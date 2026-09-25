@@ -146,7 +146,8 @@ namespace PoliSim.UI
             GUIStyle label = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
             GUIStyle small = DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleLeft);
             GUIStyle chipCaption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
-            PoliSimWidgets.MeasuredLabel(new Rect(left, y + StatsUnit(2f), width, styles.CapH), "TECHNOLOGY · THE FLEET · LEAD TIME · ORDER · IN THE QUEUE", styles.Caption);
+            bool fleetLocked = !_simulationManager.PlayerMayIntroduce(country.Id, out string fleetLockedWhy);   // PS-3c (§630): a fleet order is the government's - the AI energy ministry's where the AI governs the player's country
+            PoliSimWidgets.MeasuredLabel(new Rect(left, y + StatsUnit(2f), width, styles.CapH), fleetLocked ? fleetLockedWhy : "TECHNOLOGY · THE FLEET · LEAD TIME · ORDER · IN THE QUEUE", styles.Caption);
             float lineY = y + StatsUnit(4f) + styles.CapH;
             for (int k = 0; k < EnergyLayerData.Labels.Length; k++)
             {
@@ -158,11 +159,11 @@ namespace PoliSim.UI
                 float cx = line.x + techW + leadW;
                 var minus = new Rect(cx, line.y + (lh - chipH) * 0.5f, chipW, chipH);
                 var plus = new Rect(cx + chipW + StatsUnit(4f), line.y + (lh - chipH) * 0.5f, chipW, chipH);
-                if (DrawDeskChipButton(minus, "-", chipCaption, false, !can)) { EnergyFleet.Place(country, k, -step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary - the cached preview is of a fleet without it
+                if (DrawDeskChipButton(minus, "-", chipCaption, false, !can || fleetLocked)) { EnergyFleet.Place(country, k, -step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary - the cached preview is of a fleet without it
                 // P6-F2e (§551): a step the connection queue has no room for is REFUSED, and the line says why - the step up draws disabled, the step down stands
                 string full = can ? EnergyConnectionQueue.FullText(country, k, year) : null;
                 double up = can ? EnergyConnectionQueue.StepUpMw(country, k, step, year) : step;   // a step larger than the line's room is the room - the last step lands on the published figure
-                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can || full != null)) { EnergyFleet.Place(country, k, up, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
+                if (DrawDeskChipButton(plus, "+", chipCaption, false, !can || fleetLocked || full != null)) { EnergyFleet.Place(country, k, up, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
                 double queued = EnergyFleet.QueuedMw(country, k);
                 string queuedText = can
                     ? (Math.Abs(queued) < 0.5 ? "NOTHING QUEUED" : (queued > 0 ? "+" : "-") + EnergyConnectionQueue.Mw(Math.Abs(queued)) + " MW QUEUED")

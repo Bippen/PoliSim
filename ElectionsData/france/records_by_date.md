@@ -474,3 +474,203 @@ scheduled legislative election falls in the sixty days before it.
 
 *(Filed 2026-09-24 by the PS-1 France sourcing agent. Nothing outside `ElectionsData/france/records_by_date.md` and
 `ElectionsData/france/raw/records/` was written. No code was touched, Unity was not run, nothing was committed.)*
+
+
+---
+
+# THE EXECUTIVE OF RECORD, 2022-07-01 to 2026-09-25 — president and governments, with the JORF decrees [SOURCED] [PROVISIONAL]
+
+Class: SOURCED (executive pass, 2026-09-25, sourcing agent; the window's end moves to 2026-09-25). `[PROVISIONAL]` until a
+second session re-verifies (R-K9). This section supplements Table 2 above: it adds the JORF decrees behind the Élysée
+communiqués (Légifrance read through Wayback `id_` captures, since `legifrance.gouv.fr` refuses this machine — see the
+head of this file), the first round of the 2022 presidential election, the Bayrou Government's end by decree, and the
+newest official composition page. It repeats no quote already above; every Élysée id it cites ([EL-*]) is in the
+register above, with its raw file under `raw/records/`.
+
+**Fetched, never recalled.** Every new quote below was read in a page fetched on 2026-09-25 (07:00–07:15 UTC, see
+`raw/executive/fetch_log.txt`) and saved byte for byte under `raw/executive/`; SHA-256 in `raw/executive/SHA256SUMS.txt`
+and in the register below. Quotes are verbatim and checked against the saved bytes by the same script rule as above (tags
+stripped, entities decoded, U+2019 read as `'`, non-breaking spaces and whitespace runs collapsed). Wayback `id_` captures
+serve the archived page's original bytes; the capture served is logged per file. Légifrance's pages print the text with
+"Versions" widgets between articles; those words are the page's, not the decree's, and are not quoted.
+
+**Party keys.** As above: `Assets/Scripts/Data/PartySystem.cs`'s France roster (`UG ENS RN LR DVD UXD DVG REG HOR DVC UDI
+SOC ECO DIV EXD`). Renaissance rides `ENS`; MoDem rode `ENS` in 2024 (Table 3's DERIVED mapping); Les Républicains is `LR`.
+
+## Register of the new ids
+(all accessed 2026-09-25; saved as `raw/executive/<file>`; "page's own date" is what the page itself shows)
+
+| id | URL | publisher | page's own date | file | bytes | SHA-256 |
+|---|---|---|---|---|---|---|
+| [CC-195] | https://www.conseil-constitutionnel.fr/decision/2022/2022195PDR.htm | Conseil constitutionnel | "Décision n° 2022-195 PDR du 13 avril 2022"; "Rendu public le 13 avril 2022" | `cc_2022-195PDR_premier-tour.html` | 69358 | `91dc2a2f691bc433aab45365d96d5c38e8ecb0a62a0770d182e421b8e46366c2` |
+| [EL-SM] | https://www.elysee.fr/sitemap.xml | Élysée (sitemap index) | `lastmod` 2026-06-09 on every child sitemap | `elysee_sitemap.xml` | 1106 | `d0ef9c6e91ccc24e4e4392c030f746083cd6bdaf88bf57efda721aebcb7b54d0` |
+| [EL-SMP] | https://www.elysee.fr/sitemap.publication.xml | Élysée (publication sitemap, every dated article URL) | as served 2026-09-25; carries URLs dated up to 2026-09 | `elysee_sitemap.publication.xml` | 12174683 | `b929f579cec9cec6faaa18980ecaa1b5ad8c04ab242db3e91ab08af7b2e7c31f` |
+| [JO-0114] | https://www.legifrance.gouv.fr/jorf/jo/2022/05/17/0114 | Légifrance (JORF issue sommaire) via Wayback | "JORF n° 0114 du 17 mai 2022" | `wb_jorf_2022_05_17_0114.html` | 327805 | `e2f8bbc87f66caa09b83af7cf1d0b05abec63d9dcde873013567b56ccc2e5e83` |
+| [JO-0007] | https://www.legifrance.gouv.fr/jorf/jo/2024/01/10/0007 | Légifrance via Wayback | "JORF n° 0007 du 10 janvier 2024" | `wb_jorf_2024_01_10_0007.html` | 333638 | `fc330b5836e1fd14654d3d547df8f2581e63795cdeeaac58a360e38d2cf8f62e` |
+| [JO-0169] | https://www.legifrance.gouv.fr/jorf/jo/2024/07/17/0169 | Légifrance via Wayback | "JORF n° 0169 du 17 juillet 2024" | `wb_jorf_2024_07_17_0169.html` | 353745 | `1c342f14dda75697bfe4b58a6262b994411211e9567544e04ae1bc6d94ed29c6` |
+| [JO-0212] | https://www.legifrance.gouv.fr/jorf/jo/2024/09/06/0212 | Légifrance via Wayback | "JORF n° 0212 du 6 septembre 2024" | `wb_jorf_2024_09_06_0212.html` | 296844 | `9f008121d86f9e14167cc5156c220219a13e17c363ce812e402fff5259888dba` |
+| [JO-0295] | https://www.legifrance.gouv.fr/jorf/jo/2024/12/14/0295 | Légifrance via Wayback | "JORF n° 0295 du 14 décembre 2024" | `wb_jorf_2024_12_14_0295.html` | 315947 | `f27c3a25e62f80a19664ffcc9da09140e985e283e290707c86a2b9ba5e7db8aa` |
+| [JO-0210] | https://www.legifrance.gouv.fr/jorf/jo/2025/09/10/0210 | Légifrance via Wayback | "JORF n° 0210 du 10 septembre 2025" | `wb_jorf_2025_09_10_0210.html` | 324286 | `d151e5dca43143feaaf9674a35a2352b7457e838013bcaf98f10d688f33971ae` |
+| [JD-C16] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045802689 | Légifrance (decree text) via Wayback | "Fait le 16 mai 2022."; "JORF n°0114 du 17 mai 2022 Texte n° 1" | `wb_legifrance_JORFTEXT000045802689.html` | 96124 | `3cdc39bf9a6c4deda11e5d9e88bd5ae043009f6d77b04b6c17c33bffcc66924e` |
+| [JD-B16] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045802692 | Légifrance via Wayback | "Fait le 16 mai 2022."; "JORF n°0114 du 17 mai 2022 Texte n° 2" | `wb_legifrance_JORFTEXT000045802692.html` | 100491 | `b0278dd3e9c4e8bb74eac936535bf47b5b00e303615fcb058d5afab80c12146c` |
+| [JD-B09] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000048898744 | Légifrance via Wayback | "Fait le 9 janvier 2024."; "JORF n°0007 du 10 janvier 2024 Texte n° 1" | `wb_legifrance_JORFTEXT000048898744.html` | 90564 | `9ae7b26bb02bf94052688f64651d6b1eb7ee32703b16595bd8321967df6cac1e` |
+| [JD-A09] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000048898747 | Légifrance via Wayback | "Fait le 9 janvier 2024."; "JORF n°0007 du 10 janvier 2024 Texte n° 2" | `wb_legifrance_JORFTEXT000048898747.html` | 95344 | `553a022ad3c6cff7c5f835e67a6e93a0472582c81443cdc7c2753cb4b6905a6d` |
+| [JD-A16] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000050000932 | Légifrance via Wayback | "Fait le 16 juillet 2024."; "JORF n°0169 du 17 juillet 2024 Texte n° 1" | `wb_legifrance_JORFTEXT000050000932.html` | 96301 | `6dce5f1e87cf6c5a757d5fd1f478a303fcdf1de56f0d761cec04d6710c1b4975` |
+| [JD-BA05] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000050185112 | Légifrance via Wayback | "Fait le 5 septembre 2024."; "JORF n°0212 du 6 septembre 2024 Texte n° 1" | `wb_legifrance_JORFTEXT000050185112.html` | 100390 | `87d482b4d65ace0203548a652e9d65c12db2188bcdaab7ccea07bfd16cd51c67` |
+| [JD-BY13] | https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000050774288 | Légifrance via Wayback | "Fait le 13 décembre 2024."; "JORF n°0295 du 14 décembre 2024 Texte n° 1" | `wb_legifrance_JORFTEXT000050774288.html` | 100408 | `cfc73489b0c692952559eceabc59aac467344c85565d3cfa7e498053d7f82535` |
+| [IG-COMP] | https://www.info.gouv.fr/composition-du-gouvernement | info.gouv.fr (Service d'information du Gouvernement) via Wayback, capture 2026-09-09 15:02:02 UTC | "Annoncé le 26/02/2026" | `wb_infogouv_composition_2026.html` | 223756 | `f29eed50e8de02f69eb79dfc070fed1b0907fa572dce16419de5803631095db0` |
+
+## Table E1 — THE PRESIDENT OF RECORD
+
+| from | until | president | party | basis |
+|---|---|---|---|---|
+| 2022-05-14, 0 h (re-elected 2022-04-24; the window opens 2022-07-01) | 2027-05-13 (**DERIVED**: five years, Art. 6 [CC-CONST]; the next election "vingt jours au moins et trente-cinq jours au plus" before, Art. 7) | Emmanuel Macron | Renaissance → `ENS` (the party's page names him "Président d'honneur" as served 2026-09-24 [P-REN]; the label he ran under in April 2022 is on no fetched page — GAP E1) | rounds 2022-04-10 [CC-195] and 2022-04-24 [CC-197]; proclamation 27 April 2022 [CC-197]; term Art. 6–7 [CC-CONST] |
+
+**The first round, 10 April 2022** [CC-195], "Décision n° 2022-195 PDR du 13 avril 2022", "Déclaration du 13 avril 2022
+relative aux résultats du premier tour de scrutin de l'élection du Président de la République":
+> "Article 1 er . - Les résultats du scrutin pour l'élection du Président de la République, auquel il a été procédé les 9 et 10 avril 2022, sont les suivants :"
+>
+> "M. Emmanuel MACRON : 9 783 058"
+>
+> "Mme Marine LE PEN : 8 133 828"
+>
+> "Rendu public le 13 avril 2022."
+>
+> "JORF n°0088 du 14 avril 2022, texte n° 1"
+
+*gloss:* "les 9 et 10 avril" — the Saturday 9 April is the overseas and Americas polling day; metropolitan France voted
+Sunday 10 April. **The second round is "les 23 et 24 avril 2022"** in [CC-197], quoted in Table 2 above. So the 2022
+rounds are 10 and 24 April 2022 on the Conseil's own two proclamations — **E-49 closes** on [CC-195] + [CC-197].
+
+**The president's party.** [P-REN] (Table 3 above) prints the lines "Emmanuel", "Macron", "Président d'honneur" on the
+Renaissance party page. No fetched page states his party on the day of the election or of his re-investiture; the
+roster key `ENS` is the DERIVED mapping of Renaissance to the 2024 nuance (Table 3).
+
+## Table E2 — THE GOVERNMENTS OF RECORD (Table 2 above, re-cut with the decrees)
+
+Dates are the decrees' own ("Fait le …"), which coincide with the Élysée communiqués' "Publié le" in every case fetched.
+"until" is the day the next Government's appointment decree is signed (Art. 8: the President "met fin à ses fonctions
+sur la présentation par celui-ci de la démission du Gouvernement"); between a resignation and that day the outgoing
+Government handles current business ("affaires courantes", the Élysée's own words in [EL-B24] [EL-A16] [EL-BA-DEM]).
+
+| from | until | prime minister | cabinet parties (keys) | basis |
+|---|---|---|---|---|
+| 2022-05-16 (before the window) | 2024-01-09 | Élisabeth Borne | **GAP G4** (no official page states them); PM's own party: **GAP** (no party page fetched names her) | appointment decree of 16 May 2022 [JD-B16] ("Mme Elisabeth BORNE est nommée Première ministre."), JORF n°0114 texte 2 [JO-0114]; Élysée [EL-B16]; ministers [EL-B20]; resignation 8 Jan 2024 [EL-B24]; cessation decree of 9 Jan 2024 [JD-B09] |
+| 2024-01-09 | 2024-09-05 (resigned 2024-07-16, current business to 2024-09-05) | Gabriel Attal | **GAP G4**; PM's own party: Renaissance → `ENS` ("Secrétaire général" as served 2026-09-24 [P-REN]; his party on 9 Jan 2024 not on a fetched page) | appointment decree of 9 Jan 2024 [JD-A09] ("M. Gabriel ATTAL est nommé Premier ministre."), JORF n°0007 texte 2 [JO-0007]; Élysée [EL-A09]; ministers [EL-A11]; resignation accepted 16 July 2024 [EL-A16]; cessation decree of 16 July 2024 [JD-A16] (the resignation letter dated 8 July 2024), JORF n°0169 texte 1 [JO-0169] |
+| 2024-09-05 | 2024-12-13 (censured 2024-12-04, resignation "pris acte" 2024-12-05, current business to 2024-12-13) | Michel Barnier | **GAP G4**; PM's own party: Les Républicains → `LR` ("Président du Conseil national" of LR as served 2026-09-24 [P-LR]; his party on 5 Sept 2024 not on a fetched page) | appointment decree of 5 Sept 2024 [JD-BA05] ("M. Michel BARNIER est nommé Premier ministre."), JORF n°0212 texte 1 [JO-0212]; Élysée [EL-BA05]; ministers [EL-BA21]; censure [AN-SCR519] [AN-ADO]; resignation [EL-BA-DEM]; the cessation decree is **not fetched** (GAP E3) |
+| 2024-12-13 | 2025-09-09 (confidence refused 2025-09-08) | François Bayrou | **GAP G4**; PM's own party: Mouvement Démocrate → `ENS` by the 2024 nuance mapping ("Président du Mouvement Démocrate" [P-MODEM]) | appointment decree of 13 Dec 2024 [JD-BY13] ("M. François BAYROU est nommé Premier ministre."), JORF n°0295 texte 1 [JO-0295]; Élysée [EL-BY13]; ministers [EL-BY23]; confidence vote [AN-CONF]; **the end is now sourced**: "Décret du 9 septembre 2025 relatif à la cessation des fonctions du Gouvernement", JORF n°0210 of 10 Sept 2025 [JO-0210] — GAP G5 closes (the decree's own body is not fetched, GAP E3) |
+| 2025-09-09 | 2025-10-10 (resignation accepted 2025-10-06) | Sébastien Lecornu (first) | **GAP G4**; PM's own party: **GAP** (no fetched party page names him) | "Décret du 9 septembre 2025 portant nomination du Premier ministre", JORF n°0210 [JO-0210]; Élysée [EL-L09]; ministers 5 Oct 2025 [EL-L05]; resignation [EL-L06]; the cessation decree is not fetched (GAP E3) |
+| 2025-10-10 | 2026-09-25 (window end; in office) | Sébastien Lecornu (second) | **GAP G4**; PM's own party: **GAP** | Élysée [EL-L10] (the appointment decree's JORF issue is not captured, GAP E3); ministers 12 Oct 2025 [EL-L12] and 26 Feb 2026 [EL-L26F]; **in office on 2026-09-09**: [IG-COMP], the Government's own composition page as captured that day, "Annoncé le 26/02/2026 Premier ministre Sébastien Lecornu"; 2026-09-09 → 2026-09-25 remains **DERIVED** from [EL-SMP] (no Élysée article dated after 2026-02-26 names a Prime Minister's appointment or a Government's resignation) and [EL-CM10] |
+
+**The decrees, verbatim.** Each is Légifrance's page for the JORF text, read through Wayback; the page's own date is
+the decree's "Fait le". Every one is signed "Emmanuel Macron" and cites "Vu l'article 8 de la Constitution".
+
+- [JD-C16], "Décret du 16 mai 2022 relatif à la cessation des fonctions du Gouvernement":
+  > "Vu la lettre, en date du 16 mai 2022, par laquelle le Premier ministre a présenté au Président de la République la démission du Gouvernement,"
+  >
+  > "Article 1 Il est mis fin, sur la présentation de la démission du Gouvernement, aux fonctions de M. Jean CASTEX, Premier ministre, et des autres membres du Gouvernement."
+  >
+  > "Fait le 16 mai 2022."
+- [JD-B16], "Décret du 16 mai 2022 portant nomination du Premier ministre":
+  > "Article 1 Mme Elisabeth BORNE est nommée Première ministre."
+  >
+  > "Fait le 16 mai 2022."
+- [JD-B09], "Décret du 9 janvier 2024 relatif à la cessation des fonctions du Gouvernement":
+  > "Vu la lettre, en date du 8 janvier 2024, par laquelle la Première ministre a présenté au Président de la République la démission du Gouvernement,"
+  >
+  > "Article 1 Il est mis fin, sur la présentation de la démission du Gouvernement, aux fonctions de Mme Elisabeth Borne, Première ministre, et des autres membres du Gouvernement."
+  >
+  > "Fait le 9 janvier 2024."
+- [JD-A09], "Décret du 9 janvier 2024 portant nomination du Premier ministre":
+  > "Article 1 M. Gabriel ATTAL est nommé Premier ministre."
+  >
+  > "Fait le 9 janvier 2024."
+- [JD-A16], "Décret du 16 juillet 2024 relatif à la cessation des fonctions du Gouvernement":
+  > "Vu la lettre, en date du 8 juillet 2024, par laquelle le Premier ministre a présenté au Président de la République la démission du Gouvernement,"
+  >
+  > "Article 1 Il est mis fin, sur la présentation de la démission du Gouvernement, aux fonctions de M. Gabriel ATTAL, Premier ministre, et des autres membres du Gouvernement."
+  >
+  > "Fait le 16 juillet 2024."
+
+  *gloss:* the letter is dated 8 July 2024, the day after the second round; the President accepted it on 16 July
+  ([EL-A16]: "qui l'a acceptée ce jour"). The Government of record stayed Attal's through the interval.
+- [JD-BA05], "Décret du 5 septembre 2024 portant nomination du Premier ministre":
+  > "Article 1 M. Michel BARNIER est nommé Premier ministre."
+  >
+  > "Fait le 5 septembre 2024."
+- [JD-BY13], "Décret du 13 décembre 2024 portant nomination du Premier ministre":
+  > "Article 1 M. François BAYROU est nommé Premier ministre."
+  >
+  > "Fait le 13 décembre 2024."
+
+**The JORF issues' sommaires** (each issue page lists its texts under "Présidence de la République"; the two decrees
+are consecutive entries, "Texte n° 1" the cessation and "Texte n° 2" the appointment where both appear):
+
+- [JO-0114], "JORF n° 0114 du 17 mai 2022": "Décret du 16 mai 2022 relatif à la cessation des fonctions du Gouvernement";
+  "Décret du 16 mai 2022 portant nomination du Premier ministre".
+- [JO-0007], "JORF n° 0007 du 10 janvier 2024": "Décret du 9 janvier 2024 relatif à la cessation des fonctions du
+  Gouvernement"; "Décret du 9 janvier 2024 portant nomination du Premier ministre".
+- [JO-0169], "JORF n° 0169 du 17 juillet 2024": "Décret du 16 juillet 2024 relatif à la cessation des fonctions du Gouvernement".
+- [JO-0212], "JORF n° 0212 du 6 septembre 2024": "Décret du 5 septembre 2024 portant nomination du Premier ministre".
+- [JO-0295], "JORF n° 0295 du 14 décembre 2024": "Décret du 13 décembre 2024 portant nomination du Premier ministre".
+- [JO-0210], "JORF n° 0210 du 10 septembre 2025":
+  > "Décret du 9 septembre 2025 relatif à la cessation des fonctions du Gouvernement"
+  >
+  > "Décret du 9 septembre 2025 portant nomination du Premier ministre"
+
+  *gloss:* this is the Bayrou Government's end and the first Lecornu appointment, both dated 9 September 2025 — the date
+  Table 2 had DERIVED. The two decree pages themselves (JORFTEXT000052221929, JORFTEXT000052221932, the ids the sommaire
+  links) have no Wayback capture (fetch log); their titles are quoted from the sommaire.
+
+**The Government in office, the newest official page** [IG-COMP], `info.gouv.fr` "Composition du Gouvernement", Wayback
+capture of 2026-09-09 15:02:02 UTC (the live site refuses this machine):
+> "Composition du Gouvernement Annoncé le 26/02/2026 Premier ministre Sébastien Lecornu Premier ministre"
+
+The page lists the ministers by ministry with no party for any of them (so GAP G4 stands even on the Government's own
+page). It names, among others: "Laurent Nunez Ministre de l'Intérieur", "Gérald Darmanin Garde des Sceaux, ministre de la
+Justice", "Roland Lescure Ministre de l'Économie, des Finances et de la Souveraineté industrielle, énergétique et numérique".
+
+**No later appointment on the Élysée's site** [EL-SMP]: the publication sitemap as served 2026-09-25 lists every dated
+article URL. Its only entry under `/emmanuel-macron/2025/09/09/` is
+`https://www.elysee.fr/emmanuel-macron/2025/09/09/le-president-de-la-republique-a-nomme-sebastien-lecornu-premier-ministre`
+— there is no Élysée article for the Bayrou resignation (GAP G5's page does not exist; the decree [JO-0210] stands in).
+Among its 2026 entries from March onward, every URL containing "nomination" is a "proposition-de-nomination-de-…" for an
+agency head (AFD, ANSES, CNES, Banque de France, CNRS, ANJ), and none contains "premier-ministre" as a French office or
+"demission"; the "premier-ministre" URLs of that span are meetings with foreign prime ministers (the Netherlands, the
+United Kingdom, Lebanon, Norway, Hungary). **DERIVED**: no Prime Minister was appointed and no Government resigned
+between 26 February 2026 and the sitemap's serving; with [IG-COMP] on 9 September 2026 and [EL-CM10] on 10 September
+2026, Lecornu's second Government is the Government of record to the window's end.
+
+## Against the task's framing
+
+- "Borne (2022-05-16 → 2024-01-09)": confirmed on the decrees [JD-B16] [JD-B09].
+- "Attal (2024-01-09 → 2024-09-05, resigned 2024-07-16 caretaker)": confirmed; the resignation letter is dated 8 July
+  2024 and accepted 16 July [JD-A16] [EL-A16]; his Government's functions end with Barnier's appointment on 5 September
+  2024 [JD-BA05].
+- "Barnier (2024-09-05 → 2024-12-13, censured 2024-12-04)": confirmed [JD-BA05] [AN-SCR519] [JD-BY13].
+- "Bayrou (2024-12-13 → ?)": the "?" is 2025-09-09 [JO-0210].
+- "whatever followed": Lecornu, appointed 9 September 2025, resigned 6 October 2025, re-appointed 10 October 2025, in
+  office on 9 September 2026 [IG-COMP]; nothing later on any fetched page.
+- The 2022 rounds: 10 April [CC-195] and 24 April [CC-197] — E-49 closes.
+
+## GAPS of this pass
+
+- **E1: the president's party label on election day (April 2022) is on no fetched page.** [P-REN] gives his party office
+  as served in 2026 only. `ENS` is a DERIVED key.
+- **G4 stands: no official page states any cabinet's party composition.** The Élysée composition pages and [IG-COMP]
+  list ministers by portfolio only. The cabinet-party column is billed GAP for every Government; only the PM's own
+  party office is on record for Attal, Barnier, Bayrou (party pages, as served 2026-09-24). Borne and Lecornu: no
+  fetched party page names them (the Renaissance page's "Membres de droit" list, [P-REN], names Attal, not them).
+- **E3: decrees not fetched** (no Wayback capture found; the live site refuses): the ministers' composition decrees
+  (every Government); the cessation decrees of the Barnier (JORF of 6 or 14 December 2024 — the 0295 issue's sommaire
+  carries no such decree), Bayrou (title only, [JO-0210]) and first Lecornu Governments; the appointment decrees of
+  9 September 2025 (title only, [JO-0210]) and 10 October 2025 (issue numbers 0233–0241 of 11 October 2025 probed, all
+  404 on Wayback). The Élysée communiqués [EL-L06] [EL-L10] stand for those dates.
+- **G5 closes** on [JO-0210]. **G2 narrows** to E3. **G7 narrows**: the Government is named on an official page dated
+  2026-09-09 [IG-COMP]; the last sixteen days of the window remain DERIVED from [EL-SMP] and [EL-CM10].
+- **E4: the ministers of each Government by party** would need the Assembly's or each party's own pages per minister;
+  not attempted (out of the ask's scope; billed so the next pass knows).
+- **G13 stands**: second-session re-verification (R-K9) pending.
+
+*(Filed 2026-09-25 by the executive sourcing pass. Nothing outside `ElectionsData/france/records_by_date.md` and
+`ElectionsData/france/raw/executive/` was written. No code was touched, Unity was not run, nothing was committed.)*

@@ -78,9 +78,9 @@ namespace PoliSim.Elections
                     list.Add(Ruled(id, "PRESIDENTIAL ELECTION", "NARA's Electoral College calendar [EC-DATES]; the run-up by the standard window (§618)"));
                     break;
                 case CountryId.France:
-                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", DateTime.MinValue, RoundDatesNote, DateTime.MinValue, false,
+                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", new DateTime(2022, 4, 10), null, DateTime.MinValue, false,
                         LockedPrefix + TwoRoundReason,
-                        "france/records_by_date.md holds the Élysée's appointment of 2022-05-16 [EL-B16], not the rounds - E-49; the two-round presidential model is not built (S8)",
+                        "the rounds of 10 April 2022 [CC-195] and 24 April 2022 [CC-197], the Conseil constitutionnel's own proclamations (E-49 closed, §629); the two-round presidential model is not built (S8)",
                         year: 2022));
                     list.Add(Ruled(id, "LEGISLATIVE ELECTION (SNAP)", "the Élysée's address of 2024-06-09 [EL-DIS]; governing mode opens at the XVIIe's first sitting 2024-07-18 [AN-S18] (ruled, §618) - the 577-constituency system is not modelled (R-EL10)"));
                     break;
@@ -114,7 +114,7 @@ namespace PoliSim.Elections
         {
             if (!p.Playable) { return null; }
             string opens = "OPENS " + Stamp(p.Opens);
-            if (WorldClock.GoverningModeOnly(p.Country)) { return "GOVERNING · " + opens; }
+            if (WorldClock.GoverningModeOnly(p.Country)) { return "WHAT-IF · YOUR PARTY GOVERNS · " + opens; }   // PS-3d (§631, ruled): the card states the what-if plainly
             return (WorldClock.IsSnapStart(p.Country) ? "SNAP ELECTION · " : "RUN-UP · ") + opens;
         }
 

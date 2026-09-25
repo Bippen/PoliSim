@@ -182,6 +182,10 @@ namespace PoliSim.EditorTools
             ("StartPointsDiagnostic", StartPointsDiagnostic.Run),   // SP-1 (§622): the start points as data - one per popularly decided election, the playable one the ruled start, locked cards with reasons
             ("StartBriefDiagnostic", StartBriefDiagnostic.Run),   // SP-2 (§623): the derived brief - four clauses per playable start, each tracing to its record; Sweden's reads the record's figures
             ("PlayerRoleDiagnostic", PlayerRoleDiagnostic.Run),   // PS-3a (§628): who governs is the player's role - the record at Sweden's start, the four roles by party, the AI ministry's gate, the save round trip
+            ("GovernmentBudgetBillDiagnostic", GovernmentBudgetBillDiagnostic.Run),   // PS-3e (§632): the AI government's budget as a bill, the alternative, the frame decision; player path only
+            ("PortfolioAllocationDiagnostic", PortfolioAllocationDiagnostic.Run),   // PS-3g (§634): portfolios by Gamson's law on the record; the gate's portfolio leg
+            ("SupportAgreementDiagnostic", SupportAgreementDiagnostic.Run),   // PS-3h (§635): the support agreement's items owed, delivered, broken; the withdrawal recorded
+            ("ConfidenceDiagnostic", ConfidenceDiagnostic.Run),   // PS-3i (§636): a supporter's withdrawal brings a government down by the Riksdag's procedure
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),

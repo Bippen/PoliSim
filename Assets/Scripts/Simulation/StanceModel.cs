@@ -43,6 +43,8 @@ namespace PoliSim.Simulation
         public readonly List<(SpendingCategory? Category, WelfareProgramType? Program, float CutShare)> Cuts = new List<(SpendingCategory?, WelfareProgramType?, float)>();
         /// <summary>The legacy scalar direction the records and the lean bar keep (each bill kind's own sign convention).</summary>
         public float Direction;
+        /// <summary>PS-3e (§632): the bill is the GOVERNMENT'S own (the AI government's budget for the player's country) - the cabinet's cohesion term applies whoever the player is.</summary>
+        public bool GovernmentAuthored;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 
@@ -243,14 +245,23 @@ namespace PoliSim.Simulation
         /// </summary>
         public static List<PartyStance> StancesOver(Country country, IReadOnlyList<PoliticalParty> parties, IReadOnlyDictionary<string, int> seatsOf, BillConcern concern)
         {
+            bool government = GovernmentFormation.TryGovernment(country, out IReadOnlyList<string> cabinet, out IReadOnlyList<string> support);
+            return StancesOver(country, parties, seatsOf, concern, government, cabinet, support);
+        }
+
+        /// <summary>
+        /// PS-3h (§635): the same stances with the GOVERNMENT CONTEXT PASSED IN - a caller scoring many bills at once (the support agreement's demands over
+        /// the whole catalogue) computes the formation once instead of once per bill; the four-argument form above computes it and delegates here.
+        /// </summary>
+        public static List<PartyStance> StancesOver(Country country, IReadOnlyList<PoliticalParty> parties, IReadOnlyDictionary<string, int> seatsOf, BillConcern concern, bool government, IReadOnlyList<string> cabinet, IReadOnlyList<string> support)
+        {
             var result = new List<PartyStance>();
             if (parties == null) { return result; }
             bool opennessAvailable = ParliamentSystem.TradeAxisAvailable(country);
             var loaded = new List<(StanceAxis Axis, int End, float Weight)>(concern.Loaded());
 
             // The government context (term 2): the formed cabinet and its support, and whether this is a government bill.
-            bool government = GovernmentFormation.TryGovernment(country, out IReadOnlyList<string> cabinet, out IReadOnlyList<string> support);
-            bool governmentBill = government && !string.IsNullOrEmpty(country.PlayerPartyAbbrev) && cabinet.Contains(country.PlayerPartyAbbrev);
+            bool governmentBill = government && (concern.GovernmentAuthored || (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && cabinet.Contains(country.PlayerPartyAbbrev)));   // PS-3e (§632): the author, not the player's seat, makes a government bill
             float[] cabinetPosition = governmentBill ? CabinetPositions(country, PartySystems.For(country.Id), cabinet, loaded, opennessAvailable) : null;
             // P4-A3: the government's bloc is the bloc of its largest cabinet party (the seat map's own blocs, NationalElection.BlocOf).
             int governmentBloc = -1;

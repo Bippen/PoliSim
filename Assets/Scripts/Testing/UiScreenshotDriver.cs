@@ -1371,6 +1371,45 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "SignPendingDivision");
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
+
+            // (d) PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - the signing screen names each with its votes, the abstentions,
+            // and stamps the adopted one. Staged as the frame decision the model records (S's alternative against the government's frames, the
+            // government's own parties carrying them), and filmed real: the surface is Canvas.
+            if (player.Id != CountryId.Sweden) { Debug.Log("SHOT: 89f_signing_budget_contest is Sweden's (the staged sides name its parties) - skipped for this country, not missing."); yield break; }
+            StageBudgetContestDivision(player, sim);
+            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: true);
+            yield return Settle();
+            Claim("signing");
+            yield return Capture("89f_signing_budget_contest");
+            RecordCanvasTextAssert("89f_signing_budget_contest", controller);
+            InvokeNoArg(controller, "SignPendingDivision");
+            yield return WaitForCanvasSettle(controller, wantActive: false);
+            yield return Settle();
+        }
+
+        /// <summary>PS-3f (§633): the frame decision as the model records it - the government's parties carrying its frames, the rest by alignment toward S's alternative or abstaining - with the contest on the record.</summary>
+        private static void StageBudgetContestDivision(Country player, SimulationManager sim)
+        {
+            var sides = new List<DivisionSide>();
+            int forG = 0, forA = 0, abst = 0;
+            string alternativeBy = "S";
+            foreach (PoliticalParty party in PartySystems.For(player.Id))
+            {
+                int seats = player.ParliamentSeats.TryGetValue(party.Abbrev, out int n) ? n : 0;
+                if (seats <= 0) { continue; }
+                PoliSim.Elections.PlayerRole role = player.Government != null ? player.Government.RoleOf(party.Abbrev) : PoliSim.Elections.PlayerRole.None;
+                bool governmentParty = role == PoliSim.Elections.PlayerRole.PrimeMinister || role == PoliSim.Elections.PlayerRole.JuniorPartner || role == PoliSim.Elections.PlayerRole.Support;
+                int side = governmentParty ? 1 : party.Abbrev == alternativeBy || party.Abbrev == "V" || party.Abbrev == "MP" ? -1 : 0;
+                if (side > 0) { forG += seats; } else if (side < 0) { forA += seats; } else { abst += seats; }
+                string why = governmentParty ? "the government's own party - carries its frames" : side < 0 ? alternativeBy + "'s frames (+0.40) over the government's (+0.00)" : "abstains - aligned with neither";
+                sides.Add(new DivisionSide { Abbrev = party.Abbrev, ShortName = party.ShortName, Seats = seats, Side = side, Alignment = side < 0 ? 0.4f : 0f, Reason = why });
+            }
+            bool governmentAdopted = forG >= forA;
+            string title = governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternativeBy}'s alternative" : $"Annual budget: {alternativeBy}'s alternative frames adopted, {forA} to {forG}, over the government's";
+            player.Divisions.Append(title, sim.CurrentDate, 0f, true, 0f, (int)BillAxis.Fiscal, sides);
+            player.Divisions.Entries[player.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternativeBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abst, AlternativeAdopted = !governmentAdopted };
+            Debug.Log($"SHOT: staged the budget contest division - {title}");
         }
 
         /// <summary>
@@ -1503,6 +1542,9 @@ namespace PoliSim.Testing
                 }
             }
 
+            // PS-3c (§630): the bills staged here are the GOVERNMENT'S - seat the record's prime-minister party for them, else the role gate refuses every one (the sweep seats the largest party, which may be in opposition).
+            string seatedBefore = player.PlayerPartyAbbrev;
+            if (player.Government != null && player.Government.PmParty != null && player.PlayerPartyAbbrev != player.Government.PmParty) { Debug.Log($"SHOT: bills staged - re-seating {player.Government.PmParty}, the prime minister's party, in place of {player.PlayerPartyAbbrev} so the bills are the government's (§630)"); player.PlayerPartyAbbrev = player.Government.PmParty; }
             TaxType? taxPick = null;
             foreach (TaxLine line in player.TaxLines) { if (!line.IsImplemented) { taxPick = line.Type; break; } }
             if (taxPick == null && player.TaxLines.Count > 0) { taxPick = player.TaxLines[0].Type; }
@@ -1523,6 +1565,7 @@ namespace PoliSim.Testing
             sim.IntroduceLawBill(_countryId, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false });
             sim.IntroduceLawBill(_countryId, new LawBill { LawId = "skilled_worker_immigration_act", IsRepeal = false });
             sim.IntroduceTradeBill(_countryId, new TradePolicyBill { NewBaseTariffRate = player.BaseTariffRate + 2f });
+            if (player.PlayerPartyAbbrev != seatedBefore) { Debug.Log($"SHOT: bills staged - {seatedBefore} re-seated; the pending bills stay before the chamber (their countdown is the chamber's, §630)"); player.PlayerPartyAbbrev = seatedBefore; }
 
             Debug.Log($"SHOT: dense state - budget pause {sim.GetPendingBudgetProcess(_countryId)}, cabinet decisions {sim.GetPendingCabinetDecisions(_countryId).Count}, meeting {(sim.GetPendingForeignPolicyMeeting(_countryId) != null)}, enacted laws {player.EnactedLaws.Count}, turn {sim.CurrentTurn}.");
             SetEnumField(controller, "_consolidatedTab", "Decisions");
@@ -3031,6 +3074,9 @@ namespace PoliSim.Testing
                 }
             }
 
+            // PS-3c (§630): the bills staged here are the GOVERNMENT'S - seat the record's prime-minister party for them, else the role gate refuses every one (the sweep seats the largest party, which may be in opposition).
+            string seatedBefore = player.PlayerPartyAbbrev;
+            if (player.Government != null && player.Government.PmParty != null && player.PlayerPartyAbbrev != player.Government.PmParty) { Debug.Log($"SHOT: bills staged - re-seating {player.Government.PmParty}, the prime minister's party, in place of {player.PlayerPartyAbbrev} so the bills are the government's (§630)"); player.PlayerPartyAbbrev = player.Government.PmParty; }
             // --- D. PENDING BILLS, one of every type — LAST, so no day ever ticks their countdowns. ---
             TaxType? taxPick = null;
             foreach (TaxLine line in player.TaxLines)
@@ -3110,6 +3156,7 @@ namespace PoliSim.Testing
             // Pass 3: a labor law's pending bill alongside the two C&J ones - available/enacted/
             // pending now all exist in BOTH categories in one capture.
             bool lawOk3 = sim.IntroduceLawBill(_countryId, new LawBill { LawId = "skilled_worker_immigration_act", IsRepeal = false });
+            if (player.PlayerPartyAbbrev != seatedBefore) { Debug.Log($"SHOT: bills staged - {seatedBefore} re-seated; the pending bills stay before the chamber (their countdown is the chamber's, §630)"); player.PlayerPartyAbbrev = seatedBefore; }
 
             var sectorBill = new SectorPolicyBill();
             foreach (Sector sector in player.Sectors)

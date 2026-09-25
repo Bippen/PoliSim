@@ -295,7 +295,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public void AdvanceCountryDayTick(CountryId countryId)
         {
-            TryRollForeignPolicyMeeting(countryId);
+            if (PlayerMayIntroduce(countryId, CabinetPortfolio.ForeignAffairs, out _)) { TryRollForeignPolicyMeeting(countryId); }   // PS-3c (§630): a meeting is the government's - none rolls for a player country the AI governs
             AdvanceBudgetBillDay(countryId);
             AdvanceTaxProgramBillsDay(countryId);
             AdvanceWelfareProgramBillsDay(countryId);
@@ -306,6 +306,7 @@ namespace PoliSim.Simulation
             AdvanceSwfDrawdownBillDay(countryId);
             AdvanceLawBillsDay(countryId);
             TryOpenBudgetProcess(countryId, CurrentDate);
+            AdvanceConfidenceDay(countryId);   // PS-3i (§636): a carried motion's week, the discharge and the Speaker's round
         }
 
         public bool AdvanceDay()
@@ -984,6 +985,9 @@ namespace PoliSim.Simulation
         /// Master Sequence step 4 pilot's TaxBill/AdvanceLegislativeDay already established (retired -
         /// see git history - BudgetBill generalizes it to Tax+Spending+Welfare+SWF together).
         /// </summary>
+        /// <summary>PS-3e (§632): the ALTERNATIVE budget tabled against the government's pending bill - the Riksdag's budget motion; one per country, voted with the government's on its day.</summary>
+        private readonly Dictionary<CountryId, BudgetBill> _pendingBudgetAlternativeByCountry = new Dictionary<CountryId, BudgetBill>();
+
         private readonly Dictionary<CountryId, BudgetBill> _pendingBudgetBillByCountry =
             new Dictionary<CountryId, BudgetBill>();
 
@@ -1152,6 +1156,122 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The pending omnibus BudgetBill for this country, or null if none is currently before Parliament (the common case).</summary>
+        /// <summary>
+        /// PS-3e (2026-09-25, §632, ruled): THE AI-GOVERNMENT BILL PATH. Where the AI governs the player's country its finance ministry's rule
+        /// (AiFinanceMinistry, the EU rule / the US caps) is laid before the chamber as the government's budget bill instead of written into the
+        /// book at the turn boundary; the player's party may table an alternative while it stands (<see cref="TableShadowBudget"/>), and on the
+        /// bill's day the chamber decides by the country's own procedure (<see cref="Elections.WorldClock.BudgetProcedureOf"/>): Sweden's frame decision sets
+        /// the government's frames against the alternative and adopts the one the chamber prefers; a country whose procedure is not yet sourced
+        /// votes the government's bill alone, and a failed budget leaves the old one standing, stated in the division's own title.
+        /// </summary>
+        public void TableGovernmentBudget(Country country)
+        {
+            if (country == null || _pendingBudgetBillByCountry.ContainsKey(country.Id)) { return; }
+            BudgetBill bill = AiFinanceMinistry.AsBudgetBill(country, AiFinanceMinistry.Decide(country, GetLastFiscalReport(country.Id)));
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingBudgetBillByCountry[country.Id] = bill;
+            _pendingBudgetProcessByCountry.Remove(country.Id);
+            _incomingBudgetWindowOpenNow.Remove(country.Id);
+            Debug.Log($"BUDGET: {country.Id} - the government tables its budget ({DescribeBudgetBill(bill)}); the chamber decides in {bill.DaysRemaining} day(s) by {Elections.WorldClock.BudgetProcedureOf(country.Id)}");
+        }
+
+        /// <summary>PS-3e (§632): the player's party tables its draft as the ALTERNATIVE to the government's pending budget - the Riksdag's budget motion. False, with the reason, where none can be tabled.</summary>
+        public bool TableShadowBudget(CountryId countryId, BudgetBill bill, out string refusedBecause)
+        {
+            refusedBecause = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || bill == null) { refusedBecause = "no country"; return false; }
+            if (!_pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill pending) || !pending.GovernmentBill) { refusedBecause = "NO GOVERNMENT BUDGET IS BEFORE THE CHAMBER"; return false; }
+            if (Elections.WorldClock.BudgetProcedureOf(countryId) == Elections.WorldClock.BudgetProcedure.Unsourced) { refusedBecause = "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE"; return false; }
+            if (_pendingBudgetAlternativeByCountry.ContainsKey(countryId)) { refusedBecause = "YOUR ALTERNATIVE IS ALREADY TABLED"; return false; }
+            if (country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.JuniorPartner) { refusedBecause = "JUNIOR PARTNER · YOUR BUDGET VOICE IS THE COALITION AGREEMENT"; return false; }   // PS-3f (§633, ruled)
+            bill.TabledBy = country.PlayerPartyAbbrev;
+            bill.GovernmentBill = false;
+            bill.DaysRemaining = pending.DaysRemaining;
+            _pendingBudgetAlternativeByCountry[countryId] = bill;
+            Debug.Log($"BUDGET: {countryId} - {bill.TabledBy} tables an alternative budget ({DescribeBudgetBill(bill)}) against the government's");
+            return true;
+        }
+
+        /// <summary>PS-3e (§632): the arrival budget window is a GOVERNMENT'S, once - the flag is reset where the government changes (the election's verdict), so an incoming government lays its budget on arrival whether the AI's or the player's laid the last.</summary>
+        public void ResetArrivalBudgetWindow(CountryId countryId) => _incomingBudgetWindowUsed.Remove(countryId);
+
+        /// <summary>PS-3e (§632): the alternative tabled against the government's pending budget, or null.</summary>
+        public BudgetBill GetPendingBudgetAlternative(CountryId countryId) => _pendingBudgetAlternativeByCountry.TryGetValue(countryId, out BudgetBill bill) ? bill : null;
+
+        /// <summary>The budget's day: the country's procedure decides between the government's bill and the alternative, and what the chamber adopts is applied.</summary>
+        private void ResolveGovernmentBudget(Country country, BudgetBill government)
+        {
+            BillConcern concernG = ParliamentSystem.GetBudgetBillConcern(country, government);
+            _pendingBudgetAlternativeByCountry.TryGetValue(country.Id, out BudgetBill alternative);
+            Elections.WorldClock.BudgetProcedure procedure = Elections.WorldClock.BudgetProcedureOf(country.Id);
+            float approvalBefore = country.State.ApprovalRating;
+            if (procedure == Elections.WorldClock.BudgetProcedure.RiksdagFrameDecision && alternative != null)
+            {
+                // THE FRAME DECISION (sweden/budget_procedure.md): the revenue estimate and every expenditure area's frame are fixed "genom ett enda beslut" [RO-11-18];
+                // with more than two proposals the chamber sets the main proposal against ONE counter-proposal chosen in preparatory votes [RO-11-10], and the one
+                // "som stöds av mer än hälften av de röstande" carries [RO-11-10] - abstentions do not count (2021: 154 ja, 143 nej, 51 avstår, the M/SD/KD frames
+                // adopted over the government's [FIU1-22]). The model: one alternative (the player's), so the main vote is the whole procedure; each party votes for
+                // the proposal it aligns with more, or abstains where it aligns with neither; recorded as sides toward the government's frames (+1, -1, 0 abstaining).
+                // STATED DEVIATIONS: a tie keeps the government's frames (the statute decides a preparatory vote's tie by lot [RO-11-11]; a main vote's tie tables the matter, then returns it or draws lots [RO-11-12]); the
+                // alternative may be tabled any day the bill stands (21), where the statute gives 15 days from the announcement [RO-9-12].
+                BillConcern concernA = ParliamentSystem.GetBudgetBillConcern(country, alternative);
+                var alignG = new Dictionary<string, PartyStance>(); foreach (PartyStance st in StanceModel.Stances(country, concernG)) { alignG[st.Party.Abbrev] = st; }
+                var alignA = new Dictionary<string, PartyStance>(); foreach (PartyStance st in StanceModel.Stances(country, concernA)) { alignA[st.Party.Abbrev] = st; }
+                int forG = 0, forA = 0, abstaining = 0;
+                var sides = new List<DivisionSide>();
+                foreach (KeyValuePair<string, PartyStance> kv in alignG)
+                {
+                    PartyStance g = kv.Value;
+                    float a = alignA.TryGetValue(kv.Key, out PartyStance sa) ? sa.Alignment : 0f;
+                    // The government's own parties - the cabinet and its support - carry its frames (2021: the government's parties voted its budget, the M/SD/KD theirs, C and L abstained [FIU1-22]);
+                    // every other party votes for the proposal it aligns with more, or abstains where it aligns with neither.
+                    Elections.PlayerRole role = country.Government != null ? country.Government.RoleOf(kv.Key) : Elections.PlayerRole.None;
+                    // PS-3f (§633, ruled): a SUPPORT party that tabled the alternative votes for its own frames, not the government's - a break with the government, recorded on it.
+                    bool ownAlternative = kv.Key == alternative.TabledBy;   // whoever tabled it votes its own (the reader, s633): the opposition's motion is its own vote; a support party's is also a break
+                    bool governmentParty = role == Elections.PlayerRole.PrimeMinister || role == Elections.PlayerRole.JuniorPartner || (role == Elections.PlayerRole.Support && !ownAlternative);
+                    int side = governmentParty ? 1 : ownAlternative ? -1 : g.Alignment >= a ? (g.Alignment > 0f ? 1 : 0) : (a > 0f ? -1 : 0);
+                    if (side > 0) { forG += g.Seats; } else if (side < 0) { forA += g.Seats; } else { abstaining += g.Seats; }
+                    string why = governmentParty ? "the government's own party - carries its frames" : ownAlternative ? (role == Elections.PlayerRole.Support ? "its own alternative over the frames of the government it supports - a break with the government" : "its own alternative") : side > 0 ? $"the government's frames ({g.Alignment:+0.00;-0.00}) over {alternative.TabledBy}'s ({a:+0.00;-0.00})" : side < 0 ? $"{alternative.TabledBy}'s frames ({a:+0.00;-0.00}) over the government's ({g.Alignment:+0.00;-0.00})" : "abstains - aligned with neither";
+                    sides.Add(new DivisionSide { Abbrev = g.Party.Abbrev, ShortName = g.Party.ShortName, Seats = g.Seats, Side = side, Alignment = side > 0 ? g.Alignment : side < 0 ? a : 0f, Reason = why });
+                }
+                bool governmentAdopted = forG >= forA;   // a tie keeps the government's frames - the tie rule of the statute is sourced in the record and applied there when it lands
+                BudgetBill adopted = governmentAdopted ? government : alternative;
+                country.Divisions.Append(governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternative.TabledBy}'s alternative" : $"Annual budget: {alternative.TabledBy}'s alternative frames adopted, {forA} to {forG}, over the government's",
+                    CurrentDate, ParliamentSystem.GetSeatWeightedAlignment(country, concernG), true, concernG.Direction, (int)BillAxis.Fiscal, sides);   // PASSED either way: the chamber adopted a budget - the title says whose
+                string breakBy = alternative.TabledBy != null && country.Government != null && country.Government.RoleOf(alternative.TabledBy) == Elections.PlayerRole.Support ? alternative.TabledBy : null;
+                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternative.TabledBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
+                if (breakBy != null) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {breakBy} voted its own alternative budget against the government's frames"); Debug.Log($"BUDGET: {country.Id} - {breakBy}, a support party, broke with the government on its budget"); }
+                if (!governmentAdopted) { country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government lost its budget - {alternative.TabledBy}'s frames adopted; it governs on the adopted frames (sweden/budget_procedure.md [BA-3]); the constitution requires no resignation, and the AI government offers none (a premise, PS-3i §636)"); }
+                ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
+                Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
+                return;
+            }
+            // The government's bill alone (no alternative tabled, or a procedure not yet sourced): for or against; a failed budget leaves the old one standing, stated.
+            bool passed = ParliamentSystem.WouldBillPass(country, concernG);
+            string title = passed ? "Annual budget: the government's bill adopted" : (procedure == Elections.WorldClock.BudgetProcedure.Unsourced
+                ? "Annual budget: the government's bill failed - the old budget stands (this country's procedure is not yet sourced)"
+                : "Annual budget: the government's bill failed with no alternative tabled - the old budget stands");
+            ParliamentSystem.RecordDivision(country, title, concernG, passed, CurrentDate);
+            ParliamentSystem.ApplyBillResult(country, government, passed, ApplyBudgetBillSpendingAndSwf);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "The government's budget adopted" : "The government's budget failed", country.State.ApprovalRating - approvalBefore);
+            Debug.Log($"BUDGET: {country.Id} - {title}");
+        }
+
+        /// <summary>One line naming a budget bill's content for the log and the desk: the lines it moves and the rates it sets.</summary>
+        public static string DescribeBudgetBill(BudgetBill bill)
+        {
+            if (bill == null) { return "none"; }
+            var parts = new List<string>();
+            int cut = 0, raised = 0; foreach (KeyValuePair<SpendingCategory, float> kv in bill.SpendingPercentChanges) { if (kv.Value < 0f) { cut++; } else if (kv.Value > 0f) { raised++; } }
+            if (cut > 0) { parts.Add($"{cut} line(s) cut"); }
+            if (raised > 0) { parts.Add($"{raised} line(s) raised"); }
+            if (bill.SpendingNominalTargets.Count > 0) { parts.Add($"{bill.SpendingNominalTargets.Count} line(s) re-targeted"); }
+            foreach (KeyValuePair<TaxType, float> kv in bill.TaxLines) { parts.Add($"{kv.Key} at {kv.Value:0.0} %"); }
+            return parts.Count > 0 ? string.Join(", ", parts) : "the standing figures, unchanged";
+        }
+
         public BudgetBill GetPendingBudgetBill(CountryId countryId)
         {
             return _pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill bill) ? bill : null;
@@ -1169,6 +1289,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool IntroduceBudgetBill(CountryId countryId, BudgetBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingBudgetBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1203,6 +1324,7 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
+            if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
             float direction = ParliamentSystem.GetBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
@@ -1259,6 +1381,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new standalone TaxProgramBill - a no-op (returns false) if one is already pending for this SAME TaxType (different TaxTypes may all have their own bill pending at once - see _pendingTaxProgramBillsByCountry's own doc comment). No mandatory pause to close - unlike IntroduceBudgetBill, this tier never blocks time in the first place.</summary>
         public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd)
         {
+            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.FinanceTreasury, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (!_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<TaxType, TaxProgramBill>();
@@ -1317,6 +1440,7 @@ namespace PoliSim.Simulation
         /// <summary>WelfareProgramType equivalent of IntroduceTaxProgramBill - see that method's own doc comment, same pattern.</summary>
         public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd)
         {
+            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.HealthSocialAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (!_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<WelfareProgramType, WelfareProgramBill>();
@@ -1375,6 +1499,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new standalone LaborPolicyBill - a no-op (returns false) if one is already pending, same single-slot pattern as IntroduceBudgetBill. No mandatory pause to close - this tier never blocks time.</summary>
         public bool IntroduceLaborBill(CountryId countryId, LaborPolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingLaborBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1463,6 +1588,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceCrimeJusticeBill(CountryId countryId, CrimeJusticePolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.InteriorJustice, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingCrimeJusticeBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1515,6 +1641,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new law bill (enact or repeal, per bill.IsRepeal) - a no-op (returns false) if one is already pending for this SAME LawId. Mirrors IntroduceTaxProgramBill's own pattern exactly.</summary>
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, PortfolioOfLaw(bill), out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside the parliament's competence (a monetary-regime law in a
             // country that shares its currency zone; EN-7b: an electricity-tax law where no statute is levied - the USA) is refused here as well as not offered - the browser's line and this gate agree.
             if (!LawCatalog.IsWithinCompetence(_world, _world?.GetCountry(countryId), LawCatalog.GetById(bill.LawId)))
@@ -1636,6 +1763,7 @@ namespace PoliSim.Simulation
                 country.EnactedLaws.Add(new EnactedLaw { LawId = bill.LawId, EnactedOn = CurrentDate });
                 country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f);
             }
+            TrackAgreements(country);   // PS-3h (§635): a law enacted or repealed is a delivery or a break the day it applies
 
             // Both categories' recomputes run unconditionally (pass 3): each is idempotent and a
             // law's foreign-category deltas are 0f defaults, so the wrong-category recompute is an
@@ -1821,6 +1949,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceSectorBill(CountryId countryId, SectorPolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingSectorBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1884,6 +2013,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool IntroduceSwfDrawdownBill(CountryId countryId, SwfDrawdownBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingSwfDrawdownBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1972,6 +2102,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceTradeBill(CountryId countryId, TradePolicyBill bill)
         {
+            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.ForeignAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
             if (_pendingTradeBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -2064,9 +2195,21 @@ namespace PoliSim.Simulation
             {
                 return;
             }
+            if (_pendingBudgetBillByCountry.ContainsKey(countryId)) { return; }   // PS-3e (§632, the reader): no window opens beside a pending bill - a window whose bill cannot be introduced would hold the clock the bill needs to resolve
             // PS-3a (§628): the budget is the government's to lay - a player whose party does not lead it lays none (the AI ministry governs the book).
+            // PS-3e (§632, ruled): where the AI governs THE PLAYER'S country, the AI government lays it - as a BILL the chamber votes on, on the same
+            // calendar as the player's own (the arrival window once, then every fiscal-year date), with the player's party free to table an alternative
+            // while it is before the chamber. PLAYER PATH ONLY: a country that is not the player's never comes here (the ministry writes its book direct).
             Country budgeting = _world?.GetCountry(countryId);
-            if (budgeting != null && !PlayerGoverns(budgeting)) { return; }
+            if (budgeting != null && !PlayerGoverns(budgeting))
+            {
+                if (!PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || _pendingBudgetBillByCountry.ContainsKey(countryId)) { return; }
+                bool arrival = !_incomingBudgetWindowUsed.Contains(countryId);
+                if (!arrival && !IsFiscalYearStart(countryId, date)) { return; }
+                if (arrival) { _incomingBudgetWindowUsed.Add(countryId); }
+                TableGovernmentBudget(budgeting);
+                return;
+            }
 
             // C-C2 (Playtest-1 finding 4): the INCOMING GOVERNMENT'S window. A government that has
             // just taken office lays a budget on arrival rather than waiting for the calendar - which
@@ -2137,6 +2280,8 @@ namespace PoliSim.Simulation
                 PendingBudgetProcess = new List<CountryId>(_pendingBudgetProcessByCountry),
                 IncomingBudgetWindowUsed = new List<CountryId>(_incomingBudgetWindowUsed),
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
+                PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>(_pendingBudgetAlternativeByCountry),   // PS-3e (§632)
+                ExtraElectionDate = _extraElectionDate, ExtraElectionOrderedOn = _extraElectionOrderedOn,   // PS-3i (§636)
                 PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
                 PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
                 PendingSectorBills = new Dictionary<CountryId, SectorPolicyBill>(_pendingSectorBillByCountry),
@@ -2254,7 +2399,7 @@ namespace PoliSim.Simulation
         // energy ministry, the AI's book indexation and the budget process used to ask "is this the player's country?"; they ask
         // "does the player's party LEAD this country's government?" now (Country.Government, GovernmentRecord.RoleOf) - so a
         // player in opposition or support watches the AI govern their own country, the spec's §5.2. A country with no stored
-        // government (a world before it seats one) reads as before: the player governs their own country. A junior partner
+        // government FAILS LOUDLY (PS-3b, §629): the role is never defaulted - every path that opens a world stores the record first. A junior partner
         // does NOT govern here - the portfolio-gated levers are PS-3's next part, stated.
         // ---------------------------------------------------------------------------------------------
 
@@ -2262,20 +2407,259 @@ namespace PoliSim.Simulation
         public bool PlayerGoverns(Country country)
         {
             if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return false; }
-            if (country.Government == null) { return true; }
+            // PS-3b (§629): a country with NO government stored fails loudly - the role is never defaulted. WorldFactory stores every country's record
+            // of the epoch at creation, so a null here is a defect (a Country built outside the factory), not a state.
+            if (country.Government == null) { throw new System.InvalidOperationException($"{country.Id} has no government stored: who governs is unknown, and the player's role is never defaulted (PS-3b, §629) - WorldFactory stores GovernmentRecord.AtStart for every country"); }
+            // A player country with NO PARTY SEATED is the instrument's hand on it - the meaning every Editor tool that names a player country without a party
+            // has always had (the AI ministries keep off it). The game itself always seats a party (SelectPlayerCountry's fallback), so this is the tools' case, stated.
+            if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return true; }
             return country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.PrimeMinister;
+        }
+
+        /// <summary>
+        /// PS-3c (§630): THE ROLE GATE ON THE LEVERS. A bill is the government's to introduce - the political-system spec's §5.2: the prime minister's
+        /// party has every lever; a junior partner its portfolios' (part 4, not yet built - none here); a support party and the opposition their votes
+        /// alone. So a player whose party does not lead the government introduces NO bill in their own country, and every Introduce*Bill refuses with
+        /// the reason. Another country's bills are its own AI government's (never refused here; the AI writes its book without a bill).
+        /// </summary>
+        public bool PlayerMayIntroduce(CountryId countryId, out string lockedBecause)
+        {
+            lockedBecause = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || PlayerGoverns(country)) { return true; }
+            Elections.PlayerRole role = country.Government.RoleOf(country.PlayerPartyAbbrev);
+            string roleWord = role == Elections.PlayerRole.Support ? "IN SUPPORT" : role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER" : "IN OPPOSITION";
+            lockedBecause = role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER · THE PRIME MINISTER'S LEVER · YOURS: " + country.Government.PortfoliosOf(country.PlayerPartyAbbrev) : roleWord + " · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM";
+            return false;
+        }
+
+        /// <summary>
+        /// PS-3g (§634): THE PORTFOLIO LEG OF THE GATE. A JUNIOR PARTNER holds the levers of the portfolios its party holds (the spec's §5.2) - a bill
+        /// that belongs to one of them is its to introduce; a lever with no portfolio, or another party's, is the prime minister's. The map of levers to
+        /// portfolios (<see cref="PortfolioOfLaw"/> and the callers): a tax-programme bill FINANCE; a welfare-programme bill HEALTH; a crime-and-justice
+        /// bill INTERIOR; a trade bill and the foreign-policy meeting FOREIGN; a law by its category (crime INTERIOR; the fiscal, monetary and electricity
+        /// categories FINANCE); a cabinet decision its own portfolio. STATED: the budget (the partner's say is the coalition agreement, §5.2), the fund's
+        /// drawdown, the labour, sector and energy levers, the pension age and the central bank stay the prime minister's - no portfolio of the six owns
+        /// them (there is no economy portfolio), and the spec gives the budget to the agreement.
+        /// </summary>
+        public bool PlayerMayIntroduce(CountryId countryId, CabinetPortfolio? portfolio, out string lockedBecause)
+        {
+            if (PlayerMayIntroduce(countryId, out lockedBecause)) { return true; }
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { return false; }
+            if (portfolio.HasValue && country.Government.HoldsPortfolio(country.PlayerPartyAbbrev, portfolio.Value)) { lockedBecause = null; return true; }
+            string yours = country.Government.PortfoliosOf(country.PlayerPartyAbbrev);
+            lockedBecause = portfolio.HasValue
+                ? $"JUNIOR PARTNER · THE {Effectiveness.ShortName(portfolio.Value).ToUpperInvariant()} MINISTER'S LEVER · YOURS: {yours}"
+                : $"JUNIOR PARTNER · THE PRIME MINISTER'S LEVER · YOURS: {yours}";
+            return false;
+        }
+
+        /// <summary>PS-3g (§634): the portfolio a law bill belongs to by its category - crime INTERIOR; the fiscal, monetary and electricity-tax categories FINANCE; the labour categories none (the prime minister's).</summary>
+        public static CabinetPortfolio? PortfolioOfLaw(LawBill bill)
+        {
+            LawDefinition law = bill != null ? LawCatalog.GetById(bill.LawId) : null;
+            if (law == null) { return null; }
+            switch (law.Category)
+            {
+                case LawCategory.CrimeJustice: return CabinetPortfolio.InteriorJustice;
+                case LawCategory.FiscalFramework: case LawCategory.MonetaryRegime: case LawCategory.ElectricityTax: return CabinetPortfolio.FinanceTreasury;
+                default: return null;
+            }
+        }
+
+        /// <summary>PS-3h (§635): every agreement's items read against the country - a delivery or a break is a fact of the book, so this runs at the turn boundary and the day a law bill applies; a break is recorded on the government.</summary>
+        public void TrackAgreements(Country country)
+        {
+            if (country?.Government == null) { return; }
+            foreach (Elections.SupportAgreement agreement in country.Government.Agreements)
+            {
+                if (!country.Government.Support.Contains(agreement.Supporter)) { continue; }   // a withdrawn supporter's agreement stands as the record of it, no longer tracked
+                foreach (Elections.AgreementItem broken in agreement.Track(country, CurrentDate))
+                {
+                    country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government broke '{broken.Name}', owed to {agreement.Supporter} under its support agreement");
+                    Debug.Log($"AGREEMENT: {country.Id} - the government broke '{broken.Name}' owed to {agreement.Supporter}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// PS-3h (§635): the player's support party WITHDRAWS - the spec's "threaten or withdraw support". Recorded on the government as a break and the
+        /// party struck from its support; what follows - "the government faces a confidence vote", a new formation, an extra election by the country's
+        /// own procedure - is part 6's (confidence and collapse), STATED: today the government stands on without the supporter.
+        /// </summary>
+        public bool WithdrawSupport(CountryId countryId, out string refusedBecause)
+        {
+            refusedBecause = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.Support) { refusedBecause = "YOUR PARTY IS NOT A SUPPORT PARTY"; return false; }
+            country.Government.Support.Remove(country.PlayerPartyAbbrev);
+            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it until confidence and collapse arrive (part 6)");
+            Debug.Log($"AGREEMENT: {countryId} - {country.PlayerPartyAbbrev} withdrew its support");
+            return true;
+        }
+
+        // ---------------------------------------------------------------------------------------------
+        // PS-3i (2026-09-25, §636): CONFIDENCE AND COLLAPSE (the spec's §5.4; Sweden's rules in ConfidenceProcedure, sourced from Regeringsformen).
+        // The motion is the player's verb - AI parties move none (an AI motion needs an authored trigger: stated, owed to play). A carried motion opens
+        // the government's week (RF 6 kap. 7 §): the player's government may order an extra election in it; an AI government does not (the 2021
+        // precedent: the government resigned rather than dissolve - a premise); at the week's end the Speaker discharges the prime minister and with
+        // them the government (6 kap. 9 §), which serves on as a caretaker, and the Speaker's round runs on the sitting chamber: a government that
+        // forms is the new record, and none forming stands for four rejected proposals - an extra election within three months (6 kap. 5 §).
+        // ---------------------------------------------------------------------------------------------
+        private System.DateTime _extraElectionDate = System.DateTime.MinValue;
+        private System.DateTime _extraElectionOrderedOn = System.DateTime.MinValue;
+
+        /// <summary>The ordered extra election's polling day, or MinValue.</summary>
+        public System.DateTime ExtraElectionDate => _extraElectionDate;
+
+        /// <summary>The player's party moves no confidence in the prime minister. False, with the reason, where no motion is taken up; otherwise the vote, recorded as a division.</summary>
+        public bool MoveNoConfidence(CountryId countryId, out string refusedBecause, out Elections.ConfidenceProcedure.MotionVote vote)
+        {
+            vote = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            Elections.GovernmentRecord g = country.Government;
+            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Unsourced) { refusedBecause = "THIS COUNTRY'S CONFIDENCE RULES ARE NOT YET MODELLED"; return false; }
+            switch (g.RoleOf(country.PlayerPartyAbbrev))
+            {
+                case Elections.PlayerRole.PrimeMinister: refusedBecause = "THE GOVERNMENT MOVES NO MOTION AGAINST ITSELF"; return false;
+                case Elections.PlayerRole.JuniorPartner: refusedBecause = "LEAVE THE GOVERNMENT FIRST"; return false;
+                case Elections.PlayerRole.Support: refusedBecause = "WITHDRAW YOUR SUPPORT FIRST"; return false;
+            }
+            if (g.Caretaker) { refusedBecause = "NO MOTION IS TAKEN UP AGAINST A CARETAKER GOVERNMENT"; return false; }
+            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate) { refusedBecause = "NO MOTION IS TAKEN UP BETWEEN AN EXTRA ELECTION'S DECISION AND THE NEW RIKSDAG"; return false; }
+            if (g.NoConfidenceOn != System.DateTime.MinValue) { refusedBecause = "THE CHAMBER HAS ALREADY DECLARED NO CONFIDENCE - THE GOVERNMENT'S WEEK RUNS"; return false; }
+            if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, country.PlayerPartyAbbrev, out int moverSeats, out int tenth)) { refusedBecause = $"A MOTION NEEDS A TENTH OF THE MEMBERS - {tenth} - YOUR PARTY HOLDS {moverSeats}"; return false; }
+            refusedBecause = null;
+            vote = Elections.ConfidenceProcedure.Vote(country, country.PlayerPartyAbbrev);
+            country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
+            country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;   // a motion, not a bill (the reader, s636)
+            if (vote.Carried)
+            {
+                g.NoConfidenceOn = CurrentDate;
+                g.NoConfidenceMover = country.PlayerPartyAbbrev;
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag declared no confidence in the prime minister ({g.PmParty}), {vote.For} of {vote.Members} members, moved by {country.PlayerPartyAbbrev} (RF 13 kap. 4 §)");
+            }
+            Debug.Log($"CONFIDENCE: {countryId} - {vote.Title()}");
+            return true;
+        }
+
+        /// <summary>The player's junior partner leaves the government - struck from the cabinet, the portfolios re-apportioned among those who stay; it may then move no confidence as the opposition.</summary>
+        public bool LeaveGovernment(CountryId countryId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { refusedBecause = "YOUR PARTY IS NOT A JUNIOR PARTNER"; return false; }
+            refusedBecause = null;
+            country.Government.Cabinet.Remove(country.PlayerPartyAbbrev);
+            country.Government.AllocatePortfolios(country);
+            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} left the government");
+            Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government");
+            return true;
+        }
+
+        /// <summary>RF 6 kap. 7 §: the player's government answers a carried motion by ordering an extra election within the week - then no discharge follows.</summary>
+        public bool OrderExtraElection(CountryId countryId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            Elections.GovernmentRecord g = country?.Government;
+            if (g == null || !PlayerGoverns(country)) { refusedBecause = "ONLY THE GOVERNMENT ORDERS AN EXTRA ELECTION"; return false; }
+            if (g.Caretaker) { refusedBecause = "A CARETAKER GOVERNMENT ORDERS NO EXTRA ELECTION"; return false; }
+            // [RF-R:3:11]: not within three months of a new Riksdag's first sitting - the chamber of record's first sitting, or the game's own last polling day where
+            // the game has held one (its first sitting is not modelled; the polling day is the earlier bound, stated).
+            System.DateTime sat = Elections.WorldClock.ChamberAt(countryId, CurrentDate).Convened;
+            if (country.ElectionHistory != null) { foreach (Elections.ElectionRecord held in country.ElectionHistory) { if (held.Method != Elections.ElectionMethod.NotImplemented && held.Date > sat) { sat = held.Date; } } }
+            if (CurrentDate < sat.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths)) { refusedBecause = "NO EXTRA ELECTION WITHIN THREE MONTHS OF THE NEW RIKSDAG'S FIRST SITTING"; return false; }
+            if (g.NoConfidenceOn == System.DateTime.MinValue || CurrentDate >= g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { refusedBecause = "NO DECLARATION OF NO CONFIDENCE IS WITHIN ITS WEEK"; return false; }
+            refusedBecause = null;
+            ScheduleExtraElection(country, "the government ordered it within the week of the declaration (RF 6 kap. 7 §)");
+            g.NoConfidenceOn = System.DateTime.MinValue;
+            return true;
+        }
+
+        private void ScheduleExtraElection(Country country, string why)
+        {
+            _extraElectionOrderedOn = CurrentDate;
+            _extraElectionDate = Elections.ConfidenceProcedure.ExtraElectionDay(CurrentDate);
+            country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: an extra election is ordered for {_extraElectionDate:yyyy-MM-dd} - {why}");
+            Debug.Log($"CONFIDENCE: {country.Id} - an extra election on {_extraElectionDate:yyyy-MM-dd}: {why}");
+        }
+
+        private void AdvanceConfidenceDay(CountryId countryId)
+        {
+            if (_extraElectionDate != System.DateTime.MinValue && CurrentDate > _extraElectionDate)
+            {
+                // The extra election is held: the campaign state dated to it ends with it, so the ordinary election's run-up and campaign begin on their own
+                // calendar rather than inheriting a record dated to the extra election (the reader, s636).
+                if (CampaignRecord != null && CampaignRecord.ElectionDate == _extraElectionDate) { CampaignRecord = null; PlayerCampaign = null; PlayerCampaignResult = null; }
+                if (PlayerPreCampaign != null && PlayerPreCampaign.Calendar.ElectionDate == _extraElectionDate) { PlayerPreCampaign = null; }
+                _extraElectionDate = System.DateTime.MinValue; _extraElectionOrderedOn = System.DateTime.MinValue;
+            }
+            Country country = _world?.GetCountry(countryId);
+            Elections.GovernmentRecord g = country?.Government;
+            if (g == null || g.Caretaker || g.NoConfidenceOn == System.DateTime.MinValue) { return; }
+            if (CurrentDate < g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
+            DischargeAndRound(country);
+        }
+
+        /// <summary>The Speaker discharges the prime minister [RF-R:6:7] and every minister with them [RF-R:6:9]; they serve on as a caretaker [RF-R:6:11]; the round runs on the sitting chamber [RF-R:6:4] - on the week's last day here, where 2021's round ran nine days (29 June to 7 July), stated.</summary>
+        private void DischargeAndRound(Country country)
+        {
+            Elections.GovernmentRecord fallen = country.Government;
+            fallen.Caretaker = true;
+            fallen.CaretakerSince = CurrentDate;
+            fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker discharged the prime minister ({fallen.PmParty}) and the government (RF 6 kap. 7 §, 9 §); the ministers serve on as a caretaker (6 kap. 11 §)");
+            // The player's party moved the motion: it will not carry the prime minister it brought down in the round - its own choice, made by moving it.
+            // An AI party's refusal is not added (the 2021 precedent: a party that brought the prime minister down tolerated his re-election).
+            var lines = new List<Elections.RedLine>();
+            int mover = Elections.GovernmentFormation.IndexOf(country.Id, fallen.NoConfidenceMover), pm = Elections.GovernmentFormation.IndexOf(country.Id, fallen.PmParty);
+            if (mover >= 0 && pm >= 0 && fallen.NoConfidenceMover == country.PlayerPartyAbbrev)
+            {
+                lines.Add(new Elections.RedLine(mover, pm, Elections.RedLineKind.Declared, blocksSupport: true, basis: "moved the motion that brought this prime minister down", oneWay: true));
+            }
+            Elections.GovernmentFormation.View view = Elections.GovernmentFormation.ViewOfSitting(country, lines);
+            if (view.HasGovernment)
+            {
+                Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromView(country, view, CurrentDate, basis: "the Speaker's round on the sitting chamber after the declaration of no confidence", world: _world);
+                country.Government = formed;
+                ResetArrivalBudgetWindow(country.Id);
+                Debug.Log($"CONFIDENCE: {country.Id} - the Speaker's round: {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
+            }
+            else if (Elections.WorldClock.TryNextPollingDay(country.Id, CurrentDate, out System.DateTime ordinary) && ordinary <= CurrentDate.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths))
+            {
+                // [RF-R:6:5]: no extra election where an ordinary one is due within the three months - the caretaker serves to it.
+                fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: no proposal the chamber accepts; the ordinary election of {ordinary:yyyy-MM-dd} falls within three months and serves (RF 6 kap. 5 §)");
+            }
+            else
+            {
+                ScheduleExtraElection(country, "no proposal the chamber accepts - four rejected proposals order an extra election within three months (RF 6 kap. 5 §)");
+            }
         }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
         public bool TryPlayerPollingDay(out System.DateTime pollingDay)
         {
             pollingDay = System.DateTime.MinValue;
-            return PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
+            bool ordinary = PlayerCountryId.HasValue && Elections.WorldClock.TryNextPollingDay(PlayerCountryId.Value, CurrentDate, out pollingDay);
+            // PS-3i (§636): an ordered EXTRA election is the next polling day where it falls first; the four-year cycle carries on beside it.
+            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate && (!ordinary || _extraElectionDate < pollingDay)) { pollingDay = _extraElectionDate; return true; }
+            return ordinary;
         }
 
         /// <summary>The campaign window and calendar for the current day: the run-up and the eight weeks before the player's country's next polling day, or null where none is modelled.</summary>
-        private Elections.CampaignCalendar? CurrentCampaignCalendar() =>
-            TryPlayerPollingDay(out System.DateTime pollingDay) ? new Elections.CampaignCalendar(pollingDay) : (Elections.CampaignCalendar?)null;
+        private Elections.CampaignCalendar? CurrentCampaignCalendar()
+        {
+            if (!TryPlayerPollingDay(out System.DateTime pollingDay)) { return null; }
+            // PS-3i (§636): an extra election's campaign runs from its decision to its polling day - no run-up, the campaign proper at most eight weeks (a premise).
+            if (pollingDay == _extraElectionDate)
+            {
+                int weeks = System.Math.Max(0, System.Math.Min(Elections.CampaignCalendar.DefaultCampaignWeeks, (int)((_extraElectionDate - _extraElectionOrderedOn).TotalDays / 7)));
+                return new Elections.CampaignCalendar(pollingDay, weeks, 0);
+            }
+            return new Elections.CampaignCalendar(pollingDay);
+        }
 
         /// <summary>
         /// Called once per day after the date has advanced: begins the player's campaign on its first
@@ -2357,7 +2741,7 @@ namespace PoliSim.Simulation
         /// </summary>
         private void AdvancePreCampaign(Elections.CampaignCalendar calendar)
         {
-            if (PlayerPreCampaign == null || PlayerPreCampaign.Calendar.ElectionDate != calendar.ElectionDate)
+            if (PlayerPreCampaign == null || PlayerPreCampaign.Calendar.ElectionDate != calendar.ElectionDate || CampaignRecord == null || CampaignRecord.ElectionDate != calendar.ElectionDate)   // PS-3i (§636, the reader): a run-up whose record is not this calendar's re-begins
             {
                 int me = PlayerPartyIndexForCampaign();
                 if (me < 0) { return; }
@@ -2691,6 +3075,8 @@ namespace PoliSim.Simulation
             }
 
             CopyInto(state.PendingBudgetBills, _pendingBudgetBillByCountry);
+            _pendingBudgetAlternativeByCountry.Clear(); CopyInto(state.PendingBudgetAlternatives, _pendingBudgetAlternativeByCountry);   // PS-3e (§632): cleared first - a v29 save carries its own, an older none
+            _extraElectionDate = state.ExtraElectionDate; _extraElectionOrderedOn = state.ExtraElectionOrderedOn;   // PS-3i (§636)
             CopyInto(state.PendingLaborBills, _pendingLaborBillByCountry);
             CopyInto(state.PendingCrimeJusticeBills, _pendingCrimeJusticeBillByCountry);
             CopyInto(state.PendingSectorBills, _pendingSectorBillByCountry);
@@ -2832,10 +3218,13 @@ namespace PoliSim.Simulation
                 // balance and its debt ratio with the player's own levers under its sourced rule (AiFinanceMinistry) - written into the decision it was
                 // handed where that decision carries nothing of its own for a line or a tax, then observed for the US trigger's two-year memory.
                 bool aiGovernment = AiFinanceMinistryEnabled && !PlayerGoverns(country);   // PS-3a (§628): the test is the player's ROLE, not the country
+                // PS-3e (§632): for THE PLAYER'S country the ministry's rule goes to the chamber as the government's budget bill (TableGovernmentBudget) and
+                // applies on the day the chamber adopts it - not into the boundary's decision. Observe still runs (the US trigger's two-year memory).
+                bool ministryByBill = aiGovernment && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id;
                 AiFinanceMinistry.Written ministryWrote = null;
                 if (aiGovernment)
                 {
-                    ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision);
+                    if (!ministryByBill) { ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision); }
                     AiFinanceMinistry.Observe(country);
                 }
                 // THE AI ENERGY MINISTRY (P6-F2d, §544): HELD - AiEnergyMinistry.Live is false until its family is dumped and ruled; with it on, a country the player
@@ -2851,6 +3240,7 @@ namespace PoliSim.Simulation
                 // comment), after ApplyDomesticPolicy so this turn's freshly-updated ApprovalRating is
                 // what the seat-share formula actually reads, not last turn's stale value.
                 ParliamentSystem.UpdateSeats(country);
+                TrackAgreements(country);   // PS-3h (§635)
 
                 // PHASE 4 FINDING (2026-08-16): History.Append lived HERE, once per turn, from Phase 0
                 // until this pass - which meant the multi-resolution buckets built FOR daily data had
@@ -3107,7 +3497,10 @@ namespace PoliSim.Simulation
                 pendingDecisions = new List<(CabinetPortfolio, CabinetDecision)>();
                 _pendingCabinetDecisionsByCountry[country.Id] = pendingDecisions;
             }
-            pendingDecisions.AddRange(CabinetSystem.TryRollDecisions(country));
+            // PS-3g (§634): a decision reaches the player where its portfolio is the player's - and the roll is not made at all for a player holding none (the reader: a roll draws the RNG per minister; the whole skip keeps a film's frames where they were).
+            Country rolling = _world.GetCountry(country.Id);
+            bool holdsAny = PlayerMayIntroduce(country.Id, out _) || (rolling?.Government != null && rolling.Government.Portfolios.TryGetValue(rolling.PlayerPartyAbbrev ?? string.Empty, out List<CabinetPortfolio> heldByPlayer) && heldByPlayer.Count > 0);
+            if (holdsAny) { foreach ((CabinetPortfolio portfolio, CabinetDecision rolled) in CabinetSystem.TryRollDecisions(country)) { if (PlayerMayIntroduce(country.Id, portfolio, out _)) { pendingDecisions.Add((portfolio, rolled)); } } }   // PS-3c (§630): a cabinet decision is the government's - none rolls for a player country the AI governs
             // P2-5.2: LOYALTY's term - under pressure, a disloyal minister may resign or leak; the record goes to the
             // country for the Docket, the approval move to the ledger like any cabinet event.
             foreach (CabinetEventRecord cabinetEvent in CabinetSystem.TryRollCabinetEvents(country, CurrentDate))
@@ -3579,6 +3972,10 @@ namespace PoliSim.Simulation
                 ParticipationAtLastBoundary = country.ParticipationAtLastBoundary,
                 StructuralParticipationAtLastBoundary = country.StructuralParticipationAtLastBoundary,
                 CompositionNaturalRateAtSeed = country.CompositionNaturalRateAtSeed,
+                // PS-3b (§629): WHO GOVERNS rides the hand-list - the R4-1 clone-escape class a sixth time, caught by the parity audit the day the
+                // gate began to throw on a null: the preview's turn asks PlayerGoverns on the clone, and a clone without the record read as the
+                // player's (§628) or throws (§629). A shared reference: nothing on the preview path writes the record.
+                Government = country.Government,
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,

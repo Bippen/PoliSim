@@ -2170,8 +2170,8 @@ namespace PoliSim.UI
             Country after = _world.GetCountry(countryId);
             if (after != null)
             {
-                // PS-3a (§628): WHO GOVERNS at the start - the government of record where its cabinet is sourced, else the formation's stand-in, else none
-                // (France, the USA: no cabinet of record - the player governs). Written on EVERY path that opens a world, not only the picker's (the review).
+                // PS-3a (§628): WHO GOVERNS at the start - the government of record where its cabinet is sourced (the USA's president and party, PS-3b §629), else the formation's
+                // stand-in; a date with no record at all THROWS (§629: the role is never defaulted). Written on EVERY path that opens a world, not only the picker's (the review).
                 after.Government = PoliSim.Elections.GovernmentRecord.AtStart(after, start);
             }
             if (after != null && !string.IsNullOrEmpty(seatedParty))
@@ -2216,6 +2216,11 @@ namespace PoliSim.UI
             }
             // PS-3a (§628): a world that was not rebuilt (the same epoch, turn 0) still gets its government of record - the role is read from it.
             if (_playerCountry.Government == null) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.AtStart(_playerCountry, SimulationManager.EpochDate); }
+            // PS-3d (§631, ruled): France's governing mode seats the player's party as the prime minister's - a what-if on the 2024 Assembly of record, the player path only.
+            if (PoliSim.Elections.WorldClock.GoverningModeOnly(countryId) && !string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev) && _playerCountry.Government.Outcome != "what-if")
+            {
+                _playerCountry.Government = PoliSim.Elections.GovernmentRecord.WhatIfGoverning(_playerCountry, _playerCountry.PlayerPartyAbbrev, SimulationManager.EpochDate);
+            }
             Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
 
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
@@ -2264,6 +2269,7 @@ namespace PoliSim.UI
         {
             foreach (DivisionRecord record in _playerCountry.Divisions.Entries)
             {
+                if (record.Motion) { _seenDivisionNumber = System.Math.Max(_seenDivisionNumber, record.Number); continue; }   // PS-3i (§636): a motion is no bill to sign
                 if (record.Number > _seenDivisionNumber)
                 {
                     // P2-4.3: the estimate the turn's decision carried (the preview's arrows, snapshotted at the turn's
@@ -3816,6 +3822,8 @@ namespace PoliSim.UI
         /// </summary>
         private bool UpdateFedChairSelectionState()
         {
+            // PS-3c (§630): the chair is the government's to appoint - where the AI governs the player's country the sitting chair stays and no term hold is raised (the appointment the hold waits on is locked; the hold would freeze the clock).
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { _fedChairCandidates = null; return false; }
             if (_playerCountry.CurrentFedChair == null)
             {
                 return false;
@@ -3985,7 +3993,7 @@ namespace PoliSim.UI
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate change as a ledger row of the family - in points, a tick per quarter-point while the pitch holds.
-                    _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
+                    if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                 }
                 else
                 {
@@ -4010,7 +4018,7 @@ namespace PoliSim.UI
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate push as a ledger row of the family.
-                    _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
+                    if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                     DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
                 }
             }
@@ -4227,7 +4235,7 @@ namespace PoliSim.UI
             GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
-            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
             {
                 _playerCountry.CurrentFedChair = candidate;
                 _fedChairCandidates = null;
@@ -4702,7 +4710,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"A Labor Market bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Labor Market bill before Parliament - the dials above are its draft.";
-            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
+            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts());
             }
@@ -6612,7 +6620,7 @@ namespace PoliSim.UI
             // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
             GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionVintage);
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
-            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date); }
+            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date, world: _world); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
             {
@@ -6646,7 +6654,7 @@ namespace PoliSim.UI
                 : "in opposition";
             _pendingElectionVerdict = $"Out of office after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: the chamber formed a "
                 + $"{government.CabinetDescription} government with {PartySystems.ShortName(_playerCountry.Id, playerAbbrev)} {standing}. The run continues - "
-                + "losing office never ends it; until the roles are built, the government's levers stay on your desk.";
+                + "losing office never ends it; the government's levers leave your desk, and your party votes on its bills.";
             _pendingElectionVerdictEndsGame = false;
         }
 
@@ -6711,7 +6719,7 @@ namespace PoliSim.UI
                 List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
                 for (int d = divisions.Count - 1; d >= 0; d--)
                 {
-                    if (divisions[d].Passed && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
+                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
                 }
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
                 // against the seed - the seated election, Sweden 2026 since K-1, which the allocator reproduces seat for seat (§601's
@@ -9150,7 +9158,7 @@ namespace PoliSim.UI
                 _lawActionButtonSource = _neutralActionButtonStyle;
             }
             float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
-            if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+            if (DrawLeverLock(null, actionWidth, SimulationManager.PortfolioOfLaw(new LawBill { LawId = law.Id }))) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
             {
                 _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
             }
@@ -9799,6 +9807,10 @@ namespace PoliSim.UI
             DrawPendingLegislation();
 
             GUILayout.Space(10f);
+            DrawSupportAgreements();   // PS-3h (§635)
+            DrawConfidence();   // PS-3i (§636)
+
+            GUILayout.Space(10f);
             DrawRecentDivisions();
 
             GUILayout.EndScrollView();
@@ -10078,7 +10090,7 @@ namespace PoliSim.UI
                 //
                 // Contorting this into a fixed control set would also mean rendering N candidate buttons
                 // when there are no candidates, which is not a thing.
-                if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
+                if (DrawLeverLock(null, 0f, portfolio)) { } else if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
                     float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
@@ -10124,7 +10136,7 @@ namespace PoliSim.UI
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             DrawMinisterAttributes(candidate);   // P2-5.2
-            if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
+            if (DrawLeverLock(null, 0f, portfolio)) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
             {
                 _playerCountry.CabinetMinisters[portfolio] = candidate;
                 _cabinetCandidatesByPortfolio.Remove(portfolio);
@@ -10562,7 +10574,7 @@ namespace PoliSim.UI
             string overrideSentence = hasOverride
                 ? $"An override stands on imports from {partner.Name} - its rate moves only through the Trade bill; Reset returns the draft below to the standing override."
                 : $"No override on imports from {partner.Name} - one starts at today's effective rate and changes nothing until a Trade bill moves it.";
-            if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
+            if (DrawLeverLock(null, 0f, CabinetPortfolio.ForeignAffairs)) { } else if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
             {
                 if (hasOverride)
                 {
@@ -10608,7 +10620,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"A Trade bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Trade bill before Parliament - the base rate and every override rate below are its draft.";
-            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
+            if (DrawLeverLock(null, 0f, CabinetPortfolio.ForeignAffairs)) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
             }
@@ -10654,7 +10666,7 @@ namespace PoliSim.UI
                 : fundExists
                     ? "No drawdown bill before Parliament - one withdraws from the fund now, not at the fiscal year."
                     : "No fund stands to draw down - the annual budget creates one first.";
-            if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
+            if (DrawLeverLock()) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
             {
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
@@ -11037,11 +11049,107 @@ namespace PoliSim.UI
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
             // §568: the budget bill's call to action is the family's - brass, because it commits, at the class's one width (PF-5's fourth sibling, and its last).
-            if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _))
+            {
+                DrawShadowBudgetAction(pendingBill);   // PS-3e (§632): the opposition's call to action - the draft below tabled against the government's budget
+            }
+            else if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
             {
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }
             GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// PS-3e (§632, ruled): THE OPPOSITION'S BUDGET. While the government's budget is before the chamber, the player's draft (the same
+        /// drafts the governing party would introduce) can be tabled as the ALTERNATIVE the chamber sets against it - the Riksdag's budget
+        /// motion. Where no government budget stands the lock reads as before; where the country's procedure is not yet sourced the government's
+        /// bill is voted alone and the caption says so; once tabled, the caption counts the days.
+        /// </summary>
+        private void DrawShadowBudgetAction(BudgetBill pending)
+        {
+            bool ambient = GUI.enabled; GUI.enabled = true;
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
+            if (pending == null || !pending.GovernmentBill) { DrawLeverLock(); }
+            else if (tabled != null) { GUILayout.Label($"YOUR ALTERNATIVE IS TABLED · THE CHAMBER DECIDES IN {pending.DaysRemaining} DAY(S)", caption); }
+            else if (PoliSim.Elections.WorldClock.BudgetProcedureOf(PlayerCountryId) == PoliSim.Elections.WorldClock.BudgetProcedure.Unsourced) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
+            else if (PoliSimWidgets.Button("Table an Alternative Budget", _implementButtonStyle, GUILayout.Width(CtaWidth())))
+            {
+                if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
+            }
+            GUI.enabled = ambient;
+        }
+
+        /// <summary>
+        /// PS-3i (§636): CONFIDENCE on the Parliament tab - the government's standing (a declaration of no confidence and its week, a caretaker, an extra
+        /// election ordered) and the player's verbs by role: the opposition moves no confidence (the sentence names the motion's arithmetic before it is
+        /// moved); a junior partner leaves the government; the player's government, within the week of a declaration, orders an extra election. Structural
+        /// until Design's board on the confidence-vote moment (the D22 ask).
+        /// </summary>
+        private void DrawConfidence()
+        {
+            PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
+            if (g == null || PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) == PoliSim.Elections.ConfidenceProcedure.Rules.Unsourced) { return; }
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            System.DateTime extra = _simulationManager.ExtraElectionDate;
+            if (extra != System.DateTime.MinValue) { GUILayout.Label("AN EXTRA ELECTION ON " + extra.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption); }
+            if (g.Caretaker) { GUILayout.Label("A CARETAKER GOVERNMENT SINCE " + g.CaretakerSince.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption); }
+            else if (g.NoConfidenceOn != System.DateTime.MinValue)
+            {
+                System.DateTime discharge = g.NoConfidenceOn.AddDays(PoliSim.Elections.ConfidenceProcedure.ExtraElectionWindowDays);
+                GUILayout.Label("NO CONFIDENCE DECLARED " + g.NoConfidenceOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · THE SPEAKER DISCHARGES THE GOVERNMENT ON " + discharge.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption);
+                if (_simulationManager.PlayerGoverns(_playerCountry)
+                    && DrawSentenceAction("The chamber has no confidence in your government. Within the week you may order an extra election instead of being discharged.", "Order an extra election", true, _implementButtonStyle))
+                {
+                    if (!_simulationManager.OrderExtraElection(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
+                }
+            }
+            switch (g.RoleOf(_playerCountry.PlayerPartyAbbrev))
+            {
+                case PoliSim.Elections.PlayerRole.Opposition:
+                    if (g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || extra != System.DateTime.MinValue) { break; }
+                    PoliSim.Elections.ConfidenceProcedure.MotionVote projected = PoliSim.Elections.ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev);
+                    bool takenUp = PoliSim.Elections.ConfidenceProcedure.CanBeTakenUp(_playerCountry, _playerCountry.PlayerPartyAbbrev, out int moverSeats, out int tenth);
+                    string sentence = takenUp
+                        ? string.Format(CultureInfo.InvariantCulture, "A motion of no confidence in the prime minister would have {0} of {1} members for it; it needs {2}.", projected.For, projected.Members, projected.Needed)
+                        : string.Format(CultureInfo.InvariantCulture, "A motion needs a tenth of the members, {0}, to be taken up; your party holds {1}.", tenth, moverSeats);
+                    if (DrawSentenceAction(sentence, "Move no confidence", takenUp, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.MoveNoConfidence(PlayerCountryId, out string refused, out _)) { Debug.Log($"CONFIDENCE: the motion was refused - {refused}"); }
+                    }
+                    break;
+                case PoliSim.Elections.PlayerRole.JuniorPartner:
+                    if (DrawSentenceAction("Leaving takes your ministers out of the cabinet; the government stands until the chamber declares otherwise.", "Leave the government", true, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.LeaveGovernment(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
+                    }
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// PS-3h (§635): THE SUPPORT AGREEMENTS on the Parliament tab - one block per support party: its tally (OWED · DELIVERED · BROKEN) and every
+        /// item with its state; where the player's party is the supporter, the call to action WITHDRAW SUPPORT (the spec's "threaten or withdraw"),
+        /// its consequence part 6's and said so. Structural until Design's board on the agreement as an instrument (the D22 ask).
+        /// </summary>
+        private void DrawSupportAgreements()
+        {
+            PoliSim.Elections.GovernmentRecord government = _playerCountry?.Government;
+            if (government == null || government.Agreements.Count == 0) { return; }
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            foreach (PoliSim.Elections.SupportAgreement agreement in government.Agreements)
+            {
+                GUILayout.Label("SUPPORT AGREEMENT · " + agreement.Supporter + " · " + agreement.Tally(), caption);
+                foreach (PoliSim.Elections.AgreementItem item in agreement.Items) { GUILayout.Label(item.Line(), _labelStyle); }
+                if (agreement.Supporter == _playerCountry.PlayerPartyAbbrev && government.Support.Contains(agreement.Supporter))
+                {
+                    if (DrawSentenceAction("Your party carries this government on these items. Withdrawing is recorded against the government; what follows arrives with confidence and collapse.", "Withdraw support", true, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.WithdrawSupport(PlayerCountryId, out string refused)) { Debug.Log($"AGREEMENT: the withdrawal was refused - {refused}"); }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -11053,6 +11161,11 @@ namespace PoliSim.UI
         private string BuildBudgetBillStatusText()
         {
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            // PS-3e (§632): the government's budget named first - what it moves and when the chamber decides - and the draft below as the alternative it can be set against.
+            if (pendingBill != null && pendingBill.GovernmentBill)
+            {
+                return $"The government's budget is before the chamber ({SimulationManager.DescribeBudgetBill(pendingBill)}); the chamber decides in {pendingBill.DaysRemaining} day(s). Your draft below can be tabled as the alternative.";
+            }
             if (pendingBill != null)
             {
                 return $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).";
@@ -11068,7 +11181,8 @@ namespace PoliSim.UI
                        + "After this one, the annual process opens on your country's own fiscal-year date.";
             }
 
-            return _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
+            return !_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? "The budget is the government's to lay - your party votes on its bill."   // PS-3c (§630)
+                : _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
                 : "No budget bill currently before Parliament. The annual process opens on your country's own fiscal-year date.";
         }
@@ -11386,7 +11500,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.FinanceTreasury)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
             }
@@ -11726,7 +11840,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.HealthSocialAffairs)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
@@ -11903,7 +12017,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"An Economic Sectors bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Economic Sectors bill currently before Parliament. Introduce your current draft (across every sector) as a bill.";
-            if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))
+            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))
             {
                 _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts());
             }
@@ -11915,6 +12029,21 @@ namespace PoliSim.UI
         /// (<see cref="LedgerFamilyColumns"/>), brass *Introduce* when the draft can go to Parliament and the stamped-grey *Pending (NNd)* while one is before it - rendered, never
         /// omitted, as on every tax and welfare row. The sentence names the bill, so the button does not. One control, always, enabled or not.
         /// </summary>
+        /// <summary>
+        /// PS-3c (§630): THE LOCK ON A LEVER. Where the player's party does not lead the government, the call to action is not drawn - the family's caption says
+        /// the role and whose the bills are (SimulationManager.PlayerMayIntroduce, the one rule the simulation refuses by). A rect draws the short word in the action's column.
+        /// </summary>
+        private bool DrawLeverLock(Rect? rect = null, float width = 0f, CabinetPortfolio? portfolio = null)
+        {
+            // PS-3g (§634): the lever's portfolio - a junior partner holding it draws no lock.
+            if (_playerCountry == null || _simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out string lockedBecause)) { return false; }
+            bool ambient = GUI.enabled; GUI.enabled = true;   // the reason is read at full ink whatever the family's ambient state (the budget page disables its family while the process is closed)
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            if (rect.HasValue) { GUI.Label(rect.Value, "LOCKED", caption); } else if (width > 0f) { GUILayout.Label(lockedBecause, caption, GUILayout.Width(width)); } else { GUILayout.Label(lockedBecause, caption); }
+            GUI.enabled = ambient;
+            return true;
+        }
+
         private bool DrawBillCallToAction(string statusText, bool pending, int daysRemaining)
         {
             return DrawSentenceAction(statusText, pending ? $"Pending ({daysRemaining}d)" : "Introduce", !pending, pending ? _pendingButtonStyle : _implementButtonStyle) && !pending;

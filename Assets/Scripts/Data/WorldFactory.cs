@@ -1086,6 +1086,11 @@ namespace PoliSim.Data
             EnvironmentFamily.SeedAll(world);   // P5-C5 (2026-09-06)
             MigrationPovertyFamily.SeedAll(world);   // P5-C6 (2026-09-06)
 
+            // PS-3b (§629): WHO GOVERNS, stored for EVERY country at the world's epoch - the government of record where its cabinet is sourced (the USA's
+            // president and party), else the formation's stand-in, and a country with none THROWS here. No world exists with a null record, so the one
+            // test (SimulationManager.PlayerGoverns) can fail loudly on a null instead of defaulting the player's role.
+            foreach (Country country in world.Countries) { country.Government = PoliSim.Elections.GovernmentRecord.AtStart(country, PoliSim.Simulation.SimulationManager.EpochDate, world); }
+
             return world;
         }
 

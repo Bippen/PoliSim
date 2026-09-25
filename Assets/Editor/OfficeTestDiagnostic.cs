@@ -247,9 +247,12 @@ namespace PoliSim.EditorTools
             }
             string CountryPath()
             {
+                // PS-3h (§635): who governs is the STORED record - the chamber under test gets the record the game would store after an election on it.
+                sweden.Government = PoliSim.Elections.GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden), PoliSim.Simulation.SimulationManager.EpochDate);
                 if (!GovernmentFormation.TryGovernment(sweden, out IReadOnlyList<string> cab, out IReadOnlyList<string> sup)) { return "none"; }
                 return string.Join("+", cab) + (sup.Count > 0 ? " | " + string.Join("+", sup) : string.Empty);
             }
+            PoliSim.Elections.GovernmentRecord seatedRecord = sweden.Government;   // restored after the chambers under test
             bool installed = SeatedGovernment.TryInstalled(sweden, out SeatedGovernment.Record _);
             string gameSeated = FormationPath(seatedSeats);
             string gamePlayed = FormationPath(yearThirtyTwo);
@@ -259,6 +262,7 @@ namespace PoliSim.EditorTools
             string countryPlayed = installed ? "(installed record)" : CountryPath();
             sweden.ParliamentSeats.Clear();
             foreach (KeyValuePair<string, int> seat in seatedChamber) { sweden.ParliamentSeats[seat.Key] = seat.Value; }
+            sweden.Government = seatedRecord;
             bool gameReadsRules = gameSeated == Government(seatedFormation) && gamePlayed == Government(played)
                 && (installed || (countrySeated == gameSeated && countryPlayed == gamePlayed));
             bool rulesVisible = Government(seatedFormation) != Government(seatedWithoutRules) || Government(played) != Government(playedWithoutRules);

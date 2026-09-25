@@ -35,12 +35,30 @@ namespace PoliSim.Data
         /// <summary>P2-4.3 (2026-09-02): the bill's direction and axis at the division, and every party's side with its
         /// seats - what the ceremony's per-seat vote map draws. Empty on divisions recorded before this pass.</summary>
         public float Direction;
+        /// <summary>PS-3i (§636): a MOTION (no confidence), not a bill - no signing ceremony, never the standing budget act.</summary>
+        public bool Motion;
         public int Axis;
         public List<DivisionSide> Sides = new List<DivisionSide>();
         /// <summary>P2-4.3: the estimated impact of the turn's decision this division belonged to (the preview's arrows,
         /// P2-2.1), attached by the controller when the division is queued for its ceremony; empty when no preview was
         /// held for that turn.</summary>
         public List<DivisionEffect> Effects = new List<DivisionEffect>();
+        /// <summary>PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - each named with its votes, the abstentions, and the adopted one stamped; null for an ordinary for-or-against division.</summary>
+        public DivisionContest Contest;
+    }
+
+    /// <summary>PS-3f (§633): the two proposals of a budget division and how the chamber decided between them (Riksdagsordningen 11 kap. 10 § - the main proposal against the counter-proposal).</summary>
+    public class DivisionContest
+    {
+        public string ProposalFor;
+        public string ProposalAgainst;
+        public int VotesFor;
+        public int VotesAgainst;
+        public int Abstentions;
+        /// <summary>True where the counter-proposal (the alternative) was adopted.</summary>
+        public bool AlternativeAdopted;
+        /// <summary>The party whose alternative broke with the government it supports (a support party voting its own frames) - null where none did.</summary>
+        public string BreakBy;
     }
 
     /// <summary>

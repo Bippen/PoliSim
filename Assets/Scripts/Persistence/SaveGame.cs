@@ -83,6 +83,11 @@ namespace PoliSim.Persistence
         /// window at all, so it is owed one) and is why this needs no SaveVersion bump.</summary>
         public List<CountryId> IncomingBudgetWindowUsed = new List<CountryId>();
         public Dictionary<CountryId, BudgetBill> PendingBudgetBills = new Dictionary<CountryId, BudgetBill>();
+        /// <summary>PS-3e (§632): the alternative budget a party tabled against the government's pending bill (format 29).</summary>
+        public Dictionary<CountryId, BudgetBill> PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>();
+        /// <summary>PS-3i (§636): an ordered extra election's polling day and decision day (MinValue for none).</summary>
+        public System.DateTime ExtraElectionDate = System.DateTime.MinValue;
+        public System.DateTime ExtraElectionOrderedOn = System.DateTime.MinValue;
         public Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>> PendingTaxProgramBills = new Dictionary<CountryId, Dictionary<TaxType, TaxProgramBill>>();
         public Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>> PendingWelfareProgramBills = new Dictionary<CountryId, Dictionary<WelfareProgramType, WelfareProgramBill>>();
         public Dictionary<CountryId, LaborPolicyBill> PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>();

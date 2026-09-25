@@ -1,0 +1,40 @@
+    ok        SD: Support, governs False
+    ok        V: Opposition, governs False
+    ok        no party: no role
+    ok        with S seated the player does not govern Sweden - the AI ministry's gate opens for it
+    ok        another country is never the player's to govern
+    ok        the government rides the save (format 27) and reads the same role after the round trip
+    ok        the formation's record: SD+M+KD+L led by M (MajorityCoalition); S is Opposition
+    ok        Germany's start: SPD+Grune+FDP led by SPD
+    ok        6 November 2024 is the day BEFORE the FDP ministers were dismissed - the record's SPD+Grüne+FDP cabinet still stands (§618)
+    ROLE: Poland at 2023-02-19 - the government KO+TD+NL led by KO (provisional); the player's (no party) is None
+    ROLE: Italy at 2022-07-21 - the government FdI+Lega+FI+NM led by FdI (provisional); the player's (no party) is None
+    ROLE: USA at 2024-03-12 - no government of record; the player governs their own country
+    ROLE: France at 2024-07-18 - no government of record; the player governs their own country
+    ok        Poland and Italy: the formation's stand-in, marked provisional (§605)
+    ok        Sweden: a government of record is stored at its start, led by M
+    FAIL      Germany: a government of record is stored at its start, led by NONE
+    ok        Poland: a government of record is stored at its start, led by KO
+    ok        Italy: a government of record is stored at its start, led by FdI
+    FAIL      USA: a government of record is stored at its start, led by NONE
+    FAIL      France: a government of record is stored at its start, led by NONE
+    FAIL      a date with no government of record: AtStart THROWS rather than returning null
+    FAIL      a country whose government was never stored: PlayerGoverns THROWS rather than defaulting the player to governing
+UnityEngine.Debug:ExtractStackTraceNoAlloc (byte*,int,string)
+UnityEngine.StackTraceUtility:ExtractStackTrace ()
+UnityEngine.DebugLogHandler:Internal_Log (UnityEngine.LogType,UnityEngine.LogOption,string,UnityEngine.Object)
+UnityEngine.DebugLogHandler:LogFormat (UnityEngine.LogType,UnityEngine.Object,string,object[])
+UnityEngine.Logger:Log (UnityEngine.LogType,object)
+UnityEngine.Debug:LogError (object)
+PoliSim.EditorTools.PlayerRoleDiagnostic:Run () (at Assets/Editor/PlayerRoleDiagnostic.cs:108)
+System.Reflection.RuntimeMethodInfo:Invoke (object,System.Reflection.BindingFlags,System.Reflection.Binder,object[],System.Globalization.CultureInfo)
+System.Reflection.MethodBase:Invoke (object,object[])
+PoliSim.EditorTools.WarmEditor/<>c__DisplayClass8_0:<Resolve>b__0 () (at Assets/Editor/WarmEditor.cs:160)
+PoliSim.EditorTools.CheckExit:Collect (System.Action) (at Assets/Editor/CheckSuite.cs:126)
+PoliSim.EditorTools.WarmEditor:RunOne (System.Action,string,System.Text.StringBuilder) (at Assets/Editor/WarmEditor.cs:172)
+PoliSim.EditorTools.WarmEditor:Pump () (at Assets/Editor/WarmEditor.cs:119)
+PoliSim.EditorTools.WarmEditor:Host () (at Assets/Editor/WarmEditor.cs:74)
+
+(Filename: Assets/Editor/PlayerRoleDiagnostic.cs Line: 108)
+
+CHECKEXIT: 1 error(s) logged during the run; the reported code 1 already reflects failure.

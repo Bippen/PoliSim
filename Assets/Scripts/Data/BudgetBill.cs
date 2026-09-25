@@ -32,6 +32,10 @@ namespace PoliSim.Data
     /// </summary>
     public class BudgetBill
     {
+        /// <summary>PS-3e (§632): TRUE for a budget the AI GOVERNMENT tabled for the player's country - the finance ministry's rule as a bill the chamber votes on; false for the player's own.</summary>
+        public bool GovernmentBill;
+        /// <summary>PS-3e (§632): the party that tabled this budget as an ALTERNATIVE to the government's (the Riksdag's budget motion - a shadow budget); null for a government's own.</summary>
+        public string TabledBy;
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<TaxType, float> TaxLines = new Dictionary<TaxType, float>();
         /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the statute's figure stands; only the income tax carries one.</summary>

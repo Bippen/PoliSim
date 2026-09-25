@@ -40,6 +40,14 @@ namespace PoliSim.Elections
         /// <summary>The chamber's name as the cards and the ledger say it: Riksdag, Bundestag, Sejm, Camera, House, Assemblée.</summary>
         public static string ChamberOf(CountryId id) => ChamberName.TryGetValue(id, out string name) ? name : "chamber";
 
+        /// <summary>The chamber's largest party and its seats - a presidential brief's second half (PS-3b, §629).</summary>
+        private static (string party, int seats) Majority(Dictionary<string, int> seats)
+        {
+            string best = "-"; int bestSeats = -1;
+            foreach (KeyValuePair<string, int> kv in seats) { if (kv.Value > bestSeats) { best = kv.Key; bestSeats = kv.Value; } }
+            return (best, Math.Max(bestSeats, 0));
+        }
+
         /// <summary>The country as the ledger heads it (BRIEF · SWEDEN, 18 JAN 2026).</summary>
         public static string CountryOf(CountryId id) => CountryName.TryGetValue(id, out string name) ? name : id.ToString();
 
@@ -60,18 +68,28 @@ namespace PoliSim.Elections
 
             if (WorldClock.TryGovernmentAt(id, opens, out WorldClock.GovernmentOfRecord government))
             {
-                if (government.CabinetSourced && government.Cabinet != null)
+                if (government.Kind == WorldClock.ExecutiveKind.Presidency)
+                {
+                    // PS-3b (§629): a presidential system's government of record is the president and their party; the chamber's majority is the sentence's other half (divided government, §6).
+                    (string majorityParty, int majoritySeats) = Majority(seats);
+                    clauses.Add(new Clause("The president is " + government.President + ", in office since " + Long(government.From) + "; the " + ChamberOf(id) + " majority is " + majorityParty
+                        + ", with " + majoritySeats.ToString(CultureInfo.InvariantCulture) + " of " + size.ToString(CultureInfo.InvariantCulture) + " seats.",
+                        "WorldClock.Governments (" + government.Basis + "); the seats " + chamber.Basis));
+                }
+                else if (government.CabinetSourced && government.Cabinet != null)
                 {
                     int cabinetSeats = 0;
                     foreach (string abbrev in government.Cabinet) { if (seats.TryGetValue(abbrev, out int n)) { cabinetSeats += n; } }
                     clauses.Add(new Clause(government.Head + "'s government (" + string.Join("+", government.Cabinet) + ") has governed since " + Long(government.From)
                         + ", with " + cabinetSeats.ToString(CultureInfo.InvariantCulture) + " of " + size.ToString(CultureInfo.InvariantCulture) + " seats"
-                        + (government.Support != null && government.Support.Length > 0 ? " and the support of " + string.Join("+", government.Support) : string.Empty) + ".",
+                        + (government.Support != null && government.Support.Length > 0 ? " and the support of " + string.Join("+", government.Support) : string.Empty)
+                        + (government.President != null ? ", under the president " + government.President : string.Empty) + ".",
                         "WorldClock.Governments (" + government.Basis + "); the seats " + chamber.Basis));
                 }
                 else
                 {
-                    clauses.Add(new Clause(government.Head + " has governed since " + Long(government.From) + "; the record does not name the cabinet's parties, so its seats are not counted here.",
+                    clauses.Add(new Clause(government.Head + " has governed since " + Long(government.From) + (government.President != null ? ", under the president " + government.President : string.Empty)
+                        + "; the record does not name the cabinet's parties, so its seats are not counted here.",
                         "WorldClock.Governments (" + government.Basis + ") - cabinet not sourced"));
                 }
             }
@@ -131,7 +149,15 @@ namespace PoliSim.Elections
             if (WorldClock.TryGovernmentAt(id, opens, out WorldClock.GovernmentOfRecord government))
             {
                 string basis = "WorldClock.Governments (" + government.Basis + ")";
-                if (government.CabinetSourced && government.Cabinet != null)
+                if (government.Kind == WorldClock.ExecutiveKind.Presidency)
+                {
+                    // PS-3b (§629): the president and their party, then the chamber's majority - the two halves of a presidential government.
+                    (string majorityParty, int majoritySeats) = Majority(seats);
+                    rows.Add(new Row("President", government.President, basis));
+                    rows.Add(new Row("Since", Stamp(government.From), basis));
+                    rows.Add(new Row(ChamberOf(id), majorityParty + " · " + majoritySeats.ToString(CultureInfo.InvariantCulture) + " OF " + size.ToString(CultureInfo.InvariantCulture), basis + "; the seats " + chamber.Basis));
+                }
+                else if (government.CabinetSourced && government.Cabinet != null)
                 {
                     int cabinetSeats = 0;
                     foreach (string abbrev in government.Cabinet) { if (seats.TryGetValue(abbrev, out int n)) { cabinetSeats += n; } }
@@ -142,11 +168,13 @@ namespace PoliSim.Elections
                     {
                         rows.Add(new Row("Support", string.Join(" + ", government.Support), basis));
                     }
+                    if (government.President != null) { rows.Add(new Row("President", government.President, basis)); }   // PS-3b (§629): France's cabinet sits under its president
                 }
                 else
                 {
                     rows.Add(new Row("Government", government.Head + " · CABINET NOT IN THE RECORD", basis + " - cabinet not sourced"));
                     rows.Add(new Row("Since", Stamp(government.From), basis));
+                    if (government.President != null) { rows.Add(new Row("President", government.President, basis)); }   // PS-3b (§629)
                 }
             }
             else

@@ -106,6 +106,26 @@ namespace PoliSim.Simulation
             return Mathf.Max(0f, now / lastYear - 1f - benchmark);
         }
 
+        /// <summary>
+        /// PS-3e (§632): THE MINISTRY'S RULE AS A BILL. What <see cref="Decide"/> wrote - the lines' percent changes and the two household rates - in the
+        /// budget bill's own slots, so the chamber votes on it and <c>ParliamentSystem.ApplyBillResult</c> applies it the day it is adopted. The fund
+        /// rides unchanged (the bill's SWF block always runs: a bill that says no fund would dissolve one), welfare and the pension age stay off the bill.
+        /// </summary>
+        public static BudgetBill AsBudgetBill(Country country, PolicyDecision decision)
+        {
+            var bill = new BudgetBill { GovernmentBill = true };
+            foreach (KeyValuePair<SpendingCategory, float> kv in decision.SpendingLineChanges) { bill.SpendingPercentChanges[kv.Key] = kv.Value; }
+            foreach (KeyValuePair<TaxType, float> kv in decision.TaxRateOverrides) { bill.TaxLines[kv.Key] = kv.Value; }
+            SovereignWealthFund fund = country.SovereignWealthFund;
+            bill.SwfShouldExist = fund != null;
+            if (fund != null)
+            {
+                bill.SwfContributionRatePercent = fund.ContributionRatePercent; bill.SwfDomesticAllocationPercent = fund.DomesticAllocationPercent;
+                bill.SwfEquitiesWeight = fund.EquitiesWeight; bill.SwfBondsWeight = fund.BondsWeight; bill.SwfInfrastructureWeight = fund.InfrastructureWeight; bill.SwfRealEstateWeight = fund.RealEstateWeight;
+            }
+            return bill;
+        }
+
         /// <summary>A fresh decision carrying only what the ministry writes - pure: reads the country and last year's report, changes nothing.</summary>
         public static PolicyDecision Decide(Country country, FiscalTurnReport lastReport)
         {

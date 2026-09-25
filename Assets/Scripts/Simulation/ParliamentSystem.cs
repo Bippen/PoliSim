@@ -892,7 +892,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
         {
-            var concern = new BillConcern { Direction = GetBillDirection(country, bill) };
+            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill };   // PS-3e (§632)
             foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { concern.Add(StanceAxis.Redistribution, -BracketRateMove(country, bill, FindTaxLine(country, kvp.Key))); }   // F4-4: the sub-rows' points
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
