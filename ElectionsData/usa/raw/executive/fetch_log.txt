@@ -1,0 +1,11 @@
+2026-09-25T06:59:26Z	200	57662	archives_amendments_11-27.html	https://www.archives.gov/founding-docs/amendments-11-27
+2026-09-25T06:59:27Z	200	57762	archives_electoral_college_2024.html	https://www.archives.gov/electoral-college/2024
+2026-09-25T06:59:28Z	200	57517	archives_electoral_college_2020.html	https://www.archives.gov/electoral-college/2020
+2026-09-25T06:59:28Z	200	41224	archives_electoral_college_key_dates.html	https://www.archives.gov/electoral-college/key-dates
+2026-09-25T06:59:29Z	200	160458	bidenwhitehouse_president_biden.html	https://bidenwhitehouse.archives.gov/administration/president-biden/
+2026-09-25T06:59:30Z	200	150970	bidenwhitehouse_inaugural_address_2021-01-20.html	https://bidenwhitehouse.archives.gov/briefing-room/speeches-remarks/2021/01/20/inaugural-address-by-president-joseph-r-biden-jr/
+2026-09-25T06:59:32Z	200	246683	whitehouse_president_trump.html	https://www.whitehouse.gov/administration/donald-j-trump/
+2026-09-25T06:59:33Z	200	281116	whitehouse_inaugural_address_2025-01-20.html	https://www.whitehouse.gov/remarks/2025/01/the-inaugural-address/
+2026-09-25T06:59:35Z	200	176436	history_house_party_divisions.html	https://history.house.gov/Institution/Party-Divisions/Party-Divisions/
+2026-09-25T06:59:36Z	200	65246	archives_presidents_list.html	https://www.archives.gov/presidential-libraries/research/alic/presidents.html
+2026-09-25T07:00:24Z	DISCARDED	-	archives_presidents_list.html	(the NARA presidents list does not reach Biden or Trump; file deleted, nothing cited)

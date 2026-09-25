@@ -21,7 +21,7 @@ Four saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\Defaul
 
 | save | cut by | what it opens on |
 |---|---|---|
-| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: format 24, seed 777, **turn 3**, 4 February 2030 (since §604), the first day of the 26-week run-up of the game's own election (the next election turn's boundary; `PlayProtocolStaging` computes it as the live day path does, and the staging PRINTS the three dates every run), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
+| `playtest_4_precampaign_day1.json` | `PlayProtocolStaging.Run` | **the play's opening**: format 28 (§629), seed 777, **turn 0**, 18 January 2026 (since §628), the first day of the 26-week run-up of the game's own election (the next election turn's boundary; `PlayProtocolStaging` computes it as the live day path does, and the staging PRINTS the three dates every run), Sweden, the player seated as the largest party of the seeded chamber (§558), a clean book - nothing drafted |
 | `playtest_2_riksbank_rate_decision.json` | the film harness, `-shotsaves`, Sweden | felt verdict 2 ("still not independent"): a rate decision drafted on the Riksbank tab |
 | `playtest_1_trade_bill_costs.json` | the film harness, `-shotsaves`, the USA | felt verdict 1: the Trade bill open with its costs on screen |
 | `playtest_3_dense_midgame.json` | the film harness, `-shotsaves`, the USA | the dense mid-game: the budget-process pause, pending cabinet decisions, a foreign-policy meeting, one bill of every type |

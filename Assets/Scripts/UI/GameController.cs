@@ -2170,8 +2170,8 @@ namespace PoliSim.UI
             Country after = _world.GetCountry(countryId);
             if (after != null)
             {
-                // PS-3a (§628): WHO GOVERNS at the start - the government of record where its cabinet is sourced, else the formation's stand-in, else none
-                // (France, the USA: no cabinet of record - the player governs). Written on EVERY path that opens a world, not only the picker's (the review).
+                // PS-3a (§628): WHO GOVERNS at the start - the government of record where its cabinet is sourced (the USA's president and party, PS-3b §629), else the formation's
+                // stand-in; a date with no record at all THROWS (§629: the role is never defaulted). Written on EVERY path that opens a world, not only the picker's (the review).
                 after.Government = PoliSim.Elections.GovernmentRecord.AtStart(after, start);
             }
             if (after != null && !string.IsNullOrEmpty(seatedParty))

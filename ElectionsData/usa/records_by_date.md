@@ -247,3 +247,62 @@ Discarded fetches (logged in `fetch_log.txt`, files deleted, nothing cited from 
 - **G12: second-session re-verification (R-K9) is pending**, as for every SOURCED file.
 
 *(Filed 2026-09-24 by the PS-1 sourcing agent. Nothing outside `ElectionsData/usa/records_by_date.md` and `ElectionsData/usa/raw/records/` was written. No code was touched, Unity was not run, nothing was committed.)*
+
+## 5. The executive of record by date (the president and their party)
+
+*(Appended 2026-09-25 by the PS-1 sourcing agent, second pass. The brief named this "§4"; the file's §4 is the rules, so it is numbered 5. It re-fetches §2's executive record from the primary pages with the party read from a page that states it — the White House biographies name no party; NARA's Electoral College results pages do — and adds the House majority by Congress. Every quote is from a page fetched 2026-09-25 06:59 UTC and saved under `raw/executive/`; `raw/executive/fetch_log.txt` and `raw/executive/SHA256SUMS.txt` as for §1–§4. Four files came back byte-identical to the 2026-09-24 copies under `raw/records/` (same SHA-256: [EX-AM], [EX-EC24], [EX-DATES], [EX-BIDEN]); the others differ by served bytes only.)*
+
+| from | until | president | party | basis |
+|---|---|---|---|---|
+| 2021-01-20, noon (before the window; the window opens 2022-07-01 with him in office) | 2025-01-20, noon | **Joseph R. Biden Jr.**, "the 46th President" | **DEM** — "[D]" on NARA's 2020 results page | elected 2020 (306 electoral votes to 232) [EX-EC20]; sworn in 2021-01-20 [EX-BIDEN], the address delivered at the Capitol "11:52 AM EST" that day [EX-BIDEN-INAUG]; term ends at noon 20 January by the 20th Amendment §1 [EX-AM] (**DERIVED**: the end date is the rule applied, no page states his last day in words — G11 stands) |
+| 2025-01-20, noon | (open on 2026-09-25; the term ends at noon 2029-01-20, **DERIVED** from [EX-AM]) | **Donald J. Trump**, "45th & 47th President" | **REP** — "[R]" on NARA's 2024 results page | elected 2024-11-05 (312 to 226) [EX-EC24] [EX-DATES]; "January 20, 2025 at Noon—Inauguration Day" [EX-DATES]; the address delivered "12:10 P.M. EST" that day [EX-TRUMP-INAUG]; still the sitting president on the White House page served 2026-09-25 [EX-TRUMP] |
+
+**The inauguration date — the 20th Amendment, Section 1** (NARA's transcript, [EX-AM]):
+> "AMENDMENT XX Passed by Congress March 2, 1932. Ratified January 23, 1933."
+>
+> "Section 1. The terms of the President and Vice President shall end at noon on the 20th day of January, and the terms of Senators and Representatives at noon on the 3d day of January, of the years in which such terms would have ended if this article had not been ratified; and the terms of their successors shall then begin."
+
+**Biden, 2021–2025.**
+- [EX-EC20] (NARA, Electoral College results 2020, "This page was last reviewed on April 16, 2021."): > "President Joseph R. Biden Jr. [D] Main Opponent Donald J. Trump [R] Electoral Vote Winner: 306 Main Opponent: 232 Total/Majority: 538/270 Vice President Kamala D. Harris [D] V.P. Opponent: Michael R. Pence [R]"
+- [EX-BIDEN] (the Biden White House archive): > "After being sworn in as the 46th President on January 20th, 2021, he took swift action to get America vaccinated and jumpstart an economic recovery that created more jobs than any other President has created in four years."
+- [EX-BIDEN-INAUG] (the inaugural address as published, page dated "January 20, 2021"): > "Inaugural Address by President Joseph R. Biden, Jr. Home Briefing Room Speeches and Remarks The United States Capitol 11:52 AM EST THE PRESIDENT: Chief Justice Roberts, Vice President Harris, Speaker Pelosi, Leader Schumer, Leader McConnell, Vice President Pence, distinguished guests, and my fellow Americans."
+
+**Trump, 2025–.**
+- [EX-EC24] (NARA, Electoral College results 2024, "This page was last reviewed on January 13, 2025."): > "President Donald J. Trump [R] Main Opponent Kamala D. Harris [D] Electoral Vote Winner: 312 Main Opponent: 226 Total/Majority: 538/270 Vice President JD Vance [R] V.P. Opponent Tim Walz [D]" and its timeline > "January 20, 2025—Inauguration Day The President-Elect is sworn in as President of the United States."
+- [EX-DATES] (NARA's key dates for the 2024 cycle): > "November 5, 2024—Election Day (first Tuesday after the first Monday in November*)" and > "January 20, 2025 at Noon—Inauguration Day The President-elect and Vice President-elect take the Oath of Office and become the President of the United States and Vice President of the United States, respectively."
+- [EX-TRUMP] (the White House, served 2026-09-25): > "Donald J. Trump 45th & 47th President of the United States" and > "After a landslide election victory in 2024, President Donald J. Trump is returning to the White House to build upon his previous successes and use his mandate to reject the extremist policies of the radical left while providing tangible quality of life improvements for the American people."
+- [EX-TRUMP-INAUG] (the inaugural address as published): > "The Inaugural Address The White House January 20, 2025 U.S. Capitol Washington, D.C. 12:10 P.M. EST THE PRESIDENT: Thank you. Thank you very much, everybody. (Applause.) Wow. Thank you very, very much. Vice President Vance, Speaker Johnson, Senator Thune, Chief Justice Roberts, justices of the Supreme Court of the United States, President Clinton, President Bush, President Obama, President Biden, Vice President Harris, and my fellow citizens"
+
+**DERIVED**: the party is the letter NARA prints after the winner's name ("[D]", "[R]"), read as the project's keys DEM and REP. The "noon" on the boundary is the Amendment's; the two addresses were delivered a few minutes either side of it (11:52 AM EST in 2021, 12:10 P.M. EST in 2025), so the ceremony's clock time is not the term's. There was no other president inside the window: the White House page of 2026-09-25 still names Trump and no fetched page names a successor or an acting president (nothing was searched for one beyond these pages).
+
+**The House majority party by Congress in the window** ([EX-HH-DIV], the House Historian's table "Party Divisions of the House of Representatives, 1789 to Present", columns Congress (Years), # of House Seats, Democrats, Republicans, Other, Del./Res.; re-fetched 2026-09-25, the same figures as §1a's 2026-09-24 copy):
+> "117th (2021–2023) 435 6 222 212 0 5/1 118th (2023–2025) 435 213 222 0 5/1 119th (2025–2027) 435 215 220 0 5/1"
+
+| Congress | from | until | House majority (the larger of the table's two columns) | figures |
+|---|---|---|---|---|
+| 117th | 2021-01-03 (before the window) | 2023-01-03 | **DEM** | 222 DEM, 212 REP |
+| 118th | 2023-01-03 | 2025-01-03 | **REP** | 213 DEM, 222 REP |
+| 119th | 2025-01-03 | (open; 2027-01-03) | **REP** | 215 DEM, 220 REP |
+
+**DERIVED**: "majority" is this file's reading of the larger column; the table prints no majority label, and its figures are "based on election day results" ([HH-117], [HH-118] in §1a), not the live count (the Clerk's 218 REP / 214 DEM / 1 I / 2 vacancies of 2026-09-24, [CLK-R1]). The "6" after the 117th's 435 is the footnote mark quoted in §1a. The Congress dates are [SEN-DATES]'s (§1a), not re-fetched here.
+
+### Register of the §5 ids
+(all fetched 2026-09-25, 06:59 UTC; saved as `raw/executive/<file>`; SHA-256 as in `raw/executive/SHA256SUMS.txt`)
+
+| id | URL | publisher | page's own date | basis | file | bytes | SHA-256 |
+|---|---|---|---|---|---|---|---|
+| [EX-AM] | https://www.archives.gov/founding-docs/amendments-11-27 | U.S. National Archives (NARA) | no page date shown; the amendment's own "Ratified January 23, 1933" | official transcript, Amendments 11–27 (byte-identical to [CONST-AM]) | `archives_amendments_11-27.html` | 57662 | `95560fca4fe948ffa1d156f466c405592a7057e557b220b5308fef5ae51e784f` |
+| [EX-EC20] | https://www.archives.gov/electoral-college/2020 | U.S. National Archives (NARA) | "This page was last reviewed on April 16, 2021." | official Electoral College results 2020 | `archives_electoral_college_2020.html` | 57517 | `07b7c440192a0f01d859b9f7d7f1dac40d91506b7a3fa5023026e9fc8caabcef` |
+| [EX-EC24] | https://www.archives.gov/electoral-college/2024 | U.S. National Archives (NARA) | "This page was last reviewed on January 13, 2025." | official Electoral College results 2024 (byte-identical to [EC-2024]) | `archives_electoral_college_2024.html` | 57762 | `45861f6999e950d22823ee3a952f74cd94b0266576feb278ca5bce053c629f1f` |
+| [EX-DATES] | https://www.archives.gov/electoral-college/key-dates | U.S. National Archives (NARA) | no page date shown; the 2024 cycle's dates | official calendar (byte-identical to [EC-DATES]) | `archives_electoral_college_key_dates.html` | 41224 | `8d286ae3a5504cf53c5aa8974d7b0d4bbd12a5ba5a95bfa2fccb4312987c2288` |
+| [EX-BIDEN] | https://bidenwhitehouse.archives.gov/administration/president-biden/ | The White House (Biden administration archive, NARA-hosted) | no page date shown | official biography, archived site (byte-identical to [WH-BIDEN]) | `bidenwhitehouse_president_biden.html` | 160458 | `e529cd9d2d8f1e3153f666070cff7f5f884286fb33990b394b1acc0a7f307102` |
+| [EX-BIDEN-INAUG] | https://bidenwhitehouse.archives.gov/briefing-room/speeches-remarks/2021/01/20/inaugural-address-by-president-joseph-r-biden-jr/ | The White House (Biden administration archive) | "January 20, 2021" | official transcript | `bidenwhitehouse_inaugural_address_2021-01-20.html` | 150970 | `a02361c1ffe602160fc763eb1e756902bcb316831ed7f4687b9f6fc083c392e1` |
+| [EX-TRUMP] | https://www.whitehouse.gov/administration/donald-j-trump/ | The White House | live page as served 2026-09-25 | official biography | `whitehouse_president_trump.html` | 246683 | `c40676e883b21f32df04cb81555d53322dbf442baace1682f3e9498148d98ce1` |
+| [EX-TRUMP-INAUG] | https://www.whitehouse.gov/remarks/2025/01/the-inaugural-address/ | The White House | "January 20, 2025" | official transcript | `whitehouse_inaugural_address_2025-01-20.html` | 281116 | `0fa3b88537ec2286b6a63e81629c832d734a4fee00da738fc15d2d7c0588790a` |
+| [EX-HH-DIV] | https://history.house.gov/Institution/Party-Divisions/Party-Divisions/ | Office of the Historian, U.S. House | no page date shown; table runs to the 119th | official House historical table | `history_house_party_divisions.html` | 176436 | `6ec3dff36c297caebbd8e26b82f53b2939b09dcc84a7ddadac7f29821531cbfe` |
+
+Discarded (logged in `raw/executive/fetch_log.txt`, file deleted, nothing cited): NARA's presidents list (`archives.gov/presidential-libraries/research/alic/presidents.html`, 200) — its served text does not reach Biden or Trump.
+
+**GAPS of this section.** None new. G11 stands (Biden's last day is the Amendment applied, not a page's words). The party is sourced from NARA's results pages, not from a party-membership statement by either president's office (no fetched official page says "Democrat" or "Republican" in words next to the name); a second session that wants that in words should look to the parties' own pages (gop.com is G1).
+
+*(Filed 2026-09-25. Nothing outside `ElectionsData/usa/records_by_date.md` and `ElectionsData/usa/raw/executive/` was written. No code was touched, Unity was not run, nothing was committed.)*

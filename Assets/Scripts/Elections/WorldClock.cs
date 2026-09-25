@@ -45,6 +45,9 @@ namespace PoliSim.Elections
             public bool Holds(DateTime date) => date >= Convened && date < Until;
         }
 
+        /// <summary>PS-3b (§629): the two shapes a government of record takes - a cabinet answerable to the chamber, or a presidency elected apart from it.</summary>
+        public enum ExecutiveKind { Cabinet, Presidency }
+
         /// <summary>One government of record, by key, from the day it took office until it left; support is the parties carrying it from outside.</summary>
         public readonly struct GovernmentOfRecord
         {
@@ -58,16 +61,22 @@ namespace PoliSim.Elections
             /// <summary>True where the record names the cabinet's parties by a DERIVATION it states (the ministers' clubs, a motion's signatories) rather than a page that lists them; the standing says so.</summary>
             public readonly bool CabinetDerived;
             public readonly string Basis;
+            /// <summary>PS-3b (§629): a CABINET (the parliamentary four, and France, whose cabinet sits under its president) or a PRESIDENCY (the USA: the president and their party ARE the government of record, and Cabinet holds that one party).</summary>
+            public readonly ExecutiveKind Kind;
+            /// <summary>PS-3b (§629): the head of state where one is elected apart from the chamber - the USA's president (the same person as Head) and France's; null for the parliamentary four.</summary>
+            public readonly string President;
 
-            public GovernmentOfRecord(string head, string[] cabinet, string[] support, DateTime from, DateTime until, bool cabinetSourced, string basis, bool cabinetDerived = false)
+            public GovernmentOfRecord(string head, string[] cabinet, string[] support, DateTime from, DateTime until, bool cabinetSourced, string basis, bool cabinetDerived = false, ExecutiveKind kind = ExecutiveKind.Cabinet, string president = null)
             {
-                Head = head; Cabinet = cabinet; Support = support; From = from; Until = until; CabinetSourced = cabinetSourced; Basis = basis; CabinetDerived = cabinetDerived;
+                Head = head; Cabinet = cabinet; Support = support; From = from; Until = until; CabinetSourced = cabinetSourced; Basis = basis; CabinetDerived = cabinetDerived; Kind = kind; President = president;
             }
 
             public bool Holds(DateTime date) => date >= From && date < Until;
         }
 
         private static readonly DateTime Open = DateTime.MaxValue;
+        /// <summary>PS-3b (§629): France's president of record throughout the window - proclaimed re-elected 2022-04-27 with effect from 2022-05-14 [CC-197]; the party key ENS is DERIVED (france records E1).</summary>
+        private const string FrancePresident = "Emmanuel Macron (ENS)";
         private static DateTime D(int y, int m, int d) => new DateTime(y, m, d);
 
         /// <summary>The polling day each country's start is cut on (the latest election of its kind, §4), or the snap trigger.</summary>
@@ -235,12 +244,34 @@ namespace PoliSim.Elections
                         new GovernmentOfRecord("Mario Draghi", null, null, D(2021, 2, 13), D(2022, 10, 22), false, "in office 2021-02-13 → 2022-10-22 [GV-DR]; caretaker from 2022-07-21 [CAM-729]; the cabinet's party list is a GAP (italy records G5) - the formation's result stands in, PROVISIONAL"),
                         new GovernmentOfRecord("Giorgia Meloni (FdI)", new[] { "FdI", "Lega", "FI", "NM" }, null, D(2022, 10, 22), Open, true, "in office from 2022-10-22 [GV-ME]; the Camera's confidence 2022-10-25, 235-154 [CAM-S4]; the cabinet's parties DERIVED by the record from the confidence motion's signatories (its GAP G5)", cabinetDerived: true),
                     };
+                case CountryId.USA:
+                    // PS-3b (§629): a presidential system's government of record is THE PRESIDENT AND THEIR PARTY (usa records §5). The party is NARA's own "[D]"/"[R]"
+                    // tag on the Electoral College results pages; a term ends at noon on 20 January by the Twentieth Amendment §1 [EX-AM] (Biden's last day DERIVED from it, G11).
+                    return new[]
+                    {
+                        new GovernmentOfRecord("Joseph R. Biden Jr. (DEM), president", new[] { "DEM" }, null, D(2021, 1, 20), D(2025, 1, 20), true, "elected 2020, 306 electoral votes to 232 [EX-EC20]; sworn in 2021-01-20 [EX-BIDEN] [EX-BIDEN-INAUG]; the term ends at noon 2025-01-20 by the Twentieth Amendment §1 [EX-AM]", kind: ExecutiveKind.Presidency, president: "Joseph R. Biden Jr. (DEM)"),
+                        new GovernmentOfRecord("Donald J. Trump (REP), president", new[] { "REP" }, null, D(2025, 1, 20), Open, true, "elected 2024-11-05, 312 to 226 [EX-EC24] [EX-DATES]; \"January 20, 2025 at Noon-Inauguration Day\" [EX-DATES] [EX-TRUMP-INAUG]; in office on 2026-09-25 [EX-TRUMP]", kind: ExecutiveKind.Presidency, president: "Donald J. Trump (REP)"),
+                    };
+                case CountryId.France:
+                    // PS-3b (§629): France's cabinets by their appointment decrees and the president above them (france records Table E2). No official page
+                    // states any cabinet's party composition (GAP G4), so every cabinet is unsourced and the formation's stand-in is marked provisional;
+                    // the president's party key is DERIVED (E1: Renaissance -> ENS by the 2024 nuance mapping).
+                    return new[]
+                    {
+                        new GovernmentOfRecord("Élisabeth Borne", null, null, D(2022, 5, 16), D(2024, 1, 9), false, "appointed 2022-05-16 [JD-B16] [EL-B16]; resigned 2024-01-08 [EL-B24], cessation decree 2024-01-09 [JD-B09]; the cabinet's parties are GAP G4", president: FrancePresident),
+                        new GovernmentOfRecord("Gabriel Attal", null, null, D(2024, 1, 9), D(2024, 7, 16), false, "appointed 2024-01-09 [JD-A09] [EL-A09]; the cabinet's parties are GAP G4", president: FrancePresident),
+                        new GovernmentOfRecord("Gabriel Attal, caretaker", null, null, D(2024, 7, 16), D(2024, 9, 5), false, "resignation accepted 2024-07-16 [JD-A16] [EL-A16], current business until Barnier's appointment 2024-09-05 [JD-BA05]; the cabinet's parties are GAP G4", president: FrancePresident),
+                        new GovernmentOfRecord("Michel Barnier", null, null, D(2024, 9, 5), D(2024, 12, 13), false, "appointed 2024-09-05 [JD-BA05]; censured 2024-12-04 [AN-SCR519], current business until Bayrou's appointment 2024-12-13 [JD-BY13]; the cabinet's parties are GAP G4", president: FrancePresident),
+                        new GovernmentOfRecord("François Bayrou", null, null, D(2024, 12, 13), D(2025, 9, 9), false, "appointed 2024-12-13 [JD-BY13] [EL-BY13]; confidence refused 2025-09-08 [AN-CONF], Lecornu appointed 2025-09-09 [JO-0210]; the cabinet's parties are GAP G4", president: FrancePresident),
+                        new GovernmentOfRecord("Sébastien Lecornu", null, null, D(2025, 9, 9), D(2025, 10, 10), false, "appointed 2025-09-09 [JO-0210] [EL-L09]; resignation accepted 2025-10-06 [EL-L06]; the cabinet's parties are GAP G4", president: FrancePresident),
+                        new GovernmentOfRecord("Sébastien Lecornu", null, null, D(2025, 10, 10), Open, false, "re-appointed 2025-10-10 [EL-L10]; in office on 2026-09-09 [IG-COMP], nothing later on the Élysée's publications [EL-SMP]; the cabinet's parties are GAP G4", president: FrancePresident),
+                    };
                 default:
-                    return Array.Empty<GovernmentOfRecord>();   // the USA's executive and France's governments are in their records; neither runs the formation model (§6, §8)
+                    return Array.Empty<GovernmentOfRecord>();   // no other country is modelled
             }
         }
 
-        /// <summary>The government of record on a date, where the country has one; false for the two countries outside the formation model.</summary>
+        /// <summary>The government of record on a date, where the country has one on it; false before a country's first record (PS-3b, §629: every modelled country carries them to today).</summary>
         public static bool TryGovernmentAt(CountryId id, DateTime date, out GovernmentOfRecord government)
         {
             foreach (GovernmentOfRecord g in Governments(id)) { if (g.Holds(date)) { government = g; return true; } }

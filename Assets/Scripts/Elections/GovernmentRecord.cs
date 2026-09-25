@@ -40,6 +40,10 @@ namespace PoliSim.Elections
         /// <summary>True while the record is the formation's stand-in for a government the record does not yet hold (§605).</summary>
         public bool Provisional;
         public string Basis;
+        /// <summary>PS-3b (§629): a cabinet answerable to the chamber, or a presidency - the USA's, where the president's party is the government and PmParty is that party.</summary>
+        public WorldClock.ExecutiveKind Kind;
+        /// <summary>PS-3b (§629): the president of record where one is elected apart from the chamber (the USA's, France's), by the record's own line; null for the parliamentary four.</summary>
+        public string Executive;
 
         public PlayerRole RoleOf(string abbrev)
         {
@@ -50,22 +54,30 @@ namespace PoliSim.Elections
             return PlayerRole.Opposition;
         }
 
-        /// <summary>The government the world seats at a country's start: the record's where its cabinet is sourced, else the formation's on the seated chamber, provisional.</summary>
+        /// <summary>
+        /// The government the world seats at a country's start: the record's where its cabinet is sourced (the USA's is its president and their party, France's
+        /// its cabinet under its president), else the formation's on the seated chamber, provisional. PS-3b (§629): a date with NO government of record THROWS -
+        /// a stand-in formed on a chamber whose record names no government would seat a cabinet the record never held, and a null would let the player's role
+        /// default silently; the world does not open there.
+        /// </summary>
         public static GovernmentRecord AtStart(Country country, DateTime start)
         {
+            if (!WorldClock.TryGovernmentAt(country.Id, start, out WorldClock.GovernmentOfRecord ofRecord))
+            {
+                throw new InvalidOperationException($"{country.Id} has no government of record on {start:yyyy-MM-dd} (WorldClock.Governments): who governs is unknown, and the player's role is never defaulted (PS-3b, §629)");
+            }
             if (SeatedGovernment.TryAt(country.Id, start, out SeatedGovernment.Record record) && record.Standing == SeatedGovernment.Standing.Installed && record.Cabinet != null)
             {
-                var installed = new GovernmentRecord { FormedOn = record.AsOf, Provisional = false, Basis = record.Basis, Outcome = "of record" };
+                var installed = new GovernmentRecord { FormedOn = record.AsOf, Provisional = false, Basis = record.Basis, Outcome = "of record", Kind = ofRecord.Kind, Executive = ofRecord.President };
                 installed.Cabinet.AddRange(record.Cabinet);
                 if (record.Support != null) { installed.Support.AddRange(record.Support); }
                 installed.PmParty = HeadParty(country.Id, start) ?? Largest(country, installed.Cabinet);
                 return installed;
             }
-            // No government of record on this date at all (France, the USA - the record holds no cabinet for them): NO record, and the player governs their
-            // own country, as before. A stand-in formed on a chamber whose record names no government would seat a cabinet the record never held (the review).
-            if (!WorldClock.TryGovernmentAt(country.Id, start, out WorldClock.GovernmentOfRecord _)) { return null; }
             GovernmentFormation.View formed = GovernmentFormation.ViewOf(country);
-            return FromView(country, formed, start, provisional: true, basis: "the formation's result on the seated chamber - the government of record names no cabinet on this date (§605)");
+            GovernmentRecord standIn = FromView(country, formed, start, provisional: true, basis: "the formation's result on the seated chamber - the government of record names no cabinet on this date (§605)");
+            standIn.Kind = ofRecord.Kind; standIn.Executive = ofRecord.President;
+            return standIn;
         }
 
         /// <summary>The government the formation formed after the game's own election (or none: a record with an empty cabinet and the reason).</summary>
@@ -101,8 +113,10 @@ namespace PoliSim.Elections
         public static string Describe(CountryId id, DateTime date, Country country)
         {
             GovernmentRecord g = country?.Government;
-            if (g == null) { return $"ROLE: {id} at {date:yyyy-MM-dd} - no government of record; the player governs their own country"; }
-            return $"ROLE: {id} at {date:yyyy-MM-dd} - the government {(g.Cabinet.Count > 0 ? string.Join("+", g.Cabinet) : "none")} led by {g.PmParty ?? "-"}{(g.Support.Count > 0 ? " with " + string.Join("+", g.Support) : string.Empty)}{(g.Provisional ? " (provisional)" : string.Empty)}; the player's {country.PlayerPartyAbbrev ?? "(no party)"} is {g.RoleOf(country.PlayerPartyAbbrev)}";
+            if (g == null) { return $"ROLE: {id} at {date:yyyy-MM-dd} - NO GOVERNMENT STORED; the player's role is unknown (PS-3b, §629: a defect - every path that opens a world stores one)"; }
+            string executive = g.Kind == WorldClock.ExecutiveKind.Presidency ? $"the president {g.Executive}, the administration's party {g.PmParty ?? "-"}"
+                : $"the government {(g.Cabinet.Count > 0 ? string.Join("+", g.Cabinet) : "none")} led by {g.PmParty ?? "-"}{(g.Support.Count > 0 ? " with " + string.Join("+", g.Support) : string.Empty)}{(g.Executive != null ? " under the president " + g.Executive : string.Empty)}";
+            return $"ROLE: {id} at {date:yyyy-MM-dd} - {executive}{(g.Provisional ? " (provisional)" : string.Empty)}; the player's {country.PlayerPartyAbbrev ?? "(no party)"} is {g.RoleOf(country.PlayerPartyAbbrev)}";
         }
 
         private static string Largest(Country country, List<string> cabinet)

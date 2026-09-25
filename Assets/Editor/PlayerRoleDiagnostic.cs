@@ -14,8 +14,9 @@ namespace PoliSim.EditorTools
     /// PS-3a (§628): WHO GOVERNS, ASSERTED. At Sweden's start the government of record is Kristersson's M+KD+L with SD's support, INSTALLED,
     /// led by M (the record's own head); by party the four roles read S OPPOSITION, M PRIME MINISTER, KD and L JUNIOR PARTNER, SD SUPPORT; the
     /// one test `PlayerGoverns` is true for M alone (a junior partner's portfolios are PS-3's next part, stated); the AI finance ministry's
-    /// gate follows it (a Sweden the player's S does not lead is AI-governed); the record survives a save round trip; a country with no stored
-    /// government reads as the player's; Germany's start reads SPD PRIME MINISTER; France and the USA, whose record names no cabinet, store no record (the player governs); Poland's and Italy's stand-ins are printed.
+    /// gate follows it (a Sweden the player's S does not lead is AI-governed); the record survives a save round trip; Germany's start reads SPD PRIME MINISTER;
+    /// Poland's and Italy's stand-ins are printed. PS-3b (§629): every start stores a record - the USA's president and party, France's cabinet under its president -
+    /// and a country with none FAILS LOUDLY at AtStart and at PlayerGoverns (proved red on §628's build first: Reviews/evidence/2026-09-25_s629_probe_red.txt).
     /// </summary>
     public static class PlayerRoleDiagnostic
     {
@@ -40,7 +41,8 @@ namespace PoliSim.EditorTools
                 Country sweden = world.GetCountry(CountryId.Sweden);
                 DateTime start = WorldClock.StartDate(CountryId.Sweden);
 
-                Check(sim.PlayerGoverns(sweden) && sweden.Government == null, "no stored government: the player governs their own country, as before");
+                Check(sweden.Government != null, "the factory stored Sweden's government of record at creation (§629)");
+                Check(sim.PlayerGoverns(sweden), "no party seated: the player country is the instrument's hand - the Editor tools' case, stated (§629)");
                 sweden.Government = GovernmentRecord.AtStart(sweden, start);
                 GovernmentRecord g = sweden.Government;
                 Check(!g.Provisional && g.PmParty == "M" && string.Join("+", g.Cabinet) == "M+KD+L" && string.Join("+", g.Support) == "SD",
@@ -58,13 +60,13 @@ namespace PoliSim.EditorTools
                 Country germany = world.GetCountry(CountryId.Germany);
                 Check(!sim.PlayerGoverns(germany), "another country is never the player's to govern");
 
-                // The record survives the save round trip (format 27).
+                // The record survives the save round trip (format 28).
                 SaveGame save = SaveGameService.CreateSaveGame(sim, world, CountryId.Sweden, null);
                 string json = SaveGameService.Serialize(save);
                 SaveGame back = SaveGameService.Deserialize(json);
                 Country loaded = back.World.GetCountry(CountryId.Sweden);
                 Check(loaded.Government != null && loaded.Government.PmParty == "M" && string.Join("+", loaded.Government.Cabinet) == "M+KD+L" && loaded.Government.RoleOf("S") == PlayerRole.Opposition,
-                    "the government rides the save (format 27) and reads the same role after the round trip");
+                    "the government rides the save (format 28) and reads the same role after the round trip");
 
                 // The formation's record after an election: on the seated 2022 chamber with 2026's declarations the formation forms SD+M+KD+L (§607) - the record names it and its head.
                 GovernmentRecord formed = GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden, ElectionVintage.Sweden2026), new DateTime(2026, 9, 13));
@@ -73,18 +75,41 @@ namespace PoliSim.EditorTools
 
                 // Germany's start: the government of record led by the chancellor's party.
                 Country de = world.GetCountry(CountryId.Germany);
-                GovernmentRecord gde = GovernmentRecord.AtStart(de, WorldClock.StartDate(CountryId.Germany));
+                GovernmentRecord gde = de.Government = GovernmentRecord.AtStart(de, WorldClock.StartDate(CountryId.Germany));
                 Check(gde.PmParty == "SPD" && gde.Cabinet.Contains("SPD"), F("Germany's start: {0} led by {1}{2}", string.Join("+", gde.Cabinet), gde.PmParty, gde.Provisional ? " (provisional)" : string.Empty));
                 Check(gde.Cabinet.Contains("FDP"), "6 November 2024 is the day BEFORE the FDP ministers were dismissed - the record's SPD+Grüne+FDP cabinet still stands (§618)");
-                // The other starts, printed so the stand-in is visible: France and the USA store NO record (their record names no cabinet), Poland and Italy the formation's stand-in.
+                // The other starts, printed: the USA's president and France's cabinet under its president (§629), Poland's and Italy's the formation's stand-in.
                 foreach (CountryId other in new[] { CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
                 {
                     Country c = world.GetCountry(other);
                     c.Government = GovernmentRecord.AtStart(c, WorldClock.StartDate(other));
                     sb.Append("    ").Append(GovernmentRecord.Describe(other, WorldClock.StartDate(other), c)).Append(Environment.NewLine);
                 }
-                Check(world.GetCountry(CountryId.France).Government == null && world.GetCountry(CountryId.USA).Government == null, "France and the USA: no cabinet of record, no stored government - the player governs their own country");
                 Check(world.GetCountry(CountryId.Poland).Government != null && world.GetCountry(CountryId.Poland).Government.Provisional && world.GetCountry(CountryId.Italy).Government != null && world.GetCountry(CountryId.Italy).Government.Provisional, "Poland and Italy: the formation's stand-in, marked provisional (§605)");
+
+                // PS-3b (§629): THE EXECUTIVES, AND NO SILENT DEFAULT. Every playable start stores a government of record - the USA's is its president
+                // and their party, France's its cabinet under its president - and a country with none FAILS LOUDLY: `AtStart` throws, and `PlayerGoverns`
+                // throws on a country whose record was never stored, rather than reading the player as governing. Proved both ways: this block was
+                // run against §628's build first (RED: the USA and France stored null and S/DEM/ENS governed by default), then against this one (GREEN).
+                foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
+                {
+                    Country c = world.GetCountry(id);
+                    Check(c.Government != null && !string.IsNullOrEmpty(c.Government.PmParty), F("{0}: a government of record is stored at its start, led by {1}", id, c.Government?.PmParty ?? "NONE"));
+                }
+                GovernmentRecord usa = world.GetCountry(CountryId.USA).Government;
+                Check(usa != null && usa.PmParty == "DEM" && !usa.Provisional && usa.Kind == WorldClock.ExecutiveKind.Presidency && usa.Executive != null && usa.Executive.Contains("Biden"),
+                    F("the USA's start ({0:yyyy-MM-dd}): the president and their party of record - {1}, {2}", WorldClock.StartDate(CountryId.USA), usa?.Executive ?? "NONE", usa?.PmParty ?? "-"));
+                GovernmentRecord fr = world.GetCountry(CountryId.France).Government;
+                Check(fr != null && fr.Provisional && fr.Kind == WorldClock.ExecutiveKind.Cabinet && fr.Executive != null && fr.Executive.Contains("Macron"),
+                    F("France's start ({0:yyyy-MM-dd}): Attal's caretaker cabinet under {3} - its parties are GAP G4, so the formation's stand-in {1} led by {2} is PROVISIONAL", WorldClock.StartDate(CountryId.France), fr == null ? "NONE" : string.Join("+", fr.Cabinet), fr?.PmParty ?? "-", fr?.Executive ?? "no president"));
+                bool threw = false;
+                try { GovernmentRecord.AtStart(sweden, new DateTime(1900, 1, 1)); } catch (InvalidOperationException) { threw = true; }
+                Check(threw, "a date with no government of record: AtStart THROWS rather than returning null");
+                threw = false;
+                sweden.Government = null;
+                try { sim.PlayerGoverns(sweden); } catch (InvalidOperationException) { threw = true; }
+                Check(threw, "a country whose government was never stored: PlayerGoverns THROWS rather than defaulting the player to governing");
+                sweden.Government = g;
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }

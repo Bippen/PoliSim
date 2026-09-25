@@ -1,0 +1,27 @@
+# ElectionsData/france/raw/executive — fetch log, 2026-09-25 (07:00–07:15 UTC), sourcing agent (executive pass)
+# curl -sL -A "Mozilla/5.0" (Wayback fetches with --compressed; two files that arrived gzip-encoded were gunzipped in place).
+# Columns: status, saved file, source URL, and for Wayback "id_" captures the capture actually served.
+200	cc_2022-195PDR_premier-tour.html	https://www.conseil-constitutionnel.fr/decision/2022/2022195PDR.htm
+200	elysee_sitemap.xml	https://www.elysee.fr/sitemap.xml
+200	elysee_sitemap.publication.xml	https://www.elysee.fr/sitemap.publication.xml
+200	wb_jorf_2022_05_17_0114.html	https://www.legifrance.gouv.fr/jorf/jo/2022/05/17/0114	via https://web.archive.org/web/2025id_/ (capture served: 2022-05-17 per CDX 20220517092259)
+200	wb_jorf_2024_01_10_0007.html	https://www.legifrance.gouv.fr/jorf/jo/2024/01/10/0007	via https://web.archive.org/web/2025id_/ (CDX 20240110073657)
+200	wb_jorf_2024_07_17_0169.html	https://www.legifrance.gouv.fr/jorf/jo/2024/07/17/0169	via https://web.archive.org/web/20250114233403id_/
+200	wb_jorf_2024_09_06_0212.html	https://www.legifrance.gouv.fr/jorf/jo/2024/09/06/0212	via https://web.archive.org/web/20240912031135id_/
+200	wb_jorf_2024_12_14_0295.html	https://www.legifrance.gouv.fr/jorf/jo/2024/12/14/0295	via https://web.archive.org/web/2025id_/ (CDX 20241214013053)
+200	wb_jorf_2025_09_10_0210.html	https://www.legifrance.gouv.fr/jorf/jo/2025/09/10/0210	via https://web.archive.org/web/20250911161418id_/
+200	wb_legifrance_JORFTEXT000045802689.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045802689	via https://web.archive.org/web/20250123185209id_/
+200	wb_legifrance_JORFTEXT000045802692.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045802692	via https://web.archive.org/web/20241202161449id_/
+200	wb_legifrance_JORFTEXT000048898744.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000048898744	via https://web.archive.org/web/20240110101925id_/
+200	wb_legifrance_JORFTEXT000048898747.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000048898747	via https://web.archive.org/web/20240301021148id_/ (the 20250214193516 capture is a 212-byte Incapsula stub, deleted)
+200	wb_legifrance_JORFTEXT000050000932.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000050000932	via https://web.archive.org/web/20240829143727id_/
+200	wb_legifrance_JORFTEXT000050185112.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000050185112	via https://web.archive.org/web/20240907210227id_/ (the 20250322234024 capture is a Cloudflare 403, deleted)
+200	wb_legifrance_JORFTEXT000050774288.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000050774288	via https://web.archive.org/web/20241225211851id_/ (the 20250214204650 capture is a 212-byte Incapsula stub, deleted)
+200	wb_infogouv_composition_2026.html	https://www.info.gouv.fr/composition-du-gouvernement	via https://web.archive.org/web/20260909150202id_/
+# NOT OBTAINED (attempts):
+404	-	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000052221929 (Décret du 9 septembre 2025 relatif à la cessation des fonctions du Gouvernement) — no Wayback capture at 2025, 20240901, 20251001, 2026 prefixes; the title is read from the issue page 0210 instead
+404	-	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000052221932 (Décret du 9 septembre 2025 portant nomination du Premier ministre) — same; title from issue page 0210
+404	-	https://www.legifrance.gouv.fr/jorf/jo/2025/10/07/{0230..0235} and /2025/10/11/{0233..0241} — no capture found for the JORF issues carrying the Lecornu I cessation and Lecornu II appointment decrees (issue numbers guessed from the year's numbering; the CDX index was "Temporarily Offline" for these queries); the Élysée communiqués stand
+000	-	https://web.archive.org/cdx/search/cdx?url=info.gouv.fr/... — 504 / "Temporarily Offline" several times; the id_ fetch with the 2026 prefix succeeded
+-	-	https://www.elysee.fr/toutes-les-actualites?page=N — the listing does not page server-side (page=2 returns the same 536 KB page); the sitemap was used instead
+-	-	https://www.elysee.fr/recherche?q=... — returned no result links

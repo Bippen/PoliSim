@@ -2254,7 +2254,7 @@ namespace PoliSim.Simulation
         // energy ministry, the AI's book indexation and the budget process used to ask "is this the player's country?"; they ask
         // "does the player's party LEAD this country's government?" now (Country.Government, GovernmentRecord.RoleOf) - so a
         // player in opposition or support watches the AI govern their own country, the spec's §5.2. A country with no stored
-        // government (a world before it seats one) reads as before: the player governs their own country. A junior partner
+        // government FAILS LOUDLY (PS-3b, §629): the role is never defaulted - every path that opens a world stores the record first. A junior partner
         // does NOT govern here - the portfolio-gated levers are PS-3's next part, stated.
         // ---------------------------------------------------------------------------------------------
 
@@ -2262,7 +2262,12 @@ namespace PoliSim.Simulation
         public bool PlayerGoverns(Country country)
         {
             if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return false; }
-            if (country.Government == null) { return true; }
+            // PS-3b (§629): a country with NO government stored fails loudly - the role is never defaulted. WorldFactory stores every country's record
+            // of the epoch at creation, so a null here is a defect (a Country built outside the factory), not a state.
+            if (country.Government == null) { throw new System.InvalidOperationException($"{country.Id} has no government stored: who governs is unknown, and the player's role is never defaulted (PS-3b, §629) - WorldFactory stores GovernmentRecord.AtStart for every country"); }
+            // A player country with NO PARTY SEATED is the instrument's hand on it - the meaning every Editor tool that names a player country without a party
+            // has always had (the AI ministries keep off it). The game itself always seats a party (SelectPlayerCountry's fallback), so this is the tools' case, stated.
+            if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return true; }
             return country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.PrimeMinister;
         }
 
@@ -3579,6 +3584,10 @@ namespace PoliSim.Simulation
                 ParticipationAtLastBoundary = country.ParticipationAtLastBoundary,
                 StructuralParticipationAtLastBoundary = country.StructuralParticipationAtLastBoundary,
                 CompositionNaturalRateAtSeed = country.CompositionNaturalRateAtSeed,
+                // PS-3b (§629): WHO GOVERNS rides the hand-list - the R4-1 clone-escape class a sixth time, caught by the parity audit the day the
+                // gate began to throw on a null: the preview's turn asks PlayerGoverns on the clone, and a clone without the record read as the
+                // player's (§628) or throws (§629). A shared reference: nothing on the preview path writes the record.
+                Government = country.Government,
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,

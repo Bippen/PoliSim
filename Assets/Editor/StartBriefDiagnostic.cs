@@ -39,6 +39,10 @@ namespace PoliSim.EditorTools
                                 F("{0}: \"{1}\" <- {2}", id, c.Text, c.Basis));
                         }
                         Check(StartBrief.Tagline(start) == null, F("{0}: the tagline slot is empty until one is reviewed", id));
+                        // PS-3b (§629): no playable start prints a gap for its government - every one has an executive of record (the USA's president, France's cabinet under its president).
+                        bool gap = StartBrief.Text(start).Contains("No government of record");
+                        foreach (StartBrief.Row row in StartBrief.Rows(start)) { if (row.Figure.Contains("NONE OF RECORD")) { gap = true; } }
+                        Check(!gap, F("{0} {1}: the brief names its government of record, never a gap", id, start.Kind));
                         sb.Append("    brief     ").Append(StartBrief.Text(start)).Append('\n');
                     }
                 }
@@ -47,6 +51,17 @@ namespace PoliSim.EditorTools
                 Check(text.StartsWith("Sweden, 18 January 2026.", StringComparison.Ordinal) && text.Contains("since 18 October 2022, with 103 of 349 seats and the support of SD.")
                     && text.Contains("Polling day is 13 September 2026.") && text.Contains("8 parties sit in the Riksdag (349 seats, the election of 11 September 2022)."),
                     "Sweden's brief reads the record: Kristersson's M+KD+L since 18 Oct 2022, 103 of 349, SD's support; polling day 13 Sep 2026; 8 parties");
+                // PS-3b (§629): the USA's brief names the administration - the president and their party, then the House majority - instead of "NONE OF RECORD".
+                StartPoints.TryPlayable(CountryId.USA, out StartPoints.StartPoint usa);
+                string usaText = StartBrief.Text(usa);
+                Check(usaText.Contains("The president is Joseph R. Biden Jr. (DEM), in office since 20 January 2021; the House majority is REP, with"),
+                    "the USA's brief on 12 March 2024: Biden (DEM) since 20 Jan 2021, the House majority REP - " + usaText);
+                bool presidentRow = false;
+                foreach (StartBrief.Row row in StartBrief.Rows(usa)) { if (row.Name == "President" && row.Figure == "Joseph R. Biden Jr. (DEM)") { presidentRow = true; } }
+                Check(presidentRow, "the USA's ledger carries a President row");
+                StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint france);
+                string frText = StartBrief.Text(france);
+                Check(frText.Contains("under the president Emmanuel Macron"), "France's brief names its cabinet under its president - " + frText);
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             if (failures > 0) { Debug.LogError($"START BRIEF: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
