@@ -46,6 +46,66 @@ namespace PoliSim.Elections
         public string Executive;
         /// <summary>PS-3f (§633, ruled): the breaks recorded against this government - a support party voting its own alternative budget over the government's frames, dated; their consequence arrives with the support agreements (PS-3 part 5).</summary>
         public List<string> Breaks = new List<string>();
+        /// <summary>
+        /// PS-3g (§634): THE PORTFOLIOS BY PARTY - Gamson's law, sourced (`docs/reference/GAMSON_PORTFOLIOS.md`): a cabinet party's share of the
+        /// portfolios is its share of the coalition's seats ("a share of the payoff proportional to the amount of resources which they contribute
+        /// to a coalition" [BF73]; "one-to-one proportion" [WD01]; "near-perfect relationship" [WD06]), with no formateur premium [WD06]. The six
+        /// portfolios apportioned by largest remainder; the prime minister's party keeps the head of government and takes Finance first (the
+        /// premise); the rest handed out in the enum's order to the parties by size. STATED, UNSIZED: the literature's deviation - the large party
+        /// underpaid, the small overpaid [BF73] [WD01] - is on no abstract as a figure, so the model pays pure proportion and says so; Sweden's real
+        /// cabinet (M 13, KD 6, L 5 of 24 for seat shares 0.66/0.18/0.16, `sweden/portfolios.md`) shows the direction. Which portfolio a party
+        /// takes follows its manifesto's emphasis in the literature [BDD11] - unsourced per party here, so the enum's order stands as the premise.
+        /// </summary>
+        public Dictionary<string, List<CabinetPortfolio>> Portfolios = new Dictionary<string, List<CabinetPortfolio>>();
+
+        public bool HoldsPortfolio(string party, CabinetPortfolio portfolio) => !string.IsNullOrEmpty(party) && Portfolios.TryGetValue(party, out List<CabinetPortfolio> held) && held.Contains(portfolio);
+
+        /// <summary>The portfolios a party holds, as the desk names them (FINANCE, INTERIOR …), or "NONE".</summary>
+        public string PortfoliosOf(string party)
+        {
+            if (string.IsNullOrEmpty(party) || !Portfolios.TryGetValue(party, out List<CabinetPortfolio> held) || held.Count == 0) { return "NONE"; }
+            var names = new List<string>(held.Count);
+            foreach (CabinetPortfolio p in held) { names.Add(Effectiveness.ShortName(p).ToUpperInvariant()); }
+            return string.Join(", ", names);
+        }
+
+        /// <summary>Allocates the six portfolios among the cabinet's parties by their seat shares of the cabinet (Gamson's law, above), the prime minister's party taking Finance first.</summary>
+        public void AllocatePortfolios(Country country)
+        {
+            Portfolios.Clear();
+            if (Cabinet.Count == 0) { return; }
+            var all = (CabinetPortfolio[])Enum.GetValues(typeof(CabinetPortfolio));
+            int total = 0;
+            var seats = new Dictionary<string, int>();
+            foreach (string party in Cabinet) { int held = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(party, out int n) ? n : 0; seats[party] = held; total += held; }
+            var count = new Dictionary<string, int>();
+            var remainder = new List<(string Party, double Rem)>();
+            int given = 0;
+            foreach (string party in Cabinet)
+            {
+                double quota = total > 0 ? all.Length * (double)seats[party] / total : all.Length / (double)Cabinet.Count;
+                int floor = (int)Math.Floor(quota);
+                count[party] = floor; given += floor;
+                remainder.Add((party, quota - floor));
+            }
+            remainder.Sort((a, b) => b.Rem != a.Rem ? b.Rem.CompareTo(a.Rem) : seats[b.Party].CompareTo(seats[a.Party]));   // the larger remainder first, a tie to the larger party
+            for (int i = 0; given < all.Length && remainder.Count > 0; i = (i + 1) % remainder.Count) { count[remainder[i].Party]++; given++; }
+            if (PmParty != null && count.TryGetValue(PmParty, out int pmCount) && pmCount == 0)
+            {
+                // The head of government's party holds a portfolio whatever its share: one is taken from the party with the most.
+                string richest = null; foreach (KeyValuePair<string, int> kv in count) { if (richest == null || kv.Value > count[richest]) { richest = kv.Key; } }
+                if (richest != null && count[richest] > 0) { count[richest]--; count[PmParty] = 1; }
+            }
+            var order = new List<string>(Cabinet);
+            order.Sort((a, b) => seats[b].CompareTo(seats[a]));
+            foreach (string party in order) { Portfolios[party] = new List<CabinetPortfolio>(); }
+            var pool = new List<CabinetPortfolio>(all);
+            if (PmParty != null && count.TryGetValue(PmParty, out int pmTake) && pmTake > 0) { Portfolios[PmParty].Add(CabinetPortfolio.FinanceTreasury); pool.Remove(CabinetPortfolio.FinanceTreasury); }
+            foreach (string party in order)
+            {
+                while (Portfolios[party].Count < count[party] && pool.Count > 0) { Portfolios[party].Add(pool[0]); pool.RemoveAt(0); }
+            }
+        }
 
         public PlayerRole RoleOf(string abbrev)
         {
@@ -74,11 +134,13 @@ namespace PoliSim.Elections
                 installed.Cabinet.AddRange(record.Cabinet);
                 if (record.Support != null) { installed.Support.AddRange(record.Support); }
                 installed.PmParty = HeadParty(country.Id, start) ?? Largest(country, installed.Cabinet);
+                installed.AllocatePortfolios(country);
                 return installed;
             }
             GovernmentFormation.View formed = GovernmentFormation.ViewOf(country);
             GovernmentRecord standIn = FromView(country, formed, start, provisional: true, basis: "the formation's result on the seated chamber - the government of record names no cabinet on this date (§605)");
             standIn.Kind = ofRecord.Kind; standIn.Executive = ofRecord.President;
+            standIn.AllocatePortfolios(country);
             return standIn;
         }
 
@@ -93,6 +155,7 @@ namespace PoliSim.Elections
             var whatIf = new GovernmentRecord { FormedOn = start, Provisional = false, Outcome = "what-if", Kind = ofRecord.Kind, Executive = ofRecord.Executive, PmParty = party,
                 Basis = $"WHAT-IF (ruled, §631): the player's {party} governs on the chamber of record; the real cabinet on this date is {ofRecord.Basis}" };
             whatIf.Cabinet.Add(party);
+            whatIf.AllocatePortfolios(country);
             return whatIf;
         }
 
@@ -110,6 +173,7 @@ namespace PoliSim.Elections
                 if (record.Cabinet.Contains(abbrev)) { record.PmParty = abbrev; break; }
             }
             record.PmParty ??= Largest(country, record.Cabinet);
+            record.AllocatePortfolios(country);
             return record;
         }
 

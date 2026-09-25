@@ -264,7 +264,7 @@ namespace PoliSim.UI
             {
                 case PoliSim.Elections.PlayerRole.Opposition: return " · IN OPPOSITION · THE GOVERNMENT IS THE AI'S";
                 case PoliSim.Elections.PlayerRole.Support: return " · IN SUPPORT · THE GOVERNMENT IS THE AI'S";
-                case PoliSim.Elections.PlayerRole.JuniorPartner: return " · JUNIOR PARTNER · THE GOVERNMENT IS THE AI'S";
+                case PoliSim.Elections.PlayerRole.JuniorPartner: return " · JUNIOR PARTNER · YOUR PORTFOLIOS: " + _playerCountry.Government.PortfoliosOf(_playerCountry.PlayerPartyAbbrev);   // PS-3g (§634): the portfolios the party holds
                 default: return string.Empty;
             }
         }

@@ -183,6 +183,7 @@ namespace PoliSim.EditorTools
             ("StartBriefDiagnostic", StartBriefDiagnostic.Run),   // SP-2 (§623): the derived brief - four clauses per playable start, each tracing to its record; Sweden's reads the record's figures
             ("PlayerRoleDiagnostic", PlayerRoleDiagnostic.Run),   // PS-3a (§628): who governs is the player's role - the record at Sweden's start, the four roles by party, the AI ministry's gate, the save round trip
             ("GovernmentBudgetBillDiagnostic", GovernmentBudgetBillDiagnostic.Run),   // PS-3e (§632): the AI government's budget as a bill, the alternative, the frame decision; player path only
+            ("PortfolioAllocationDiagnostic", PortfolioAllocationDiagnostic.Run),   // PS-3g (§634): portfolios by Gamson's law on the record; the gate's portfolio leg
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),

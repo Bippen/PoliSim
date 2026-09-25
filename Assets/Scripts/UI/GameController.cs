@@ -9157,7 +9157,7 @@ namespace PoliSim.UI
                 _lawActionButtonSource = _neutralActionButtonStyle;
             }
             float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
-            if (DrawLeverLock(null, actionWidth)) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+            if (DrawLeverLock(null, actionWidth, SimulationManager.PortfolioOfLaw(new LawBill { LawId = law.Id }))) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
             {
                 _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
             }
@@ -10085,7 +10085,7 @@ namespace PoliSim.UI
                 //
                 // Contorting this into a fixed control set would also mean rendering N candidate buttons
                 // when there are no candidates, which is not a thing.
-                if (DrawLeverLock()) { } else if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
+                if (DrawLeverLock(null, 0f, portfolio)) { } else if (PoliSimWidgets.Button("Reshuffle", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))   // §568: paper, and the class's one width
                 {
                     _playerCountry.CabinetMinisters.Remove(portfolio);
                     float approvalBeforeReshuffle = _playerCountry.State.ApprovalRating;
@@ -10131,7 +10131,7 @@ namespace PoliSim.UI
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
             DrawMinisterAttributes(candidate);   // P2-5.2
-            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
+            if (DrawLeverLock(null, 0f, portfolio)) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _implementButtonStyle))   // §568: brass, because appointing commits
             {
                 _playerCountry.CabinetMinisters[portfolio] = candidate;
                 _cabinetCandidatesByPortfolio.Remove(portfolio);
@@ -10569,7 +10569,7 @@ namespace PoliSim.UI
             string overrideSentence = hasOverride
                 ? $"An override stands on imports from {partner.Name} - its rate moves only through the Trade bill; Reset returns the draft below to the standing override."
                 : $"No override on imports from {partner.Name} - one starts at today's effective rate and changes nothing until a Trade bill moves it.";
-            if (DrawLeverLock()) { } else if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
+            if (DrawLeverLock(null, 0f, CabinetPortfolio.ForeignAffairs)) { } else if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
             {
                 if (hasOverride)
                 {
@@ -10615,7 +10615,7 @@ namespace PoliSim.UI
             string statusText = pendingBill != null
                 ? $"A Trade bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
                 : "No Trade bill before Parliament - the base rate and every override rate below are its draft.";
-            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
+            if (DrawLeverLock(null, 0f, CabinetPortfolio.ForeignAffairs)) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
             {
                 _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
             }
@@ -11424,7 +11424,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (DrawLeverLock(actionRect)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.FinanceTreasury)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
             }
@@ -11764,7 +11764,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (DrawLeverLock(actionRect)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.HealthSocialAffairs)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
@@ -11957,9 +11957,10 @@ namespace PoliSim.UI
         /// PS-3c (§630): THE LOCK ON A LEVER. Where the player's party does not lead the government, the call to action is not drawn - the family's caption says
         /// the role and whose the bills are (SimulationManager.PlayerMayIntroduce, the one rule the simulation refuses by). A rect draws the short word in the action's column.
         /// </summary>
-        private bool DrawLeverLock(Rect? rect = null, float width = 0f)
+        private bool DrawLeverLock(Rect? rect = null, float width = 0f, CabinetPortfolio? portfolio = null)
         {
-            if (_playerCountry == null || _simulationManager.PlayerMayIntroduce(PlayerCountryId, out string lockedBecause)) { return false; }
+            // PS-3g (§634): the lever's portfolio - a junior partner holding it draws no lock.
+            if (_playerCountry == null || _simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out string lockedBecause)) { return false; }
             bool ambient = GUI.enabled; GUI.enabled = true;   // the reason is read at full ink whatever the family's ambient state (the budget page disables its family while the process is closed)
             GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
             if (rect.HasValue) { GUI.Label(rect.Value, "LOCKED", caption); } else if (width > 0f) { GUILayout.Label(lockedBecause, caption, GUILayout.Width(width)); } else { GUILayout.Label(lockedBecause, caption); }

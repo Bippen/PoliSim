@@ -1,0 +1,1424 @@
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html class=" no-js" lang="en">
+    <head>
+        <meta charset="UTF-8"/><script type="text/javascript">window.NREUM||(NREUM={}),__nr_require=function(e,t,n){function r(n){if(!t[n]){var o=t[n]={exports:{}};e[n][0].call(o.exports,function(t){var o=e[n][1][t];return r(o||t)},o,o.exports)}return t[n].exports}if("function"==typeof __nr_require)return __nr_require;for(var o=0;o<n.length;o++)r(n[o]);return r}({1:[function(e,t,n){function r(){}function o(e,t,n){return function(){return i(e,[(new Date).getTime()].concat(u(arguments)),t?null:this,n),t?void 0:this}}var i=e("handle"),a=e(2),u=e(3),c=e("ee").get("tracer"),f=NREUM;"undefined"==typeof window.newrelic&&(newrelic=f);var s=["setPageViewName","setCustomAttribute","setErrorHandler","finished","addToTrace","inlineHit"],l="api-",p=l+"ixn-";a(s,function(e,t){f[t]=o(l+t,!0,"api")}),f.addPageAction=o(l+"addPageAction",!0),f.setCurrentRouteName=o(l+"routeName",!0),t.exports=newrelic,f.interaction=function(){return(new r).get()};var d=r.prototype={createTracer:function(e,t){var n={},r=this,o="function"==typeof t;return i(p+"tracer",[Date.now(),e,n],r),function(){if(c.emit((o?"":"no-")+"fn-start",[Date.now(),r,o],n),o)try{return t.apply(this,arguments)}finally{c.emit("fn-end",[Date.now()],n)}}}};a("setName,setAttribute,save,ignore,onEnd,getContext,end,get".split(","),function(e,t){d[t]=o(p+t)}),newrelic.noticeError=function(e){"string"==typeof e&&(e=new Error(e)),i("err",[e,(new Date).getTime()])}},{}],2:[function(e,t,n){function r(e,t){var n=[],r="",i=0;for(r in e)o.call(e,r)&&(n[i]=t(r,e[r]),i+=1);return n}var o=Object.prototype.hasOwnProperty;t.exports=r},{}],3:[function(e,t,n){function r(e,t,n){t||(t=0),"undefined"==typeof n&&(n=e?e.length:0);for(var r=-1,o=n-t||0,i=Array(o<0?0:o);++r<o;)i[r]=e[t+r];return i}t.exports=r},{}],ee:[function(e,t,n){function r(){}function o(e){function t(e){return e&&e instanceof r?e:e?c(e,u,i):i()}function n(n,r,o){if(!p.aborted){e&&e(n,r,o);for(var i=t(o),a=v(n),u=a.length,c=0;c<u;c++)a[c].apply(i,r);var f=s[w[n]];return f&&f.push([y,n,r,i]),i}}function d(e,t){b[e]=v(e).concat(t)}function v(e){return b[e]||[]}function g(e){return l[e]=l[e]||o(n)}function m(e,t){f(e,function(e,n){t=t||"feature",w[n]=t,t in s||(s[t]=[])})}var b={},w={},y={on:d,emit:n,get:g,listeners:v,context:t,buffer:m,abort:a,aborted:!1};return y}function i(){return new r}function a(){(s.api||s.feature)&&(p.aborted=!0,s=p.backlog={})}var u="nr@context",c=e("gos"),f=e(2),s={},l={},p=t.exports=o();p.backlog=s},{}],gos:[function(e,t,n){function r(e,t,n){if(o.call(e,t))return e[t];var r=n();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(e,t,{value:r,writable:!0,enumerable:!1}),r}catch(i){}return e[t]=r,r}var o=Object.prototype.hasOwnProperty;t.exports=r},{}],handle:[function(e,t,n){function r(e,t,n,r){o.buffer([e],r),o.emit(e,t,n)}var o=e("ee").get("handle");t.exports=r,r.ee=o},{}],id:[function(e,t,n){function r(e){var t=typeof e;return!e||"object"!==t&&"function"!==t?-1:e===window?0:a(e,i,function(){return o++})}var o=1,i="nr@id",a=e("gos");t.exports=r},{}],loader:[function(e,t,n){function r(){if(!h++){var e=y.info=NREUM.info,t=l.getElementsByTagName("script")[0];if(setTimeout(f.abort,3e4),!(e&&e.licenseKey&&e.applicationID&&t))return f.abort();c(b,function(t,n){e[t]||(e[t]=n)}),u("mark",["onload",a()],null,"api");var n=l.createElement("script");n.src="https://"+e.agent,t.parentNode.insertBefore(n,t)}}function o(){"complete"===l.readyState&&i()}function i(){u("mark",["domContent",a()],null,"api")}function a(){return(new Date).getTime()}var u=e("handle"),c=e(2),f=e("ee"),s=window,l=s.document,p="addEventListener",d="attachEvent",v=s.XMLHttpRequest,g=v&&v.prototype;NREUM.o={ST:setTimeout,CT:clearTimeout,XHR:v,REQ:s.Request,EV:s.Event,PR:s.Promise,MO:s.MutationObserver},e(1);var m=""+location,b={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",agent:"js-agent.newrelic.com/nr-998.min.js"},w=v&&g&&g[p]&&!/CriOS/.test(navigator.userAgent),y=t.exports={offset:a(),origin:m,features:{},xhrWrappable:w};l[p]?(l[p]("DOMContentLoaded",i,!1),s[p]("load",r,!1)):(l[d]("onreadystatechange",o),s[d]("onload",r)),u("mark",["firstbyte",a()],null,"api");var h=0},{}]},{},["loader"]);</script><script type="text/javascript">window.NREUM||(NREUM={});NREUM.info={"agent":"","applicationID":"9863671","errorBeacon":"bam.nr-data.net","applicationTime":807,"queueTime":0,"beacon":"bam.nr-data.net","transactionName":"MlAHYEpQC0dXV0ZRWAsaI0FWUhFdWVodWUURXAZYXW4TXVNDHE5eAEIWDktFBFZaUQ==","licenseKey":"913fae2ed4"}</script><script type="text/javascript">window.NREUM||(NREUM={}),__nr_require=function(e,t,n){function r(n){if(!t[n]){var o=t[n]={exports:{}};e[n][0].call(o.exports,function(t){var o=e[n][1][t];return r(o||t)},o,o.exports)}return t[n].exports}if("function"==typeof __nr_require)return __nr_require;for(var o=0;o<n.length;o++)r(n[o]);return r}({1:[function(e,t,n){function r(){}function o(e,t,n){return function(){return i(e,[(new Date).getTime()].concat(u(arguments)),t?null:this,n),t?void 0:this}}var i=e("handle"),a=e(2),u=e(3),c=e("ee").get("tracer"),f=NREUM;"undefined"==typeof window.newrelic&&(newrelic=f);var s=["setPageViewName","setCustomAttribute","setErrorHandler","finished","addToTrace","inlineHit"],l="api-",p=l+"ixn-";a(s,function(e,t){f[t]=o(l+t,!0,"api")}),f.addPageAction=o(l+"addPageAction",!0),f.setCurrentRouteName=o(l+"routeName",!0),t.exports=newrelic,f.interaction=function(){return(new r).get()};var d=r.prototype={createTracer:function(e,t){var n={},r=this,o="function"==typeof t;return i(p+"tracer",[Date.now(),e,n],r),function(){if(c.emit((o?"":"no-")+"fn-start",[Date.now(),r,o],n),o)try{return t.apply(this,arguments)}finally{c.emit("fn-end",[Date.now()],n)}}}};a("setName,setAttribute,save,ignore,onEnd,getContext,end,get".split(","),function(e,t){d[t]=o(p+t)}),newrelic.noticeError=function(e){"string"==typeof e&&(e=new Error(e)),i("err",[e,(new Date).getTime()])}},{}],2:[function(e,t,n){function r(e,t){var n=[],r="",i=0;for(r in e)o.call(e,r)&&(n[i]=t(r,e[r]),i+=1);return n}var o=Object.prototype.hasOwnProperty;t.exports=r},{}],3:[function(e,t,n){function r(e,t,n){t||(t=0),"undefined"==typeof n&&(n=e?e.length:0);for(var r=-1,o=n-t||0,i=Array(o<0?0:o);++r<o;)i[r]=e[t+r];return i}t.exports=r},{}],ee:[function(e,t,n){function r(){}function o(e){function t(e){return e&&e instanceof r?e:e?c(e,u,i):i()}function n(n,r,o){if(!p.aborted){e&&e(n,r,o);for(var i=t(o),a=v(n),u=a.length,c=0;c<u;c++)a[c].apply(i,r);var f=s[w[n]];return f&&f.push([y,n,r,i]),i}}function d(e,t){b[e]=v(e).concat(t)}function v(e){return b[e]||[]}function g(e){return l[e]=l[e]||o(n)}function m(e,t){f(e,function(e,n){t=t||"feature",w[n]=t,t in s||(s[t]=[])})}var b={},w={},y={on:d,emit:n,get:g,listeners:v,context:t,buffer:m,abort:a,aborted:!1};return y}function i(){return new r}function a(){(s.api||s.feature)&&(p.aborted=!0,s=p.backlog={})}var u="nr@context",c=e("gos"),f=e(2),s={},l={},p=t.exports=o();p.backlog=s},{}],gos:[function(e,t,n){function r(e,t,n){if(o.call(e,t))return e[t];var r=n();if(Object.defineProperty&&Object.keys)try{return Object.defineProperty(e,t,{value:r,writable:!0,enumerable:!1}),r}catch(i){}return e[t]=r,r}var o=Object.prototype.hasOwnProperty;t.exports=r},{}],handle:[function(e,t,n){function r(e,t,n,r){o.buffer([e],r),o.emit(e,t,n)}var o=e("ee").get("handle");t.exports=r,r.ee=o},{}],id:[function(e,t,n){function r(e){var t=typeof e;return!e||"object"!==t&&"function"!==t?-1:e===window?0:a(e,i,function(){return o++})}var o=1,i="nr@id",a=e("gos");t.exports=r},{}],loader:[function(e,t,n){function r(){if(!h++){var e=y.info=NREUM.info,t=l.getElementsByTagName("script")[0];if(setTimeout(f.abort,3e4),!(e&&e.licenseKey&&e.applicationID&&t))return f.abort();c(b,function(t,n){e[t]||(e[t]=n)}),u("mark",["onload",a()],null,"api");var n=l.createElement("script");n.src="https://"+e.agent,t.parentNode.insertBefore(n,t)}}function o(){"complete"===l.readyState&&i()}function i(){u("mark",["domContent",a()],null,"api")}function a(){return(new Date).getTime()}var u=e("handle"),c=e(2),f=e("ee"),s=window,l=s.document,p="addEventListener",d="attachEvent",v=s.XMLHttpRequest,g=v&&v.prototype;NREUM.o={ST:setTimeout,CT:clearTimeout,XHR:v,REQ:s.Request,EV:s.Event,PR:s.Promise,MO:s.MutationObserver},e(1);var m=""+location,b={beacon:"bam.nr-data.net",errorBeacon:"bam.nr-data.net",agent:"js-agent.newrelic.com/nr-998.min.js"},w=v&&g&&g[p]&&!/CriOS/.test(navigator.userAgent),y=t.exports={offset:a(),origin:m,features:{},xhrWrappable:w};l[p]?(l[p]("DOMContentLoaded",i,!1),s[p]("load",r,!1)):(l[d]("onreadystatechange",o),s[d]("onload",r)),u("mark",["firstbyte",a()],null,"api");var h=0},{}]},{},["loader"]);</script><script type="text/javascript">window.NREUM||(NREUM={});NREUM.info={"licenseKey":"913fae2ed4","applicationTime":165,"applicationID":"22416823","errorBeacon":"bam.nr-data.net","agent":"","beacon":"bam.nr-data.net","queueTime":1,"transactionName":"MlAHYEpQC0dXV0ZRWAsaI0FWUhFdWVodTFIIRQlVTFQ6UFNYW05SF0xLQlFUEkcMU1dMaBFQCERUUBFR"}</script>
+        <!-- Start SEO custom tags -->
+<meta name="robots" content="noarchive,noindex,nofollow,NOODP" />
+<meta name="description" content="Coalition formation is a pervasive aspect of social life. This paper presents a theory of coalition formation with a statement of conditions and assumptions. Wh..." />
+<meta property="og:description" content="Coalition formation is a pervasive aspect of social life. This paper presents a theory of coalition formation with a statement of conditions and assumptions. Wh..." />
+<meta name="MSSmartTagsPreventParsing" content="true" />
+<!-- End SEO custom tags -->
+        
+            <!-- prod DTM script -->
+            <script src="//assets.adobedtm.com/e0b918adcf7233db110ce33e1416a2e6448e08e6/satelliteLib-5c3c84854607a1fc3328b9b539472ebd81244f0b.js"></script>
+        
+        
+        <meta name="viewport" content="width=device-width" />
+        
+        
+        <meta name="ST.publisher" content="American Sociological Association" />
+    
+
+    
+        <meta name="ST.desc" content="ARCHIVE" />
+    
+
+    
+        <meta name="ST.printIssn" content="00031224" />
+    
+    
+    
+    
+    <meta name="ST.PlatformAPIKey" content="83e2edc873d4" />
+
+
+        
+        <link rel="apple-touch-icon" href="//www.jstor.org/assets/legacy_20161031T1347/files/shared/images/apple-touch-icon.png" />
+        <link rel="stylesheet" href="//www.jstor.org/assets/legacy_20161031T1347/files/legacy/css/legacy.css" />
+        <script src="//www.jstor.org/assets/legacy_20161031T1347/files/shared/js/vendor/jquery-1-10-2.js"></script>
+
+        
+        
+    <link rel="stylesheet" href="//www.jstor.org/assets/article-view_20161031T1347/files/article-view/css/article-view.css" />
+
+
+        
+    <link rel="canonical" href="http://www.jstor.org/stable/2090664" />
+
+        <title>
+    A Theory of Coalition Formation on JSTOR
+</title>
+
+        <script type="text/javascript" class="ddo">
+            var  DDO  = {};
+            DDO.pageData={
+                
+    "pageName" : "article view urp",
+    "pageChannel" : "content:article:pagescan:urp",
+    "pageProduct" : "jstor",
+    "pagePlatform" : "seq"
+
+            };
+
+            DDO.userData = {
+                
+    "loginStatus" : "false",
+    "userAuthentication" : "Unauthenticated",
+    "userInstitution" : "",
+    "institutionID" : "",
+    "myJstorUserID" : "None"
+
+            };
+
+            
+DDO.contentData = {
+    "contentName" : "American Sociological Review",
+    "objectDOI" : "10.2307/2090664",
+    "contentType" : "journal",
+    "contentIssue" : "Vol. 26, No. 3 (Jun., 1961), pp. 373-382",
+    "contentPublisher" : "American Sociological Association",
+    "contentDiscipline" : "[&#39;Sociology&#39;, &#39;Social Sciences&#39;]",
+    "userAuthorization" : "Unauthorized"
+};
+
+
+    DDO.contentData.urpPageType =  "article view urp-rr-jpass-pssarticle-pssissue";
+
+
+DDO.itemData = {
+    "itemTitle":"A Theory of Coalition Formation",
+    "pageCount":"10",
+    "itemType" : "article"
+};
+
+
+
+
+
+
+
+        </script>
+    </head>
+    <body>
+        
+            
+<!-- PerimeterX -->
+<script type="text/javascript">
+    (function(){
+        window._pxAppId ='PXu4K0s8nX';
+        var p = document.getElementsByTagName('script')[0],
+            s = document.createElement('script');
+        s.async = 1;
+        s.src = '//client.perimeterx.net/PXu4K0s8nX/main.min.js';
+        p.parentNode.insertBefore(s,p);
+    }());
+</script>
+<div style="position:fixed; top:0; left:0;" width="1" height="1">
+    <img src="//collector-PXu4K0s8nX.perimeterx.net/api/v1/collector/pxPixel.gif?appId=PXu4K0s8nX">
+</div>
+<noscript>
+    <div style="position:fixed; top:0; left:0;" width="1" height="1">
+        <img src="//collector-PXu4K0s8nX.perimeterx.net/api/v1/collector/noScript.gif?appId=PXu4K0s8nX">
+    </div>
+</noscript>
+<!-- End PerimeterX -->
+
+        
+
+        
+
+        
+
+        <div id="skipNav">
+            <a class="visuallyhidden" href="#content">Skip to Main Content</a>
+        </div>
+
+        
+
+        <nav id="nav-global" role="navigation">
+    <ul class=" inline-list menu menu-global">
+        <li class="name">
+            <a href="/" class="menu-heading" id="menu-global-home">JSTOR Home</a>
+        </li>
+        <li class="has-dropdown"><a href="/action/showAdvancedSearch" class="menu-heading" id="menu-global-search">Search</a>
+    <ul class="dropdown">
+        <li><a href="/action/showAdvancedSearch">Advanced Search</a></li>
+    </ul>
+</li>
+<li class="has-dropdown"><a href="/action/showJournals?browseType=title" class="menu-heading" id="menu-global-browse">Browse</a>
+    <ul class="dropdown">
+        <li><a href="/action/showJournals?browseType=title">by Title</a></li>
+        <li><a href="/action/showJournals?browseType=publisherInstance">by Publisher</a></li>
+        <li><a href="/subjects">by Subject</a></li>
+    </ul>
+</li>
+<li class="has-dropdown"><a href="/profile" class="menu-heading" id="menu-global-myjstor">MyJSTOR</a>
+    <ul class="dropdown">
+        <li><a href="/profile">My Profile</a></li>
+        <li class="no-js-hide"><a href="/myjstor/mylists">My Lists</a></li>
+        <li id="joyride-5"><a href="/action/showShelf">Shelf</a></li>
+        <li><a href="/action/showSubscriptions">JPASS Downloads</a></li>
+        <li><a href="/action/showPurchases">Purchase History</a></li>
+        
+    </ul>
+</li>
+
+    </ul>
+    
+</nav>
+
+        
+        <div id="content" role="main" class="content row" data-equalizer>
+            
+    
+        <div class="article-view small-12 columns brandingStripe">
+            <div class="row">
+                <div class="small-12 large-8 columns">
+                    
+
+
+
+    <div class="row mtm">
+        
+        
+            <div class="columns small-12 xlarge-6 xlarge-offset-6">
+                <form role="form" class="form-jstor basic-search-form" action="/action/doBasicSearch" method="GET">
+    
+
+    
+
+    <div class="row collapse">
+        <div class="small-6 medium-7 large-6 columns">
+            
+            <label for="q0" class="visuallyhidden">Search JSTOR</label>
+            <input id="q0" title="Search Box" name="Query" type="text" class="searchBox small" placeholder="" value="">
+        </div>
+
+        
+        <div class="small-4 large-5 columns">
+            <div class="selectContainer">
+                <label class="visuallyhidden" for="QSFSearchFilter">Filter search by</label>
+                <select name="filter" id="QSFSearchFilter">
+                
+                    <option value="iid:10.2307/i336402" selected="selected">In This Issue</option>
+                
+                    <option value="jid:10.2307/j100080">In This Title</option>
+                
+                    <option value="">All Content</option>
+                
+                </select>
+            </div>
+        </div>
+        
+
+        <button type="submit" class="button tiny small-2 medium-1 columns">Search</button>
+    </div>
+
+    
+</form>
+
+            </div>
+        
+    </div>
+
+
+                    
+                </div>
+                <div class="large-4 show-for-large-up columns prn">
+                    
+    
+
+<ul id="nav-support" class="menu menu-subcontent inline-list">
+    <li><a href="/"><img src="//www.jstor.org/assets/legacy_20161031T1347/files/shared/images/jstor_logo.jpg" alt="JSTOR" /></a></li>
+    
+    <li><a href="/action/showLogin?redirectUri=%2Fstable%2F2090664">Login</a></li>
+
+    
+    <li>
+    <a href="http://about.jstor.org/support-training/help" target="_blank" title="This link opens in a new window">Help</a>
+</li>
+    <li>
+    <a href="/forms/content/jstor-help-support" target="_blank" title="This link opens in a new window">Contact Us</a>
+</li>
+
+    <li>
+    <a href="http://about.jstor.org/" target="_blank" title="This link opens in a new window">About</a>
+</li>
+</ul>
+
+    
+
+
+                </div>
+            </div>
+            <div class="article-view-info">
+                <div class="row">
+                    <div class="medium-4 show-for-large-up columns medium-push-8">
+                        
+
+    <div class="border-full-thick phm mvl ptm provider-statement">
+        <h2 class="mbn">Access</h2>
+        <p class="show-for-large-up">
+            You are not currently logged in.
+        </p>
+        <p class="show-for-large-up">
+            
+            Access your personal account or get JSTOR access through your library or other institution:
+            
+        </p>
+        <p class="show-for-large-up">
+            <a class="button button-jstor shelf" href="/action/showLogin?redirectUri=%2Fstable%2F2090664">login</a>
+        </p>
+        <p class="hide-for-large-up">
+            <a href="/action/showLogin?redirectUri=%2Fstable%2F2090664">
+                Log in to your personal account or through your institution.
+            </a>
+        </p>
+    </div>
+
+
+                    </div>
+                    <div class="medium-8 columns medium-pull-4">
+                        
+    
+        
+<span class="visuallyhidden"><h2>If You Use a Screen Reader</h2>This content is available through Read Online (Free) program, which relies on page scans. Since scans are not currently available to screen readers, please <a href="mailto:support@jstor.org?subject=Accessibility Request: URP and Register+Read DOI: 10.2307/2090664">contact JSTOR User Support for access.</a> We'll provide a PDF copy for your screen reader.</span>
+    
+
+                        <div class="row">
+                            <div class="small-12 columns">
+                                
+
+<ul class="breadcrumbs ">
+
+    <li class="breadcrumb-journal">
+        
+        
+        <a href="/action/showPublication?journalCode=amersocirevi">American Sociological Review</a>
+        
+        
+    </li>
+
+    <li class="breadcrumb-issue">
+        
+        
+        <a href="/stable/i336402">Vol. 26, No. 3, Jun., 1961</a>
+        
+        
+    </li>
+
+    <li class="breadcrumb-article current">
+        
+        
+        A Theory of Coalitio...
+        
+        
+    </li>
+
+</ul>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="small-12 xlarge-9 columns">
+                                
+
+
+    <div class="row clearfix">
+         <div class="small-12 columns ">
+         
+           
+               
+                <div class="left prl cover-image">
+                    
+
+    <a class="cover-url" href="/action/showPublication?journalCode=amersocirevi">
+
+    <img class="cover" aria-label="Thumbnail" src="data:image/gif;base64,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" alt="American Sociological Review">
+
+    </a>
+
+
+                </div>
+                
+            
+         
+             <div class="medium-8 inline-block">
+                 
+    
+        <h1 class="title">
+        
+            A Theory of Coalition Formation
+        
+        </h1>
+
+        
+        
+    <div class="contrib">
+        
+William A. Gamson
+    </div>
+
+    
+
+    
+        
+
+
+    <div class="journal">
+        <cite>American Sociological Review</cite>
+    </div>
+
+        
+    
+        <div class="src mbl">
+            Vol. 26, No. 3 (Jun., 1961), pp. 373-382
+        </div>
+    
+
+        
+
+
+    <div class="publisher">
+        Published by: <a href="/publisher/asa" class="publisher-link">American Sociological Association</a>
+    </div>
+
+        
+    
+        
+    <div class="stable">
+        Stable URL: http://www.jstor.org/stable/2090664
+    </div>
+
+        
+    <div class="count">
+        Page Count: 10
+    </div>
+
+
+        
+
+             </div>
+             
+        </div>
+    </div>
+
+                            </div>
+                            <div class="small-12 xlarge-3 columns" id="pds-mobile-place-holder">
+                                
+	<ul class="action-buttons mtm mln">
+        
+            
+                <li><a href="/stable/2090664?item_view=read_online" target="_blank" id="read-online-button" class="button button-jstor" aria-controls="rr-overlay" role="button" data-reveal-id="rr-overlay">Read Online (Free)</a></li>
+            
+            
+                <li><a href="/stable/2090664?item_view=download_purchase" target="_blank" id="download-purchase-button" class="button button-jstor" aria-controls="pss-overlay" data-reveal-id="pss-overlay" role="button">Download ($14.00)</a></li>
+            
+            
+            
+                <li><a href="#" id="subscribe-button" class="button button-jstor" aria-controls="jpass-overlay" role="button" data-reveal-id="jpass-overlay">Subscribe ($19.50)</a></li>
+            
+        
+        <li class="download-pdf-button">
+            
+    
+
+        </li>
+        
+        
+        <li class="cite-this-item-button">
+            <a href="#" class="cite-this-item" data-reveal-id="citation-tools" data-doi="10.2307/2090664">
+    Cite this Item
+</a>
+
+
+<div id="citation-tools" class="reveal-modal medium" data-reveal aria-labelledby="citation-tools-title" aria-live="polite" aria-relevant="additions" aria-atomic="true" aria-busy="false" aria-hidden="true" role="dialog">
+
+    <header>
+        <h2 id="citation-tools-title">Cite This Item</h2>
+    </header>
+    <div id="citationBody" class="reveal-body">
+        <div class="mbm">
+            <div class="lookslikeh2">Copy Citation</div>
+        </div>
+        <div class="copy-citation-mla">
+        
+        </div>
+        <div class="copy-citation-apa">
+        
+        </div>
+        <div class="copy-citation-chicago">
+        
+        </div>
+        <div class="mbm">
+            <div class="lookslikeh2">Export Citation</div>
+        </div>
+        <div class="export-citation-refworks mbm mlm">
+            <a href="/citation/refworks/" target="_blank">Export to RefWorks</a>
+        </div>
+        <div class="export-citation-ris mbm mlm">
+            <a href="/citation/ris/">Export a RIS file</a> (For EndNote, ProCite, Reference Manager, Zotero…)
+        </div>
+        <div class="export-citation-text mbm mlm">
+            <a href="/citation/text/">Export a Text file</a> (For BibTex)
+        </div>
+        <div class="citation-note">
+            <strong>Note:</strong> Always review your references and make any necessary corrections before using. Pay attention to names, capitalization, and dates.
+        </div>
+    </div>
+
+    <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+
+
+
+        <script id="tpl-citation_item" type="text/x-handlebars-template">
+        
+    
+    <div class="mbm mlm">
+        <strong class="mbs">{{ label }}</strong>
+        <div class="clearfix">
+            <div id="{{ label }}_text" class="{{ class_name }} left pas brdra citation-copy">{{ citation }}</div>
+            <button data-tooltip data-options="disable_for_touch:true" data-tracking="{{ label }}" data-selector="clipboard-tip-{{ label }}" title="Copy to Clipboard" aria-label="Copy {{ label }} format to clipboard" data-clipboard-target="#{{ label }}_text" class="button button-img copy tiny mhs" type="button">Copy</button>
+        </div>
+    </div>
+
+
+        </script>
+
+        </li>
+        
+    
+    	
+        <li class="journal_info_button">
+    		<a href="#" data-dropdown="journal_info_drop" aria-controls="journal_info_drop" aria-expanded="false" title="Select to display Journal Info">Journal Info</a>
+        	
+<div id="journal_info_drop" class="f-dropdown content medium txtL " data-dropdown-content aria-hidden="true" tabindex="-1" aria-autoclose="false">
+
+    <div class="journal lookslikeh2 drop-content-title">American Sociological Review</div>
+
+    <div class="journal_description mtm"><strong>Description:</strong> 
+The official flagship journal of the American Sociological Association (ASA), <cite>American Sociological Review</cite> (<cite>ASR</cite>) publishes works of interest to the discipline in general, new theoretical developments, results of research that advance our understanding of fundamental social processes, and important methodological innovations. All areas of sociology are welcome. Emphasis is on exceptional quality and general interest. Published bi-monthly in February, April, June, August, October, and December. 
+<p>Information about subscriptions, article submissions, and advertising rates: <a href="http://www.asanet.org/journals/asr/">http://www.asanet.org/journals/asr/</a>
+<br />
+</p>
+</div>
+    
+
+    <div class="coverage-period mtm"><strong>Coverage:</strong> 1936-2013 (Vol. 1, No. 1 - Vol. 78, No. 6)</div>
+
+
+    
+
+
+<div class="moving-wall mtm">
+    <dl class="accordion" data-accordion>
+        <dt class="visuallyhidden">Moving Wall</dt>
+        <dd class="accordion-navigation">
+            <strong>Moving Wall:</strong> 2 years <a href="#panel1">(What is the moving wall?)</a>
+            <div id="panel1" class="content mtm prl">
+                <dl>
+                    <dt class="hide">Moving Wall</dt>
+                    <dd class="alert-box secondary">
+                        <p>The "moving wall" represents the time period between the last issue
+                        available in JSTOR and the most recently published issue of a journal.
+                        Moving walls are generally represented in years. In rare instances, a
+                        publisher has elected to have a "zero" moving wall, so their current
+                        issues are available in JSTOR shortly after publication.<br>
+                        Note: In calculating the moving wall, the current year is not counted.<br>
+                        For example, if the current year is 2008 and a journal has a 5 year
+                        moving wall, articles from the year 2002 are available.</p>
+                        <dl>
+                            <dt><strong>Terms Related to the Moving Wall</strong></dt>
+                            <dd><strong>Fixed walls:</strong> Journals with no new volumes being added to the archive.</dd>
+                            <dd><strong>Absorbed:</strong> Journals that are combined with another title.</dd>
+                            <dd><strong>Complete:</strong> Journals that are no longer published or that have been
+                            combined with another title.</dd>
+                        </dl>
+                    </dd>
+                </dl>
+            </div>
+            
+        </dd>
+    </dl>
+</div>
+
+
+
+    <div class="issn mtm"><strong>ISSN:</strong> 00031224</div>
+
+
+        
+    <div class="subjects mtm"><strong>Subjects:</strong> 
+            
+                Sociology,
+            
+                Social Sciences
+            
+    </div>
+
+
+    <a href="#" class="close close-overlay" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+
+
+</div>
+
+    	</li>
+        
+    
+    </ul>
+    
+	    <noscript>
+    <div class="clearfix" aria-hidden="true">
+        <div class="article-tools txtL pal">
+            <ul class="no-bullet mbn">
+                <li><strong>Article Tools</strong></li>
+                <li>
+                    <a href="/citation/info/10.2307/2090664" target="_blank">
+                        Cite this Item
+                    </a>
+                </li>
+                
+                    <li class="mvs">
+                        <a href="/stable/2090664?item_view=journal_info" target="_blank">Journal Info</a>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+</noscript>
+    
+
+                            </div>
+                        </div>
+                        
+    
+
+                    </div>
+                </div>
+            </div>
+
+            
+	<div id="article_view_content" class="article-view-content ptxl">
+	    <div class="row collapse" style="max-width: 822px;">
+	        <div class="small-12 large-4 large-push-8 columns">
+		    
+	        </div>
+	        <div class="small-12 large-8 large-pull-4 columns">
+	            <dl class="tabs three-up" data-tab data-options="deep_linking:true; scroll_to_content: false">
+					<dt class="visuallyhidden">Item Type</dt>
+	                <dd class="active" role="tablist" id="page_scan_tab">
+	                    <a role="tab" href="#page_scan_tab_contents">Article</a>
+	                </dd>
+	                
+    
+    <dd id="page_thumbnails_tab" class="show-for-medium-up" role="tablist">
+        <a role="tab" href="#page_thumbnails_tab_contents">Thumbnails</a>
+    </dd>
+    
+    
+    
+        <dd id="references_tab">
+            
+                <a href="#" class="tab disabled" title="This link is disabled">References</a>
+            
+
+        </dd>
+    
+
+	            </dl>
+	        </div>
+	    </div>
+	    <div class="row">
+	        <div class="small-12 columns">
+	            <div class="tabs-content">
+	                <noscript>
+	                    <div class="notify-error reading-length" aria-hidden="true">
+	                        You have javascript disabled.
+						</div>
+	                    
+    
+        <p class="f15">In order to preview this item and view access options please enable javascript.</p>
+    
+
+	                </noscript>
+
+	                
+    
+        
+<span class="visuallyhidden">Since scans are not currently available to screen readers, please <a href="mailto:support@jstor.org?subject=Accessibility Request: URP and Register+Read DOI: 10.2307/2090664">contact JSTOR User Support for access.</a> We'll provide a PDF copy for your screen reader.</span>
+    
+
+
+	                
+    <div class="content active" role="tabpanel" id="page_scan_tab_contents" style="max-width: 822px;">
+        <div class="page-scan">
+    <div class="row">
+        <div class="small-12 columns">
+            <div class="mbm">
+                <span class="page-scan-current-page">
+</span>
+            </div>
+        </div>
+        
+    </div>
+    
+    
+    <div class="page-scan-wrapper">
+        
+            <div class="banner urp-banner">
+    <div class="banner-wrap banner-wrap-l"></div>
+    <div class="row">
+        
+            <div class="small-2 columns mvm">
+                <span class="lookslikeh2 pll">PREVIEW </span>
+            </div>
+            <div class="small-10 text-right columns">
+            
+            </div>
+
+        
+    </div>
+    <div class="banner-wrap banner-wrap-r"></div>
+
+    
+
+    <div id="get-access-overlay" class="reveal-modal medium" data-reveal aria-labelledby="get-access-overlay-header" role="dialog" aria-hidden="true">
+        <header>
+            <h2 id="get-access-overlay-header">Get Access to this Item</h2>
+        </header>
+         <div class="row pal">
+            
+                 <div class="small-12 medium-3 columns brdrr">
+                     <h2>Access JSTOR through a library</h2>
+                         <div>
+                           Choose this if you have access to JSTOR through a university, library, or other institution.
+                         </div>
+                        <br/>
+                     <div class="pvm">
+                        <a href="/action/showLogin?redirectUri=/stable/2090664" id="find-institution-button" class="button button-jstor" role="button">Find Institution</a>
+                     </div>
+                </div>
+                
+                    <div class="small-12 medium-3 columns brdrr">
+                        
+    <h2>Read on our site for free</h2>
+    <div>Pick three articles and read them for free. After two weeks, you can pick another three articles.</div>
+    <br/>
+    
+        <a href="/register?redirectUri=%2Faction%2FshowShelf%3Fcandidate%3D10.2307%2F2090664" class="button button-jstor mtl">Register</a> or <a href="/action/showLogin?redirectUri=%2Faction%2FshowShelf%3Fcandidate%3D10.2307%2F2090664">login</a>
+    
+
+
+                    </div>
+                
+                
+                    <div class="small-12 medium-3 columns brdrr">
+                        <h2>Buy a PDF of this article</h2>
+
+    
+        
+            <div>Buy a downloadable copy of this article and own it forever. Come back any time and download it again.</div>
+            <br/>
+            <a href="/purchase/pss/checkout?doi=10.2307/2090664" class="button button-jstor mtl">Buy article ($14.00)</a>
+        
+    
+        
+            <div>You can also buy the entire issue and get downloadable access to every article in it. <a href="/stable/10.2307/i336402">See this issue's table of contents</a></div>
+            <br/>
+            <a href="/purchase/pss/checkout?doi=10.2307/i336402" class="button button-jstor mtl">Buy issue ($40.00)</a>
+        
+    
+
+                    </div>
+                
+                
+                    <div class="medium-3 columns">
+                        <h2>Subscribe to JSTOR</h2>
+<div>Get access to 2,000+ journals. Read as much as you want on JSTOR and download up to 120 PDFs a year.</div>
+<br/>
+<div class="pvm">
+    <a href="http://jpass.jstor.org/offer20/?utm_source=URPpage-JPASSoffer-testing&utm_medium=display&utm_campaign=URPpage-JPASSoffer-testing&cid=dsp_URPpage-JPASSoffer-testing" target="_self">Learn more about a JSTOR subscription</a>
+ </div>
+                    </div>
+                
+            
+         </div>
+         
+             <div class="overlay-footer pvm txtC mal">
+                <p class="pan mbn">Have access through a MyJSTOR account? <a href="/action/showLogin?redirectUri=/stable/2090664">Login to your MyJSTOR account</a></p>
+             </div>
+        
+         <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+    </div>
+
+
+    
+        <div id="access-options-overlay" class="reveal-modal small" data-reveal aria-labelledby="access-options-overlay-header" role="dialog" aria-hidden="true">
+    <header>
+        <h2 id="personal-access-overlay-header">Personal Access Options</h2>
+    </header>
+    <div class="row pal">
+        
+            <div class="small-12 medium-6 columns brdrr">
+                
+    <h2>Read on our site for free</h2>
+    <div>Pick three articles and read them for free. After two weeks, you can pick another three articles.</div>
+    <br/>
+    
+        <a href="/register?redirectUri=%2Faction%2FshowShelf%3Fcandidate%3D10.2307%2F2090664" class="button button-jstor mtl">Register</a> or <a href="/action/showLogin?redirectUri=%2Faction%2FshowShelf%3Fcandidate%3D10.2307%2F2090664">login</a>
+    
+
+
+            </div>
+        
+        
+            <div class="small-12 medium-6 columns brdrr">
+                <h2>Buy a PDF of this article</h2>
+
+    
+        
+            <div>Buy a downloadable copy of this article and own it forever. Come back any time and download it again.</div>
+            <br/>
+            <a href="/purchase/pss/checkout?doi=10.2307/2090664" class="button button-jstor mtl">Buy article ($14.00)</a>
+        
+    
+        
+            <div>You can also buy the entire issue and get downloadable access to every article in it. <a href="/stable/10.2307/i336402">See this issue's table of contents</a></div>
+            <br/>
+            <a href="/purchase/pss/checkout?doi=10.2307/i336402" class="button button-jstor mtl">Buy issue ($40.00)</a>
+        
+    
+
+            </div>
+        
+        
+            <div class="medium-6 columns">
+                <h2>Subscribe to JSTOR</h2>
+<div>Get access to 2,000+ journals. Read as much as you want on JSTOR and download up to 120 PDFs a year.</div>
+<br/>
+<div class="pvm">
+    <a href="http://jpass.jstor.org/offer20/?utm_source=URPpage-JPASSoffer-testing&utm_medium=display&utm_campaign=URPpage-JPASSoffer-testing&cid=dsp_URPpage-JPASSoffer-testing" target="_self">Learn more about a JSTOR subscription</a>
+ </div>
+            </div>
+        
+    </div>
+    
+         <div class="overlay-footer pvm txtC mal">
+            <p class="pan mbn">Have access through a MyJSTOR account? <a href="/action/showLogin?redirectUri=/stable/2090664">Login to your MyJSTOR account</a></p>
+         </div>
+    
+    <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+
+        
+            <div id="rr-overlay" class="reveal-modal small" data-reveal aria-labelledby="rr-overlay_title" aria-hidden="true" role="dialog">
+    <header>
+        <h2 id="rr-overlay_title">
+    Read Online (Beta)
+
+    <span class="visuallyhidden">Read Online (Free) relies on page scans, which are not currently available to screen readers. To access this article, please <a href="mailto:support@jstor.org?subject=Accessibility Request: URP and Register+Read DOI: 10.2307/2090664">contact JSTOR User Support.</a> We'll provide a PDF copy for your screen reader.</span>
+</h2>
+    </header>
+    <div id="rr-overlay_body" class="reveal-body">
+        
+    <div class="row pal">
+    <div class="small-12 medium-6 columns brdrr">
+        <div class="lookslikeh2">Add to your shelf</div>
+        
+            <p class="pln pbn">Read this item online for free by registering for a MyJSTOR account.</p>
+            
+            <a href="/register?redirectUri=%2Faction%2FshowShelf%3Fcandidate%3D10.2307%2F2090664" class="button button-jstor mtl"> Register</a>
+            
+            <p class="mbn">Already have an account? <a href="/action/showLogin?redirectUri=%2Faction%2FshowShelf%3Fcandidate%3D10.2307%2F2090664">Login</a></p>
+        
+    </div>
+    <div class="small-12 medium-6 columns">
+        <div class="lookslikeh2">How does it work?</div>
+        <ol>
+            <li class="mvm">Register for a MyJSTOR account.</li>
+            <li class="mvm">Add up to 3 free items to your shelf.</li>
+            <li class="mvm">Items added to your shelf can be removed after 14 days.</li>
+        </ol>
+    </div>
+</div>
+
+<div class="overlay-footer pvm txtC mal">
+    <p class="pan mbn urp-exp-hide">Think you should have access to this item via your institution? <a href="/action/showLogin?redirectUri=%2fstable%2f10.2307%2F2090664">Login</a></p>
+    <p class="pan mbn urp-exp-show hide"><a href="#" id="compare-options-link" aria-controls="get-access-overlay" data-reveal-id="get-access-overlay">Compare your access options</a></p>
+</div>
+
+
+    </div>
+    <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+        
+        
+            
+                <div id="pss-overlay" class="reveal-modal small" data-reveal aria-labelledby="pss-overlay-header" aria-describedby="pss-overlay-body" role="dialog" aria-hidden="true">
+<header>
+    <h2 id="pss-overlay-header">Purchase Options</h2>
+</header>
+<div id="pss-overlay-body">
+    <div class="row pal">
+        <div class="medium-6 columns">
+            <div class="lookslikeh2">Purchase a PDF</div>
+            
+                
+                    <p class="pln"><a href="/purchase/pss/checkout?doi=10.2307/2090664">Purchase this article for $14.00 USD.</a></p>
+                
+            
+                
+                    <p class="pln">
+                        <a href="/purchase/pss/checkout?doi=10.2307/i336402">Purchase this issue for $40.00 USD.</a>
+                        Go to <a href="/stable/i336402">Table of Contents.</a>
+                    </p>
+                
+            
+        </div>
+        <div class="medium-6 columns brdrl">
+            <div class="lookslikeh2">How does it work?</div>
+            <ol>
+                <li class="mvm">Select a  purchase option.</li>
+                <li class="mvm">Check out using a credit card or bank account with <a href="http://www.paypal.com" target="_blank">PayPal</a>.</li>
+                <li class="mvm">Read your article online and download the PDF from your email or your MyJSTOR account.</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="overlay-footer pvm txtC mal">
+        <p class="pan mbn urp-exp-hide">Think you should have access to this item via your institution? <a href="/action/showLogin?redirectUri=%2fstable%2f10.2307%2F2090664">Login</a></p>
+        <p class="pan mbn urp-exp-show hide"><a href="#" id="compare-options-link" aria-controls="get-access-overlay" data-reveal-id="get-access-overlay">Compare your access options</a></p>
+    </div>
+    
+</div>
+
+
+
+<a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+
+    <div id="myjstor-login" class="overlay-jstor-modal reveal-modal small" role="dialog" data-reveal>
+	<h2 class="headerBottomLines overlayHeader">Why register for MyJSTOR?</h2>
+    <ul>
+        <li>Access supplemental materials and multimedia.</li>
+        <li>Unlimited access to purchased articles.</li>
+        <li>Ability to save and export citations.</li>
+        <li>Custom alerts when new content is added.</li>
+    </ul>
+    <span><a class="button button-jstor register">Register/Login</a></span> <span class="mlxl"><a href="#" class="proceed">Proceed to Cart</a></span>
+    <a class="close-reveal-modal" title="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+
+            
+        
+        
+            <div id="jpass-overlay" class="reveal-modal small" data-reveal aria-labelledby="jpass-overlay-header" aria-describedby="jpass-overlay-body" role="dialog" aria-hidden="true">
+    <header>
+        <h2 id="jpass-overlay-header">Subscribe to JPASS</h2>
+    </header>
+    <div id="jpass-overlay-body">
+        <div class="row pal">
+            <div class="medium-6 columns">
+                <div class="lookslikeh2">Monthly Plan</div>
+                <ul>
+                    <li class="mvm">Access everything in the JPASS collection</li>
+                    <li class="mvm">Read the full-text of every article</li>
+                    <li class="mvm">Download up to 10 article PDFs to save and keep</li>
+                </ul>
+                <a href="/purchase/jpass/checkout?offerCode=SlBBU1MtSS1Nb250aA&cid=dsp_URP_button" class="button button-jstor">$19.50/month</a>
+            </div>
+            <div class="medium-6 columns brdrl">
+                <div class="lookslikeh2">Yearly Plan</div>
+                <ul>
+                    <li class="mvm">Access everything in the JPASS collection</li>
+                    <li class="mvm">Read the full-text of every article</li>
+                    <li class="mvm">Download up to 120 article PDFs to save and keep</li>
+                </ul>
+                <a href="/purchase/jpass/checkout?offerCode=SlBBU1MtSS1ZZWFyLTEwcGN0&cid=dsp_URP_button" class="button button-jstor">$179/year</a>
+            </div>
+        </div>
+        
+        <div class="overlay-footer pvm txtC mal">
+            <p class="pan mbn urp-exp-hide">Think you should have access to this item via your institution? <a href="/action/showLogin?redirectUri=%2fstable%2f10.2307%2F2090664">Login</a></p>
+            <p class="pan mbn urp-exp-show hide"><a href="#" id="compare-options-link" aria-controls="get-access-overlay" data-reveal-id="get-access-overlay">Compare your access options</a></p>
+        </div>
+        
+        <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+    </div>
+</div>
+        
+    
+
+</div>
+
+
+            <div class="pages-and-paging-wrapper">
+        
+
+        
+        <div class="page-center first-page-only">
+            
+                <div id="search-term-highlight-container" class="relative scan-image-wrapper loading" data-search-text="">
+                    <img class="page-scan-container notResponsive" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-page="" data-last="1" alt="A Theory of Coalition Formation "/>
+                </div>
+            
+            <div class="revive-ad">
+                
+
+
+<script type='text/javascript'>
+    <!--//<![CDATA[
+        var m3_u = (location.protocol=='https:'
+                ? 'https://ja.jstor.org/www/serve/ajs.php'
+                : 'http://ja.jstor.org/www/serve/ajs.php');
+
+        if (!document.MAX_used){
+            document.MAX_used = ',';
+        }
+        document.write("<script type='text/javascript' src='" + m3_u);
+        
+    var is_urp = true,
+    is_shelved = false,
+    is_in_jpass = true;
+    document.write("?zoneid=16");
+    document.write("&amp;articleId=10.2307/2090664");
+    
+        document.write ("&amp;issueId=10.2307/i336402");
+        document.write("&amp;publisherCode=asa");
+    
+    document.write ("&amp;journalCode=amersocirevi");
+    document.write("&amp;urp=" + is_urp);
+    document.write("&amp;rfs=" + is_shelved);
+    document.write("&amp;jpass=" + is_in_jpass);
+
+        document.write('&amp;cb=5714178926');
+        if (document.MAX_used != ','){
+            document.write("&amp;exclude=" + document.MAX_used);
+        }
+        document.write(document.charset ?
+                                '&amp;charset='+document.charset :
+                                (document.characterSet ?
+                                        '&amp;charset='+document.characterSet : ''));
+        document.write("&amp;loc=" + escape(window.location));
+        if (document.referrer) {
+            document.write("&amp;referer=" + escape(document.referrer));
+        }
+        if (document.context) {
+            document.write("&context=" + escape(document.context));
+        }
+        if (document.mmm_fo) {
+            document.write("&amp;mmm_fo=1");
+        }
+        document.write("'><\/script>");
+    //]]>-->
+</script>
+<noscript>
+    <a href="http://ja.jstor.org/www/serve/ck.php?n=a680fa70&amp;cb=5714178926" target="_blank">
+        <img src="http://ja.jstor.org/www/serve/avw-jstor.php?zoneid=16&amp;cb=5714178926&amp;n=a680fa70" border="0" alt=""/>
+    </a>
+</noscript>
+
+            </div>
+        </div>
+        
+        
+        </div>
+        
+
+    </div>
+
+    
+            <div id="page1" data-doi="10.2307/2090664" data-page="373" data-pagename="Viewing page 373 of pages 373-382" data-s3="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3BhZ2VzL2R0Yy4yOS50aWYuZ2lm" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzI5LnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page2" data-doi="10.2307/2090664" data-page="374" data-pagename="Viewing page 374 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzMwLnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page3" data-doi="10.2307/2090664" data-page="375" data-pagename="Viewing page 375 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzMxLnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page4" data-doi="10.2307/2090664" data-page="376" data-pagename="Viewing page 376 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzMyLnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page5" data-doi="10.2307/2090664" data-page="377" data-pagename="Viewing page 377 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzMzLnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page6" data-doi="10.2307/2090664" data-page="378" data-pagename="Viewing page 378 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzM0LnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page7" data-doi="10.2307/2090664" data-page="379" data-pagename="Viewing page 379 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzM1LnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page8" data-doi="10.2307/2090664" data-page="380" data-pagename="Viewing page 380 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzM2LnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page9" data-doi="10.2307/2090664" data-page="381" data-pagename="Viewing page 381 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzM3LnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+            <div id="page10" data-doi="10.2307/2090664" data-page="382" data-pagename="Viewing page 382 of pages 373-382" data-s3="None" data-ocr="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9vY3JzLzM4LnhtbF9fLi5KU1RPUl9PQ1JfSlNPTg"></div>
+    
+</div>
+<div class="no_img_available hide">
+    
+    <div class="no-page-display lookslikeh1 bold txtC">
+        Preview not available
+    </div>
+    
+</div>
+
+
+
+<div class="abstract" data-ajax="false">
+    <h2>Abstract</h2>
+    <div >
+    
+        <div class="abstract1">Coalition formation is a pervasive aspect of social life. This paper presents a theory of coalition formation with a statement of conditions and assumptions. While applicable to groups of varying sizes, it is shown to be consistent with Caplow's theory of coalitions in the triad. It successfully handles the experimental results of Vinacke and Arkoff. Finally, the applicability of various work in n-person game theory is discussed with the conclusion that, in its present state, it fails to provide a basis for a descriptive theory of coalitions.</div>
+    
+    </div>
+</div>
+
+
+
+    </div>
+    <div class="content" role="tabpanel" id="page_thumbnails_tab_contents">
+        <div id="thumbnails" class="reading-length">
+    <h2>Page Thumbnails</h2>
+   
+    <div id="thumbs" class="mtl ">
+        <ul class="medium-block-grid-4 txtC pbs">
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_1"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4yOS50aWYuanBn"
+                             alt="Thumbnail: Page 
+373"/>
+                        <div>
+373</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_2"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zMC50aWYuanBn"
+                             alt="Thumbnail: Page 
+374"/>
+                        <div>
+374</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_3"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zMS50aWYuanBn"
+                             alt="Thumbnail: Page 
+375"/>
+                        <div>
+375</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_4"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zMi50aWYuanBn"
+                             alt="Thumbnail: Page 
+376"/>
+                        <div>
+376</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_5"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zMy50aWYuanBn"
+                             alt="Thumbnail: Page 
+377"/>
+                        <div>
+377</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_6"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zNC50aWYuanBn"
+                             alt="Thumbnail: Page 
+378"/>
+                        <div>
+378</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_7"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zNS50aWYuanBn"
+                             alt="Thumbnail: Page 
+379"/>
+                        <div>
+379</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_8"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zNi50aWYuanBn"
+                             alt="Thumbnail: Page 
+380"/>
+                        <div>
+380</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_9"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zNy50aWYuanBn"
+                             alt="Thumbnail: Page 
+381"/>
+                        <div>
+381</div>
+                    
+                </li>
+            
+                <li class="txtM">
+                    
+                        <img id="thumbnail_image_10"
+                             src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                             data-echo="czM6Ly9zZXF1b2lhLWNlZGFyL2NpZC1wcm9kLTEvYjcwZThhMWYvMTJkYS8zOWVhL2FjZTcvNDMzNjU0YWZiNGI5L2kzMzY0MDIvMjA5MDY2NC9ncmFwaGljL3NtYWxsL2R0Yy4zOC50aWYuanBn"
+                             alt="Thumbnail: Page 
+382"/>
+                        <div>
+382</div>
+                    
+                </li>
+            
+        </ul>
+    </div>
+    
+</div>
+    </div>
+    
+
+
+	            </div>
+	        </div>
+	    </div>
+	    
+	        <div class="mbl ">
+	            <div class="copyright-statement">
+    
+        <cite>American Sociological Review</cite> © 1961 <a href="/publisher/asa" class="publisher-link">American Sociological Association</a>
+    
+</div>
+	        </div>
+	    
+        <div class="mbl rightslink">
+           
+
+
+
+
+    
+    <a class="ccc-logo" target="_blank" href="https://www.copyright.com/openurl.do?sid=pd_ITHAKA&servicename=all&WT.mc_id=tpd_ITHAKA19334192&issn=00031224&date=1961" title="This link opens in a new window">
+        Request Permissions
+    </a>
+
+        </div>
+	</div>
+
+
+        </div>    
+    
+
+        </div>
+
+        
+    
+
+
+
+
+        
+
+<footer class="row">
+    <div class="large-12 columns prn">
+        <ul class="inline-list menu menu-footer">
+            <li><a href="/">JSTOR Home</a></li>
+            <li><a href="http://about.jstor.org/" target="_blank" title="This link opens in a new window">About</a></li>
+            <li><a href="/action/showAdvancedSearch">Search</a></li>
+            <li><a href="/action/showJournals?browseType=title">Browse</a></li>
+            <li><a href="http://about.jstor.org/terms" target="_blank" title="This link opens in a new window">Terms and Conditions</a></li>
+            <li><a href="http://about.jstor.org/privacy" target="_blank" title="This link opens in a new window">Privacy Policy</a></li>
+            <li><a href="http://about.jstor.org/content/jstors-use-cookies" target="_blank" title="This link opens in a new window">Cookies</a></li>
+            <li><a href="http://about.jstor.org/accessibility" target="_blank" title="This link opens in a new window">Accessibility</a></li>
+            <li><a href="http://about.jstor.org/support-training/help" target="_blank" title="This link opens in a new window">Help</a></li>
+            <li>
+    <a href="/forms/content/jstor-help-support" target="_blank" title="This link opens in a new window">Contact Us</a>
+</li>
+
+            
+        </ul>
+        <p>JSTOR is part of ITHAKA, a not-for-profit organization helping the academic community use digital technologies to preserve the scholarly record and to advance research and teaching in sustainable ways.<br />
+        &copy;2000-2016 ITHAKA. All Rights Reserved. JSTOR&reg;, the JSTOR logo, JPASS&reg;, and ITHAKA&reg; are registered trademarks of ITHAKA.</p>
+    </div>
+</footer>
+
+
+        
+        
+        
+    
+        <script id="tpl-loading" type="text/x-handlebars-template">
+        
+        
+
+<div id="loading" class="reveal-modal small" data-reveal aria-labelledby="loadingTitle" aria-hidden="true" role="dialog">
+    <header>
+        <h2 id="loadingTitle">{{{ heading }}}</h2>
+    </header>
+    <div id="loadingBody" class="reveal-body">
+        {{{ body }}}
+    </div>
+    <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+
+    
+        </script>
+
+    <div id="mylists" class="reveal-modal medium" data-reveal aria-labelledby="mylists_title" aria-hidden="true"  aria-live="polite" aria-atomic="true" aria-relevant="additions" role="dialog">
+    <header>
+        <h2 id="mylists_title">Loading</h2>
+    </header>
+    <div id="mylists_body" class="reveal-body">
+        <p>Processing your request...</p>
+    </div>
+    <a href="#" class="close-reveal-modal" aria-label="Close Overlay">&#215; <span class="visuallyhidden">Close Overlay</span></a>
+</div>
+    
+        <script id="tpl-my-lists-register" type="text/x-handlebars-template">
+        
+        
+
+
+<div class="row pal">
+    <div class="large-6 columns">
+        <div class="row">
+            <div class="lookslikeh2">Organize Your Work</div>
+            <p class="pln pbn">Make lists and save your research.</p>
+        </div>
+
+        
+
+        
+        
+        <div class="row"><a id="reg_uri" href="{{{ reg_url }}}" class="button button-jstor mtl">Register</a></div>
+        
+        
+
+        
+        <div class="row">
+            <p class="pln pbn">
+                Already have an account? <a id="login_uri" href="{{{ login_url }}}" class=" mvl">Login</a>
+            </p>
+        </div>
+        
+    </div>
+    <div class="large-6 columns">
+        <div class="row">
+            <div class="lookslikeh2">How does it work?</div>
+            <ol>
+                <li class="mvm">Register for a free MyJSTOR account.</li>
+                <li class="mvm">Add articles and eBook chapters to your lists.</li>
+                <li class="mvm">Get citations in MLA, APA, and Chicago formats.</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+    
+        </script>
+
+
+
+        
+    
+            <script type="text/javascript" src="//www.jstor.org/assets/legacy_20161031T1347/files/legacy/js/legacy.min.js"></script>
+        
+    
+        <script type="text/javascript" src="//www.jstor.org/assets/article-view_20161031T1347/files/article-view/js/article-view.min.js"></script>
+    
+
+    <!-- POC only.  Not for production -->
+    
+
+
+
+
+
+        
+    <script>
+    // COUNTER 4 tagging code
+    window.starData = {
+        'contentType': 'journal',
+        'journal': 'American Sociological Review',
+        'article': 'A Theory of Coalition Formation',
+        'institution_consortium_map': [],
+        'yop': '1961',
+        'doi': '10.2307/2090664',
+        'SEARCH_FED': 'False',
+        'has_access': false,
+        'page_scan': true,
+        'pdf_only': false,
+        'full_text': false,
+        'id' : 'excelsior:7e74651f21cfe1a6eb2e6c2a0e752eed'
+    };
+</script>
+    
+            
+            <script>
+                var _$tarQ = _$tarQ || [];
+                    
+                (function (){ 
+                        var stars = document.createElement('script'),
+                            s = document.getElementsByTagName('script')[0];
+                        
+                        stars.async= true; 
+                        stars.type = 'text/javascript'; 
+                        stars.src =  "http://receiver.star.ith.semcs.net/star-aws.js" ; 
+                        
+                        s.parentNode.insertBefore(stars, s); 
+                    }
+                )();
+            </script>
+            
+        
+
+        
+        <div id="env_info" class="hide" data-debug="False"></div>
+        
+        
+        <!-- DTM Footer code -->
+        <script type="text/javascript">
+            //To prevent JS errors when disabled
+            if(typeof _satellite !== "undefined"){
+                _satellite.pageBottom();
+            }
+        </script>
+        
+    </body>
+</html>
