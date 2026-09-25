@@ -107,30 +107,18 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// P2-3.2 (2026-09-02): the sitting cabinet's parties, by abbreviation, for a chamber - the same
-        /// formation <see cref="Form"/> runs, read without the player's standing in it, so the compass can mark
-        /// the government whether or not the player holds a party. Empty when no government forms from this
-        /// chamber (a new election or a collapse) or nothing is seeded for it.
+        /// P2-3.2 (2026-09-02): the sitting cabinet's parties, by abbreviation, so the compass can mark the government whether or not the player
+        /// holds a party. §642 (the ultrareview of PR #1): WHO GOVERNS IS ONE ANSWER - <see cref="TryGovernment"/>'s, the stored record the chamber's
+        /// votes read, so the compass and the pickers can never name a cabinet the votes do not (it had re-formed from the seats, and drew the
+        /// installed cabinet after a partner left or the Speaker's round replaced it - §636's review, filed). Empty when no government is stored or forms.
         /// </summary>
-        public static IReadOnlyList<string> Cabinet(Country country)
-        {
-            var cabinet = new List<string>();
-            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] _, out CoalitionResult result, out bool _, out string _))
-            {
-                return cabinet;
-            }
-            if (result.Outcome == CoalitionOutcomeKind.NewElection || result.Outcome == CoalitionOutcomeKind.Collapse) { return cabinet; }
-            for (int p = 0; p < parties.Count; p++)
-            {
-                if ((result.Government.Cabinet & (1 << p)) != 0) { cabinet.Add(parties[p].Abbrev); }
-            }
-            return cabinet;
-        }
+        public static IReadOnlyList<string> Cabinet(Country country) =>
+            TryGovernment(country, out IReadOnlyList<string> cabinet, out IReadOnlyList<string> _) ? cabinet : new List<string>();
 
         /// <summary>
         /// P3-A2 (2026-09-03): the sitting government for the stance model's term 2 - the cabinet's parties and the
-        /// parties supporting it from outside (confidence and supply), by abbreviation, from the same formation
-        /// <see cref="Form"/> runs. False when no government forms from this chamber, and both lists are empty.
+        /// parties supporting it from outside (confidence and supply), by abbreviation. Since PS-3h (§635) the STORED record (`Country.Government`);
+        /// the formation <see cref="Form"/> runs only where no record is stored. False when none governs, and both lists are empty.
         /// </summary>
         public static bool TryGovernment(Country country, out IReadOnlyList<string> cabinet, out IReadOnlyList<string> support)
         {
@@ -267,7 +255,7 @@ namespace PoliSim.Elections
             return view;
         }
 
-        /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/> and <see cref="Cabinet"/>.</summary>
+        /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/>, <see cref="ViewOf(Country, ElectionVintage)"/> and <see cref="TryGovernment"/> where no record is stored.</summary>
         private static bool TryFormChamber(Country country, out IReadOnlyList<PoliticalParty> parties, out int[] seats,
             out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated)
         {
@@ -382,9 +370,11 @@ namespace PoliSim.Elections
             return -1;
         }
 
-        /// <summary>K-1 part (4): whether the government the chamber forms is the PROVISIONAL stand-in - the seeded chamber's, with the real
-        /// government not yet on record (<see cref="SeatedGovernment"/>). Every surface that names the government says so.</summary>
-        public static bool IsProvisional(Country country) => SeatedGovernment.IsProvisional(country);
+        /// <summary>K-1 part (4): whether the government that governs is a PROVISIONAL stand-in, the real government not yet on record. §642 (the review):
+        /// the stored record's own standing - one answer with the cabinet <see cref="Cabinet"/> prints (a what-if, a government formed after an election or
+        /// by the Speaker's round is none; after an election that formed none the record stands, and so does its standing) - and the seated table's
+        /// (<see cref="SeatedGovernment"/>) where no record is stored. Every surface that names the government says so.</summary>
+        public static bool IsProvisional(Country country) => country?.Government != null ? country.Government.Provisional : SeatedGovernment.IsProvisional(country);
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
             out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null)

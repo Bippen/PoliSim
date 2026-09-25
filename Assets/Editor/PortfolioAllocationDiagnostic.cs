@@ -65,7 +65,7 @@ namespace PoliSim.EditorTools
 
                 // The what-if: the player's party alone holds every portfolio.
                 Country france = world.GetCountry(CountryId.France);
-                GovernmentRecord whatIf = GovernmentRecord.WhatIfGoverning(france, "UG", WorldClock.StartDate(CountryId.France));
+                GovernmentRecord whatIf = GovernmentRecord.WhatIfGoverning(france, "UG", WorldClock.StartDate(CountryId.France), world);
                 Check(whatIf.Portfolios.TryGetValue("UG", out List<CabinetPortfolio> ug) && ug.Count == 6, "France's what-if: the player's party holds all six");
 
                 // The record rides the save.

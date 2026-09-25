@@ -90,10 +90,14 @@ namespace PoliSim.EditorTools
                             foreach (string key in g.Cabinet) { if (!want.ContainsKey(key)) { failures++; sb.Append(F("    FAIL {0}: the cabinet names '{1}', not a roster key\n", id, key)); } }
                             bool installed = SeatedGovernment.TryInstalled(country, out SeatedGovernment.Record rec) && rec.Standing == SeatedGovernment.Standing.Installed;
                             if (!installed) { failures++; sb.Append(F("    FAIL {0}: the government of record is sourced but the world does not read it as INSTALLED\n", id)); }
-                            IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(country);
+                            // §642 (the review): the formation's own installed branch (`ViewOf` → `TryFormChamber`), and the stored record the game reads - `Cabinet` reads the record now, so the two are asserted apart.
+                            var cabinet = new List<string>();
+                            foreach ((string abbrev, int _) in GovernmentFormation.ViewOf(country).Cabinet) { cabinet.Add(abbrev); }
                             var wantCab = new HashSet<string>(g.Cabinet);
                             var gotCab = new HashSet<string>(cabinet);
                             if (!wantCab.SetEquals(gotCab)) { failures++; sb.Append(F("    FAIL {0}: the formation reads the cabinet as [{1}], the record says [{2}]\n", id, string.Join("+", cabinet), string.Join("+", g.Cabinet))); }
+                            IReadOnlyList<string> stored = GovernmentFormation.Cabinet(country);
+                            if (!wantCab.SetEquals(stored)) { failures++; sb.Append(F("    FAIL {0}: the stored government reads the cabinet as [{1}], the record says [{2}]\n", id, string.Join("+", stored), string.Join("+", g.Cabinet))); }
                         }
                         else if (!SeatedGovernment.IsProvisional(country))
                         {

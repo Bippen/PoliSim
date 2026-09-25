@@ -40,21 +40,23 @@ namespace PoliSim.Elections
         /// oppose; the best <see cref="Demands"/> are the items, laws first, then a dial target where the supporter wants the dial moved and the
         /// formateur does not object (border enforcement on the immigration axis, police funding on the GAL-TAN axis - the two dials the crime
         /// and justice bill's own concern loads).
+        /// <para>The demands are a pure function of the world's state - the chamber's seats and positions, the enacted laws, the two dials, the world's
+        /// currency zones - so the scoring over the catalogue runs once per distinct state and the agreement is COPIED after; the key names what the
+        /// scoring reads of the country. §642 (the ultrareview of PR #1): the table is THE WORLD's (<see cref="World.SupportAgreementTemplates"/>),
+        /// never a static one - a second world can neither see the first's templates nor be answered with its competence. With no world there is no
+        /// table and the scoring runs each time.</para>
         /// </summary>
-        /// <summary>
-        /// The demands are a pure function of the seeded state - the chamber's seats and positions, the enacted laws, the two dials - and every world a
-        /// process builds seats the same state, so the scoring over the catalogue (one formation and ~140 stance readings per supporter) runs once per
-        /// distinct state and the agreement is COPIED after; the key names everything the scoring reads. Measured before the cache: the world-heavy checks
-        /// four to six times slower (PlayerRoleDiagnostic 1.5 s to 8.0 s).
-        /// </summary>
-        private static readonly Dictionary<string, SupportAgreement> Templates = new Dictionary<string, SupportAgreement>();
-
         public static SupportAgreement Demand(Country country, string supporter, string formateur, DateTime formedOn, World world = null)
         {
-            string key = string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}|{3:yyyyMMdd}|{4}|{5}|{6}|{7}", country.Id, supporter, formateur, formedOn, EnactedKey(country), country.BorderEnforcementLevel, country.PoliceFundingLevel, SeatsKey(country));
-            if (!Templates.TryGetValue(key, out SupportAgreement template)) { template = Score(country, supporter, formateur, formedOn, world); Templates[key] = template; }
+            if (world == null) { return Score(country, supporter, formateur, formedOn, null); }
+            string key = TemplateKey(country, supporter, formateur, formedOn);
+            if (!world.SupportAgreementTemplates.TryGetValue(key, out SupportAgreement template)) { template = Score(country, supporter, formateur, formedOn, world); world.SupportAgreementTemplates[key] = template; }
             return template.Copy();
         }
+
+        /// <summary>The template's key - what the scoring reads of the country.</summary>
+        private static string TemplateKey(Country country, string supporter, string formateur, DateTime formedOn) =>
+            string.Format(CultureInfo.InvariantCulture, "{0}|{1}|{2}|{3:yyyyMMdd}|{4}|{5}|{6}|{7}", country.Id, supporter, formateur, formedOn, EnactedKey(country), country.BorderEnforcementLevel, country.PoliceFundingLevel, SeatsKey(country));
 
         private static string EnactedKey(Country country) { var ids = new List<string>(); foreach (EnactedLaw e in country.EnactedLaws) { ids.Add(e.LawId); } ids.Sort(StringComparer.Ordinal); return string.Join(",", ids); }
         private static string SeatsKey(Country country) { var parts = new List<string>(); if (country.ParliamentSeats != null) { foreach (KeyValuePair<string, int> kv in country.ParliamentSeats) { parts.Add(kv.Key + "=" + kv.Value.ToString(CultureInfo.InvariantCulture)); } } parts.Sort(StringComparer.Ordinal); return string.Join(",", parts); }

@@ -43,7 +43,7 @@ namespace PoliSim.EditorTools
 
                 Check(sweden.Government != null, "the factory stored Sweden's government of record at creation (§629)");
                 Check(sim.PlayerGoverns(sweden), "no party seated: the player country is the instrument's hand - the Editor tools' case, stated (§629)");
-                sweden.Government = GovernmentRecord.AtStart(sweden, start);
+                sweden.Government = GovernmentRecord.AtStart(sweden, start, world);
                 GovernmentRecord g = sweden.Government;
                 Check(!g.Provisional && g.PmParty == "M" && string.Join("+", g.Cabinet) == "M+KD+L" && string.Join("+", g.Support) == "SD",
                     F("Sweden's start: {0} led by {1}, support {2}, {3}", string.Join("+", g.Cabinet), g.PmParty, string.Join("+", g.Support), g.Provisional ? "PROVISIONAL" : "of record"));
@@ -76,20 +76,20 @@ namespace PoliSim.EditorTools
                     "the government rides the save (format 28) and reads the same role after the round trip");
 
                 // The formation's record after an election: on the seated 2022 chamber with 2026's declarations the formation forms SD+M+KD+L (§607) - the record names it and its head.
-                GovernmentRecord formed = GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden, ElectionVintage.Sweden2026), new DateTime(2026, 9, 13));
+                GovernmentRecord formed = GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden, ElectionVintage.Sweden2026), new DateTime(2026, 9, 13), world: world);
                 Check(formed.Cabinet.Count > 0 && formed.PmParty == "M" && formed.RoleOf("S") == PlayerRole.Opposition && !formed.Provisional,
                     F("the formation's record: {0} led by {1} ({2}); S is {3}", string.Join("+", formed.Cabinet), formed.PmParty, formed.Outcome, formed.RoleOf("S")));
 
                 // Germany's start: the government of record led by the chancellor's party.
                 Country de = world.GetCountry(CountryId.Germany);
-                GovernmentRecord gde = de.Government = GovernmentRecord.AtStart(de, WorldClock.StartDate(CountryId.Germany));
+                GovernmentRecord gde = de.Government = GovernmentRecord.AtStart(de, WorldClock.StartDate(CountryId.Germany), world);
                 Check(gde.PmParty == "SPD" && gde.Cabinet.Contains("SPD"), F("Germany's start: {0} led by {1}{2}", string.Join("+", gde.Cabinet), gde.PmParty, gde.Provisional ? " (provisional)" : string.Empty));
                 Check(gde.Cabinet.Contains("FDP"), "6 November 2024 is the day BEFORE the FDP ministers were dismissed - the record's SPD+Grüne+FDP cabinet still stands (§618)");
                 // The other starts, printed: the USA's president and France's cabinet under its president (§629), Poland's and Italy's the formation's stand-in.
                 foreach (CountryId other in new[] { CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
                 {
                     Country c = world.GetCountry(other);
-                    c.Government = GovernmentRecord.AtStart(c, WorldClock.StartDate(other));
+                    c.Government = GovernmentRecord.AtStart(c, WorldClock.StartDate(other), world);
                     sb.Append("    ").Append(GovernmentRecord.Describe(other, WorldClock.StartDate(other), c)).Append(Environment.NewLine);
                 }
                 Check(world.GetCountry(CountryId.Poland).Government != null && world.GetCountry(CountryId.Poland).Government.Provisional && world.GetCountry(CountryId.Italy).Government != null && world.GetCountry(CountryId.Italy).Government.Provisional, "Poland and Italy: the formation's stand-in, marked provisional (§605)");
@@ -121,7 +121,7 @@ namespace PoliSim.EditorTools
                 // PS-3d (§631, ruled): France's governing mode is a WHAT-IF - the player's party governs on the 2024 Assembly of record; as an AI country France keeps the provisional stand-in.
                 Country france = world.GetCountry(CountryId.France);
                 Check(france.Government.Provisional && france.Government.Outcome != "what-if", "France as an AI country: the provisional stand-in stands");
-                GovernmentRecord whatIf = GovernmentRecord.WhatIfGoverning(france, "UG", WorldClock.StartDate(CountryId.France));
+                GovernmentRecord whatIf = GovernmentRecord.WhatIfGoverning(france, "UG", WorldClock.StartDate(CountryId.France), world);
                 Check(whatIf.PmParty == "UG" && whatIf.RoleOf("UG") == PlayerRole.PrimeMinister && whatIf.RoleOf("RN") == PlayerRole.Opposition && !whatIf.Provisional && whatIf.Outcome == "what-if" && whatIf.Executive != null && whatIf.Executive.Contains("Macron"),
                     F("France's what-if: {0} governs under {1}; RN is {2}", whatIf.PmParty, whatIf.Executive, whatIf.RoleOf("RN")));
             }

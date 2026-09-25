@@ -2182,7 +2182,7 @@ namespace PoliSim.UI
             {
                 // PS-3a (§628): WHO GOVERNS at the start - the government of record where its cabinet is sourced (the USA's president and party, PS-3b §629), else the formation's
                 // stand-in; a date with no record at all THROWS (§629: the role is never defaulted). Written on EVERY path that opens a world, not only the picker's (the review).
-                after.Government = PoliSim.Elections.GovernmentRecord.AtStart(after, start);
+                after.Government = PoliSim.Elections.GovernmentRecord.AtStart(after, start, _world);
             }
             if (after != null && !string.IsNullOrEmpty(seatedParty))
             {
@@ -2225,11 +2225,11 @@ namespace PoliSim.UI
                 _playerCountry.PartyApprovalRating = _playerCountry.State.ApprovalRating;
             }
             // PS-3a (§628): a world that was not rebuilt (the same epoch, turn 0) still gets its government of record - the role is read from it.
-            if (_playerCountry.Government == null) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.AtStart(_playerCountry, SimulationManager.EpochDate); }
+            if (_playerCountry.Government == null) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.AtStart(_playerCountry, SimulationManager.EpochDate, _world); }
             // PS-3d (§631, ruled): France's governing mode seats the player's party as the prime minister's - a what-if on the 2024 Assembly of record, the player path only.
             if (PoliSim.Elections.WorldClock.GoverningModeOnly(countryId) && !string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev) && _playerCountry.Government.Outcome != "what-if")
             {
-                _playerCountry.Government = PoliSim.Elections.GovernmentRecord.WhatIfGoverning(_playerCountry, _playerCountry.PlayerPartyAbbrev, SimulationManager.EpochDate);
+                _playerCountry.Government = PoliSim.Elections.GovernmentRecord.WhatIfGoverning(_playerCountry, _playerCountry.PlayerPartyAbbrev, SimulationManager.EpochDate, _world);
             }
             Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
 

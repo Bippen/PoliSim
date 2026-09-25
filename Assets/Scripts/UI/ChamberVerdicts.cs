@@ -14,21 +14,24 @@ namespace PoliSim.UI
     ///
     /// <para><b>The defect.</b> The screens asked the parliament how a bill would vote inside OnGUI - every tax line's and
     /// welfare program's verdict, the live estimate's count, seat map and breakdown, the laws page, the pending cards -
-    /// and every one of those questions ran `StanceModel.Stances`, which forms the government
-    /// (`GovernmentFormation.TryGovernment`, a coalition search over the chamber's parties) each time. Measured on the
+    /// and every one of those questions ran `StanceModel.Stances`, which then formed the government
+    /// (`GovernmentFormation.TryGovernment`, a coalition search over the chamber's parties - since §635 it reads the
+    /// stored record) each time. Measured on the
     /// default world: 90 ms a question for France's fifteen parties, 35 ms for Italy's fourteen, 0.3 ms for Sweden's
     /// eight; France's Budget tab drew at 2-4 s a pass.</para>
     ///
     /// <para><b>The key is what the answer reads.</b> The stance model reads the country, the player's party, the
-    /// chamber's seats and the bill's concern; everything else it reads (the party positions, the declared red lines,
-    /// the voter profiles, the salience) is seeded data. So an entry lives until the country, the player's party or any
-    /// party's seats change - the whole cache is dropped then - and it is keyed by the concern itself, which is how a
+    /// chamber's seats, WHO GOVERNS (the cabinet and its support, `Country.Government` - §642, the ultrareview of PR #1:
+    /// it was read and not keyed, so a withdrawal left every cached verdict on the old coalition) and the bill's concern;
+    /// everything else it reads (the party positions, the declared red lines, the voter profiles, the salience) is seeded
+    /// data. So an entry lives until the country, the player's party, any party's seats, the government record or that
+    /// record's version change - the whole cache is dropped then - and it is keyed by the concern itself, which is how a
     /// DRAFT reaches it: a draft change is a different concern, so the answers a draft feeds are asked again while the
     /// per-line verdicts, which no draft reads, stay.</para>
     ///
     /// <para>⚠ <b>The cache must not drift from the model, and that is asserted, not assumed.</b> With
     /// <see cref="VerifyHits"/> on - every film and dry film turns it on for each captured frame, and
-    /// `ChamberVerdictCacheCheck` drives it through seat, party and draft changes - every hit is recomputed uncached
+    /// `ChamberVerdictCacheCheck` drives it through seat, party, draft and government changes - every hit is recomputed uncached
     /// and compared party by party (seats, side, alignment to the bit, measured, the reasons) and verdict for verdict.
     /// A difference is logged as a drift, which fails the run, and the fresh answer replaces the stale one. A key that
     /// misses an input the model starts reading is caught the first time that input moves under a film.</para>
@@ -51,6 +54,9 @@ namespace PoliSim.UI
         private readonly Dictionary<string, List<PartyStance>> _stances = new Dictionary<string, List<PartyStance>>();
         private readonly Dictionary<string, bool> _verdicts = new Dictionary<string, bool>();
         private string _chamberKey;
+        // §642: who governs, by identity and version - a government formed, installed or loaded is a new record, one changed in place a new version.
+        private PoliSim.Elections.GovernmentRecord _government;
+        private int _governmentVersion;
 
         /// <summary>Every party's stance on <paramref name="concern"/> - `StanceModel.Stances`, asked once per chamber and concern.</summary>
         public IReadOnlyList<PartyStance> Stances(Country country, BillConcern concern)
@@ -105,13 +111,17 @@ namespace PoliSim.UI
             return WouldPass(country, BillConcern.FromLegacy(direction, axis));
         }
 
-        /// <summary>Drops every entry when the chamber the answers were asked of is not this one.</summary>
+        /// <summary>Drops every entry when the chamber the answers were asked of, or the government it was asked under, is not this one.</summary>
         private void Bind(Country country)
         {
             string key = ChamberKey(country);
-            if (key == _chamberKey) { return; }
+            PoliSim.Elections.GovernmentRecord government = country.Government;
+            int version = government?.Version ?? 0;
+            if (key == _chamberKey && ReferenceEquals(government, _government) && version == _governmentVersion) { return; }
             if (_chamberKey != null) { Invalidations++; }
             _chamberKey = key;
+            _government = government;
+            _governmentVersion = version;
             _stances.Clear();
             _verdicts.Clear();
         }
@@ -132,6 +142,8 @@ namespace PoliSim.UI
         {
             if (concern == null) { return "null"; }
             var sb = new StringBuilder(128);
+            // §642 (the review): who authored it - the stance model's term 2 reads a government bill differently from a member's with the same moves.
+            sb.Append(concern.GovernmentAuthored ? "G|" : "M|");
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {

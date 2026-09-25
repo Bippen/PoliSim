@@ -63,6 +63,9 @@ namespace PoliSim.EditorTools
             // §615 (2026-09-24): the settings check scans for `polisim.` key literals and the driver's Pin/Restore calls - a key or a call surviving in a comment
             // is neither read nor made.
             "SettingsCheck",
+            // §642 (2026-09-26): the chamber cache's guard scans the game's source for a write to who governs outside the record's methods - a write
+            // surviving in a comment is not one.
+            "ChamberVerdictCacheCheck",
         };
 
         /// <summary>

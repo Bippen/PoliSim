@@ -2494,7 +2494,7 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.Support) { refusedBecause = "YOUR PARTY IS NOT A SUPPORT PARTY"; return false; }
-            country.Government.Support.Remove(country.PlayerPartyAbbrev);
+            country.Government.WithdrawSupport(country.PlayerPartyAbbrev);
             country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it; the chamber's confidence votes read it (§636)");
             Debug.Log($"AGREEMENT: {countryId} - {country.PlayerPartyAbbrev} withdrew its support");
             return true;
@@ -2553,8 +2553,7 @@ namespace PoliSim.Simulation
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { refusedBecause = "YOUR PARTY IS NOT A JUNIOR PARTNER"; return false; }
             refusedBecause = null;
-            country.Government.Cabinet.Remove(country.PlayerPartyAbbrev);
-            country.Government.AllocatePortfolios(country);
+            country.Government.LeaveCabinet(country.PlayerPartyAbbrev, country);   // the portfolios re-apportioned among those who stay
             country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} left the government");
             Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev} left the government");
             return true;
@@ -2654,7 +2653,7 @@ namespace PoliSim.Simulation
         /// government the round would not form AND a carrying vote. The start's government is the record of record, not the round's - but on its
         /// chamber no candidate both carries and would be seated (SD's motion carries and the round keeps SD out; S's cannot carry). Every government
         /// the game forms after is the round's own answer. It becomes live where an installed government differs from the round: the formateur's
-        /// proposals (§642) and installed 2026 records (K-1b). Whether a breach should itself enter the round - the aggrieved supporter refusing the
+        /// proposals (PS-3's open offers) and installed 2026 records (K-1b). Whether a breach should itself enter the round (PS-3i-2a) - the aggrieved supporter refusing the
         /// prime minister it carried - is a ruling.</para>
         /// <para>No motion is taken up in the week before the player's next polling day: its week would end on the far side of an election, and the round
         /// it was weighed against would never run (the reader). The player's refusals made by moving a motion stand in the round until the next
@@ -2687,7 +2686,7 @@ namespace PoliSim.Simulation
                 if (g.Support.Contains(mover))
                 {
                     Elections.SupportAgreement agreement = g.AgreementOf(mover);
-                    g.Support.Remove(mover);
+                    g.WithdrawSupport(mover);
                     g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {mover} withdrew its support over {agreement?.Count(Elections.AgreementState.Broken) ?? 0} broken item(s) of its agreement, to move no confidence");
                 }
                 vote = Elections.ConfidenceProcedure.Vote(country, mover);
@@ -2760,8 +2759,7 @@ namespace PoliSim.Simulation
         private void DischargeAndRound(Country country)
         {
             Elections.GovernmentRecord fallen = country.Government;
-            fallen.Caretaker = true;
-            fallen.CaretakerSince = CurrentDate;
+            fallen.Discharge(CurrentDate);
             fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker discharged the prime minister ({fallen.PmParty}) and the government (RF 6 kap. 7 §, 9 §); the ministers serve on as a caretaker (6 kap. 11 §)");
             // The player's party moved the motion: it will not carry the prime minister it brought down in the round - its own choice, made by moving it.
             // An AI party's refusal is not added (the 2021 precedent: a party that brought the prime minister down tolerated his re-election).

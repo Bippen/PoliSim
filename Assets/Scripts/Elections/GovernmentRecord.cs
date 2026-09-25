@@ -72,6 +72,40 @@ namespace PoliSim.Elections
         /// the player's party will not carry the prime minister it brought down. Carried from a fallen government to the one the round forms; an election's
         /// formation starts without them. Empty in an older save, which is what it held.</summary>
         public List<string> StandingRefusals = new List<string>();
+
+        /// <summary>
+        /// §642 (the ultrareview of PR #1): WHO GOVERNS HAS A VERSION. A government formed, installed or loaded is a new record; every change made to a
+        /// record in place - a supporter's withdrawal, a partner leaving, the Speaker's discharge - goes through the methods below, and each bumps
+        /// the version. A reader that caches on who governs (`ChamberVerdicts`) keys on the record and its version, so no change can pass under it. Not
+        /// saved: a loaded record is a new record.
+        /// </summary>
+        [Newtonsoft.Json.JsonIgnore] public int Version { get; private set; }
+
+        /// <summary>A support party withdraws: struck from the support. False when it was not supporting.</summary>
+        public bool WithdrawSupport(string party)
+        {
+            if (!Support.Remove(party)) { return false; }
+            Version++;
+            return true;
+        }
+
+        /// <summary>A junior partner leaves the cabinet; the portfolios are re-apportioned among those who stay. False when it was not in the cabinet.</summary>
+        public bool LeaveCabinet(string party, Country country)
+        {
+            if (!Cabinet.Remove(party)) { return false; }
+            Version++;   // before the portfolios, so a throw there cannot leave the cabinet changed and the version not (the second reading)
+            AllocatePortfolios(country);
+            return true;
+        }
+
+        /// <summary>The Speaker discharges the government; it serves on as a caretaker from <paramref name="on"/> (RF 6 kap. 9 §, 11 §).</summary>
+        public void Discharge(DateTime on)
+        {
+            Caretaker = true;
+            CaretakerSince = on;
+            Version++;
+        }
+
         /// <summary>The agreement a support party holds, or null.</summary>
         public SupportAgreement AgreementOf(string party) { foreach (SupportAgreement a in Agreements) { if (a.Supporter == party) { return a; } } return null; }
 
@@ -174,9 +208,9 @@ namespace PoliSim.Elections
         /// the card states plainly. Player path only: as an AI country France keeps its provisional stand-in (<see cref="AtStart"/>) until the cabinets' parties
         /// are sourced (france records G4). The president of record stays above the what-if cabinet.
         /// </summary>
-        public static GovernmentRecord WhatIfGoverning(Country country, string party, DateTime start)
+        public static GovernmentRecord WhatIfGoverning(Country country, string party, DateTime start, World world = null)
         {
-            GovernmentRecord ofRecord = AtStart(country, start);
+            GovernmentRecord ofRecord = AtStart(country, start, world);
             var whatIf = new GovernmentRecord { FormedOn = start, Provisional = false, Outcome = "what-if", Kind = ofRecord.Kind, Executive = ofRecord.Executive, PmParty = party,
                 Basis = $"WHAT-IF (ruled, §631): the player's {party} governs on the chamber of record; the real cabinet on this date is {ofRecord.Basis}" };
             whatIf.Cabinet.Add(party);

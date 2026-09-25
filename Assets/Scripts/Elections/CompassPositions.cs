@@ -46,7 +46,7 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// The sitting cabinet's seat-weighted mean over its member parties that publish both scales; null
-        /// when no government is formed for this chamber (<see cref="GovernmentFormation.Cabinet"/>) or none
+        /// when none governs (<see cref="GovernmentFormation.Cabinet"/>, the stored record) or none
         /// of its members publish a pair.
         /// </summary>
         public static Point? CabinetMean(Country country, out int seatsLeftOut)

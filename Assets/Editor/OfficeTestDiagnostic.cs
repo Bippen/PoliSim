@@ -267,7 +267,7 @@ namespace PoliSim.EditorTools
             string CountryPath()
             {
                 // PS-3h (§635): who governs is the STORED record - the chamber under test gets the record the game would store after an election on it.
-                sweden.Government = PoliSim.Elections.GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden), PoliSim.Simulation.SimulationManager.EpochDate);
+                sweden.Government = PoliSim.Elections.GovernmentRecord.FromView(sweden, GovernmentFormation.ViewOf(sweden), PoliSim.Simulation.SimulationManager.EpochDate, world: world);
                 if (!GovernmentFormation.TryGovernment(sweden, out IReadOnlyList<string> cab, out IReadOnlyList<string> sup)) { return "none"; }
                 return string.Join("+", cab) + (sup.Count > 0 ? " | " + string.Join("+", sup) : string.Empty);
             }
@@ -335,10 +335,10 @@ namespace PoliSim.EditorTools
             // Riksdag's vote will fill (K-1b, data only) reads a record as the government - checked here on 2022's chamber with 2022's real
             // cabinet, where the answer is public record, and refused when the record names a party the chamber does not seat. ---
             Country germany = world.GetCountry(CountryId.Germany);
-            bool swedenProvisional = GovernmentFormation.IsProvisional(sweden);
-            bool germanyProvisional = GovernmentFormation.IsProvisional(germany);
+            bool swedenProvisional = SeatedGovernment.IsProvisional(sweden);   // the seated table's own rule; the compass reads the stored record (§642, below)
+            bool germanyProvisional = SeatedGovernment.IsProvisional(germany);
             sweden.ElectionHistory.Add(new ElectionRecord { Turn = 4, CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
-            bool provisionalAfterElection = GovernmentFormation.IsProvisional(sweden);
+            bool provisionalAfterElection = SeatedGovernment.IsProvisional(sweden);
             sweden.ElectionHistory.RemoveAt(sweden.ElectionHistory.Count - 1);
             var tido = new SeatedGovernment.Record(SeatedGovernment.Standing.Installed, new[] { "M", "KD", "L" }, new[] { "SD" }, "probe: the 2022 Tidö record", new System.DateTime(2022, 10, 18));
             bool installedReads = SeatedGovernment.TryAsResult(tido, swedenParties, CampaignAiHarness.Seats2022, out CoalitionResult installedResult, out string installedReason);
@@ -354,13 +354,15 @@ namespace PoliSim.EditorTools
                 installedReads ? installedResult.Outcome.ToString() : "not read: " + installedReason,
                 installedReads ? string.Format(CultureInfo.InvariantCulture, "cabinet {0}, supported {1}", installedResult.Government.CabinetSeats, installedResult.Government.SupportedSeats) : "-",
                 strangerRefused, strangerReason));
-            if (!swedenProvisional || germanyProvisional || provisionalAfterElection || !installedRight || !strangerRefused)
+            // §642 (the review): the compass's mark is the STORED record's standing - one answer with the cabinet it prints - and at the start the record is the seated table's.
+            bool markReadsRecord = GovernmentFormation.IsProvisional(sweden) == sweden.Government.Provisional && GovernmentFormation.IsProvisional(germany) == germany.Government.Provisional && sweden.Government.Provisional == swedenProvisional && germany.Government.Provisional == germanyProvisional;
+            if (!swedenProvisional || germanyProvisional || provisionalAfterElection || !installedRight || !strangerRefused || !markReadsRecord)
             {
                 failures.Add("K-1 part (4): the seated government's standing");
                 Debug.LogError("OFFICE: the day-one government's standing does not hold - Sweden provisional " + swedenProvisional + " (want True), Germany "
                                + germanyProvisional + " (want False), Sweden after a held election " + provisionalAfterElection + " (want False), the installed record "
                                + (installedRight ? "right" : "WRONG") + ", the unseated party " + (strangerRefused ? "refused" : "NOT refused")
-                               + ". ⚠ The order: the formation's result stands in, marked provisional, replaced when the Riksdag votes.");
+                               + ", the compass's mark reads the stored record " + markReadsRecord + ". ⚠ The order: the formation's result stands in, marked provisional, replaced when the Riksdag votes.");
             }
 
             // --- No player party: a reason, never a verdict. ---

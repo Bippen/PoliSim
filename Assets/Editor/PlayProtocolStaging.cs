@@ -69,7 +69,7 @@ namespace PoliSim.EditorTools
                 // PS-3f (§633, ruled): THE FIRST SITTING'S PARTY IS M, leading the government of record - the play opens governing; S in opposition is the second sitting (PLAY_PROTOCOL.md). The largest-party rule stays the harness's.
                 player.PlayerPartyAbbrev = "M";
                 player.PartyApprovalRating = player.State.ApprovalRating;
-                player.Government = PoliSim.Elections.GovernmentRecord.AtStart(player, PoliSim.Elections.WorldClock.StartDate(CountryId.Sweden));   // PS-3a (§628): the staged save is the game a player would start - S in opposition under M+KD+L
+                player.Government = PoliSim.Elections.GovernmentRecord.AtStart(player, PoliSim.Elections.WorldClock.StartDate(CountryId.Sweden), world);   // PS-3a (§628): the staged save is the game a player would start - S in opposition under M+KD+L
                 int days = 0;
                 // K-1 part (5) (2026-09-24, §606): THE TURNS RUN. The game crosses a boundary by calling AdvanceTurn when AdvanceDay reports one
                 // (GameController.Update); this staging advanced days alone, so the save opened years in at TURN 0 with no turn ever run - its next

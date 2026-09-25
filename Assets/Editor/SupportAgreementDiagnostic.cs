@@ -102,6 +102,42 @@ namespace PoliSim.EditorTools
                 Persistence.SaveGame back = Persistence.SaveGameService.Deserialize(Persistence.SaveGameService.Serialize(save));
                 GovernmentRecord loaded = back.World.GetCountry(CountryId.Sweden).Government;
                 Check(loaded != null && loaded.Agreements.Count == 1 && loaded.Agreements[0].Items.Count == sd.Items.Count && loaded.Agreements[0].Items[0].State == sd.Items[0].State, "the agreement rides the save (format 32)");
+
+                // §642 (the ultrareview of PR #1): THE TEMPLATES ARE THE WORLD'S. A second world seats the same state, so its Sweden keys the same template
+                // as the first's; the first world's table is poisoned under that key, and the second world must score its own all the same.
+                World second = WorldFactory.CreateDefault();
+                Country sweden2 = second.GetCountry(CountryId.Sweden);
+                string key2 = second.SupportAgreementTemplates.Keys.FirstOrDefault(k => k.StartsWith("Sweden|SD|", StringComparison.Ordinal));
+                Check(key2 != null && world.SupportAgreementTemplates.ContainsKey(key2) && !ReferenceEquals(world.SupportAgreementTemplates, second.SupportAgreementTemplates),
+                    F("each world scored SD's demands into its own table, under the same key ({0})", key2 ?? "none"));
+                if (key2 != null)
+                {
+                    DateTime formedOn = DateTime.ParseExact(key2.Split('|')[3], "yyyyMMdd", CultureInfo.InvariantCulture);
+                    string formateur = key2.Split('|')[2];
+                    SupportAgreement poison = world.SupportAgreementTemplates[key2].Copy();
+                    poison.Basis = "POISONED BY THE FIRST WORLD";
+                    world.SupportAgreementTemplates[key2] = poison;
+                    second.SupportAgreementTemplates.Remove(key2);
+                    Check(SupportAgreement.Demand(sweden2, "SD", formateur, formedOn, world).Basis == poison.Basis, "the control: asked through the first world, the second world's Sweden gets the first's template - the keys collide, only the table separates them");
+                    SupportAgreement own = SupportAgreement.Demand(sweden2, "SD", formateur, formedOn, second);
+                    Check(own.Basis != poison.Basis && second.SupportAgreementTemplates.TryGetValue(key2, out SupportAgreement scored) && scored.Basis != poison.Basis && own.Items.Count == sd.Items.Count,
+                        "a second world cannot see the first's templates: asked through its own world, it scores its own");
+                    world.SupportAgreementTemplates.Remove(key2);
+                }
+
+                // §642 (the review): WHAT A WORLD NOW PAYS - it scores its own start governments' supporters at its creation, where the process's first world
+                // once scored for all. Measured here on a fresh table over the second world's countries, the scoring the factory runs.
+                var fresh = new World();
+                fresh.Countries.AddRange(second.Countries);
+                var clock = System.Diagnostics.Stopwatch.StartNew();
+                int scoredSupporters = 0;
+                foreach (Country c in second.Countries)
+                {
+                    if (c.Government == null) { continue; }
+                    foreach (string supporter in c.Government.Support) { SupportAgreement.Demand(c, supporter, c.Government.PmParty, SimulationManager.EpochDate, fresh); scoredSupporters++; }
+                }
+                clock.Stop();
+                sb.Append(F("    cost      a world scores its own supporters' demands at its creation: {0} supporter(s) across the default world's start governments, {1:F1} ms\n", scoredSupporters, clock.Elapsed.TotalMilliseconds));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }
