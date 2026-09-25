@@ -2485,8 +2485,8 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// PS-3h (§635): the player's support party WITHDRAWS - the spec's "threaten or withdraw support". Recorded on the government as a break and the
-        /// party struck from its support; what follows - "the government faces a confidence vote", a new formation, an extra election by the country's
-        /// own procedure - is part 6's (confidence and collapse), STATED: today the government stands on without the supporter.
+        /// party struck from its support; the government stands on without it, and what follows is the chamber's - the withdrawn party may move no
+        /// confidence (§636), and an AI supporter moves where ruling (2) allows (§641).
         /// </summary>
         public bool WithdrawSupport(CountryId countryId, out string refusedBecause)
         {
@@ -2495,15 +2495,15 @@ namespace PoliSim.Simulation
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.Support) { refusedBecause = "YOUR PARTY IS NOT A SUPPORT PARTY"; return false; }
             country.Government.Support.Remove(country.PlayerPartyAbbrev);
-            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it until confidence and collapse arrive (part 6)");
+            country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it; the chamber's confidence votes read it (§636)");
             Debug.Log($"AGREEMENT: {countryId} - {country.PlayerPartyAbbrev} withdrew its support");
             return true;
         }
 
         // ---------------------------------------------------------------------------------------------
         // PS-3i (2026-09-25, §636): CONFIDENCE AND COLLAPSE (the spec's §5.4; Sweden's rules in ConfidenceProcedure, sourced from Regeringsformen).
-        // The motion is the player's verb - AI parties move none (an AI motion needs an authored trigger: stated, owed to play). A carried motion opens
-        // the government's week (RF 6 kap. 7 §): the player's government may order an extra election in it; an AI government does not (the 2021
+        // The motion is the player's verb, and an AI party's where ruling (2) allows it (§641: only a motion that would carry, by a mover that prefers
+        // the government the round would form). A carried motion opens the government's week (RF 6 kap. 7 §): the player's government may order an extra election in it; an AI government does not (the 2021
         // precedent: the government resigned rather than dissolve - a premise); at the week's end the Speaker discharges the prime minister and with
         // them the government (6 kap. 9 §), which serves on as a caretaker, and the Speaker's round runs on the sitting chamber: a government that
         // forms is the new record, and none forming stands for four rejected proposals - an extra election within three months (6 kap. 5 §).
@@ -2563,6 +2563,16 @@ namespace PoliSim.Simulation
         /// <summary>RF 6 kap. 7 §: the player's government answers a carried motion by ordering an extra election within the week - then no discharge follows.</summary>
         public bool OrderExtraElection(CountryId countryId, out string refusedBecause)
         {
+            if (!CanOrderExtraElection(countryId, out refusedBecause)) { return false; }
+            Country country = _world.GetCountry(countryId);
+            ScheduleExtraElection(country, "the government ordered it within the week of the declaration (RF 6 kap. 7 §)");
+            country.Government.NoConfidenceOn = System.DateTime.MinValue;
+            return true;
+        }
+
+        /// <summary>§641 (the reader): whether <see cref="OrderExtraElection"/> would be accepted today, and why not - so the desk draws the verb disabled with its reason.</summary>
+        public bool CanOrderExtraElection(CountryId countryId, out string refusedBecause)
+        {
             Country country = _world?.GetCountry(countryId);
             Elections.GovernmentRecord g = country?.Government;
             if (g == null || !PlayerGoverns(country)) { refusedBecause = "ONLY THE GOVERNMENT ORDERS AN EXTRA ELECTION"; return false; }
@@ -2574,8 +2584,24 @@ namespace PoliSim.Simulation
             if (CurrentDate < sat.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths)) { refusedBecause = "NO EXTRA ELECTION WITHIN THREE MONTHS OF THE NEW RIKSDAG'S FIRST SITTING"; return false; }
             if (g.NoConfidenceOn == System.DateTime.MinValue || CurrentDate >= g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { refusedBecause = "NO DECLARATION OF NO CONFIDENCE IS WITHIN ITS WEEK"; return false; }
             refusedBecause = null;
-            ScheduleExtraElection(country, "the government ordered it within the week of the declaration (RF 6 kap. 7 §)");
-            g.NoConfidenceOn = System.DateTime.MinValue;
+            return true;
+        }
+
+        /// <summary>
+        /// §641: the player's government answers a declaration by ASKING TO BE DISCHARGED - [RF-R:6:8]: "Ett statsråd ska entledigas om han eller hon begär
+        /// det, statsministern av talmannen" - the route Löfven took in 2021 (confidence_rules.md). The discharge and the Speaker's round run at once,
+        /// as they would at the week's end. With <see cref="OrderExtraElection"/>, the two answers that end the clock's hold on a declaration.
+        /// </summary>
+        public bool AskToBeDischarged(CountryId countryId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            Elections.GovernmentRecord g = country?.Government;
+            if (g == null || !PlayerGoverns(country)) { refusedBecause = "ONLY THE PRIME MINISTER ASKS TO BE DISCHARGED"; return false; }
+            if (g.Caretaker) { refusedBecause = "THE GOVERNMENT IS ALREADY DISCHARGED"; return false; }
+            if (g.NoConfidenceOn == System.DateTime.MinValue) { refusedBecause = "NO DECLARATION OF NO CONFIDENCE STANDS"; return false; }
+            refusedBecause = null;
+            g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the prime minister asked the Speaker to be discharged (RF 6 kap. 8 §)");
+            DischargeAndRound(country);
             return true;
         }
 
@@ -2605,9 +2631,99 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             Elections.GovernmentRecord g = country?.Government;
             if (g != null && g.Caretaker) { ResumeAppointmentAfterElection(country); return; }
-            if (g == null || g.NoConfidenceOn == System.DateTime.MinValue) { return; }
+            if (g == null) { return; }
+            if (g.NoConfidenceOn == System.DateTime.MinValue) { TryAiMotion(country); return; }   // PS-3i ruling (2), §641
             if (CurrentDate < g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
             DischargeAndRound(country);
+        }
+
+        /// <summary>
+        /// PS-3i RULING (2) (Elias, 2026-09-25): AN AI PARTY MOVES NO CONFIDENCE ONLY WHEN THE MOTION WOULD CARRY AND THE MOVER PREFERS THE GOVERNMENT
+        /// THE FORMATION MODEL SAYS WOULD FOLLOW - no doomed motions. A supporter with broken agreement items is the natural mover: it is asked first, and
+        /// it withdraws its support to move (a party supporting a government moves nothing - the player's rule, §636). Then the opposition, largest first.
+        /// <para>Each test is the model's own: the vote is <see cref="Elections.ConfidenceProcedure.Vote"/> (the mover for it, the government and its
+        /// support against, the red-lined for it); what would follow is the Speaker's round the discharge runs (<see cref="Elections.GovernmentFormation.ViewOfSitting"/>,
+        /// no refusal line added for an AI mover, as §636's round adds none); the preference is the formation's payoff
+        /// (<see cref="Elections.GovernmentFormation.PayoffIn"/>) - a mover is never in the cabinet it would bring down, so it prefers a round that seats
+        /// it in the next cabinet. A round that forms nothing - the four proposals rejected, an extra election - is no government a mover can prefer (a
+        /// premise, stated). Deterministic: no stream is drawn. The player's country only - the procedure's week, discharge and extra election are
+        /// its alone (one pending extra election), and the player's own party moves by the player's verb; in an AI motion the player's party votes by
+        /// the model's lines, as every party does.</para>
+        /// <para>⚠ <b>Found by the readers, stated for Elias (§641):</b> as built, no reachable path of play fires an AI motion. The round reads seats and
+        /// declarations, never an agreement, so a broken agreement changes who is asked first, never whether a motion is moved; a motion needs a sitting
+        /// government the round would not form AND a carrying vote. The start's government is the record of record, not the round's - but on its
+        /// chamber no candidate both carries and would be seated (SD's motion carries and the round keeps SD out; S's cannot carry). Every government
+        /// the game forms after is the round's own answer. It becomes live where an installed government differs from the round: the formateur's
+        /// proposals (§642) and installed 2026 records (K-1b). Whether a breach should itself enter the round - the aggrieved supporter refusing the
+        /// prime minister it carried - is a ruling.</para>
+        /// <para>No motion is taken up in the week before the player's next polling day: its week would end on the far side of an election, and the round
+        /// it was weighed against would never run (the reader). The player's refusals made by moving a motion stand in the round until the next
+        /// election (<see cref="Elections.GovernmentRecord.StandingRefusals"/>), here as in the discharge.</para>
+        /// </summary>
+        private void TryAiMotion(Country country)
+        {
+            if (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return; }
+            if (Elections.ConfidenceProcedure.RulesOf(country.Id) != Elections.ConfidenceProcedure.Rules.Riksdag) { return; }
+            Elections.GovernmentRecord g = country.Government;
+            if (g == null || g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || g.Cabinet.Count == 0) { return; }
+            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate) { return; }
+            if (TryPlayerPollingDay(out System.DateTime polling) && polling <= CurrentDate.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
+            Elections.GovernmentFormation.View next = null;
+            var nextCabinet = new List<string>();
+            foreach (string mover in AiMotionCandidates(country, g))
+            {
+                if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, mover, out int _, out int _)) { continue; }
+                Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.Vote(country, mover);   // the mover counts for it, withdrawn or not
+                if (!vote.Carried) { continue; }
+                if (next == null)
+                {
+                    next = Elections.GovernmentFormation.ViewOfSitting(country, Elections.GovernmentFormation.RefusalLines(country.Id, g.StandingRefusals));   // the round does not depend on the mover
+                    if (next.HasGovernment) { foreach ((string abbrev, int _) in next.Cabinet) { nextCabinet.Add(abbrev); } }
+                }
+                if (!next.HasGovernment) { return; }
+                double now = Elections.GovernmentFormation.PayoffIn(country, g.Cabinet, mover);   // zero by construction - a mover is never in the cabinet - kept so the test reads as the ruling's
+                double after = Elections.GovernmentFormation.PayoffIn(country, nextCabinet, mover);
+                if (after <= now + Elections.CoalitionFormation.DefectionMargin) { continue; }
+                if (g.Support.Contains(mover))
+                {
+                    Elections.SupportAgreement agreement = g.AgreementOf(mover);
+                    g.Support.Remove(mover);
+                    g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {mover} withdrew its support over {agreement?.Count(Elections.AgreementState.Broken) ?? 0} broken item(s) of its agreement, to move no confidence");
+                }
+                vote = Elections.ConfidenceProcedure.Vote(country, mover);
+                if (!vote.Carried) { return; }   // the same tally as above (the mover is counted first); a guard against a later change declaring a lost motion
+                country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
+                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
+                g.NoConfidenceOn = CurrentDate;
+                g.NoConfidenceMover = mover;
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag declared no confidence in the prime minister ({g.PmParty}), {vote.For} of {vote.Members} members, moved by {mover}, which the round would seat in {string.Join("+", nextCabinet)} (RF 13 kap. 4 §)");
+                Debug.Log($"CONFIDENCE: {country.Id} - an AI motion by {mover}: {vote.Title()}; the round would form {string.Join("+", nextCabinet)}");
+                return;
+            }
+        }
+
+        /// <summary>Ruling (2)'s order: support parties with broken agreement items first (the natural movers), then the opposition by seats; never a cabinet party, never the player's.</summary>
+        private static List<string> AiMotionCandidates(Country country, Elections.GovernmentRecord g)
+        {
+            var aggrieved = new List<string>();
+            var opposition = new List<string>();
+            foreach (PoliticalParty party in PartySystems.For(country.Id))
+            {
+                string key = party.Abbrev;
+                if (key == country.PlayerPartyAbbrev || g.Cabinet.Contains(key)) { continue; }
+                if (g.Support.Contains(key))
+                {
+                    Elections.SupportAgreement a = g.AgreementOf(key);
+                    if (a != null && a.Count(Elections.AgreementState.Broken) > 0) { aggrieved.Add(key); }
+                    continue;
+                }
+                opposition.Add(key);
+            }
+            int Seats(string k) => country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(k, out int s) ? s : 0;
+            aggrieved.Sort((a, b) => Seats(b).CompareTo(Seats(a)) != 0 ? Seats(b).CompareTo(Seats(a)) : string.CompareOrdinal(a, b));
+            opposition.Sort((a, b) => Seats(b).CompareTo(Seats(a)) != 0 ? Seats(b).CompareTo(Seats(a)) : string.CompareOrdinal(a, b));
+            aggrieved.AddRange(opposition);
+            return aggrieved;
         }
 
         /// <summary>
@@ -2649,16 +2765,20 @@ namespace PoliSim.Simulation
             fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker discharged the prime minister ({fallen.PmParty}) and the government (RF 6 kap. 7 §, 9 §); the ministers serve on as a caretaker (6 kap. 11 §)");
             // The player's party moved the motion: it will not carry the prime minister it brought down in the round - its own choice, made by moving it.
             // An AI party's refusal is not added (the 2021 precedent: a party that brought the prime minister down tolerated his re-election).
-            var lines = new List<Elections.RedLine>();
-            int mover = Elections.GovernmentFormation.IndexOf(country.Id, fallen.NoConfidenceMover), pm = Elections.GovernmentFormation.IndexOf(country.Id, fallen.PmParty);
-            if (mover >= 0 && pm >= 0 && fallen.NoConfidenceMover == country.PlayerPartyAbbrev)
+            // §641 (the reader): the refusal stands until the next election - carried from the fallen government to the one the round forms, so a later
+            // motion's round cannot hand back the prime minister the player brought down.
+            var refusals = new List<string>(fallen.StandingRefusals);
+            if (!string.IsNullOrEmpty(fallen.NoConfidenceMover) && !string.IsNullOrEmpty(fallen.PmParty) && fallen.NoConfidenceMover == country.PlayerPartyAbbrev)
             {
-                lines.Add(new Elections.RedLine(mover, pm, Elections.RedLineKind.Declared, blocksSupport: true, basis: "moved the motion that brought this prime minister down", oneWay: true));
+                string refusal = fallen.NoConfidenceMover + ">" + fallen.PmParty;
+                if (!refusals.Contains(refusal)) { refusals.Add(refusal); }
             }
+            List<Elections.RedLine> lines = Elections.GovernmentFormation.RefusalLines(country.Id, refusals);
             Elections.GovernmentFormation.View view = Elections.GovernmentFormation.ViewOfSitting(country, lines);
             if (view.HasGovernment)
             {
                 Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromView(country, view, CurrentDate, basis: "the Speaker's round on the sitting chamber after the declaration of no confidence", world: _world);
+                formed.StandingRefusals.AddRange(refusals);
                 country.Government = formed;
                 ResetArrivalBudgetWindow(country.Id);
                 Debug.Log($"CONFIDENCE: {country.Id} - the Speaker's round: {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");

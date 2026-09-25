@@ -335,6 +335,44 @@ namespace PoliSim.Elections
             return Describe(country.Id, parties, seats, result, sourced, country.PlayerPartyAbbrev);
         }
 
+        /// <summary>
+        /// PS-3i ruling (2) (2026-09-25): what a party gets out of a cabinet on the country's sitting seats - the formation's own payoff
+        /// (<see cref="CoalitionFormation.Payoff"/>: its share of the cabinet's seats, scaled by the cabinet's cohesion), zero outside the cabinet,
+        /// because support buys no portfolios. The measure an AI mover's preference between the government that sits and the one the round would form is read on.
+        /// </summary>
+        public static double PayoffIn(Country country, IReadOnlyCollection<string> cabinet, string party)
+        {
+            IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
+            if (parties == null || cabinet == null || string.IsNullOrEmpty(party) || !System.Linq.Enumerable.Contains(cabinet, party)) { return 0.0; }
+            var seats = new int[parties.Count];
+            int mask = 0, me = -1;
+            for (int p = 0; p < parties.Count; p++)
+            {
+                seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0;
+                if (System.Linq.Enumerable.Contains(cabinet, parties[p].Abbrev)) { mask |= 1 << p; }
+                if (parties[p].Abbrev == party) { me = p; }
+            }
+            if (me < 0 || mask == 0) { return 0.0; }
+            int cabinetSeats = CoalitionMath.Seats(seats, mask);
+            var option = new GovernmentOption(mask, 0, CoalitionOutcomeKind.MinorityGovernment, cabinetSeats, cabinetSeats, 0, 0.0, 0.0);
+            return CoalitionFormation.Payoff(me, option, seats, Compatibility(parties), parties.Count);
+        }
+
+        /// <summary>§641: the standing refusals ("MOVER>PM") as one-way support-blocking lines for a round - the mover will not carry that prime minister.</summary>
+        public static List<RedLine> RefusalLines(CountryId country, IEnumerable<string> refusals)
+        {
+            var lines = new List<RedLine>();
+            if (refusals == null) { return lines; }
+            foreach (string refusal in refusals)
+            {
+                int at = refusal?.IndexOf('>') ?? -1;
+                if (at <= 0) { continue; }
+                int mover = IndexOf(country, refusal.Substring(0, at)), pm = IndexOf(country, refusal.Substring(at + 1));
+                if (mover >= 0 && pm >= 0 && mover != pm) { lines.Add(new RedLine(mover, pm, RedLineKind.Declared, blocksSupport: true, basis: "moved the motion that brought this prime minister down", oneWay: true)); }
+            }
+            return lines;
+        }
+
         /// <summary>The index of a party key in the country's party system, or -1.</summary>
         public static int IndexOf(CountryId country, string abbrev)
         {

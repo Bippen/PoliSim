@@ -34393,3 +34393,22 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **No family.** The procedure runs for the player's country alone; no dump seats a player.
 
 **Bars.** Tier SIMULATION: the cheap bar 60 of 60 (its first run failed ReviewLedgerCheck before the row went in); the simulation bar 56 of 56, `TrajectorySentinelCheck` on `ps3k`.
+
+
+## 641. PS-3i RULING (2) - AI NO-CONFIDENCE MOTIONS: AN AI PARTY MOVES ONLY A MOTION THAT WOULD CARRY, AND ONLY WHERE IT PREFERS THE GOVERNMENT THE ROUND WOULD FORM; THE PLAYER'S GOVERNMENT ANSWERS A DECLARATION BY AN EXTRA ELECTION OR BY ASKING TO BE DISCHARGED (2026-09-25)
+
+**The ruling** (Elias, 2026-09-25): *an AI party moves no confidence only when the motion would carry and the mover prefers the government the formation model says would follow - no doomed motions; a supporter with broken agreement items is the natural mover.*
+
+**Built.** `SimulationManager.TryAiMotion`, in the player's day tick while no declaration stands: the candidates in ruling (2)'s order (`AiMotionCandidates` - support parties with broken items first, then the opposition by seats; never a cabinet party, never the player's); each tested by the model's own vote (`ConfidenceProcedure.Vote`, the mover counted for it) and the Speaker's round the discharge would run (`GovernmentFormation.ViewOfSitting`), preferred by the formation's payoff (`GovernmentFormation.PayoffIn`); a supporter withdraws before it moves (the player's rule, §636). None in the week before the player's polling day - its round would never run. **The player's answers to a declaration against its own government:** an extra election (6 kap. 7 §) or the discharge asked for (6 kap. 8 §, `AskToBeDischarged`, Löfven's 2021 route); the clock holds on the declaration until one is given, the fold's banner names it, and the extra-election verb draws disabled with its reason where 3 kap. 11 § refuses it (`CanOrderExtraElection`). **The player's refusal stands:** a motion's refusal line rides `GovernmentRecord.StandingRefusals` into every later round until the next election (`GovernmentFormation.RefusalLines`), saved with the record.
+
+**Stated for Elias** (the readers, on the code): as built, no reachable path of play fires an AI motion - the round reads seats and declarations, never an agreement, so a breach changes who is asked first and never whether one moves; the start's government is the record of record and on its chamber no candidate both carries and would be seated (SD's motion carries, the round keeps SD out; S's cannot carry). It becomes live where an installed government differs from the round - the formateur's proposals and installed 2026 records. Whether a breach should itself enter the round is filed as PS-3i-2a. In an AI motion the player's party votes by the model's lines.
+
+**Asserted** (`ConfidenceDiagnostic` part 5, the cheap bar): (a) at the start no AI party moves, the premise enumerated; (b) a broken SD agreement whose round keeps SD out moves nothing; (c0) nothing broken, a supporter moves nothing; (c1) the aggrieved supporter being the player's party, no motion in its name; (d) no doomed motion; (c) SD, broken and seated by the round, withdraws, moves and carries, and the round forms the promised M+SD+KD+L with the fallen government a caretaker; (e) none within a week of polling day, (e+) the same motion eight days before; (g) a plain opposition mover; (f) against the player's own government, the discharge asked for forms the round at once, and no second discharge.
+
+**Reviewed** (`Reviews/2026-09-25_s641_ai_motions.md`, two independent readings): the hold on a declaration against the player's government, the standing refusals, the pre-polling week, the refusals cleared by any election, the hold's rules guard, the verb's disabled state and its save round trip fixed on their word; stated: the round may run daily once a candidate carries (unmeasured), and the hold's release is exercised by no bar (the dry film's player is in opposition).
+
+**Filmed.** Dry `dryps3m` (Sweden at 1280 × 720, 135 measured, 0 failed, 0 overflow) and real `ps3m_1280` (97 captured to `07b_politics_compass`, 0 failed, 0 canvas text violations): the Parliament tab's confidence block and its answers.
+
+**No family.** The procedure runs for the player's country alone; no dump seats a player.
+
+**Bars.** Tier SIMULATION + UI: the cheap bar 60 of 60; the simulation bar 56 of 56, `TrajectorySentinelCheck` on `ps3k`.

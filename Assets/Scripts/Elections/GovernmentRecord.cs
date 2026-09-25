@@ -68,6 +68,10 @@ namespace PoliSim.Elections
         /// <summary>PS-3i ruling (3) (2026-09-25): the polling day of the last election after which the Speaker's procedure resumed for this caretaker
         /// (RF 6 kap. 5 §) - so each election resumes it once. MinValue: not yet resumed, which is what an older save's caretaker reads.</summary>
         public DateTime ProcedureResumedAfter = DateTime.MinValue;
+        /// <summary>§641 (the reader): the refusals a motion made that stand in every Speaker's round until the next election, as "MOVER>PM" by party key -
+        /// the player's party will not carry the prime minister it brought down. Carried from a fallen government to the one the round forms; an election's
+        /// formation starts without them. Empty in an older save, which is what it held.</summary>
+        public List<string> StandingRefusals = new List<string>();
         /// <summary>The agreement a support party holds, or null.</summary>
         public SupportAgreement AgreementOf(string party) { foreach (SupportAgreement a in Agreements) { if (a.Supporter == party) { return a; } } return null; }
 

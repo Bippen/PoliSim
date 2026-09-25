@@ -766,7 +766,7 @@ namespace PoliSim.UI
             // MM-2: the campaign's opening and the budget window hold the clock only while their settings say so.
             if (UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                || BudgetWindowHolds())
+                || BudgetWindowHolds() || DeclarationHolds())
             {
                 return;
             }
@@ -814,7 +814,7 @@ namespace PoliSim.UI
                     || UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                    || BudgetWindowHolds())
+                    || BudgetWindowHolds() || DeclarationHolds())
                 {
                     break;
                 }
@@ -1394,6 +1394,16 @@ namespace PoliSim.UI
 
         /// <summary>MM-2: the budget window holds the clock only while the setting says so.</summary>
         private bool BudgetWindowHolds() => _simulationManager.GetPendingBudgetProcess(PlayerCountryId) && GameSettings.HoldOnBudgetWindow;
+
+        /// <summary>§641 (the reader): a declaration of no confidence in the PLAYER'S government holds the clock until the player answers it - an extra election
+        /// within the week (6 kap. 7 §) or the discharge asked for (6 kap. 8 §). Since AI parties move motions, the week could otherwise pass unseen.</summary>
+        private bool DeclarationHolds()
+        {
+            PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
+            return g != null && !g.Caretaker && g.NoConfidenceOn != System.DateTime.MinValue
+                && PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) != PoliSim.Elections.ConfidenceProcedure.Rules.Unsourced   // the block that draws the answers is drawn only then
+                && _simulationManager.PlayerGoverns(_playerCountry);
+        }
 
         /// <summary>Days played since the last autosave, and how many autosaves this game has written (the slot rotates on it). Not saved: a loaded game starts its cadence afresh.</summary>
         private int _daysSinceAutosave;
@@ -2690,7 +2700,7 @@ namespace PoliSim.UI
             // and its persisted overrides were deleted in v3.1 Phase B (COMPLETED.md section 45). The
             // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
-            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening;
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds();
             if (isTimePaused && !_wasTimePausedLastFrame && Event.current.type == EventType.Repaint) { AudioDirector.Fire(AudioCue.InterruptRaised); }   // P4-2: the hold's rising edge
             if (Event.current.type == EventType.Repaint) { _wasTimePausedLastFrame = isTimePaused; }
             float leftColumnWidth = RailWidth();
@@ -6256,6 +6266,11 @@ namespace PoliSim.UI
                 blocking.Add("a Foreign Policy meeting (Foreign Policy tab)");
             }
 
+            if (DeclarationHolds())
+            {
+                blocking.Add("the chamber's declaration of no confidence in your government (Parliament tab)");
+            }
+
             if (includeBudgetProcess && BudgetWindowHolds())
             {
                 blocking.Add(_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)
@@ -6620,6 +6635,8 @@ namespace PoliSim.UI
             // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
             GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionVintage);
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
+            // §641 (the reader): a motion's standing refusals end at the election either way - a new record starts without them, and a record that stands drops them.
+            _playerCountry.Government?.StandingRefusals.Clear();
             if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date, world: _world); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
@@ -11097,11 +11114,20 @@ namespace PoliSim.UI
             else if (g.NoConfidenceOn != System.DateTime.MinValue)
             {
                 System.DateTime discharge = g.NoConfidenceOn.AddDays(PoliSim.Elections.ConfidenceProcedure.ExtraElectionWindowDays);
-                GUILayout.Label("NO CONFIDENCE DECLARED " + g.NoConfidenceOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · THE SPEAKER DISCHARGES THE GOVERNMENT ON " + discharge.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant(), caption);
+                GUILayout.Label("NO CONFIDENCE DECLARED " + g.NoConfidenceOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()
+                    + (_simulationManager.PlayerGoverns(_playerCountry) ? " · THE CLOCK WAITS ON YOUR ANSWER" : " · THE SPEAKER DISCHARGES THE GOVERNMENT ON " + discharge.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()), caption);
+                bool mayOrder = _simulationManager.CanOrderExtraElection(PlayerCountryId, out string orderRefused);
                 if (_simulationManager.PlayerGoverns(_playerCountry)
-                    && DrawSentenceAction("The chamber has no confidence in your government. Within the week you may order an extra election instead of being discharged.", "Order an extra election", true, _implementButtonStyle))
+                    && DrawSentenceAction(mayOrder ? "The chamber has no confidence in your government. Within the week you may order an extra election instead of being discharged."
+                        : "The chamber has no confidence in your government. " + orderRefused + ".", "Order an extra election", mayOrder, _implementButtonStyle))
                 {
                     if (!_simulationManager.OrderExtraElection(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
+                }
+                // §641: the other answer - the prime minister asks the Speaker to be discharged (6 kap. 8 §); the Speaker's round follows at once.
+                if (_simulationManager.PlayerGoverns(_playerCountry)
+                    && DrawSentenceAction("Or ask the Speaker to discharge you now, and the Speaker's round begins.", "Ask to be discharged", true, _removeButtonStyle))
+                {
+                    if (!_simulationManager.AskToBeDischarged(PlayerCountryId, out string refused)) { Debug.Log($"CONFIDENCE: refused - {refused}"); }
                 }
             }
             switch (g.RoleOf(_playerCountry.PlayerPartyAbbrev))
@@ -11143,7 +11169,7 @@ namespace PoliSim.UI
                 foreach (PoliSim.Elections.AgreementItem item in agreement.Items) { GUILayout.Label(item.Line(), _labelStyle); }
                 if (agreement.Supporter == _playerCountry.PlayerPartyAbbrev && government.Support.Contains(agreement.Supporter))
                 {
-                    if (DrawSentenceAction("Your party carries this government on these items. Withdrawing is recorded against the government; what follows arrives with confidence and collapse.", "Withdraw support", true, _removeButtonStyle))
+                    if (DrawSentenceAction("Your party carries this government on these items. Withdrawing is recorded against the government; your party may then move no confidence.", "Withdraw support", true, _removeButtonStyle))
                     {
                         if (!_simulationManager.WithdrawSupport(PlayerCountryId, out string refused)) { Debug.Log($"AGREEMENT: the withdrawal was refused - {refused}"); }
                     }
