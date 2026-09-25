@@ -117,6 +117,13 @@ namespace PoliSim.EditorTools
                 try { sim.PlayerGoverns(sweden); } catch (InvalidOperationException) { threw = true; }
                 Check(threw, "a country whose government was never stored: PlayerGoverns THROWS rather than defaulting the player to governing");
                 sweden.Government = g;
+
+                // PS-3d (§631, ruled): France's governing mode is a WHAT-IF - the player's party governs on the 2024 Assembly of record; as an AI country France keeps the provisional stand-in.
+                Country france = world.GetCountry(CountryId.France);
+                Check(france.Government.Provisional && france.Government.Outcome != "what-if", "France as an AI country: the provisional stand-in stands");
+                GovernmentRecord whatIf = GovernmentRecord.WhatIfGoverning(france, "UG", WorldClock.StartDate(CountryId.France));
+                Check(whatIf.PmParty == "UG" && whatIf.RoleOf("UG") == PlayerRole.PrimeMinister && whatIf.RoleOf("RN") == PlayerRole.Opposition && !whatIf.Provisional && whatIf.Outcome == "what-if" && whatIf.Executive != null && whatIf.Executive.Contains("Macron"),
+                    F("France's what-if: {0} governs under {1}; RN is {2}", whatIf.PmParty, whatIf.Executive, whatIf.RoleOf("RN")));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }

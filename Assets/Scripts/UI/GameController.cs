@@ -2216,6 +2216,11 @@ namespace PoliSim.UI
             }
             // PS-3a (§628): a world that was not rebuilt (the same epoch, turn 0) still gets its government of record - the role is read from it.
             if (_playerCountry.Government == null) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.AtStart(_playerCountry, SimulationManager.EpochDate); }
+            // PS-3d (§631, ruled): France's governing mode seats the player's party as the prime minister's - a what-if on the 2024 Assembly of record, the player path only.
+            if (PoliSim.Elections.WorldClock.GoverningModeOnly(countryId) && !string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev) && _playerCountry.Government.Outcome != "what-if")
+            {
+                _playerCountry.Government = PoliSim.Elections.GovernmentRecord.WhatIfGoverning(_playerCountry, _playerCountry.PlayerPartyAbbrev, SimulationManager.EpochDate);
+            }
             Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
 
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
@@ -6614,7 +6619,7 @@ namespace PoliSim.UI
             // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
             GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionVintage);
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
-            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date); }
+            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
             {
@@ -11039,11 +11044,36 @@ namespace PoliSim.UI
             bool ambientEnabled = GUI.enabled;
             GUI.enabled = ambientEnabled && pendingBill == null && budgetProcessOpen;
             // §568: the budget bill's call to action is the family's - brass, because it commits, at the class's one width (PF-5's fourth sibling, and its last).
-            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _))
+            {
+                DrawShadowBudgetAction(pendingBill);   // PS-3e (§632): the opposition's call to action - the draft below tabled against the government's budget
+            }
+            else if (PoliSimWidgets.Button("Introduce Budget Bill", _implementButtonStyle, GUILayout.Width(CtaWidth())))
             {
                 _simulationManager.IntroduceBudgetBill(PlayerCountryId, BuildBudgetBillFromDrafts());
             }
             GUI.enabled = ambientEnabled;
+        }
+
+        /// <summary>
+        /// PS-3e (§632, ruled): THE OPPOSITION'S BUDGET. While the government's budget is before the chamber, the player's draft (the same
+        /// drafts the governing party would introduce) can be tabled as the ALTERNATIVE the chamber sets against it - the Riksdag's budget
+        /// motion. Where no government budget stands the lock reads as before; where the country's procedure is not yet sourced the government's
+        /// bill is voted alone and the caption says so; once tabled, the caption counts the days.
+        /// </summary>
+        private void DrawShadowBudgetAction(BudgetBill pending)
+        {
+            bool ambient = GUI.enabled; GUI.enabled = true;
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
+            if (pending == null || !pending.GovernmentBill) { DrawLeverLock(); }
+            else if (tabled != null) { GUILayout.Label($"YOUR ALTERNATIVE IS TABLED · THE CHAMBER DECIDES IN {pending.DaysRemaining} DAY(S)", caption); }
+            else if (PoliSim.Elections.WorldClock.BudgetProcedureOf(PlayerCountryId) == PoliSim.Elections.WorldClock.BudgetProcedure.Unsourced) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
+            else if (PoliSimWidgets.Button("Table an Alternative Budget", _implementButtonStyle, GUILayout.Width(CtaWidth())))
+            {
+                if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
+            }
+            GUI.enabled = ambient;
         }
 
         /// <summary>
@@ -11055,6 +11085,11 @@ namespace PoliSim.UI
         private string BuildBudgetBillStatusText()
         {
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            // PS-3e (§632): the government's budget named first - what it moves and when the chamber decides - and the draft below as the alternative it can be set against.
+            if (pendingBill != null && pendingBill.GovernmentBill)
+            {
+                return $"The government's budget is before the chamber ({SimulationManager.DescribeBudgetBill(pendingBill)}); the chamber decides in {pendingBill.DaysRemaining} day(s). Your draft below can be tabled as the alternative.";
+            }
             if (pendingBill != null)
             {
                 return $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).";

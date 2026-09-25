@@ -80,6 +80,20 @@ namespace PoliSim.Elections
             return standIn;
         }
 
+        /// <summary>
+        /// PS-3d (§631, ruled): FRANCE'S GOVERNING MODE SEATS THE PLAYER'S PARTY AS THE PRIME MINISTER'S, governing on the 2024 Assembly of record - a what-if
+        /// the card states plainly. Player path only: as an AI country France keeps its provisional stand-in (<see cref="AtStart"/>) until the cabinets' parties
+        /// are sourced (france records G4). The president of record stays above the what-if cabinet.
+        /// </summary>
+        public static GovernmentRecord WhatIfGoverning(Country country, string party, DateTime start)
+        {
+            GovernmentRecord ofRecord = AtStart(country, start);
+            var whatIf = new GovernmentRecord { FormedOn = start, Provisional = false, Outcome = "what-if", Kind = ofRecord.Kind, Executive = ofRecord.Executive, PmParty = party,
+                Basis = $"WHAT-IF (ruled, §631): the player's {party} governs on the chamber of record; the real cabinet on this date is {ofRecord.Basis}" };
+            whatIf.Cabinet.Add(party);
+            return whatIf;
+        }
+
         /// <summary>The government the formation formed after the game's own election (or none: a record with an empty cabinet and the reason).</summary>
         public static GovernmentRecord FromView(Country country, GovernmentFormation.View view, DateTime formedOn, bool provisional = false, string basis = null)
         {

@@ -114,7 +114,7 @@ namespace PoliSim.Elections
         {
             if (!p.Playable) { return null; }
             string opens = "OPENS " + Stamp(p.Opens);
-            if (WorldClock.GoverningModeOnly(p.Country)) { return "GOVERNING · " + opens; }
+            if (WorldClock.GoverningModeOnly(p.Country)) { return "WHAT-IF · YOUR PARTY GOVERNS · " + opens; }   // PS-3d (§631, ruled): the card states the what-if plainly
             return (WorldClock.IsSnapStart(p.Country) ? "SNAP ELECTION · " : "RUN-UP · ") + opens;
         }
 

@@ -984,6 +984,9 @@ namespace PoliSim.Simulation
         /// Master Sequence step 4 pilot's TaxBill/AdvanceLegislativeDay already established (retired -
         /// see git history - BudgetBill generalizes it to Tax+Spending+Welfare+SWF together).
         /// </summary>
+        /// <summary>PS-3e (§632): the ALTERNATIVE budget tabled against the government's pending bill - the Riksdag's budget motion; one per country, voted with the government's on its day.</summary>
+        private readonly Dictionary<CountryId, BudgetBill> _pendingBudgetAlternativeByCountry = new Dictionary<CountryId, BudgetBill>();
+
         private readonly Dictionary<CountryId, BudgetBill> _pendingBudgetBillByCountry =
             new Dictionary<CountryId, BudgetBill>();
 
@@ -1152,6 +1155,115 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>The pending omnibus BudgetBill for this country, or null if none is currently before Parliament (the common case).</summary>
+        /// <summary>
+        /// PS-3e (2026-09-25, §632, ruled): THE AI-GOVERNMENT BILL PATH. Where the AI governs the player's country its finance ministry's rule
+        /// (AiFinanceMinistry, the EU rule / the US caps) is laid before the chamber as the government's budget bill instead of written into the
+        /// book at the turn boundary; the player's party may table an alternative while it stands (<see cref="TableShadowBudget"/>), and on the
+        /// bill's day the chamber decides by the country's own procedure (<see cref="Elections.WorldClock.BudgetProcedureOf"/>): Sweden's frame decision sets
+        /// the government's frames against the alternative and adopts the one the chamber prefers; a country whose procedure is not yet sourced
+        /// votes the government's bill alone, and a failed budget leaves the old one standing, stated in the division's own title.
+        /// </summary>
+        public void TableGovernmentBudget(Country country)
+        {
+            if (country == null || _pendingBudgetBillByCountry.ContainsKey(country.Id)) { return; }
+            BudgetBill bill = AiFinanceMinistry.AsBudgetBill(country, AiFinanceMinistry.Decide(country, GetLastFiscalReport(country.Id)));
+            bill.DaysRemaining = ParliamentSystem.BillDurationDays;
+            _pendingBudgetBillByCountry[country.Id] = bill;
+            _pendingBudgetProcessByCountry.Remove(country.Id);
+            _incomingBudgetWindowOpenNow.Remove(country.Id);
+            Debug.Log($"BUDGET: {country.Id} - the government tables its budget ({DescribeBudgetBill(bill)}); the chamber decides in {bill.DaysRemaining} day(s) by {Elections.WorldClock.BudgetProcedureOf(country.Id)}");
+        }
+
+        /// <summary>PS-3e (§632): the player's party tables its draft as the ALTERNATIVE to the government's pending budget - the Riksdag's budget motion. False, with the reason, where none can be tabled.</summary>
+        public bool TableShadowBudget(CountryId countryId, BudgetBill bill, out string refusedBecause)
+        {
+            refusedBecause = null;
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || bill == null) { refusedBecause = "no country"; return false; }
+            if (!_pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill pending) || !pending.GovernmentBill) { refusedBecause = "NO GOVERNMENT BUDGET IS BEFORE THE CHAMBER"; return false; }
+            if (Elections.WorldClock.BudgetProcedureOf(countryId) == Elections.WorldClock.BudgetProcedure.Unsourced) { refusedBecause = "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE"; return false; }
+            if (_pendingBudgetAlternativeByCountry.ContainsKey(countryId)) { refusedBecause = "YOUR ALTERNATIVE IS ALREADY TABLED"; return false; }
+            bill.TabledBy = country.PlayerPartyAbbrev;
+            bill.GovernmentBill = false;
+            bill.DaysRemaining = pending.DaysRemaining;
+            _pendingBudgetAlternativeByCountry[countryId] = bill;
+            Debug.Log($"BUDGET: {countryId} - {bill.TabledBy} tables an alternative budget ({DescribeBudgetBill(bill)}) against the government's");
+            return true;
+        }
+
+        /// <summary>PS-3e (§632): the arrival budget window is a GOVERNMENT'S, once - the flag is reset where the government changes (the election's verdict), so an incoming government lays its budget on arrival whether the AI's or the player's laid the last.</summary>
+        public void ResetArrivalBudgetWindow(CountryId countryId) => _incomingBudgetWindowUsed.Remove(countryId);
+
+        /// <summary>PS-3e (§632): the alternative tabled against the government's pending budget, or null.</summary>
+        public BudgetBill GetPendingBudgetAlternative(CountryId countryId) => _pendingBudgetAlternativeByCountry.TryGetValue(countryId, out BudgetBill bill) ? bill : null;
+
+        /// <summary>The budget's day: the country's procedure decides between the government's bill and the alternative, and what the chamber adopts is applied.</summary>
+        private void ResolveGovernmentBudget(Country country, BudgetBill government)
+        {
+            BillConcern concernG = ParliamentSystem.GetBudgetBillConcern(country, government);
+            _pendingBudgetAlternativeByCountry.TryGetValue(country.Id, out BudgetBill alternative);
+            Elections.WorldClock.BudgetProcedure procedure = Elections.WorldClock.BudgetProcedureOf(country.Id);
+            float approvalBefore = country.State.ApprovalRating;
+            if (procedure == Elections.WorldClock.BudgetProcedure.RiksdagFrameDecision && alternative != null)
+            {
+                // THE FRAME DECISION (sweden/budget_procedure.md): the revenue estimate and every expenditure area's frame are fixed "genom ett enda beslut" [RO-11-18];
+                // with more than two proposals the chamber sets the main proposal against ONE counter-proposal chosen in preparatory votes [RO-11-10], and the one
+                // "som stöds av mer än hälften av de röstande" carries [RO-11-10] - abstentions do not count (2021: 154 ja, 143 nej, 51 avstår, the M/SD/KD frames
+                // adopted over the government's [FIU1-22]). The model: one alternative (the player's), so the main vote is the whole procedure; each party votes for
+                // the proposal it aligns with more, or abstains where it aligns with neither; recorded as sides toward the government's frames (+1, -1, 0 abstaining).
+                // STATED DEVIATIONS: a tie keeps the government's frames (the statute decides a preparatory vote's tie by lot [RO-11-11]; a main vote's tie tables the matter, then returns it or draws lots [RO-11-12]); the
+                // alternative may be tabled any day the bill stands (21), where the statute gives 15 days from the announcement [RO-9-12].
+                BillConcern concernA = ParliamentSystem.GetBudgetBillConcern(country, alternative);
+                var alignG = new Dictionary<string, PartyStance>(); foreach (PartyStance st in StanceModel.Stances(country, concernG)) { alignG[st.Party.Abbrev] = st; }
+                var alignA = new Dictionary<string, PartyStance>(); foreach (PartyStance st in StanceModel.Stances(country, concernA)) { alignA[st.Party.Abbrev] = st; }
+                int forG = 0, forA = 0;
+                var sides = new List<DivisionSide>();
+                foreach (KeyValuePair<string, PartyStance> kv in alignG)
+                {
+                    PartyStance g = kv.Value;
+                    float a = alignA.TryGetValue(kv.Key, out PartyStance sa) ? sa.Alignment : 0f;
+                    // The government's own parties - the cabinet and its support - carry its frames (2021: the government's parties voted its budget, the M/SD/KD theirs, C and L abstained [FIU1-22]);
+                    // every other party votes for the proposal it aligns with more, or abstains where it aligns with neither.
+                    Elections.PlayerRole role = country.Government != null ? country.Government.RoleOf(kv.Key) : Elections.PlayerRole.None;
+                    bool governmentParty = role == Elections.PlayerRole.PrimeMinister || role == Elections.PlayerRole.JuniorPartner || role == Elections.PlayerRole.Support;
+                    int side = governmentParty ? 1 : g.Alignment >= a ? (g.Alignment > 0f ? 1 : 0) : (a > 0f ? -1 : 0);
+                    if (side > 0) { forG += g.Seats; } else if (side < 0) { forA += g.Seats; }
+                    string why = governmentParty ? "the government's own party - carries its frames" : side > 0 ? $"the government's frames ({g.Alignment:+0.00;-0.00}) over {alternative.TabledBy}'s ({a:+0.00;-0.00})" : side < 0 ? $"{alternative.TabledBy}'s frames ({a:+0.00;-0.00}) over the government's ({g.Alignment:+0.00;-0.00})" : "abstains - aligned with neither";
+                    sides.Add(new DivisionSide { Abbrev = g.Party.Abbrev, ShortName = g.Party.ShortName, Seats = g.Seats, Side = side, Alignment = side > 0 ? g.Alignment : side < 0 ? a : 0f, Reason = why });
+                }
+                bool governmentAdopted = forG >= forA;   // a tie keeps the government's frames - the tie rule of the statute is sourced in the record and applied there when it lands
+                BudgetBill adopted = governmentAdopted ? government : alternative;
+                country.Divisions.Append(governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternative.TabledBy}'s alternative" : $"Annual budget: {alternative.TabledBy}'s alternative frames adopted, {forA} to {forG}, over the government's",
+                    CurrentDate, ParliamentSystem.GetSeatWeightedAlignment(country, concernG), true, concernG.Direction, (int)BillAxis.Fiscal, sides);   // PASSED either way: the chamber adopted a budget - the title says whose
+                ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
+                Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
+                return;
+            }
+            // The government's bill alone (no alternative tabled, or a procedure not yet sourced): for or against; a failed budget leaves the old one standing, stated.
+            bool passed = ParliamentSystem.WouldBillPass(country, concernG);
+            string title = passed ? "Annual budget: the government's bill adopted" : (procedure == Elections.WorldClock.BudgetProcedure.Unsourced
+                ? "Annual budget: the government's bill failed - the old budget stands (this country's procedure is not yet sourced)"
+                : "Annual budget: the government's bill failed with no alternative tabled - the old budget stands");
+            ParliamentSystem.RecordDivision(country, title, concernG, passed, CurrentDate);
+            ParliamentSystem.ApplyBillResult(country, government, passed, ApplyBudgetBillSpendingAndSwf);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "The government's budget adopted" : "The government's budget failed", country.State.ApprovalRating - approvalBefore);
+            Debug.Log($"BUDGET: {country.Id} - {title}");
+        }
+
+        /// <summary>One line naming a budget bill's content for the log and the desk: the lines it moves and the rates it sets.</summary>
+        public static string DescribeBudgetBill(BudgetBill bill)
+        {
+            if (bill == null) { return "none"; }
+            var parts = new List<string>();
+            int cut = 0, raised = 0; foreach (KeyValuePair<SpendingCategory, float> kv in bill.SpendingPercentChanges) { if (kv.Value < 0f) { cut++; } else if (kv.Value > 0f) { raised++; } }
+            if (cut > 0) { parts.Add($"{cut} line(s) cut"); }
+            if (raised > 0) { parts.Add($"{raised} line(s) raised"); }
+            if (bill.SpendingNominalTargets.Count > 0) { parts.Add($"{bill.SpendingNominalTargets.Count} line(s) re-targeted"); }
+            foreach (KeyValuePair<TaxType, float> kv in bill.TaxLines) { parts.Add($"{kv.Key} at {kv.Value:0.0} %"); }
+            return parts.Count > 0 ? string.Join(", ", parts) : "the standing figures, unchanged";
+        }
+
         public BudgetBill GetPendingBudgetBill(CountryId countryId)
         {
             return _pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill bill) ? bill : null;
@@ -1204,6 +1316,7 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
+            if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
             float direction = ParliamentSystem.GetBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
@@ -2073,9 +2186,21 @@ namespace PoliSim.Simulation
             {
                 return;
             }
+            if (_pendingBudgetBillByCountry.ContainsKey(countryId)) { return; }   // PS-3e (§632, the reader): no window opens beside a pending bill - a window whose bill cannot be introduced would hold the clock the bill needs to resolve
             // PS-3a (§628): the budget is the government's to lay - a player whose party does not lead it lays none (the AI ministry governs the book).
+            // PS-3e (§632, ruled): where the AI governs THE PLAYER'S country, the AI government lays it - as a BILL the chamber votes on, on the same
+            // calendar as the player's own (the arrival window once, then every fiscal-year date), with the player's party free to table an alternative
+            // while it is before the chamber. PLAYER PATH ONLY: a country that is not the player's never comes here (the ministry writes its book direct).
             Country budgeting = _world?.GetCountry(countryId);
-            if (budgeting != null && !PlayerGoverns(budgeting)) { return; }
+            if (budgeting != null && !PlayerGoverns(budgeting))
+            {
+                if (!PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || _pendingBudgetBillByCountry.ContainsKey(countryId)) { return; }
+                bool arrival = !_incomingBudgetWindowUsed.Contains(countryId);
+                if (!arrival && !IsFiscalYearStart(countryId, date)) { return; }
+                if (arrival) { _incomingBudgetWindowUsed.Add(countryId); }
+                TableGovernmentBudget(budgeting);
+                return;
+            }
 
             // C-C2 (Playtest-1 finding 4): the INCOMING GOVERNMENT'S window. A government that has
             // just taken office lays a budget on arrival rather than waiting for the calendar - which
@@ -2146,6 +2271,7 @@ namespace PoliSim.Simulation
                 PendingBudgetProcess = new List<CountryId>(_pendingBudgetProcessByCountry),
                 IncomingBudgetWindowUsed = new List<CountryId>(_incomingBudgetWindowUsed),
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
+                PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>(_pendingBudgetAlternativeByCountry),   // PS-3e (§632)
                 PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
                 PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
                 PendingSectorBills = new Dictionary<CountryId, SectorPolicyBill>(_pendingSectorBillByCountry),
@@ -2722,6 +2848,7 @@ namespace PoliSim.Simulation
             }
 
             CopyInto(state.PendingBudgetBills, _pendingBudgetBillByCountry);
+            _pendingBudgetAlternativeByCountry.Clear(); CopyInto(state.PendingBudgetAlternatives, _pendingBudgetAlternativeByCountry);   // PS-3e (§632): cleared first - a v29 save carries its own, an older none
             CopyInto(state.PendingLaborBills, _pendingLaborBillByCountry);
             CopyInto(state.PendingCrimeJusticeBills, _pendingCrimeJusticeBillByCountry);
             CopyInto(state.PendingSectorBills, _pendingSectorBillByCountry);
@@ -2863,10 +2990,13 @@ namespace PoliSim.Simulation
                 // balance and its debt ratio with the player's own levers under its sourced rule (AiFinanceMinistry) - written into the decision it was
                 // handed where that decision carries nothing of its own for a line or a tax, then observed for the US trigger's two-year memory.
                 bool aiGovernment = AiFinanceMinistryEnabled && !PlayerGoverns(country);   // PS-3a (§628): the test is the player's ROLE, not the country
+                // PS-3e (§632): for THE PLAYER'S country the ministry's rule goes to the chamber as the government's budget bill (TableGovernmentBudget) and
+                // applies on the day the chamber adopts it - not into the boundary's decision. Observe still runs (the US trigger's two-year memory).
+                bool ministryByBill = aiGovernment && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id;
                 AiFinanceMinistry.Written ministryWrote = null;
                 if (aiGovernment)
                 {
-                    ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision);
+                    if (!ministryByBill) { ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision); }
                     AiFinanceMinistry.Observe(country);
                 }
                 // THE AI ENERGY MINISTRY (P6-F2d, §544): HELD - AiEnergyMinistry.Live is false until its family is dumped and ruled; with it on, a country the player

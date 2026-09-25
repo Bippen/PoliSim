@@ -118,7 +118,7 @@ namespace PoliSim.Elections
         {
             DateTime start = StartDate(id);
             string opens = start.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
-            if (GoverningModeOnly(id)) { return $"OPENS {opens} · GOVERNING MODE · NO ELECTION"; }   // the card's one line at 1280: "MODELLED" wrapped and clipped
+            if (GoverningModeOnly(id)) { return $"OPENS {opens} · A WHAT-IF · NO ELECTION"; }   // PS-3d (§631): the player's party governs as a what-if   // the card's one line at 1280: "MODELLED" wrapped and clipped
             string polling = LatestElectionDay(id).ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
             return IsSnapStart(id)
                 ? $"OPENS {opens} · THE SNAP ELECTION OF {polling}"
@@ -212,6 +212,17 @@ namespace PoliSim.Elections
             for (int i = chambers.Count - 1; i >= 0; i--) { if (PartySystems.SeatsSourced(chambers[i].Vintage)) { return chambers[i].Vintage; } }
             throw new InvalidOperationException($"{id} has no sourced seat table");
         }
+
+        /// <summary>
+        /// PS-3e (§632, ruled): HOW A CHAMBER DECIDES ITS BUDGET - data per country. Sweden's is the Riksdag's frame decision (Riksdagsordningen 11 kap. 18 §
+        /// [RO-11-18], the vote by 11 kap. 10 § [RO-11-10], quoted in `sweden/budget_procedure.md`): the government's budget proposition and the parties'
+        /// alternative budget motions go to one decision on the frames, the alternatives eliminated in prior votes and the one the chamber prefers adopted -
+        /// the government then governs on those frames. Every other country's procedure is data when its stage lands; until it is sourced the government's
+        /// bill is voted alone and a failed budget leaves the old one standing, stated.
+        /// </summary>
+        public enum BudgetProcedure { Unsourced, RiksdagFrameDecision }
+
+        public static BudgetProcedure BudgetProcedureOf(CountryId id) => id == CountryId.Sweden ? BudgetProcedure.RiksdagFrameDecision : BudgetProcedure.Unsourced;
 
         /// <summary>The governments of record per country, oldest first. Keys are the roster's; a cabinet the record cannot name is unsourced (the formation stands in).</summary>
         public static IReadOnlyList<GovernmentOfRecord> Governments(CountryId id)
