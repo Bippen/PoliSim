@@ -114,6 +114,37 @@ one-way red lines, feasible hold-outs). What is new is that **the player's party
   compatibility allows. The agreement is the support party's leverage for the whole term: the game
   tracks each item as owed, delivered or broken.
 
+**The formateur's premises** (ruled by Elias 2026-09-26, `COMPLETED.md` §643; written here before any of it
+is built, per the standing rule that a design a later session depends on lives in the repo):
+
+1. **The formation sheet.** When the Speaker asks the player's party, a formation sheet opens: the player
+   proposes a cabinet (which parties, which posts to each) and support agreements (which supporters,
+   which of their demands to accept).
+2. **Posts by Gamson's law.** Partners expect posts roughly in proportion to their seats (Gamson's law,
+   `docs/reference/GAMSON_PORTFOLIOS.md`); offering less lowers acceptance. Each post carries its
+   portfolio's levers to the partner (§634).
+3. **AI answers.** Each AI party answers from its compatibility with the proposed cabinet and its dated
+   declarations - red lines, candidacies, V's in-or-against - accepting or refusing with its reason,
+   never from an authored willingness. The player may revise and re-offer.
+4. **The investiture.** Submitting the proposal runs the investiture vote under the country's rules; a
+   failed vote counts as one of the Speaker's proposals, and the sourced limit leads to an extra
+   election (§640's loop).
+5. **Another party asked.** When another party is asked, it offers the player's party what the
+   formation model computes - posts, an agreement, or nothing. The player accepts or declines;
+   declining leaves the party in opposition, and if its seats were needed, the Speaker moves to the
+   next candidate.
+6. **The Speaker's order.** The formation's prime-minister party first; otherwise the largest party
+   with a declared candidate.
+7. **Dated time.** Each round takes dated time where the constitution sets a deadline; otherwise one
+   week per round [AUTHORED-DRAFT].
+8. **The caretaker.** The outgoing government governs as caretaker throughout (§640).
+9. **Election night.** The board ends with a line naming who the Speaker asks first - and, when it is
+   the player, the control that opens the formation sheet.
+
+The build, one commit each: the evaluator (a proposal's investiture and each party's answer, reproducing
+the current formation exactly), the Speaker's round (save format 35), the formation sheet, and the
+election-night line.
+
 ### 5.4 Confidence and collapse
 
 Each country's rules, sourced from its constitution and dated, as data: Sweden's no-confidence vote

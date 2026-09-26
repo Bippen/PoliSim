@@ -34429,3 +34429,14 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **No family.** Nothing on the play path moved.
 
 **Bars.** Tier SIMULATION + UI: the cheap bar 60 of 60 (its first run on the final tree failed ReviewLedgerCheck - the report named the class, not the file - and CommentImmunityCheck - the new guard reads source and was not enrolled; both fixed); the simulation bar 56 of 56, `TrajectorySentinelCheck` on `ps3k`, 678 s against the day's 685-894 s - the per-world scoring costs no measurable bar time.
+
+
+## 643. STANDING RULE: A DESIGN A LATER SESSION DEPENDS ON IS WRITTEN TO THE REPO (2026-09-26)
+
+**The ruling** (Elias, 2026-09-26): *a design a later session depends on is written to the repo, never a scratchpad - the formateur's nine premises were lost this way, the third instance after warm.ps1 and the ignored .csproj.* The premises §640 called "its ninth premise" lived only in the conversation that put them to Elias; §642's session found neither them nor the rulings' full text on disk and stopped before building.
+
+**Written.** `CLAUDE.md`, beside §576's rule for tooling: premises, a plan put to Elias and the rulings it answers go into the spec or the feature list the day they are made. The formateur's nine premises, re-issued with this ruling, are written into `docs/specs/POLITICAL_SYSTEM_SPEC.md` §5.3 in this commit, before anything is built on them.
+
+**Pushed first** (R-SP1): `7a4c15a..c157c55`, fast-forward, `origin/main` = HEAD re-fetched.
+
+**Bars.** Tier DOCUMENTS: the cheap bar 60 of 60.
