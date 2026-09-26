@@ -291,6 +291,7 @@ namespace PoliSim.Testing
             // MM-1 (2026-09-24): THE MAIN MENU is the first screen now. Filmed as the player meets it, then NEW GAME chosen
             // through the controller's own entry (the click's method), and the seam waited through the menu's exit and the
             // selector's entrance before the selector's own frame - so every frame after this one is what it always was.
+            Expect("00_main_menu", "00a_settings");   // TL-1 (§645): the menu is every film's first screen
             if (controller.MainMenuLive)
             {
                 Claim("menu");
@@ -336,6 +337,7 @@ namespace PoliSim.Testing
 
             // SP-1 (§622): the start panel - the selector's step between the folder and the party - filmed for the country, then hidden; the
             // party panel below is still opened directly, so no frame after this one moves.
+            Expect("01f2_start_points");   // TL-1 (§645): filmed only on the live Canvas selector - its absence fails the film
             if (controller.CanvasSelectorActive)
             {
                 object startSelector = controller.GetType().GetField("_countrySelector", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
@@ -357,6 +359,7 @@ namespace PoliSim.Testing
             // CL-2 (2026-09-13, DS-6): the party picker over the selector - the country's seeded chamber, largest first, the cabinet the
             // chamber forms marked - filmed on the Canvas selector, then hidden; the run then seats the party the one-argument shape
             // seats (the largest), as every film before the picker did, so no frame after this one moves.
+            Expect("01g_party_picker", "01h_scenario_party_picker");   // TL-1 (§645)
             if (controller.CanvasSelectorActive)
             {
                 object selector = controller.GetType().GetField("_countrySelector", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
@@ -1728,6 +1731,19 @@ namespace PoliSim.Testing
         /// <summary>Bound on the canvas-settle wait — generous against a ~25-frame envelope, but a bound, per the standing rule that an unbounded wait is a hang with no log line.</summary>
         private const int MaxCanvasSettleFrames = 600;
 
+        /// <summary>TL-1 (§645): the envelope is TIMED, so the wait is bounded in real seconds too - it gives up only when both bounds have passed. A
+        /// frame count alone lost the race in a fast batch run (frames uncapped): the bound ran out before the cover had come in.</summary>
+        public const float DefaultCanvasSettleSeconds = 10f;
+        public float CanvasSettleSeconds = DefaultCanvasSettleSeconds;
+        /// <summary>The frame bound, a field so the race flag (-shotcanvasrace) can shorten it.</summary>
+        public int CanvasSettleFrames = MaxCanvasSettleFrames;
+
+        // TL-1 (§645): THE FRAMES A SWEEP DECLARES IT WILL CAPTURE - a guarded block names its frames before it runs, and EndSweep fails the film on
+        // any that was never captured. A skipped frame is a failure, never a silence.
+        private readonly HashSet<string> _expectedFrames = new HashSet<string>();
+        private readonly HashSet<string> _capturedFrames = new HashSet<string>();
+        private void Expect(params string[] frames) { foreach (string f in frames) { _expectedFrames.Add(f); } }
+
         /// <summary>
         /// Waits until the takeover seam is settled in the REQUESTED state: <paramref name="wantActive"/>
         /// true = the Canvas surface live and its envelope finished; false = handed back to IMGUI.
@@ -1738,7 +1754,8 @@ namespace PoliSim.Testing
         private IEnumerator WaitForCanvasSettle(GameController controller, bool wantActive)
         {
             FieldInfo failedField = controller.GetType().GetField("_canvasSelectorFailed", BindingFlags.Instance | BindingFlags.NonPublic);
-            for (int i = 0; i < MaxCanvasSettleFrames; i++)
+            float began = Time.realtimeSinceStartup;
+            for (int i = 0; i < CanvasSettleFrames || Time.realtimeSinceStartup - began < CanvasSettleSeconds; i++)
             {
                 if (failedField?.GetValue(controller) is bool failed && failed)
                 {
@@ -1754,7 +1771,8 @@ namespace PoliSim.Testing
                 yield return null;
             }
 
-            Debug.LogWarning($"SHOT: canvas seam never settled to active={wantActive} within {MaxCanvasSettleFrames} frames - capturing whatever is up.");
+            // TL-1 (§645): an ERROR, counted - a wait that gave up is a film that may capture the wrong surface or skip a frame.
+            Debug.LogError($"SHOT: canvas seam never settled to active={wantActive} within {CanvasSettleFrames} frames and {CanvasSettleSeconds:0.#} s - capturing whatever is up, and the film fails.");
 
             // ⚠ THE FALLBACK'S OWN TRACE (2026-08-25 hang investigation). The warning above is the
             // TRIGGER for "capture whatever is up," not proof the coroutine actually got there - a
@@ -1775,6 +1793,16 @@ namespace PoliSim.Testing
         private void EndSweep()
         {
             ReportIdentity();
+            // TL-1 (§645): every frame the sweep declared and never captured fails the film.
+            int missing = 0;
+            foreach (string frame in _expectedFrames)
+            {
+                if (_capturedFrames.Contains(frame)) { continue; }
+                missing++;
+                _failed++;
+                Debug.LogError($"SHOT: EXPECTED FRAME MISSING - '{frame}' was declared and never captured (TL-1): a skipped frame fails the film.");
+            }
+            Debug.Log($"SHOT: {_expectedFrames.Count} declared frame(s), {missing} missing.");
             Debug.Log($"SHOT: done, {_captured} captured, {_failed} failed.");
 
             int overflows = ReportOverflows();
@@ -2000,6 +2028,7 @@ namespace PoliSim.Testing
 
         private IEnumerator Capture(string name)
         {
+            _capturedFrames.Add(name);   // TL-1 (§645): attempted - a capture that fails is counted by its own trap, not as missing
             // ⚠ THIS IS WHY THE RUNNER CANNOT USE -batchmode.
             //
             // `WaitForEndOfFrame` NEVER RESUMES in batchmode - the coroutine simply stops, the capture

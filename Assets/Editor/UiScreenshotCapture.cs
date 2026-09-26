@@ -456,6 +456,9 @@ namespace PoliSim.EditorTools
             driver.StopAfter = Arg("-shotstop=", "");
             // §560 (2026-09-21): open on a named save, loaded through the game's own load path - the sitting package films a real game, not the harness's fresh world.
             driver.LoadSave = Arg("-shotload=", "");
+            // TL-1 (§645): -shotcanvasrace makes the Canvas seam's wait give up at once - the race a fast batch run used to lose, made certain - so
+            // the proof can show a frame skipped that way fails the film.
+            if (Environment.GetCommandLineArgs().Contains("-shotcanvasrace")) { driver.CanvasSettleSeconds = 0f; driver.CanvasSettleFrames = 1; }
             // C-C10 (2026-08-31): film the impact ledger POPULATED instead of the sweep. The sweep's
             // warm-up is deliberately no-policy, so it films the ledger's empty state and only this
             // films the state where there is a divergence to attribute.

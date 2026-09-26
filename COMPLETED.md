@@ -34461,3 +34461,18 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **No family.** No dump ticks the day; the trajectory sentinel held.
 
 **Bars.** Tier SIMULATION: the simulation bar 56 of 56 on the tree before the review's comment and check edits (`TrajectorySentinelCheck` on `ps3k`); the cheap bar 61 of 61 on the committed tree.
+
+
+## 645. TL-1 - THE DRY FILM FAILS, NEVER SKIPS, WHEN AN EXPECTED FRAME IS MISSING: THE FRAMES A SWEEP WILL CAPTURE ARE DECLARED AND FOLDED AT ITS END, AND THE CANVAS SEAM'S WAIT IS BOUNDED IN SECONDS AS WELL AS FRAMES; PROVED BOTH WAYS (2026-09-26)
+
+**The ruling** (Elias, 2026-09-26): *TL-1: the dry film fails, never skips, when an expected frame is missing - proved both ways.* §642 had found `dryps3n` measuring three frames fewer than `dryps3m` on the same driver.
+
+**The cause.** `WaitForCanvasSettle` gave up after a bound of frames with only a warning; the Canvas cover is TIMED, and a batch run's frames are uncapped, so the bound could run out before the cover came in - the start panel and the two Canvas pickers are filmed only `if (controller.CanvasSelectorActive)`, and were skipped with no line at all.
+
+**Built** (`UiScreenshotDriver`): a guarded block DECLARES its frames before it runs (`Expect`: the main menu and settings, the start panel, the two pickers) and `EndSweep` fails the film on every declared frame never captured, naming it; the seam's wait gives up only when both its frame bound and a bound in real seconds have passed, and giving up is an error, counted. `-shotcanvasrace` (`UiScreenshotCapture`) makes the wait give up at once - the race made certain, for the proof.
+
+**Proved both ways** (Sweden at 1280 × 720, scope rows `drytl1`, `drytl1race`): the dry film without the flag - 135 measured, 5 declared frames, 0 missing, exit 0; with `-shotcanvasrace` - 132 measured, the three frames named missing, the timed-out waits logged, exit 1. The real film `tl1_1280` (97 captured to `07b_politics_compass`, 0 failed, 0 canvas text violations): 5 declared, 0 missing.
+
+**Stated.** Frames skipped by design (a country without the feature, a scenario absent) are not declared; only frames every film reaches are. A capture that fails its own trap is counted by that trap, not as missing.
+
+**Bars.** Tier UI: the cheap bar 61 of 61; the dry films and the filmed width above.
