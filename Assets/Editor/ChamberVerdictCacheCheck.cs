@@ -238,7 +238,7 @@ namespace PoliSim.EditorTools
             }
             PoliSim.Elections.GovernmentRecord fallen = sweden.Government;
             invalidations = cache.Invalidations;
-            for (int d = 0; d < PoliSim.Elections.ConfidenceProcedure.ExtraElectionWindowDays + 1 && ReferenceEquals(sweden.Government, fallen); d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
+            for (int d = 0; d < PoliSim.Elections.ConfidenceProcedure.ExtraElectionWindowDays + PoliSim.Elections.SpeakerRound.ConsultationDays + PoliSim.Elections.SpeakerRound.VoteDays + 2 && ReferenceEquals(sweden.Government, fallen); d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
             if (ReferenceEquals(sweden.Government, fallen)) { failures.Add($"Sweden (who governs): the week ran out and the round replaced nothing ({Describe(fallen)}, caretaker {fallen.Caretaker})"); return; }
             Answers afterRound = Ask(cache, sweden, bills, "after the Speaker's round", failures);
             if (cache.Invalidations == invalidations) { failures.Add("Sweden: the round replaced the government and the cache kept its entries"); }

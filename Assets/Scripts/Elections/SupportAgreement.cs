@@ -38,6 +38,9 @@ namespace PoliSim.Elections
         /// tolerance scales with the agreement.</summary>
         public const float BrokenShareTolerated = 0.1f;
 
+        /// <summary>§646: an item's stable key - its law, or its dial - never its display name, which carries the dial's standing level.</summary>
+        public static string KeyOf(AgreementItem item) => item.Kind == AgreementItemKind.Law ? "law:" + item.LawId : "dial:" + item.Dial;
+
         /// <summary>Whether more than <see cref="BrokenShareTolerated"/> of the items are broken.</summary>
         public bool PastTolerance() => Items.Count > 0 && Count(AgreementState.Broken) > BrokenShareTolerated * Items.Count;
 

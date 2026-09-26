@@ -766,7 +766,7 @@ namespace PoliSim.UI
             // MM-2: the campaign's opening and the budget window hold the clock only while their settings say so.
             if (UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                || BudgetWindowHolds() || DeclarationHolds())
+                || BudgetWindowHolds() || DeclarationHolds() || FormationHolds())
             {
                 return;
             }
@@ -814,7 +814,7 @@ namespace PoliSim.UI
                     || UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                    || BudgetWindowHolds() || DeclarationHolds())
+                    || BudgetWindowHolds() || DeclarationHolds() || FormationHolds())
                 {
                     break;
                 }
@@ -1403,6 +1403,13 @@ namespace PoliSim.UI
             return g != null && !g.Caretaker && g.NoConfidenceOn != System.DateTime.MinValue
                 && PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) != PoliSim.Elections.ConfidenceProcedure.Rules.Unsourced   // the block that draws the answers is drawn only then
                 && _simulationManager.PlayerGoverns(_playerCountry);
+        }
+
+        /// <summary>§646 (R5, premise 5): the Speaker's round waits on the player - asked to form a government, or holding an offer - and the clock waits with it.</summary>
+        private bool FormationHolds()
+        {
+            PoliSim.Elections.SpeakerRound round = _simulationManager != null ? _simulationManager.RoundOf(PlayerCountryId) : null;
+            return round != null && (round.Stage == PoliSim.Elections.RoundStage.PlayerAsked || round.Stage == PoliSim.Elections.RoundStage.OfferToPlayer);
         }
 
         /// <summary>Days played since the last autosave, and how many autosaves this game has written (the slot rotates on it). Not saved: a loaded game starts its cadence afresh.</summary>
@@ -2700,7 +2707,7 @@ namespace PoliSim.UI
             // and its persisted overrides were deleted in v3.1 Phase B (COMPLETED.md section 45). The
             // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
-            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds();
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds() || FormationHolds();
             if (isTimePaused && !_wasTimePausedLastFrame && Event.current.type == EventType.Repaint) { AudioDirector.Fire(AudioCue.InterruptRaised); }   // P4-2: the hold's rising edge
             if (Event.current.type == EventType.Repaint) { _wasTimePausedLastFrame = isTimePaused; }
             float leftColumnWidth = RailWidth();
@@ -6271,6 +6278,13 @@ namespace PoliSim.UI
                 blocking.Add("the chamber's declaration of no confidence in your government (Parliament tab)");
             }
 
+            if (FormationHolds())
+            {
+                blocking.Add(_simulationManager.RoundOf(PlayerCountryId).Stage == PoliSim.Elections.RoundStage.PlayerAsked
+                    ? "the Speaker's request that your party form a government (Parliament tab)"
+                    : "an offer from the party the Speaker asked (Parliament tab)");
+            }
+
             if (includeBudgetProcess && BudgetWindowHolds())
             {
                 blocking.Add(_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)
@@ -6612,7 +6626,8 @@ namespace PoliSim.UI
         /// cannot run), the game continues and the sentence says so - "nobody could form a government"
         /// is not "you were thrown out", and ending a game on a modelling gap would be the worst kind of
         /// invented verdict. The sentence is held in `_pendingElectionVerdict` until election night's
-        /// CONTINUE and printed on the night's foot; `ApplyElectionVerdict` lands it.
+        /// CONTINUE and printed on the night's foot; `ApplyElectionVerdict` lands it. §646: where the Speaker's round runs (the player's
+        /// country, its rules sourced), the night installs nothing and says who the Speaker asks first - leaving the chamber still ends the run.
         /// </summary>
         private void ResolveElectionVerdict()
         {
@@ -6637,6 +6652,27 @@ namespace PoliSim.UI
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
             // §641 (the reader): a motion's standing refusals end at the election either way - a new record starts without them, and a record that stands drops them.
             _playerCountry.Government?.StandingRefusals.Clear();
+            // §646 (R2): where the Speaker's round runs, the night installs nothing - the round opens the day after on this election's declarations, and
+            // the outgoing government serves on as a caretaker until a proposal wins its investiture. The night says who the Speaker asks first.
+            if (_simulationManager.RoundsApply(PlayerCountryId))
+            {
+                string key = _playerCountry.PlayerPartyAbbrev;
+                if (latest.Seats != null && (!latest.Seats.TryGetValue(key, out int keySeats) || keySeats <= 0))
+                {
+                    _pendingElectionVerdict = $"Out of parliament after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: "
+                        + $"{PartySystems.ShortName(_playerCountry.Id, key)} won no seat, and a run ends when its party leaves the chamber.";
+                    _pendingElectionVerdictEndsGame = true;
+                    return;
+                }
+                System.Collections.Generic.List<string> order = _simulationManager.SpeakerOrder(_playerCountry, electionVintage);
+                string first = order.Count > 0 ? order[0] : null;
+                _pendingElectionVerdict = first == key
+                    ? "The Speaker will ask your party first to form a government - the formation sheet opens when the round does. The outgoing government serves on as a caretaker until a proposal wins its investiture."
+                    : $"The Speaker will ask {(first != null ? PartySystems.ShortName(_playerCountry.Id, first) : "no party")} first to form a government. The outgoing government serves on as a caretaker until a proposal wins its investiture.";
+                _pendingElectionVerdictEndsGame = false;
+                Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the Speaker's round opens tomorrow; the order is {string.Join(", ", order)}");
+                return;
+            }
             if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date, world: _world); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
@@ -9824,6 +9860,7 @@ namespace PoliSim.UI
 
             GUILayout.Space(10f);
             DrawSupportAgreements();   // PS-3h (§635)
+            DrawSpeakerRound();   // §646: the formateur's round
             DrawConfidence();   // PS-3i (§636)
 
             GUILayout.Space(10f);
@@ -11095,6 +11132,72 @@ namespace PoliSim.UI
                 if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
             }
             GUI.enabled = ambient;
+        }
+
+        // §646: the proposal drafted for the player when the Speaker asks the player's party - cached per round and turn (the reader: a turn number
+        // alone repeats across rounds and loads), so a frame does not re-form the chamber.
+        private PoliSim.Elections.FormationProposal _formationDraft;
+        private PoliSim.Elections.SpeakerRound _formationDraftRound;
+        private int _formationDraftTurn = -1;
+        private string _formationRefusal;
+
+        /// <summary>
+        /// §646 (premises 1, 4-5): THE SPEAKER'S ROUND on the Parliament tab - who is asked, the proposal and the day the Riksdag votes on it, the
+        /// proposals rejected to RF 6:5's limit; an offer to the player's party, to accept or decline; and when the player's party is asked, the
+        /// proposal the formation would make with it leading, to table as drafted, or a pass.
+        /// </summary>
+        private void DrawSpeakerRound()
+        {
+            PoliSim.Elections.SpeakerRound round = _simulationManager.RoundOf(PlayerCountryId);
+            if (round == null) { return; }
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            string Name(string key) => key != null ? PartySystems.ShortName(_playerCountry.Id, key) : "NO PARTY";
+            string Date(System.DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
+            GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "THE SPEAKER'S ROUND {0} · {1} OF {2} PROPOSALS REJECTED", round.Occasion.ToUpperInvariant(), round.Rejections, PoliSim.Elections.SpeakerRound.ProposalLimit), caption);
+            // The round's record, the last lines, dated - what the Speaker and the parties did.
+            GUIStyle logStyle = new GUIStyle(DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleLeft)) { wordWrap = true };   // a rejection names its refusals: wrapped, never widening the column
+            for (int i = System.Math.Max(0, round.Log.Count - 2); i < round.Log.Count; i++) { GUILayout.Label(round.Log[i], logStyle); }
+            switch (round.Stage)
+            {
+                case PoliSim.Elections.RoundStage.Consulting:
+                    GUILayout.Label($"THE SPEAKER ASKS {Name(round.Asked)} · ITS PROPOSAL BY {Date(round.AskedOn.AddDays(PoliSim.Elections.SpeakerRound.ConsultationDays))}", caption);
+                    break;
+                case PoliSim.Elections.RoundStage.VotePending:
+                    GUILayout.Label($"{Name(round.Proposal.Formateur)}'S PROPOSAL, {string.Join("+", round.Proposal.CabinetParties.ConvertAll(Name))} · THE RIKSDAG VOTES ON {Date(round.VoteOn)}", caption);
+                    break;
+                case PoliSim.Elections.RoundStage.OfferToPlayer:
+                    string you = _playerCountry.PlayerPartyAbbrev;
+                    string offer = round.Proposal.CabinetParties.Contains(you)
+                        ? string.Format(CultureInfo.InvariantCulture, "{0} offers your party {1} post(s) in a {2} cabinet.", Name(round.Asked), round.Proposal.PostsOf(you), string.Join("+", round.Proposal.CabinetParties.ConvertAll(Name)))
+                        : string.Format(CultureInfo.InvariantCulture, "{0} asks your party to support a {1} cabinet from outside, on an agreement.", Name(round.Asked), string.Join("+", round.Proposal.CabinetParties.ConvertAll(Name)));
+                    if (DrawSentenceAction(offer, "Accept the offer", true, _implementButtonStyle))
+                    {
+                        if (!_simulationManager.AnswerOffer(PlayerCountryId, true, out string refused)) { Debug.Log($"SPEAKER: refused - {refused}"); }
+                    }
+                    if (DrawSentenceAction("Declining leaves your party in opposition; the Speaker moves on if your seats were needed.", "Decline", true, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.AnswerOffer(PlayerCountryId, false, out string refused)) { Debug.Log($"SPEAKER: refused - {refused}"); }
+                    }
+                    break;
+                case PoliSim.Elections.RoundStage.PlayerAsked:
+                    if (_formationDraft == null || !ReferenceEquals(_formationDraftRound, round) || _formationDraftTurn != round.Turn)
+                    {
+                        _formationDraft = _simulationManager.DraftProposal(_playerCountry, round, _playerCountry.PlayerPartyAbbrev);
+                        _formationDraftRound = round;
+                        _formationDraftTurn = round.Turn;
+                        _formationRefusal = null;
+                    }
+                    string draft = string.Join("+", _formationDraft.CabinetParties.ConvertAll(Name)) + (_formationDraft.Supporters.Count > 0 ? " with " + string.Join("+", _formationDraft.Supporters.ConvertAll(Name)) + " supporting" : string.Empty);
+                    if (DrawSentenceAction("The Speaker asks your party to form a government. The formation would propose " + draft + (_formationRefusal != null ? " - " + _formationRefusal.ToLowerInvariant() : "."), "Propose it", true, _implementButtonStyle))
+                    {
+                        if (!_simulationManager.SubmitFormation(PlayerCountryId, _formationDraft, out _, out string refused)) { _formationRefusal = refused; Debug.Log($"SPEAKER: the proposal was not tabled - {refused}"); }
+                    }
+                    if (DrawSentenceAction("Or pass, and the Speaker asks the next party.", "Pass", true, _removeButtonStyle))
+                    {
+                        if (!_simulationManager.PassFormation(PlayerCountryId, out string refused)) { Debug.Log($"SPEAKER: refused - {refused}"); }
+                    }
+                    break;
+            }
         }
 
         /// <summary>

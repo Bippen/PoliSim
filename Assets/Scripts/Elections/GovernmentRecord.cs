@@ -62,16 +62,18 @@ namespace PoliSim.Elections
         /// <summary>PS-3i (§636): the day the chamber declared no confidence in this government's prime minister (MinValue for none), and the party that moved it.</summary>
         public DateTime NoConfidenceOn = DateTime.MinValue;
         public string NoConfidenceMover;
-        /// <summary>PS-3i (§636): discharged, serving on as a caretaker until the next government (RF 6 kap. 9 §) - no motion is taken up against it, and it cannot itself decide an extra election (RF 3 kap. 11 §); the Speaker's procedure resumed after an election can order one (6 kap. 5 §, §640).</summary>
+        /// <summary>PS-3i (§636): discharged, serving on as a caretaker until the next government (RF 6 kap. 9 §) - no motion is taken up against it, and it cannot itself decide an extra election (RF 3 kap. 11 §); a Speaker's round that breaks off can order one (6 kap. 5 §, §640, §646).</summary>
         public bool Caretaker;
         public DateTime CaretakerSince = DateTime.MinValue;
-        /// <summary>PS-3i ruling (3) (2026-09-25): the polling day of the last election after which the Speaker's procedure resumed for this caretaker
-        /// (RF 6 kap. 5 §) - so each election resumes it once. MinValue: not yet resumed, which is what an older save's caretaker reads.</summary>
+        /// <summary>PS-3i ruling (3) (2026-09-25), §646: the polling day of the last election after which a Speaker's round opened on this government's watch
+        /// (RF 6 kap. 5 §) - so each election opens one round. MinValue: none yet.</summary>
         public DateTime ProcedureResumedAfter = DateTime.MinValue;
         /// <summary>§641 (the reader): the refusals a motion made that stand in every Speaker's round until the next election, as "MOVER>PM" by party key -
         /// the player's party will not carry the prime minister it brought down. Carried from a fallen government to the one the round forms; an election's
         /// formation starts without them. Empty in an older save, which is what it held.</summary>
         public List<string> StandingRefusals = new List<string>();
+        /// <summary>§646: the Speaker's round this government serves through as a caretaker (premise 8), or null. Saved (format 35).</summary>
+        public SpeakerRound Round;
 
         /// <summary>
         /// §642 (the ultrareview of PR #1): WHO GOVERNS HAS A VERSION. A government formed, installed or loaded is a new record; every change made to a
@@ -98,7 +100,8 @@ namespace PoliSim.Elections
             return true;
         }
 
-        /// <summary>The Speaker discharges the government; it serves on as a caretaker from <paramref name="on"/> (RF 6 kap. 9 §, 11 §).</summary>
+        /// <summary>The Speaker discharges the government; it serves on as a caretaker from <paramref name="on"/> (RF 6 kap. 9 §, 11 §) - and, §646, the
+        /// outgoing government through a Speaker's round after an election (premise 8).</summary>
         public void Discharge(DateTime on)
         {
             Caretaker = true;
@@ -163,6 +166,39 @@ namespace PoliSim.Elections
             {
                 while (Portfolios[party].Count < count[party] && pool.Count > 0) { Portfolios[party].Add(pool[0]); pool.RemoveAt(0); }
             }
+        }
+
+        /// <summary>
+        /// §646 (R7): the government a Speaker's round installs - the proposal's cabinet, its posts as offered, the supporters that accepted and, for each,
+        /// its tabled demands the formateur accepted; the prime minister the formateur's party; the round's standing refusals carried (§641).
+        /// </summary>
+        public static GovernmentRecord FromProposal(Country country, FormationProposal proposal, IEnumerable<string> supporters, CoalitionOutcomeKind kind,
+            DateTime formedOn, string basis, WorldClock.ExecutiveKind executiveKind, string executive, IEnumerable<string> refusals, World world)
+        {
+            var record = new GovernmentRecord { FormedOn = formedOn, Provisional = false, Kind = executiveKind, Executive = executive, PmParty = proposal.Formateur, Outcome = kind.ToString(), Basis = basis };
+            record.Cabinet.AddRange(proposal.CabinetParties);
+            record.Support.AddRange(supporters);
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in proposal.Posts) { record.Portfolios[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
+            foreach (string supporter in record.Support)
+            {
+                // The demands as tabled to the proposal (frozen when it was drafted or submitted), the accepted ones kept - copied, so the record's
+                // tracking never writes into the proposal.
+                List<string> accepted = proposal.AcceptedDemands.TryGetValue(supporter, out List<string> a) ? a : new List<string>();
+                var tabled = new SupportAgreement { Supporter = supporter, FormedOn = formedOn, Basis = "the demands it tabled to the formateur's proposal, those the formateur accepted (the formation sheet, §5.3)" };
+                foreach (AgreementItem item in proposal.TabledOf(country, supporter, formedOn, world)) { if (accepted.Contains(SupportAgreement.KeyOf(item))) { tabled.Items.Add(item); } }
+                record.Agreements.Add(tabled.Copy());
+            }
+            if (refusals != null) { record.StandingRefusals.AddRange(refusals); }
+            return record;
+        }
+
+        /// <summary>§646: the posts Gamson's law allocates each party of a proposed cabinet (<see cref="AllocatePortfolios"/>), the prime minister's party taking Finance first - what a partner expects.</summary>
+        public static Dictionary<string, List<CabinetPortfolio>> GamsonPosts(Country country, IEnumerable<string> cabinet, string pmParty)
+        {
+            var scratch = new GovernmentRecord { PmParty = pmParty };
+            scratch.Cabinet.AddRange(cabinet);
+            scratch.AllocatePortfolios(country);
+            return scratch.Portfolios;
         }
 
         public PlayerRole RoleOf(string abbrev)

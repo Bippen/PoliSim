@@ -290,109 +290,23 @@ namespace PoliSim.Elections
         public static CoalitionResult Form(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
             IReadOnlyList<InOrAgainst> inOrAgainst = null)
         {
-            if (seats == null) { throw new ArgumentNullException(nameof(seats)); }
-            int n = seats.Length;
-            // K-1f: the parties that support no cabinet they are not in; K-1g: of those, the ones that also vote against every such cabinet.
-            int noSupportMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: false);
-            int inOrAgainstMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: true);
-            if (compatibility.GetLength(0) != n || compatibility.GetLength(1) != n) { throw new ArgumentException("compatibility must be party by party"); }
-            var lines = redLines ?? new List<RedLine>();
+            // §646 (the formateur's evaluator): the chamber is PREPARED once and every admissible cabinet EVALUATED by the one routine a proposal
+            // is judged by - so the formation and the formateur's investiture can never disagree. The formation reproduced exactly is pinned by
+            // `FormationSweepDiagnostic`.
+            Chamber chamber = Prepare(seats, compatibility, redLines, negativeRule, inOrAgainst);
             var result = new CoalitionResult
             {
-                Majority = CoalitionMath.Majority(seats),
-                NegotiatingPower = CoalitionMath.NegotiatingPower(seats),
+                Majority = chamber.Majority,
+                NegotiatingPower = chamber.Power,
             };
+            result.BlockedByRedLine.AddRange(chamber.Blocked);
 
-            int all = (1 << n) - 1;
-            int totalSeats = CoalitionMath.Seats(seats, all);
-
-            // PASS 1 - which cabinets are admissible at all, and what each is worth on its own
-            // terms. The score uses only cohesion, seats and pivotality, so it does NOT depend on
-            // who supports whom; that is what lets pass 2 ask "would this party rather have a
-            // different government?" without the question chasing its own tail.
-            var admissible = new List<int>();
-            var baseScore = new double[all + 1];
-            for (int cabinet = 1; cabinet <= all; cabinet++)
+            // PASS 2 - support, opposition, and the investiture, cabinet by cabinet (Evaluate).
+            foreach (int cabinet in chamber.Admissible)
             {
-                int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
-                if (TryFindInternalRedLine(cabinet, n, lines, out RedLine broken))
-                {
-                    // A cabinet an absolute majority of seats would have carried, refused by a red
-                    // line: the done-when's second clause reads exactly this list.
-                    if (cabinetSeats >= result.Majority) { result.BlockedByRedLine.Add((cabinet, broken)); }
-                    continue;
-                }
-
-                admissible.Add(cabinet);
-                baseScore[cabinet] = WeightCohesion * Cohesion(cabinet, n, compatibility)
-                    + WeightSeatStrength * 100.0 * cabinetSeats / Math.Max(1, totalSeats)
-                    + WeightPower * 100.0 * PowerOf(cabinet, n, result.NegotiatingPower);
-            }
-
-            // K-1h (i): which admissible cabinets pass their investiture on the lines and rules alone, before any party holds out - the only
-            // cabinets a party holds out for.
-            var passesOnLines = new bool[all + 1];
-            foreach (int cabinet in admissible)
-            {
-                int support = SupportersOf(cabinet, n, lines, compatibility, result.NegotiatingPower, noSupportMask);
-                int opposeMask = 0;
-                for (int p = 0; p < n; p++)
-                {
-                    if ((cabinet & (1 << p)) != 0 || (support & (1 << p)) != 0) { continue; }
-                    if (SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0) { opposeMask |= 1 << p; }
-                }
-                int supported = CoalitionMath.Seats(seats, cabinet) + CoalitionMath.Seats(seats, support);
-                passesOnLines[cabinet] = supported >= result.Majority || (negativeRule && CoalitionMath.Seats(seats, opposeMask) < result.Majority);
-            }
-
-            // The best government each party could hope to sit in - what it is holding out for: a cabinet of its own that could pass (K-1h (i)).
-            var bestOwn = new double[n];
-            for (int p = 0; p < n; p++) { bestOwn[p] = double.NegativeInfinity; }
-            foreach (int cabinet in admissible)
-            {
-                if (!passesOnLines[cabinet]) { continue; }
-                for (int p = 0; p < n; p++)
-                {
-                    if ((cabinet & (1 << p)) != 0 && baseScore[cabinet] > bestOwn[p]) { bestOwn[p] = baseScore[cabinet]; }
-                }
-            }
-
-            // PASS 2 - support, opposition, and the investiture.
-            foreach (int cabinet in admissible)
-            {
-                int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
-                int support = SupportersOf(cabinet, n, lines, compatibility, result.NegotiatingPower, noSupportMask);
-                int supported = cabinetSeats + CoalitionMath.Seats(seats, support);
-
-                // Who actually votes AGAINST. A party red-lined from the cabinet does; so does one
-                // holding out for a government it prefers and could be part of - one that could pass its own
-                // investiture on the lines and rules alone (K-1h (i)). Everyone else
-                // ABSTAINS - which is the whole point of negative parliamentarism, and without it
-                // the rule would be arithmetic in disguise (opposed < majority would just be
-                // supported >= majority restated).
-                int opposeMask = 0;
-                for (int p = 0; p < n; p++)
-                {
-                    if ((cabinet & (1 << p)) != 0 || (support & (1 << p)) != 0) { continue; }
-                    // A party that will not SUPPORT you votes against you. A party that merely
-                    // will not SIT with you can still tolerate you from outside - which is the
-                    // whole Tido arrangement, so conflating the two would erase it.
-                    // K-1f: an in-or-against party is never outside a cabinet it tolerates - outside one, it votes against (K-1g: V's and MP's
-                    // form; SD's refuses support only, and its vote is the lines' and the hold-out's).
-                    bool redLined = SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0;
-                    if (redLined || bestOwn[p] > baseScore[cabinet]) { opposeMask |= 1 << p; }
-                }
-
-                int opposed = CoalitionMath.Seats(seats, opposeMask);
-                bool wins = supported >= result.Majority || (negativeRule && opposed < result.Majority);
-                if (!wins) { continue; }
-
-                CoalitionOutcomeKind kind = cabinetSeats >= result.Majority ? CoalitionOutcomeKind.MajorityCoalition
-                    : support != 0 && supported >= result.Majority ? CoalitionOutcomeKind.ConfidenceAndSupply
-                    : CoalitionOutcomeKind.MinorityGovernment;
-
-                result.Viable.Add(new GovernmentOption(cabinet, support, kind, cabinetSeats, supported, opposed,
-                    Cohesion(cabinet, n, compatibility), baseScore[cabinet]));
+                CabinetEvaluation evaluation = Evaluate(chamber, cabinet);
+                if (!evaluation.Wins) { continue; }
+                result.Viable.Add(evaluation.AsOption());
             }
 
             // DEFECTION. Passing the investiture is not enough: a government also has to be one
@@ -412,6 +326,7 @@ namespace PoliSim.Elections
             // party was holding out for. If a round would empty the set, the round is abandoned and
             // the survivors stand - a chamber where everyone can always do better elsewhere is a
             // statement about the payoff rule, not a reason to report a new election.
+            int n = chamber.N;
             for (int round = 0; round < 32; round++)
             {
                 var kept = new List<GovernmentOption>();
@@ -437,6 +352,272 @@ namespace PoliSim.Elections
             return result;
         }
 
+        /// <summary>
+        /// §646 (the formateur's evaluator): THE CHAMBER, PREPARED - everything <see cref="Form"/> reads of the whole chamber before it weighs one
+        /// cabinet: which cabinets are admissible (no red line inside) and each one's own score, which of them pass their investiture on the lines
+        /// and the party rules alone, and the best passable cabinet each party could sit in - what it holds out for (K-1h (i)).
+        /// </summary>
+        public sealed class Chamber
+        {
+            public int N;
+            public int[] Seats;
+            public double[,] Compatibility;
+            public IReadOnlyList<RedLine> Lines;
+            public bool NegativeRule;
+            /// <summary>K-1f: the parties that support no cabinet they are not in; K-1g: of those, the ones that also vote against every such cabinet.</summary>
+            public int NoSupportMask;
+            public int InOrAgainstMask;
+            public IReadOnlyList<InOrAgainst> Rules;
+            public int Majority;
+            public int TotalSeats;
+            public double[] Power;
+            public readonly List<int> Admissible = new List<int>();
+            public double[] BaseScore;
+            public bool[] PassesOnLines;
+            public double[] BestOwn;
+            public readonly List<(int Cabinet, RedLine Line)> Blocked = new List<(int, RedLine)>();
+        }
+
+        /// <summary>§646: prepare a chamber for evaluation - the formation's pass 1, its passable set and each party's hold-out, as <see cref="Form"/> computes them.</summary>
+        public static Chamber Prepare(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
+            IReadOnlyList<InOrAgainst> inOrAgainst = null)
+        {
+            if (seats == null) { throw new ArgumentNullException(nameof(seats)); }
+            int n = seats.Length;
+            // K-1f: the parties that support no cabinet they are not in; K-1g: of those, the ones that also vote against every such cabinet.
+            int noSupportMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: false);
+            int inOrAgainstMask = InOrAgainst.Mask(inOrAgainst, n, votingAgainstOnly: true);
+            if (compatibility.GetLength(0) != n || compatibility.GetLength(1) != n) { throw new ArgumentException("compatibility must be party by party"); }
+            var lines = redLines ?? new List<RedLine>();
+            var chamber = new Chamber
+            {
+                N = n, Seats = seats, Compatibility = compatibility, Lines = lines, NegativeRule = negativeRule,
+                NoSupportMask = noSupportMask, InOrAgainstMask = inOrAgainstMask, Rules = inOrAgainst ?? new List<InOrAgainst>(),
+                Majority = CoalitionMath.Majority(seats),
+                Power = CoalitionMath.NegotiatingPower(seats),
+            };
+
+            int all = (1 << n) - 1;
+            int totalSeats = CoalitionMath.Seats(seats, all);
+            chamber.TotalSeats = totalSeats;
+
+            // PASS 1 - which cabinets are admissible at all, and what each is worth on its own
+            // terms. The score uses only cohesion, seats and pivotality, so it does NOT depend on
+            // who supports whom; that is what lets pass 2 ask "would this party rather have a
+            // different government?" without the question chasing its own tail.
+            var baseScore = new double[all + 1];
+            for (int cabinet = 1; cabinet <= all; cabinet++)
+            {
+                int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
+                if (TryFindInternalRedLine(cabinet, n, lines, out RedLine broken))
+                {
+                    // A cabinet an absolute majority of seats would have carried, refused by a red
+                    // line: the done-when's second clause reads exactly this list.
+                    if (cabinetSeats >= chamber.Majority) { chamber.Blocked.Add((cabinet, broken)); }
+                    continue;
+                }
+
+                chamber.Admissible.Add(cabinet);
+                baseScore[cabinet] = WeightCohesion * Cohesion(cabinet, n, compatibility)
+                    + WeightSeatStrength * 100.0 * cabinetSeats / Math.Max(1, totalSeats)
+                    + WeightPower * 100.0 * PowerOf(cabinet, n, chamber.Power);
+            }
+            chamber.BaseScore = baseScore;
+
+            // K-1h (i): which admissible cabinets pass their investiture on the lines and rules alone, before any party holds out - the only
+            // cabinets a party holds out for.
+            var passesOnLines = new bool[all + 1];
+            foreach (int cabinet in chamber.Admissible)
+            {
+                int support = SupportersOf(cabinet, n, lines, compatibility, chamber.Power, noSupportMask);
+                int opposeMask = 0;
+                for (int p = 0; p < n; p++)
+                {
+                    if ((cabinet & (1 << p)) != 0 || (support & (1 << p)) != 0) { continue; }
+                    if (SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0) { opposeMask |= 1 << p; }
+                }
+                int supported = CoalitionMath.Seats(seats, cabinet) + CoalitionMath.Seats(seats, support);
+                passesOnLines[cabinet] = supported >= chamber.Majority || (negativeRule && CoalitionMath.Seats(seats, opposeMask) < chamber.Majority);
+            }
+            chamber.PassesOnLines = passesOnLines;
+
+            // The best government each party could hope to sit in - what it is holding out for: a cabinet of its own that could pass (K-1h (i)).
+            var bestOwn = new double[n];
+            for (int p = 0; p < n; p++) { bestOwn[p] = double.NegativeInfinity; }
+            foreach (int cabinet in chamber.Admissible)
+            {
+                if (!passesOnLines[cabinet]) { continue; }
+                for (int p = 0; p < n; p++)
+                {
+                    if ((cabinet & (1 << p)) != 0 && baseScore[cabinet] > bestOwn[p]) { bestOwn[p] = baseScore[cabinet]; }
+                }
+            }
+            chamber.BestOwn = bestOwn;
+            return chamber;
+        }
+
+        /// <summary>§646: one party's side at a cabinet's investiture, and why - the formation's own reasons, never an authored willingness.</summary>
+        public enum InvestitureSide { InCabinet, Supports, Against, Abstains }
+
+        /// <summary>§646: ONE CABINET'S INVESTITURE, as the formation weighs it: who supports it, who votes against and why, whether it wins, and what kind of government it is.</summary>
+        public sealed class CabinetEvaluation
+        {
+            public int Cabinet;
+            public int SupportMask;
+            public int OpposeMask;
+            public int CabinetSeats;
+            public int SupportedSeats;
+            public int OpposedSeats;
+            /// <summary>False when a red line falls inside the cabinet - <see cref="InternalLine"/> names it.</summary>
+            public bool Admissible;
+            public RedLine InternalLine;
+            public bool Wins;
+            public CoalitionOutcomeKind Kind;
+            public double Cohesion;
+            public double Score;
+            public InvestitureSide[] Sides;
+            /// <summary>Each party's reason, in the formation's own terms; the red line's basis where one decides it.</summary>
+            public string[] Reasons;
+
+            public GovernmentOption AsOption() => new GovernmentOption(Cabinet, SupportMask, Kind, CabinetSeats, SupportedSeats, OpposedSeats, Cohesion, Score);
+        }
+
+        /// <summary>
+        /// §646: EVALUATE ONE CABINET in a prepared chamber - pass 2 of the formation, for one cabinet. <paramref name="support"/> null derives the
+        /// supporters as the formation does; a mask (the formateur's proposal) takes those parties as supporting it.
+        /// </summary>
+        public static CabinetEvaluation Evaluate(Chamber chamber, int cabinet, int? support = null)
+        {
+            int n = chamber.N;
+            int[] seats = chamber.Seats;
+            var e = new CabinetEvaluation { Cabinet = cabinet, Sides = new InvestitureSide[n], Reasons = new string[n] };
+            e.Admissible = !TryFindInternalRedLine(cabinet, n, chamber.Lines, out RedLine inside);
+            if (!e.Admissible) { e.InternalLine = inside; }
+            int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
+            int supportMask = support.HasValue ? support.Value & ~cabinet : SupportersOf(cabinet, n, chamber.Lines, chamber.Compatibility, chamber.Power, chamber.NoSupportMask);
+            int supported = cabinetSeats + CoalitionMath.Seats(seats, supportMask);
+            double score = e.Admissible ? chamber.BaseScore[cabinet] : double.NaN;
+
+            // Who actually votes AGAINST. A party red-lined from the cabinet does; so does one
+            // holding out for a government it prefers and could be part of - one that could pass its own
+            // investiture on the lines and rules alone (K-1h (i)). Everyone else
+            // ABSTAINS - which is the whole point of negative parliamentarism, and without it
+            // the rule would be arithmetic in disguise (opposed < majority would just be
+            // supported >= majority restated).
+            int opposeMask = 0;
+            for (int p = 0; p < n; p++)
+            {
+                if ((cabinet & (1 << p)) != 0) { e.Sides[p] = InvestitureSide.InCabinet; e.Reasons[p] = "in the cabinet"; continue; }
+                if ((supportMask & (1 << p)) != 0) { e.Sides[p] = InvestitureSide.Supports; e.Reasons[p] = "supports it from outside"; continue; }
+                // A party that will not SUPPORT you votes against you. A party that merely
+                // will not SIT with you can still tolerate you from outside - which is the
+                // whole Tido arrangement, so conflating the two would erase it.
+                // K-1f: an in-or-against party is never outside a cabinet it tolerates - outside one, it votes against (K-1g: V's and MP's
+                // form; SD's refuses support only, and its vote is the lines' and the hold-out's).
+                bool blocked = SupportBlocked(p, cabinet, n, chamber.Lines);
+                bool inOrAgainst = (chamber.InOrAgainstMask & (1 << p)) != 0;
+                bool holdsOut = e.Admissible && chamber.BestOwn[p] > score;
+                if (blocked || inOrAgainst || holdsOut)
+                {
+                    opposeMask |= 1 << p;
+                    e.Sides[p] = InvestitureSide.Against;
+                    e.Reasons[p] = blocked ? "a red line against a cabinet party - " + SupportBlockBasis(p, cabinet, n, chamber.Lines)
+                        : inOrAgainst ? "votes against every cabinet it is not in - " + RuleBasis(chamber.Rules, p)
+                        : "holds out for a cabinet of its own that could pass";
+                    continue;
+                }
+                e.Sides[p] = InvestitureSide.Abstains;
+                e.Reasons[p] = "abstains - no line bars its support, and it holds out for nothing it could pass";
+            }
+
+            int opposed = CoalitionMath.Seats(seats, opposeMask);
+            e.SupportMask = supportMask;
+            e.OpposeMask = opposeMask;
+            e.CabinetSeats = cabinetSeats;
+            e.SupportedSeats = supported;
+            e.OpposedSeats = opposed;
+            e.Score = score;
+            e.Cohesion = Cohesion(cabinet, n, chamber.Compatibility);
+            e.Wins = e.Admissible && (supported >= chamber.Majority || (chamber.NegativeRule && opposed < chamber.Majority));
+            e.Kind = cabinetSeats >= chamber.Majority ? CoalitionOutcomeKind.MajorityCoalition
+                : supportMask != 0 && supported >= chamber.Majority ? CoalitionOutcomeKind.ConfidenceAndSupply
+                : CoalitionOutcomeKind.MinorityGovernment;
+            return e;
+        }
+
+        /// <summary>
+        /// §646: why party <paramref name="p"/> would refuse to support <paramref name="cabinet"/> from outside, on the formation's first conditions of
+        /// support (<see cref="SupportersOf"/>): a support-blocking line to a cabinet member, its own rule refusing the support role (K-1f, K-1g), or a
+        /// party left outside suiting it better. Null where it would support. The second condition - supporters tolerating each other - is
+        /// <see cref="SharedSupportRefusal"/>, asked among the parties that pass this one, as the formation asks it.
+        /// </summary>
+        public static string SupportRefusal(Chamber chamber, int p, int cabinet)
+        {
+            int n = chamber.N;
+            if (SupportBlocked(p, cabinet, n, chamber.Lines)) { return "a red line against a cabinet party - " + SupportBlockBasis(p, cabinet, n, chamber.Lines); }
+            if ((chamber.NoSupportMask & (1 << p)) != 0) { return "supports no cabinet it is not in - " + RuleBasis(chamber.Rules, p); }
+            double toCabinet = MeanCompatibility(p, cabinet, n, chamber.Compatibility);
+            double bestOutside = double.NegativeInfinity;
+            int bestParty = -1;
+            for (int q = 0; q < n; q++)
+            {
+                if (q == p || (cabinet & (1 << q)) != 0) { continue; }
+                if (!double.IsNaN(chamber.Compatibility[p, q]) && chamber.Compatibility[p, q] > bestOutside) { bestOutside = chamber.Compatibility[p, q]; bestParty = q; }
+            }
+            if (double.IsNaN(toCabinet)) { return "no compatibility with the cabinet is defined"; }
+            if (bestOutside > double.NegativeInfinity && toCabinet < bestOutside)
+            {
+                return string.Format(System.Globalization.CultureInfo.InvariantCulture, "a party left outside the cabinet suits it better ({0:0.0} against {1:0.0} with the cabinet; party index {2})", bestOutside, toCabinet, bestParty);
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// §646: the formation's second condition of support, for a proposal - among <paramref name="survivors"/> (the proposed supporters that pass
+        /// <see cref="SupportRefusal"/>), supporters that red-line each other cannot both stay; the weaker by negotiating power leaves, the later index on
+        /// a tie, repeated to a fixed point as <see cref="SupportersOf"/> does. Returns the mask that stays.
+        /// </summary>
+        public static int SharedSupport(Chamber chamber, int survivors)
+        {
+            int n = chamber.N;
+            int support = survivors;
+            bool changed = true;
+            while (changed)
+            {
+                changed = false;
+                for (int i = 0; i < chamber.Lines.Count && !changed; i++)
+                {
+                    RedLine line = chamber.Lines[i];
+                    if (!line.BlocksSupport || line.OneWay || line.A >= n || line.B >= n) { continue; }
+                    if ((support & (1 << line.A)) == 0 || (support & (1 << line.B)) == 0) { continue; }
+                    int weaker = chamber.Power[line.A] < chamber.Power[line.B] ? line.A
+                        : chamber.Power[line.B] < chamber.Power[line.A] ? line.B
+                        : Math.Max(line.A, line.B);
+                    support &= ~(1 << weaker);
+                    changed = true;
+                }
+            }
+            return support;
+        }
+
+        /// <summary>The basis of the first support-blocking line that parts a party from a cabinet member.</summary>
+        private static string SupportBlockBasis(int p, int cabinet, int n, IReadOnlyList<RedLine> lines)
+        {
+            for (int i = 0; i < lines.Count; i++)
+            {
+                RedLine line = lines[i];
+                if (!line.BlocksSupport) { continue; }
+                for (int q = 0; q < n; q++) { if ((cabinet & (1 << q)) != 0 && line.RefusesSupport(p, q)) { return line.Basis; } }
+            }
+            return "no line found";
+        }
+
+        private static string RuleBasis(IReadOnlyList<InOrAgainst> rules, int p)
+        {
+            foreach (InOrAgainst rule in rules) { if (rule.Party == p) { return rule.Basis; } }
+            return "no rule found";
+        }
+
         /// <summary>[AUTHORED-DRAFT] the margin by which a party must do better elsewhere before it walks - below it, two governments are the same offer and nobody moves.</summary>
         public const double DefectionMargin = 0.01;
 
@@ -447,6 +628,20 @@ namespace PoliSim.Elections
             int cabinetSeats = CoalitionMath.Seats(seats, g.Cabinet);
             if (cabinetSeats <= 0) { return 0.0; }
             return (double)seats[party] / cabinetSeats * (Cohesion(g.Cabinet, n, compatibility) / 100.0);
+        }
+
+        /// <summary>
+        /// §646: THE GOVERNMENTS THAT WOULD HOLD - of the formation's viable governments, those no party in or behind would walk out of (<see cref="WouldHold"/>);
+        /// where the defection rounds were abandoned and none holds, the government the formation stands on alone. What a party answering a proposal
+        /// compares it against: never a government the formation itself would not settle on.
+        /// </summary>
+        public static List<GovernmentOption> Holding(CoalitionResult result, int[] seats, double[,] compatibility)
+        {
+            var holding = new List<GovernmentOption>();
+            int n = seats.Length;
+            foreach (GovernmentOption g in result.Viable) { if (WouldHold(g, result.Viable, seats, compatibility, n)) { holding.Add(g); } }
+            if (holding.Count == 0 && result.Outcome != CoalitionOutcomeKind.NewElection) { holding.Add(result.Government); }
+            return holding;
         }
 
         /// <summary>Whether every party in or behind a government does at least as well there as in any other government still standing.</summary>

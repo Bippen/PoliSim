@@ -349,7 +349,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>§641: the standing refusals ("MOVER>PM") as one-way support-blocking lines for a round - the mover will not carry that prime minister.</summary>
-        public static List<RedLine> RefusalLines(CountryId country, IEnumerable<string> refusals)
+        public static List<RedLine> RefusalLines(CountryId country, IEnumerable<string> refusals, string basis = "moved the motion that brought this prime minister down")
         {
             var lines = new List<RedLine>();
             if (refusals == null) { return lines; }
@@ -358,7 +358,7 @@ namespace PoliSim.Elections
                 int at = refusal?.IndexOf('>') ?? -1;
                 if (at <= 0) { continue; }
                 int mover = IndexOf(country, refusal.Substring(0, at)), pm = IndexOf(country, refusal.Substring(at + 1));
-                if (mover >= 0 && pm >= 0 && mover != pm) { lines.Add(new RedLine(mover, pm, RedLineKind.Declared, blocksSupport: true, basis: "moved the motion that brought this prime minister down", oneWay: true)); }
+                if (mover >= 0 && pm >= 0 && mover != pm) { lines.Add(new RedLine(mover, pm, RedLineKind.Declared, blocksSupport: true, basis: basis, oneWay: true)); }
             }
             return lines;
         }

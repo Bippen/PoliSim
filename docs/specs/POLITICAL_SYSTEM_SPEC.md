@@ -143,7 +143,32 @@ is built, per the standing rule that a design a later session depends on lives i
 
 The build, one commit each: the evaluator (a proposal's investiture and each party's answer, reproducing
 the current formation exactly), the Speaker's round (save format 35), the formation sheet, and the
-election-night line.
+election-night line. (The evaluator lands with the Speaker's round, its first caller: `UnwiredSubsystemCheck`
+admits no game file nothing reaches, §646.)
+
+**The Speaker's round - the builder's premises, beneath the ruled nine** (§646; each stated, none ruled):
+
+- R1. The player's country only, where its confidence rules are sourced (Sweden's today); every other
+  country forms at once, as before.
+- R2. A round opens after the player's country's election (in place of installing the formation's
+  government that night), after a discharge (in place of §636's single round), and so after an election
+  a caretaker served to (§640's resumption becomes the round).
+- R3. The order (premise 6): the formation's prime-minister party - the party of a declared candidacy in
+  the formation's cabinet, else its largest - then every other party with a declared candidate, largest
+  first; the order repeats until a government is installed or the proposals run out (RF 6:5).
+- R4. An AI party asked proposes the best government the formation would form with itself leading
+  (Gamson's posts, its supporters' demands accepted); with none, itself alone. Where that government
+  seats the player's party or asks its support, the offer goes to the player (premise 5); a decline is a
+  refusal line for the rest of the round, and the asked party proposes again without the player - where
+  nothing passes without the player's seats, the Speaker moves on without a vote.
+- R5. The player asked: the formation sheet (premise 1); the clock holds until the player tables a
+  proposal every invited party accepts, or passes to the next candidate.
+- R6. Dated time (premise 7): the consultation before an AI party's proposal one week [AUTHORED-DRAFT];
+  the vote on the fourth day after a proposal (RF 6:4, "inom fyra dagar": the last day allowed).
+- R7. A proposal that wins its investiture installs its government - its cabinet, posts, supporters and
+  accepted demands; one that fails counts against the limit, and at the limit the procedure breaks off
+  to an extra election (§640's rule: within three months unless the ordinary election falls in them).
+- R8. The round rides the outgoing government's record, saved (format 35).
 
 ### 5.4 Confidence and collapse
 

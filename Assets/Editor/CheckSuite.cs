@@ -186,6 +186,9 @@ namespace PoliSim.EditorTools
             ("PortfolioAllocationDiagnostic", PortfolioAllocationDiagnostic.Run),   // PS-3g (§634): portfolios by Gamson's law on the record; the gate's portfolio leg
             ("SupportAgreementDiagnostic", SupportAgreementDiagnostic.Run),   // PS-3h (§635): the support agreement's items owed, delivered, broken; the withdrawal recorded
             ("ConfidenceDiagnostic", ConfidenceDiagnostic.Run),   // PS-3i (§636): a supporter's withdrawal brings a government down by the Riksdag's procedure
+            ("FormationSweepDiagnostic", FormationSweepDiagnostic.Run),   // §646: the formation's whole answer over a sweep of chambers, pinned - the evaluator reproduces it exactly
+            ("FormateurDiagnostic", FormateurDiagnostic.Run),   // §646: every AI party answers a proposal from the formation's own model (the formateur's premises 2-3)
+            ("SpeakerRoundDiagnostic", SpeakerRoundDiagnostic.Run),   // §646: the Speaker's round, dated - the AI asked, the offer to the player, the player asked
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),

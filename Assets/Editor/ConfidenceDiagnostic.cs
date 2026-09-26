@@ -17,7 +17,7 @@ namespace PoliSim.EditorTools
     /// the week's end into a caretaker (6 kap. 7 §, 9 §) and the round on the sitting chamber forms the next government or orders an extra election (6 kap. 5 §).
     /// Both ways around the edges: the prime minister's party, a junior partner and a support party move nothing; a party under a tenth of the members moves
     /// nothing; a caretaker faces no motion; the player's government ordering an extra election within the week is not discharged, and the polling day moves.
-    /// Ruling (3) (§640): the procedure resumes after an election that forms no government while a caretaker serves. Ruling (2) (§641): an AI party moves
+    /// Ruling (3) (§640), as the Speaker's round (§646): after an election a round opens; four rejected proposals break it off to an extra election. Ruling (2) (§641): an AI party moves
     /// no confidence only when the motion would carry and the round would seat it; a supporter past its agreement's tolerance withdraws and is the first mover asked (PS-3i-2a, §644).
     /// </summary>
     public static class ConfidenceDiagnostic
@@ -54,7 +54,8 @@ namespace PoliSim.EditorTools
                 GovernmentRecord fallen = sweden.Government;
                 string fallenCabinet = string.Join("+", fallen.Cabinet);
                 Check(fallen.NoConfidenceOn == sim.CurrentDate && !fallen.Caretaker, "the declaration is recorded; the government's week runs - not yet discharged");
-                for (int d = 0; d < ConfidenceProcedure.ExtraElectionWindowDays + 1; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
+                // §646: the week, then the Speaker's round, dated - walked until it installs a government or orders an extra election.
+                for (int d = 0; d < 120 && sweden.Government == fallen && sim.ExtraElectionDate == DateTime.MinValue; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
                 GovernmentRecord after = sweden.Government;
                 bool reformed = after != fallen && !after.Caretaker;
                 bool extra = after == fallen && fallen.Caretaker && sim.ExtraElectionDate != DateTime.MinValue;
@@ -129,56 +130,72 @@ namespace PoliSim.EditorTools
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go3); EnergyMarket.ResetTurnState(); }
 
-            // 4. PS-3i ruling (3) (2026-09-25): after an election that forms no government the appointment procedure restarts as RF 6 kap. 5 § requires -
-            //    resumed once per election, an extra election within three months, the loop turning until a government forms or an ordinary election
-            //    falls within the three months. An election that formed none is one that left the caretaker's record in place (the game installs any
-            //    government that forms), so the check records each election as held and leaves the record as it is.
+            // 4. PS-3i ruling (3) AS THE SPEAKER'S ROUND (§646, R2 and R7): the day after an election a round opens on it, once, the outgoing government a
+            //    caretaker; a round the Riksdag rejects to RF 6:5's limit breaks off to an extra election within three months, or the ordinary election
+            //    serves where it falls in them; the extra election held, the next day's round opens on it - the loop §640 ruled, turned by the round's
+            //    own limit. The Speaker's own order forms a government on this chamber, so the fixture sets the order to V alone - a party whose own
+            //    proposal the chamber rejects - to reach the limit; that premise is asserted, not assumed.
             var go4 = new GameObject("ConfidenceDiagnostic.4");
             try
             {
                 (SimulationManager sim, Country sweden) = Open(go4);
                 sweden.PlayerPartyAbbrev = "S";
                 GovernmentRecord care = sweden.Government;
-                care.Caretaker = true;
-                care.CaretakerSince = sim.CurrentDate;
-                void HoldFormingNone() => sweden.ElectionHistory.Add(new ElectionRecord { Date = sim.CurrentDate, CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
+                void Hold() => sweden.ElectionHistory.Add(new ElectionRecord { Date = sim.CurrentDate, CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
                 void Day() { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
-                // An election BEFORE the discharge is not one the procedure waits for.
-                sweden.ElectionHistory.Add(new ElectionRecord { Date = sim.CurrentDate.AddDays(-1), CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
+                // An election before the government formed opens nothing.
+                sweden.ElectionHistory.Add(new ElectionRecord { Date = care.FormedOn.AddDays(-1), CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
                 Day();
-                Check(sim.ExtraElectionDate == DateTime.MinValue && care.ProcedureResumedAfter == DateTime.MinValue, "a caretaker with only an election before its discharge: nothing resumes");
+                Check(sim.RoundOf(CountryId.Sweden) == null && care.ProcedureResumedAfter == DateTime.MinValue, "an election before the government formed opens no round");
                 var ordered = new List<DateTime>();
                 string ordinaryServes = null;
-                for (int round = 0; round < 6 && ordinaryServes == null; round++)
+                for (int turn = 0; turn < 4 && ordinaryServes == null; turn++)
                 {
                     DateTime heldOn = sim.CurrentDate;
-                    HoldFormingNone();
+                    Hold();
                     Day();
-                    Check(care.ProcedureResumedAfter == heldOn, F("the election of {0:yyyy-MM-dd} resumed the procedure the day after", heldOn));
+                    SpeakerRound round = sim.RoundOf(CountryId.Sweden);
+                    Check(round != null && care.ProcedureResumedAfter == heldOn && care.Caretaker && round.Occasion.Contains(heldOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)),
+                        F("the day after the election of {0:yyyy-MM-dd} a Speaker's round opens on it (the order {1}); the outgoing government a caretaker", heldOn, round != null ? string.Join(", ", round.Order) : "none"));
+                    if (round == null) { break; }
+                    Day();
+                    Check(sim.RoundOf(CountryId.Sweden) == round, "  once per election - the next day opens no second round");
+                    round.Order = new List<string> { "V" }; round.Asked = "V"; round.AskedOn = sim.CurrentDate; round.Stage = RoundStage.Consulting;
+                    int guard = 0;
+                    while (round.Open && guard++ < 200) { Day(); }
+                    Check(round.Rejections == SpeakerRound.ProposalLimit && !round.Open,
+                        F("  V asked each time: the Riksdag rejects its proposal {0} times and the procedure breaks off (RF 6 kap. 5 §), on {1:yyyy-MM-dd}", round.Rejections, sim.CurrentDate));
                     if (sim.ExtraElectionDate == DateTime.MinValue)
                     {
-                        ordinaryServes = care.Breaks.Find(b => b.Contains("the procedure resumed") && b.Contains("serves"));
+                        ordinaryServes = care.Breaks.Find(b => b.Contains("rejected four proposals") && b.Contains("serves"));
                         break;
                     }
                     DateTime next = sim.ExtraElectionDate;
-                    Check(next > heldOn && next <= heldOn.AddMonths(ConfidenceProcedure.ExtraElectionMonths).AddDays(1) && next.DayOfWeek == DayOfWeek.Sunday, F("  and ordered an extra election on {0:yyyy-MM-dd} - a Sunday within three months", next));
+                    Check(next > sim.CurrentDate && next <= sim.CurrentDate.AddMonths(ConfidenceProcedure.ExtraElectionMonths) && next.DayOfWeek == DayOfWeek.Sunday, F("  and an extra election is ordered on {0:yyyy-MM-dd} - a Sunday within three months", next));
                     ordered.Add(next);
-                    Day();
-                    Check(sim.ExtraElectionDate == next, "  resumed once per election - the next day orders nothing more");
-                    int guard = 0;
+                    guard = 0;
                     while (sim.CurrentDate < next && guard++ < 120) { Day(); }
                     Check(sim.CurrentDate == next, F("  walked to the extra election's polling day ({0:yyyy-MM-dd})", sim.CurrentDate));
                 }
-                Check(ordered.Count >= 2, F("the loop turned: {0} extra election(s) ordered in a row ({1})", ordered.Count, string.Join(", ", ordered.ConvertAll(d => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))));
-                Check(ordinaryServes != null, F("until the ordinary election fell within three months and served: {0}", ordinaryServes ?? "NEVER"));
-                // Once per election, where the field alone guards it: after the ordinary-serves break no extra election is pending, so only
-                // ProcedureResumedAfter keeps the next days from resuming the same election again.
-                int breaks = care.Breaks.Count;
+                Check(ordered.Count >= 1, F("the loop turned: {0} extra election(s) ordered ({1})", ordered.Count, string.Join(", ", ordered.ConvertAll(d => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))));
+                Check(ordinaryServes != null, F("until a break-off fell within three months of the ordinary election, which serves: {0}", ordinaryServes ?? "NEVER"));
+                // Once per election, where the field alone guards it: the round concluded and no extra election pending, only ProcedureResumedAfter keeps
+                // the next days from opening a second round on the same election.
+                int breaksNow = care.Breaks.Count;
                 Day(); Day();
-                Check(care.Breaks.Count == breaks && sim.ExtraElectionDate == DateTime.MinValue, "the same election resumes the procedure once - two more days add nothing (the field's own guard)");
-                Persistence.SaveGame save = Persistence.SaveGameService.CreateSaveGame(sim, sim.World, CountryId.Sweden, null);
+                Check(sim.RoundOf(CountryId.Sweden) == null && care.Breaks.Count == breaksNow && sim.ExtraElectionDate == DateTime.MinValue, "the same election opens one round - two more days open nothing (the field's own guard)");
+
+                // The round rides the save (format 35): one opened, asked, and read back as it stood.
+                (SimulationManager sim2, Country sweden2) = Open(new GameObject("ConfidenceDiagnostic.4save"));
+                sweden2.PlayerPartyAbbrev = "S";
+                sim2.OpenSpeakerRound(sweden2, ElectionVintage.Sweden2022, "for the save");
+                SpeakerRound open = sim2.RoundOf(CountryId.Sweden);
+                Persistence.SaveGame save = Persistence.SaveGameService.CreateSaveGame(sim2, sim2.World, CountryId.Sweden, null);
                 Persistence.SaveGame back = Persistence.SaveGameService.Deserialize(Persistence.SaveGameService.Serialize(save));
-                Check(back.World.GetCountry(CountryId.Sweden).Government.ProcedureResumedAfter == care.ProcedureResumedAfter, "the last resumption rides the save, so a load resumes no election twice");
+                SpeakerRound loaded = back.World.GetCountry(CountryId.Sweden).Government.Round;
+                Check(open != null && loaded != null && loaded.Asked == open.Asked && loaded.Stage == open.Stage && string.Join(",", loaded.Order) == string.Join(",", open.Order) && loaded.AskedOn == open.AskedOn && loaded.Vintage == open.Vintage,
+                    F("an open round rides the save (format 35): {0} asked, {1}", loaded?.Asked ?? "none", loaded?.Stage.ToString() ?? "no round"));
+                UnityEngine.Object.DestroyImmediate(sim2.gameObject);
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go4); EnergyMarket.ResetTurnState(); }
@@ -311,8 +328,8 @@ namespace PoliSim.EditorTools
                 Check(start.NoConfidenceMover == "SD" && !start.Support.Contains("SD") && motion.Motion && motion.Passed && motion.Sides.Exists(x => x.Abbrev == "SD" && x.Side > 0),
                     "(c) SD, its agreement broken, withdraws and moves no confidence - the natural mover; the motion carried, recorded as a division marked a motion, SD for it");
                 Check(start.Breaks.Exists(b => b.Contains("SD withdrew its support over")), "(c) the withdrawal is recorded with its broken items");
-                Walk(sc, cc, ConfidenceProcedure.ExtraElectionWindowDays + 1, "(c)");
-                Check(cc.Government != start && string.Join("+", cc.Government.Cabinet) == string.Join("+", promised.Split('+')) , F("(c) the week ran out and the round formed {0} - the government SD was promised ({1})", string.Join("+", cc.Government.Cabinet), promised));
+                Walk(sc, cc, ConfidenceProcedure.ExtraElectionWindowDays + SpeakerRound.ConsultationDays + SpeakerRound.VoteDays + 2, "(c)");   // §646: the week, then the round's consultation and vote
+                Check(cc.Government != start && new HashSet<string>(cc.Government.Cabinet).SetEquals(promised.Split('+')) , F("(c) the week ran out and the round formed {0} - the government SD was promised ({1})", string.Join("+", cc.Government.Cabinet), promised));
                 Check(start.Caretaker, "(c) the fallen government was discharged into a caretaker");
 
                 // (e) the week before the next polling day: no motion is taken up - its week would end across an election.
@@ -350,7 +367,14 @@ namespace PoliSim.EditorTools
                 Walk(sf, cf, 1, "(f)");
                 GovernmentRecord mine = cf.Government;
                 Check(mine.NoConfidenceMover == "SD" && sf.PlayerGoverns(cf), "(f) SD's motion carries against the player's own government (M leads)");
-                Check(sf.AskToBeDischarged(CountryId.Sweden, out string whyNot) && mine.Caretaker && cf.Government != mine, F("(f) the prime minister asks to be discharged (6 kap. 8 §): discharged at once, the round forms {0}", string.Join("+", cf.Government.Cabinet)));
+                bool discharged = sf.AskToBeDischarged(CountryId.Sweden, out string whyNot);
+                SpeakerRound roundF = sf.RoundOf(CountryId.Sweden);
+                Check(discharged && mine.Caretaker && roundF != null && roundF.Stage == RoundStage.PlayerAsked && roundF.Asked == "M",
+                    F("(f) the prime minister asks to be discharged (6 kap. 8 §): a caretaker at once, and the Speaker's round asks M first - the player ({0})", roundF != null ? string.Join(", ", roundF.Order) : "no round"));
+                // §646: the player tables the government the formation would form with M leading; the vote comes on the fourth day.
+                bool tabled = roundF != null && sf.SubmitFormation(CountryId.Sweden, sf.DraftProposal(cf, roundF, "M"), out ProposalVerdict verdictF, out string notTabled);
+                for (int d = 0; d < SpeakerRound.VoteDays + 1 && cf.Government == mine; d++) { sf.AdvanceDay(); sf.AdvanceCountryDayTick(CountryId.Sweden); }
+                Check(tabled && cf.Government != mine && cf.Government.PmParty == "M", F("(f) M tables its proposal and the Riksdag approves it on the fourth day: {0} led by {1}", string.Join("+", cf.Government.Cabinet), cf.Government.PmParty));
                 Check(!sf.AskToBeDischarged(CountryId.Sweden, out whyNot), F("(f) no second discharge: {0}", whyNot));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }

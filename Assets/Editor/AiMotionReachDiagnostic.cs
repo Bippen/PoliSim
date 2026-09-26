@@ -153,8 +153,22 @@ namespace PoliSim.EditorTools
                 Check(start.NoConfidenceMover == "SD" && start.NoConfidenceOn == sim.CurrentDate && motion != null && motion.Motion && motion.Passed,
                     F("(3) the same day SD moves no confidence and it carries: {0}", motion?.Title ?? "no division"));
                 if (start.NoConfidenceMover != "SD") { return; }
-                Check(sim.AskToBeDischarged(CountryId.Sweden, out string whyNot) && start.Caretaker && sweden.Government != start && sweden.Government.Cabinet.Contains("SD"),
-                    F("(3) the player's government asks to be discharged and falls: a caretaker until the successor {0} led by {1}, which seats SD ({2})", string.Join("+", sweden.Government.Cabinet), sweden.Government.PmParty, whyNot ?? "discharged"));
+                // §646: the discharge opens the Speaker's round; the player's party is asked first and tables the formation's proposal, and the
+                // Riksdag votes on the fourth day.
+                bool discharged = sim.AskToBeDischarged(CountryId.Sweden, out string whyNot);
+                SpeakerRound roundAfter = sim.RoundOf(CountryId.Sweden);
+                string submission = "not asked";
+                if (roundAfter != null && roundAfter.Stage == RoundStage.PlayerAsked)
+                {
+                    bool tabled = sim.SubmitFormation(CountryId.Sweden, sim.DraftProposal(sweden, roundAfter, sweden.PlayerPartyAbbrev), out ProposalVerdict submitted, out string notTabled);
+                    var refused = new List<string>();
+                    if (submitted != null) { foreach (PartyAnswer a in submitted.Answers) { if (!a.Accepts) { refused.Add(a.Party + " " + a.Reason); } } }
+                    submission = tabled ? "tabled" : notTabled + (refused.Count > 0 ? ": " + string.Join("; ", refused) : string.Empty);
+                }
+                sb.Append("    submitted ").Append(submission).Append('\n');
+                for (int d = 0; d < 60 && sweden.Government == start; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
+                Check(discharged && start.Caretaker && sweden.Government != start && sweden.Government.Cabinet.Contains("SD"),
+                    F("(3) the player's government asks to be discharged and falls: a caretaker until the Speaker's round installs {0} led by {1}, which seats SD ({2})", string.Join("+", sweden.Government.Cabinet), sweden.Government.PmParty, whyNot ?? "discharged"));
             }
         }
 

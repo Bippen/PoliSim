@@ -2505,8 +2505,8 @@ namespace PoliSim.Simulation
         // The motion is the player's verb, and an AI party's where ruling (2) allows it (§641: only a motion that would carry, by a mover that prefers
         // the government the round would form). A carried motion opens the government's week (RF 6 kap. 7 §): the player's government may order an extra election in it; an AI government does not (the 2021
         // precedent: the government resigned rather than dissolve - a premise); at the week's end the Speaker discharges the prime minister and with
-        // them the government (6 kap. 9 §), which serves on as a caretaker, and the Speaker's round runs on the sitting chamber: a government that
-        // forms is the new record, and none forming stands for four rejected proposals - an extra election within three months (6 kap. 5 §).
+        // them the government (6 kap. 9 §), which serves on as a caretaker, and the Speaker's round opens on the sitting chamber (§646, dated: a proposal
+        // that wins its investiture installs its government; four rejected break the procedure off to an extra election within three months, 6 kap. 5 §).
         // ---------------------------------------------------------------------------------------------
         private System.DateTime _extraElectionDate = System.DateTime.MinValue;
         private System.DateTime _extraElectionOrderedOn = System.DateTime.MinValue;
@@ -2629,8 +2629,11 @@ namespace PoliSim.Simulation
             }
             Country country = _world?.GetCountry(countryId);
             Elections.GovernmentRecord g = country?.Government;
-            if (g != null && g.Caretaker) { ResumeAppointmentAfterElection(country); return; }
             if (g == null) { return; }
+            // §646: a round open runs its day; the day after an election a round opens (R2 - §640's resumption is this); a caretaker waits on either.
+            if (OpenRoundAfterElection(country, g)) { return; }   // first: an election held while a round is open ends that round (the reader, §646)
+            if (g.Round != null && g.Round.Open) { AdvanceSpeakerRound(country, g); return; }
+            if (g.Caretaker) { return; }
             if (g.NoConfidenceOn == System.DateTime.MinValue)
             {
                 // PS-3i-2a (§644): the agreements are read every day - a dial moved by a bill breaks its item the day it moves, not at the year's turn - and an
@@ -2670,7 +2673,7 @@ namespace PoliSim.Simulation
         /// (PS-3i-2a, §644: the withdrawal is its own step, past the tolerance; a party supporting a government moves nothing - the player's rule, §636):
         /// it is asked first. Then the opposition, largest first.
         /// <para>Each test is the model's own: the vote is <see cref="Elections.ConfidenceProcedure.Vote"/> (the mover for it, the government and its
-        /// support against, the red-lined for it); what would follow is the Speaker's round the discharge runs (<see cref="Elections.GovernmentFormation.ViewOfSitting"/>,
+        /// support against, the red-lined for it); what would follow is the Speaker's round the discharge runs - read as the formation's own government on the sitting chamber, which the round's first party asked proposes (§646; stated: the dated round can end elsewhere where the player is asked or offered a place) (<see cref="Elections.GovernmentFormation.ViewOfSitting"/>,
         /// no refusal line added for an AI mover, as §636's round adds none); the preference is the formation's payoff
         /// (<see cref="Elections.GovernmentFormation.PayoffIn"/>) - a mover is never in the cabinet it would bring down, so it prefers a round that seats
         /// it in the next cabinet. A round that forms nothing - the four proposals rejected, an extra election - is no government a mover can prefer (a
@@ -2740,37 +2743,312 @@ namespace PoliSim.Simulation
             return aggrieved;
         }
 
+        // =============================================================================================================================================
+        // §646 THE SPEAKER'S ROUND (POLITICAL_SYSTEM_SPEC.md §5.3, premises 4-8 and the builder's R1-R8): the formation as a dated procedure in the
+        // player's country - who the Speaker asks, the proposal and its investiture, the proposals the chamber rejects to RF 6:5's limit.
+        // =============================================================================================================================================
+
+        /// <summary>The round open in a country, or null.</summary>
+        public Elections.SpeakerRound RoundOf(CountryId countryId)
+        {
+            Elections.SpeakerRound round = _world?.GetCountry(countryId)?.Government?.Round;
+            return round != null && round.Open ? round : null;
+        }
+
+        /// <summary>Whether a Speaker's round runs in this country - the player's, where its confidence rules are sourced (R1).</summary>
+        public bool RoundsApply(CountryId countryId) => PlayerCountryId.HasValue && PlayerCountryId.Value == countryId
+            && Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Riksdag;
+
         /// <summary>
-        /// PS-3i RULING (3) (Elias, 2026-09-25): AFTER AN ELECTION THAT FORMS NO GOVERNMENT, THE APPOINTMENT PROCEDURE RESTARTS AS THE RIKSDAG'S RULES
-        /// REQUIRE, rather than leaving the caretaker in place. [RF-R:6:5]: four rejected proposals stop the procedure, which "återupptas först sedan
-        /// val till riksdagen har hållits" - it resumes only after an election has been held - and an extra election follows within three months unless an
-        /// ordinary one is due in them. So a caretaker still serving after an election held since its discharge is a resumed procedure that formed
-        /// nothing: the election's own formation is the Speaker's round (the model's four proposals are one formation's answer, §636), and it installs
-        /// any government that forms (<c>GameController.ResolveElectionVerdict</c>). Resumed once per election, the day after its polling day, where
-        /// the new Riksdag's first sitting and the Speaker's talks are not modelled (a premise, stated).
+        /// Premise 6: THE SPEAKER'S ORDER on a chamber and a vintage's declarations - the formation's prime-minister party (a declared candidacy in its
+        /// cabinet, else its largest party), then every other party with a declared candidate, largest first; where neither exists, the largest party.
         /// </summary>
-        private void ResumeAppointmentAfterElection(Country country)
+        public List<string> SpeakerOrder(Country country, ElectionVintage vintage, IReadOnlyList<Elections.RedLine> extraLines = null)
+        {
+            var order = new List<string>();
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, vintage, extraLines, out IReadOnlyList<PoliticalParty> parties);
+            Elections.CoalitionResult formation = Elections.CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules);
+            if (formation.Outcome != Elections.CoalitionOutcomeKind.NewElection) { order.Add(PmOf(country, vintage, parties, formation.Government.Cabinet)); }
+            var declared = new List<string>();
+            foreach ((string abbrev, string _, string _) in Elections.DeclaredRedLines.Candidacies(country.Id, vintage)) { if (!order.Contains(abbrev)) { declared.Add(abbrev); } }
+            declared.Sort((a, b) => SeatsOf(country, b).CompareTo(SeatsOf(country, a)) != 0 ? SeatsOf(country, b).CompareTo(SeatsOf(country, a)) : string.CompareOrdinal(a, b));
+            order.AddRange(declared);
+            if (order.Count == 0)
+            {
+                string largest = null;
+                foreach (PoliticalParty p in parties) { if (largest == null || SeatsOf(country, p.Abbrev) > SeatsOf(country, largest)) { largest = p.Abbrev; } }
+                if (largest != null) { order.Add(largest); }
+            }
+            return order;
+        }
+
+        private static int SeatsOf(Country country, string key) => country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(key, out int s) ? s : 0;
+
+        /// <summary>K-1f's premise, as <see cref="Elections.GovernmentRecord.FromView"/> reads it: a declared candidacy standing in the cabinet leads it; else its largest party.</summary>
+        private static string PmOf(Country country, ElectionVintage vintage, IReadOnlyList<PoliticalParty> parties, int cabinet)
+        {
+            foreach ((string abbrev, string _, string _) in Elections.DeclaredRedLines.Candidacies(country.Id, vintage))
+            {
+                for (int p = 0; p < parties.Count; p++) { if ((cabinet & (1 << p)) != 0 && parties[p].Abbrev == abbrev) { return abbrev; } }
+            }
+            string largest = null;
+            for (int p = 0; p < parties.Count; p++) { if ((cabinet & (1 << p)) != 0 && (largest == null || SeatsOf(country, parties[p].Abbrev) > SeatsOf(country, largest))) { largest = parties[p].Abbrev; } }
+            return largest;
+        }
+
+        /// <summary>The refusal lines that stand in a round: §641's standing refusals and the player's declines (premise 5).</summary>
+        private static List<Elections.RedLine> RoundLines(Country country, Elections.SpeakerRound round)
+        {
+            List<Elections.RedLine> lines = Elections.GovernmentFormation.RefusalLines(country.Id, round.Refusals);
+            return lines;
+        }
+
+        /// <summary>
+        /// R4: THE PROPOSAL A PARTY MAKES WHEN ASKED - the best government the formation would form with that party leading (Gamson's posts, its
+        /// supporters' tabled demands accepted); with none, the party alone. Also the formation sheet's first draft when the player is asked.
+        /// </summary>
+        public Elections.FormationProposal DraftProposal(Country country, Elections.SpeakerRound round, string party)
+        {
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, round.Vintage, RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
+            Elections.CoalitionResult formation = Elections.CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules);
+            var proposal = new Elections.FormationProposal { Formateur = party };
+            // The governments that would hold (the answers compare against the same set, §646 the reader), best first.
+            foreach (Elections.GovernmentOption g in Elections.CoalitionFormation.Holding(formation, chamber.Seats, chamber.Compatibility))
+            {
+                if (PmOf(country, round.Vintage, parties, g.Cabinet) != party) { continue; }
+                // Premise 5 (the second reader): a party that declined this formateur's offer stays in OPPOSITION - out of its cabinet and its support, its
+                // vote at the investiture the model's, as any opposition party's; never a line that would make it vote against.
+                string declined = round.Declines.Contains(country.PlayerPartyAbbrev + ">" + party) ? country.PlayerPartyAbbrev : null;
+                bool seatsDecliner = false;
+                for (int p = 0; p < parties.Count; p++) { if ((g.Cabinet & (1 << p)) != 0 && parties[p].Abbrev == declined) { seatsDecliner = true; } }
+                if (seatsDecliner) { continue; }
+                for (int p = 0; p < parties.Count; p++)
+                {
+                    if ((g.Cabinet & (1 << p)) != 0) { proposal.CabinetParties.Add(parties[p].Abbrev); }
+                    else if ((g.Support & (1 << p)) != 0 && parties[p].Abbrev != declined) { proposal.Supporters.Add(parties[p].Abbrev); }
+                }
+                break;
+            }
+            if (proposal.CabinetParties.Count == 0) { proposal.CabinetParties.Add(party); }
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, party)) { proposal.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
+            proposal.FreezeTabled(country, CurrentDate, _world);
+            foreach (string supporter in proposal.Supporters)
+            {
+                var keys = new List<string>();
+                foreach (Elections.AgreementItem item in proposal.TabledOf(country, supporter, CurrentDate, _world)) { keys.Add(Elections.SupportAgreement.KeyOf(item)); }
+                proposal.AcceptedDemands[supporter] = keys;
+            }
+            return proposal;
+        }
+
+        /// <summary>R2: open a round - the outgoing government serves on as a caretaker (premise 8), and the Speaker asks the first party in the order.</summary>
+        public void OpenSpeakerRound(Country country, ElectionVintage vintage, string occasion, IEnumerable<string> refusals = null)
         {
             Elections.GovernmentRecord g = country.Government;
-            if (Elections.ConfidenceProcedure.RulesOf(country.Id) != Elections.ConfidenceProcedure.Rules.Riksdag) { return; }
-            if (_extraElectionDate != System.DateTime.MinValue) { return; }   // an extra election already ordered: the procedure waits for it
+            if (g == null) { return; }
+            if (!g.Caretaker)
+            {
+                g.Discharge(CurrentDate);
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government serves on as a caretaker through the Speaker's round {occasion}");
+            }
+            var round = new Elections.SpeakerRound { OpenedOn = CurrentDate, Occasion = occasion, Vintage = vintage, Stage = Elections.RoundStage.Consulting };
+            if (refusals != null) { round.Refusals.AddRange(refusals); }
+            round.Order = SpeakerOrder(country, vintage, RoundLines(country, round));
+            g.Round = round;
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker's round opens {occasion}; the order is {string.Join(", ", round.Order)}");
+            AskNext(country, round);
+        }
+
+        private void AskNext(Country country, Elections.SpeakerRound round)
+        {
+            round.Turn++;
+            round.Asked = round.Order.Count > 0 ? round.Order[round.Turn % round.Order.Count] : null;
+            if (round.Asked == null) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: no party to ask"); BreakOff(country, country.Government, round); return; }   // no party to ask: the procedure breaks off (unreachable where the order falls back to the largest party)
+            round.AskedOn = CurrentDate;
+            round.Proposal = null;
+            round.Stage = round.Asked == country.PlayerPartyAbbrev ? Elections.RoundStage.PlayerAsked : Elections.RoundStage.Consulting;
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker asks {round.Asked} to form a government{(round.Stage == Elections.RoundStage.PlayerAsked ? " - the player's party" : string.Empty)}");
+            Debug.Log($"SPEAKER: {country.Id} - the Speaker asks {round.Asked} ({round.Stage})");
+        }
+
+        private void Table(Elections.SpeakerRound round, Elections.FormationProposal proposal)
+        {
+            round.Proposal = proposal;
+            round.Stage = Elections.RoundStage.VotePending;
+            round.VoteOn = CurrentDate.AddDays(Elections.SpeakerRound.VoteDays);
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {proposal.Formateur} tables {string.Join("+", proposal.CabinetParties)}{(proposal.Supporters.Count > 0 ? " with " + string.Join("+", proposal.Supporters) : string.Empty)}; the Riksdag votes on {round.VoteOn:yyyy-MM-dd} (RF 6 kap. 4 §)");
+        }
+
+        private static bool Involves(Elections.FormationProposal proposal, string party) => !string.IsNullOrEmpty(party) && (proposal.CabinetParties.Contains(party) || proposal.Supporters.Contains(party));
+
+        /// <summary>The round's day: the consultation ends in a proposal, a tabled proposal comes to its vote; the player's turns wait on the player.</summary>
+        private void AdvanceSpeakerRound(Country country, Elections.GovernmentRecord g)
+        {
+            Elections.SpeakerRound round = g.Round;
+            switch (round.Stage)
+            {
+                case Elections.RoundStage.Consulting:
+                    if (CurrentDate < round.AskedOn.AddDays(Elections.SpeakerRound.ConsultationDays)) { return; }
+                    Elections.FormationProposal proposal = DraftProposal(country, round, round.Asked);
+                    if (Involves(proposal, country.PlayerPartyAbbrev))
+                    {
+                        round.Proposal = proposal;
+                        round.Stage = Elections.RoundStage.OfferToPlayer;
+                        round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} offers {country.PlayerPartyAbbrev} {(proposal.CabinetParties.Contains(country.PlayerPartyAbbrev) ? proposal.PostsOf(country.PlayerPartyAbbrev) + " post(s) in " + string.Join("+", proposal.CabinetParties) : "a support agreement with " + string.Join("+", proposal.CabinetParties))}");
+                        return;
+                    }
+                    Table(round, proposal);
+                    return;
+                case Elections.RoundStage.VotePending:
+                    if (CurrentDate < round.VoteOn) { return; }
+                    Investiture(country, g, round);
+                    return;
+                default:
+                    return;   // PlayerAsked and OfferToPlayer wait on the player (the clock holds on them, GameController.FormationHolds)
+            }
+        }
+
+        /// <summary>R7: the investiture - the formation's own vote under the country's rule, recorded as a division; a win installs, a loss counts to the limit.</summary>
+        private void Investiture(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
+        {
+            Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            var sides = new List<DivisionSide>();
+            if (verdict.Investiture != null)
+            {
+                for (int p = 0; p < verdict.Parties.Count; p++)
+                {
+                    int seats = SeatsOf(country, verdict.Parties[p].Abbrev);
+                    if (seats <= 0) { continue; }
+                    Elections.CoalitionFormation.InvestitureSide side = verdict.Investiture.Sides[p];
+                    int s = side == Elections.CoalitionFormation.InvestitureSide.Against ? -1 : side == Elections.CoalitionFormation.InvestitureSide.Abstains ? 0 : 1;
+                    sides.Add(new DivisionSide { Abbrev = verdict.Parties[p].Abbrev, ShortName = verdict.Parties[p].ShortName, Seats = seats, Side = s, Alignment = s, Reason = verdict.Investiture.Reasons[p] });
+                }
+            }
+            string title = $"Investiture: {round.Proposal.Formateur}'s proposal, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "approved" : "rejected")}";
+            country.Divisions.Append(title, CurrentDate, verdict.Passes ? 1f : -1f, verdict.Passes, 0f, (int)BillAxis.Fiscal, sides);
+            country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;   // a vote on a prime minister, not a bill: no ceremony, never a budget act
+            if (verdict.Passes) { Install(country, g, round, verdict); return; }
+            round.Rejections++;
+            var refusals = new List<string>();
+            foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.Accepts) { refusals.Add(answer.Party + " " + answer.Reason); } }
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {round.Proposal.Formateur}'s proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
+            Debug.Log($"SPEAKER: {country.Id} - {title}; {round.Rejections} rejected{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
+            if (round.Rejections >= Elections.SpeakerRound.ProposalLimit) { BreakOff(country, g, round); return; }
+            AskNext(country, round);
+        }
+
+        private void Install(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round, Elections.ProposalVerdict verdict)
+        {
+            Elections.FormationProposal proposal = round.Proposal;
+            var supporters = new List<string>();
+            foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.InCabinet && answer.Accepts) { supporters.Add(answer.Party); } }
+            Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromProposal(country, proposal, supporters, verdict.Investiture.Kind, CurrentDate,
+                $"the Speaker's round {round.Occasion}: {proposal.Formateur}'s proposal won its investiture", g.Kind, g.Executive, round.Refusals, _world);
+            round.Stage = Elections.RoundStage.Concluded;
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {proposal.Formateur}'s proposal; {string.Join("+", formed.Cabinet)} takes office");
+            country.Government = formed;
+            ResetArrivalBudgetWindow(country.Id);
+            Debug.Log($"SPEAKER: {country.Id} - installed {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
+        }
+
+        /// <summary>R7: four proposals rejected - the procedure breaks off until an election; an extra election within three months unless the ordinary one falls in them (RF 6 kap. 5 §, §640).</summary>
+        private void BreakOff(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
+        {
+            round.Stage = Elections.RoundStage.Concluded;
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the procedure breaks off - the Riksdag rejected {Elections.SpeakerRound.ProposalLimit} proposals (RF 6 kap. 5 §)");
+            if (Elections.WorldClock.TryNextPollingDay(country.Id, CurrentDate, out System.DateTime ordinary) && ordinary <= CurrentDate.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths))
+            {
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejected four proposals; the ordinary election of {ordinary:yyyy-MM-dd} falls within three months and serves (RF 6 kap. 5 §)");
+                return;
+            }
+            ScheduleExtraElection(country, "the Riksdag rejected four of the Speaker's proposals - the procedure breaks off to an extra election within three months (RF 6 kap. 5 §)");
+        }
+
+        /// <summary>R2: the day after an election in the player's country, a round opens on the new chamber, on that election's declarations - once per election.</summary>
+        private bool OpenRoundAfterElection(Country country, Elections.GovernmentRecord g)
+        {
+            if (!RoundsApply(country.Id)) { return false; }
             System.DateTime held = System.DateTime.MinValue;
             if (country.ElectionHistory != null)
             {
                 foreach (Elections.ElectionRecord e in country.ElectionHistory) { if (e.Method != Elections.ElectionMethod.NotImplemented && e.Date < CurrentDate && e.Date > held) { held = e.Date; } }
             }
-            if (held == System.DateTime.MinValue || held < g.CaretakerSince || held <= g.ProcedureResumedAfter) { return; }   // no election since the discharge, or this one already resumed it
-            g.ProcedureResumedAfter = held;
-            if (Elections.WorldClock.TryNextPollingDay(country.Id, CurrentDate, out System.DateTime ordinary) && ordinary <= CurrentDate.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths))
+            if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate)
             {
-                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the procedure resumed after the election of {held:yyyy-MM-dd} and the chamber accepted no proposal; the ordinary election of {ordinary:yyyy-MM-dd} falls within three months and serves (RF 6 kap. 5 §)");
-                Debug.Log($"CONFIDENCE: {country.Id} - the procedure resumed after {held:yyyy-MM-dd}, no government; the ordinary election of {ordinary:yyyy-MM-dd} serves");
-                return;
+                // An extra election ordered and not yet held: the procedure waits for it - unless an election was held after the order (the ordinary one
+                // falling first), which elected the new Riksdag; the order lapses with it and that election's round opens (a premise, stated - §646's
+                // second reader: waiting on, the government would govern the new chamber undischarged until the extra election).
+                if (held == System.DateTime.MinValue || held <= _extraElectionOrderedOn) { return false; }
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the election of {held:yyyy-MM-dd} was held before the extra election ordered for {_extraElectionDate:yyyy-MM-dd}; the order lapses with it");
+                _extraElectionDate = System.DateTime.MinValue; _extraElectionOrderedOn = System.DateTime.MinValue;
             }
-            ScheduleExtraElection(country, $"the procedure resumed after the election of {held:yyyy-MM-dd} and the chamber accepted no proposal - four rejected proposals order an extra election within three months (RF 6 kap. 5 §)");
+            if (held == System.DateTime.MinValue || held < g.FormedOn || held <= g.ProcedureResumedAfter) { return false; }
+            g.ProcedureResumedAfter = held;
+            if (g.Round != null && g.Round.Open)
+            {
+                // A round still open when an election is held ends with it: the new chamber's round reads the new election's declarations and order,
+                // and a motion's refusals end at the election (§641).
+                g.Round.Stage = Elections.RoundStage.Concluded;
+                g.Round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the election of {held:yyyy-MM-dd} ends the round - the new Riksdag's round opens");
+            }
+            OpenSpeakerRound(country, Elections.WorldClock.VintageOfElection(country.Id, held), $"after the election of {held:yyyy-MM-dd}");   // §641: a motion's refusals end at the election
+            return true;
         }
 
-        /// <summary>The Speaker discharges the prime minister [RF-R:6:7] and every minister with them [RF-R:6:9]; they serve on as a caretaker [RF-R:6:11]; the round runs on the sitting chamber [RF-R:6:4] - on the week's last day here, where 2021's round ran nine days (29 June to 7 July), stated.</summary>
+        /// <summary>Premise 1: the player, asked, tables a proposal - every invited party must accept it (premise 3: revise and re-offer); tabled, the vote comes on the fourth day.</summary>
+        public bool SubmitFormation(CountryId countryId, Elections.FormationProposal proposal, out Elections.ProposalVerdict verdict, out string refusedBecause)
+        {
+            verdict = null;
+            Country country = _world?.GetCountry(countryId);
+            Elections.SpeakerRound round = RoundOf(countryId);
+            if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
+            if (proposal == null || proposal.Formateur != country.PlayerPartyAbbrev) { refusedBecause = "THE PROPOSAL MUST BE YOUR PARTY'S"; return false; }
+            proposal.FreezeTabled(country, CurrentDate, _world);
+            verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            if (verdict.Investiture == null) { refusedBecause = verdict.Reason?.ToUpperInvariant() ?? "THE PROPOSAL IS NOT WELL FORMED"; return false; }
+            if (!verdict.AllAccept) { refusedBecause = "NOT EVERY INVITED PARTY ACCEPTS - REVISE AND OFFER AGAIN"; return false; }
+            refusedBecause = null;
+            Table(round, proposal);
+            return true;
+        }
+
+        /// <summary>R5: the player, asked, passes - the Speaker asks the next party; nothing is voted, nothing counts.</summary>
+        public bool PassFormation(CountryId countryId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            Elections.SpeakerRound round = RoundOf(countryId);
+            if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
+            refusedBecause = null;
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} does not form a government");
+            AskNext(country, round);
+            return true;
+        }
+
+        /// <summary>Premise 5: the player answers an offer - accepted, the proposal is tabled; declined, the party stays in opposition and the asked party
+        /// proposes again without it, the Speaker moving on where nothing passes without the player's seats.</summary>
+        public bool AnswerOffer(CountryId countryId, bool accept, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            Elections.SpeakerRound round = RoundOf(countryId);
+            if (country == null || round == null || round.Stage != Elections.RoundStage.OfferToPlayer) { refusedBecause = "NO OFFER WAITS ON YOUR PARTY"; return false; }
+            refusedBecause = null;
+            if (accept)
+            {
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} accepts {round.Asked}'s offer");
+                Table(round, round.Proposal);
+                return true;
+            }
+            round.Declines.Add(country.PlayerPartyAbbrev + ">" + round.Asked);
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} declines {round.Asked}'s offer and stays in opposition");
+            Elections.FormationProposal without = DraftProposal(country, round, round.Asked);
+            Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            if (verdict != null && verdict.Passes) { Table(round, without); return true; }
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - the Speaker moves on");
+            AskNext(country, round);
+            return true;
+        }
+
+        /// <summary>The Speaker discharges the prime minister [RF-R:6:7] and every minister with them [RF-R:6:9]; they serve on as a caretaker [RF-R:6:11]; the Speaker's round opens on the sitting chamber [RF-R:6:4] on the week's last day, dated as §646 builds it (2021's ran nine days, 29 June to 7 July).</summary>
         private void DischargeAndRound(Country country)
         {
             Elections.GovernmentRecord fallen = country.Government;
@@ -2786,25 +3064,9 @@ namespace PoliSim.Simulation
                 string refusal = fallen.NoConfidenceMover + ">" + fallen.PmParty;
                 if (!refusals.Contains(refusal)) { refusals.Add(refusal); }
             }
-            List<Elections.RedLine> lines = Elections.GovernmentFormation.RefusalLines(country.Id, refusals);
-            Elections.GovernmentFormation.View view = Elections.GovernmentFormation.ViewOfSitting(country, lines);
-            if (view.HasGovernment)
-            {
-                Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromView(country, view, CurrentDate, basis: "the Speaker's round on the sitting chamber after the declaration of no confidence", world: _world);
-                formed.StandingRefusals.AddRange(refusals);
-                country.Government = formed;
-                ResetArrivalBudgetWindow(country.Id);
-                Debug.Log($"CONFIDENCE: {country.Id} - the Speaker's round: {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
-            }
-            else if (Elections.WorldClock.TryNextPollingDay(country.Id, CurrentDate, out System.DateTime ordinary) && ordinary <= CurrentDate.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths))
-            {
-                // [RF-R:6:5]: no extra election where an ordinary one is due within the three months - the caretaker serves to it.
-                fallen.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: no proposal the chamber accepts; the ordinary election of {ordinary:yyyy-MM-dd} falls within three months and serves (RF 6 kap. 5 §)");
-            }
-            else
-            {
-                ScheduleExtraElection(country, "no proposal the chamber accepts - four rejected proposals order an extra election within three months (RF 6 kap. 5 §)");
-            }
+            // §646 (R2): the Speaker's round, dated, on the sitting chamber's declarations - it installs what wins its investiture, or breaks off at
+            // RF 6:5's limit to an extra election (§636's single round was the four proposals' answer at once).
+            OpenSpeakerRound(country, Elections.GovernmentFormation.SittingVintage(country), $"after the discharge of {fallen.PmParty}'s government", refusals);
         }
 
         /// <summary>PS-3k (§638): a record's shift by party key as one per the setup's parties, or null where none is stored (an older campaign replays as it ran).</summary>
