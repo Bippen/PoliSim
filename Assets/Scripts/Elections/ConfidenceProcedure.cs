@@ -50,12 +50,13 @@ namespace PoliSim.Elections
         /// The motion's vote on the sitting government. The mover votes for it; the cabinet and its support vote against; a party red-lined from the
         /// cabinet by its own declarations votes for it (the investiture's opposition rule - a party that would vote a cabinet down votes no confidence
         /// in it); every other party abstains. Carried by more than half of all the members (13 kap. 4 §) - abstentions count against, as absent votes do.
+        /// <paramref name="asOf"/> (§644): the declarations standing on a date - for measuring only (PS-3i-2c); the game passes none.
         /// </summary>
-        public static MotionVote Vote(Country country, string mover)
+        public static MotionVote Vote(Country country, string mover, DateTime? asOf = null)
         {
             GovernmentRecord government = country.Government;
             var vote = new MotionVote { Mover = mover, PmParty = government?.PmParty };
-            HashSet<string> redLined = government != null ? GovernmentFormation.RedLinedFrom(country, government.Cabinet) : new HashSet<string>();
+            HashSet<string> redLined = government != null ? GovernmentFormation.RedLinedFrom(country, government.Cabinet, asOf) : new HashSet<string>();
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
                 int seats = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(party.Abbrev, out int held) ? held : 0;

@@ -261,7 +261,8 @@ namespace PoliSim.Elections
         // (C's own publication [C-P1]). The vintage API above stays for the backtests, pinned by name; `ForDate` is the timeline, and
         // `DeclarationDatesDiagnostic` proves the timeline's 2022-09-11 equals `For(Sweden2022)` and its 2026-09-13 `For(Sweden2026)`. K-1g (§639)
         // adds three: SD's refusal of the support role 2025-10-10, MP's in-or-against rule 2026-04-04 (a press report's date, stated), KD → S 2026-09-02.
-        // No runtime surface reads the timeline yet - the run-up's declarations are D-PS's (§620/§621); the election reads its own day's.
+        // No runtime surface reads the timeline yet - the run-up's declarations are D-PS's (§620/§621); the election reads its own day's. §644 measures a
+        // mid-term round on it (`GovernmentFormation.ViewOfSitting` with a date, read by `AiMotionReachDiagnostic`) for Elias's ruling PS-3i-2c.
         // -----------------------------------------------------------------------------------------------------------------------------
 
         /// <summary>One dated declaration: a pair line, a candidacy, an in-or-against rule or SD's refusal of the support role, standing from <see cref="From"/> until <see cref="Until"/> (exclusive; MaxValue while it stands).</summary>

@@ -80,9 +80,17 @@ namespace PoliSim.EditorTools
                 AgreementItem dialItem = null; if (sd != null) { foreach (AgreementItem item in sd.Items) { if (item.Kind == AgreementItemKind.Dial) { dialItem = item; break; } } }
                 if (dialItem != null)
                 {
+                    // §644 (the reader): the agreements are tracked daily now, so the law enacted above - its dial effect recomputed with the laws - may
+                    // already have delivered the dial item. Asserted on a fresh copy of the item, owed, so the check is the tracker's and not a leftover.
+                    SupportAgreement probeAgreement = new SupportAgreement { Supporter = sd.Supporter };
+                    AgreementItem owed = new AgreementItem { Kind = dialItem.Kind, Dial = dialItem.Dial, Target = dialItem.Target, StartValue = dialItem.StartValue, Name = dialItem.Name, State = AgreementState.Owed };
+                    probeAgreement.Items.Add(owed);
+                    if (dialItem.Dial == AgreementDial.BorderEnforcement) { sweden.BorderEnforcementLevel = dialItem.Target - 1f; } else { sweden.PoliceFundingLevel = dialItem.Target - 1f; }
+                    probeAgreement.Track(sweden, sim.CurrentDate);
+                    bool belowHolds = owed.State == AgreementState.Owed;
                     if (dialItem.Dial == AgreementDial.BorderEnforcement) { sweden.BorderEnforcementLevel = dialItem.Target; } else { sweden.PoliceFundingLevel = dialItem.Target; }
-                    sim.TrackAgreements(sweden);
-                    Check(dialItem.State == AgreementState.Delivered, F("the dial at its target delivers the item ({0})", dialItem.Name));
+                    probeAgreement.Track(sweden, sim.CurrentDate);
+                    Check(belowHolds && owed.State == AgreementState.Delivered, F("the dial one short of its target leaves the item owed; at its target it delivers ({0})", dialItem.Name));
                 }
                 sb.Append("    tally     ").Append(sd?.Tally() ?? "-").Append('\n');
 

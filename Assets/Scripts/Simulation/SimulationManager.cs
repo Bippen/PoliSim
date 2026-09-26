@@ -2468,7 +2468,7 @@ namespace PoliSim.Simulation
             }
         }
 
-        /// <summary>PS-3h (§635): every agreement's items read against the country - a delivery or a break is a fact of the book, so this runs at the turn boundary and the day a law bill applies; a break is recorded on the government.</summary>
+        /// <summary>PS-3h (§635): every agreement's items read against the country - a delivery or a break is a fact of the book, so this runs at the turn boundary, the day a law bill applies and, in the player's country, every day (§644); a break is recorded on the government.</summary>
         public void TrackAgreements(Country country)
         {
             if (country?.Government == null) { return; }
@@ -2631,15 +2631,44 @@ namespace PoliSim.Simulation
             Elections.GovernmentRecord g = country?.Government;
             if (g != null && g.Caretaker) { ResumeAppointmentAfterElection(country); return; }
             if (g == null) { return; }
-            if (g.NoConfidenceOn == System.DateTime.MinValue) { TryAiMotion(country); return; }   // PS-3i ruling (2), §641
+            if (g.NoConfidenceOn == System.DateTime.MinValue)
+            {
+                // PS-3i-2a (§644): the agreements are read every day - a dial moved by a bill breaks its item the day it moves, not at the year's turn - and an
+                // AI supporter past its tolerance withdraws before any motion is weighed.
+                TrackAgreements(country);
+                AiWithdrawals(country, g);
+                TryAiMotion(country);   // PS-3i ruling (2), §641
+                return;
+            }
             if (CurrentDate < g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
             DischargeAndRound(country);
         }
 
         /// <summary>
+        /// PS-3i-2a (ruled 2026-09-26, §644): AN AI SUPPORTER WITHDRAWS ONCE ITS BROKEN AGREEMENT ITEMS PASS A TOLERANCE
+        /// (<see cref="Elections.SupportAgreement.BrokenShareTolerated"/>, [AUTHORED-DRAFT]) - recorded on the government as the player's withdrawal is, and
+        /// then in opposition: whether it moves no confidence is ruling (2)'s test, weighed apart. The player's own party withdraws by the player's verb.
+        /// </summary>
+        private void AiWithdrawals(Country country, Elections.GovernmentRecord g)
+        {
+            if (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return; }
+            foreach (string supporter in new List<string>(g.Support))
+            {
+                if (supporter == country.PlayerPartyAbbrev) { continue; }
+                Elections.SupportAgreement agreement = g.AgreementOf(supporter);
+                if (agreement == null || !agreement.PastTolerance()) { continue; }
+                int broken = agreement.Count(Elections.AgreementState.Broken);
+                g.WithdrawSupport(supporter);
+                g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {supporter} withdrew its support over {broken} broken item(s) of its agreement's {agreement.Items.Count}, past the share it tolerates");
+                Debug.Log($"AGREEMENT: {country.Id} - {supporter} withdrew its support over {broken} broken item(s)");
+            }
+        }
+
+        /// <summary>
         /// PS-3i RULING (2) (Elias, 2026-09-25): AN AI PARTY MOVES NO CONFIDENCE ONLY WHEN THE MOTION WOULD CARRY AND THE MOVER PREFERS THE GOVERNMENT
-        /// THE FORMATION MODEL SAYS WOULD FOLLOW - no doomed motions. A supporter with broken agreement items is the natural mover: it is asked first, and
-        /// it withdraws its support to move (a party supporting a government moves nothing - the player's rule, §636). Then the opposition, largest first.
+        /// THE FORMATION MODEL SAYS WOULD FOLLOW - no doomed motions. A party that withdrew its support over broken agreement items is the natural mover
+        /// (PS-3i-2a, §644: the withdrawal is its own step, past the tolerance; a party supporting a government moves nothing - the player's rule, §636):
+        /// it is asked first. Then the opposition, largest first.
         /// <para>Each test is the model's own: the vote is <see cref="Elections.ConfidenceProcedure.Vote"/> (the mover for it, the government and its
         /// support against, the red-lined for it); what would follow is the Speaker's round the discharge runs (<see cref="Elections.GovernmentFormation.ViewOfSitting"/>,
         /// no refusal line added for an AI mover, as §636's round adds none); the preference is the formation's payoff
@@ -2648,13 +2677,11 @@ namespace PoliSim.Simulation
         /// premise, stated). Deterministic: no stream is drawn. The player's country only - the procedure's week, discharge and extra election are
         /// its alone (one pending extra election), and the player's own party moves by the player's verb; in an AI motion the player's party votes by
         /// the model's lines, as every party does.</para>
-        /// <para>⚠ <b>Found by the readers, stated for Elias (§641):</b> as built, no reachable path of play fires an AI motion. The round reads seats and
-        /// declarations, never an agreement, so a broken agreement changes who is asked first, never whether a motion is moved; a motion needs a sitting
-        /// government the round would not form AND a carrying vote. The start's government is the record of record, not the round's - but on its
-        /// chamber no candidate both carries and would be seated (SD's motion carries and the round keeps SD out; S's cannot carry). Every government
-        /// the game forms after is the round's own answer. It becomes live where an installed government differs from the round: the formateur's
-        /// proposals (PS-3's open offers) and installed 2026 records (K-1b). Whether a breach should itself enter the round (PS-3i-2a) - the aggrieved supporter refusing the
-        /// prime minister it carried - is a ruling.</para>
+        /// <para>⚠ <b>Reachability (PS-3i-2a, §644).</b> Built as ruled: a supporter past its tolerance withdraws (<see cref="AiWithdrawals"/>), the
+        /// agreements tracked daily, and a withdrawn party is the first mover asked. Measured and put to Elias: on the start's chamber the round reads
+        /// the 2022 declarations (§607, §636), where M, KD and L will not sit with SD, so SD never prefers the successor before the 2026 election
+        /// (PS-3i-2c, `AiMotionReachDiagnostic` prints the round by date under each reading); and a player-led breach of SD's agreement does not pass
+        /// the chamber (PS-3i-2b).</para>
         /// <para>No motion is taken up in the week before the player's next polling day: its week would end on the far side of an election, and the round
         /// it was weighed against would never run (the reader). The player's refusals made by moving a motion stand in the round until the next
         /// election (<see cref="Elections.GovernmentRecord.StandingRefusals"/>), here as in the discharge.</para>
@@ -2672,7 +2699,7 @@ namespace PoliSim.Simulation
             foreach (string mover in AiMotionCandidates(country, g))
             {
                 if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, mover, out int _, out int _)) { continue; }
-                Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.Vote(country, mover);   // the mover counts for it, withdrawn or not
+                Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.Vote(country, mover);
                 if (!vote.Carried) { continue; }
                 if (next == null)
                 {
@@ -2683,14 +2710,6 @@ namespace PoliSim.Simulation
                 double now = Elections.GovernmentFormation.PayoffIn(country, g.Cabinet, mover);   // zero by construction - a mover is never in the cabinet - kept so the test reads as the ruling's
                 double after = Elections.GovernmentFormation.PayoffIn(country, nextCabinet, mover);
                 if (after <= now + Elections.CoalitionFormation.DefectionMargin) { continue; }
-                if (g.Support.Contains(mover))
-                {
-                    Elections.SupportAgreement agreement = g.AgreementOf(mover);
-                    g.WithdrawSupport(mover);
-                    g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {mover} withdrew its support over {agreement?.Count(Elections.AgreementState.Broken) ?? 0} broken item(s) of its agreement, to move no confidence");
-                }
-                vote = Elections.ConfidenceProcedure.Vote(country, mover);
-                if (!vote.Carried) { return; }   // the same tally as above (the mover is counted first); a guard against a later change declaring a lost motion
                 country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
                 g.NoConfidenceOn = CurrentDate;
@@ -2701,7 +2720,8 @@ namespace PoliSim.Simulation
             }
         }
 
-        /// <summary>Ruling (2)'s order: support parties with broken agreement items first (the natural movers), then the opposition by seats; never a cabinet party, never the player's.</summary>
+        /// <summary>Ruling (2)'s order: the parties that withdrew over broken agreement items first (the natural movers), then the rest of the opposition by
+        /// seats; never a cabinet party, never a supporter (a supporter moves nothing - §644: it withdraws first, past its tolerance), never the player's.</summary>
         private static List<string> AiMotionCandidates(Country country, Elections.GovernmentRecord g)
         {
             var aggrieved = new List<string>();
@@ -2709,14 +2729,9 @@ namespace PoliSim.Simulation
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
                 string key = party.Abbrev;
-                if (key == country.PlayerPartyAbbrev || g.Cabinet.Contains(key)) { continue; }
-                if (g.Support.Contains(key))
-                {
-                    Elections.SupportAgreement a = g.AgreementOf(key);
-                    if (a != null && a.Count(Elections.AgreementState.Broken) > 0) { aggrieved.Add(key); }
-                    continue;
-                }
-                opposition.Add(key);
+                if (key == country.PlayerPartyAbbrev || g.Cabinet.Contains(key) || g.Support.Contains(key)) { continue; }
+                Elections.SupportAgreement a = g.AgreementOf(key);
+                if (a != null && a.Count(Elections.AgreementState.Broken) > 0) { aggrieved.Add(key); } else { opposition.Add(key); }
             }
             int Seats(string k) => country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(k, out int s) ? s : 0;
             aggrieved.Sort((a, b) => Seats(b).CompareTo(Seats(a)) != 0 ? Seats(b).CompareTo(Seats(a)) : string.CompareOrdinal(a, b));

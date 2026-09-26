@@ -290,7 +290,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>PS-3i (§636): the parties red-lined from a sitting cabinet (keys), by the chamber's own declarations - the confidence motion's yes-voters.</summary>
-        public static HashSet<string> RedLinedFrom(Country country, IReadOnlyList<string> cabinet)
+        public static HashSet<string> RedLinedFrom(Country country, IReadOnlyList<string> cabinet, DateTime? asOf = null)
         {
             var result = new HashSet<string>();
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
@@ -298,8 +298,9 @@ namespace PoliSim.Elections
             int mask = 0;
             var inCabinet = new HashSet<string>(cabinet);
             for (int p = 0; p < parties.Count; p++) { if (inCabinet.Contains(parties[p].Abbrev)) { mask |= 1 << p; } }
-            ElectionVintage vintage = SittingVintage(country);
-            List<RedLine> lines = DeclaredRedLines.For(country.Id, parties, vintage);
+            // §644: asked on a date, the declarations STANDING on it (§621's timeline, `ForDate`) - the measurement PS-3i-2c puts to Elias; no runtime
+            // caller passes one, so the game reads the sitting chamber's election's (§607, §636).
+            List<RedLine> lines = asOf.HasValue ? DeclaredRedLines.ForDate(country.Id, parties, asOf.Value) : DeclaredRedLines.For(country.Id, parties, SittingVintage(country));
             // SUPPORT-BLOCKING LINES ONLY: an in-or-against rule is about investiture - V votes against every cabinet it is not in - and not about toppling one: V's leader said V would not bring Andersson down [C-I9] (the reader, s636).
             int against = CoalitionFormation.RedLinedMask(mask, parties.Count, lines, null);
             for (int p = 0; p < parties.Count; p++) { if ((against & (1 << p)) != 0) { result.Add(parties[p].Abbrev); } }
@@ -307,16 +308,17 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// PS-3i (§636): THE SPEAKER'S ROUND on the SITTING chamber - the formation on today's seats and declarations, never the installed record (which
-        /// would hand back the government just discharged); <paramref name="extraLines"/> carries the refusal a party made by moving the motion.
+        /// PS-3i (§636): THE SPEAKER'S ROUND on the SITTING chamber - the formation on today's seats and the sitting chamber's election's declarations, never
+        /// the installed record (which would hand back the government just discharged); <paramref name="extraLines"/> carries the refusal a party made by
+        /// moving the motion. <paramref name="asOf"/> (§644) reads the declarations standing on a date instead - for measuring only (PS-3i-2c); the game passes none.
         /// </summary>
-        public static View ViewOfSitting(Country country, IReadOnlyList<RedLine> extraLines = null)
+        public static View ViewOfSitting(Country country, IReadOnlyList<RedLine> extraLines = null, DateTime? asOf = null)
         {
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country.Id);
             if (parties == null || parties.Count == 0) { return new View { HasGovernment = false, Reason = "no party system is seeded for this country" }; }
             var seats = new int[parties.Count];
             for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
-            if (!TryFormSeats(country.Id, parties, seats, out CoalitionResult result, out bool sourced, out string reason, SittingVintage(country), extraLines))
+            if (!TryFormSeats(country.Id, parties, seats, out CoalitionResult result, out bool sourced, out string reason, SittingVintage(country), extraLines, asOf))
             {
                 return new View { HasGovernment = false, Reason = reason };
             }
@@ -377,18 +379,19 @@ namespace PoliSim.Elections
         public static bool IsProvisional(Country country) => country?.Government != null ? country.Government.Provisional : SeatedGovernment.IsProvisional(country);
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
-            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null)
+            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null, DateTime? asOf = null)
         {
             result = null; declarationsSourced = false; reason = null;
             int totalSeats = 0;
             foreach (int s in seats) { totalSeats += s; }
             if (totalSeats <= 0) { reason = "the chamber holds no seats"; return false; }
             double[,] compatibility = Compatibility(parties);
-            List<RedLine> lines = DeclaredRedLines.For(country, parties, vintage);
+            // §644: asked on a date, the declarations standing on it (the measurement of PS-3i-2c; no runtime caller passes one); else the vintage, an election's.
+            List<RedLine> lines = asOf.HasValue ? DeclaredRedLines.ForDate(country, parties, asOf.Value) : DeclaredRedLines.For(country, parties, vintage);
             if (extraLines != null) { lines.AddRange(extraLines); }   // PS-3i (§636): a refusal made by moving a motion, for the Speaker's round
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: DeclaredRedLines.InOrAgainstFor(country, parties, vintage));   // K-1f: a party's in-or-against rule, beside the pairs
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: asOf.HasValue ? DeclaredRedLines.InOrAgainstAt(country, parties, asOf.Value) : DeclaredRedLines.InOrAgainstFor(country, parties, vintage));   // K-1f: a party's in-or-against rule, beside the pairs
             return true;
         }
 

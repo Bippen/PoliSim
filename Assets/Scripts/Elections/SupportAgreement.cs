@@ -33,6 +33,13 @@ namespace PoliSim.Elections
         public const float DialStep = 10f;
         /// <summary>A dial item is broken when the government moves the dial this far below where it stood when the demand was made [AUTHORED-DRAFT].</summary>
         public const float DialBreakTolerance = 5f;
+        /// <summary>PS-3i-2a (ruled 2026-09-26, §644): the share of its agreement's items an AI supporter tolerates broken - it withdraws its support once
+        /// more than this share is broken (<see cref="PastTolerance"/>) [AUTHORED-DRAFT], a play-calibration entry. A share, not a count, so the
+        /// tolerance scales with the agreement.</summary>
+        public const float BrokenShareTolerated = 0.1f;
+
+        /// <summary>Whether more than <see cref="BrokenShareTolerated"/> of the items are broken.</summary>
+        public bool PastTolerance() => Items.Count > 0 && Count(AgreementState.Broken) > BrokenShareTolerated * Items.Count;
 
         /// <summary>
         /// The supporter's demands from its own positions: every law within the country's competence not yet enacted, scored by the supporter's

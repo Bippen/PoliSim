@@ -18,7 +18,7 @@ namespace PoliSim.EditorTools
     /// Both ways around the edges: the prime minister's party, a junior partner and a support party move nothing; a party under a tenth of the members moves
     /// nothing; a caretaker faces no motion; the player's government ordering an extra election within the week is not discharged, and the polling day moves.
     /// Ruling (3) (§640): the procedure resumes after an election that forms no government while a caretaker serves. Ruling (2) (§641): an AI party moves
-    /// no confidence only when the motion would carry and the round would seat it; a supporter with broken items is the natural mover.
+    /// no confidence only when the motion would carry and the round would seat it; a supporter past its agreement's tolerance withdraws and is the first mover asked (PS-3i-2a, §644).
     /// </summary>
     public static class ConfidenceDiagnostic
     {
@@ -124,7 +124,7 @@ namespace PoliSim.EditorTools
                 Check(threw == null, F("walked {0} days past the extra election with no throw{1}", days, threw != null ? " - " + threw : string.Empty));
                 Check(sim.ExtraElectionDate == DateTime.MinValue && sim.TryPlayerPollingDay(out DateTime ordinaryAfter) && ordinaryAfter > extraDay, "after the extra election the ordinary polling day is next again");
                 Check(sim.CampaignRecord == null || sim.CampaignRecord.ElectionDate != extraDay, F("no campaign record is left dated to the extra election ({0})", sim.CampaignRecord != null ? sim.CampaignRecord.ElectionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "none"));
-                Check(sweden.Government.NoConfidenceOn == DateTime.MinValue, "no AI motion fired in the 240 days walked (§641: on the start's chamber no candidate both carries and would be seated, and no election is held)");
+                Check(sweden.Government.NoConfidenceOn == DateTime.MinValue, "no AI motion fired in the 240 days walked (on the start's chamber the round seats no mover whose motion carries, and nothing is broken - §641, §644)");
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go3); EnergyMarket.ResetTurnState(); }
@@ -184,10 +184,10 @@ namespace PoliSim.EditorTools
             finally { UnityEngine.Object.DestroyImmediate(go4); EnergyMarket.ResetTurnState(); }
 
             // 5. PS-3i ruling (2) (2026-09-25, §641): AI parties move no confidence only when the motion would carry and the mover prefers the government the
-            //    formation says would follow - no doomed motions; a supporter with broken agreement items is the natural mover, and it moves only then.
+            //    formation says would follow - no doomed motions; a supporter moves nothing - past its tolerance it withdraws first (PS-3i-2a, §644).
             //    Every case asserts both premises of what it shows, and one invariant rides every day walked: a motion an AI party moved carried and the
             //    round it was weighed against seats the mover.
-            (SimulationManager, Country) Fixture(GameObject host, string player, bool yearThirtyTwo, bool sdAggrieved, string[] cabinetOverride = null)
+            (SimulationManager, Country) Fixture(GameObject host, string player, bool yearThirtyTwo, bool sdAggrieved, string[] cabinetOverride = null, int brokenItems = -1)
             {
                 (SimulationManager s, Country c) = Open(host);
                 c.PlayerPartyAbbrev = player;
@@ -205,10 +205,14 @@ namespace PoliSim.EditorTools
                     c.Government.PmParty = cabinetOverride[0]; c.Government.AllocatePortfolios(c);
                 }
                 SupportAgreement a = c.Government.AgreementOf("SD");
-                if (sdAggrieved && a != null && a.Items.Count > 0) { a.Items[0].State = AgreementState.Broken; a.Items[0].BrokenOn = s.CurrentDate; }
+                // PS-3i-2a (§644): aggrieved means PAST the tolerance - one more broken item than SD tolerates - unless a case names its count.
+                int breaks = brokenItems >= 0 ? brokenItems : sdAggrieved && a != null ? (int)Math.Floor(SupportAgreement.BrokenShareTolerated * a.Items.Count) + 1 : 0;
+                if (a != null) { for (int i = 0; i < breaks && i < a.Items.Count; i++) { a.Items[i].State = AgreementState.Broken; a.Items[i].BrokenOn = s.CurrentDate; } }
                 return (s, c);
             }
+            // The round and the vote as the manager reads them - the sitting chamber's election's declarations.
             string Round(Country c) { GovernmentFormation.View v = GovernmentFormation.ViewOfSitting(c, GovernmentFormation.RefusalLines(c.Id, c.Government.StandingRefusals)); return v.HasGovernment ? string.Join("+", v.Cabinet.ConvertAll(x => x.Abbrev)) : "none"; }
+            ConfidenceProcedure.MotionVote VoteOn(Country c, string mover) => ConfidenceProcedure.Vote(c, mover);
             bool Seats(Country c, string party) => ("+" + Round(c) + "+").Contains("+" + party + "+");
             void Walk(SimulationManager s, Country c, int days, string label)
             {
@@ -235,25 +239,49 @@ namespace PoliSim.EditorTools
                 foreach (PoliticalParty party in PartySystems.For(CountryId.Sweden))
                 {
                     if (party.Abbrev == ca.PlayerPartyAbbrev || ca.Government.Cabinet.Contains(party.Abbrev) || !ConfidenceProcedure.CanBeTakenUp(ca, party.Abbrev, out int _, out int _)) { continue; }
-                    premiseA.Add(party.Abbrev + (ConfidenceProcedure.Vote(ca, party.Abbrev).Carried && Seats(ca, party.Abbrev) ? " CARRIES AND SEATED" : " no"));
+                    premiseA.Add(party.Abbrev + (VoteOn(ca, party.Abbrev).Carried && Seats(ca, party.Abbrev) ? " CARRIES AND SEATED" : " no"));
                 }
                 Walk(sa, ca, 3, "(a)");
                 Check(ca.Government.NoConfidenceOn == DateTime.MinValue && !premiseA.Exists(x => x.EndsWith("SEATED", StringComparison.Ordinal)),
                     F("(a) the start, nothing broken: no AI party moves - and none over the tenth both carries and would be seated [{0}]", string.Join(", ", premiseA)));
 
-                // (b) SD's agreement broken; its motion would carry, but the round would re-form the government without SD in its cabinet: nothing.
+                // (b0) PS-3i-2a (§644): the tolerance's arithmetic - an agreement exactly at the tolerated share is not past it, one item more is; and an
+                // empty agreement never is. Sized from the share so the "at" case is never empty.
+                int size = (int)Math.Ceiling(1f / SupportAgreement.BrokenShareTolerated);
+                var probe = new SupportAgreement { Supporter = "SD" };
+                for (int i = 0; i < size; i++) { probe.Items.Add(new AgreementItem { Kind = AgreementItemKind.Law, State = AgreementState.Owed }); }
+                int atShare = (int)Math.Floor(SupportAgreement.BrokenShareTolerated * size);
+                for (int i = 0; i < atShare; i++) { probe.Items[i].State = AgreementState.Broken; }
+                bool atIsWithin = !probe.PastTolerance();
+                probe.Items[atShare].State = AgreementState.Broken;
+                Check(atShare > 0 && atIsWithin && probe.PastTolerance() && !new SupportAgreement().PastTolerance(),
+                    F("(b0) the tolerance: {0} broken of {1} is within the tolerated share ({2}), {3} is past it, an empty agreement never is", atShare, size, SupportAgreement.BrokenShareTolerated, atShare + 1));
+
+                // (b0, live) the manager reads the tolerance, not any broken item: SD's agreement widened with owed items until one broken item is exactly
+                // at the tolerated share, on the chamber where the round would seat SD - SD stays a supporter and moves nothing.
+                var gb0 = new GameObject("ConfidenceDiagnostic.5b0"); hosts.Add(gb0);
+                (SimulationManager sb0, Country cb0) = Fixture(gb0, "S", yearThirtyTwo: true, sdAggrieved: false, brokenItems: 1);
+                SupportAgreement sdAgreement = cb0.Government.AgreementOf("SD");
+                while (sdAgreement != null && sdAgreement.PastTolerance()) { sdAgreement.Items.Add(new AgreementItem { Kind = AgreementItemKind.Law, LawId = "tolerance_probe", Name = "an owed probe item", State = AgreementState.Owed }); }
+                bool seatsB0 = Seats(cb0, "SD");
+                Walk(sb0, cb0, 3, "(b0)");
+                Check(sdAgreement != null && sdAgreement.Count(AgreementState.Broken) == 1 && seatsB0 && cb0.Government.Support.Contains("SD") && cb0.Government.NoConfidenceOn == DateTime.MinValue,
+                    F("(b0) live: one broken item of {0}, within the tolerated share, the round would seat SD - SD stays a supporter and moves nothing", sdAgreement?.Items.Count ?? 0));
+
+                // (b) SD past its tolerance on the start's chamber: it withdraws (PS-3i-2a) - but the round forms a government
+                // without SD in its cabinet, so its motion, which would carry, is not moved: nothing for nothing.
                 var gb = new GameObject("ConfidenceDiagnostic.5b"); hosts.Add(gb);
                 (SimulationManager sb2, Country cb) = Fixture(gb, "S", yearThirtyTwo: false, sdAggrieved: true);
-                ConfidenceProcedure.MotionVote wouldB = ConfidenceProcedure.Vote(cb, "SD");
+                ConfidenceProcedure.MotionVote wouldB = VoteOn(cb, "SD");
                 bool seatedB = Seats(cb, "SD");
                 Walk(sb2, cb, 3, "(b)");
-                Check(wouldB.Carried && !seatedB && cb.Government.NoConfidenceOn == DateTime.MinValue && cb.Government.Support.Contains("SD"),
-                    F("(b) SD's agreement broken, its motion would carry ({0} of {1}) but the round forms {2}: SD moves nothing and still supports - no motion for nothing", wouldB.For, wouldB.Members, Round(cb)));
+                Check(wouldB.Carried && !seatedB && cb.Government.NoConfidenceOn == DateTime.MinValue && !cb.Government.Support.Contains("SD") && cb.Government.Breaks.Exists(x => x.Contains("SD withdrew its support over")),
+                    F("(b) SD past its tolerance withdraws; its motion would carry ({0} of {1}) but the round forms {2}: no motion for nothing", wouldB.For, wouldB.Members, Round(cb)));
 
-                // (c0) the year-32 chamber, where the round would seat SD and its motion would carry - but nothing is broken: the aggrieved gate holds it.
+                // (c0) the year-32 chamber, where the round would seat SD and its motion would carry - but nothing is broken: a supporter moves nothing.
                 var gc0 = new GameObject("ConfidenceDiagnostic.5c0"); hosts.Add(gc0);
                 (SimulationManager sc0, Country cc0) = Fixture(gc0, "S", yearThirtyTwo: true, sdAggrieved: false);
-                bool carriesC0 = ConfidenceProcedure.Vote(cc0, "SD").Carried, seatsC0 = Seats(cc0, "SD");
+                bool carriesC0 = VoteOn(cc0, "SD").Carried, seatsC0 = Seats(cc0, "SD");
                 Walk(sc0, cc0, 3, "(c0)");
                 Check(carriesC0 && seatsC0 && cc0.Government.NoConfidenceOn == DateTime.MinValue, "(c0) SD's motion would carry and the round would seat it, but nothing it was promised is broken: a supporter moves nothing");
 
@@ -266,7 +294,7 @@ namespace PoliSim.EditorTools
                 // (d) doomed: S governs alone on the year-32 chamber; the round would seat M and SD, but neither motion carries - no motion.
                 var gd = new GameObject("ConfidenceDiagnostic.5d"); hosts.Add(gd);
                 (SimulationManager sd2, Country cd) = Fixture(gd, "V", yearThirtyTwo: true, sdAggrieved: false, cabinetOverride: new[] { "S" });
-                ConfidenceProcedure.MotionVote mVote = ConfidenceProcedure.Vote(cd, "M"), sdVote = ConfidenceProcedure.Vote(cd, "SD");
+                ConfidenceProcedure.MotionVote mVote = VoteOn(cd, "M"), sdVote = VoteOn(cd, "SD");
                 bool seatsM = Seats(cd, "M"), seatsSd = Seats(cd, "SD");
                 Walk(sd2, cd, 3, "(d)");
                 Check(seatsM && seatsSd && !mVote.Carried && !sdVote.Carried && cd.Government.NoConfidenceOn == DateTime.MinValue,
@@ -296,7 +324,7 @@ namespace PoliSim.EditorTools
                 foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) }) { ce.ParliamentSeats[abbrev] = held; }
                 Check(ce.Government.Support.Contains("SD") && ce.Government.AgreementOf("SD").Count(AgreementState.Broken) > 0, "(e) SD is still an aggrieved supporter on the guard's first day");
                 se.AdvanceCountryDayTick(CountryId.Sweden);
-                Check(ce.Government.NoConfidenceOn == DateTime.MinValue && Seats(ce, "SD") && ConfidenceProcedure.Vote(ce, "SD").Carried,
+                Check(ce.Government.NoConfidenceOn == DateTime.MinValue && Seats(ce, "SD") && VoteOn(ce, "SD").Carried,
                     F("(e) {0:yyyy-MM-dd}, within a week of polling day {1:yyyy-MM-dd}: SD's motion would carry and the round would seat it, and none is taken up", se.CurrentDate, polling));
 
                 // (e+) the positive control: the same fixture a day earlier, outside the guard's week - SD moves.
@@ -312,7 +340,7 @@ namespace PoliSim.EditorTools
                 // (g) a plain opposition mover: SD outside the government with no agreement, the year-32 chamber - its motion carries and the round seats it.
                 var gg = new GameObject("ConfidenceDiagnostic.5g"); hosts.Add(gg);
                 (SimulationManager sg, Country cg) = Fixture(gg, "S", yearThirtyTwo: true, sdAggrieved: false, cabinetOverride: new[] { "M", "KD", "L" });
-                bool carriesG = ConfidenceProcedure.Vote(cg, "SD").Carried, seatsG = Seats(cg, "SD");
+                bool carriesG = VoteOn(cg, "SD").Carried, seatsG = Seats(cg, "SD");
                 Walk(sg, cg, 1, "(g)");
                 Check(carriesG && seatsG && cg.Government.NoConfidenceMover == "SD", "(g) SD in opposition: its motion carries and the round would seat it - it moves, as the opposition may");
 
