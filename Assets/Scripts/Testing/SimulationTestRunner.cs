@@ -81,6 +81,16 @@ namespace PoliSim.Testing
             {
                 return;
             }
+#if !UNITY_EDITOR
+            // §673 (ruled 2026-09-29): IN THE PLAYER THIS RUNS ONLY WHEN ASKED. It is a validation harness - its own World, its results only in the log - and
+            // nothing in the game reads it, before the menu or after; run on every start it held the menu's first frame for about twenty seconds
+            // (19.7 s headless, 23.5 s windowed, measured). Its first use is a developer's `-runsimulationtestrunner`, and its log lines are its progress.
+            // The Editor keeps it as it was: the trajectory and matrix tools drive it there.
+            if (!args.Contains("-runsimulationtestrunner"))
+            {
+                return;
+            }
+#endif
 
             // Master Sequence step 9, Step A0: -seed=N makes a run reproducible so before/after
             // trajectories can be compared strictly. Absent (or 0), behaviour is unchanged and every run

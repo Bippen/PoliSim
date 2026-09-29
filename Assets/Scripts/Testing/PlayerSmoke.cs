@@ -41,7 +41,10 @@ namespace PoliSim.Testing
         private IEnumerator Run()
         {
             Debug.Log($"SMOKE: armed - {Application.productName} {Application.version}, {Application.platform}, save '{_save}'");
-            for (int i = 0; i < 10; i++) { yield return null; }   // the scene's controller starts first
+            yield return null;
+            // §673: startup to the menu - the first frame after every scene Start (the menu's first frame), in the player's own clock since it started
+            Debug.Log($"SMOKE: STARTUP - the first frame after the scene's Starts at {Time.realtimeSinceStartup:0.00} s since the player started");
+            for (int i = 0; i < 9; i++) { yield return null; }   // the scene's controller starts first
             var controller = FindFirstObjectByType<PoliSim.UI.GameController>();
             if (controller == null) { Fail("the scene carries no GameController"); yield break; }
             string path = Path.Combine(PoliSim.Persistence.SaveGameService.DefaultSaveDirectory, _save + ".json");
