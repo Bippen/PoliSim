@@ -740,6 +740,21 @@ namespace PoliSim.Testing
                 }
                 if (Tabs[i] == "Demographics")
                 {
+                    // §666 (19b): two pinned chains - the 35-39 band's slip with WORKING AGE's level 2 open, and the turnout head's - pinned through the
+                    // controller's own pin (a pointer's slip cannot be filmed; a pinned one is drawn whatever the pointer does), filmed, then let go.
+                    MethodInfo pinSlip = controller.GetType().GetMethod("PinSlipForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                    FieldInfo pins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                    if (pinSlip != null && pins != null)
+                    {
+                        pinSlip.Invoke(controller, new object[] { "band:7", "WORKING AGE", new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.24f) });
+                        pinSlip.Invoke(controller, new object[] { "head:turnout", null, new Vector2(UiScreen.Width * 0.58f, UiScreen.Height * 0.06f) });
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture("04i_people_slips_pinned");
+                        (pins.GetValue(controller) as System.Collections.IList)?.Clear();
+                        yield return Settle();
+                    }
+                    else { Debug.LogError("SHOT: §666 - the controller has no PinSlipForFilm / _slipPins; 04i_people_slips_pinned NOT written."); _failed++; }
                     // P6-1 (board 8a): the sector pie sits deep in the People page - scroll to where the renderer laid it out (its LastArea, read after a settled frame), the disc with its outside labels on film.
                     var pie = controller.GetType().GetField("_sectorEmploymentPieChart", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as PieChartRenderer;
                     float pieY = pie != null ? pie.LastArea.y : 2400f;

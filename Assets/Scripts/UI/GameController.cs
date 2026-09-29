@@ -10436,6 +10436,7 @@ namespace PoliSim.UI
             DrawEnvironmentFamilyPlate();   // P5-C5 (2026-09-06): family 4 of 6 on the shared core
             GUILayout.Space(10f);
             DrawMigrationPovertyFamilyPlate();   // P5-C6 (2026-09-06): family 5 of 6 on the shared core
+            if (_peopleSlips != null && !DeskProvenance.On) { DrawSlips(_peopleSlips, _cohortBlockBounds); }   // §666: the slips over the whole page, last
             // §564 (2026-09-22): the two ranked bar ledgers that stood here - "Spending Allocation" (29 lines) and "Theoretical Tax Revenue by Source" (13 types), the
             // old pack's full-width Fiscal-ink bars - are gone with their renderer (Design's sitting, part A item 1: *"the spending bars bleeding onto People's foot"*).
             // The Budget's own tabs carry every line and every tax as the family's rows; People ends on its five family plates.
@@ -10470,12 +10471,7 @@ namespace PoliSim.UI
             }
         }
 
-        private static string Millions(float millions)
-        {
-            return millions >= 1f
-                ? millions.ToString("0.00", CultureInfo.InvariantCulture) + "M"
-                : (millions * 1000f).ToString("0", CultureInfo.InvariantCulture) + "k";
-        }
+        private static string Millions(float millions) => PeopleSlips.Millions(millions);   // §666: one definition, the slips' and the page's
 
         /// <summary>
         /// §662 (UI v3.3, D24 item 5, board 20a - PEOPLE RETROFITTED): the cohort instruments keep their grammar - the pyramid with the turnout
@@ -10516,6 +10512,11 @@ namespace PoliSim.UI
                 return;
             }
 
+            // §666 (19b): the slips' book - built from the model each frame, the one PeopleSlipReachabilityCheck reads - and the anchors, re-registered each repaint.
+            _peopleSlips = null;
+            PeopleSlips.Book slips = PeopleSlips.Build(cohorts, groups, votingAge, turnoutSourced);
+            BeginSlipAnchors();
+
             // The pyramid with the turnout column: one row per band.
             GUIStyle bandLabel = DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
             float rowHeight = Mathf.Max(StatsUnit(11f), Mathf.Ceil(DeskCaptionHeight(bandLabel)));
@@ -10526,7 +10527,7 @@ namespace PoliSim.UI
             // The two heads over the columns: the words only; TURNOUT carries ◇ where its series is dated, or its gap word where it has none.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
-            DrawStatsSectionCaption("POPULATION");
+            SlipAnchor(DrawStatsSectionCaption("POPULATION"), "head:population");
             GUILayout.EndVertical();
             GUILayout.Space(gapX);
             GUILayout.BeginVertical(GUILayout.Width(turnoutWidth));
@@ -10537,6 +10538,7 @@ namespace PoliSim.UI
                 float side = Mathf.Min(StatsUnit(11f), turnoutHead.height);
                 SymbolRegistry.Draw(new Rect(turnoutHead.x + headWidth + StatsUnit(8f), turnoutHead.y + (turnoutHead.height - side) * 0.5f - StatsUnit(2f), side, side), Symbol.Dated, PoliSimTheme.TextSecondary, DeskCaption(7f, PoliSimTheme.TextSecondary));
             }
+            SlipAnchor(turnoutHead, "head:turnout");
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
 
@@ -10544,7 +10546,6 @@ namespace PoliSim.UI
             float barX = rows.x + labelWidth + StatsUnit(4f);
             float barMax = Mathf.Max(1f, rows.width - labelWidth - turnoutWidth - gapX - StatsUnit(8f));
             float turnoutX = rows.xMax - turnoutWidth;
-            int hovered = -1;
             if (Event.current.type == EventType.Repaint)
             {
                 for (int i = 0; i < PopulationCohorts.CohortCount; i++)
@@ -10557,7 +10558,7 @@ namespace PoliSim.UI
                     if (from == 0 || from == 15 || from == 40 || from == 65 || from == 90) { PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y, labelWidth, rowHeight), from.ToString(CultureInfo.InvariantCulture), bandLabel); }
                     float length = max > 0f ? barMax * cohorts.Counts[i] / max : 0f;
                     PoliSimTheme.Rule(new Rect(barX, y + rowHeight * 0.2f, Mathf.Max(1f, length), rowHeight * 0.6f), workingAge ? areaInk : dependentInk);
-                    if (new Rect(rows.x, y, rows.width - turnoutWidth - gapX, rowHeight).Contains(Event.current.mousePosition)) { hovered = i; }
+                    SlipAnchor(new Rect(rows.x, y, rows.width - turnoutWidth - gapX, rowHeight), "band:" + i.ToString(CultureInfo.InvariantCulture));
 
                     // The turnout lane: a tick where the band is eligible, a dashed empty lane where it is not.
                     float laneY = y + rowHeight * 0.5f;
@@ -10568,7 +10569,7 @@ namespace PoliSim.UI
                     else
                     {
                         PoliSimTheme.Rule(new Rect(turnoutX, laneY - 0.5f, turnoutWidth, 1f), PoliSimTheme.Hairline);
-                        double turnout = BandTurnout(groups, Mathf.Max(from, votingAge));
+                        double turnout = PeopleSlips.BandTurnout(groups, Mathf.Max(from, votingAge));
                         if (!double.IsNaN(turnout))
                         {
                             float tx = turnoutX + turnoutWidth * Mathf.Clamp01((float)turnout / 100f);
@@ -10588,6 +10589,7 @@ namespace PoliSim.UI
                 float footY = rows.yMax - rowHeight;
                 PoliSimWidgets.MeasuredLabel(new Rect(barX, footY, barMax * 0.3f, rowHeight), "0", axis);
                 PoliSimWidgets.MeasuredLabel(new Rect(barX + barMax * 0.35f, footY, barMax * 0.3f, rowHeight), Millions(total), DeskCaption(7f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleCenter));
+                SlipAnchor(new Rect(barX + barMax * 0.35f, footY, barMax * 0.3f, rowHeight), "foot:total");
                 PoliSimWidgets.MeasuredLabel(new Rect(barX + barMax * 0.7f, footY, barMax * 0.3f, rowHeight), Millions(max), axisRight);
                 PoliSimWidgets.MeasuredLabel(new Rect(turnoutX, footY, turnoutWidth * 0.5f, rowHeight), "0", axis);
                 PoliSimWidgets.MeasuredLabel(new Rect(turnoutX + turnoutWidth * 0.5f, footY, turnoutWidth * 0.5f, rowHeight), "100", axisRight);
@@ -10595,15 +10597,19 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(8f));
 
             // Dependency: the four figures, each with its one-word caption, over the one bar.
-            DrawStatsSectionCaption("DEPENDENCY");
+            SlipAnchor(DrawStatsSectionCaption("DEPENDENCY"), "head:dependency");
             GUILayout.BeginHorizontal();
             DrawRuleTerm("OLD-AGE", cohorts.OldAgeDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:oldage");
             GUILayout.Space(StatsUnit(14f));
             DrawRuleTerm("TOTAL", cohorts.TotalDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:total");
             GUILayout.Space(StatsUnit(14f));
             DrawRuleTerm("0–19", cohorts.SchoolAgeShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:school");
             GUILayout.Space(StatsUnit(14f));
             DrawRuleTerm("65+", cohorts.ElderlyShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:elderly");
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             float young = total > 0f ? cohorts.InAgeRange(0, 14) / total : 0f;
@@ -10613,15 +10619,18 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(8f));
 
             // The electorate: three figures and what votes, over the one bar with five anchors (the rest in the dense view).
-            DrawStatsSectionCaption("ELECTORATE");
+            SlipAnchor(DrawStatsSectionCaption("ELECTORATE"), "head:electorate");
             GUILayout.BeginHorizontal();
             DrawRuleTerm("ELIGIBLE", Millions((float)eligible));
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:eligible");
             GUILayout.Space(StatsUnit(14f));
             DrawRuleTerm("OF ALL", total > 0f ? (eligible / total * 100.0).ToString("0.0", CultureInfo.InvariantCulture) + "%" : "—");
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:ofall");
             GUILayout.Space(StatsUnit(14f));
             DrawRuleTerm("VOTING AGE", votingAge.ToString(CultureInfo.InvariantCulture));
+            SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:votingage");
             GUILayout.FlexibleSpace();
-            if (turnoutSourced) { DrawRuleTerm("VOTES", "≈ " + Millions((float)votes)); }
+            if (turnoutSourced) { DrawRuleTerm("VOTES", "≈ " + Millions((float)votes)); SlipAnchor(GUILayoutUtility.GetLastRect(), "fig:votes"); }
             GUILayout.EndHorizontal();
             if (groups.Length > 0)
             {
@@ -10633,59 +10642,21 @@ namespace PoliSim.UI
                     shares.Add((anchor ? groups[i].Name : string.Empty, (float)groups[i].PopulationShare, areaInk));
                 }
                 DrawShareBar(shares.ToArray());
+                // §666: each voter group's segment is an anchor - the bar's own rect cut by the shares, as DrawShareBar cuts it
+                Rect bar = GUILayoutUtility.GetLastRect();
+                float gx = bar.x;
+                for (int i = 0; i < groups.Length; i++) { float gw = bar.width * Mathf.Clamp01((float)groups[i].PopulationShare); SlipAnchor(new Rect(gx, bar.y, gw, StatsUnit(10f)), "group:" + i.ToString(CultureInfo.InvariantCulture)); gx += gw; }
             }
 
-            // 20a part B, level 1: the band's slip - after 250 ms at rest on a band, below-right of the pointer (level 2 and the pin are 19b's, not built).
-            if (Event.current.type == EventType.Repaint)
-            {
-                if (hovered != _cohortSlipBand) { _cohortSlipBand = hovered; _cohortSlipSince = Time.realtimeSinceStartup; }
-                if (hovered >= 0 && Time.realtimeSinceStartup - _cohortSlipSince >= 0.25f) { DrawBandSlip(hovered, peak, cohorts, groups, votingAge, turnoutSourced); }
-            }
+            // 20a part B and 19b: the slips over the block - level 1 from every anchor, level 2 from a marked term, pinning (GameController.Slip.cs).
+            _peopleSlips = slips;   // drawn LAST on the page (DrawDemographicsContent), so no plate below paints over a slip
+            if (Event.current.type == EventType.Repaint) { _cohortBlockBounds = new Rect(rows.x, rows.y, rows.width, 100000f); }
         }
 
-        private int _cohortSlipBand = -1;
-        private float _cohortSlipSince;
-
-        private static double BandTurnout(CohortVoterGroups.Group[] groups, int eligibleFrom)
-        {
-            foreach (CohortVoterGroups.Group g in groups) { if (eligibleFrom >= g.FromAge && eligibleFrom <= g.ToAge) { return g.TurnoutBase; } }
-            return double.NaN;
-        }
-
-        /// <summary>20a part B: a band's level-1 slip - its first line the band (and PEAK BAND where it is), then its figure and share, its turnout
-        /// (◇ 2014) where it is eligible, the working-age term where it falls inside 15–64, and THE LARGEST OF 21 BANDS on the peak.</summary>
-        private void DrawBandSlip(int band, int peak, PopulationCohorts cohorts, CohortVoterGroups.Group[] groups, int votingAge, bool turnoutSourced)
-        {
-            int from = band * PopulationCohorts.CohortWidth;
-            int to = band == PopulationCohorts.OpenBandIndex ? 999 : from + PopulationCohorts.CohortWidth - 1;
-            var lines = new List<string> { PopulationCohorts.Label(band) + " · " + Millions(cohorts.Counts[band]) + " · " + (cohorts.Total > 0f ? (cohorts.Counts[band] / cohorts.Total * 100f).ToString("0.0", CultureInfo.InvariantCulture) : "0") + "% OF ALL" };
-            if (to >= votingAge && turnoutSourced)
-            {
-                double t = BandTurnout(groups, Mathf.Max(from, votingAge));
-                if (!double.IsNaN(t)) { lines.Add("TURNOUT " + t.ToString("0", CultureInfo.InvariantCulture) + "% ◇ 2014"); }
-            }
-            else { lines.Add(to < votingAge ? "UNDER THE VOTING AGE - NO TURNOUT" : "TURNOUT · NO SOURCE"); }
-            if (from >= 15 && from < 65) { lines.Add("WORKING AGE · " + (cohorts.Total > 0f ? (cohorts.InAgeRange(15, 64) / cohorts.Total * 100f).ToString("0", CultureInfo.InvariantCulture) : "0") + "% OF ALL"); }
-            if (band == peak) { lines.Add("THE LARGEST OF 21 BANDS"); }
-            string head = PopulationCohorts.Label(band) + (band == peak ? " · PEAK BAND" : string.Empty);
-            GUIStyle headStyle = DeskCaption(8f, PoliSimTheme.TextPrimary, true);
-            GUIStyle lineStyle = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
-            float lineH = Mathf.Ceil(DeskCaptionHeight(lineStyle)) + StatsUnit(2f);
-            float w = headStyle.CalcSize(new GUIContent(head)).x;
-            foreach (string l in lines) { w = Mathf.Max(w, lineStyle.CalcSize(new GUIContent(l)).x); }
-            w += StatsUnit(16f);
-            float h = lineH * (lines.Count + 1) + StatsUnit(10f);
-            Vector2 at = Event.current.mousePosition + new Vector2(StatsUnit(12f), StatsUnit(12f));
-            var box = new Rect(at.x, at.y, w, h);
-            PoliSimTheme.Rule(box, PoliSimTheme.Card);
-            PoliSimTheme.Rule(new Rect(box.x, box.y, box.width, 1f), PoliSimTheme.HairlineStrong);
-            PoliSimTheme.Rule(new Rect(box.x, box.yMax - 1f, box.width, 1f), PoliSimTheme.HairlineStrong);
-            PoliSimTheme.Rule(new Rect(box.x, box.y, 1f, box.height), PoliSimTheme.HairlineStrong);
-            PoliSimTheme.Rule(new Rect(box.xMax - 1f, box.y, 1f, box.height), PoliSimTheme.HairlineStrong);
-            float y = box.y + StatsUnit(5f);
-            PoliSimWidgets.MeasuredLabel(new Rect(box.x + StatsUnit(8f), y, w - StatsUnit(16f), lineH), head, headStyle);
-            foreach (string l in lines) { y += lineH; PoliSimWidgets.MeasuredLabel(new Rect(box.x + StatsUnit(8f), y, w - StatsUnit(16f), lineH), l, lineStyle); }
-        }
+        /// <summary>§666: the cohort block's width, the bounds its slips keep inside (the last repaint's).</summary>
+        private Rect _cohortBlockBounds = new Rect(0f, 0f, 1280f, 100000f);
+        /// <summary>§666: the slips' book of this frame's cohort block, or null where the block is dense or absent.</summary>
+        private PeopleSlips.Book _peopleSlips;
 
         /// <summary>20a part C: one dense line - the head at one x, the line at another, the same on every line (lines, never columns).</summary>
         private void DrawDenseLine(string head, string line)

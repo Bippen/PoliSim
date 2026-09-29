@@ -159,6 +159,8 @@ namespace PoliSim.EditorTools
             ("GameController.cs", "SOURCED - A PUBLISHED SERIES, WITH ITS YEAR"),
             // §662 (19a): PROVISIONAL is the honesty glyph's own word - the registry's fallback and the slip's first line
             ("SymbolRegistry.cs", "PROVISIONAL"),
+            // §666 (19b, 20a part B): People's slips print the honesty class in the coalition page's vocabulary, and mark a term as [[TERM]] for its level 2
+            ("PeopleSlips.cs", ""),
             // P5-C2 (2026-09-05, board 9c): the society-stat plate's HONESTY chips are Design's own vocabulary - SOURCED / DERIVED / ABSENT · STATED / SUPPORTING,
             // player-facing with the source line's dataflow id and year beside them; not the provenance tag this check hunts.
             ("GameController.Health.cs", "SOURCED"),
