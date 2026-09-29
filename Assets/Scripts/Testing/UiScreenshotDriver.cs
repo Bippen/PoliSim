@@ -4249,6 +4249,8 @@ namespace PoliSim.Testing
                 }
                 yield return Settle();
                 yield return Capture("cl1_runup_hq_stepped");
+                // §657: the run-up's declarations, opened from the HQ's DECLARED chip - the DECLARED block only, on today's date.
+                yield return FilmDeclared(controller, sim, "ps3d_runup_declared");
                 Debug.Log($"SHOT: CL-1 - the run-up began {(sim.CampaignRecord != null ? sim.CampaignRecord.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "?")} after {daysToRunUp} day(s); HQ filmed on run-up day {sim.PlayerPreCampaign.Day} with an office and a {hireRole} queued and stepped; chest {sim.PlayerPreCampaign.Money:F0}, {sim.PlayerPreCampaign.PlannedOffices.Count} planned office(s), {sim.PlayerPreCampaign.Hired.Count} hired");
                 InvokeNoArg(controller, "CloseLiveCampaign");
                 SetPrivateField(controller, "_onDesk", true);
@@ -4301,6 +4303,7 @@ namespace PoliSim.Testing
             Claim("imgui");   // the HQ is an IMGUI sheet - it stamps the desk token, as every folded screen does
             yield return Capture("e7a_campaign_opening_hq");
             yield return AssertClockHeld(controller, sim, "the campaign's opening");
+            yield return FilmDeclared(controller, sim, "ps3d_campaign_declared");   // §657: the declarations the campaign opens on
 
             InvokeNoArg(controller, "AcknowledgeCampaignOpening");
             yield return Settle();
@@ -4371,6 +4374,13 @@ namespace PoliSim.Testing
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
 
+            // §657: play's own clock is PAUSED while the harness walks the days itself - at Normal the controller's Update ticked a day off polling
+            // day between the harness's frames (a slow frame at 1280 real), queued the staged act's ceremony and left CheckElection no polling day.
+            // Restored once the election is called; the night holds the clock by itself (AssertClockHeld sets and restores its own speed).
+            FieldInfo walkSpeedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object walkSpeed = walkSpeedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "Paused");
+
             // 1. To the first POLLING DAY (PS-2 / CL-4, §619: the country's own calendar - Sweden's 13 September 2026 from its 18 January start),
             //    through the controller-shaped day path (the campaign runs inside the sim's own day; the polling day is where Update calls CheckElection).
             int days = 0;
@@ -4405,6 +4415,7 @@ namespace PoliSim.Testing
             //    the clock cannot pass.
             yield return SealLiveSigning(controller, "e7_signing_before_the_night");
             InvokeNoArg(controller, "CheckElection");
+            if (walkSpeed != null) { walkSpeedField.SetValue(controller, walkSpeed); }   // §657: the walk's pause lifted once the election is called
             FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
             if (nightField?.GetValue(controller) == null)
             {
@@ -5348,6 +5359,32 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded - on a ladder run these are the rungs that broke, reported not gated.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded - on a ladder run these are the rungs that broke, reported not gated.");
             Finish(_failed == 0 && errorsDuringCaptures == 0 ? 0 : 1);
+        }
+
+        /// <summary>§657: the run-up's declarations page, opened as the HQ's DECLARED chip opens it, filmed, and closed back to the HQ - the page's
+        /// rows are the timeline's facts standing on the day (`DeclaredRedLines.StandingOn`), logged beside the frame so the film is read against them.</summary>
+        private IEnumerator FilmDeclared(GameController controller, SimulationManager sim, string frame)
+        {
+            InvokeNoArg(controller, "OpenLiveDeclared");
+            FieldInfo open = controller.GetType().GetField("_liveDeclaredOpen", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (!(open?.GetValue(controller) is bool isOpen && isOpen))
+            {
+                Debug.LogError($"SHOT: {frame} - the declarations page did not open (the HQ's DECLARED chip is offered only over a live campaign with a dated timeline).");
+                _failed++;
+                yield break;
+            }
+            yield return Settle();
+            Claim("imgui");
+            yield return Capture(frame);
+            var standing = DeclaredRedLines.StandingOn(_countryId, sim.CurrentDate);
+            var lifted = DeclaredRedLines.LiftedSince(_countryId, WorldClock.ElectionDayOf(_countryId, WorldClock.SeatedVintage(_countryId, sim.CurrentDate)), sim.CurrentDate);
+            var rows = new List<string>();
+            foreach (DeclaredRedLines.DatedFact f in standing) { rows.Add(f.Kind + " " + f.Party + (f.Other != null ? ">" + f.Other : string.Empty)); }
+            var liftedRows = new List<string>();
+            foreach (DeclaredRedLines.DatedFact f in lifted) { liftedRows.Add(f.Party + ">" + f.Other); }
+            Debug.Log($"SHOT: {frame} - {sim.CurrentDate:yyyy-MM-dd}: {standing.Count} declared standing ({string.Join(", ", rows.ToArray())}); lifted {lifted.Count} ({string.Join(", ", liftedRows.ToArray())}).");
+            InvokeNoArg(controller, "CloseLiveDeclared");
+            yield return Settle();
         }
 
         private static void InvokeNoArg(object target, string method)

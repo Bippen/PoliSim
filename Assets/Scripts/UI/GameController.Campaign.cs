@@ -214,6 +214,7 @@ namespace PoliSim.UI
             _liveCampaignOpen = false;
             _campaignScreen = null;
             CloseLiveCampaignMap();
+            CloseLiveDeclared();   // §657
         }
 
         /// <summary>
@@ -292,7 +293,8 @@ namespace PoliSim.UI
 
             // CL-2: the map is the HQ's own chip while the campaign runs; a story that waits for its answer takes the legality panel's place.
             bool campaignRunning = _liveCampaignOpen && _simulationManager?.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished;
-            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ", campaignRunning ? "THE MAP" : null, OpenLiveCampaignMap);
+            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ", campaignRunning ? "THE MAP" : null, OpenLiveCampaignMap,
+                DeclaredPageAvailable() ? "DECLARED" : null, OpenLiveDeclared);   // §657
 
             DrawCampaignResources(Board(0f, 36f, 440f, CampaignResourcesPlateHeight), snapshot);
             DrawCampaignStaffAndOffices(Board(0f, 348f, 440f, 264f), snapshot);
@@ -314,7 +316,8 @@ namespace PoliSim.UI
         // ------------------------------------------------------------------------------------------
         // The masthead: who is campaigning, in what phase, with how long left.
         // ------------------------------------------------------------------------------------------
-        private void DrawCampaignMasthead(Rect r, CampaignSnapshot s, string screenTitle, string sideChip = null, System.Action onSideChip = null)
+        private void DrawCampaignMasthead(Rect r, CampaignSnapshot s, string screenTitle, string sideChip = null, System.Action onSideChip = null,
+            string secondChip = null, System.Action onSecondChip = null)
         {
             float ux = r.width / 1156f;
             float uy = r.height / 28f;
@@ -382,6 +385,15 @@ namespace PoliSim.UI
                 float sideWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(sideChip)).x) + Mathf.Round(16f * ux);
                 var sideRect = new Rect(nextX - sideWidth - Mathf.Round(6f * ux), chipY, sideWidth, chipHeight);
                 if (DrawDeskChipButton(sideRect, sideChip, chipCaption, selected: false, disabled: false)) { onSideChip(); }
+                nextX = sideRect.x;
+            }
+
+            // §657: the HQ's second chip - DECLARED, the run-up's declarations (D-PS).
+            if (!string.IsNullOrEmpty(secondChip) && onSecondChip != null)
+            {
+                float secondWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(secondChip)).x) + Mathf.Round(16f * ux);
+                var secondRect = new Rect(nextX - secondWidth - Mathf.Round(6f * ux), chipY, secondWidth, chipHeight);
+                if (DrawDeskChipButton(secondRect, secondChip, chipCaption, selected: false, disabled: false)) { onSecondChip(); }
             }
         }
 

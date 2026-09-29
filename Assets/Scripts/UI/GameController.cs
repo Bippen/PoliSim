@@ -2794,7 +2794,8 @@ namespace PoliSim.UI
                 // (a film, never refreshed), and since C-R4b step 4a the rail's CAMPAIGN cell opens the
                 // LIVE campaign, re-read from the running state before every draw.
                 RefreshLiveCampaignScreen();
-                if (_campaignScreen.HasValue) { DrawCampaignHqStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value); }
+                if (_campaignScreen.HasValue && _liveDeclaredOpen && DeclaredPageAvailable()) { DrawCampaignDeclaredStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value); }   // §657
+                else if (_campaignScreen.HasValue) { DrawCampaignHqStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value); }
             }
             else if (_onDesk)
             {

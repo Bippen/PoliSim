@@ -95,6 +95,14 @@ namespace PoliSim.EditorTools
                     foreach ((DateTime a, DateTime b) in spans) { Check(f.From >= b || f.Until <= a, F("{0}: no overlap between [{1:yyyy-MM-dd}, {2}) and an earlier span", key, f.From, f.Until == DateTime.MaxValue ? "open" : f.Until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))); }
                     spans.Add((f.From, f.Until));
                 }
+                // §657: the run-up page's two readings - what stands today, and what was lifted since the sitting chamber's election.
+                int StandCount(DateTime on) { int n = 0; foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.SwedenTimeline) { if (f.StandsOn(on)) { n++; } } return n; }
+                string Lifted(DateTime on) { var s = new List<string>(); foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.LiftedSince(CountryId.Sweden, new DateTime(2022, 9, 11), on)) { s.Add(f.Party + ">" + f.Other); } return string.Join(",", s.ToArray()); }
+                Check(DeclaredRedLines.StandingOn(CountryId.Sweden, new DateTime(2026, 1, 18)).Count == StandCount(new DateTime(2026, 1, 18)), "StandingOn(start) is the timeline's facts standing on Sweden's start");
+                Check(DeclaredRedLines.StandingOn(CountryId.Germany, new DateTime(2026, 1, 18)).Count == 0, "StandingOn: a country with no timeline stands nothing");
+                Check(Lifted(new DateTime(2026, 1, 18)) == string.Empty, "LiftedSince(2022 election, start): nothing lifted yet - C's 2025 restatement replaces, it does not lift");
+                Check(Lifted(new DateTime(2026, 7, 19)) == "M>SD,L>SD", F("LiftedSince(2022 election, campaign opening): M's and L's lines on SD lifted, the candidacies restated not lifted - got {0}", Lifted(new DateTime(2026, 7, 19))));
+                Check(Lifted(new DateTime(2026, 9, 8)) == "M>SD,KD>SD,L>SD", F("LiftedSince(2022 election, 8 September): KD's lifts on its own day - got {0}", Lifted(new DateTime(2026, 9, 8))));
                 sb.Append(F("    {0} dated fact(s) on Sweden's timeline.\n", DeclaredRedLines.SwedenTimeline.Count));
             }
             catch (Exception e)

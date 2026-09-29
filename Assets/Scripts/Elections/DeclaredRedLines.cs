@@ -339,6 +339,31 @@ namespace PoliSim.Elections
         /// <summary>Whether a country's declarations are dated on a timeline (§621) - Sweden's alone; every other country reads its vintage.</summary>
         public static bool HasTimeline(CountryId country) => country == CountryId.Sweden;
 
+        /// <summary>§657: the dated facts standing on <paramref name="asOf"/>, in the timeline's order - the run-up's declarations page (D-PS, the DECLARED block only). Empty without a timeline.</summary>
+        public static List<DatedFact> StandingOn(CountryId country, System.DateTime asOf)
+        {
+            var standing = new List<DatedFact>();
+            if (!HasTimeline(country)) { return standing; }
+            foreach (DatedFact f in SwedenTimeline) { if (f.StandsOn(asOf)) { standing.Add(f); } }
+            return standing;
+        }
+
+        /// <summary>§657: the facts LIFTED after <paramref name="since"/> and on or before <paramref name="asOf"/> - ended with no dated fact of the same party, other and kind
+        /// taking over on that day (a restatement replaces, a lift ends). A lifted line is a declaration too.</summary>
+        public static List<DatedFact> LiftedSince(CountryId country, System.DateTime since, System.DateTime asOf)
+        {
+            var lifted = new List<DatedFact>();
+            if (!HasTimeline(country)) { return lifted; }
+            foreach (DatedFact f in SwedenTimeline)
+            {
+                if (f.Until == Open || f.Until <= since.Date || f.Until > asOf.Date) { continue; }
+                bool replaced = false;
+                foreach (DatedFact g in SwedenTimeline) { if (g.From == f.Until && g.Party == f.Party && g.Other == f.Other && g.Kind == f.Kind) { replaced = true; break; } }
+                if (!replaced) { lifted.Add(f); }
+            }
+            return lifted;
+        }
+
         /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden only; the other countries return derived lines alone.</summary>
         public static List<RedLine> ForDate(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
