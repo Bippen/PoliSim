@@ -34846,3 +34846,16 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Fixed.** `PlayerSmoke.Arm` sets `Application.runInBackground` when - and only when - `-smoke` is on the command line. **Proved:** rebuilt (26 s), headless smoke PASSED, windowed smoke PASSED on the real device (Intel Arc B580), 30 days, exit 0, the log 0 errors and 0 exceptions.
 
 **Tooling tier:** cheap bar 67 of 67 (`cheap668`, run on this tree).
+
+
+## 670. D-PS SENT IN THE STANDARD FORM, AGAINST BUILT SCREENS ONLY: SEVEN SCREENS, TEN REAL FRAMES; THREE STATES NAMED AS LACKING A FRAME (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Send D-PS to Design in the standard form, against built screens only: the formation sheet, the support agreement in its owed, delivered and broken states, the run-up declarations page, the election-night line and its control, the confidence moment as it appears in play, the role indicator, and the reference view. List any that lack a real frame. Ask nothing already answered.*
+
+**Sent** `uploads/D-PS_ask/` (13 files, one zip with MANIFEST inside, 12 files; local `PoliSim-captures/design/D-PS_ask/`): `ASK.md` and ten real frames (Sweden 1280, this session's films) - the formation sheet (`s667_1280` 07a sheet, rows, revised, the Speaker's ask), the support agreement (07a deep), the run-up declarations (`s657_i1280` ps3d both days), the night's line and control (`s656_night1280` e6 player first, `s657_i1280` e7c live), the role indicator (01c desk), the reference view (e7c: SWEDEN 2026, AS IT HAPPENED). The ask: boards in UI v3.3's grammar against the built screens, saying where a built screen is wrong; Code builds from confirmed boards (PS-3b).
+
+**Not asked, already answered:** the run-up shows the DECLARED block, never the MEASURED (§648 (d)); the D24 vocabulary and the slip (§662, §666).
+
+**Lacking a real frame, listed for Design:** the agreement DELIVERED and BROKEN (the films' government never delivers or breaks an item); NO CONFIDENCE DECLARED with its two answers and the rail's HELD chip (no film moves a motion against the player); the role indicator's governing, junior-partner and supporter roles (the film sits in opposition). Design is asked whether Code stages and films them first, or draws from the built text.
+
+**Documents tier.**
