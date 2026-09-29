@@ -34550,3 +34550,20 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **The baseline, generated.** `Tools/text_baseline.pl` reads a dry film's label table and counts each rail screen's visible text draws at rest (its own unscrolled frame, draws flagged OUTSIDE the clip left out); `docs/generated/UI_V33_BASELINE.tsv` is its output on `drys648` (§648's closing dry film), registered in `docs/generated/README.md`. **A hand count is not the count**: the session's first figures matched a lowercase `outside` against the table's `OUTSIDE` and counted off-screen draws - People and Energy near double, the Desk fifth; the tool puts the Desk first. The order is Elias's on the tool's figures.
 
 **Bars.** Tier DOCUMENTS + tooling: the cheap bar 64 of 64.
+
+
+## 650. D24 SENT: ITEM 4 THE ICON INVENTORY GENERATED, ITEM 5'S FIRST COMPOSITION (PEOPLE), THE RECORD FROM §612, BOARDS_BUILT; THE GLYPHS AND THE INCUMBENT SET ASKED AS ZIPS (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29, item 2): *install the 16 glyphs in the icon registry with the coverage checks; send D24's item 4 (the generated icon inventory) and the first screen composition in the standard form; order the screens by the dry film's at-rest text-draw baseline; send Design a generated extract of COMPLETED.md from §612 on, plus the Incumbent brand request's status. The glyphs arrive from Design as one zip - never write a binary from a pulled image. BOARDS_BUILT.md generated from COMPLETED.md and the feature list, one row per board id, UNSURE where the record is ambiguous; send it to Design.*
+
+**Pulled first** (the return of 2026-09-29): the board file as eleven parts, each and the whole verified against Design's sheet (`Tools/design_channel.pl join`); `#sitting-c-note`, `#d24-note`, 19a-19c read (§648 sorted part C). **The glyphs are not installed**: each of the sixteen PNGs comes back from a pull inline, under the size at which the harness writes a result to disk, and §427 forbids writing a binary from a pulled image - Design is asked for them as one zip; the registry and its coverage check land with them.
+
+**Generated and sent** (`uploads/D24_ask/`, the standard form: `D24_ask.zip` with `MANIFEST.sha256` inside, the ask and the People frames loose; the store listed after the write and the ask read back):
+- **Item 4**: `PoliSim.EditorTools.D24Inventory.Emit` - the law categories with the emblem each draws and a verb census by the signs of each law's dial and structural deltas (RAISE and LOWER proposed from signs; both-ways laws the owner's reading), the areas, the stat rows, the cabinet's portfolios. Every name the screens load is held except the portfolios, which are words today. On the census the four verbs look sufficient; no fifth is proposed.
+- **Item 5, People first**: the page at rest and its plates (real film `s648_1280`) and its at-rest text draws (`Tools/text_baseline.pl screen`), under the order Elias ruled (§649).
+- **The record from §612** (cut at its heading) and **`BOARDS_BUILT.md`** (`Tools/boards_built.pl`: one row per board id from Design's board file and every board the record names - BUILT where a naming section says built and none reverted it, UNSURE otherwise, NOT IN THE RECORD where none names it).
+- **The Incumbent brand set**: found in Design's store (`brand/incumbent/`, its README read - the chamber as the mark, a drawn logotype, the capsules, the icon tiers). The ask's first cut said no wordmark art had been asked; corrected before it was read back: the set is acknowledged and asked for as one zip.
+
+**Filed.** The sweep's `04f_people_migration_plate` is byte-identical to `04e` on every film (the page's foot, where the scroll clamps) - a frame that cannot show what its name says; noted in the ask, not yet changed in the driver.
+
+**Bars.** Tier tooling + documents: the cheap bar 64 of 64.
