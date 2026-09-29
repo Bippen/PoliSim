@@ -125,7 +125,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The digest of the sweep's text as the formation computed it when the evaluator was built (§646) - the formation reproduced exactly.</summary>
-        private const string PinnedDigest = "a66608018b6d3be4bd90d466a7c4cb774e5a16079e304274b839ebedac823ba0";
+        private const string PinnedDigest = "cb08c27e94a64d6eb70e9d31b9749aa937fed2c3201e8ad84a7190473204b01c";   // §652: re-pinned - MP's in-or-against edge moved 2026-04-04 -> 2026-08-10 (the April-August timeline samples only)
 
         private static string Option(GovernmentOption g) => string.Format(CultureInfo.InvariantCulture, "cab {0} sup {1} {2} seats {3} supported {4} opposed {5} cohesion {6:R} score {7:R}",
             g.Cabinet, g.Support, g.Kind, g.CabinetSeats, g.SupportedSeats, g.OpposedSeats, g.Cohesion, g.Score);

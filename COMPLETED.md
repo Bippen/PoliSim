@@ -34585,3 +34585,18 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Filmed.** Dry `drys651` (Sweden 1280 × 720): 139 measured, 0 failed, 0 overflow; real `s651_1280` and `s651_2560` to the pickers: 6 captured, 0 failed each, the menu's, the selector's and the pickers' Canvas texts 0 violations; 2560's exit is PF-17's settings frame, not this change's.
 
 **Bars.** Tier UI: the cheap bar 64 of 64.
+
+
+## 652. MP'S IN-OR-AGAINST RULE DATED BY HELLDÉN'S OWN WORDS, 2026-08-10; THE TIMELINE, ITS CHECK AND THE SWEEP'S PIN MOVED WITH IT; THE CARETAKER-LOOP STASH DROPPED (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *MP's in-or-against rule: 2026-08-10, Helldén's own words. If a saved MP publication is earlier, use that instead. Update §621's timeline and its check, apply it, then drop the caretaker-loop stash and say so.*
+
+**Read first.** MP's one saved publication is [MP-P1], the spokespeople's summer speech of 2026-08-12 (`raw/declarations/mp_sprakrorens_sommartal_2026.html`): it declares the aim to govern and does not state the condition - and it is later. So the date is [MP-I1], Helldén to Sveriges Radio, 2026-08-10; TT's paraphrase of 4 April ([MP-I4]) is a newsroom's.
+
+**Applied.** `DeclaredRedLines.SwedenTimeline`: MP's `InOrAgainst` from 2026-08-10, its basis naming the ruling; `DeclarationDatesDiagnostic` - MP's rule takes effect on 10 August (absent on the 9th), and V's 18 April edge now reads without MP; `coalition_declarations_2026.md`'s MP row. **The vintages do not move** (the 2026 set is the timeline on 13 September, MP included; the 2022 set never held MP's 2026 rule), so no election's formation changes.
+
+**The sweep's pin moved, and why** (`FormationSweepDiagnostic`): the digest changed; the pinned text and the new one differ in the timeline-edge samples only - the 4 April samples gone, the 10 August samples added, and the 18 April and 1 May samples of the seed, 2022 and year-32 chambers formed without MP's rule - every vintage section and every sample after 10 August identical. Re-pinned on that diff.
+
+**The stash dropped.** `stash@{0}` ("caretaker-loop WIP", on §638): every hunk is in §639/§640 or superseded by §646's round, except MP's dating - now applied here, on the ruling. Dropped.
+
+**Bars.** Tier SIMULATION: the cheap bar 64 of 64; the simulation bar 56 of 56, `TrajectorySentinelCheck` on `ps3k` unmoved (no review owed).

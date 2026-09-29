@@ -241,9 +241,10 @@ namespace PoliSim.Elections
         /// <summary>K-1g: MP's rule. MP's own record is a GAP, so its date is a PRESS REPORT's - a stated deviation from §621's first rule, put to Elias
         /// (§639): 2026-04-04, TT's report, the first and only source that carries the half that is wired (the vote against); Sveriges Radio's of
         /// 2026-08-10 carries the demand to sit in government and not the vote.</summary>
-        private const string MpInOrAgainst = "DECLARED: Miljöpartiet will vote no to a prime minister unless it sits in the government - TT's report of Helldén's condition "
-            + "2026-04-04 ([MP-I4], the newsroom's paraphrase: \"röstar nej utan regeringsplats\"), restated 2026-08-10 to Sveriges Radio ([MP-I1]: \"Vi ska sitta i nästa regering\"; "
-            + "[MP-I2]: \"Partiet ställer samtidigt ett villkor om att sitta i regering\"); secondary only - MP's own wording is a GAP, and the date is a press report's (§639). " + SwedenSource;
+        private const string MpInOrAgainst = "DECLARED: Miljöpartiet will vote no to a prime minister unless it sits in the government - Helldén's own words to Sveriges Radio "
+            + "2026-08-10 ([MP-I1]: \"Vi ska sitta i nästa regering\"; the condition as [MP-I2] reports it: \"Partiet ställer samtidigt ett villkor om att sitta i regering\"), "
+            + "first reported 2026-04-04 ([MP-I4], TT's paraphrase: \"röstar nej utan regeringsplats\"); dated by the leader's own words, ruled 2026-09-29 (§652) - MP's one "
+            + "saved publication ([MP-P1], 2026-08-12) is later and does not state the condition. " + SwedenSource;
 
         /// <summary>K-1g: SD's rule - the support role refused, the vote against not declared.</summary>
         private const string SdNoSupportRole = "DECLARED: Sverigedemokraterna will be either a government party or an opposition party, never a support party again - "
@@ -260,7 +261,7 @@ namespace PoliSim.Elections
         // in-or-against rule takes effect 2026-04-18 (the congress decision [V-P1] records); C's one-way line to V starts 2026-01-30
         // (C's own publication [C-P1]). The vintage API above stays for the backtests, pinned by name; `ForDate` is the timeline, and
         // `DeclarationDatesDiagnostic` proves the timeline's 2022-09-11 equals `For(Sweden2022)` and its 2026-09-13 `For(Sweden2026)`. K-1g (§639)
-        // adds three: SD's refusal of the support role 2025-10-10, MP's in-or-against rule 2026-04-04 (a press report's date, stated), KD → S 2026-09-02.
+        // adds three: SD's refusal of the support role 2025-10-10, MP's in-or-against rule 2026-08-10 (Helldén's own words, ruled §652), KD → S 2026-09-02.
         // No runtime surface reads the timeline yet - the run-up's declarations are D-PS's (§620/§621); the election reads its own day's. §644 measures a
         // mid-term round on it (`GovernmentFormation.ViewOfSitting` with a date, read by `AiMotionReachDiagnostic`) for Elias's ruling PS-3i-2c.
         // -----------------------------------------------------------------------------------------------------------------------------
@@ -327,9 +328,9 @@ namespace PoliSim.Elections
             // leader's own post, quoted verbatim, dates the party's record (KD's line lifted on Busch's post on X as Bulletin quotes it). The rule is scoped
             // to the formation after the 2026 election; no runtime path reads the timeline before it (the vintage carries it).
             new DatedFact("SD", null, FactKind.NoSupportRole, false, false, null, D(2025, 10, 10), Open, SdNoSupportRole),
-            // MP's in-or-against: its own record is a GAP, so the date is a press report's - the first that carries the vote against (TT, 2026-04-04), a
-            // stated deviation from §621's first rule (§639).
-            new DatedFact("MP", null, FactKind.InOrAgainst, false, false, null, D(2026, 4, 4), Open, MpInOrAgainst),
+            // MP's in-or-against: dated by Helldén's own words to Sveriges Radio, 2026-08-10 (ruled 2026-09-29, §652); TT's paraphrase of 4 April is
+            // a newsroom's, and MP's one saved publication (12 August) is later and does not state the condition.
+            new DatedFact("MP", null, FactKind.InOrAgainst, false, false, null, D(2026, 8, 10), Open, MpInOrAgainst),
             // KD → S, one way: Busch's own words of 2 September as SVT's live report quotes them - spoken words, not a party publication, so an
             // EXTENSION of §621's precedent (a post on X), stated and put to Elias (§639); the June report is the newsroom's.
             new DatedFact("KD", "S", FactKind.PairLine, true, true, null, D(2026, 9, 2), Open, KdRefusesAndersson),

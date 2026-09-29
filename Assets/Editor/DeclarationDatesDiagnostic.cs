@@ -14,7 +14,7 @@ namespace PoliSim.EditorTools
     /// `Sweden2022` set and on 13 September 2026 the shape of the `Sweden2026` set (pairs, strengths, one-way flags, candidacies, in-or-against
     /// rules - the bases may differ in wording); and at every change point of the run-up the ruled fact appears or lifts on its ruled day:
     /// C→V from 30 January, L's line lifted 13 March, M's 1 April with its 2026 candidacy, V's rule 18 April, S's 2026 candidacy 1 May, KD's line
-    /// lifted 8 September; K-1g (§639): SD's refusal of the support role 10 October 2025, MP's rule 4 April 2026 (a press report's date), KD → S 2 September. Every fact's dates are ordered and no two facts of one party and kind overlap.
+    /// lifted 8 September; K-1g (§639): SD's refusal of the support role 10 October 2025, MP's rule 10 August 2026 (Helldén's own words, §652), KD → S 2 September. Every fact's dates are ordered and no two facts of one party and kind overlap.
     /// </summary>
     public static class DeclarationDatesDiagnostic
     {
@@ -74,9 +74,9 @@ namespace PoliSim.EditorTools
                 Point(new DateTime(2026, 3, 13), "L's no-SD-ministers line lifts", l => !Has(l, "L", "SD", false, false));
                 Point(new DateTime(2026, 4, 1), "M's no-SD-ministers line lifts", l => !Has(l, "M", "SD", false, false));
                 Check(Cand(new DateTime(2026, 3, 31), "M").Contains("2022-03-26") && Cand(new DateTime(2026, 4, 1), "M").Contains("[MSD-P1]"), "2026-04-01: M's candidacy is 2026's from that day, 2022's the day before");
-                Check(Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 4, 17))) == "MP,SD~" && Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 4, 18))) == "MP,SD~,V", "2026-04-18: V's rule takes effect (the decision's day, not the PDF's)");
+                Check(Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 4, 17))) == "SD~" && Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 4, 18))) == "SD~,V", "2026-04-18: V's rule takes effect (the decision's day, not the PDF's)");
                 Check(Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2025, 10, 9))) == string.Empty && Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2025, 10, 10))) == "SD~", "2025-10-10: SD's no-support rule takes effect (Åkesson's own post - K-1g)");
-                Check(Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 4, 3))) == "SD~" && Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 4, 4))) == "MP,SD~", "2026-04-04: MP's rule takes effect (TT's report - a press report's date, stated, K-1g)");
+                Check(Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 8, 9))) == "SD~,V" && Rules(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties, new DateTime(2026, 8, 10))) == "MP,SD~,V", "2026-08-10: MP's rule takes effect (Helldén's own words - ruled §652; TT's 4 April paraphrase is not the date)");
                 Point(new DateTime(2026, 9, 2), "KD>S one way appears (Busch's own words - K-1g)", l => Has(l, "KD", "S", true, true));
                 Check(Cand(new DateTime(2026, 4, 30), "S").Contains("2022-08-04") && Cand(new DateTime(2026, 5, 1), "S").Contains("[S-P2]"), "2026-05-01: S's candidacy is 2026's from that day, 2022's the day before");
                 Point(new DateTime(2026, 9, 8), "KD's no-SD-ministers line lifts (KD's own words)", l => !Has(l, "KD", "SD", false, false));
