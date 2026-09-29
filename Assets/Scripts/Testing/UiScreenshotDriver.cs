@@ -4058,6 +4058,7 @@ namespace PoliSim.Testing
             yield return Settle();
             Claim("electionnight");
             yield return Capture("e6_election_night_model");
+            RecordCanvasTextAssert("e6_election_night_model", controller);   // §648: the staged nights carry the Canvas guard too (the synthetic weight among it)
 
             Debug.Log(string.Format(CultureInfo.InvariantCulture,
                 "SHOT: F1 - board 1h filmed from the MODEL, {0} constituencies declared of {1}.",
@@ -4131,6 +4132,7 @@ namespace PoliSim.Testing
                 yield return Settle();
                 Claim("electionnight");
                 yield return Capture("e6_election_night_" + stems[i]);
+                RecordCanvasTextAssert("e6_election_night_" + stems[i], controller);
 
                 Debug.Log(string.Format(CultureInfo.InvariantCulture,
                     "SHOT: W-E6 {0} - minute {1}, {2} of {3} declared, {4:N0} votes counted, {5} call(s) safe.",
@@ -4194,6 +4196,7 @@ namespace PoliSim.Testing
             while (sim.PlayerPreCampaign == null && sim.PlayerCampaign == null && daysToRunUp < MaxStateSearchDays)
             {
                 bool boundaryBefore = sim.AdvanceDay();
+                MemTick(sim);   // the 2560 out-of-memory: the working set and the heaps every 30 game days
                 sim.AdvanceCountryDayTick(_countryId);
                 daysToRunUp++;
                 if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
@@ -4220,6 +4223,7 @@ namespace PoliSim.Testing
                 yield return Capture("cl1_runup_hq_queued");
                 {
                     bool boundaryBefore = sim.AdvanceDay();
+                    MemTick(sim);   // the 2560 out-of-memory: the working set and the heaps every 30 game days
                     sim.AdvanceCountryDayTick(_countryId);
                     if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
                 }
@@ -4243,6 +4247,7 @@ namespace PoliSim.Testing
             while (sim.PlayerCampaign == null && daysToOpening < MaxStateSearchDays)
             {
                 bool boundaryBefore = sim.AdvanceDay();
+                MemTick(sim);   // the 2560 out-of-memory: the working set and the heaps every 30 game days
                 sim.AdvanceCountryDayTick(_countryId);
                 daysToOpening++;
                 if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
@@ -4258,7 +4263,7 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Settle();
             string interruptText = controller.GetType().GetMethod("BuildFoldedInterruptText", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.Invoke(controller, new object[] { true, true }) as string;
+                ?.Invoke(controller, new object[] { true }) as string;   // §648: one parameter (the speed hint went with the sentence)
             FieldInfo hqOpenField = controller.GetType().GetField("_liveCampaignOpen", BindingFlags.Instance | BindingFlags.NonPublic);
             bool hqOpen = hqOpenField?.GetValue(controller) is bool h && h;
             if (interruptText == null || interruptText.IndexOf("campaign", System.StringComparison.OrdinalIgnoreCase) < 0)
@@ -4281,6 +4286,9 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("e7b_campaign_opening_acknowledged");
             yield return ReportClockAfterDismissal(controller, sim, "the campaign's opening");
+            // PS-3e (§632): the government's budget is tabled and adopted in the run-up, and its division opens the signing takeover as
+            // any passed act does (§633); the film seals it as a player would, or every frame after it photographs the signing (§648's finding).
+            yield return SealLiveSigning(controller, "cl1_signing_government_budget");
 
             // CL-2 (2026-09-13): the loop's closures on film, on the live campaign the opening just began. (1) The map as the picker:
             //    opened from the HQ's masthead, a tile picked (the catalog's second valkrets), the HQ's local-acts line naming it and a
@@ -4320,6 +4328,7 @@ namespace PoliSim.Testing
                     yield return Capture("cl2_campaign_hq_scandal_answered");
                     {
                         bool boundaryBefore = sim.AdvanceDay();
+                        MemTick(sim);   // the 2560 out-of-memory: the working set and the heaps every 30 game days
                         sim.AdvanceCountryDayTick(_countryId);
                         if (boundaryBefore) { sim.AdvanceTurn(noDecisions); }
                     }
@@ -4348,6 +4357,7 @@ namespace PoliSim.Testing
             while (days < MaxStateSearchDays)
             {
                 bool boundary = sim.AdvanceDay();
+                MemTick(sim);   // the 2560 out-of-memory: the working set and the heaps every 30 game days
                 sim.AdvanceCountryDayTick(_countryId);
                 days++;
                 if (boundary)
@@ -4373,6 +4383,7 @@ namespace PoliSim.Testing
 
             // 2. Election night is entered by the controller's own election call, and it must be a takeover
             //    the clock cannot pass.
+            yield return SealLiveSigning(controller, "e7_signing_before_the_night");
             InvokeNoArg(controller, "CheckElection");
             FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
             if (nightField?.GetValue(controller) == null)
@@ -4406,6 +4417,54 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
             Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// A signing takeover the game opened by itself (a division the player's country recorded - the government's budget in the run-up,
+        /// PS-3e): filmed under its own stem and sealed through the controller's own verb, as a player's click would. Nothing is filmed where
+        /// no signing is up - the frame is the game's to show, not the film's to stage, so it is never declared.
+        /// </summary>
+        private IEnumerator SealLiveSigning(GameController controller, string stem)
+        {
+            FieldInfo kindField = controller.GetType().GetField("_canvasScreenKind", BindingFlags.Instance | BindingFlags.NonPublic);
+            // Every signing the game opened, one after another (a second division queues behind the first): the first filmed under the stem,
+            // each sealed; bounded, and loud if the queue never empties.
+            for (int n = 0; n < 8; n++)
+            {
+                for (int w = 0; w < SettleFrames * 4 && kindField?.GetValue(controller)?.ToString() != "Signing"; w++) { yield return null; }   // a queued one is built on a later frame
+                if (kindField == null || kindField.GetValue(controller)?.ToString() != "Signing") { yield break; }   // the kind is set when the takeover is built, before its cover is in
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                string frame = n == 0 ? stem : stem + "_" + (n + 1).ToString(CultureInfo.InvariantCulture);
+                Claim("signing");
+                yield return Capture(frame);
+                RecordCanvasTextAssert(frame, controller);
+                InvokeNoArg(controller, "SignPendingDivision");
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+                Claim("imgui");
+                Debug.Log($"SHOT: {frame} - a signing the game opened by itself, filmed and sealed.");
+            }
+            Debug.LogError($"SHOT: {stem} - eight signings sealed and another still up; the queue does not empty.");
+            _failed++;
+        }
+
+        private int _memDays;
+
+        /// <summary>
+        /// §648 (the 2560 interrupts film died of Unity's "System out of memory" in its day loop): every 30 game days, the Editor's
+        /// working set, the managed heap and Unity's own allocator - the growth curve, read off the log's MEM lines.
+        /// </summary>
+        private void MemTick(SimulationManager sim)
+        {
+            _memDays++;
+            if (_memDays % 30 != 0) { return; }
+            System.Diagnostics.Process self = System.Diagnostics.Process.GetCurrentProcess();
+            self.Refresh();
+            Debug.Log(string.Format(CultureInfo.InvariantCulture, "MEM: day {0} {1:yyyy-MM-dd} ws {2} MB managed {3} MB unity-allocated {4} MB unity-reserved {5} MB mono-used {6} MB",
+                _memDays, sim.CurrentDate, self.WorkingSet64 / 1048576, GC.GetTotalMemory(false) / 1048576,
+                UnityEngine.Profiling.Profiler.GetTotalAllocatedMemoryLong() / 1048576, UnityEngine.Profiling.Profiler.GetTotalReservedMemoryLong() / 1048576,
+                UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong() / 1048576));
         }
 
         /// <summary>With the clock set to run, the date must not move: that is what an interrupt IS. Restores the speed it found.</summary>

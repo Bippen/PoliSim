@@ -256,6 +256,7 @@ namespace PoliSim.UI
                 }
             }
             if (Event.current.type != EventType.Repaint) { return; }
+            DrawHeldCellMark(slot, HoldCell.Campaign);   // §648 (PF-11): the opening and a story point here
             Texture2D icon = IconLibrary.Get("icon_area_political");
             if (icon == null) { return; }
             float size = RailGlyphSize(cell);

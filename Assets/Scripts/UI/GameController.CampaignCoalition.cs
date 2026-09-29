@@ -184,6 +184,47 @@ namespace PoliSim.UI
             var blocked = new System.Collections.Generic.List<(int Cabinet, RedLine Line)>(s.Result.BlockedByRedLine);
             blocked.Sort((a, b) => CountBits(a.Cabinet).CompareTo(CountBits(b.Cabinet)));
 
+            // §648 (Design's part-C reading 5): the reading is the COUNT and what refused - at rest, the total and one row per refusing line with
+            // the majorities it refused; the combinations themselves are the dense view's (the desk's †, 19c), not twenty two-line rows and AND N MORE.
+            var byLine = new System.Collections.Generic.List<(RedLine Line, int Count)>();
+            foreach ((int _, RedLine line) in blocked)
+            {
+                int at = byLine.FindIndex(e => e.Line.A == line.A && e.Line.B == line.B && e.Line.Kind == line.Kind && e.Line.OneWay == line.OneWay
+                    && DeclaredRedLines.IsCandidacy(e.Line) == DeclaredRedLines.IsCandidacy(line));
+                if (at < 0) { byLine.Add((line, 1)); } else { byLine[at] = (byLine[at].Line, byLine[at].Count + 1); }
+            }
+            byLine.Sort((a, b) => b.Count != a.Count ? b.Count.CompareTo(a.Count) : a.Line.A != b.Line.A ? a.Line.A.CompareTo(b.Line.A) : a.Line.B.CompareTo(b.Line.B));
+            // Each majority is credited to the first line the formation finds refusing it, so a row counts the refusals credited to its line.
+            DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "MAJORITIES REFUSED · EACH CREDITED TO ONE LINE", blocked.Count.ToString(CultureInfo.InvariantCulture),
+                DeskBody(10f, PoliSimTheme.TextPrimary), DeskCaption(9.5f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight));
+            y += rowHeight;
+            int lineRoom = Mathf.Max(0, Mathf.FloorToInt((r.yMax - y) / rowHeight) - (DeskProvenance.On ? 0 : 1));
+            int linesShown = 0;
+            foreach ((RedLine line, int count) in byLine)
+            {
+                if (!DeskProvenance.On && linesShown >= lineRoom) { break; }
+                if (DeskProvenance.On && linesShown >= Mathf.Min(byLine.Count, 4)) { break; }   // dense: the four largest lines, then the combinations
+                DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight),
+                    s.PartyNames[line.A] + " / " + s.PartyNames[line.B] + (DeclaredRedLines.IsCandidacy(line) ? " · rival candidates" : line.Kind == RedLineKind.Declared ? " · declared" : " · on distance"),
+                    count.ToString(CultureInfo.InvariantCulture), name, figure);
+                y += rowHeight;
+                linesShown++;
+            }
+            if (!DeskProvenance.On)
+            {
+                if (linesShown < byLine.Count)
+                {
+                    DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight),
+                        string.Format(CultureInfo.InvariantCulture, "{0} MORE LINES · † FOR EVERY COMBINATION", byLine.Count - linesShown), name);
+                }
+                else
+                {
+                    DrawCampaignEmptyRow(new Rect(r.x, y, r.width, rowHeight), "† FOR EVERY COMBINATION", name);
+                }
+                return;
+            }
+            y += Mathf.Round(4f * uy);
+
             int room = Mathf.Max(1, Mathf.FloorToInt((r.yMax - y) / (rowHeight * 2f)) - 1);
             int shown = 0;
             foreach ((int cabinet, RedLine line) in blocked)

@@ -1958,13 +1958,15 @@ namespace PoliSim.UI
             {
                 // v3.0: the folded frame's text (its wording now), the Budget ledger's own pause left
                 // out as before - the seam names the same states it always did.
-                string interrupt = BuildFoldedInterruptText(includeBudgetProcess: false);
-                if (interrupt != null)
+                List<(string Label, HoldCell Cell)> holds = _isGameOver ? null : CollectHolds(includeBudgetProcess: false);
+                if (_isGameOver || holds.Count > 0)
                 {
                     float marginX = UiScreen.Width * ScreenMarginFraction;
                     float marginY = UiScreen.Height * ScreenMarginFraction;
-                    GUILayout.BeginArea(new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f));
-                    DrawHoldBannerLabel(interrupt);
+                    float areaWidth = UiScreen.Width - marginX * 2f;
+                    GUILayout.BeginArea(new Rect(marginX, marginY, areaWidth, UiScreen.Height - marginY * 2f));
+                    if (_isGameOver) { DrawHoldBannerLabel($"GAME OVER - {_gameOverReason}"); }
+                    else { DrawHoldChips(holds, areaWidth); }   // §648: the one line over the Canvas as on the frame
                     GUILayout.EndArea();
                 }
             }
@@ -2709,6 +2711,7 @@ namespace PoliSim.UI
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
             bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds() || FormationHolds();
             if (isTimePaused && !_wasTimePausedLastFrame && Event.current.type == EventType.Repaint) { AudioDirector.Fire(AudioCue.InterruptRaised); }   // P4-2: the hold's rising edge
+            RefreshHeldCells();   // §648: the rail's HELD marks read the banner's own list
             if (Event.current.type == EventType.Repaint) { _wasTimePausedLastFrame = isTimePaused; }
             float leftColumnWidth = RailWidth();
             float rightColumnWidth = areaWidth - leftColumnWidth - columnSpacing;
@@ -5641,6 +5644,7 @@ namespace PoliSim.UI
             // Board 1n (2026-08-28), the active convention, kept by 1n-r2: the wash and the spine are
             // DrawRailCell's; the glyph in the area ink when active, the tab-swatch tint otherwise.
             Color ink = selected ? areaInk : PoliSimTheme.TabSwatchTint(area);
+            DrawHeldCellMark(slot, HoldCellOf(tab));   // §648 (PF-11): the cell a hold points at shows it
             Texture2D icon = IconLibrary.Get(iconName);
             if (icon != null)
             {
@@ -6214,92 +6218,193 @@ namespace PoliSim.UI
         /// </summary>
         private float DrawFoldedInterruptBanner(float columnWidth)
         {
-            // On Screen 0 every hold is listed (no document states its own there) and the speed hint
-            // is dropped - the cluster is on the Desk's masthead, not on an unfolded column (C27 keeps
-            // only its load-bearing half: the reasons, screens named).
-            string interruptText = BuildFoldedInterruptText(includeBudgetProcess: _onDesk || _consolidatedTab != ConsolidatedTab.Budget, includeSpeedHint: !_onDesk);
-            if (interruptText == null)
+            // §648 (PF-11; Design's part-C reading 2; board 1m's C27): HELD is ONE mono line - the lamp, TIME PAUSED, and each thing waited
+            // on as a chip naming the rail cell it is answered at, a click taking the player there. No sentence and no speed hint (the rail's
+            // chip says PAUSE/RUN). On the Budget ledger its own pause is left out - it states that status itself. Game over keeps its line.
+            if (_isGameOver)
+            {
+                string over = $"GAME OVER - {_gameOverReason}";
+                DrawHoldBannerLabel(over);
+                GUILayout.Space(4f);
+                return _holdBannerStyle.CalcHeight(new GUIContent(over), columnWidth - _holdBannerStyle.margin.horizontal) + _holdBannerStyle.margin.vertical + 4f;
+            }
+
+            // Read on the Layout event and held for the frame: a rail click moving to or from the Budget mid-event would otherwise change
+            // the chip count between Layout and the event that draws it (the second reading, §648).
+            if (Event.current.type == EventType.Layout) { _bannerIncludesBudget = _onDesk || _consolidatedTab != ConsolidatedTab.Budget; }
+            List<(string Label, HoldCell Cell)> holds = CollectHolds(includeBudgetProcess: _bannerIncludesBudget);
+            if (holds.Count == 0)
             {
                 return 0f;
             }
 
-            DrawHoldBannerLabel(interruptText);
+            float height = DrawHoldChips(holds, columnWidth);
             GUILayout.Space(4f);
-            float textWidth = columnWidth - _holdBannerStyle.margin.horizontal;
-            return _holdBannerStyle.CalcHeight(new GUIContent(interruptText), textWidth) + _holdBannerStyle.margin.vertical + 4f;
+            return height + 4f;
         }
 
-        /// <summary>
-        /// The banner's text, or null when nothing holds the clock. Split from the draw site so it can
-        /// be measured (you cannot measure what is not a value). The Budget ledger's own pause is left
-        /// out ON that screen - it states that status itself, and repeating it would train players to
-        /// ignore the banner - and listed on every other folded screen, where nothing else says it.
-        /// </summary>
-        private string BuildFoldedInterruptText(bool includeBudgetProcess, bool includeSpeedHint = true)
+        /// <summary>§648: where a held thing is answered - a rail cell that exists (PF-11: the banner named a Foreign Policy tab and a Cabinet tab the rail has not had since v3.1).</summary>
+        private enum HoldCell { None, Docket, Budget, Politics, Campaign }
+
+        private static string HoldCellCaption(HoldCell cell) => cell switch
         {
-            // v3.1 R-E1 (ONE FRAME): the OPEN column's game-over banner (C4/C5) retired with the
-            // column; behaviour #8 - a player can always see why the clock is stopped - now rides this
-            // banner on every screen. The reason is the game's own string, nothing added to it.
-            if (_isGameOver)
-            {
-                return $"GAME OVER - {_gameOverReason}";
-            }
+            HoldCell.Docket => "DOCKET",
+            HoldCell.Budget => "BUDGET",
+            HoldCell.Politics => "POLITICS",
+            HoldCell.Campaign => "CAMPAIGN",
+            _ => null,
+        };
 
-            var blocking = new List<string>();
-            // P2-0.3: the takeover and the opening name themselves - the banner says what holds the clock,
-            // not whichever meeting waits behind it.
-            if (_electionNight != null)
-            {
-                blocking.Add("election night - the count is in, and CONTINUE is on the board");
-            }
+        /// <summary>The rail cell a document tab IS, for the rail's HELD marks - the one mapping the chips and the marks share.</summary>
+        private static HoldCell HoldCellOf(ConsolidatedTab tab) => tab switch
+        {
+            ConsolidatedTab.Decisions => HoldCell.Docket,
+            ConsolidatedTab.Budget => HoldCell.Budget,
+            ConsolidatedTab.Politics => HoldCell.Politics,
+            _ => HoldCell.None,
+        };
 
-            if (CampaignOpeningHolds())
-            {
-                blocking.Add("the opening of your election campaign (Campaign HQ)");
-            }
-
-            if (HasPendingScandalAnswer())
-            {
-                blocking.Add("a story that broke for your party (Campaign HQ)");
-            }
-
-            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
-            {
-                blocking.Add($"a {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()} appointment (Politics tab)");
-            }
-
-            if (_simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0)
-            {
-                blocking.Add("a Cabinet decision (Cabinet tab)");
-            }
-
-            if (_simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null)
-            {
-                blocking.Add("a Foreign Policy meeting (Foreign Policy tab)");
-            }
-
-            if (DeclarationHolds())
-            {
-                blocking.Add("the chamber's declaration of no confidence in your government (Parliament tab)");
-            }
-
+        /// <summary>
+        /// Every thing holding the clock, each with the cell it is answered at: the central bank's appointment, a cabinet decision and a foreign
+        /// meeting are the Docket's dossiers ("everything currently waiting on your response"); a declaration and the Speaker's round are the
+        /// Parliament page's; the opening and a story are the campaign's; the budget window is the Budget ledger's; election night is its own board.
+        /// </summary>
+        private List<(string Label, HoldCell Cell)> CollectHolds(bool includeBudgetProcess)
+        {
+            var holds = new List<(string Label, HoldCell Cell)>();
+            if (_electionNight != null) { holds.Add(("ELECTION NIGHT - CONTINUE IS ON THE BOARD", HoldCell.None)); }
+            if (CampaignOpeningHolds()) { holds.Add(("THE CAMPAIGN'S OPENING", HoldCell.Campaign)); }
+            if (HasPendingScandalAnswer()) { holds.Add(("A STORY ABOUT YOUR PARTY", HoldCell.Campaign)); }
+            if (_fedChairCandidates != null && _fedChairCandidates.Count > 0) { holds.Add(($"THE {GetCentralBankHeadTitle(PlayerCountryId).ToUpperInvariant()} TO APPOINT", HoldCell.Docket)); }
+            if (_simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0) { holds.Add(("A CABINET DECISION", HoldCell.Docket)); }
+            if (_simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null) { holds.Add(("A FOREIGN POLICY MEETING", HoldCell.Docket)); }
+            if (DeclarationHolds()) { holds.Add(("NO CONFIDENCE DECLARED IN YOUR GOVERNMENT", HoldCell.Politics)); }
             if (FormationHolds())
             {
-                blocking.Add(_simulationManager.RoundOf(PlayerCountryId).Stage == PoliSim.Elections.RoundStage.PlayerAsked
-                    ? "the Speaker's request that your party form a government (Parliament tab)"
-                    : "an offer from the party the Speaker asked (Parliament tab)");
+                holds.Add((_simulationManager.RoundOf(PlayerCountryId).Stage == PoliSim.Elections.RoundStage.PlayerAsked
+                    ? "THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT" : "AN OFFER FROM THE PARTY THE SPEAKER ASKED", HoldCell.Politics));
             }
-
             if (includeBudgetProcess && BudgetWindowHolds())
             {
-                blocking.Add(_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId)
-                    ? "your incoming government's first budget (Budget tab)"
-                    : "the annual budget bill (Budget tab)");
+                holds.Add((_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId) ? "YOUR INCOMING GOVERNMENT'S FIRST BUDGET" : "THE ANNUAL BUDGET BILL", HoldCell.Budget));
             }
+            return holds;
+        }
 
-            return blocking.Count == 0
-                ? null
-                : $"TIME IS PAUSED - waiting on {string.Join(" and ", blocking)}." + (includeSpeedHint ? " The speed controls are on the Desk." : string.Empty);
+        /// <summary>The banner's text as one string, or null when nothing holds the clock - the same line the chips draw, for measurement and the log.</summary>
+        private string BuildFoldedInterruptText(bool includeBudgetProcess)
+        {
+            if (_isGameOver) { return $"GAME OVER - {_gameOverReason}"; }
+            List<(string Label, HoldCell Cell)> holds = CollectHolds(includeBudgetProcess);
+            if (holds.Count == 0) { return null; }
+            var parts = new List<string>(holds.Count);
+            foreach ((string label, HoldCell cell) in holds) { parts.Add(HoldCellCaption(cell) == null ? label : HoldCellCaption(cell) + " · " + label); }
+            return "TIME PAUSED · " + string.Join(" · ", parts);
+        }
+
+        private GUIStyle _holdChipStyle;
+        private int _holdChipSize = -1;
+        private bool _bannerIncludesBudget = true;
+
+        /// <summary>
+        /// §648: the HELD line - the plate, the lamp in its left padding, TIME PAUSED in mono, then one chip per hold: CELL · WHAT, a click
+        /// opening the cell (a hold with no cell - election night - is a plain chip). Chips that do not fit the width fold into "+N MORE", so
+        /// the line never wraps and never pushes the page down by more than its one line. Returns the height it takes.
+        /// </summary>
+        private float DrawHoldChips(List<(string Label, HoldCell Cell)> holds, float width)
+        {
+            GUIStyle line = DeskCaption(9.5f, PoliSimTheme.TextOnDesk);
+            if (_holdChipStyle == null || _holdChipSize != line.fontSize)
+            {
+                // A flat paper chip on the plate: the paper button's nine-slice border is taller than a caption line, and at this height its
+                // edges drew over the words (the first film of this line). Every state inked, or IMGUI draws the skin's pale hover ink.
+                _holdChipStyle = Inked(new GUIStyle(line)
+                {
+                    alignment = TextAnchor.MiddleCenter, wordWrap = false,
+                    padding = new RectOffset(6, 6, 2, 2), margin = new RectOffset(6, 0, 0, 0), border = new RectOffset(0, 0, 0, 0),
+                }, PoliSimTheme.TextPrimary);
+                _holdChipStyle.normal.background = UiPalette.Solid(PoliSimTheme.CardInset);
+                _holdChipStyle.focused.background = UiPalette.Solid(PoliSimTheme.CardInset);
+                _holdChipStyle.hover.background = UiPalette.Solid(PoliSimTheme.Hex(0xF6EFDF));
+                _holdChipStyle.active.background = UiPalette.Solid(PoliSimTheme.Hex(0xF6EFDF));
+                _holdChipSize = line.fontSize;
+            }
+            float chipHeight = Mathf.Ceil(_holdChipStyle.CalcSize(new GUIContent("Ag")).y);
+            float inner = Mathf.Max(chipHeight, Mathf.Ceil(line.CalcSize(new GUIContent("Ag")).y));
+
+            GUILayout.BeginHorizontal(_holdBannerStyle, GUILayout.Width(width), GUILayout.Height(inner + _holdBannerStyle.padding.vertical));
+            const string head = "TIME PAUSED";
+            GUILayout.Label(head, line, GUILayout.Height(inner));
+            float used = _holdBannerStyle.padding.horizontal + line.CalcSize(new GUIContent(head)).x;
+            float moreWidth = _holdChipStyle.CalcSize(new GUIContent("+9 MORE")).x + _holdChipStyle.margin.horizontal;
+            int shown = 0;
+            for (int i = 0; i < holds.Count; i++)
+            {
+                string caption = HoldCellCaption(holds[i].Cell);
+                string text = caption == null ? holds[i].Label : caption + " · " + holds[i].Label;
+                float w = _holdChipStyle.CalcSize(new GUIContent(text)).x + _holdChipStyle.margin.horizontal;
+                bool last = i == holds.Count - 1;
+                if (used + w + (last ? 0f : moreWidth) > width) { break; }
+                if (holds[i].Cell == HoldCell.None) { GUILayout.Label(text, _holdChipStyle, GUILayout.Height(inner)); }
+                else if (PoliSimWidgets.Button(text, _holdChipStyle, GUILayout.Height(inner))) { GoToHoldCell(holds[i].Cell); }
+                used += w;
+                shown++;
+            }
+            if (shown < holds.Count) { GUILayout.Label($"+{holds.Count - shown} MORE", _holdChipStyle, GUILayout.Height(inner)); }
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+
+            if (Event.current.type == EventType.Repaint && _holdBannerStyle.normal.background != null)
+            {
+                Rect plate = GUILayoutUtility.GetLastRect();
+                float lamp = HoldBannerLampSize();
+                PoliSimTheme.Pill(new Rect(plate.x + HoldBannerPadX, plate.y + _holdBannerStyle.padding.top + (inner - lamp) * 0.5f, lamp, lamp), PoliSimTheme.DraftOnDesk);
+            }
+            return inner + _holdBannerStyle.padding.vertical + _holdBannerStyle.margin.vertical;
+        }
+
+        /// <summary>§648: a chip's click - the cell it names, as the rail's own cell would open it (the Parliament page for the Speaker's round and a declaration).</summary>
+        private void GoToHoldCell(HoldCell cell)
+        {
+            switch (cell)
+            {
+                case HoldCell.Campaign:
+                    OpenLiveCampaign();
+                    break;
+                case HoldCell.Docket:
+                case HoldCell.Budget:
+                case HoldCell.Politics:
+                    CloseLiveCampaign();
+                    _onDesk = false;
+                    _consolidatedTab = cell == HoldCell.Docket ? ConsolidatedTab.Decisions : cell == HoldCell.Budget ? ConsolidatedTab.Budget : ConsolidatedTab.Politics;
+                    if (cell == HoldCell.Politics)
+                    {
+                        _politicsCategory = PoliticsCategory.Parliament;
+                        _parliamentScrollPosition = new Vector2(0f, float.MaxValue);   // the round and the declaration are the page's foot; IMGUI clamps to it
+                    }
+                    break;
+            }
+            AudioDirector.Fire(AudioCue.FolderSwitch);
+            GUIUtility.ExitGUI();   // the page changed under this event: end it here, the next event lays the new page out
+        }
+
+        /// <summary>§648: the cells a hold points at this frame, read by the rail's cells for their HELD mark - the chips' own list, the budget
+        /// window always included (the chips leave it out on the Budget ledger and over a Canvas, where it states itself).</summary>
+        private readonly HashSet<HoldCell> _heldCells = new HashSet<HoldCell>();
+
+        private void RefreshHeldCells()
+        {
+            _heldCells.Clear();
+            if (_isGameOver) { return; }
+            foreach ((string _, HoldCell cell) in CollectHolds(includeBudgetProcess: true)) { if (cell != HoldCell.None) { _heldCells.Add(cell); } }
+        }
+
+        /// <summary>§648: a held cell's mark - the lamp's amber at the icon's upper right, so the cell the banner names is the cell that shows it.</summary>
+        private void DrawHeldCellMark(Rect slot, HoldCell cell)
+        {
+            if (Event.current.type != EventType.Repaint || !_heldCells.Contains(cell)) { return; }
+            float d = Mathf.Max(5f, Mathf.Round(slot.width * 0.28f));
+            PoliSimTheme.Pill(new Rect(slot.xMax - d * 0.5f, slot.y - d * 0.5f, d, d), PoliSimTheme.DraftOnDesk);
         }
 
         /// <summary>

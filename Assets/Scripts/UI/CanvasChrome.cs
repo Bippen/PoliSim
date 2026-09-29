@@ -284,6 +284,26 @@ namespace PoliSim.UI
             return image;
         }
 
+        /// <summary>
+        /// §648 (Design's part-C reading 8, ruled "a real weight or none"): a weight is the font FILE's, never synthesised. The Display
+        /// face IS the bold file, so a bold style on it is a second, faux weight; the Document face (Courier Prime) ships no bold, so a
+        /// bold style on it is all faux - double-struck at 7-8 px; the Body face's bold is the Display file. Returns the style to set
+        /// and moves <paramref name="font"/> to the file that carries the weight.
+        /// </summary>
+        public static FontStyle RealWeight(ref Font font, FontStyle style)
+        {
+            if (style != FontStyle.Bold && style != FontStyle.BoldAndItalic) { return style; }
+            if (font != null && font == PoliSimTheme.Body) { font = PoliSimTheme.Display; }
+            return style == FontStyle.BoldAndItalic ? FontStyle.Italic : FontStyle.Normal;
+        }
+
+        /// <summary><see cref="MakeText"/> under <see cref="RealWeight"/> - the night's texts (§648).</summary>
+        public static Text MakeTextRealWeight(Transform parent, string name, string content, Font font, int size, Color color, TextAnchor anchor, FontStyle style = FontStyle.Normal)
+        {
+            FontStyle real = RealWeight(ref font, style);
+            return MakeText(parent, name, content, font, size, color, anchor, real);
+        }
+
         /// <summary>Legacy-uGUI Text, deliberately: the pilot's PATTERN decision, recorded in its charter — the fonts already load as `Font` assets through PoliSimTheme, TMP would need font-asset generation, and every pattern the pilot exists to prove (host, slicing, states, the seam) is orthogonal to the text backend. Revisit when a Canvas screen needs masks/outline/per-character effects.</summary>
         public static Text MakeText(Transform parent, string name, string content, Font font, int size, Color color, TextAnchor anchor, FontStyle style = FontStyle.Normal)
         {

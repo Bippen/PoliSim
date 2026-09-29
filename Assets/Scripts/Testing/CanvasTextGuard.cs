@@ -58,6 +58,15 @@ namespace PoliSim.Testing
                         detail.AppendLine($"CANVAS TEXT CLIP [{context}] '{Path(text.transform)}': preferredHeight {text.preferredHeight:F1} > rect {rect.height:F1} (\"{Shorten(text.text)}\")");
                     }
 
+                    // §648 (ruled "a real weight or none"): on the night's frames a bold STYLE is a synthesised weight - the Display file is
+                    // the bold, the Document face has none (`CanvasChrome.RealWeight`). Scoped to the night: the other Canvas surfaces are
+                    // the same class, not yet ruled.
+                    if (context.Contains("election_night") && (text.fontStyle == FontStyle.Bold || text.fontStyle == FontStyle.BoldAndItalic))
+                    {
+                        violations++;
+                        detail.AppendLine($"CANVAS TEXT SYNTHETIC WEIGHT [{context}] '{Path(text.transform)}': {text.fontStyle} on {(text.font != null ? text.font.name : "no font")} (\"{Shorten(text.text)}\")");
+                    }
+
                     if (text.horizontalOverflow == HorizontalWrapMode.Overflow && text.preferredWidth > rect.width + Epsilon)
                     {
                         violations++;

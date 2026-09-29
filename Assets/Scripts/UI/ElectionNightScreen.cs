@@ -247,10 +247,10 @@ namespace PoliSim.UI
             leftColumn.childForceExpandHeight = false;
             leftColumn.childAlignment = TextAnchor.MiddleLeft;
 
-            CanvasChrome.MakeText(left.transform, "Institution", "RETURNING OFFICER  ·  " + countryName.ToUpperInvariant(),
+            CanvasChrome.MakeTextRealWeight(left.transform, "Institution", "RETURNING OFFICER  ·  " + countryName.ToUpperInvariant(),
                 PoliSimTheme.Display, 12, PoliSimTheme.Hex(0x6B6250), TextAnchor.MiddleLeft, FontStyle.Bold)
                 .GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
-            CanvasChrome.MakeText(left.transform, "Title", "ELECTION NIGHT",
+            CanvasChrome.MakeTextRealWeight(left.transform, "Title", "ELECTION NIGHT",
                 PoliSimTheme.Display, 30, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold)
                 .GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 34f);
 
@@ -262,7 +262,7 @@ namespace PoliSim.UI
             rightColumn.childForceExpandHeight = false;
             rightColumn.childAlignment = TextAnchor.MiddleRight;
 
-            CanvasChrome.MakeText(right.transform, "Timestamp",
+            CanvasChrome.MakeTextRealWeight(right.transform, "Timestamp",
                 pollsClosed.AddMinutes(state.Minute).ToString("HH:mm", CultureInfo.InvariantCulture) + "  ·  POLLS CLOSED " + pollsClosed.ToString("HH:mm", CultureInfo.InvariantCulture),
                 PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight)
                 .GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
@@ -275,7 +275,7 @@ namespace PoliSim.UI
             chip.AddComponent<RectTransform>().sizeDelta = new Vector2(300f, 22f);
             chip.AddComponent<Image>().color = PoliSimTheme.Hex(0x5D564A);
             chip.AddComponent<LayoutElement>().minHeight = 22f;
-            Text chipText = CanvasChrome.MakeText(chip.transform, "ChipText",
+            Text chipText = CanvasChrome.MakeTextRealWeight(chip.transform, "ChipText",
                 string.Format(CultureInfo.InvariantCulture, "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies),
                 PoliSimTheme.Display, 11, PoliSimTheme.Hex(0xF4ECDC), TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(chipText.GetComponent<RectTransform>());
@@ -411,7 +411,7 @@ namespace PoliSim.UI
             Heading(parent, string.Format(CultureInfo.InvariantCulture,
                 "THE VALKRETSAR - TILE AREA = FIXED SEATS, {0} OF THE CHAMBER'S 349 - EACH IN ITS WINNER'S INK", Sum(mandates)));
             ValkretsCartogramView view = ValkretsCartogramView.Create(parent, mandates, results);
-            Text key = CanvasChrome.MakeText(parent, "MapKey",
+            Text key = CanvasChrome.MakeTextRealWeight(parent, "MapKey",
                 "ELEVEN BANDS NORTH TO SOUTH, WEST TO EAST INSIDE EACH · THE FIGURE AT A BAND'S LEFT IS THE SEATS IT RETURNS · "
                 + "A TILE'S FIGURE IS THE WINNER'S LEAD IN POINTS" + (previous.ByConstituency != null ? " · 'VS LAST' IS THE WINNER'S CHANGE THERE" : string.Empty)
                 + " · — HAS NOT DECLARED",
@@ -566,7 +566,7 @@ namespace PoliSim.UI
 
         private static void Wrapped(Transform parent, string text, int size, Color ink)
         {
-            Text t = CanvasChrome.MakeText(parent, "Note", text, PoliSimTheme.Document, size, ink, TextAnchor.UpperLeft);
+            Text t = CanvasChrome.MakeTextRealWeight(parent, "Note", text, PoliSimTheme.Document, size, ink, TextAnchor.UpperLeft);
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.gameObject.AddComponent<LayoutElement>().minHeight = size + 6f;
         }
@@ -601,21 +601,21 @@ namespace PoliSim.UI
             image.preserveAspect = true;
             image.raycastTarget = false;
 
-            Text figures = CanvasChrome.MakeText(parent, "Figures", EffectArrowsRenderer.FiguresLine(arrows), PoliSimTheme.Document, 11, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            Text figures = CanvasChrome.MakeTextRealWeight(parent, "Figures", EffectArrowsRenderer.FiguresLine(arrows), PoliSimTheme.Document, 11, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             figures.horizontalOverflow = HorizontalWrapMode.Wrap;
             figures.gameObject.AddComponent<LayoutElement>().minHeight = 18f;
             if (!string.IsNullOrEmpty(citation))
             {
                 Wrapped(parent, "AS ENACTED - " + citation, 11, PoliSimTheme.TextSecondary);   // one line that wraps: as a two-cell row its key broke letter by letter in the narrower column (2026-09-10)
             }
-            Text scope = CanvasChrome.MakeText(parent, "Scope", EffectArrowsRenderer.ScopeLine, PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.UpperLeft);
+            Text scope = CanvasChrome.MakeTextRealWeight(parent, "Scope", EffectArrowsRenderer.ScopeLine, PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.UpperLeft);
             scope.horizontalOverflow = HorizontalWrapMode.Wrap;
             scope.gameObject.AddComponent<LayoutElement>().minHeight = 28f;
         }
 
         private static void Heading(Transform parent, string text)
         {
-            Text t = CanvasChrome.MakeText(parent, "Heading", text, PoliSimTheme.Display, 11,
+            Text t = CanvasChrome.MakeTextRealWeight(parent, "Heading", text, PoliSimTheme.Display, 11,
                 PoliSimTheme.Hex(0x6B6250), TextAnchor.MiddleLeft, FontStyle.Bold);
             t.GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 20f);
             t.gameObject.AddComponent<LayoutElement>().minHeight = 20f;
@@ -633,9 +633,9 @@ namespace PoliSim.UI
             h.childForceExpandHeight = false;   // a row keeps its own height; the page's spare height is the map's (2026-09-10, measured)
             row.AddComponent<LayoutElement>().minHeight = 20f;
 
-            Text nameText = CanvasChrome.MakeText(row.transform, "Name", name, PoliSimTheme.Document, size, ink,
+            Text nameText = CanvasChrome.MakeTextRealWeight(row.transform, "Name", name, PoliSimTheme.Document, size, ink,
                 TextAnchor.MiddleLeft, bold ? FontStyle.Bold : FontStyle.Normal);
-            Text figureText = CanvasChrome.MakeText(row.transform, "Figure", figure, PoliSimTheme.Document, size, ink,
+            Text figureText = CanvasChrome.MakeTextRealWeight(row.transform, "Figure", figure, PoliSimTheme.Document, size, ink,
                 TextAnchor.MiddleRight, bold ? FontStyle.Bold : FontStyle.Normal);
             if (nameWidth > 0f)
             {
@@ -838,7 +838,7 @@ namespace PoliSim.UI
 
         private static void Label(Transform parent, string text, Color ink, bool struck)
         {
-            Text t = CanvasChrome.MakeText(parent, "L", text, PoliSimTheme.Document, 9, ink, TextAnchor.MiddleCenter);
+            Text t = CanvasChrome.MakeTextRealWeight(parent, "L", text, PoliSimTheme.Document, 9, ink, TextAnchor.MiddleCenter);
             t.raycastTarget = false;
             if (!struck) { return; }
             var line = new GameObject("Strike");
@@ -967,7 +967,7 @@ namespace PoliSim.UI
             row.spacing = 24f;
             foot.AddComponent<LayoutElement>().minHeight = 56f;
 
-            Text line = CanvasChrome.MakeText(foot.transform, "Verdict", string.IsNullOrEmpty(verdict) ? string.Empty : verdict.ToUpperInvariant(),
+            Text line = CanvasChrome.MakeTextRealWeight(foot.transform, "Verdict", string.IsNullOrEmpty(verdict) ? string.Empty : verdict.ToUpperInvariant(),
                 PoliSimTheme.Display, 12, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft, FontStyle.Bold);
             line.horizontalOverflow = HorizontalWrapMode.Wrap;
             line.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
@@ -982,7 +982,7 @@ namespace PoliSim.UI
         private static void BuildContinueButton(Transform parent, Action onContinue)
         {
             Button control = CanvasChrome.FacedButton(parent, "ContinueButton", "CONTINUE", PoliSimTheme.Display, 16,
-                PoliSimTheme.TextPrimary, new Vector2(200f, 48f));   // §626 (D6, board 17a): TextPrimary on the brass face
+                PoliSimTheme.TextPrimary, new Vector2(200f, 48f), style: FontStyle.Normal);   // §626 (D6, board 17a): TextPrimary on the brass face; §648: the Display file is the weight
             LayoutElement size = control.gameObject.AddComponent<LayoutElement>();
             size.minWidth = 200f;
             size.preferredWidth = 200f;

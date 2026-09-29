@@ -37,12 +37,12 @@ namespace PoliSim.EditorTools
             // against, so a wrong answer here is wrong about the world and not merely about formatting.
             total++;
             bool check1 = true;
-            check1 &= Expect("USA GDP", 29000f, MoneyUnit.Billions, "$29.0T");
-            check1 &= Expect("USA GovernmentDebt", 35960f, MoneyUnit.Billions, "$36.0T");
-            check1 &= Expect("SocialSecurity", 1530f, MoneyUnit.Billions, "$1.53T");
-            check1 &= Expect("Defense", 850f, MoneyUnit.Billions, "$850B");
-            check1 &= Expect("Sweden SWF", 195f, MoneyUnit.Billions, "$195B");
-            check1 &= Expect("a half-billion line", 0.5f, MoneyUnit.Billions, "$500M");
+            check1 &= Expect("USA GDP", 29000f, MoneyUnit.Billions, "US$29.0T");
+            check1 &= Expect("USA GovernmentDebt", 35960f, MoneyUnit.Billions, "US$36.0T");
+            check1 &= Expect("SocialSecurity", 1530f, MoneyUnit.Billions, "US$1.53T");
+            check1 &= Expect("Defense", 850f, MoneyUnit.Billions, "US$850B");
+            check1 &= Expect("Sweden SWF", 195f, MoneyUnit.Billions, "US$195B");
+            check1 &= Expect("a half-billion line", 0.5f, MoneyUnit.Billions, "US$500M");
             if (check1) { passed++; }
             Debug.Log($"{(check1 ? "PASS" : "FAIL")} CHECK 1 real seed values render at their true magnitude.");
 
@@ -51,8 +51,8 @@ namespace PoliSim.EditorTools
             // too large - the one exception that forced the unit onto the stat rather than into here.
             total++;
             bool check2 = true;
-            check2 &= Expect("GdpPerCapita (USA-ish)", 85.6f, MoneyUnit.Thousands, "$85.6k");
-            check2 &= Expect("GdpPerCapita (Poland-ish)", 24.5f, MoneyUnit.Thousands, "$24.5k");
+            check2 &= Expect("GdpPerCapita (USA-ish)", 85.6f, MoneyUnit.Thousands, "US$85.6k");
+            check2 &= Expect("GdpPerCapita (Poland-ish)", 24.5f, MoneyUnit.Thousands, "US$24.5k");
             bool unitsDiffer = UiFormat.Money(85.6f, MoneyUnit.Thousands) != UiFormat.Money(85.6f, MoneyUnit.Billions);
             if (!unitsDiffer) { Debug.Log("FAIL the two units render identically - the unit parameter does nothing."); }
             check2 &= unitsDiffer;
@@ -63,12 +63,12 @@ namespace PoliSim.EditorTools
             // and the net position is specifically expected to go NEGATIVE once the debt floor is removed.
             total++;
             bool check3 = true;
-            check3 &= Expect("negative trade balance", -1200f, MoneyUnit.Billions, "-$1.20T");
-            check3 &= Expect("negative net position", -599f, MoneyUnit.Billions, "-$599B");
-            check3 &= Expect("zero", 0f, MoneyUnit.Billions, "$0");
-            check3 &= ExpectDelta("a positive change", 42f, MoneyUnit.Billions, "+$42.0B");
-            check3 &= ExpectDelta("a negative change", -42f, MoneyUnit.Billions, "-$42.0B");
-            check3 &= ExpectDelta("no change", 0f, MoneyUnit.Billions, "+$0");
+            check3 &= Expect("negative trade balance", -1200f, MoneyUnit.Billions, "-US$1.20T");
+            check3 &= Expect("negative net position", -599f, MoneyUnit.Billions, "-US$599B");
+            check3 &= Expect("zero", 0f, MoneyUnit.Billions, "US$0");
+            check3 &= ExpectDelta("a positive change", 42f, MoneyUnit.Billions, "+US$42.0B");
+            check3 &= ExpectDelta("a negative change", -42f, MoneyUnit.Billions, "-US$42.0B");
+            check3 &= ExpectDelta("no change", 0f, MoneyUnit.Billions, "+US$0");
             if (check3) { passed++; }
             Debug.Log($"{(check3 ? "PASS" : "FAIL")} CHECK 3 signed amounts and zero.");
 
@@ -76,9 +76,9 @@ namespace PoliSim.EditorTools
             // whole reason the rounding happens in dollars rather than after scaling.
             total++;
             bool check4 = true;
-            check4 &= Expect("just under a trillion", 999.97f, MoneyUnit.Billions, "$1.00T");
-            check4 &= Expect("exactly a trillion", 1000f, MoneyUnit.Billions, "$1.00T");
-            check4 &= Expect("just under a billion", 0.99997f, MoneyUnit.Billions, "$1.00B");
+            check4 &= Expect("just under a trillion", 999.97f, MoneyUnit.Billions, "US$1.00T");
+            check4 &= Expect("exactly a trillion", 1000f, MoneyUnit.Billions, "US$1.00T");
+            check4 &= Expect("just under a billion", 0.99997f, MoneyUnit.Billions, "US$1.00B");
             if (check4) { passed++; }
             Debug.Log($"{(check4 ? "PASS" : "FAIL")} CHECK 4 tier boundaries survive rounding.");
 
@@ -96,14 +96,15 @@ namespace PoliSim.EditorTools
                     string text = UiFormat.Money(v, unit);
                     cases++;
                     if (text.Length > widest) { widest = text.Length; widestText = $"{v} {unit} -> {text}"; }
-                    if (!text.Contains("$"))
+                    if (!text.Contains("US$"))
                     {
                         Debug.Log($"FAIL {v} {unit} rendered \"{text}\" with no currency symbol.");
                         check5 = false;
                     }
                 }
             }
-            if (widest > 8) { Debug.Log($"FAIL widest result is {widest} chars: {widestText}"); check5 = false; }
+            // §648: the book unit ("US$") costs two characters on the old bound of 8; the dry film measured every rect holding them.
+            if (widest > 10) { Debug.Log($"FAIL widest result is {widest} chars: {widestText}"); check5 = false; }
             if (check5) { passed++; }
             Debug.Log($"{(check5 ? "PASS" : "FAIL")} CHECK 5 {cases} magnitudes swept; widest {widest} chars ({widestText}); every result carries a symbol.");
 

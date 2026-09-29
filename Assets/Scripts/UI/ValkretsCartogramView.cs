@@ -214,7 +214,7 @@ namespace PoliSim.UI
 
         private static Text Label(Transform parent, string name, string content, int size, Color color, TextAnchor anchor, FontStyle style)
         {
-            Text t = CanvasChrome.MakeText(parent, name, content, PoliSimTheme.Document, size, color, anchor, style);
+            Text t = CanvasChrome.MakeTextRealWeight(parent, name, content, PoliSimTheme.Document, size, color, anchor, style);   // §648: the mono face has no bold - none
             t.horizontalOverflow = HorizontalWrapMode.Overflow;
             t.verticalOverflow = VerticalWrapMode.Truncate;
             t.raycastTarget = false;

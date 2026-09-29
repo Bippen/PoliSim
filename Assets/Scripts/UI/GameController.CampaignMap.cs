@@ -328,6 +328,18 @@ namespace PoliSim.UI
                 float pitch = nameHeight + detailHeight + Mathf.Round(4f * uy);
 
                 List<int> order = s.BySwing();
+                // §648 (Design's part-C reading 6): every row once wore Caution and said TOO CLOSE TO CALL - when every row carries the ink, the
+                // ink carries nothing. The words are printed ONCE, as the ledger's state; a row's lead is signed from the player's side (+ your
+                // party leads, - it trails: the sign is the shape) and inked Good or Bad only where it clears its ±.
+                int insideErrors = 0;
+                foreach (int k in order) { if (s.Regions[k].TooCloseToCall) { insideErrors++; } }
+                if (insideErrors > 0)
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, detailHeight),
+                        string.Format(CultureInfo.InvariantCulture, "{0} OF {1} POLLED LEADS SIT INSIDE THEIR ± - TOO CLOSE TO CALL", insideErrors, order.Count),
+                        DeskCaption(8.5f, PoliSimTheme.TextSecondary));
+                    y += detailHeight + Mathf.Round(4f * uy);
+                }
                 int room = Mathf.Max(0, Mathf.FloorToInt((methodRect.y - Mathf.Round(6f * uy) - y) / pitch));
                 int shown = Mathf.Min(order.Count, room);
                 float indexWidth = Mathf.Ceil(indexStyle.CalcSize(new GUIContent("INDEX 100")).x) + Mathf.Round(4f * ux);
@@ -342,15 +354,16 @@ namespace PoliSim.UI
 
                     string leader = reading.Leader >= 0 ? s.PartyNames[reading.Leader] : "—";
                     string runner = reading.RunnerUp >= 0 ? s.PartyNames[reading.RunnerUp] : "—";
-                    string detailText = reading.TooCloseToCall
-                        ? string.Format(CultureInfo.InvariantCulture, "{0} {1:F1} v {2} {3:F1} · LEAD {4:F1} INSIDE ITS ± {5:F1} — TOO CLOSE TO CALL",
-                            leader, 100.0 * reading.Poll.Share(reading.Leader), runner, 100.0 * reading.Poll.Share(reading.RunnerUp),
-                            reading.GapPp, reading.GapErrorPp)
-                        : string.Format(CultureInfo.InvariantCulture, "{0} {1:F1} v {2} {3:F1} · LEAD {4:F1} ± {5:F1}",
-                            leader, 100.0 * reading.Poll.Share(reading.Leader), runner, 100.0 * reading.Poll.Share(reading.RunnerUp),
-                            reading.GapPp, reading.GapErrorPp);
-                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y + nameHeight, r.width, detailHeight), detailText,
-                        reading.TooCloseToCall ? DeskCaption(8.5f, PoliSimTheme.Caution) : detail);
+                    bool yoursLeads = reading.Leader == s.PlayerPartyIndex;
+                    bool yoursTrails = reading.RunnerUp == s.PlayerPartyIndex;
+                    string lead = yoursLeads ? string.Format(CultureInfo.InvariantCulture, "YOU +{0:F1}", reading.GapPp)
+                        : yoursTrails ? string.Format(CultureInfo.InvariantCulture, "YOU -{0:F1}", reading.GapPp)
+                        : string.Format(CultureInfo.InvariantCulture, "LEAD {0:F1}", reading.GapPp);
+                    string detailText = string.Format(CultureInfo.InvariantCulture, "{0} {1:F1} v {2} {3:F1} · {4} ± {5:F1}",
+                        leader, 100.0 * reading.Poll.Share(reading.Leader), runner, 100.0 * reading.Poll.Share(reading.RunnerUp), lead, reading.GapErrorPp);
+                    GUIStyle leadInk = reading.TooCloseToCall || !(yoursLeads || yoursTrails) ? detail
+                        : DeskCaption(8.5f, yoursLeads ? PoliSimTheme.Good : PoliSimTheme.Bad);
+                    PoliSimWidgets.MeasuredLabel(new Rect(r.x, y + nameHeight, r.width, detailHeight), detailText, leadInk);
                     y += pitch;
                 }
 

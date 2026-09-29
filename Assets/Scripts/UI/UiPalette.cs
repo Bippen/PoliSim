@@ -290,6 +290,9 @@ namespace PoliSim.UI
             return texture;
         }
 
+        /// <summary>The cached solid swatch, for a style's background (the HELD line's chips, §648).</summary>
+        public static Texture2D Solid(Color color) => GetSolidTexture(color);
+
         private static Color Lighten(Color c, float amount) => Color.Lerp(c, Color.white, amount);
         private static Color Darken(Color c, float amount) => Color.Lerp(c, Color.black, amount);
 

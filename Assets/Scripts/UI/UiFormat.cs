@@ -86,10 +86,10 @@ namespace PoliSim.UI
             double magnitude = Math.Abs(dollars);
             string sign = dollars < 0d ? "-" : (explicitPlus ? "+" : string.Empty);
 
-            // Zero gets its own branch so it reads "$0" rather than "$0.00".
+            // Zero gets its own branch so it reads "US$0" rather than "US$0.00".
             if (magnitude < 0.5d)
             {
-                return explicitPlus ? "+$0" : "$0";
+                return explicitPlus ? "+" + BookUnit + "0" : BookUnit + "0";
             }
 
             int tier = Tiers.Length - 1;
@@ -119,8 +119,16 @@ namespace PoliSim.UI
                 rounded = 1d;
             }
 
-            return sign + "$" + rounded.ToString("F" + DecimalsFor(rounded), CultureInfo.InvariantCulture) + Tiers[tier].Suffix;
+            return sign + BookUnit + rounded.ToString("F" + DecimalsFor(rounded), CultureInfo.InvariantCulture) + Tiers[tier].Suffix;
         }
+
+        /// <summary>
+        /// §648 (ruled 2026-09-29: every money figure names its unit - book dollars). The book is kept in US dollars for every
+        /// country (the macro block's own currency; a tax base reads its national unit and a market its own, each named where it prints),
+        /// so a figure on Sweden's desk printed "$646B" beside the campaign's kronor and read as either. "US$" names it on the figure
+        /// itself, at two characters.
+        /// </summary>
+        public const string BookUnit = "US$";
 
         /// <summary>
         /// <see cref="Money"/> with an explicit sign, for deltas and balances where the direction is
