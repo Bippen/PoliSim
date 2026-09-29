@@ -815,6 +815,11 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Settle();
                     yield return Capture("04g_people_health_plate_provenance");
+                    // §662 (board 20a part C): People's head in the dense view - the cohort instruments as lines, every word that left the page at rest.
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture("04h_people_dense");
                     DeskProvenance.On = _provenanceToRestore.Value;
                     _provenanceToRestore = null;
                     ResetScrolls(controller);
@@ -1205,6 +1210,21 @@ namespace PoliSim.Testing
                             selectedLaw?.SetValue(controller, stagedLawId);   // the detail pane carries the status cell; select the law in force so the mark is on the frame
                             yield return Settle();
                             yield return Capture("06g_laws_repealable");
+                            // §662 (Design's D24 ask of Code, 3): a law row carrying the interest rate's icon - the monetary regime's emblem - under the All
+                            // chip, so the category cell draws the pair; found by the browser's own search, then the search cleared.
+                            FieldInfo lawSearch = controller.GetType().GetField("_lawSearchText", BindingFlags.Instance | BindingFlags.NonPublic);
+                            if (lawSearch != null)
+                            {
+                                object searchBefore = lawSearch.GetValue(controller);
+                                lawSearch.SetValue(controller, "Inflation Target");
+                                ResetScrolls(controller);
+                                yield return Settle();
+                                yield return Settle();
+                                yield return Capture("06i_laws_monetary_row");
+                                lawSearch.SetValue(controller, searchBefore ?? string.Empty);
+                                yield return Settle();
+                            }
+                            else { Debug.LogError("SHOT: §662 - the controller has no _lawSearchText; 06i_laws_monetary_row NOT written."); _failed++; }
                             applyLaw.Invoke(lawSim, new object[] { lawCountry, new LawBill { LawId = stagedLawId, IsRepeal = true } });
                             List<(string Name, int Bits)> restored = SnapshotFloats(lawCountry);
                             int drifted = 0;

@@ -8863,23 +8863,29 @@ namespace PoliSim.UI
                 x += nameWidth + magnitudeWidth - glyphWidth * 1.6f;
                 if (categoryWidth > 0f)
                 {
-                    LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                    if (DeskProvenance.On) { LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft); }
+                    else { DrawLawPair(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), law, PoliSimTheme.TextSecondary, emblem: true); }   // §662: the pair at rest
                 }
                 x += categoryWidth;
             }
             else
             {
                 // R-C1: the shrink path, full weight - see the compact branch's comment.
-                LedgerRow.Cell(new Rect(x, rowRect.y, nameWidth - 4f, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                // §662: under a single-category chip (no category cell) the verb alone takes a 16 px slot before the name, at rest.
+                float verbSlot = categoryWidth <= 0f && !DeskProvenance.On ? 20f : 0f;
+                if (verbSlot > 0f) { DrawLawPair(new Rect(x, rowRect.y, verbSlot, rowRect.height), law, row.Enacted ? areaColor : PoliSimTheme.TextSecondary, emblem: false); }
+                LedgerRow.Cell(new Rect(x + verbSlot, rowRect.y, nameWidth - 4f - verbSlot, rowRect.height), rowName, _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
                 x += nameWidth;
 
                 // Pass 3: the returned category cell - 1i's "dimmed token" ink (TextMuted), never
                 // a second accent (the glyph bar already carries the category's area color).
                 // Zero-width under a single-category chip (LawRowColumns) - nothing drawn, the name
                 // has the width.
+                // §662 (UI v3.3, 19a): at rest the cell draws the law's PAIR - the category's emblem and the verb - and behind the † the word it replaced.
                 if (categoryWidth > 0f)
                 {
-                    LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
+                    if (DeskProvenance.On) { LedgerRow.Cell(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), LawCategoryCellLabel(law.Category, categoryWidth - 4f), _labelStyle, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft); }
+                    else { DrawLawPair(new Rect(x, rowRect.y, categoryWidth - 4f, rowRect.height), law, row.Enacted ? areaColor : PoliSimTheme.TextSecondary, emblem: true); }
                 }
                 x += categoryWidth;
 
@@ -8897,7 +8903,8 @@ namespace PoliSim.UI
             // D16 §4.2 (§415): behind the tab the row gains its citation line - the formal Act name, which is the record. A LINE, not a column.
             if (DeskProvenance.On && !string.IsNullOrEmpty(law.PlainName))
             {
-                GUILayout.Label(law.Name, DeskCaption(6.5f, PoliSimTheme.TextMuted));
+                // §662: a both-ways law with no verb says so behind the † - the verb's absence is a reading, not a gap
+                GUILayout.Label(law.Name + (LawVerbs.IsBothWays(law) && LawVerbs.Of(law) == LawVerb.None ? " · MOVES ITS DIALS BOTH WAYS" : string.Empty), DeskCaption(6.5f, PoliSimTheme.TextMuted));
             }
             GUILayout.Space(LawRowGap);
         }
@@ -9025,6 +9032,36 @@ namespace PoliSim.UI
         /// detail kicker context) carry the LAW'S OWN category area rather than a tab-wide
         /// CrimeJustice constant - the same truth each category's own bill card already declares
         /// (LABOR MARKET BILL draws SystemArea.Labor).</summary>
+        /// <summary>§662 (D24, 19a; Design's `#d24-note` item 1): the emblem half of a law's pair - the category's area icon, except the monetary
+        /// regime, which draws the interest rate's stat icon (the stat the regime governs; Design's call, costing nothing). Null when not held.</summary>
+        private static Texture2D LawEmblem(LawCategory category) => category == LawCategory.MonetaryRegime
+            ? IconLibrary.GetStat("icon_stat_interestrate")
+            : IconLibrary.GetAreaIcon(LawCategoryArea(category));
+
+        /// <summary>§662: the pair (19a) - the emblem, then the verb (RAISE · LOWER · BAN · ALLOW, or none: <see cref="LawVerbs"/>), each a 16 px
+        /// square at 19a's floor, left-aligned in <paramref name="r"/>; tinted as the row's glyph bar is.</summary>
+        private void DrawLawPair(Rect r, LawDefinition law, Color ink, bool emblem)
+        {
+            float side = Mathf.Min(16f, r.height);
+            float y = r.y + (r.height - side) * 0.5f;
+            float x = r.x;
+            GUIStyle word = DeskCaption(6.5f, ink);
+            if (emblem)
+            {
+                Texture2D e = LawEmblem(law.Category);
+                if (e != null && Event.current.type == EventType.Repaint)
+                {
+                    Color previous = GUI.color; GUI.color = ink;
+                    GUI.DrawTexture(new Rect(x, y, side, side), e, ScaleMode.ScaleToFit, true);
+                    GUI.color = previous;
+                }
+                else if (e == null) { PoliSimWidgets.MeasuredLabel(new Rect(x, r.y, side * 2f, r.height), LawCategoryCellLabel(law.Category, side * 2f), word); }
+                x += side + 4f;
+            }
+            Symbol? verb = SymbolRegistry.Of(LawVerbs.Of(law));
+            if (verb.HasValue) { SymbolRegistry.Draw(new Rect(x, y, side, side), verb.Value, ink, word); }
+        }
+
         private static UiPalette.SystemArea LawCategoryArea(LawCategory category)
         {
             return category == LawCategory.CrimeJustice ? UiPalette.SystemArea.CrimeJustice : category == LawCategory.FiscalFramework ? UiPalette.SystemArea.Fiscal : category == LawCategory.MonetaryRegime ? UiPalette.SystemArea.Political : category == LawCategory.ElectricityTax ? UiPalette.SystemArea.Energy : UiPalette.SystemArea.Labor;   // P4-C3: the institutions share the labour area's ink, the framework the fiscal area's; EN-7b: the electricity tax the energy page's - the Energy area since its ink landed (§536's *not moved*, moved at §556)
@@ -10440,6 +10477,14 @@ namespace PoliSim.UI
                 : (millions * 1000f).ToString("0", CultureInfo.InvariantCulture) + "k";
         }
 
+        /// <summary>
+        /// §662 (UI v3.3, D24 item 5, board 20a - PEOPLE RETROFITTED): the cohort instruments keep their grammar - the pyramid with the turnout
+        /// lane, the dependency figures over one bar, the electorate figures over one bar, in that order - and print at rest only what 20a keeps:
+        /// the heads, five start-ages on the pyramid's axis (0 15 40 65 90), its ends and the total at its foot, the turnout lane's 0 and 100, the
+        /// figures with their one-word captions, the bars' anchors. Every word that left is on the dense view behind the † (20a part C: lines,
+        /// never columns, provenance last) or in a band's slip (20a part B, level 1: rest 250 ms on a band). ◇ is the 19a DATED glyph, at the
+        /// turnout head where the series is older than the game.
+        /// </summary>
         private void DrawCohortInstruments(PopulationCohorts cohorts)
         {
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
@@ -10449,47 +10494,70 @@ namespace PoliSim.UI
             bool turnoutSourced = groups.Length > 0 && !double.IsNaN(groups[0].TurnoutBase);
             float total = cohorts.Total;
             float max = 0f;
-            for (int i = 0; i < PopulationCohorts.CohortCount; i++) { max = Mathf.Max(max, cohorts.Counts[i]); }
+            int peak = 0;
+            for (int i = 0; i < PopulationCohorts.CohortCount; i++) { if (cohorts.Counts[i] > max) { max = cohorts.Counts[i]; peak = i; } }
+            double eligible = CohortVoterGroups.EligiblePopulation(cohorts, votingAge);
+            double votes = double.NaN;
+            if (turnoutSourced) { votes = 0.0; foreach (CohortVoterGroups.Group g in groups) { votes += g.PopulationShare * eligible * g.TurnoutBase / 100.0; } }
+            int votingBandFrom = votingAge - votingAge % 5;
 
-            GUILayout.Label("COHORT SUBSTRATE · 21 FIVE-YEAR BANDS · THE OPEN BAND LAST", DeskCaption(8.5f, PoliSimTheme.TextSecondary));
-            GUILayout.Space(StatsUnit(4f));
+            if (DeskProvenance.On)
+            {
+                // 20a part C: the dense view - the same page as lines, the heads at one x and the lines at another, provenance last.
+                string dated = turnoutSourced ? "DATED · SOURCED · SCB 2014 · " : string.Empty;
+                DrawDenseLine("POPULATION", $"DERIVED · 21 FIVE-YEAR BANDS · THE OPEN BAND LAST · BANDS SUM TO {Millions(total)} EXACTLY · WORKING AGE 15–64, THE DASHED LINES BOUND IT: 15 BEGINS, 65 ENDS - BOTH THE MODEL'S · PopulationCohorts");
+                DrawDenseLine("TURNOUT", turnoutSourced
+                    ? $"{dated}DRAWN ONLY WHERE A BAND IS ELIGIBLE, DASHED WHERE NOT · VOTING AGE {votingAge}, INSIDE THE {votingBandFrom}–{votingBandFrom + 4} BAND, SPLIT PRO RATA"
+                    : "NO SOURCE FOR THIS COUNTRY - THE LANE IS DASHED ON EVERY BAND RATHER THAN DRAWN FROM A GUESS");
+                DrawDenseLine("DEPENDENCY", "DERIVED · OLD-AGE = 65+ ⁄ 15–64 × 100 · TOTAL = (0–14 + 65+) ⁄ 15–64 × 100 · 0–19 = SCHOOL-AGE SHARE · 65+ = ELDERLY SHARE");
+                DrawDenseLine("ELECTORATE", $"DERIVED · {groups.Length} GROUPS, ONE INK WITH HAIRLINE BREAKS · VOTING AGE {votingAge} SOURCED · CONSTITUTION · CohortVoterGroups");
+                if (turnoutSourced) { DrawDenseLine("VOTES ≈ " + Millions((float)votes), "DERIVED · ELIGIBLE × TURNOUT BY BAND · IF EACH BAND VOTED AT ITS 2014 RATE - NOT A FORECAST"); }
+                DrawDenseLine("KEY", "DERIVED - THE MODEL'S OWN ARITHMETIC OVER THE COHORTS · DECLARED - AUTHORED AND SAID SO · SOURCED - A PUBLISHED SERIES, WITH ITS YEAR · MEASURED - READ OFF THE RUNNING MODEL · ◇ DATED - A SERIES OLDER THAN THE GAME".Replace("DATED", SymbolRegistry.Word(Symbol.Dated)));
+                return;
+            }
 
             // The pyramid with the turnout column: one row per band.
             GUIStyle bandLabel = DeskCaption(8f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
-            GUIStyle bandFigure = DeskCaption(8f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
             float rowHeight = Mathf.Max(StatsUnit(11f), Mathf.Ceil(DeskCaptionHeight(bandLabel)));
-            float labelWidth = StatsUnit(44f);
-            float figureWidth = StatsUnit(44f);
-            float turnoutWidth = StatsUnit(230f);   // the caption and its SOURCED stamp share the column head; 170 left the caption 44 px at 720
+            float labelWidth = StatsUnit(24f);
+            float turnoutWidth = StatsUnit(230f);
             float gapX = StatsUnit(8f);
 
-            // The two captions over the columns, each with its stamp.
+            // The two heads over the columns: the words only; TURNOUT carries ◇ where its series is dated, or its gap word where it has none.
             GUILayout.BeginHorizontal();
             GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
-            DrawCohortCaption("POPULATION BY BAND · PopulationCohorts", "DERIVED");
+            DrawStatsSectionCaption("POPULATION");
             GUILayout.EndVertical();
             GUILayout.Space(gapX);
             GUILayout.BeginVertical(GUILayout.Width(turnoutWidth));
-            DrawCohortCaption("TURNOUT BY AGE", turnoutSourced ? "SOURCED · SCB 2014" : "NO SOURCE");
+            Rect turnoutHead = DrawStatsSectionCaption(turnoutSourced ? "TURNOUT" : "TURNOUT · NO SOURCE");
+            if (turnoutSourced)
+            {
+                float headWidth = DeskCaption(8.5f, PoliSimTheme.TextSecondary).CalcSize(new GUIContent("TURNOUT")).x;
+                float side = Mathf.Min(StatsUnit(11f), turnoutHead.height);
+                SymbolRegistry.Draw(new Rect(turnoutHead.x + headWidth + StatsUnit(8f), turnoutHead.y + (turnoutHead.height - side) * 0.5f - StatsUnit(2f), side, side), Symbol.Dated, PoliSimTheme.TextSecondary, DeskCaption(7f, PoliSimTheme.TextSecondary));
+            }
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
 
             Rect rows = GUILayoutUtility.GetRect(10f, rowHeight * (PopulationCohorts.CohortCount + 1) + StatsUnit(2f), GUILayout.ExpandWidth(true));
+            float barX = rows.x + labelWidth + StatsUnit(4f);
+            float barMax = Mathf.Max(1f, rows.width - labelWidth - turnoutWidth - gapX - StatsUnit(8f));
+            float turnoutX = rows.xMax - turnoutWidth;
+            int hovered = -1;
             if (Event.current.type == EventType.Repaint)
             {
-                float barX = rows.x + labelWidth + StatsUnit(4f);
-                float barMax = Mathf.Max(1f, rows.width - labelWidth - figureWidth - turnoutWidth - gapX - StatsUnit(8f));
-                float turnoutX = rows.xMax - turnoutWidth;
                 for (int i = 0; i < PopulationCohorts.CohortCount; i++)
                 {
                     float y = rows.y + i * rowHeight;
                     int from = i * PopulationCohorts.CohortWidth;
                     int to = i == PopulationCohorts.OpenBandIndex ? 999 : from + PopulationCohorts.CohortWidth - 1;
                     bool workingAge = from >= 15 && from < 65;
-                    PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y, labelWidth, rowHeight), PopulationCohorts.Label(i), bandLabel);
+                    // 20a: five start-ages on the axis, chosen by the page's own marks (15 and 65 are the dashed lines); the rest in the band's slip.
+                    if (from == 0 || from == 15 || from == 40 || from == 65 || from == 90) { PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y, labelWidth, rowHeight), from.ToString(CultureInfo.InvariantCulture), bandLabel); }
                     float length = max > 0f ? barMax * cohorts.Counts[i] / max : 0f;
                     PoliSimTheme.Rule(new Rect(barX, y + rowHeight * 0.2f, Mathf.Max(1f, length), rowHeight * 0.6f), workingAge ? areaInk : dependentInk);
-                    PoliSimWidgets.MeasuredLabel(new Rect(barX + length + StatsUnit(4f), y, figureWidth, rowHeight), Millions(cohorts.Counts[i]), bandFigure);
+                    if (new Rect(rows.x, y, rows.width - turnoutWidth - gapX, rowHeight).Contains(Event.current.mousePosition)) { hovered = i; }
 
                     // The turnout lane: a tick where the band is eligible, a dashed empty lane where it is not.
                     float laneY = y + rowHeight * 0.5f;
@@ -10500,12 +10568,7 @@ namespace PoliSim.UI
                     else
                     {
                         PoliSimTheme.Rule(new Rect(turnoutX, laneY - 0.5f, turnoutWidth, 1f), PoliSimTheme.Hairline);
-                        int eligibleFrom = Mathf.Max(from, votingAge);
-                        double turnout = double.NaN;
-                        foreach (CohortVoterGroups.Group g in groups)
-                        {
-                            if (eligibleFrom >= g.FromAge && eligibleFrom <= g.ToAge) { turnout = g.TurnoutBase; break; }
-                        }
+                        double turnout = BandTurnout(groups, Mathf.Max(from, votingAge));
                         if (!double.IsNaN(turnout))
                         {
                             float tx = turnoutX + turnoutWidth * Mathf.Clamp01((float)turnout / 100f);
@@ -10513,95 +10576,127 @@ namespace PoliSim.UI
                         }
                     }
                 }
-                // The substrate's own thresholds: dashed rules at 15 and 65.
+                // The substrate's own thresholds: dashed rules at 15 and 65 - the mark; its words are the dense view's and the band slip's.
                 float y15 = rows.y + 3 * rowHeight;
                 float y65 = rows.y + 13 * rowHeight;
                 DrawDashedRule(new Rect(rows.x, y15 - 0.5f, rows.width - turnoutWidth - gapX, 1f), PoliSimTheme.HairlineStrong, 4f, 3f);
                 DrawDashedRule(new Rect(rows.x, y65 - 0.5f, rows.width - turnoutWidth - gapX, 1f), PoliSimTheme.HairlineStrong, 4f, 3f);
-                GUIStyle mark = DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight);
-                PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y15 - rowHeight, rows.width - turnoutWidth - gapX, rowHeight), "15 — WORKING AGE BEGINS", mark);
-                PoliSimWidgets.MeasuredLabel(new Rect(rows.x, y65 - rowHeight, rows.width - turnoutWidth - gapX, rowHeight), "65 — OLD AGE", mark);
-                // The 0 and 100 of the turnout lane.
-                // P6-1 (board 8a): the bar's face - a baseline hairline where the bars start, the scale as two numbers (zero and the max) at the foot, no gridlines.
+                // P6-1 (board 8a): the bar's face - a baseline hairline where the bars start; the foot carries 0, the total and the peak (the axis end).
                 PoliSimTheme.Rule(new Rect(barX - 1f, rows.y, 1f, rowHeight * PopulationCohorts.CohortCount), PoliSimTheme.Hairline);
-                GUIStyle scale = DeskCaption(7f, PoliSimTheme.TextMuted);
-                PoliSimWidgets.MeasuredLabel(new Rect(barX, rows.yMax - rowHeight, barMax * 0.5f, rowHeight), "0", scale);
-                PoliSimWidgets.MeasuredLabel(new Rect(barX, rows.yMax - rowHeight, barMax, rowHeight), Millions(max), DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
                 GUIStyle axis = DeskCaption(7f, PoliSimTheme.TextMuted);
-                PoliSimWidgets.MeasuredLabel(new Rect(turnoutX, rows.yMax - rowHeight, turnoutWidth * 0.5f, rowHeight), "0", axis);
-                PoliSimWidgets.MeasuredLabel(new Rect(turnoutX + turnoutWidth * 0.5f, rows.yMax - rowHeight, turnoutWidth * 0.5f, rowHeight), "100", DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
+                GUIStyle axisRight = DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight);
+                float footY = rows.yMax - rowHeight;
+                PoliSimWidgets.MeasuredLabel(new Rect(barX, footY, barMax * 0.3f, rowHeight), "0", axis);
+                PoliSimWidgets.MeasuredLabel(new Rect(barX + barMax * 0.35f, footY, barMax * 0.3f, rowHeight), Millions(total), DeskCaption(7f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleCenter));
+                PoliSimWidgets.MeasuredLabel(new Rect(barX + barMax * 0.7f, footY, barMax * 0.3f, rowHeight), Millions(max), axisRight);
+                PoliSimWidgets.MeasuredLabel(new Rect(turnoutX, footY, turnoutWidth * 0.5f, rowHeight), "0", axis);
+                PoliSimWidgets.MeasuredLabel(new Rect(turnoutX + turnoutWidth * 0.5f, footY, turnoutWidth * 0.5f, rowHeight), "100", axisRight);
             }
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Label("TOTAL " + Millions(total) + " · THE BANDS SUM TO IT EXACTLY", DeskCaption(8f, PoliSimTheme.TextSecondary, true));
-            GUILayout.FlexibleSpace();
-            // ⚠ P6-B1 (2026-09-17): THE LINE IS SPLIT ALONG D16 §2's OWN TEST, not shortened. What the lane
-            // does - drawn only where a band is eligible, dashed where it is not, and which band the voting
-            // age falls in - QUALIFIES a lane the player is looking at, so it stays at rest. Where the
-            // series came from says nothing about a lane already drawn, so the publisher and its vintage
-            // print behind the `†`. ⚠ The NO SOURCE wording is a GAP WORD and keeps its place in both
-            // states (`DeskProvenance.ShowsGapWord`): a symbol for "we do not have this" reads as
-            // decoration, and the absence is the honest half of the readout.
-            string turnoutProvenance = DeskProvenance.On ? "SCB 2014, THE SERIES' END — " : string.Empty;
-            GUILayout.Label(turnoutSourced
-                ? $"TURNOUT: {turnoutProvenance}DRAWN ONLY WHERE A BAND IS ELIGIBLE; DASHED WHERE NOT. VOTING AGE {votingAge} — INSIDE THE {votingAge - votingAge % 5}–{votingAge - votingAge % 5 + 4} BAND, SPLIT PRO RATA"
-                : "TURNOUT: NO SOURCE FOR THIS COUNTRY — THE LANE IS DASHED ON EVERY BAND RATHER THAN DRAWN FROM A GUESS",
-                DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight));
-            GUILayout.EndHorizontal();
             GUILayout.Space(StatsUnit(8f));
 
-            // Dependency, as the substrate derives it.
+            // Dependency: the four figures, each with its one-word caption, over the one bar.
+            DrawStatsSectionCaption("DEPENDENCY");
             GUILayout.BeginHorizontal();
-            GUILayout.BeginVertical(GUILayout.ExpandWidth(true));
-            DrawCohortCaption("DEPENDENCY · AS THE SUBSTRATE DERIVES IT", "DERIVED");
-            GUILayout.BeginHorizontal();
-            DrawRuleTerm("OLD-AGE · 65+ ⁄ 15–64 × 100", cohorts.OldAgeDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
+            DrawRuleTerm("OLD-AGE", cohorts.OldAgeDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
             GUILayout.Space(StatsUnit(14f));
-            DrawRuleTerm("TOTAL · (0–14 + 65+) ⁄ 15–64 × 100", cohorts.TotalDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
+            DrawRuleTerm("TOTAL", cohorts.TotalDependencyRatio.ToString("0.0", CultureInfo.InvariantCulture));
             GUILayout.Space(StatsUnit(14f));
-            DrawRuleTerm("SCHOOL-AGE SHARE (0–19)", cohorts.SchoolAgeShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
+            DrawRuleTerm("0–19", cohorts.SchoolAgeShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
             GUILayout.Space(StatsUnit(14f));
-            DrawRuleTerm("ELDERLY SHARE (65+)", cohorts.ElderlyShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
+            DrawRuleTerm("65+", cohorts.ElderlyShare.ToString("0.0", CultureInfo.InvariantCulture) + "%");
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             float young = total > 0f ? cohorts.InAgeRange(0, 14) / total : 0f;
             float working = total > 0f ? cohorts.InAgeRange(15, 64) / total : 0f;
             float old = total > 0f ? cohorts.InAgeRange(65, 999) / total : 0f;
             DrawShareBar(new[] { ("0–14", young, UiPalette.GetCategoricalColor(0)), ("15–64", working, UiPalette.GetCategoricalColor(1)), ("65+", old, UiPalette.GetCategoricalColor(2)) });
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
             GUILayout.Space(StatsUnit(8f));
 
-            // The electorate.
-            DrawCohortCaption("THE ELECTORATE · CohortVoterGroups", "DERIVED");
-            double eligible = CohortVoterGroups.EligiblePopulation(cohorts, votingAge);
+            // The electorate: three figures and what votes, over the one bar with five anchors (the rest in the dense view).
+            DrawStatsSectionCaption("ELECTORATE");
             GUILayout.BeginHorizontal();
             DrawRuleTerm("ELIGIBLE", Millions((float)eligible));
             GUILayout.Space(StatsUnit(14f));
-            DrawRuleTerm("OF THE POPULATION", total > 0f ? (eligible / total * 100.0).ToString("0.0", CultureInfo.InvariantCulture) + "%" : "—");
+            DrawRuleTerm("OF ALL", total > 0f ? (eligible / total * 100.0).ToString("0.0", CultureInfo.InvariantCulture) + "%" : "—");
             GUILayout.Space(StatsUnit(14f));
-            DrawRuleTerm("VOTING AGE · SOURCED · CONSTITUTION", votingAge.ToString(CultureInfo.InvariantCulture));
+            DrawRuleTerm("VOTING AGE", votingAge.ToString(CultureInfo.InvariantCulture));
             GUILayout.FlexibleSpace();
+            if (turnoutSourced) { DrawRuleTerm("VOTES", "≈ " + Millions((float)votes)); }
             GUILayout.EndHorizontal();
             if (groups.Length > 0)
             {
-                GUILayout.Label($"VOTER GROUPS · POPULATION SHARE OF THE ELIGIBLE · {groups.Length} GROUPS, ONE INK WITH HAIRLINE BREAKS — UiPalette.MaxCategoricalSeries IS {UiPalette.MaxCategoricalSeries}, AND NOTHING DRAWS MORE SERIES THAN INKS", DeskCaption(7.5f, PoliSimTheme.TextMuted));
                 var shares = new List<(string, float, Color)>();
-                foreach (CohortVoterGroups.Group g in groups) { shares.Add((g.Name, (float)g.PopulationShare, areaInk)); }
-                DrawShareBar(shares.ToArray());
-                if (turnoutSourced)
+                int step = Mathf.Max(1, (groups.Length - 1) / 4);
+                for (int i = 0; i < groups.Length; i++)
                 {
-                    double votes = 0.0;
-                    foreach (CohortVoterGroups.Group g in groups) { votes += g.PopulationShare * eligible * g.TurnoutBase / 100.0; }
-                    GUILayout.BeginHorizontal();
-                    DrawRuleTerm("WHAT VOTES · ELIGIBLE × TURNOUT BY BAND", "≈ " + Millions((float)votes));
-                    GUILayout.Space(StatsUnit(10f));
-                    GUILayout.Label("IF EACH BAND VOTED AT ITS 2014 RATE — A DERIVATION FROM TWO SOURCED SERIES, NOT A FORECAST", DeskCaption(7.5f, PoliSimTheme.TextMuted));
-                    GUILayout.FlexibleSpace();
-                    GUILayout.EndHorizontal();
+                    bool anchor = i % step == 0 && i / step <= 4 || i == groups.Length - 1;
+                    shares.Add((anchor ? groups[i].Name : string.Empty, (float)groups[i].PopulationShare, areaInk));
                 }
+                DrawShareBar(shares.ToArray());
             }
-            GUILayout.Label("HONESTY, AS THE COALITION PAGE PRINTS IT: DERIVED — THE MODEL'S OWN ARITHMETIC OVER THE COHORTS · DECLARED — AUTHORED AND SAID SO · SOURCED — A PUBLISHED SERIES, WITH ITS YEAR · MEASURED — READ OFF THE RUNNING MODEL", DeskCaption(7.5f, PoliSimTheme.TextMuted));
+
+            // 20a part B, level 1: the band's slip - after 250 ms at rest on a band, below-right of the pointer (level 2 and the pin are 19b's, not built).
+            if (Event.current.type == EventType.Repaint)
+            {
+                if (hovered != _cohortSlipBand) { _cohortSlipBand = hovered; _cohortSlipSince = Time.realtimeSinceStartup; }
+                if (hovered >= 0 && Time.realtimeSinceStartup - _cohortSlipSince >= 0.25f) { DrawBandSlip(hovered, peak, cohorts, groups, votingAge, turnoutSourced); }
+            }
+        }
+
+        private int _cohortSlipBand = -1;
+        private float _cohortSlipSince;
+
+        private static double BandTurnout(CohortVoterGroups.Group[] groups, int eligibleFrom)
+        {
+            foreach (CohortVoterGroups.Group g in groups) { if (eligibleFrom >= g.FromAge && eligibleFrom <= g.ToAge) { return g.TurnoutBase; } }
+            return double.NaN;
+        }
+
+        /// <summary>20a part B: a band's level-1 slip - its first line the band (and PEAK BAND where it is), then its figure and share, its turnout
+        /// (◇ 2014) where it is eligible, the working-age term where it falls inside 15–64, and THE LARGEST OF 21 BANDS on the peak.</summary>
+        private void DrawBandSlip(int band, int peak, PopulationCohorts cohorts, CohortVoterGroups.Group[] groups, int votingAge, bool turnoutSourced)
+        {
+            int from = band * PopulationCohorts.CohortWidth;
+            int to = band == PopulationCohorts.OpenBandIndex ? 999 : from + PopulationCohorts.CohortWidth - 1;
+            var lines = new List<string> { PopulationCohorts.Label(band) + " · " + Millions(cohorts.Counts[band]) + " · " + (cohorts.Total > 0f ? (cohorts.Counts[band] / cohorts.Total * 100f).ToString("0.0", CultureInfo.InvariantCulture) : "0") + "% OF ALL" };
+            if (to >= votingAge && turnoutSourced)
+            {
+                double t = BandTurnout(groups, Mathf.Max(from, votingAge));
+                if (!double.IsNaN(t)) { lines.Add("TURNOUT " + t.ToString("0", CultureInfo.InvariantCulture) + "% ◇ 2014"); }
+            }
+            else { lines.Add(to < votingAge ? "UNDER THE VOTING AGE - NO TURNOUT" : "TURNOUT · NO SOURCE"); }
+            if (from >= 15 && from < 65) { lines.Add("WORKING AGE · " + (cohorts.Total > 0f ? (cohorts.InAgeRange(15, 64) / cohorts.Total * 100f).ToString("0", CultureInfo.InvariantCulture) : "0") + "% OF ALL"); }
+            if (band == peak) { lines.Add("THE LARGEST OF 21 BANDS"); }
+            string head = PopulationCohorts.Label(band) + (band == peak ? " · PEAK BAND" : string.Empty);
+            GUIStyle headStyle = DeskCaption(8f, PoliSimTheme.TextPrimary, true);
+            GUIStyle lineStyle = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
+            float lineH = Mathf.Ceil(DeskCaptionHeight(lineStyle)) + StatsUnit(2f);
+            float w = headStyle.CalcSize(new GUIContent(head)).x;
+            foreach (string l in lines) { w = Mathf.Max(w, lineStyle.CalcSize(new GUIContent(l)).x); }
+            w += StatsUnit(16f);
+            float h = lineH * (lines.Count + 1) + StatsUnit(10f);
+            Vector2 at = Event.current.mousePosition + new Vector2(StatsUnit(12f), StatsUnit(12f));
+            var box = new Rect(at.x, at.y, w, h);
+            PoliSimTheme.Rule(box, PoliSimTheme.Card);
+            PoliSimTheme.Rule(new Rect(box.x, box.y, box.width, 1f), PoliSimTheme.HairlineStrong);
+            PoliSimTheme.Rule(new Rect(box.x, box.yMax - 1f, box.width, 1f), PoliSimTheme.HairlineStrong);
+            PoliSimTheme.Rule(new Rect(box.x, box.y, 1f, box.height), PoliSimTheme.HairlineStrong);
+            PoliSimTheme.Rule(new Rect(box.xMax - 1f, box.y, 1f, box.height), PoliSimTheme.HairlineStrong);
+            float y = box.y + StatsUnit(5f);
+            PoliSimWidgets.MeasuredLabel(new Rect(box.x + StatsUnit(8f), y, w - StatsUnit(16f), lineH), head, headStyle);
+            foreach (string l in lines) { y += lineH; PoliSimWidgets.MeasuredLabel(new Rect(box.x + StatsUnit(8f), y, w - StatsUnit(16f), lineH), l, lineStyle); }
+        }
+
+        /// <summary>20a part C: one dense line - the head at one x, the line at another, the same on every line (lines, never columns).</summary>
+        private void DrawDenseLine(string head, string line)
+        {
+            GUILayout.BeginHorizontal();
+            GUILayout.Space(StatsUnit(20f));
+            GUILayout.Label(head, DeskCaption(8f, PoliSimTheme.TextPrimary, true), GUILayout.Width(StatsUnit(120f)));
+            GUIStyle body = DeskCaption(7.5f, PoliSimTheme.TextSecondary);
+            body.wordWrap = true;
+            GUILayout.Label(line, body, GUILayout.ExpandWidth(true));
+            GUILayout.EndHorizontal();
         }
 
         /// <summary>One share bar: segments in the given inks with their labels beneath where they fit; a hairline between adjacent segments of one ink.</summary>
@@ -10619,7 +10714,7 @@ namespace PoliSim.UI
                 PoliSimTheme.Rule(new Rect(x, r.y, Mathf.Max(0f, w), barHeight), segments[i].Ink);
                 if (i > 0) { PoliSimTheme.Rule(new Rect(x, r.y, 1f, barHeight), PoliSimTheme.Card); }
                 string text = segments[i].Label + " " + (segments[i].Share * 100f).ToString("0", CultureInfo.InvariantCulture);
-                if (caption.CalcSize(new GUIContent(text)).x <= w) { PoliSimWidgets.MeasuredLabel(new Rect(x, r.y + barHeight + StatsUnit(1f), w, captionHeight), text, caption); }
+                if (!string.IsNullOrEmpty(segments[i].Label) && caption.CalcSize(new GUIContent(text)).x <= w) { PoliSimWidgets.MeasuredLabel(new Rect(x, r.y + barHeight + StatsUnit(1f), w, captionHeight), text, caption); }
                 x += w;
             }
         }

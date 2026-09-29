@@ -7,13 +7,17 @@
 #
 #   perl Tools/text_baseline.pl rank   <labels.tsv>           the rail screens by visible text draws at rest, most first
 #   perl Tools/text_baseline.pl screen <labels.tsv> <stem>     one frame's visible draws: font size, mode, width, text
+#   perl Tools/text_baseline.pl tsv    <labels.tsv> <a,b,..>   the named frames' visible draws as a TSV, geometry kept (s662, Design's
+#                                                              ask); each frame's count goes to stderr
+#   perl Tools/text_baseline.pl reach  <labels.tsv> 04h_people_dense   People's moved words, each on the dense frame (s662)
 #
 # A rail screen's at-rest frame is the capture the sweep takes on arriving at it (the stems below, the sweep's own);
 # a draw flagged OUTSIDE its clip is not on the screen and is not counted. The Desk is 01c_desk (the running desk).
 use strict; use warnings;
 binmode STDOUT, ':encoding(UTF-8)';
 my ($mode, $tsv, $stem) = @ARGV;
-die "usage: text_baseline.pl rank <labels.tsv> | screen <labels.tsv> <stem>\n" unless $mode && $tsv && ($mode eq 'rank' || ($mode eq 'screen' && $stem));
+die "usage: text_baseline.pl rank <labels.tsv> | screen <labels.tsv> <stem> | tsv <labels.tsv> <a,b,...>\n" unless $mode && $tsv && ($mode eq 'rank' || (($mode eq 'screen' || $mode eq 'tsv' || $mode eq 'reach') && $stem));
+my %want = map { $_ => 1 } split /,/, ($stem // '');
 my %rail = (
     '01c_desk' => 'DESK', '02_statistics' => 'STATS', '03_decisions' => 'DOCKET', '04_demographics' => 'PEOPLE',
     '05_budget' => 'BUDGET', '06_policylaws' => 'LAWS', '07_politics' => 'POLITICS', '08_energy' => 'ENERGY',
@@ -21,7 +25,7 @@ my %rail = (
 open my $in, '<:encoding(UTF-8)', $tsv or die "$tsv: $!\n";
 my $head = <$in>; chomp $head; $head =~ s/\r$//;
 my @cols = split /\t/, $head; my %at; @at{@cols} = 0 .. $#cols;
-for my $c (qw(capture font mode width flags text)) { die "the table has no '$c' column\n" unless exists $at{$c}; }
+for my $c (qw(capture x y width height font mode flags text)) { die "the table has no '$c' column\n" unless exists $at{$c}; }
 my (%count, @rows);
 while (my $line = <$in>) {
     chomp $line; $line =~ s/\r$//;
@@ -29,7 +33,8 @@ while (my $line = <$in>) {
     next if ($f[$at{flags}] // '') =~ /OUTSIDE/;
     my $cap = $f[$at{capture}];
     $count{$cap}++;
-    push @rows, [ $f[$at{font}], $f[$at{mode}], $f[$at{width}], $f[$at{text}] ] if $mode eq 'screen' && $cap eq $stem;
+    push @rows, [ $f[$at{font}], $f[$at{mode}], $f[$at{width}], $f[$at{text}] ] if ($mode eq 'screen' || $mode eq 'reach') && $cap eq $stem;
+    push @rows, [ map { $f[$at{$_}] } qw(capture x y width height font mode text) ] if $mode eq 'tsv' && $want{$cap};
 }
 close $in;
 if ($mode eq 'rank') {
@@ -41,7 +46,24 @@ if ($mode eq 'rank') {
     print "MISSING\t$rail{$_}\t-\t$_ (not in this table)\n" for @missing;
     exit(@missing ? 1 : 0);
 }
+if ($mode eq 'reach') {
+    # s662 (UI v3.3 s1: a removed word no slip and no dense line reaches fails): People's words that left the page at rest (board 20a, table E),
+    # each asserted on the dense frame's draws. The band values are the band slip's (a pointer's, not filmed) and are not listed here.
+    my @need = ('21 FIVE-YEAR BANDS', 'BANDS SUM TO', 'WORKING AGE 15', 'VOTING AGE', 'OLD-AGE = 65+', 'SCHOOL-AGE SHARE', 'ELDERLY SHARE',
+                'GROUPS, ONE INK', 'CONSTITUTION', 'NOT A FORECAST', 'THE MODEL\'S OWN ARITHMETIC', 'PopulationCohorts', 'CohortVoterGroups');
+    my $all = join("\n", map { $_->[3] } @rows);
+    my $miss = 0;
+    for my $n (@need) { if (index($all, $n) >= 0) { print "reach\tok\t$n\n" } else { print "reach\tMISSING\t$n\n"; $miss++ } }
+    printf "%s: %d of %d moved words reachable on the dense frame\n", $stem, @need - $miss, scalar @need;
+    exit($miss ? 1 : 0);
+}
 die "no visible draws for '$stem' in $tsv\n" unless @rows;
+if ($mode eq 'tsv') {
+    print "capture\tx\ty\twidth\theight\tfont\tmode\ttext\n";
+    print join("\t", @$_), "\n" for @rows;
+    printf STDERR "%s\t%d visible text draws at rest\n", $_, $count{$_} // 0 for sort keys %want;
+    exit((grep { !$count{$_} } keys %want) ? 1 : 0);
+}
 print "font\tmode\twidth\ttext\n";
 print join("\t", @$_), "\n" for @rows;
 printf STDERR "%s: %d visible text draws at rest\n", $stem, scalar @rows;

@@ -110,11 +110,10 @@ namespace PoliSim.EditorTools
         {
             // the Policy Web names the model's own fields as an edge's provenance by ruling (R-C6), and the page is the sitting pass's leave-alone set
             ("identifier in prose", "PolicyWebRenderer.cs", ""),
-            // People's captions name the table a plate is drawn from, in the honesty idiom's own words; People is the sitting pass's leave-alone set
-            ("identifier in prose", "GameController.cs", "THE ELECTORATE"),
-            ("identifier in prose", "GameController.cs", "POPULATION BY BAND"),
+            // People's dense lines name the table a plate is drawn from, provenance last (§662, board 20a part C)
+            ("identifier in prose", "GameController.cs", "CONSTITUTION · CohortVoterGroups"),
+            ("identifier in prose", "GameController.cs", "BOTH THE MODEL'S · PopulationCohorts"),
             ("identifier in prose", "GameController.cs", "EMPLOYMENT · SHARE BY SECTOR"),
-            ("identifier in prose", "GameController.cs", "VOTER GROUPS · POPULATION SHARE"),
             // a guard's own context names - what the overflow and containment guards measured, for the film log, never a label
             ("identifier in prose", "LedgerRow.cs", "LedgerRow "),
             ("identifier in prose", "PoliSimWidgets.cs", "StatTile "),
@@ -155,9 +154,11 @@ namespace PoliSim.EditorTools
             // coalition page's own vocabulary - DERIVED / DECLARED / SOURCED / MEASURED - by Design's ruling; the word
             // SOURCED is player-facing there, with its year, and is not the provenance tag this check hunts.
             ("GameController.cs", "SOURCED · SCB 2014"),
-            ("GameController.cs", "VOTING AGE · SOURCED · CONSTITUTION"),
-            ("GameController.cs", "A DERIVATION FROM TWO SOURCED SERIES, NOT A FORECAST"),
-            ("GameController.cs", "SOURCED — A PUBLISHED SERIES, WITH ITS YEAR"),
+            // §662 (board 20a part C): the dense view's lines lead with their honesty class, in the same vocabulary
+            ("GameController.cs", "VOTING AGE {votingAge} SOURCED · CONSTITUTION"),
+            ("GameController.cs", "SOURCED - A PUBLISHED SERIES, WITH ITS YEAR"),
+            // §662 (19a): PROVISIONAL is the honesty glyph's own word - the registry's fallback and the slip's first line
+            ("SymbolRegistry.cs", "PROVISIONAL"),
             // P5-C2 (2026-09-05, board 9c): the society-stat plate's HONESTY chips are Design's own vocabulary - SOURCED / DERIVED / ABSENT · STATED / SUPPORTING,
             // player-facing with the source line's dataflow id and year beside them; not the provenance tag this check hunts.
             ("GameController.Health.cs", "SOURCED"),
