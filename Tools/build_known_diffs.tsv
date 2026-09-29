@@ -1,0 +1,20 @@
+# THE DIFFS A PLAYER BUILD IS KNOWN TO WRITE INTO THE TREE (2026-09-29, COMPLETED.md s672) - read by Tools/build_player.ps1, which restores a file
+# only when EVERY changed line of its diff (git diff -U0, the +/- content without the sign) matches one of its patterns here; anything else fails the
+# build and is left for inspection. Indentation is part of each pattern: UnityConnectSettings.asset carries six m_Enabled lines, and only the
+# top-level one (two spaces) may change. Measured on the build of s672 (Unity 6000.5.6f1).
+# file	pattern
+Assets/Settings/DefaultVolumeProfile.asset	^  worldOffset:$
+Assets/Settings/DefaultVolumeProfile.asset	^  filter:$
+Assets/Settings/DefaultVolumeProfile.asset	^    m_OverrideState: [01]$
+Assets/Settings/DefaultVolumeProfile.asset	^    m_Value: (\{x: 0, y: 0, z: 0\}|0)$
+Assets/Settings/DefaultVolumeProfile.asset	^  - \{fileID: -?\d+\}$
+Assets/Settings/PC_RPAsset.asset	^  m_Prefilter\w+: \d+$
+Assets/Settings/UniversalRenderPipelineGlobalSettings.asset	^      m_List: \[\]$
+Assets/Settings/UniversalRenderPipelineGlobalSettings.asset	^      m_List:$
+Assets/Settings/UniversalRenderPipelineGlobalSettings.asset	^      - rid: \d+$
+ProjectSettings/ProjectSettings.asset	^  m_BuildTargetBatching: \[\]$
+ProjectSettings/ProjectSettings.asset	^  m_BuildTargetBatching:$
+ProjectSettings/ProjectSettings.asset	^  - m_BuildTarget: Standalone$
+ProjectSettings/ProjectSettings.asset	^    m_StaticBatching: [01]$
+ProjectSettings/ProjectSettings.asset	^    m_DynamicBatching: [01]$
+ProjectSettings/UnityConnectSettings.asset	^  m_Enabled: [01]$
