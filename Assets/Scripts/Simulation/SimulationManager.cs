@@ -3310,7 +3310,7 @@ namespace PoliSim.Simulation
                 LoyaltyPerParty = run.Setup.LoyaltyPerParty,
             };
             PlayerCampaignLedger = Elections.VoteAttribution.Explain(input, me);
-            PlayerCampaignLedgerParty = run.Setup.Parties != null && me < run.Setup.Parties.Length ? run.Setup.Parties[me].Name : Elections.LiveCampaignSetup.SwedenParties[me];   // the setup's party names - State.Names are the regions
+            PlayerCampaignLedgerParty = run.Setup.Parties != null && me < run.Setup.Parties.Length ? run.Setup.Parties[me].Name : Elections.LiveCampaignSetup.Keys(PlayerCountryId.Value)[me];   // the setup's party names - State.Names are the regions; §675 (the review): the fallback reads the cast, which a created party's index is inside
         }
 
         public int PlayerPartyIndexForCampaign()
@@ -3318,7 +3318,7 @@ namespace PoliSim.Simulation
             if (!PlayerCountryId.HasValue || _world == null) { return -1; }
             Country country = _world.GetCountry(PlayerCountryId.Value);
             if (country == null || string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return -1; }
-            return System.Array.IndexOf(Elections.LiveCampaignSetup.SwedenParties, country.PlayerPartyAbbrev);
+            return System.Array.IndexOf(Elections.LiveCampaignSetup.Keys(PlayerCountryId.Value), country.PlayerPartyAbbrev);   // §675: the cast, created parties included
         }
 
         /// <summary>

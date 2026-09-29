@@ -64,6 +64,57 @@ namespace PoliSim.Elections
         /// (S, M, SD, C, V, KD, L, MP): every read of a catalog maps by key, never by position. (This doc said the two orders were one until K-1.)</summary>
         public static readonly string[] SwedenParties = { "S", "SD", "M", "V", "C", "KD", "MP", "L" };
 
+        /// <summary>§675 (SP-3 part two): the campaign's cast - `PartySystems.For`'s keys, the real parties in their order and the created parties after them.
+        /// With none created it is <see cref="SwedenParties"/> exactly, so every staging and digest stands.</summary>
+        public static string[] Keys(CountryId country)
+        {
+            IReadOnlyList<PoliticalParty> roster = PartySystems.For(country);
+            var keys = new string[roster.Count];
+            for (int i = 0; i < keys.Length; i++) { keys[i] = roster[i].Abbrev; }
+            return keys;
+        }
+
+        /// <summary>§675: a party's cast personality - the real eight's as cast; a created party's by its origin ([AUTHORED-DRAFT]): Grassroots and Single-issue grassroots,
+        /// a Splinter its parent's, Protest populist, Business-backed professional, Regional grassroots (its ground game).</summary>
+        public static AiPersonality PersonalityOf(int index, string key)
+        {
+            if (index < SwedenParties.Length && SwedenParties[index] == key) { return SwedenPersonalities[index]; }
+            CreatedParty c = null;
+            foreach (CreatedParty x in CreatedParties.Of(CountryId.Sweden)) { if (x.Key == key) { c = x; } }
+            if (c == null) { return AiPersonality.Professional; }
+            switch (c.Origin)
+            {
+                case PartyOrigin.Splinter: { int parent = System.Array.IndexOf(SwedenParties, c.ParentKey); return parent >= 0 ? SwedenPersonalities[parent] : AiPersonality.Grassroots; }
+                case PartyOrigin.Protest: return AiPersonality.Populist;
+                case PartyOrigin.BusinessTechnocrats: return AiPersonality.Professional;
+                default: return AiPersonality.Grassroots;
+            }
+        }
+
+        /// <summary>§675: a created party's day 0 from its five stats through the pip table (`PartyOrigins`, [AUTHORED-DRAFT]) - Funding the war chest as a share of
+        /// the real parties' (equal) chest, Organisation the offices (a Regional party's region first), Activists the volunteers as a share of the real parties',
+        /// Leader the candidate's attributes; no state support (the party-support act pays on past elections, §625 - a created party has none).
+        /// ⚠ Recognition reaches nothing: neither the vote model nor the campaign has an awareness term (§674).</summary>
+        public static bool TryCreatedDayZero(string key, RegionAudience[] regions, out double money, out int volunteers, out int[] offices, out CandidateProfile candidate)
+        {
+            money = 0; volunteers = 0; offices = null; candidate = default;
+            CreatedParty c = null;
+            foreach (CreatedParty x in CreatedParties.Of(CountryId.Sweden)) { if (x.Key == key) { c = x; } }
+            if (c == null) { return false; }
+            money = WarChest * PartyOrigins.Pip(PartyOrigins.FundingShare, c.Funding);
+            volunteers = (int)Math.Round(Volunteers * PartyOrigins.Pip(PartyOrigins.ActivistShare, c.Activists));
+            int count = PartyOrigins.Pip(PartyOrigins.Offices, c.Organisation);
+            var order = new List<int>();
+            for (int r = 0; r < regions.Length; r++) { order.Add(r); }
+            order.Sort((a, b) => (c.Origin == PartyOrigin.Regional && regions[a].Name == c.Region ? 0 : 1).CompareTo(c.Origin == PartyOrigin.Regional && regions[b].Name == c.Region ? 0 : 1) != 0
+                ? (c.Origin == PartyOrigin.Regional && regions[a].Name == c.Region ? 0 : 1).CompareTo(c.Origin == PartyOrigin.Regional && regions[b].Name == c.Region ? 0 : 1)
+                : regions[b].Audience.CompareTo(regions[a].Audience));
+            offices = order.GetRange(0, Math.Min(count, order.Count)).ToArray();
+            int a100 = (int)Math.Round(100.0 * PartyOrigins.Pip(PartyOrigins.LeaderAttribute, c.Leader));
+            candidate = new CandidateProfile(key, a100, a100, a100, a100, a100, a100, a100, a100, a100);
+            return true;
+        }
+
         /// <summary>
         /// The country's staged campaign, or false with the reason when none is staged. Only Sweden today.
         /// <paramref name="scandals"/> is the caller's staging (the harness stages one; a game passes none
@@ -87,10 +138,11 @@ namespace PoliSim.Elections
                         note = $"no campaign is staged for {country} on the vote model: it has no fitted electorate or no two-election history";
                         return false;
                     }
-                    compatibilityOverride = new double[SwedenParties.Length];
-                    for (int p = 0; p < SwedenParties.Length; p++)
+                    string[] cast = Keys(country);   // §675: the cast, created parties included
+                    compatibilityOverride = new double[cast.Length];
+                    for (int p = 0; p < cast.Length; p++)
                     {
-                        int k = System.Array.IndexOf(keys, SwedenParties[p]);
+                        int k = System.Array.IndexOf(keys, cast[p]);
                         compatibilityOverride[p] = k >= 0 ? compatibility[k] : 0.0;
                     }
                 }
@@ -139,12 +191,13 @@ namespace PoliSim.Elections
             salience[(int)IssueId.Education] = 0.16;
             // SOURCED regions: the 29 valkretsar's valid votes, the same vintage as the prior (W-F1) - the runtime catalog.
             RegionAudience[] regions = SwedenRegions(out double national, vintage);
-            var parties = new CampaignRun.PartySetup[SwedenParties.Length];
+            string[] cast = Keys(CountryId.Sweden);   // §675: the real eight, then the created parties
+            var parties = new CampaignRun.PartySetup[cast.Length];
             for (int p = 0; p < parties.Length; p++)
             {
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
-                AiPersonality personality = SwedenPersonalities[p];
+                AiPersonality personality = PersonalityOf(p, cast[p]);
                 // C-R4b step 4b: the player's party plays the HQ's queue (a scripted party, W-C2's seam);
                 // every other party, and the player's until a script is given, is its cast personality.
                 // CL-1 (2026-09-12): the player's party brings its PRE-campaign's outcome to day 0 - the chest as the run-up
@@ -152,18 +205,20 @@ namespace PoliSim.Elections
                 // plan. Every other party's day 0 IS its staging (its run-up, authored once). An idle run-up reproduces the
                 // staging exactly, which CampaignClockHarness 7a asserts on the campaign's own decision digest.
                 PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
-                parties[p] = new CampaignRun.PartySetup(SwedenParties[p], personality, FlatCredibility,
-                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
-                    CandidateFor(personality, SwedenParties[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions), OfficeOperationsPerDay,
-                    brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
+                // §675: a created party's day 0 is its stats' (TryCreatedDayZero); a real party's is its cast staging, unchanged
+                bool made = TryCreatedDayZero(cast[p], regions, out double madeMoney, out int madeVolunteers, out int[] madeOffices, out CandidateProfile madeCandidate);
+                parties[p] = new CampaignRun.PartySetup(cast[p], personality, FlatCredibility,
+                    brought.HasValue ? brought.Value.Money : made ? madeMoney : WarChest, match, brought.HasValue ? brought.Value.Volunteers : made ? madeVolunteers : Volunteers,
+                    made ? madeCandidate : CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : made ? madeOffices : OfficesFor(personality, regions), OfficeOperationsPerDay,
+                    brought.HasValue ? brought.Value.Staff : made ? new StaffRole[0] : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : made ? 0 : TelevisionBuysFor(personality),
                     p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
             }
-            var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[SwedenParties.Length]);
-            var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[SwedenParties.Length], isInternal: true);
-            sb.Append("\n  staging: 8 parties on Sweden " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear + " (W-A1):\n    ");
+            var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[cast.Length]);
+            var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[cast.Length], isInternal: true);
+            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on Sweden " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear + " (W-A1):\n    ");
             for (int p = 0; p < parties.Length; p++)
             {
-                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}  ", SwedenParties[p], loyalty[p], compatibility[p]));
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}  ", cast[p], loyalty[p], compatibility[p]));
             }
             sb.Append(string.Format(CultureInfo.InvariantCulture,
                 "\n    {0} valkretsar (SOURCED " + latestYear + " valid votes, W-F1), national audience {1:N0}; salience EB105 SE: climate .26 crime .18 defence .17 education .16\n" +
