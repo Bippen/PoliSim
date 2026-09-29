@@ -136,6 +136,30 @@ namespace PoliSim.EditorTools
             }
             sb.AppendLine();
 
+            // 5. §662, Design's first ask of Code: the both-ways laws by name, one line each - read by LawVerbs, the one definition the rows draw by.
+            string[] dials = new string[12];
+            string[] cj = Enum.GetNames(typeof(CrimeJusticeDial)), lab = Enum.GetNames(typeof(LaborDial));
+            Array.Copy(cj, 0, dials, 0, 6); Array.Copy(lab, 0, dials, 6, 6);   // LawDefinition.DialDeltas' contract: the six C&J dials, then the six labour dials
+            sb.AppendLine("## 5. The laws that move dials both ways - one line each");
+            sb.AppendLine();
+            sb.AppendLine("category · id · the name the desk shows (the formal name) · what goes up · what goes down. Your rule applies to each: BAN if its net move is");
+            sb.AppendLine("a prohibition, ALLOW if it permits what was not, no verb if it does both or neither. Until you read them, each shows no verb.");
+            sb.AppendLine();
+            int both = 0;
+            foreach (LawDefinition law in LawCatalog.All)
+            {
+                if (!LawVerbs.IsBothWays(law)) { continue; }
+                both++;
+                var upList = new List<string>(); var downList = new List<string>();
+                float[] deltas = law.DialDeltas;
+                for (int i = 0; i < deltas.Length && i < dials.Length; i++) { if (deltas[i] > 0f) { upList.Add(dials[i]); } else if (deltas[i] < 0f) { downList.Add(dials[i]); } }
+                if (law.Structural != null) { foreach (StructuralDelta s in law.Structural) { if (s.Delta > 0f) { upList.Add(s.Parameter.ToString()); } else if (s.Delta < 0f) { downList.Add(s.Parameter.ToString()); } } }
+                sb.AppendLine($"{both}. {law.Category} · `{law.Id}` · {law.PlainName ?? law.Name} ({law.Name}) · up: {string.Join(", ", upList)} · down: {string.Join(", ", downList)}");
+            }
+            sb.AppendLine();
+            sb.AppendLine($"**{both} laws.**");
+            sb.AppendLine();
+
             return sb.ToString();
         }
 

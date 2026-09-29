@@ -34762,3 +34762,19 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Found on the way.** `UnwiredSubsystemCheck` failed on new public entry points only Editor code called - `LawEmblem`, the registry's `Stem`/`Texture` made private and read by the check through reflection (`D24Inventory`'s precedent), `Word` and `IsBothWays` given their in-game callers; `MetaTextCheck` on the dense lines' honesty words and the glyph word PROVISIONAL - allowed by literal, with reasons, the stale People entries replaced; D18's inventory regenerated (`Tools/d18_inventory.sh`) for the sixteen new assets.
 
 **Bars.** Tier UI + tooling: cheap bar 65 of 65 (`cheap662`), residue 0; the dry film and one filmed width above.
+
+
+## 663. DESIGN'S THREE ASKS OF CODE SENT IN THE STANDARD FORM: THE 13 BOTH-WAYS LAWS BY NAME, THE 04b–04e PLATES' AT-REST DRAWS AS A TSV, A REAL 1280 CROP OF A LAW ROW CARRYING THE INTEREST-RATE ICON WITH CODE'S READING; THE INCUMBENT CODE-SIDE FILES ASKED AS ONE ZIP (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Design's three requests, in the standard form: the names of the 13 laws that move dials both ways; a TSV of the at-rest text draws on the 04b–04e plates, from the dry film's label tables; a real 1280 crop of a law row carrying the interest-rate icon, native size and 4× nearest-neighbour, with your own reading of whether it holds at 16 px. Design judges it.* And (item 5): *the Code-side Incumbent files - the logotype SVG, the logomark SVG, the .ico and the 256 and 512 PNGs - in a zip under 192 KiB or split. Install them when they arrive.*
+
+**Sent** (`uploads/D24_code_ask/`, 14 files, listed back on the far side; local `PoliSim-captures/design/D24_code/`): `D24_code_answers.zip` (18 files, `MANIFEST.sha256` inside, stored; 17 of 17 digests verified on a local unzip), with its parts loose for reading:
+1. **The 13 names** - `both_ways_laws.md`, generated: `D24Inventory.Emit`'s new section 5, read by `LawVerbs` (the definition the rows draw by) - each line the category, the id, the name the desk shows (the formal name), what goes up, what goes down; 11 in crime and justice, 2 in the labour market; the whole inventory beside it.
+2. **The TSV** - `people_plates_04b-04e_at_rest.tsv` from the final tree's dry film (`drys662`) by `Tools/text_baseline.pl tsv` (new: the named frames' visible draws with geometry); `COUNTS.tsv`: 04b 81 · 04c 80 · 04d 68 · 04e 67.
+3. **The crop** - from the real frame `s662_1280_06i_laws_monetary_row` (the browser under the All chip, searched to the monetary regime's laws): `law_row_interestrate_native.png` (640 × 28) and `_4x.png` (nearest neighbour, half-pixel offset: each frame pixel an exact 4 × 4 block), `pair_only_8x.png`; by `Tools/png_crop.ps1` (new, System.Drawing). **Code's reading** (`READING.md`): the emblem holds as a shape at 16 px - the stair and the % are both there and it is not mistaken for the Political icon it replaced - but at its edge: the percent's rings are single pixels, and the thin strokes break into grey where the 256 px source is drawn at 16 with no mipmaps (the stat icons' import convention). Three ways it could move, for Design: the word MONETARY (its own fallback), a 16 px cut, or mipmaps for the vocabulary and stat icons - the last Code's, changing every stat row, not done without Design.
+
+**The Incumbent ask** is in the same README: the five Code-side files as one zip under 192 KiB, or split - `send/incumbent_brand.zip` pulled truncated, over the cap. Installed when they arrive.
+
+**Also sent:** `20a_as_built.md` with the frames `04_demographics`, `04h_people_dense` and the four plates, so Design reads the retrofit against its board.
+
+**Tooling tier** (`bar_tier.ps1`): cheap bar 65 of 65 (`cheap663`), residue 0.
