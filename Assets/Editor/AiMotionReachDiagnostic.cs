@@ -51,6 +51,7 @@ namespace PoliSim.EditorTools
                 Measure();
                 Chain();
                 RealGame();
+                CAsSupport();
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
@@ -127,6 +128,35 @@ namespace PoliSim.EditorTools
                     sb.Append(F("    measured  {0:yyyy-MM-dd} the player as M tables '{1}' - {2}, {3} for, {4} against: {5} (PS-3i-2b)\n", d.Date, d.Title, d.Passed ? "PASSED" : "FAILED", yes, no, string.Join(", ", sides)));
                 }
                 sb.Append(F("    measured  SD's dial item after the breaching bills: {0}\n", dial.State));
+            }
+
+            // (5) PS-3i-2a (c), ruled 2026-09-29: MEASURED ONCE, ASSERTED NEITHER WAY - after the 2026 election, an M-led cabinet with C as its only
+            // support, on the chamber the election seated and the election's own day's declarations (§653); every C demand accepted. Two M-led
+            // cabinets: M+KD+L (the outgoing cabinet less SD's role) and M alone. The answers and the investiture's count are logged; nothing is built.
+            void CAsSupport()
+            {
+                (SimulationManager sim3, Country after) = Open("AiMotionReachDiagnostic.csupport", new DateTime(2026, 10, 1));
+                after.PlayerPartyAbbrev = "M";
+                foreach (string[] cabinet in new[] { new[] { "M", "KD", "L" }, new[] { "M" } })
+                {
+                    var proposal = new FormationProposal { Formateur = "M" };
+                    proposal.CabinetParties.AddRange(cabinet);
+                    foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in GovernmentRecord.GamsonPosts(after, proposal.CabinetParties, "M")) { proposal.Posts[kv.Key] = kv.Value; }
+                    proposal.Supporters.Add("C");
+                    proposal.FreezeTabled(after, sim3.CurrentDate, sim3.World);
+                    var keys = new List<string>();
+                    foreach (AgreementItem item in proposal.TabledOf(after, "C", sim3.CurrentDate, sim3.World)) { keys.Add(SupportAgreement.KeyOf(item)); }
+                    proposal.AcceptedDemands["C"] = keys;
+                    ProposalVerdict verdict = Formateur.Answer(after, proposal, sim3.CurrentDate, sim3.World, DeclarationReading.OfElection(CountryId.Sweden, new DateTime(2026, 9, 13)), null, "M");
+                    var answers = new List<string>();
+                    foreach (PartyAnswer a in verdict.Answers) { answers.Add(a.Party + (a.Accepts ? " accepts" : " refuses (" + a.Reason + ")")); }
+                    CoalitionFormation.CabinetEvaluation inv = verdict.Investiture;
+                    sb.Append(F("    c-support {0} with C's support, {1} C demand(s) accepted: {2}; investiture {3}; the proposal {4}\n",
+                        string.Join("+", cabinet), keys.Count, string.Join("; ", answers.ToArray()),
+                        inv == null ? "not reached" : F("cabinet {0} seats, with support {1}, opposed {2} of 349 - {3}", inv.CabinetSeats, inv.SupportedSeats, inv.OpposedSeats, inv.Wins ? "WINS" : "LOSES"),
+                        verdict.Passes ? "PASSES" : "FAILS" + (string.IsNullOrEmpty(verdict.Reason) ? string.Empty : " (" + verdict.Reason + ")")));
+                    Check(verdict.Answers.Count > 0, F("(5) measured: {0} with C's support answered ({1}) - recorded, asserted neither way", string.Join("+", cabinet), verdict.Passes ? "passes" : "fails"));
+                }
             }
 
             // (4) PS-3i-2a IN A REAL GAME (ruled 2026-09-29, §655: as M, deliver nothing, watch SD withdraw, the motion carry and the government fall), measured

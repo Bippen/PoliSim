@@ -34685,3 +34685,16 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Found on the way, fixed: the interrupts film's walk to polling day now holds play's clock.** The first real run showed NO election night: the harness walks the days itself while the controller sat at Normal, and a slow frame let the controller's own `Update` tick a day off polling day - the staged budget act's ceremony queued (`e7_signing_before_the_night`, "a signing the game opened by itself") and `CheckElection` found no polling day. Timing, not the game: play holds the election in the same tick that queues a signing. The harness pauses `_gameSpeed` for its walk and restores it once the election is called; the re-run above is the proof. (Latent since the pre-night seal of §648; the 13:05 film missed the slow frame.)
 
 **Bars.** Tier SIMULATION + UI (`bar_tier.ps1`: one simulation path - add-only helpers on `DeclaredRedLines` - five UI, one tooling): cheap bar 64 of 64 (`cheap657`), residue 0; simulation bar 56 of 56 (`sim657`; the sentinel first, baseline unmoved - add-only helpers). No family.
+
+
+## 658. PS-3i-2a (c) MEASURED ONCE, BUILT NOTHING: AFTER 2026, M+KD+L WITH C AS ITS ONLY SUPPORT PASSES ITS INVESTITURE; M ALONE WITH C FAILS, C REFUSING (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29, with (a) in §655): *measure (c) once - on the 2026-election chamber, read on 13 September 2026's declarations, try two M-led cabinets with C as the only support and C's demands accepted (M+KD+L, and M alone); log each party's answer and the investiture count; assert neither outcome and build nothing.*
+
+**Measured** (`AiMotionReachDiagnostic` (5), epoch 2026-10-01, `DeclarationReading.OfElection(Sweden, 2026-09-13)`, `Formateur.Answer`; the part drafted in the previous session and applied as drafted):
+- **M+KD+L, C supporting, 4 C demands accepted:** KD accepts, L accepts, C accepts; investiture - cabinet 111 seats, 136 with support, 151 opposed of 349 - WINS by the negative rule; **the proposal PASSES.**
+- **M alone, C supporting, 4 C demands accepted:** C refuses (*a party left outside the cabinet suits it better*, 90.8 against 84.8 with the cabinet; party index 7); investiture - 70 seats, 70 with support, 151 opposed - WINS on count; **the proposal FAILS** (an invited party refuses).
+
+**What it says about (a).** §655's ruled limit - no supporter to withdraw after the election - holds for SD, whose declaration refuses the role; it does not hold for every supporter: a player who forms M+KD+L with C's support has a supporter whose agreement §644's chain could break. Nothing built, by the ruling; whether the chain is proved on that cabinet is Elias's. The PS-3i-2a row says so.
+
+**Tooling tier** (`bar_tier.ps1`: one Editor diagnostic): cheap bar 64 of 64 (`cheap658`), residue 0.
