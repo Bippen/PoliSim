@@ -2533,7 +2533,7 @@ namespace PoliSim.Simulation
             if (g.NoConfidenceOn != System.DateTime.MinValue) { refusedBecause = "THE CHAMBER HAS ALREADY DECLARED NO CONFIDENCE - THE GOVERNMENT'S WEEK RUNS"; return false; }
             if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, country.PlayerPartyAbbrev, out int moverSeats, out int tenth)) { refusedBecause = $"A MOTION NEEDS A TENTH OF THE MEMBERS - {tenth} - YOUR PARTY HOLDS {moverSeats}"; return false; }
             refusedBecause = null;
-            vote = Elections.ConfidenceProcedure.Vote(country, country.PlayerPartyAbbrev);
+            vote = Elections.ConfidenceProcedure.Vote(country, country.PlayerPartyAbbrev, CurrentDate);   // §653: the lines standing today
             country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
             country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;   // a motion, not a bill (the reader, s636)
             if (vote.Carried)
@@ -2702,11 +2702,11 @@ namespace PoliSim.Simulation
             foreach (string mover in AiMotionCandidates(country, g))
             {
                 if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, mover, out int _, out int _)) { continue; }
-                Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.Vote(country, mover);
+                Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.Vote(country, mover, CurrentDate);   // §653: the lines standing today
                 if (!vote.Carried) { continue; }
                 if (next == null)
                 {
-                    next = Elections.GovernmentFormation.ViewOfSitting(country, Elections.GovernmentFormation.RefusalLines(country.Id, g.StandingRefusals));   // the round does not depend on the mover
+                    next = Elections.GovernmentFormation.ViewOfSitting(country, Elections.GovernmentFormation.RefusalLines(country.Id, g.StandingRefusals), CurrentDate);   // the round does not depend on the mover; §653: the mid-term reading, as the discharge's round would read
                     if (next.HasGovernment) { foreach ((string abbrev, int _) in next.Cabinet) { nextCabinet.Add(abbrev); } }
                 }
                 if (!next.HasGovernment) { return; }
@@ -2763,14 +2763,18 @@ namespace PoliSim.Simulation
         /// Premise 6: THE SPEAKER'S ORDER on a chamber and a vintage's declarations - the formation's prime-minister party (a declared candidacy in its
         /// cabinet, else its largest party), then every other party with a declared candidate, largest first; where neither exists, the largest party.
         /// </summary>
-        public List<string> SpeakerOrder(Country country, ElectionVintage vintage, IReadOnlyList<Elections.RedLine> extraLines = null)
+        public List<string> SpeakerOrder(Country country, ElectionVintage vintage, IReadOnlyList<Elections.RedLine> extraLines = null) =>
+            SpeakerOrder(country, Elections.DeclarationReading.OfVintage(vintage), extraLines);
+
+        /// <summary>Premise 6 under a named reading (§653): an election's, or the mid-term one.</summary>
+        public List<string> SpeakerOrder(Country country, Elections.DeclarationReading reading, IReadOnlyList<Elections.RedLine> extraLines = null)
         {
             var order = new List<string>();
-            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, vintage, extraLines, out IReadOnlyList<PoliticalParty> parties);
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, reading, extraLines, out IReadOnlyList<PoliticalParty> parties);
             Elections.CoalitionResult formation = Elections.CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules);
-            if (formation.Outcome != Elections.CoalitionOutcomeKind.NewElection) { order.Add(PmOf(country, vintage, parties, formation.Government.Cabinet)); }
+            if (formation.Outcome != Elections.CoalitionOutcomeKind.NewElection) { order.Add(PmOf(country, reading, parties, formation.Government.Cabinet)); }
             var declared = new List<string>();
-            foreach ((string abbrev, string _, string _) in Elections.DeclaredRedLines.Candidacies(country.Id, vintage)) { if (!order.Contains(abbrev)) { declared.Add(abbrev); } }
+            foreach ((string abbrev, string _, string _) in reading.Candidacies(country.Id)) { if (!order.Contains(abbrev)) { declared.Add(abbrev); } }
             declared.Sort((a, b) => SeatsOf(country, b).CompareTo(SeatsOf(country, a)) != 0 ? SeatsOf(country, b).CompareTo(SeatsOf(country, a)) : string.CompareOrdinal(a, b));
             order.AddRange(declared);
             if (order.Count == 0)
@@ -2785,9 +2789,9 @@ namespace PoliSim.Simulation
         private static int SeatsOf(Country country, string key) => country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(key, out int s) ? s : 0;
 
         /// <summary>K-1f's premise, as <see cref="Elections.GovernmentRecord.FromView"/> reads it: a declared candidacy standing in the cabinet leads it; else its largest party.</summary>
-        private static string PmOf(Country country, ElectionVintage vintage, IReadOnlyList<PoliticalParty> parties, int cabinet)
+        private static string PmOf(Country country, Elections.DeclarationReading reading, IReadOnlyList<PoliticalParty> parties, int cabinet)
         {
-            foreach ((string abbrev, string _, string _) in Elections.DeclaredRedLines.Candidacies(country.Id, vintage))
+            foreach ((string abbrev, string _, string _) in reading.Candidacies(country.Id))
             {
                 for (int p = 0; p < parties.Count; p++) { if ((cabinet & (1 << p)) != 0 && parties[p].Abbrev == abbrev) { return abbrev; } }
             }
@@ -2795,6 +2799,13 @@ namespace PoliSim.Simulation
             for (int p = 0; p < parties.Count; p++) { if ((cabinet & (1 << p)) != 0 && (largest == null || SeatsOf(country, parties[p].Abbrev) > SeatsOf(country, largest))) { largest = parties[p].Abbrev; } }
             return largest;
         }
+
+        /// <summary>PS-3i-2c (ruled 2026-09-29, §653): what a round reads - after an election, everything dated at its polling day; mid-term, the lines and
+        /// candidacies standing today with the platforms held to the sitting chamber's election; a vintage alone where a check opens one on a vintage.</summary>
+        public Elections.DeclarationReading RoundReading(Country country, Elections.SpeakerRound round) =>
+            round.MidTerm ? Elections.GovernmentFormation.SittingReading(country, CurrentDate)
+            : round.ReadsOn != System.DateTime.MinValue ? Elections.DeclarationReading.OfElection(country.Id, round.ReadsOn)
+            : Elections.DeclarationReading.OfVintage(round.Vintage);
 
         /// <summary>The refusal lines that stand in a round: §641's standing refusals and the player's declines (premise 5).</summary>
         private static List<Elections.RedLine> RoundLines(Country country, Elections.SpeakerRound round)
@@ -2809,13 +2820,14 @@ namespace PoliSim.Simulation
         /// </summary>
         public Elections.FormationProposal DraftProposal(Country country, Elections.SpeakerRound round, string party)
         {
-            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, round.Vintage, RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
+            Elections.DeclarationReading reading = RoundReading(country, round);
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, reading, RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
             Elections.CoalitionResult formation = Elections.CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules);
             var proposal = new Elections.FormationProposal { Formateur = party };
             // The governments that would hold (the answers compare against the same set, §646 the reader), best first.
             foreach (Elections.GovernmentOption g in Elections.CoalitionFormation.Holding(formation, chamber.Seats, chamber.Compatibility))
             {
-                if (PmOf(country, round.Vintage, parties, g.Cabinet) != party) { continue; }
+                if (PmOf(country, reading, parties, g.Cabinet) != party) { continue; }
                 // Premise 5 (the second reader): a party that declined this formateur's offer stays in OPPOSITION - out of its cabinet and its support, its
                 // vote at the investiture the model's, as any opposition party's; never a line that would make it vote against.
                 string declined = round.Declines.Contains(country.PlayerPartyAbbrev + ">" + party) ? country.PlayerPartyAbbrev : null;
@@ -2842,7 +2854,7 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>R2: open a round - the outgoing government serves on as a caretaker (premise 8), and the Speaker asks the first party in the order.</summary>
-        public void OpenSpeakerRound(Country country, ElectionVintage vintage, string occasion, IEnumerable<string> refusals = null)
+        public void OpenSpeakerRound(Country country, ElectionVintage vintage, string occasion, IEnumerable<string> refusals = null, System.DateTime? electionDay = null, bool midTerm = false)
         {
             Elections.GovernmentRecord g = country.Government;
             if (g == null) { return; }
@@ -2851,9 +2863,10 @@ namespace PoliSim.Simulation
                 g.Discharge(CurrentDate);
                 g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government serves on as a caretaker through the Speaker's round {occasion}");
             }
-            var round = new Elections.SpeakerRound { OpenedOn = CurrentDate, Occasion = occasion, Vintage = vintage, Stage = Elections.RoundStage.Consulting };
+            var round = new Elections.SpeakerRound { OpenedOn = CurrentDate, Occasion = occasion, Vintage = vintage, Stage = Elections.RoundStage.Consulting,
+                ReadsOn = electionDay?.Date ?? System.DateTime.MinValue, MidTerm = midTerm && !electionDay.HasValue };
             if (refusals != null) { round.Refusals.AddRange(refusals); }
-            round.Order = SpeakerOrder(country, vintage, RoundLines(country, round));
+            round.Order = SpeakerOrder(country, RoundReading(country, round), RoundLines(country, round));
             g.Round = round;
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Speaker's round opens {occasion}; the order is {string.Join(", ", round.Order)}");
             AskNext(country, round);
@@ -2911,7 +2924,7 @@ namespace PoliSim.Simulation
         /// <summary>R7: the investiture - the formation's own vote under the country's rule, recorded as a division; a win installs, a loss counts to the limit.</summary>
         private void Investiture(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
         {
-            Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             var sides = new List<DivisionSide>();
             if (verdict.Investiture != null)
             {
@@ -2991,7 +3004,7 @@ namespace PoliSim.Simulation
                 g.Round.Stage = Elections.RoundStage.Concluded;
                 g.Round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the election of {held:yyyy-MM-dd} ends the round - the new Riksdag's round opens");
             }
-            OpenSpeakerRound(country, Elections.WorldClock.VintageOfElection(country.Id, held), $"after the election of {held:yyyy-MM-dd}");   // §641: a motion's refusals end at the election
+            OpenSpeakerRound(country, Elections.WorldClock.VintageOfElection(country.Id, held), $"after the election of {held:yyyy-MM-dd}", electionDay: held);   // §641: a motion's refusals end at the election; §653: the election's own day's declarations
             return true;
         }
 
@@ -3021,7 +3034,7 @@ namespace PoliSim.Simulation
             if (country == null || round == null || proposal == null) { return null; }
             if (!HoldsTreasury(proposal)) { return new Elections.ProposalVerdict { AllAccept = false, Reason = "the prime minister's party holds the Treasury" }; }
             proposal.FreezeTabled(country, CurrentDate, _world);
-            return Elections.Formateur.Answer(country, proposal, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            return Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
         }
 
         /// <summary>§647: the prime minister's party keeps the head of government's portfolio (spec §5.3; <c>AllocatePortfolios</c> gives it first).</summary>
@@ -3057,7 +3070,7 @@ namespace PoliSim.Simulation
             round.Declines.Add(country.PlayerPartyAbbrev + ">" + round.Asked);
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} declines {round.Asked}'s offer and stays in opposition");
             Elections.FormationProposal without = DraftProposal(country, round, round.Asked);
-            Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             if (verdict != null && verdict.Passes) { Table(round, without); return true; }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - the Speaker moves on");
             AskNext(country, round);
@@ -3082,7 +3095,7 @@ namespace PoliSim.Simulation
             }
             // §646 (R2): the Speaker's round, dated, on the sitting chamber's declarations - it installs what wins its investiture, or breaks off at
             // RF 6:5's limit to an extra election (§636's single round was the four proposals' answer at once).
-            OpenSpeakerRound(country, Elections.GovernmentFormation.SittingVintage(country), $"after the discharge of {fallen.PmParty}'s government", refusals);
+            OpenSpeakerRound(country, Elections.GovernmentFormation.SittingVintage(country), $"after the discharge of {fallen.PmParty}'s government", refusals, midTerm: true);   // §653: the mid-term reading
         }
 
         /// <summary>PS-3k (§638): a record's shift by party key as one per the setup's parties, or null where none is stored (an older campaign replays as it ran).</summary>

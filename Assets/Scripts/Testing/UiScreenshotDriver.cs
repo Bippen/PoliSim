@@ -866,7 +866,8 @@ namespace PoliSim.Testing
                                 GovernmentRecord roundRecord = roundCountry.Government;
                                 string partyBefore = roundCountry.PlayerPartyAbbrev;
                                 roundCountry.PlayerPartyAbbrev = filmRound.Order[0];
-                                roundSim.OpenSpeakerRound(roundCountry, filmRound.Vintage, "for the film");
+                                roundSim.OpenSpeakerRound(roundCountry, filmRound.Vintage, "for the film",
+                                    electionDay: filmRound.ReadsOn == DateTime.MinValue ? (DateTime?)null : filmRound.ReadsOn, midTerm: filmRound.MidTerm);   // the film's round's own reading (§653)
                                 SpeakerRound staged = roundSim.RoundOf(_countryId);
                                 Debug.Log($"SHOT: §647 - {partyBefore} re-seated as {roundCountry.PlayerPartyAbbrev}, first in the order ({string.Join(", ", filmRound.Order)}); the staged round's stage {staged?.Stage}");
                                 FieldInfo sheetOpen = controller.GetType().GetField("_formationSheetOpen", BindingFlags.Instance | BindingFlags.NonPublic);

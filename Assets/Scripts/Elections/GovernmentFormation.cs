@@ -73,10 +73,15 @@ namespace PoliSim.Elections
         /// <para>K-1 (2026-09-23): <paramref name="vintage"/> picks the declarations - the seated election's in the game; a
         /// backtest that asserts 2022's government pins <see cref="ElectionVintage.Sweden2022"/>.</para>
         /// </summary>
-        public static Formed Form(Country country, ElectionVintage vintage = ElectionVintage.Seated)
+        public static Formed Form(Country country, ElectionVintage vintage = ElectionVintage.Seated) => Form(country, vintage, null);
+
+        /// <summary>PS-3i-2c (§653): an election's formation under its reading - everything dated at its polling day.</summary>
+        public static Formed Form(Country country, DeclarationReading reading) => Form(country, reading.Vintage, reading);
+
+        private static Formed Form(Country country, ElectionVintage vintage, DeclarationReading? reading)
         {
             if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result,
-                    out bool declarationsSourced, out string reason, vintage))
+                    out bool declarationsSourced, out string reason, vintage, reading))
             {
                 return Formed.None(reason);
             }
@@ -180,6 +185,17 @@ namespace PoliSim.Elections
             public bool PlayerSupports;
         }
 
+        /// <summary>PS-3i-2c (§653): the formation on the country's current chamber under a named reading - an election's (`DeclarationReading.OfElection`,
+        /// everything dated at its polling day) or a mid-term one.</summary>
+        public static View ViewOf(Country country, DeclarationReading reading)
+        {
+            if (!TryFormChamber(country, out IReadOnlyList<PoliticalParty> parties, out int[] seats, out CoalitionResult result, out bool sourced, out string reason, reading.Vintage, reading))
+            {
+                return new View { HasGovernment = false, Reason = reason };
+            }
+            return Describe(country.Id, parties, seats, result, sourced, country.PlayerPartyAbbrev);
+        }
+
         /// <summary>The formation on the country's CURRENT chamber - the chamber of record after an election. PS-2 (§619): <paramref name="vintage"/> picks the
         /// declarations - an election held on a polling day reads that election's (`WorldClock.VintageOfElection`), the seated chamber the seated election's.</summary>
         public static View ViewOf(Country country, ElectionVintage vintage = ElectionVintage.Seated)
@@ -257,7 +273,7 @@ namespace PoliSim.Elections
 
         /// <summary>The formation itself - the chamber's seats, the derived compatibility, the declared red lines and the chamber's own rule - shared by <see cref="Form"/>, <see cref="ViewOf(Country, ElectionVintage)"/> and <see cref="TryGovernment"/> where no record is stored.</summary>
         private static bool TryFormChamber(Country country, out IReadOnlyList<PoliticalParty> parties, out int[] seats,
-            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated)
+            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, DeclarationReading? reading = null)
         {
             parties = null; seats = null; result = null; declarationsSourced = false; reason = null;
             if (country == null) { reason = "no country"; return false; }
@@ -273,12 +289,12 @@ namespace PoliSim.Elections
             // K-1 part (4): where the real government is ON RECORD for the seeded chamber and the game has not voted its own chamber in,
             // it is the government - the formation is not asked. No country carries one yet (SeatedGovernment); Sweden's is provisional,
             // so it falls through to the formation, which is exactly the stand-in the order names.
-            if (vintage == ElectionVintage.Seated && SeatedGovernment.TryInstalled(country, out SeatedGovernment.Record installed))
+            if (reading == null && vintage == ElectionVintage.Seated && SeatedGovernment.TryInstalled(country, out SeatedGovernment.Record installed))
             {
                 declarationsSourced = DeclaredRedLines.IsSourced(country.Id);
                 return SeatedGovernment.TryAsResult(installed, parties, seats, out result, out reason);
             }
-            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage);
+            return TryFormSeats(country.Id, parties, seats, out result, out declarationsSourced, out reason, vintage, reading: reading);
         }
 
         /// <summary>PS-3i (§636, the reader): the declarations of the election that seated the SITTING chamber - the start's until the game holds one, then that election's (the resolver election night uses).</summary>
@@ -288,6 +304,19 @@ namespace PoliSim.Elections
             if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (held.Method != ElectionMethod.NotImplemented && held.Date > latest) { latest = held.Date; } } }
             return latest == DateTime.MinValue ? ElectionVintage.Seated : WorldClock.VintageOfElection(country.Id, latest);
         }
+
+        /// <summary>PS-3i-2c (§653): the polling day of the election that seated the sitting chamber - the game's latest, else the chamber of record's.</summary>
+        public static DateTime SittingPollingDay(Country country)
+        {
+            DateTime latest = DateTime.MinValue;
+            if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (held.Method != ElectionMethod.NotImplemented && held.Date > latest) { latest = held.Date; } } }
+            return latest != DateTime.MinValue ? latest : WorldClock.ElectionDayOf(country.Id, WorldClock.Resolve(country.Id, SittingVintage(country)));   // the seated sentinel resolved to its chamber of record (the reading)
+        }
+
+        /// <summary>PS-3i-2c (ruled 2026-09-29, §653): a mid-term formation's reading on <paramref name="today"/> - the pair lines and candidacies standing
+        /// today, the platforms held to the sitting chamber's election.</summary>
+        public static DeclarationReading SittingReading(Country country, DateTime today) =>
+            DeclarationReading.MidTerm(country.Id, SittingVintage(country), today, SittingPollingDay(country));
 
         /// <summary>PS-3i (§636): the parties red-lined from a sitting cabinet (keys), by the chamber's own declarations - the confidence motion's yes-voters.</summary>
         public static HashSet<string> RedLinedFrom(Country country, IReadOnlyList<string> cabinet, DateTime? asOf = null)
@@ -300,7 +329,7 @@ namespace PoliSim.Elections
             for (int p = 0; p < parties.Count; p++) { if (inCabinet.Contains(parties[p].Abbrev)) { mask |= 1 << p; } }
             // §644: asked on a date, the declarations STANDING on it (§621's timeline, `ForDate`) - the measurement PS-3i-2c puts to Elias; no runtime
             // caller passes one, so the game reads the sitting chamber's election's (§607, §636).
-            List<RedLine> lines = asOf.HasValue ? DeclaredRedLines.ForDate(country.Id, parties, asOf.Value) : DeclaredRedLines.For(country.Id, parties, SittingVintage(country));
+            List<RedLine> lines = asOf.HasValue ? SittingReading(country, asOf.Value).Lines(country.Id, parties) : DeclaredRedLines.For(country.Id, parties, SittingVintage(country));   // §653: the game passes today
             // SUPPORT-BLOCKING LINES ONLY: an in-or-against rule is about investiture - V votes against every cabinet it is not in - and not about toppling one: V's leader said V would not bring Andersson down [C-I9] (the reader, s636).
             int against = CoalitionFormation.RedLinedMask(mask, parties.Count, lines, null);
             for (int p = 0; p < parties.Count; p++) { if ((against & (1 << p)) != 0) { result.Add(parties[p].Abbrev); } }
@@ -318,7 +347,8 @@ namespace PoliSim.Elections
             if (parties == null || parties.Count == 0) { return new View { HasGovernment = false, Reason = "no party system is seeded for this country" }; }
             var seats = new int[parties.Count];
             for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
-            if (!TryFormSeats(country.Id, parties, seats, out CoalitionResult result, out bool sourced, out string reason, SittingVintage(country), extraLines, asOf))
+            if (!TryFormSeats(country.Id, parties, seats, out CoalitionResult result, out bool sourced, out string reason, SittingVintage(country), extraLines,
+                    reading: asOf.HasValue ? SittingReading(country, asOf.Value) : (DeclarationReading?)null))   // §653: the game passes today - the mid-term reading
             {
                 return new View { HasGovernment = false, Reason = reason };
             }
@@ -379,19 +409,22 @@ namespace PoliSim.Elections
         public static bool IsProvisional(Country country) => country?.Government != null ? country.Government.Provisional : SeatedGovernment.IsProvisional(country);
 
         private static bool TryFormSeats(CountryId country, IReadOnlyList<PoliticalParty> parties, int[] seats,
-            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null, DateTime? asOf = null)
+            out CoalitionResult result, out bool declarationsSourced, out string reason, ElectionVintage vintage = ElectionVintage.Seated, IReadOnlyList<RedLine> extraLines = null, DateTime? asOf = null,
+            DeclarationReading? reading = null)
         {
+            // PS-3i-2c (§653): a reading names what is read; without one, the vintage - or everything on the measuring date (§644's instrument).
+            DeclarationReading read = reading ?? (asOf.HasValue ? DeclarationReading.AllOn(country, vintage, asOf.Value) : DeclarationReading.OfVintage(vintage));
             result = null; declarationsSourced = false; reason = null;
             int totalSeats = 0;
             foreach (int s in seats) { totalSeats += s; }
             if (totalSeats <= 0) { reason = "the chamber holds no seats"; return false; }
             double[,] compatibility = Compatibility(parties);
             // §644: asked on a date, the declarations standing on it (the measurement of PS-3i-2c; no runtime caller passes one); else the vintage, an election's.
-            List<RedLine> lines = asOf.HasValue ? DeclaredRedLines.ForDate(country, parties, asOf.Value) : DeclaredRedLines.For(country, parties, vintage);
+            List<RedLine> lines = read.Lines(country, parties);
             if (extraLines != null) { lines.AddRange(extraLines); }   // PS-3i (§636): a refusal made by moving a motion, for the Speaker's round
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: asOf.HasValue ? DeclaredRedLines.InOrAgainstAt(country, parties, asOf.Value) : DeclaredRedLines.InOrAgainstFor(country, parties, vintage));   // K-1f: a party's in-or-against rule, beside the pairs
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: read.Platforms(country, parties));   // K-1f: a party's in-or-against rule, beside the pairs
             return true;
         }
 

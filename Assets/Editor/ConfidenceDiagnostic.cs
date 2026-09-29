@@ -185,16 +185,23 @@ namespace PoliSim.EditorTools
                 Day(); Day();
                 Check(sim.RoundOf(CountryId.Sweden) == null && care.Breaks.Count == breaksNow && sim.ExtraElectionDate == DateTime.MinValue, "the same election opens one round - two more days open nothing (the field's own guard)");
 
-                // The round rides the save (format 35): one opened, asked, and read back as it stood.
+                // The round rides the save (format 36): one opened, asked, and read back as it stood - its reading too (§653).
                 (SimulationManager sim2, Country sweden2) = Open(new GameObject("ConfidenceDiagnostic.4save"));
                 sweden2.PlayerPartyAbbrev = "S";
-                sim2.OpenSpeakerRound(sweden2, ElectionVintage.Sweden2022, "for the save");
+                sim2.OpenSpeakerRound(sweden2, ElectionVintage.Sweden2022, "for the save", midTerm: true);
                 SpeakerRound open = sim2.RoundOf(CountryId.Sweden);
                 Persistence.SaveGame save = Persistence.SaveGameService.CreateSaveGame(sim2, sim2.World, CountryId.Sweden, null);
                 Persistence.SaveGame back = Persistence.SaveGameService.Deserialize(Persistence.SaveGameService.Serialize(save));
                 SpeakerRound loaded = back.World.GetCountry(CountryId.Sweden).Government.Round;
                 Check(open != null && loaded != null && loaded.Asked == open.Asked && loaded.Stage == open.Stage && string.Join(",", loaded.Order) == string.Join(",", open.Order) && loaded.AskedOn == open.AskedOn && loaded.Vintage == open.Vintage,
-                    F("an open round rides the save (format 35): {0} asked, {1}", loaded?.Asked ?? "none", loaded?.Stage.ToString() ?? "no round"));
+                    F("an open round rides the save (format 36): {0} asked, {1}", loaded?.Asked ?? "none", loaded?.Stage.ToString() ?? "no round"));
+                Check(open != null && loaded != null && open.MidTerm && loaded.MidTerm && loaded.ReadsOn == DateTime.MinValue, "§653: a mid-term round's reading rides the save (format 36)");
+                (SimulationManager sim3, Country sweden3) = Open(new GameObject("ConfidenceDiagnostic.4save2"));
+                sweden3.PlayerPartyAbbrev = "S";
+                sim3.OpenSpeakerRound(sweden3, ElectionVintage.Sweden2022, "for the save, after an election", electionDay: new DateTime(2026, 6, 14));
+                SpeakerRound loaded3 = Persistence.SaveGameService.Deserialize(Persistence.SaveGameService.Serialize(Persistence.SaveGameService.CreateSaveGame(sim3, sim3.World, CountryId.Sweden, null))).World.GetCountry(CountryId.Sweden).Government.Round;
+                Check(loaded3 != null && !loaded3.MidTerm && loaded3.ReadsOn == new DateTime(2026, 6, 14), F("§653: a round after an election rides the save with its polling day ({0:yyyy-MM-dd})", loaded3?.ReadsOn ?? DateTime.MinValue));
+                UnityEngine.Object.DestroyImmediate(sim3.gameObject);
                 UnityEngine.Object.DestroyImmediate(sim2.gameObject);
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
@@ -204,10 +211,14 @@ namespace PoliSim.EditorTools
             //    formation says would follow - no doomed motions; a supporter moves nothing - past its tolerance it withdraws first (PS-3i-2a, §644).
             //    Every case asserts both premises of what it shows, and one invariant rides every day walked: a motion an AI party moved carried and the
             //    round it was weighed against seats the mover.
+            var simOf = new Dictionary<Country, SimulationManager>();
             (SimulationManager, Country) Fixture(GameObject host, string player, bool yearThirtyTwo, bool sdAggrieved, string[] cabinetOverride = null, int brokenItems = -1)
             {
-                (SimulationManager s, Country c) = Open(host);
+                // §653: a chamber elected on 13 September 2026 sits after it - the year-32 fixture opens its world on 1 October 2026 (the epoch), so the
+                // mid-term reading reads that chamber's own day (the 2026 lines, the platforms held to its election), never January's.
+                (SimulationManager s, Country c) = Open(host, yearThirtyTwo ? new DateTime(2026, 10, 1) : (DateTime?)null);
                 c.PlayerPartyAbbrev = player;
+                if (yearThirtyTwo) { InstallKristersson(c, s); }
                 if (yearThirtyTwo)
                 {
                     // The pinned film's year-32 count, sitting as if seated by the 13 September 2026 election (its record added, so the round reads that
@@ -216,6 +227,7 @@ namespace PoliSim.EditorTools
                     foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) }) { c.ParliamentSeats[abbrev] = held; }
                     c.ElectionHistory.Add(new ElectionRecord { Date = new DateTime(2026, 9, 13), CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
                 }
+                simOf[c] = s;
                 if (cabinetOverride != null)
                 {
                     c.Government.Cabinet.Clear(); c.Government.Cabinet.AddRange(cabinetOverride); c.Government.Support.Clear(); c.Government.Agreements.Clear();
@@ -227,9 +239,9 @@ namespace PoliSim.EditorTools
                 if (a != null) { for (int i = 0; i < breaks && i < a.Items.Count; i++) { a.Items[i].State = AgreementState.Broken; a.Items[i].BrokenOn = s.CurrentDate; } }
                 return (s, c);
             }
-            // The round and the vote as the manager reads them - the sitting chamber's election's declarations.
-            string Round(Country c) { GovernmentFormation.View v = GovernmentFormation.ViewOfSitting(c, GovernmentFormation.RefusalLines(c.Id, c.Government.StandingRefusals)); return v.HasGovernment ? string.Join("+", v.Cabinet.ConvertAll(x => x.Abbrev)) : "none"; }
-            ConfidenceProcedure.MotionVote VoteOn(Country c, string mover) => ConfidenceProcedure.Vote(c, mover);
+            // The round and the vote as the manager reads them - §653: the mid-term reading on the fixture's own day.
+            string Round(Country c) { GovernmentFormation.View v = GovernmentFormation.ViewOfSitting(c, GovernmentFormation.RefusalLines(c.Id, c.Government.StandingRefusals), simOf[c].CurrentDate); return v.HasGovernment ? string.Join("+", v.Cabinet.ConvertAll(x => x.Abbrev)) : "none"; }
+            ConfidenceProcedure.MotionVote VoteOn(Country c, string mover) => ConfidenceProcedure.Vote(c, mover, simOf[c].CurrentDate);
             bool Seats(Country c, string party) => ("+" + Round(c) + "+").Contains("+" + party + "+");
             void Walk(SimulationManager s, Country c, int days, string label)
             {
@@ -332,27 +344,22 @@ namespace PoliSim.EditorTools
                 Check(cc.Government != start && new HashSet<string>(cc.Government.Cabinet).SetEquals(promised.Split('+')) , F("(c) the week ran out and the round formed {0} - the government SD was promised ({1})", string.Join("+", cc.Government.Cabinet), promised));
                 Check(start.Caretaker, "(c) the fallen government was discharged into a caretaker");
 
-                // (e) the week before the next polling day: no motion is taken up - its week would end across an election.
+                // (e) the week before the next polling day: no motion is taken up - its week would end across an election. §653: on the start's chamber
+                // before the 2026 election, under the ruled reading, the round seats SD only from KD's lift of 8 September - inside the week - so the
+                // week's guard is the one thing that stops the motion there, and it is asserted on those days.
                 var ge = new GameObject("ConfidenceDiagnostic.5e"); hosts.Add(ge);
-                (SimulationManager se, Country ce) = Fixture(ge, "S", yearThirtyTwo: true, sdAggrieved: true);
+                (SimulationManager se, Country ce) = Fixture(ge, "S", yearThirtyTwo: false, sdAggrieved: true);
                 se.TryPlayerPollingDay(out DateTime polling);
-                int guardDays = 0; while (se.CurrentDate < polling.AddDays(-ConfidenceProcedure.ExtraElectionWindowDays) && guardDays++ < 400) { se.AdvanceDay(); }
-                ce.ParliamentSeats.Clear();
-                foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) }) { ce.ParliamentSeats[abbrev] = held; }
-                Check(ce.Government.Support.Contains("SD") && ce.Government.AgreementOf("SD").Count(AgreementState.Broken) > 0, "(e) SD is still an aggrieved supporter on the guard's first day");
+                DateTime kdLift = new DateTime(2026, 9, 8);
+                int guardDays = 0; while (se.CurrentDate < kdLift && guardDays++ < 400) { se.AdvanceDay(); }
+                bool inWeek = se.CurrentDate >= polling.AddDays(-ConfidenceProcedure.ExtraElectionWindowDays) && se.CurrentDate < polling;
+                Check(inWeek && ce.Government.Support.Contains("SD") && ce.Government.AgreementOf("SD").Count(AgreementState.Broken) > 0,
+                    F("(e) {0:yyyy-MM-dd}, KD's lift, falls inside the week before polling day {1:yyyy-MM-dd}; SD is still an aggrieved supporter", se.CurrentDate, polling));
                 se.AdvanceCountryDayTick(CountryId.Sweden);
                 Check(ce.Government.NoConfidenceOn == DateTime.MinValue && Seats(ce, "SD") && VoteOn(ce, "SD").Carried,
                     F("(e) {0:yyyy-MM-dd}, within a week of polling day {1:yyyy-MM-dd}: SD's motion would carry and the round would seat it, and none is taken up", se.CurrentDate, polling));
-
-                // (e+) the positive control: the same fixture a day earlier, outside the guard's week - SD moves.
-                var ge2 = new GameObject("ConfidenceDiagnostic.5e2"); hosts.Add(ge2);
-                (SimulationManager se2, Country ce2) = Fixture(ge2, "S", yearThirtyTwo: true, sdAggrieved: true);
-                se2.TryPlayerPollingDay(out DateTime polling2);
-                int guard2 = 0; while (se2.CurrentDate < polling2.AddDays(-ConfidenceProcedure.ExtraElectionWindowDays - 2) && guard2++ < 400) { se2.AdvanceDay(); }
-                ce2.ParliamentSeats.Clear();
-                foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) }) { ce2.ParliamentSeats[abbrev] = held; }
-                se2.AdvanceDay(); se2.AdvanceCountryDayTick(CountryId.Sweden);
-                Check(ce2.Government.NoConfidenceMover == "SD", F("(e+) {0:yyyy-MM-dd}, eight days before polling day: the same motion is moved - the guard is the week, nothing else", se2.CurrentDate));
+                // (e+) the positive control moved (§653): before the 2026 election no day outside the week seats SD under the ruled reading
+                // (`AiMotionReachDiagnostic` (1)), so the control that SD moves where the week does not apply is (c), on the chamber after the election.
 
                 // (g) a plain opposition mover: SD outside the government with no agreement, the year-32 chamber - its motion carries and the round seats it.
                 var gg = new GameObject("ConfidenceDiagnostic.5g"); hosts.Add(gg);
@@ -371,6 +378,8 @@ namespace PoliSim.EditorTools
                 SpeakerRound roundF = sf.RoundOf(CountryId.Sweden);
                 Check(discharged && mine.Caretaker && roundF != null && roundF.Stage == RoundStage.PlayerAsked && roundF.Asked == "M",
                     F("(f) the prime minister asks to be discharged (6 kap. 8 §): a caretaker at once, and the Speaker's round asks M first - the player ({0})", roundF != null ? string.Join(", ", roundF.Order) : "no round"));
+                Check(roundF != null && roundF.MidTerm && roundF.ReadsOn == DateTime.MinValue,
+                    "(f) §653: the discharge's round is mid-term - the lines and candidacies standing on each day it reads, the platforms held to the sitting chamber's election");
                 // §646: the player tables the government the formation would form with M leading; the vote comes on the fourth day.
                 bool tabled = roundF != null && sf.SubmitFormation(CountryId.Sweden, sf.DraftProposal(cf, roundF, "M"), out ProposalVerdict verdictF, out string notTabled);
                 for (int d = 0; d < SpeakerRound.VoteDays + 1 && cf.Government == mine; d++) { sf.AdvanceDay(); sf.AdvanceCountryDayTick(CountryId.Sweden); }
@@ -388,9 +397,28 @@ namespace PoliSim.EditorTools
             CheckExit.Finish(0);
         }
 
-        private static (SimulationManager, Country) Open(GameObject go)
+        /// <summary>
+        /// §653: the year-32 fixtures sit after the 2026 election (the world opens on 1 October 2026), where no government of record is installed;
+        /// the fixture installs Kristersson's shape - M+KD+L with SD's support, SD's demands to M tabled and all accepted - through the round's own
+        /// builder (`GovernmentRecord.FromProposal`), so the chain runs on the government it was written for.
+        /// </summary>
+        private static void InstallKristersson(Country c, SimulationManager s)
         {
-            WorldClock.ApplyStart(CountryId.Sweden);
+            var proposal = new FormationProposal { Formateur = "M" };
+            proposal.CabinetParties.AddRange(new[] { "M", "KD", "L" });
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in GovernmentRecord.GamsonPosts(c, proposal.CabinetParties, "M")) { proposal.Posts[kv.Key] = kv.Value; }
+            proposal.Supporters.Add("SD");
+            proposal.FreezeTabled(c, s.CurrentDate, s.World);
+            var keys = new List<string>();
+            foreach (AgreementItem item in proposal.TabledOf(c, "SD", s.CurrentDate, s.World)) { keys.Add(SupportAgreement.KeyOf(item)); }
+            proposal.AcceptedDemands["SD"] = keys;
+            c.Government = GovernmentRecord.FromProposal(c, proposal, new[] { "SD" }, CoalitionOutcomeKind.ConfidenceAndSupply, s.CurrentDate,
+                "the fixture (§653): M+KD+L with SD's support, standing on 1 October 2026", WorldClock.ExecutiveKind.Cabinet, "Ulf Kristersson (M)", null, s.World);
+        }
+
+        private static (SimulationManager, Country) Open(GameObject go, DateTime? epoch = null)
+        {
+            if (epoch.HasValue) { SimulationManager.SetEpoch(epoch.Value); } else { WorldClock.ApplyStart(CountryId.Sweden); }
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
             World world = WorldFactory.CreateDefault();

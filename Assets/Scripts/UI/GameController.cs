@@ -6756,9 +6756,12 @@ namespace PoliSim.UI
             // PS-2 (§619): the formation reads the declarations of the election just held - 13 September 2026 reads 2026's dated
             // declarations (K-1f's facts), not the seated 2022 chamber's - through the one resolver the night's board reads too.
             ElectionVintage electionVintage = PoliSim.Elections.WorldClock.VintageOfElection(PlayerCountryId, latest.Date);
-            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry, electionVintage);
+            // PS-3i-2c (ruled 2026-09-29, §653): any election reads the declarations dated at its own polling day - an extra election before the next
+            // ordinary one included (it read the previous chamber's vintage before).
+            PoliSim.Elections.DeclarationReading electionReading = PoliSim.Elections.DeclarationReading.OfElection(PlayerCountryId, latest.Date);
+            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry, electionReading);
             // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
-            GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionVintage);
+            GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionReading);
             // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
             // §641 (the reader): a motion's standing refusals end at the election either way - a new record starts without them, and a record that stands drops them.
             _playerCountry.Government?.StandingRefusals.Clear();
@@ -6774,7 +6777,7 @@ namespace PoliSim.UI
                     _pendingElectionVerdictEndsGame = true;
                     return;
                 }
-                System.Collections.Generic.List<string> order = _simulationManager.SpeakerOrder(_playerCountry, electionVintage);
+                System.Collections.Generic.List<string> order = _simulationManager.SpeakerOrder(_playerCountry, electionReading);
                 string first = order.Count > 0 ? order[0] : null;
                 _pendingElectionVerdict = first == key
                     ? "The Speaker will ask your party first to form a government - the formation sheet opens when the round does. The outgoing government serves on as a caretaker until a proposal wins its investiture."
@@ -6920,7 +6923,7 @@ namespace PoliSim.UI
                 // Item 3: who governs - the formation on the chamber the election just set, the same one the verdict was read from,
                 // on the election's own declarations (PS-2, §619).
                 System.DateTime pollingDay = _simulationManager.CurrentDate;
-                GovernmentFormation.View government = GovernmentFormation.ViewOf(_playerCountry, PoliSim.Elections.WorldClock.VintageOfElection(PlayerCountryId, pollingDay));
+                GovernmentFormation.View government = GovernmentFormation.ViewOf(_playerCountry, PoliSim.Elections.DeclarationReading.OfElection(PlayerCountryId, pollingDay));   // §653
 
                 // §7 of the political-system spec (PS-2, §619): HISTORY AS THE REFERENCE - what actually happened at this election, where the
                 // record holds it (the first election of a Sweden game is 13 September 2026, K-1's sourced result); a later one has no history.
@@ -11580,7 +11583,7 @@ namespace PoliSim.UI
             {
                 case PoliSim.Elections.PlayerRole.Opposition:
                     if (g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || extra != System.DateTime.MinValue) { break; }
-                    PoliSim.Elections.ConfidenceProcedure.MotionVote projected = PoliSim.Elections.ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev);
+                    PoliSim.Elections.ConfidenceProcedure.MotionVote projected = PoliSim.Elections.ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
                     bool takenUp = PoliSim.Elections.ConfidenceProcedure.CanBeTakenUp(_playerCountry, _playerCountry.PlayerPartyAbbrev, out int moverSeats, out int tenth);
                     string sentence = takenUp
                         ? string.Format(CultureInfo.InvariantCulture, "A motion of no confidence in the prime minister would have {0} of {1} members for it; it needs {2}.", projected.For, projected.Members, projected.Needed)

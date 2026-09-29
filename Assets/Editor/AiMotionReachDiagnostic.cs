@@ -34,10 +34,10 @@ namespace PoliSim.EditorTools
             string Describe(GovernmentFormation.View v) => v == null || !v.HasGovernment ? "none" : string.Join("+", v.Cabinet.ConvertAll(c => c.Abbrev)) + (v.Support.Count > 0 ? " with " + string.Join("+", v.Support.ConvertAll(c => c.Abbrev)) : "");
             using IDisposable epoch = SimulationManager.EpochScope();
             var hosts = new List<GameObject>();
-            (SimulationManager, Country) Open(string name)
+            (SimulationManager, Country) Open(string name, DateTime? epoch = null)
             {
                 var go = new GameObject(name); hosts.Add(go);
-                WorldClock.ApplyStart(CountryId.Sweden);
+                if (epoch.HasValue) { SimulationManager.SetEpoch(epoch.Value); } else { WorldClock.ApplyStart(CountryId.Sweden); }
                 SimulationRandom.Seed(777);
                 EnergyMarket.ResetCalibration();
                 World world = WorldFactory.CreateDefault();
@@ -69,9 +69,11 @@ namespace PoliSim.EditorTools
                 IReadOnlyList<PoliticalParty> ps = PartySystems.For(CountryId.Sweden);
                 var seats = new int[ps.Count];
                 for (int p = 0; p < ps.Count; p++) { seats[p] = sweden.ParliamentSeats.TryGetValue(ps[p].Abbrev, out int h) ? h : 0; }
-                GovernmentFormation.View asRead = GovernmentFormation.ViewOfSitting(sweden);
+                // §653: as the game reads it - the mid-term reading on today's date (the lines standing today, the platforms held to 2022's election).
+                GovernmentFormation.View asRead = GovernmentFormation.ViewOfSitting(sweden, null, sim.CurrentDate);
                 bool seatedAsRead = asRead.HasGovernment && asRead.Cabinet.Exists(c => c.Abbrev == "SD");
-                ConfidenceProcedure.MotionVote sdAsRead = ConfidenceProcedure.Vote(sweden, "SD");
+                ConfidenceProcedure.MotionVote sdAsRead = ConfidenceProcedure.Vote(sweden, "SD", sim.CurrentDate);
+                bool ruledSeatsBeforeWeek = false;
                 sb.Append(F("    as read   the sitting chamber's election's declarations: SD's motion {0}/{1}, the round {2}\n", sdAsRead.For, sdAsRead.Needed, Describe(asRead)));
                 // Every stretch of the timeline between the start and polling day: the start, and each day a dated declaration starts or ends (the second reader).
                 sim.TryPlayerPollingDay(out DateTime polling);
@@ -93,13 +95,14 @@ namespace PoliSim.EditorTools
                         : string.Join("+", CoalitionFormation.Members(platformless.Government.Cabinet, ps.Count).ConvertAll(i => ps[i].Abbrev))
                           + (platformless.Government.Support != 0 ? " with " + string.Join("+", CoalitionFormation.Members(platformless.Government.Support, ps.Count).ConvertAll(i => ps[i].Abbrev)) : "");
                     bool beforeWeek = d < polling.AddDays(-ConfidenceProcedure.ExtraElectionWindowDays);
+                    if (beforeWeek && dated.HasGovernment && dated.Cabinet.Exists(c => c.Abbrev == "SD")) { ruledSeatsBeforeWeek = true; }
                     if (beforeWeek && platformless.Outcome != CoalitionOutcomeKind.NewElection && CoalitionFormation.Members(platformless.Government.Cabinet, ps.Count).Exists(i => ps[i].Abbrev == "SD")) { platformlessSeatsBeforeWeek = true; }
                     sb.Append(F("    by date   {0:yyyy-MM-dd}{5}: SD's motion {1}/{2}; the round on the day's timeline {3}; without the platforms' rules {4}\n", d, v.For, v.Needed, Describe(dated), pl, beforeWeek ? "" : " (in the week before polling day)"));
                 }
                 sb.Append(F("    measured  without the platforms' rules, the round seats SD before the week that takes up no motion: {0}\n", platformlessSeatsBeforeWeek ? "YES" : "no"));
                 sweden.Government = start;
-                Check(!seatedAsRead && sdAsRead.Carried,
-                    F("(1) the premise of PS-3i-2c: SD's motion carries, and the round as the game reads it ({0}) seats SD on no date before the election - the reading is Elias's to rule", Describe(asRead)));
+                Check(!seatedAsRead && sdAsRead.Carried && !ruledSeatsBeforeWeek,
+                    F("(1) PS-3i-2c as ruled (§653: the lines standing on the day, the platforms held to the sitting election): SD's motion carries, and the round ({0}) seats SD on no day before the week that takes up no motion - from the start's chamber an AI motion stays out of reach before the 2026 election", Describe(asRead)));
 
                 sweden.PlayerPartyAbbrev = "M";
                 AgreementItem dial = start.AgreementOf("SD")?.Items.Find(i => i.Kind == AgreementItemKind.Dial && i.Dial == AgreementDial.BorderEnforcement);
@@ -128,7 +131,10 @@ namespace PoliSim.EditorTools
             // (3): the ruled chain, on the chamber where the round seats SD.
             void Chain()
             {
-                (SimulationManager sim, Country sweden) = Open("AiMotionReachDiagnostic.chain");
+                // §653: the chamber sits after its election - the world opens on 1 October 2026 (the epoch), so the mid-term reading reads its own day.
+                (SimulationManager sim, Country sweden) = Open("AiMotionReachDiagnostic.chain", new DateTime(2026, 10, 1));
+                sweden.PlayerPartyAbbrev = "M";
+                InstallKristersson(sweden, sim);
                 sweden.ParliamentSeats.Clear();
                 foreach ((string abbrev, int held) in new[] { ("S", 94), ("SD", 63), ("M", 70), ("V", 27), ("C", 24), ("KD", 27), ("MP", 24), ("L", 20) }) { sweden.ParliamentSeats[abbrev] = held; }
                 sweden.ElectionHistory.Add(new ElectionRecord { Date = new DateTime(2026, 9, 13), CountryId = CountryId.Sweden.ToString(), Method = ElectionMethod.SwedenTwoTier });
@@ -136,7 +142,7 @@ namespace PoliSim.EditorTools
                 GovernmentRecord start = sweden.Government;
                 SupportAgreement sd = start.AgreementOf("SD");
                 AgreementItem dial = sd?.Items.Find(i => i.Kind == AgreementItemKind.Dial);
-                GovernmentFormation.View round = GovernmentFormation.ViewOfSitting(sweden);
+                GovernmentFormation.View round = GovernmentFormation.ViewOfSitting(sweden, null, sim.CurrentDate);
                 Check(start.PmParty == "M" && start.Support.Contains("SD") && sim.PlayerGoverns(sweden) && dial != null && round.HasGovernment && round.Cabinet.Exists(c => c.Abbrev == "SD"),
                     F("(3) the premise: M leads {0} with SD's support, the player governs, and the round on this chamber would seat SD ({1})", string.Join("+", start.Cabinet), Describe(round)));
                 if (dial == null) { return; }
@@ -170,6 +176,25 @@ namespace PoliSim.EditorTools
                 Check(discharged && start.Caretaker && sweden.Government != start && sweden.Government.Cabinet.Contains("SD"),
                     F("(3) the player's government asks to be discharged and falls: a caretaker until the Speaker's round installs {0} led by {1}, which seats SD ({2})", string.Join("+", sweden.Government.Cabinet), sweden.Government.PmParty, whyNot ?? "discharged"));
             }
+        }
+
+        /// <summary>
+        /// §653: the year-32 fixtures sit after the 2026 election (the world opens on 1 October 2026), where no government of record is installed;
+        /// the fixture installs Kristersson's shape - M+KD+L with SD's support, SD's demands to M tabled and all accepted - through the round's own
+        /// builder (`GovernmentRecord.FromProposal`), so the chain runs on the government it was written for.
+        /// </summary>
+        private static void InstallKristersson(Country c, SimulationManager s)
+        {
+            var proposal = new FormationProposal { Formateur = "M" };
+            proposal.CabinetParties.AddRange(new[] { "M", "KD", "L" });
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in GovernmentRecord.GamsonPosts(c, proposal.CabinetParties, "M")) { proposal.Posts[kv.Key] = kv.Value; }
+            proposal.Supporters.Add("SD");
+            proposal.FreezeTabled(c, s.CurrentDate, s.World);
+            var keys = new List<string>();
+            foreach (AgreementItem item in proposal.TabledOf(c, "SD", s.CurrentDate, s.World)) { keys.Add(SupportAgreement.KeyOf(item)); }
+            proposal.AcceptedDemands["SD"] = keys;
+            c.Government = GovernmentRecord.FromProposal(c, proposal, new[] { "SD" }, CoalitionOutcomeKind.ConfidenceAndSupply, s.CurrentDate,
+                "the fixture (§653): M+KD+L with SD's support, standing on 1 October 2026", WorldClock.ExecutiveKind.Cabinet, "Ulf Kristersson (M)", null, s.World);
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

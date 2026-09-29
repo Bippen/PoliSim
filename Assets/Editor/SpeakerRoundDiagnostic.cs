@@ -145,9 +145,39 @@ namespace PoliSim.EditorTools
                 SpeakerRound lapsed = s6.RoundOf(CountryId.Sweden);
                 Check(extraDate != null && lapsed != null && lapsed.Occasion.Contains(ordinary.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)) && s6.ExtraElectionDate == DateTime.MinValue,
                     F("(5) an election held before the ordered extra election opens the round ({0}), and the order lapses", lapsed?.Occasion ?? "none"));
+
+                // (7) PS-3i-2c (ruled 2026-09-29, §653): any election reads the declarations dated at its own polling day. This election falls before
+                // 13 September 2026, where the fallback vintage is 2022's - the §644 reviewer's finding; it now reads its own day's.
+                IReadOnlyList<PoliticalParty> parties7 = PartySystems.For(CountryId.Sweden);
+                DeclarationReading read7 = lapsed != null ? s6.RoundReading(c6, lapsed) : default;
+                bool ownDay = lapsed != null && lapsed.ReadsOn == ordinary.Date && read7.Dated && read7.LinesOn == ordinary.Date && read7.PlatformsOn == ordinary.Date;
+                string fallback = Describe(DeclaredRedLines.InOrAgainstFor(CountryId.Sweden, parties7, WorldClock.VintageOfElection(CountryId.Sweden, ordinary)), parties7);
+                string own = Describe(read7.Platforms(CountryId.Sweden, parties7), parties7);
+                Check(ownDay && own == Describe(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties7, ordinary), parties7) && own != fallback,
+                    F("(7) the election of {0} reads its own day's declarations - platforms [{1}], where the fallback vintage read [{2}]", ordinary.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), own, fallback));
+
+                // (6) a mid-term reading (§653): the pair lines and candidacies standing on the day, the platforms held to the sitting chamber's election.
+                DateTime midDay = new DateTime(2026, 6, 1);
+                DeclarationReading mid = GovernmentFormation.SittingReading(c1, midDay);
+                DateTime sittingDay = GovernmentFormation.SittingPollingDay(c1);
+                int im = IndexOf(parties7, "M"), isd = IndexOf(parties7, "SD");
+                bool msdLifted = !mid.Lines(CountryId.Sweden, parties7).Exists(l => l.Kind == RedLineKind.Declared && ((l.A == im && l.B == isd) || (l.A == isd && l.B == im)));
+                bool msdIn2022 = DeclaredRedLines.For(CountryId.Sweden, parties7, ElectionVintage.Sweden2022).Exists(l => l.Kind == RedLineKind.Declared && ((l.A == im && l.B == isd) || (l.A == isd && l.B == im)));
+                string midPlatforms = Describe(mid.Platforms(CountryId.Sweden, parties7), parties7);
+                Check(mid.Dated && mid.LinesOn == midDay && sittingDay == new DateTime(2022, 9, 11) && mid.PlatformsOn == sittingDay && msdLifted && msdIn2022
+                        && midPlatforms == Describe(DeclaredRedLines.InOrAgainstAt(CountryId.Sweden, parties7, sittingDay), parties7) && !midPlatforms.Contains("MP") && !midPlatforms.Contains("SD"),
+                    F("(6) mid-term on {0}: M's line to SD lifted (it stood in 2022), the platforms held to {1} - [{2}], no 2026 platform", midDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), sittingDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), midPlatforms));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
+            string Describe(List<InOrAgainst> rules, IReadOnlyList<PoliticalParty> ps)
+            {
+                var keys = new List<string>();
+                foreach (InOrAgainst r in rules) { keys.Add(ps[r.Party].Abbrev + (r.VotesAgainst ? string.Empty : "~")); }
+                keys.Sort(string.CompareOrdinal);
+                return string.Join(",", keys);
+            }
+            int IndexOf(IReadOnlyList<PoliticalParty> ps, string key) { for (int i = 0; i < ps.Count; i++) { if (ps[i].Abbrev == key) { return i; } } return -1; }
             if (failures > 0) { Debug.LogError($"SPEAKER ROUND: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);

@@ -34,8 +34,12 @@ namespace PoliSim.Elections
 
         public DateTime OpenedOn;
         public string Occasion;
-        /// <summary>The declarations the round reads - the election's that seated the chamber (§607, §636).</summary>
+        /// <summary>The declarations the round reads - the election's that seated the chamber (§607, §636); a vintage-only reading where neither field below is set.</summary>
         public ElectionVintage Vintage;
+        /// <summary>PS-3i-2c (§653): a round after an election reads everything dated at that election's polling day (this day); MinValue otherwise.</summary>
+        public DateTime ReadsOn;
+        /// <summary>PS-3i-2c (§653): a mid-term round (after a discharge) - the lines and candidacies standing on each day it reads, the platforms held to the sitting chamber's election.</summary>
+        public bool MidTerm;
         /// <summary>Premise 6: the Speaker's order - the formation's prime-minister party, then the other parties with a declared candidate, largest first.</summary>
         public List<string> Order = new List<string>();
         public int Turn = -1;

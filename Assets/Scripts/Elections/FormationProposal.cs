@@ -85,21 +85,29 @@ namespace PoliSim.Elections
     public static class Formateur
     {
         /// <summary>The prepared chamber for a country's sitting seats and a vintage's declarations (with any refusal lines a motion or a decline made).</summary>
-        public static CoalitionFormation.Chamber ChamberOf(Country country, ElectionVintage vintage, IReadOnlyList<RedLine> extraLines, out IReadOnlyList<PoliticalParty> parties)
+        public static CoalitionFormation.Chamber ChamberOf(Country country, ElectionVintage vintage, IReadOnlyList<RedLine> extraLines, out IReadOnlyList<PoliticalParty> parties) =>
+            ChamberOf(country, DeclarationReading.OfVintage(vintage), extraLines, out parties);
+
+        /// <summary>PS-3i-2c (§653): the prepared chamber under a named reading - the round's (an election's polling day, or mid-term).</summary>
+        public static CoalitionFormation.Chamber ChamberOf(Country country, DeclarationReading reading, IReadOnlyList<RedLine> extraLines, out IReadOnlyList<PoliticalParty> parties)
         {
             parties = PartySystems.For(country.Id);
             var seats = new int[parties.Count];
             for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
-            List<RedLine> lines = DeclaredRedLines.For(country.Id, parties, vintage);
+            List<RedLine> lines = reading.Lines(country.Id, parties);
             if (extraLines != null) { lines.AddRange(extraLines); }
-            return CoalitionFormation.Prepare(seats, GovernmentFormation.Compatibility(parties), lines, ChamberRules.UsesNegativeParliamentarism(country.Id), DeclaredRedLines.InOrAgainstFor(country.Id, parties, vintage));
+            return CoalitionFormation.Prepare(seats, GovernmentFormation.Compatibility(parties), lines, ChamberRules.UsesNegativeParliamentarism(country.Id), reading.Platforms(country.Id, parties));
         }
 
         /// <summary>Every invited party's answer to <paramref name="proposal"/>, and the investiture it would face, on <paramref name="vintage"/>'s declarations.</summary>
-        public static ProposalVerdict Answer(Country country, FormationProposal proposal, DateTime date, World world, ElectionVintage vintage, IReadOnlyList<RedLine> extraLines = null, string playersParty = null)
+        public static ProposalVerdict Answer(Country country, FormationProposal proposal, DateTime date, World world, ElectionVintage vintage, IReadOnlyList<RedLine> extraLines = null, string playersParty = null) =>
+            Answer(country, proposal, date, world, DeclarationReading.OfVintage(vintage), extraLines, playersParty);
+
+        /// <summary>PS-3i-2c (§653): <see cref="Answer(Country, FormationProposal, DateTime, World, ElectionVintage, IReadOnlyList{RedLine}, string)"/> under a named reading.</summary>
+        public static ProposalVerdict Answer(Country country, FormationProposal proposal, DateTime date, World world, DeclarationReading reading, IReadOnlyList<RedLine> extraLines = null, string playersParty = null)
         {
             var verdict = new ProposalVerdict();
-            CoalitionFormation.Chamber chamber = ChamberOf(country, vintage, extraLines, out IReadOnlyList<PoliticalParty> parties);
+            CoalitionFormation.Chamber chamber = ChamberOf(country, reading, extraLines, out IReadOnlyList<PoliticalParty> parties);
             verdict.Parties = parties;
             int n = parties.Count;
             int Index(string key) { for (int p = 0; p < n; p++) { if (parties[p].Abbrev == key) { return p; } } return -1; }
@@ -133,7 +141,7 @@ namespace PoliSim.Elections
             }
             Dictionary<string, List<CabinetPortfolio>> gamson = GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, proposal.Formateur);
             var candidacies = new HashSet<string>();
-            foreach ((string abbrev, string _, string _) in DeclaredRedLines.Candidacies(country.Id, vintage)) { candidacies.Add(abbrev); }
+            foreach ((string abbrev, string _, string _) in reading.Candidacies(country.Id)) { candidacies.Add(abbrev); }
             int cabinetSeats = CoalitionMath.Seats(chamber.Seats, cabinet);
             var option = new GovernmentOption(cabinet, 0, CoalitionOutcomeKind.MinorityGovernment, cabinetSeats, cabinetSeats, 0, 0.0, 0.0);
 

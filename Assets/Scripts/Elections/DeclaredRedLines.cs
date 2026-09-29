@@ -336,6 +336,9 @@ namespace PoliSim.Elections
             new DatedFact("KD", "S", FactKind.PairLine, true, true, null, D(2026, 9, 2), Open, KdRefusesAndersson),
         };
 
+        /// <summary>Whether a country's declarations are dated on a timeline (§621) - Sweden's alone; every other country reads its vintage.</summary>
+        public static bool HasTimeline(CountryId country) => country == CountryId.Sweden;
+
         /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden only; the other countries return derived lines alone.</summary>
         public static List<RedLine> ForDate(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
@@ -405,5 +408,59 @@ namespace PoliSim.Elections
 
             return -1;
         }
+    }
+
+    /// <summary>
+    /// PS-3i-2c (ruled 2026-09-29, §653): WHICH DECLARATIONS A FORMATION READS. Where a country's declarations are dated (§621's timeline), the
+    /// pair lines and the candidacies are read on one day and the PLATFORMS - the in-or-against rules and the support role refused, each a party's
+    /// terms for the formation after an election - on another: **any election reads everything dated at its own polling day**; **a mid-term round
+    /// reads the lines and candidacies standing today, with the platforms held to the election that seated the chamber** (they address that
+    /// election's formation, not the next one's until it is held). A country without a timeline reads its vintage, as every formation did before.
+    /// </summary>
+    public readonly struct DeclarationReading
+    {
+        /// <summary>The vintage read where the reading is not dated - and, where it is, the election's that seated the chamber.</summary>
+        public readonly ElectionVintage Vintage;
+        /// <summary>The day the pair lines and candidacies are read on; MinValue where the vintage is read.</summary>
+        public readonly System.DateTime LinesOn;
+        /// <summary>The day the platforms (in-or-against, the support role refused) are read on.</summary>
+        public readonly System.DateTime PlatformsOn;
+
+        private DeclarationReading(ElectionVintage vintage, System.DateTime linesOn, System.DateTime platformsOn)
+        {
+            Vintage = vintage; LinesOn = linesOn; PlatformsOn = platformsOn;
+        }
+
+        public bool Dated => LinesOn != System.DateTime.MinValue;
+
+        /// <summary>A vintage's declarations, whole - the backtests, the start's chamber of record, a country without a timeline.</summary>
+        public static DeclarationReading OfVintage(ElectionVintage vintage) => new DeclarationReading(vintage, System.DateTime.MinValue, System.DateTime.MinValue);
+
+        /// <summary>An election's: everything dated at its own polling day (ruled) - an extra election before the next ordinary one included.</summary>
+        public static DeclarationReading OfElection(CountryId country, System.DateTime pollingDay)
+        {
+            ElectionVintage vintage = WorldClock.VintageOfElection(country, pollingDay);
+            return DeclaredRedLines.HasTimeline(country) ? new DeclarationReading(vintage, pollingDay.Date, pollingDay.Date) : OfVintage(vintage);
+        }
+
+        /// <summary>A mid-term reading: the lines and candidacies standing on <paramref name="today"/>, the platforms held to the sitting chamber's polling day.</summary>
+        public static DeclarationReading MidTerm(CountryId country, ElectionVintage sitting, System.DateTime today, System.DateTime sittingPollingDay) =>
+            DeclaredRedLines.HasTimeline(country) ? new DeclarationReading(sitting, today.Date, sittingPollingDay.Date) : OfVintage(sitting);
+
+        /// <summary>Everything on one day - the measuring instrument §644 built (`AiMotionReachDiagnostic`); no game path reads this way.</summary>
+        public static DeclarationReading AllOn(CountryId country, ElectionVintage vintage, System.DateTime day) => new DeclarationReading(vintage, day.Date, day.Date);
+
+        public List<RedLine> Lines(CountryId country, IReadOnlyList<PoliticalParty> parties) =>
+            Dated ? DeclaredRedLines.ForDate(country, parties, LinesOn) : DeclaredRedLines.For(country, parties, Vintage);
+
+        public List<InOrAgainst> Platforms(CountryId country, IReadOnlyList<PoliticalParty> parties) =>
+            Dated ? DeclaredRedLines.InOrAgainstAt(country, parties, PlatformsOn) : DeclaredRedLines.InOrAgainstFor(country, parties, Vintage);
+
+        public IReadOnlyList<(string Abbrev, string Candidate, string Basis)> Candidacies(CountryId country) =>
+            Dated ? DeclaredRedLines.CandidaciesAt(country, LinesOn) : DeclaredRedLines.Candidacies(country, Vintage);
+
+        public override string ToString() => Dated
+            ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "lines and candidacies of {0:yyyy-MM-dd}, platforms of {1:yyyy-MM-dd}", LinesOn, PlatformsOn)
+            : "the " + Vintage + " declarations";
     }
 }
