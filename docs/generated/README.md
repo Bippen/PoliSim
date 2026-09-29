@@ -10,6 +10,7 @@ convention's GENERATED destination (`CLAUDE.md`): a derived figure lives in a ma
 | `docs/generated/BUDGET_PREMISE.md` | `PoliSim.EditorTools.BudgetPremiseDump` | `-executeMethod PoliSim.EditorTools.BudgetPremiseDump.Run [-premiseout=<path>]` |
 | `docs/generated/ENERGY_LAYER_PREMISE.md` | `PoliSim.EditorTools.EnergyLayerDump` | `-executeMethod PoliSim.EditorTools.EnergyLayerDump.Run [-energyout=<path>]` |
 | `docs/generated/POTENTIAL_PREMISE.md` | `PoliSim.EditorTools.PotentialPremiseDump` | `-executeMethod PoliSim.EditorTools.PotentialPremiseDump.Run` |
+| `docs/generated/UI_V33_BASELINE.tsv` | `Tools/text_baseline.pl` (from a dry film's label table, §648) | `perl Tools/text_baseline.pl rank ../PoliSim-captures/labels/drys648_sweden_1280_labels.tsv > docs/generated/UI_V33_BASELINE.tsv` |
 
 Each runs `Unity.exe -batchmode -nographics -projectPath <path> -executeMethod <above> -logFile <log>`.
 All four moved here from the repository root on 2026-09-22 (`COMPLETED.md` §579) and their tools' default
