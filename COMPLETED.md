@@ -34715,3 +34715,18 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Standing rule** (CLAUDE.md, beside §643's): at a session's end, drafted-but-unapplied work goes to a `wip/<date>-<item>` branch, pushed, never `main` - §657's page and §658's measurement survived in a scratchpad only by luck.
 
 **Bars.** Tier tooling + documents: cheap bar 64 of 64 (`cheap659`), residue 0.
+
+
+## 660. PS-3i-2a ON THE C-SUPPORTED CABINET: THE ROUND NEVER ASKS M ON THE REAL RESULT; FROM A STATED STAND-IN ASK, C'S ITEMS BREAK ON THE SECOND BUDGET VOTE AND C WITHDRAWS; ITS MOTION WOULD CARRY 176 OF 175 WITH SD ABSTAINING, AND IS NEVER MOVED - THE SUCCESSOR DOES NOT SEAT C (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *"No supporter to withdraw" holds for SD only. Prove the chain on M+KD+L with C as its only support: the staged real-result chamber, the formateur's own verbs, the player as M forming M+KD+L on C's agreement; deliver nothing, let two budget votes pass, watch C's items break; then whether C withdraws and the motion carries. Report the count and SD's stance. Don't change the break count or the seats; if the motion falls short, record that as the result.*
+
+**Measured** (`AiMotionReachDiagnostic` (6), epoch 1 October 2026 - the chamber the real result seats: S 99, SD 62, M 70, V 30, C 25, KD 22, MP 22, L 19):
+- **The premise, as the game plays: M is never asked.** The Speaker's round opened as after the election (`OpenSpeakerRound`, the election's own day's declarations) orders S, M; S tables S alone on 8 October and the Riksdag approves it on 12 October (RF 6 kap. 4 §) - the player as M never becomes formateur on this chamber.
+- **From a STAND-IN, stated:** a fresh world, the same chamber and round, the Speaker's ask set to M (seats and break count untouched); everything after is the game's own verbs. M tables M+KD+L with C's support, C's four demands accepted (four law items), through `PreviewFormation` and `SubmitFormation`; the Riksdag installs it on 5 October.
+- **Delivering nothing** (the standing budget tabled at every window): budget vote 1 on 23 October (passed) - C's items owed through 1; budget vote 2 on 13 November (passed) - **all four break**; **C withdraws** the same day.
+- **The motion:** C's, as the model counts it - **176 for, 111 against, 62 abstaining; 175 needed - it would CARRY. SD abstains.** **No motion is moved** in 90 further days: the round's successor is **S alone**, which does not seat C, and an AI mover moves only a motion whose successor it prefers (ruling (2), §641). The chain stops one step short of the fall - recorded as the result.
+
+**Pinned.** Part (6) asserts the premise's failure on the round's own order, C's items breaking on budget vote 2 with C's withdrawal, and the motion that would carry with SD abstaining and is not moved because the successor does not seat C. The rows amended: PS-3i-2a and PS-3's done-when.
+
+**Tooling tier** (`bar_tier.ps1`: one Editor diagnostic): cheap bar 64 of 64 (`cheap660`, part (6) among it), residue 0.

@@ -22,6 +22,8 @@ namespace PoliSim.EditorTools
     /// seated by the 2026 election, the start's government in office): the player as M; the dial stood past its tolerance (the breach stood in, as
     /// PS-3i-2b is open) and read by the day's tracker; SD withdraws past its tolerated share; SD moves and the motion carries; the player's
     /// government asks to be discharged and falls to the successor, which seats SD.</para>
+    /// <para>(4)-(6), §655, §658, §660: the real game before and after 2026; C as the only support measured; and the chain on the C-supported
+    /// cabinet - the round's own order first (the premise), then from a stated stand-in ask.</para>
     /// </summary>
     public static class AiMotionReachDiagnostic
     {
@@ -52,6 +54,7 @@ namespace PoliSim.EditorTools
                 Chain();
                 RealGame();
                 CAsSupport();
+                CChain();
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
@@ -157,6 +160,109 @@ namespace PoliSim.EditorTools
                         verdict.Passes ? "PASSES" : "FAILS" + (string.IsNullOrEmpty(verdict.Reason) ? string.Empty : " (" + verdict.Reason + ")")));
                     Check(verdict.Answers.Count > 0, F("(5) measured: {0} with C's support answered ({1}) - recorded, asserted neither way", string.Join("+", cabinet), verdict.Passes ? "passes" : "fails"));
                 }
+            }
+
+            // (6) PS-3i-2a ON THE C-SUPPORTED CABINET (ruled 2026-09-29, §660): the chamber the real 2026 result seats (epoch 1 October 2026), the
+            // Speaker's round opened as after the election, the player as M forming M+KD+L on C's agreement by the formateur's own verbs (the preview,
+            // then the tabling and the fourth day's vote); then the game's day path, the standing budget tabled at every window and nothing delivered,
+            // until C withdraws and a motion is weighed. The break count and the seats are the game's; every step is logged, the outcome as it falls.
+            void CChain()
+            {
+                (SimulationManager sim, Country sweden) = Open("AiMotionReachDiagnostic.cchain", new DateTime(2026, 10, 1));
+                sweden.PlayerPartyAbbrev = "M";
+                var seatLine = new List<string>(); foreach (KeyValuePair<string, int> kv in sweden.ParliamentSeats) { seatLine.Add(kv.Key + " " + kv.Value); }
+                sb.Append(F("    c-chain   the chamber: {0}; the government before the round: {1}\n", string.Join(", ", seatLine),
+                    sweden.Government == null ? "none" : string.Join("+", sweden.Government.Cabinet) + (sweden.Government.Caretaker ? " (caretaker)" : string.Empty)));
+                DateTime held = new DateTime(2026, 9, 13);
+                sim.OpenSpeakerRound(sweden, WorldClock.VintageOfElection(CountryId.Sweden, held), $"after the election of {held:yyyy-MM-dd}", electionDay: held);
+                SpeakerRound round = sim.RoundOf(CountryId.Sweden);
+                sb.Append(F("    c-chain   the round: order {0}; asked {1} ({2})\n", round == null ? "-" : string.Join(", ", round.Order), round?.Asked ?? "-", round?.Stage.ToString() ?? "no round"));
+                // The round runs its own days until the Speaker asks M: a party asked before M tables its proposal and the Riksdag votes on it.
+                int logged = round?.Log.Count ?? 0;
+                for (int d = 0; d < 60 && round != null && round.Open && round.Stage != RoundStage.PlayerAsked; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); round = sim.RoundOf(CountryId.Sweden) ?? round; }
+                if (round != null) { for (int i = logged; i < round.Log.Count; i++) { sb.Append("    c-chain   round: ").Append(round.Log[i]).Append('\n'); } }
+                if (round == null || round.Stage != RoundStage.PlayerAsked)
+                {
+                    // THE PREMISE, MEASURED: on this chamber the round's own order never reaches M - recorded as the result. What follows the ask is then
+                    // measured on a STAND-IN, stated: a fresh world, the same chamber and round, the Speaker's ask set to M (the seats and the break count
+                    // untouched); every step after it is the game's own verb.
+                    sb.Append(F("    c-chain   {0:yyyy-MM-dd} RESULT: M is never asked - {1}\n", sim.CurrentDate, sweden.Government == null ? "no government" : string.Join("+", sweden.Government.Cabinet) + " installed by the round"));
+                    Check(round != null && sweden.Government != null && !sweden.Government.Cabinet.Contains("M"),
+                        F("(6) measured: on the real-result chamber the round ({0}) installs {1} before it asks M - the premise fails as the game plays", round == null ? "-" : string.Join(", ", round.Order), sweden.Government == null ? "none" : string.Join("+", sweden.Government.Cabinet)));
+                    (sim, sweden) = Open("AiMotionReachDiagnostic.cchain.standin", new DateTime(2026, 10, 1));
+                    sweden.PlayerPartyAbbrev = "M";
+                    sim.OpenSpeakerRound(sweden, WorldClock.VintageOfElection(CountryId.Sweden, held), $"after the election of {held:yyyy-MM-dd}", electionDay: held);
+                    round = sim.RoundOf(CountryId.Sweden);
+                    if (round == null || !round.Order.Contains("M")) { Check(false, "(6) STAND-IN: the round holds no M to ask"); return; }
+                    round.Turn = round.Order.IndexOf("M"); round.Asked = "M"; round.AskedOn = sim.CurrentDate; round.Stage = RoundStage.PlayerAsked;
+                    round.Log.Add($"{sim.CurrentDate:yyyy-MM-dd}: STAND-IN (AiMotionReachDiagnostic (6)) - the Speaker asks M");
+                    sb.Append(F("    c-chain   {0:yyyy-MM-dd} STAND-IN from here: the Speaker's ask set to M on the same chamber\n", sim.CurrentDate));
+                }
+
+                var proposal = new FormationProposal { Formateur = "M" };
+                proposal.CabinetParties.AddRange(new[] { "M", "KD", "L" });
+                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in GovernmentRecord.GamsonPosts(sweden, proposal.CabinetParties, "M")) { proposal.Posts[kv.Key] = kv.Value; }
+                proposal.Supporters.Add("C");
+                sim.PreviewFormation(CountryId.Sweden, proposal);   // freezes C's tabled demands, as the sheet does
+                var keys = new List<string>();
+                foreach (AgreementItem item in proposal.TabledOf(sweden, "C", sim.CurrentDate, sim.World)) { keys.Add(SupportAgreement.KeyOf(item)); }
+                proposal.AcceptedDemands["C"] = keys;
+                bool tabled = sim.SubmitFormation(CountryId.Sweden, proposal, out ProposalVerdict verdict, out string notTabled);
+                sb.Append(F("    c-chain   {0:yyyy-MM-dd} M tables M+KD+L with C's support, {1} demand(s) accepted ({2}): {3}\n", sim.CurrentDate, keys.Count, string.Join(", ", keys), tabled ? "tabled" : notTabled));
+                GovernmentRecord before = sweden.Government;
+                for (int d = 0; d < 30 && sweden.Government == before; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
+                GovernmentRecord g = sweden.Government;
+                SupportAgreement c = g?.AgreementOf("C");
+                bool formed = tabled && g != null && g != before && g.PmParty == "M" && g.Support.Contains("C") && c != null;
+                Check(formed, F("(6) the premise: the Riksdag installs M+KD+L with C's support by the round's vote ({0:yyyy-MM-dd}: {1})", sim.CurrentDate, g == null ? "none" : string.Join("+", g.Cabinet) + " with " + string.Join("+", g.Support)));
+                if (!formed) { return; }
+                string Items() { var s = new List<string>(); foreach (AgreementItem i in c.Items) { s.Add(SupportAgreement.KeyOf(i) + " " + i.State + (i.State == AgreementState.Owed ? " (" + i.BudgetVotesOwed + ")" : string.Empty)); } return string.Join(", ", s); }
+                sb.Append(F("    c-chain   C's agreement: {0}\n", Items()));
+
+                var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+                int budgetVotes = 0, days = 0;
+                while (days++ < 1200 && g.Support.Contains("C") && g.NoConfidenceOn == DateTime.MinValue && sweden.Government == g)
+                {
+                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, new BudgetBill()); }
+                    int divisionsBefore = sweden.Divisions.Entries.Count;
+                    if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                    sim.AdvanceCountryDayTick(CountryId.Sweden);
+                    for (int i = divisionsBefore; i < sweden.Divisions.Entries.Count; i++)
+                    {
+                        DivisionRecord dv = sweden.Divisions.Entries[i];
+                        if (!dv.Title.StartsWith("Annual budget", StringComparison.Ordinal)) { continue; }
+                        budgetVotes++;
+                        sb.Append(F("    c-chain   {0:yyyy-MM-dd} budget vote {1} ({2}): C's items {3}\n", dv.Date, budgetVotes, dv.Passed ? "passed" : "failed", Items()));
+                    }
+                }
+                bool withdrew = !g.Support.Contains("C");
+                // After the withdrawal the days run on - a motion is weighed every day (TryAiMotion) - for up to 90 more, or until one is moved.
+                for (int after = 0; withdrew && after < 90 && g.NoConfidenceOn == DateTime.MinValue && sweden.Government == g; after++)
+                {
+                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, new BudgetBill()); }
+                    if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                    sim.AdvanceCountryDayTick(CountryId.Sweden);
+                    days++;
+                }
+                GovernmentFormation.View successor = GovernmentFormation.ViewOfSitting(sweden, GovernmentFormation.RefusalLines(CountryId.Sweden, g.StandingRefusals), sim.CurrentDate);
+                sb.Append(F("    c-chain   the successor the round would form (the mover's preference test): {0} - C {1}\n", Describe(successor),
+                    successor.HasGovernment && successor.Cabinet.Exists(x => x.Abbrev == "C") ? "IN its cabinet" : "not in its cabinet"));
+                sb.Append(F("    c-chain   {0:yyyy-MM-dd} after {1} day(s), {2} budget vote(s): C {3}; {4} broken of {5}\n", sim.CurrentDate, days, budgetVotes,
+                    withdrew ? "WITHDREW" : "still supports", c.Count(AgreementState.Broken), c.Items.Count));
+                ConfidenceProcedure.MotionVote vote = ConfidenceProcedure.Vote(sweden, "C", sim.CurrentDate);
+                DivisionSide sdSide = vote.Sides.Find(s => s.Abbrev == "SD");
+                sb.Append(F("    c-chain   C's motion as the model counts it: {0} for, {1} against, {2} abstaining, {3} needed - {4}; SD {5}\n", vote.For, vote.Against, vote.Abstaining, vote.Needed,
+                    vote.Carried ? "CARRIES" : "FALLS SHORT", sdSide == null ? "not counted" : sdSide.Side > 0 ? "for" : sdSide.Side < 0 ? "against" : "abstains"));
+                DivisionRecord motion = sweden.Divisions.Entries.FindLast(dv => dv.Motion);
+                sb.Append(F("    c-chain   the motion moved: {0}\n", g.NoConfidenceOn == DateTime.MinValue ? "none" : F("{0} on {1:yyyy-MM-dd} - {2}", g.NoConfidenceMover, g.NoConfidenceOn, motion?.Title ?? "no division")));
+                // §660, as measured and pinned: C's owed items break on the second budget vote and C withdraws; C's motion would carry on the count with
+                // SD abstaining - and none is moved, because the round's successor does not seat C (ruling (2), §641: a mover prefers the successor).
+                bool noMotion = g.NoConfidenceOn == DateTime.MinValue;
+                bool cInSuccessor = successor.HasGovernment && successor.Cabinet.Exists(x => x.Abbrev == "C");
+                Check(withdrew && budgetVotes == SupportAgreement.BudgetVotesToBreak && c.Count(AgreementState.Broken) == c.Items.Count,
+                    F("(6) C's {0} owed item(s) break on budget vote {1} and C withdraws its support", c.Items.Count, budgetVotes));
+                Check(vote.Carried && sdSide != null && sdSide.Side == 0 && noMotion && !cInSuccessor,
+                    F("(6) C's motion would carry ({0} of {1} needed, SD abstaining) and none is moved: the successor ({2}) does not seat C, so C does not prefer it", vote.For, vote.Needed, Describe(successor)));
             }
 
             // (4) PS-3i-2a IN A REAL GAME (ruled 2026-09-29, §655: as M, deliver nothing, watch SD withdraw, the motion carry and the government fall), measured
