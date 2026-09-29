@@ -3003,14 +3003,30 @@ namespace PoliSim.Simulation
             Elections.SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
             if (proposal == null || proposal.Formateur != country.PlayerPartyAbbrev) { refusedBecause = "THE PROPOSAL MUST BE YOUR PARTY'S"; return false; }
-            proposal.FreezeTabled(country, CurrentDate, _world);
-            verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+            if (!HoldsTreasury(proposal)) { refusedBecause = "THE PRIME MINISTER'S PARTY HOLDS THE TREASURY"; return false; }
+            verdict = PreviewFormation(countryId, proposal);
             if (verdict.Investiture == null) { refusedBecause = verdict.Reason?.ToUpperInvariant() ?? "THE PROPOSAL IS NOT WELL FORMED"; return false; }
             if (!verdict.AllAccept) { refusedBecause = "NOT EVERY INVITED PARTY ACCEPTS - REVISE AND OFFER AGAIN"; return false; }
             refusedBecause = null;
             Table(round, proposal);
             return true;
         }
+
+        /// <summary>§647: the answer the player's proposal would get if tabled now - the call <see cref="SubmitFormation"/> makes, so the sheet never
+        /// shows a verdict the tabling would not reach (the round's refusal lines, the player's party named). Freezes the supporters' tabled demands.</summary>
+        public Elections.ProposalVerdict PreviewFormation(CountryId countryId, Elections.FormationProposal proposal)
+        {
+            Country country = _world?.GetCountry(countryId);
+            Elections.SpeakerRound round = RoundOf(countryId);
+            if (country == null || round == null || proposal == null) { return null; }
+            if (!HoldsTreasury(proposal)) { return new Elections.ProposalVerdict { AllAccept = false, Reason = "the prime minister's party holds the Treasury" }; }
+            proposal.FreezeTabled(country, CurrentDate, _world);
+            return Elections.Formateur.Answer(country, proposal, CurrentDate, _world, round.Vintage, RoundLines(country, round), country.PlayerPartyAbbrev);
+        }
+
+        /// <summary>§647: the prime minister's party keeps the head of government's portfolio (spec §5.3; <c>AllocatePortfolios</c> gives it first).</summary>
+        public static bool HoldsTreasury(Elections.FormationProposal proposal) =>
+            proposal.Formateur != null && proposal.Posts.TryGetValue(proposal.Formateur, out List<CabinetPortfolio> held) && held.Contains(CabinetPortfolio.FinanceTreasury);
 
         /// <summary>R5: the player, asked, passes - the Speaker asks the next party; nothing is voted, nothing counts.</summary>
         public bool PassFormation(CountryId countryId, out string refusedBecause)

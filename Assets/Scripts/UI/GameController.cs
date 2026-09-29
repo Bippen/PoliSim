@@ -2745,7 +2745,12 @@ namespace PoliSim.UI
             // pieces (e.g. Politics = Parliament[ungated] + Compass[ungated] + Cabinet[gated] +
             // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
             // gate at the right granularity, matching the old per-case behavior exactly.
-            if (_campaignMapScreen.HasValue)
+            AutoOpenFormationSheet();   // §647, premise 1: the Speaker's request opens the sheet
+            if (_formationSheetOpen && FormationSheetAvailable())
+            {
+                DrawFormationSheetStage(tabContentHeight, rightColumnWidth);
+            }
+            else if (_campaignMapScreen.HasValue)
             {
                 // W-E2, same contract as its three siblings below. Two ways in since CL-2: the capture driver stages a snapshot
                 // (a film), and the HQ's masthead opens the LIVE map - re-read from the running state before every draw, as the HQ is.
@@ -11141,6 +11146,245 @@ namespace PoliSim.UI
         private int _formationDraftTurn = -1;
         private string _formationRefusal;
 
+        // =============================================================================================================================================
+        // §647 THE FORMATION SHEET (POLITICAL_SYSTEM_SPEC.md §5.3, premises 1-3): when the Speaker asks the player's party, the player proposes a cabinet
+        // (which parties, which posts to each) and support agreements (which supporters, which of their demands to accept); every invited party's answer
+        // and the investiture's count read live from the evaluator; the proposal tabled, or the turn passed.
+        // =============================================================================================================================================
+
+        private bool _formationSheetOpen;
+        private int _formationDraftVersion;
+        private int _formationVerdictVersion = -1;
+        private PoliSim.Elections.ProposalVerdict _formationVerdict;
+        private Vector2 _formationSheetScrollPosition;
+        private GUIStyle _formationWrapStyle;
+        private GUIStyle _formationRowStyle, _formationRowSource;
+        // Premise 1: the sheet OPENS when the Speaker asks the player's party - once per turn of a round; closed, the desk's Parliament tab reopens it.
+        private PoliSim.Elections.SpeakerRound _formationSheetShownRound;
+        private int _formationSheetShownTurn = -1;
+
+        /// <summary>Whether the sheet can be shown - the Speaker has asked the player's party.</summary>
+        private bool FormationSheetAvailable()
+        {
+            PoliSim.Elections.SpeakerRound round = _simulationManager != null ? _simulationManager.RoundOf(PlayerCountryId) : null;
+            return round != null && round.Stage == PoliSim.Elections.RoundStage.PlayerAsked;
+        }
+
+        private void OpenFormationSheet() { if (FormationSheetAvailable()) { _formationSheetOpen = true; } }
+
+        /// <summary>Premise 1: when the Speaker asks the player's party, the sheet opens - once per turn of a round, so a sheet the player closed stays closed until the next request.</summary>
+        private void AutoOpenFormationSheet()
+        {
+            PoliSim.Elections.SpeakerRound round = _simulationManager != null ? _simulationManager.RoundOf(PlayerCountryId) : null;
+            if (round == null || round.Stage != PoliSim.Elections.RoundStage.PlayerAsked) { return; }
+            if (ReferenceEquals(_formationSheetShownRound, round) && _formationSheetShownTurn == round.Turn) { return; }
+            _formationSheetShownRound = round;
+            _formationSheetShownTurn = round.Turn;
+            _formationSheetOpen = true;
+        }
+
+        /// <summary>The draft the sheet edits - the formation's own proposal with the player leading, made once per turn of the round (§646's DraftProposal).</summary>
+        private PoliSim.Elections.FormationProposal FormationDraft()
+        {
+            PoliSim.Elections.SpeakerRound round = _simulationManager.RoundOf(PlayerCountryId);
+            if (_formationDraft == null || !ReferenceEquals(_formationDraftRound, round) || _formationDraftTurn != round.Turn)
+            {
+                _formationDraft = _simulationManager.DraftProposal(_playerCountry, round, _playerCountry.PlayerPartyAbbrev);
+                _formationDraftRound = round;
+                _formationDraftTurn = round.Turn;
+                _formationRefusal = null;
+                _formationDraftVersion++;
+            }
+            return _formationDraft;
+        }
+
+        /// <summary>The answer the draft would get if tabled now - <see cref="SimulationManager.PreviewFormation"/>, the call the tabling makes; recomputed
+        /// only when the draft changes, so a frame never re-forms the chamber.</summary>
+        private PoliSim.Elections.ProposalVerdict FormationVerdict(PoliSim.Elections.FormationProposal draft)
+        {
+            if (_formationVerdict == null || _formationVerdictVersion != _formationDraftVersion)
+            {
+                _formationVerdict = _simulationManager.PreviewFormation(PlayerCountryId, draft);
+                _formationVerdictVersion = _formationDraftVersion;
+            }
+            return _formationVerdict;
+        }
+
+        /// <summary>
+        /// §647: THE FORMATION SHEET, drawn over the desk's right column. Premise 1: the cabinet and each post; the supporters and their demands.
+        /// Premises 2-3: each invited party's answer with its reason, and the investiture's count - the player revises and offers again until every
+        /// invited party accepts, then tables the proposal (premise 4) or passes. A click is QUEUED and applied after the sheet is drawn: a change
+        /// made mid-event would add or drop rows the Layout event never counted.
+        /// </summary>
+        private void DrawFormationSheetStage(float availableHeight, float availableWidth)
+        {
+            PoliSim.Elections.SpeakerRound round = _simulationManager.RoundOf(PlayerCountryId);
+            if (round == null || round.Stage != PoliSim.Elections.RoundStage.PlayerAsked) { _formationSheetOpen = false; return; }
+            PoliSim.Elections.FormationProposal draft = FormationDraft();
+            PoliSim.Elections.ProposalVerdict verdict = FormationVerdict(draft);
+            string you = _playerCountry.PlayerPartyAbbrev;
+            string Name(string key) => PartySystems.ShortName(_playerCountry.Id, key);
+            GUIStyle heading = DeskCaption(11f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
+            GUIStyle quiet = DeskCaption(9f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleLeft);
+            if (_formationWrapStyle == null) { _formationWrapStyle = new GUIStyle(quiet) { wordWrap = true }; }
+            GUIStyle wrap = _formationWrapStyle;
+            System.Action change = null;
+            const float verbWidth = 150f;
+            if (_formationRowStyle == null || !ReferenceEquals(_formationRowSource, _labelStyle)) { _formationRowStyle = new GUIStyle(_labelStyle) { alignment = TextAnchor.MiddleLeft }; _formationRowSource = _labelStyle; }
+            float rowHeight = _neutralActionButtonStyle.CalcHeight(new GUIContent("Invite"), verbWidth);   // one row height: the name centred on its verb
+            void Fixed(string text) { GUILayout.Label(text, _formationRowStyle, GUILayout.Height(rowHeight)); }
+            bool Verb(string text, string verb)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(text, _formationRowStyle, GUILayout.ExpandWidth(true), GUILayout.Height(rowHeight));
+                bool clicked = PoliSimWidgets.Button(verb, _neutralActionButtonStyle, GUILayout.Width(verbWidth), GUILayout.Height(rowHeight));
+                GUILayout.EndHorizontal();
+                return clicked;
+            }
+
+            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
+            _formationSheetScrollPosition = GUILayout.BeginScrollView(_formationSheetScrollPosition, GUILayout.Height(availableHeight));
+            GUILayout.Label($"THE FORMATION SHEET · THE SPEAKER ASKS {Name(you)} TO FORM A GOVERNMENT", heading);
+            GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "THE ROUND {0} · {1} OF {2} PROPOSALS REJECTED · THE RIKSDAG VOTES ON THE FOURTH DAY AFTER A PROPOSAL IS TABLED",
+                round.Occasion.ToUpperInvariant(), round.Rejections, PoliSim.Elections.SpeakerRound.ProposalLimit), quiet);
+
+            // The cabinet: the player's party fixed in as the formateur; any other seated party invited or not.
+            GUILayout.Space(6f);
+            GUILayout.Label("THE CABINET", caption);
+            Dictionary<string, List<CabinetPortfolio>> gamson = PoliSim.Elections.GovernmentRecord.GamsonPosts(_playerCountry, draft.CabinetParties, you);
+            foreach (PoliticalParty party in PartySystems.For(PlayerCountryId))
+            {
+                if (!_playerCountry.ParliamentSeats.TryGetValue(party.Abbrev, out int seats) || seats <= 0) { continue; }
+                string key = party.Abbrev;
+                bool inCabinet = draft.CabinetParties.Contains(key);
+                string posts = inCabinet ? string.Format(CultureInfo.InvariantCulture, " · OFFERED {0} POST(S), GAMSON'S LAW {1}", draft.PostsOf(key), gamson.TryGetValue(key, out List<CabinetPortfolio> g) ? g.Count : 0) : string.Empty;
+                string text = string.Format(CultureInfo.InvariantCulture, "{0} · {1} SEATS · {2}{3}", Name(key), seats, key == you ? "THE FORMATEUR" : inCabinet ? "IN THE CABINET" : "NOT INVITED", posts);
+                if (key == you) { Fixed(text); continue; }
+                if (Verb(text, inCabinet ? "Leave out" : "Invite"))
+                {
+                    change = () =>
+                    {
+                        if (!inCabinet) { draft.CabinetParties.Add(key); draft.Supporters.Remove(key); draft.AcceptedDemands.Remove(key); return; }
+                        draft.CabinetParties.Remove(key);
+                        if (draft.Posts.TryGetValue(key, out List<CabinetPortfolio> lost))
+                        {
+                            draft.Posts.Remove(key);
+                            if (!draft.Posts.ContainsKey(you)) { draft.Posts[you] = new List<CabinetPortfolio>(); }
+                            draft.Posts[you].AddRange(lost);   // a partner's posts come back to the formateur
+                        }
+                    };
+                }
+            }
+
+            // The posts: each portfolio held by one cabinet party, passed on to the next (premise 2: posts carry their levers, §634). The Treasury stays
+            // the formateur's - the prime minister's party keeps the head of government's post (spec §5.3) - and the formateur never gives its last one away.
+            GUILayout.Space(6f);
+            GUILayout.Label("THE POSTS - EACH CARRIES ITS PORTFOLIO'S LEVERS TO THE PARTY THAT HOLDS IT", caption);
+            foreach (CabinetPortfolio post in (CabinetPortfolio[])System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                string holder = null;
+                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in draft.Posts) { if (kv.Value.Contains(post)) { holder = kv.Key; } }
+                if (holder == null || !draft.CabinetParties.Contains(holder)) { holder = you; }
+                string text = Effectiveness.ShortName(post).ToUpperInvariant() + " · " + Name(holder);
+                int at = draft.CabinetParties.IndexOf(holder);
+                string next = draft.CabinetParties.Count > 0 ? draft.CabinetParties[(at + 1) % draft.CabinetParties.Count] : holder;
+                bool fixedPost = post == CabinetPortfolio.FinanceTreasury || next == holder || (holder == you && draft.PostsOf(you) <= 1);
+                if (fixedPost)
+                {
+                    Fixed(text + (post == CabinetPortfolio.FinanceTreasury ? " · THE PRIME MINISTER'S PARTY" : string.Empty));
+                    continue;
+                }
+                if (Verb(text, "Pass to " + Name(next)))
+                {
+                    string from = holder, to = next;
+                    change = () =>
+                    {
+                        foreach (List<CabinetPortfolio> held in draft.Posts.Values) { held.Remove(post); }
+                        if (!draft.Posts.ContainsKey(to)) { draft.Posts[to] = new List<CabinetPortfolio>(); }
+                        draft.Posts[to].Add(post);
+                    };
+                }
+            }
+
+            // The support: any party outside the cabinet asked to carry it, and which of its tabled demands the formateur accepts - the demands as the
+            // proposal froze them, the ones the answers count.
+            GUILayout.Space(6f);
+            GUILayout.Label("THE SUPPORT - A SUPPORTER TABLES ITS DEMANDS; REFUSE MORE THAN IT TOLERATES AND IT REFUSES", caption);
+            foreach (PoliticalParty party in PartySystems.For(PlayerCountryId))
+            {
+                string key = party.Abbrev;
+                if (draft.CabinetParties.Contains(key) || !_playerCountry.ParliamentSeats.TryGetValue(key, out int seats) || seats <= 0) { continue; }
+                bool supports = draft.Supporters.Contains(key);
+                if (Verb(Name(key) + (supports ? " · SUPPORTS FROM OUTSIDE" : " · NOT ASKED"), supports ? "Leave out" : "Ask to support"))
+                {
+                    change = () =>
+                    {
+                        if (supports) { draft.Supporters.Remove(key); draft.AcceptedDemands.Remove(key); return; }
+                        draft.Supporters.Add(key);
+                        draft.AcceptedDemands[key] = new List<string>();
+                        draft.FreezeTabled(_playerCountry, _simulationManager.CurrentDate, _world);
+                    };
+                }
+                if (!supports || !draft.Tabled.TryGetValue(key, out List<PoliSim.Elections.AgreementItem> tabled)) { continue; }
+                draft.AcceptedDemands.TryGetValue(key, out List<string> accepted);
+                foreach (PoliSim.Elections.AgreementItem item in tabled)
+                {
+                    string demand = PoliSim.Elections.SupportAgreement.KeyOf(item);
+                    bool yes = accepted != null && accepted.Contains(demand);
+                    if (Verb("      " + (yes ? "ACCEPTED · " : "REFUSED · ") + (item.Name ?? item.LawId), yes ? "Refuse" : "Accept"))
+                    {
+                        change = () =>
+                        {
+                            if (!draft.AcceptedDemands.TryGetValue(key, out List<string> list)) { list = new List<string>(); draft.AcceptedDemands[key] = list; }
+                            if (yes) { list.Remove(demand); } else { list.Add(demand); }
+                        };
+                    }
+                }
+            }
+
+            // The answers and the count (premises 3-4).
+            GUILayout.Space(6f);
+            GUILayout.Label("THE ANSWERS", caption);
+            if (verdict == null || verdict.Investiture == null) { GUILayout.Label(verdict?.Reason ?? "the proposal is not well formed", wrap); }
+            if (verdict != null)
+            {
+                foreach (PoliSim.Elections.PartyAnswer answer in verdict.Answers)
+                {
+                    GUILayout.Label(Name(answer.Party) + " · " + answer.Reason, wrap);   // the reason leads with its own verb (accepts / refuses)
+                }
+            }
+            if (verdict?.Investiture != null)
+            {
+                GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "THE INVESTITURE, AS IT WOULD STAND: {0} CARRYING IT, {1} AGAINST - {2}", verdict.Investiture.SupportedSeats, verdict.Investiture.OpposedSeats,
+                    verdict.Investiture.Wins ? "IT WOULD PASS" : "IT WOULD FAIL"), caption);
+            }
+            if (_formationRefusal != null) { GUILayout.Label(_formationRefusal, wrap); }
+
+            bool allAccept = verdict != null && verdict.AllAccept;
+            GUILayout.Space(8f);
+            if (DrawSentenceAction(allAccept ? "Every invited party accepts. Tabled, the Riksdag votes on the fourth day." : "Not every invited party accepts - revise the offer, or table it once they do.",
+                    "Table it", allAccept, _implementButtonStyle))
+            {
+                if (_simulationManager.SubmitFormation(PlayerCountryId, draft, out _, out string refused)) { _formationSheetOpen = false; }
+                else { _formationRefusal = refused; }
+            }
+            if (DrawSentenceAction("Or pass, and the Speaker asks the next party.", "Pass", true, _removeButtonStyle))
+            {
+                if (_simulationManager.PassFormation(PlayerCountryId, out string refused)) { _formationSheetOpen = false; } else { _formationRefusal = refused; }
+            }
+            if (DrawSentenceAction("Closed, the clock still waits on your answer; the Parliament tab opens the sheet again.", "Close the sheet", true, _neutralActionButtonStyle)) { _formationSheetOpen = false; }
+            GUILayout.EndScrollView();
+            GUILayout.EndVertical();
+
+            if (change != null)
+            {
+                change();
+                _formationDraftVersion++;
+                _formationRefusal = null;   // a revised offer is answered afresh
+            }
+        }
+
         /// <summary>
         /// §646 (premises 1, 4-5): THE SPEAKER'S ROUND on the Parliament tab - who is asked, the proposal and the day the Riksdag votes on it, the
         /// proposals rejected to RF 6:5's limit; an offer to the player's party, to accept or decline; and when the player's party is asked, the
@@ -11180,17 +11424,11 @@ namespace PoliSim.UI
                     }
                     break;
                 case PoliSim.Elections.RoundStage.PlayerAsked:
-                    if (_formationDraft == null || !ReferenceEquals(_formationDraftRound, round) || _formationDraftTurn != round.Turn)
+                    PoliSim.Elections.FormationProposal current = FormationDraft();
+                    string drafted = string.Join("+", current.CabinetParties.ConvertAll(Name)) + (current.Supporters.Count > 0 ? " with " + string.Join("+", current.Supporters.ConvertAll(Name)) + " supporting" : string.Empty);
+                    if (DrawSentenceAction("The Speaker asks your party to form a government. The sheet opens on " + drafted + ", the formation's own proposal with your party leading.", "Open the formation sheet", true, _implementButtonStyle))
                     {
-                        _formationDraft = _simulationManager.DraftProposal(_playerCountry, round, _playerCountry.PlayerPartyAbbrev);
-                        _formationDraftRound = round;
-                        _formationDraftTurn = round.Turn;
-                        _formationRefusal = null;
-                    }
-                    string draft = string.Join("+", _formationDraft.CabinetParties.ConvertAll(Name)) + (_formationDraft.Supporters.Count > 0 ? " with " + string.Join("+", _formationDraft.Supporters.ConvertAll(Name)) + " supporting" : string.Empty);
-                    if (DrawSentenceAction("The Speaker asks your party to form a government. The formation would propose " + draft + (_formationRefusal != null ? " - " + _formationRefusal.ToLowerInvariant() : "."), "Propose it", true, _implementButtonStyle))
-                    {
-                        if (!_simulationManager.SubmitFormation(PlayerCountryId, _formationDraft, out _, out string refused)) { _formationRefusal = refused; Debug.Log($"SPEAKER: the proposal was not tabled - {refused}"); }
+                        OpenFormationSheet();
                     }
                     if (DrawSentenceAction("Or pass, and the Speaker asks the next party.", "Pass", true, _removeButtonStyle))
                     {

@@ -845,6 +845,88 @@ namespace PoliSim.Testing
                         AssertMapLabelSeparation(controller, stem);
                     }
 
+                    // §647 (POLITICAL_SYSTEM_SPEC.md §5.3, premise 1): THE FORMATION SHEET. The warm-up election opens the Speaker's round with the film's
+                    // party in opposition, so the Speaker never asks it; the sheet is staged the §630 way - the party re-seated as the first in the round's
+                    // order, a round opened on the same chamber and declarations, filmed, then the film's round and party put back.
+                    if (stem == "07a_politics_parliament")
+                    {
+                        SimulationManager roundSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                        Country roundCountry = roundSim?.World?.GetCountry(_countryId);
+                        if (roundSim != null && roundCountry != null && roundSim.RoundsApply(_countryId))
+                        {
+                            Expect(stem + "_formation_sheet", stem + "_formation_sheet_rows", stem + "_formation_sheet_revised", stem + "_speaker_asks");   // TL-1: a country with rounds reaches these
+                            SpeakerRound filmRound = roundSim.RoundOf(_countryId);
+                            if (filmRound == null || filmRound.Order.Count == 0)
+                            {
+                                Debug.LogError($"SHOT: {stem} - no Speaker's round is open after the warm-up election; the formation sheet is not filmed.");
+                                _failed++;
+                            }
+                            else
+                            {
+                                GovernmentRecord roundRecord = roundCountry.Government;
+                                string partyBefore = roundCountry.PlayerPartyAbbrev;
+                                roundCountry.PlayerPartyAbbrev = filmRound.Order[0];
+                                roundSim.OpenSpeakerRound(roundCountry, filmRound.Vintage, "for the film");
+                                SpeakerRound staged = roundSim.RoundOf(_countryId);
+                                Debug.Log($"SHOT: §647 - {partyBefore} re-seated as {roundCountry.PlayerPartyAbbrev}, first in the order ({string.Join(", ", filmRound.Order)}); the staged round's stage {staged?.Stage}");
+                                FieldInfo sheetOpen = controller.GetType().GetField("_formationSheetOpen", BindingFlags.Instance | BindingFlags.NonPublic);
+                                ResetScrolls(controller);
+                                yield return Settle();
+                                if (!(sheetOpen?.GetValue(controller) is bool opened) || !opened)
+                                {
+                                    Debug.LogError($"SHOT: {stem}_formation_sheet - the Speaker asked the player's party and the sheet did not open (premise 1).");
+                                    _failed++;
+                                }
+                                yield return Capture(stem + "_formation_sheet");
+                                ScrollBy(controller, 900f);
+                                yield return Settle();
+                                yield return Capture(stem + "_formation_sheet_rows");
+
+                                // Premise 3, revise and re-offer: a partner's posts taken back by the formateur - the partner's answer turns, and the sheet says why.
+                                FieldInfo draftField = controller.GetType().GetField("_formationDraft", BindingFlags.Instance | BindingFlags.NonPublic);
+                                FieldInfo versionField = controller.GetType().GetField("_formationDraftVersion", BindingFlags.Instance | BindingFlags.NonPublic);
+                                string stinted = null;
+                                if (draftField?.GetValue(controller) is FormationProposal draft && versionField != null)
+                                {
+                                    foreach (string partner in draft.CabinetParties)
+                                    {
+                                        if (partner == draft.Formateur || draft.PostsOf(partner) == 0) { continue; }
+                                        if (!draft.Posts.ContainsKey(draft.Formateur)) { draft.Posts[draft.Formateur] = new List<CabinetPortfolio>(); }
+                                        draft.Posts[draft.Formateur].AddRange(draft.Posts[partner]);
+                                        draft.Posts[partner] = new List<CabinetPortfolio>();
+                                        stinted = partner;
+                                        break;
+                                    }
+                                    versionField.SetValue(controller, (int)versionField.GetValue(controller) + 1);
+                                }
+                                ResetScrolls(controller);
+                                yield return Settle();
+                                ProposalVerdict revised = controller.GetType().GetField("_formationVerdict", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as ProposalVerdict;
+                                PartyAnswer stintedAnswer = revised?.Answers.Find(a => a.Party == stinted);
+                                if (stinted == null || stintedAnswer == null || stintedAnswer.Accepts)
+                                {
+                                    Debug.LogError($"SHOT: {stem}_formation_sheet_revised - a partner offered no post should refuse (premise 2); stinted {stinted ?? "none"}, answer {(stintedAnswer == null ? "none" : stintedAnswer.Accepts ? "accepts" : "refuses")}.");
+                                    _failed++;
+                                }
+                                else { Debug.Log($"SHOT: §647 - {stinted} offered no post refuses: {stintedAnswer.Reason}"); }
+                                yield return Capture(stem + "_formation_sheet_revised");
+
+                                // Closed, the Parliament tab's round block offers the sheet again.
+                                sheetOpen?.SetValue(controller, false);
+                                ScrollBy(controller, 900f);
+                                yield return Settle();
+                                yield return Capture(stem + "_speaker_asks");
+
+                                roundRecord.Round = filmRound;
+                                roundCountry.PlayerPartyAbbrev = partyBefore;
+                                sheetOpen?.SetValue(controller, false);
+                                ResetScrolls(controller);
+                                yield return Settle();
+                                Debug.Log($"SHOT: §647 - the film's round ({filmRound.Stage}, {filmRound.Asked} asked) and {partyBefore} put back.");
+                            }
+                        }
+                    }
+
                     // P4-B2 (2026-09-04): the range caption at its three moments on two dials - the Minimum Wage on the
                     // labour page and the first sector's Subsidy on the sectors page. The draft moves into a new band
                     // with the presenter's clock at 0 (on-drag), then the clock alone advances to the hold's end (held)
