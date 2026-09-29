@@ -34698,3 +34698,20 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **What it says about (a).** §655's ruled limit - no supporter to withdraw after the election - holds for SD, whose declaration refuses the role; it does not hold for every supporter: a player who forms M+KD+L with C's support has a supporter whose agreement §644's chain could break. Nothing built, by the ruling; whether the chain is proved on that cabinet is Elias's. The PS-3i-2a row says so.
 
 **Tooling tier** (`bar_tier.ps1`: one Editor diagnostic): cheap bar 64 of 64 (`cheap658`), residue 0.
+
+
+## 659. THE STUCK WARM HOST: IT HUNG IN UNITY'S NATIVE TEARDOWN AFTER ITS LOOP HAD ENDED, WHERE NO IDLE TIMER CAN ACT; THE HOST'S PID REGISTERED, A HANG REPORTED WITH THE ONE COMMAND THAT ENDS IT, THE IDLE EXIT PROBED; WIP WORK GOES TO A PUSHED BRANCH (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Find out why PID 11496 never exited despite its idle timer. Fix that, with a check that a host exits on its idle timeout. Propose the narrowest permission rule that lets you end only a Unity process you launched yourself.* And, standing: *at the end of a session, any drafted-but-unapplied work goes into the repo, never a session scratchpad - a wip branch, pushed, never main.*
+
+**Found** (`PoliSim-captures/logs/warm_host.log`, the hung host's own log): the host served three commands - the §655 check, `bar all` (82.4 s, ok) and `quit` - logged *host down after 3 command(s)*, called `EditorApplication.Exit(0)`, and Unity's teardown ran through *Cleanup mono* and *CodeReloadManager destroyed*, then stopped: a clean exit logs *Checking for leaked weakptr*, *Package Manager server shutdown* and the memory report next (`cheap657.log`). So the idle timer was never in play - it lives in the managed loop, which had already ended on `quit`; the hang was native, after the runtime that runs the host's code was shut down, where no timer of its own can act. The old `warm.ps1 -Stop` said, on a host still running after 120 s, *it will on its idle timer; never kill it* - false for exactly this case, and why the host was left holding the project. Not reproduced: two hosts since (below) exited in about 2 s.
+
+**Fixed.** `WarmEditor` reads `-warmidle=<seconds>` (the probe's short limit; the default stays `IdleMinutes`) and says in its summary that both exits end the loop, not the process. `Tools/warm.ps1`: `-Start` runs the pre-launch check (`unity_run.ps1 -Check`), writes the host's pid to the bridge (`host.pid`) and registers it in `unity_launched.tsv`; `-Stop` waits 90 s on THAT pid and, if it is still running, reports **HUNG IN TEARDOWN** with the one command that ends it and exits 4 - it never ends a process itself; **`-IdleProbe`** is the check: a real host with a 20 s limit, left alone, timed to its process's end. `Tools/unity_end_own.ps1 -ProcessId N` ends a Unity.exe only if the launch register has that pid with the live process's start time (to the second) and its command line opens this project; its children go with it; every ending is logged to `unity_ended.tsv`.
+
+**Checked.** `warm.ps1 -IdleProbe`: PASSED - pid 18624 logged its idle exit 20 s after ready and was gone 2.1 s later. `-Start` / `-Stop`: up in 23 s, down clean. `unity_end_own.ps1` refused its own shell's pid (*powershell.exe, not Unity.exe*) and a pid that does not exist; nothing was ended. The probe launches Unity, so it runs outside the bar; run it after any change to `WarmEditor`.
+
+**The permission rule proposed** (for Elias to approve once): `PowerShell(powershell -NoProfile -ExecutionPolicy Bypass -File G:\UNITY\Projects\PoliSim\Tools\unity_end_own.ps1 -ProcessId:*)` - one script, absolute path; the narrowness is the script's refusals, so it holds only while the script is the committed one.
+
+**Standing rule** (CLAUDE.md, beside §643's): at a session's end, drafted-but-unapplied work goes to a `wip/<date>-<item>` branch, pushed, never `main` - §657's page and §658's measurement survived in a scratchpad only by luck.
+
+**Bars.** Tier tooling + documents: cheap bar 64 of 64 (`cheap659`), residue 0.

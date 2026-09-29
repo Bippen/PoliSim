@@ -36,7 +36,10 @@ namespace PoliSim.EditorTools
     ///
     /// <para>⚠ <b>What the host refuses.</b> It will not run while a film or a bar holds the project (Unity's own lock does that for
     /// it - a second Editor cannot open the project), and it exits on <c>quit</c> or after <see cref="IdleMinutes"/> with nothing to do,
-    /// so a forgotten host cannot hold the project against the next cold run. It does not recompile: an edit to C# while it is warm is
+    /// so a forgotten host cannot hold the project against the next cold run. ⚠ Both end the LOOP, not the process: Unity's native
+    /// teardown runs after this code's last line, and a host once hung there after "Cleanup mono" (§656, §659), where no timer of its
+    /// own can act. `Tools/warm.ps1` registers the host's pid at start and reports a host still running after its "host down" line as
+    /// HUNG, with the one command that ends it (`Tools/unity_end_own.ps1`); `warm.ps1 -IdleProbe` is the check that the idle exit completes. It does not recompile: an edit to C# while it is warm is
     /// picked up by Unity's own asset refresh on the next command, which costs the compile but not the start - and the log says when
     /// that happened, because a command that silently ran the OLD code would be the worst failure this could have.</para>
     /// </summary>
@@ -61,7 +64,15 @@ namespace PoliSim.EditorTools
 
             _lastWork = DateTime.UtcNow;
             _served = 0;
-            Debug.Log($"WARM: host up - {BridgeDirectory}. Commands: 'run <Type.Method>[,…]', 'checks <Name>[,…]', 'quit'. Idle limit {IdleMinutes:F0} min.");
+            // §659: `-warmidle=<seconds>` shortens the idle limit - the one caller is `Tools/warm.ps1 -IdleProbe`, the check that a host
+            // exits on its idle timeout. Without it the limit is IdleMinutes.
+            double idleMinutes = IdleMinutes;
+            foreach (string a in Environment.GetCommandLineArgs())
+            {
+                if (a.StartsWith("-warmidle=", StringComparison.Ordinal)
+                    && double.TryParse(a.Substring(10), NumberStyles.Float, CultureInfo.InvariantCulture, out double s) && s > 0) { idleMinutes = s / 60.0; }
+            }
+            Debug.Log($"WARM: host up - {BridgeDirectory}. Commands: 'run <Type.Method>[,…]', 'checks <Name>[,…]', 'quit'. Idle limit {idleMinutes:F2} min.");
             File.WriteAllText(Path.Combine(BridgeDirectory, "ready.txt"), DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
 
             // ⚠ THE PUMP IS THIS LOOP, not EditorApplication.update. The first cut registered the pump as an update callback and blocked
@@ -73,9 +84,9 @@ namespace PoliSim.EditorTools
                 Thread.Sleep(100);
                 Pump();
                 if (_command == "quit") { break; }
-                if ((DateTime.UtcNow - _lastWork).TotalMinutes > IdleMinutes)
+                if ((DateTime.UtcNow - _lastWork).TotalMinutes > idleMinutes)
                 {
-                    Debug.Log($"WARM: idle past {IdleMinutes:F0} min after {_served} command(s) - exiting so the project is free.");
+                    Debug.Log($"WARM: idle past {idleMinutes:F2} min after {_served} command(s) - exiting so the project is free.");
                     break;
                 }
             }
