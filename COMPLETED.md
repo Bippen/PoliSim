@@ -34824,3 +34824,16 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Re-shot** (`s667_1280_06i_laws_monetary_row`, the same frame and rect as §663): **the thin strokes no longer break** - the stair is continuous, the percent's rings are two-pixel marks, the slash unbroken; the cost is softness, grey edges where there were hard pixels; the verb (a solid shape) unchanged. **Sent** `uploads/D24_code_mip/` (9 files: one zip with MANIFEST inside, 8 files; before and after, native, 4× and the pair at 8×, and Code's reading). Design judges.
 
 **Filmed** real `s667_1280`: 142 captured, 0 failed, 0 clipped. **Bars:** cheap 67 of 67 (`cheap667`).
+
+
+## 668. THE FIRST WINDOWS PLAYER BUILD: G:\UNITY\Builds\Incumbent-dev\Incumbent.exe, SCRIPTED WITH A SMOKE CHECK THAT LOADS THE PLAY SAVE, RUNS 30 GAME DAYS AND EXITS 0; THE EXE CARRIES THE INCUMBENT ICON (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Say whether a Windows player build has ever been made. If not, make one into G:\UNITY\Builds\Incumbent-dev\ (outside the repo, never committed). Script it, with a smoke check that launches it, loads the play save, runs 30 game days and exits 0. Report every build-only failure and fix each in its own commit. Confirm the exe's icon. Don't change productName or companyName. Elias plays this build.*
+
+**Never made before.** No build method, no build folder and no record of one existed; the record's only mentions are cautions against Editor-only APIs in play code. The Windows standalone module is installed (mono and IL2CPP).
+
+**Built.** `PlayerBuild.BuildWindows` (Editor): the build settings' enabled scenes, StandaloneWindows64, `<out>\Incumbent.exe`; refuses an output folder inside the repository; productName `PoliSim` and companyName `DefaultCompany` untouched (the window title and the save path stay theirs, §651). `PoliSim.Testing.PlayerSmoke` (runtime, armed only by `-smoke=<save>`): loads the save through `GameController.LoadFromPath` (the menu's and F9's path), runs 30 game days through `AdvanceDay`/`AdvanceTurn`/the player's day tick (the harness's day path), quits 0 - or logs `SMOKE: FAILED` and quits 1. **`Tools/build_player.ps1`**: the build as one Unity job through `unity_run.ps1`, the smoke (PASSED needs exit 0 AND the log's PASSED line), and the exe's own icon extracted to `G:\UNITY\Builds\Incumbent-dev_icon.png`; `-SmokeOnly`, `-Windowed`.
+
+**Result.** Build succeeded - 0 errors, 37 warnings, 140 MB, 123 s first (26 s rebuilt). Smoke (headless) PASSED: the protocol's first save, 2026-01-18 to 2026-02-17, player exit 0; the player's log 0 errors. **The icon is the Incumbent brand's** (the chamber-arc mark, read by eye from the extracted 32 × 32; §664 set it). One build-only failure, found by the windowed smoke, fixed in its own commit: §669. Observed, not a failure: the player runs a no-policy century at startup (the model's anomaly notices, 253 lines) before the scene arms - the Editor does the same; it costs start-up time, and is a separate question.
+
+**Tooling tier:** cheap bar 67 of 67 (`cheap668`).
