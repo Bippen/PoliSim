@@ -34567,3 +34567,21 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Filed.** The sweep's `04f_people_migration_plate` is byte-identical to `04e` on every film (the page's foot, where the scroll clamps) - a frame that cannot show what its name says; noted in the ask, not yet changed in the driver.
 
 **Bars.** Tier tooling + documents: the cheap bar 64 of 64.
+
+
+## 651. INCUMBENT IS THE PLAYER-FACING NAME: THE WORDMARKS AND THE SAVE ERROR RENAMED, ONE CONSTANT; THE WINDOW TITLE AND THE SAVE PATH MEASURED, THEIR MIGRATION PROPOSED AND HELD FOR THE STUDIO NAME (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Incumbent as the player-facing name. Change the menu and selector wordmark, the window title and store-facing text. The code name and repo stay PoliSim. Don't touch Unity's productName or companyName. Measure every reference to the save path and propose one migration commit, then wait for Elias's studio name.*
+
+**Changed.** `PoliSimTheme.PlayerFacingName` / `Wordmark` (INCUMBENT in capitals, as Design's drawn logotype in `brand/incumbent/` is set; in the Display face until the logotype is installed from Design's zip, §650) - read by the main menu's and the selector's wordmark and the IMGUI selector's heading; the one player-facing sentence naming the game (a file that is not a save) says Incumbent, literally, the persistence file being engine-free.
+
+**Not changed, measured.**
+- **The window title**: a built player's title bar is Unity's `productName`, ruled untouched - it stays PoliSim until that is ruled (the options: productName to Incumbent, which also moves the save path below; or a native title set at start-up, Windows-only).
+- **Store-facing text**: none is held in this repository (Design's brand set carries the capsules).
+- **The save path**: one definition - `SaveGameService.DefaultSaveDirectory` = `Application.persistentDataPath` + `saves` (`DefaultSlotPath` beside it), which on Windows is `LocalLow/<companyName>/<productName>/`, today `DefaultCompany/PoliSim`. Every save the game writes or lists goes through it (the controller's save, list, autosave and newest-save sites, the quick slot), as do the play protocol's staging, the record dump and the film driver's staged saves. **The preferences** (the `polisim.` PlayerPrefs keys, `PreferenceKeys.All`) live under the same pair on Windows (`HKCU\Software\<companyName>\<productName>`). **So the studio name moves both**: a companyName change leaves every existing save and preference behind at the old path.
+
+**Proposed - one migration commit, on the studio name** (nothing built): (1) `companyName` set to the studio's name - the one change to Unity's identity; (2) before the first save access, a migration copies (never moves) every save from the old `DefaultCompany/PoliSim/saves` into the new directory where the new one holds none, and leaves a marker so it runs once; (3) the preferences carried by reading the old registry key's `polisim.` values (Windows; PlayerPrefs cannot read another company's) - or, if Elias prefers, preferences reset to their defaults and the loss stated; (4) a check proving the copy on a temporary pair of directories, both ways (old present and new empty: copied; new present: untouched).
+
+**Filmed.** Dry `drys651` (Sweden 1280 × 720): 139 measured, 0 failed, 0 overflow; real `s651_1280` and `s651_2560` to the pickers: 6 captured, 0 failed each, the menu's, the selector's and the pickers' Canvas texts 0 violations; 2560's exit is PF-17's settings frame, not this change's.
+
+**Bars.** Tier UI: the cheap bar 64 of 64.

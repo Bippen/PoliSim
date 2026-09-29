@@ -2348,7 +2348,7 @@ namespace PoliSim.UI
             GUILayout.FlexibleSpace();
 
             GUILayout.BeginVertical(GUILayout.Width(UiScreen.Width * 0.4f));
-            GUILayout.Label("PoliSim", _headerStyle);
+            GUILayout.Label(PoliSimTheme.Wordmark, _headerStyle);
             GUILayout.Label("Choose your country", _labelStyle);
             GUILayout.Space(20f);
 

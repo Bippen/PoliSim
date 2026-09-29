@@ -155,7 +155,7 @@ namespace PoliSim.Persistence
             }
             catch (JsonException)
             {
-                throw new SaveLoadException("This file is not a PoliSim save (it does not parse as one).");
+                throw new SaveLoadException("This file is not an Incumbent save (it does not parse as one).");   // the player-facing name (\xC2\xA7651); this file stays engine-free
             }
 
             if (version != CurrentSaveVersion)

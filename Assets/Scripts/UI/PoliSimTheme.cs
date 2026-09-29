@@ -13,6 +13,15 @@ namespace PoliSim.UI
     /// </summary>
     public static class PoliSimTheme
     {
+        /// <summary>
+        /// §651 (ruled 2026-09-29): the player-facing name is INCUMBENT - the menu's and the selector's wordmark and every line a player
+        /// reads that names the game. The code name, the repository, the namespaces and Unity's productName and companyName stay PoliSim
+        /// (ruled): the window title a built player shows is productName's, so it stays until that is ruled. The wordmark is set in
+        /// capitals, as Design's drawn logotype is (`brand/incumbent`), in the Display face until the logotype is installed.
+        /// </summary>
+        public const string PlayerFacingName = "Incumbent";
+        public const string Wordmark = "INCUMBENT";
+
         // --- Surfaces (v2.0 "ministry fresh print"). Values from polisim_palette.json. ---
         //
         // ⚠ THE THEME INVERTED. Until 2026-08-03 this was a dark stack and text was light-on-dark; it is

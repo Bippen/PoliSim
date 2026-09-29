@@ -111,7 +111,7 @@ namespace PoliSim.UI
             // shrinks the ones with no minimum toward zero, and a `Text` squeezed under its own line height
             // is CLIPPED, silently - which is what the canvas-text guard caught the moment the scenario
             // lines grew faces. The wordmark and the subtitle now state what a line of their type needs.
-            Text wordmark = CanvasChrome.MakeText(title.transform, "Wordmark", "PoliSim", PoliSimTheme.Display, 54,
+            Text wordmark = CanvasChrome.MakeText(title.transform, "Wordmark", PoliSimTheme.Wordmark, PoliSimTheme.Display, 54,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
             wordmark.gameObject.AddComponent<LayoutElement>().minHeight = WordmarkMinHeight;
             MakeRulePair(title.transform);

@@ -122,7 +122,7 @@ namespace PoliSim.UI
 
             // ⚠ THE MINIMUMS ARE LOAD-BEARING (P6-A2): a vertical layout group that cannot fit its children
             // shrinks the ones with no minimum toward zero, and a Text under its own line height is clipped.
-            Text wordmark = CanvasChrome.MakeText(title.transform, "Wordmark", "PoliSim", PoliSimTheme.Display, WordmarkSize,
+            Text wordmark = CanvasChrome.MakeText(title.transform, "Wordmark", PoliSimTheme.Wordmark, PoliSimTheme.Display, WordmarkSize,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
             LayoutElement wordmarkLayout = wordmark.gameObject.AddComponent<LayoutElement>();
             wordmarkLayout.minHeight = WordmarkMinHeight;
