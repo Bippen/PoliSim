@@ -299,6 +299,8 @@ namespace PoliSim.UI
         /// ResolveElectionVerdict / ApplyElectionVerdict). Persisted; a load with one pending lands it at once.</summary>
         private string _pendingElectionVerdict;
         private bool _pendingElectionVerdictEndsGame;
+        /// <summary>Premise 9 (§656): the Speaker asks the player's party first - the night's control is the way to the formation sheet.</summary>
+        private bool _pendingElectionPlayerAskedFirst;
         private System.DateTime _pendingElectionDate;   // PS-2 (§619): the polling day the verdict was read on - an election is a date since CL-4
         private string _gameOverReason;
 
@@ -6743,6 +6745,7 @@ namespace PoliSim.UI
         {
             _pendingElectionVerdict = null;
             _pendingElectionVerdictEndsGame = false;
+            _pendingElectionPlayerAskedFirst = false;
 
             ElectionRecord latest = _playerCountry.ElectionHistory.Count > 0
                 ? _playerCountry.ElectionHistory[_playerCountry.ElectionHistory.Count - 1]
@@ -6779,9 +6782,8 @@ namespace PoliSim.UI
                 }
                 System.Collections.Generic.List<string> order = _simulationManager.SpeakerOrder(_playerCountry, electionReading);
                 string first = order.Count > 0 ? order[0] : null;
-                _pendingElectionVerdict = first == key
-                    ? "The Speaker will ask your party first to form a government - the formation sheet opens when the round does. The outgoing government serves on as a caretaker until a proposal wins its investiture."
-                    : $"The Speaker will ask {(first != null ? PartySystems.ShortName(_playerCountry.Id, first) : "no party")} first to form a government. The outgoing government serves on as a caretaker until a proposal wins its investiture.";
+                _pendingElectionVerdict = ElectionNightScreen.SpeakerLine(first == key, first != null ? PartySystems.ShortName(_playerCountry.Id, first) : null);   // premise 9 (§656)
+                _pendingElectionPlayerAskedFirst = first == key;
                 _pendingElectionVerdictEndsGame = false;
                 Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the Speaker's round opens tomorrow; the order is {string.Join(", ", order)}");
                 return;
@@ -6950,7 +6952,8 @@ namespace PoliSim.UI
                     standingBudgetCitation: standingBudget == null ? null
                         : $"DIVISION No. {standingBudget.Number} · {standingBudget.Date:yyyy-MM-dd} · {standingBudget.Title}",
                     previousByConstituency: previousByConstituency, previousShares: previousShares, previousSeats: previousSeats,
-                    government: government, inkCountry: PlayerCountryId, reference: reference);
+                    government: government, inkCountry: PlayerCountryId, reference: reference,
+                    continueLabel: _pendingElectionPlayerAskedFirst ? ElectionNightScreen.ContinueToSheet : null);   // premise 9 (§656)
             }
             catch (System.Exception e)
             {
@@ -7044,6 +7047,7 @@ namespace PoliSim.UI
 
             _pendingElectionVerdict = null;
             _pendingElectionVerdictEndsGame = false;
+            _pendingElectionPlayerAskedFirst = false;
         }
 
         /// <summary>

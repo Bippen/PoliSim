@@ -4144,6 +4144,25 @@ namespace PoliSim.Testing
                 // Canvas child out mid-frame and the run ends without reaching its own exit.
                 if (screen.Root != null) { UnityEngine.Object.Destroy(screen.Root); }
                 yield return Settle();
+
+                // Premise 9 (§656): the final count once more with the player's party asked first - the Speaker's line the game writes and the
+                // control to the formation sheet, filmed where the Canvas draws them.
+                if (stems[i] == "final")
+                {
+                    PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                    ElectionNightScreen first = ElectionNightScreen.Build(state, parties, "SWEDEN", new DateTime(2026, 9, 13, 20, 0, 0), 349,
+                        previousVotes: ElectionNightFilm.Votes2018, previousLabel: "SWEDEN 2018", verdict: ElectionNightScreen.SpeakerLine(true, null),
+                        government: stagedGovernment, inkCountry: CountryId.Sweden, continueLabel: ElectionNightScreen.ContinueToSheet);
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e6_election_night_player_first");
+                    RecordCanvasTextAssert("e6_election_night_player_first", controller);
+                    bool control = first?.Root != null && Array.Exists(first.Root.GetComponentsInChildren<UnityEngine.UI.Text>(), x => x.text == ElectionNightScreen.ContinueToSheet);
+                    if (!control) { Debug.LogError("SHOT: e6_election_night_player_first - the control to the formation sheet is not on the board (premise 9)."); _failed++; }
+                    else { Debug.Log("SHOT: premise 9 - the board ends with the Speaker's line and the control '" + ElectionNightScreen.ContinueToSheet + "'."); }
+                    if (first?.Root != null) { UnityEngine.Object.Destroy(first.Root); }
+                    yield return Settle();
+                }
             }
 
             // The run ends HERE, and it must end through Finish - a `yield break` alone leaves

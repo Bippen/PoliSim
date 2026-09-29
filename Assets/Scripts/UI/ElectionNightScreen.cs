@@ -125,7 +125,7 @@ namespace PoliSim.UI
             string verdict = null, VoteAttribution.Ledger ledger = null, string ledgerParty = null,
             IReadOnlyList<DivisionEffect> standingBudget = null, string standingBudgetCitation = null,
             long[][] previousByConstituency = null, double[] previousShares = null, int[] previousSeats = null,
-            GovernmentFormation.View government = null, CountryId inkCountry = CountryId.Sweden, Reference reference = null)
+            GovernmentFormation.View government = null, CountryId inkCountry = CountryId.Sweden, Reference reference = null, string continueLabel = null)
         {
             if (previousShares == null && previousVotes != null && partyNames != null && previousVotes.Length == partyNames.Length)
             {
@@ -204,7 +204,7 @@ namespace PoliSim.UI
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
             ValkretsCartogramView map = BuildBody(content.transform, state, partyNames, totalSeats, previous, ledger, ledgerParty,
                 standingBudget, standingBudgetCitation, government, inkCountry, reference);
-            BuildFooter(content.transform, verdict, screen);
+            BuildFooter(content.transform, verdict, screen, continueLabel);
 
             // The map lays itself in the rect the page gives it; resolve the page now so the first frame already has it,
             // not two frames on (the signing screen's lesson: a capture can photograph an unlaid rect).
@@ -953,7 +953,19 @@ namespace PoliSim.UI
 
         /// <summary>P2-0.2: the board's foot - the office verdict (when a player is on the ballot) and CONTINUE, the
         /// takeover's one exit. The verdict is the same sentence the desk prints when a game ends on it.</summary>
-        private static void BuildFooter(Transform parent, string verdict, ElectionNightScreen screen)
+        /// <summary>
+        /// Premise 9 (§5.3, §656): the board ends with a line naming who the Speaker asks first - one sentence, the game's and the film's. Where the
+        /// player's party is asked, the board's control is the way to the formation sheet (<see cref="ContinueToSheet"/>): leaving the board lets the
+        /// round open the next day, and the sheet opens on the Speaker's request (premise 1).
+        /// </summary>
+        public static string SpeakerLine(bool playerAskedFirst, string firstShortName) => playerAskedFirst
+            ? "The Speaker will ask your party first to form a government - continue, and the formation sheet opens with the round. The outgoing government serves on as a caretaker until a proposal wins its investiture."
+            : $"The Speaker will ask {firstShortName ?? "no party"} first to form a government. The outgoing government serves on as a caretaker until a proposal wins its investiture.";
+
+        /// <summary>Premise 9: the control's face where the player's party is asked first.</summary>
+        public const string ContinueToSheet = "CONTINUE · FORM A GOVERNMENT";
+
+        private static void BuildFooter(Transform parent, string verdict, ElectionNightScreen screen, string continueLabel = null)
         {
             var foot = new GameObject("Footer");
             foot.transform.SetParent(parent, false);
@@ -972,20 +984,22 @@ namespace PoliSim.UI
             line.horizontalOverflow = HorizontalWrapMode.Wrap;
             line.gameObject.AddComponent<LayoutElement>().flexibleWidth = 1f;
 
-            BuildContinueButton(foot.transform, screen.Dismiss);
+            BuildContinueButton(foot.transform, screen.Dismiss, continueLabel);
         }
 
         /// <summary>The canvas brass button, through the ONE definition of it since P6-A2 (2026-09-17):
         /// `CanvasChrome.FacedButton`. This file used to carry its own copy of `SigningScreen.BuildSignButton`
         /// - the same strips, the same SpriteSwap, the same flat-brass degradation - and the playtest's
         /// finding 2 is what made a third copy unacceptable rather than merely untidy.</summary>
-        private static void BuildContinueButton(Transform parent, Action onContinue)
+        private static void BuildContinueButton(Transform parent, Action onContinue, string label = null)
         {
-            Button control = CanvasChrome.FacedButton(parent, "ContinueButton", "CONTINUE", PoliSimTheme.Display, 16,
-                PoliSimTheme.TextPrimary, new Vector2(200f, 48f), style: FontStyle.Normal);   // §626 (D6, board 17a): TextPrimary on the brass face; §648: the Display file is the weight
+            string face = string.IsNullOrEmpty(label) ? "CONTINUE" : label;
+            float width = string.IsNullOrEmpty(label) ? 200f : 320f;   // §656: the longer face, the control to the formation sheet
+            Button control = CanvasChrome.FacedButton(parent, "ContinueButton", face, PoliSimTheme.Display, 16,
+                PoliSimTheme.TextPrimary, new Vector2(width, 48f), style: FontStyle.Normal);   // §626 (D6, board 17a): TextPrimary on the brass face; §648: the Display file is the weight
             LayoutElement size = control.gameObject.AddComponent<LayoutElement>();
-            size.minWidth = 200f;
-            size.preferredWidth = 200f;
+            size.minWidth = width;
+            size.preferredWidth = width;
             size.minHeight = 48f;
             control.onClick.AddListener(() => onContinue());
         }
