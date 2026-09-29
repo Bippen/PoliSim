@@ -12240,7 +12240,7 @@ namespace PoliSim.UI
         {
             TaxProgramBill bill = pendingBill ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !taxLine.IsImplemented };
             float direction = ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill);
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, direction);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill));   // §654: the bill's own concern, its author voting for it, as the vote reads it
 
             // The sentence this used to print - "If introduced now: WOULD PASS (current seat
             // composition)" - said the same thing on every one of thirteen rows, so twelve repetitions
@@ -12360,7 +12360,7 @@ namespace PoliSim.UI
         {
             WelfareProgramBill bill = pendingBill ?? new WelfareProgramBill { Type = welfareProgram.Type, IsAdd = !welfareProgram.IsImplemented };
             float direction = ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill);
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, direction);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill));   // §654: the bill's own concern (its cuts and its author), as the vote reads it
 
             // See DrawTaxProgramBillVerdict - the "(current seat composition)" qualifier moved to the
             // screen header there for the same reason it moves here, and it is declared to Design as V1.

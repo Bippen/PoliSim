@@ -37,12 +37,29 @@ namespace PoliSim.Elections
         /// more than this share is broken (<see cref="PastTolerance"/>) [AUTHORED-DRAFT], a play-calibration entry. A share, not a count, so the
         /// tolerance scales with the agreement.</summary>
         public const float BrokenShareTolerated = 0.1f;
+        /// <summary>PS-3i-2b (ruled 2026-09-29, §654): an OWED item breaks when it is still undelivered after this many budget votes - counted in budget
+        /// votes because that is when a supporter's support is exercised (<see cref="CountBudgetVote"/>) [AUTHORED-DRAFT], the 24th play-calibration entry.</summary>
+        public const int BudgetVotesToBreak = 2;
 
         /// <summary>§646: an item's stable key - its law, or its dial - never its display name, which carries the dial's standing level.</summary>
         public static string KeyOf(AgreementItem item) => item.Kind == AgreementItemKind.Law ? "law:" + item.LawId : "dial:" + item.Dial;
 
         /// <summary>Whether more than <see cref="BrokenShareTolerated"/> of the items are broken.</summary>
         public bool PastTolerance() => Items.Count > 0 && Count(AgreementState.Broken) > BrokenShareTolerated * Items.Count;
+
+        /// <summary>PS-3i-2b (§654): a budget vote held - every item still OWED counts it, and one owed through <see cref="BudgetVotesToBreak"/> of them
+        /// breaks that day. Returns the items it broke. A delivered or broken item counts nothing.</summary>
+        public List<AgreementItem> CountBudgetVote(DateTime date)
+        {
+            var broken = new List<AgreementItem>();
+            foreach (AgreementItem item in Items)
+            {
+                if (item.State != AgreementState.Owed) { continue; }
+                item.BudgetVotesOwed++;
+                if (item.BudgetVotesOwed >= BudgetVotesToBreak) { item.State = AgreementState.Broken; item.BrokenOn = date; broken.Add(item); }
+            }
+            return broken;
+        }
 
         /// <summary>
         /// The supporter's demands from its own positions: every law within the country's competence not yet enacted, scored by the supporter's
@@ -75,7 +92,7 @@ namespace PoliSim.Elections
         public SupportAgreement Copy()
         {
             var copy = new SupportAgreement { Supporter = Supporter, FormedOn = FormedOn, Basis = Basis };
-            foreach (AgreementItem item in Items) { copy.Items.Add(new AgreementItem { Kind = item.Kind, LawId = item.LawId, Dial = item.Dial, Target = item.Target, StartValue = item.StartValue, Name = item.Name, State = item.State, DeliveredOn = item.DeliveredOn, BrokenOn = item.BrokenOn, Basis = item.Basis }); }
+            foreach (AgreementItem item in Items) { copy.Items.Add(new AgreementItem { Kind = item.Kind, LawId = item.LawId, Dial = item.Dial, Target = item.Target, StartValue = item.StartValue, Name = item.Name, State = item.State, DeliveredOn = item.DeliveredOn, BrokenOn = item.BrokenOn, BudgetVotesOwed = item.BudgetVotesOwed, Basis = item.Basis }); }
             return copy;
         }
 
@@ -91,6 +108,7 @@ namespace PoliSim.Elections
                 if (!LawCatalog.IsWithinCompetence(world, country, law)) { continue; }
                 if (country.EnactedLaws.Exists(e => e.LawId == law.Id)) { continue; }
                 BillConcern concern = ParliamentSystem.GetLawBillConcern(country, new LawBill { LawId = law.Id, IsRepeal = false });
+                concern.Author = null;   // §654: a law scored for a demand is no one's bill - the author rule is the vote's, not the scoring's
                 if (concern.IsEmpty) { continue; }
                 if (!Alignments(country, concern, supporter, formateur, context, out float wants, out float allows)) { continue; }
                 if (wants <= 0.05f || allows < 0f) { continue; }
@@ -177,6 +195,8 @@ namespace PoliSim.Elections
         public AgreementState State;
         public DateTime DeliveredOn;
         public DateTime BrokenOn;
+        /// <summary>PS-3i-2b (§654): the budget votes held while this item was owed (saved, format 37).</summary>
+        public int BudgetVotesOwed;
         public string Basis;
 
         public string Line() => (Name ?? LawId) + " · " + State.ToString().ToUpperInvariant();

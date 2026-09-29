@@ -146,6 +146,30 @@ namespace PoliSim.EditorTools
                 }
                 clock.Stop();
                 sb.Append(F("    cost      a world scores its own supporters' demands at its creation: {0} supporter(s) across the default world's start governments, {1:F1} ms\n", scoredSupporters, clock.Elapsed.TotalMilliseconds));
+
+                // PS-3i-2b (ruled 2026-09-29, §654), (a): an owed item breaks when still undelivered after two budget votes; a delivered one counts nothing.
+                var probe = new SupportAgreement { Supporter = "SD" };
+                probe.Items.Add(new AgreementItem { Kind = AgreementItemKind.Law, LawId = "probe_owed", Name = "probe owed", State = AgreementState.Owed });
+                probe.Items.Add(new AgreementItem { Kind = AgreementItemKind.Law, LawId = "probe_delivered", Name = "probe delivered", State = AgreementState.Delivered });
+                DateTime firstVote = new DateTime(2026, 3, 1), secondVote = new DateTime(2026, 11, 1);
+                bool afterOne = probe.CountBudgetVote(firstVote).Count == 0 && probe.Items[0].State == AgreementState.Owed && probe.Items[0].BudgetVotesOwed == 1 && probe.Items[1].BudgetVotesOwed == 0;
+                List<AgreementItem> brokeOnSecond = probe.CountBudgetVote(secondVote);
+                Check(SupportAgreement.BudgetVotesToBreak == 2 && afterOne && brokeOnSecond.Count == 1 && probe.Items[0].State == AgreementState.Broken && probe.Items[0].BrokenOn == secondVote
+                        && probe.Items[1].State == AgreementState.Delivered,
+                    "§654 (a): an owed item survives one budget vote and breaks on the second, dated that vote; a delivered item counts nothing");
+                Check(probe.Copy().Items[0].BudgetVotesOwed == 2, "§654 (a): the count rides the agreement's copy");
+
+                // (b) an item's author votes for it: the player as M tables a law M's positions oppose (PS-3i-2b's measurement had M voting against its own
+                // bill); its author votes for it now, and the same concern with no author reads M by the model.
+                sweden.PlayerPartyAbbrev = "M";
+                LawDefinition opposed = LawCatalog.All.Find(l => l.Name == "Sanctuary City Policy");
+                BillConcern ownBill = opposed != null ? ParliamentSystem.GetLawBillConcern(sweden, new LawBill { LawId = opposed.Id, IsRepeal = false }) : null;
+                string author = ownBill?.Author;
+                int authoredSide = ownBill != null ? StanceModel.Stances(sweden, ownBill).Find(s => s.Party.Abbrev == "M").Side : 0;
+                if (ownBill != null) { ownBill.Author = null; }
+                int modelledSide = ownBill != null ? StanceModel.Stances(sweden, ownBill).Find(s => s.Party.Abbrev == "M").Side : 0;
+                Check(opposed != null && author == "M" && authoredSide == 1 && modelledSide < 0,
+                    F("§654 (b): M tables '{0}' - its author votes for it (side {1}); read with no author, M's own positions vote it down (side {2})", opposed?.Name, authoredSide, modelledSide));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }

@@ -45,6 +45,9 @@ namespace PoliSim.Simulation
         public float Direction;
         /// <summary>PS-3e (§632): the bill is the GOVERNMENT'S own (the AI government's budget for the player's country) - the cabinet's cohesion term applies whoever the player is.</summary>
         public bool GovernmentAuthored;
+        /// <summary>PS-3i-2b (ruled 2026-09-29, §654): the party that tabled the bill - it votes for its own bill. The player's bills carry the player's
+        /// party (`ParliamentSystem`'s bill concerns); a government's own budget and a concern scored for no bill carry none.</summary>
+        public string Author;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 
@@ -280,6 +283,14 @@ namespace PoliSim.Simulation
                 int seats = seatsOf != null ? (seatsOf.TryGetValue(party.Abbrev, out int so) ? so : 0) : (country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0);
                 if (seats <= 0) { continue; }
                 var reasons = new List<string>();
+                if (!string.IsNullOrEmpty(concern.Author) && party.Abbrev == concern.Author)
+                {
+                    // PS-3i-2b (ruled 2026-09-29, §654): an item's author votes for it - the party that tabled the bill is for it, as a tabler already votes
+                    // its own budget alternative (§633).
+                    reasons.Add(party.Abbrev + " tabled the bill: its author votes for it");
+                    result.Add(new PartyStance(party, seats, 1f, 1, true, reasons));
+                    continue;
+                }
 
                 // Term 1: the position on each loaded axis, weighted by the bill's own share of movement.
                 float alignment = 0f;

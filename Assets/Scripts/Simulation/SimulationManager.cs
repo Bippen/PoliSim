@@ -1324,7 +1324,7 @@ namespace PoliSim.Simulation
             }
 
             Country country = _world.GetCountry(countryId);
-            if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
+            if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); CountBudgetVoteOnAgreements(country); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
             float direction = ParliamentSystem.GetBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
@@ -1333,6 +1333,7 @@ namespace PoliSim.Simulation
             ParliamentSystem.ApplyBillResult(country, bill, passed, ApplyBudgetBillSpendingAndSwf);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
             _pendingBudgetBillByCountry.Remove(countryId);
+            CountBudgetVoteOnAgreements(country);   // §654
         }
 
         /// <summary>
@@ -2465,6 +2466,22 @@ namespace PoliSim.Simulation
                 case LawCategory.CrimeJustice: return CabinetPortfolio.InteriorJustice;
                 case LawCategory.FiscalFramework: case LawCategory.MonetaryRegime: case LawCategory.ElectricityTax: return CabinetPortfolio.FinanceTreasury;
                 default: return null;
+            }
+        }
+
+        /// <summary>PS-3i-2b (ruled 2026-09-29, §654): a budget vote was held - every supported agreement counts it, and an item owed through
+        /// <see cref="Elections.SupportAgreement.BudgetVotesToBreak"/> of them breaks, recorded as the day's tracker records a break.</summary>
+        public void CountBudgetVoteOnAgreements(Country country)
+        {
+            if (country?.Government == null) { return; }
+            foreach (Elections.SupportAgreement agreement in country.Government.Agreements)
+            {
+                if (!country.Government.Support.Contains(agreement.Supporter)) { continue; }
+                foreach (Elections.AgreementItem broken in agreement.CountBudgetVote(CurrentDate))
+                {
+                    country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: '{broken.Name}', owed to {agreement.Supporter}, is still undelivered after {Elections.SupportAgreement.BudgetVotesToBreak} budget votes - broken");
+                    Debug.Log($"AGREEMENT: {country.Id} - '{broken.Name}' owed to {agreement.Supporter} broken, undelivered after {Elections.SupportAgreement.BudgetVotesToBreak} budget votes");
+                }
             }
         }
 

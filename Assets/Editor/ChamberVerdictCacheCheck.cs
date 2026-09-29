@@ -206,7 +206,7 @@ namespace PoliSim.EditorTools
             int authorPairs = 0;
             foreach ((string law, BillConcern government) in bills)
             {
-                BillConcern member = new BillConcern { Direction = government.Direction, GovernmentAuthored = false };
+                BillConcern member = new BillConcern { Direction = government.Direction, GovernmentAuthored = false, Author = government.Author };   // §654: a member's bill carries its author
                 foreach (KeyValuePair<StanceAxis, float> move in government.Moves) { member.Add(move.Key, move.Value); }
                 member.Cuts.AddRange(government.Cuts);
                 if (Differ(StanceModel.Stances(sweden, member), StanceModel.Stances(sweden, government)) == null) { continue; }

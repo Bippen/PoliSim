@@ -883,6 +883,14 @@ namespace PoliSim.Simulation
         // toward 0; `immigrate_policy` "10 = restrictive"; `deregulation` "10 = favors deregulation";
         // openness (eu_position rescaled) "10 = most open", so a tariff rise moves toward 0.
         // ------------------------------------------------------------------------------------------
+        /// <summary>PS-3i-2b (ruled 2026-09-29, §654): a bill's concern carries its author - the player's party, who tables every bill but a government's
+        /// own budget (the author of that is the government, whose cohesion is term 2's).</summary>
+        private static BillConcern Authored(Country country, BillConcern concern, bool governmentBill = false)
+        {
+            concern.Author = governmentBill ? null : country?.PlayerPartyAbbrev;
+            return concern;
+        }
+
         /// <summary>
         /// P4-A2 (Playtest 4, 2026-09-04): **a budget decomposes into its lines.** Each line loads the CHES axis it
         /// concerns (<see cref="BudgetLineAxes"/>), with its own signed size, so a party's stance is the seat-weighted sum
@@ -920,7 +928,7 @@ namespace PoliSim.Simulation
                 concern.Add(StanceAxis.SpendVsTax, -delta);
                 if (delta < 0f && standing.GenerosityLevel > 0f) { concern.Cuts.Add((null, kvp.Key, -delta / standing.GenerosityLevel)); }
             }
-            return concern;
+            return Authored(country, concern, bill.GovernmentBill);
         }
 
         /// <summary>
@@ -1006,7 +1014,7 @@ namespace PoliSim.Simulation
         public static BillConcern GetTaxProgramBillConcern(Country country, TaxProgramBill bill)
         {
             float direction = GetTaxProgramBillDirection(country, bill);
-            return new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
+            return Authored(country, new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction));
         }
 
         public static BillConcern GetWelfareProgramBillConcern(Country country, WelfareProgramBill bill)
@@ -1014,7 +1022,7 @@ namespace PoliSim.Simulation
             float direction = GetWelfareProgramBillDirection(country, bill);
             var concern = new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
             if (!bill.IsAdd && direction < 0f) { concern.Cuts.Add((null, bill.Type, 1f)); }
-            return concern;
+            return Authored(country, concern);
         }
 
         public static BillConcern GetLaborBillConcern(Country country, LaborPolicyBill bill)
@@ -1026,7 +1034,7 @@ namespace PoliSim.Simulation
             concern.Add(StanceAxis.LrEcon, -(bill.RetrainingProgram - country.RetrainingProgramBase));
             concern.Add(StanceAxis.LrEcon, -(bill.FamilyPolicy - country.FamilyPolicyBase));
             concern.Add(StanceAxis.ImmigratePolicy, -(bill.ImmigrationPolicy - country.ImmigrationPolicyBase));   // more open → the liberal (0) end
-            return concern;
+            return Authored(country, concern);
         }
 
         public static BillConcern GetCrimeJusticeBillConcern(Country country, CrimeJusticePolicyBill bill)
@@ -1038,7 +1046,7 @@ namespace PoliSim.Simulation
             concern.Add(StanceAxis.Galtan, bill.DrugPolicy - country.DrugPolicyLevel);
             concern.Add(StanceAxis.Galtan, bill.JudicialFunding - country.JudicialFundingLevel);
             concern.Add(StanceAxis.ImmigratePolicy, bill.BorderEnforcement - country.BorderEnforcementLevel);
-            return concern;
+            return Authored(country, concern);
         }
 
         /// <summary>The law catalog's twelve dial deltas: the crime six on `galtan` (border enforcement on `immigrate_policy`), the labour six on `lrecon` (immigration openness on `immigrate_policy`) - the same index order `LawDialSigns` reads.</summary>
@@ -1052,7 +1060,7 @@ namespace PoliSim.Simulation
         {
             var concern = new BillConcern { Direction = GetLawBillDirection(country, bill) };
             LawDefinition law = LawCatalog.GetById(bill.LawId);
-            if (law == null) { return concern; }
+            if (law == null) { return Authored(country, concern); }
             float sign = bill.IsRepeal ? -1f : 1f;
             float[] deltas = law.DialDeltas;
             for (int i = 0; i < deltas.Length && i < LawDialAxes.Length; i++)
@@ -1064,7 +1072,7 @@ namespace PoliSim.Simulation
             {
                 concern.Add(StanceAxis.LrEcon, sign * law.LrEconToward10 * StructuralParameters.GridPoints(structural));   // P4-C3: the law's own reading, on the dial grid
             }
-            return concern;
+            return Authored(country, concern);
         }
 
         public static BillConcern GetSectorBillConcern(Country country, SectorPolicyBill bill)
@@ -1078,19 +1086,19 @@ namespace PoliSim.Simulation
                 if (bill.ResearchGrantsLevels.TryGetValue(sector.Type, out float researchGrants)) { concern.Add(StanceAxis.LrEcon, -(researchGrants - sector.ResearchGrantsLevel)); }
                 if (bill.DeregulationLevels.TryGetValue(sector.Type, out float deregulation)) { concern.Add(StanceAxis.Deregulation, deregulation - sector.DeregulationNationalizationLevel); }
             }
-            return concern;
+            return Authored(country, concern);
         }
 
         public static BillConcern GetTradeBillConcern(Country country, TradePolicyBill bill, World world)
         {
             float direction = GetTradeBillDirection(country, bill, world);
-            return new BillConcern { Direction = direction }.Add(StanceAxis.Openness, -direction);
+            return Authored(country, new BillConcern { Direction = direction }.Add(StanceAxis.Openness, -direction));
         }
 
         public static BillConcern GetSwfDrawdownBillConcern(Country country, SwfDrawdownBill bill)
         {
             float direction = GetSwfDrawdownBillDirection(country, bill);
-            return new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
+            return Authored(country, new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction));
         }
 
         /// <summary>P3-A2: the record from the concern the verdict read - every party's side from the same enumeration, the scalar direction kept for the lean bar.</summary>

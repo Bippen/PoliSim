@@ -34619,3 +34619,22 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **No family.** No dump seats a player; the vintage paths unchanged.
 
 **Bars.** Tier SIMULATION + UI: the cheap bar 64 of 64 (its first run red on `ReviewLedgerCheck`, the row owed before the bar); the simulation bar 56 of 56, `TrajectorySentinelCheck` on `ps3k` unmoved.
+
+
+## 654. PS-3i-2b RULED AND BUILT: AN OWED AGREEMENT ITEM BREAKS WHEN STILL UNDELIVERED AFTER TWO BUDGET VOTES (THE 24TH PLAY-CALIBRATION ENTRY); AN ITEM'S AUTHOR VOTES FOR IT; FORMAT 37 (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *PS-3i-2b: (c). An owed agreement item breaks when it is still undelivered after two budget votes, counted in budget votes because that is when a supporter's support is exercised. The count is [AUTHORED-DRAFT], and the next play-calibration entry. An item's author votes for it.*
+
+**Built.** `SupportAgreement.BudgetVotesToBreak` (2, [AUTHORED-DRAFT], the 24th play-calibration entry in the feature list) and `AgreementItem.BudgetVotesOwed` (saved, format 37): every budget vote held - the government's bill (a contest or alone) and the player's, passed or failed, the arrival window included - counts once on each supported agreement's owed items (`SimulationManager.CountBudgetVoteOnAgreements`, on the budget day), and an item owed through two breaks that day, recorded as the tracker records a break. **The author's vote**: `BillConcern.Author`, set by every bill concern `ParliamentSystem` builds (the player's party - who tables every bill but a government's own budget, which carries none), read first by the stance model: the author's party votes for its bill; `SupportAgreement.Demand` clears it on the laws it scores (a scored law is no one's bill); the verdict cache keys on it; the tax and welfare verdict rows read the bill's own concern, so every preview is the vote.
+
+**Measured.** §644's breaching bills re-voted with the author (`AiMotionReachDiagnostic` (2)): M now votes for each; every one still fails (134 for, 199 against on the crime-and-justice bill, where M voted against its own bill before) - the author's vote alone does not deliver a breach, as §644 measured; the budget votes are what break an item.
+
+**Asserted.** `SupportAgreementDiagnostic`: an owed item survives one budget vote and breaks on the second, dated that vote; a delivered item counts nothing; the count rides the agreement's copy; M tabling Sanctuary City Policy votes for it, and the same concern with no author reads M against it by its own positions. `GovernmentBudgetBillDiagnostic`'s contest case now counts the contest's own break line (its fixture's second budget vote also breaks SD's owed items - the rule at work).
+
+**Reviewed** (`Reviews/2026-09-29_s654_budget_votes_author.md`): READY WITH FIXES, every fix taken - the tax and welfare rows read the vote without its author; summaries placed; the cache check's member copy authored. **Money path: yes** - the author's vote can flip a bill's passage and a passed bill books its money; stated for calibration: an agreement formed after an election can meet the arrival budget and the fiscal-year one within months; a bill spanning a change of government counts against the new government's agreements.
+
+**Filmed.** Dry `drys654` (Sweden 1280): 139 measured, 0 failed, 0 overflows, 0 escapes. Real sweep `s654_1280` to 07b: 101 captured, 0 failed, 0 overflows, 0 clipped. The play save re-staged at format 37 (`stage_v37`, seed 777, turn 0, `3a38500a…`).
+
+**No family.** The no-policy century seats no player: no author, no budget vote counted; the sentinel unmoved.
+
+**Bars.** Tier SIMULATION + UI: cheap 64 of 64, simulation 56 of 56.

@@ -144,6 +144,7 @@ namespace PoliSim.UI
             var sb = new StringBuilder(128);
             // §642 (the review): who authored it - the stance model's term 2 reads a government bill differently from a member's with the same moves.
             sb.Append(concern.GovernmentAuthored ? "G|" : "M|");
+            sb.Append(concern.Author ?? string.Empty).Append('|');   // §654: the author votes for its own bill
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {

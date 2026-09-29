@@ -88,7 +88,7 @@ namespace PoliSim.EditorTools
                 for (int i = 0; i < 25 && sim.GetPendingBudgetBill(CountryId.Sweden) != null; i++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }
                 DivisionRecord sdDivision = sweden.Divisions.Entries.Count > divisionsBefore ? sweden.Divisions.Entries[sweden.Divisions.Entries.Count - 1] : null;
                 DivisionSide sdSide = null; if (sdDivision != null) { foreach (DivisionSide sd in sdDivision.Sides) { if (sd.Abbrev == "SD") { sdSide = sd; } } }
-                Check(sdSide != null && sdSide.Side < 0 && sdDivision.Contest != null && sdDivision.Contest.BreakBy == "SD" && sweden.Government.Breaks.Count == breaksBefore + 1, F("SD votes its own alternative, not the government's frames - a break recorded: {0}", sdSide?.Reason ?? "NONE"));
+                Check(sdSide != null && sdSide.Side < 0 && sdDivision.Contest != null && sdDivision.Contest.BreakBy == "SD" && ContestBreaks(sweden.Government, breaksBefore) == 1, F("SD votes its own alternative, not the government's frames - a break recorded: {0}", sdSide?.Reason ?? "NONE"));
                 Check(sdDivision != null && sdDivision.Contest != null && sdDivision.Contest.VotesFor + sdDivision.Contest.VotesAgainst + sdDivision.Contest.Abstentions == 349 && sdDivision.Passed, F("the contest on the record: {0} {1}, {2} {3}, abstaining {4}", sdDivision?.Contest?.ProposalFor, sdDivision?.Contest?.VotesFor, sdDivision?.Contest?.ProposalAgainst, sdDivision?.Contest?.VotesAgainst, sdDivision?.Contest?.Abstentions));
                 sweden.PlayerPartyAbbrev = "S";
 
@@ -131,6 +131,14 @@ namespace PoliSim.EditorTools
             if (failures > 0) { Debug.LogError($"GOVERNMENT BUDGET BILL: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);
+        }
+
+        /// <summary>§654: the contest's own break lines since <paramref name="from"/> - a budget vote can also break items owed through two budget votes (PS-3i-2b), which record their own lines.</summary>
+        private static int ContestBreaks(GovernmentRecord g, int from)
+        {
+            int n = 0;
+            for (int i = from; i < g.Breaks.Count; i++) { if (g.Breaks[i].Contains("voted its own alternative budget")) { n++; } }
+            return n;
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
