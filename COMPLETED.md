@@ -34778,3 +34778,14 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Also sent:** `20a_as_built.md` with the frames `04_demographics`, `04h_people_dense` and the four plates, so Design reads the retrofit against its board.
 
 **Tooling tier** (`bar_tier.ps1`): cheap bar 65 of 65 (`cheap663`), residue 0.
+
+
+## 664. THE INCUMBENT CODE-SIDE FILES ARRIVED AND ARE INSTALLED: FIVE FILES BYTE-EXACT TO DESIGN'S MANIFEST, THE PLAYER'S DEFAULT ICON THE BRAND'S 512 (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *the Code-side files are the logotype SVG, logomark SVG, .ico and the 256 and 512 PNGs, in a zip under 192 KiB or split. Install them when they arrive.*
+
+**Arrived** the same evening, after §663's ask: `send/incumbent_install.zip`, 146,601 bytes (under the pull cap, pulled whole), exactly the five files with a MANIFEST; every digest matched; both PNGs walk clean (`pngcheck`); the SVGs are paths only, no fonts.
+
+**Installed.** `Assets/Art/Brand/Incumbent/` - the five and Design's MANIFEST, outside `Resources` (nothing loads them at run time; they are the build's and the store's), kept `-text` in `.gitattributes` so a checkout never rewrites an SVG's line endings under its digest. The default player icon set through Unity's own `PlayerSettings` to `incumbent_icon_512.png` (`IncumbentBrandCheck.Install`, run once; `ProjectSettings.asset` gains the one icon entry). **`IncumbentBrandCheck`** (cheap bar): every MANIFEST file present with its digest, and the default icon the brand's. Not touched: `productName` and `companyName` (ruled, §651) - the window title and the save path wait on the studio name; the in-game wordmark stays `PoliSimTheme.Wordmark` (text, as built §651) - the logotype SVG is held for the store and a vector import, which this project does not carry.
+
+**Tooling tier + settings:** cheap bar 66 of 66 (`cheap664`), residue 0.
