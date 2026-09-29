@@ -34813,3 +34813,14 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Filmed.** Dry `drys666` (Sweden 1280): 142 measured, 0 failed, 0 overflows, 0 escapes. Real `s666_1280`: 142 captured, 0 failed, 0 clipped; new frame `04i_people_slips_pinned` (the 35–39 band's chain with WORKING AGE's level 2, and the turnout head's, pinned through the controller's own pin - a pointer's slip cannot be filmed, a pinned one can), read by eye.
 
 **Tier UI + tooling:** cheap bar 67 of 67 (`cheap666`), residue 0.
+
+
+## 667. MIPMAPS WITH TRILINEAR FILTERING ON THE TEXTURES DRAWN AT 16 PX - THE SIXTEEN GLYPHS AND THE LAW PAIR'S EMBLEMS; IMPORT SETTINGS ONLY; THE THIN STROKES NO LONGER BREAK; BOTH CROPS SENT (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Enable mipmaps with trilinear filtering on the registry's icon textures. Change import settings only and never rewrite the PNGs. Re-shoot the 16 px interest-rate crop and send Design both crops. Report whether thin strokes still break.*
+
+**Changed** (21 `.meta` files, `enableMipMap: 1`, `filterMode: 2`; no PNG touched, Design's digests hold): the sixteen glyphs under `Vocab/` and the textures the law pair draws as its emblem - `icon_stat_interestrate` (the monetary regime's) and the four law categories' area icons (crime and justice, labour, fiscal, energy). The emblems are read as the registry's because the pair draws them at the same 16 px and §663's crop was of one; they also draw on the rail, where a mip chain changes nothing visible at their larger size. **`ImporterSettingsCheck`**: a MINIFIED class (`MinifiedAtSixteen`) where mipmaps and Trilinear are REQUIRED; the §3 rule - no mipmaps on art drawn 1:1 - stands for every other sprite. 214 sprites, 0 errors.
+
+**Re-shot** (`s667_1280_06i_laws_monetary_row`, the same frame and rect as §663): **the thin strokes no longer break** - the stair is continuous, the percent's rings are two-pixel marks, the slash unbroken; the cost is softness, grey edges where there were hard pixels; the verb (a solid shape) unchanged. **Sent** `uploads/D24_code_mip/` (9 files: one zip with MANIFEST inside, 8 files; before and after, native, 4× and the pair at 8×, and Code's reading). Design judges.
+
+**Filmed** real `s667_1280`: 142 captured, 0 failed, 0 clipped. **Bars:** cheap 67 of 67 (`cheap667`).

@@ -164,7 +164,18 @@ namespace PoliSim.EditorTools
                 // was written; 44 files across Emblems/, Flags/, Icons/ and Portraits/ carried them
                 // anyway, which is a rule that existed and was never checked. A mip chain on art drawn at
                 // 1:1 by IMGUI is memory spent to make it blurrier.
-                if (texture.mipmapCount > 1)
+                // §667 (ruled 2026-09-29): THE MINIFIED CLASS - the registry's glyphs and the law pair's emblems are 256 px art drawn at 16 px, the one
+                // place UI art minifies, and a 256 -> 16 draw without a mip chain samples the source sparsely (§663's crop: thin strokes broke). There
+                // mipmaps with trilinear filtering are REQUIRED; everywhere else the rule below stands.
+                if (MinifiedAtSixteen(assetPath))
+                {
+                    if (texture.mipmapCount <= 1 || texture.filterMode != FilterMode.Trilinear)
+                    {
+                        Debug.LogError($"  MINIFIED {assetPath} -> {texture.mipmapCount} mip level(s), {texture.filterMode}; drawn at 16 px it needs mipmaps and Trilinear (§667).");
+                        errors++;
+                    }
+                }
+                else if (texture.mipmapCount > 1)
                 {
                     Debug.LogError($"  MIPMAPS {assetPath} -> {texture.mipmapCount} levels on UI art drawn at 1:1. " +
                                    $"§3 requires enableMipMap: 0.");
@@ -180,6 +191,19 @@ namespace PoliSim.EditorTools
             Debug.Log($"=== Importer settings: {files.Length} sprite(s) under {Root}, " +
                       $"{errors} error(s), {warnings} warning(s) ===");
             CheckExit.Finish(errors == 0 ? 0 : 1);
+        }
+
+        /// <summary>§667: the minified class - every glyph of the D24 vocabulary (the registry's folder) and the textures the law pair draws as its
+        /// emblem (the law categories' area icons and the interest rate's stat icon, `GameController.LawEmblem`).</summary>
+        private static bool MinifiedAtSixteen(string assetPath)
+        {
+            string p = assetPath.Replace('\\', '/');
+            if (p.Contains("/Art/UI/Vocab/")) { return true; }
+            foreach (string stem in new[] { "Stats/icon_stat_interestrate.png", "Icons/icon_area_crimejustice.png", "Icons/icon_area_energy.png", "Icons/icon_area_fiscal.png", "Icons/icon_area_labor.png" })
+            {
+                if (p.EndsWith("/Art/UI/" + stem, System.StringComparison.Ordinal)) { return true; }
+            }
+            return false;
         }
 
         /// <summary>Every block-compressed format this project can plausibly produce. Listed rather than inferred, so a new one shows up as a compile-time gap instead of silently passing.</summary>
