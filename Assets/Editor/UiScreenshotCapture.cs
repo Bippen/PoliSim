@@ -504,10 +504,18 @@ namespace PoliSim.EditorTools
                 driver.BeforeExit = null;
                 driver.DryExit = OnDrySessionEnd;
                 Debug.Log($"SHOT: DRY session {index + 1} of {sessions.Length} - {session[0]} at {w}x{h - GameViewChromeHeight} (a {w}x{h} film's frame), label {driver.Label}.");
+                Debug.Log(FilmHeader(driver.Country, w));
                 return;
             }
             Debug.Log($"SHOT: driver attached, label={label}, country={driver.Country}, states={driver.PinStates}, saves={driver.StageSaves}, ladder={driver.Ladder}, campaign={driver.CampaignHq}, locale={(driver.Locale.Length == 0 ? "OS" : driver.Locale)}, {Screen.width}x{Screen.height}");
+            Debug.Log(FilmHeader(driver.Country, Screen.width));
         }
+
+        /// <summary>§661: THE FILM'S OWN HEADER - the country it plays and the width it runs at, as the run found them (the real film's is the Game
+        /// View's own width, not the width asked for). `Tools/unity_run.ps1` reads every one and fails a film whose header differs from its request:
+        /// a dry film once ran USA at 1600 and exited 0 because its arguments never reached Unity (§656).</summary>
+        private static string FilmHeader(string country, int width) =>
+            string.Format(System.Globalization.CultureInfo.InvariantCulture, "SHOT: HEADER country={0} width={1}", country, width);
 
         private static string Arg(string prefix, string fallback)
         {

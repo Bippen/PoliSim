@@ -34730,3 +34730,14 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Pinned.** Part (6) asserts the premise's failure on the round's own order, C's items breaking on budget vote 2 with C's withdrawal, and the motion that would carry with SD abstaining and is not moved because the successor does not seat C. The rows amended: PS-3i-2a and PS-3's done-when.
 
 **Tooling tier** (`bar_tier.ps1`: one Editor diagnostic): cheap bar 64 of 64 (`cheap660`, part (6) among it), residue 0.
+
+
+## 661. A FILM'S OWN HEADER STATES ITS COUNTRY AND WIDTH, AND THE LAUNCHER FAILS A FILM WHOSE HEADER DIFFERS FROM ITS REQUEST - PROVED BOTH WAYS (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *each film's own log header must state its country and width, and the launcher fails if they differ from the request. Prove it both ways.*
+
+**Built.** `UiScreenshotCapture.FilmHeader`: every session logs `SHOT: HEADER country=<c> width=<w>` from what it found - a dry session its own plan's country and width, a real film the driver's country and the Game View's own `Screen.width`, not the width asked for. `Tools/unity_run.ps1`, for `UiScreenshotCapture.Run`/`RunDry`: the request is read from `-Extra` without regard to case (what was meant - `-shotcountry`/`-shotcountries`, `-shotwidth`/`-shotgeometries`), every header in the film's log is compared with it, and a film with a differing header, or with none, fails the launcher with exit 5 whatever Unity's own exit.
+
+**Proved.** Matching (`hdr661ok`, Sweden 1280, `-shotstop=01c`): Unity exit 0, *FILM HEADER: ok - country=Sweden width=1280*, launcher exit 0. Differing (`hdr661bad`, the same request with the switch mis-cased `-shotCountry=Sweden`, which the harness does not read): **Unity exit 0** having run USA, *FILM HEADER: MISMATCH - the film ran country=USA width=1280; asked country=Sweden*, launcher **exit 5**. And a third way, unplanned: the first matching run met a compile error of this very edit - no header - and the launcher failed it (exit 5), where the film's own exit said only 1. Neither proof label has a scope row, so `DryFilmScopeCheck` reads neither.
+
+**Tooling tier** (`bar_tier.ps1`: one Editor tool, one Tools script): cheap bar 64 of 64 (`cheap661`), residue 0.
