@@ -368,6 +368,7 @@ namespace PoliSim.UI
         public const float BlocFenceLightness = 0.090f;
         private static readonly Dictionary<PoliSim.Data.CountryId, Dictionary<string, Color>> NudgedCache = new Dictionary<PoliSim.Data.CountryId, Dictionary<string, Color>>();
         private static readonly Dictionary<PoliSim.Data.CountryId, List<string>> NudgeLog = new Dictionary<PoliSim.Data.CountryId, List<string>>();
+        private static bool _createdHooked;
 
         /// <summary>The party's ink after the nudge rule - its seated ink unless a measured collision moved its lightness; the neutral accent for a party with no published colour.</summary>
         public static Color PartyLaddered(PoliSim.Data.CountryId country, string abbrev)
@@ -411,6 +412,7 @@ namespace PoliSim.UI
         /// <summary>The chamber's inked parties by the ladder's mandates (<see cref="InkLadderSeats"/>), descending; each smaller party is measured against every larger one and nudged away from the nearest collision until it clears the tolerance.</summary>
         private static Dictionary<string, Color> NudgedTable(PoliSim.Data.CountryId country)
         {
+            if (!_createdHooked) { _createdHooked = true; PoliSim.Data.CreatedParties.Changed += () => { NudgedCache.Clear(); NudgeLog.Clear(); }; }   // §671: a created party changes the roster the nudge was measured on
             if (NudgedCache.TryGetValue(country, out Dictionary<string, Color> cached)) { return cached; }
             var table = new Dictionary<string, Color>();
             var log = new List<string>();

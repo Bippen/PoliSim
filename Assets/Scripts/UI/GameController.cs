@@ -670,6 +670,7 @@ namespace PoliSim.UI
             // World/SimulationManager are created immediately (the selector screen needs every
             // country's Name/Id to exist) - only _playerCountry/_prevGdp wait for SelectPlayerCountry,
             // since which country those refer to isn't known until the player picks.
+            PoliSim.Data.CreatedParties.Clear();   // §671 (SP-3): a fresh process's game has no created party until the creation flow (SP-4) or a load registers one
             _world = WorldFactory.CreateDefault();
             _simulationManager = gameObject.AddComponent<SimulationManager>();
             _simulationManager.SetWorld(_world);

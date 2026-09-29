@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using PoliSim.Elections;
 
@@ -507,6 +508,31 @@ namespace PoliSim.Data
         /// </summary>
         public static bool TryHistory(CountryId id, out double[] latest, out double[] previous, ElectionVintage vintage = ElectionVintage.Seated)
         {
+            if (!TryRealHistory(id, out latest, out previous, vintage)) { return false; }
+            // §671 (SP-3): a created party's history, after the real parties' - a newcomer's prior 0 and previous 0, so no loyal base (§2.7, the
+            // vote model's own logic); a Splinter's prior is its chosen slice of the parent's last result, MOVED from the parent. None registered, nothing padded.
+            IReadOnlyList<CreatedParty> created = CreatedParties.Of(id);
+            if (created.Count == 0) { return true; }
+            PoliticalParty[] real = RealRoster(id);
+            var l = new double[latest.Length + created.Count];
+            var p = new double[previous.Length + created.Count];
+            Array.Copy(latest, l, latest.Length);
+            Array.Copy(previous, p, previous.Length);
+            for (int c = 0; c < created.Count; c++)
+            {
+                if (created[c].Origin != PartyOrigin.Splinter) { continue; }
+                int parent = Array.FindIndex(real, x => x.Abbrev == created[c].ParentKey);
+                if (parent < 0 || parent >= latest.Length) { continue; }
+                double slice = l[parent] * created[c].InheritedSlice;
+                l[parent] -= slice;
+                l[latest.Length + c] = slice;
+            }
+            latest = l; previous = p;
+            return true;
+        }
+
+        private static bool TryRealHistory(CountryId id, out double[] latest, out double[] previous, ElectionVintage vintage)
+        {
             vintage = Elections.WorldClock.Resolve(id, vintage);   // PS-1 (§618): the seated chamber's election, at the world's epoch
             switch (id)
             {
@@ -576,6 +602,14 @@ namespace PoliSim.Data
         /// <summary>The country's seat-holding units, in its key order - seat order at the election the order was set on (Sweden's is 2022's,
         /// kept by K-1 because every positional table is indexed by it); a view that needs seat order sorts by <see cref="PoliticalParty.SeedSeats"/>.</summary>
         public static IReadOnlyList<PoliticalParty> For(CountryId id)
+        {
+            // §671 (SP-3): the created parties of this game after the real ones - the very same array where none is registered
+            PoliticalParty[] real = RealRoster(id);
+            return CreatedParties.Extend(id, real) ?? real;
+        }
+
+        /// <summary>§671: the country's real parties, in its key order - what every sourced positional table is indexed by.</summary>
+        public static PoliticalParty[] RealRoster(CountryId id)
         {
             switch (id)
             {

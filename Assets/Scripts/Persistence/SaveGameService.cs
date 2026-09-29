@@ -100,6 +100,7 @@ namespace PoliSim.Persistence
                 EpochDate = SimulationManager.EpochDate,   // PS-1 (§618): the world's start travels with the game
                 CurrencyZoneGroups = CaptureZoneGroups(world),
                 World = world,
+                CreatedParties = PoliSim.Data.CreatedParties.All(),   // §671 (SP-3)
                 Sim = sim.CaptureSaveState(),
                 PlayerCampaign = sim.CampaignRecord,
                 Ui = ui
@@ -228,6 +229,12 @@ namespace PoliSim.Persistence
         /// </summary>
         public static void RestoreInto(SimulationManager sim, SaveGame save)
         {
+            // §671 (SP-3): the save's created parties replace the process's, before anything reads a roster - a refused one is logged, never dropped silently
+            PoliSim.Data.CreatedParties.Clear();
+            foreach (PoliSim.Data.CreatedParty party in save.CreatedParties ?? new List<PoliSim.Data.CreatedParty>())
+            {
+                if (!PoliSim.Data.CreatedParties.TryRegister(party, PoliSim.Data.PartySystems.RealRoster(party.Country), out string refused)) { UnityEngine.Debug.LogError($"SAVE: the created party '{party.Key}' was refused on load - {refused}"); }
+            }
             SimulationRandom.RestoreState(save.MasterSeed, save.RngDrawCounts);
             SimulationManager.SetEpoch(save.EpochDate);   // PS-1 (§618): the save's own start, before the clock is restored against it
             sim.RestoreSaveState(save.World, save.CurrentTurn, save.CurrentDate, save.Sim);

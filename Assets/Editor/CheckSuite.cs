@@ -176,6 +176,7 @@ namespace PoliSim.EditorTools
             ("SymbolRegistryCoverageCheck", SymbolRegistryCoverageCheck.Run),   // §662 (UI v3.3 §4.2): the D24 vocabulary resolves, every law's pair is drawable, the fallbacks named
             ("IncumbentBrandCheck", IncumbentBrandCheck.Run),   // §664: the brand's Code-side files byte-exact to Design's MANIFEST, and the player's icon the brand's
             ("PeopleSlipReachabilityCheck", PeopleSlipReachabilityCheck.Run),   // §666 (UI v3.3 §1): every word People's cohort block took off the page at rest is on a slip within two levels
+            ("CreatedPartyDiagnostic", CreatedPartyDiagnostic.Run),   // §671 (SP-3): a created party appended to the roster, its history padded, the spec's asserts (i) and (iii), a save round trip; inert when none
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),
             ("PartyLeadershipDiagnostic", PartyLeadershipDiagnostic.Run),   // K-1e (§608): the sourced roster, name and office - it had run in no bar, so its ASCII-folded names failed unheard
             ("SettingsCheck", SettingsCheck.Run),   // MM-2 (§615): every preference pinned by the film harness, every setting proved live

@@ -54,6 +54,9 @@ namespace PoliSim.Persistence
         /// <summary>C-R4b step 3: the player's campaign as a REPLAY record (streams' counts at its start, days stepped) - see `PlayerCampaignRecord`. Null when no campaign has begun. Format 6.</summary>
         public PoliSim.Elections.PlayerCampaignRecord PlayerCampaign;
         public UiDraftState Ui;
+        /// <summary>§671 (SP-3): the game's created parties - registered again before the world is restored, so every roster read sees them. A save
+        /// from before §671 carries none, which is what it means: no created party (no format bump).</summary>
+        public List<PoliSim.Data.CreatedParty> CreatedParties = new List<PoliSim.Data.CreatedParty>();
     }
 
     /// <summary>A pending cabinet decision as a NAMED pair - the in-memory shape is a ValueTuple,
