@@ -15,10 +15,11 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// §671 (SP-3, the spec's S3, structural): **A CREATED PARTY IN THE MODEL.** Asserted: none registered, nothing reads differently (`For` is the very
     /// array it was; the history's length stands) - the no-policy path stays byte-inert; the key rules (ASCII, no roster key, no duplicate; a Splinter
-    /// needs a real parent); a registered party is APPENDED - every real index stands; the six origins and the pip table are data; the spec's second, its
-    /// first half - a Grassroots newcomer polls near zero before it campaigns; its third - a Splinter begins at its inherited slice of the parent's last
-    /// result, moved from the parent; and a save carries the party back. MEASURED, not asserted: the spec's first (a party on a real party's positions
-    /// competes for THAT party's voters) - on the idle prediction the newcomer's sliver is taken from every party by size; the campaign asserts it (part two).
+    /// needs a real parent); a registered party is APPENDED - every real index stands; the six origins and the pip table are data; the spec's third - a
+    /// Splinter begins at its inherited slice of the parent's last result, moved from the parent; and a save carries the party back. MEASURED, not
+    /// asserted (§674, the units corrected - the prediction returns fractions): the spec's first (a party on a real party's positions competes for THAT
+    /// party's voters) - the model has no source term, a newcomer's persuaded share comes out of every party through the renormalisation; and its second
+    /// (a Grassroots newcomer polls near zero until it campaigns) - it does not: with no loyal base it takes its whole persuaded share at once.
     /// </summary>
     public static class CreatedPartyDiagnostic
     {
@@ -69,34 +70,33 @@ namespace PoliSim.EditorTools
                 Check(indices, F("it is APPENDED: For(Sweden) is {0} long, every real party at its own index, the created one last", roster.Count));
                 PartySystems.TryHistory(CountryId.Sweden, out double[] twinLatest, out double[] twinPrevious);
                 Check(twinLatest.Length == real.Length + 1 && twinLatest[real.Length] == 0.0 && twinPrevious[real.Length] == 0.0, "a newcomer's history is padded with prior 0 and previous 0 - no loyal base (§2.7)");
+                // §674: TryPredictShares returns FRACTIONS - §671 printed them as percentages, so its "0.06 %" was 5.5 % and its (ii) passed on a fraction
+                // (0.12 < 1.0) where the share is 12 %. Every share below is read ×100.
                 if (NationalElection.TryPredictShares(CountryId.Sweden, out Dictionary<string, double> twinShares))
                 {
                     string most = null; double mostLoss = double.MinValue;
                     var losses = new List<string>();
                     foreach (PoliticalParty p in real)
                     {
-                        double loss = baseShares[p.Abbrev] - twinShares[p.Abbrev];
+                        double loss = (baseShares[p.Abbrev] - twinShares[p.Abbrev]) * 100.0;
                         losses.Add(F("{0} {1:+0.00;-0.00}", p.Abbrev, -loss));
                         if (loss > mostLoss) { mostLoss = loss; most = p.Abbrev; }
                     }
-                    sb.Append(F("    measured  on M's positions: NM {0:0.00} %; the real parties move {1}\n", twinShares["NM"], string.Join(", ", losses)));
-                    // §671, MEASURED AND NOT ASSERTED: the spec's (i) does not hold on the IDLE prediction. A newcomer with prior 0 and no loyal base takes a sliver, and
-                    // the preference is renormalised, so the sliver comes from every party by size - the largest loses most, not the party it sits on. Whether it
-                    // competes for THAT party's voters is the campaign's to show (persuasion moves by compatibility there): SP-3's second part asserts it there.
-                    sb.Append(F("    measured  (i) on the idle prediction the twin takes {0:0.00} % and {1} loses the most ({2:0.00} pp) - the sliver is taken by size, not from M; (i) is asserted on the campaign, SP-3's second part\n", twinShares["NM"], most, mostLoss));
-                    Check(twinShares["NM"] > 0.0 && twinShares["NM"] < baseShares["M"], F("a party on M's positions is predicted a share, and less than M's own ({0:0.00} % against {1:0.00} %)", twinShares["NM"], twinShares["M"]));
+                    sb.Append(F("    measured  (i) on M's positions, no loyal base: NM {0:0.00} %; the real parties move (pp) {1}; {2} loses the most - NOT asserted: the model has no source term, a newcomer's persuaded share comes out of every party through the renormalisation (§674)\n",
+                        twinShares["NM"] * 100.0, string.Join(", ", losses), most));
+                    Check(twinShares["NM"] > 0.0 && twinShares["NM"] < baseShares["M"], F("a party on M's positions is predicted a share, and less than M's own ({0:0.00} % against {1:0.00} %)", twinShares["NM"] * 100.0, baseShares["M"] * 100.0));
                 }
                 else { Check(false, "(i) the vote model predicts no shares with a created party registered"); }
 
-                // (ii) measured: a Grassroots newcomer at the electorate's centre, before any campaign.
+                // (ii) measured: a Grassroots newcomer at (5, 5), before any campaign. §674: NOT near zero - with no loyal base it takes its whole persuaded share
+                // at once; the vote model has no awareness term (Recognition reaches nothing). Recorded, not asserted.
                 CreatedParties.Clear();
                 var grass = Make("GRS");
-                PartySystems.TryElectorate(CountryId.Sweden, out VoteModel.Electorate electorate, out double _);
                 grass.LrEcon = 5f; grass.Galtan = 5f;
                 CreatedParties.TryRegister(grass, real, out _);
                 if (NationalElection.TryPredictShares(CountryId.Sweden, out Dictionary<string, double> grassShares))
                 {
-                    Check(grassShares["GRS"] < 1.0, F("(ii), its first half: a Grassroots newcomer at (5, 5) polls near zero before it campaigns - {0:0.00} %; 'until it campaigns' is the campaign's half, SP-3's second part", grassShares["GRS"]));
+                    sb.Append(F("    measured  (ii) a Grassroots newcomer at (5, 5), no campaign: {0:0.00} % - NOT near zero: no loyal base means its whole persuaded share at once, and no awareness term holds it back (§674)\n", grassShares["GRS"] * 100.0));
                 }
 
                 // (iii) a Splinter begins at its inherited slice, moved from its parent.
@@ -110,7 +110,7 @@ namespace PoliSim.EditorTools
                 foreach (double v in baseLatest) { sumBase += v; }
                 foreach (double v in spLatest) { sumSplit += v; }
                 Check(Math.Abs(spLatest[real.Length] - slice) < 1e-9 && Math.Abs(spLatest[s] - (baseLatest[s] - slice)) < 1e-9 && Math.Abs(sumBase - sumSplit) < 1e-9 && spPrevious[real.Length] == 0.0,
-                    F("(iii) a Splinter of S at a quarter begins at its inherited slice: prior {0:0.00} % (S's {1:0.00} × 0.25), S down to {2:0.00} %, the total unchanged, no previous result", spLatest[real.Length], baseLatest[s], spLatest[s]));
+                    F("(iii) a Splinter of S at a quarter begins at its inherited slice: prior {0:0.00} % (S's {1:0.00} % × 0.25), S down to {2:0.00} %, the total unchanged, no previous result", spLatest[real.Length], baseLatest[s], spLatest[s]));
 
                 // The save carries it back.
                 SimulationRandom.Seed(777);
