@@ -34837,3 +34837,12 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Result.** Build succeeded - 0 errors, 37 warnings, 140 MB, 123 s first (26 s rebuilt). Smoke (headless) PASSED: the protocol's first save, 2026-01-18 to 2026-02-17, player exit 0; the player's log 0 errors. **The icon is the Incumbent brand's** (the chamber-arc mark, read by eye from the extracted 32 × 32; §664 set it). One build-only failure, found by the windowed smoke, fixed in its own commit: §669. Observed, not a failure: the player runs a no-policy century at startup (the model's anomaly notices, 253 lines) before the scene arms - the Editor does the same; it costs start-up time, and is a separate question.
 
 **Tooling tier:** cheap bar 67 of 67 (`cheap668`).
+
+
+## 669. BUILD-ONLY FAILURE, FIXED: THE WINDOWED SMOKE HUNG - A SCRIPT-LAUNCHED PLAYER HAS NO FOCUS AND STOPS TICKING; THE SMOKE ALONE RUNS IN THE BACKGROUND (2026-09-29)
+
+**The failure** (the first windowed smoke, `build_player.ps1 -SmokeOnly -Windowed`): the player armed, loaded its fonts and stopped - no `SMOKE: loaded` line in ten minutes, the script's timeout, the process left running (ended by its pid, the smoke's own launch, 17748). Cause: a windowed player launched by a script has no focus, and with Run In Background off Unity stops ticking frames; the headless smoke never met it (batch mode ticks regardless). A player launched by hand has focus and is not affected.
+
+**Fixed.** `PlayerSmoke.Arm` sets `Application.runInBackground` when - and only when - `-smoke` is on the command line. **Proved:** rebuilt (26 s), headless smoke PASSED, windowed smoke PASSED on the real device (Intel Arc B580), 30 days, exit 0, the log 0 errors and 0 exceptions.
+
+**Tooling tier:** cheap bar 67 of 67 (`cheap668`, run on this tree).

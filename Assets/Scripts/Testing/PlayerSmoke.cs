@@ -26,6 +26,9 @@ namespace PoliSim.Testing
             string save = null;
             foreach (string a in Environment.GetCommandLineArgs()) { if (a.StartsWith("-smoke=", StringComparison.Ordinal)) { save = a.Substring(7); } }
             if (string.IsNullOrEmpty(save)) { return; }
+            // §668, found by the first windowed smoke: a windowed player launched by a script has no focus, and with Run In Background off Unity
+            // stops ticking frames - the smoke hung after the scene loaded. The smoke alone runs in the background; a player launched by hand is untouched.
+            Application.runInBackground = true;
             var go = new GameObject("PlayerSmoke");
             DontDestroyOnLoad(go);
             go.AddComponent<PlayerSmoke>()._save = save;
