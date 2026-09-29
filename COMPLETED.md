@@ -34789,3 +34789,14 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Installed.** `Assets/Art/Brand/Incumbent/` - the five and Design's MANIFEST, outside `Resources` (nothing loads them at run time; they are the build's and the store's), kept `-text` in `.gitattributes` so a checkout never rewrites an SVG's line endings under its digest. The default player icon set through Unity's own `PlayerSettings` to `incumbent_icon_512.png` (`IncumbentBrandCheck.Install`, run once; `ProjectSettings.asset` gains the one icon entry). **`IncumbentBrandCheck`** (cheap bar): every MANIFEST file present with its digest, and the default icon the brand's. Not touched: `productName` and `companyName` (ruled, §651) - the window title and the save path wait on the studio name; the in-game wordmark stays `PoliSimTheme.Wordmark` (text, as built §651) - the logotype SVG is held for the store and a vector import, which this project does not carry.
 
 **Tooling tier + settings:** cheap bar 66 of 66 (`cheap664`), residue 0.
+
+
+## 665. THE PLAY PROTOCOL'S SITTINGS REORDERED: S FIRST (NEW GAME → SWEDEN → 2026 → S), M SECOND; THE FORMATEUR HALF IS REACHED AS S; BOTH SAVES STAGED AND CHECKED (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29, on §660): *PS-3i-2a stays closed as recorded - the rule, the count and the seats unchanged. Update PLAY_PROTOCOL.md: the first sitting is S (New game → Sweden → 2026 → S) and the second is M. State that the formateur half is reached as S, and that M is asked only if the campaign's seats make the formation name M. Stage S as the protocol's first save and keep M's as the second.*
+
+**Built.** `PlayProtocolStaging.CutAndVerify(path, party, …)`: the sitting's party seated at the start under the government of record, and its role asserted both ways on the restore - S in opposition, M governing. `Run` cuts both: `playtest_4_precampaign_day1.json` is now **S** (the first save's name kept, so every reader of it opens the first sitting) and `playtest_4b_precampaign_day1_m.json` is **M**. `PlayProtocolCheck` (cheap bar) cuts, loads back and adopts BOTH through the controller's own load path. `docs/play/PLAY_PROTOCOL.md`: the two sittings in order, the formateur half reached as S (the Speaker asks the party the formation names first - S on the real result, §660), M asked only on a count that names M; the saves table carries both; the stale 2030 dates in §1 and §3 replaced by the dates the staging prints (§619 moved the election to its real day).
+
+**Staged** (`stage665`): both saves format 37, seed 777, turn 0, the run-up's first day 2026-01-18, polling day 2026-09-13 as printed; S `5f73a016…`, M `f2ab14fa…`.
+
+**Tooling + documents:** cheap bar 66 of 66 (`cheap665`) - PlayProtocolCheck adopts both.

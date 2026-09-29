@@ -66,12 +66,16 @@ namespace PoliSim.EditorTools
             using System.IDisposable epoch = SimulationManager.EpochScope();
             try
             {
-                string failure = PlayProtocolStaging.CutAndVerify(path, out SaveGame loaded);
-                if (failure != null) { Debug.LogError("PLAY PROTOCOL: " + failure); CheckExit.Finish(1); return; }
-                Debug.Log(string.Format(CultureInfo.InvariantCulture, "PLAY PROTOCOL: the pre-campaign save cuts and loads back - format {0}, seed {1}, Sweden, {2:yyyy-MM-dd}, PRE-CAMPAIGN on the calendar.", loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate));
-                string adoption = AdoptThroughTheController(path);
-                if (adoption != null) { Debug.LogError("PLAY PROTOCOL: " + adoption); CheckExit.Finish(1); return; }
-                Debug.Log("PLAY PROTOCOL: the CONTROLLER adopts it - GameController.RestoreFromSave on a save with no UI layer, the path the player's Load takes; the controller governs Sweden in the loaded world, PAUSED.");
+                // §665: both sittings' saves - S (the first, in opposition) and M (the second, governing) - each cut, loaded back and adopted by the controller
+                foreach (string party in PlayProtocolStaging.SittingParties)
+                {
+                    string failure = PlayProtocolStaging.CutAndVerify(path, party, out SaveGame loaded);
+                    if (failure != null) { Debug.LogError($"PLAY PROTOCOL: the {party} sitting - " + failure); CheckExit.Finish(1); return; }
+                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "PLAY PROTOCOL: the {3} sitting's save cuts and loads back - format {0}, seed {1}, Sweden, {2:yyyy-MM-dd}, PRE-CAMPAIGN on the calendar.", loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, party));
+                    string adoption = AdoptThroughTheController(path);
+                    if (adoption != null) { Debug.LogError($"PLAY PROTOCOL: the {party} sitting - " + adoption); CheckExit.Finish(1); return; }
+                    Debug.Log($"PLAY PROTOCOL: the CONTROLLER adopts the {party} sitting's save - GameController.RestoreFromSave on a save with no UI layer, the path the player's Load takes; the controller governs Sweden in the loaded world, PAUSED.");
+                }
                 Debug.Log("=== PlayProtocolCheck: ALL ASSERTIONS PASS ===");
                 CheckExit.Finish(0);
             }

@@ -18,7 +18,7 @@ namespace PoliSim.EditorTools
     /// (the game's own run-up - since PS-2 / CL-4 (§619) the run-up to Sweden's REAL polling day, `WorldClock.TryNextPollingDay` from the epoch, so the
     /// save's day is the epoch itself, 18 January 2026, and the turn is 0; between CL-5 (§579) and §619 it was the run-up to turn 4's boundary), and written with the save service the game itself uses.
     /// The seed is stated on the save (`MasterSeed`, 777 - the harness's own, so a played run and a filmed one open on one world) and the
-    /// protocol document names it. Nothing is drafted into it: a playtester opens a clean book. **The player is seated as M, the first sitting's party (ruled §633; before it the largest party of Sweden's seeded chamber**
+    /// protocol document names it. Nothing is drafted into it: a playtester opens a clean book. **The player is seated as the sitting's party - S the first sitting, M the second (ruled §665; §633 had M first; before it the largest party of Sweden's seeded chamber**
     /// (§558 - the fresh game's own fallback and the film harness's seat; until 2026-09-21 the staging seated none, and a player with no party has no run-up).
     ///
     /// <para><see cref="PlayProtocolCheck"/> (the cheap bar) cuts the same save to a temporary path, loads it back into a second manager and
@@ -30,12 +30,20 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class PlayProtocolStaging
     {
+        /// <summary>§665 (ruled 2026-09-29): the protocol's FIRST save - the first sitting, S in opposition, which reaches the formateur half on the real result's order.</summary>
         public const string PreCampaignSaveName = "playtest_4_precampaign_day1";
+        /// <summary>§665: the SECOND save - the second sitting, M leading the government of record (§633's first sitting until §665).</summary>
+        public const string SecondSittingSaveName = "playtest_4b_precampaign_day1_m";
+        /// <summary>§665: the sittings' parties in the protocol's order.</summary>
+        public static readonly string[] SittingParties = { "S", "M" };
+
+        /// <summary>The first sitting's save (S); see the overload.</summary>
+        public static string CutAndVerify(string path, out SaveGame loaded) => CutAndVerify(path, SittingParties[0], out loaded);
         public const int Seed = 777;
         private static string F(string f, params object[] a) => string.Format(CultureInfo.InvariantCulture, f, a);
 
         /// <summary>Cuts the pre-campaign save to <paramref name="path"/>, loads it back into a fresh manager and returns null, or the first assertion that failed.</summary>
-        public static string CutAndVerify(string path, out SaveGame loaded)
+        public static string CutAndVerify(string path, string party, out SaveGame loaded)
         {
             loaded = null;
             // CL-5 RULED (2026-09-22, §579): THE GAME IS RIGHT AND THE PROTOCOL WAS WRONG. Until this day the save was cut on CampaignCalendar.Sweden2026 - the REAL
@@ -64,10 +72,10 @@ namespace PoliSim.EditorTools
                 Country player = world.GetCountry(CountryId.Sweden);
                 PoliticalParty largest = default;
                 int largestSeats = -1;   // PS-1 (§618): the largest of the chamber the world SEATS, as SelectPlayerCountry picks it
-                foreach (PoliticalParty party in PartySystems.For(CountryId.Sweden)) { int held = player.ParliamentSeats.TryGetValue(party.Abbrev, out int n) ? n : 0; if (largest.Abbrev == null || held > largestSeats) { largest = party; largestSeats = held; } }
+                foreach (PoliticalParty candidate in PartySystems.For(CountryId.Sweden)) { int held = player.ParliamentSeats.TryGetValue(candidate.Abbrev, out int n) ? n : 0; if (largest.Abbrev == null || held > largestSeats) { largest = candidate; largestSeats = held; } }
                 if (player == null || largest.Abbrev == null) { return "Sweden's seeded chamber could not be read - no party to seat"; }
-                // PS-3f (§633, ruled): THE FIRST SITTING'S PARTY IS M, leading the government of record - the play opens governing; S in opposition is the second sitting (PLAY_PROTOCOL.md). The largest-party rule stays the harness's.
-                player.PlayerPartyAbbrev = "M";
+                // §665 (ruled 2026-09-29, reversing §633's order): the sitting's party - S in opposition first (it reaches the formateur half), M leading the government of record second (PLAY_PROTOCOL.md). The largest-party rule stays the harness's.
+                player.PlayerPartyAbbrev = party;   // §665: S the first sitting, M the second
                 player.PartyApprovalRating = player.State.ApprovalRating;
                 player.Government = PoliSim.Elections.GovernmentRecord.AtStart(player, PoliSim.Elections.WorldClock.StartDate(CountryId.Sweden), world);   // PS-3a (§628): the staged save is the game a player would start - S in opposition under M+KD+L
                 int days = 0;
@@ -103,9 +111,11 @@ namespace PoliSim.EditorTools
                 // party has no run-up and is refused every campaign verb (`AdvancePreCampaign`: no party index, no run) - and until this day the staging seated none, so the
                 // save the protocol opens on could not be played as the protocol says.
                 if (simB.PlayerPartyIndexForCampaign() < 0) { return "restored, the player has NO PARTY in the campaign - no run-up begins and every campaign verb is refused; the protocol's first step cannot be taken"; }
-                // PS-3f (§633, ruled): the first sitting's party is M and it governs - a regression to the largest (S) would pass the index test and open the play in opposition.
+                // §665: the sitting's party and its role - a regression to another party, or to the other role, fails here.
                 Country restored = simB.World?.GetCountry(CountryId.Sweden);
-                if (restored == null || restored.PlayerPartyAbbrev != "M" || !simB.PlayerGoverns(restored)) { return $"restored, the player is {restored?.PlayerPartyAbbrev ?? "NONE"} and governs {(restored != null && simB.PlayerGoverns(restored))} - the first sitting is M leading the government of record (§633)"; }
+                // §665: S sits in opposition under the government of record, M leads it - the sitting's own role, asserted both ways
+                bool shouldGovern = party == "M";
+                if (restored == null || restored.PlayerPartyAbbrev != party || simB.PlayerGoverns(restored) != shouldGovern) { return $"restored, the player is {restored?.PlayerPartyAbbrev ?? "NONE"} and governs {(restored != null && simB.PlayerGoverns(restored))} - the sitting is {party}, {(shouldGovern ? "leading" : "in opposition to")} the government of record (§665)"; }
                 // CL-5, CLOSED (2026-09-22, §579), and PS-2 / CL-4 (§619): the save is cut on the GAME's calendar, which since §619 IS the real one - the live day path
                 // reads the player's country's next polling day. ⚠ The guard is that the two agree AFTER the restore - if the restored manager pointed at a different
                 // election, the save would open on a run-up the game is not about to run.
@@ -137,11 +147,17 @@ namespace PoliSim.EditorTools
             CheckExit.ArmLogFold();
             string dir = SaveGameService.DefaultSaveDirectory;
             Directory.CreateDirectory(dir);
-            string path = Path.Combine(dir, PreCampaignSaveName + ".json");
-            string failure = CutAndVerify(path, out SaveGame loaded);
-            if (failure != null) { Debug.LogError("PLAY PROTOCOL: the pre-campaign save was NOT staged clean - " + failure); CheckExit.Finish(1); return; }
+            // §665: both sittings' saves, S first and M second, each cut and verified
+            string[] names = { PreCampaignSaveName, SecondSittingSaveName };
+            for (int s = 0; s < names.Length; s++)
+            {
+            string path = Path.Combine(dir, names[s] + ".json");
+            string failure = CutAndVerify(path, SittingParties[s], out SaveGame loaded);
+            if (failure != null) { Debug.LogError($"PLAY PROTOCOL: the {SittingParties[s]} sitting's save was NOT staged clean - " + failure); CheckExit.Finish(1); return; }
+            Debug.Log($"PLAY PROTOCOL: sitting {s + 1} is {SittingParties[s]} - {names[s]}.json");
             Debug.Log(F("PLAY PROTOCOL: staged {0} ({1} bytes, sha256 {2}…) - format {3}, seed {4}, turn {9}, Sweden, {5:yyyy-MM-dd} = the run-up's first day ({6} weeks before the campaign, {7} before polling day {8:yyyy-MM-dd}).",
                 path, new FileInfo(path).Length, Digest(path), loaded.SaveVersion, loaded.MasterSeed, loaded.CurrentDate, CampaignCalendar.DefaultPreCampaignWeeks, CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks, loaded.CurrentDate.AddDays(7 * (CampaignCalendar.DefaultPreCampaignWeeks + CampaignCalendar.DefaultCampaignWeeks)), loaded.CurrentTurn));
+            }
             CheckExit.Finish(0);
         }
     }
