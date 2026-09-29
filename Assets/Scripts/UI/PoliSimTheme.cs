@@ -320,11 +320,44 @@ namespace PoliSim.UI
 
         /// <summary>W-G1: true when this party has a published colour on disk. False is NOT "grey is its colour" — it is "no colour is known", and a caller that draws a legend should say so.</summary>
         public static bool HasPartyInk(PoliSim.Data.CountryId country, string abbrev) =>
-            PartyHues.ContainsKey(country + "/" + abbrev);
+            PartyHues.ContainsKey(country + "/" + abbrev) || CreatedInk(country, abbrev).HasValue;
 
         /// <summary>This party's ink. The SAME call must serve a hemicycle arc and its legend swatch - that is behaviour 9, and routing both through one accessor is what makes it true by construction rather than by two call sites agreeing.</summary>
         public static Color Party(PoliSim.Data.CountryId country, string abbrev) =>
-            PartyHues.TryGetValue(country + "/" + abbrev, out Color ink) ? ink : AreaAccents[UiPalette.SystemArea.Neutral];
+            PartyHues.TryGetValue(country + "/" + abbrev, out Color ink) ? ink : CreatedInk(country, abbrev) ?? AreaAccents[UiPalette.SystemArea.Neutral];
+
+        /// <summary>§676 (SP-4): a created party's chosen ink (its stored hex, already at the desk's seat), or null - none registered, none chosen.</summary>
+        private static Color? CreatedInk(PoliSim.Data.CountryId country, string abbrev)
+        {
+            foreach (PoliSim.Data.CreatedParty c in PoliSim.Data.CreatedParties.Of(country))
+            {
+                if (c.Key == abbrev && !string.IsNullOrEmpty(c.InkHex) && ColorUtility.TryParseHtmlString(c.InkHex, out Color ink)) { return ink; }
+            }
+            return null;
+        }
+
+        /// <summary>§676 (SP-4): the creation flow's ink ring - <see cref="CreatedInkSteps"/> hues at the desk's own seat (the saturation and value every
+        /// published party ink is seated at), so a created party's ink is chosen by hue alone, as every real one was.</summary>
+        public const int CreatedInkSteps = 24;
+
+        public static Color CreatedInkCandidate(int step) => Color.HSVToRGB(((step % CreatedInkSteps) + CreatedInkSteps) % CreatedInkSteps / (float)CreatedInkSteps, PartyInkSaturation, PartyInkValue);
+
+        /// <summary>§676 (SP-4): the nearest real party's DRAWN ink to a candidate (oklab, Euclidean - the nudge's own measure): its key, or null where the
+        /// chamber draws none. A candidate under <see cref="NudgeTolerance"/> of one collides, and the flow refuses it - so the nudge never has to move it.</summary>
+        public static string NearestRealInk(PoliSim.Data.CountryId country, Color candidate, out float distance)
+        {
+            string nearest = null;
+            distance = float.MaxValue;
+            ToOklab(candidate, out float L, out float a, out float b);
+            foreach (PoliSim.Data.PoliticalParty p in PoliSim.Data.PartySystems.RealRoster(country))
+            {
+                if (!PartyHues.ContainsKey(country + "/" + p.Abbrev)) { continue; }
+                ToOklab(PartyLaddered(country, p.Abbrev), out float Lj, out float aj, out float bj);
+                float d = Mathf.Sqrt((L - Lj) * (L - Lj) + (a - aj) * (a - aj) + (b - bj) * (b - bj));
+                if (d < distance) { distance = d; nearest = p.Abbrev; }
+            }
+            return nearest;
+        }
 
         // ------------------------------------------------------------------------------------------
         // ------------------------------------------------------------------------------------------

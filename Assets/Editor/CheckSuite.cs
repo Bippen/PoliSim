@@ -178,6 +178,7 @@ namespace PoliSim.EditorTools
             ("PeopleSlipReachabilityCheck", PeopleSlipReachabilityCheck.Run),   // §666 (UI v3.3 §1): every word People's cohort block took off the page at rest is on a slip within two levels
             ("CreatedPartyDiagnostic", CreatedPartyDiagnostic.Run),
             ("CreatedPartyCampaignDiagnostic", CreatedPartyCampaignDiagnostic.Run),   // §675 (SP-3 part two): the cast, the day 0 from the stats, the player's index, the count's rule; (i) and (ii) re-measured on a campaign   // §671 (SP-3): a created party appended to the roster, its history padded, the spec's (iii) asserted and (i), (ii) measured (§674), a save round trip; inert when none
+            ("PartyCreationCheck", PartyCreationCheck.Run),   // §676 (SP-4): the creation flow - the unspent cells, the ink fence, the key rule, every anchor slipped, the commit into the roster and the cast, the real inks and prediction untouched
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),
             ("PartyLeadershipDiagnostic", PartyLeadershipDiagnostic.Run),   // K-1e (§608): the sourced roster, name and office - it had run in no bar, so its ASCII-folded names failed unheard
             ("SettingsCheck", SettingsCheck.Run),   // MM-2 (§615): every preference pinned by the film harness, every setting proved live

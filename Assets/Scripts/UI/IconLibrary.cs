@@ -205,8 +205,15 @@ namespace PoliSim.UI
         {
             if (string.IsNullOrEmpty(markName)) { return null; }
 
+            // §676 (SP-4): a created party wears one of the cells no seed spends, installed under its own name in Cells/ (never Emblems/, where
+            // PartyMarkCoverageCheck counts an unclaimed mark as an orphan).
+            if (markName.StartsWith(CellPrefix, System.StringComparison.Ordinal)) { return Load(CellResourcesPath + markName); }
+
             return Load(EmblemResourcesPath + markName);
         }
+
+        private const string CellPrefix = "mark_cell_";
+        private const string CellResourcesPath = "Art/UI/Cells/";
 
         private const string PortraitResourcesPath = "Art/UI/Portraits/";
 

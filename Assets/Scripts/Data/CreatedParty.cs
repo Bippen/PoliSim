@@ -37,6 +37,16 @@ namespace PoliSim.Data
         public string Issue;
         public string Region;
 
+        /// <summary>§676 (SP-4): the party's declarations as the creation flow stores them, by real party KEY (an index moves with the roster, a key
+        /// does not) - the parties it will not sit in or support a cabinet with (a symmetric red line), the parties it will not sit in or support any
+        /// cabinet CONTAINING (one-way, K-1's shape), the party whose leader it backs for prime minister (its own key for its own leader, empty for
+        /// none), and whether it refuses every cabinet it is not in (in-or-against, K-1f's shape). ⚠ STORED, NOT YET READ: the formation's wiring
+        /// (`DeclaredRedLines`, the round) is owed.</summary>
+        public List<string> RedLinesAgainst = new List<string>();
+        public List<string> OneWayAgainst = new List<string>();
+        public string BacksCandidateOf;
+        public bool InOrAgainst;
+
         /// <summary>The party as the roster carries it: no seats of its own (a created party enters the chamber by election), its positions and leader.</summary>
         public PoliticalParty ToParty() => new PoliticalParty(Key, Name, LrEcon, Galtan, 0, MarkStem, EuPosition,
             string.IsNullOrEmpty(LeaderName) ? null : new[] { new PartyLeader(LeaderName, LeaderTitle ?? "partiledare") },

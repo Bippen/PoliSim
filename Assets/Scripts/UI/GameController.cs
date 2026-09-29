@@ -1785,7 +1785,7 @@ namespace PoliSim.UI
                     break;
 
                 case CanvasPhase.None when !_selectedPlayerCountryId.HasValue && !_canvasLive && !_canvasSelectorFailed
-                    && (_mainMenuPassed || _mainMenuFailed) && !_savesMenuOpen && !_settingsOpen:
+                    && (_mainMenuPassed || _mainMenuFailed) && !_savesMenuOpen && !_settingsOpen && !_partyCreationOpen:
                     // ⚠ SEAM DEFECT CLASS 8, found by the pilot's own FIRST run rather than named in
                     // advance: a THROWING screen builder is worse than a null one. The throw escaped
                     // this Layout-event call, aborted OnGUI mid-Layout (corrupting the Layout/Repaint
@@ -1811,6 +1811,7 @@ namespace PoliSim.UI
                     }
 
                     _canvasScreenKind = CanvasScreenKind.Selector;
+                    _countrySelector.OnCreateParty = RequestPartyCreation;   // §676 (SP-4)
                     _countrySelector.SetVisible(false);
                     BeginCanvasPhase(CanvasPhase.CoverIn);
                     break;
@@ -1868,7 +1869,7 @@ namespace PoliSim.UI
                     break;
 
                 case CanvasPhase.None when _canvasLive && _canvasScreenKind == CanvasScreenKind.Selector
-                    && _selectedPlayerCountryId.HasValue:
+                    && (_selectedPlayerCountryId.HasValue || _createPartyRequested):   // §676: or CREATE A PARTY pressed - the flow opens under the cover
                     BeginCanvasPhase(CanvasPhase.CoverOut);
                     break;
 
@@ -1903,6 +1904,7 @@ namespace PoliSim.UI
                         else { ApplyMainMenuChoice(); }
                     }
 
+                    if (_createPartyRequested && _countrySelector != null) { _createPartyRequested = false; OpenPartyCreation(_partyCreationCountry); }   // §676 (SP-4)
                     _countrySelector?.Destroy();
                     _countrySelector = null;
                     _signingScreen?.Destroy();
@@ -2144,7 +2146,7 @@ namespace PoliSim.UI
         {
             Country country = definition != null ? _world.GetCountry(definition.Country) : null;
             if (country == null || _countrySelector == null) { return; }
-            _countrySelector.ShowPartyPanel(country, (id, abbrev) => StartScenarioAsParty(definition, abbrev));
+            _countrySelector.ShowPartyPanel(country, (id, abbrev) => StartScenarioAsParty(definition, abbrev), offerCreate: false);
         }
 
         /// <summary>CL-2: the scenario's party pick committed - the party seated, then the scenario as it always started.</summary>
@@ -2177,7 +2179,8 @@ namespace PoliSim.UI
             Country before = _world?.GetCountry(countryId);
             string seatedParty = before?.PlayerPartyAbbrev;
             bool sameEpoch = start == SimulationManager.EpochDate && _simulationManager.CurrentDate == start;
-            if (sameEpoch) { return; }
+            if (sameEpoch && !_worldRosterStale) { return; }   // §676: a party registered after the world was built rebuilds it - the world snapshots the roster
+            _worldRosterStale = false;
 
             SimulationManager.SetEpoch(start);
             _world = WorldFactory.CreateDefault();
@@ -2609,6 +2612,14 @@ namespace PoliSim.UI
                 if (_savesMenuOpen)
                 {
                     DrawSavesMenuScreen();
+                    DrawCanvasRestoreScrim();
+                    return;
+                }
+
+                // §676 (SP-4): the creation flow, a screen swap opened from the party panel's CREATE A PARTY
+                if (_partyCreationOpen)
+                {
+                    DrawPartyCreationScreen();
                     DrawCanvasRestoreScrim();
                     return;
                 }

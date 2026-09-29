@@ -439,6 +439,8 @@ namespace PoliSim.EditorTools
             driver.Country = Arg("-shotcountry=", "USA");
             // State pinning and locale override (2026-08-12): flags of the same capture-config family.
             driver.PinStates = Environment.GetCommandLineArgs().Contains("-shotstates");
+            // §676 (SP-4): the creation flow filmed through START - the filmed draft committed, the player seated as it (stop the film after 01k6 with -shotstop=).
+            driver.CreateAndStart = Environment.GetCommandLineArgs().Contains("-shotcreatestart");
             // R-D4 (the clear-out kickoff, 2026-08-28): stage the three playtest saves instead of the sweep.
             driver.StageSaves = Environment.GetCommandLineArgs().Contains("-shotsaves");
             // UI v3.0 Phase A, Phase 3 (2026-08-28): film the instrument ladder instead of the sweep.

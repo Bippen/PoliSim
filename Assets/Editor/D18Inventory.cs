@@ -432,6 +432,9 @@ namespace PoliSim.EditorTools
                 foreach (PoliticalParty party in PartySystems.For(id)) { Take(IconLibrary.GetPartyMark(party.MarkName)); }
             }
 
+            // §676 (SP-4): the creation flow's mark picker - every cell it offers, through the same accessor the picker draws with
+            foreach (string cell in PoliSim.UI.PartyCreationFlow.UnspentCells()) { Take(IconLibrary.GetPartyMark(cell)); }
+
             var ministers = PortraitCoverageCheck.ReadPool<Dictionary<CabinetPortfolio, List<CabinetMinister>>>(
                 typeof(CabinetSystem), "CandidatePool");
             var chairs = PortraitCoverageCheck.ReadPool<List<FedChair>>(typeof(FederalReserveSystem), "CandidatePool");

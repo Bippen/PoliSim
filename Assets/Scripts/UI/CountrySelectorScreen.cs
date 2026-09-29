@@ -30,6 +30,9 @@ namespace PoliSim.UI
     {
         public GameObject Root { get; private set; }
 
+        /// <summary>§676 (SP-4): the party panel's CREATE A PARTY - set by the controller; drawn where it is set and the country offers creation.</summary>
+        public Action<CountryId> OnCreateParty;
+
         /// <summary>CL-2: the party panel over the folders - the country's seeded chamber, largest first; null when no country is open.</summary>
         private GameObject _partyPanel;
 
@@ -216,7 +219,7 @@ namespace PoliSim.UI
         /// formation seats it in the cabinet; a party seats the player and starts the game, BACK returns to the folders. Public so the
         /// capture driver can film it; <paramref name="onSelect"/> null draws the panel and seats nobody.
         /// </summary>
-        public void ShowPartyPanel(Country country, Action<CountryId, string> onSelect)
+        public void ShowPartyPanel(Country country, Action<CountryId, string> onSelect, bool offerCreate = true)
         {
             ClosePartyPanel();   // 18a: the party panel opens OVER the sheet; the sheet closes with it through HidePartyPanel
             if (Root == null || country == null) { return; }
@@ -304,6 +307,19 @@ namespace PoliSim.UI
                 string abbrev = party.Abbrev;
                 CountryId id = country.Id;
                 button.onClick.AddListener(() => { if (onSelect != null) { onSelect(id, abbrev); } });
+            }
+
+            // §676 (SP-4): a party of the player's own - the creation flow, where the country offers it (a scenario's pick does not: it starts the scenario's party)
+            if (offerCreate && OnCreateParty != null && PartyCreationFlow.Offered(country.Id))
+            {
+                Button createButton = CanvasChrome.FacedButton(column.transform, "CreateParty", "CREATE A PARTY",
+                    PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight), CanvasChrome.Face.Paper);
+                LayoutElement createLayout = createButton.gameObject.AddComponent<LayoutElement>();
+                createLayout.preferredWidth = BackButtonWidth;
+                createLayout.preferredHeight = PartyRowHeight;
+                createLayout.minHeight = PartyRowHeight;
+                CountryId createFor = country.Id;
+                createButton.onClick.AddListener(() => OnCreateParty?.Invoke(createFor));
             }
 
             Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE COUNTRIES",

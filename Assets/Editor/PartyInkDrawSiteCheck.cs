@@ -77,6 +77,10 @@ namespace PoliSim.EditorTools
              + "parties' laddered inks - the chamber IS the card's subject (16e's rule: the bar is the form below a disc's size). The "
              + "file draws NO area accent beside it: the country's hue rule is the folder's own ink through UiPalette's country accessor, "
              + "not a system area's, and the party panel's rows carry marks, not inks."),
+            ("GameController.PartyCreation.cs",
+             "§676 (SP-4, 2026-09-29): the creation flow CHOOSES a party identity - its ink is picked against the real parties' drawn inks and "
+             + "its mark placed among theirs on the compass, so party identity is the whole subject, the chamber's argument. The file draws "
+             + "NO area accent: the single-issue party's area icons are tinted in plain text ink, never the area's own (clause 2 by construction)."),
         };
 
         public static void Run()

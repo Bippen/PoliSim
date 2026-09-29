@@ -103,6 +103,9 @@ namespace PoliSim.EditorTools
         /// is IN THE PACK, verified by content, with the reason it stays there. Per (pack, predicate), each skip logged.
         /// ⚠ A held entry is not a licence: if its base name turns up under `Assets/` the entry is no longer held and the
         /// check falls through to the ordinary comparison.
+        /// <para>§676 (SP-4, 2026-09-29): the 35 unspent cells are now IMPORTED - under `Cells/`, not `Emblems/`, as the creation flow's mark picker
+        /// (`PartyCreationFlow.UnspentCells`) - so the two cell predicates below no longer fire for them and the files compare as delivered. The
+        /// predicates stay for the record of why the cells waited, and for any pack that ships a cell not yet installed.</para>
         /// </summary>
         private static readonly Dictionary<string, (Func<string, bool> Matches, string Reason)[]> HeldInPack =
             new Dictionary<string, (Func<string, bool>, string)[]>

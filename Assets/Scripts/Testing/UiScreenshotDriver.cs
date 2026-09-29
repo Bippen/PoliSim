@@ -67,6 +67,9 @@ namespace PoliSim.Testing
         /// <summary>Set by `-shotstates`: run the state-pinning pass (cabinet, budget pause, decision search, pending bills) after the main sweep. Off by default so ordinary chrome runs stay fast and their sets comparable with history.</summary>
         public bool PinStates;
 
+        /// <summary>§676 (SP-4), set by `-shotcreatestart`: the creation flow ends in START (the draft registered, the player seated as it) instead of BACK.</summary>
+        public bool CreateAndStart;
+
         /// <summary>Set by `-shotsaves` (R-D4, the clear-out kickoff of 2026-08-28): instead of the sweep, stage the
         /// playtest saves - one per felt verdict in COMPLETED.md §198 §P - through the REAL save service
         /// into the real saves directory, each state filmed once as proof, so §P is load-play-judge rather than
@@ -390,6 +393,57 @@ namespace PoliSim.Testing
                 else
                 {
                     Debug.LogWarning("SHOT: CL-2 - the Canvas selector was not reachable; the party picker is NOT filmed.");
+                }
+            }
+
+            // §676 (SP-4): THE CREATION FLOW - the party panel's CREATE A PARTY, then the five steps on one filled draft (the profile with an
+            // origin card's slip pinned), then BACK to the selector through the flow's own close. Nothing is registered, so no frame after these moves.
+            if (controller.CanvasSelectorActive && PartyCreationFlow.Offered(_countryId))
+            {
+                string[] steps = { "01k1_create_profile", "01k2_create_placement", "01k3_create_declarations", "01k4_create_leader", "01k5_create_review" };
+                Expect(steps);
+                Invoke(controller, "RequestPartyCreation", _countryId);
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+                if (controller.GetType().GetField("_pcDraft", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is CreatedParty draft)
+                {
+                    draft.Name = "Framtidspartiet";
+                    draft.ShortName = "Framtid";
+                    draft.Key = PartyCreationFlow.KeyFrom(_countryId, draft.ShortName);
+                    draft.LeaderName = "Maja Ek";
+                    draft.RedLinesAgainst.Add("SD");
+                    draft.OneWayAgainst.Add("V");
+                    draft.BacksCandidateOf = draft.Key;
+                    draft.LrEcon = 4.5f;
+                    draft.Galtan = 3.0f;
+                }
+                for (int s = 0; s < steps.Length; s++)
+                {
+                    SetPrivateField(controller, "_pcStep", s);
+                    if (s == 0) { Invoke(controller, "PinSlipForFilm", "origin/Grassroots", null, new Vector2(UiScreen.Width * 0.58f, UiScreen.Height * 0.40f)); }
+                    yield return Settle();
+                    Claim("imgui");
+                    yield return Capture(steps[s]);
+                }
+                if (CreateAndStart)
+                {
+                    // -shotcreatestart: START through the flow's own commit - the draft registered, the world rebuilt on the roster that carries it,
+                    // the player seated as it - and the desk filmed with the created party seated. The film runs on as that party (cut it with -shotstop=).
+                    Expect("01k6_created_seated");
+                    Invoke(controller, "CommitPartyCreation");
+                    SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                    yield return Settle();
+                    Country seatedIn = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+                    Debug.Log($"SHOT: SP-4 - START: the cast {string.Join(" ", LiveCampaignSetup.Keys(_countryId))}; the seated party {seatedIn?.PlayerPartyAbbrev}; campaign capital for it: {seatedIn?.PartyCapital.Exists(c => c.PartyAbbrev == seatedIn.PlayerPartyAbbrev)}.");
+                    Claim("imgui");
+                    yield return Capture("01k6_created_seated");
+                }
+                else
+                {
+                    Invoke(controller, "ClosePartyCreation");
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    Debug.Log($"SHOT: SP-4 - the creation flow filmed for {_countryId}: five steps, closed back to the selector, nothing registered.");
                 }
             }
 
