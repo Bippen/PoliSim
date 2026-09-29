@@ -34638,3 +34638,18 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **No family.** The no-policy century seats no player: no author, no budget vote counted; the sentinel unmoved.
 
 **Bars.** Tier SIMULATION + UI: cheap 64 of 64, simulation 56 of 56.
+
+
+## 655. PS-3i-2a IN A REAL GAME, MEASURED: UNREACHABLE AS RULED - ONE BUDGET VOTE BEFORE 13 SEPTEMBER 2026, AND AFTER IT SD REFUSES THE SUPPORT ROLE; THE CONFLICT NAMED. D24'S MIXED-DIRECTION FORM ASKED (2026-09-29)
+
+**The ruling** (Elias, 2026-09-29): *Then prove PS-3i-2a in a real game: as M, deliver nothing, watch SD withdraw, the motion carry and the government fall.* And: *check that the 16 glyphs include a mixed-direction form, since 13 laws move their dials both ways. If they don't, add it to D24.*
+
+**Measured** (`AiMotionReachDiagnostic` (4), the game's own calendar and chamber, the rules of §653 and §654):
+- **Before the 2026 election**: the real day path from Sweden's start, 18 January 2026, to polling day, as M, tabling the standing budget whenever a window opens and delivering nothing - **1 budget vote held** (the arrival window; the fiscal year's frame decision falls after polling day). SD's owed items waited through at most 1 of the 2 an item waits through (§654), so nothing breaks, SD supports on and no motion is moved.
+- **After the 2026 election**: on the chamber the election seated, M proposing M+KD+L with SD's support and every SD demand accepted, read on the election's own day (§653) - **SD refuses**: *supports no cabinet it is not in* - its own declaration dated 2025-10-10 ([L-C2], restated [MSD-I4], the 2026 platform [SD-P2]), which stands open on the timeline and so governs every formation after it, 2030's included.
+
+**The conflict, named.** The chain as ruled needs SD to be a supporter across two budget votes; in the modelled calendar SD is one only before 13 September 2026, when one budget vote is held, and never after, by its own words. The two rulings are each honoured and together leave the chain with no supporter to withdraw. The ways it could be reached, for Elias's ruling (nothing changed): (i) the proof stays on the chamber where the round seats SD, as §644's part (3) proves it; (ii) the break count is 1 before the first election (the entry is [AUTHORED-DRAFT], the 24th on the list); (iii) the chain is proved with a supporter other than SD after 2026 (C's declared lines do not refuse supporting an M-led cabinet without SD - not measured; its agreement would be a new one); (iv) K-1i read the other way (*full opposition*) changes nothing here - either reading refuses the support role. PS-3i-2a's row says so.
+
+**The glyphs, read.** Design's sixteen 19a glyphs carry RAISE and LOWER, BAN and ALLOW and the three trends - no form says a law moves its dials in both directions, while 13 laws do (the inventory's *both ways* column: 11 in crime and justice, 2 in the labour market). Added to D24 as a costed ask under 19a rule 7 (`uploads/D24_ask/ADDENDUM_mixed_direction.md`; local copy `PoliSim-captures/design/D24_ask/`): a VERB-family member, or *no verb* stays right and the pair shows the emblem alone - which is also the honest fallback until Design answers. The D24 row names it.
+
+**Tooling tier** (`bar_tier.ps1`: one Editor diagnostic): cheap bar 64 of 64, with the record.

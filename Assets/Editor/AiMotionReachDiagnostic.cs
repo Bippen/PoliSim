@@ -50,6 +50,7 @@ namespace PoliSim.EditorTools
             {
                 Measure();
                 Chain();
+                RealGame();
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
@@ -126,6 +127,53 @@ namespace PoliSim.EditorTools
                     sb.Append(F("    measured  {0:yyyy-MM-dd} the player as M tables '{1}' - {2}, {3} for, {4} against: {5} (PS-3i-2b)\n", d.Date, d.Title, d.Passed ? "PASSED" : "FAILED", yes, no, string.Join(", ", sides)));
                 }
                 sb.Append(F("    measured  SD's dial item after the breaching bills: {0}\n", dial.State));
+            }
+
+            // (4) PS-3i-2a IN A REAL GAME (ruled 2026-09-29, §655: as M, deliver nothing, watch SD withdraw, the motion carry and the government fall), measured
+            // on the game's own calendar and chamber - its two preconditions: SD must be a supporter across two budget votes (PS-3i-2b as ruled, §654), and
+            // the round must seat SD outside the week before a polling day (PS-3i-2c, §653).
+            void RealGame()
+            {
+                // Before the 2026 election: the real day path from the start, the player as M tabling the standing budget whenever a window opens and
+                // delivering nothing; every budget vote the game holds before polling day counted.
+                (SimulationManager sim, Country sweden) = Open("AiMotionReachDiagnostic.real");
+                sweden.PlayerPartyAbbrev = "M";
+                sim.TryPlayerPollingDay(out DateTime polling);
+                var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+                int budgetVotes = 0, guard = 0;
+                while (sim.CurrentDate < polling && guard++ < 400)
+                {
+                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, new BudgetBill()); }
+                    int divisionsBefore = sweden.Divisions.Entries.Count;
+                    if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
+                    sim.AdvanceCountryDayTick(CountryId.Sweden);
+                    for (int i = divisionsBefore; i < sweden.Divisions.Entries.Count; i++) { if (sweden.Divisions.Entries[i].Title.StartsWith("Annual budget", StringComparison.Ordinal)) { budgetVotes++; } }
+                }
+                SupportAgreement sd = sweden.Government?.AgreementOf("SD");
+                int owedThrough = 0;
+                if (sd != null) { foreach (AgreementItem item in sd.Items) { if (item.State == AgreementState.Owed) { owedThrough = Math.Max(owedThrough, item.BudgetVotesOwed); } } }
+                sb.Append(F("    real      {0:yyyy-MM-dd} to polling day {1:yyyy-MM-dd} as M, nothing delivered: {2} budget vote(s) held; SD's owed items waited through at most {3}; SD {4}\n",
+                    SimulationManager.EpochDate, polling, budgetVotes, owedThrough, sweden.Government != null && sweden.Government.Support.Contains("SD") ? "still supports" : "no longer supports"));
+                Check(budgetVotes < SupportAgreement.BudgetVotesToBreak && sweden.Government != null && sweden.Government.Support.Contains("SD") && sweden.Government.NoConfidenceOn == DateTime.MinValue,
+                    F("(4) before the 2026 election the game holds {0} budget vote(s) - fewer than the {1} an owed item waits through: nothing breaks, SD supports on, no motion", budgetVotes, SupportAgreement.BudgetVotesToBreak));
+
+                // After the election: the chamber the 2026 election seated, M proposing M+KD+L with SD's support and every SD demand accepted, read on the
+                // election's own day (§653) - SD's answer.
+                (SimulationManager sim2, Country after) = Open("AiMotionReachDiagnostic.real2026", new DateTime(2026, 10, 1));
+                after.PlayerPartyAbbrev = "M";
+                var proposal = new FormationProposal { Formateur = "M" };
+                proposal.CabinetParties.AddRange(new[] { "M", "KD", "L" });
+                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in GovernmentRecord.GamsonPosts(after, proposal.CabinetParties, "M")) { proposal.Posts[kv.Key] = kv.Value; }
+                proposal.Supporters.Add("SD");
+                proposal.FreezeTabled(after, sim2.CurrentDate, sim2.World);
+                var keys = new List<string>();
+                foreach (AgreementItem item in proposal.TabledOf(after, "SD", sim2.CurrentDate, sim2.World)) { keys.Add(SupportAgreement.KeyOf(item)); }
+                proposal.AcceptedDemands["SD"] = keys;
+                ProposalVerdict verdict = Formateur.Answer(after, proposal, sim2.CurrentDate, sim2.World, DeclarationReading.OfElection(CountryId.Sweden, new DateTime(2026, 9, 13)), null, "M");
+                PartyAnswer sdAnswer = verdict.Answers.Find(a => a.Party == "SD");
+                sb.Append(F("    real      after the 2026 election, M+KD+L with SD's support offered every demand: SD {0} - {1}\n", sdAnswer == null ? "not asked" : sdAnswer.Accepts ? "accepts" : "refuses", sdAnswer?.Reason ?? "-"));
+                Check(sdAnswer != null && !sdAnswer.Accepts,
+                    F("(4) after the 2026 election SD refuses the support role it would need to hold ({0}) - the chain as ruled has no supporter to withdraw", sdAnswer?.Reason ?? "not asked"));
             }
 
             // (3): the ruled chain, on the chamber where the round seats SD.
