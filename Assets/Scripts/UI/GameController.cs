@@ -10476,6 +10476,8 @@ namespace PoliSim.UI
             DrawCohortCaption("EMPLOYMENT · SHARE BY SECTOR · Sector.EmploymentShare", "DERIVED");   // P6-1 (board 8a): the head row is the instrument's - title left, stamp right
             _sectorEmploymentPieChart.Draw(string.Empty, sectorSlices, _labelStyle, "F1", moneyUnit: null);
             GUILayout.Space(10f);
+            _plateRetrofit20b = true;   // §686 (board 20b): People's five plates take 20b's eight rules at rest - the flag scopes them to this page
+            if (Event.current.type == EventType.Repaint) { _plateSlips.Clear(); _plateSlipRects.Clear(); }
             DrawHealthFamilyPlate();   // P5-C2 (2026-09-05, board 9c): the health family's plate - the society-stat grammar, family 1 of 6
             GUILayout.Space(10f);
             DrawEducationFamilyPlate();   // P5-C3 (2026-09-06): family 2 of 6, 9c's grammar inherited by shape - the distribution form drawn first
@@ -10485,6 +10487,8 @@ namespace PoliSim.UI
             DrawEnvironmentFamilyPlate();   // P5-C5 (2026-09-06): family 4 of 6 on the shared core
             GUILayout.Space(10f);
             DrawMigrationPovertyFamilyPlate();   // P5-C6 (2026-09-06): family 5 of 6 on the shared core
+            _plateRetrofit20b = false;
+            if (_peopleSlips != null) { foreach (KeyValuePair<string, SlipContent> plate in _plateSlips) { _peopleSlips.Anchors[plate.Key] = plate.Value; } }   // §686: the plates' slips join the page's book
             if (_peopleSlips != null && !DeskProvenance.On) { DrawSlips(_peopleSlips, _cohortBlockBounds); }   // §666: the slips over the whole page, last
             // §564 (2026-09-22): the two ranked bar ledgers that stood here - "Spending Allocation" (29 lines) and "Theoretical Tax Revenue by Source" (13 types), the
             // old pack's full-width Fiscal-ink bars - are gone with their renderer (Design's sitting, part A item 1: *"the spending bars bleeding onto People's foot"*).

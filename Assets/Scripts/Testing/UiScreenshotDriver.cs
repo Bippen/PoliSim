@@ -845,6 +845,26 @@ namespace PoliSim.Testing
                     ScrollBy(controller, Mathf.Max(0f, eduY - UiScreen.Height * 0.08f));
                     yield return Settle();
                     yield return Capture("04c_people_education_plate");
+                    // §686 (board 20b rule 5): the BILLED glyph's slip, pinned through the controller's own hook - a pointer's slip is never filmed.
+                    var plateSlipRects = controller.GetType().GetField("_plateSlipRects", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<string, Rect>;
+                    MethodInfo pin = controller.GetType().GetMethod("PinSlipForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                    string billedId = null;
+                    if (plateSlipRects != null) { foreach (KeyValuePair<string, Rect> kv in plateSlipRects) { if (kv.Key.StartsWith("Education|", StringComparison.Ordinal) && kv.Key.EndsWith("/BILLED", StringComparison.Ordinal)) { billedId = kv.Key; break; } } }
+                    if (billedId == null || pin == null)
+                    {
+                        Debug.LogError("SHOT: 04c2_people_education_billed_pinned - no BILLED glyph slip on the education plate (20b rule 5); NOT written.");
+                        _failed++;
+                    }
+                    else
+                    {
+                        Rect glyph = plateSlipRects[billedId];
+                        pin.Invoke(controller, new object[] { billedId, null, new Vector2(glyph.xMax + 6f, glyph.y) });
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture("04c2_people_education_billed_pinned");
+                        (controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as System.Collections.IList)?.Clear();
+                        Debug.Log("SHOT: §686 - the education plate's BILLED glyph slip pinned: " + billedId);
+                    }
                     ResetScrolls(controller);
                     yield return Settle();
                     // P5-C4 (2026-09-06): the infrastructure plate sits under the education plate.
@@ -884,6 +904,19 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Settle();
                     yield return Capture("04g_people_health_plate_provenance");
+                    // §686 (board 20b): every word the plates took off at rest is on the dense view (19c) - the other three plates behind the †, filmed.
+                    foreach ((string field, string stem) in new[] { ("_educationPlateLastArea", "04g2_people_education_plate_provenance"),
+                        ("_infrastructurePlateLastArea", "04g3_people_infrastructure_plate_provenance"), ("_environmentPlateLastArea", "04g4_people_environment_plate_provenance") })
+                    {
+                        ResetScrolls(controller);
+                        yield return Settle();
+                        FieldInfo provField = controller.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
+                        float provPlateY = provField != null ? ((Rect)provField.GetValue(controller)).y : 3600f;
+                        ScrollBy(controller, Mathf.Max(0f, provPlateY - UiScreen.Height * 0.08f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(stem);
+                    }
                     // §662 (board 20a part C): People's head in the dense view - the cohort instruments as lines, every word that left the page at rest.
                     ResetScrolls(controller);
                     yield return Settle();
