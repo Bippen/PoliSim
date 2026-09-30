@@ -88,8 +88,7 @@ namespace PoliSim.EditorTools
                 double[] prior = Normalise(c.PriorPct);
                 // §681: the entrant layer the model applies wherever it forms a preference - an entrant (prior 0: BSW, AzIV) draws first from its
                 // CHES family; every real party is at full awareness, so an entrant's own share is unchanged and only where it comes from moves
-                int[] families = PoliSim.Data.PartyFamilies.For(CountryOf(c.Name), c.PartyNames);
-                double[] runC = EntrantLayer.Apply(PreferenceModel.Preference(ToCompatibilityScale(runA), prior, Loyalty), prior, families, null, null);   // real entrants: no grouping (§681, measured)
+                double[] runC = EntrantLayer.ApplyFor(PreferenceModel.Preference(ToCompatibilityScale(runA), prior, Loyalty), prior, CountryOf(c.Name), c.PartyNames, null);   // §684: the rule in force (the default: real entrants no grouping)
                 double madC = VoteModel.MeanAbsoluteDeviationPp(runC, actual);
 
                 report.Append($"\n---- {c.Name} ----\n  prior basis: {c.PriorNote}\n");
@@ -118,8 +117,8 @@ namespace PoliSim.EditorTools
 
                     var regionPriors = new double[regions.Length][];
                     for (int r = 0; r < regions.Length; r++) { regionPriors[r] = prior; }
-                    double[] runD = EntrantLayer.Apply(RegionalVoteModel.NationalSharesWithLoyalty(
-                        c.Parties, regions, c.Day1, c.WEcon, regionPriors, Loyalty), prior, families, null, null);   // §681
+                    double[] runD = EntrantLayer.ApplyFor(RegionalVoteModel.NationalSharesWithLoyalty(
+                        c.Parties, regions, c.Day1, c.WEcon, regionPriors, Loyalty), prior, CountryOf(c.Name), c.PartyNames, null);   // §681
                     double madD = VoteModel.MeanAbsoluteDeviationPp(runD, actual);
 
                     report.Append("  party    actual   B:+§27  devB    D:+both  devD\n");

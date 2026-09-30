@@ -110,25 +110,28 @@ namespace PoliSim.Elections
             public readonly double[] AwarenessStart;
             /// <summary>§681: each party's family grouping strength (a created party's `EntrantLayer.GroupingStrength`, 0 a real one); null = none.</summary>
             public readonly double[] Grouping;
+            /// <summary>§684: each party's nine CHES positions (`EntrantSimilarity.Positions`), for the measured similarity rule; null = none.</summary>
+            public readonly double[][] Positions;
 
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions);
 
             /// <summary>§681: this setup with the entrant layer's families and opening awareness.</summary>
-            public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping);
+            public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping, double[][] positions) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
-                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null)
+                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null, double[][] positions = null)
             {
                 RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening
                 Families = families;
                 AwarenessStart = awarenessStart;
                 Grouping = grouping;
+                Positions = positions;
                 ElectorateLoyalty = electorateLoyalty;
                 LiveScandalRatePerPartyDay = liveScandalRatePerPartyDay;
                 Scandals = scandals ?? new (int, int, Scandal)[0];
@@ -1128,7 +1131,7 @@ namespace PoliSim.Elections
             var compatibility = new double[setup.Compatibility.Length];
             for (int i = 0; i < compatibility.Length; i++) { compatibility[i] = setup.Compatibility[i] + bonus[i]; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, setup.LoyaltyPerParty);
-            if (setup.Families != null) { preference = EntrantLayer.Apply(preference, prior, setup.Families, AwarenessToday(setup, pressure, coverage), setup.Grouping); }   // §681
+            if (setup.Families != null) { preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, prior, setup.Positions, AwarenessToday(setup, pressure, coverage)) : EntrantLayer.Apply(preference, prior, setup.Families, AwarenessToday(setup, pressure, coverage), setup.Grouping); }   // §681
             if (setup.RecordShift == null) { return preference; }
             // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
             return EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift);

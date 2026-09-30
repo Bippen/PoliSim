@@ -68,7 +68,7 @@ namespace PoliSim.EditorTools
                     if (!NationalElection.TryCompatibility(c, out string[] keys, out double[] compat, out double[] prior, out double[] loyalty)) { continue; }
                     double[] pref = PreferenceModel.Preference(compat, prior, loyalty);
                     bool hasEntrant = prior.Any(EntrantLayer.IsEntrant);
-                    double[] after = EntrantLayer.Apply(pref, prior, PartyFamilies.For(c, keys), null, null);
+                    double[] after = EntrantLayer.ApplyFor(pref, prior, c, keys, null);
                     sb.Append(F("    measured  {0}: {1} parties, entrant(s): {2}\n", c, keys.Length, hasEntrant ? string.Join(" ", keys.Where((k, i) => EntrantLayer.IsEntrant(prior[i]))) : "none"));
                     if (!hasEntrant && !ReferenceEquals(after, pref)) { inert = false; }
                 }
@@ -100,10 +100,15 @@ namespace PoliSim.EditorTools
                 int[] fam1 = PartyFamilies.For(se, k1);
                 int twinIndex = Array.IndexOf(k1, "NM");
                 // the twin at FULL awareness (null = every party at 1): the gate is where it draws from, not how much
-                double[] layered = EntrantLayer.Apply(plain, p1, fam1, null, EntrantLayer.GroupingOf(se, k1));   // the twin is a created party: it carries the grouping
-                sb.Append(F("    measured  the layer, the twin at full awareness, grouping {0:0.00} (family {1}, M's {2}): ", EntrantLayer.GroupingStrength, fam1[twinIndex], fam1[m])).Append(Pct(k1, layered, ref sums)).Append('\n');
+                double[] layered = EntrantLayer.ApplyFor(plain, p1, se, k1, null);   // §684: the rule in force (the default: the twin, a created party, carries the family grouping)
+                sb.Append(F("    measured  the layer ({0}), the twin at full awareness (family {1}, M's {2}): ", EntrantLayer.Active, fam1[twinIndex], fam1[m])).Append(Pct(k1, layered, ref sums)).Append('\n');
                 double twinShare = layered[twinIndex];
-                double fromFamily = 0.0;
+                // M's neighbours by position: the two real parties nearest M over the nine dimensions (the chamber's own spread per dimension)
+                double[][] pos = EntrantSimilarity.For(se, k0);
+                double[] spread = EntrantSimilarity.Spread(pos, p0);
+                var neighbours = new HashSet<int>(Enumerable.Range(0, k0.Length).Where(i => i != m)
+                    .OrderByDescending(i => EntrantSimilarity.Similarity(pos[m], pos[i], spread)).Take(2)) { m };
+                double fromFamily = 0.0, fromNeighbours = 0.0;
                 var draws = new List<string>();
                 double drawn = 0.0;
                 for (int i = 0; i < k0.Length; i++)
@@ -111,10 +116,15 @@ namespace PoliSim.EditorTools
                     double d = base0[i] - layered[i];   // what the party lost to the twin, against the chamber without it
                     drawn += d;
                     if (fam1[i] == fam1[twinIndex] && fam1[i] >= 0) { fromFamily += d; }
+                    if (neighbours.Contains(i)) { fromNeighbours += d; }
                     draws.Add(F("{0} {1:+0.00;-0.00}", k0[i], -d * 100.0));
                 }
-                sb.Append("    measured  where the twin's vote comes from (pp): ").Append(string.Join(", ", draws)).Append(F(" - {0:0.0}% of it from M's family\n", drawn > 0 ? fromFamily / drawn * 100.0 : 0.0));
-                Check(drawn > 0 && fromFamily / drawn > 0.5, F("a twin at M's position draws most of its vote from M and M's family: {0:0.0}% of its {1:0.00}% (grouping {2:0.00})", fromFamily / drawn * 100.0, twinShare * 100.0, EntrantLayer.GroupingStrength));
+                string neighbourNames = string.Join("+", neighbours.OrderBy(i => i).Select(i => k0[i]));
+                sb.Append("    measured  where the twin's vote comes from (pp): ").Append(string.Join(", ", draws))
+                  .Append(F(" - {0:0.0}% from M's family, {1:0.0}% from M and its neighbours by position ({2})\n", drawn > 0 ? fromFamily / drawn * 100.0 : 0.0, drawn > 0 ? fromNeighbours / drawn * 100.0 : 0.0, neighbourNames));
+                double gateShare = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? fromNeighbours : fromFamily;
+                string gateName = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? "M and its neighbours by position (" + neighbourNames + ")" : "M and M's family";
+                Check(drawn > 0 && gateShare / drawn > 0.5, F("a twin at M's position draws most of its vote from {0}: {1:0.0}% of its {2:0.00}% ({3})", gateName, gateShare / drawn * 100.0, twinShare * 100.0, EntrantLayer.Active));
 
                 // (4b) a Grassroots newcomer at (5, 5) that does not campaign, in the idle prediction the game makes
                 CreatedParties.Clear();

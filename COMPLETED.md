@@ -35060,3 +35060,27 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **What moved** (`FormationSweepDiagnostic` re-pinned, `dbd5f4fb…`, before `cb08c27e…`): **4 of 250 formations**, the seated German and Polish chambers only - Germany's viable list lost the options with a seatless member (its government unchanged: CDU+AfD+CSU supported by SSW); **Poland's PiS cabinet stands and its support falls from mask 244 to 20: SLD, PSL and MN - the 2019 Sejm's lists, no seat in the seated chamber - were listed as supporters and are dropped** (supported seats 277 either way, since they added nothing). Every other formation of the sweep is byte-identical.
 
 **Tier SIMULATION + tooling + documents:** cheap bar 74 of 74 (`cheap683`); simulation bar 56 of 56 (`sim683`, the sentinel identical to `ps3k` at both seeds - no no-player run ever gave a seatless party a role); documents 8 of 8 (`doc683`).
+
+
+## 684. THE MEASURED ALTERNATIVE - SUBSTITUTION BY POSITION ACROSS THE SURVEY'S NINE DIMENSIONS, FOR EVERY ENTRANT - FAILS ONE GATE (ITALY 2022 6.69 → 6.74 PP); THE CREATED-ONLY FAMILY RULE STAYS AND THE SPEC STATES IT WITH THE BSW EVIDENCE (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30): *Family grouping stays for created parties only, for now. Measure one alternative: similarity by position across the survey's nine dimensions instead of by family label, applied to every entrant, against the same gates (every backtest no worse, including Germany 2025 and BSW; M's twin drawing mostly from M and its neighbours; a non-campaigning newcomer inside the real first-timer range). If it passes all of them, it replaces both versions, as one rule for every party. If not, keep the created-only rule and state it in the spec with the BSW evidence. Rule nothing beyond that.*
+
+**The alternative, built to be measured** (`EntrantSimilarity`): an entrant keeps its share `a · p` (the same awareness); each established party loses in proportion to `share × similarity`, the similarity `exp(-D²/2)` over the nine CHES positions the roster carries (lrgen, lrecon, galtan, EU position, environment, regions, spend-vs-tax, immigration, deregulation), each dimension scaled by its own spread across the chamber's real parties, `D²` the mean over the dimensions both parties carry - nothing tuned; every similarity equal reduces it to the proportional draw exactly; a loss capped at a party's share. `EntrantLayer.Active` chooses the rule (the created-only family rule the default); `EntrantLayer.ApplyFor` is the one entry the idle prediction and the backtests call, the campaign's daily truth dispatching the same way (`Setup.Positions`). `EntrantRuleMeasure.RunSimilarity` sets the alternative, runs the gates, the campaign re-test and every elections backtest in one launch, and puts the default back. **The dispatch is inert under the default:** `ElectionsBacktests` under the default rule prints every figure `elec_final` printed (416 report lines, the diff empty).
+
+**Measured** (`elec_similarity684` against `elec_default684`):
+
+| Gate | Similarity by position, every entrant |
+|---|---|
+| Sweden 2022 | 1.75 pp, unchanged (no entrant) |
+| Germany 2025, loyalty run | 4.55 → **4.51** pp (better) |
+| Germany 2025, both layers | 5.01 → **5.00** pp (better) |
+| Germany, the eight-party set | 4.66 → 4.66 pp |
+| BSW | 5.30 % (+0.08) and 7.07 % (+1.86), unchanged (full awareness) |
+| **Italy 2022, loyalty run** | **6.69 → 6.74 pp (worse)** - AzIV (prior 0) draws by position: FdI, M5S, FI and AVS improve, PD (−3.66 → −4.07) and Lega (+7.14 → +7.96) worsen more |
+| M's twin | 56.0 % of its 5.55 % from M and its neighbours by position (M+KD+L) ✓ |
+| A Grassroots newcomer, no campaign | 0.58 %, inside 0.00-0.68 % ✓ |
+
+**Verdict: it fails "every backtest no worse" on Italy.** By the ruling, **the created-only family rule stays** and the spec states it with the BSW evidence (`docs/specs/START_POINTS_AND_PARTY_CREATION_SPEC.md` §2.7): family grouping for every entrant worsened every German 2025 run (4.55 → 4.85, 5.01 → 5.37, 4.66 → 5.04; Die Linke 6.36 → 4.38 % against an actual 9.18 %); similarity by position for every entrant worsens Italy; a created party's family is the model's own assignment, no election has measured its draw, and there the grouping passes every gate. The alternative's instrument stays as a measured, not-in-force switch so it can be measured again. Nothing else ruled.
+
+**Tier SIMULATION + tooling + documents:** cheap bar 74 of 74 (`cheap684`); simulation bar 56 of 56 (`sim684`, the sentinel identical to `ps3k` at both seeds); documents 8 of 8 (`doc684b`); elections backtests `elec_default684` (default, = `elec_final`) and `elec_similarity684` (the alternative).

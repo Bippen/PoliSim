@@ -15,7 +15,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class ElectionsBacktests
     {
-        private static readonly (string Name, Action Run)[] Set = new (string Name, Action Run)[]
+        internal static readonly (string Name, Action Run)[] Set = new (string Name, Action Run)[]
         {
             ("VoteShareBacktest", VoteShareBacktest.Run),
             ("ReBacktest", ReBacktest.Run),

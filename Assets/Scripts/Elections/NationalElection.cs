@@ -162,7 +162,7 @@ namespace PoliSim.Elections
             shares = null;
             if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)) { return false; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
-            preference = EntrantLayer.Apply(preference, prior, PartyFamilies.For(country, keys), EntrantAwareness(country, keys), EntrantLayer.GroupingOf(country, keys));   // §681: an entrant's reach and where it draws from; none, the very array
+            preference = EntrantLayer.ApplyFor(preference, prior, country, keys, EntrantAwareness(country, keys));   // §681: an entrant's reach and where it draws from; none, the very array
             preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
 
             shares = new Dictionary<string, double>();

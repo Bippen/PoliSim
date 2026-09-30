@@ -135,6 +135,26 @@ single electoral vote.
   share of other parties' voters who are *not* loyal to them. That is the model's own logic, not an
   authored penalty — and it is why the Splinter's inherited slice (02) and the Regional concentration
   (06) matter.
+- **Awareness and where the vote comes from (the entrant layer, built §681, ruled §684).** A party with no
+  share at the previous election reaches only the voters aware of it: its share is awareness × what the
+  preference gives it. Every real party is at full awareness; a created party starts from its Recognition
+  and grows with its coverage and campaigning. **Where that share is drawn from is grouped by party family
+  for created parties only**: a created party draws first from its CHES family (a Splinter its parent's,
+  any other the nearest real party's), at grouping strength 0.5 `[AUTHORED-DRAFT]`; **a real entrant draws
+  from every party in proportion to its size.** Why only created parties — the evidence:
+  - *Family grouping for every entrant* (§681): BSW (CHES family 6, Radical Left) then draws first from Die
+    Linke, and every German 2025 backtest worsens — the loyalty run 4.55 → 4.85 pp, both layers 5.01 →
+    5.37, the eight-party set 4.66 → 5.04. Die Linke falls from 6.36 % to 4.38 % against an actual 9.18 %:
+    in 2025 Die Linke rose while BSW took 5.21 % (its share of the backtest's nine-party set). An expert's family label is not where a real
+    newcomer's voters came from.
+  - *Similarity by position across the survey's nine dimensions, for every entrant* (§684, one rule for
+    every party): Germany improves slightly (4.55 → 4.51, 5.01 → 5.00; BSW itself unchanged at 5.30 %) and
+    M's twin draws 56 % from M and its neighbours by position, but **Italy 2022 worsens (6.69 → 6.74 pp)**,
+    through AzIV's draw — so it fails "every backtest no worse" and is not taken.
+  - A created party's family is the model's own assignment and no election has measured its draw; there
+    the grouping is the only statement of where its voters come from, and it passes every gate (M's twin
+    57 % from M's family; a Grassroots newcomer that does not campaign at 0.58 %, inside the 0.00–0.68 %
+    real first-time parties took in their first Riksdag election, Valmyndigheten 2006–2026).
 - **The threshold** applies as it does to every party; missing it means no seats.
 - **Party funding follows each country's real rule**, sourced — where state support is paid per seat or
   per vote above a line, a party below it starts and stays without it.

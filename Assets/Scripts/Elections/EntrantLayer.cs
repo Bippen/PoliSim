@@ -56,6 +56,19 @@ namespace PoliSim.Elections
 
         public static bool IsEntrant(double prior) => prior <= 0.0;
 
+        /// <summary>§684: which substitution rule is in force - the family nest carried by created parties (§681, the default), or the measured
+        /// alternative, similarity by position over the nine dimensions for every entrant (`EntrantSimilarity`). Set only by the measuring entry.</summary>
+        public enum Rule { FamilyForCreated, SimilarityForAll }
+
+        public static Rule Active = Rule.FamilyForCreated;
+
+        /// <summary>§684: the layer by the rule in force, for a country's keys - the one entry the idle prediction and the backtests call.</summary>
+        public static double[] ApplyFor(double[] preference, double[] prior, CountryId country, IReadOnlyList<string> keys, double[] awareness)
+        {
+            if (Active == Rule.SimilarityForAll) { return EntrantSimilarity.Apply(preference, prior, EntrantSimilarity.For(country, keys), awareness); }
+            return Apply(preference, prior, PartyFamilies.For(country, keys), awareness, GroupingOf(country, keys));
+        }
+
         /// <summary>The layer. <paramref name="preference"/> sums to 1; <paramref name="prior"/> marks the entrants (0); <paramref name="family"/> the
         /// party's family (-1 none: its own nest); <paramref name="awareness"/> null means every party at 1; <paramref name="grouping"/> null means
         /// every nest proportional. Returns the same array when nothing is an entrant.</summary>

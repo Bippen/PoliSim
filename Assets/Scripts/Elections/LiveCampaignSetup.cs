@@ -235,7 +235,7 @@ namespace PoliSim.Elections
             note = sb.ToString();
             return new CampaignRun.Setup(calendar ?? CampaignCalendar.Sweden2026, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals, liveScandalRate,
-                null, PartyFamilies.For(CountryId.Sweden, cast), NationalElection.EntrantAwareness(CountryId.Sweden, cast), EntrantLayer.GroupingOf(CountryId.Sweden, cast));   // §681: the entrant layer - inert with no entrant
+                null, PartyFamilies.For(CountryId.Sweden, cast), NationalElection.EntrantAwareness(CountryId.Sweden, cast), EntrantLayer.GroupingOf(CountryId.Sweden, cast), EntrantSimilarity.For(CountryId.Sweden, cast));   // §681, §684: the entrant layer - inert with no entrant
         }
 
         /// <summary>The 29 valkretsar as campaign regions: name and VALID votes (the audience a local action can address), from the runtime catalog
