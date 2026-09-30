@@ -18,8 +18,11 @@ reach fails the bar.
 rail screen's own unscrolled frame. The tool is `Tools/text_baseline.pl rank <labels.tsv>`; the baseline is generated into
 `docs/generated/UI_V33_BASELINE.tsv` from the dry film of the tree that closed item 1 of the ruling (§648) and is never hand-edited.
 
-**Target: at least 50 % fewer at-rest text draws on the main screens** than the baseline, each screen measured against its own baseline row.
-A screen's retrofit closes when its dry film's count meets the target and the reachability check holds.
+**No target (ruled 2026-09-30, §690; the 50 % figure is withdrawn).** Each retrofit **reports the measured reduction** of its screen's
+at-rest text draws against the screen's own baseline row, before and after, by the same tool - and **never cuts content to reach a number**:
+the names and figures that are a screen's content stay, however terse the screen already was (20b's plates fell 22-31 %, and that is the
+honest figure). A screen's retrofit closes when its composition is built and **the two-level reachability check holds** (§1: every word
+that leaves the screen at rest is on a slip within two levels or on the dense view).
 
 ## 3. The order of the retrofits
 
