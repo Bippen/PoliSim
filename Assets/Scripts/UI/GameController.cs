@@ -389,13 +389,8 @@ namespace PoliSim.UI
         private int _cachedBudgetImpactTurn = -1;
         private bool _hasCachedBudgetImpact;
         private float _cachedSwfReturnsEstimateRaw;
-        // P2-2.1 (2026-09-02): the rest of the preview's full-turn figures, for the Desk's effects card - the
-        // horizon-scaled copies they replace are gone with the horizons.
-        private float _cachedInflationChangeRaw;
-        private float _cachedPovertyRateChangeRaw;
-        private float _cachedLaborForceParticipationRateChangeRaw;
-        private float _cachedCrimeIndexChangeRaw;
-        private float _cachedNetBudgetImpactRaw;
+        // P2-2.1 (2026-09-02) kept five more of the preview's full-turn figures here for the Desk's effects card alone; since §694 the card reads the
+        // PolicyPreview of its role's subject whole (DeskEffectsPreview), and the five copies went with their one reader.
         /// <summary>P2-2.1 (2026-09-02): the outcomes this draft moves, as the arrows the effects panel draws - built with
         /// the preview, from its own full-turn figures; an outcome that prints as zero is left off.</summary>
         private readonly List<EffectArrow> _cachedPreviewEffects = new List<EffectArrow>();
@@ -5070,6 +5065,8 @@ namespace PoliSim.UI
             {
                 return true;
             }
+            // §694: a role that changed on a day tick (a government fallen, a formation) changes what the preview may carry
+            if (_simulationManager.PlayerGoverns(_playerCountry) != _cachedPreviewGoverns) { return true; }
 
             // P3-C1 (2026-09-03): the BUDGET DRAFT reaches the preview again - as "with vs without this draft"
             // (PreviewTurnWithBudgetDraft against PreviewTurn), so every tax, spending and welfare dial and the
@@ -5084,7 +5081,10 @@ namespace PoliSim.UI
         private void RecomputePolicyPreview()
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            PolicyDecision decision = BuildPlayerDecision();
+            // §694 (ruled): the preview carries the rate lever only where the turn will - the player's decision while the player governs, none
+            // otherwise (the turn's own rule, AdvanceTurn's decisions) - so a rate drafted in office and left behind by the role never moves an estimate.
+            bool governs = _simulationManager.PlayerGoverns(_playerCountry);
+            PolicyDecision decision = governs ? BuildPlayerDecision() : PolicyDecision.None();
             BudgetBill draft = BuildBudgetBillFromDrafts();
             int fingerprint = DraftFingerprint(draft);
             PolicyPreview preview = _simulationManager.PreviewTurn(PlayerCountryId, decision);
@@ -5093,16 +5093,11 @@ namespace PoliSim.UI
             _cachedPreviewWithoutDraft = preview;   // P3-C2: the standing policy's year, for the fiscal header's projected balance beside the draft's
 
             // The Raw fields are the full-turn figures the Statistics projections read (the dashed next-year
-            // segment); since P2-2.1 the effects panel reads the same full-turn point, as arrows.
+            // segment); the Desk's effects card reads the PolicyPreview itself (§694).
             _cachedGdpGrowthPercentRaw = withDraft.GdpGrowthPercent;
             _cachedUnemploymentChangeRaw = withDraft.UnemploymentChange;
             _cachedApprovalChangeRaw = withDraft.ApprovalChange;
             _cachedSwfReturnsEstimateRaw = withDraft.SwfReturnsEstimate;
-            _cachedInflationChangeRaw = withDraft.InflationChange;
-            _cachedPovertyRateChangeRaw = withDraft.PovertyRateChange;
-            _cachedLaborForceParticipationRateChangeRaw = withDraft.LaborForceParticipationRateChange;
-            _cachedCrimeIndexChangeRaw = withDraft.CrimeIndexChange;
-            _cachedNetBudgetImpactRaw = withDraft.NetBudgetImpact;
 
             _cachedSwfContributionText = FormatMoneyEstimate(withDraft.SwfContributionEstimate, MoneyUnit.Billions);
             _cachedSwfReturnsText = FormatMoneyEstimate(withDraft.SwfReturnsEstimate, MoneyUnit.Billions);
@@ -5122,6 +5117,9 @@ namespace PoliSim.UI
             AddPreviewEffect("Poverty rate", withDraft.PovertyRateChange - preview.PovertyRateChange, higherIsBetter: false, " pts");
             AddPreviewEffect("Labor force participation", withDraft.LaborForceParticipationRateChange - preview.LaborForceParticipationRateChange, higherIsBetter: true, " pts");
             AddPreviewEffect("Crime index", withDraft.CrimeIndexChange - preview.CrimeIndexChange, higherIsBetter: false, " pts");
+            // §694: whether the budget sheet's draft moves the estimate at all - an outcome that would print, or the book's balance - the Desk's subject reads it
+            _cachedDraftMoves = _cachedPreviewEffects.Count > 0 || !Mathf.Approximately(withDraft.NetBudgetImpact, preview.NetBudgetImpact);
+            _cachedPreviewGoverns = governs;
 
             _cachedInterestRateChangeInput = _interestRateChangeInput;
             _cachedDraftFingerprint = fingerprint;
@@ -5162,6 +5160,9 @@ namespace PoliSim.UI
 
         private int _cachedDraftFingerprint;
         private PolicyPreview _cachedPreviewWithoutDraft;
+        /// <summary>§694: the budget draft moves the cached estimate; the role the cache was computed under.</summary>
+        private bool _cachedDraftMoves;
+        private bool _cachedPreviewGoverns;
         private float _previewCostMs;
         private float _lastPreviewAt = -1f;
 
@@ -5337,6 +5338,29 @@ namespace PoliSim.UI
         private Rect _railActiveTongueFace;
         private Rect _railActiveTongueStrip;
         private bool _railActiveTongueSet;
+        /// <summary>§694: the one lit cell this frame (<see cref="RailLit.Of"/>, read once per rail), the cells the paint actually lit, and the lit sets already reported.</summary>
+        private string _railLitCell;
+        private readonly List<string> _railLitDrawn = new List<string>();
+        private readonly HashSet<string> _railLitReported = new HashSet<string>();
+
+        /// <summary>§694 (ruled): THE ONE LIT CELL - the campaign's while its page is open and its cell on the rail, the Desk's while the Desk is up, else the open document's.</summary>
+        private string RailLitKey() => RailLit.Of(_onDesk, _liveCampaignOpen, RailCampaignCellPresent(), RailDocumentCaption(_consolidatedTab));
+
+        /// <summary>§694: a document tab's rail caption - the captions DrawFoldedRail draws, in <see cref="RailLit.Documents"/>; DeskRoleCheck holds every tab to one.</summary>
+        private static string RailDocumentCaption(ConsolidatedTab tab)
+        {
+            switch (tab)
+            {
+                case ConsolidatedTab.Statistics: return "STATS";
+                case ConsolidatedTab.Decisions: return "DOCKET";
+                case ConsolidatedTab.Demographics: return "PEOPLE";
+                case ConsolidatedTab.Budget: return "BUDGET";
+                case ConsolidatedTab.PolicyLaws: return "LAWS";
+                case ConsolidatedTab.Politics: return "POLITICS";
+                case ConsolidatedTab.Energy: return "ENERGY";
+                default: return null;
+            }
+        }
 
         private GUIStyle RailTongueStyle()
         {
@@ -5443,6 +5467,7 @@ namespace PoliSim.UI
                 _railActiveTongueFace = face;
                 _railActiveTongueStrip = new Rect(rect.xMax - 1f, rect.y, RailTongueOverlapPx + 1f, rect.height);
                 _railActiveTongueSet = true;
+                _railLitDrawn.Add(caption);   // §694: what the paint lit, counted at the rail's foot
                 // §576 (flag (ii), Design's SECOND alternative, ruled 2026-09-22): THE WASH STOPS AT THE CAPTION BAND. The 8 % wash of §575 lifted every
                 // active caption by about two tenths of a contrast point and carried four of twelve areas over the 4.5 text floor; the caption on PLAIN TONGUE
                 // carries all twelve, because the ink is then the same area ink on the same paper the sheet's own headers clear the floor on. The wash still
@@ -5513,6 +5538,8 @@ namespace PoliSim.UI
             float cell = RailCellWidth();
             var cells = new List<KeyValuePair<string, Rect>>();
             _railActiveTongueSet = false;
+            _railLitCell = RailLitKey();   // §694: one rule, read once, and every cell compares against it
+            _railLitDrawn.Clear();
 
             // Board 1n-r3: the column is the desk ground, not a paper box - each tongue brings its own
             // paper, and the 4 u gap (RailGap, the icons' grid) of ground between tongues is the idiom.
@@ -5568,6 +5595,12 @@ namespace PoliSim.UI
                 {
                     UiContainmentGuard.Check(cells[i].Key, cells[i].Value, rail);
                 }
+                // §694 (ruled): THE RAIL LIGHTS EXACTLY ONE CELL - a frame that painted any other number says so, once per lit set, as an error a film counts
+                if (_railLitDrawn.Count != 1)
+                {
+                    string lit = _railLitDrawn.Count + ": " + string.Join(", ", _railLitDrawn);
+                    if (_railLitReported.Add(lit)) { Debug.LogError($"RAIL: {lit} cell(s) lit, not one - the rule named {_railLitCell ?? "none"}"); }
+                }
             }
         }
 
@@ -5588,7 +5621,7 @@ namespace PoliSim.UI
             // caption DESK; on the Desk the brass wash at 0.16 and the brass spine, the caption bold in
             // TextPrimary (brass text on paper would whisper - the D6 flip's own reasoning; a build
             // call, one literal). Off the Desk: the flag alone over DESK in TextSecondary.
-            bool active = _onDesk;
+            bool active = _railLitCell == RailLit.Desk;   // §694: the one rule (was _onDesk alone)
             if (DrawRailCell("shell rail: home", cell, active, PoliSimTheme.Tint(PoliSimTheme.Brass, RailHomeWashAlpha), PoliSimTheme.Brass,
                     "DESK", active ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary, cells, out Rect slot))
             {
@@ -5632,8 +5665,9 @@ namespace PoliSim.UI
         private void DrawRailNavCell(string caption, ConsolidatedTab tab, string iconName, float cell, List<KeyValuePair<string, Rect>> cells)
         {
             UiPalette.SystemArea area = GetConsolidatedTabArea(tab);
-            // Board 1m, D2: on Screen 0 no cell is active - the Desk sits above the six documents.
-            bool selected = !_onDesk && _consolidatedTab == tab;
+            // Board 1m, D2: on Screen 0 no document is active - the Desk sits above them. §694 (ruled): nor while the campaign's page is open over
+            // the stage - that page leaves the tab where it was, and the per-cell rule this replaced lit the tab beneath beside CAMPAIGN (21c).
+            bool selected = _railLitCell == caption;
             Color areaInk = UiPalette.GetAreaColor(area);
             if (DrawRailCell("shell rail: " + caption, cell, selected, PoliSimTheme.AccentWash(area, RailActiveWashAlpha), areaInk,
                     caption, selected ? areaInk : PoliSimTheme.TextSecondary, cells, out Rect slot))

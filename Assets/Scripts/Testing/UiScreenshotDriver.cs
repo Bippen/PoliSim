@@ -1403,6 +1403,7 @@ namespace PoliSim.Testing
             {
                 yield return CaptureStatePins(controller);
             }
+            yield return CaptureDeskByRole(controller);   // §694: last, because it tables bills - no frame before it moves
 
             EndSweep();
             }
@@ -1897,6 +1898,49 @@ namespace PoliSim.Testing
         /// their names are the cleanup instruction. ⚠ This pins the SCREEN, not the round trip -
         /// layer 3's live checklist stays in the OPEN VERIFICATION GAP block regardless.
         /// </summary>
+        /// <summary>
+        /// §694 (ruled): THE DESK'S EFFECTS CARD BY ROLE, filmed where the ruling bites - the player in opposition with the government's budget before the
+        /// chamber (93a), then with the player's alternative tabled against it (93b). Staged through the public simulation API as play stages them (the AI
+        /// government's bill path, `TableGovernmentBudget`, §632; the opposition's motion, `TableShadowBudget`), after every other frame, so no frame before
+        /// them moves. A player who governs at this point has no government's budget to be shown: the shots are skipped and said.
+        /// </summary>
+        private IEnumerator CaptureDeskByRole(GameController controller)
+        {
+            var sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as PoliSim.Simulation.SimulationManager;
+            var world = controller.GetType().GetField("_world", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as World;
+            MethodInfo draft = controller.GetType().GetMethod("BuildBudgetBillFromDrafts", BindingFlags.Instance | BindingFlags.NonPublic);
+            Country player = world?.GetCountry(_countryId);
+            if (sim == null || player == null || draft == null)
+            {
+                Debug.LogError("SHOT: desk-by-role reflection failed - the 93 captures are MISSING, not clean.");
+                yield break;
+            }
+            if (sim.PlayerGoverns(player))
+            {
+                Debug.Log($"SHOT: 93a/93b are the opposition's Desk - {player.PlayerPartyAbbrev} governs {player.Name} at this frame; skipped, not missing.");
+                yield break;
+            }
+            sim.TableGovernmentBudget(player);
+            BudgetBill pending = sim.GetPendingBudgetBill(player.Id);
+            if (pending == null || !pending.GovernmentBill)
+            {
+                Debug.LogError("SHOT: 93a - the government's budget could not be tabled (a bill of the player's already pending?) - the 93 captures are MISSING, not clean.");
+                yield break;
+            }
+            SetPrivateField(controller, "_onDesk", true);
+            yield return Settle();
+            Debug.Log($"SHOT: 93a_desk_government_budget - {player.PlayerPartyAbbrev} in opposition, the government's budget before the chamber, decided in {pending.DaysRemaining} day(s)");
+            yield return Capture("93a_desk_government_budget");
+            if (!sim.TableShadowBudget(player.Id, draft.Invoke(controller, null) as BudgetBill, out string refused))
+            {
+                Debug.Log($"SHOT: 93b_desk_alternative_tabled - the alternative was refused ({refused}); skipped, not missing.");
+                yield break;
+            }
+            yield return Settle();
+            Debug.Log($"SHOT: 93b_desk_alternative_tabled - {player.PlayerPartyAbbrev}'s alternative tabled against the government's budget");
+            yield return Capture("93b_desk_alternative_tabled");
+        }
+
         private IEnumerator CaptureSavesMenu(GameController controller)
         {
             FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);

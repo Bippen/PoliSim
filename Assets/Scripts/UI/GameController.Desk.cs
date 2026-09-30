@@ -666,16 +666,20 @@ namespace PoliSim.UI
             // Invariant culture, as the tiles print.
             float gdp = Mathf.Max(1f, _playerCountry.State.GDP);
             string Signed(float v) => v.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
+            // §694 (ruled 2026-09-30): WHAT THE CARD ESTIMATES IS THE ROLE'S. A governing player's own draft (the cached preview, as before); any other role's
+            // what is before the chamber - the player's alternative once tabled, else the government's budget - then the alternative as drafted, then the book as it stands (DeskEffectsNote).
+            DeskEffectsSubject subject = DeskEffectsSubjectNow(out string rateLever, out bool mayTable, out int chamberDays);
+            PolicyPreview shown = DeskEffectsPreview(subject);
             var rows = new List<(string label, float value, string text, bool higherIsBetter, float range)>
             {
-                ("GDP growth", _cachedGdpGrowthPercentRaw, Signed(_cachedGdpGrowthPercentRaw) + "%", true, DeskRangeGdpGrowthPercent),
-                ("Inflation", _cachedInflationChangeRaw, Signed(_cachedInflationChangeRaw) + " pts", false, DeskRangeInflationPoints),
-                ("Unemployment", _cachedUnemploymentChangeRaw, Signed(_cachedUnemploymentChangeRaw) + " pts", false, DeskRangeUnemploymentPoints),
-                ("Approval", _cachedApprovalChangeRaw, Signed(_cachedApprovalChangeRaw), true, DeskRangeApproval),
-                ("Poverty rate", _cachedPovertyRateChangeRaw, Signed(_cachedPovertyRateChangeRaw) + " pts", false, DeskRangePovertyPoints),
-                ("Labor force participation", _cachedLaborForceParticipationRateChangeRaw, Signed(_cachedLaborForceParticipationRateChangeRaw) + " pts", true, DeskRangeParticipationPoints),
-                ("Crime index", _cachedCrimeIndexChangeRaw, Signed(_cachedCrimeIndexChangeRaw), false, DeskRangeCrimeIndex),
-                ("Net budget", _cachedNetBudgetImpactRaw, UiFormat.MoneyDelta(_cachedNetBudgetImpactRaw, MoneyUnit.Billions), true, DeskRangeNetBudgetShareOfGdp * gdp)
+                ("GDP growth", shown.GdpGrowthPercent, Signed(shown.GdpGrowthPercent) + "%", true, DeskRangeGdpGrowthPercent),
+                ("Inflation", shown.InflationChange, Signed(shown.InflationChange) + " pts", false, DeskRangeInflationPoints),
+                ("Unemployment", shown.UnemploymentChange, Signed(shown.UnemploymentChange) + " pts", false, DeskRangeUnemploymentPoints),
+                ("Approval", shown.ApprovalChange, Signed(shown.ApprovalChange), true, DeskRangeApproval),
+                ("Poverty rate", shown.PovertyRateChange, Signed(shown.PovertyRateChange) + " pts", false, DeskRangePovertyPoints),
+                ("Labor force participation", shown.LaborForceParticipationRateChange, Signed(shown.LaborForceParticipationRateChange) + " pts", true, DeskRangeParticipationPoints),
+                ("Crime index", shown.CrimeIndexChange, Signed(shown.CrimeIndexChange), false, DeskRangeCrimeIndex),
+                ("Net budget", shown.NetBudgetImpact, UiFormat.MoneyDelta(shown.NetBudgetImpact, MoneyUnit.Billions), true, DeskRangeNetBudgetShareOfGdp * gdp)
             };
 
             // §568 (2026-09-22, Design's drift row D2): BOARD 5c'S ARROWS, not a column of centred bars. The desk was the last surface in the game estimating an effect in
@@ -693,16 +697,18 @@ namespace PoliSim.UI
             y += panelHeight;
 
             y += Mathf.Round(6f * uy);
-            if (!DeskHasDraftPending())
+            if (DeskEffectsNote.IsEmptyState(subject))
             {
-                // 1m-r2's empty state: while nothing is drafted the two footer captions become one
+                // 1m-r2's empty state: while nothing moves the estimate the two footer captions become one
                 // caption in a dashed frame. Its claim is aligned to the model, not copied from the
-                // board: the preview reads the rate dial as drafted (the one input it still reads)
-                // and every bill as it passes - a drafted bill does not move it (R-B4's discipline).
+                // board: the preview reads the budget sheet's draft (P3-C1) and the rate lever as drafted
+                // and every other bill as it passes (R-B4's discipline). §694 (ruled): the caption names a lever
+                // only where the role holds it - the fixed caption it replaced named the rate dial to every
+                // role, in opposition too and where a chair sets the rate (Design's sighting 21e).
                 GUIStyle note = DeskCaptionWrapped(8f, PoliSimTheme.TextMuted);
                 // C-C14 (2026-08-31): "±5–10% MARGIN" is gone from this caption. It was a rolled number,
                 // and the scope it sat beside is the part that was doing the work.
-                const string noteText = "NO DRAFT PENDING — ESTIMATES FOLLOW THE RATE DIAL AS DRAFTED AND EVERY BILL AS IT PASSES · NO MARGIN: THE PROJECTION IS DETERMINISTIC · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE";
+                string noteText = DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays);
                 float notePadX = Mathf.Round(7f * ux);
                 float notePadY = Mathf.Round(5f * uy);
                 float noteWidth = Mathf.Max(1f, r.width - notePadX * 2f);
@@ -720,13 +726,30 @@ namespace PoliSim.UI
             // C-C14: the margin line becomes the scope line. The board's slot stays - a reader who has
             // learned to look here for "how much should I trust this" still finds an answer, and now it
             // is a true one. Same style, same height, same position, so no layout below it moves.
-            GUIStyle margin = DeskCaption(8f, PoliSimTheme.TextSecondary);
-            float marginHeight = DeskCaptionHeight(margin);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, marginHeight), "NO MARGIN — THE PROJECTION IS DETERMINISTIC", margin);
-            y += marginHeight + Mathf.Round(2f * uy);
+            if (subject == DeskEffectsSubject.YourDraft)
+            {
+                GUIStyle margin = DeskCaption(8f, PoliSimTheme.TextSecondary);
+                float marginHeight = DeskCaptionHeight(margin);
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, marginHeight), DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays), margin);
+                y += marginHeight + Mathf.Round(2f * uy);
+            }
+            else
+            {
+                // §694: the slot names WHOSE budget the arrows estimate - the player's alternative or the government's - in the scope line's ink,
+                // wrapped (the chamber's day count does not fit one line at the floor); the margin's clause moves into the methodology below.
+                GUIStyle scope = DeskCaptionWrapped(8f, PoliSimTheme.TextSecondary);
+                string scopeText = DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays);
+                float scopeHeight = scope.CalcHeight(new GUIContent(scopeText), r.width);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    UiContainmentGuard.Check("Desk effects subject", new Rect(r.x, y, r.width, scopeHeight), r);
+                }
+                GUI.Label(new Rect(r.x, y, r.width, Mathf.Min(Mathf.Max(1f, r.yMax - y), scopeHeight)), scopeText, scope);
+                y += scopeHeight + Mathf.Round(2f * uy);
+            }
 
             GUIStyle method = DeskCaptionWrapped(8f, PoliSimTheme.TextMuted);
-            string methodText = $"SCALED DISPLAY ESTIMATE — FROM THE {SimulationManager.DaysPerTurn}-DAY PROJECTION, NOT A SIMULATED SUB-YEAR VALUE";
+            string methodText = DeskEffectsNote.Method(subject, SimulationManager.DaysPerTurn);
             float methodHeight = Mathf.Min(Mathf.Max(1f, r.yMax - y), method.CalcHeight(new GUIContent(methodText), r.width));
             if (Event.current.type == EventType.Repaint)
             {
@@ -1024,10 +1047,53 @@ namespace PoliSim.UI
             PoliSimWidgets.MeasuredLabel(new Rect(r.x + padX, centreY, Mathf.Max(1f, r.width - padX * 2f), lineHeight), $"YEAR {turn} · NO EVENT LIVE", quiet);
         }
 
-        /// <summary>Whether the preview has a draft to read: the interest-rate change is the one input BuildPlayerDecision still carries (PolicyInputsChangedSinceLastPreview's own note) - bills reach the estimate only as they pass.</summary>
-        private bool DeskHasDraftPending()
+        /// <summary>
+        /// §694 (ruled): the effects card's subject by the player's role (<see cref="DeskEffectsNote.SubjectOf"/>), with what its note may name: the
+        /// rate lever the role holds (<paramref name="rateLever"/> - the dial where the country sets its own rate, the push in the eurozone, none where
+        /// a chair sets it or the player does not govern: the rate is the prime minister's lever, `DrawLeverLock`'s), whether the role may table an
+        /// alternative budget (not a junior partner - its voice is the coalition agreement - and the country's procedure sourced, `TableShadowBudget`'s
+        /// own refusals), and the days until the chamber decides the budget before it. Replaces the test that read the rate input alone, which a
+        /// budget draft never reached although it moves the estimate (P3-C1).
+        /// </summary>
+        private DeskEffectsSubject DeskEffectsSubjectNow(out string rateLever, out bool mayTable, out int chamberDays)
         {
-            return !Mathf.Approximately(_interestRateChangeInput, 0f);
+            bool governs = _simulationManager.PlayerGoverns(_playerCountry);
+            rateLever = governs && _playerCountry.CurrentFedChair == null
+                ? (CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world) ? DeskEffectsNote.RatePush : DeskEffectsNote.RateDial)
+                : null;
+            bool junior = _playerCountry.Government != null && _playerCountry.Government.RoleOf(_playerCountry.PlayerPartyAbbrev) == PoliSim.Elections.PlayerRole.JuniorPartner;
+            mayTable = !governs && !junior && PoliSim.Elections.WorldClock.BudgetProcedureOf(PlayerCountryId) != PoliSim.Elections.WorldClock.BudgetProcedure.Unsourced;
+            BudgetBill pending = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
+            chamberDays = pending != null ? pending.DaysRemaining : 0;
+            bool rateDrafted = rateLever != null && !Mathf.Approximately(_interestRateChangeInput, 0f);
+            return DeskEffectsNote.SubjectOf(governs, _cachedDraftMoves, rateDrafted, tabled != null, mayTable, pending != null && pending.GovernmentBill);
+        }
+
+        // §694: the preview of a budget the player did not draft this frame - the government's before the chamber, or the player's alternative as tabled -
+        // cached on the bill, its fingerprint and the turn, as the main preview is cached on the turn.
+        private PolicyPreview _deskSubjectPreview;
+        private BudgetBill _deskSubjectBill;
+        private int _deskSubjectFingerprint;
+        private int _deskSubjectTurn = -1;
+
+        /// <summary>§694: the preview the card draws for its subject - the cached preview for the player's own draft (governing, or an alternative
+        /// drafted), the standing book's for nothing before the chamber, and the tabled bill's own for the government's budget or a tabled alternative.</summary>
+        private PolicyPreview DeskEffectsPreview(DeskEffectsSubject subject)
+        {
+            if (subject == DeskEffectsSubject.StandingBook) { return _cachedPreviewWithoutDraft ?? _cachedPreview; }
+            if (subject != DeskEffectsSubject.GovernmentDraft && subject != DeskEffectsSubject.YourAlternativeTabled) { return _cachedPreview; }
+            BudgetBill bill = subject == DeskEffectsSubject.GovernmentDraft ? _simulationManager.GetPendingBudgetBill(PlayerCountryId) : _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
+            if (bill == null) { return _cachedPreviewWithoutDraft ?? _cachedPreview; }
+            int fingerprint = DraftFingerprint(bill);
+            if (_deskSubjectPreview == null || !ReferenceEquals(bill, _deskSubjectBill) || fingerprint != _deskSubjectFingerprint || _deskSubjectTurn != _simulationManager.CurrentTurn)
+            {
+                _deskSubjectPreview = _simulationManager.PreviewTurnWithBudgetDraft(PlayerCountryId, PolicyDecision.None(), bill);
+                _deskSubjectBill = bill;
+                _deskSubjectFingerprint = fingerprint;
+                _deskSubjectTurn = _simulationManager.CurrentTurn;
+            }
+            return _deskSubjectPreview;
         }
 
         /// <summary>

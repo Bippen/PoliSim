@@ -230,18 +230,23 @@ namespace PoliSim.UI
             return LiveCampaignSnapshot.StrongestRegion(s, p, out _);
         }
 
+        /// <summary>Whether the rail carries the CAMPAIGN cell: a campaign or its run-up runs for the player's party. CL-1: present through the run-up too - the
+        /// pre-campaign is where the preparation verbs live, and a cell that appeared only on the campaign's first day would leave the 26 weeks before it
+        /// unreachable, as they were. §694: read by the lit rule as well as the cell, so a page left open after its cell is gone lights the document instead.</summary>
+        private bool RailCampaignCellPresent()
+        {
+            if (_simulationManager == null || _playerCountry == null) { return false; }
+            return _simulationManager.PlayerCampaign != null
+                ? LiveCampaignSnapshot.PlayerPartyIndex(_simulationManager.PlayerCampaign, _playerCountry) >= 0
+                : _simulationManager.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished && _simulationManager.PlayerPartyIndexForCampaign() >= 0;
+        }
+
         /// <summary>The rail's CAMPAIGN cell: drawn only while a campaign runs for the player's party; a click opens the live HQ (or, if it is open, returns to the Desk).</summary>
         private void DrawRailCampaignCell(float cell, List<KeyValuePair<string, Rect>> cells)
         {
-            if (_simulationManager == null || _playerCountry == null) { return; }
-            // CL-1: present through the run-up too - the pre-campaign is where the preparation verbs live, and a cell that
-            // appeared only on the campaign's first day would leave the 26 weeks before it unreachable, as they were.
-            bool live = _simulationManager.PlayerCampaign != null
-                ? LiveCampaignSnapshot.PlayerPartyIndex(_simulationManager.PlayerCampaign, _playerCountry) >= 0
-                : _simulationManager.PlayerPreCampaign != null && !_simulationManager.PlayerPreCampaign.Finished && _simulationManager.PlayerPartyIndexForCampaign() >= 0;
-            if (!live) { return; }
+            if (!RailCampaignCellPresent()) { return; }
             UiPalette.SystemArea area = UiPalette.SystemArea.Political;
-            bool selected = _liveCampaignOpen;
+            bool selected = _railLitCell == RailLit.Campaign;   // §694: the one rule (was _liveCampaignOpen alone, beside the tab's own)
             Color areaInk = UiPalette.GetAreaColor(area);
             if (DrawRailCell("shell rail: CAMPAIGN", cell, selected, PoliSimTheme.AccentWash(area, RailActiveWashAlpha), areaInk,
                     "CAMPAIGN", selected ? areaInk : PoliSimTheme.TextSecondary, cells, out Rect slot))
