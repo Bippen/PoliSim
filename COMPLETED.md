@@ -35131,3 +35131,18 @@ The plates' slips are filled on the repaint that lays them out and joined to the
 **Found on the film and fixed:** 16b's sticky header (the family header repeated at the top of the scroll) was painted before the rows, so the rows scrolled under it painted over it - at 2560 the education plate's gap row's name and its sentence ran through the stuck header (pre-existing: `s685b_2560_04d` shows it worse, with the reasons). The stuck copy is now painted after the rows.
 
 **Tier UI + tooling:** cheap bar 74 of 74 (`cheap686b`); dry film `drys686b` (Sweden 1280, scope row s686) 151 measured, 0 failed, 0 overflows, 0 escapes (the four new frames among them); real films `s686b_1280` and `s686b_2560` (stopped after `04h_people_dense`) 46 captured each, 0 failed, 0 overflows, 0 escapes, 0 clipped - the plates, the pinned slip and the four † frames read by eye.
+
+
+## 687. D-ST SENT IN THE STANDARD FORM: THE SECOND RETROFIT COMPOSITION, STATISTICS, BY THE AT-REST BASELINE - FOUR REAL FRAMES, EVERY VISIBLE DRAW AS A TSV, SEVEN QUESTIONS (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30, item 4): *Send Design the next retrofit composition, Stats, per the at-rest baseline.*
+
+**The order it follows** (UI v3.3 §3, ruled 2026-09-29): People, then Stats, Energy and Budget, the Desk after; by the measured at-rest text Statistics carries **98 draws** at rest (`UI_V33_BASELINE.tsv`, §648; 98 today, dry film `drys685b`) - the target 49 or fewer, every word that leaves reachable within two slip levels or on the dense view.
+
+**Sent** `uploads/D-ST_ask/` (8 files; one stored zip with `MANIFEST.sha256` first and six entries; the store listed after the write and the ask and manifest read back whole; local `PoliSim-captures/design/D-ST_ask/`): `ASK.md`; four real frames from `s685b_1280` (Sweden 1280) - `02_statistics` (Domestic at rest), `02a_statistics_domestic_rows` (the live series, YOUR POLICIES, SOCIETY), `02b_statistics_international` (the map and the pair page's head), `02b_statistics_international_rows` (the pair's readings, trade, stance; TRADE) - the sweep's other three Stats frames are byte-identical to these (the scroll clamps at the page's foot) and were not sent; `02_statistics_at_rest.tsv` (every visible draw of every Stats frame with its geometry, size, mode and text, `Tools/text_baseline.pl tsv`). The ask: a composition in UI v3.3's grammar against the built screen, keeping its instruments, columns and order; honesty qualifiers as the 19a glyphs.
+
+**Asked (found while measuring):** (1) the ten reading cards' caption words - a stat icon is held for every one (`icon_stat_*`): lead with the icon and keep the word on the slip, or keep the word; (2) the fiscal position's six-draw axis line; (3) the live series' footer sentence repeated under every chart; (4) the sector legend's eight names and figures - 20b's rule 6 as the precedent, or this screen's own rule; (5) SOCIETY's unit phrases at rest; (6) the pair page's caption between two figures on every row, and three facts on each head; (7) the International map's country names at 11 px - kept, or marks. **Not asked, already answered:** the D24 vocabulary and the slip (§662, §666); the dense view's † (D16 §2).
+
+**Found on the way:** the DesignSync write refuses `text/tab-separated-values`; the TSV went as `text/plain` (the zip carries it byte-exact either way).
+
+**Documents tier.**
