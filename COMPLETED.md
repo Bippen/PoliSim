@@ -34951,3 +34951,16 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Owed:** the formation reads the declarations (`DeclaredRedLines`, the round); the issue's salience and the awareness term (§674, Elias's); the ballot-access task; blocs; D-CP's answers.
 
 **Tier UI + tooling + documents:** cheap bar 70 of 70 (`cheap676`); simulation bar 56 of 56 (`sim676`, the sentinel identical to `ps3k` at both seeds); dry film `drys676`; real films `s676_1280`, `s676_2560`; documents 8 of 8 (`doc676`).
+
+
+## 677. D-CP SENT IN THE STANDARD FORM, AGAINST THE BUILT FLOW: SEVEN REAL FRAMES (THE ENTRY, THE FIVE STEPS, THE SEATED DESK) AND SIX QUESTIONS FOUND WHILE BUILDING (2026-09-30)
+
+**The ruling** (Elias, 2026-09-29): *Then send D-CP to Design against the built flow, in the standard form.*
+
+**Sent** `uploads/D-CP_ask/` (10 files; one stored zip with `MANIFEST.sha256` first, 9 entries, every hash verified after extraction; local `PoliSim-captures/design/D-CP_ask/`): `ASK.md` and seven real frames from `s676_1280` (Sweden, 1280, through START) - `01g_party_picker` (the entry), `01k1`-`01k5` (profile with an origin card's slip pinned, placement, declarations, leader, review), `01k6_created_seated`. The ask: boards for the flow in UI v3.3's grammar against the built screens, saying where the built flow is wrong; Code builds from the boards Design confirms.
+
+**Asked (found while building):** (1) glyphs for the five stats - the one word per pip row is the only word left beside a control; (2) glyphs for the six origins, or the title confirmed as the card's head; (3) the declarations' borrowing of the D24 vocabulary (BAN red line, LOCKED one way, GOOD the candidacy, ALLOW/BAN outside) confirmed, or the glyphs named; (4) the ink ring - 6 of 24 clear against Sweden's eight: lightness steps, fewer hues, or as built; (5) **the cells are authored in slate, not white** - cut them white-on-alpha, or confirm the ink rule the flow draws (the D18 marks the chamber tints share it); and the hatched cells' legibility; (6) the regional party's 29 valkrets chips, or board 4a's cartogram as the picker.
+
+**Not asked, already answered:** the D24 vocabulary and the slip (§662, §666); the cells themselves (board 11b). **Lacking a real frame:** the single-issue and regional origins' own choices (the filmed draft is grassroots) - Code can film them first.
+
+**Documents tier.**
