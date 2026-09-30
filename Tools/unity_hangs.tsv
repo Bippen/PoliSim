@@ -1,0 +1,5 @@
+ended	pid	label	method	started	minutes_alive	phase	working_set_mb	last_log_line
+2026-09-29	11496	warm host (warm.ps1)	PoliSim.EditorTools.WarmEditor	n/r	n/r	teardown	n/r (backfilled from s659)	CodeReloadManager destroyed (warm_host.log, s659)
+2026-09-30T09:59:11	21936	s680_2560	PoliSim.EditorTools.UiScreenshotCapture.Run	n/r	n/r	startup (compile errors)	n/r (backfilled; the log was overwritten by the rerun)	error CS0106 in GameController.PartyCreation.cs - executeMethod class could not be found (the record, s680)
+2026-09-30T14:01:54	20624	cheap688	PoliSim.EditorTools.CheckSuite.RunAllBatch	2026-09-30T13:40:26	21.5	teardown	n/r (backfilled)	CodeReloadManager destroyed
+2026-09-30T14:32:54	20780	elec688	PoliSim.EditorTools.ElectionsBacktests.RunBatch	2026-09-30T14:13:58	18.9	startup	n/r (backfilled)	Begin MonoManager ReloadAssembly

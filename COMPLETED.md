@@ -35196,3 +35196,14 @@ The plates' slips are filled on the repaint that lays them out and joined to the
 **Changed nothing** in the build, the manifest or §678's check.
 
 **Documents tier:** the document bar 8 of 8 (`doc690`, the tree that carries this row).
+
+
+## 692. THE HANG LEDGER: EVERY HUNG UNITY LAUNCH IS A ROW OF THE COMMITTED Tools/unity_hangs.tsv - WHEN, THE LABEL AND METHOD, MINUTES ALIVE, THE PHASE READ FROM ITS OWN LOG, THE WORKING SET, THE LOG'S LAST LINE; FOUR KNOWN HANGS BACKFILLED (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30, item 5): *Hangs: keep a small ledger of every hung Unity launch (time, phase, working set) so a pattern can show.*
+
+**Built** (`Tools/unity_end_own.ps1`, the one command that ends a hung launch - so every hang passes through it). Before it ends the process it reads the working set, the minutes alive since the registered start, and the launch's own log (`PoliSim-captures/logs/<label>.log`) for the **phase**: *startup* (the method never began - a domain reload), *startup (compile errors)*, *running* (the method's own lines, no end), *after the run* (its result line printed, the process never left), *teardown* (`Cleanup mono`, then nothing - §656/§659); then appends one row to **`Tools/unity_hangs.tsv`** (committed, so the pattern survives sessions - the out-of-tree `unity_ended.tsv` stays as the ending log). The row: ended, pid, label, method, started, minutes alive, phase, working set (MB), the log's last line as the evidence. The script parses clean and its refusal path is unchanged (`END: REFUSED - no process 99999999`); the next real hang writes the first live row.
+
+**Backfilled** (working set not recorded before today): the warm host of §659 (2026-09-29, teardown, *CodeReloadManager destroyed*); `s680_2560` (the windowed film on a tree with compile errors - startup, from the record, its log since overwritten by the rerun); `cheap688` (teardown after its last check, 21.5 min alive); `elec688` (startup, stopped at *Begin MonoManager ReloadAssembly*, 18.9 min). **Two of four at teardown, two at startup; none mid-run** - the first shape the ledger shows.
+
+**Tier TOOLING:** cheap bar 76 of 76 (`cheap690`, the tree that carries this script).
