@@ -192,8 +192,8 @@ namespace PoliSim.Persistence
         /// replays every ceremony still inside the 24-entry log.</summary>
         public int SeenDivisionNumber;
 
-        public float PrevGdp;
-        public float LastGrowthPercent;
+        // `PrevGdp` and `LastGrowthPercent` (the controller's GDP growth, set at a year's close by play's own path) lived here until D-ST
+        // (COMPLETED.md s701): the figure is read off the kept real series now, and an older save's two keys are read past.
 
         // `ShellFoldOverrides` (UI v3.0, V3-R2: the player's per-screen fold choice) lived here from
         // 2026-08-28 to 2026-08-28 - retired with the OPEN state (v3.1 R-E1, ONE FRAME; the deletion in

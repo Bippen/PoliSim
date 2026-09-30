@@ -125,8 +125,15 @@ namespace PoliSim.UI
         private const float ChipHeight = 20f;
 
         private Texture2D _backgroundTexture;
-        private Texture2D _circleTexture;
         private Texture2D _lineTexture;
+
+        /// <summary>
+        /// D-ST (§701): the part of the map a scroll view shows, in the map's own coordinates - set by the caller before <see cref="Draw"/>, null where
+        /// the map is never scrolled. A trade line is a ROTATED quad, and IMGUI's clip does not hold under a rotated matrix: with the Statistics page
+        /// short enough to scroll the map half out of view, its lines drew over the sub-tabs above the view (the D-ST film's scrolled frame). Each
+        /// segment is clipped to this rect, by its geometry, before it is drawn.
+        /// </summary>
+        public Rect? VisibleClip { get; set; }
 
         /// <summary>
         /// Draws the map into <paramref name="rect"/>, handles hover/click hit-testing for both
@@ -193,7 +200,9 @@ namespace PoliSim.UI
                 Color dotColor = new Color(baseColor.r, baseColor.g, baseColor.b, fade);
 
                 var dotRect = new Rect(pixel.x - diameter * 0.5f, pixel.y - diameter * 0.5f, diameter, diameter);
-                DrawCircle(dotRect, dotColor);
+                // D-ST (23b: colour never carries a meaning alone, S5): an event takes the verdict glyph - GOOD helped, BAD hurt - sized by its shock and fading
+                // with it, where a green or red dot had carried the verdict by its colour only
+                SymbolRegistry.Draw(dotRect, marker.Event.ApprovalEffect >= 0f ? Symbol.Good : Symbol.Bad, dotColor, labelStyle);
 
                 if (dotRect.Contains(mousePosition))
                 {
@@ -431,6 +440,7 @@ namespace PoliSim.UI
 
         private void DrawLineSegment(Vector2 from, Vector2 to, float thickness, Color color)
         {
+            if (VisibleClip.HasValue && !ClipSegment(VisibleClip.Value, ref from, ref to)) { return; }
             Vector2 delta = to - from;
             float length = delta.magnitude;
             if (length < 1f)
@@ -448,6 +458,26 @@ namespace PoliSim.UI
 
             GUI.matrix = previousMatrix;
             GUI.color = previousColor;
+        }
+
+        /// <summary>Liang–Barsky: the part of the segment inside <paramref name="clip"/>, written back through the two ends; false where none is.</summary>
+        internal static bool ClipSegment(Rect clip, ref Vector2 a, ref Vector2 b)
+        {
+            float t0 = 0f, t1 = 1f;
+            Vector2 d = b - a;
+            float[] p = { -d.x, d.x, -d.y, d.y };
+            float[] q = { a.x - clip.xMin, clip.xMax - a.x, a.y - clip.yMin, clip.yMax - a.y };
+            for (int i = 0; i < 4; i++)
+            {
+                if (Mathf.Approximately(p[i], 0f)) { if (q[i] < 0f) { return false; } continue; }
+                float t = q[i] / p[i];
+                if (p[i] < 0f) { if (t > t1) { return false; } if (t > t0) { t0 = t; } }
+                else { if (t < t0) { return false; } if (t < t1) { t1 = t; } }
+            }
+            Vector2 start = a;
+            a = start + d * t0;
+            b = start + d * t1;
+            return true;
         }
 
         /// <summary>Reserved space (px) on every side so a node - and, on the right, its name label, which always renders to the right of the node - can never sit flush against or past the panel's actual edge, at any panel size. The largest a node can ever be (BaseNodeDiameter, before the size-clamp shrinks smaller-GDP countries further); the label's own width is now measured (see GetLabelReserveWidth), not a fixed guess.</summary>
@@ -744,14 +774,6 @@ namespace PoliSim.UI
             return _tooltipBackground;
         }
 
-        private void DrawCircle(Rect rect, Color color)
-        {
-            Color previous = GUI.color;
-            GUI.color = color;
-            GUI.DrawTexture(rect, _circleTexture, ScaleMode.StretchToFill);
-            GUI.color = previous;
-        }
-
         private Texture2D GetLineTexture()
         {
             if (_lineTexture == null)
@@ -769,10 +791,6 @@ namespace PoliSim.UI
             if (_backgroundTexture == null)
             {
                 _backgroundTexture = BuildBackgroundTexture();
-            }
-            if (_circleTexture == null)
-            {
-                _circleTexture = BuildCircleTexture(32);
             }
         }
 
@@ -792,28 +810,6 @@ namespace PoliSim.UI
                 for (int x = 0; x < TextureWidth; x++)
                 {
                     pixels[y * TextureWidth + x] = BackgroundColor;   // P4-E1 (2026-09-04): plain paper - the grid is gone from the Desk and Statistics alike, one texture serving both
-                }
-            }
-
-            texture.SetPixels(pixels);
-            texture.Apply(false);
-            return texture;
-        }
-
-        private static Texture2D BuildCircleTexture(int diameter)
-        {
-            var texture = new Texture2D(diameter, diameter, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-            float radius = diameter / 2f;
-            var pixels = new Color[diameter * diameter];
-
-            for (int y = 0; y < diameter; y++)
-            {
-                for (int x = 0; x < diameter; x++)
-                {
-                    float dx = x + 0.5f - radius;
-                    float dy = y + 0.5f - radius;
-                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                    pixels[y * diameter + x] = dist <= radius ? Color.white : Color.clear;
                 }
             }
 

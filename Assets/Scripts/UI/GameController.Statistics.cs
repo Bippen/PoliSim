@@ -24,9 +24,32 @@ namespace PoliSim.UI
     /// R-B10; DeskPx / StatsUnit), not at the body clamp. Placeholders on the board - the USA's
     /// figures, its 30 % axis - are declared as such, and the build draws from its own data: the axis
     /// is the group's maximum rounded up to the next 10 %, printed; sector names are the model's.
+    ///
+    /// <para><b>D-ST (boards 23a-23c, 2026-09-30, `COMPLETED.md` §701): what left the page at rest went to a slip at its own anchor</b> (19b; the
+    /// book is <see cref="StatsSlips"/>) - the subtitle to the title's slip, heads' tails, the fiscal axis's arithmetic, the pagers' legends, the Δ's
+    /// definition, SOCIETY's unit phrases, the sentences that explained an absence - and the absences draw as 19a's glyphs (ABSENT, NIL, ◇ DATED,
+    /// the verdicts). The built screen's wrong readings are fixed where Design found them: the Δ prints in the reading's own unit, GDP growth is
+    /// read off the kept series, the sector bar sums to GDP, a chart's head says it is the window's last point, a held seed value is not a history.</para>
     /// </summary>
     public partial class GameController
     {
+        /// <summary>D-ST (23a ⑨): the six live series share one pager; the trade chart has its own.</summary>
+        private readonly GraphSection _statsSeriesSection = new GraphSection();
+        private readonly GraphSection _statsTradeSection = new GraphSection();
+
+        /// <summary>True while the Statistics sheet draws - the one page whose reading cells register slip anchors (the Desk strip and the Budget
+        /// header draw the same cell and hold no slips).</summary>
+        private bool _statsSlipPage;
+
+        /// <summary>The part of the Statistics content its scroll view shows, in the content's coordinates - the map clips its rotated lines to it.</summary>
+        private Rect _statsVisibleContent;
+
+        /// <summary>A slip anchor on the Statistics sheet only.</summary>
+        private void StatsAnchor(Rect r, string id) { if (_statsSlipPage) { SlipAnchor(r, id); } }
+
+        /// <summary>A 19a state glyph in its slot, its word where the file is not held.</summary>
+        private void DrawStateGlyph(Rect r, Symbol s, Color ink) => SymbolRegistry.Draw(r, s, ink, DeskCaption(6.5f, ink));
+
         /// <summary>One of the ten headline readings - ONE list for the Desk's chip strip and the Statistics plates, so the two can never disagree about the tenth reading (the tiles' list of old, shared).</summary>
         private readonly struct HeadlineReading
         {
@@ -38,8 +61,10 @@ namespace PoliSim.UI
             /// the neutral ink rather than the good one. NaN where the delta is categorical (an outlook's + or -, a projection's NEXT), which the flag above answers for.</summary>
             public readonly float DeltaValue;
             public readonly IReadOnlyList<float> Series;
+            /// <summary>D-ST (23a ③): the second line is a figure the model does not hold yet - ABSENT in its slot, never 0.00 and never a dash.</summary>
+            public readonly bool DeltaAbsent;
 
-            public HeadlineReading(string label, string value, string delta, bool deltaIsGood, IReadOnlyList<float> series, float deltaValue = float.NaN)
+            public HeadlineReading(string label, string value, string delta, bool deltaIsGood, IReadOnlyList<float> series, float deltaValue = float.NaN, bool deltaAbsent = false)
             {
                 Label = label;
                 Value = value;
@@ -47,6 +72,7 @@ namespace PoliSim.UI
                 DeltaIsGood = deltaIsGood;
                 DeltaValue = deltaValue;
                 Series = series;
+                DeltaAbsent = deltaAbsent;
             }
 
             /// <summary>The ink a drawer gives this reading's delta: the value's own where there is one, the flag's otherwise.</summary>
@@ -121,11 +147,12 @@ namespace PoliSim.UI
                 // time, so before the first boundary there is no reading - and the chip printed the format's zero section, "0%", in the GOOD ink, on the desk and on
                 // the Statistics tile, for the whole of turn 0. A figure that is only a placeholder is drawn as nothing; once a year has closed, the value's own ink
                 // reads it, and a genuine zero takes the neutral one (GetDeltaColor's own threshold), not the green.
-                new HeadlineReading("GDP", UiFormat.Money(state.NominalGdp, MoneyUnit.Billions),
-                    _simulationManager.CurrentTurn > 0 ? _lastGrowthPercent.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + "%" : null,
-                    _lastGrowthPercent >= 0f, history?.Gdp.Quarterly, _lastGrowthPercent),
-                new HeadlineReading("Unemployment", UiFormat.Number(state.Unemployment, 2) + "%", null, false, history?.Unemployment.Quarterly),
-                new HeadlineReading("Inflation", UiFormat.Number(state.Inflation, 2) + "%", null, false, history?.Inflation.Quarterly),
+                // D-ST (23a ③, Design's question 4): the growth is READ OFF THE KEPT REAL SERIES - four quarters on four quarters - not the controller's
+                // figure, which only play's own year-close set (the film's warm-up closes its years through the manager, and the card printed that
+                // figure's default, 0.00 %, under a series rising 620 → 671). Until the series holds a year the line is ABSENT, never 0.00, never a dash.
+                GdpGrowthReading(state, history),
+                new HeadlineReading("Unemployment", StatsReadings.Rate(state.Unemployment), null, false, history?.Unemployment.Quarterly),   // 23a ⑤: one form - one decimal, its unit
+                new HeadlineReading("Inflation", StatsReadings.Rate(state.Inflation), null, false, history?.Inflation.Quarterly),
                 new HeadlineReading("Approval Rating", UiFormat.Number(state.ApprovalRating, 1), null, false, history?.ApprovalRating.Quarterly)
             };
 
@@ -134,9 +161,9 @@ namespace PoliSim.UI
                 readings.Add(new HeadlineReading("Currency Strength", UiFormat.Number(state.CurrencyStrength, 1), null, false, null));
             }
 
-            readings.Add(new HeadlineReading("Poverty Rate", UiFormat.Number(state.PovertyRate, 1) + "%", null, false, history?.PovertyRate.Quarterly));
+            readings.Add(new HeadlineReading("Poverty Rate", StatsReadings.Rate(state.PovertyRate), null, false, history?.PovertyRate.Quarterly));
             readings.Add(new HeadlineReading("Government Debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, false, null));
-            readings.Add(new HeadlineReading("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1) + "%", null, false, history?.DebtToGdpRatio.Quarterly));
+            readings.Add(new HeadlineReading("Debt-to-GDP", StatsReadings.Rate(state.DebtToGdpRatio), null, false, history?.DebtToGdpRatio.Quarterly));
 
             // The STANDING rating (Elias's A1 ruling, 2026-08-02: set by scheduled review, unchanged
             // between reviews - recomputing per frame would reintroduce the thrash the cadence removes).
@@ -155,8 +182,18 @@ namespace PoliSim.UI
             // report, the annual series as its line, and a dash before any year has closed (a figure no year has
             // computed is stated, never drawn).
             FiscalTurnReport lastYear = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            readings.Add(new HeadlineReading("Budget Balance", lastYear != null ? UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions) : "-", null, false, history?.BudgetBalanceAnnual));
+            readings.Add(new HeadlineReading("Budget Balance", lastYear != null ? StatsReadings.TrueMinus(UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions)) : "-", null, false, history?.BudgetBalanceAnnual));   // 23a ⑤: the true minus
             return readings;
+        }
+
+        /// <summary>D-ST (23a ③): the GDP card - the nominal level, and real growth over the kept series' last four quarters as its second line, or
+        /// ABSENT until the series holds a year.</summary>
+        private HeadlineReading GdpGrowthReading(EconomyState state, StatHistory history)
+        {
+            float? growth = StatsReadings.YearOnYearGrowthPercent(history?.Gdp.Quarterly);
+            string line = growth.HasValue ? StatsReadings.TrueMinus(growth.Value.ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture)) + "%" : null;
+            return new HeadlineReading("GDP", UiFormat.Money(state.NominalGdp, MoneyUnit.Billions), line, (growth ?? 0f) >= 0f, history?.Gdp.Quarterly,
+                growth ?? float.NaN, deltaAbsent: !growth.HasValue);
         }
 
         // ------------------------------------------------------------------------------------------
@@ -270,25 +307,45 @@ namespace PoliSim.UI
             // tile was 46.6 px, and caption 12 + delta 12 + pads 8 left the credit rating's 17 px "AAA" a 14.6 px row (GDP's figure hid the same row by shrinking
             // to its width). Where the figure's measured height does not fit, the vertical padding is taken back first, down to none; past that the guard reports.
             float figureNeed = Mathf.Ceil(numeral.CalcSize(new GUIContent(string.IsNullOrEmpty(reading.Value) ? "0" : reading.Value)).y);
-            float deltaNeed = string.IsNullOrEmpty(reading.Delta) ? 0f : Mathf.Ceil(DeskCaptionHeight(DeskCaption(deltaPx, reading.DeltaInk, bold: true)));
+            bool deltaRow = !string.IsNullOrEmpty(reading.Delta) || reading.DeltaAbsent;
+            float deltaNeed = !deltaRow ? 0f : Mathf.Ceil(DeskCaptionHeight(DeskCaption(deltaPx, reading.DeltaInk, bold: true)));
             float shortfall = figureNeed - (plate.height - padY * 2f - captionHeight - deltaNeed);
             if (shortfall > 0f) { padY = Mathf.Max(0f, padY - Mathf.Ceil(shortfall * 0.5f)); }
             var inner = new Rect(plate.x + padX, plate.y + padY, plate.width - padX * 2f, plate.height - padY * 2f);
             PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.y, inner.width, captionHeight), reading.Label.ToUpperInvariant(), caption);
 
-            GUIStyle delta = string.IsNullOrEmpty(reading.Delta) ? null : DeskCaption(deltaPx, reading.DeltaInk, bold: true);
+            GUIStyle delta = !deltaRow ? null : DeskCaption(deltaPx, reading.DeltaInk, bold: true);
             float deltaHeight = delta == null ? 0f : Mathf.Ceil(DeskCaptionHeight(delta));
             float sparkX = inner.xMax - sparkWidth;
             var spark = new Rect(sparkX, inner.yMax - sparkHeight, sparkWidth, sparkHeight);
             if (reading.Series != null && reading.Series.Count >= 2) { GraphRenderer.DrawSparkline(spark, reading.Series, PoliSimTheme.TextSecondary); }
+            else if (reading.Series == null && StatsSlips.KeepsNoHistory(reading.Label))
+            {
+                // D-ST (23a ④, the D24 carried note): a reading whose history is NOT KEPT takes ABSENT in the sparkline's slot - the dotted rule said
+                // "the line starts here", which for a series never kept is a promise nothing keeps (debt cannot stay flat under a deficit)
+                float side = Mathf.Min(inner.height - captionHeight, Mathf.Max(sparkHeight, StatsUnit(12f)));
+                var slot = new Rect(inner.xMax - side, inner.yMax - side, side, side);
+                DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted);
+                StatsAnchor(slot, "card:history");
+                UiContainmentGuard.Check("Reading cell history glyph", slot, plate);
+            }
             else { DeskDottedBaseline(spark); }
             UiContainmentGuard.Check("Reading cell sparkline", spark, plate);
 
             var numeralRect = new Rect(inner.x, inner.y + captionHeight, Mathf.Max(1f, sparkX - inner.x - padX), Mathf.Max(1f, inner.yMax - deltaHeight - inner.y - captionHeight));
             PoliSimWidgets.MeasuredLabel(numeralRect, reading.Value, numeral);
-            if (delta != null)
+            if (reading.DeltaAbsent)
             {
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, inner.yMax - deltaHeight, Mathf.Max(1f, sparkX - inner.x - padX), deltaHeight), reading.Delta, delta);
+                // 23a ③: a growth the model does not hold yet is not a zero - ABSENT in the line's slot, its slip naming it
+                var slot = new Rect(inner.x, inner.yMax - deltaHeight, deltaHeight, deltaHeight);
+                DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted);
+                StatsAnchor(slot, "card:gdp/growth");
+            }
+            else if (delta != null)
+            {
+                Rect line = new Rect(inner.x, inner.yMax - deltaHeight, Mathf.Max(1f, sparkX - inner.x - padX), deltaHeight);
+                PoliSimWidgets.MeasuredLabel(line, reading.Delta, delta);
+                if (reading.Label == "GDP") { StatsAnchor(new Rect(line.x, line.y, Mathf.Min(line.width, delta.CalcSize(new GUIContent(reading.Delta)).x), line.height), "card:gdp/growth"); }
             }
         }
 
@@ -307,7 +364,7 @@ namespace PoliSim.UI
             bool anyDelta = false;
             for (int i = 0; i < readings.Count; i++)
             {
-                anyDelta |= !string.IsNullOrEmpty(readings[i].Delta);
+                anyDelta |= !string.IsNullOrEmpty(readings[i].Delta) || readings[i].DeltaAbsent;
             }
 
             float deltaHeight = anyDelta ? Mathf.Ceil(DeskCaptionHeight(DeskCaption(8f, PoliSimTheme.Neutral, bold: true))) : 0f;
@@ -334,11 +391,14 @@ namespace PoliSim.UI
         /// Board 2a: the fiscal shares of GDP on ONE axis - tax burden, spending, the deficit and the
         /// primary balance as bars to a printed axis (the group's maximum rounded up to the next 10 %,
         /// never below the board's 30 %), each with its figure; a row no closed year has computed yet
-        /// says so instead of drawing a track at zero (an empty track IS the wrong number); GDP per
+        /// draws ABSENT instead of a track at zero (an empty track IS the wrong number); GDP per
         /// capita beneath as a bare level - currency per person, no denominator, no gauge (§A.9b, E2
         /// absorbed). The deficit rows are NAMED by their sign ("Surplus" at 4.8 %, never "Deficit:
         /// −4.8 %"), and a positive deficit reads in the bad ink - the sign convention is the opposite
         /// of the budget balance's, so the ink follows the meaning.
+        /// <para>D-ST (23a ⑥ ⑦): the head is FISCAL POSITION (its tail to the head's slip); the axis is ticks with ONE label - the scale's end and its
+        /// unit - since the four bars print their own figures; the two fit hacks are undone (the name column 132 at the board's scale, the figure 56),
+        /// and LEVEL · NO GAUGE leaves for the empty lane's slip.</para>
         /// </summary>
         private void DrawStatsFiscalPosition(float contentWidth)
         {
@@ -371,16 +431,17 @@ namespace PoliSim.UI
                     primary.HasValue ? UiPalette.GetDeltaColor(primary.Value, higherIsBetter: false) : fiscalInk)
             };
 
-            DrawStatsSectionCaption($"FISCAL POSITION — SHARES OF GDP · ONE AXIS TO {axisMax.ToString("0", CultureInfo.InvariantCulture)}%");
+            Rect head = DrawStatsSectionCaption("FISCAL POSITION");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "fiscal:head");
 
             float rowHeight = StatsUnit(22f);
-            float labelWidth = StatsUnit(120f);
-            float valueWidth = StatsUnit(44f);
+            float labelWidth = StatsUnit(132f);   // 23a ⑦: widened from 120, so "Government spending" draws at its siblings' size
+            float valueWidth = StatsUnit(56f);    // 23a ⑦: widened from 44, so GDP per capita's figure draws at its siblings' size
             float gap = StatsUnit(8f);
             float barHeight = StatsUnit(11f);
             GUIStyle label = DeskBody(12f, PoliSimTheme.TextPrimary);
             GUIStyle value = DeskCaption(10f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight);
-            GUIStyle note = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            GUIStyle note = DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight);
             float axisRowHeight = Mathf.Ceil(DeskCaptionHeight(note)) + StatsUnit(2f);
             float totalHeight = rows.Count * rowHeight + axisRowHeight + rowHeight;
             Rect block = GUILayoutUtility.GetRect(contentWidth, totalHeight, GUILayout.Width(contentWidth), GUILayout.Height(totalHeight));
@@ -405,32 +466,46 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    PoliSimWidgets.MeasuredLabel(new Rect(barX, y, barWidth + gap + valueWidth, rowHeight), "NOT YET COMPUTED — ADVANCE A YEAR", note);
+                    // no closed year has computed it: ABSENT in the figure's slot (19a), the sentence on its slip
+                    float side = Mathf.Min(rowHeight, StatsUnit(14f));
+                    var slot = new Rect(block.xMax - side, y + (rowHeight - side) * 0.5f, side, side);
+                    DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted);
+                    StatsAnchor(slot, "fiscal:notyet");
                 }
 
                 y += rowHeight;
             }
 
-            var ticks = new System.Text.StringBuilder("0");
-            for (float t = 10f; t <= axisMax + 0.01f; t += 10f)
+            // 23a ⑥: the axis - a tick every 10 points under the tracks, and one label, the scale's end and its unit
+            for (float t = 0f; t <= axisMax + 0.01f; t += 10f)
             {
-                ticks.Append(" · ").Append(t.ToString("0", CultureInfo.InvariantCulture)).Append('%');
+                float x = Mathf.Round(barX + barWidth * (t / axisMax));
+                PoliSimTheme.Rule(new Rect(Mathf.Min(x, barX + barWidth - 1f), y, 1f, StatsUnit(4f)), PoliSimTheme.HairlineStrong);
             }
-
-            ticks.Append(" OF GDP");
-            PoliSimWidgets.MeasuredLabel(new Rect(barX, y, barWidth + gap + valueWidth, axisRowHeight), ticks.ToString(), note);
+            string end = axisMax.ToString("0", CultureInfo.InvariantCulture) + "% OF GDP";
+            float endWidth = note.CalcSize(new GUIContent(end)).x + StatsUnit(2f);
+            var endRect = new Rect(barX + barWidth + gap + valueWidth - endWidth, y, endWidth, axisRowHeight);
+            PoliSimWidgets.MeasuredLabel(endRect, end, note);
+            StatsAnchor(endRect, "fiscal:axis");
             y += axisRowHeight;
 
             PoliSimWidgets.MeasuredLabel(new Rect(block.x, y, labelWidth, rowHeight), "GDP per capita", label);
-            PoliSimWidgets.MeasuredLabel(new Rect(barX, y, barWidth, rowHeight), perCapita.HasValue ? "LEVEL · NO GAUGE" : "NO POPULATION", note);
+            StatsAnchor(new Rect(barX, y, barWidth, rowHeight), "fiscal:percapita");   // 23a ⑦: the empty lane says NO GAUGE; its words are its slip
             PoliSimWidgets.MeasuredLabel(new Rect(block.xMax - valueWidth, y, valueWidth, rowHeight), perCapita.HasValue ? UiFormat.Money(perCapita.Value, MoneyUnit.Thousands) : "n/a", value);
         }
 
-        /// <summary>Board 2a: the sector shares of GDP as ONE stacked distribution bar in the categorical eight (the shares normalised to their own sum, so the bar is always the whole) over a two-column legend - swatch, name, share - replacing eight gauges each to its own 100 %.</summary>
+        /// <summary>
+        /// Board 2a: the sector shares of GDP as ONE stacked distribution bar in the categorical eight over a key.
+        /// <para>D-ST (23a ⑧): THE BAR SUMS TO ITS WHOLE. The eight are shares of GDP (`Sector.OutputShareOfGdp`, value added by sector) and summed
+        /// to 43 % for Sweden - the bar had drawn them as 100 %, so Manufacturing's 12.6 % took 29 % of it. Each segment's length is now its share,
+        /// and the rest of GDP draws as OTHER in Neutral. Parts named only by their ink keep name and figure at rest, in ONE key line in bar order
+        /// (the order is the sign that backs the ink, §5) - not 20b's rule 6, which serves parts named by their order.</para>
+        /// </summary>
         private void DrawStatsSectorShares(float contentWidth)
         {
             List<(SectorType Type, float SharePercent)> shares = DerivedStats.SectorSharesOfGdp(_playerCountry);
-            DrawStatsSectionCaption("SECTOR SHARES OF GDP — ONE DISTRIBUTION");
+            Rect head = DrawStatsSectionCaption("SECTOR SHARES");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "sector:head");
             GUIStyle note = DeskCaption(7.5f, PoliSimTheme.TextMuted);
             if (shares.Count == 0)
             {
@@ -443,55 +518,72 @@ namespace PoliSim.UI
                 return;
             }
 
+            var percents = new List<float>(shares.Count);
+            foreach ((SectorType _, float p) in shares) { percents.Add(p); }
+            float other = StatsReadings.SectorRemainderPercent(percents);
+
+            // The key: swatch · name · figure per part, in bar order, OTHER last - one line, wrapping only where the width runs out (measured).
+            GUIStyle name = DeskBody(11f, PoliSimTheme.TextPrimary);
+            GUIStyle share = DeskCaption(9.5f, PoliSimTheme.TextSecondary);
+            float swatch = StatsUnit(7f);
+            float swatchGap = StatsUnit(4f);
+            float figureGap = StatsUnit(4f);
+            float entryGap = StatsUnit(14f);
+            float keyPitch = StatsUnit(16f);
+            var entries = new List<(string Name, string Figure, Color Ink, bool Other)>();
+            for (int i = 0; i < shares.Count; i++)
+            {
+                // Spaced, NOT Of: SectorType.Energy resolves through the curated policy table to "Energy (Spending)", a discretionary spending line.
+                entries.Add((DisplayName.Spaced(shares[i].Type.ToString()), UiFormat.Number(shares[i].SharePercent, 1) + "%", UiPalette.GetCategoricalColor(i), false));
+            }
+            entries.Add(("Other", UiFormat.Number(other, 1) + "%", PoliSimTheme.Neutral, true));
+            var widths = new float[entries.Count];
+            for (int i = 0; i < entries.Count; i++)
+            {
+                widths[i] = swatch + swatchGap + name.CalcSize(new GUIContent(entries[i].Name)).x + figureGap + share.CalcSize(new GUIContent(entries[i].Figure)).x;
+            }
+            int keyRows = 1;
+            float run = 0f;
+            for (int i = 0; i < entries.Count; i++)
+            {
+                if (run > 0f && run + entryGap + widths[i] > contentWidth) { keyRows++; run = 0f; }
+                run += (run > 0f ? entryGap : 0f) + widths[i];
+            }
+
             float barHeight = StatsUnit(22f);
-            float legendGap = StatsUnit(8f);
-            float legendPitch = StatsUnit(16f);
-            int legendRows = Mathf.CeilToInt(shares.Count / 2f);
-            float totalHeight = barHeight + legendGap + legendRows * legendPitch;
+            float keyGap = StatsUnit(8f);
+            float totalHeight = barHeight + keyGap + keyRows * keyPitch;
             Rect block = GUILayoutUtility.GetRect(contentWidth, totalHeight, GUILayout.Width(contentWidth), GUILayout.Height(totalHeight));
             if (Event.current.type != EventType.Repaint)
             {
                 return;
             }
 
-            float total = 0f;
-            for (int i = 0; i < shares.Count; i++)
-            {
-                total += Mathf.Max(0f, shares[i].SharePercent);
-            }
-
             var bar = new Rect(block.x, block.y, block.width, barHeight);
             PoliSimTheme.Rule(bar, PoliSimTheme.BarTrack);
             float x = bar.x;
-            for (int i = 0; i < shares.Count && total > 0f; i++)
+            for (int i = 0; i < entries.Count; i++)
             {
-                float w = bar.width * Mathf.Max(0f, shares[i].SharePercent) / total;
-                PoliSimTheme.Rule(new Rect(x, bar.y, w, bar.height), UiPalette.GetCategoricalColor(i));
-                if (i > 0)
-                {
-                    PoliSimTheme.Rule(new Rect(Mathf.Round(x), bar.y, 1f, bar.height), PoliSimTheme.Card);
-                }
-
+                float part = i < shares.Count ? Mathf.Max(0f, shares[i].SharePercent) : other;
+                float w = bar.width * Mathf.Clamp01(part / 100f);   // 23a ⑧: a segment's length is its share of GDP
+                PoliSimTheme.Rule(new Rect(x, bar.y, w, bar.height), entries[i].Ink);
+                if (i > 0) { PoliSimTheme.Rule(new Rect(Mathf.Round(x), bar.y, 1f, bar.height), PoliSimTheme.Card); }
+                if (entries[i].Other) { StatsAnchor(new Rect(x, bar.y, w, bar.height), "sector:other"); }
                 x += w;
             }
 
-            GUIStyle name = DeskBody(11f, PoliSimTheme.TextPrimary);
-            GUIStyle share = DeskCaption(9.5f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
-            float swatch = StatsUnit(7f);
-            float columnGap = StatsUnit(13f);
-            float columnWidth = (block.width - columnGap) / 2f;
-            float shareWidth = StatsUnit(44f);
-            float swatchGap = StatsUnit(6f);
-            for (int i = 0; i < shares.Count; i++)
+            float kx = block.x, ky = bar.yMax + keyGap;
+            for (int i = 0; i < entries.Count; i++)
             {
-                float cx = block.x + (i % 2) * (columnWidth + columnGap);
-                float cy = bar.yMax + legendGap + (i / 2) * legendPitch;
-                PoliSimTheme.Rule(new Rect(cx, cy + (legendPitch - swatch) * 0.5f, swatch, swatch), UiPalette.GetCategoricalColor(i));
-                float nameX = cx + swatch + swatchGap;
-                // Spaced, NOT Of: SectorType.Energy resolves through the curated policy table to "Energy
-                // (Spending)", a discretionary spending line rather than an economic sector.
-                PoliSimWidgets.MeasuredLabel(new Rect(nameX, cy, Mathf.Max(1f, columnWidth - swatch - swatchGap - shareWidth), legendPitch), DisplayName.Spaced(shares[i].Type.ToString()), name);
-                PoliSimWidgets.MeasuredLabel(new Rect(cx + columnWidth - shareWidth, cy, shareWidth, legendPitch), UiFormat.Number(shares[i].SharePercent, 1) + "%", share);
+                if (kx > block.x && kx + widths[i] > block.xMax + 0.5f) { kx = block.x; ky += keyPitch; }
+                PoliSimTheme.Rule(new Rect(kx, ky + (keyPitch - swatch) * 0.5f, swatch, swatch), entries[i].Ink);
+                float nx = kx + swatch + swatchGap;
+                float nw = name.CalcSize(new GUIContent(entries[i].Name)).x;
+                PoliSimWidgets.MeasuredLabel(new Rect(nx, ky, nw, keyPitch), entries[i].Name, name);
+                float fw = share.CalcSize(new GUIContent(entries[i].Figure)).x;
+                PoliSimWidgets.MeasuredLabel(new Rect(nx + nw + figureGap, ky, fw, keyPitch), entries[i].Figure, share);
+                if (entries[i].Other) { StatsAnchor(new Rect(kx, ky, widths[i], keyPitch), "sector:other"); }
+                kx += widths[i] + entryGap;
             }
         }
 
@@ -521,25 +613,25 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>One Society row's reading: the name, a 0..1 gauge fill or −1, the kept history for a row-end sparkline or null, the figure, the unit caption, the ink; Absent marks a row that is drawn as absent by ruling (no figure, never a zero).</summary>
+        /// <summary>One Society row's reading: the name, a 0..1 gauge fill or −1, the kept history for a row-end sparkline or null, the figure WITH its
+        /// true unit (23a ⑰: 83.8 Y, 92.1 $/H), whether it is an index on base 100 (its line carries the dotted base rule), and Absent for a row drawn as
+        /// absent by ruling (ABSENT in the figure's slot, never a zero).</summary>
         private readonly struct SocietyReading
         {
             public readonly string Name;
             public readonly float Fill;
             public readonly IReadOnlyList<float> Series;
             public readonly string Value;
-            public readonly string Unit;
-            public readonly Color Ink;
+            public readonly bool Index;
             public readonly bool Absent;
 
-            public SocietyReading(string name, float fill, IReadOnlyList<float> series, string value, string unit, Color ink, bool absent = false)
+            public SocietyReading(string name, float fill, IReadOnlyList<float> series, string value, bool index = false, bool absent = false)
             {
                 Name = name;
                 Fill = fill;
                 Series = series;
                 Value = value;
-                Unit = unit;
-                Ink = ink;
+                Index = index;
                 Absent = absent;
             }
         }
@@ -550,33 +642,34 @@ namespace PoliSim.UI
         /// index or level that keeps a history (real wages, house prices, productivity - a base-100
         /// index is unbounded by construction and any fill denominator an invented ceiling, §A.9b, so
         /// its own history is the honest instrument), nothing for a level that keeps none (life
-        /// expectancy); the figure in mono 10.5; the unit as a muted caption. The housing three keep
-        /// their asymmetry (overburden first for the EU five, homeownership primary for the USA) and
-        /// the USA's overburden row is ABSENT by ruling, drawn as absent - a name and the ruling, no
-        /// figure, never a zero: drawing "0.0%" would fabricate a figure no source publishes.
+        /// expectancy); the figure in mono 10.5. The housing three keep their asymmetry (overburden
+        /// first for the EU five, homeownership primary for the USA) and the USA's overburden row is
+        /// ABSENT by ruling - never a zero: drawing "0.0%" would fabricate a figure no source publishes.
+        /// <para>D-ST (23a ⑰): the unit phrases left the row. A true unit rides in the figure (83.8 Y, 92.1 $/H); a definition or a denominator goes
+        /// to line 2 of the name's slip; an index's base is drawn - a dotted rule at 100 on its line. The gauges draw in Neutral: they had drawn in two
+        /// area inks that are France's and Germany's chips on International, so one ink meant a country on one tab and a share on the other.</para>
         /// </summary>
         private void DrawStatsSocietyRows(float contentWidth)
         {
             EconomyState state = _playerCountry.State;
             StatHistory history = _playerCountry.History;
-            Color labor = UiPalette.GetAreaColor(UiPalette.SystemArea.Labor);
-            Color welfare = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
             bool tracksOverburden = _playerCountry.TracksHousingOverburden;
             var rows = new List<SocietyReading>
             {
-                new SocietyReading("Youth unemployment", state.YouthUnemployment / 100f, null, UiFormat.Number(state.YouthUnemployment, 1) + "%", "OF YOUTH LABOR FORCE", labor),
-                new SocietyReading("Life expectancy", -1f, null, UiFormat.Number(state.LifeExpectancy, 1), "YEARS AT BIRTH", welfare),
-                new SocietyReading("Income inequality (Gini)", state.Gini / 100f, null, UiFormat.Number(state.Gini, 1), "0–100 SCALE", welfare),
-                new SocietyReading("Real wages", -1f, history?.RealWageIndex.Quarterly, UiFormat.Number(state.RealWageIndex, 1), "INDEX · 100 = TERM START", labor),
-                new SocietyReading("Productivity", -1f, history?.Productivity.Quarterly, UiFormat.Number(state.Productivity, 1), "$/HOUR (PPP) · OWN PAST", labor),
+                new SocietyReading("Youth unemployment", state.YouthUnemployment / 100f, null, StatsReadings.Rate(state.YouthUnemployment)),
+                new SocietyReading("Life expectancy", -1f, null, UiFormat.Number(state.LifeExpectancy, 1) + " Y"),
+                new SocietyReading("Income inequality (Gini)", state.Gini / 100f, null, UiFormat.Number(state.Gini, 1)),
+                new SocietyReading("Real wages", -1f, history?.RealWageIndex.Quarterly, UiFormat.Number(state.RealWageIndex, 1), index: true),
+                new SocietyReading("Productivity", -1f, history?.Productivity.Quarterly, UiFormat.Number(state.Productivity, 1) + " $/H"),
                 tracksOverburden
-                    ? new SocietyReading("Housing overburden", state.HousingOverburden / 100f, null, UiFormat.Number(state.HousingOverburden, 1) + "%", ">40% OF INCOME ON HOUSING", welfare)
-                    : new SocietyReading("Housing overburden", -1f, null, null, "ABSENT BY RULING · NOT ZERO", welfare, absent: true),
-                new SocietyReading("Homeownership", state.Homeownership / 100f, null, UiFormat.Number(state.Homeownership, 1) + "%", tracksOverburden ? "OF HOUSEHOLDS" : "OF HOUSEHOLDS · PRIMARY", welfare),
-                new SocietyReading("House prices", -1f, history?.HousePriceIndex.Quarterly, UiFormat.Number(state.HousePriceIndex, 1), "INDEX · 100 = TERM START", welfare)
+                    ? new SocietyReading("Housing overburden", state.HousingOverburden / 100f, null, StatsReadings.Rate(state.HousingOverburden))
+                    : new SocietyReading("Housing overburden", -1f, null, null, absent: true),
+                new SocietyReading("Homeownership", state.Homeownership / 100f, null, StatsReadings.Rate(state.Homeownership)),
+                new SocietyReading("House prices", -1f, history?.HousePriceIndex.Quarterly, UiFormat.Number(state.HousePriceIndex, 1), index: true)
             };
 
-            DrawStatsSectionCaption("SOCIETY — SHARES AS GAUGES · INDICES AND LEVELS WITH THEIR KEPT HISTORIES");
+            Rect head = DrawStatsSectionCaption("SOCIETY");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "society:head");
             float rowHeight = StatsUnit(22f);
             int gridRows = Mathf.CeilToInt(rows.Count / 2f);
             float totalHeight = gridRows * rowHeight;
@@ -590,12 +683,11 @@ namespace PoliSim.UI
             float columnWidth = (block.width - columnGap) / 2f;
             float nameWidth = StatsUnit(170f);
             float instrumentWidth = StatsUnit(70f);
-            float valueWidth = StatsUnit(60f);
+            float valueWidth = StatsUnit(70f);
             float gap = StatsUnit(8f);
             GUIStyle name = DeskBody(12f, PoliSimTheme.TextPrimary);
             GUIStyle absentName = DeskBody(12f, PoliSimTheme.TextMuted);
             GUIStyle value = DeskCaption(10.5f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight);
-            GUIStyle unit = DeskCaption(7.5f, PoliSimTheme.TextMuted);
             float gaugeHeight = StatsUnit(8f);
             float sparkWidth = StatsUnit(44f);
             float sparkHeight = StatsUnit(13f);
@@ -605,20 +697,23 @@ namespace PoliSim.UI
                 SocietyReading row = rows[i];
                 float x = block.x + (i % 2) * (columnWidth + columnGap);
                 float y = block.y + (i / 2) * rowHeight;
-                PoliSimWidgets.MeasuredLabel(new Rect(x, y, nameWidth, rowHeight), row.Name, row.Absent ? absentName : name);
+                GUIStyle face = row.Absent ? absentName : name;
+                PoliSimWidgets.MeasuredLabel(new Rect(x, y, nameWidth, rowHeight), row.Name, face);
+                StatsAnchor(new Rect(x, y, Mathf.Min(nameWidth, face.CalcSize(new GUIContent(row.Name)).x), rowHeight), "society:" + row.Name);
                 float ix = x + nameWidth + gap;
                 if (row.Fill >= 0f)
                 {
                     var track = new Rect(ix, y + (rowHeight - gaugeHeight) * 0.5f, instrumentWidth, gaugeHeight);
                     PoliSimTheme.Rule(track, PoliSimTheme.BarTrack);
-                    PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(row.Fill), track.height), row.Ink);
+                    PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(row.Fill), track.height), PoliSimTheme.Neutral);   // 23a ⑰: Neutral, not an area ink
                 }
                 else if (row.Series != null)
                 {
                     var spark = new Rect(ix + instrumentWidth - sparkWidth, y + (rowHeight - sparkHeight) * 0.5f, sparkWidth, sparkHeight);
                     if (row.Series.Count >= 2)
                     {
-                        GraphRenderer.DrawSparkline(spark, row.Series, row.Ink);
+                        GraphRenderer.DrawSparkline(spark, row.Series, PoliSimTheme.Neutral, reference: row.Index ? 100f : (float?)null);   // 23a ⑰: an index's base drawn at 100
+                        if (row.Index) { StatsAnchor(spark, "society:index"); }
                     }
                     else
                     {
@@ -627,13 +722,17 @@ namespace PoliSim.UI
                 }
 
                 float vx = ix + instrumentWidth + gap;
-                if (!row.Absent)
+                if (row.Absent)
+                {
+                    float side = Mathf.Min(rowHeight, StatsUnit(14f));
+                    var slot = new Rect(vx + valueWidth - side, y + (rowHeight - side) * 0.5f, side, side);
+                    DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted);
+                    StatsAnchor(slot, "society:" + row.Name);
+                }
+                else
                 {
                     PoliSimWidgets.MeasuredLabel(new Rect(vx, y, valueWidth, rowHeight), row.Value, value);
                 }
-
-                float unitX = vx + valueWidth + gap;
-                PoliSimWidgets.MeasuredLabel(new Rect(unitX, y, Mathf.Max(1f, x + columnWidth - unitX), rowHeight), row.Unit, unit);
             }
         }
 
@@ -645,11 +744,12 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Statistics › Domestic as board 2a draws it, top to bottom: the headline plates, the fiscal
-        /// position on one axis, the sector distribution, the six live graphs, the Society rows (the "as published" band that
-        /// followed them was cut at P-A2, 2026-08-29 - a display cut; the mechanism stands). The "Domestic" header is gone - the sub-tab already says it (a (b)-class
-        /// duplicate, the census's own category). Next-year projections ride the three graphs that
-        /// have them, from the same cached PreviewTurn the Desk's effects card reads (the dashed
-        /// segment is a real feature and the section caption says what it is, once).
+        /// position on one axis, the sector distribution, the six live graphs, YOUR POLICIES, the Society rows. Next-year projections ride the three
+        /// graphs that have them, from the same cached PreviewTurn the Desk's effects card reads.
+        /// <para>D-ST (23a ⑨-⑭): the six charts share ONE pager on the LIVE SERIES head and draw no feet - their words are slips; each chart's Δ prints
+        /// in its reading's own unit; a verdict glyph leads a name where lower is better; each head's figure is ◇ DATED - the window's last point,
+        /// beside the live card - and the GDP chart names itself REAL (the card is nominal; the chart and its estimate are real, B6's rule); approval's
+        /// seed value, held until the first year's close, is empty paper.</para>
         /// </summary>
         private void DrawDomesticStatisticsContent(float contentWidth)
         {
@@ -666,7 +766,7 @@ namespace PoliSim.UI
             float? projectedApproval = null;
             if (_hasCachedPreview)
             {
-                projectedGdp = state.NominalGdp * (1f + _cachedGdpGrowthPercentRaw / 100f);   // P5-B6: the level in current prices, the growth the real one
+                projectedGdp = state.GDP * (1f + _cachedGdpGrowthPercentRaw / 100f);   // D-ST (23a ⑫): the chart is REAL GDP, so its estimate is the real level at the real growth - never the nominal level on a real line (B6: real with real)
                 projectedUnemployment = state.Unemployment + _cachedUnemploymentChangeRaw;
                 projectedApproval = state.ApprovalRating + _cachedApprovalChangeRaw;
             }
@@ -684,26 +784,94 @@ namespace PoliSim.UI
             // nothing extra in that case rather than a flat line at zero.
             StatHistory shadowHistory = _shadowBaseline?.CountryFor(PlayerCountryId)?.History;
 
-            DrawStatsSectionCaption("THE LIVE SERIES — DASHED = NEXT-YEAR ESTIMATE WHERE ONE EXISTS · TICKS ABOVE = LAWS ENACTED");
+            int pages = 1;
+            foreach (StatsChart c in StatsSlips.Domestic) { pages = Mathf.Max(pages, GraphRenderer.PagesFor(c.Series(history).Quarterly)); }
+            DrawStatsPagedHead("LIVE SERIES", "series:head", "series:pager", _statsSeriesSection, pages);
             GUILayout.Space(StatsUnit(6f));
-            // The unit comes from the stat's own metadata rather than a MoneyUnit literal here: a
-            // literal would be a second place that knows GDP is in billions, which is how the P2 unit
-            // bug spread across 21 sites in the first place.
-            DrawStatsGraphGrid(contentWidth, new List<System.Action>
+            var projections = new Dictionary<string, float?> { { "gdp", projectedGdp }, { "unemployment", projectedUnemployment }, { "approval", projectedApproval } };
+            var cells = new List<System.Action>();
+            foreach (StatsChart chart in StatsSlips.Domestic)
             {
-                () => _gdpGraph.Draw("GDP", history.Gdp.Quarterly, projectedGdp, graphLabel, higherIsBetter: true, moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), enactmentPositions: enactments, shadowHistory: shadowHistory?.Gdp.Quarterly),
-                () => _unemploymentGraph.Draw("Unemployment", history.Unemployment.Quarterly, projectedUnemployment, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.EffectiveNaturalUnemploymentRate, thresholdLabel: "NAIRU", enactmentPositions: enactments, shadowHistory: shadowHistory?.Unemployment.Quarterly),
-                () => _inflationGraph.Draw("Inflation", history.Inflation.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.Inflation.Quarterly),
-                () => _approvalGraph.Draw("Approval rating", history.ApprovalRating.Quarterly, projectedApproval, graphLabel, higherIsBetter: true, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.ApprovalRating.Quarterly),
-                () => _povertyGraph.Draw("Poverty rate", history.PovertyRate.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null, enactmentPositions: enactments, shadowHistory: shadowHistory?.PovertyRate.Quarterly),
-                () => _debtGraph.Draw("Debt-to-GDP", history.DebtToGdpRatio.Quarterly, null, graphLabel, higherIsBetter: false, moneyUnit: null,
-                    thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "comfortable", enactmentPositions: enactments, shadowHistory: shadowHistory?.Gdp.Quarterly)
-            });
+                StatsChart c = chart;
+                projections.TryGetValue(c.Id, out float? projected);
+                float? threshold = c.Id == "unemployment" ? _playerCountry.EffectiveNaturalUnemploymentRate : c.Id == "debt" ? _playerCountry.ComfortableDebtToGdpPercent : (float?)null;
+                string thresholdLabel = c.Id == "unemployment" ? "NAIRU" : c.Id == "debt" ? "comfortable" : null;
+                // C-C9: each chart's own counterfactual series - the debt chart had been handed the shadow's GDP (billions on a ratio's axis, pinned to
+                // its top edge); it reads the shadow's debt ratio now
+                IReadOnlyList<float> shadow = shadowHistory == null ? null : c.Series(shadowHistory).Quarterly;
+                cells.Add(() => DrawStatsChart(c, history, projected, graphLabel, threshold, thresholdLabel, enactments, shadow, _statsSeriesSection));
+            }
+            DrawStatsGraphGrid(contentWidth, cells);
             StatsSectionGap();
             DrawImpactLedgerContent();
             StatsSectionGap();
             DrawStatsSocietyRows(contentWidth);
+        }
+
+        /// <summary>The graph instances by chart id - the fields the sheet has always drawn through (their caches and textures are per chart).</summary>
+        private GraphRenderer StatsGraphFor(string id)
+        {
+            switch (id)
+            {
+                case "gdp": return _gdpGraph;
+                case "unemployment": return _unemploymentGraph;
+                case "inflation": return _inflationGraph;
+                case "approval": return _approvalGraph;
+                case "poverty": return _povertyGraph;
+                case "debt": return _debtGraph;
+                default: return _tradeBalanceGraph;
+            }
+        }
+
+        /// <summary>One chart of the sheet (23a ⑩-⑭): drawn by the renderer in its reading's unit, and its head's parts anchored for their slips.</summary>
+        private void DrawStatsChart(StatsChart c, StatHistory history, float? projected, GUIStyle graphLabel, float? threshold, string thresholdLabel,
+            List<float> enactments, IReadOnlyList<float> shadow, GraphSection section)
+        {
+            MultiResolutionSeries series = c.Series(history);
+            bool dated = series.LastQuarterlyDate.HasValue && series.LastQuarterlyDate.Value < _simulationManager.CurrentDate;
+            GraphRenderer graph = StatsGraphFor(c.Id);
+            graph.Draw(c.Title, series.Quarterly, projected, graphLabel, c.HigherIsBetter, c.Money, threshold, thresholdLabel, enactments, shadow,
+                reading: c.Unit, heldSeed: c.HeldSeed, section: section, datedHead: dated);
+            string id = "chart:" + c.Id;
+            StatsAnchor(graph.HeadDeltaRect, id + "/delta");
+            StatsAnchor(graph.HeadVerdictRect, id + "/verdict");
+            StatsAnchor(graph.HeadDatedRect, id + "/dated");
+            if (c.Id == "gdp") { StatsAnchor(graph.HeadTitleRect, id + "/name"); }
+            if (c.HeldSeed.HasValue && graph.PlotAreaRect.width > 0f)
+            {
+                // 23a ⑭: the empty paper before the first live point opens the held seed's slip
+                (int start, int end) = GraphRenderer.WindowOf(series.Quarterly.Count, section?.PageFromEnd ?? 0);
+                int live = Mathf.Clamp(StatsReadings.FirstLiveIndex(series.Quarterly, c.HeldSeed) - start, 0, end - start);
+                if (live > 0 && end - start > 1)
+                {
+                    Rect plot = graph.PlotAreaRect;
+                    float w = live >= end - start ? plot.width : plot.width * (live - 0.5f) / (end - start - 1);
+                    StatsAnchor(new Rect(plot.x, plot.y, Mathf.Max(1f, w), plot.height), id + "/held");
+                }
+            }
+        }
+
+        /// <summary>D-ST (23a ⑨): a section head carrying the section's ONE pager at its right - ◀ OLDER, ▶ NEWER, the disabled arrow in the hairline
+        /// ink (THE WHOLE SERIES is the pager's disabled face, since the window already holds the series); its legend is the pager's slip.</summary>
+        private void DrawStatsPagedHead(string caption, string headAnchor, string pagerAnchor, GraphSection section, int pages)
+        {
+            GUIStyle arrow = DeskCaption(10f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
+            float button = Mathf.Ceil(arrow.CalcSize(new GUIContent("◀")).x) + StatsUnit(10f);
+            Rect row = DrawStatsSectionCaption(caption, button * 2f + StatsUnit(4f));
+            section.PageFromEnd = Mathf.Clamp(section.PageFromEnd, 0, Mathf.Max(0, pages - 1));
+            StatsAnchor(new Rect(row.x, row.y, Mathf.Min(row.width, StatsUnit(160f)), row.height), headAnchor);
+            var older = new Rect(row.xMax - button * 2f - StatsUnit(2f), row.y, button, row.height - 1f);
+            var newer = new Rect(row.xMax - button, row.y, button, row.height - 1f);
+            bool canOlder = section.PageFromEnd < pages - 1, canNewer = section.PageFromEnd > 0;
+            if (Event.current.type == EventType.Repaint)
+            {
+                GUIStyle off = DeskCaption(10f, PoliSimTheme.Hairline, false, TextAnchor.MiddleCenter);
+                PoliSimWidgets.MeasuredLabel(older, "◀", canOlder ? arrow : off);
+                PoliSimWidgets.MeasuredLabel(newer, "▶", canNewer ? arrow : off);
+            }
+            StatsAnchor(new Rect(older.x, older.y, newer.xMax - older.x, older.height), pagerAnchor);
+            if (canOlder && PoliSimWidgets.Button(older, GUIContent.none, GUIStyle.none)) { section.PageFromEnd++; }
+            if (canNewer && PoliSimWidgets.Button(newer, GUIContent.none, GUIStyle.none)) { section.PageFromEnd--; }
         }
 
         /// <summary>
@@ -718,21 +886,26 @@ namespace PoliSim.UI
         /// honest residual beats a false identity.</para>
         ///
         /// <para>Nothing is shown until the player has actually moved something — before that there is
-        /// no divergence to explain, and the panel says that in a sentence rather than printing six rows
-        /// of zero.</para>
+        /// no divergence to explain. D-ST (23a ⑯): that held nothing is NIL, the em dash (19a) - the sentence that said it is the dash's slip.</para>
         /// </summary>
         private void DrawImpactLedgerContent()
         {
             if (_impactLedger == null) { return; }
 
-            DrawStatsSectionCaption("YOUR POLICIES — THE GAP FROM THE NO-POLICY COUNTERFACTUAL, AND WHAT OPENED IT");
+            Rect head = DrawStatsSectionCaption("YOUR POLICIES");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "policies:head");
             GUILayout.Space(StatsUnit(6f));
 
             if (!_impactLedger.HasAnything)
             {
-                // the empty state is one line in the desk's caption face - a reading, not a paragraph
-                Rect empty = GUILayoutUtility.GetRect(10f, Mathf.Ceil(DeskCaptionHeight(DeskCaption(8.5f, PoliSimTheme.TextMuted))) + StatsUnit(4f), GUILayout.ExpandWidth(true));
-                if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(empty, "NO DIAL MOVED YET · THE LIVE SERIES AND THE COUNTERFACTUAL ARE ONE RUN · THE GAP APPEARS HERE WITH ITS REASONS", DeskCaption(8.5f, PoliSimTheme.TextMuted)); }
+                GUIStyle dash = DeskCaption(12f, PoliSimTheme.TextMuted);
+                Rect nil = GUILayoutUtility.GetRect(10f, Mathf.Ceil(DeskCaptionHeight(dash)) + StatsUnit(4f), GUILayout.ExpandWidth(true));
+                if (Event.current.type == EventType.Repaint)
+                {
+                    var mark = new Rect(nil.x, nil.y, Mathf.Ceil(dash.CalcSize(new GUIContent("—")).x) + StatsUnit(4f), nil.height);
+                    PoliSimWidgets.MeasuredLabel(mark, "—", dash);
+                    StatsAnchor(mark, "policies:nil");
+                }
                 return;
             }
 
@@ -798,8 +971,8 @@ namespace PoliSim.UI
         /// International statistics: the world map plus everything cross-country, including Trade -
         /// which absorbed the old peer sub-tab because trade IS international relations. Board 2a
         /// (2026-08-28) drops E24, the turn log that lived here (its content is the calendar's and
-        /// the event card's now), and the "International" header with it - the sub-tab says it. No
-        /// board of its own: it inherits D4's tokens and E22's pass-through label unchanged.
+        /// the event card's now), and the "International" header with it - the sub-tab says it.
+        /// <para>D-ST (23b, 2026-09-30): one heading face on the page - WORLD MAP, PAIR and TRADE take the section rule, as Domestic's heads do.</para>
         /// </summary>
         private void DrawInternationalStatisticsContent()
         {
@@ -811,28 +984,25 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Board 5a (D11 row 1, 2026-09-02): **the pair as ONE PAGE rather than a stack.** P-E1's two
-        /// side-by-side blocks become one instrument with a spine - a mirrored ledger, the eight
-        /// readings as one column of labels down the centre with the home side reading right-to-left
-        /// on the left and the partner left-to-right on the right, so a label is read once and the eye
-        /// compares across it. Both identities are the masthead; the pair (trade both ways as two
-        /// arrows, both tariffs, bloc, currency) leads the right column because it is the only content
-        /// that belongs to the pair - everything else is two countries' own readings.
+        /// Board 5a (D11 row 1, 2026-09-02): **the pair as ONE PAGE rather than a stack.** The home side reads right-to-left on the left, the partner
+        /// left-to-right on the right, one label column down the centre, so a label is read once and the eye compares across it.
         ///
-        /// <para>⚠ <b>ONLY WHAT THE MODEL HOLDS, and absence drawn as its own fact - three states, three
-        /// drawings.</b> This model holds no bilateral relations state at all (`Country` has no relations
-        /// field; a summit is an event, not a bond), so every pair page carries the dashed collar saying
-        /// so and nothing reads warm or cool. <i>No trade link</i> replaces the trade plate's arrows with
-        /// the collar while the tariffs still read (each side's rate is a fact about that side); <i>trade
-        /// of zero</i> draws the arrows at their minimum with the figure 0 - a different fact from "no
-        /// link", never the same pixels. A row with one side is not drawn: currency strength exists only
-        /// for independent-currency countries, so against a euro partner the row is omitted and the footer
-        /// says why. Partner order is the CountryId enum's.</para>
+        /// <para>⚠ <b>ONLY WHAT THE MODEL HOLDS, and absence drawn as its own fact.</b> This model holds no bilateral relations state at all (`Country`
+        /// has no relations field; a summit is an event, not a bond), so every pair page carries RELATIONS with ABSENT. <i>No trade link</i> draws
+        /// ABSENT where the arrows would be while the tariffs still read; <i>trade of zero</i> draws the arrows at their minimum with the figure 0 - a
+        /// different fact from "no link", never the same pixels. A row with one side is not drawn. Partner order is the CountryId enum's.</para>
+        ///
+        /// <para>D-ST (23b ④-⑬): the partner control is ONE line of the partners' codes on the PAIR head, the active one boxed (10b) - a click on a code
+        /// is the step; the heads keep name and flag (HOME and PARTNER are the side each stands on, so their words are the heads' slips); zone and bloc
+        /// print ONCE, as mirrored rows in LINKS; the head over the nine rows reads READINGS; each trade arrow starts on its own side; the tariffs are
+        /// one mirrored row; the stance lanes name their ends; RELATIONS takes ABSENT. The chip's name beside each map marker is R-SP5's, Elias's
+        /// ruling of 2026-08-28 - Design's Q7 would retire it on this map, and that is Elias's to confirm: the map is drawn as ruled.</para>
         /// </summary>
         /// <summary>The pair column's width on the board (380 of the 1280 board's px), scaled with the sheet.</summary>
         private float PairColumnWidth => StatsUnit(380f);
 
-        private void DrawCountryPageContent()
+        /// <summary>The pair page's partners, in the CountryId enum's order.</summary>
+        private List<Country> PairPartners()
         {
             var others = new List<Country>();
             foreach (CountryId id in (CountryId[])System.Enum.GetValues(typeof(CountryId)))
@@ -841,36 +1011,57 @@ namespace PoliSim.UI
                 Country c = _world.GetCountry(id);
                 if (c != null) { others.Add(c); }
             }
-            if (others.Count == 0) { return; }
+            return others;
+        }
 
+        /// <summary>The pair page's partner as it stands, or null with no other country.</summary>
+        private Country PairPartner()
+        {
+            List<Country> others = PairPartners();
+            if (others.Count == 0) { return null; }
             _internationalPageIndex = ((_internationalPageIndex % others.Count) + others.Count) % others.Count;
-            Country them = others[_internationalPageIndex];
+            return others[_internationalPageIndex];
+        }
 
-            DrawStatsSectionCaption("PAIR PAGE · THE MODEL'S OWN LINKS");
-            GUILayout.Space(StatsUnit(4f));
+        private void DrawCountryPageContent()
+        {
+            List<Country> others = PairPartners();
+            Country them = PairPartner();
+            if (them == null) { return; }
 
-            // The pager: prev · the partners in enum order, the current one in the primary ink · next.
-            GUILayout.BeginHorizontal();
-            if (PoliSimWidgets.Button("\u2039 PREV", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex--; }
-            GUILayout.FlexibleSpace();
+            // 23b ⑥: PAIR on the section rule, the partners' codes on its right - one control line, the active code boxed, a click the step
+            GUIStyle code = DeskCaption(9f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleCenter);
+            GUIStyle active = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
+            float codeWidth = Mathf.Ceil(active.CalcSize(new GUIContent("WW")).x) + StatsUnit(10f);
+            float codeGap = StatsUnit(4f);
+            float controlWidth = others.Count * codeWidth + (others.Count - 1) * codeGap;
+            Rect head = DrawStatsSectionCaption("PAIR", controlWidth + StatsUnit(8f));
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width - controlWidth, StatsUnit(160f)), head.height), "pair:head");
             for (int i = 0; i < others.Count; i++)
             {
+                var r = new Rect(head.xMax - controlWidth + i * (codeWidth + codeGap), head.y, codeWidth, head.height - 2f);
                 bool current = i == _internationalPageIndex;
-                GUILayout.Label(others[i].Name.ToUpperInvariant(), DeskCaption(current ? 10f : 8.5f, current ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted, current, TextAnchor.MiddleCenter));
-                if (i < others.Count - 1) { GUILayout.Label("·", DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter)); }
+                if (Event.current.type == EventType.Repaint)
+                {
+                    if (current)
+                    {
+                        PoliSimTheme.Rule(new Rect(r.x, r.y, r.width, 1f), PoliSimTheme.TextPrimary);
+                        PoliSimTheme.Rule(new Rect(r.x, r.yMax - 1f, r.width, 1f), PoliSimTheme.TextPrimary);
+                        PoliSimTheme.Rule(new Rect(r.x, r.y, 1f, r.height), PoliSimTheme.TextPrimary);
+                        PoliSimTheme.Rule(new Rect(r.xMax - 1f, r.y, 1f, r.height), PoliSimTheme.TextPrimary);
+                    }
+                    PoliSimWidgets.MeasuredLabel(r, PairCountryTag(others[i].Id), current ? active : code);
+                }
+                StatsAnchor(r, "pair:code:" + others[i].Id);
+                if (!current && PoliSimWidgets.Button(r, GUIContent.none, GUIStyle.none)) { _internationalPageIndex = i; }
             }
-            GUILayout.FlexibleSpace();
-            if (PoliSimWidgets.Button("NEXT \u203A", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(90f)))) { _internationalPageIndex++; }
-            GUILayout.EndHorizontal();
             GUILayout.Space(StatsUnit(6f));
 
-            // The masthead: both identities, the home side left, the partner right.
+            // 23b ⑦: the heads - name and flag, each on its own side
             GUILayout.BeginHorizontal();
-            DrawPairIdentity(_playerCountry, "HOME", left: true);
+            DrawPairIdentity(_playerCountry, left: true);
             GUILayout.FlexibleSpace();
-            GUILayout.Label("BOTH SIDES · LIVE", DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter));
-            GUILayout.FlexibleSpace();
-            DrawPairIdentity(them, "PARTNER", left: false);
+            DrawPairIdentity(them, left: false);
             GUILayout.EndHorizontal();
             GUILayout.Space(StatsUnit(8f));
 
@@ -880,30 +1071,23 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
             GUILayout.Space(StatsUnit(16f));
             GUILayout.BeginVertical(GUILayout.Width(PairColumnWidth));
-            DrawPairTradePlate(them);
+            DrawPairLinks(them);
             GUILayout.Space(StatsUnit(8f));
             DrawPairStancePlate(them);
             GUILayout.Space(StatsUnit(8f));
-            DrawPairRelationsCollar();
+            DrawPairRelations();
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>One identity of the masthead: the flag, the name as a numeral, and its role · currency zone · bloc (· the year for the home side).</summary>
-        private void DrawPairIdentity(Country country, string role, bool left)
+        /// <summary>One head (23b ⑦): the flag and the name as a numeral, each on its own side; its role, zone and bloc are its slip's and LINKS'.</summary>
+        private void DrawPairIdentity(Country country, bool left)
         {
-            TextAnchor anchor = left ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight;
-            string bloc = "NO BLOC";
-            foreach (TradeBloc b in _world.TradeBlocs) { if (b.IsMember(country.Id)) { bloc = b.Name.ToUpperInvariant(); break; } }
-            string line = role + " · " + country.CurrencyZone.Name.ToUpperInvariant() + " · " + bloc
-                + (left ? " · YEAR " + _simulationManager.CurrentDate.Year.ToString(CultureInfo.InvariantCulture) : "");
             GUILayout.BeginHorizontal();
-            if (left) { DrawPairFlag(country.Id); }
-            GUILayout.BeginVertical();
-            GUILayout.Label(country.Name, DeskNumeral(16f, PoliSimTheme.TextPrimary, left ? TextAnchor.LowerLeft : TextAnchor.LowerRight));
-            GUILayout.Label(line, DeskCaption(8.5f, PoliSimTheme.TextSecondary, false, anchor));
-            GUILayout.EndVertical();
-            if (!left) { DrawPairFlag(country.Id); }
+            if (left) { DrawPairFlag(country.Id); GUILayout.Space(StatsUnit(6f)); }
+            GUILayout.Label(country.Name, DeskNumeral(16f, PoliSimTheme.TextPrimary, left ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight));
+            StatsAnchor(GUILayoutUtility.GetLastRect(), left ? "pair:home" : "pair:partner");
+            if (!left) { GUILayout.Space(StatsUnit(6f)); DrawPairFlag(country.Id); }
             GUILayout.EndHorizontal();
         }
 
@@ -916,19 +1100,21 @@ namespace PoliSim.UI
             if (Event.current.type == EventType.Repaint && flag != null) { GUI.DrawTexture(new Rect(r.x, r.y + (r.height - h) * 0.5f, w, h), flag, ScaleMode.StretchToFill, true); }
         }
 
-        /// <summary>The mirrored ledger: one label column down the centre, the home figure reading right-to-left on the left, the partner's left-to-right on the right. Eight readings each side; a row with one side is omitted and the footer says why.</summary>
+        /// <summary>The mirrored ledger (23b ⑧): one label column down the centre, the home figure on the left, the partner's on the right, under the head
+        /// READINGS. A row with one side is omitted and a line says why.</summary>
         private void DrawPairMirroredLedger(Country them)
         {
-            DrawStatsSectionCaption("EIGHT HEADLINE READINGS · THE SAME EIGHT EACH SIDE");
+            Rect head = DrawStatsSectionCaption("READINGS");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "readings:head");
             GUILayout.Space(StatsUnit(3f));
             DrawPairMirrorRow("GDP", UiFormat.Money(_playerCountry.State.NominalGdp, MoneyUnit.Billions), UiFormat.Money(them.State.NominalGdp, MoneyUnit.Billions));
-            DrawPairMirrorRow("UNEMPLOYMENT", UiFormat.Number(_playerCountry.State.Unemployment, 1) + "%", UiFormat.Number(them.State.Unemployment, 1) + "%");
-            DrawPairMirrorRow("INFLATION", UiFormat.Number(_playerCountry.State.Inflation, 1) + "%", UiFormat.Number(them.State.Inflation, 1) + "%");
-            DrawPairMirrorRow("APPROVAL", UiFormat.Number(_playerCountry.State.ApprovalRating, 1), UiFormat.Number(them.State.ApprovalRating, 1));
-            DrawPairMirrorRow("DEBT-TO-GDP", UiFormat.Number(_playerCountry.State.DebtToGdpRatio, 1) + "%", UiFormat.Number(them.State.DebtToGdpRatio, 1) + "%");
+            DrawPairMirrorRow("UNEMPLOYMENT", StatsReadings.Rate(_playerCountry.State.Unemployment), StatsReadings.Rate(them.State.Unemployment));
+            DrawPairMirrorRow("INFLATION", StatsReadings.Rate(_playerCountry.State.Inflation), StatsReadings.Rate(them.State.Inflation));
+            DrawPairMirrorRow("APPROVAL RATING", UiFormat.Number(_playerCountry.State.ApprovalRating, 1), UiFormat.Number(them.State.ApprovalRating, 1));
+            DrawPairMirrorRow("DEBT-TO-GDP", StatsReadings.Rate(_playerCountry.State.DebtToGdpRatio), StatsReadings.Rate(them.State.DebtToGdpRatio));
             DrawPairMirrorRow("BUDGET BALANCE", PairBudgetBalance(_playerCountry), PairBudgetBalance(them));
             DrawPairMirrorRow("CREDIT RATING", PairCreditRating(_playerCountry), PairCreditRating(them));
-            DrawPairMirrorRow("POVERTY RATE", UiFormat.Number(_playerCountry.State.PovertyRate, 1) + "%", UiFormat.Number(them.State.PovertyRate, 1) + "%");
+            DrawPairMirrorRow("POVERTY RATE", StatsReadings.Rate(_playerCountry.State.PovertyRate), StatsReadings.Rate(them.State.PovertyRate));
 
             bool mineIndependent = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
             bool theirsIndependent = !CurrencySystem.SharesCurrencyZoneWithOthers(them, _world);
@@ -950,81 +1136,98 @@ namespace PoliSim.UI
         {
             FiscalTurnReport last = _simulationManager.GetLastFiscalReport(country.Id);
             if (last == null || country.State.GDP <= 0f) { return "—"; }
-            return (last.BudgetBalance / country.State.NominalGdp * 100f).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + "% GDP";
+            return StatsReadings.TrueMinus((last.BudgetBalance / country.State.NominalGdp * 100f).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture)) + "% GDP";
         }
 
         /// <summary>The standing rating (set by scheduled review); a dash until the first review - an unrated sovereign is not a top-rated one.</summary>
         private static string PairCreditRating(Country country) =>
             country.Rating != null && country.Rating.HasBeenReviewed ? CreditRatingSystem.Format(country.Rating.Rating) : "—";
 
-        private void DrawPairMirrorRow(string label, string mine, string theirs)
+        /// <summary>One mirrored row; returns its rect for a slip's anchor.</summary>
+        private Rect DrawPairMirrorRow(string label, string mine, string theirs)
         {
             GUIStyle numeral = DeskNumeral(13f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
             GUIStyle numeralRight = DeskNumeral(13f, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             GUIStyle caption = DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
             float height = Mathf.Ceil(numeral.CalcSize(new GUIContent("0")).y) + StatsUnit(4f);
             Rect row = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
-            if (Event.current.type != EventType.Repaint) { return; }
-            float labelWidth = StatsUnit(150f);
+            if (Event.current.type != EventType.Repaint) { return row; }
+            float labelWidth = Mathf.Min(StatsUnit(150f), row.width * 0.44f);
             float side = Mathf.Max(1f, (row.width - labelWidth) * 0.5f);
             PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, side, row.height), mine, numeral);
             PoliSimWidgets.MeasuredLabel(new Rect(row.x + side, row.y, labelWidth, row.height), label, caption);
             PoliSimWidgets.MeasuredLabel(new Rect(row.x + side + labelWidth, row.y, side, row.height), theirs, numeralRight);
             PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), PoliSimTheme.RuleRow);
+            return row;
         }
 
-        /// <summary>The pair plate: trade from the map's own links as two arrows (direction the fact, length relative to the larger), the tariff each charges, shared bloc, shared currency - and the two absence states drawn apart.</summary>
-        private void DrawPairTradePlate(Country them)
+        /// <summary>A bloc's short name - its words' initials (the European Union reads EU), or NIL's em dash for none.</summary>
+        private string PairBloc(CountryId id)
         {
-            DrawStatsSectionCaption("THE PAIR · TRADE FROM THE MAP'S OWN LINKS");
+            foreach (TradeBloc b in _world.TradeBlocs)
+            {
+                if (!b.IsMember(id)) { continue; }
+                var initials = new System.Text.StringBuilder();
+                foreach (string w in b.Name.Split(' ')) { if (w.Length > 0 && char.IsUpper(w[0])) { initials.Append(w[0]); } }
+                return initials.Length > 1 ? initials.ToString() : b.Name.ToUpperInvariant();
+            }
+            return "—";
+        }
+
+        /// <summary>LINKS (23b ⑦ ⑨ ⑩): trade from the map's own links as two arrows, each starting on its own side (home left, the partner right); the
+        /// tariff each side charges the other as one mirrored row; bloc and currency as mirrored rows, each side's fact once - and the two absence states
+        /// drawn apart.</summary>
+        private void DrawPairLinks(Country them)
+        {
+            Rect head = DrawStatsSectionCaption("LINKS");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "links:head");
             GUILayout.Space(StatsUnit(4f));
-            string mine = _playerCountry.Name.ToUpperInvariant();
-            string theirs = them.Name.ToUpperInvariant();
             TradePartner link = _playerCountry.TradePartners.Find(p => p.PartnerId == them.Id);
             if (link == null)
             {
-                DrawPairCollar("NO TRADE LINK", "THE MAP HOLDS NO TRADE LINK BETWEEN THESE TWO. THIS IS NOT TRADE OF ZERO — NO VOLUME EXISTS TO BE ZERO. TARIFFS STILL READ: EACH SIDE'S RATE IS A FACT ABOUT THAT SIDE.");
+                // no link: ABSENT where the arrows would be - not trade of zero; the tariffs still read
+                float side = StatsUnit(14f);
+                Rect r = GUILayoutUtility.GetRect(10f, side + StatsUnit(4f), GUILayout.ExpandWidth(true));
+                var slot = new Rect(r.x + (r.width - side) * 0.5f, r.y + StatsUnit(2f), side, side);
+                if (Event.current.type == EventType.Repaint) { DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted); }
+                StatsAnchor(slot, "links:none");
             }
             else
             {
                 float max = Mathf.Max(link.ExportVolume, link.ImportVolume);
-                bool zero = max <= 0f;
-                if (zero) { GUILayout.Label("(TRADE OF ZERO, THIS PERIOD) — A LINK EXISTS AND CARRIED NOTHING: THE ARROWS DRAW AT THEIR MINIMUM, THE FIGURE READS 0", DeskCaption(7.5f, PoliSimTheme.TextMuted)); }
-                DrawPairTradeArrow(mine + " → " + theirs, link.ExportVolume, max);
-                DrawPairTradeArrow(theirs + " → " + mine, link.ImportVolume, max);
+                Rect a = DrawPairTradeArrow(link.ExportVolume, max, fromLeft: true);
+                StatsAnchor(a, max <= 0f ? "links:zero" : "links:out");
+                Rect b = DrawPairTradeArrow(link.ImportVolume, max, fromLeft: false);
+                StatsAnchor(b, max <= 0f ? "links:zero" : "links:in");
             }
             GUILayout.Space(StatsUnit(4f));
-            DrawPairFactRow("TARIFF " + mine + " CHARGES", UiFormat.Number(TradeSystem.GetTariffRate(_playerCountry, them, _world.TradeBlocs), 1) + "%");
-            DrawPairFactRow("TARIFF " + theirs + " CHARGES", UiFormat.Number(TradeSystem.GetTariffRate(them, _playerCountry, _world.TradeBlocs), 1) + "%");
-            string sharedBloc = null;
-            foreach (TradeBloc bloc in _world.TradeBlocs) { if (bloc.IsMember(PlayerCountryId) && bloc.IsMember(them.Id)) { sharedBloc = bloc.Name.ToUpperInvariant(); break; } }
-            DrawPairFactRow("SHARED BLOC", sharedBloc ?? "NONE");
-            bool sameCurrency = _playerCountry.CurrencyZone == them.CurrencyZone;
-            DrawPairFactRow("SHARED CURRENCY", sameCurrency
-                ? "YES — " + _playerCountry.CurrencyZone.Name.ToUpperInvariant()
-                : "NO — " + _playerCountry.CurrencyZone.Name.ToUpperInvariant() + " / " + them.CurrencyZone.Name.ToUpperInvariant());
+            Rect tariff = DrawPairMirrorRow("TARIFF", UiFormat.Number(TradeSystem.GetTariffRate(_playerCountry, them, _world.TradeBlocs), 1) + "%",
+                UiFormat.Number(TradeSystem.GetTariffRate(them, _playerCountry, _world.TradeBlocs), 1) + "%");
+            StatsAnchor(tariff, "links:tariff");
+            StatsAnchor(DrawPairMirrorRow("BLOC", PairBloc(PlayerCountryId), PairBloc(them.Id)), "links:bloc");
+            StatsAnchor(DrawPairMirrorRow("CURRENCY", EnergyLayer.CurrencyCode(PlayerCountryId), EnergyLayer.CurrencyCode(them.Id)), "links:currency");
         }
 
-        /// <summary>One trade arrow: the label above, the shaft from the left edge with its length relative to the larger of the pair (a minimum for zero), the head, and the figure at the head - in the Trade area's ink.</summary>
-        private void DrawPairTradeArrow(string label, float volume, float max)
+        /// <summary>One trade arrow (23b ⑨): the shaft from its own side - home's from the left edge pointing right, the partner's from the right edge
+        /// pointing left - its length relative to the larger of the pair (a minimum for zero), the head, and the figure at the head; in the Trade area's
+        /// ink. The direction's words are the arrow's slip. Returns the row's rect.</summary>
+        private Rect DrawPairTradeArrow(float volume, float max, bool fromLeft)
         {
-            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
-            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
-            float captionHeight = Mathf.Ceil(Mathf.Max(DeskCaptionHeight(caption), caption.CalcSize(new GUIContent(label)).y));   // the arrow glyph's line is taller than the caption face's (2.7 px at 2560), so the row is measured on the label itself
+            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, fromLeft ? TextAnchor.MiddleLeft : TextAnchor.MiddleRight);
             float lane = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(2f);
-            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + lane + StatsUnit(3f), GUILayout.ExpandWidth(true));
-            if (Event.current.type != EventType.Repaint) { return; }
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width, captionHeight), label, caption);
+            Rect r = GUILayoutUtility.GetRect(10f, lane + StatsUnit(3f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return r; }
             string text = UiFormat.Money(volume, MoneyUnit.Billions);
             float figureWidth = figure.CalcSize(new GUIContent(text)).x + StatsUnit(6f);
             float track = Mathf.Max(1f, r.width - figureWidth);
             float fraction = max > 0f ? volume / max : 0f;
             float length = Mathf.Max(track * 0.12f, track * fraction);
-            float y = r.y + captionHeight + lane * 0.5f;
+            float y = r.y + lane * 0.5f;
             float shaft = Mathf.Max(2f, StatsUnit(3f));
             float head = Mathf.Max(5f, StatsUnit(7f));
             Color ink = UiPalette.GetAreaColor(UiPalette.SystemArea.Trade);
-            PoliSimTheme.Rule(new Rect(r.x, y - shaft * 0.5f, Mathf.Max(1f, length - head), shaft), ink);
+            float x0 = fromLeft ? r.x : r.xMax - length;   // the shaft's left end
+            PoliSimTheme.Rule(new Rect(fromLeft ? x0 : x0 + head, y - shaft * 0.5f, Mathf.Max(1f, length - head), shaft), ink);
             Color previous = GUI.color;
             GUI.color = ink;
             const int Steps = 5;
@@ -1032,53 +1235,66 @@ namespace PoliSim.UI
             {
                 float t = (s + 0.5f) / Steps;
                 float half = head * 0.8f * (1f - t);
-                GUI.DrawTexture(new Rect(r.x + length - head + head * t - head / Steps * 0.5f, y - half, head / Steps + 0.6f, half * 2f), Texture2D.whiteTexture);
+                float hx = fromLeft ? x0 + length - head + head * t : x0 + head - head * t;
+                GUI.DrawTexture(new Rect(hx - head / Steps * 0.5f, y - half, head / Steps + 0.6f, half * 2f), Texture2D.whiteTexture);
             }
             GUI.color = previous;
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x + length + StatsUnit(4f), r.y + captionHeight, figureWidth, lane), text, figure);
+            var figureRect = fromLeft
+                ? new Rect(x0 + length + StatsUnit(4f), r.y, figureWidth, lane)
+                : new Rect(x0 - StatsUnit(4f) - figureWidth, r.y, figureWidth, lane);
+            PoliSimWidgets.MeasuredLabel(figureRect, text, figure);
+            return r;
         }
 
-        private void DrawPairFactRow(string label, string value)
-        {
-            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextMuted);
-            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
-            float height = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(3f);
-            Rect r = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
-            if (Event.current.type != EventType.Repaint) { return; }
-            float valueWidth = figure.CalcSize(new GUIContent(value)).x + StatsUnit(4f);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, Mathf.Max(1f, r.width - valueWidth), r.height), label, caption);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.xMax - valueWidth, r.y, valueWidth, r.height), value, figure);
-            PoliSimTheme.Rule(new Rect(r.x, r.yMax - 1f, r.width, 1f), PoliSimTheme.RuleRow);
-        }
-
-        /// <summary>The stance plate: the two blends both sides sit on (PolicyStanceAxes, the pair the compass plotted until P2-3.2 - not the CHES positions, which are not on this page), each a centred lane with the two markers tagged.</summary>
-        private void DrawPairStancePlate(Country them)
-        {
-            DrawStatsSectionCaption("POLICY STANCE · TWO BLENDS, BOTH SIDES");
-            GUILayout.Space(StatsUnit(4f));
-            DrawPairStanceLane("FISCAL SIZE", PolicyStanceAxes.GetFiscalSizeAxisValue(_playerCountry), PolicyStanceAxes.GetFiscalSizeAxisValue(them), them);
-            DrawPairStanceLane("REGULATION / WELFARE", PolicyStanceAxes.GetRegulationWelfareAxisValue(_playerCountry), PolicyStanceAxes.GetRegulationWelfareAxisValue(them), them);
-            GUILayout.Label("THE BLENDS THE COMPASS PLOTTED UNTIL P2-3.2 — NOT THE CHES POSITIONS, WHICH ARE NOT ON THIS PAGE. 0–100, THE CODE'S OWN SCALE.", DeskCaption(7.5f, PoliSimTheme.TextMuted));
-        }
-
-        private void DrawPairStanceLane(string axis, float mine, float theirs, Country them)
+        /// <summary>The labelled arrow the Trade policy tab's partner rows draw (its label above, the shaft from the left) - the pair page's arrow
+        /// with its caption kept, since those rows carry no slips.</summary>
+        private void DrawPairTradeArrow(string label, float volume, float max)
         {
             GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
+            float captionHeight = Mathf.Ceil(Mathf.Max(DeskCaptionHeight(caption), caption.CalcSize(new GUIContent(label)).y));
+            Rect r = GUILayoutUtility.GetRect(10f, captionHeight, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(r, label, caption); }
+            DrawPairTradeArrow(volume, max, fromLeft: true);
+        }
+
+        /// <summary>STANCE (23b ⑪): the two blends both sides sit on (PolicyStanceAxes - not the CHES positions, which are not on this page), each a
+        /// centred lane with the two markers tagged and its ENDS NAMED, in the model's own words for what grows along it (22c's rule: a compass names
+        /// its ends). 0–100 is the head's slip; the provenance is the dense line's.</summary>
+        private void DrawPairStancePlate(Country them)
+        {
+            Rect head = DrawStatsSectionCaption("STANCE");
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, StatsUnit(160f)), head.height), "stance:head");
+            GUILayout.Space(StatsUnit(4f));
+            DrawPairStanceLane("FISCAL SIZE", "stance:fiscal", "SMALLER STATE", "LARGER STATE", PolicyStanceAxes.GetFiscalSizeAxisValue(_playerCountry), PolicyStanceAxes.GetFiscalSizeAxisValue(them), them);
+            DrawPairStanceLane("REGULATION / WELFARE", "stance:regulation", "LESS REACH", "MORE REACH", PolicyStanceAxes.GetRegulationWelfareAxisValue(_playerCountry), PolicyStanceAxes.GetRegulationWelfareAxisValue(them), them);
+        }
+
+        private void DrawPairStanceLane(string axis, string anchor, string lowEnd, string highEnd, float mine, float theirs, Country them)
+        {
+            GUIStyle caption = DeskCaption(8f, PoliSimTheme.TextSecondary);
+            GUIStyle endFace = DeskCaption(7.5f, PoliSimTheme.TextMuted);
+            GUIStyle endFaceRight = DeskCaption(7.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleRight);
             GUIStyle tag = DeskCaption(8f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleCenter);
             float captionHeight = Mathf.Ceil(DeskCaptionHeight(caption));
+            float endHeight = Mathf.Ceil(DeskCaptionHeight(endFace));
             float lane = StatsUnit(18f);
             float tagHeight = captionHeight;   // the markers' tags get a full caption row above the track (the first film squeezed them into half a lane)
             // P5-8 (board 6b row 7, 2026-09-03): when the two sides read within a point the tags STACK above the lane - two tag rows,
             // reserved always so the lane's geometry does not change with the readings.
-            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + tagHeight * 2f + lane + StatsUnit(4f), GUILayout.ExpandWidth(true));
+            Rect r = GUILayoutUtility.GetRect(10f, captionHeight + tagHeight * 2f + lane + endHeight + StatsUnit(4f), GUILayout.ExpandWidth(true));
             if (Event.current.type != EventType.Repaint) { return; }
             PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width, captionHeight), axis, caption);
+            StatsAnchor(new Rect(r.x, r.y, Mathf.Min(r.width, caption.CalcSize(new GUIContent(axis)).x), captionHeight), anchor);
             float trackY = r.y + captionHeight + tagHeight * 2f + lane * 0.5f;
             float tagWidth = StatsUnit(22f);
             float x0 = r.x + tagWidth * 0.5f;
             float span = Mathf.Max(1f, r.width - tagWidth);
             PoliSimTheme.Rule(new Rect(x0, trackY - 0.5f, span, 1f), PoliSimTheme.Hairline);
             PoliSimTheme.Rule(new Rect(x0 + span * 0.5f, trackY - lane * 0.25f, 1f, lane * 0.5f), PoliSimTheme.HairlineStrong);
+            // 23b ⑪: the ends named, under the lane's two ends
+            float endY = trackY + lane * 0.5f;
+            PoliSimWidgets.MeasuredLabel(new Rect(x0, endY, span * 0.5f, endHeight), lowEnd, endFace);
+            PoliSimWidgets.MeasuredLabel(new Rect(x0 + span * 0.5f, endY, span * 0.5f, endHeight), highEnd, endFaceRight);
             float mineX = x0 + span * Mathf.Clamp01(mine / 100f);
             float theirsX = x0 + span * Mathf.Clamp01(theirs / 100f);
             bool stacked = Mathf.Abs(mine - theirs) < 1f;   // the threshold: 1.0 point on the axis's own scale (board 6b row 7)
@@ -1121,27 +1337,21 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>The collar every pair page carries: the model holds no bilateral relations state, and nothing on the page reads warm or cool - in a dashed frame, always.</summary>
-        private void DrawPairRelationsCollar()
+        /// <summary>RELATIONS (23b ⑫): the model holds no bilateral relations state - the word and ABSENT (19a), its sentence the glyph's slip.</summary>
+        private void DrawPairRelations()
         {
-            DrawPairCollar("NO BILATERAL RELATIONS STATE", "THE MODEL HOLDS NONE — NO RELATIONS SCORE, NO ALLIANCE OR TREATY STANDING, NO DIPLOMATIC HISTORY. NOTHING ON THIS PAGE READS WARM OR COOL, AND NO SCORE IS DRAWN IN ITS PLACE.");
-        }
-
-        /// <summary>A dashed collar with a title and a sentence - board 5a's drawing of an absence.</summary>
-        private void DrawPairCollar(string title, string sentence)
-        {
-            GUIStyle head = DeskCaption(8.5f, PoliSimTheme.TextSecondary, true);
-            GUIStyle body = DeskCaption(7.5f, PoliSimTheme.TextMuted);
-            body.wordWrap = true;
-            float pad = StatsUnit(6f);
-            float width = PairColumnWidth;   // the pair column's own width - the collar is measured against it, not against a layout probe
-            float headHeight = Mathf.Ceil(DeskCaptionHeight(head));
-            float bodyHeight = Mathf.Ceil(body.CalcHeight(new GUIContent(sentence), Mathf.Max(1f, width - pad * 2f)));
-            Rect r = GUILayoutUtility.GetRect(10f, headHeight + bodyHeight + pad * 2f + StatsUnit(2f), GUILayout.ExpandWidth(true));
-            if (Event.current.type != EventType.Repaint) { return; }
-            DeskDashedFrame(r, PoliSimTheme.HairlineStrong, 4f, 3f);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x + pad, r.y + pad, r.width - pad * 2f, headHeight), title, head);
-            GUI.Label(new Rect(r.x + pad, r.y + pad + headHeight + StatsUnit(2f), r.width - pad * 2f, bodyHeight), sentence, body);
+            GUIStyle face = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
+            float height = Mathf.Ceil(DeskCaptionHeight(face)) + StatsUnit(6f);
+            Rect r = GUILayoutUtility.GetRect(10f, height, GUILayout.ExpandWidth(true));
+            float side = Mathf.Min(height, StatsUnit(14f));
+            var slot = new Rect(r.xMax - side, r.y + (r.height - side) * 0.5f, side, side);
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(r.x, r.y, r.width - side - StatsUnit(6f), r.height), "RELATIONS", face);
+                PoliSimTheme.Rule(new Rect(r.x, r.yMax - 1f, r.width, 1f), PoliSimTheme.RuleRow);
+                DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted);
+            }
+            StatsAnchor(slot, "relations");
         }
     }
 }

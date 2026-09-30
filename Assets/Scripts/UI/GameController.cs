@@ -179,8 +179,6 @@ namespace PoliSim.UI
         private SimulationManager _simulationManager;
         private Country _playerCountry;
 
-        private float _prevGdp;
-        private float _lastGrowthPercent;
 
         // Draft ABSOLUTE rate per TaxType (not a delta) for the Tax Policy tab's sliders - defaults
         // to that TaxLine's persisted Rate until the player drags it (see GetTaxRateInput). Not
@@ -671,8 +669,8 @@ namespace PoliSim.UI
             DisplaySettings.Apply();
 
             // World/SimulationManager are created immediately (the selector screen needs every
-            // country's Name/Id to exist) - only _playerCountry/_prevGdp wait for SelectPlayerCountry,
-            // since which country those refer to isn't known until the player picks.
+            // country's Name/Id to exist) - only _playerCountry waits for SelectPlayerCountry,
+            // since which country it refers to isn't known until the player picks.
             PoliSim.Data.CreatedParties.Clear();   // §671 (SP-3): a fresh process's game has no created party until the creation flow (SP-4) or a load registers one
             _world = WorldFactory.CreateDefault();
             _simulationManager = gameObject.AddComponent<SimulationManager>();
@@ -984,9 +982,7 @@ namespace PoliSim.UI
                 GameSpeedValue = (int)_gameSpeed,
                 FedChairCandidates = _fedChairCandidates == null ? null : new List<FedChair>(_fedChairCandidates),
                 FedChairCandidatesForTurn = _fedChairCandidatesForTurn,
-                SeenDivisionNumber = _seenDivisionNumber,
-                PrevGdp = _prevGdp,
-                LastGrowthPercent = _lastGrowthPercent
+                SeenDivisionNumber = _seenDivisionNumber
             };
         }
 
@@ -1082,8 +1078,7 @@ namespace PoliSim.UI
                 ?? (_playerCountry != null && _playerCountry.Divisions.Entries.Count > 0
                     ? _playerCountry.Divisions.Entries[_playerCountry.Divisions.Entries.Count - 1].Number
                     : 0);
-            _prevGdp = ui?.PrevGdp ?? 0f;
-            _lastGrowthPercent = ui?.LastGrowthPercent ?? 0f;
+            // A save before D-ST carries PrevGdp and LastGrowthPercent - read past: GDP growth is read off the kept series now (StatsReadings.YearOnYearGrowthPercent).
             // A v3.0 save's ShellFoldOverrides map is read past without effect: ONE FRAME (v3.1 R-E1)
             // has no fold to restore, and the member left UiDraftState in v3.1 Phase B.
 
@@ -2221,7 +2216,6 @@ namespace PoliSim.UI
             _selectedPlayerCountryId = countryId;
             _playerCountry = _world.GetCountry(countryId);
             _simulationManager.PlayerCountryId = countryId;   // C-R4b step 3: the day loop runs the player's campaign for this country
-            _prevGdp = _playerCountry.State.GDP;
 
             // C-R2 (R-CL1): the player has a party. The PICKER is built since CL-2 (`SelectPlayerCountryAndParty`, the
             // selector's second step); this one-argument shape is the harness's and the fallback's, and seats the LARGEST
@@ -4729,7 +4723,7 @@ namespace PoliSim.UI
             DrawTierBreakdownAfterRows();   // P4-B2: the labour bill's breakdown, after the rows - under its card now that the card follows the dials
 
             GUILayout.Space(10f);
-            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null);
+            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null, reading: ReadingUnit.Percent);
 
             // §564: the population as the family's read-only rows, not a sentence of six figures
             GUILayout.Space(8f);
@@ -6098,7 +6092,7 @@ namespace PoliSim.UI
                         }
 
                         GUILayout.BeginArea(r);
-                        graph.Draw("Approval Rating", history.ApprovalRating.Quarterly, null, style, higherIsBetter: true, moneyUnit: null);
+                        graph.Draw("Approval Rating", history.ApprovalRating.Quarterly, null, style, higherIsBetter: true, moneyUnit: null, heldSeed: 50f);
                         GUILayout.EndArea();
                         LadderCaption(r, $"width {w} type {style.fontSize}", captionHeight);
                     }
@@ -6562,10 +6556,6 @@ namespace PoliSim.UI
             // world last ran a boundary - and the shadow's runs last. Until the next boundary the page's clearing and the preview would read the counterfactual
             // world's German and Polish prices; the played world's are set again here. The boundary itself always sets its own at its top, so no turn read them.
             EnergyMarket.BeginTurn(_world);
-
-            EconomyState state = _playerCountry.State;
-            _lastGrowthPercent = (state.GDP - _prevGdp) / Mathf.Max(_prevGdp, 1f) * 100f;
-            _prevGdp = state.GDP;
 
             RecordMapEventMarkers();
             ResetPolicyInputs();
@@ -7575,14 +7565,8 @@ namespace PoliSim.UI
 
         /// <summary>The captions, one per sub-screen - the live/published word is the load-bearing
         /// part (§A.8a's "live desk reading" sits under it). Text is this session's call (R-K10's
-        /// "log one line": the spec gives two examples and no table); the seat count is real.</summary>
-        private string StatisticsScreenCaption()
-        {
-            return _statisticsCategory == StatisticsCategory.Domestic
-                ? "DOMESTIC BULLETIN — DESK READINGS, LIVE"
-                : "INTERNATIONAL BULLETIN — WORLD READINGS, LIVE";
-        }
-
+        /// "log one line": the spec gives two examples and no table); the seat count is real.
+        /// D-ST (23a ①): Statistics' two captions are its title's slip (<see cref="StatsSlips"/>).</summary>
         private string PolicyLawsScreenCaption()
         {
             switch (_policyLawsCategory)
@@ -7813,7 +7797,13 @@ namespace PoliSim.UI
             // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
             // px at 720, hidden by the old margin). The campaign stages already size their box this way.
             GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
-            DrawColoredLabel("Statistics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            // D-ST (23a ①, 23b ①): the title carries the desk's one † tab (D16 §2 - it was not on this screen), and the subtitle that stood under the
+            // sub-tabs is the title's slip. The slips are off in the dense view, as on People.
+            _statsSlipPage = !DeskProvenance.On;
+            BeginSlipAnchors();
+            DrawPageHeaderWithProvenanceTab("Statistics", UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
+            Rect titleRow = GUILayoutUtility.GetLastRect();
+            StatsAnchor(new Rect(titleRow.x, titleRow.y, Mathf.Min(titleRow.width, _headerStyle.CalcSize(new GUIContent("Statistics")).x), titleRow.height), "title");
             GUILayout.BeginHorizontal();
             float subTabShare = SubTabShare(availableWidth, 2);
             // Instance #13: the row's height is measured once (SubTabRowHeight) and shared between the
@@ -7826,14 +7816,16 @@ namespace PoliSim.UI
             DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight, statisticsIcons ? UiPalette.SystemArea.Global : UiPalette.SystemArea.Neutral);
             GUILayout.EndHorizontal();
             GUILayout.Space(6f);
-            DrawScreenCaption(StatisticsScreenCaption());
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight();
+            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f;   // D-ST: the subtitle's band is the title's slip now
             float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
             // Board 2a (2026-08-28): the grids lay their columns out from the content width on the
             // Layout event (GameController.Statistics.cs), so it is derived here, not measured a frame late.
             float contentWidth = StatsContentWidth(availableWidth);
+            int scrolledFrom = _slipAnchors.Count;
             _statisticsContentScrollPosition = GUILayout.BeginScrollView(_statisticsContentScrollPosition, GUILayout.Height(scrollHeight));
+            _statsVisibleContent = new Rect(_statisticsContentScrollPosition.x, _statisticsContentScrollPosition.y, availableWidth, scrollHeight);   // D-ST: what the view shows, for the map's lines
+            if (DeskProvenance.On) { DrawStatsDenseLines(); }   // D16 §2: provenance adds LINES, never columns
             switch (_statisticsCategory)
             {
                 case StatisticsCategory.Domestic:
@@ -7844,7 +7836,41 @@ namespace PoliSim.UI
                     break;
             }
             GUILayout.EndScrollView();
+            Rect view = GUILayoutUtility.GetLastRect();
+            if (Event.current.type == EventType.Repaint)
+            {
+                // The anchors inside the scroll view were registered in its content's coordinates; the slips draw over the whole sheet, so each is
+                // moved into the sheet's and kept only where the view shows it (a hidden row opens nothing).
+                for (int i = _slipAnchors.Count - 1; i >= scrolledFrom; i--)
+                {
+                    (string id, Rect r) = _slipAnchors[i];
+                    var moved = new Rect(r.x + view.x - _statisticsContentScrollPosition.x, r.y + view.y - _statisticsContentScrollPosition.y, r.width, r.height);
+                    float top = Mathf.Max(moved.y, view.y), bottom = Mathf.Min(moved.yMax, view.yMax);
+                    if (bottom <= top) { _slipAnchors.RemoveAt(i); continue; }
+                    _slipAnchors[i] = (id, new Rect(moved.x, top, moved.width, bottom - top));
+                }
+            }
             GUILayout.EndVertical();
+            Rect sheet = GUILayoutUtility.GetLastRect();
+            _statsSlipPage = false;
+            if (!DeskProvenance.On)
+            {
+                // 19b: the sheet's slips - the book built from the model each frame, the one StatsSlipReachabilityCheck reads - drawn last, over the sheet
+                PeopleSlips.Book book = StatsSlips.Build(_playerCountry, _world, PairPartner(), _statsSeriesSection.PageFromEnd, _statsTradeSection.PageFromEnd,
+                    _simulationManager.GetLastFiscalReport(PlayerCountryId)?.TariffPassThroughPp);
+                DrawSlips(book, sheet);
+            }
+        }
+
+        /// <summary>D-ST: the dense view's lines (D16 §2 - provenance adds lines): each section's window as dates, where the pair's figures come from,
+        /// and the glyphs' key - the words that left the page at rest for good and belong to no one anchor.</summary>
+        private void DrawStatsDenseLines()
+        {
+            foreach ((string head, string line) in StatsSlips.DenseLines(_playerCountry, _statisticsCategory == StatisticsCategory.Domestic, _statsSeriesSection.PageFromEnd, _statsTradeSection.PageFromEnd))
+            {
+                DrawDenseLine(head, line);
+            }
+            GUILayout.Space(StatsUnit(8f));
         }
 
         // Statistics › Domestic and › International moved to GameController.Statistics.cs on 2026-08-28
@@ -9699,12 +9725,13 @@ namespace PoliSim.UI
         /// scrolling now, and nesting a scroll view inside one breaks wheel handling.</summary>
         private void DrawWorldMapContent()
         {
-            DrawColoredLabel("World Map", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            // §565 (Design's sitting part A item 3): what the map DRAWS, in the desk's caption face - not instructions to the hand (*"Hover a marker …"*, *"Click a country marker …"*).
-            DrawStatsSectionCaption($"THE SIX · MARKERS ARE COUNTRIES · DOTS ARE EVENTS OF THE LAST FEW YEARS, GREEN HELPED AND RED HURT, SIZED BY THE SHOCK AND FADING WITH IT");
+            // D-ST (23b ② ③): the page's one heading face - WORLD MAP on the section rule; what the map draws (§565's caption) is the map's slip
+            Rect mapHead = DrawStatsSectionCaption("WORLD MAP");
+            StatsAnchor(new Rect(mapHead.x, mapHead.y, Mathf.Min(mapHead.width, StatsUnit(160f)), mapHead.height), "map");
             GUILayout.Space(6f);
 
             Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
+            _mapRenderer.VisibleClip = _statsVisibleContent;   // D-ST: this map scrolls - its rotated lines clip to what the view shows; the Desk's map never does
             _mapRenderer.Draw(
                 mapRect,
                 _world.Countries,
@@ -9715,6 +9742,7 @@ namespace PoliSim.UI
                 _labelStyle,
                 out CountryId? clickedCountry,
                 out MapEventMarker? clickedEvent);
+            _mapRenderer.VisibleClip = null;
 
             if (clickedCountry.HasValue)
             {
@@ -9737,11 +9765,7 @@ namespace PoliSim.UI
             {
                 DrawSelectedMapCountryPanel(_selectedMapCountry.Value);
             }
-            else
-            {
-                DrawStatsSectionCaption("NO COUNTRY PINNED");
-            }
-
+            // D-ST (23b ⑤): nothing pinned draws nothing - a pin is a chip's state
         }
 
         /// <summary>
@@ -10790,21 +10814,43 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawTradeStatsContent()
         {
-            EconomyState state = _playerCountry.State;
-            DrawColoredLabel("Trade", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
-            // Pass 6: the tariff pass-through that actually printed over the last period (the closing
-            // FiscalPeriod's applied term on the report); null before the first boundary, the
-            // DrawSpendingSection posture. One label either way. Playtest 3 cut (2026-08-27): the
-            // "(last year)" qualifier was a (b) and is cut; the figure and its unit stay.
+            // D-ST (23b ② ⑬-⑮): TRADE on the section rule with its chart's pager at its right; the pass-through a row - name and figure, a zero
+            // unsigned - and ABSENT before a year has closed; the chart as the domestic series draw (its Δ in money, its feet slips, the trade balance's
+            // seed 0.00 held until the first year's close is empty paper, not a history).
+            StatHistory history = _playerCountry.History;
+            DrawStatsPagedHead("TRADE", "trade:head", "trade:pager", _statsTradeSection, GraphRenderer.PagesFor(history.TradeBalance.Quarterly));
+            GUILayout.Space(StatsUnit(4f));
+            // Pass 6: the tariff pass-through that actually printed over the last period (the closing FiscalPeriod's applied term on the report); null
+            // before the first boundary.
             FiscalTurnReport lastTradeReport = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            GUILayout.Label(lastTradeReport != null
-                ? $"Tariff pass-through to prices: {lastTradeReport.TariffPassThroughPp:+0.00;-0.00} pp of inflation"
-                : "Tariff pass-through to prices: advance a year", _labelStyle);
-            // Playtest 3 cut: "Overall Trade Balance: $X" above the graph and the graph's own "Trade
-            // Balance" title were a (c) pair - one copy stays, and it is the one that carries the
-            // figure: the graph's title row names the series and its current level in one line.
-            _tradeBalanceGraph.Draw("Trade balance · goods and services", _playerCountry.History.TradeBalance.Quarterly, null, _labelStyle, higherIsBetter: true,
-                moneyUnit: PolicyWebRenderer.GetStatUnit(StatNodeId.TradeBalance));
+            GUIStyle name = DeskBody(12f, PoliSimTheme.TextPrimary);
+            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+            float rowHeight = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(4f);
+            Rect row = GUILayoutUtility.GetRect(10f, rowHeight, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, row.width * 0.6f, row.height), "Tariff pass-through", name);
+                PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), PoliSimTheme.RuleRow);
+            }
+            if (lastTradeReport != null)
+            {
+                float pp = lastTradeReport.TariffPassThroughPp;
+                string text = (StatsReadings.IsFlat(pp, 2) ? 0f.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                    : StatsReadings.TrueMinus(pp.ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture))) + " pp";   // 23b ⑬: a zero has no sign
+                float w = figure.CalcSize(new GUIContent(text)).x + StatsUnit(4f);
+                var cell = new Rect(row.xMax - w, row.y, w, row.height);
+                if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(cell, text, figure); }
+                StatsAnchor(cell, "trade:passthrough");
+            }
+            else
+            {
+                float side = Mathf.Min(rowHeight, StatsUnit(14f));
+                var slot = new Rect(row.xMax - side, row.y + (row.height - side) * 0.5f, side, side);
+                if (Event.current.type == EventType.Repaint) { DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted); }
+                StatsAnchor(slot, "trade:passthrough");
+            }
+            GUILayout.Space(StatsUnit(6f));
+            DrawStatsChart(StatsSlips.Trade, history, null, StatsGraphLabelStyle(), null, null, null, null, _statsTradeSection);
         }
 
         /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - see DrawTradeStatsContent's own doc comment for the split reasoning. Called from DrawPolicyLawsTab.</summary>
@@ -12109,7 +12155,7 @@ namespace PoliSim.UI
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
             // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class); the row says it.
-            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
+            _povertyRateGraph.Draw("Poverty Rate", _playerCountry.History.PovertyRate.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null, reading: ReadingUnit.Percent);
             GUILayout.Space(8f);
 
             float welfareTypeNameColumnWidth = GetWelfareProgramNameColumnWidth();
@@ -12817,7 +12863,7 @@ namespace PoliSim.UI
             DrawLastYearBook();
             GUILayout.Space(10f);
             _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
-                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable");
+                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable", reading: ReadingUnit.Percent);
         }
 
         /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>

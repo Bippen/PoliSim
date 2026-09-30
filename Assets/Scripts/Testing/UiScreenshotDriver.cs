@@ -952,6 +952,28 @@ namespace PoliSim.Testing
                         AssertMapLabelSeparation(controller, stem);
                     }
 
+                    // D-ST (§701, 19b): the sheet's slips on film - three pinned chains per tab through the controller's own pin, filmed, then let go.
+                    if (stem == "02a_statistics_domestic" || stem == "02b_statistics_international")
+                    {
+                        MethodInfo pinStats = controller.GetType().GetMethod("PinSlipForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                        FieldInfo statsPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                        if (pinStats != null && statsPins != null)
+                        {
+                            bool domestic = stem == "02a_statistics_domestic";
+                            string[] ids = domestic ? new[] { "card:history", "sector:other", "chart:unemployment/verdict" } : new[] { "pair:head", "links:tariff", "relations" };
+                            Vector2[] at = domestic
+                                ? new[] { new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.22f), new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.52f), new Vector2(UiScreen.Width * 0.40f, UiScreen.Height * 0.78f) }
+                                : new[] { new Vector2(UiScreen.Width * 0.20f, UiScreen.Height * 0.46f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.62f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.80f) };
+                            for (int p = 0; p < ids.Length; p++) { pinStats.Invoke(controller, new object[] { ids[p], null, at[p] }); }
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(stem + "_slips_pinned");
+                            (statsPins.GetValue(controller) as System.Collections.IList)?.Clear();
+                            yield return Settle();
+                        }
+                        else { Debug.LogError($"SHOT: D-ST - the controller has no PinSlipForFilm / _slipPins; {stem}_slips_pinned NOT written."); _failed++; }
+                    }
+
                     // §647 (POLITICAL_SYSTEM_SPEC.md §5.3, premise 1): THE FORMATION SHEET. The warm-up election opens the Speaker's round with the film's
                     // party in opposition, so the Speaker never asks it; the sheet is staged the §630 way - the party re-seated as the first in the round's
                     // order, a round opened on the same chamber and declarations, filmed, then the film's round and party put back.

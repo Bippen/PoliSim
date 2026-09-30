@@ -93,6 +93,28 @@ namespace PoliSim.UI
         private GUIStyle _pageButtonStyle;
         private GUIStyle _footStyle;   // 8b: the one caption line under the plot
 
+        /// <summary>D-ST (23a ⑩): what the reading is, so its change prints in its own unit; and its printed precision (a policy rate's two decimals).</summary>
+        private ReadingUnit _unit;
+        private int _deltaDecimals = 1;
+        /// <summary>23a ⑭: the drawn window's first live point (the held seed before it is empty paper) - part of the redraw key.</summary>
+        private int _drawnFirstLive;
+
+        /// <summary>D-ST (19b): where the head's parts and the plot drew on the last repaint, and what the head printed - the Statistics sheet anchors
+        /// its slips on these. Empty where the part did not draw.</summary>
+        public Rect HeadTitleRect { get; private set; }
+        public Rect HeadVerdictRect { get; private set; }
+        public Rect HeadFigureRect { get; private set; }
+        public Rect HeadDatedRect { get; private set; }
+        public Rect HeadDeltaRect { get; private set; }
+        public Rect PlotAreaRect { get; private set; }
+        public string HeadFigureText { get; private set; }
+        public string HeadDeltaText { get; private set; }
+        /// <summary>The verdict glyph that led the name (19a: only where the sign and the verdict can disagree), or null.</summary>
+        public Symbol? HeadVerdict { get; private set; }
+        /// <summary>The first and last live values of the drawn window, NaN where the window holds none.</summary>
+        public float WindowFirstLive { get; private set; } = float.NaN;
+        public float WindowLast { get; private set; } = float.NaN;
+
         /// <summary>
         /// Draws this graph via GUILayout, stretching to whatever width the current layout group
         /// gives it. <paramref name="history"/> may hold up to StatHistory.MaxEntries worth of
@@ -119,14 +141,30 @@ namespace PoliSim.UI
         /// added with the same silence. Prefer passing <c>PolicyWebRenderer.GetStatUnit(stat)</c> where
         /// the call site has a StatNodeId, so the answer comes from the stat's own metadata.
         /// </summary>
-        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null, IReadOnlyList<float> shadowHistory = null, bool deltaInPoints = false)
+        /// <para>D-ST (board 23a, 2026-09-30): <paramref name="reading"/> says what the series is - its change prints in its own unit (money, points of
+        /// a percentage, a plain number for a score), never a relative per cent of a rate; null derives it (money from the unit, a percentage where
+        /// <paramref name="deltaInPoints"/>, a score otherwise). <paramref name="heldSeed"/> names a seed value the series holds until its formula first
+        /// runs (approval's 50, the trade balance's 0): the leading run of it is empty paper and the change runs from the first live point.
+        /// <paramref name="section"/> shares one pager among a section's charts and drops this chart's pager and foot (their words are the section's
+        /// slips); <paramref name="datedHead"/> marks the head's figure ◇ DATED - the window's last point, beside a live card.</para>
+        public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null, IReadOnlyList<float> shadowHistory = null, bool deltaInPoints = false,
+            ReadingUnit? reading = null, float? heldSeed = null, GraphSection section = null, bool datedHead = false)
         {
             EnsureOverlayStylesInitialized(labelStyle);
             _moneyUnit = moneyUnit;
+            _unit = reading ?? (moneyUnit.HasValue ? ReadingUnit.Money : deltaInPoints ? ReadingUnit.Percent : ReadingUnit.Score);
+            _deltaDecimals = deltaInPoints ? 2 : 1;
+            if (Event.current.type == EventType.Repaint)
+            {
+                HeadTitleRect = HeadVerdictRect = HeadFigureRect = HeadDatedRect = HeadDeltaRect = PlotAreaRect = Rect.zero;
+                HeadFigureText = HeadDeltaText = null;
+                HeadVerdict = null;
+                WindowFirstLive = WindowLast = float.NaN;
+            }
 
             if (history == null || history.Count == 0)
             {
-                DrawHeadRow(title, null, higherIsBetter, labelStyle, deltaInPoints, 1);   // 8b: the head row carries the pager now
+                DrawHeadRow(title, null, 0, higherIsBetter, labelStyle, deltaInPoints, 1, section, datedHead);   // 8b: the head row carries the pager now
                 GUILayout.Label("No data yet - advance a year.", labelStyle);
 
                 // ⚠ THE PAGE ROW IS STILL DRAWN, and this is the same behaviour-5 defect as DrawPageRow's
@@ -145,24 +183,27 @@ namespace PoliSim.UI
             }
 
             int totalPages = Mathf.Max(1, Mathf.CeilToInt(history.Count / (float)WindowSize));
-            _pageFromEnd = Mathf.Clamp(_pageFromEnd, 0, totalPages - 1);
-            bool isMostRecentPage = _pageFromEnd == 0;
+            // D-ST (23a ⑨): a section's charts share its page
+            int page = Mathf.Clamp(section != null ? section.PageFromEnd : _pageFromEnd, 0, totalPages - 1);
+            _pageFromEnd = page;
+            bool isMostRecentPage = page == 0;
 
-            int endExclusive = history.Count - _pageFromEnd * WindowSize;
-            int startInclusive = Mathf.Max(0, endExclusive - WindowSize);
+            (int startInclusive, int endExclusive) = WindowOf(history.Count, page);
             var visibleWindow = new List<float>(endExclusive - startInclusive);
             for (int i = startInclusive; i < endExclusive; i++)
             {
                 visibleWindow.Add(history[i]);
             }
+            // 23a ⑭: the held seed's leading run is not a history - the window's live points start here
+            int firstLive = Mathf.Clamp(StatsReadings.FirstLiveIndex(history, heldSeed) - startInclusive, 0, visibleWindow.Count);
 
-            float? visibleProjectedValue = isMostRecentPage ? projectedValue : null;
+            float? visibleProjectedValue = isMostRecentPage && firstLive < visibleWindow.Count ? projectedValue : null;
 
-            DrawHeadRow(title, visibleWindow, higherIsBetter, labelStyle, deltaInPoints, totalPages);
+            DrawHeadRow(title, visibleWindow, firstLive, higherIsBetter, labelStyle, deltaInPoints, totalPages, section, datedHead);
 
-            if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue))
+            if (NeedsRedraw(visibleWindow, visibleProjectedValue, thresholdValue) || firstLive != _drawnFirstLive)
             {
-                Regenerate(visibleWindow, visibleProjectedValue, thresholdValue);
+                Regenerate(visibleWindow, visibleProjectedValue, thresholdValue, firstLive);
             }
 
             // Display height is decoupled from the texture's own pixel resolution (StretchToFill below
@@ -174,6 +215,7 @@ namespace PoliSim.UI
             if (_texture != null)
             {
                 Rect plot = PlotRect(rect, labelStyle);   // 8b: the y-labels leave the plot for the gutter
+                if (Event.current.type == EventType.Repaint) { PlotAreaRect = plot; }
                 GUI.DrawTexture(plot, _texture, ScaleMode.StretchToFill);
                 DrawAxisLabelOverlay(rect, plot);
                 if (thresholdValue.HasValue && !string.IsNullOrEmpty(thresholdLabel))
@@ -184,8 +226,29 @@ namespace PoliSim.UI
                 DrawShadowSeries(plot, shadowHistory, history);
                 DrawEnactmentMarkers(plot, enactmentPositions);
             }
-            DrawFootRow(totalPages, deltaInPoints, _lastMin < 0f && _lastMax > 0f);
+            if (section == null) { DrawFootRow(totalPages, deltaInPoints, _lastMin < 0f && _lastMax > 0f); }   // D-ST (23a ⑨): a section's charts have no foot - its words are the section's slips
         }
+
+        /// <summary>The window a page shows of a series of <paramref name="count"/> points - [start, end) - the one arithmetic the chart and the
+        /// Statistics sheet's slips both read, so a slip's Δ is the head's.</summary>
+        public static (int Start, int End) WindowOf(int count, int page)
+        {
+            int pages = Mathf.Max(1, Mathf.CeilToInt(count / (float)WindowSize));
+            page = Mathf.Clamp(page, 0, pages - 1);
+            int end = count - page * WindowSize;
+            return (Mathf.Max(0, end - WindowSize), end);
+        }
+
+        /// <summary>D-ST (23a ⑨): the most pages any of these series fills - the section's pager's reach.</summary>
+        public static int PagesFor(params IReadOnlyList<float>[] series)
+        {
+            int pages = 1;
+            foreach (IReadOnlyList<float> s in series) { if (s != null) { pages = Mathf.Max(pages, Mathf.CeilToInt(s.Count / (float)WindowSize)); } }
+            return pages;
+        }
+
+        /// <summary>How many points one window shows.</summary>
+        public const int WindowPoints = WindowSize;
 
         /// <summary>
         /// C-C9 (P-G1): the no-policy counterfactual drawn against the live series — *"with your
@@ -359,50 +422,90 @@ namespace PoliSim.UI
         private Rect PlotRect(Rect rect, GUIStyle labelStyle)
         {
             float gutter = Mathf.Round(GutterAt1280 * labelStyle.fontSize / 14f);
+            // D-ST: the gutter fits its own two labels - a negative money label ("-US$2.89B") ran past the Statistics sheet's smaller gutter and lost its head
+            if (_axisLabelStyle != null)
+            {
+                float widest = Mathf.Max(_axisLabelStyle.CalcSize(new GUIContent(FormatValue(_lastMax))).x, _axisLabelStyle.CalcSize(new GUIContent(FormatValue(_lastMin))).x);
+                gutter = Mathf.Max(gutter, Mathf.Ceil(widest) + TickWidth + 4f);
+            }
             return new Rect(rect.x + gutter, rect.y, Mathf.Max(10f, rect.width - gutter), rect.height);
         }
 
-        private void DrawHeadRow(string title, IReadOnlyList<float> visibleWindow, bool? higherIsBetter, GUIStyle labelStyle, bool deltaInPoints, int totalPages)
+        private void DrawHeadRow(string title, IReadOnlyList<float> visibleWindow, int firstLive, bool? higherIsBetter, GUIStyle labelStyle, bool deltaInPoints, int totalPages, GraphSection section, bool datedHead)
         {
+            bool repaint = Event.current.type == EventType.Repaint;
+            int liveCount = visibleWindow == null ? 0 : visibleWindow.Count - firstLive;
+            float last = liveCount >= 1 ? visibleWindow[visibleWindow.Count - 1] : float.NaN;
+            float first = liveCount >= 1 ? visibleWindow[firstLive] : float.NaN;
+            float change = liveCount >= 2 ? last - first : 0f;
+            // P4-E2: the Riksbank's policy rate (two decimals, no title) prints nothing on a flat window - its board's rule, kept.
+            bool flatPoints = deltaInPoints && Mathf.Abs(change) < 0.005f;
+            bool flat = liveCount >= 2 && _unit != ReadingUnit.Money && StatsReadings.IsFlat(change, _deltaDecimals);
+            if (repaint) { WindowFirstLive = first; WindowLast = last; }
+
             GUILayout.BeginHorizontal();
-            if (!string.IsNullOrEmpty(title)) { GUILayout.Label(title, _pageLabelStyle, GUILayout.ExpandWidth(false)); }   // P4-E2: an empty title draws nothing
-            GUILayout.FlexibleSpace();
-            if (visibleWindow != null && visibleWindow.Count >= 1)
+            // D-ST (23a ⑪, 19a): the verdict glyph leads the name only where the sign and the verdict can disagree - a reading where lower is better -
+            // and never on a FLAT move (a move under its printed precision carries no verdict).
+            if (!string.IsNullOrEmpty(title) && liveCount >= 2 && higherIsBetter == false && !flat)
             {
-                float last = visibleWindow[visibleWindow.Count - 1];
+                Symbol verdict = change < 0f ? Symbol.Good : Symbol.Bad;
+                float side = Mathf.Round(_pageLabelStyle.fontSize * 1.1f);
+                Rect g = GUILayoutUtility.GetRect(side, _pageLabelStyle.lineHeight + 4f, GUILayout.Width(side), GUILayout.ExpandWidth(false));
+                SymbolRegistry.Draw(g, verdict, verdict == Symbol.Good ? PoliSimTheme.Good : PoliSimTheme.Bad, _pageLabelStyle);
+                if (repaint) { HeadVerdictRect = g; HeadVerdict = verdict; }
+                GUILayout.Space(4f);
+            }
+            if (!string.IsNullOrEmpty(title))
+            {
+                GUILayout.Label(title, _pageLabelStyle, GUILayout.ExpandWidth(false));   // P4-E2: an empty title draws nothing
+                if (repaint) { HeadTitleRect = GUILayoutUtility.GetLastRect(); }
+            }
+            GUILayout.FlexibleSpace();
+            if (liveCount >= 1)
+            {
                 if (!string.IsNullOrEmpty(title))
                 {
-                    // The hero numeral: the window's last value, in the instrument's own unit. (The Riksbank page passes no
-                    // title and prints its own lead figure above the graph, so it takes the delta only.)
+                    // The hero numeral: the window's last value, in the instrument's own unit - a rate at one decimal WITH its unit (23a ⑤). (The
+                    // Riksbank page passes no title and prints its own lead figure above the graph, so it takes the delta only.)
                     _changeLabelStyle.normal.textColor = PoliSimTheme.TextPrimary;
-                    GUILayout.Label(deltaInPoints ? last.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture) : FormatValue(last), _changeLabelStyle, GUILayout.ExpandWidth(false));
-                }
-                if (visibleWindow.Count >= 2)
-                {
-                    float first = visibleWindow[0];
-                    // P3-C4 (2026-09-03): a percentage from a ZERO base is not a percentage - from a zero base the delta is the
-                    // absolute change in the series' own unit, marked Δ; the percentage stays where the base is real.
-                    // P4-E2: a rate's delta reads in points, and a flat window prints nothing at all.
-                    bool flatPoints = deltaInPoints && Mathf.Abs(last - first) < 0.005f;
-                    if (!flatPoints)
+                    string figure = deltaInPoints ? last.ToString("0.00", CultureInfo.InvariantCulture) : FormatHead(last);
+                    GUILayout.Label(figure, _changeLabelStyle, GUILayout.ExpandWidth(false));
+                    if (repaint) { HeadFigureRect = GUILayoutUtility.GetLastRect(); HeadFigureText = figure; }
+                    if (datedHead)
                     {
-                        bool zeroBase = Mathf.Approximately(first, 0f);
-                        float change = zeroBase ? last - first : (last - first) / Mathf.Abs(first) * 100f;
-                        string deltaText = deltaInPoints ? "Δ " + (last - first).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pts"
-                            : zeroBase
-                                ? "Δ " + (_moneyUnit.HasValue ? UiFormat.MoneyDelta(change, _moneyUnit.Value) : (change >= 0f ? "+" : "") + FormatAxisValue(change))
-                                : $"Δ {change:+0.0;-0.0;0}%";
-                        _changeLabelStyle.normal.textColor = higherIsBetter.HasValue
-                            ? UiPalette.GetDeltaColor(change, higherIsBetter.Value)
-                            : UiPalette.NeutralChangeColor;
-                        GUILayout.Space(6f);
-                        GUILayout.Label(deltaText, _changeLabelStyle, GUILayout.ExpandWidth(false));
+                        // 23a ⑫: the head prints the window's last point, not the live reading - ◇ DATED says so, and its slip names the point
+                        float side = Mathf.Round(_changeLabelStyle.fontSize * 0.9f);
+                        GUILayout.Space(3f);
+                        Rect d = GUILayoutUtility.GetRect(side, _changeLabelStyle.lineHeight + 4f, GUILayout.Width(side), GUILayout.ExpandWidth(false));
+                        SymbolRegistry.Draw(d, Symbol.Dated, PoliSimTheme.TextSecondary, _footStyle);
+                        if (repaint) { HeadDatedRect = d; }
                     }
                 }
+                if (liveCount >= 2 && !flatPoints)
+                {
+                    // D-ST (23a ⑩): the change in the reading's OWN unit - US$ for money, pp for a percentage, a plain number for a score - never a
+                    // relative per cent of a rate (the foot had said MONEY, NEVER % beside a Δ of +8.2 %); a FLAT move prints its zero, unsigned and neutral.
+                    string deltaText = StatsReadings.DeltaText(first, last, _unit, _moneyUnit, _deltaDecimals);
+                    _changeLabelStyle.normal.textColor = flat || !higherIsBetter.HasValue
+                        ? UiPalette.NeutralChangeColor
+                        : UiPalette.GetDeltaColor(change, higherIsBetter.Value);
+                    GUILayout.Space(6f);
+                    GUILayout.Label(deltaText, _changeLabelStyle, GUILayout.ExpandWidth(false));
+                    if (repaint) { HeadDeltaRect = GUILayoutUtility.GetLastRect(); HeadDeltaText = deltaText; }
+                }
             }
-            GUILayout.Space(8f);
-            DrawPager(totalPages);
+            if (section == null)
+            {
+                GUILayout.Space(8f);
+                DrawPager(totalPages);
+            }
             GUILayout.EndHorizontal();
+        }
+
+        /// <summary>The head's figure in the reading's own form: money in its money, a percentage at one decimal with its unit, a score at one decimal.</summary>
+        private string FormatHead(float value)
+        {
+            return StatsSlips.Figure(value, _unit, _moneyUnit);   // the slip book's own form, so a head and its slip print one figure
         }
 
         private void DrawPager(int totalPages)
@@ -428,7 +531,7 @@ namespace PoliSim.UI
                 ? "THE WHOLE SERIES"
                 : _pageFromEnd == 0 ? $"LAST {WindowSize} YEARS" : $"{_pageFromEnd * WindowSize + 1}–{(_pageFromEnd + 1) * WindowSize} YEARS AGO";
             string left = $"OLDER ◀ ▶ NEWER · {window}" + (spansZero ? " · DOTTED = ZERO" : "");
-            string unit = deltaInPoints ? "POINTS" : _moneyUnit.HasValue ? "MONEY, NEVER %" : "% OF THE FIRST, MONEY FROM A ZERO BASE";
+            string unit = "IN THE READING'S OWN UNIT · NEVER %";   // D-ST (23a ⑩): what the Δ now prints - US$, pp or a plain number
             // P5-B5 (2026-09-05): THE FOOT NEVER WIDENS THE PAGE. As two ExpandWidth(false) labels in a horizontal, the foot's
             // minimum width was the sum of its texts - wider than the Budget centre column at 1280, so the whole scroll view
             // grew a horizontal scrollbar and every spending row's figure cell slid off the panel (the B4 film caught it).
@@ -474,11 +577,11 @@ namespace PoliSim.UI
         private void DrawAxisLabelOverlay(Rect rect, Rect plot)
         {
             // 8b: the labels sit in the gutter at the plot's left, right-aligned, a 4 px tick each; the plot's left edge is a hairline.
+            // D-ST (23a ⑬): the middle label is gone - it is always the mean of the two ends; the midline stays in the plot
             float labelHeight = _axisLabelStyle.fontSize + 4f;
-            float mid = (_lastMin + _lastMax) * 0.5f;
             float labelWidth = Mathf.Max(8f, plot.x - TickWidth - 2f - rect.x);
             _axisLabelStyle.alignment = TextAnchor.MiddleRight;
-            foreach ((float value, float y) in new[] { (_lastMax, plot.y), (mid, plot.y + plot.height * 0.5f - labelHeight * 0.5f), (_lastMin, plot.y + plot.height - labelHeight) })
+            foreach ((float value, float y) in new[] { (_lastMax, plot.y), (_lastMin, plot.y + plot.height - labelHeight) })
             {
                 GUI.Label(new Rect(rect.x, y, labelWidth, labelHeight), FormatValue(value), _axisLabelStyle);
                 PoliSimTheme.Rule(new Rect(plot.x - TickWidth, y + labelHeight * 0.5f - 0.5f, TickWidth, 1f), PoliSimTheme.Hairline);
@@ -496,7 +599,7 @@ namespace PoliSim.UI
         /// </summary>
         private string FormatValue(float value)
         {
-            return _moneyUnit.HasValue ? UiFormat.Money(value, _moneyUnit.Value) : FormatAxisValue(value);
+            return StatsReadings.TrueMinus(_moneyUnit.HasValue ? UiFormat.Money(value, _moneyUnit.Value) : FormatAxisValue(value));   // D-ST: the true minus on a printed figure
         }
 
         /// <summary>
@@ -597,7 +700,7 @@ namespace PoliSim.UI
             return hasThreshold && !Mathf.Approximately(thresholdValue.Value, _drawnThresholdValue);
         }
 
-        private void Regenerate(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue)
+        private void Regenerate(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue, int firstLive = 0)
         {
             if (_texture == null)
             {
@@ -614,7 +717,7 @@ namespace PoliSim.UI
                 pixels[i] = BackgroundColor;
             }
 
-            GetScaleRange(history, projectedValue, thresholdValue, out float min, out float max);
+            GetScaleRange(history, projectedValue, thresholdValue, firstLive, !_moneyUnit.HasValue, out float min, out float max);
             _lastMin = min;
             _lastMax = max;
 
@@ -634,11 +737,12 @@ namespace PoliSim.UI
                 int zeroY = Mathf.RoundToInt(Mathf.InverseLerp(min, max, 0f) * (TextureHeight - 1));
                 DrawDottedHorizontalLine(pixels, zeroY, PoliSimTheme.TextPrimary);
             }
-            PlotSeries(pixels, history, projectedValue, min, max);
+            PlotSeries(pixels, history, projectedValue, min, max, firstLive);
 
             _texture.SetPixels(pixels);
             _texture.Apply(false);
 
+            _drawnFirstLive = firstLive;
             _drawnHistory.Clear();
             _drawnHistory.AddRange(history);
             _drawnHasProjection = projectedValue.HasValue;
@@ -649,11 +753,13 @@ namespace PoliSim.UI
         }
 
         /// <summary>This graph's own Y-axis range: its historical min/max (plus the projected point and/or threshold value, if given), padded 10% so the series doesn't hug the top/bottom edge, with a flat-line fallback so a constant series doesn't divide by a zero range. Folding the threshold into the range (not just clamping it into whatever range the data alone produces) is what keeps a reference line ALWAYS visible, even on a page where the data sits far from it - the whole point of a "how far from target are we" reference.</summary>
-        private static void GetScaleRange(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue, out float min, out float max)
+        private static void GetScaleRange(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue, int firstLive, bool widenToPrintedSteps, out float min, out float max)
         {
-            min = history[0];
-            max = history[0];
-            for (int i = 1; i < history.Count; i++)
+            // 23a ⑭: the scale is the LIVE points' - a held seed before them is not read (with none live, the threshold or a unit band)
+            bool any = firstLive < history.Count;
+            min = any ? history[firstLive] : thresholdValue ?? 0f;
+            max = any ? history[firstLive] : thresholdValue ?? 1f;
+            for (int i = firstLive + 1; i < history.Count; i++)
             {
                 min = Mathf.Min(min, history[i]);
                 max = Mathf.Max(max, history[i]);
@@ -673,15 +779,17 @@ namespace PoliSim.UI
             float pad = range < 0.0001f ? Mathf.Max(Mathf.Abs(max) * 0.05f, 0.5f) : range * 0.1f;
             min -= pad;
             max += pad;
+            // D-ST (23a ⑬): a rate's or a score's axis spans at least four steps of its printed precision - poverty's 0.1-point window printed 9.0 twice
+            if (widenToPrintedSteps) { StatsReadings.WidenToPrintedSteps(ref min, ref max); }
         }
 
-        private static void PlotSeries(Color[] pixels, IReadOnlyList<float> history, float? projectedValue, float min, float max)
+        private static void PlotSeries(Color[] pixels, IReadOnlyList<float> history, float? projectedValue, float min, float max, int firstLive = 0)
         {
             int totalPoints = history.Count + (projectedValue.HasValue ? 1 : 0);
             int lastRealIndex = history.Count - 1;
 
             Vector2Int? prevPixel = null;
-            for (int i = 0; i < totalPoints; i++)
+            for (int i = firstLive; i < totalPoints; i++)   // 23a ⑭: the held seed's run is empty paper - the line starts at the first live point, at its own x
             {
                 float value = i <= lastRealIndex ? history[i] : projectedValue.Value;
                 int x = totalPoints == 1 ? TextureWidth - 1 : Mathf.RoundToInt((float)i / (totalPoints - 1) * (TextureWidth - 1));
@@ -742,7 +850,7 @@ namespace PoliSim.UI
         /// must not each carry a GraphRenderer's cached texture state. Returns silently on a series too
         /// short to have a shape - one point is not a trend, and drawing a flat line would imply one.
         /// </summary>
-        public static void DrawSparkline(Rect rect, IReadOnlyList<float> history, Color color, int maxPoints = 40)
+        public static void DrawSparkline(Rect rect, IReadOnlyList<float> history, Color color, int maxPoints = 40, float? reference = null)
         {
             if (history == null || history.Count < 2 || rect.width < 2f || rect.height < 2f)
             {
@@ -752,7 +860,7 @@ namespace PoliSim.UI
             int width = Mathf.Max(2, Mathf.RoundToInt(rect.width));
             int height = Mathf.Max(2, Mathf.RoundToInt(rect.height));
 
-            Color[] pixels = BuildSparklinePixels(width, height, history, color, maxPoints);
+            Color[] pixels = BuildSparklinePixels(width, height, history, color, maxPoints, reference);
 
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
             texture.SetPixels(pixels);
@@ -770,7 +878,7 @@ namespace PoliSim.UI
         /// throws outside OnGUI. The arithmetic that actually had the bug has no such dependency, so it
         /// lives here and `GraphRendererDiagnostic` hammers it directly.
         /// </summary>
-        public static Color[] BuildSparklinePixels(int width, int height, IReadOnlyList<float> history, Color color, int maxPoints = 40)
+        public static Color[] BuildSparklinePixels(int width, int height, IReadOnlyList<float> history, Color color, int maxPoints = 40, float? reference = null)
         {
             var pixels = new Color[width * height];
             if (history == null || history.Count < 2)
@@ -787,6 +895,7 @@ namespace PoliSim.UI
                 min = Mathf.Min(min, history[i]);
                 max = Mathf.Max(max, history[i]);
             }
+            if (reference.HasValue) { min = Mathf.Min(min, reference.Value); max = Mathf.Max(max, reference.Value); }   // D-ST (23a ⑰): an index's base is on the line's own scale
 
             // A perfectly flat series has no range to normalize against; centre it rather than dividing
             // by zero and producing a line pinned to an edge.
@@ -797,6 +906,13 @@ namespace PoliSim.UI
             // px - 2 at the small chip rects, 3 at a 90px 2560 rect. Native-resolution buffers, so
             // the rule speaks in the buffer's own pixels.
             int thickness = Mathf.Max(2, Mathf.RoundToInt(height / 34f));
+            if (reference.HasValue && !flat)
+            {
+                // D-ST (23a ⑰): the base drawn - a dotted rule, one pixel in three, under the line (100 = TERM START for an index)
+                int ry = Mathf.Clamp(Mathf.RoundToInt((reference.Value - min) / range * (height - 3)) + 1, 0, height - 1);
+                Color rule = new Color(color.r, color.g, color.b, color.a * 0.6f);
+                for (int x = 0; x < width; x += 3) { pixels[ry * width + x] = rule; }
+            }
 
             Vector2Int? previous = null;
             for (int i = 0; i < count; i++)
@@ -914,9 +1030,11 @@ namespace PoliSim.UI
         {
             EnsureOverlayStylesInitialized(labelStyle);
             _moneyUnit = null;
+            _unit = ReadingUnit.Percent;   // D-ST: a policy rate - its change in pp, at its two decimals
+            _deltaDecimals = 2;
             if (history == null || history.Count == 0)
             {
-                DrawHeadRow(title, null, null, labelStyle, true, 1);
+                DrawHeadRow(title, null, 0, null, labelStyle, true, 1, null, false);
                 GUILayout.Label("No data yet - advance a year.", labelStyle);
                 return;
             }
@@ -930,7 +1048,7 @@ namespace PoliSim.UI
             for (int i = startInclusive; i < endExclusive; i++) { visibleWindow.Add(history[i]); }
             IReadOnlyList<float> path = isMostRecentPage && projectedPath != null ? projectedPath : System.Array.Empty<float>();
 
-            DrawHeadRow(title, visibleWindow, null, labelStyle, true, totalPages);
+            DrawHeadRow(title, visibleWindow, 0, null, labelStyle, true, totalPages, null, false);
 
             if (NeedsPathRedraw(visibleWindow, path, referenceValue))
             {
@@ -974,7 +1092,7 @@ namespace PoliSim.UI
             // The scale folds the path and the reference in, so both are always on the plot.
             var all = new List<float>(history);
             all.AddRange(path);
-            GetScaleRange(all, null, reference, out float min, out float max);
+            GetScaleRange(all, null, reference, 0, true, out float min, out float max);
             _lastMin = min;
             _lastMax = max;
 
