@@ -35416,3 +35416,27 @@ Latent, stated: **the cost** - a formation per candidate every German day was ~1
 **Proved** - **the planted hang** (`ExitDiagnostics.PlantedHang`: prints a result line and returns without exiting; under `-batchmode` with no `-quit` the Editor stays alive, the shape of every recorded hang): ended by the watchdog **90 s after its line**, the launcher exiting **0** (the kept code) after 121 s, the ledger row written (`planted702`, phase *teardown (the log: startup)*, result kept *code 0 - CHECKS: the watchdog's planted hang …*) and nine children alive at the end (UnityCrashHandler64, Unity.Licensing.Client, UnityPackageManager, Unity.ILPP.Runner, two UnityAutoQuitter, the Unity import worker, UnityShaderCompiler, conhost). The planted row stays in the ledger under its label - the watchdog's first entry is its own proof. **On the real runs**: `EXITDIAG: quitting` on the dry film (118 threads), the cheap bar (112 - *Unity Main Thread* 108.7 s CPU, the next a *Thread Pool Worker* at 2.7 s) and the real film (124), which printed `SHOT: exiting 0.`; none hung, so the cause of the four teardown hangs is not yet named - the next one is logged with its threads and its children.
 
 **Tier UI** (the driver's one line): cheap bar **82 of 82** (`cheap702b`, on the enrolled tree; `cheap702` failed CommentImmunityCheck as above); dry film `drys702` (Sweden 1280, 155 measured, 0 failed, 0 overflow, 0 escape, 0 errors); real film `se702_1280` (155 captured, 0 failed, 0 escape, 0 clipped, `SHOT: exiting 0.`), both on the tree before the stripper line, which is Editor-only.
+
+
+## 703. §696's BASELINE: THE NO-CHANGE FORECAST BESIDE THE MODEL'S 5.32 POINTS, AS SWEDEN'S TEST PRINTED IT - THE MODEL BEATS PERSISTENCE BY 0.10 PP ON §696's BASIS AND 0.36 ON SWEDEN'S; NOTHING TUNED (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30, round 4 follow-up 2): *Report the persistence error (the 2021 result taken as the 2025 prediction) beside the model's 5.32 points, as Sweden's test did. Tune nothing.*
+
+**Built** (`GermanRegionsDiagnostic` (e), printed and not asserted, the cheap bar's): beside §696's line, the no-change forecast on the same parties and the same basis, and then every column renormalised over the parties compared - the basis Sweden's out-of-sample test printed its no-change and spatial benchmarks on (§601).
+
+**The figures** (`grd703b`; the eight parties the model predicts, the SSW not among them):
+
+| party | real 2025 | model | no-change (2021) |
+|---|---:|---:|---:|
+| CDU | 23.67 | 16.84 | 20.76 |
+| AfD | 21.78 | 9.95 | 11.39 |
+| SPD | 17.18 | 22.78 | 28.17 |
+| Grüne | 12.15 | 13.07 | 16.13 |
+| Linke | 9.22 | 6.36 | 5.34 |
+| CSU | 6.28 | 6.23 | 5.69 |
+| BSW | 5.22 | 13.74 | 0.00 |
+| FDP | 4.50 | 11.02 | 12.52 |
+
+(each column renormalised over the eight, %). **The mean absolute deviation: on §696's raw basis the model 5.32 pp, the no-change forecast 5.42 pp; on Sweden's basis the model 5.39 pp, no-change 5.75 pp.** Read plainly: the model beats persistence by 0.10 pp on the raw basis and 0.36 pp renormalised - a thin edge, as Sweden's was (§601: 1.29 against 1.36). It gains where the no-change forecast is most wrong on the SPD (−5.6 pp off rather than −11.0) and the FDP, and loses it on the BSW, which persistence sets at zero (the real 5.22) and the model at 13.74 - the §696 finding (a newcomer taking its spatial share whole). Both miss the AfD's doubling by about 10 pp. **Nothing tuned.** Seats are not compared here: the game's count seats the SSW only from §704 (the national-minority exemption).
+
+**Tier TOOLING:** cheap bar **82 of 82** (`cheap703`); the diagnostic alone `grd703b` 1 of 1.

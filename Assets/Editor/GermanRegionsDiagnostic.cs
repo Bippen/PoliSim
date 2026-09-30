@@ -134,14 +134,36 @@ namespace PoliSim.EditorTools
                     {
                         // printed, not asserted: the 2025 count the game plays toward, beside what the model predicts from 2021 and 2017 - out of sample
                         var readLine = new StringBuilder("    read      the 2025 prediction from 2021 and 2017 against the 2025 count (pp):");
-                        double absDev = 0.0; int counted = 0;
+                        double absDev = 0.0, absNoChange = 0.0; int counted = 0;
+                        double sumModel = 0.0, sumReal25 = 0.0, sumPrior21 = 0.0;
+                        var compared = new List<int>();
                         for (int k = 0; k < roster.Count && k < l25.Length; k++)
                         {
                             if (!snap.TryGetValue(roster[k].Abbrev, out double predicted)) { continue; }
                             readLine.Append(F(" {0} {1:F1}/{2:F1}", roster[k].Abbrev, predicted * 100.0, l25[k]));
                             absDev += Math.Abs(predicted * 100.0 - l25[k]); counted++;
+                            // round 4 follow-up 2 (§703): the no-change forecast - the 2021 result taken as the 2025 prediction - on the same basis
+                            absNoChange += Math.Abs(l21[k] - l25[k]);
+                            sumModel += predicted * 100.0; sumReal25 += l25[k]; sumPrior21 += l21[k];
+                            compared.Add(k);
                         }
                         sb.Append(readLine).Append(F(" - mean absolute deviation {0:F2} pp over {1}\n", counted > 0 ? absDev / counted : double.NaN, counted));
+                        // printed, not asserted, and nothing tuned: the baseline beside the model, as Sweden's out-of-sample test printed it (§601) - on §696's
+                        // raw basis (the model's shares sum to 100 over its parties, the counts' to less), and on Sweden's (every column renormalised over
+                        // the parties compared)
+                        double normModel = 0.0, normNoChange = 0.0;
+                        var table = new StringBuilder("    read      over the same parties, each column renormalised (Sweden's basis), real / model / no-change (pp):");
+                        foreach (int k in compared)
+                        {
+                            snap.TryGetValue(roster[k].Abbrev, out double predicted);
+                            double real = l25[k] / sumReal25 * 100.0, model = predicted * 100.0 / sumModel * 100.0, noChange = l21[k] / sumPrior21 * 100.0;
+                            normModel += Math.Abs(model - real); normNoChange += Math.Abs(noChange - real);
+                            table.Append(F(" {0} {1:F2}/{2:F2}/{3:F2}", roster[k].Abbrev, real, model, noChange));
+                        }
+                        sb.Append(F("    read      the no-change forecast (the 2021 result as the 2025 prediction) on the same raw basis: {0:F2} pp over {1} - the model {2:F2}\n",
+                            counted > 0 ? absNoChange / counted : double.NaN, counted, counted > 0 ? absDev / counted : double.NaN));
+                        sb.Append(table).Append(F(" - mean absolute deviation: the model {0:F2} pp, the no-change forecast {1:F2} pp\n",
+                            counted > 0 ? normModel / counted : double.NaN, counted > 0 ? normNoChange / counted : double.NaN));
                     }
                 }
 
