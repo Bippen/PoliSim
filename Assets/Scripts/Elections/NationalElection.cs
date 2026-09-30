@@ -295,8 +295,8 @@ namespace PoliSim.Elections
             else if (country == CountryId.Germany && on.HasValue)
             {
                 // PS-4 (§688): the sixteen Länder on the chamber seated that day (GermanRegions: 2021's count before the 2025 chamber sat, 2025's
-                // after), by the same uniform swing - a readout of the national result, never an input to it. A party standing in one Land
-                // (the CSU) takes its swing there alone, so the error the swing reports is the honest one, not zero.
+                // after), by the same uniform swing - a readout of the national result, never an input to it. A party standing in a subset of the
+                // Länder (the CSU, the SSW) has its swing spread over its own Länder and scaled, so its Länder sum to its national share (§689).
                 RegionalVoteModel.RegionInput[] regions = GermanRegions.Regions(keys, on.Value);
                 LastRegionalShares = RegionalVoteModel.RegionalSharesByUniformSwing(preference, regions, GermanRegions.PriorShares(keys, on.Value), out double worstAbsError);
                 LastRegionalNames = new string[regions.Length];

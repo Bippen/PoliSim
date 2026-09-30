@@ -19,7 +19,7 @@ namespace PoliSim.EditorTools
     /// the Grüne nowhere in Saarland in 2021, the BSW (no 2021 column) standing everywhere in 2021 with no record of its own; (c) the seated
     /// vintage by date - the snap start of 6 November 2024 reads 2021's Länder, 25 March 2025 on reads 2025's; (d) the breakdown the national
     /// election derives for Germany (`NationalElection.TryPredictShares` with a date) is sixteen Länder whose vote-weighted total reproduces the
-    /// national result, and the national result is the same with the date and without it - the regional layer is a readout, never an input; where the uniform swing cannot reproduce a party standing in one Land exactly, the error it reports is the error measured.
+    /// national result, and the national result is the same with the date and without it - the regional layer is a readout, never an input; a party standing in one Land (the CSU) reproduces its national share too, its swing spread over its Land alone and scaled (§689).
     /// </summary>
     public static class GermanRegionsDiagnostic
     {
@@ -110,7 +110,7 @@ namespace PoliSim.EditorTools
                         if (e > worst) { worst = e; worstParty = order[p] + F(" ({0:F2} % national, {1:F2} % rebuilt)", dated[order[p]] * 100.0, agg * 100.0); }
                     }
                     double reported = NationalElection.LastRegionalWorstAbsError;
-                    Check(order != null && Math.Abs(worst - reported) < 1e-9, F("the Länder's vote-weighted total against the national shares: worst {0:F4} pp, {2}, the error the uniform swing itself reports ({1:F4} pp) - a party standing in one Land (the CSU) takes its swing in that Land alone, so the derivation reports what it cannot reproduce rather than absorbing it", worst * 100.0, reported * 100.0, worstParty));
+                    Check(order != null && worst < 1e-9 && Math.Abs(worst - reported) < 1e-9, F("the Länder's vote-weighted total reproduces the national shares: worst {0:E1} of a share ({2}), the swing's own residual {1:E1} - a one-Land party's swing spread over its Land alone, scaled (§689)", worst, reported, worstParty));
                 }
             }
             catch (Exception e) { failures++; sb.Append("    FAIL      threw: ").Append(e.Message).Append('\n'); }
