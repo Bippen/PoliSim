@@ -15,8 +15,8 @@ namespace PoliSim.UI
     {
         /// <summary>
         /// §651 (ruled 2026-09-29): the player-facing name is INCUMBENT - the menu's and the selector's wordmark and every line a player
-        /// reads that names the game. The code name, the repository, the namespaces and Unity's productName and companyName stay PoliSim
-        /// (ruled): the window title a built player shows is productName's, so it stays until that is ruled. The wordmark is set in
+        /// reads that names the game. The code name, the repository and the namespaces stay PoliSim (ruled); §693 (the studio name ruled):
+        /// Unity's companyName is DWELOP Games and productName Incumbent, so a built player's window title reads Incumbent. The wordmark is set in
         /// capitals, as Design's drawn logotype is (`brand/incumbent`), in the Display face until the logotype is installed.
         /// </summary>
         public const string PlayerFacingName = "Incumbent";

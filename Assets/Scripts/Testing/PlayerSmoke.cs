@@ -41,6 +41,9 @@ namespace PoliSim.Testing
         private IEnumerator Run()
         {
             Debug.Log($"SMOKE: armed - {Application.productName} {Application.version}, {Application.platform}, save '{_save}'");
+            // §693: where this player reads its saves (the studio's folder) and what the one-time migration did at this start-up - the build script
+            // asserts both (a first launch copies the old folder's saves; the play save then loads from the new one).
+            Debug.Log($"SMOKE: saves at {PoliSim.Persistence.SaveGameService.DefaultSaveDirectory} - migration: {PoliSim.Persistence.SaveMigration.LastResult}");
             yield return null;
             // §673: startup to the menu - the first frame after every scene Start (the menu's first frame), in the player's own clock since it started
             Debug.Log($"SMOKE: STARTUP - the first frame after the scene's Starts at {Time.realtimeSinceStartup:0.00} s since the player started");

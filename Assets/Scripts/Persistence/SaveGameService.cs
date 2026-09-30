@@ -278,8 +278,17 @@ namespace PoliSim.Persistence
         }
 
         /// <summary>Outside the repository by construction (the repository-weight finding made that a
-        /// requirement): %USERPROFILE%\AppData\LocalLow\&lt;company&gt;\PoliSim\saves on Windows.</summary>
-        public static string DefaultSaveDirectory => Path.Combine(UnityEngine.Application.persistentDataPath, "saves");
+        /// requirement): %USERPROFILE%\AppData\LocalLow\DWELOP Games\Incumbent\saves on Windows (§693: the studio name; the folder is named by
+        /// Unity's companyName and productName). Every save the game or a tool reads or writes goes through here, so the one-time migration from the
+        /// old identity's folder (<see cref="SaveMigration"/>, DefaultCompany\PoliSim) runs before the first access.</summary>
+        public static string DefaultSaveDirectory
+        {
+            get
+            {
+                SaveMigration.EnsureOnce();
+                return Path.Combine(UnityEngine.Application.persistentDataPath, "saves");
+            }
+        }
 
         public static string DefaultSlotPath => Path.Combine(DefaultSaveDirectory, "slot1.json");
 

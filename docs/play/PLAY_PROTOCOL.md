@@ -17,7 +17,7 @@ One play of Sweden's first election in the played game - its own polling day on 
 
 ## 2. The saves
 
-Five saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\DefaultCompany\PoliSim\saves`), each cut by the tool that cuts it - never by hand. ⚠ Only the two sittings' saves are on the current format (re-staged by §665; the staging prints it). The three felt-verdict saves were cut on format 19 and are refused by this build until the film harness re-cuts them (`-shotsaves`); K-1 did not re-cut them.
+Five saves in the game's saves directory (`%USERPROFILE%\AppData\LocalLow\DWELOP Games\Incumbent\saves` since §693, the studio name - the old `DefaultCompany\PoliSim\saves` is copied across once, on the first launch, and left in place), each cut by the tool that cuts it - never by hand. ⚠ Only the two sittings' saves are on the current format (re-staged by §665; the staging prints it). The three felt-verdict saves were cut on format 19 and are refused by this build until the film harness re-cuts them (`-shotsaves`); K-1 did not re-cut them.
 
 | save | cut by | what it opens on |
 |---|---|---|

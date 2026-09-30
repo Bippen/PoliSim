@@ -10,7 +10,7 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// §668: **THE WINDOWS PLAYER BUILD** - the first this project has made. `-executeMethod PoliSim.EditorTools.PlayerBuild.BuildWindows
     /// -buildout=&lt;folder&gt;` builds the scenes the build settings enable into <c>&lt;folder&gt;/Incumbent.exe</c>, 64-bit Windows, with the
-    /// scripting backend the project sets; productName and companyName are untouched (ruled, §651). The folder is outside the repository and is
+    /// scripting backend the project sets; companyName DWELOP Games and productName Incumbent (§693, the studio name ruled - the window title is productName's). The folder is outside the repository and is
     /// never committed. `Tools/build_player.ps1` runs it, then the smoke check (`PoliSim.Testing.PlayerSmoke`).
     /// </summary>
     public static class PlayerBuild

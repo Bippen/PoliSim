@@ -183,6 +183,7 @@ namespace PoliSim.EditorTools
             ("SeatlessFormationDiagnostic", SeatlessFormationDiagnostic.Run),   // §683 (ruled): a party with no seat is never offered a cabinet or support role - the assertion throws on a planted result, never on a formed one
             ("GermanRegionsDiagnostic", GermanRegionsDiagnostic.Run),   // PS-4 (§688): the sixteen Länder as Germany's regions - the 2025 columns against the Bund's exact counts, the candidacy facts, the seated vintage by date, the derived breakdown a readout
             ("RegionalSumCheck", RegionalSumCheck.Run),   // §689 (ruled): every party's regions sum to its national share within rounding - Sweden and both German chambers, the model's prediction and seeded random results, a planted error caught every run
+            ("SaveMigrationCheck", SaveMigrationCheck.Run),   // §693 (ruled): a planted save and preference carried from the old identity's location to the new one intact, the originals untouched, once, a new location that holds data left alone
             ("EntrantLayerDiagnostic", EntrantLayerDiagnostic.Run),   // §681: the entrant layer - the proportional property confirmed, the CHES families read back, inert with no entrant, the twin and newcomer gates
             ("ScreenEdgeSelfTest", ScreenEdgeCheck.SelfTest),   // §680 (PF-17): the edge guard on planted frames - a clean sheet passes, the measured wedge is NOT FLUSH, a planted overflow is CLIPPED
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),

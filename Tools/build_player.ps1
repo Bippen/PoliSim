@@ -5,7 +5,9 @@ param([string]$KnownDiffs = '', [string]$Out = 'G:\UNITY\Builds\Incumbent-dev', 
 #   ... -Save <name>                                                                          the save the smoke loads (default: the protocol's first)
 #   ... -SmokeOnly -Windowed                                                                  the smoke with a real graphics device and window
 # 1. The build: one Unity job through Tools/unity_run.ps1 (the pre-launch check, the launch register), PlayerBuild.BuildWindows. The folder is
-#    outside the repository and never committed; productName and companyName are untouched (s651).
+#    outside the repository and never committed; companyName DWELOP Games, productName Incumbent (s693: the studio name).
+#    The smoke must read its saves from LocalLow\DWELOP Games\Incumbent\saves (the log's 'SMOKE: saves at' line, with what the one-time
+#    migration from DefaultCompany\PoliSim did at that start-up), and a plain windowed launch must show the title Incumbent (read, then ended).
 # 2. The smoke: the built Incumbent.exe, -batchmode -nographics -smoke=<save>: PoliSim.Testing.PlayerSmoke loads the save through the game's own
 #    load path, runs 30 game days and quits 0. PASSED needs exit 0 AND the log's 'SMOKE: PASSED' line - an exit alone proves nothing (s656).
 # Hygiene (s672): the five settings files a build dirties are restored when their diffs are the known ones (Tools/build_known_diffs.tsv), and the
@@ -76,6 +78,18 @@ $icon.ToBitmap().Save($png, [System.Drawing.Imaging.ImageFormat]::Png)
 "ICON: extracted $($icon.Width)x$($icon.Height) -> $png"
 
 if ($p.ExitCode -ne 0 -or -not $passed) { 'BUILD PLAYER: SMOKE FAILED'; exit 1 }
+# s693: the smoke read its saves from the studio's folder, and the one-time migration said what it did at that start-up.
+$savesLine = $lines | Where-Object { $_ -like 'SMOKE: saves at *' } | Select-Object -First 1
+"$savesLine"
+# Unity's persistentDataPath writes '/', Path.Combine '\' - either separator.
+if (-not $savesLine -or $savesLine -notmatch 'DWELOP Games[\\/]Incumbent[\\/]saves') { "BUILD PLAYER: FAILED - the smoke did not read its saves from LocalLow\DWELOP Games\Incumbent\saves"; exit 8 }
+# s693: THE WINDOW TITLE - the player launched as a person launches it (a window, no smoke), its main window's title read, that player ended.
+$tp = Start-Process -FilePath $exe -PassThru
+$title = ''
+for ($i = 0; $i -lt 120 -and -not $title; $i++) { Start-Sleep -Milliseconds 500; $tp.Refresh(); if ($tp.HasExited) { break }; $title = $tp.MainWindowTitle }
+if (-not $tp.HasExited) { Stop-Process -Id $tp.Id -Force }
+"TITLE: the player's window reads '$title'"
+if ($title -ne 'Incumbent') { "BUILD PLAYER: FAILED - the window title is '$title', not 'Incumbent'"; exit 9 }
 # s678 (Elias's ruling: Unity analytics OFF): THE PLAYER MAY NOT CALL UNITY'S CLOUD - its smoke run again under Tools/player_net_watch.ps1, which
 # fails when the player connects to, or even looks up, cdp.cloud.unity3d.com or config.uca.cloud.unity3d.com.
 & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'Tools\player_net_watch.ps1') -Exe $exe -Save $Save
