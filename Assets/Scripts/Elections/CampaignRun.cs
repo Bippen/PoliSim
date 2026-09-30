@@ -119,6 +119,20 @@ namespace PoliSim.Elections
             /// <summary>§697: whether <paramref name="party"/> stands in <paramref name="region"/> - everywhere where no candidacy is staged.</summary>
             public bool StandsIn(int party, int region) => Stands == null || party < 0 || party >= Stands.Length || Stands[party] == null || region < 0 || region >= Stands[party].Length || Stands[party][region];
 
+            /// <summary>
+            /// §699: the share of the national audience that can vote for <paramref name="party"/> - the audiences of the regions where it stands over all
+            /// of them; a NATIONAL act reaches only these voters. Exactly 1 where no candidacy is staged (Sweden, every harness), so every product with it
+            /// is the old one. Before it a party standing in one Land campaigned to the whole country: the SSW's national television carried it to 9.5 %
+            /// and 60 of 630 seats on the German film's warm-up election (§698's film).
+            /// </summary>
+            public double StandingShare(int party)
+            {
+                if (Stands == null || Regions == null || Regions.Length == 0) { return 1.0; }
+                double all = 0.0, where = 0.0;
+                for (int r = 0; r < Regions.Length; r++) { all += Regions[r].Audience; if (StandsIn(party, r)) { where += Regions[r].Audience; } }
+                return all > 0.0 ? where / all : 1.0;
+            }
+
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
                 PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands);
@@ -820,6 +834,8 @@ namespace PoliSim.Elections
                             audience = setup.NationalAudience * bookedReach[p][0];
                             bookedReach[p].RemoveAt(0);
                         }
+                        // §699: a national act reaches only the voters with the party on their ballot (a factor of exactly 1 in Sweden)
+                        if (d.Target.RegionIndex < 0 && d.Kind != CampaignActionKind.DoorToDoor) { audience *= setup.StandingShare(p); }
 
                         TrueMessage(setup, p, d.Target.Issue, out double salience, out double match);
 
@@ -1057,7 +1073,8 @@ namespace PoliSim.Elections
                 bookedReach.ToArray(), bestOutletReach, setup.InternalHouse.Cost, audienceByKind, volunteerHoursToday,
                 staff?.ActivePlan?.Fund ?? 0.0,
                 activity?.PressureSeenBy(party), activity?.PushSeenBy(party), activity?.AttackersOf(party),
-                MediaSystem.PressReach(setup.Outlets));   // C-N7: a public fact about the media, like bestOutletReach
+                MediaSystem.PressReach(setup.Outlets),   // C-N7: a public fact about the media, like bestOutletReach
+                setup.StandingShare(party));   // §699: the party's own reach of the national audience - where it stands
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>
@@ -1148,9 +1165,34 @@ namespace PoliSim.Elections
             for (int i = 0; i < compatibility.Length; i++) { compatibility[i] = setup.Compatibility[i] + bonus[i]; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, setup.LoyaltyPerParty);
             if (setup.Families != null) { preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, prior, setup.Positions, AwarenessToday(setup, pressure, coverage)) : EntrantLayer.Apply(preference, prior, setup.Families, AwarenessToday(setup, pressure, coverage), setup.Grouping); }   // §681
-            if (setup.RecordShift == null) { return preference; }
             // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
-            return EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift);
+            if (setup.RecordShift != null) { preference = EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift); }
+            return WithinReach(setup, preference);
+        }
+
+        /// <summary>
+        /// §699: A PARTY CANNOT WIN A VOTE WHERE IT IS NOT ON THE BALLOT - its national share is capped at its reach of the country
+        /// (<see cref="Setup.StandingShare"/>: the SSW at Schleswig-Holstein's 3.8 %, the CSU at Bayern's 16 %), and the excess goes to the parties still
+        /// under their own reach in proportion to their shares. True by construction, not a tuning: the ceiling is the share it would hold with every
+        /// vote where it stands. Sweden stages no candidacy - every reach is 1, no share can pass it, the preference is returned as it came.
+        /// </summary>
+        private static double[] WithinReach(Setup setup, double[] preference)
+        {
+            if (setup.Stands == null || preference == null) { return preference; }
+            double[] capped = (double[])preference.Clone();
+            for (int pass = 0; pass < capped.Length; pass++)
+            {
+                double excess = 0.0, room = 0.0;
+                for (int i = 0; i < capped.Length; i++)
+                {
+                    double reach = setup.StandingShare(i);
+                    if (capped[i] > reach) { excess += capped[i] - reach; capped[i] = reach; }
+                    else if (capped[i] < reach) { room += capped[i]; }
+                }
+                if (excess <= 0.0 || room <= 0.0) { break; }
+                for (int i = 0; i < capped.Length; i++) { if (capped[i] < setup.StandingShare(i)) { capped[i] += excess * capped[i] / room; } }
+            }
+            return capped;
         }
 
         /// <summary>§681: each party's awareness today - its opening awareness grown by its coverage and its campaigning pressure so far, each as a share of

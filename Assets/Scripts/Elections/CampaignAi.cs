@@ -168,6 +168,9 @@ namespace PoliSim.Elections
         public readonly double PollCost;
         /// <summary>W-B9: the audience each NATIONAL §12 action can reach through the media landscape today, in `TheEight`'s order (television's and the platforms' ceilings, the party's own following, the press's interest in it) — public facts, or its own; null = the whole electorate for every kind (W-B3's placeholder).</summary>
         public readonly double[] NationalAudienceByKind;
+        /// <summary>§699: the share of the national audience that can vote for this party - the valid votes of the regions where it stands over the whole
+        /// (the CSU's Bayern, the SSW's Schleswig-Holstein); a national act reaches only them. 1 where no candidacy is staged (Sweden, every harness).</summary>
+        public readonly double NationalReachShare;
         /// <summary>W-B11: the volunteer-hours this party still has today - the bound on how many doors a door-to-door action can knock (its own books).</summary>
         public readonly double VolunteerHoursToday;
         /// <summary>W-B5: what the campaign manager's budget plan has set aside for television (its own books) - spendable on a television buy and on nothing else; 0 without a manager.</summary>
@@ -192,8 +195,9 @@ namespace PoliSim.Elections
             CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
-            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0)
+            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0)
         {
+            NationalReachShare = nationalReachShare;
             NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday; TelevisionFund = televisionFund;
             RegionPressure = regionPressure; RegionPush = regionPush; AttackersOnMe = attackersOnMe; PressReach = pressReach;
             PartyIndex = partyIndex; Phase = phase; DaysUntilElection = daysUntilElection; Resources = resources;
@@ -624,6 +628,7 @@ namespace PoliSim.Elections
                         else if (kind == CampaignActionKind.SocialPost) { label = "Own following"; }
                         else if (kind == CampaignActionKind.DigitalAd) { label = "Platforms"; }
                         else if (kind == CampaignActionKind.PolicyAnnouncement) { label = "The press"; }
+                        nationalAudience *= view.NationalReachShare;   // §699: only the voters with the party on their ballot (1 in Sweden - the product unchanged)
 
                         foreach (IssueId? issue in issueChoices)
                         {

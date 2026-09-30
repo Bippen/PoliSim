@@ -120,6 +120,24 @@ namespace PoliSim.EditorTools
                     int liftedRallies = Rallies(CampaignAiHarness.RunSeeded(lifted, 777));
                     Check(withCandidacy == 0 && liftedRallies > 0, F("THE PLANTED PROOF: the CSU scripted to rally in Hamburg every day - {0} rallies land where it stands (Bayern only), {1} where the candidacy is lifted", withCandidacy, liftedRallies));
 
+                    // §699: THE PLANTED PROOF of national reach - the SSW scripted to air national television every day. A national act reaches only the
+                    // voters with the party on their ballot: with its candidacy the SSW stays under its reach of the country; lifted, it campaigns to all of it
+                    // (the §698 film's warm-up election seated it with 60 of 630).
+                    int sswAt = Party("SSW");
+                    CampaignActions.ActionSpec tv = CampaignActions.Spec(CampaignActionKind.TelevisionAd);
+                    Func<int, AiDecision[]> tvScript = d => new[] { new AiDecision(CampaignActionKind.TelevisionAd, CampaignActions.ActionTarget.National(null), "Television", tv.MoneyCost, tv.Hours, 0.0, false) };
+                    LiveCampaignSetup.TryFor(CountryId.Germany, none, cal, out CampaignRun.Setup tvStaged, out _, onVoteModelCompatibility: true, playerParty: sswAt, playerScript: tvScript);
+                    CampaignRun.Setup tvLifted = new CampaignRun.Setup(tvStaged.Calendar, tvStaged.Parties, tvStaged.PriorShares, tvStaged.LoyaltyPerParty, tvStaged.Compatibility, tvStaged.TrueSalience,
+                        tvStaged.NationalAudience, tvStaged.Regions, tvStaged.PublicHouse, tvStaged.PublicPollEveryDays, tvStaged.InternalHouse, tvStaged.ElectorateLoyalty, tvStaged.Outlets,
+                        tvStaged.DebateDays, tvStaged.Scandals, tvStaged.LiveScandalRatePerPartyDay, tvStaged.RecordShift, tvStaged.Families, tvStaged.AwarenessStart, tvStaged.Grouping,
+                        tvStaged.Positions, stands: null);
+                    double sswReach = tvStaged.StandingShare(sswAt);
+                    double sswStaged = CampaignAiHarness.RunSeeded(tvStaged, 777).FinalShares[sswAt];
+                    double sswLifted = CampaignAiHarness.RunSeeded(tvLifted, 777).FinalShares[sswAt];
+                    Check(sswStaged < sswReach && sswLifted > sswStaged && Math.Abs(setup.StandingShare(Party("CDU")) + setup.StandingShare(Party("CSU")) - 1.0) < 1e-9,
+                        F("THE PLANTED PROOF of reach: the SSW scripted to air national television daily ends at {0:F2} % with its candidacy (its reach of the country {1:F2} %, Schleswig-Holstein's), {2:F2} % where it is lifted; the CDU's and CSU's reaches sum to the country",
+                            sswStaged * 100.0, sswReach * 100.0, sswLifted * 100.0));
+
                     // (h) the run-up refuses an office where the party has no list
                     PreCampaignRun.State pre = PreCampaignRun.Begin(scripted, csu, new Random(1));
                     PreCampaignRun.StepDay(pre, new[] { new PreCampaignRun.Decision(CampaignActionKind.EstablishOffice, hamburg) });
@@ -168,6 +186,36 @@ namespace PoliSim.EditorTools
                                 pollingDaySeen.HasValue ? pollingDaySeen.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "NEVER", droppedAfter, resultAfter));
                     }
                     finally { UnityEngine.Object.DestroyImmediate(host); EnergyMarket.ResetTurnState(); }
+
+                    // §699: THE FILM'S OWN CASE - a German game with the SSW as the player's party (the §698 film's), stepped through polling day as the game
+                    // steps it; its campaign's result, the count election night reads, printed - and the SSW held under its reach of the country
+                    var hostSsw = new UnityEngine.GameObject("GermanCampaignDiagnostic SSW");
+                    try
+                    {
+                        SimulationRandom.Seed(777);
+                        EnergyMarket.ResetCalibration();
+                        World worldSsw = WorldFactory.CreateDefault();
+                        SimulationManager simSsw = hostSsw.AddComponent<SimulationManager>();
+                        simSsw.SetWorld(worldSsw);
+                        simSsw.PlayerCountryId = CountryId.Germany;
+                        worldSsw.GetCountry(CountryId.Germany).PlayerPartyAbbrev = "SSW";
+                        var none2 = new Dictionary<CountryId, PolicyDecision>();
+                        for (int step = 0; step < 130 && simSsw.CurrentDate < new DateTime(2025, 2, 24); step++)
+                        {
+                            if (simSsw.AdvanceDay()) { simSsw.AdvanceTurn(none2); }
+                            simSsw.AdvanceCountryDayTick(CountryId.Germany);
+                        }
+                        CampaignRun.Result sswResult = simSsw.PlayerCampaignResult;
+                        var shares = new StringBuilder("    read      the SSW as the player's party - its game's campaign result (the count election night reads), %:");
+                        int sswKey = Array.IndexOf(keys, "SSW");
+                        for (int p = 0; sswResult != null && p < keys.Length && p < sswResult.FinalShares.Length; p++) { shares.Append(F(" {0} {1:F1}", keys[p], sswResult.FinalShares[p] * 100.0)); }
+                        sb.Append(shares).Append('\n');
+                        double sswShare = sswResult != null && sswKey >= 0 ? sswResult.FinalShares[sswKey] : double.NaN;
+                        Check(sswResult != null && sswShare < setup.StandingShare(sswKey),
+                            F("a German game played as the SSW: its campaign ends at {0:F2} %, under its reach of the country ({1:F2} %) - the §698 film's warm-up seated it with 60 of 630",
+                                sswShare * 100.0, setup.StandingShare(sswKey) * 100.0));
+                    }
+                    finally { UnityEngine.Object.DestroyImmediate(hostSsw); EnergyMarket.ResetTurnState(); }
                     sb.Append("    note     ").Append(note.Replace("\n", "\n             ").Trim()).Append('\n');
                 }
             }

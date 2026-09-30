@@ -4,3 +4,4 @@ ended	pid	label	method	started	minutes_alive	phase	working_set_mb	last_log_line
 2026-09-30T14:01:54	20624	cheap688	PoliSim.EditorTools.CheckSuite.RunAllBatch	2026-09-30T13:40:26	21.5	teardown	n/r (backfilled)	CodeReloadManager destroyed
 2026-09-30T14:32:54	20780	elec688	PoliSim.EditorTools.ElectionsBacktests.RunBatch	2026-09-30T14:13:58	18.9	startup	n/r (backfilled)	Begin MonoManager ReloadAssembly
 2026-09-30T19:22:03	4700	cheap698	PoliSim.EditorTools.CheckSuite.RunAllBatch	2026-09-30T19:01:18	20.7	teardown	2457	CodeReloadManager destroyed
+2026-09-30T20:06:05	10764	sim699	PoliSim.EditorTools.CheckSuite.RunSimulationBatch	2026-09-30T19:43:23	22.7	teardown	2108	CodeReloadManager destroyed
