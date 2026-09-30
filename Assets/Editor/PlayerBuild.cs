@@ -34,6 +34,7 @@ namespace PoliSim.EditorTools
                 targetGroup = BuildTargetGroup.Standalone,
                 options = BuildOptions.None,
             };
+            DisableUnityServices();
             Debug.Log($"BUILD: {scenes.Count} scene(s) ({string.Join(", ", scenes)}) -> {options.locationPathName}; product '{PlayerSettings.productName}', company '{PlayerSettings.companyName}'");
             BuildReport report = BuildPipeline.BuildPlayer(options);
             BuildSummary summary = report.summary;
@@ -46,6 +47,22 @@ namespace PoliSim.EditorTools
             }
             Debug.Log($"BUILD: {summary.result} - {summary.totalErrors} error(s), {summary.totalWarnings} warning(s), {summary.totalSize / (1024 * 1024)} MB, {summary.totalTime.TotalSeconds:F0} s");
             EditorApplication.Exit(summary.result == BuildResult.Succeeded ? 0 : 1);
+        }
+
+        /// <summary>§678 (Elias's ruling: analytics OFF): the Unity services the Editor's API documents (`UnityEditor.Analytics.AnalyticsSettings`,
+        /// Unity 6.6 scripting reference), turned off before every build and each value read back into the build log. The second layer: the
+        /// built-in analytics module (`com.unity.modules.unityanalytics`) is out of the package manifest, so no analytics code ships at all.
+        /// What the built player contacts is measured, not assumed: `Tools/player_net_watch.ps1`, run by `Tools/build_player.ps1` on every build.</summary>
+        private static void DisableUnityServices()
+        {
+            UnityEditor.Analytics.AnalyticsSettings.enabled = false;
+            UnityEditor.Analytics.AnalyticsSettings.initializeOnStartup = false;
+            // deviceStatsEnabledInBuild is READ-ONLY in 6000.5.6f1 (CS0200) although the 6.6 page lists it read-write - the hardware statistics are not ours to set; read back below
+            UnityEditor.Analytics.PerformanceReportingSettings.enabled = false;
+            UnityEditor.CrashReporting.CrashReportingSettings.enabled = false;
+            Debug.Log($"BUILD: Unity services - analytics {UnityEditor.Analytics.AnalyticsSettings.enabled}, initialise on startup {UnityEditor.Analytics.AnalyticsSettings.initializeOnStartup}, "
+                      + $"device stats {UnityEditor.Analytics.AnalyticsSettings.deviceStatsEnabledInBuild}, performance reporting {UnityEditor.Analytics.PerformanceReportingSettings.enabled}, "
+                      + $"crash reporting {UnityEditor.CrashReporting.CrashReportingSettings.enabled}");
         }
     }
 }

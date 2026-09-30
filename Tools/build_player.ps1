@@ -43,6 +43,9 @@ if (-not $SmokeOnly) {
   $unknown = 0
   foreach ($line in (GitStatus | Where-Object { $pre -notcontains $_ })) {
     $path = $line.Substring(3)
+    # s678: a file Unity rewrites with other line endings (ProjectAuditorSettings.asset, LF over the committed CRLF) is listed as modified with
+    # NO content difference after git's own normalisation - an equivalence, not a leak; restored and said. Any content change still counts.
+    if ($line.StartsWith(' M') -and @(Invoke-RepoGit @('diff', '--', $path)).Count -eq 0) { $null = Invoke-RepoGit @('checkout', '--', $path); "HYGIENE: restored $path - rewritten with no content difference (line endings)"; continue }
     if (-not $known.ContainsKey($path)) { continue }   # judged by the final comparison below
     $changed = @(Invoke-RepoGit @('diff', '-U0', '--', $path) | ForEach-Object { $_ -replace "`r$", '' } | Where-Object { $_ -match '^[-+]' -and $_ -notmatch '^(\+\+\+|---)' } | ForEach-Object { $_.Substring(1) })
     $odd = @($changed | Where-Object { $l = $_; -not ($known[$path] | Where-Object { $l -match $_ }) })
@@ -73,8 +76,15 @@ $icon.ToBitmap().Save($png, [System.Drawing.Imaging.ImageFormat]::Png)
 "ICON: extracted $($icon.Width)x$($icon.Height) -> $png"
 
 if ($p.ExitCode -ne 0 -or -not $passed) { 'BUILD PLAYER: SMOKE FAILED'; exit 1 }
+# s678 (Elias's ruling: Unity analytics OFF): THE PLAYER MAY NOT CALL UNITY'S CLOUD - its smoke run again under Tools/player_net_watch.ps1, which
+# fails when the player connects to, or even looks up, cdp.cloud.unity3d.com or config.uca.cloud.unity3d.com.
+& powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'Tools\player_net_watch.ps1') -Exe $exe -Save $Save
+$watch = $LASTEXITCODE
+if ($watch -ne 0) { "BUILD PLAYER: FAILED - the player contacted Unity's cloud, or did not run (watcher exit $watch)"; exit 7 }
 # s672: THE CHECK - the tree stands exactly as it stood before the build; the output folder is outside the repository, so any difference is a leak
-$diff = @(Compare-Object -ReferenceObject $pre -DifferenceObject (GitStatus) | ForEach-Object { "$($_.SideIndicator) $($_.InputObject)" })
+# s678: compared by hand - Compare-Object refuses an empty side, and a CLEAN tree before the build is exactly the empty one (it crashed the check)
+$now = @(GitStatus)
+$diff = @($now | Where-Object { @($pre) -notcontains $_ } | ForEach-Object { "=> $_" }) + @(@($pre) | Where-Object { $now -notcontains $_ } | ForEach-Object { "<= $_" })
 if ($diff.Count -gt 0) { "HYGIENE: FAILED - the build left the tree dirty outside its output folder: $($diff -join '; ')"; exit 6 }
 'HYGIENE: the tree stands as it stood before the build'
 'BUILD PLAYER: PASSED'
