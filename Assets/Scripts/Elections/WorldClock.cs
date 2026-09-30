@@ -384,6 +384,12 @@ namespace PoliSim.Elections
             public Dictionary<string, int> Seats;
             public string GovernmentLine;
             public string Basis;
+            /// <summary>§685 (board 21d): the government of record after the election as parts - the head's party key and surname, its qualifier
+            /// ("caretaker", "minority"), the day it took office, and whether a caretaker - so the night draws a mark, words and a date stamp. Null
+            /// <see cref="HeadParty"/> where the record shows no change or names no party.</summary>
+            public string HeadParty, HeadSurname, HeadQualifier;
+            public DateTime HeadFrom;
+            public bool HeadIsCaretaker;
         }
 
         public static bool TryReference(CountryId id, DateTime pollingDay, out Reference reference)
@@ -416,10 +422,22 @@ namespace PoliSim.Elections
                     // The review (§619): the sentence is generic - a caretaker head means the chamber had not chosen by the record's date; any other unsourced
                     // cabinet (Poland's Morawiecki, Italy's Draghi) means the record names the head but not the cabinet's parties.
                     bool caretaker = after.Value.Head != null && after.Value.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0;
+                    r.HeadIsCaretaker = caretaker;
                     r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()
                         + (caretaker
                             ? " · THE CHAMBER HAD NOT CHOSEN A HEAD OF GOVERNMENT BY THE RECORD'S DATE, " + RecordDate.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant()
                             : " · ITS CABINET NOT NAMED BY THE RECORD");
+                }
+                if (after.HasValue && after.Value.Head != null)
+                {
+                    // "Ulf Kristersson (M), caretaker" - the name, the party in brackets, the qualifier after the comma.
+                    System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(after.Value.Head, @"^(?<name>[^(,]+?)\s*(\((?<party>[^)]+)\))?\s*(,\s*(?<q>.+))?$");
+                    string name = m.Success ? m.Groups["name"].Value.Trim() : after.Value.Head;
+                    r.HeadSurname = name.Contains(" ") ? name.Substring(name.LastIndexOf(' ') + 1) : name;
+                    r.HeadParty = m.Success && m.Groups["party"].Success ? m.Groups["party"].Value.Trim() : after.Value.Cabinet != null && after.Value.Cabinet.Length > 0 ? after.Value.Cabinet[0] : null;
+                    r.HeadQualifier = m.Success && m.Groups["q"].Success ? m.Groups["q"].Value.Trim() : null;
+                    r.HeadFrom = after.Value.From;
+                    r.HeadIsCaretaker = r.HeadIsCaretaker || (r.HeadQualifier != null && r.HeadQualifier.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0);
                 }
                 reference = r;
                 return true;

@@ -221,6 +221,8 @@ namespace PoliSim.UI
             Rect Board(float x, float y, float w, float h) => new Rect(inner.x + x * ux, inner.y + y * uy, w * ux, h * uy);
 
             // Board 1m-r2's placements at the 1156×680 inner area.
+            BeginSlipAnchors();   // §685 (21e): the role chip's slip
+            _deskSlipBook = new PeopleSlips.Book();
             DrawDeskMasthead(Board(0f, 0f, 1156f, 28f), isTimePaused);
 
             DrawDeskMapPlate(Board(0f, 36f, 440f, 320f));
@@ -240,6 +242,7 @@ namespace PoliSim.UI
             }
 
             DrawDeskChipStrip(Board(0f, 627f, 1156f, 53f));
+            DrawSlips(_deskSlipBook, inner);
 
             if (_isGameOver)
             {
@@ -256,21 +259,71 @@ namespace PoliSim.UI
         /// OPEN strip (a game-over player is the one who most needs Load). Board 17c (2026-09-24) fixes
         /// the right end's order: the joined 1× 2× 3× strip, a pitch with a hairline, SAVES, SETTINGS outermost.
         /// </summary>
-        /// <summary>PS-3a (§628): the player's role beside the year where the party does not lead the government - " · IN OPPOSITION · THE GOVERNMENT IS THE AI'S", " · IN SUPPORT · …", " · JUNIOR PARTNER · …"; empty where it governs.</summary>
-        private string RoleTitleSuffix()
+        /// <summary>
+        /// PS-3a (§628), redrawn from board 21e (§685): **THE PLAYER'S ROLE AS A CHIP beside the year**, led by the party's mark - FILLED where the party
+        /// holds office (GOVERNING, JUNIOR PARTNER, CARETAKER), OUTLINED where it does not (SUPPORTER FROM OUTSIDE, IN OPPOSITION): 17b's rule, the fill
+        /// is the state, so a glance tells whether the player holds office. The run-on line it replaces ("· IN OPPOSITION · THE GOVERNMENT IS THE AI'S")
+        /// is the chip's slip: the chip's own words, who governs, what the role cannot do - in the role gate's own words (<see cref="SimulationManager.PlayerMayIntroduce(CountryId, out string)"/>),
+        /// never Design's placeholder "YOU MAY NOT DRAFT A BUDGET", which no gate says - and since when. Null where no government is stored.
+        /// </summary>
+        /// <summary>The desk's slips (the role chip's), rebuilt on every pass of the stage.</summary>
+        private PeopleSlips.Book _deskSlipBook = new PeopleSlips.Book();
+
+        private (string Words, bool InOffice)? RoleChip()
         {
-            if (_playerCountry?.Government == null) { return string.Empty; }
-            switch (_playerCountry.Government.RoleOf(_playerCountry.PlayerPartyAbbrev))
+            PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
+            if (g == null) { return null; }
+            switch (g.RoleOf(_playerCountry.PlayerPartyAbbrev))
             {
-                case PoliSim.Elections.PlayerRole.Opposition: return " · IN OPPOSITION · THE GOVERNMENT IS THE AI'S";
-                case PoliSim.Elections.PlayerRole.Support:
-                {
-                    PoliSim.Elections.SupportAgreement agreement = _playerCountry.Government.AgreementOf(_playerCountry.PlayerPartyAbbrev);   // PS-3h (§635): the agreement's tally beside the role
-                    return agreement != null ? " · IN SUPPORT · AGREEMENT: " + agreement.Tally() : " · IN SUPPORT · THE GOVERNMENT IS THE AI'S";
-                }
-                case PoliSim.Elections.PlayerRole.JuniorPartner: return " · JUNIOR PARTNER · YOUR PORTFOLIOS: " + _playerCountry.Government.PortfoliosOf(_playerCountry.PlayerPartyAbbrev);   // PS-3g (§634): the portfolios the party holds
-                default: return string.Empty;
+                case PoliSim.Elections.PlayerRole.PrimeMinister: return (g.Caretaker ? "CARETAKER" : "GOVERNING", true);
+                case PoliSim.Elections.PlayerRole.JuniorPartner: return ("JUNIOR PARTNER", true);
+                case PoliSim.Elections.PlayerRole.Support: return ("SUPPORTER FROM OUTSIDE", false);
+                case PoliSim.Elections.PlayerRole.Opposition: return ("IN OPPOSITION", false);
+                default: return null;
             }
+        }
+
+        private float RoleChipWidth(string words) =>
+            StatsUnit(6f) + StatsUnit(16f) + StatsUnit(6f) + Mathf.Ceil(RowChipCaption(PoliSimTheme.TextPrimary).CalcSize(new GUIContent(words)).x) + StatsUnit(8f);
+
+        /// <summary>Draws the role chip in <paramref name="r"/> and hangs its slip on <see cref="_deskSlipBook"/>.</summary>
+        private void DrawRoleChip(Rect r, string words, bool inOffice)
+        {
+            PoliSim.Elections.GovernmentRecord g = _playerCountry.Government;
+            string you = _playerCountry.PlayerPartyAbbrev;
+            DrawRowChip(r, string.Empty, inOffice ? ChipFace.Filled : ChipFace.Outline);
+            float side = StatsUnit(16f);
+            var markRect = new Rect(r.x + StatsUnit(6f), r.y + Mathf.Round((r.height - side) * 0.5f), side, side);
+            if (inOffice && Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(markRect, PoliSimTheme.Card); }   // the mark's own ground on the dark fill
+            DrawPartyMarkSlot(markRect, _playerCountry.Id, you);
+            float wx = markRect.xMax + StatsUnit(6f);
+            PoliSimWidgets.MeasuredLabel(new Rect(wx, r.y, Mathf.Max(1f, r.xMax - wx - StatsUnit(4f)), r.height), words,
+                DeskCaption(9.5f, inOffice ? PoliSimTheme.Card : PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft));
+
+            var slip = new SlipContent(PartySystems.ShortName(_playerCountry.Id, you) + " " + words);
+            switch (words)
+            {
+                case "GOVERNING": slip.Add("YOUR PARTY LEADS THE GOVERNMENT"); break;
+                case "CARETAKER": slip.Add("YOUR GOVERNMENT SERVES ON AS A CARETAKER"); break;
+                case "JUNIOR PARTNER": slip.Add("IN THE CABINET · YOUR PORTFOLIOS: " + g.PortfoliosOf(you)); break;
+                case "SUPPORTER FROM OUTSIDE":
+                {
+                    slip.Add("THE GOVERNMENT IS THE AI'S");
+                    PoliSim.Elections.SupportAgreement agreement = g.AgreementOf(you);   // PS-3h (§635): the agreement's tally
+                    if (agreement != null) { slip.Add("AGREEMENT: " + agreement.Tally()); }
+                    break;
+                }
+                default: slip.Add("THE GOVERNMENT IS THE AI'S"); break;
+            }
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out string locked) && !string.IsNullOrEmpty(locked))
+            {
+                int cut = locked.IndexOf(" · ", System.StringComparison.Ordinal);
+                slip.Add(cut >= 0 ? locked.Substring(cut + 3) : locked);   // the gate's words after its role word, which the head already says
+            }
+            System.DateTime since = words == "CARETAKER" ? g.CaretakerSince : g.FormedOn;
+            if (since > System.DateTime.MinValue) { slip.Add("SINCE " + DeskDay(since)); }
+            SlipAnchor(r, "role");
+            _deskSlipBook.Anchors["role"] = slip;
         }
 
         private void DrawDeskMasthead(Rect r, bool isTimePaused)
@@ -289,8 +342,13 @@ namespace PoliSim.UI
             }
 
             GUIStyle title = DeskCaption(10.5f, PoliSimTheme.TextPrimary, bold: true);
-            string titleText = $"{_playerCountry.Name.ToUpperInvariant()} · YEAR {_simulationManager.CurrentTurn}" + RoleTitleSuffix();   // PS-3a (§628): the player's role beside the year where the party does not govern
-            float titleWidth = title.CalcSize(new GUIContent(titleText)).x + 4f;
+            string titleText = $"{_playerCountry.Name.ToUpperInvariant()} · YEAR {_simulationManager.CurrentTurn}";
+            float titleTextWidth = title.CalcSize(new GUIContent(titleText)).x + 4f;
+            // PS-3a (§628), board 21e (§685): the player's role as a chip beside the year, reserved with the title so the LIVE caption keeps its place.
+            (string Words, bool InOffice)? role = RoleChip();
+            float roleGap = StatsUnit(10f);
+            float roleWidth = role.HasValue ? RoleChipWidth(role.Value.Words) : 0f;
+            float titleWidth = titleTextWidth + (role.HasValue ? roleGap + roleWidth : 0f);
 
             // The cluster (board 1m-r2: mono 9 on bordered chips, the active one brass with
             // TextPrimary - D6's flip), measured from its own labels and laid out from the right
@@ -364,7 +422,12 @@ namespace PoliSim.UI
             float liveRight = x - Mathf.Round(14f * ux);
             float titleLeft = flagRect.xMax + Mathf.Round(10f * ux);
             float liveLeft = Mathf.Max(titleLeft + titleWidth + gap, liveRight - liveWidth);
-            PoliSimWidgets.MeasuredLabel(new Rect(titleLeft, r.y, Mathf.Max(1f, Mathf.Min(titleWidth, liveLeft - gap - titleLeft)), r.height), titleText, title);
+            PoliSimWidgets.MeasuredLabel(new Rect(titleLeft, r.y, Mathf.Max(1f, Mathf.Min(titleTextWidth, liveLeft - gap - titleLeft)), r.height), titleText, title);
+            if (role.HasValue)
+            {
+                float chipH = Mathf.Min(r.height, StatsUnit(20f));
+                DrawRoleChip(new Rect(titleLeft + titleTextWidth + roleGap, r.y + Mathf.Round((r.height - chipH) * 0.5f), roleWidth, chipH), role.Value.Words, role.Value.InOffice);
+            }
             PoliSimWidgets.MeasuredLabel(new Rect(liveLeft, r.y, Mathf.Max(1f, liveRight - liveLeft), r.height), liveText, live);
         }
 

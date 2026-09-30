@@ -60,6 +60,10 @@ namespace PoliSim.UI
                 if (e.type == EventType.MouseDown && head.Contains(mouse)) { _slipPins.RemoveAt(i); e.Use(); return; }
             }
 
+            // §685: a FILM never opens a pointer's slip - the harness parks the cursor, but IMGUI keeps the last position it saw, and a slip that opens
+            // on the wall clock's 250 ms is a frame two films of one code can disagree on (s685_2560 filmed one). The pinned chains above are the film's hook.
+            if (PoliSim.Testing.CaptureIdentity.Armed) { return; }
+
             // Level 1: the anchor under the pointer, after the delay; kept while the pointer is on the anchor, the slip or its level 2.
             string hovered = null;
             foreach ((string id, Rect r) in _slipAnchors) { if (r.Contains(mouse)) { hovered = id; break; } }

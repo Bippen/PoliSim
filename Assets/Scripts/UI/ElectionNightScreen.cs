@@ -71,6 +71,21 @@ namespace PoliSim.UI
             public string Label;
             public int[] Seats;
             public string GovernmentLine;
+            /// <summary>Board 21d (§685): the government of record after the election as parts - its head's party and surname, whether a caretaker,
+            /// from when - so the line draws as a mark, words and a date stamp. Null <see cref="HeadParty"/>: the record shows no change, or no head's party.</summary>
+            public string HeadParty, HeadSurname, HeadQualifier;
+            public DateTime HeadFrom, RecordDate;
+            public bool HeadIsCaretaker;
+        }
+
+        /// <summary>Board 21d (§685): the night's foot where the Speaker's round runs - who the Speaker asks first (a mark), whether that is the
+        /// player's party, and the one caretaker fact; the sentence is the control's slip.</summary>
+        public sealed class SpeakerFoot
+        {
+            public CountryId Country;
+            public string FirstAsked;
+            public bool PlayerFirst;
+            public string Sentence;
         }
 
         /// <summary>P2-0.2 (2026-09-02): set by the board's own CONTINUE - the takeover's exit. The seam
@@ -125,7 +140,7 @@ namespace PoliSim.UI
             string verdict = null, VoteAttribution.Ledger ledger = null, string ledgerParty = null,
             IReadOnlyList<DivisionEffect> standingBudget = null, string standingBudgetCitation = null,
             long[][] previousByConstituency = null, double[] previousShares = null, int[] previousSeats = null,
-            GovernmentFormation.View government = null, CountryId inkCountry = CountryId.Sweden, Reference reference = null, string continueLabel = null)
+            GovernmentFormation.View government = null, CountryId inkCountry = CountryId.Sweden, Reference reference = null, string continueLabel = null, SpeakerFoot speaker = null)
         {
             if (previousShares == null && previousVotes != null && partyNames != null && previousVotes.Length == partyNames.Length)
             {
@@ -204,7 +219,7 @@ namespace PoliSim.UI
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
             ValkretsCartogramView map = BuildBody(content.transform, state, partyNames, totalSeats, previous, ledger, ledgerParty,
                 standingBudget, standingBudgetCitation, government, inkCountry, reference);
-            BuildFooter(content.transform, verdict, screen, continueLabel);
+            BuildFooter(content.transform, verdict, screen, continueLabel, speaker, root.transform);
 
             // The map lays itself in the rect the page gives it; resolve the page now so the first frame already has it,
             // not two frames on (the signing screen's lesson: a capture can photograph an unlaid rect).
@@ -311,7 +326,7 @@ namespace PoliSim.UI
             Transform count = Column(body.transform, "Count", 1.0f);
             BuildTally(count, state, partyNames, totalSeats, previous);
             BuildCalls(count, state, partyNames);
-            BuildReference(count, state, partyNames, reference);   // PS-2 (§619): history beside the count, under it
+            BuildReference(count, state, partyNames, reference, inkCountry);   // PS-2 (§619): history beside the count, under it; board 21d's table (§685)
 
             Transform centre = Column(body.transform, "MapColumn", 1.8f);
             ValkretsCartogramView map = BuildMap(centre, state, partyNames, previous, inkCountry);
@@ -861,22 +876,93 @@ namespace PoliSim.UI
         /// player's": the real result's seats per party with the played count beside each, and the government the record shows after
         /// it. Absent when the record holds no election on this polling day (a later term), and absent until the count is complete -
         /// history is compared against a final count, never a projection.
+        /// <para><b>Board 21d (§685): the table.</b> The paragraph (7 px on the film, below the floor) becomes the count's own eight rows in the
+        /// count's order with the real seats beside the played: the mark, the party, PLAYED, REAL at the reduced presence (10a: the reference,
+        /// not the game) and DIFF signed with + and − and no arrowheads; under it the government of record as a mark, words and a date stamp,
+        /// and the caretaker state phrase with the record's date. The sentences are the slips.</para>
         /// </summary>
-        private static void BuildReference(Transform parent, NightState state, string[] partyNames, Reference reference)
+        private static void BuildReference(Transform parent, NightState state, string[] partyNames, Reference reference, CountryId country)
         {
             if (reference == null || state == null || !state.Complete || reference.Seats == null || reference.Seats.Length != partyNames.Length) { return; }
-            Heading(parent, reference.Label ?? "AS IT HAPPENED");
+            string label = (reference.Label ?? "AS IT HAPPENED").ToLowerInvariant();
+            label = char.ToUpperInvariant(label[0]) + label.Substring(1);
+            string countryWord = country.ToString();
+            if (label.StartsWith(countryWord.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase)) { label = countryWord + label.Substring(countryWord.Length); }
+
+            Transform head = CanvasRows.HRow(parent, "ReferenceHead", 24f, 8f);
+            CanvasChrome.MakeTextRealWeight(head, "Label", label, PoliSimTheme.Body, 13, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft).horizontalOverflow = HorizontalWrapMode.Overflow;
+            Texture2D dated = SymbolRegistry.TextureOf(Symbol.Dated);
+            if (dated != null)
+            {
+                var glyph = new GameObject("Dated");
+                glyph.transform.SetParent(head, false);
+                glyph.AddComponent<RectTransform>();
+                RawImage image = glyph.AddComponent<RawImage>();
+                image.texture = dated;
+                image.color = PoliSimTheme.TextMuted;
+                LayoutElement side = glyph.AddComponent<LayoutElement>();
+                side.minWidth = side.preferredWidth = side.minHeight = side.preferredHeight = 14f;
+            }
+            else { CanvasRows.Caption(head, SymbolRegistry.Word(Symbol.Dated), 10, PoliSimTheme.TextMuted); }
+            CanvasRows.Slip(head.gameObject, null, "DATED", new[] { "THE REAL RESULT, AS THE RECORD HOLDS IT", "THE RECORD AS OF " + DeskDay(reference.RecordDate) });
+
+            const float markW = 16f, nameW = 30f, figW = 50f, pitch = 18f;
+            Transform keys = CanvasRows.HRow(parent, "ReferenceKeys", 16f, 8f);
+            CanvasRows.FixedCell(keys, string.Empty, markW + 8f + nameW, 10, PoliSimTheme.TextMuted);
+            CanvasRows.FixedCell(keys, "PLAYED", figW, 10, PoliSimTheme.TextMuted);
+            CanvasRows.FixedCell(keys, "REAL", figW, 10, PoliSimTheme.TextMuted);
+            CanvasRows.FixedCell(keys, "DIFF", figW, 10, PoliSimTheme.TextMuted);
+
             var order = new List<int>();
             for (int p = 0; p < partyNames.Length; p++) { order.Add(p); }
-            order.Sort((a, b) => reference.Seats[b].CompareTo(reference.Seats[a]));
-            var parts = new List<string>();
+            order.Sort((a, b) => state.CountedVotes[b].CompareTo(state.CountedVotes[a]));   // the count's own order
             foreach (int p in order)
             {
-                int diff = state.SeatsOnCounted[p] - reference.Seats[p];
-                parts.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1} (played {2:+0;-0;±0})", partyNames[p], reference.Seats[p], diff));
+                int played = state.SeatsOnCounted[p], real = reference.Seats[p], diff = played - real;
+                Transform row = CanvasRows.HRow(parent, "Reference " + partyNames[p], pitch, 8f);
+                CanvasRows.Mark(row, country, partyNames[p], markW);
+                CanvasRows.FixedCell(row, PartySystems.ShortName(country, partyNames[p]), nameW, 13, PoliSimTheme.TextPrimary, font: PoliSimTheme.Body);
+                CanvasRows.FixedCell(row, played.ToString(CultureInfo.InvariantCulture), figW, 13, PoliSimTheme.TextPrimary);
+                CanvasRows.FixedCell(row, real.ToString(CultureInfo.InvariantCulture), figW, 12, PoliSimTheme.TextMuted);
+                CanvasRows.FixedCell(row, diff > 0 ? "+" + diff.ToString(CultureInfo.InvariantCulture) : diff < 0 ? "−" + (-diff).ToString(CultureInfo.InvariantCulture) : "0", figW, 12, PoliSimTheme.TextPrimary);
+                CanvasRows.Slip(row.gameObject, null, PartySystems.ShortName(country, partyNames[p]),
+                    new[] { string.Format(CultureInfo.InvariantCulture, "PLAYED {0} SEATS · THE REAL RESULT {1}", played, real), "THE DIFFERENCE IS PLAYED LESS REAL" });
             }
-            Wrapped(parent, "THE REAL RESULT'S SEATS, THE PLAYED COUNT'S DIFFERENCE BESIDE EACH: " + string.Join(" · ", parts), 11, PoliSimTheme.TextPrimary);
-            if (!string.IsNullOrEmpty(reference.GovernmentLine)) { Wrapped(parent, reference.GovernmentLine, 11, PoliSimTheme.TextSecondary); }
+
+            if (!string.IsNullOrEmpty(reference.HeadParty))
+            {
+                Transform gov = CanvasRows.HRow(parent, "ReferenceGovernment", 30f, 8f);
+                CanvasRows.Mark(gov, country, reference.HeadParty, markW);
+                CanvasRows.Caption(gov, (reference.HeadSurname ?? string.Empty).ToUpperInvariant() + (reference.HeadIsCaretaker ? " · CARETAKER" : string.IsNullOrEmpty(reference.HeadQualifier) ? string.Empty : " · " + reference.HeadQualifier.ToUpperInvariant()), 11, PoliSimTheme.TextPrimary);
+                CanvasRows.Stamp(gov, DeskDay(reference.HeadFrom), 11, PoliSimTheme.TextPrimary);
+                CanvasRows.Slip(gov.gameObject, null, "THE GOVERNMENT OF RECORD", SlipLines(reference.GovernmentLine));
+                if (reference.HeadIsCaretaker)
+                {
+                    Transform chosen = CanvasRows.HRow(parent, "ReferenceChamber", 24f, 8f);
+                    CanvasRows.Caption(chosen, "CHAMBER HAD NOT CHOSEN", 11, PoliSimTheme.TextMuted);
+                    CanvasRows.Stamp(chosen, DeskDay(reference.RecordDate), 11, PoliSimTheme.TextPrimary);
+                    CanvasRows.Slip(chosen.gameObject, null, "CHAMBER HAD NOT CHOSEN", new[] { "THE CHAMBER HAD NOT CHOSEN A HEAD OF GOVERNMENT", "BY THE RECORD'S DATE, " + DeskDay(reference.RecordDate) });
+                }
+            }
+            else if (!string.IsNullOrEmpty(reference.GovernmentLine)) { Wrapped(parent, reference.GovernmentLine, 11, PoliSimTheme.TextSecondary); }
+        }
+
+        private static string DeskDay(DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
+
+        /// <summary>A sentence cut into slip lines of at most 56 characters at word boundaries, upper-cased.</summary>
+        private static List<string> SlipLines(string sentence)
+        {
+            var lines = new List<string>();
+            if (string.IsNullOrEmpty(sentence)) { return lines; }
+            var line = new System.Text.StringBuilder();
+            foreach (string word in sentence.ToUpperInvariant().Split(' '))
+            {
+                if (line.Length > 0 && line.Length + 1 + word.Length > 56) { lines.Add(line.ToString()); line.Clear(); }
+                if (line.Length > 0) { line.Append(' '); }
+                line.Append(word);
+            }
+            if (line.Length > 0) { lines.Add(line.ToString()); }
+            return lines;
         }
 
         private static void BuildCalls(Transform parent, NightState state, string[] partyNames)
@@ -965,8 +1051,35 @@ namespace PoliSim.UI
         /// <summary>Premise 9: the control's face where the player's party is asked first.</summary>
         public const string ContinueToSheet = "CONTINUE · FORM A GOVERNMENT";
 
-        private static void BuildFooter(Transform parent, string verdict, ElectionNightScreen screen, string continueLabel = null)
+        private static void BuildFooter(Transform parent, string verdict, ElectionNightScreen screen, string continueLabel = null, SpeakerFoot speaker = null, Transform overlay = null)
         {
+            if (speaker != null)
+            {
+                // Board 21d (§685): who is asked first and the one caretaker fact, each a mark or a stamp; one decision, one brass face - FORM A
+                // GOVERNMENT where the player's party is asked (the act that changes the sim beyond time), CONTINUE on paper where it is not (it only
+                // passes time). The two sentences are the control's slip.
+                Transform speakerRow = CanvasRows.HRow(parent, "Footer", 56f, 12f);
+                Transform asks = CanvasRows.HRow(speakerRow, "Asks", 30f, 10f);
+                CanvasRows.Caption(asks, "THE SPEAKER ASKS FIRST", 12, PoliSimTheme.TextPrimary);
+                if (speaker.FirstAsked != null) { CanvasRows.Mark(asks, speaker.Country, speaker.FirstAsked, 18f); }
+                else { CanvasRows.Caption(asks, "NO PARTY", 12, PoliSimTheme.TextMuted); }
+                if (speaker.PlayerFirst) { CanvasRows.Stamp(asks, "YOUR PARTY", 11, PoliSimTheme.TextPrimary); }
+                CanvasRows.Caption(asks, "· OUTGOING GOVERNMENT", 12, PoliSimTheme.TextMuted);
+                CanvasRows.Stamp(asks, "CARETAKER", 11, PoliSimTheme.TextPrimary);
+                CanvasRows.Slip(asks.gameObject, overlay, "THE SPEAKER ASKS FIRST", SlipLines(speaker.Sentence));
+                CanvasRows.Spacer(speakerRow);
+                string face = speaker.PlayerFirst ? ContinueToSheet : "CONTINUE";
+                float width = speaker.PlayerFirst ? 320f : 200f;
+                Button control = CanvasChrome.FacedButton(speakerRow, "ContinueButton", face, PoliSimTheme.Display, 16, PoliSimTheme.TextPrimary, new Vector2(width, 48f),
+                    speaker.PlayerFirst ? CanvasChrome.Face.Brass : CanvasChrome.Face.Paper, FontStyle.Normal);
+                LayoutElement size = control.gameObject.AddComponent<LayoutElement>();
+                size.minWidth = size.preferredWidth = width;
+                size.minHeight = size.preferredHeight = 48f;
+                control.onClick.AddListener(() => screen.Dismiss());
+                CanvasRows.Slip(control.gameObject, overlay, face, SlipLines(speaker.Sentence));
+                return;
+            }
+
             var foot = new GameObject("Footer");
             foot.transform.SetParent(parent, false);
             foot.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 56f);

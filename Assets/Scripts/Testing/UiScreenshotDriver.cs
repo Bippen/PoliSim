@@ -940,7 +940,7 @@ namespace PoliSim.Testing
                                 GovernmentRecord roundRecord = roundCountry.Government;
                                 string partyBefore = roundCountry.PlayerPartyAbbrev;
                                 roundCountry.PlayerPartyAbbrev = filmRound.Order[0];
-                                roundSim.OpenSpeakerRound(roundCountry, filmRound.Vintage, "for the film",
+                                roundSim.OpenSpeakerRound(roundCountry, filmRound.Vintage, filmRound.Occasion,   // §685 (21a): the film round's own occasion - "for the film" was harness prose on a player screen
                                     electionDay: filmRound.ReadsOn == DateTime.MinValue ? (DateTime?)null : filmRound.ReadsOn, midTerm: filmRound.MidTerm);   // the film's round's own reading (§653)
                                 SpeakerRound staged = roundSim.RoundOf(_countryId);
                                 Debug.Log($"SHOT: §647 - {partyBefore} re-seated as {roundCountry.PlayerPartyAbbrev}, first in the order ({string.Join(", ", filmRound.Order)}); the staged round's stage {staged?.Stage}");
@@ -953,13 +953,45 @@ namespace PoliSim.Testing
                                     _failed++;
                                 }
                                 yield return Capture(stem + "_formation_sheet");
-                                ScrollBy(controller, 900f);
-                                yield return Settle();
-                                yield return Capture(stem + "_formation_sheet_rows");
 
-                                // Premise 3, revise and re-offer: a partner's posts taken back by the formateur - the partner's answer turns, and the sheet says why.
+                                // §685 (board 21a): the sheet no longer scrolls, so the second frame stages the state the first cannot show - a party outside
+                                // the cabinet ASKED to support, its tabled demands as rows under it, the first accepted - then puts the draft back.
                                 FieldInfo draftField = controller.GetType().GetField("_formationDraft", BindingFlags.Instance | BindingFlags.NonPublic);
                                 FieldInfo versionField = controller.GetType().GetField("_formationDraftVersion", BindingFlags.Instance | BindingFlags.NonPublic);
+                                string askedSupporter = null;
+                                if (draftField?.GetValue(controller) is FormationProposal rowsDraft && versionField != null)
+                                {
+                                    foreach (PoliticalParty party in PartySystems.For(_countryId))
+                                    {
+                                        if (rowsDraft.CabinetParties.Contains(party.Abbrev) || rowsDraft.Supporters.Contains(party.Abbrev)
+                                            || !roundCountry.ParliamentSeats.TryGetValue(party.Abbrev, out int rowsSeats) || rowsSeats <= 0) { continue; }
+                                        askedSupporter = party.Abbrev;
+                                        break;
+                                    }
+                                    if (askedSupporter != null)
+                                    {
+                                        rowsDraft.Supporters.Add(askedSupporter);
+                                        rowsDraft.AcceptedDemands[askedSupporter] = new List<string>();
+                                        rowsDraft.FreezeTabled(roundCountry, roundSim.CurrentDate, roundSim.World);
+                                        if (rowsDraft.Tabled.TryGetValue(askedSupporter, out List<AgreementItem> rowsTabled) && rowsTabled.Count > 0)
+                                        {
+                                            rowsDraft.AcceptedDemands[askedSupporter].Add(SupportAgreement.KeyOf(rowsTabled[0]));
+                                        }
+                                        versionField.SetValue(controller, (int)versionField.GetValue(controller) + 1);
+                                    }
+                                }
+                                yield return Settle();
+                                if (askedSupporter == null) { Debug.LogError($"SHOT: {stem}_formation_sheet_rows - no seated party outside the cabinet to ask; the support rows are not staged."); _failed++; }
+                                else { Debug.Log($"SHOT: §685 - {askedSupporter} asked to support on the sheet, its demands as rows, the first accepted."); }
+                                yield return Capture(stem + "_formation_sheet_rows");
+                                if (askedSupporter != null && draftField?.GetValue(controller) is FormationProposal rowsBack)
+                                {
+                                    rowsBack.Supporters.Remove(askedSupporter);
+                                    rowsBack.AcceptedDemands.Remove(askedSupporter);
+                                    versionField.SetValue(controller, (int)versionField.GetValue(controller) + 1);
+                                }
+
+                                // Premise 3, revise and re-offer: a partner's posts taken back by the formateur - the partner's answer turns, and the sheet says why.
                                 string stinted = null;
                                 if (draftField?.GetValue(controller) is FormationProposal draft && versionField != null)
                                 {
@@ -4239,9 +4271,14 @@ namespace PoliSim.Testing
                 if (stems[i] == "final")
                 {
                     PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                    // §685 (board 21d): the foot as the game builds it - the first-asked party's mark (the staged count's largest), YOUR PARTY, the
+                    // caretaker stamp and the brass control; the sentence on its slip.
+                    int largest = 0;
+                    for (int p = 1; p < parties.Length; p++) { if (state.SeatsOnCounted[p] > state.SeatsOnCounted[largest]) { largest = p; } }
                     ElectionNightScreen first = ElectionNightScreen.Build(state, parties, "SWEDEN", new DateTime(2026, 9, 13, 20, 0, 0), 349,
                         previousVotes: ElectionNightFilm.Votes2018, previousLabel: "SWEDEN 2018", verdict: ElectionNightScreen.SpeakerLine(true, null),
-                        government: stagedGovernment, inkCountry: CountryId.Sweden, continueLabel: ElectionNightScreen.ContinueToSheet);
+                        government: stagedGovernment, inkCountry: CountryId.Sweden, continueLabel: ElectionNightScreen.ContinueToSheet,
+                        speaker: new ElectionNightScreen.SpeakerFoot { Country = CountryId.Sweden, FirstAsked = parties[largest], PlayerFirst = true, Sentence = ElectionNightScreen.SpeakerLine(true, null) });
                     yield return Settle();
                     Claim("electionnight");
                     yield return Capture("e6_election_night_player_first");

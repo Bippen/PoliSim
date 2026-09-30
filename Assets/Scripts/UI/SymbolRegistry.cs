@@ -59,6 +59,15 @@ namespace PoliSim.UI
             return t;
         }
 
+        /// <summary>§685 (board 21d): the symbol's texture for a Canvas surface (the election night's DATED glyph), or null when its file is not held -
+        /// the caller draws <see cref="Word"/> in its place, the registry's honest fallback, and the symbol is recorded in <see cref="Fallbacks"/>.</summary>
+        public static Texture2D TextureOf(Symbol s)
+        {
+            Texture2D t = Texture(s);
+            if (t == null) { Fallbacks.Add(s); }
+            return t;
+        }
+
         /// <summary>A verb symbol for a law's verb, or null for none.</summary>
         public static Symbol? Of(LawVerb verb) => verb switch
         {

@@ -345,28 +345,48 @@ namespace PoliSim.UI
                 new Rect(x + titleWidth + Mathf.Round(12f * ux), r.y, Mathf.Round(260f * ux), r.height),
                 screenTitle, DeskCaption(9f, PoliSimTheme.TextSecondary));
 
-            // The phase and the countdown on the board's own chip face. Read-only here: the click is
-            // swallowed by `disabled` because nothing is wired (R-N2), and a chip that looked live
-            // while doing nothing would be the worse lie.
-            GUIStyle chipCaption = DeskCaption(8.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
-            float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipCaption)) + Mathf.Round(6f * uy);
+            // Board 21c (§685): the header row held three kinds of chip in one face - two actions, a phase and a countdown, all at 8 px bold.
+            // The actions are paper chips at the boards' 9.5; the phase is 17b's JOINED strip, the current phase filled (the fill is the state -
+            // TextPrimary with paper ink, since light-on-brass fails D6) and not a control; the countdown is a plain figure with its caption.
+            GUIStyle chipCaption = DeskCaption(9.5f, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
+            float chipHeight = Mathf.Min(r.height, StatsUnit(20f));
             float chipY = r.y + Mathf.Round((r.height - chipHeight) * 0.5f);
 
-            string daysText = s.DaysUntilElection > 0
-                ? $"{s.DaysUntilElection} DAYS TO POLLING DAY"
-                : s.DaysUntilElection == 0 ? "POLLING DAY" : "POLL CLOSED";
-            float daysWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(daysText)).x) + Mathf.Round(16f * ux);
-            var daysRect = new Rect(r.xMax - daysWidth, chipY, daysWidth, chipHeight);
-            DrawDeskChipButton(daysRect, daysText, chipCaption, selected: false, disabled: true);
+            float right = r.xMax;
+            if (s.DaysUntilElection > 0)
+            {
+                string days = s.DaysUntilElection.ToString(CultureInfo.InvariantCulture);
+                const string daysTail = "D TO POLLING DAY";
+                float daysWidth = Mathf.Ceil(DeskCaption(13f, PoliSimTheme.TextPrimary, true).CalcSize(new GUIContent(days)).x) + StatsUnit(4f)
+                    + Mathf.Ceil(DeskCaption(9.5f, PoliSimTheme.TextMuted).CalcSize(new GUIContent(daysTail)).x) + 4f;
+                DrawFigurePair(right - daysWidth, r, days, daysTail);
+                right -= daysWidth;
+            }
+            else
+            {
+                string daysText = s.DaysUntilElection == 0 ? "POLLING DAY" : "POLL CLOSED";
+                GUIStyle plain = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
+                float daysWidth = Mathf.Ceil(plain.CalcSize(new GUIContent(daysText)).x) + 4f;
+                PoliSimWidgets.MeasuredLabel(new Rect(right - daysWidth, r.y, daysWidth, r.height), daysText, plain);
+                right -= daysWidth;
+            }
 
-            string phaseText = SpacedIdentifier(s.Phase.ToString()).ToUpperInvariant();
-            float phaseWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(phaseText)).x) + Mathf.Round(16f * ux);
-            var phaseRect = new Rect(daysRect.x - phaseWidth - Mathf.Round(6f * ux), chipY, phaseWidth, chipHeight);
-            DrawDeskChipButton(phaseRect, phaseText, chipCaption, selected: true, disabled: true);
+            var phases = new List<CampaignPhase> { CampaignPhase.PreCampaign, CampaignPhase.Campaign };
+            if (s.Phase >= CampaignPhase.ElectionDay) { phases.Add(CampaignPhase.ElectionDay); }
+            right -= Mathf.Round(10f * ux);
+            for (int i = phases.Count - 1; i >= 0; i--)
+            {
+                string phaseText = SpacedIdentifier(phases[i].ToString()).ToUpperInvariant();
+                float phaseWidth = RowChipWidth(phaseText);
+                if (i < phases.Count - 1) { right += 1f; }   // joined: one hairline between two cells, not two borders
+                var cell = new Rect(right - phaseWidth, chipY, phaseWidth, chipHeight);
+                DrawRowChip(cell, phaseText, s.Phase == phases[i] ? ChipFace.Filled : ChipFace.Paper, control: false);
+                right = cell.x;
+            }
 
             // P2-0.3: the opening interrupt's exit. The clock is held until this is pressed; the banner above
             // the sheet says so. Drawn only while the hold is on, so a re-opened HQ carries no stale chip.
-            float nextX = phaseRect.x;
+            float nextX = right - Mathf.Round(4f * ux);
             if (HasPendingCampaignOpening())
             {
                 const string trailText = "TAKE THE TRAIL";
