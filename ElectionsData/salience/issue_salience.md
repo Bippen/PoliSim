@@ -69,3 +69,31 @@ The EB105 figures were re-extracted with `pdftotext` in table mode and cross-ver
 distinctive values in other countries' rows before Sweden's were trusted — the annex PDF
 mis-aligns labels by one row in plain extraction, which is exactly the kind of error that would have
 gone unnoticed. That check is recorded above and stands.
+---
+
+## GERMANY, AUTUMN 2024 — Standard Eurobarometer 102, *Nationaler Bericht: Deutschland* [SOURCED] (fetched 2026-09-30, §697)
+
+The German snap campaign runs from the game's start (6 Nov 2024) to polling day (23 Feb 2025); the EB105 row above is a year later
+than that campaign. The last wave fielded before its start is **EB102** (the report: *"Die Befragung fand im Zeitraum vom 10. bis
+31. Oktober 2024 statt, befragt wurden 1542 Bürgerinnen und Bürger in Deutschland"*). The national-level question, verbatim from the
+report's *Hauptergebnisse*:
+
+> "Einwanderung ist für die Deutschen inzwischen das drängendste nationale Problem (35 %, +5 Pp), gefolgt von steigenden Preisen
+> (31 %, -2 Pp), der wirtschaftlichen Lage (unverändert 16 %), dem Thema Wohnungsbau bzw. -beschaffung (15 %, -3 Pp) und der
+> internationalen Lage (14 %, -4 Pp)."
+
+| country | #1 issue (%) | #2 | #3 | #4 | #5 |
+|---|---|---|---|---|---|
+| Germany (EB102, fieldwork 10–31 Oct 2024) | Immigration (35) | Rising prices/inflation/cost of living (31) | Economic situation (16) | Housing (15) | International situation (14) |
+
+**Mapped to the campaign's issue slots** by the convention `StanceModel` already uses for EB105: rising prices take the Economy slot,
+and the economic situation, which shares that slot, is not added to it (a respondent may name both): Immigration **.35**, Economy
+**.31**, Housing **.15**; the international situation has no slot.
+
+**Source:** the Publications Office of the EU, cellar `cc198be2-0f72-11f0-b1a3-01aa75ed71a1` (German), downloaded through
+`https://op.europa.eu/o/opportal-service/download-handler?identifier=cc198be2-0f72-11f0-b1a3-01aa75ed71a1&format=pdf&language=de&productionSystem=cellar&part=`;
+kept byte-exact as `ElectionsData/germany/raw/records/ec_eb102_nationaler-bericht-deutschland.pdf`, SHA-256
+`d7ad343cb816f250b584e6287d2ef0ca1dce3967057ee037edb6b583c1b53008` (in that folder's `SHA256SUMS.txt`). Read by inflating the PDF's
+FlateDecode streams (no renderer on this machine); the sentence above is the report's own text, its umlauts restored from the PDF's
+octal escapes. The same immigration figure is quoted by the EC's German representation on 15 Dec 2025 (*"EB102, Herbst 2024:
+35 Prozent, +5 Pp"*). Not found by this fetch: the EB102 data annex (the europa.eu survey page is a JS application).

@@ -112,21 +112,29 @@ namespace PoliSim.Elections
             public readonly double[] Grouping;
             /// <summary>§684: each party's nine CHES positions (`EntrantSimilarity.Positions`), for the measured similarity rule; null = none.</summary>
             public readonly double[][] Positions;
+            /// <summary>§697 (PS-4): where each party STANDS - one row per party, one flag per region (the candidacy fact the returns carry: the CSU in
+            /// Bayern alone, the CDU in the other fifteen Länder, the SSW in Schleswig-Holstein); null = every party everywhere (Sweden, every harness).</summary>
+            public readonly bool[][] Stands;
+
+            /// <summary>§697: whether <paramref name="party"/> stands in <paramref name="region"/> - everywhere where no candidacy is staged.</summary>
+            public bool StandsIn(int party, int region) => Stands == null || party < 0 || party >= Stands.Length || Stands[party] == null || region < 0 || region >= Stands[party].Length || Stands[party][region];
 
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands);
 
             /// <summary>§681: this setup with the entrant layer's families and opening awareness.</summary>
             public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping, double[][] positions) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
-                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null, double[][] positions = null)
+                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null, double[][] positions = null,
+                bool[][] stands = null)
             {
+                Stands = stands;   // §697: the candidacy fact per party and region; null everywhere
                 RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening
                 Families = families;
                 AwarenessStart = awarenessStart;
@@ -432,6 +440,7 @@ namespace PoliSim.Elections
                     * (CampaignOffices.MaintenancePerDay + setup.Parties[p].OfficeOperationsPerDay);
                 foreach (int region in setup.Parties[p].Offices)
                 {
+                    if (!setup.StandsIn(p, region)) { continue; }   // §697: no office where the party does not stand (a brought plan's too)
                     int wouldHold = offices[p].Count + 1;
                     if (chest - CampaignOffices.OpenCost < wouldHold * perOfficeUpkeep)
                     {
@@ -760,6 +769,8 @@ namespace PoliSim.Elections
                             // outlets decide on the day (W-B9). With no booking it is SKIPPED, the rest of
                             // the day's queue stands; the AI never queues one unbooked (Evaluate filters).
                             if (d.Kind == CampaignActionKind.Interview && bookedReach[p].Count == 0) { continue; }
+                            // §697: nor does a local act land where the party does not stand - skipped, the rest of the day's queue stands
+                            if (d.Target.RegionIndex >= 0 && !setup.StandsIn(p, d.Target.RegionIndex)) { continue; }
                         }
                         else if (guard < committed.Count)
                         {
@@ -1021,16 +1032,21 @@ namespace PoliSim.Elections
             // W-B4: the regions as THIS party can reach them - the electorate scaled by its own organisation
             // there, and its own office's unspent volunteer-hours (both its own books, no truth).
             RegionAudience[] regions = setup.Regions;
-            if (offices != null)
+            if (offices != null || setup.Stands != null)
             {
                 regions = new RegionAudience[setup.Regions.Length];
                 for (int r = 0; r < regions.Length; r++)
                 {
-                    regions[r] = new RegionAudience(setup.Regions[r].Name,
-                        CampaignOffices.LocalAudience(setup.Regions[r].Audience, offices.Influence(r)),
-                        officeHoursLeft != null ? officeHoursLeft[r] : offices.VolunteerHours(r),
-                        offices.HasOffice(r),
-                        setup.Regions[r].Eligible);   // F3: the mobilisable electorate rides the view unchanged - a public fact, not the party's reach
+                    // §697: a region the party does not stand in is on its view with no one to reach - no audience, no office, no hours
+                    bool stands = setup.StandsIn(party, r);
+                    regions[r] = !stands
+                        ? new RegionAudience(setup.Regions[r].Name, 0.0, 0.0, false, setup.Regions[r].Eligible, stands: false)
+                        : offices == null ? setup.Regions[r]
+                        : new RegionAudience(setup.Regions[r].Name,
+                            CampaignOffices.LocalAudience(setup.Regions[r].Audience, offices.Influence(r)),
+                            officeHoursLeft != null ? officeHoursLeft[r] : offices.VolunteerHours(r),
+                            offices.HasOffice(r),
+                            setup.Regions[r].Eligible);   // F3: the mobilisable electorate rides the view unchanged - a public fact, not the party's reach
                 }
             }
 

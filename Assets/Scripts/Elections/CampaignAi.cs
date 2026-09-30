@@ -116,10 +116,16 @@ namespace PoliSim.Elections
         /// <summary>F3 (2026-09-02): the ELIGIBLE electorate of the region - who can be mobilised - as distinct from <see cref="Audience"/> (who can be reached, the valid votes the returns record). Sweden's is the 18+ population of `SwedishValkretsPopulation2024`; a region without a figure carries its audience here, which is the older approximation stated.</summary>
         public readonly double Eligible;
 
-        public RegionAudience(string name, double audience, double volunteerHours = 0.0, bool hasOffice = false, double eligible = double.NaN)
+        /// <summary>§697 (PS-4): whether the party whose view this is STANDS here - on a party's own view only; a region of the staging is true. A party
+        /// that stands nowhere near a region has no candidates, no list and no voters to reach there: the CSU outside Bayern, the CDU inside it, the SSW
+        /// outside Schleswig-Holstein. Its view carries such a region with no audience, and no local act of its lands there.</summary>
+        public readonly bool Stands;
+
+        public RegionAudience(string name, double audience, double volunteerHours = 0.0, bool hasOffice = false, double eligible = double.NaN, bool stands = true)
         {
             Name = name; Audience = audience; VolunteerHours = volunteerHours; HasOffice = hasOffice;
             Eligible = double.IsNaN(eligible) ? audience : eligible;
+            Stands = stands;
         }
     }
 
@@ -896,7 +902,7 @@ namespace PoliSim.Elections
                 double most = 0.0;
                 for (int r = 0; r < view.RegionPush.Length && r < view.Regions.Length; r++)
                 {
-                    if (view.Regions[r].HasOffice) { continue; }
+                    if (view.Regions[r].HasOffice || !view.Regions[r].Stands) { continue; }   // §697: nothing to defend where the party does not stand
                     if (view.RegionPush[r] >= defendAt && view.RegionPush[r] > most) { most = view.RegionPush[r]; region = r; }
                 }
             }
@@ -957,7 +963,7 @@ namespace PoliSim.Elections
         private static List<int> MostPressuredRegions(AiView view, int count)
         {
             var order = new List<int>();
-            for (int i = 0; i < view.RegionPressure.Length; i++) { if (view.RegionPressure[i] > 0.0) { order.Add(i); } }
+            for (int i = 0; i < view.RegionPressure.Length; i++) { if (view.RegionPressure[i] > 0.0 && (view.Regions == null || i >= view.Regions.Length || view.Regions[i].Stands)) { order.Add(i); } }   // §697: pressure where the party stands
             order.Sort((a, b) => view.RegionPressure[b].CompareTo(view.RegionPressure[a]));
             if (order.Count > count) { order.RemoveRange(count, order.Count - count); }
             return order;
@@ -967,7 +973,7 @@ namespace PoliSim.Elections
         {
             var order = new List<int>();
             if (view.Regions == null) { return order; }
-            for (int i = 0; i < view.Regions.Length; i++) { order.Add(i); }
+            for (int i = 0; i < view.Regions.Length; i++) { if (view.Regions[i].Stands) { order.Add(i); } }   // §697: only where the party stands
             order.Sort((a, b) => view.Regions[b].Audience.CompareTo(view.Regions[a].Audience));
             if (order.Count > count) { order.RemoveRange(count, order.Count - count); }
             return order;

@@ -382,7 +382,7 @@ namespace PoliSim.UI
                 B("Customary", "Retirement at sixty-five. The line as the pyramid has it.", 0),
                 B("Deferred", "A year past custom. Fewer pensioners; a lighter line.", -1),
                 B("Extended", "Two years on. The line eases; the pyramid does not.", -1),
-                B("Late", "The line is smaller. Nobody is asked to keep working.", -1),
+                B("Late", "Three years on. The line is smaller.", -1),   // §697: shortened - the German film's pension frames overflowed it by 38.6 px
                 B("Very late", "Few reach it young. The line is lean.", -1),
                 B("Terminal", "Pensions from seventy. The line at its floor.", -1),
             }) },

@@ -31,6 +31,18 @@ namespace PoliSim.Elections
         /// <summary>Sixteen: the Länder of the Grundgesetz's preamble.</summary>
         public static int Count => GermanLandReturns2025.Names.Length;
 
+        // §697: each Land's REGISTERED electorate (Wahlberechtigte), in the catalogs' order - ElectionsData/germany/land_eligible.csv, cut from the same
+        // two kerg2.csv files the catalogs stand on; GermanRegionsDiagnostic re-reads the file and holds every figure, and the sixteen sum to the Bund's.
+        private static readonly long[] Eligible2021 = { 2272717, 1314435, 1298792, 6105381, 459749, 2048844, 1789775, 2460618, 13040267, 3253667, 4383047, 1707726, 3053335, 9517664, 7711531, 755223 };
+        private static readonly long[] Eligible2025 = { 2262811, 1294729, 1299289, 6043412, 450564, 2033539, 1734719, 2442042, 12884209, 3186780, 4341919, 1652462, 3014482, 9481659, 7653811, 734204 };
+
+        /// <summary>§697: the Land's registered electorate on the chamber seated on <paramref name="date"/> - who a ground game can mobilise, as distinct from
+        /// the valid votes a campaign's audience is (<see cref="RegionAudience.Eligible"/>, F3's distinction, as Sweden's valkretsar draw it).</summary>
+        public static long EligibleAt(int region, DateTime date) => (WorldClock.SeatedVintage(CountryId.Germany, date) == ElectionVintage.Germany2021 ? Eligible2021 : Eligible2025)[region];
+
+        /// <summary>§697: the Land's valid Zweitstimmen on the chamber seated on <paramref name="date"/> - a campaign's audience there.</summary>
+        public static long ValidAt(int region, DateTime date) => Catalog(WorldClock.SeatedVintage(CountryId.Germany, date)).Valid[region];
+
         /// <summary>The Land's name at <paramref name="region"/>, in the catalogs' shared order.</summary>
         public static string NameAt(int region) => GermanLandReturns2025.Names[region];
 

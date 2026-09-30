@@ -29,9 +29,9 @@ namespace PoliSim.Elections
     /// eight), the candidates' attributes, the offices each personality opens, the staff it hires, the
     /// war chest (D-1 (c): equal, 2 400 000 kr), the volunteers, the flat issue-match and credibility.
     /// Moving them here changes nothing about their provenance; it changes who can call them.
-    /// Sweden is the only country with a staged campaign - the spec's own first case (§3's calendar is
-    /// `CampaignCalendar.Sweden2026`) - and <see cref="TryFor"/> says so for the other five rather than
-    /// inventing one.
+    /// Sweden's was the first staged campaign - the spec's own first case (§3's calendar is
+    /// `CampaignCalendar.Sweden2026`); §697 staged Germany's on the Länder (<see cref="Germany"/>), and
+    /// <see cref="TryFor"/> says so for the other four rather than inventing one.
     ///
     /// **Proven by the harness's own digest:** `CampaignAiHarness.BuildSetup` now delegates here, and
     /// its decision digest under seed 777 is the one it had before the move.
@@ -90,15 +90,22 @@ namespace PoliSim.Elections
         public static AiPersonality PersonalityOf(int index, string key)
         {
             if (index < SwedenParties.Length && SwedenParties[index] == key) { return SwedenPersonalities[index]; }
-            PoliticalParty[] real = PartySystems.RealRoster(CountryId.Sweden);
+            return PersonalityOf(CountryId.Sweden, key);
+        }
+
+        /// <summary>§697: <paramref name="country"/>'s cast of <paramref name="key"/> - a real party's by the CHES rule (§695); a created party's by its origin,
+        /// a Splinter its parent's rule cast.</summary>
+        public static AiPersonality PersonalityOf(CountryId country, string key)
+        {
+            PoliticalParty[] real = PartySystems.RealRoster(country);
             int realAt = Array.FindIndex(real, p => p.Abbrev == key);
             if (realAt >= 0) { return CampaignCasts.Of(real[realAt]); }
             CreatedParty c = null;
-            foreach (CreatedParty x in CreatedParties.Of(CountryId.Sweden)) { if (x.Key == key) { c = x; } }
+            foreach (CreatedParty x in CreatedParties.Of(country)) { if (x.Key == key) { c = x; } }
             if (c == null) { return AiPersonality.Professional; }
             switch (c.Origin)
             {
-                case PartyOrigin.Splinter: { int parent = System.Array.IndexOf(SwedenParties, c.ParentKey); return parent >= 0 ? SwedenPersonalities[parent] : AiPersonality.Grassroots; }
+                case PartyOrigin.Splinter: { int parent = Array.FindIndex(real, p => p.Abbrev == c.ParentKey); return parent >= 0 ? CampaignCasts.Of(real[parent]) : AiPersonality.Grassroots; }
                 case PartyOrigin.Protest: return AiPersonality.Populist;
                 case PartyOrigin.BusinessTechnocrats: return AiPersonality.Professional;
                 default: return AiPersonality.Grassroots;
@@ -130,7 +137,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// The country's staged campaign, or false with the reason when none is staged. Only Sweden today.
+        /// The country's staged campaign, or false with the reason when none is staged. Sweden and, since §697, Germany.
         /// <paramref name="scandals"/> is the caller's staging (the harness stages one; a game passes none
         /// until §17's dynamic generation exists).
         /// </summary>
@@ -138,7 +145,7 @@ namespace PoliSim.Elections
             bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
             Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
         {
-            if (country == CountryId.Sweden)
+            if (country == CountryId.Sweden || country == CountryId.Germany)   // §697: Germany's campaign on the Länder, its own staging
             {
                 double[] compatibilityOverride = null;
                 if (onVoteModelCompatibility)
@@ -160,12 +167,115 @@ namespace PoliSim.Elections
                         compatibilityOverride[p] = k >= 0 ? compatibility[k] : 0.0;
                     }
                 }
-                setup = Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate);
+                setup = country == CountryId.Sweden
+                    ? Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate)
+                    : Germany(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate);
                 return true;
             }
             setup = default;
-            note = $"no campaign is staged for {country}: the calendar, the regions and the personality cast exist for Sweden only (§3's first case); staging another country is its own item, not a copy of Sweden's";
+            note = $"no campaign is staged for {country}: the calendar, the regions and the personality cast exist for Sweden and Germany only; staging another country is its own item, not a copy of theirs";
             return false;
+        }
+
+        /// <summary>
+        /// §697 (PS-4): <b>GERMANY'S CAMPAIGN ON THE LÄNDER</b> - its own staging, not a copy of Sweden's. The sixteen Länder are its regions
+        /// (<see cref="GermanRegions"/>: each Land's valid Zweitstimmen the audience a local act can reach, its registered electorate the one a
+        /// ground game can mobilise), read on the chamber seated at the campaign's opening, so the snap campaign of 2024-25 stands on 2021's Länder.
+        /// Each party campaigns only where it stands - the candidacy fact those returns carry (<see cref="CampaignRun.Setup.Stands"/>): the CSU in
+        /// Bayern alone, the CDU in the other fifteen, the SSW in Schleswig-Holstein, and on 2021's Länder the Grüne nowhere in Saarland (their 2021
+        /// list was rejected; their 2025 list was not - a limit of reading the seated election's candidacies, stated). The prior and the loyalty are
+        /// that chamber's pair (2021 against 2017 for the snap campaign, §696); the salience the last Eurobarometer wave fielded before the campaign
+        /// (EB102 for the snap - immigration .35, economy .31, housing .15 - and EB105 for an election after it); the casts the CHES rule's (§695).
+        /// ⚠ The price table - the war chest, every action's cost - is the model's one, in kronor, as the HQ prints it: a German table is billed,
+        /// not invented.
+        /// </summary>
+        public static CampaignRun.Setup Germany((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
+            double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
+        {
+            CampaignCalendar cal = calendar ?? CampaignCalendar.FromWorldStart(WorldClock.LatestElectionDay(CountryId.Germany), WorldClock.StartDate(CountryId.Germany));
+            DateTime opening = cal.CampaignStart;
+            ElectionVintage seated = WorldClock.SeatedVintage(CountryId.Germany, opening);
+            if (!PartySystems.TryHistory(CountryId.Germany, out double[] latestShares, out double[] previousShares, seated))
+            {
+                throw new InvalidOperationException("PartySystems carries no two-election history for Germany's seated chamber");
+            }
+            bool snap = seated == ElectionVintage.Germany2021;
+            string latestYear = snap ? "2021" : "2025", previousYear = snap ? "2017" : "2021";
+            var sb = new StringBuilder();
+            double[] prior = Normalised(latestShares);
+            double[] loyalty = LoyaltyModel.PartyLoyalties(latestShares, previousShares);
+            // DERIVED: the fixed point where an idle campaign reproduces the prior (Sweden's form); the game hands in the vote model's instead (TryFor).
+            double maxPrior = 0.0;
+            foreach (double p in prior) { if (p > maxPrior) { maxPrior = p; } }
+            var compatibility = new double[prior.Length];
+            for (int i = 0; i < prior.Length; i++)
+            {
+                compatibility[i] = maxPrior > 0.0 ? CompatibilityCeiling * Math.Pow(prior[i] / maxPrior, 1.0 / PreferenceModel.Sharpness) : 0.0;
+            }
+            if (compatibilityOverride != null && compatibilityOverride.Length == compatibility.Length) { compatibility = compatibilityOverride; }
+            // SOURCED salience (ElectionsData/salience/issue_salience.md), mapped to the issue slots by StanceModel's convention (rising prices onto Economy)
+            var salience = new double[IssueVector.IssueCount];
+            for (int i = 0; i < salience.Length; i++) { salience[i] = double.NaN; }
+            if (snap)
+            {
+                salience[(int)IssueId.Immigration] = 0.35;   // EB102, Nationaler Bericht Deutschland, fieldwork 10-31 Oct 2024
+                salience[(int)IssueId.Economy] = 0.31;
+                salience[(int)IssueId.Housing] = 0.15;
+            }
+            else
+            {
+                salience[(int)IssueId.Economy] = 0.36;   // EB105, Spring 2026 - the latest wave on disk for an election after the snap
+                salience[(int)IssueId.Immigration] = 0.14;
+            }
+            // SOURCED regions: the sixteen Länder of the seated election (kerg2.csv), audience the valid Zweitstimmen, eligible the registered electorate
+            string[] cast = Keys(CountryId.Germany);
+            RegionalVoteModel.RegionInput[] lands = GermanRegions.Regions(cast, opening);
+            var regions = new RegionAudience[lands.Length];
+            double national = 0.0;
+            for (int r = 0; r < regions.Length; r++)
+            {
+                regions[r] = new RegionAudience(lands[r].Name, GermanRegions.ValidAt(r, opening), eligible: GermanRegions.EligibleAt(r, opening));
+                national += regions[r].Audience;
+            }
+            var stands = new bool[cast.Length][];
+            for (int p = 0; p < cast.Length; p++)
+            {
+                stands[p] = new bool[regions.Length];
+                for (int r = 0; r < regions.Length; r++) { stands[p][r] = lands[r].PartyAvailable[p]; }
+            }
+            var parties = new CampaignRun.PartySetup[cast.Length];
+            for (int p = 0; p < parties.Length; p++)
+            {
+                var match = new double[IssueVector.IssueCount];
+                for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
+                AiPersonality personality = PersonalityOf(CountryId.Germany, cast[p]);
+                PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
+                parties[p] = new CampaignRun.PartySetup(cast[p], personality, FlatCredibility,
+                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
+                    CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions, stands[p]), OfficeOperationsPerDay,
+                    brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
+                    p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
+            }
+            var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[cast.Length]);
+            var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[cast.Length], isInternal: true);
+            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on Germany " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear + ":\n    ");
+            for (int p = 0; p < parties.Length; p++)
+            {
+                int where = 0;
+                foreach (bool s in stands[p]) { if (s) { where++; } }
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}/{3}L  ", cast[p], loyalty[p], compatibility[p], where));
+            }
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "\n    {0} Länder (SOURCED " + latestYear + " valid Zweitstimmen and Wahlberechtigte, kerg2.csv), national audience {1:N0}; salience " + (snap ? "EB102 DE: immigration .35 economy .31 housing .15" : "EB105 DE: economy .36 immigration .14") + "\n" +
+                "    each party only where it stands (/nL above); [AUTHORED-DRAFT] issue-match {2:F2} flat, credibility {3:F2} flat, war chest {4:N0} kr each - the model's one price table, a German one billed\n",
+                regions.Length, national, FlatIssueMatch, FlatCredibility, WarChest));
+            double electorateLoyalty = LoyaltyModel.WeightedMeanLoyalty(loyalty, prior);
+            note = sb.ToString();
+            return new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
+                national, regions, publicHouse, PublicPollEveryDays, internalHouse, electorateLoyalty, null, null, scandals, liveScandalRate,
+                null, PartyFamilies.For(CountryId.Germany, cast), NationalElection.EntrantAwareness(CountryId.Germany, cast), EntrantLayer.GroupingOf(CountryId.Germany, cast), EntrantSimilarity.For(CountryId.Germany, cast),
+                stands);
         }
 
         /// <summary>Sweden's campaign staging from the runtime tables - on the seated election (2026's) in the game; on 2022's where a harness
@@ -283,7 +393,11 @@ namespace PoliSim.Elections
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B4 staging: the offices each personality opens on day 0, the largest regions first - grassroots 6, populist 4, professional 3, establishment 2, chaotic 1.</summary>
-        public static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions)
+        public static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions) => OfficesFor(personality, regions, null);
+
+        /// <summary>§697: the same plan among the regions where the party stands (<paramref name="stands"/>; null everywhere) - the CSU's offices are Bavarian,
+        /// and a party standing in fewer regions than its personality's count opens one in each.</summary>
+        public static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions, bool[] stands)
         {
             int count;
             switch (personality)
@@ -295,9 +409,9 @@ namespace PoliSim.Elections
                 default: count = 1; break;
             }
             var order = new List<int>();
-            for (int r = 0; r < regions.Length; r++) { order.Add(r); }
+            for (int r = 0; r < regions.Length; r++) { if (stands == null || stands[r]) { order.Add(r); } }
             order.Sort((a, b) => regions[b].Audience.CompareTo(regions[a].Audience));
-            return order.GetRange(0, count).ToArray();
+            return order.GetRange(0, Math.Min(count, order.Count)).ToArray();
         }
 
         /// <summary>[AUTHORED-DRAFT] §16's candidate attributes per personality - game fiction until W-F6 labels real candidates. Charisma, debate, communication, credibility, integrity, knowledge, campaign, popularity, scandal resistance.</summary>

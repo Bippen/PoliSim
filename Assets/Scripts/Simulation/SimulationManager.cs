@@ -3144,7 +3144,7 @@ namespace PoliSim.Simulation
                 int weeks = System.Math.Max(0, System.Math.Min(Elections.CampaignCalendar.DefaultCampaignWeeks, (int)((_extraElectionDate - _extraElectionOrderedOn).TotalDays / 7)));
                 return new Elections.CampaignCalendar(pollingDay, weeks, 0);
             }
-            return new Elections.CampaignCalendar(pollingDay);
+            return Elections.CampaignCalendar.FromWorldStart(pollingDay, EpochDate);   // §697: a run-up never opens before the world began (the snap start's)
         }
 
         /// <summary>
@@ -3157,17 +3157,18 @@ namespace PoliSim.Simulation
         private void AdvanceCampaign()
         {
             if (!PlayerCountryId.HasValue) { return; }
+            // A finished campaign's result stays readable until the next window opens; the running state is dropped once its election has
+            // passed. Strictly AFTER polling day: the election is counted on polling day's own Update (the controller's CheckElection reads
+            // PlayerCampaign and the Result then - PS-2, §619). §697 (the review's defect 3): dropped BEFORE the calendar is asked for - a
+            // country whose last polling day on record has passed (Germany after its snap) has no next calendar, and the drop sat behind that
+            // return, so a German game carried its finished campaign for the rest of the run.
+            if (PlayerCampaign != null && CurrentDate > PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; PlayerPreCampaign = null; }
             Elections.CampaignCalendar? next = CurrentCampaignCalendar();
             if (!next.HasValue) { return; }   // no election calendar for this country yet - no run-up and no campaign, as there is no election
             Elections.CampaignCalendar calendar = next.Value;
             if (CurrentDate < calendar.PreCampaignStart || CurrentDate >= calendar.ElectionDate)
             {
-                // Outside the window - which opens at the PRE-campaign's first day since CL-1. A finished
-                // campaign's result stays readable until the next window opens; the running state is dropped
-                // once its election has passed. Strictly AFTER polling day: the election is counted on polling day's own
-                // Update (the controller's CheckElection reads PlayerCampaign and the Result then - PS-2, §619).
-                if (PlayerCampaign != null && CurrentDate > PlayerCampaign.Setup.Calendar.ElectionDate) { PlayerCampaign = null; PlayerPreCampaign = null; }
-                return;
+                return;   // outside the window - which opens at the PRE-campaign's first day since CL-1
             }
             if (CurrentDate < calendar.CampaignStart) { AdvancePreCampaign(calendar); return; }
             if (PlayerCampaign == null || PlayerCampaign.Setup.Calendar.ElectionDate != calendar.ElectionDate)
@@ -3444,7 +3445,7 @@ namespace PoliSim.Simulation
             PlayerCampaignResult = null;
             if (record == null || !PlayerCountryId.HasValue) { return; }
             if (record.DaysStepped <= 0 && record.PreCampaignDaysStepped <= 0) { return; }
-            var calendar = new Elections.CampaignCalendar(record.ElectionDate);
+            var calendar = Elections.CampaignCalendar.FromWorldStart(record.ElectionDate, EpochDate);   // §697: the calendar the record was stepped on
             int me = PlayerPartyIndexForCampaign();
             // CL-1: the run-up first - its one stream rewound to its count at the run-up's start, the same days re-stepped on
             // the same queue; its outcome is then what the campaign's replay hands the player's party, as the original run did.

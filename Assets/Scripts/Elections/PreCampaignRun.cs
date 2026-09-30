@@ -174,7 +174,7 @@ namespace PoliSim.Elections
             int best = -1; double bestAudience = -1.0;
             for (int r = 0; r < s.Staged.Regions.Length; r++)
             {
-                if (s.HasOffice(r)) { continue; }
+                if (s.HasOffice(r) || !s.Staged.StandsIn(s.Party, r)) { continue; }   // §697: only where the party stands
                 if (s.Staged.Regions[r].Audience > bestAudience) { bestAudience = s.Staged.Regions[r].Audience; best = r; }
             }
             return best;
@@ -221,6 +221,7 @@ namespace PoliSim.Elections
                         if (region < 0 || region >= s.Staged.Regions.Length) { entry.Refusal = "no region without an office is left"; break; }
                         entry.Target = s.Staged.Regions[region].Name;
                         entry.Cost = CampaignOffices.OpenCost;
+                        if (!s.Staged.StandsIn(s.Party, region)) { entry.Refusal = "the party has no list there"; break; }   // §697
                         if (s.HasOffice(region)) { entry.Refusal = "an office is already planned there"; break; }
                         // The opening is paid on the campaign's day 0 by Begin; the plan must at least be affordable to open now.
                         if (s.Money < (s.PlannedOffices.Count + 1) * CampaignOffices.OpenCost) { entry.Refusal = "the chest would not open every office planned"; break; }

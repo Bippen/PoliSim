@@ -1,0 +1,26 @@
+# Germany Bundestag 2021 and 2025 - per-Land Wahlberechtigte (the registered electorate) [SOURCED]
+# 2021: w-btw21_kerg2.csv, https://www.bundeswahlleiterin.de/dam/jcr/860495c9-83fb-4068-8a99-c1c985ffffd2/w-btw21_kerg2.csv
+#   (Status Endgueltig, Stand 23.02.2024 - the post-revision file land_votes_2021.csv was cut from), SHA-256 7057cef6234df64ce5c1724f035ceb1b798c7e80e518714d5903ab3500167c05
+# 2025: kerg2.csv, https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/opendata/btw25/csv/kerg2.csv
+#   (Status Endgueltig, Stand 14.03.2025 - the file land_votes_2025.csv was cut from), SHA-256 c68b097e37da16b13a21c0b21871a7e06b1fd8d6c32e01a415d434becf761288
+# Rows Gebietsart=Land, Gruppenname=Wahlberechtigte, column Anzahl; fetched 2026-09-30 (COMPLETED.md s697).
+# CHECKED at the fetch: the sixteen sum to each file's own Bund row (61,172,771 in 2021; 60,510,631 in 2025); the same files'
+#   valid Zweitstimmen per Land equal land_votes_2021.csv and land_votes_2025.csv to the vote (2021 differing only in the two
+#   ASCII spellings that file uses, Thueringen and Baden-Wuerttemberg) - the same versions the Laender catalogs stand on.
+land;eligible_2021;eligible_2025
+Schleswig-Holstein;2272717;2262811
+Mecklenburg-Vorpommern;1314435;1294729
+Hamburg;1298792;1299289
+Niedersachsen;6105381;6043412
+Bremen;459749;450564
+Brandenburg;2048844;2033539
+Sachsen-Anhalt;1789775;1734719
+Berlin;2460618;2442042
+Nordrhein-Westfalen;13040267;12884209
+Sachsen;3253667;3186780
+Hessen;4383047;4341919
+Thüringen;1707726;1652462
+Rheinland-Pfalz;3053335;3014482
+Bayern;9517664;9481659
+Baden-Württemberg;7711531;7653811
+Saarland;755223;734204

@@ -22,7 +22,7 @@ namespace PoliSim.Elections
     /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so.</para>
     ///
     /// <para><b>Every election on a country's calendar inside a run is simulated once that country's model exists</b>; until then its chamber
-    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it; the five others offer no polling day yet.</para>
+    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); the four others offer no polling day yet.</para>
     /// </summary>
     public static class WorldClock
     {
@@ -326,15 +326,27 @@ namespace PoliSim.Elections
 
         /// <summary>The statute a country's ordinary polling day follows, with its citations, or null where no calendar is modelled.</summary>
         public static string PollingDayBasis(CountryId id) =>
-            id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)" : null;
+            id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
+            : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
+            : null;
 
         /// <summary>
         /// The country's next ordinary polling day on or after <paramref name="onOrAfter"/>, false where the country's election calendar
-        /// is not modelled (the five others until their stages: their chambers hold as of record).
+        /// is not modelled (the four others until their stages: their chambers hold as of record).
+        /// §697 (PS-4): <b>Germany's snap polling day</b>, 23 February 2025 (BGBl. 2024 I Nr. 435) - the day a German game opened on the snap start
+        /// votes, and the one German polling day on record here; the next regular one's rule (Art. 39 GG's term) is not quoted on disk, so after the
+        /// snap a German game offers no polling day, as the other four do not.
         /// </summary>
         public static bool TryNextPollingDay(CountryId id, DateTime onOrAfter, out DateTime pollingDay)
         {
             pollingDay = DateTime.MinValue;
+            if (id == CountryId.Germany)
+            {
+                DateTime snap = LatestElectionDay(id);
+                if (onOrAfter.Date > snap) { return false; }
+                pollingDay = snap;
+                return true;
+            }
             if (id != CountryId.Sweden) { return false; }
             DateTime anchor = LatestElectionDay(id);
             // The election years are the anchor's every fourth year, in both directions (a date before the anchor reads the same cycle).

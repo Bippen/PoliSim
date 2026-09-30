@@ -166,6 +166,7 @@ namespace PoliSim.Elections
             double bestAudience = -1.0;
             for (int r = 0; r < s.Setup.Regions.Length; r++)
             {
+                if (!s.Setup.StandsIn(p, r)) { continue; }   // §697: the largest electorate where the party stands
                 if (s.Setup.Regions[r].Audience > bestAudience) { bestAudience = s.Setup.Regions[r].Audience; best = r; }
             }
             return best;

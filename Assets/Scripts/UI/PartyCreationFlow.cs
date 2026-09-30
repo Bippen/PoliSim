@@ -19,8 +19,9 @@ namespace PoliSim.UI
     {
         public const int StepCount = 5;
 
-        /// <summary>Where a party may be created: a country whose campaign is staged (`LiveCampaignSetup.TryFor` - Sweden alone), since a created party
-        /// enters the chamber only by fighting an election.</summary>
+        /// <summary>Where a party may be created: a country whose campaign is staged, since a created party enters the chamber only by fighting an
+        /// election - Sweden alone. §697: Germany's campaign is staged too, but a created party's day zero (`LiveCampaignSetup.TryCreatedDayZero`) and
+        /// its placement read Sweden's tables, so offering creation in Germany is an item of its own.</summary>
         public static bool Offered(CountryId country) => country == CountryId.Sweden;
 
         /// <summary>The five steps' plate heads, in order.</summary>

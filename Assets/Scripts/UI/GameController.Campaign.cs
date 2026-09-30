@@ -159,6 +159,9 @@ namespace PoliSim.UI
             return LiveCampaignSnapshot.Build(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
         }
 
+        /// <summary>§697: whether the player's country has a campaign map to draw - Sweden's valkrets cartogram today; Germany's Länder wait on Design (D-DE).</summary>
+        private bool CampaignMapDrawn() => _playerCountry != null && _playerCountry.Id == PoliSim.Data.CountryId.Sweden;
+
         /// <summary>
         /// CL-2: the map over the live campaign - board 4a's cartogram as the REGION PICKER (a tile sets where the next local
         /// act goes; the party's offices framed; every valkrets honestly unknown, regional detail not being on sale in the
@@ -167,7 +170,7 @@ namespace PoliSim.UI
         private void OpenLiveCampaignMap()
         {
             // a map left open when its campaign is gone (the run dropped after polling day, a load) closes rather than freezing
-            if (_simulationManager?.PlayerCampaign == null || _playerCountry == null) { CloseLiveCampaignMap(); return; }
+            if (_simulationManager?.PlayerCampaign == null || _playerCountry == null || !CampaignMapDrawn()) { CloseLiveCampaignMap(); return; }
             double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
             CampaignMapSnapshot? map = LiveCampaignSnapshot.BuildMap(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
             if (!map.HasValue) { CloseLiveCampaignMap(); return; }
@@ -298,7 +301,9 @@ namespace PoliSim.UI
 
             // CL-2: the map is the HQ's own chip while the campaign runs; a story that waits for its answer takes the legality panel's place.
             bool campaignRunning = _liveCampaignOpen && _simulationManager?.PlayerCampaign != null && !_simulationManager.PlayerCampaign.Finished;
-            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ", campaignRunning ? "THE MAP" : null, OpenLiveCampaignMap,
+            // §697: the map is a cartogram of Sweden's valkretsar; a German campaign's Länder have none until Design's D-DE draws them, so its HQ offers
+            // no map (the one-region rule places its local acts, where the party stands) rather than an empty sheet
+            DrawCampaignMasthead(Board(0f, 0f, 1156f, 28f), snapshot, "CAMPAIGN HQ", campaignRunning && CampaignMapDrawn() ? "THE MAP" : null, OpenLiveCampaignMap,
                 DeclaredPageAvailable() ? "DECLARED" : null, OpenLiveDeclared);   // §657
 
             DrawCampaignResources(Board(0f, 36f, 440f, CampaignResourcesPlateHeight), snapshot);

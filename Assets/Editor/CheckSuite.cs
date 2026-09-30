@@ -454,6 +454,7 @@ namespace PoliSim.EditorTools
                 // of the dump's own text against the declared baseline's digests; §490 moved them from turn 2 and no bar saw it.
                 ("TrajectorySentinelCheck", TrajectorySentinelCheck.Run),
                 ("AggregationEquivalenceCheck", AggregationEquivalenceCheck.Run),
+                ("GermanCampaignDiagnostic", GermanCampaignDiagnostic.Run),   // §697 (PS-4): Germany's campaign on the Länder staged on the snap start and run whole - each party only where it stands, a scripted CSU rally in Hamburg skipped (and landing where the candidacy is lifted)
                 ("CreditRatingAnchorCheck", CreditRatingAnchorCheck.Run),
                 ("PublicationCadenceCheck", PublicationCadenceCheck.Run),
                 // C-N3 (2026-08-31): every player-facing lever must measurably move the model, or be named

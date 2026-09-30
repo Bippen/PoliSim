@@ -144,6 +144,26 @@ namespace PoliSim.EditorTools
                         sb.Append(readLine).Append(F(" - mean absolute deviation {0:F2} pp over {1}\n", counted > 0 ? absDev / counted : double.NaN, counted));
                     }
                 }
+
+                // (f) §697: THE REGISTERED ELECTORATE - the runtime table against the sourced file, every figure, both years; each year's sixteen sum to its Bund
+                string eligiblePath = Path.Combine(Path.GetDirectoryName(Application.dataPath), "ElectionsData/germany/land_eligible.csv");
+                var fromFile = new Dictionary<string, (long E21, long E25)>();
+                foreach (string raw in File.ReadAllLines(eligiblePath))
+                {
+                    if (raw.StartsWith("#", StringComparison.Ordinal) || raw.StartsWith("land;", StringComparison.Ordinal) || raw.Trim().Length == 0) { continue; }
+                    string[] cells = raw.Split(';');
+                    fromFile[cells[0]] = (long.Parse(cells[1], CultureInfo.InvariantCulture), long.Parse(cells[2], CultureInfo.InvariantCulture));
+                }
+                int eligibleMisses = 0; long sum21 = 0, sum25 = 0;
+                DateTime on21 = new DateTime(2024, 11, 6), on25 = new DateTime(2025, 3, 25);
+                for (int r = 0; r < GermanRegions.Count; r++)
+                {
+                    long e21 = GermanRegions.EligibleAt(r, on21), e25 = GermanRegions.EligibleAt(r, on25);
+                    sum21 += e21; sum25 += e25;
+                    if (!fromFile.TryGetValue(GermanRegions.NameAt(r), out (long E21, long E25) row) || row.E21 != e21 || row.E25 != e25) { eligibleMisses++; }
+                }
+                Check(fromFile.Count == 16 && eligibleMisses == 0 && sum21 == 61_172_771L && sum25 == 60_510_631L,
+                    F("the registered electorate: sixteen Länder, every figure the sourced file's (land_eligible.csv), summing to the Bund's own rows - 2021 {0:N0}, 2025 {1:N0}", sum21, sum25));
             }
             catch (Exception e) { failures++; sb.Append("    FAIL      threw: ").Append(e.Message).Append('\n'); }
             sb.Append(failures == 0 ? "    CLEAN\n" : F("    {0} failure(s)\n", failures));

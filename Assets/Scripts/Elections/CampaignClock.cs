@@ -94,6 +94,21 @@ namespace PoliSim.Elections
         /// <summary>Sweden's real 2026 general election — the second Sunday in September.</summary>
         public static CampaignCalendar Sweden2026 => new CampaignCalendar(new DateTime(2026, 9, 13));
 
+        /// <summary>
+        /// §697 (PS-4): the standard windows, with the run-up cut to the whole weeks that fit after <paramref name="worldStart"/> - A RUN-UP NEVER
+        /// OPENS BEFORE THE WORLD BEGAN. A snap start's election was set in motion on the start day itself (decision 2), and the world has no days
+        /// before it to step: under the standard 26 weeks a German game opened on 6 November 2024 would have begun eighteen weeks into a run-up it
+        /// never had, those weeks stepped idle on its first day. Where the standard run-up already opens on or after the start (Sweden's start is
+        /// its run-up's first day, every later election), the calendar is the standard one, unchanged.
+        /// </summary>
+        public static CampaignCalendar FromWorldStart(DateTime electionDate, DateTime worldStart)
+        {
+            var standard = new CampaignCalendar(electionDate);
+            if (standard.PreCampaignStart >= worldStart.Date) { return standard; }
+            int weeks = Math.Max(0, (int)Math.Floor((standard.CampaignStart - worldStart.Date).TotalDays / 7.0));
+            return new CampaignCalendar(electionDate, DefaultCampaignWeeks, weeks);
+        }
+
         public DateTime CampaignStart => ElectionDate.AddDays(-7 * CampaignWeeks);
 
         public DateTime PreCampaignStart => CampaignStart.AddDays(-7 * PreCampaignWeeks);

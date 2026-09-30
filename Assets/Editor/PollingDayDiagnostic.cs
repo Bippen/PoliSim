@@ -50,7 +50,12 @@ namespace PoliSim.EditorTools
                 Next(CountryId.Sweden, new DateTime(2026, 9, 14), new DateTime(2030, 9, 8), "the day after");
                 Next(CountryId.Sweden, SimulationManager.DefaultEpoch, new DateTime(2030, 9, 8), "the default epoch");
                 Next(CountryId.Sweden, new DateTime(2022, 7, 21), new DateTime(2022, 9, 11), "an earlier date reads the same cycle");
-                foreach (CountryId other in new[] { CountryId.Germany, CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
+                // §697 (PS-4): Germany's one polling day on record - the snap's, 23 Feb 2025 - and nothing after it (the next regular day's rule is not on disk)
+                Next(CountryId.Germany, new DateTime(2024, 11, 6), new DateTime(2025, 2, 23), "Germany's snap start");
+                Next(CountryId.Germany, new DateTime(2025, 2, 23), new DateTime(2025, 2, 23), "Germany's polling day itself");
+                Check(!WorldClock.TryNextPollingDay(CountryId.Germany, new DateTime(2025, 2, 24), out _) && WorldClock.PollingDayBasis(CountryId.Germany) != null && WorldClock.PollingDayBasis(CountryId.Germany).Contains("[BWL-WT25]"),
+                    "Germany after its snap: no polling day on record; the basis cites the snap's notice [BWL-WT25]");
+                foreach (CountryId other in new[] { CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
                 {
                     Check(!WorldClock.TryNextPollingDay(other, new DateTime(2026, 1, 18), out _) && WorldClock.PollingDayBasis(other) == null, other + ": no polling day and no basis - its calendar is not modelled, its chamber holds as of record");
                 }
