@@ -262,12 +262,11 @@ namespace PoliSim.Elections
             record.Outcome = view.Outcome.ToString();
             foreach ((string abbrev, int _) in view.Cabinet) { record.Cabinet.Add(abbrev); }
             foreach ((string abbrev, int _) in view.Support) { record.Support.Add(abbrev); }
-            // K-1f's premise: a declared own-leader candidacy standing in the cabinet leads it; else the largest cabinet party.
-            foreach ((string abbrev, string _, string _) in DeclaredRedLines.CandidaciesAt(country.Id, formedOn))
-            {
-                if (record.Cabinet.Contains(abbrev)) { record.PmParty = abbrev; break; }
-            }
-            record.PmParty ??= Largest(country, record.Cabinet);
+            // K-1f's premise: a declared own-leader candidacy standing in the cabinet leads it; else the largest cabinet party. §705: of two or more
+            // (a German cabinet may hold more than one candidacy), the largest party's.
+            var led = new List<string>();
+            foreach ((string abbrev, string _, string _) in DeclaredRedLines.CandidaciesAt(country.Id, formedOn)) { if (record.Cabinet.Contains(abbrev)) { led.Add(abbrev); } }
+            record.PmParty = led.Count > 0 ? Largest(country, led, byGroup: true) : Largest(country, record.Cabinet);   // §705: a candidacy stands on its Fraktion's seats
             record.AllocatePortfolios(country);
             record.FormAgreements(country, formedOn, world);
             return record;
@@ -295,12 +294,20 @@ namespace PoliSim.Elections
             return $"ROLE: {id} at {date:yyyy-MM-dd} - {executive}{(g.Provisional ? " (provisional)" : string.Empty)}; the player's {country.PlayerPartyAbbrev ?? "(no party)"} is {g.RoleOf(country.PlayerPartyAbbrev)}";
         }
 
-        private static string Largest(Country country, List<string> cabinet)
+        private static string Largest(Country country, List<string> cabinet, bool byGroup = false)
         {
             string best = null; int bestSeats = -1;
             foreach (string abbrev in cabinet)
             {
                 int seats = country.ParliamentSeats.TryGetValue(abbrev, out int n) ? n : 0;
+                if (byGroup)
+                {
+                    foreach ((string a, string b) in ChamberRules.JointGroups(country.Id))
+                    {
+                        string partner = a == abbrev ? b : b == abbrev ? a : null;
+                        if (partner != null && seats > 0 && country.ParliamentSeats.TryGetValue(partner, out int m)) { seats += m; }
+                    }
+                }
                 if (seats > bestSeats) { best = abbrev; bestSeats = seats; }
             }
             return best;

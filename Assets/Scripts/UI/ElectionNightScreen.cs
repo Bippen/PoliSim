@@ -1044,7 +1044,11 @@ namespace PoliSim.UI
         /// player's party is asked, the board's control is the way to the formation sheet (<see cref="ContinueToSheet"/>): leaving the board lets the
         /// round open the next day, and the sheet opens on the Speaker's request (premise 1).
         /// </summary>
-        public static string SpeakerLine(bool playerAskedFirst, string firstShortName) => playerAskedFirst
+        public static string SpeakerLine(bool playerAskedFirst, string firstShortName, bool bundestag = false) => bundestag
+            ? (playerAskedFirst
+                ? "Your party forms the government its candidate would lead, and the Bundespräsident proposes your candidate first - continue, and the formation sheet opens. The Bundestag elects the chancellor once it convenes (Art. 63 GG); the outgoing government serves on until then."
+                : $"{firstShortName ?? "No party"} forms the government its candidate would lead, and the Bundespräsident proposes that candidate first. The Bundestag elects the chancellor once it convenes (Art. 63 GG); the outgoing government serves on until then.")
+            : playerAskedFirst
             ? "The Speaker will ask your party first to form a government - continue, and the formation sheet opens with the round. The outgoing government serves on as a caretaker until a proposal wins its investiture."
             : $"The Speaker will ask {firstShortName ?? "no party"} first to form a government. The outgoing government serves on as a caretaker until a proposal wins its investiture.";
 

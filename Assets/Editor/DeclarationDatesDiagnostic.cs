@@ -99,7 +99,8 @@ namespace PoliSim.EditorTools
                 int StandCount(DateTime on) { int n = 0; foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.SwedenTimeline) { if (f.StandsOn(on)) { n++; } } return n; }
                 string Lifted(DateTime on) { var s = new List<string>(); foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.LiftedSince(CountryId.Sweden, new DateTime(2022, 9, 11), on)) { s.Add(f.Party + ">" + f.Other); } return string.Join(",", s.ToArray()); }
                 Check(DeclaredRedLines.StandingOn(CountryId.Sweden, new DateTime(2026, 1, 18)).Count == StandCount(new DateTime(2026, 1, 18)), "StandingOn(start) is the timeline's facts standing on Sweden's start");
-                Check(DeclaredRedLines.StandingOn(CountryId.Germany, new DateTime(2026, 1, 18)).Count == 0, "StandingOn: a country with no timeline stands nothing");
+                Check(DeclaredRedLines.StandingOn(CountryId.Poland, new DateTime(2026, 1, 18)).Count == 0, "StandingOn: a country with no timeline stands nothing (Poland; Germany has one since §705)");
+                Check(DeclaredRedLines.StandingOn(CountryId.Germany, new DateTime(2026, 1, 18)).Count == DeclaredRedLines.GermanyTimeline.Count, F("StandingOn: Germany's timeline (§705) - its {0} facts all stand on 18 Jan 2026, none closed", DeclaredRedLines.GermanyTimeline.Count));
                 Check(Lifted(new DateTime(2026, 1, 18)) == string.Empty, "LiftedSince(2022 election, start): nothing lifted yet - C's 2025 restatement replaces, it does not lift");
                 Check(Lifted(new DateTime(2026, 7, 19)) == "M>SD,L>SD", F("LiftedSince(2022 election, campaign opening): M's and L's lines on SD lifted, the candidacies restated not lifted - got {0}", Lifted(new DateTime(2026, 7, 19))));
                 Check(Lifted(new DateTime(2026, 9, 8)) == "M>SD,KD>SD,L>SD", F("LiftedSince(2022 election, 8 September): KD's lifts on its own day - got {0}", Lifted(new DateTime(2026, 9, 8))));

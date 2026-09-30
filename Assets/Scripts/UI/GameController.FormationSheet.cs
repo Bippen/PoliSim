@@ -67,23 +67,24 @@ namespace PoliSim.UI
             x += tw + StatsUnit(10f);
             DrawPartyMarkSlot(new Rect(x, head.y, StatsUnit(16f), head.height), country, you);
             x += StatsUnit(16f) + StatsUnit(8f);
-            const string asked = "ASKED BY THE SPEAKER";
+            string asked = "ASKED BY " + RoundAsker(round);
             float aw = Mathf.Ceil(caption.CalcSize(new GUIContent(asked)).x) + 2f;
             PoliSimWidgets.MeasuredLabel(new Rect(x, head.y, aw, head.height), asked, caption);
             SlipAnchor(new Rect(head.x, head.y, x + aw - head.x, head.height), "head");
-            book.Anchors["head"] = new SlipContent(Name(you) + " ASKED BY THE SPEAKER")
+            string[] rule = RoundRule(round);
+            book.Anchors["head"] = new SlipContent(Name(you) + " " + asked)
                 .Add("THE ROUND " + DeskDated(round.Occasion).ToUpperInvariant())
-                .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} PROPOSALS REJECTED", round.Rejections, SpeakerRound.ProposalLimit))
-                .Add("THE CHAMBER VOTES ON THE " + Ordinal(SpeakerRound.VoteDays) + " DAY AFTER A PROPOSAL IS TABLED");
+                .Add(rule[0])
+                .Add(rule[1]);
 
             Rect close = RowChipRectEndingAt(head.xMax, head, "CLOSE THE SHEET");
             if (DrawRowChip(close, "CLOSE THE SHEET", ChipFace.Paper)) { _formationSheetOpen = false; }
             SlipAnchor(close, "close");
             book.Anchors["close"] = new SlipContent("CLOSE THE SHEET").Add("CLOSED, THE CLOCK STILL WAITS ON YOUR ANSWER").Add("THE PARLIAMENT TAB OPENS THE SHEET AGAIN");
-            string rejectedTail = "⁄ " + SpeakerRound.ProposalLimit.ToString(CultureInfo.InvariantCulture) + " REJECTED";
+            string rejectedTail = RoundFigureTail(round);
             float rtw = Mathf.Ceil(muted.CalcSize(new GUIContent(rejectedTail)).x) + 2f;
             GUIStyle rejectedFigure = DeskCaption(14f, PoliSimTheme.TextPrimary, true);
-            string rejected = round.Rejections.ToString(CultureInfo.InvariantCulture);
+            string rejected = RoundFigure(round);
             float rfw = Mathf.Ceil(rejectedFigure.CalcSize(new GUIContent(rejected)).x) + 2f;
             float rx = close.x - StatsUnit(14f) - rtw;
             PoliSimWidgets.MeasuredLabel(new Rect(rx, head.y, rtw, head.height), rejectedTail, muted);
@@ -144,7 +145,7 @@ namespace PoliSim.UI
                     };
                 }
                 var slip = new SlipContent(Name(key) + " · " + seats.ToString(CultureInfo.InvariantCulture) + " SEATS")
-                    .Add(formateur ? "THE FORMATEUR - THE PRIME MINISTER'S PARTY" : inCabinet ? "INVITED INTO THE CABINET" : "NOT INVITED");
+                    .Add(formateur ? (round.Bundestag ? "THE FORMATEUR - THE CHANCELLOR'S PARTY" : "THE FORMATEUR - THE PRIME MINISTER'S PARTY") : inCabinet ? "INVITED INTO THE CABINET" : "NOT INVITED");
                 if (inCabinet)
                 {
                     int offered = draft.PostsOf(key);
@@ -252,8 +253,8 @@ namespace PoliSim.UI
                 var slip = new SlipContent(postName + " · " + Name(holder)).Add("THE POST CARRIES ITS PORTFOLIO'S LEVERS TO THE PARTY THAT HOLDS IT");
                 if (treasury)
                 {
-                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + 230f * ux, row.y, row.xMax - (row.x + 230f * ux), row.height), "THE PRIME MINISTER'S PARTY", muted);
-                    slip.Add("LOCKED: THE TREASURY STAYS THE PRIME MINISTER'S PARTY'S");
+                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + 230f * ux, row.y, row.xMax - (row.x + 230f * ux), row.height), round.Bundestag ? "THE CHANCELLOR'S PARTY" : "THE PRIME MINISTER'S PARTY", muted);
+                    slip.Add(round.Bundestag ? "LOCKED: THE TREASURY STAYS THE CHANCELLOR'S PARTY'S" : "LOCKED: THE TREASURY STAYS THE PRIME MINISTER'S PARTY'S");
                 }
                 else if (fixedPost)
                 {
@@ -318,7 +319,7 @@ namespace PoliSim.UI
             }
 
             y += gap;
-            DrawRowSectionHead(new Rect(right.x, y, right.width, headH), "THE INVESTITURE");
+            DrawRowSectionHead(new Rect(right.x, y, right.width, headH), round.Bundestag ? "THE CHANCELLOR'S ELECTION" : "THE INVESTITURE");   // §705
             y += headH;
             var bar = new Rect(right.x, y, right.width, StatsUnit(36f));
             if (verdict?.Investiture != null)
@@ -363,15 +364,15 @@ namespace PoliSim.UI
             }
             SlipAnchor(Shifted(table, rightShift), "table");
             book.Anchors["table"] = new SlipContent("TABLE IT").Add(allAccept ? "EVERY INVITED PARTY ACCEPTS" : "NOT EVERY INVITED PARTY ACCEPTS - REVISE THE OFFER")
-                .Add("TABLED, THE CHAMBER VOTES ON THE " + Ordinal(SpeakerRound.VoteDays) + " DAY");
+                .Add(RoundVoteWhen(round, brief: false));
             Rect pass = RowChipRectEndingAt(table.x - StatsUnit(10f), acts, "PASS", 26f, 12f);
             if (DrawRowChip(pass, "PASS", ChipFace.Paper))
             {
                 if (_simulationManager.PassFormation(PlayerCountryId, out string refused)) { _formationSheetOpen = false; } else { _formationRefusal = refused; }
             }
             SlipAnchor(Shifted(pass, rightShift), "pass");
-            book.Anchors["pass"] = new SlipContent("PASS").Add("THE SPEAKER ASKS THE NEXT PARTY");
-            string voteOn = "VOTE ON DAY " + SpeakerRound.VoteDays.ToString(CultureInfo.InvariantCulture);
+            book.Anchors["pass"] = new SlipContent("PASS").Add(RoundPassLine(round));
+            string voteOn = RoundVoteWhen(round, brief: true);
             float vw = Mathf.Ceil(muted.CalcSize(new GUIContent(voteOn)).x) + 2f;
             PoliSimWidgets.MeasuredLabel(new Rect(pass.x - StatsUnit(10f) - vw, acts.y, vw, acts.height), voteOn, muted);
             EndSheetColumn(rightShift);

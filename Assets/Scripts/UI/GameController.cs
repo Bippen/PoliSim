@@ -6350,7 +6350,7 @@ namespace PoliSim.UI
             if (FormationHolds())
             {
                 holds.Add((_simulationManager.RoundOf(PlayerCountryId).Stage == PoliSim.Elections.RoundStage.PlayerAsked
-                    ? "THE SPEAKER ASKS YOUR PARTY TO FORM A GOVERNMENT" : "AN OFFER FROM THE PARTY THE SPEAKER ASKED", HoldCell.Politics));
+                    ? RoundAsker(_simulationManager.RoundOf(PlayerCountryId)) + " ASKS YOUR PARTY TO FORM A GOVERNMENT" : "AN OFFER FROM THE PARTY " + RoundAsker(_simulationManager.RoundOf(PlayerCountryId)) + " ASKED", HoldCell.Politics));
             }
             if (includeBudgetProcess && BudgetWindowHolds())
             {
@@ -6845,7 +6845,8 @@ namespace PoliSim.UI
                 }
                 System.Collections.Generic.List<string> order = _simulationManager.SpeakerOrder(_playerCountry, electionReading);
                 string first = order.Count > 0 ? order[0] : null;
-                _pendingElectionVerdict = ElectionNightScreen.SpeakerLine(first == key, first != null ? PartySystems.ShortName(_playerCountry.Id, first) : null);   // premise 9 (§656)
+                _pendingElectionVerdict = ElectionNightScreen.SpeakerLine(first == key, first != null ? PartySystems.ShortName(_playerCountry.Id, first) : null,
+                    PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) == PoliSim.Elections.ConfidenceProcedure.Rules.Bundestag);   // premise 9 (§656); §705 the Bundestag's words
                 _pendingElectionPlayerAskedFirst = first == key;
                 _pendingElectionFirstAsked = first;
                 _pendingElectionVerdictEndsGame = false;

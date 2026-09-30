@@ -96,7 +96,7 @@ namespace PoliSim.Elections
             for (int p = 0; p < parties.Count; p++) { seats[p] = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(parties[p].Abbrev, out int held) ? held : 0; }
             List<RedLine> lines = reading.Lines(country.Id, parties);
             if (extraLines != null) { lines.AddRange(extraLines); }
-            return CoalitionFormation.Prepare(seats, GovernmentFormation.Compatibility(parties), lines, ChamberRules.UsesNegativeParliamentarism(country.Id), reading.Platforms(country.Id, parties));
+            return CoalitionFormation.Prepare(seats, GovernmentFormation.Compatibility(parties), lines, ChamberRules.UsesNegativeParliamentarism(country.Id), reading.Platforms(country.Id, parties), ChamberRules.JointMasks(country.Id, parties, seats));   // s705: the Union sits as one
         }
 
         /// <summary>Every invited party's answer to <paramref name="proposal"/>, and the investiture it would face, on <paramref name="vintage"/>'s declarations.</summary>
@@ -127,7 +127,7 @@ namespace PoliSim.Elections
             foreach (string key in proposal.CabinetParties) { cabinet |= 1 << Index(key); }
 
             // The alternatives: every government the formation itself would form on this chamber - the best a party could have instead.
-            CoalitionResult formation = CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules);
+            CoalitionResult formation = CoalitionFormation.Form(chamber.Seats, chamber.Compatibility, chamber.Lines, chamber.NegativeRule, chamber.Rules, chamber.Joint);
             List<GovernmentOption> holding = CoalitionFormation.Holding(formation, chamber.Seats, chamber.Compatibility);   // never a government the formation would not settle on
             double BestElsewhere(int p, out string where)
             {
@@ -141,7 +141,12 @@ namespace PoliSim.Elections
             }
             Dictionary<string, List<CabinetPortfolio>> gamson = GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, proposal.Formateur);
             var candidacies = new HashSet<string>();
-            foreach ((string abbrev, string _, string _) in reading.Candidacies(country.Id)) { candidacies.Add(abbrev); }
+            // §705: K-1f's pairing - a party whose own leader is its candidate sits only in a cabinet that candidate leads - is Sweden's ruled record,
+            // not a rule of candidacies: the SPD stood Scholz in 2025 and sits in Merz's cabinet (DeclaredRedLines.CandidacyRefuses)
+            if (DeclaredRedLines.CandidacyRefuses(country.Id))
+            {
+                foreach ((string abbrev, string _, string _) in reading.Candidacies(country.Id)) { candidacies.Add(abbrev); }
+            }
             int cabinetSeats = CoalitionMath.Seats(chamber.Seats, cabinet);
             var option = new GovernmentOption(cabinet, 0, CoalitionOutcomeKind.MinorityGovernment, cabinetSeats, cabinetSeats, 0, 0.0, 0.0);
 
@@ -222,7 +227,8 @@ namespace PoliSim.Elections
 
             verdict.AllAccept = all;
             verdict.Investiture = CoalitionFormation.Evaluate(chamber, cabinet, support);
-            verdict.Reason = !all ? "an invited party refuses" : verdict.Investiture.Wins ? "every invited party accepts and the investiture passes" : "every invited party accepts, and the investiture fails";
+            verdict.Reason = verdict.Investiture.SplitsJointGroup ? "the cabinet splits a parliamentary group - the CDU and the CSU sit as one Fraktion, in a cabinet together or not at all"   // §705 (the review's latent case: the sheet said only that the investiture fails)
+                : !all ? "an invited party refuses" : verdict.Investiture.Wins ? "every invited party accepts and the investiture passes" : "every invited party accepts, and the investiture fails";
             return verdict;
         }
 

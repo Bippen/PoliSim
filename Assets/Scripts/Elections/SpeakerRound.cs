@@ -57,6 +57,31 @@ namespace PoliSim.Elections
         /// <summary>What happened, dated - the desk's record of the round.</summary>
         public List<string> Log = new List<string>();
 
+        // -------- §705 (round 4 follow-up 4): THE BUNDESTAG'S CHANCELLOR ELECTION, Art. 63 GG - the same round, the Grundgesetz's phases --------
+
+        /// <summary>[GG-39] Art. 39 Abs. 2: "Der Bundestag tritt spätestens am dreißigsten Tage nach der Wahl zusammen" - the latest day, the one the game
+        /// takes (2025: polling day 23 February, the constituent sitting 25 March, exactly thirty days).</summary>
+        public const int BundestagConvenesWithinDays = 30;
+        /// <summary>[GG-63] Art. 63 Abs. 3: "Wird der Vorgeschlagene nicht gewählt, so kann der Bundestag binnen vierzehn Tagen nach dem Wahlgange mit
+        /// mehr als der Hälfte seiner Mitglieder einen Bundeskanzler wählen."</summary>
+        public const int BundestagSecondPhaseDays = 14;
+
+        /// <summary>The Art. 63 phase: 0 or 1 - the Bundespräsident's candidate (Abs. 1-2); 2 - the fourteen days (Abs. 3); 3 - the ballot the most votes
+        /// win (Abs. 4). Always 0 in the Riksdag's round.</summary>
+        public int Phase;
+        /// <summary>The day the new Bundestag convenes - the outgoing government's office ends with it (Art. 69 Abs. 2) and it serves on at the
+        /// Bundespräsident's request (Abs. 3); no chancellor is elected before it. MinValue in the Riksdag's round.</summary>
+        public DateTime Convenes;
+        /// <summary>The last day of the fourteen after the first failed ballot (Art. 63 Abs. 3); MinValue before one fails.</summary>
+        public DateTime SecondPhaseUntil;
+
+        /// <summary>§705 (the review's second pass, defect 2): the player's party tabled a proposal in this round - only then does its candidate stand in
+        /// the ballot the most votes win (Art. 63 Abs. 4); a party that passed or was never asked is not made a candidate by the game.</summary>
+        public bool PlayerStood;
+
+        /// <summary>§705: the round is the Bundestag's chancellor election - it carries the day the new Bundestag convenes.</summary>
+        public bool Bundestag => Convenes != DateTime.MinValue;
+
         public bool Open => Stage != RoundStage.Concluded;
     }
 }

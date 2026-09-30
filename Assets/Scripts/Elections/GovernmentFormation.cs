@@ -424,7 +424,7 @@ namespace PoliSim.Elections
             if (extraLines != null) { lines.AddRange(extraLines); }   // PS-3i (§636): a refusal made by moving a motion, for the Speaker's round
             declarationsSourced = DeclaredRedLines.IsSourced(country);
             result = CoalitionFormation.Form(seats, compatibility, lines,
-                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: read.Platforms(country, parties));   // K-1f: a party's in-or-against rule, beside the pairs
+                negativeRule: ChamberRules.UsesNegativeParliamentarism(country), inOrAgainst: read.Platforms(country, parties), joint: ChamberRules.JointMasks(country, parties, seats));   // K-1f: a party's in-or-against rule, beside the pairs
             return true;
         }
 
@@ -473,5 +473,33 @@ namespace PoliSim.Elections
     public static class ChamberRules
     {
         public static bool UsesNegativeParliamentarism(CountryId country) => country == CountryId.Sweden;
+
+        /// <summary>
+        /// §705 (round 4 follow-up 4): PARTIES THAT SIT AS ONE PARLIAMENTARY GROUP. The CDU and the CSU form one Fraktion in the Bundestag - § 10 Abs. 1
+        /// GO-BT, as the Bundestag's Datenhandbuch 5.1 quotes it: *"Die Fraktionen sind Vereinigungen … die derselben Partei oder solchen Parteien
+        /// angehören, die auf Grund gleichgerichteter politischer Ziele in keinem Land miteinander in Wettbewerb stehen"* (the CSU stands in Bayern
+        /// alone, the CDU in the other fifteen). A cabinet holds both or neither, and outside a cabinet the two vote as one - the larger's side. The
+        /// formation had treated them as two parties free to part: §698's successor was a CDU cabinet with the CSU only supporting it.
+        /// </summary>
+        public static IReadOnlyList<(string A, string B)> JointGroups(CountryId country) =>
+            country == CountryId.Germany ? new[] { ("CDU", "CSU") } : System.Array.Empty<(string, string)>();
+
+        /// <summary>§705: each joint group as a bitmask over <paramref name="parties"/>; null where there is none. A group missing a member is
+        /// dropped, and so is one a member of which holds no seat (<paramref name="seats"/>): a Fraktion is formed by the parties seated - the model has
+        /// no Grundmandat, so a played CSU can fall under the 5 % line, and a seatless member in the mask made every CDU cabinet a split group and
+        /// put the seatless CSU into support masks (the review's defect 7).</summary>
+        public static int[] JointMasks(CountryId country, IReadOnlyList<PoliticalParty> parties, IReadOnlyList<int> seats = null)
+        {
+            var masks = new List<int>();
+            foreach ((string a, string b) in JointGroups(country))
+            {
+                int ia = -1, ib = -1;
+                for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == a) { ia = p; } else if (parties[p].Abbrev == b) { ib = p; } }
+                if (ia < 0 || ib < 0) { continue; }
+                if (seats != null && (ia >= seats.Count || ib >= seats.Count || seats[ia] <= 0 || seats[ib] <= 0)) { continue; }
+                masks.Add((1 << ia) | (1 << ib));
+            }
+            return masks.Count > 0 ? masks.ToArray() : null;
+        }
     }
 }

@@ -58,7 +58,7 @@ namespace PoliSim.UI
                     return (a + " will not " + (f.OneWay ? "sit in or back a cabinet with " : f.BlocksSupport ? "depend on " : "sit with ") + b,
                         f.OneWay ? "one way" : f.BlocksSupport ? "nor support" : "would support");
                 case DeclaredRedLines.FactKind.Candidacy:
-                    return (a + " names " + f.Candidate + " for prime minister", "candidacy");
+                    return (a + " names " + f.Candidate + " for " + HeadOfGovernment(country), "candidacy");
                 case DeclaredRedLines.FactKind.InOrAgainst:
                     return (a + " will be in the government or vote against it", "in or against");
                 default:
@@ -67,6 +67,9 @@ namespace PoliSim.UI
         }
 
         private static string Day(DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
+
+        /// <summary>§705: the office a candidacy names - the Bundestag elects a chancellor.</summary>
+        private static string HeadOfGovernment(CountryId country) => ConfidenceProcedure.RulesOf(country) == ConfidenceProcedure.Rules.Bundestag ? "chancellor" : "prime minister";
 
         private void DrawCampaignDeclaredStage(float availableHeight, float availableWidth, CampaignSnapshot snapshot)
         {
@@ -98,7 +101,7 @@ namespace PoliSim.UI
 
         /// <summary>A dated fact as the row draws it (21c): the party's mark, the verb, the other party's mark, the rest - the sentence with its
         /// parties as marks. A segment is a mark key or words.</summary>
-        internal static List<(bool Mark, string Text)> DeclaredSegments(DeclaredRedLines.DatedFact f)
+        internal static List<(bool Mark, string Text)> DeclaredSegments(DeclaredRedLines.DatedFact f, CountryId country = CountryId.Sweden)
         {
             var s = new List<(bool Mark, string Text)> { (true, f.Party) };
             switch (f.Kind)
@@ -107,7 +110,7 @@ namespace PoliSim.UI
                     s.Add((false, "will not " + (f.OneWay ? "sit in or back a cabinet with" : f.BlocksSupport ? "depend on" : "sit with")));
                     s.Add((true, f.Other));
                     break;
-                case DeclaredRedLines.FactKind.Candidacy: s.Add((false, "names " + f.Candidate + " for prime minister")); break;
+                case DeclaredRedLines.FactKind.Candidacy: s.Add((false, "names " + f.Candidate + " for " + HeadOfGovernment(country))); break;
                 case DeclaredRedLines.FactKind.InOrAgainst: s.Add((false, "will be in the government or vote against it")); break;
                 default: s.Add((false, "will not take the support role")); break;
             }
@@ -134,7 +137,7 @@ namespace PoliSim.UI
             }
             float x = line.x;
             float gap = StatsUnit(5f);
-            foreach ((bool mark, string text) in DeclaredSegments(f))
+            foreach ((bool mark, string text) in DeclaredSegments(f, _playerCountry.Id))
             {
                 if (mark)
                 {
@@ -209,7 +212,10 @@ namespace PoliSim.UI
                         if (group == 1)
                         {
                             SlipAnchor(groupHead, "declared/candidacies");
-                            book.Anchors["declared/candidacies"] = new SlipContent("CANDIDACIES").Add("THE PARTIES SAID THIS").Add("THE REFUSAL BETWEEN RIVALS IS THE MODEL'S RULE");
+                            // §705: K-1f's pairing is Sweden's record - a German candidacy refuses nothing
+                            book.Anchors["declared/candidacies"] = DeclaredRedLines.CandidacyRefuses(_playerCountry.Id)
+                                ? new SlipContent("CANDIDACIES").Add("THE PARTIES SAID THIS").Add("THE REFUSAL BETWEEN RIVALS IS THE MODEL'S RULE")
+                                : new SlipContent("CANDIDACIES").Add("THE PARTIES SAID THIS").Add("A CANDIDACY REFUSES NO OTHER CANDIDATE'S CABINET").Add("EACH FROM THE DAY ITS SOURCE DATES IT");
                         }
                         y += headH;
                         captioned = true;

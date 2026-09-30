@@ -45,6 +45,7 @@ namespace PoliSim.UI
             DrawSupportAgreements(book);   // PS-3h (§635)
             DrawCaretakerLine(book);
             DrawSpeakerRound(book);   // §646: the formateur's round
+            DrawReferenceRow(book);   // §705: history as the reference where no election night carries it
             DrawConfidence(book);   // PS-3i (§636)
             Rect tail = ReserveRowPx(1f);
             if (Event.current.type == EventType.Repaint) { _parliamentSlipBounds = new Rect(tail.x, 0f, tail.width, tail.yMax); }
@@ -146,7 +147,8 @@ namespace PoliSim.UI
             Rect date = RowChipRectFrom(x, row, day, padBoard: 6f);
             DrawRowChip(date, day, ChipFace.Outline);
             SlipAnchor(new Rect(row.x, row.y, date.xMax - row.x, row.height), "caretaker");
-            book.Anchors["caretaker"] = new SlipContent("CARETAKER SINCE " + day).Add("THE OUTGOING GOVERNMENT SERVES ON").Add("UNTIL A PROPOSAL WINS ITS INVESTITURE");
+            book.Anchors["caretaker"] = new SlipContent("CARETAKER SINCE " + day).Add("THE OUTGOING GOVERNMENT SERVES ON")
+                .Add(ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag ? "UNTIL THE BUNDESTAG ELECTS A CHANCELLOR (ART. 69 ABS. 3)" : "UNTIL A PROPOSAL WINS ITS INVESTITURE");   // §705
             DrawRowRule(row);
         }
 
@@ -156,6 +158,46 @@ namespace PoliSim.UI
         /// votes; an offer to the player's party (ACCEPT · DECLINE, both paper - no default); and where the player's party is asked, OPEN THE SHEET
         /// (brass, the act) and PASS.
         /// </summary>
+        // -------- §705: the round's words by chamber - the Riksdag's Speaker's round (RF 6 kap.) or the Bundestag's chancellor election (Art. 63 GG) --------
+
+        /// <summary>Who asks a party to form the government: the Riksdag's Speaker, or the Bundespräsident, who proposes the chancellor (Art. 63 Abs. 1 GG).</summary>
+        private static string RoundAsker(SpeakerRound round) => round.Bundestag ? "THE BUNDESPRÄSIDENT" : "THE SPEAKER";
+
+        private static string RoundTitle(SpeakerRound round) => round.Bundestag ? "The chancellor's election" : "The Speaker's round";
+
+        /// <summary>The head's figure and its tail: the proposals rejected of the Riksdag's four, or the Art. 63 phase of three.</summary>
+        private static string RoundFigure(SpeakerRound round) => (round.Bundestag ? System.Math.Max(1, round.Phase) : round.Rejections).ToString(CultureInfo.InvariantCulture);
+
+        private static string RoundFigureTail(SpeakerRound round) => round.Bundestag ? "⁄ 3 PHASES" : "⁄ " + SpeakerRound.ProposalLimit.ToString(CultureInfo.InvariantCulture) + " REJECTED";
+
+        /// <summary>The round's rule, two lines for a slip.</summary>
+        private string[] RoundRule(SpeakerRound round)
+        {
+            if (!round.Bundestag)
+            {
+                return new[] { string.Format(CultureInfo.InvariantCulture, "{0} OF {1} PROPOSALS REJECTED", round.Rejections, SpeakerRound.ProposalLimit),
+                    "THE CHAMBER VOTES ON THE " + Ordinal(SpeakerRound.VoteDays) + " DAY AFTER A PROPOSAL IS TABLED" };
+            }
+            switch (round.Phase)
+            {
+                case 2: return new[] { "PHASE 2 OF 3 · ART. 63 ABS. 3 GG", "UNTIL " + DeskDay(round.SecondPhaseUntil) + " ANY CANDIDATE WITH A MAJORITY OF THE MEMBERS" };
+                case 3: return new[] { "PHASE 3 OF 3 · ART. 63 ABS. 4 GG", "THE MOST VOTES ELECT" };
+                default: return new[] { "PHASE 1 OF 3 · ART. 63 ABS. 1-2 GG", "THE BUNDESPRÄSIDENT'S CANDIDATE NEEDS A MAJORITY OF THE MEMBERS" };
+            }
+        }
+
+        /// <summary>When a proposal tabled today comes to its vote: the Riksdag's fourth day, or the Bundestag's day - once it has convened, the same day.</summary>
+        private string RoundVoteWhen(SpeakerRound round, bool brief)
+        {
+            if (!round.Bundestag) { return brief ? "VOTE ON DAY " + SpeakerRound.VoteDays.ToString(CultureInfo.InvariantCulture) : "TABLED, THE CHAMBER VOTES ON THE " + Ordinal(SpeakerRound.VoteDays) + " DAY"; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            if (today >= round.Convenes) { return brief ? "VOTE THE SAME DAY" : "TABLED, THE BUNDESTAG VOTES THE SAME DAY"; }
+            return brief ? "VOTE ON " + DeskDay(round.Convenes) : "TABLED, THE BUNDESTAG VOTES WHEN IT CONVENES ON " + DeskDay(round.Convenes);
+        }
+
+        /// <summary>What passing does: the Speaker asks the next party; in the Bundestag the next party in the order stands its candidate.</summary>
+        private static string RoundPassLine(SpeakerRound round) => round.Bundestag ? "THE NEXT PARTY IN THE ORDER STANDS ITS CANDIDATE" : "THE SPEAKER ASKS THE NEXT PARTY";
+
         private void DrawSpeakerRound(PeopleSlips.Book book)
         {
             SpeakerRound round = _simulationManager.RoundOf(PlayerCountryId);
@@ -166,12 +208,12 @@ namespace PoliSim.UI
             GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
 
             Rect head = ReserveRow(30f);
-            DrawBlockHead(head, "The Speaker's round", null, PoliSimTheme.TextPrimary);
-            string tail = "⁄ " + SpeakerRound.ProposalLimit.ToString(CultureInfo.InvariantCulture) + " REJECTED";
+            DrawBlockHead(head, RoundTitle(round), null, PoliSimTheme.TextPrimary);
+            string tail = RoundFigureTail(round);
             float tw = Mathf.Ceil(muted.CalcSize(new GUIContent(tail)).x) + 2f;
             PoliSimWidgets.MeasuredLabel(new Rect(head.xMax - tw, head.y, tw, head.height), tail, muted);
             GUIStyle fig = DeskCaption(14f, PoliSimTheme.TextPrimary, true);
-            string rejected = round.Rejections.ToString(CultureInfo.InvariantCulture);
+            string rejected = RoundFigure(round);
             float fw = Mathf.Ceil(fig.CalcSize(new GUIContent(rejected)).x) + 2f;
             PoliSimWidgets.MeasuredLabel(new Rect(head.xMax - tw - StatsUnit(4f) - fw, head.y, fw, head.height), rejected, fig);
             SlipAnchor(head, "round");
@@ -211,7 +253,7 @@ namespace PoliSim.UI
                     DateStamp(round.AskedOn.AddDays(SpeakerRound.ConsultationDays));
                     SlipAnchor(row, "round/stage");
                     book.Anchors["round/stage"] = new SlipContent(Name(round.Asked) + (round.Turn == 0 ? " ASKED FIRST" : " ASKED"))
-                        .Add("THE SPEAKER ASKS " + Name(round.Asked) + " TO FORM A GOVERNMENT").Add("ITS PROPOSAL BY " + DeskDay(round.AskedOn.AddDays(SpeakerRound.ConsultationDays)));
+                        .Add(RoundAsker(round) + " ASKS " + Name(round.Asked) + " TO FORM A GOVERNMENT").Add("ITS PROPOSAL BY " + DeskDay(round.AskedOn.AddDays(SpeakerRound.ConsultationDays)));
                     break;
                 case RoundStage.VotePending:
                     Mark(round.Proposal.Formateur);
@@ -254,7 +296,7 @@ namespace PoliSim.UI
                         if (!_simulationManager.AnswerOffer(PlayerCountryId, false, out string refused)) { Debug.Log($"SPEAKER: refused - {refused}"); }
                     }
                     SlipAnchor(decline, "round/decline");
-                    book.Anchors["round/decline"] = new SlipContent("DECLINE").Add("YOUR PARTY STAYS IN OPPOSITION").Add("THE SPEAKER MOVES ON IF YOUR SEATS WERE NEEDED");
+                    book.Anchors["round/decline"] = new SlipContent("DECLINE").Add("YOUR PARTY STAYS IN OPPOSITION").Add(RoundAsker(round) + " MOVES ON IF YOUR SEATS WERE NEEDED");
                     break;
                 }
                 case RoundStage.PlayerAsked:
@@ -265,7 +307,7 @@ namespace PoliSim.UI
                     Rect yours = RowChipRectFrom(x, row, "YOUR PARTY", padBoard: 6f);
                     DrawRowChip(yours, "YOUR PARTY", ChipFace.Outline);
                     SlipAnchor(new Rect(row.x, row.y, yours.xMax - row.x, row.height), "round/stage");
-                    book.Anchors["round/stage"] = new SlipContent("THE SPEAKER ASKS YOUR PARTY")
+                    book.Anchors["round/stage"] = new SlipContent(RoundAsker(round) + " ASKS YOUR PARTY")
                         .Add("TO FORM A GOVERNMENT")
                         .Add("THE SHEET OPENS ON " + string.Join("+", current.CabinetParties.ConvertAll(Name)) + (current.Supporters.Count > 0 ? " WITH " + string.Join("+", current.Supporters.ConvertAll(Name)) + " SUPPORTING" : string.Empty))
                         .Add("THE FORMATION'S OWN PROPOSAL WITH YOUR PARTY LEADING");
@@ -277,13 +319,97 @@ namespace PoliSim.UI
                         if (!_simulationManager.PassFormation(PlayerCountryId, out string refused)) { Debug.Log($"SPEAKER: refused - {refused}"); }
                     }
                     SlipAnchor(pass, "round/pass");
-                    book.Anchors["round/pass"] = new SlipContent("PASS").Add("THE SPEAKER ASKS THE NEXT PARTY");
+                    book.Anchors["round/pass"] = new SlipContent("PASS").Add(RoundPassLine(round));
                     break;
                 }
                 default:
                     Words("THE ROUND IS OVER", muted);
                     break;
             }
+            DrawRowRule(row);
+            GUILayout.Space(StatsUnit(10f));
+        }
+
+        /// <summary>
+        /// §705 (round 4 follow-up 4): HISTORY AS THE REFERENCE on the Parliament tab, where no election night carries it (Germany - the night is
+        /// Sweden's until the Länder night, D-DE): after an election the game held on a polling day of record, the row reads AS IT HAPPENED · the day
+        /// the government of record took office · its head's mark and surname · IN CABINET and its parties' marks; the slip carries the real seats
+        /// party by party and the record's basis. It stands while that election's chamber sits.
+        /// </summary>
+        // §705 (the review's cost note): the record's reference is read once per election held, not on every OnGUI event (a seat table and a regex)
+        private System.DateTime _referenceHeld = System.DateTime.MinValue;
+        private CountryId _referenceCountry;
+        private WorldClock.Reference _referenceCached;
+
+        private void DrawReferenceRow(PeopleSlips.Book book)
+        {
+            if (ConfidenceProcedure.RulesOf(PlayerCountryId) != ConfidenceProcedure.Rules.Bundestag || _playerCountry.ElectionHistory == null) { return; }
+            System.DateTime held = System.DateTime.MinValue;
+            foreach (ElectionRecord e in _playerCountry.ElectionHistory)
+            {
+                if (e.Method != ElectionMethod.NotImplemented && e.Date <= _simulationManager.CurrentDate && e.Date > held) { held = e.Date; }
+            }
+            if (held == System.DateTime.MinValue) { return; }
+            if (held != _referenceHeld || _referenceCountry != PlayerCountryId)
+            {
+                _referenceHeld = held;
+                _referenceCountry = PlayerCountryId;
+                _referenceCached = WorldClock.TryReference(PlayerCountryId, held, out WorldClock.Reference fresh) ? fresh : null;
+            }
+            WorldClock.Reference reference = _referenceCached;
+            if (reference == null) { return; }
+            CountryId country = _playerCountry.Id;
+            GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
+            GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
+            Rect row = ReserveRow(30f);
+            float x = row.x;
+            void Words(string words, GUIStyle style)
+            {
+                float w = Mathf.Ceil(style.CalcSize(new GUIContent(words)).x) + 2f;
+                PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, w, row.height), words, style);
+                x += w + StatsUnit(10f);
+            }
+            void Mark(string key)
+            {
+                DrawPartyMarkSlot(new Rect(x, row.y, StatsUnit(16f), row.height), country, key);
+                x += StatsUnit(16f) + StatsUnit(8f);
+            }
+            Words(held.Year.ToString(CultureInfo.InvariantCulture) + ", AS IT HAPPENED", caption);
+            if (reference.HeadParty != null)
+            {
+                string day = DeskDay(reference.HeadFrom);
+                Rect stamp = RowChipRectFrom(x, row, day, padBoard: 6f);
+                DrawRowChip(stamp, day, ChipFace.Outline);
+                x = stamp.xMax + StatsUnit(10f);
+                Mark(reference.HeadParty);
+                Words(reference.HeadSurname.ToUpperInvariant(), caption);
+                if (reference.CabinetOfRecord != null)
+                {
+                    Words("IN CABINET", muted);
+                    foreach (string member in reference.CabinetOfRecord) { Mark(member); }
+                }
+            }
+            else
+            {
+                Words("NO GOVERNMENT OF RECORD AFTER IT", muted);
+            }
+            SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "reference");
+            var slip = new SlipContent(reference.Label);
+            var seated = new List<(string key, int seats)>();
+            foreach (KeyValuePair<string, int> kv in reference.Seats) { if (kv.Value > 0) { seated.Add((kv.Key, kv.Value)); } }
+            seated.Sort((a, b) => b.seats != a.seats ? b.seats.CompareTo(a.seats) : string.CompareOrdinal(a.key, b.key));
+            var line = new System.Text.StringBuilder();
+            foreach ((string key, int seats) in seated)
+            {
+                string part = PartySystems.ShortName(country, key).ToUpperInvariant() + " " + seats.ToString(CultureInfo.InvariantCulture);
+                if (line.Length > 0 && line.Length + part.Length + 3 > 44) { slip.Add(line.ToString()); line.Clear(); }
+                if (line.Length > 0) { line.Append(" · "); }
+                line.Append(part);
+            }
+            if (line.Length > 0) { slip.Add(line.ToString()); }
+            foreach (string l in SlipWrapped(string.Empty, reference.GovernmentLine).Lines) { slip.Add(l); }
+            slip.Add("THE GAME'S ELECTION IS ITS OWN - THIS IS THE RECORD");
+            book.Anchors["reference"] = slip;
             DrawRowRule(row);
             GUILayout.Space(StatsUnit(10f));
         }
@@ -400,7 +526,7 @@ namespace PoliSim.UI
                 case PlayerRole.Opposition:
                 {
                     if (g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || extra != System.DateTime.MinValue) { break; }
-                    if (ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag) { DrawConstructiveVote(book, caption); break; }   // §698
+                    if (ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag) { if (_simulationManager.RoundOf(PlayerCountryId) == null && !_simulationManager.ElectionAwaitsRound(PlayerCountryId)) { DrawConstructiveVote(book, caption); } break; }   // §698; §705: none while the chancellor's election runs (Art. 63, not Art. 67)
                     ConfidenceProcedure.MotionVote projected = ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
                     bool takenUp = ConfidenceProcedure.CanBeTakenUp(_playerCountry, _playerCountry.PlayerPartyAbbrev, out int moverSeats, out int tenth);
                     Rect row = ReserveRow(34f);

@@ -127,6 +127,10 @@ namespace PoliSim.Testing
 
         private GameController _dryController;
         private MethodInfo _dryOnGui;
+        /// <summary>§705: the page tour's controller, set where the tour begins (the special modes have branched off by then) - a sheet the game
+        /// opened by itself is closed before each of the tour's frames (<see cref="Capture"/>), unless 07a is staging it.</summary>
+        private GameController _tourController;
+        private bool _stagingFormationSheet;
 
         /// <summary>Frames to let IMGUI settle before a capture. IMGUI lays out on the frame it draws, so a screen switched to on frame N is not fully measured until N+1; four is cheap insurance rather than a measured minimum.</summary>
         private const int SettleFrames = 4;
@@ -565,6 +569,8 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            _tourController = controller;   // §705: the page tour begins - a sheet the game opens by itself is closed before its frames
+
             // P2-2.1 (2026-09-02): the Budget at REST - before any line is drafted - so the effects panel is filmed with
             // nothing to show (its idle sentence) as well as, below, mid-draft with its arrows.
             SetPrivateField(controller, "_onDesk", false);
@@ -995,6 +1001,7 @@ namespace PoliSim.Testing
                                 GovernmentRecord roundRecord = roundCountry.Government;
                                 string partyBefore = roundCountry.PlayerPartyAbbrev;
                                 roundCountry.PlayerPartyAbbrev = filmRound.Order[0];
+                                _stagingFormationSheet = true;   // §705: the sheet is this staging's to film
                                 roundSim.OpenSpeakerRound(roundCountry, filmRound.Vintage, filmRound.Occasion,   // §685 (21a): the film round's own occasion - "for the film" was harness prose on a player screen
                                     electionDay: filmRound.ReadsOn == DateTime.MinValue ? (DateTime?)null : filmRound.ReadsOn, midTerm: filmRound.MidTerm);   // the film's round's own reading (§653)
                                 SpeakerRound staged = roundSim.RoundOf(_countryId);
@@ -1084,6 +1091,7 @@ namespace PoliSim.Testing
                                 sheetOpen?.SetValue(controller, false);
                                 ResetScrolls(controller);
                                 yield return Settle();
+                                _stagingFormationSheet = false;
                                 Debug.Log($"SHOT: §647 - the film's round ({filmRound.Stage}, {filmRound.Asked} asked) and {partyBefore} put back.");
                             }
                         }
@@ -2332,6 +2340,19 @@ namespace PoliSim.Testing
         private IEnumerator Capture(string name)
         {
             _capturedFrames.Add(name);   // TL-1 (§645): attempted - a capture that fails is counted by its own trap, not as missing
+            // §705: THE TOUR NEVER FILMS A PAGE UNDER A SHEET THE GAME OPENED BY ITSELF. Where the player's party is asked to form a government,
+            // the controller opens the formation sheet over every page (premise 1) - the German session's round opens at the tour's first day tick
+            // (the warm-up drives the manager, not the controller's day), the SPD asked, and every frame after 01f was the sheet, five plate traps
+            // firing. A player closes it (CLOSE THE SHEET - the clock still waits on the answer); so does the tour, and 07a stages the sheet itself.
+            if (_tourController != null && !_stagingFormationSheet)
+            {
+                FieldInfo sheetField = typeof(GameController).GetField("_formationSheetOpen", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (sheetField?.GetValue(_tourController) is bool sheetUp && sheetUp)
+                {
+                    sheetField.SetValue(_tourController, false);
+                    Debug.Log($"SHOT: {name} - the formation sheet the game opened by itself (the player's party asked) is closed as a player would, CLOSE THE SHEET; the clock still waits on the answer (07a films the sheet).");
+                }
+            }
             // ⚠ THIS IS WHY THE RUNNER CANNOT USE -batchmode.
             //
             // `WaitForEndOfFrame` NEVER RESUMES in batchmode - the coroutine simply stops, the capture
@@ -2944,6 +2965,7 @@ namespace PoliSim.Testing
                     Debug.Log($"SHOT: warm-up held {playerCountry}'s election on {sim.CurrentDate:yyyy-MM-dd} (day {days} / turn {turns}) as play would, without the night{(over ? " - and the run ENDED on its verdict; the warm-up stops here" : string.Empty)}.");
                     if (over) { return; }
                 }
+
 
                 // ⚠ STOP ON A PRELIMINARY RELEASE, not on a day count.
                 //

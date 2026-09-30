@@ -31,13 +31,14 @@ namespace PoliSim.EditorTools
                 double[,] compatibility = GovernmentFormation.Compatibility(parties);
                 foreach (bool negative in new[] { true, false })
                 {
-                    CoalitionResult r = CoalitionFormation.Form(seats, compatibility, lines, negativeRule: negative, inOrAgainst: rules);
+                    int[] joint = ChamberRules.JointMasks(country, parties, seats);   // §705: the parliamentary groups the game's formation reads (the Union)
+                    CoalitionResult r = CoalitionFormation.Form(seats, compatibility, lines, negativeRule: negative, inOrAgainst: rules, joint: joint);
                     cases++;
                     // The evaluator's own API on the formation's own government (asserted, not printed - the text is the pinned formation):
                     // Evaluate gives back the formation's option, and every supporter passes the support tests and stays.
                     if (r.Outcome != CoalitionOutcomeKind.NewElection)
                     {
-                        CoalitionFormation.Chamber prepared = CoalitionFormation.Prepare(seats, compatibility, lines, negative, rules);
+                        CoalitionFormation.Chamber prepared = CoalitionFormation.Prepare(seats, compatibility, lines, negative, rules, joint);
                         CoalitionFormation.CabinetEvaluation e = CoalitionFormation.Evaluate(prepared, r.Government.Cabinet, r.Government.Support);
                         GovernmentOption back = e.AsOption();
                         bool same = e.Wins && back.Cabinet == r.Government.Cabinet && back.Support == r.Government.Support && back.Kind == r.Government.Kind
@@ -125,7 +126,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The digest of the sweep's text as the formation computed it when the evaluator was built (§646) - the formation reproduced exactly.</summary>
-        private const string PinnedDigest = "dbd5f4fb248f06693a0b7fa94a11e992192f8b058bd3a30f71028e00edb7c7a0";   // §683: re-pinned - a party with no seat is never offered a role; 4 of 250 blocks moved, the seated German and Polish chambers only: Germany's viable list lost the options with a seatless member (its government unchanged), Poland's PiS cabinet kept and its support 244 -> 20 (SLD, PSL, MN - the 2019 lists, no seat in the seated chamber - dropped; supported seats 277 either way). Before: cb08c27e… (§652).
+        private const string PinnedDigest = "86fbf292e3c9bbadfa43e4bf4b8f64d335f97c2d3d489fa31d45ce13b5834ee5";   // §705: re-pinned - Germany's declarations sourced and dated (the Union's resolutions, symmetric and support-blocking) and the Union one parliamentary group (the sweep now passes the joint masks the game reads); 2 of 250 blocks moved, the seated German chamber's two rules only: its government CDU+AfD+CSU (360, the defect §705 fixes) -> CDU+CSU+SPD with the SSW (328, supported 329) - the record's coalition; the text before is formation_sweep_before705.txt. Before that, §683: re-pinned - a party with no seat is never offered a role; 4 of 250 blocks moved, the seated German and Polish chambers only: Germany's viable list lost the options with a seatless member (its government unchanged), Poland's PiS cabinet kept and its support 244 -> 20 (SLD, PSL, MN - the 2019 lists, no seat in the seated chamber - dropped; supported seats 277 either way). Before: cb08c27e… (§652).
 
         private static string Option(GovernmentOption g) => string.Format(CultureInfo.InvariantCulture, "cab {0} sup {1} {2} seats {3} supported {4} opposed {5} cohesion {6:R} score {7:R}",
             g.Cabinet, g.Support, g.Kind, g.CabinetSeats, g.SupportedSeats, g.OpposedSeats, g.Cohesion, g.Score);

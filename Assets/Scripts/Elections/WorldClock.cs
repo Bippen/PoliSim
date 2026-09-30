@@ -401,6 +401,8 @@ namespace PoliSim.Elections
             /// <see cref="HeadParty"/> where the record shows no change or names no party.</summary>
             public string HeadParty, HeadSurname, HeadQualifier;
             public DateTime HeadFrom;
+            /// <summary>§705: the cabinet's parties of the government of record after the election, where the record names them; null otherwise.</summary>
+            public string[] CabinetOfRecord;
             public bool HeadIsCaretaker;
         }
 
@@ -426,6 +428,7 @@ namespace PoliSim.Elections
                 }
                 else if (after.Value.CabinetSourced)
                 {
+                    r.CabinetOfRecord = after.Value.Cabinet;
                     r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()
                         + " · IN CABINET " + string.Join("+", after.Value.Cabinet) + (after.Value.Support != null && after.Value.Support.Length > 0 ? " · SUPPORT " + string.Join("+", after.Value.Support) : string.Empty);
                 }

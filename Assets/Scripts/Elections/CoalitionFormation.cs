@@ -288,12 +288,12 @@ namespace PoliSim.Elections
         /// that way, so the chamber formed nothing (§607).
         /// </summary>
         public static CoalitionResult Form(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
-            IReadOnlyList<InOrAgainst> inOrAgainst = null)
+            IReadOnlyList<InOrAgainst> inOrAgainst = null, int[] joint = null)
         {
             // §646 (the formateur's evaluator): the chamber is PREPARED once and every admissible cabinet EVALUATED by the one routine a proposal
             // is judged by - so the formation and the formateur's investiture can never disagree. The formation reproduced exactly is pinned by
             // `FormationSweepDiagnostic`.
-            Chamber chamber = Prepare(seats, compatibility, redLines, negativeRule, inOrAgainst);
+            Chamber chamber = Prepare(seats, compatibility, redLines, negativeRule, inOrAgainst, joint);
             var result = new CoalitionResult
             {
                 Majority = chamber.Majority,
@@ -386,6 +386,8 @@ namespace PoliSim.Elections
             /// support (a party with no mandate has no votes to give).</summary>
             public int SeatlessMask;
             public IReadOnlyList<InOrAgainst> Rules;
+            /// <summary>§705: parties that sit as one parliamentary group, each a bitmask (the CDU and the CSU); null where there is none.</summary>
+            public int[] Joint;
             public int Majority;
             public int TotalSeats;
             public double[] Power;
@@ -398,7 +400,7 @@ namespace PoliSim.Elections
 
         /// <summary>§646: prepare a chamber for evaluation - the formation's pass 1, its passable set and each party's hold-out, as <see cref="Form"/> computes them.</summary>
         public static Chamber Prepare(int[] seats, double[,] compatibility, IReadOnlyList<RedLine> redLines, bool negativeRule = true,
-            IReadOnlyList<InOrAgainst> inOrAgainst = null)
+            IReadOnlyList<InOrAgainst> inOrAgainst = null, int[] joint = null)
         {
             if (seats == null) { throw new ArgumentNullException(nameof(seats)); }
             int n = seats.Length;
@@ -410,7 +412,7 @@ namespace PoliSim.Elections
             var chamber = new Chamber
             {
                 N = n, Seats = seats, Compatibility = compatibility, Lines = lines, NegativeRule = negativeRule,
-                NoSupportMask = noSupportMask, InOrAgainstMask = inOrAgainstMask, Rules = inOrAgainst ?? new List<InOrAgainst>(),
+                NoSupportMask = noSupportMask, InOrAgainstMask = inOrAgainstMask, Rules = inOrAgainst ?? new List<InOrAgainst>(), Joint = joint,
                 Majority = CoalitionMath.Majority(seats),
                 Power = CoalitionMath.NegotiatingPower(seats),
             };
@@ -430,6 +432,7 @@ namespace PoliSim.Elections
             for (int cabinet = 1; cabinet <= all; cabinet++)
             {
                 if ((cabinet & seatless) != 0) { continue; }   // §683: not a candidate at all - neither admissible nor "blocked"
+                if (SplitsJoint(cabinet, joint)) { continue; }   // §705: one parliamentary group sits whole or not at all - never a candidate split
                 int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
                 if (TryFindInternalRedLine(cabinet, n, lines, out RedLine broken))
                 {
@@ -451,13 +454,14 @@ namespace PoliSim.Elections
             var passesOnLines = new bool[all + 1];
             foreach (int cabinet in chamber.Admissible)
             {
-                int support = SupportersOf(cabinet, n, lines, compatibility, chamber.Power, noSupportMask, seatless);
+                int support = JointAlike(SupportersOf(cabinet, n, lines, compatibility, chamber.Power, noSupportMask, seatless), cabinet, joint, seats);
                 int opposeMask = 0;
                 for (int p = 0; p < n; p++)
                 {
                     if ((cabinet & (1 << p)) != 0 || (support & (1 << p)) != 0) { continue; }
                     if (SupportBlocked(p, cabinet, n, lines) || (inOrAgainstMask & (1 << p)) != 0) { opposeMask |= 1 << p; }
                 }
+                opposeMask = JointAlike(opposeMask, cabinet, joint, seats);
                 int supported = CoalitionMath.Seats(seats, cabinet) + CoalitionMath.Seats(seats, support);
                 passesOnLines[cabinet] = supported >= chamber.Majority || (negativeRule && CoalitionMath.Seats(seats, opposeMask) < chamber.Majority);
             }
@@ -495,6 +499,8 @@ namespace PoliSim.Elections
             public RedLine InternalLine;
             /// <summary>§683 (ruled): the proposal names a party with no seat - never a candidate.</summary>
             public bool SeatlessMember;
+            /// <summary>§705: the proposal holds one member of a parliamentary group without the other - never a candidate.</summary>
+            public bool SplitsJointGroup;
             public bool Wins;
             public CoalitionOutcomeKind Kind;
             public double Cohesion;
@@ -520,9 +526,12 @@ namespace PoliSim.Elections
             // §683 (ruled): a proposal (the formateur's, the player's sheet) may name a party with no seat - it is never a candidate
             e.SeatlessMember = (cabinet & chamber.SeatlessMask) != 0;
             if (e.SeatlessMember) { e.Admissible = false; }
+            // §705: a proposal that splits one parliamentary group (the CDU without the CSU) is never a candidate
+            e.SplitsJointGroup = SplitsJoint(cabinet, chamber.Joint);
+            if (e.SplitsJointGroup) { e.Admissible = false; }
             int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
-            int supportMask = support.HasValue ? support.Value & ~cabinet & ~chamber.SeatlessMask
-                : SupportersOf(cabinet, n, chamber.Lines, chamber.Compatibility, chamber.Power, chamber.NoSupportMask, chamber.SeatlessMask);
+            int supportMask = JointAlike(support.HasValue ? support.Value & ~cabinet & ~chamber.SeatlessMask
+                : SupportersOf(cabinet, n, chamber.Lines, chamber.Compatibility, chamber.Power, chamber.NoSupportMask, chamber.SeatlessMask), cabinet, chamber.Joint, seats);
             int supported = cabinetSeats + CoalitionMath.Seats(seats, supportMask);
             double score = e.Admissible ? chamber.BaseScore[cabinet] : double.NaN;
 
@@ -556,6 +565,25 @@ namespace PoliSim.Elections
                 }
                 e.Sides[p] = InvestitureSide.Abstains;
                 e.Reasons[p] = "abstains - no line bars its support, and it holds out for nothing it could pass";
+            }
+
+            // §705: one parliamentary group outside the cabinet votes as one - the larger member's side and reason
+            if (chamber.Joint != null)
+            {
+                foreach (int m in chamber.Joint)
+                {
+                    if ((cabinet & m) != 0) { continue; }
+                    int larger = -1, smaller = -1;
+                    for (int p = 0; p < n; p++)
+                    {
+                        if ((m & (1 << p)) == 0) { continue; }
+                        if (larger < 0 || seats[p] > seats[larger]) { smaller = larger; larger = p; } else { smaller = p; }
+                    }
+                    if (larger < 0 || smaller < 0) { continue; }
+                    e.Sides[smaller] = e.Sides[larger];
+                    e.Reasons[smaller] = "votes with its parliamentary group, as one - " + e.Reasons[larger];
+                    if ((opposeMask & (1 << larger)) != 0) { opposeMask |= 1 << smaller; } else { opposeMask &= ~(1 << smaller); }
+                }
             }
 
             int opposed = CoalitionMath.Seats(seats, opposeMask);
@@ -704,6 +732,29 @@ namespace PoliSim.Elections
             }
 
             found = default; return false;
+        }
+
+        /// <summary>§705: whether <paramref name="cabinet"/> holds one member of a parliamentary group without the other.</summary>
+        public static bool SplitsJoint(int cabinet, int[] joint)
+        {
+            if (joint == null) { return false; }
+            foreach (int m in joint) { int inside = cabinet & m; if (inside != 0 && inside != m) { return true; } }
+            return false;
+        }
+
+        /// <summary>§705: any party mask made alike across each parliamentary group outside the cabinet - its larger member decides for both.</summary>
+        public static int JointAlike(int mask, int cabinet, int[] joint, int[] seats)
+        {
+            if (joint == null) { return mask; }
+            foreach (int m in joint)
+            {
+                if ((cabinet & m) != 0) { continue; }
+                int larger = -1;
+                for (int p = 0; p < seats.Length; p++) { if ((m & (1 << p)) != 0 && (larger < 0 || seats[p] > seats[larger])) { larger = p; } }
+                if (larger < 0) { continue; }
+                mask = (mask & (1 << larger)) != 0 ? mask | m : mask & ~m;
+            }
+            return mask;
         }
 
         /// <summary>

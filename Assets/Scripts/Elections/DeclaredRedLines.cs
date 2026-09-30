@@ -12,7 +12,8 @@ namespace PoliSim.Elections
     /// let an inference wear a citation's authority — and, worse, would hide the fact that **only one of
     /// the six countries has its declarations on disk.**</para>
     ///
-    /// <para>⚠ <b>SOURCED FOR SWEDEN ONLY, in two vintages.</b> K-1 (2026-09-23): the live game reads the
+    /// <para>⚠ <b>SOURCED FOR SWEDEN, in two vintages, and for GERMANY since §705</b> (its timeline, `ElectionsData/germany/coalition_declarations_2025.md`:
+    /// the Union's incompatibility resolutions and the 2025 chancellor candidacies; every other German line derived). K-1 (2026-09-23): the live game reads the
     /// declarations as of the 2026 election, `ElectionsData/sweden/2026/coalition_declarations_2026.md`; the
     /// backtests that assert 2022's government pin <see cref="ElectionVintage.Sweden2022"/>,
     /// `ElectionsData/sweden/coalition_declarations_2022.md`. For every other country `For` returns the DERIVED
@@ -32,7 +33,16 @@ namespace PoliSim.Elections
 
         /// <summary>Whether this country's DECLARED lines are sourced. False means `For` returns derived
         /// lines alone.</summary>
-        public static bool IsSourced(CountryId country) => country == CountryId.Sweden;
+        public static bool IsSourced(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany;   // §705: Germany's declarations, dated
+
+        /// <summary>
+        /// §705: whether an own-leader candidacy REFUSES another candidate's cabinet - Sweden's ruled pairing rule (K-1f). Not Germany's: a
+        /// Kanzlerkandidatur names who leads a cabinet the party forms and draws no line - the SPD's candidate stood against Merz and the SPD entered
+        /// his cabinet in 2025 (`ElectionsData/germany/coalition_declarations_2025.md` §3).
+        /// </summary>
+        public static bool CandidacyRefuses(CountryId country) => country == CountryId.Sweden;
+
+        public const string GermanySource = "See ElectionsData/germany/coalition_declarations_2025.md";
 
         /// <summary>The derived lines plus any declared ones this country has on disk, in the party order
         /// of <paramref name="parties"/>, as of <paramref name="vintage"/> - the seated election's unless a
@@ -40,6 +50,7 @@ namespace PoliSim.Elections
         private static List<RedLine> ForSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage)
         {
             vintage = WorldClock.Resolve(country, vintage);   // PS-1 (§618): the seated chamber's election - every election reads its own date's declarations
+            if (country == CountryId.Germany) { return ForDateSourced(country, parties, WorldClock.ElectionDayOf(country, vintage)); }   // §705: a German vintage reads its timeline on its polling day
             var lrGen = new double[parties.Count];
             var galtan = new double[parties.Count];
             for (int p = 0; p < parties.Count; p++)
@@ -147,6 +158,7 @@ namespace PoliSim.Elections
         /// </summary>
         private static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesSourced(CountryId country, ElectionVintage vintage)
         {
+            if (country == CountryId.Germany) { return CandidaciesAtSourced(country, WorldClock.ElectionDayOf(country, WorldClock.Resolve(country, vintage))); }   // §705
             if (country != CountryId.Sweden) { return System.Array.Empty<(string, string, string)>(); }
             vintage = WorldClock.Resolve(country, vintage);
             if (vintage == ElectionVintage.Sweden2018) { return System.Array.Empty<(string, string, string)>(); }   // no 2018 declarations are sourced; no start seats that chamber
@@ -336,15 +348,54 @@ namespace PoliSim.Elections
             new DatedFact("KD", "S", FactKind.PairLine, true, true, null, D(2026, 9, 2), Open, KdRefusesAndersson),
         };
 
-        /// <summary>Whether a country's declarations are dated on a timeline (§621) - Sweden's alone; every other country reads its vintage.</summary>
-        public static bool HasTimeline(CountryId country) => country == CountryId.Sweden;
+        /// <summary>
+        /// §705 (round 4 follow-up 4): GERMANY'S DECLARATIONS AS DATED FACTS - the Union's incompatibility resolutions and the 2025 chancellor
+        /// candidacies, each quoted and saved in `ElectionsData/germany/coalition_declarations_2025.md`. The rest of Germany's lines stay DERIVED
+        /// (the CSU-Linke pair included: no CSU resolution against Die Linke was found). A German candidacy draws no line (<see cref="CandidacyRefuses"/>).
+        /// </summary>
+        public static IReadOnlyList<DatedFact> GermanyTimeline { get; } = new[]
+        {
+            // CDU: the 31st party congress, Hamburg, 7-8 December 2018 - "lehnt Koalitionen und ähnliche Formen der Zusammenarbeit sowohl mit der
+            // Linkspartei als auch mit der Alternative für Deutschland ab" [CDU-PT31]. SYMMETRIC and support-blocking - "I will not be in, or support,
+            // a government that depends on you": a coalition is refused, and so is every "similar form of cooperation", which takes in a CDU cabinet
+            // governing on the AfD's toleration as much as the CDU tolerating theirs. Not K-1's one-way shape: that one lets B support a cabinet A
+            // sits in (C's refusal names cabinets that CONTAIN V, and no source has it refuse V's support), and the CDU's words refuse exactly that.
+            new DatedFact("CDU", "AfD", FactKind.PairLine, true, false, null, D(2018, 12, 8), Open,
+                "DECLARED: the CDU \"lehnt Koalitionen und ähnliche Formen der Zusammenarbeit sowohl mit der Linkspartei als auch mit der Alternative für Deutschland ab\" - its 31st party congress, Hamburg, 8 December 2018 [CDU-PT31]. " + GermanySource),
+            new DatedFact("CDU", "Linke", FactKind.PairLine, true, false, null, D(2018, 12, 8), Open,
+                "DECLARED: the CDU \"lehnt Koalitionen und ähnliche Formen der Zusammenarbeit sowohl mit der Linkspartei als auch mit der Alternative für Deutschland ab\" - its 31st party congress, Hamburg, 8 December 2018 [CDU-PT31]. " + GermanySource),
+            // CSU: its Parteivorstand, 24 July 2023 - "Die Brandmauer gegen die AfD steht ... Zusammenarbeit mit der AfD ab" [CSU-PV23]; the same
+            // shape - cooperation refused, in either direction
+            new DatedFact("CSU", "AfD", FactKind.PairLine, true, false, null, D(2023, 7, 24), Open,
+                "DECLARED: \"Die Brandmauer gegen die AfD steht\" - the CSU rejects cooperation with the AfD; its Parteivorstand, 24 July 2023 [CSU-PV23]. " + GermanySource),
+            // The 2025 candidacies (the four the Bundestag's Datenhandbuch 6.5 lists, "2025 vor der Wahl" [BT-DHB65]), each from the earliest day a source
+            // saved whole dates it - the review of §705 found three dated at the polling day, so a German run-up read Habeck's alone:
+            // the Union's from the CSU's own page of 12 October 2024 (DERIVED: the page is the earliest saved; the CDU and CSU boards' nomination of
+            // 23 September is press-reported, and cdu.de did not answer); the SPD's from its own page of 25 November 2024; the AfD's from ZDF's report
+            // of its Bundesvorstand's decision of 7 December 2024; the Greens' from their own congress page of 17 November 2024.
+            new DatedFact("CDU", null, FactKind.Candidacy, false, false, "Friedrich Merz", D(2024, 10, 12), Open,
+                "the Union's chancellor candidate, Friedrich Merz (CDU) - the CSU's \"Rede des gemeinsamen Kanzlerkandidaten\", its party congress, \"Artikel vom 12.10.2024\" [CSU-PT24]; listed by the Bundestag's Datenhandbuch 6.5 [BT-DHB65]. " + GermanySource),
+            new DatedFact("SPD", null, FactKind.Candidacy, false, false, "Olaf Scholz", D(2024, 11, 25), Open,
+                "the SPD's chancellor candidate, Olaf Scholz - \"Heute haben wir Olaf Scholz zu unserem Kanzlerkandidaten nominiert\", the SPD Schleswig-Holstein, 25 November 2024 [SPD-N24]; confirmed by the party congress of 11 January 2025. " + GermanySource),
+            new DatedFact("AfD", null, FactKind.Candidacy, false, false, "Alice Weidel", D(2024, 12, 7), Open,
+                "the AfD's chancellor candidate, Alice Weidel - \"Der AfD-Vorstand nominierte die 45-Jährige am Samstag für das Spitzenamt\", ZDF, 7 December 2024 [ZDF-AFD24]. " + GermanySource),
+            new DatedFact("Grune", null, FactKind.Candidacy, false, false, "Robert Habeck", D(2024, 11, 17), Open,
+                "the Greens' candidate, Robert Habeck - their congress of 17 November 2024, \"Der entsprechende Antrag wurde mit 96,48 Prozent der Stimmen angenommen\" [GR-BDK24]. " + GermanySource),
+        };
+
+        /// <summary>The dated facts of a country with a timeline; none for the rest.</summary>
+        public static IReadOnlyList<DatedFact> TimelineOf(CountryId country) =>
+            country == CountryId.Sweden ? SwedenTimeline : country == CountryId.Germany ? GermanyTimeline : System.Array.Empty<DatedFact>();
+
+        /// <summary>Whether a country's declarations are dated on a timeline (§621) - Sweden's, and Germany's since §705; every other country reads its vintage.</summary>
+        public static bool HasTimeline(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany;
 
         /// <summary>§657: the dated facts standing on <paramref name="asOf"/>, in the timeline's order - the run-up's declarations page (D-PS, the DECLARED block only). Empty without a timeline.</summary>
         public static List<DatedFact> StandingOn(CountryId country, System.DateTime asOf)
         {
             var standing = new List<DatedFact>();
             if (!HasTimeline(country)) { return standing; }
-            foreach (DatedFact f in SwedenTimeline) { if (f.StandsOn(asOf)) { standing.Add(f); } }
+            foreach (DatedFact f in TimelineOf(country)) { if (f.StandsOn(asOf)) { standing.Add(f); } }
             return standing;
         }
 
@@ -354,26 +405,26 @@ namespace PoliSim.Elections
         {
             var lifted = new List<DatedFact>();
             if (!HasTimeline(country)) { return lifted; }
-            foreach (DatedFact f in SwedenTimeline)
+            foreach (DatedFact f in TimelineOf(country))
             {
                 if (f.Until == Open || f.Until <= since.Date || f.Until > asOf.Date) { continue; }
                 bool replaced = false;
-                foreach (DatedFact g in SwedenTimeline) { if (g.From == f.Until && g.Party == f.Party && g.Other == f.Other && g.Kind == f.Kind) { replaced = true; break; } }
+                foreach (DatedFact g in TimelineOf(country)) { if (g.From == f.Until && g.Party == f.Party && g.Other == f.Other && g.Kind == f.Kind) { replaced = true; break; } }
                 if (!replaced) { lifted.Add(f); }
             }
             return lifted;
         }
 
-        /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden only; the other countries return derived lines alone.</summary>
+        /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden and Germany (§705); the other countries return derived lines alone.</summary>
         private static List<RedLine> ForDateSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
             var lrGen = new double[parties.Count];
             var galtan = new double[parties.Count];
             for (int p = 0; p < parties.Count; p++) { lrGen[p] = parties[p].LrGen; galtan[p] = parties[p].Galtan; }
             List<RedLine> lines = DerivedRedLines.From(lrGen, galtan);
-            if (country != CountryId.Sweden) { return lines; }
-            AddCandidacyLines(lines, parties, CandidaciesAt(country, asOf));
-            foreach (DatedFact f in SwedenTimeline)
+            if (!HasTimeline(country)) { return lines; }
+            if (CandidacyRefuses(country)) { AddCandidacyLines(lines, parties, CandidaciesAt(country, asOf)); }   // §705: Sweden's ruled pairing rule; a German candidacy draws no line
+            foreach (DatedFact f in TimelineOf(country))
             {
                 if (f.Kind != FactKind.PairLine || !f.StandsOn(asOf)) { continue; }
                 int a = IndexOf(parties, f.Party), b = IndexOf(parties, f.Other);
@@ -387,8 +438,8 @@ namespace PoliSim.Elections
         private static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesAtSourced(CountryId country, System.DateTime asOf)
         {
             var found = new List<(string, string, string)>();
-            if (country != CountryId.Sweden) { return found; }
-            foreach (DatedFact f in SwedenTimeline) { if (f.Kind == FactKind.Candidacy && f.StandsOn(asOf)) { found.Add((f.Party, f.Candidate, f.Basis)); } }
+            if (!HasTimeline(country)) { return found; }
+            foreach (DatedFact f in TimelineOf(country)) { if (f.Kind == FactKind.Candidacy && f.StandsOn(asOf)) { found.Add((f.Party, f.Candidate, f.Basis)); } }
             return found;
         }
 
@@ -396,8 +447,8 @@ namespace PoliSim.Elections
         private static List<InOrAgainst> InOrAgainstAtSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
             var rules = new List<InOrAgainst>();
-            if (country != CountryId.Sweden) { return rules; }
-            foreach (DatedFact f in SwedenTimeline)
+            if (!HasTimeline(country)) { return rules; }
+            foreach (DatedFact f in TimelineOf(country))
             {
                 if ((f.Kind != FactKind.InOrAgainst && f.Kind != FactKind.NoSupportRole) || !f.StandsOn(asOf)) { continue; }
                 int p = IndexOf(parties, f.Party);
@@ -497,7 +548,7 @@ namespace PoliSim.Elections
                     if (o >= 0 && o != me) { lines.Add(new RedLine(me, o, RedLineKind.Declared, blocksSupport: true, oneWay: true, basis: CreatedPrefix + c.Name + " will not sit in or support any cabinet that contains " + other)); }
                 }
                 // backing a REAL party's candidate: every other declared candidate's cabinet refused, one way (the candidacy lines' own strength)
-                if (!string.IsNullOrEmpty(c.BacksCandidateOf) && c.BacksCandidateOf != c.Key)
+                if (CandidacyRefuses(country) && !string.IsNullOrEmpty(c.BacksCandidateOf) && c.BacksCandidateOf != c.Key)   // §705: Sweden's pairing rule, not Germany's
                 {
                     foreach ((string abbrev, string candidate, string _) in candidacies)
                     {
