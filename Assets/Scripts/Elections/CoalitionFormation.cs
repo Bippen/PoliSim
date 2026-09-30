@@ -349,7 +349,22 @@ namespace PoliSim.Elections
 
             result.Government = result.Viable[0];
             result.Outcome = result.Government.Kind;
+            AssertNoSeatless(chamber, result);
             return result;
+        }
+
+        /// <summary>§683 (ruled): THE ASSERTION - a party with no seat never appears in a cabinet or a support list the formation returns. It fails
+        /// loudly (throws) rather than letting a seatless party govern; `SeatlessFormationDiagnostic` proves it fires on a planted result and never on a
+        /// formed one.</summary>
+        public static void AssertNoSeatless(Chamber chamber, CoalitionResult result)
+        {
+            foreach (GovernmentOption g in result.Viable)
+            {
+                int bad = (g.Cabinet | g.Support) & chamber.SeatlessMask;
+                if (bad == 0) { continue; }
+                throw new InvalidOperationException(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                    "a party with no seat (mask {0}) appears in a formed cabinet ({1}) or its support ({2}) - a party with no mandate is never offered a role", bad, g.Cabinet, g.Support));
+            }
         }
 
         /// <summary>
@@ -367,6 +382,9 @@ namespace PoliSim.Elections
             /// <summary>K-1f: the parties that support no cabinet they are not in; K-1g: of those, the ones that also vote against every such cabinet.</summary>
             public int NoSupportMask;
             public int InOrAgainstMask;
+            /// <summary>§683 (ruled): the parties holding NO seat - never offered a cabinet or a support role, and no bearing on anyone else's
+            /// support (a party with no mandate has no votes to give).</summary>
+            public int SeatlessMask;
             public IReadOnlyList<InOrAgainst> Rules;
             public int Majority;
             public int TotalSeats;
@@ -396,6 +414,9 @@ namespace PoliSim.Elections
                 Majority = CoalitionMath.Majority(seats),
                 Power = CoalitionMath.NegotiatingPower(seats),
             };
+            // §683 (ruled): a party with no seat is never a candidate - for a cabinet or for support
+            for (int p = 0; p < n; p++) { if (seats[p] <= 0) { chamber.SeatlessMask |= 1 << p; } }
+            int seatless = chamber.SeatlessMask;
 
             int all = (1 << n) - 1;
             int totalSeats = CoalitionMath.Seats(seats, all);
@@ -408,6 +429,7 @@ namespace PoliSim.Elections
             var baseScore = new double[all + 1];
             for (int cabinet = 1; cabinet <= all; cabinet++)
             {
+                if ((cabinet & seatless) != 0) { continue; }   // §683: not a candidate at all - neither admissible nor "blocked"
                 int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
                 if (TryFindInternalRedLine(cabinet, n, lines, out RedLine broken))
                 {
@@ -429,7 +451,7 @@ namespace PoliSim.Elections
             var passesOnLines = new bool[all + 1];
             foreach (int cabinet in chamber.Admissible)
             {
-                int support = SupportersOf(cabinet, n, lines, compatibility, chamber.Power, noSupportMask);
+                int support = SupportersOf(cabinet, n, lines, compatibility, chamber.Power, noSupportMask, seatless);
                 int opposeMask = 0;
                 for (int p = 0; p < n; p++)
                 {
@@ -468,9 +490,11 @@ namespace PoliSim.Elections
             public int CabinetSeats;
             public int SupportedSeats;
             public int OpposedSeats;
-            /// <summary>False when a red line falls inside the cabinet - <see cref="InternalLine"/> names it.</summary>
+            /// <summary>False when a red line falls inside the cabinet - <see cref="InternalLine"/> names it - or a member holds no seat (<see cref="SeatlessMember"/>).</summary>
             public bool Admissible;
             public RedLine InternalLine;
+            /// <summary>§683 (ruled): the proposal names a party with no seat - never a candidate.</summary>
+            public bool SeatlessMember;
             public bool Wins;
             public CoalitionOutcomeKind Kind;
             public double Cohesion;
@@ -493,8 +517,12 @@ namespace PoliSim.Elections
             var e = new CabinetEvaluation { Cabinet = cabinet, Sides = new InvestitureSide[n], Reasons = new string[n] };
             e.Admissible = !TryFindInternalRedLine(cabinet, n, chamber.Lines, out RedLine inside);
             if (!e.Admissible) { e.InternalLine = inside; }
+            // §683 (ruled): a proposal (the formateur's, the player's sheet) may name a party with no seat - it is never a candidate
+            e.SeatlessMember = (cabinet & chamber.SeatlessMask) != 0;
+            if (e.SeatlessMember) { e.Admissible = false; }
             int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
-            int supportMask = support.HasValue ? support.Value & ~cabinet : SupportersOf(cabinet, n, chamber.Lines, chamber.Compatibility, chamber.Power, chamber.NoSupportMask);
+            int supportMask = support.HasValue ? support.Value & ~cabinet & ~chamber.SeatlessMask
+                : SupportersOf(cabinet, n, chamber.Lines, chamber.Compatibility, chamber.Power, chamber.NoSupportMask, chamber.SeatlessMask);
             int supported = cabinetSeats + CoalitionMath.Seats(seats, supportMask);
             double score = e.Admissible ? chamber.BaseScore[cabinet] : double.NaN;
 
@@ -554,6 +582,7 @@ namespace PoliSim.Elections
         public static string SupportRefusal(Chamber chamber, int p, int cabinet)
         {
             int n = chamber.N;
+            if ((chamber.SeatlessMask & (1 << p)) != 0) { return "holds no seat - a party with no mandate is never offered a role"; }   // §683 (ruled)
             if (SupportBlocked(p, cabinet, n, chamber.Lines)) { return "a red line against a cabinet party - " + SupportBlockBasis(p, cabinet, n, chamber.Lines); }
             if ((chamber.NoSupportMask & (1 << p)) != 0) { return "supports no cabinet it is not in - " + RuleBasis(chamber.Rules, p); }
             double toCabinet = MeanCompatibility(p, cabinet, n, chamber.Compatibility);
@@ -696,7 +725,7 @@ namespace PoliSim.Elections
         ///    the actual outcome from the arithmetic rather than from a stored answer.
         /// </summary>
         private static int SupportersOf(int cabinet, int n, IReadOnlyList<RedLine> lines,
-            double[,] compatibility, double[] power, int noSupportMask = 0)
+            double[,] compatibility, double[] power, int noSupportMask = 0, int seatlessMask = 0)
         {
             int support = 0;
             for (int p = 0; p < n; p++)
@@ -704,12 +733,13 @@ namespace PoliSim.Elections
                 if ((cabinet & (1 << p)) != 0) { continue; }
                 if (SupportBlocked(p, cabinet, n, lines)) { continue; }
                 if ((noSupportMask & (1 << p)) != 0) { continue; }   // K-1f/K-1g: it supports no cabinet it is not in
+                if ((seatlessMask & (1 << p)) != 0) { continue; }    // §683: no seat, no support role
 
                 double toCabinet = MeanCompatibility(p, cabinet, n, compatibility);
                 double bestOutside = double.NegativeInfinity;
                 for (int q = 0; q < n; q++)
                 {
-                    if (q == p || (cabinet & (1 << q)) != 0) { continue; }
+                    if (q == p || (cabinet & (1 << q)) != 0 || (seatlessMask & (1 << q)) != 0) { continue; }   // §683: a seatless party is no alternative to weigh
                     if (!double.IsNaN(compatibility[p, q]) && compatibility[p, q] > bestOutside) { bestOutside = compatibility[p, q]; }
                 }
 

@@ -35047,3 +35047,16 @@ Every raw folder's `SHA256SUMS.txt` verifies clean. Two parallel-run incidents, 
 **Changed nothing** - the build, the manifest and §678's check stand.
 
 **Documents tier.**
+
+
+## 683. A PARTY WITH ZERO SEATS IS NEVER OFFERED A CABINET OR SUPPORT ROLE: EXCLUDED FROM THE FORMATION'S CANDIDATES, AND AN ASSERTION THAT THROWS IF ONE EVER APPEARS; THE SEATED POLISH CHAMBER HAD LISTED THREE SEATLESS 2019 LISTS AS SUPPORTERS (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30): *A party with zero seats is never offered a cabinet or support role. Exclude it from the formation's candidates, and add an assertion that fails if a zero-seat party ever appears in a cabinet or support list.*
+
+**Built** (`CoalitionFormation`, so every path inherits it - the formation, the formateur's evaluator, the Speaker's round, the player's formation sheet). `Chamber.SeatlessMask` marks every party with no seat. `Prepare` never enumerates a cabinet containing one (not admissible, and not "blocked by a red line" either - it was never a candidate). `SupportersOf` gives a seatless party no support role and no weight as an alternative another party measures its support against. `Evaluate` marks a proposal naming one inadmissible (`SeatlessMember`); `SupportRefusal` says *"holds no seat - a party with no mandate is never offered a role"*; a seatless party invited into a proposal's cabinet (`FormationProposal`) refuses in the same words. **The assertion:** `CoalitionFormation.AssertNoSeatless`, called on every formation's result, throws if a seatless party is in any viable cabinet or its support.
+
+**Proved** (`SeatlessFormationDiagnostic`, cheap bar): §679's chamber re-formed - a created party holding M's mandate, M none - forms **NM+KD+L supported by SD** (§679 had formed NM+KD+L+M, M sitting with 0 seats); a proposal naming M is inadmissible and fails, and asked to support, M refuses with the reason; **the assertion throws on a planted result** that seats a seatless party in a cabinet, and on one that lists it as a supporter; **it never fires on a formed result** - the six live chambers (five seatless parties among them: Germany's two, Poland's three) and 400 seeded seat tables with zeros.
+
+**What moved** (`FormationSweepDiagnostic` re-pinned, `dbd5f4fb…`, before `cb08c27e…`): **4 of 250 formations**, the seated German and Polish chambers only - Germany's viable list lost the options with a seatless member (its government unchanged: CDU+AfD+CSU supported by SSW); **Poland's PiS cabinet stands and its support falls from mask 244 to 20: SLD, PSL and MN - the 2019 Sejm's lists, no seat in the seated chamber - were listed as supporters and are dropped** (supported seats 277 either way, since they added nothing). Every other formation of the sweep is byte-identical.
+
+**Tier SIMULATION + tooling + documents:** cheap bar 74 of 74 (`cheap683`); simulation bar 56 of 56 (`sim683`, the sentinel identical to `ps3k` at both seeds - no no-player run ever gave a seatless party a role); documents 8 of 8 (`doc683`).

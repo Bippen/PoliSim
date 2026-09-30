@@ -125,7 +125,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The digest of the sweep's text as the formation computed it when the evaluator was built (§646) - the formation reproduced exactly.</summary>
-        private const string PinnedDigest = "cb08c27e94a64d6eb70e9d31b9749aa937fed2c3201e8ad84a7190473204b01c";   // §652: re-pinned - MP's in-or-against edge moved 2026-04-04 -> 2026-08-10 (the April-August timeline samples only)
+        private const string PinnedDigest = "dbd5f4fb248f06693a0b7fa94a11e992192f8b058bd3a30f71028e00edb7c7a0";   // §683: re-pinned - a party with no seat is never offered a role; 4 of 250 blocks moved, the seated German and Polish chambers only: Germany's viable list lost the options with a seatless member (its government unchanged), Poland's PiS cabinet kept and its support 244 -> 20 (SLD, PSL, MN - the 2019 lists, no seat in the seated chamber - dropped; supported seats 277 either way). Before: cb08c27e… (§652).
 
         private static string Option(GovernmentOption g) => string.Format(CultureInfo.InvariantCulture, "cab {0} sup {1} {2} seats {3} supported {4} opposed {5} cohesion {6:R} score {7:R}",
             g.Cabinet, g.Support, g.Kind, g.CabinetSeats, g.SupportedSeats, g.OpposedSeats, g.Cohesion, g.Score);

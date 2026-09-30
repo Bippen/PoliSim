@@ -157,6 +157,10 @@ namespace PoliSim.Elections
                     answer.Accepts = true;   // §646 (the reader): the player's own party answers by the player, never by the model
                     answer.Reason = "accepts - the player's party accepted the offer";
                 }
+                else if ((chamber.SeatlessMask & (1 << p)) != 0)
+                {
+                    answer.Reason = "refuses: it holds no seat - a party with no mandate is never offered a role";   // §683 (ruled)
+                }
                 else if (inside.HasValue)
                 {
                     answer.Reason = "refuses: a red line falls inside this cabinet - " + inside.Value.Basis;
