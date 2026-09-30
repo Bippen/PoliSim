@@ -553,6 +553,12 @@ namespace PoliSim.UI
         /// once per OnGUI pass by DrawImguiFrame from the banner's measured height, read by every frame-level sheet site; inner
         /// cards keep `_boxStyle`.</summary>
         private GUIStyle _frameSheetStyle;
+
+        /// <summary>§680 (PF-17): the style for a full-frame sheet whose top edge sits at <paramref name="top"/> - the box while its top
+        /// shadow has room above it, the cropped sheet when the sheet's top IS the window's top edge (the 1920 wedge, §281). The desk took
+        /// the rule on 2026-09-04; the settings screen and the creation flow, drawn at the zero margin since board 17b, never did, and the
+        /// paper's top rows left a wedge of the clear colour along the window's top edge at 2560 (the edge guard's NOT FLUSH).</summary>
+        private GUIStyle SheetAt(float top) => top >= _boxStyle.overflow.top ? _boxStyle : _sheetStyle;
         private GUIStyle _tabButtonStyle;
         private GUIStyle _eventBannerStyle;
         /// <summary>v2.0 chrome: `_eventBannerStyle` dressed in the `ui_banner_hold` dark desk plate — the B8 interrupt indicator's own style, built in InitializeStylesIfNeeded and drawn via DrawHoldBannerLabel. Degrades to a plain clone of `_eventBannerStyle` when the sprite is missing.</summary>
@@ -1461,7 +1467,7 @@ namespace PoliSim.UI
             float marginY = UiScreen.Height * ScreenMarginFraction;
             var area = new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f);
             GUILayout.BeginArea(area);
-            GUILayout.BeginVertical(_boxStyle, GUILayout.ExpandHeight(true));
+            GUILayout.BeginVertical(SheetAt(area.y), GUILayout.ExpandHeight(true));   // §680 (PF-17): the sheet at the window's top edge draws from its own first row
             GUILayout.Label("SETTINGS", _headerStyle);
             SettingsCaptionLine("THE DESK'S PREFERENCES", PoliSimTheme.TextSecondary);
             GUILayout.Space(StatsUnit(10f));
@@ -5945,7 +5951,7 @@ namespace PoliSim.UI
             float marginX = UiScreen.Width * ScreenMarginFraction;
             float marginY = UiScreen.Height * ScreenMarginFraction;
             var area = new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f);
-            GUI.Box(area, GUIContent.none, _boxStyle);
+            GUI.Box(area, GUIContent.none, SheetAt(area.y));   // §680 (PF-17)
 
             float pad = _boxStyle.padding.left + 10f;
             float captionHeight = _calendarMetaStyle.lineHeight + 6f;

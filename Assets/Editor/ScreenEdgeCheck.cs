@@ -108,7 +108,7 @@ namespace PoliSim.EditorTools
 
                 // Full-bleed on an axis (both sides flush) is a BACKGROUND, not a clip - the menu screen
                 // fills the whole screen on purpose. The asymmetry is the diagnosis.
-                bool clipped = (Flush(right) && !Flush(left)) || (Flush(bottom) && !Flush(top));
+                bool clipped = Clipped(left, top, right, bottom);
                 // P2-1.1 (2026-09-02): at a ZERO margin the frame is the sheet, and the rule is the row's own
                 // done-when - flush on all four sides. Some sides flush and others not is a gap that crept back
                 // (or a screen that never filled its frame); NO side flush is a takeover on the ground (the
@@ -123,8 +123,7 @@ namespace PoliSim.EditorTools
                 // covered 90 % and is not asked to be. What the left line must still prove is that the tongues
                 // REACH the frame: a run at least one tongue tall (the narrowest is the 39 px cell at 720p, and
                 // the grain never runs 20), which a band of ground along the edge fails at zero.
-                int flushSides = (Flush(left) ? 1 : 0) + (Covers(top, width) ? 1 : 0) + (Covers(right, height) ? 1 : 0) + (Covers(bottom, width) ? 1 : 0);
-                bool gap = marginFraction <= 0f && flushSides > 0 && flushSides < 4;
+                bool gap = Gap(left, top, right, bottom, width, height, marginFraction);
                 string line = $"  {Path.GetFileNameWithoutExtension(path),-46} " +
                               $"L{left,5} T{top,5} R{right,5} B{bottom,5}   dead {deadShare * 100f,5:F1}%";
                 deadShares.Add((Path.GetFileNameWithoutExtension(path), deadShare));
@@ -157,6 +156,58 @@ namespace PoliSim.EditorTools
         }
 
         private static bool Flush(int count) => count > FlushMinPixels;
+
+        /// <summary>The clip verdict (the asymmetry rule above), one statement the run and <see cref="SelfTest"/> both read.</summary>
+        private static bool Clipped(int left, int top, int right, int bottom) => (Flush(right) && !Flush(left)) || (Flush(bottom) && !Flush(top));
+
+        /// <summary>The zero-margin gap verdict (the four-sides rule above), one statement the run and <see cref="SelfTest"/> both read.</summary>
+        private static bool Gap(int left, int top, int right, int bottom, int width, int height, float marginFraction)
+        {
+            int flushSides = (Flush(left) ? 1 : 0) + (Covers(top, width) ? 1 : 0) + (Covers(right, height) ? 1 : 0) + (Covers(bottom, width) ? 1 : 0);
+            return marginFraction <= 0f && flushSides > 0 && flushSides < 4;
+        }
+
+        /// <summary>
+        /// §680 (PF-17): **THE GUARD PROVED ON PLANTED FRAMES**, through the same PNG decode, line analysis and verdicts the film's run uses. At
+        /// 2560 × 1419 and the zero margin: a clean sheet passes; **the wedge PF-17 measured** (a stepped band of the clear colour along the top
+        /// row, x 1222-1727, rows 0-3) is NOT FLUSH; **a planted overflow** (a panel running off the right edge, not the left) is CLIPPED; a
+        /// takeover on the bare ground passes. A fix that made the flagged frames pass by weakening the guard fails here.
+        /// </summary>
+        public static void SelfTest()
+        {
+            CheckExit.ArmLogFold();
+            const int w = 2560, h = 1419;
+            Color32 desk = PoliSim.UI.PoliSimTheme.Desk;
+            var paper = new Color32(203, 188, 157, 255);
+            var failures = new List<string>();
+            var sb = new System.Text.StringBuilder("=== ScreenEdgeCheck self-test (§680): the guard on planted frames ===\n");
+            string dir = Path.Combine(Path.GetTempPath(), "polisim_edge_selftest");
+            Directory.CreateDirectory(dir);
+
+            void Case(string name, Func<int, int, bool> isPaper, bool wantClipped, bool wantGap)
+            {
+                var px = new Color32[w * h];
+                for (int y = 0; y < h; y++) { for (int x = 0; x < w; x++) { px[y * w + x] = isPaper(x, h - 1 - y) ? paper : desk; } }   // (x, row from the top)
+                var t = new Texture2D(w, h, TextureFormat.RGBA32, false);
+                string path = Path.Combine(dir, name + ".png");
+                try { t.SetPixels32(px); t.Apply(); File.WriteAllBytes(path, t.EncodeToPNG()); }
+                finally { UnityEngine.Object.DestroyImmediate(t); }
+                if (!TryAnalyse(path, 0f, out int l, out int tp, out int r, out int b, out int ww, out int hh, out float _)) { failures.Add(name + " did not decode"); return; }
+                bool clipped = Clipped(l, tp, r, b), gap = Gap(l, tp, r, b, ww, hh, 0f);
+                bool ok = clipped == wantClipped && gap == wantGap;
+                if (!ok) { failures.Add(name); }
+                sb.Append($"    {(ok ? "ok  " : "FAIL")}  {name,-22} L{l,5} T{tp,5} R{r,5} B{b,5} -> clipped {clipped}, not flush {gap} (wanted {wantClipped}, {wantGap})\n");
+            }
+
+            Case("clean_sheet", (x, row) => true, false, false);
+            Case("pf17_wedge", (x, row) => !(row < 4 && x >= 1222 + 116 * row && x <= 1727), false, true);
+            Case("planted_overflow", (x, row) => x >= 400 && row >= 300 && row < 900, true, false);
+            Case("ground_takeover", (x, row) => false, false, false);
+
+            if (failures.Count > 0) { Debug.LogError(sb + $"EDGE SELF-TEST: {failures.Count} case(s) wrong - {string.Join(", ", failures)}"); CheckExit.Finish(1); return; }
+            Debug.Log(sb + "=== ScreenEdgeCheck self-test: ALL FOUR CASES AS WANTED ===");
+            CheckExit.Finish(0);
+        }
         /// <summary>P2-1.1: the share of a margin line a frame edge must cover to count as flush at zero margin. The
         /// hold banner's plate and the paper both read as content against the desk; a band of desk under the sheet
         /// breaks the bottom row's run at the rail's edge, far below this.</summary>

@@ -85,7 +85,8 @@ namespace PoliSim.UI
             float marginX = UiScreen.Width * ScreenMarginFraction;
             float marginY = UiScreen.Height * ScreenMarginFraction;
             var area = new Rect(marginX, marginY, UiScreen.Width - marginX * 2f, UiScreen.Height - marginY * 2f);
-            if (Event.current.type == EventType.Repaint) { _boxStyle.Draw(area, GUIContent.none, false, false, false, false); }
+            // §680 (PF-17): at the window's top edge, the cropped sheet
+            if (Event.current.type == EventType.Repaint) { SheetAt(area.y).Draw(area, GUIContent.none, false, false, false, false); }
             float pad = StatStep(18f);
             var inner = new Rect(area.x + pad, area.y + pad, area.width - pad * 2f, area.height - pad * 2f);
 
