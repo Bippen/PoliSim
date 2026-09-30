@@ -43,8 +43,11 @@ $phase = 'unknown (no log)'
 $lastLine = ''
 $launchLog = Join-Path $logs "$($row[2]).log"
 if (Test-Path $launchLog) {
-  $text = [IO.File]::ReadAllText($launchLog)
-  $tail = @(Get-Content $launchLog -Tail 60 | Where-Object { $_.Trim() -ne '' })
+  # s698: the hung process still HOLDS its log open - read it through a stream that shares write access (ReadAllText and Get-Content were refused
+  # with an IOException on the first real hang the ledger met, cheap698, and the end itself failed with them)
+  $fs = [IO.File]::Open($launchLog, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+  try { $sr = New-Object IO.StreamReader($fs); $text = $sr.ReadToEnd() } finally { $fs.Dispose() }
+  $tail = @(($text -split "`r?`n") | Select-Object -Last 60 | Where-Object { $_.Trim() -ne '' })
   if ($tail.Count -gt 0) { $lastLine = $tail[$tail.Count - 1].Trim() -replace "`t", ' ' }
   if ($lastLine.Length -gt 160) { $lastLine = $lastLine.Substring(0, 160) }
   if ($text -match 'Cleanup mono') { $phase = 'teardown' }

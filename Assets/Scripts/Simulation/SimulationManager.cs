@@ -2548,6 +2548,17 @@ namespace PoliSim.Simulation
             if (g.Caretaker) { refusedBecause = "NO MOTION IS TAKEN UP AGAINST A CARETAKER GOVERNMENT"; return false; }
             if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate) { refusedBecause = "NO MOTION IS TAKEN UP BETWEEN AN EXTRA ELECTION'S DECISION AND THE NEW RIKSDAG"; return false; }
             if (g.NoConfidenceOn != System.DateTime.MinValue) { refusedBecause = "THE CHAMBER HAS ALREADY DECLARED NO CONFIDENCE - THE GOVERNMENT'S WEEK RUNS"; return false; }
+            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Bundestag)
+            {
+                // §698 (Art. 67 GG): the motion IS the successor's election - carried, the successor's government takes office today
+                refusedBecause = null;
+                vote = ConstructiveVoteOf(country, country.PlayerPartyAbbrev, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
+                country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
+                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
+                if (vote.Carried) { InstallSuccessor(country, successor, verdict, vote); }
+                Debug.Log($"CONFIDENCE: {countryId} - {vote.Title()}{(vote.Refusal != null ? " - refused by " + vote.Refusal : string.Empty)}");
+                return true;
+            }
             if (!Elections.ConfidenceProcedure.CanBeTakenUp(country, country.PlayerPartyAbbrev, out int moverSeats, out int tenth)) { refusedBecause = $"A MOTION NEEDS A TENTH OF THE MEMBERS - {tenth} - YOUR PARTY HOLDS {moverSeats}"; return false; }
             refusedBecause = null;
             vote = Elections.ConfidenceProcedure.Vote(country, country.PlayerPartyAbbrev, CurrentDate);   // §653: the lines standing today
@@ -2709,6 +2720,7 @@ namespace PoliSim.Simulation
         private void TryAiMotion(Country country)
         {
             if (!PlayerCountryId.HasValue || PlayerCountryId.Value != country.Id) { return; }
+            if (Elections.ConfidenceProcedure.RulesOf(country.Id) == Elections.ConfidenceProcedure.Rules.Bundestag) { TryAiConstructiveVote(country); return; }
             if (Elections.ConfidenceProcedure.RulesOf(country.Id) != Elections.ConfidenceProcedure.Rules.Riksdag) { return; }
             Elections.GovernmentRecord g = country.Government;
             if (g == null || g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || g.Cabinet.Count == 0) { return; }
@@ -2736,6 +2748,104 @@ namespace PoliSim.Simulation
                 g.NoConfidenceMover = mover;
                 g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag declared no confidence in the prime minister ({g.PmParty}), {vote.For} of {vote.Members} members, moved by {mover}, which the round would seat in {string.Join("+", nextCabinet)} (RF 13 kap. 4 §)");
                 Debug.Log($"CONFIDENCE: {country.Id} - an AI motion by {mover}: {vote.Title()}; the round would form {string.Join("+", nextCabinet)}");
+                return;
+            }
+        }
+
+        // ---------------------------------------------------------------------------------------------
+        // §698 (PS-4): THE CONSTRUCTIVE VOTE OF NO CONFIDENCE - Art. 67 GG (ConfidenceProcedure.Rules.Bundestag). The motion names its successor and is
+        // that successor's election: the best government the formation would form with the mover leading (DraftProposal, on the mid-term reading, the
+        // standing refusals kept), every party's answer under Germany's positive rule, and - elected by a majority of the members - the successor's
+        // government installed the same day, the outgoing one gone without a caretaker, a week or a round.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>§698: the successor a constructive vote by <paramref name="mover"/> would elect, and every party's answer to its government.</summary>
+        private Elections.FormationProposal DraftSuccessor(Country country, string mover, out Elections.ProposalVerdict verdict)
+        {
+            var round = new Elections.SpeakerRound { MidTerm = true, OpenedOn = CurrentDate, Occasion = "the constructive vote of no confidence" };
+            if (country.Government != null)
+            {
+                round.Refusals.AddRange(country.Government.StandingRefusals);
+                // the chancellor's own party neither sits in nor carries the government elected against its chancellor - it votes against (ConstructiveVote)
+                if (!string.IsNullOrEmpty(country.Government.PmParty) && country.Government.PmParty != mover) { round.Refusals.Add(country.Government.PmParty + ">" + mover); }
+            }
+            // The review's defect 1: an AI mover's successor never seats the player's party - nobody asked it (the Speaker's round OFFERS a place to the
+            // player instead); a decline keeps it out of the draft's cabinet and support, and it votes as its lines have it.
+            if (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && country.PlayerPartyAbbrev != mover) { round.Declines.Add(country.PlayerPartyAbbrev + ">" + mover); }
+            Elections.FormationProposal proposal = DraftProposal(country, round, mover);
+            verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
+            return proposal;
+        }
+
+        /// <summary>§698: the constructive vote <paramref name="mover"/> would win or lose today - nothing recorded.</summary>
+        private Elections.ConfidenceProcedure.MotionVote ConstructiveVoteOf(Country country, string mover, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict)
+        {
+            successor = DraftSuccessor(country, mover, out verdict);
+            return Elections.ConfidenceProcedure.ConstructiveVote(country, mover, successor, verdict);
+        }
+
+        /// <summary>§698: the constructive vote the player's party would win or lose today - projected, nothing recorded (the Parliament page's row reads it).</summary>
+        public Elections.ConfidenceProcedure.MotionVote ProjectConstructiveVote(CountryId countryId)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country?.Government == null || Elections.ConfidenceProcedure.RulesOf(countryId) != Elections.ConfidenceProcedure.Rules.Bundestag) { return null; }
+            return ConstructiveVoteOf(country, country.PlayerPartyAbbrev, out _, out _);
+        }
+
+        /// <summary>§698: Art. 67 (1) - "Der Bundespräsident muß dem Ersuchen entsprechen und den Gewählten ernennen": the successor's government takes office at once.</summary>
+        private void InstallSuccessor(Country country, Elections.FormationProposal proposal, Elections.ProposalVerdict verdict, Elections.ConfidenceProcedure.MotionVote vote)
+        {
+            Elections.GovernmentRecord g = country.Government;
+            var supporters = new List<string>();
+            foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.InCabinet && answer.Accepts && !vote.Refusers.Contains(answer.Party)) { supporters.Add(answer.Party); } }   // a refusing supporter carries nothing
+            Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromProposal(country, proposal, supporters, verdict.Investiture.Kind, CurrentDate,
+                $"the constructive vote of no confidence: the Bundestag elected {proposal.Formateur}'s candidate chancellor, {vote.For} of {vote.Members} members (Art. 67 GG)",
+                g.Kind, g.Executive, g.StandingRefusals, _world);
+            formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {proposal.Formateur}'s candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {g.PmParty}'s chancellor dismissed (Art. 67 GG)");
+            country.Government = formed;
+            ResetArrivalBudgetWindow(country.Id);
+            CloseBudgetWindowIfNotGoverning(country);
+            Debug.Log($"CONFIDENCE: {country.Id} - the constructive vote carried: {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)} takes office");
+        }
+
+        /// <summary>
+        /// §698 (the review's defect 2): a government change that leaves the player out of the chancellery closes the player's open budget window - the
+        /// window is the governing party's to use; left open, it held the clock for good (the budget-window hold) or, the hold off, barred the new
+        /// government's own budget (<see cref="TryOpenBudgetProcess"/> returns while one is open). Called where a government is installed.
+        /// </summary>
+        private void CloseBudgetWindowIfNotGoverning(Country country)
+        {
+            if (PlayerGoverns(country)) { return; }
+            _pendingBudgetProcessByCountry.Remove(country.Id);
+            _incomingBudgetWindowOpenNow.Remove(country.Id);
+        }
+
+        /// <summary>
+        /// §698: ruling (2)'s rule under Art. 67 - an AI party moves a constructive vote only where it would carry and the mover prefers the government it
+        /// would lead (the formation's payoff), in <see cref="AiMotionCandidates"/>' order; none in the week before the player's next polling day (the
+        /// Riksdag branch's reader, kept). Deterministic: no stream is drawn.
+        /// </summary>
+        private void TryAiConstructiveVote(Country country)
+        {
+            Elections.GovernmentRecord g = country.Government;
+            if (g == null || g.Caretaker || g.Cabinet.Count == 0) { return; }
+            if (TryPlayerPollingDay(out System.DateTime polling) && polling <= CurrentDate.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
+            // The review's latent cost: a formation per candidate every German day cost ~12 ms a day (measured: the German day path's check 1.7 s -> 3.0 s
+            // over 111 days). PREMISE, stated: the AI weighs a constructive vote on MONDAYS and on the day after a government forms - stateless, so a loaded
+            // game weighs on the days a continuous one does (a cached key would re-weigh on the load day and part the two runs).
+            if (CurrentDate.DayOfWeek != System.DayOfWeek.Monday && g.FormedOn.Date.AddDays(1) != CurrentDate.Date) { return; }
+            foreach (string mover in AiMotionCandidates(country, g))
+            {
+                if (SeatsOf(country, mover) <= 0) { continue; }   // a party with no members moves nothing
+                Elections.ConfidenceProcedure.MotionVote vote = ConstructiveVoteOf(country, mover, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
+                if (!vote.Carried) { continue; }
+                double now = Elections.GovernmentFormation.PayoffIn(country, g.Cabinet, mover);
+                double after = Elections.GovernmentFormation.PayoffIn(country, successor.CabinetParties, mover);
+                if (after <= now + Elections.CoalitionFormation.DefectionMargin) { continue; }
+                country.Divisions.Append(vote.Title(), CurrentDate, 1f, true, 0f, (int)BillAxis.Fiscal, vote.Sides);
+                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
+                Debug.Log($"CONFIDENCE: {country.Id} - an AI constructive vote by {mover}: {vote.Title()}");
+                InstallSuccessor(country, successor, verdict, vote);
                 return;
             }
         }
@@ -2978,6 +3088,7 @@ namespace PoliSim.Simulation
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {proposal.Formateur}'s proposal; {string.Join("+", formed.Cabinet)} takes office");
             country.Government = formed;
             ResetArrivalBudgetWindow(country.Id);
+            CloseBudgetWindowIfNotGoverning(country);   // §698 (the review's defect 2, the same gap here)
             Debug.Log($"SPEAKER: {country.Id} - installed {string.Join("+", formed.Cabinet)} led by {formed.PmParty}{(formed.Support.Count > 0 ? " with " + string.Join("+", formed.Support) : string.Empty)}");
         }
 

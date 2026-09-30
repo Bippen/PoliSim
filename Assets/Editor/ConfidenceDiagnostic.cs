@@ -389,7 +389,9 @@ namespace PoliSim.EditorTools
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
 
-            Check(ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Unsourced, "Germany's rules are not yet modelled - no motion is taken up there");
+            // §698: Germany's rules are the Bundestag's constructive vote now (ConstructiveVoteDiagnostic proves them); the unsourced case is Poland's
+            Check(ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag,
+                "Poland's rules are not yet modelled - no motion is taken up there; Germany's are the Bundestag's (§698)");
             Check(ConfidenceProcedure.ExtraElectionDay(new DateTime(2026, 3, 4)) == new DateTime(2026, 5, 31), "the extra election's day: the Sunday on or before three months (4 Mar -> 4 Jun is a Thursday -> 31 May)");
 
             if (failures > 0) { Debug.LogError($"CONFIDENCE: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }

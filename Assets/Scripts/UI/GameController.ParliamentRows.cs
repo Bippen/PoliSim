@@ -288,6 +288,51 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(10f));
         }
 
+        // §698: the constructive vote projected for the player's party - a formation's worth of work, so kept for the day and the government it was drawn for
+        private ConfidenceProcedure.MotionVote _constructiveProjection;
+        private System.DateTime _constructiveProjectedOn = System.DateTime.MinValue;
+        private GovernmentRecord _constructiveProjectedFor;
+
+        /// <summary>
+        /// §698 (Art. 67 GG): the opposition's row in Germany - A CONSTRUCTIVE VOTE OF NO CONFIDENCE with the successor's projected election (for ⁄ needed,
+        /// a majority of the members) and ELECT A SUCCESSOR; the slip names the government the player's candidate would lead, and a partner that refuses it.
+        /// There is no tenth to take a motion up, no week and no answers: the vote is the election, and carried it installs the successor at once.
+        /// </summary>
+        private void DrawConstructiveVote(PeopleSlips.Book book, GUIStyle caption)
+        {
+            GovernmentRecord g = _playerCountry.Government;
+            if (_constructiveProjection == null || _constructiveProjectedOn != _simulationManager.CurrentDate || !ReferenceEquals(_constructiveProjectedFor, g))
+            {
+                _constructiveProjection = _simulationManager.ProjectConstructiveVote(PlayerCountryId);
+                _constructiveProjectedOn = _simulationManager.CurrentDate;
+                _constructiveProjectedFor = g;
+            }
+            ConfidenceProcedure.MotionVote projected = _constructiveProjection;
+            if (projected == null) { return; }
+            string Names(List<string> keys) { var names = new List<string>(); foreach (string k in keys) { names.Add(PartySystems.ShortName(PlayerCountryId, k)); } return string.Join("+", names); }
+            Rect row = ReserveRow(34f);
+            float x = row.x;
+            const string motion = "A CONSTRUCTIVE VOTE OF NO CONFIDENCE";
+            float mw = Mathf.Ceil(caption.CalcSize(new GUIContent(motion)).x) + 2f;
+            PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, mw, row.height), motion, caption);
+            x += mw + StatsUnit(12f);
+            x = DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + projected.Needed.ToString(CultureInfo.InvariantCulture) + " NEEDED");
+            SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "motion");
+            SlipContent slip = new SlipContent("A CONSTRUCTIVE VOTE OF NO CONFIDENCE")
+                .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} MEMBERS WOULD ELECT YOUR CANDIDATE", projected.For, projected.Members))
+                .Add(string.Format(CultureInfo.InvariantCulture, "IT NEEDS {0}, A MAJORITY OF THE MEMBERS", projected.Needed))
+                .Add("YOUR GOVERNMENT: " + Names(projected.SuccessorCabinet).ToUpperInvariant() + (projected.SuccessorSupport.Count > 0 ? " WITH " + Names(projected.SuccessorSupport).ToUpperInvariant() : string.Empty));
+            if (!projected.PartnersAccept) { slip.Add("A PARTNER REFUSES IT"); }
+            book.Anchors["motion"] = slip;
+            Rect move = RowChipRectEndingAt(row.xMax, row, "ELECT A SUCCESSOR", 26f, 12f);
+            if (DrawRowChip(move, "ELECT A SUCCESSOR", ChipFace.Paper))
+            {
+                if (!_simulationManager.MoveNoConfidence(PlayerCountryId, out string refused, out _)) { Debug.Log($"CONFIDENCE: the motion was refused - {refused}"); }
+                _constructiveProjection = null;
+            }
+            DrawRowRule(row);
+        }
+
         /// <summary>
         /// PS-3i (§636), redrawn from 21b: CONFIDENCE on the Parliament tab - an extra election as a stamp and its date; a declaration of no confidence
         /// as NO CONFIDENCE DECLARED in Caution ink with the days left to answer as a figure, and, for the player's government, the week's two answers,
@@ -355,6 +400,7 @@ namespace PoliSim.UI
                 case PlayerRole.Opposition:
                 {
                     if (g.Caretaker || g.NoConfidenceOn != System.DateTime.MinValue || extra != System.DateTime.MinValue) { break; }
+                    if (ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag) { DrawConstructiveVote(book, caption); break; }   // §698
                     ConfidenceProcedure.MotionVote projected = ConfidenceProcedure.Vote(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
                     bool takenUp = ConfidenceProcedure.CanBeTakenUp(_playerCountry, _playerCountry.PlayerPartyAbbrev, out int moverSeats, out int tenth);
                     Rect row = ReserveRow(34f);
