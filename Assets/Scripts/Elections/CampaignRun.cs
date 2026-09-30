@@ -103,18 +103,32 @@ namespace PoliSim.Elections
             public readonly double LiveScandalRatePerPartyDay;
             /// <summary>PS-3k (§638): each party's vote-share shift from the government's record (EconomicVote), one per party - NaN for a party the record does not name (it absorbs the governing parties' moves), null for no record - applied to every day's preference.</summary>
             public readonly double[] RecordShift;
+            /// <summary>§681: each party's CHES family (`PartyFamilies`, -1 none) for the entrant layer; null = no layer (every harness staging).</summary>
+            public readonly int[] Families;
+            /// <summary>§681: each party's awareness at the campaign's opening (1 a real party, a created party's from its Recognition), grown each day by
+            /// its coverage and pressure (`EntrantLayer.GrownAwareness`); null = every party at 1.</summary>
+            public readonly double[] AwarenessStart;
+            /// <summary>§681: each party's family grouping strength (a created party's `EntrantLayer.GroupingStrength`, 0 a real one); null = none.</summary>
+            public readonly double[] Grouping;
 
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping);
+
+            /// <summary>§681: this setup with the entrant layer's families and opening awareness.</summary>
+            public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
-                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null)
+                double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null)
             {
                 RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening
+                Families = families;
+                AwarenessStart = awarenessStart;
+                Grouping = grouping;
                 ElectorateLoyalty = electorateLoyalty;
                 LiveScandalRatePerPartyDay = liveScandalRatePerPartyDay;
                 Scandals = scandals ?? new (int, int, Scandal)[0];
@@ -342,7 +356,7 @@ namespace PoliSim.Elections
             // --- the truth, held here and nowhere the AI can reach ---
             double[] prior = Normalised(setup.PriorShares);
             var pressure = new CampaignPressure(partyCount);
-            double[] truePreference = CurrentPreference(setup, prior, pressure);
+            double[] truePreference = CurrentPreference(setup, prior, pressure, null);   // §681: day 0 - awareness at its opening, no coverage yet
             double[] baseline = (double[])truePreference.Clone();
 
             var momentum = new MomentumTracker(partyCount);
@@ -935,7 +949,7 @@ namespace PoliSim.Elections
                     ledgers[p].PersuasionDelivered += carried.Persuasion;
                     ledgers[p].EnthusiasmDelivered += carried.Enthusiasm;
                 }
-                truePreference = CurrentPreference(setup, prior, pressure);
+                truePreference = CurrentPreference(setup, prior, pressure, coverage);   // §681: awareness grown by the day's coverage and pressure
                 momentum.Advance(1.0);
                 for (int p = 0; p < partyCount; p++) { momentumPp[p] = momentum.MomentumPp(p); }
             }
@@ -1108,15 +1122,38 @@ namespace PoliSim.Elections
             return p;
         }
 
-        private static double[] CurrentPreference(Setup setup, double[] prior, CampaignPressure pressure)
+        private static double[] CurrentPreference(Setup setup, double[] prior, CampaignPressure pressure, MediaCoverage coverage)
         {
             double[] bonus = pressure.ToCompatibilityBonus();
             var compatibility = new double[setup.Compatibility.Length];
             for (int i = 0; i < compatibility.Length; i++) { compatibility[i] = setup.Compatibility[i] + bonus[i]; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, setup.LoyaltyPerParty);
+            if (setup.Families != null) { preference = EntrantLayer.Apply(preference, prior, setup.Families, AwarenessToday(setup, pressure, coverage), setup.Grouping); }   // §681
             if (setup.RecordShift == null) { return preference; }
             // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
             return EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift);
+        }
+
+        /// <summary>§681: each party's awareness today - its opening awareness grown by its coverage and its campaigning pressure so far, each as a share of
+        /// the leading party's (`EntrantLayer.GrownAwareness`). Null where the setup carries none (every party at 1).</summary>
+        private static double[] AwarenessToday(Setup setup, CampaignPressure pressure, MediaCoverage coverage)
+        {
+            if (setup.AwarenessStart == null) { return null; }
+            int n = setup.AwarenessStart.Length;
+            double maxCoverage = 0.0, maxPressure = 0.0;
+            for (int i = 0; i < n; i++)
+            {
+                if (coverage != null) { maxCoverage = Math.Max(maxCoverage, coverage.Coverage(i)); }
+                maxPressure = Math.Max(maxPressure, pressure.Persuasion(i));
+            }
+            var a = new double[n];
+            for (int i = 0; i < n; i++)
+            {
+                double c = coverage != null && maxCoverage > 0.0 ? coverage.Coverage(i) / maxCoverage : 0.0;
+                double p = maxPressure > 0.0 ? pressure.Persuasion(i) / maxPressure : 0.0;
+                a[i] = setup.AwarenessStart[i] >= 1.0 ? 1.0 : EntrantLayer.GrownAwareness(setup.AwarenessStart[i], c, p);
+            }
+            return a;
         }
 
         /// <summary>The TRUE salience and match behind a message: one issue's, or the mean over the contested issues for a general message.</summary>

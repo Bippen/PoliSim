@@ -16,8 +16,8 @@ namespace PoliSim.EditorTools
     /// personality and a day 0 from its stats through the pip table - the war chest its Funding share of the real parties' and no state support (the
     /// party-support act pays on past elections), the volunteers its Activists share, its Organisation's offices, its Leader's candidate; the player's
     /// party index finds a created party; the count seats it by the same rule as every party - above the 4 % threshold and not below it.
-    /// MEASURED, not asserted: the spec's (i) and (ii) re-tested on a seeded campaign, every party's change printed (§674 read the model: no source
-    /// term, no awareness term).
+    /// MEASURED, not asserted: the spec's (i) and (ii) re-tested on a seeded campaign, every party's change printed (§674 found no source term and no
+    /// awareness term; §681's entrant layer adds both - awareness grows in the campaign with coverage and pressure).
     /// </summary>
     public static class CreatedPartyCampaignDiagnostic
     {

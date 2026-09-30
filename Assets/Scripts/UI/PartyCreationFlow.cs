@@ -222,7 +222,7 @@ namespace PoliSim.UI
         {
             0 => string.Format(CultureInfo.InvariantCulture, "a war chest {0:P0} of a real party's; no state support (it pays on past elections)", PartyOrigins.Pip(PartyOrigins.FundingShare, pips)),
             1 => string.Format(CultureInfo.InvariantCulture, "{0} office(s) at the start", PartyOrigins.Pip(PartyOrigins.Offices, pips)),
-            2 => string.Format(CultureInfo.InvariantCulture, "name awareness {0:P0} - read by nothing yet: the model has no awareness term", PartyOrigins.Pip(PartyOrigins.Awareness, pips)),
+            2 => string.Format(CultureInfo.InvariantCulture, "name awareness {0:P0} at the start - the share of voters who know the party, growing with its coverage and campaigning", PartyOrigins.Pip(PartyOrigins.Awareness, pips)),
             3 => string.Format(CultureInfo.InvariantCulture, "volunteers {0:P0} of a real party's", PartyOrigins.Pip(PartyOrigins.ActivistShare, pips)),
             _ => string.Format(CultureInfo.InvariantCulture, "the leader's debate and appeal at {0:0}", PartyOrigins.Pip(PartyOrigins.LeaderAttribute, pips) * 100.0),
         };

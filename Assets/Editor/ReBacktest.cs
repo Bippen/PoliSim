@@ -86,7 +86,10 @@ namespace PoliSim.EditorTools
                 double madA = VoteModel.MeanAbsoluteDeviationPp(runA, actual);
 
                 double[] prior = Normalise(c.PriorPct);
-                double[] runC = PreferenceModel.Preference(ToCompatibilityScale(runA), prior, Loyalty);
+                // §681: the entrant layer the model applies wherever it forms a preference - an entrant (prior 0: BSW, AzIV) draws first from its
+                // CHES family; every real party is at full awareness, so an entrant's own share is unchanged and only where it comes from moves
+                int[] families = PoliSim.Data.PartyFamilies.For(CountryOf(c.Name), c.PartyNames);
+                double[] runC = EntrantLayer.Apply(PreferenceModel.Preference(ToCompatibilityScale(runA), prior, Loyalty), prior, families, null, null);   // real entrants: no grouping (§681, measured)
                 double madC = VoteModel.MeanAbsoluteDeviationPp(runC, actual);
 
                 report.Append($"\n---- {c.Name} ----\n  prior basis: {c.PriorNote}\n");
@@ -115,8 +118,8 @@ namespace PoliSim.EditorTools
 
                     var regionPriors = new double[regions.Length][];
                     for (int r = 0; r < regions.Length; r++) { regionPriors[r] = prior; }
-                    double[] runD = RegionalVoteModel.NationalSharesWithLoyalty(
-                        c.Parties, regions, c.Day1, c.WEcon, regionPriors, Loyalty);
+                    double[] runD = EntrantLayer.Apply(RegionalVoteModel.NationalSharesWithLoyalty(
+                        c.Parties, regions, c.Day1, c.WEcon, regionPriors, Loyalty), prior, families, null, null);   // §681
                     double madD = VoteModel.MeanAbsoluteDeviationPp(runD, actual);
 
                     report.Append("  party    actual   B:+§27  devB    D:+both  devD\n");
@@ -164,6 +167,14 @@ namespace PoliSim.EditorTools
             Debug.Log(report.ToString());
             CheckExit.Finish(0);
         }
+
+        /// <summary>§681: the country a run is named for, for its party families (the 8-party German set is Germany's).</summary>
+        private static PoliSim.Data.CountryId CountryOf(string name) =>
+            name.StartsWith("GERMANY", StringComparison.Ordinal) ? PoliSim.Data.CountryId.Germany
+            : name == "SWEDEN" ? PoliSim.Data.CountryId.Sweden
+            : name == "POLAND" ? PoliSim.Data.CountryId.Poland
+            : name == "ITALY" ? PoliSim.Data.CountryId.Italy
+            : PoliSim.Data.CountryId.France;
 
         /// <summary>Spatial shares are a distribution; §8 wants compatibility-like magnitudes. Rescaling to 0-100 by the max preserves the ordering and ratios PreferenceModel then exponentiates.</summary>
         private static double[] ToCompatibilityScale(double[] shares)

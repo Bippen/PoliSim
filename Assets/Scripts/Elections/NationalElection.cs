@@ -143,11 +143,26 @@ namespace PoliSim.Elections
             return true;
         }
 
+        /// <summary>§681: every key's awareness before a campaign - 1 for every real party (established parties seed at full awareness), a created party's
+        /// from its Recognition through the pip table (`PartyOrigins.Awareness`). Null where no created party is in the keys (the layer reads null as all 1).</summary>
+        public static double[] EntrantAwareness(CountryId country, IReadOnlyList<string> keys)
+        {
+            if (!CreatedParties.Any(country)) { return null; }
+            var a = new double[keys.Count];
+            for (int i = 0; i < a.Length; i++)
+            {
+                a[i] = 1.0;
+                foreach (CreatedParty c in CreatedParties.Of(country)) { if (c.Key == keys[i]) { a[i] = PartyOrigins.Pip(PartyOrigins.Awareness, c.Recognition); } }
+            }
+            return a;
+        }
+
         public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares, IReadOnlyDictionary<string, double> recordShift = null)
         {
             shares = null;
             if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)) { return false; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
+            preference = EntrantLayer.Apply(preference, prior, PartyFamilies.For(country, keys), EntrantAwareness(country, keys), EntrantLayer.GroupingOf(country, keys));   // §681: an entrant's reach and where it draws from; none, the very array
             preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
 
             shares = new Dictionary<string, double>();

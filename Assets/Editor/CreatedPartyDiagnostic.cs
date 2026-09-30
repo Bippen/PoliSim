@@ -18,8 +18,8 @@ namespace PoliSim.EditorTools
     /// needs a real parent); a registered party is APPENDED - every real index stands; the six origins and the pip table are data; the spec's third - a
     /// Splinter begins at its inherited slice of the parent's last result, moved from the parent; and a save carries the party back. MEASURED, not
     /// asserted (§674, the units corrected - the prediction returns fractions): the spec's first (a party on a real party's positions competes for THAT
-    /// party's voters) - the model has no source term, a newcomer's persuaded share comes out of every party through the renormalisation; and its second
-    /// (a Grassroots newcomer polls near zero until it campaigns) - it does not: with no loyal base it takes its whole persuaded share at once.
+    /// party's voters) and its second (a Grassroots newcomer polls near zero until it campaigns). §674 found both false for want of a source term and
+    /// an awareness term; §681 added both as the entrant layer (awareness, and family-grouped substitution), gated by `EntrantLayerDiagnostic`.
     /// </summary>
     public static class CreatedPartyDiagnostic
     {
@@ -82,21 +82,21 @@ namespace PoliSim.EditorTools
                         losses.Add(F("{0} {1:+0.00;-0.00}", p.Abbrev, -loss));
                         if (loss > mostLoss) { mostLoss = loss; most = p.Abbrev; }
                     }
-                    sb.Append(F("    measured  (i) on M's positions, no loyal base: NM {0:0.00} %; the real parties move (pp) {1}; {2} loses the most - NOT asserted: the model has no source term, a newcomer's persuaded share comes out of every party through the renormalisation (§674)\n",
+                    sb.Append(F("    measured  (i) on M's positions, no loyal base: NM {0:0.00} %; the real parties move (pp) {1}; {2} loses the most - NOT asserted here; since §681 the entrant layer reaches only the voters aware of it and draws first from its CHES family (EntrantLayerDiagnostic gates both)\n",
                         twinShares["NM"] * 100.0, string.Join(", ", losses), most));
                     Check(twinShares["NM"] > 0.0 && twinShares["NM"] < baseShares["M"], F("a party on M's positions is predicted a share, and less than M's own ({0:0.00} % against {1:0.00} %)", twinShares["NM"] * 100.0, baseShares["M"] * 100.0));
                 }
                 else { Check(false, "(i) the vote model predicts no shares with a created party registered"); }
 
-                // (ii) measured: a Grassroots newcomer at (5, 5), before any campaign. §674: NOT near zero - with no loyal base it takes its whole persuaded share
-                // at once; the vote model has no awareness term (Recognition reaches nothing). Recorded, not asserted.
+                // (ii) measured: a Grassroots newcomer at (5, 5), before any campaign. §674 found it at 11.55 % (no awareness term); since §681 its
+                // Recognition's awareness holds it to the voters who know it - gated against Valmyndigheten's first-time range by EntrantLayerDiagnostic.
                 CreatedParties.Clear();
                 var grass = Make("GRS");
                 grass.LrEcon = 5f; grass.Galtan = 5f;
                 CreatedParties.TryRegister(grass, real, out _);
                 if (NationalElection.TryPredictShares(CountryId.Sweden, out Dictionary<string, double> grassShares))
                 {
-                    sb.Append(F("    measured  (ii) a Grassroots newcomer at (5, 5), no campaign: {0:0.00} % - NOT near zero: no loyal base means its whole persuaded share at once, and no awareness term holds it back (§674)\n", grassShares["GRS"] * 100.0));
+                    sb.Append(F("    measured  (ii) a Grassroots newcomer at (5, 5), no campaign: {0:0.00} % - its Recognition's awareness times what the preference gives it (§681; 11.55 % before the layer, §674)\n", grassShares["GRS"] * 100.0));
                 }
 
                 // (iii) a Splinter begins at its inherited slice, moved from its parent.
