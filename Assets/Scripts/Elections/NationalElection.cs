@@ -78,6 +78,9 @@ namespace PoliSim.Elections
         /// whether they agree, and a silent reconciliation is how a screen starts lying quietly.</summary>
         public static double LastRegionalWorstAbsError { get; private set; }
 
+        /// <summary>PS-4 (§688): the party keys the regional shares' columns are in - the prediction's own order.</summary>
+        public static IReadOnlyList<string> LastRegionalKeys { get; private set; }
+
         /// <summary>SOURCED: par. 4(2) BWahlG. (The Grundmandatsklausel that survived the BVerfG's 2024 judgment turns on constituency wins, which this national path has no notion of - stated here, not silently ignored.)</summary>
         private const double GermanThreshold = 0.05;
 
@@ -157,7 +160,7 @@ namespace PoliSim.Elections
             return a;
         }
 
-        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares, IReadOnlyDictionary<string, double> recordShift = null)
+        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares, IReadOnlyDictionary<string, double> recordShift = null, System.DateTime? on = null)
         {
             shares = null;
             if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)) { return false; }
@@ -167,7 +170,7 @@ namespace PoliSim.Elections
 
             shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Length; i++) { shares[keys[i]] = preference[i]; }
-            DeriveRegional(country, keys, preference);
+            DeriveRegional(country, keys, preference, on);   // PS-4 (§688): a date lets a country whose regions depend on the seated chamber (Germany) derive them
             return true;
         }
 
@@ -258,8 +261,9 @@ namespace PoliSim.Elections
             return shares;
         }
 
-        private static void DeriveRegional(CountryId country, IReadOnlyList<string> keys, double[] preference)
+        private static void DeriveRegional(CountryId country, IReadOnlyList<string> keys, double[] preference, System.DateTime? on = null)
         {
+            LastRegionalKeys = keys;
 
             // ⚠ F1 (2026-09-01): THE REGIONAL BREAKDOWN, DERIVED FROM the national result rather than
             // computed beside it. RegionalSharesByUniformSwing applies one swing to every valkrets' own
@@ -286,6 +290,18 @@ namespace PoliSim.Elections
                     LastRegionalWeights[r] = regions[r].ElectorateWeight;
                 }
 
+                LastRegionalWorstAbsError = worstAbsError;
+            }
+            else if (country == CountryId.Germany && on.HasValue)
+            {
+                // PS-4 (§688): the sixteen Länder on the chamber seated that day (GermanRegions: 2021's count before the 2025 chamber sat, 2025's
+                // after), by the same uniform swing - a readout of the national result, never an input to it. A party standing in one Land
+                // (the CSU) takes its swing there alone, so the error the swing reports is the honest one, not zero.
+                RegionalVoteModel.RegionInput[] regions = GermanRegions.Regions(keys, on.Value);
+                LastRegionalShares = RegionalVoteModel.RegionalSharesByUniformSwing(preference, regions, GermanRegions.PriorShares(keys, on.Value), out double worstAbsError);
+                LastRegionalNames = new string[regions.Length];
+                LastRegionalWeights = new double[regions.Length];
+                for (int r = 0; r < regions.Length; r++) { LastRegionalNames[r] = regions[r].Name; LastRegionalWeights[r] = regions[r].ElectorateWeight; }
                 LastRegionalWorstAbsError = worstAbsError;
             }
             else

@@ -7044,7 +7044,8 @@ namespace PoliSim.UI
                 }
             }
             // PS-3k (§638, ruled): with no campaign the prediction reads the government's record on polling day; a campaign's shares already carry it.
-            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty, EconomicVote.RecordShiftOf(_playerCountry, PerceivedPerformance.Perceived(_playerCountry, null).Index)))
+            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty, EconomicVote.RecordShiftOf(_playerCountry, PerceivedPerformance.Perceived(_playerCountry, null).Index),
+                    on: _simulationManager.CurrentDate))   // PS-4 (§688): the day it is held, so Germany derives its Länder on the chamber then seated
             {
                 _playerCountry.ElectionHistory.Add(new ElectionRecord
                 {

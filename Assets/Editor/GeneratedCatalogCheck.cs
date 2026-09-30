@@ -121,6 +121,7 @@ namespace PoliSim.EditorTools
             failures += CheckEnergy(sb);
             failures += CheckCohortIncome(sb);
             failures += CheckGovernmentConsumption(sb);
+            failures += CheckGermanLaender(sb);   // PS-4 (§688): the Länder catalogs
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -476,5 +477,39 @@ namespace PoliSim.EditorTools
 
         private static string F(string format, params object[] args)
             => string.Format(CultureInfo.InvariantCulture, format, args);
+
+        /// <summary>
+        /// PS-4 (§688): the two Länder catalogs against their sources, through the GENERATOR'S OWN READER (<see cref="GermanLandCatalogGenerator.Read"/>) -
+        /// so the check and the generator cannot disagree about what a file says: the digest, the party columns, and every figure, row by row.
+        /// </summary>
+        private static int CheckGermanLaender(StringBuilder sb)
+        {
+            sb.Append("\n=== The Länder catalogs against their sources ===\n");
+            int failures = 0;
+            foreach (GermanLandCatalogGenerator.Vintage v in GermanLandCatalogGenerator.Vintages)
+            {
+                if (GermanLandCatalogGenerator.Read(v, out List<string> parties, out List<string> names, out List<long[]> rows, out string digest) != 0) { failures++; continue; }
+                string recorded = v.Year == 2021 ? GermanLandReturns2021.SourceDigest : GermanLandReturns2025.SourceDigest;
+                string[] catParties = v.Year == 2021 ? GermanLandReturns2021.Parties : GermanLandReturns2025.Parties;
+                string[] catNames = v.Year == 2021 ? GermanLandReturns2021.Names : GermanLandReturns2025.Names;
+                long[] catValid = v.Year == 2021 ? GermanLandReturns2021.Valid : GermanLandReturns2025.Valid;
+                long[][] catVotes = v.Year == 2021 ? GermanLandReturns2021.Votes : GermanLandReturns2025.Votes;
+                var wrong = new List<string>();
+                if (!string.Equals(digest, recorded, StringComparison.OrdinalIgnoreCase)) { wrong.Add("the source changed since generation (on disk " + digest + ", recorded " + recorded + ")"); }
+                if (parties.Count != catParties.Length) { wrong.Add("party columns " + parties.Count + " vs " + catParties.Length); }
+                else { for (int p = 0; p < parties.Count; p++) { if (parties[p] != catParties[p]) { wrong.Add("column " + p + " is " + parties[p] + " in the source, " + catParties[p] + " in the catalog"); } } }
+                if (rows.Count != catNames.Length) { wrong.Add("rows " + rows.Count + " vs " + catNames.Length); }
+                for (int r = 0; r < Math.Min(rows.Count, catNames.Length) && wrong.Count < 10; r++)
+                {
+                    if (names[r] != catNames[r] || rows[r][0] != catValid[r]) { wrong.Add(names[r] + ": name or valid differs"); continue; }
+                    for (int p = 0; p < catParties.Length && p + 1 < rows[r].Length; p++) { if (rows[r][p + 1] != catVotes[r][p]) { wrong.Add(names[r] + " " + catParties[p] + ": " + rows[r][p + 1] + " vs " + catVotes[r][p]); } }
+                }
+                if (wrong.Count > 0) { failures++; Debug.LogError("CATALOGCHECK: " + v.OutputRelative + " - " + string.Join("; ", wrong.ToArray()) + ". Re-run the generator after reading the diff."); }
+                sb.Append(wrong.Count == 0
+                    ? $"    {v.ClassName}: {rows.Count} Länder × {parties.Count} parties, every figure the source's; digest {digest.Substring(0, 12)}…\n"
+                    : $"    ⚠ {v.ClassName}: {wrong.Count} disagreement(s)\n");
+            }
+            return failures;
+        }
     }
 }

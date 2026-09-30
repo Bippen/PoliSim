@@ -181,6 +181,7 @@ namespace PoliSim.EditorTools
             ("PartyCreationCheck", PartyCreationCheck.Run),   // §676 (SP-4): the creation flow - the unspent cells, the ink fence, the key rule, every anchor slipped, the commit into the roster and the cast, the real inks and prediction untouched
             ("CreatedPartyDeclarationsDiagnostic", CreatedPartyDeclarationsDiagnostic.Run),   // §679: a created party's declarations feed the formation - inert with none, each kind its rule, its red line blocks a cabinet on the game's own round
             ("SeatlessFormationDiagnostic", SeatlessFormationDiagnostic.Run),   // §683 (ruled): a party with no seat is never offered a cabinet or support role - the assertion throws on a planted result, never on a formed one
+            ("GermanRegionsDiagnostic", GermanRegionsDiagnostic.Run),   // PS-4 (§688): the sixteen Länder as Germany's regions - the 2025 columns against the Bund's exact counts, the candidacy facts, the seated vintage by date, the derived breakdown a readout
             ("EntrantLayerDiagnostic", EntrantLayerDiagnostic.Run),   // §681: the entrant layer - the proportional property confirmed, the CHES families read back, inert with no entrant, the twin and newcomer gates
             ("ScreenEdgeSelfTest", ScreenEdgeCheck.SelfTest),   // §680 (PF-17): the edge guard on planted frames - a clean sheet passes, the measured wedge is NOT FLUSH, a planted overflow is CLIPPED
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),

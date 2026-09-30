@@ -1,0 +1,123 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Text;
+using PoliSim.Data;
+using PoliSim.Elections;
+using PoliSim.Elections.Generated;
+using UnityEngine;
+using Debug = UnityEngine.Debug;
+
+namespace PoliSim.EditorTools
+{
+    /// <summary>
+    /// PS-4, part one (§688): **GERMANY'S SIXTEEN LÄNDER, READ AS THE ELECTION'S REGIONS.** Asserted against the sources on disk, not against
+    /// the catalogs themselves: (a) the 2025 catalog's sixteen Länder sum, party by party, to the Bundeswahlleiterin's exact national
+    /// Zweitstimmen (`ElectionsData/germany/national_counts_2025.csv`, the Bund rows of the same kerg2.csv) and to its valid total; (b) the
+    /// candidacy facts the returns carry - the CSU stands only in Bayern and the CDU in the other fifteen, the SSW only in Schleswig-Holstein,
+    /// the Grüne nowhere in Saarland in 2021, the BSW (no 2021 column) standing everywhere in 2021 with no record of its own; (c) the seated
+    /// vintage by date - the snap start of 6 November 2024 reads 2021's Länder, 25 March 2025 on reads 2025's; (d) the breakdown the national
+    /// election derives for Germany (`NationalElection.TryPredictShares` with a date) is sixteen Länder whose vote-weighted total reproduces the
+    /// national result, and the national result is the same with the date and without it - the regional layer is a readout, never an input; where the uniform swing cannot reproduce a party standing in one Land exactly, the error it reports is the error measured.
+    /// </summary>
+    public static class GermanRegionsDiagnostic
+    {
+        private static string F(string f, params object[] a) => string.Format(CultureInfo.InvariantCulture, f, a);
+
+        public static void Run()
+        {
+            CheckExit.ArmLogFold();
+            var sb = new StringBuilder("=== GermanRegionsDiagnostic (PS-4, §688): the sixteen Länder as Germany's regions ===\n");
+            int failures = 0;
+            void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
+            try
+            {
+                // (a) the 2025 columns against the national Bund rows
+                string national = Path.Combine(Directory.GetCurrentDirectory(), "ElectionsData", "germany", "national_counts_2025.csv");
+                var bund = new Dictionary<string, long>(StringComparer.Ordinal);
+                foreach (string raw in File.ReadAllLines(national, Encoding.UTF8))
+                {
+                    string line = raw.Trim();
+                    if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal) || line.StartsWith("party;", StringComparison.Ordinal)) { continue; }
+                    string[] c = line.Split(';');
+                    string key = c[0] == "GRUENE" ? "Grune" : c[0] == "Die Linke" ? "Linke" : c[0];
+                    bund[key] = long.Parse(c[1], CultureInfo.InvariantCulture);
+                }
+                Check(GermanLandReturns2025.Names.Length == 16 && GermanLandReturns2021.Names.Length == 16, "sixteen Länder in both catalogs");
+                bool sameOrder = true;
+                for (int r = 0; r < 16; r++) { sameOrder &= GermanLandReturns2025.Names[r] == GermanLandReturns2021.Names[r]; }
+                Check(sameOrder, "the two vintages list the Länder in one order - a region index means the same Land in both");
+                long valid = 0;
+                foreach (long v in GermanLandReturns2025.Valid) { valid += v; }
+                Check(bund.TryGetValue("Gueltige", out long gueltige) && valid == gueltige, F("2025: the Länder's valid Zweitstimmen sum to the Bund's, {0:N0}", valid));
+                for (int p = 0; p < GermanLandReturns2025.Parties.Length; p++)
+                {
+                    string key = GermanLandReturns2025.Parties[p];
+                    long sum = 0;
+                    for (int r = 0; r < 16; r++) { sum += GermanLandReturns2025.Votes[r][p]; }
+                    Check(bund.TryGetValue(key, out long n) && n == sum, F("2025: {0}'s sixteen Länder sum to its national count, {1:N0}", key, sum));
+                }
+
+                // (b) the candidacy facts
+                string[] keys = { "CDU", "CSU", "AfD", "SPD", "Grune", "Linke", "SSW", "BSW", "FDP" };
+                RegionalVoteModel.RegionInput[] r2025 = GermanRegions.Regions(keys, new DateTime(2025, 3, 25));
+                RegionalVoteModel.RegionInput[] r2021 = GermanRegions.Regions(keys, new DateTime(2024, 11, 6));
+                int Where(RegionalVoteModel.RegionInput[] regions, int party, out string names)
+                {
+                    var list = new List<string>();
+                    foreach (RegionalVoteModel.RegionInput x in regions) { if (x.PartyAvailable[party]) { list.Add(x.Name); } }
+                    names = string.Join(", ", list.ToArray());
+                    return list.Count;
+                }
+                Check(Where(r2025, 1, out string csu) == 1 && csu == "Bayern", "2025: the CSU stands in Bayern alone (" + csu + ")");
+                Check(Where(r2025, 0, out _) == 15 && !Array.Exists(r2025, x => x.Name == "Bayern" && x.PartyAvailable[0]), "2025: the CDU stands in the fifteen other Länder, not in Bayern");
+                Check(Where(r2025, 6, out string ssw) == 1 && ssw == "Schleswig-Holstein", "2025: the SSW stands in Schleswig-Holstein alone");
+                Check(Where(r2021, 4, out _) == 15 && !Array.Exists(r2021, x => x.Name == "Saarland" && x.PartyAvailable[4]), "2021: the Grüne stand nowhere in Saarland (their Landesliste was rejected)");
+                double[][] prior2021 = GermanRegions.PriorShares(keys, new DateTime(2024, 11, 6));
+                bool bswStands = Where(r2021, 7, out _) == 16, bswNoRecord = true;
+                foreach (double[] row in prior2021) { bswNoRecord &= row[7] == 0.0; }
+                Check(bswStands && bswNoRecord, "2021: the BSW (founded 2024, no 2021 column) stands everywhere with a prior of 0 - no record, not absence");
+
+                // (c) the seated vintage by date
+                Check(WorldClock.SeatedVintage(CountryId.Germany, new DateTime(2024, 11, 6)) == ElectionVintage.Germany2021
+                      && WorldClock.SeatedVintage(CountryId.Germany, new DateTime(2025, 3, 25)) == ElectionVintage.Germany2025,
+                    "the snap start (6 Nov 2024) sits on the 2021 chamber; 25 Mar 2025 on, the 2025 chamber");
+
+                // (d) the national election's derived breakdown for Germany
+                bool withoutDate = NationalElection.TryPredictShares(CountryId.Germany, out Dictionary<string, double> plain);
+                double[][] undated = NationalElection.LastRegionalShares;
+                bool withDate = NationalElection.TryPredictShares(CountryId.Germany, out Dictionary<string, double> dated, on: new DateTime(2024, 11, 6));
+                double[][] regional = NationalElection.LastRegionalShares;
+                double[] weights = NationalElection.LastRegionalWeights;
+                Check(withoutDate && withDate && undated == null, "without a date the prediction derives no regions (the caller gives the day it is held)");
+                bool same = plain != null && dated != null && plain.Count == dated.Count;
+                if (same) { foreach (KeyValuePair<string, double> kv in plain) { same &= dated.TryGetValue(kv.Key, out double d) && d == kv.Value; } }
+                Check(same, "the national shares are the same with the date and without it - the regions are a readout, never an input");
+                bool sixteen = regional != null && regional.Length == 16 && weights != null && weights.Length == 16;
+                Check(sixteen, "with the date: sixteen Länder derived");
+                if (sixteen && dated != null)
+                {
+                    IReadOnlyList<string> order = NationalElection.LastRegionalKeys;
+                    double worst = 0.0, total = 0.0;
+                    string worstParty = "none";
+                    foreach (double w in weights) { total += w; }
+                    for (int p = 0; order != null && p < order.Count; p++)
+                    {
+                        double agg = 0.0;
+                        for (int r = 0; r < 16; r++) { agg += regional[r][p] * weights[r] / total; }
+                        double e = Math.Abs(agg - dated[order[p]]);
+                        if (e > worst) { worst = e; worstParty = order[p] + F(" ({0:F2} % national, {1:F2} % rebuilt)", dated[order[p]] * 100.0, agg * 100.0); }
+                    }
+                    double reported = NationalElection.LastRegionalWorstAbsError;
+                    Check(order != null && Math.Abs(worst - reported) < 1e-9, F("the Länder's vote-weighted total against the national shares: worst {0:F4} pp, {2}, the error the uniform swing itself reports ({1:F4} pp) - a party standing in one Land (the CSU) takes its swing in that Land alone, so the derivation reports what it cannot reproduce rather than absorbing it", worst * 100.0, reported * 100.0, worstParty));
+                }
+            }
+            catch (Exception e) { failures++; sb.Append("    FAIL      threw: ").Append(e.Message).Append('\n'); }
+            sb.Append(failures == 0 ? "    CLEAN\n" : F("    {0} failure(s)\n", failures));
+            if (failures > 0) { Debug.LogError(sb.ToString()); CheckExit.Finish(1); return; }
+            Debug.Log(sb.ToString());
+            CheckExit.Finish(0);
+        }
+    }
+}
