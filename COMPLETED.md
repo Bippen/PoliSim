@@ -35185,3 +35185,14 @@ The plates' slips are filled on the repaint that lays them out and joined to the
 **Changed.** `docs/specs/UI_V33_SPEC.md` §2: the *Target: at least 50 % fewer* paragraph replaced - each retrofit reports its screen's measured reduction against the screen's own baseline row, before and after, by the same tool; no content is cut to reach a number (20b's plates fell 22-31 %, and that is the honest figure); a retrofit closes when its composition is built and the two-level reachability check holds (§1, unchanged). **D-ST's request document** (`uploads/D-ST_ask/ASK.md`, and its local copy): the metric paragraph says there is no target, that the first cut's "49 or fewer" is withdrawn, that the reduction will be reported and nothing cut to reach a number, and that the reachability holds - re-sent with the zip and manifest rebuilt (the zip carries the ask), the store's manifest read back (`ASK.md` 324ff701…).
 
 **Documents tier:** the document bar 8 of 8 (`doc690`).
+
+
+## 691. UNITY'S TERMS: NOTHING CHANGED; THE REMOVED ANALYTICS MODULE RECORDED AS A LAUNCH-READINESS QUESTION FOR ELIAS TO PUT TO UNITY SUPPORT IN WRITING, QUOTING §12.3 AND §17.2(d) - ERRAND E-50 (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30, item 4): *Unity's terms: change nothing. Record the removed analytics module as a launch-readiness question for Elias to put to Unity support in writing, quoting §12.3 and §17.2(d).*
+
+**Recorded** (`ERRANDS.md`, **E-50**, at the head of the table - the outward-facing actions are Elias's): the question for Unity support, in writing - whether shipping on the Personal tier with the built-in analytics module disabled through the Package Manager (the manual's documented Disable) and the analytics, performance-reporting and crash-reporting services off is permitted - with the Terms of Service's §12.3 and §17.2(d) quoted verbatim as §682 fetched them (Last updated: June 30, 2026), and the two things to ask in particular: whether a built-in package disabled as the manual documents is a "technical protection", and whether a player may ship sending no usage statistics. **What it unblocks:** a written answer before release - the build stands as it is, or the module returns.
+
+**Changed nothing** in the build, the manifest or §678's check.
+
+**Documents tier:** the document bar 8 of 8 (`doc690`, the tree that carries this row).
