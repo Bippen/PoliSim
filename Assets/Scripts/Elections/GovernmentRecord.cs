@@ -49,9 +49,10 @@ namespace PoliSim.Elections
         /// <summary>
         /// PS-3g (§634): THE PORTFOLIOS BY PARTY - Gamson's law, sourced (`docs/reference/GAMSON_PORTFOLIOS.md`): a cabinet party's share of the
         /// portfolios is its share of the coalition's seats ("a share of the payoff proportional to the amount of resources which they contribute
-        /// to a coalition" [BF73]; "one-to-one proportion" [WD01]; "near-perfect relationship" [WD06]), with no formateur premium [WD06]. The six
-        /// portfolios apportioned by largest remainder; the prime minister's party keeps the head of government and takes Finance first (the
-        /// premise); the rest handed out in the enum's order to the parties by size. STATED, UNSIZED: the literature's deviation - the large party
+        /// to a coalition" [BF73]; "one-to-one proportion" [WD01]; "near-perfect relationship" [WD06]), with no formateur premium [WD06]. §706
+        /// (ruled 2026-10-01): each post WEIGHED by Druckman &amp; Warwick's published salience (<see cref="PortfolioSalience"/>), the prime
+        /// minister's party credited the head of government's weight, the posts heaviest first to the party with the most entitlement outstanding
+        /// (<see cref="AllocatePortfolios"/>) - Finance can go to a partner (the record: 2021's FDP, 2025's SPD). STATED, UNSIZED: the literature's deviation - the large party
         /// underpaid, the small overpaid [BF73] [WD01] - is on no abstract as a figure, so the model pays pure proportion and says so; Sweden's real
         /// cabinet (M 13, KD 6, L 5 of 24 for seat shares 0.66/0.18/0.16, `sweden/portfolios.md`) shows the direction. Which portfolio a party
         /// takes follows its manifesto's emphasis in the literature [BDD11] - unsourced per party here, so the enum's order stands as the premise.
@@ -130,7 +131,14 @@ namespace PoliSim.Elections
             return string.Join(", ", names);
         }
 
-        /// <summary>Allocates the six portfolios among the cabinet's parties by their seat shares of the cabinet (Gamson's law, above), the prime minister's party taking Finance first.</summary>
+        /// <summary>
+        /// §706 (Elias's ruling of 2026-10-01: the Treasury lock lifted, Finance weighed): allocates the six portfolios by Gamson's law WITH
+        /// SALIENCE - each post at Druckman &amp; Warwick's published weight (<see cref="PortfolioSalience"/>), the head of government's weight
+        /// credited to its party. [AUTHORED-DRAFT] the method: a party's entitlement is its share of the cabinet's seats times the total weight;
+        /// the posts, heaviest first, each go to the party with the most entitlement outstanding (a tie to the larger party); the head's party holds
+        /// at least one post (the rule before, kept - its levers pass the gates anyway, the post is its minister's). Finance goes where the weights put it: to the partner in
+        /// the 2025 and 2021 chambers, as the record has it (PortfolioSalienceDiagnostic), and it carries its levers to whoever holds it (§634).
+        /// </summary>
         public void AllocatePortfolios(Country country)
         {
             Portfolios.Clear();
@@ -139,32 +147,43 @@ namespace PoliSim.Elections
             int total = 0;
             var seats = new Dictionary<string, int>();
             foreach (string party in Cabinet) { int held = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(party, out int n) ? n : 0; seats[party] = held; total += held; }
-            var count = new Dictionary<string, int>();
-            var remainder = new List<(string Party, double Rem)>();
-            int given = 0;
+            double head = PortfolioSalience.HeadWeight(country.Id);
+            double weightTotal = head;
+            foreach (CabinetPortfolio p in all) { weightTotal += PortfolioSalience.Weight(country.Id, p); }
+            var outstanding = new Dictionary<string, double>();
             foreach (string party in Cabinet)
             {
-                double quota = total > 0 ? all.Length * (double)seats[party] / total : all.Length / (double)Cabinet.Count;
-                int floor = (int)Math.Floor(quota);
-                count[party] = floor; given += floor;
-                remainder.Add((party, quota - floor));
-            }
-            remainder.Sort((a, b) => b.Rem != a.Rem ? b.Rem.CompareTo(a.Rem) : seats[b.Party].CompareTo(seats[a.Party]));   // the larger remainder first, a tie to the larger party
-            for (int i = 0; given < all.Length && remainder.Count > 0; i = (i + 1) % remainder.Count) { count[remainder[i].Party]++; given++; }
-            if (PmParty != null && count.TryGetValue(PmParty, out int pmCount) && pmCount == 0)
-            {
-                // The head of government's party holds a portfolio whatever its share: one is taken from the party with the most.
-                string richest = null; foreach (KeyValuePair<string, int> kv in count) { if (richest == null || kv.Value > count[richest]) { richest = kv.Key; } }
-                if (richest != null && count[richest] > 0) { count[richest]--; count[PmParty] = 1; }
+                double share = total > 0 ? seats[party] / (double)total : 1.0 / Cabinet.Count;
+                outstanding[party] = share * weightTotal - (party == PmParty ? head : 0.0);
             }
             var order = new List<string>(Cabinet);
             order.Sort((a, b) => seats[b].CompareTo(seats[a]));
             foreach (string party in order) { Portfolios[party] = new List<CabinetPortfolio>(); }
-            var pool = new List<CabinetPortfolio>(all);
-            if (PmParty != null && count.TryGetValue(PmParty, out int pmTake) && pmTake > 0) { Portfolios[PmParty].Add(CabinetPortfolio.FinanceTreasury); pool.Remove(CabinetPortfolio.FinanceTreasury); }
-            foreach (string party in order)
+            var posts = new List<CabinetPortfolio>(all);
+            posts.Sort((a, b) => PortfolioSalience.Weight(country.Id, b).CompareTo(PortfolioSalience.Weight(country.Id, a)) is int c && c != 0 ? c : ((int)a).CompareTo((int)b));   // heaviest first, a tie in the enum's order
+            foreach (CabinetPortfolio post in posts)
             {
-                while (Portfolios[party].Count < count[party] && pool.Count > 0) { Portfolios[party].Add(pool[0]); pool.RemoveAt(0); }
+                string taker = null;
+                foreach (string party in order) { if (taker == null || outstanding[party] > outstanding[taker] + 1e-9) { taker = party; } }   // order is by seats: a tie stays with the larger party
+                Portfolios[taker].Add(post);
+                outstanding[taker] -= PortfolioSalience.Weight(country.Id, post);
+            }
+            if (PmParty != null && Portfolios.TryGetValue(PmParty, out List<CabinetPortfolio> pmHeld) && pmHeld.Count == 0)
+            {
+                // The head of government's party holds a portfolio whatever its share: the lightest post of the party holding the most weight moves to it.
+                string richest = null; double richestWeight = -1.0;
+                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Portfolios)
+                {
+                    double w = PortfolioSalience.Of(country.Id, kv.Value);
+                    if (kv.Value.Count > 1 && w > richestWeight) { richest = kv.Key; richestWeight = w; }
+                }
+                if (richest != null)
+                {
+                    CabinetPortfolio lightest = Portfolios[richest][0];
+                    foreach (CabinetPortfolio p in Portfolios[richest]) { if (PortfolioSalience.Weight(country.Id, p) < PortfolioSalience.Weight(country.Id, lightest)) { lightest = p; } }
+                    Portfolios[richest].Remove(lightest);
+                    pmHeld.Add(lightest);
+                }
             }
         }
 
@@ -192,7 +211,7 @@ namespace PoliSim.Elections
             return record;
         }
 
-        /// <summary>§646: the posts Gamson's law allocates each party of a proposed cabinet (<see cref="AllocatePortfolios"/>), the prime minister's party taking Finance first - what a partner expects.</summary>
+        /// <summary>§646: the posts Gamson's law allocates each party of a proposed cabinet (<see cref="AllocatePortfolios"/>), each post weighed by its salience (§706) - what a partner expects.</summary>
         public static Dictionary<string, List<CabinetPortfolio>> GamsonPosts(Country country, IEnumerable<string> cabinet, string pmParty)
         {
             var scratch = new GovernmentRecord { PmParty = pmParty };

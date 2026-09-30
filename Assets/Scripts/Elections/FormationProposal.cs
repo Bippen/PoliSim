@@ -177,12 +177,16 @@ namespace PoliSim.Elections
                 else
                 {
                     double here = CoalitionFormation.Payoff(p, option, chamber.Seats, chamber.Compatibility, n);
-                    double postsFactor = answer.PostsExpected == 0 ? 1.0 : Math.Min(1.0, (double)answer.PostsOffered / answer.PostsExpected);
+                    // §706: the posts weighed, not counted - Finance counts for more than one post (Druckman & Warwick's salience, PortfolioSalience)
+                    double offeredWeight = PortfolioSalience.Of(country.Id, proposal.Posts.TryGetValue(key, out List<CabinetPortfolio> offeredPosts) ? offeredPosts : null);
+                    double expectedWeight = PortfolioSalience.Of(country.Id, gamson.TryGetValue(key, out List<CabinetPortfolio> expectedPosts) ? expectedPosts : null);
+                    double postsFactor = expectedWeight <= 0.0 ? 1.0 : Math.Min(1.0, offeredWeight / expectedWeight);
                     answer.Payoff = here * postsFactor;
                     answer.Alternative = BestElsewhere(p, out string where);
                     answer.Accepts = answer.Alternative <= answer.Payoff + CoalitionFormation.DefectionMargin;
                     answer.Reason = string.Format(CultureInfo.InvariantCulture, "{0} - offered {1} post(s), Gamson's law allocates it {2} here; worth {3:0.000} to it against {4:0.000} in {5}",
-                        answer.Accepts ? "accepts" : "refuses: the formation would give it more elsewhere", answer.PostsOffered, answer.PostsExpected, answer.Payoff, answer.Alternative, where);
+                        answer.Accepts ? "accepts" : "refuses: the formation would give it more elsewhere", answer.PostsOffered, answer.PostsExpected, answer.Payoff, answer.Alternative, where)
+                        + string.Format(CultureInfo.InvariantCulture, " (the posts weighed: {0:0.00} offered against {1:0.00} due)", offeredWeight, expectedWeight);   // §706: the weights the payoff reads
                 }
                 all &= answer.Accepts;
                 verdict.Answers.Add(answer);

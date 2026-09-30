@@ -207,6 +207,7 @@ namespace PoliSim.EditorTools
             ("FormationSweepDiagnostic", FormationSweepDiagnostic.Run),   // §646: the formation's whole answer over a sweep of chambers, pinned - the evaluator reproduces it exactly
             ("FormateurDiagnostic", FormateurDiagnostic.Run),   // §646: every AI party answers a proposal from the formation's own model (the formateur's premises 2-3)
             ("SpeakerRoundDiagnostic", SpeakerRoundDiagnostic.Run),   // §646: the Speaker's round, dated - the AI asked, the offer to the player, the player asked
+            ("PortfolioSalienceDiagnostic", PortfolioSalienceDiagnostic.Run),   // §706: Finance weighed by Druckman & Warwick's salience, the Treasury lock lifted - the 2021 and 2025 chambers put Finance where the record has it
             ("GermanFormationDiagnostic", GermanFormationDiagnostic.Run),   // §705: the chancellor's election under Art. 63 GG on the parties' dated declarations - the Union one group, convening, the fourteen days, the most votes, the reference
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature

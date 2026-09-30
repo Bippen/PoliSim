@@ -106,17 +106,16 @@ namespace PoliSim.EditorTools
                 PartyAnswer kdAnswer = stingyVerdict?.Answers.Find(a => a.Party == "KD");
                 Check(!tabledStingy && r4.Stage == RoundStage.PlayerAsked && kdAnswer != null && !kdAnswer.Accepts,
                     F("(3) M offers KD no post: KD refuses and the proposal is not tabled ({0}) - revise and offer again", refusal));
-                // §647: the prime minister's party keeps the Treasury - the tabling refuses a proposal that gives it away, and the sheet's preview
-                // (the tabling's own call, SimulationManager.PreviewFormation) says so before it is tabled.
+                // §706 (Elias's ruling of 2026-10-01): the Treasury lock is lifted - a proposal giving Finance to a partner is answered on its merits
+                // (the preview, the tabling's own call, SimulationManager.PreviewFormation); nothing refuses it for the Treasury.
                 FormationProposal noTreasury = s4.DraftProposal(c4, r4, "M");
                 string partnerOf = noTreasury.CabinetParties.Find(p => p != "M");
                 if (partnerOf != null) { noTreasury.Posts["M"].Remove(CabinetPortfolio.FinanceTreasury); if (!noTreasury.Posts.ContainsKey(partnerOf)) { noTreasury.Posts[partnerOf] = new List<CabinetPortfolio>(); } noTreasury.Posts[partnerOf].Add(CabinetPortfolio.FinanceTreasury); }
                 ProposalVerdict treasuryPreview = s4.PreviewFormation(CountryId.Sweden, noTreasury);
-                Check(treasuryPreview != null && !treasuryPreview.AllAccept && treasuryPreview.Investiture == null && (treasuryPreview.Reason ?? string.Empty).Contains("Treasury"),
-                    F("(3) the preview of a proposal giving the Treasury away: not every party accepts, and why ({0})", treasuryPreview?.Reason));
-                bool tabledNoTreasury = s4.SubmitFormation(CountryId.Sweden, noTreasury, out ProposalVerdict _, out string treasuryRefusal);
-                Check(partnerOf != null && !tabledNoTreasury && r4.Stage == RoundStage.PlayerAsked && treasuryRefusal == "THE PRIME MINISTER'S PARTY HOLDS THE TREASURY",
-                    F("(3) M gives {0} the Treasury: not tabled ({1})", partnerOf ?? "no partner", treasuryRefusal));
+                PartyAnswer financeAnswer = treasuryPreview?.Answers.Find(a => a.Party == partnerOf);
+                Check(partnerOf != null && treasuryPreview != null && treasuryPreview.Investiture != null && !(treasuryPreview.Reason ?? string.Empty).Contains("Treasury")
+                      && financeAnswer != null && !(financeAnswer.Reason ?? string.Empty).Contains("Treasury") && r4.Stage == RoundStage.PlayerAsked,
+                    F("(3) M gives {0} Finance: the lock lifted, the proposal answered on its merits - {0} {1}; {2}", partnerOf ?? "no partner", financeAnswer?.Reason ?? "no answer", treasuryPreview?.Reason));
                 Check(s4.PassFormation(CountryId.Sweden, out string _) && r4.Asked != "M" && r4.Rejections == 0 && r4.Stage == RoundStage.Consulting,
                     F("(3) M passes: the Speaker asks {0}, and nothing is counted against the limit", r4.Asked));
 

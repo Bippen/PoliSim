@@ -107,8 +107,9 @@ one-way red lines, feasible hold-outs). What is new is that **the player's party
 - **If another party forms**, the player's party is offered whatever the formation model says it
   would be offered: a coalition seat with portfolios, a support agreement, or nothing.
 - **Portfolios** are allocated in proportion to seat contribution — the regularity political science
-  calls Gamson's law, sourced and stated — with the prime minister's party keeping the head of
-  government.
+  calls Gamson's law, sourced and stated — each post WEIGHED by its published salience (Druckman &
+  Warwick 2005; Finance counts for more than one post), the prime minister's party credited the head of
+  government's weight; Finance can go to a partner (ruled 2026-10-01, `COMPLETED.md` §706).
 - **A support agreement** is a list of demands the supporting party chooses from its own positions,
   each one a law to enact or a dial target to reach; the formateur accepts the demands its own
   compatibility allows. The agreement is the support party's leverage for the whole term: the game
@@ -121,7 +122,7 @@ is built, per the standing rule that a design a later session depends on lives i
    proposes a cabinet (which parties, which posts to each) and support agreements (which supporters,
    which of their demands to accept).
 2. **Posts by Gamson's law.** Partners expect posts roughly in proportion to their seats (Gamson's law,
-   `docs/reference/GAMSON_PORTFOLIOS.md`); offering less lowers acceptance. Each post carries its
+   `docs/reference/GAMSON_PORTFOLIOS.md`), each post weighed by its salience (§706); offering less weight lowers acceptance. Each post carries its
    portfolio's levers to the partner (§634).
 3. **AI answers.** Each AI party answers from its compatibility with the proposed cabinet and its dated
    declarations - red lines, candidacies, V's in-or-against - accepting or refusing with its reason,

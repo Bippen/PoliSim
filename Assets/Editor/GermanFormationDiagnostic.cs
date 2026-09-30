@@ -20,7 +20,8 @@ namespace PoliSim.EditorTools
     /// CDU+CSU+SPD led by the CDU's candidate. (d) The procedure, dated, on the game's own path: the round opens the day after the 2025 polling
     /// day, the outgoing government stays in office until the new Bundestag convenes (Art. 69 Abs. 2) and serves on from that day (Abs. 3); the
     /// chancellor is elected on the convening day by a majority of the members (Art. 63 Abs. 2). (e) Planted refusals so no candidate reaches a
-    /// majority: the fourteen days (Abs. 3), then the ballot the most votes win (Abs. 4) - no limit of proposals, no extra election. (f) The
+    /// majority: the fourteen days (Abs. 3), then the ballot the most votes win (Abs. 4) - no limit of proposals, no extra election; §706's
+    /// nominations by GO-BT § 4 - a quarter's signatures pooled behind one candidate (e), none reaching a quarter and Abs. 3 (e2). (f) The
     /// reference: the real 2025 result and the government that formed, Merz's CDU+CSU+SPD of 6 May 2025.
     /// </summary>
     public static class GermanFormationDiagnostic
@@ -165,18 +166,27 @@ namespace PoliSim.EditorTools
                 List<DivisionRecord> inPhase2 = ballots.FindAll(e => e.Title.Contains("Art. 63 Abs. 3"));
                 FieldInfo extraDate = typeof(SimulationManager).GetField("_extraElectionDate", BindingFlags.Instance | BindingFlags.NonPublic);
                 DateTime extra = extraDate != null ? (DateTime)extraDate.GetValue(s3) : DateTime.MaxValue;
-                Check(phase2On == new DateTime(2025, 3, 25) && secondUntil == new DateTime(2025, 4, 8) && inPhase2.Count >= 2 && inPhase2.TrueForAll(e => e.Date <= secondUntil),
+                Check(phase2On == new DateTime(2025, 3, 25) && secondUntil == new DateTime(2025, 4, 8) && inPhase2.Count >= 1 && inPhase2.TrueForAll(e => e.Date <= secondUntil),
                     F("(e) the Bundespräsident's candidate not elected on {0:yyyy-MM-dd}: the fourteen days run to {1:yyyy-MM-dd} (Art. 63 Abs. 3), {2} ballot(s) inside them, each on the day its candidate stood ({3})",
                         phase2On ?? DateTime.MinValue, secondUntil, inPhase2.Count, string.Join(", ", inPhase2.ConvertAll(e => e.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))));
+                // §706: the planted SPD>CDU sends the SPD's and the Linke's members to the Greens' candidate - they sign his nomination (GO-BT § 4 Abs. 2,
+                // [AUTHORED-DRAFT] the members who would vote for a candidate sign it) and vote for him: 85 + 120 + 64 = 269 against the Union's 208
                 bool sincere = last != null && last.Sides.Exists(s => (s.Reason ?? string.Empty).Contains("the game's premise: sincere votes"));
                 Check(pluralityOn == new DateTime(2025, 4, 9) && !r3.Open && appointed != outgoing3 && last != null
-                      && last.Title.StartsWith("Chancellor's election (Art. 63 Abs. 4 GG): Friedrich Merz (CDU) - elected with the most votes", StringComparison.Ordinal)
-                      && last.Title.Contains("appointed, not dissolved (the game's premise)") && sincere
-                      && Sorted(appointed.Cabinet) == Sorted(new List<string> { "CDU", "CSU" }) && appointed.PmParty == "CDU" && (appointed.Basis ?? string.Empty).Contains("Art. 63 Abs. 4 Satz 3"),
-                    F("(e) {0:yyyy-MM-dd}, the day after: '{1}'; {2} takes office led by {3} - the ballot's sides carry the tally's premise ({4})", pluralityOn ?? DateTime.MinValue, last?.Title ?? "no ballot",
+                      && last.Title.StartsWith("Chancellor's election (Art. 63 Abs. 4 GG): Robert Habeck (Grune) - elected with the most votes, 269", StringComparison.Ordinal)
+                      && last.Title.Contains("appointed, not dissolved (the game's premise)") && last.Sides.TrueForAll(s => !string.IsNullOrEmpty(s.Reason))
+                      && appointed.PmParty == "Grune" && appointed.Cabinet.Contains("Grune") && (appointed.Basis ?? string.Empty).Contains("Art. 63 Abs. 4 Satz 3"),
+                    F("(e) {0:yyyy-MM-dd}, the day after: '{1}'; {2} takes office led by {3} - every side carries its reason ({4})", pluralityOn ?? DateTime.MinValue, last?.Title ?? "no ballot",
                         string.Join("+", appointed.Cabinet), appointed.PmParty, sincere ? "sincere votes" : "NOT STATED"));
+                // §706 (GO-BT § 4 Abs. 2): in the fourteen days only a nomination signed by a quarter of the members stands - the Union's (208 of 630,
+                // a Fraktion of a quarter) and the Greens' (signed by the 269 who would vote for him); the AfD's 152 fall short and nobody signs them.
+                // Each stands once; then no nomination stands and the fourteen days run out with no candidate before the Bundestag
+                Check(inPhase2.Exists(e => e.Title.Contains("Friedrich Merz (CDU)")) && inPhase2.Exists(e => e.Title.Contains("Robert Habeck (Grune)")) && inPhase2.Count == 2
+                      && !ballots.Exists(e => e.Title.Contains("Alice Weidel")) && r3.Log.Exists(l => l.Contains("GO-BT § 4 Abs. 2") && l.Contains("with no candidate before the Bundestag")),
+                    F("(e) GO-BT § 4 Abs. 2: the fourteen days ballot the Union's candidate (a Fraktion of a quarter) and the Greens' (signed by the members who would vote for him), each once; the AfD's 152 stand in none; then no candidate is before the Bundestag ({0})",
+                        string.Join("; ", inPhase2.ConvertAll(e => e.Title))));
                 if (last != null) { foreach (DivisionSide s in last.Sides) { sb.Append(F("    side      {0} {1} ({2}): {3}\n", s.Abbrev, s.Side > 0 ? "for" : s.Side < 0 ? "other" : "abstains", s.Seats, s.Reason)); } }
-                Check(extra == DateTime.MinValue && !r3.Log.Exists(l => l.Contains("breaks off")) && ballots.Count >= 4,
+                Check(extra == DateTime.MinValue && !r3.Log.Exists(l => l.Contains("breaks off")) && ballots.Count >= 3,
                     F("(e) {0} ballots and no limit of proposals: the procedure never breaks off to an extra election (the Riksdag's four are RF 6 kap. 5 §, not the Grundgesetz's)", ballots.Count));
                 foreach (string line in r3.Log) { sb.Append("    log       ").Append(line).Append('\n'); }
 
@@ -189,7 +199,8 @@ namespace PoliSim.EditorTools
                     F("(e2) on the polling day, before the round opens, no constructive vote - the new chamber's seats are not the old Bundestag's: {0}", pollingWhy ?? "MOVED"));
                 Days(s5, 1);   // the game's own round opens the day after; the planted refusals stand in it
                 SpeakerRound r5 = s5.RoundOf(CountryId.Germany);
-                r5?.Refusals.AddRange(new[] { "SPD>CDU", "CDU>SPD", "CDU>Grune", "SPD>AfD", "Grune>AfD", "Linke>AfD" });
+                // §706: the left planted apart too (SPD, Greens and Linke each refuse the others), so nobody pools a quarter's signatures and Abs. 3 is reached
+                r5?.Refusals.AddRange(new[] { "SPD>CDU", "CDU>SPD", "CDU>Grune", "SPD>AfD", "Grune>AfD", "Linke>AfD", "SPD>Grune", "Grune>SPD", "Linke>SPD", "Linke>Grune" });
                 bool cduPassed = false;
                 for (int d = 0; d < 120 && r5 != null && r5.Open; d++)
                 {
@@ -200,6 +211,8 @@ namespace PoliSim.EditorTools
                 if (r5 != null) { foreach (string line in r5.Log) { sb.Append("    log e2    ").Append(line).Append((char)10); } }
                 DivisionRecord final5 = g5.Divisions.Entries.FindLast(e => e.Title.Contains("Art. 63 Abs. 4"));
                 DivisionSide cduSide = final5?.Sides.Find(s => s.Abbrev == "CDU");
+                Check(r5 != null && r5.Log.Exists(l => l.Contains("GO-BT § 4 Abs. 3")),
+                    F("(e2) GO-BT § 4 Abs. 3: with the CDU standing none, no nomination reaches a quarter; the Fraktionen nominate - {0}", r5?.Log.Find(l => l.Contains("GO-BT § 4 Abs. 3")) ?? "no Abs. 3 line"));
                 Check(cduPassed && final5 != null && cduSide != null && !(cduSide.Reason ?? string.Empty).Contains("its own candidate") && !(final5.Title.Contains("Friedrich Merz")),
                     F("(e2) the CDU, the player's party, passed when asked: in the ballot the most votes win it stands no candidate - {0}; {1}", cduSide?.Reason ?? "no side", final5?.Title ?? "no ballot"));
 
@@ -209,7 +222,8 @@ namespace PoliSim.EditorTools
                 g6.ElectionHistory.Add(new ElectionRecord { Date = poll25, CountryId = CountryId.Germany.ToString(), Method = ElectionMethod.GermanyNationalProportional });
                 Days(s6, 1);
                 SpeakerRound r6 = s6.RoundOf(CountryId.Germany);
-                r6?.Refusals.AddRange(new[] { "SPD>CDU", "CDU>SPD", "CDU>Grune", "SPD>AfD", "Grune>AfD", "Linke>AfD" });
+                // §706: the Linke planted apart from the Greens and the SPD, so the Greens' pooled 205 (85 + 120) trail the Union's 208 voting as one
+                r6?.Refusals.AddRange(new[] { "SPD>CDU", "CDU>SPD", "CDU>Grune", "SPD>AfD", "Grune>AfD", "Linke>AfD", "Linke>SPD", "Linke>Grune" });
                 bool csuDeclined = false;
                 for (int d = 0; d < 120 && r6 != null && r6.Open; d++)
                 {

@@ -12,7 +12,7 @@ namespace PoliSim.EditorTools
 {
     /// <summary>
     /// PS-3g (§634): PORTFOLIOS BY GAMSON'S LAW, ASSERTED. On Sweden's government of record (M+KD+L, the 2026 chamber's seats M 70, KD 22, L 19 =
-    /// 111) the six portfolios apportion by largest remainder to M 4, KD 1, L 1 with Finance to M (the prime minister's party); every cabinet party
+    /// 111) the six portfolios apportion by salience-weighted Gamson (§706: each post at Druckman and Warwick's weight) - M 3, KD 2, L 1, Finance with M on the weights alone; every cabinet party
     /// holds at least one; the six are held once each. The gate's portfolio leg: a junior partner introduces the bills of its own portfolios and is
     /// refused the others with the reason naming the minister's lever and its own portfolios; the prime minister's party introduces everything;
     /// the opposition nothing. The what-if (France) hands every portfolio to the player's party. The record rides the save (format 31).
@@ -42,8 +42,11 @@ namespace PoliSim.EditorTools
                 int m = sweden.ParliamentSeats["M"], kd = sweden.ParliamentSeats["KD"], l = sweden.ParliamentSeats["L"];
                 sb.Append(F("    seats     M {0}, KD {1}, L {2} of the cabinet's {3}\n", m, kd, l, m + kd + l));
                 foreach (string party in g.Cabinet) { sb.Append("    holds     ").Append(party).Append(": ").Append(g.PortfoliosOf(party)).Append('\n'); }
-                Check(g.Portfolios.Count == 3 && g.Portfolios["M"].Count == 4 && g.Portfolios["KD"].Count == 1 && g.Portfolios["L"].Count == 1, "the six portfolios apportion M 4, KD 1, L 1 by largest remainder on the cabinet's seats");
-                Check(g.HoldsPortfolio("M", CabinetPortfolio.FinanceTreasury), "the prime minister's party takes Finance first");
+                // §706 (Elias's ruling of 2026-10-01): Gamson's law with salience - each post at Druckman & Warwick's Swedish weight, the prime
+                // minister's credited to M; the heaviest posts first to the party with the most entitlement outstanding
+                Check(g.Portfolios.Count == 3 && g.Portfolios["M"].Count == 3 && g.Portfolios["KD"].Count == 2 && g.Portfolios["L"].Count == 1,
+                    F("the six portfolios apportion by salience-weighted Gamson (§706): M {0} · KD {1} · L {2}", g.PortfoliosOf("M"), g.PortfoliosOf("KD"), g.PortfoliosOf("L")));
+                Check(g.HoldsPortfolio("M", CabinetPortfolio.FinanceTreasury), "M holds Finance on the weights alone - the Treasury lock is lifted (§706), and the record has Svantesson (M)");
                 var seen = new HashSet<CabinetPortfolio>(); int held = 0;
                 foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in g.Portfolios) { foreach (CabinetPortfolio p in kv.Value) { seen.Add(p); held++; } }
                 Check(seen.Count == 6 && held == 6, F("every portfolio held once ({0} distinct of {1} held)", seen.Count, held));

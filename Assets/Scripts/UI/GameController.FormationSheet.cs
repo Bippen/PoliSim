@@ -13,11 +13,12 @@ namespace PoliSim.UI
     /// player revises and offers again until every invited party accepts, then tables the proposal (premise 4) or passes.
     ///
     /// **The board's grammar, applied.** A party is a row of cells - its mark, its name, its seats as a figure and as a bar on the chamber's one axis
-    /// (0.34 px a seat at the board's scale, 18b's device), the ●/○ toggle (17b: the fill is the state), and the posts OFFERED ⁄ DUE with ✕ leading
-    /// where the offer departs from Gamson's law (a verdict: it does not say who is wrong - over-offered is as much a departure as short). The
+    /// (0.34 px a seat at the board's scale, 18b's device), the ●/○ toggle (17b: the fill is the state), and the posts' WEIGHT OFFERED ⁄ DUE (§706: each
+    /// post at its published salience) with ✕ leading where the offer weighs less than the Gamson share - the one departure that lowers a
+    /// partner's acceptance (an over-offer raises none). The
     /// sentence each row used to be goes to the row's slip. The Answers are rows - ✓/✕, the party, ACCEPTS or REFUSES, worth ⁄ elsewhere - and
-    /// the reason is the slip. The investiture is a bar with the majority tick (Bad ink, a mark, not a word) and ✓ leading. TREASURY takes the
-    /// locked glyph and no chip. Brass is the one act (TABLE IT); PASS is paper; CLOSE THE SHEET is in the head. **No scroll at 1280 × 720**: the
+    /// the reason is the slip. The investiture is a bar with the majority tick (Bad ink, a mark, not a word) and ✓ leading. Every post, Finance
+    /// included (§706: the Treasury lock lifted), passes to the next party. Brass is the one act (TABLE IT); PASS is paper; CLOSE THE SHEET is in the head. **No scroll at 1280 × 720**: the
     /// two columns are absolute rows; a column taller than the sheet (a proposal with three supporters' demands open) scrolls alone, never clipped.
     ///
     /// A click is QUEUED and applied after the sheet is drawn: a change made mid-event would add or drop rows the event's other half never saw.
@@ -110,7 +111,7 @@ namespace PoliSim.UI
             }
             float leftShift = BeginSheetColumn(left, leftNeeded, ref _formationLeftScroll);
             float y = left.y;
-            DrawRowSectionHead(new Rect(left.x, y, left.width, headH), "THE CABINET", "SEATS · IN · POSTS OFFERED ⁄ DUE");
+            DrawRowSectionHead(new Rect(left.x, y, left.width, headH), "THE CABINET", "SEATS · IN · WEIGHT OFFERED ⁄ DUE");
             y += headH;
             foreach (PoliticalParty party in seated)
             {
@@ -148,13 +149,18 @@ namespace PoliSim.UI
                     .Add(formateur ? (round.Bundestag ? "THE FORMATEUR - THE CHANCELLOR'S PARTY" : "THE FORMATEUR - THE PRIME MINISTER'S PARTY") : inCabinet ? "INVITED INTO THE CABINET" : "NOT INVITED");
                 if (inCabinet)
                 {
+                    // §706 (the review's defect 4): the posts WEIGHED, as the partner's answer weighs them (Druckman & Warwick's salience) - a count of
+                    // posts said 2 ⁄ 2 where the weights cut the partner's payoff, and marked a post short where the weights were whole
                     int offered = draft.PostsOf(key);
-                    int due = gamson.TryGetValue(key, out List<CabinetPortfolio> g) ? g.Count : 0;
+                    double offeredWeight = PortfolioSalience.Of(_playerCountry.Id, draft.Posts.TryGetValue(key, out List<CabinetPortfolio> held) ? held : null);
+                    double dueWeight = PortfolioSalience.Of(_playerCountry.Id, gamson.TryGetValue(key, out List<CabinetPortfolio> g) ? g : null);
+                    bool short_ = offeredWeight < dueWeight - 0.005;
                     float px = row.x + 356f * ux;
-                    if (offered != due) { DrawVerdictSlot(new Rect(px, row.y, StatsUnit(16f), row.height), false); }
-                    DrawFigurePair(px + StatsUnit(20f), row, offered.ToString(CultureInfo.InvariantCulture), "⁄ " + due.ToString(CultureInfo.InvariantCulture));
-                    slip.Add("OFFERED " + Posts(offered) + " · GAMSON'S LAW GIVES IT " + due.ToString(CultureInfo.InvariantCulture));
-                    if (offered != due) { slip.Add("THE OFFER DEPARTS FROM THE LAW: LESS LOWERS ITS ACCEPTANCE, MORE BUYS NOTHING"); }
+                    if (short_) { DrawVerdictSlot(new Rect(px, row.y, StatsUnit(16f), row.height), false); }
+                    DrawFigurePair(px + StatsUnit(20f), row, offeredWeight.ToString("0.00", CultureInfo.InvariantCulture), "⁄ " + dueWeight.ToString("0.00", CultureInfo.InvariantCulture));
+                    slip.Add("OFFERED " + Posts(offered) + ", WEIGHING " + offeredWeight.ToString("0.00", CultureInfo.InvariantCulture) + " · GAMSON'S LAW GIVES IT " + dueWeight.ToString("0.00", CultureInfo.InvariantCulture));
+                    slip.Add("A POST WEIGHS ITS SALIENCE - FINANCE MORE THAN ONE");
+                    if (short_) { slip.Add("THE OFFER WEIGHS LESS THAN THE LAW: IT LOWERS ITS ACCEPTANCE; MORE BUYS NOTHING"); }
                 }
                 SlipAnchor(Shifted(row, leftShift), "cabinet/" + key);
                 book.Anchors["cabinet/" + key] = slip;
@@ -229,8 +235,8 @@ namespace PoliSim.UI
             y = right.y;
             DrawRowSectionHead(new Rect(right.x, y, right.width, headH), "THE POSTS");
             y += headH;
-            // Each portfolio held by one cabinet party, passed on to the next (premise 2: posts carry their levers, §634). The Treasury stays the
-            // formateur's - the prime minister's party keeps the head of government's post (spec §5.3) - and the formateur never gives its last one away.
+            // Each portfolio held by one cabinet party, passed on to the next (premise 2: posts carry their levers, §634); the formateur never gives its
+            // last one away. §706 (Elias's ruling of 2026-10-01): Finance is a post like any other - it passes to a partner as the others do.
             foreach (CabinetPortfolio post in (CabinetPortfolio[])System.Enum.GetValues(typeof(CabinetPortfolio)))
             {
                 string holder = null;
@@ -238,25 +244,14 @@ namespace PoliSim.UI
                 if (holder == null || !draft.CabinetParties.Contains(holder)) { holder = you; }
                 int at = draft.CabinetParties.IndexOf(holder);
                 string next = draft.CabinetParties.Count > 0 ? draft.CabinetParties[(at + 1) % draft.CabinetParties.Count] : holder;
-                bool treasury = post == CabinetPortfolio.FinanceTreasury;
-                bool fixedPost = treasury || next == holder || (holder == you && draft.PostsOf(you) <= 1);
+                bool fixedPost = next == holder || (holder == you && draft.PostsOf(you) <= 1);
                 var row = new Rect(right.x, y, right.width, rowH);
                 string postName = Effectiveness.ShortName(post).ToUpperInvariant();
-                if (treasury)
-                {
-                    float side = StatsUnit(16f);
-                    SymbolRegistry.Draw(new Rect(row.x, row.y + Mathf.Round((row.height - side) * 0.5f), side, side), Symbol.Locked, PoliSimTheme.TextMuted, DeskCaption(6.5f, PoliSimTheme.TextMuted));
-                }
                 PoliSimWidgets.MeasuredLabel(new Rect(row.x + 28f * ux, row.y, 110f * ux, row.height), postName, caption);
                 DrawPartyMarkSlot(new Rect(row.x + 146f * ux, row.y, 20f * ux, row.height), country, holder);
                 PoliSimWidgets.MeasuredLabel(new Rect(row.x + 172f * ux, row.y, 50f * ux, row.height), Name(holder), nameStyle);
                 var slip = new SlipContent(postName + " · " + Name(holder)).Add("THE POST CARRIES ITS PORTFOLIO'S LEVERS TO THE PARTY THAT HOLDS IT");
-                if (treasury)
-                {
-                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + 230f * ux, row.y, row.xMax - (row.x + 230f * ux), row.height), round.Bundestag ? "THE CHANCELLOR'S PARTY" : "THE PRIME MINISTER'S PARTY", muted);
-                    slip.Add(round.Bundestag ? "LOCKED: THE TREASURY STAYS THE CHANCELLOR'S PARTY'S" : "LOCKED: THE TREASURY STAYS THE PRIME MINISTER'S PARTY'S");
-                }
-                else if (fixedPost)
+                if (fixedPost)
                 {
                     slip.Add(next == holder ? "A ONE-PARTY CABINET HOLDS EVERY POST" : "THE FORMATEUR NEVER GIVES ITS LAST POST AWAY");
                 }

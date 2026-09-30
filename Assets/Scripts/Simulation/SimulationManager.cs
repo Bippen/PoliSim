@@ -3086,6 +3086,29 @@ namespace PoliSim.Simulation
         {
             round.Turn++;
             round.Asked = round.Order.Count > 0 ? round.Order[round.Turn % round.Order.Count] : null;
+            if (IsBundestagRound(round) && round.Phase >= 2 && round.Asked != null)
+            {
+                // §706 (GO-BT § 4 Abs. 2): in the fourteen days a candidate stands only on a nomination signed by a quarter of the members, or by a
+                // Fraktion of a quarter - the next party in the order whose nomination stands; none standing, the fourteen days run out unballoted
+                Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
+                List<string> standing = Nominated(country, round, chamber, parties, pluralityBallot: false, out string how);
+                // the review of §706 (defect 1): a nomination stands once in the fourteen days - one that has stood, or a party that passed, is not
+                // asked again (a pass re-asked the player's party on the same day, and the clock held on it for good)
+                standing.RemoveAll(p => round.StoodInPhase2.Contains(p));
+                if (standing.Count == 0 && !how.Contains("no nomination")) { how = "every nomination signed by a quarter of the members has stood or passed (GO-BT § 4 Abs. 2)"; }
+                int tries = 0;
+                while (!standing.Contains(round.Asked) && tries++ < round.Order.Count) { round.Turn++; round.Asked = round.Order[round.Turn % round.Order.Count]; }
+                if (!standing.Contains(round.Asked))
+                {
+                    round.Asked = null;
+                    round.Proposal = null;
+                    round.Stage = Elections.RoundStage.Consulting;
+                    round.AskedOn = CurrentDate;
+                    round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {how}; the fourteen days run to {round.SecondPhaseUntil:yyyy-MM-dd} with no candidate before the Bundestag");
+                    Debug.Log($"SPEAKER: {country.Id} - the chancellor's election, phase 2: {how}");
+                    return;
+                }
+            }
             if (round.Asked == null) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: no party to ask"); BreakOff(country, country.Government, round); return; }   // no party to ask: the procedure breaks off (unreachable where the order falls back to the largest party)
             round.AskedOn = CurrentDate;
             round.Proposal = null;
@@ -3142,6 +3165,7 @@ namespace PoliSim.Simulation
             switch (round.Stage)
             {
                 case Elections.RoundStage.Consulting:
+                    if (round.Asked == null) { return; }   // §706: no nomination stands (GO-BT § 4 Abs. 2) - the fourteen days run out, then the ballot the most votes win
                     if (CurrentDate < round.AskedOn.AddDays(Elections.SpeakerRound.ConsultationDays)) { return; }
                     Elections.FormationProposal proposal = DraftProposal(country, round, round.Asked);
                     if (Involves(proposal, country.PlayerPartyAbbrev))
@@ -3182,6 +3206,7 @@ namespace PoliSim.Simulation
                 // candidate with a majority of its members; a candidate not elected inside them leaves the ballot the most votes win (Abs. 4)
                 round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag does not elect {CandidateOf(country, round, round.Proposal.Formateur)} - {verdict.Investiture?.SupportedSeats ?? 0} for, {MajorityOf(country)} needed, a majority of the members ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)})");
                 Debug.Log($"SPEAKER: {country.Id} - {title}{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
+                if (round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Proposal.Formateur)) { round.StoodInPhase2.Add(round.Proposal.Formateur); }   // §706: stood once in the fourteen days
                 if (round.Phase <= 1)
                 {
                     round.Phase = 2;
@@ -3246,70 +3271,18 @@ namespace PoliSim.Simulation
             round.Phase = 3;
             Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
             int IndexOf(string key) { for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == key) { return p; } } return -1; }
-            var candidates = new List<string>();
             string player = country.PlayerPartyAbbrev;
-            bool Declined(string formateur) => !string.IsNullOrEmpty(player) && round.Declines.Contains(player + ">" + formateur);
-            foreach (string party in round.Order)
-            {
-                // the review's second pass (defect 2): the player's party stands only where it stood in the round - a pass is not a candidacy
-                if (party == player && !round.PlayerStood) { continue; }
-                if (SeatsOf(country, party) > 0 && !IsSmallerGroupMember(country, party) && IndexOf(party) >= 0 && !candidates.Contains(party)) { candidates.Add(party); }
-            }
+            // §706 (Elias's ruling of 2026-10-01): the candidates are the nominations GO-BT § 4 lets stand - a quarter of the members' signatures,
+            // or a Fraktion of a quarter (Abs. 2); failing any, a Fraktion or five per cent (Abs. 3); failing even that, every member's right.
+            List<string> candidates = Nominated(country, round, chamber, parties, pluralityBallot: true, out string nominatedHow);
             if (candidates.Count == 0)
             {
                 round.Log.Add($"{CurrentDate:yyyy-MM-dd}: no candidate stands in the ballot the most votes win (Art. 63 Abs. 4 GG); the outgoing government serves on");
                 round.Stage = Elections.RoundStage.Concluded;
                 return;
             }
-            var votes = new Dictionary<string, int>();
-            foreach (string c in candidates) { votes[c] = 0; }
-            var cast = new List<(string Party, string For, string Reason)>();
-            var chose = new Dictionary<string, string>();
-            // the review's third pass (D): a parliamentary group votes as one, by its larger member (the rule the formation reads, JointAlike) - the
-            // larger members first, the smaller ones then following them, whatever their vote (for, for another, or an abstention)
-            var byGroup = new List<int>();
-            for (int p = 0; p < parties.Count; p++) { if (!IsSmallerGroupMember(country, parties[p].Abbrev)) { byGroup.Add(p); } }
-            for (int p = 0; p < parties.Count; p++) { if (IsSmallerGroupMember(country, parties[p].Abbrev)) { byGroup.Add(p); } }
-            foreach (int p in byGroup)
-            {
-                if (chamber.Seats[p] <= 0) { continue; }
-                string key = parties[p].Abbrev;
-                string partner = SeatedGroupPartner(country, key);
-                bool isPlayer = key == player;
-                string choice = candidates.Contains(key) ? key : null;
-                string reason;
-                if (IsSmallerGroupMember(country, key) && partner != null && chose.ContainsKey(partner))
-                {
-                    choice = chose[partner];
-                    reason = "votes with its parliamentary group, as one (" + partner + "'s side) - the game's premise: a group votes and governs as one";   // the review's fourth pass (E): the premise on the division the player reads
-                    chose[key] = choice;
-                    if (choice != null) { votes[choice] += chamber.Seats[p]; }
-                    cast.Add((key, choice, reason));
-                    continue;
-                }
-                if (choice != null) { reason = "its own candidate"; }
-                else if (!parties[p].HasPosition) { reason = "holds no surveyed position to be near to - abstains (the game's premise)"; }   // the SSW: compatibility 0 everywhere would hand its vote to the order's first
-                else
-                {
-                    double nearest = double.NegativeInfinity;
-                    foreach (string c in candidates)
-                    {
-                        int ci = IndexOf(c);
-                        int cp = SeatedGroupPartner(country, c) is string cPartner ? IndexOf(cPartner) : -1;
-                        bool refuses = false;
-                        foreach (Elections.RedLine line in chamber.Lines) { if (line.RefusesSupport(p, ci) || (cp >= 0 && line.RefusesSupport(p, cp))) { refuses = true; break; } }
-                        if (isPlayer && Declined(c)) { refuses = true; }   // the player's decline in this round stands in its vote too
-                        if (refuses || chamber.Compatibility[p, ci] <= nearest) { continue; }
-                        nearest = chamber.Compatibility[p, ci];
-                        choice = c;
-                    }
-                    reason = choice != null ? "the candidate nearest it that it does not refuse (the game's premise: sincere votes)" : "refuses every candidate - abstains";
-                }
-                chose[key] = choice;
-                if (choice != null) { votes[choice] += chamber.Seats[p]; }
-                cast.Add((key, choice, reason));
-            }
-            cast.Sort((a, b) => IndexOf(a.Party).CompareTo(IndexOf(b.Party)));   // the division lists the parties in the chamber's order
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the nominations for the ballot the most votes win: {string.Join(", ", candidates)} - {nominatedHow}");
+            Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> cast);
             string winner = candidates[0];
             foreach (string c in candidates) { if (votes[c] > votes[winner]) { winner = c; } }
             int majority = MajorityOf(country);
@@ -3379,6 +3352,128 @@ namespace PoliSim.Simulation
             // the review's fourth pass (E): the rule that seated the player's party is on the government it sits in, where the desk reads it
             if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {candidate}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
         }
+
+        /// <summary>
+        /// §705: the ballot's sincere tally over <paramref name="candidates"/> - a candidate's own party votes for it; a parliamentary group votes as
+        /// one, the larger member first and the smaller following it whatever its vote; every other seated party for the candidate nearest it (the
+        /// formation's compatibility) whose party it does not refuse; an unplaced party abstains; the player's declines in the round stand in its vote.
+        /// Also what signs a nomination (§706): the members who would vote for a candidate sign it.
+        /// </summary>
+        private Dictionary<string, int> Tally(Country country, Elections.SpeakerRound round, Elections.CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties,
+            List<string> candidates, out List<(string Party, string For, string Reason)> cast)
+        {
+            int IndexOf(string key) { for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == key) { return p; } } return -1; }
+            string player = country.PlayerPartyAbbrev;
+            bool Declined(string formateur) => !string.IsNullOrEmpty(player) && round.Declines.Contains(player + ">" + formateur);
+            var votes = new Dictionary<string, int>();
+            foreach (string c in candidates) { votes[c] = 0; }
+            cast = new List<(string Party, string For, string Reason)>();
+            var chose = new Dictionary<string, string>();
+            // the review's third pass (D): a parliamentary group votes as one, by its larger member - the larger members first
+            var byGroup = new List<int>();
+            for (int p = 0; p < parties.Count; p++) { if (!IsSmallerGroupMember(country, parties[p].Abbrev)) { byGroup.Add(p); } }
+            for (int p = 0; p < parties.Count; p++) { if (IsSmallerGroupMember(country, parties[p].Abbrev)) { byGroup.Add(p); } }
+            foreach (int p in byGroup)
+            {
+                if (chamber.Seats[p] <= 0) { continue; }
+                string key = parties[p].Abbrev;
+                string partner = SeatedGroupPartner(country, key);
+                bool isPlayer = key == player;
+                string choice = candidates.Contains(key) ? key : null;
+                string reason;
+                if (IsSmallerGroupMember(country, key) && partner != null && chose.ContainsKey(partner))
+                {
+                    choice = chose[partner];
+                    reason = "votes with its parliamentary group, as one (" + partner + "'s side) - the game's premise: a group votes and governs as one";   // the review's fourth pass (E): the premise on the division the player reads
+                    chose[key] = choice;
+                    if (choice != null) { votes[choice] += chamber.Seats[p]; }
+                    cast.Add((key, choice, reason));
+                    continue;
+                }
+                if (choice != null) { reason = "its own candidate"; }
+                else if (!parties[p].HasPosition) { reason = "holds no surveyed position to be near to - abstains (the game's premise)"; }   // the SSW: compatibility 0 everywhere would hand its vote to the order's first
+                else
+                {
+                    double nearest = double.NegativeInfinity;
+                    foreach (string c in candidates)
+                    {
+                        int ci = IndexOf(c);
+                        if (ci < 0) { continue; }
+                        int cp = SeatedGroupPartner(country, c) is string cPartner ? IndexOf(cPartner) : -1;
+                        bool refuses = false;
+                        foreach (Elections.RedLine line in chamber.Lines) { if (line.RefusesSupport(p, ci) || (cp >= 0 && line.RefusesSupport(p, cp))) { refuses = true; break; } }
+                        if (isPlayer && Declined(c)) { refuses = true; }   // the player's decline in this round stands in its vote too
+                        if (refuses || chamber.Compatibility[p, ci] <= nearest) { continue; }
+                        nearest = chamber.Compatibility[p, ci];
+                        choice = c;
+                    }
+                    reason = choice != null ? "the candidate nearest it that it does not refuse (the game's premise: sincere votes)" : "refuses every candidate - abstains";
+                }
+                chose[key] = choice;
+                if (choice != null) { votes[choice] += chamber.Seats[p]; }
+                cast.Add((key, choice, reason));
+            }
+            cast.Sort((a, b) => IndexOf(a.Party).CompareTo(IndexOf(b.Party)));   // the division lists the parties in the chamber's order
+            return votes;
+        }
+
+        /// <summary>
+        /// §706 (Elias's ruling of 2026-10-01: "in the later phases, candidates are nominated as §4 of the Bundestag's Rules of Procedure sets out, read
+        /// from its text and applied as written, including what a party too small to nominate alone must do"). GO-BT § 4 (Stand 11. Juli 2026, the
+        /// official print, `ElectionsData/germany/raw/records/gobt_2026-07-11.pdf` [GOBT-4]):
+        /// (2) "Wahlvorschläge zu Wahlgängen gemäß Artikel 63 Absatz 3 und 4 des Grundgesetzes sind von einem Viertel der Mitglieder des Bundestages
+        /// oder einer Fraktion, die mindestens ein Viertel der Mitglieder des Bundestages umfasst, zu unterzeichnen."
+        /// (3) "Erreicht zu dem Wahlgang gemäß Artikel 63 Absatz 4 des Grundgesetzes kein Wahlvorschlag die notwendige Anzahl an Unterzeichnungen, steht
+        /// jedem Mitglied des Bundestages das Wahlvorschlagsrecht zu, es sei denn, ein Vorschlag ist von einer Fraktion oder von fünf vom Hundert der
+        /// Mitglieder des Bundestages unterzeichnet."
+        /// A party too small to nominate alone gathers other members' signatures: [AUTHORED-DRAFT] the members who would vote for its candidate sign
+        /// it (the ballot's sincere tally, <see cref="Tally"/>, over the nominations standing - iterated, since a nomination that falls moves the
+        /// votes it held). A Fraktion is a group of at least five per cent of the members (§ 10 Abs. 1 GO-BT, as §705's record quotes it). The pool
+        /// is the Bundespräsident's order (a group standing one, its larger member's); in the ballot the most votes win the player's party only where
+        /// it stood in the round.
+        /// </summary>
+        private List<string> Nominated(Country country, Elections.SpeakerRound round, Elections.CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties,
+            bool pluralityBallot, out string how)
+        {
+            string player = country.PlayerPartyAbbrev;
+            var pool = new List<string>();
+            foreach (string party in round.Order)
+            {
+                if (pluralityBallot && party == player && !round.PlayerStood) { continue; }   // §705's second pass: a pass is not a candidacy
+                bool known = false; foreach (PoliticalParty pp in parties) { if (pp.Abbrev == party) { known = true; } }
+                if (known && SeatsOf(country, party) > 0 && !IsSmallerGroupMember(country, party) && !pool.Contains(party)) { pool.Add(party); }
+            }
+            int members = 0;
+            foreach (int s in chamber.Seats) { members += s; }
+            int quarter = (members + 3) / 4;              // "ein Viertel der Mitglieder": at least a quarter, 158 of 630
+            int fivePercent = (members * 5 + 99) / 100;    // "fünf vom Hundert": 32 of 630
+            // the review of §706 (defect 2): ONE AT A TIME - the weakest nomination short of a quarter falls, its members' votes move (the tally over
+            // the nominations still standing), and the rest are counted again; dropping every short nomination at once let a small party's votes go
+            // only to nominations that already held a quarter, so two small parties could never pool their signatures behind one of them
+            var standing = new List<string>(pool);
+            for (int pass = 0; pass < pool.Count + 1 && standing.Count > 0; pass++)
+            {
+                Dictionary<string, int> backing = Tally(country, round, chamber, parties, standing, out _);
+                string weakest = null;
+                foreach (string c in standing)
+                {
+                    int signed = System.Math.Max(backing[c], GroupSeats(country, c));
+                    if (signed >= quarter) { continue; }
+                    if (weakest == null || signed < System.Math.Max(backing[weakest], GroupSeats(country, weakest)) || (signed == System.Math.Max(backing[weakest], GroupSeats(country, weakest)) && standing.IndexOf(c) > standing.IndexOf(weakest))) { weakest = c; }
+                }
+                if (weakest == null) { break; }
+                standing.Remove(weakest);
+            }
+            if (standing.Count > 0) { how = F($"signed by a quarter of the members, {quarter} of {members}, or a Fraktion of a quarter (GO-BT § 4 Abs. 2)"); return standing; }
+            if (!pluralityBallot) { how = F($"no nomination reaches a quarter of the members, {quarter} of {members} (GO-BT § 4 Abs. 2)"); return standing; }
+            Dictionary<string, int> fallback = Tally(country, round, chamber, parties, pool, out _);
+            List<string> byFraktion = pool.FindAll(c => GroupSeats(country, c) >= fivePercent || fallback[c] >= fivePercent);
+            if (byFraktion.Count > 0) { how = F($"none reached a quarter of the members; signed by a Fraktion or five per cent, {fivePercent} of {members} (GO-BT § 4 Abs. 3)"); return byFraktion; }
+            how = "none reached a quarter, none a Fraktion or five per cent - every member may nominate (GO-BT § 4 Abs. 3)";
+            return pool;
+        }
+
+        private static string F(System.FormattableString s) => s.ToString(System.Globalization.CultureInfo.InvariantCulture);
 
         /// <summary>§705: a party's seated partner in its parliamentary group (the CDU's CSU, the CSU's CDU), or null.</summary>
         private static string SeatedGroupPartner(Country country, string party)
@@ -3476,7 +3571,6 @@ namespace PoliSim.Simulation
             Elections.SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = IsBundestag(countryId) ? "THE BUNDESPRÄSIDENT HAS NOT ASKED YOUR PARTY" : "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
             if (proposal == null || proposal.Formateur != country.PlayerPartyAbbrev) { refusedBecause = "THE PROPOSAL MUST BE YOUR PARTY'S"; return false; }
-            if (!HoldsTreasury(proposal)) { refusedBecause = "THE PRIME MINISTER'S PARTY HOLDS THE TREASURY"; return false; }
             verdict = PreviewFormation(countryId, proposal);
             if (verdict.Investiture == null) { refusedBecause = verdict.Reason?.ToUpperInvariant() ?? "THE PROPOSAL IS NOT WELL FORMED"; return false; }
             if (!verdict.AllAccept) { refusedBecause = "NOT EVERY INVITED PARTY ACCEPTS - REVISE AND OFFER AGAIN"; return false; }
@@ -3493,14 +3587,12 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             Elections.SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null || proposal == null) { return null; }
-            if (!HoldsTreasury(proposal)) { return new Elections.ProposalVerdict { AllAccept = false, Reason = "the prime minister's party holds the Treasury" }; }
             proposal.FreezeTabled(country, CurrentDate, _world);
             return Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
         }
 
-        /// <summary>§647: the prime minister's party keeps the head of government's portfolio (spec §5.3; <c>AllocatePortfolios</c> gives it first).</summary>
-        public static bool HoldsTreasury(Elections.FormationProposal proposal) =>
-            proposal.Formateur != null && proposal.Posts.TryGetValue(proposal.Formateur, out List<CabinetPortfolio> held) && held.Contains(CabinetPortfolio.FinanceTreasury);
+        // §706 (Elias's ruling of 2026-10-01): the Treasury lock is lifted - Finance is a portfolio like any other and can go to a partner (the
+        // record: the SPD's Klingbeil under Merz in 2025, the FDP's Lindner under Scholz in 2021); §647's HoldsTreasury and its two refusals are gone.
 
         /// <summary>R5: the player, asked, passes - the Speaker asks the next party; nothing is voted, nothing counts.</summary>
         public bool PassFormation(CountryId countryId, out string refusedBecause)
@@ -3510,6 +3602,7 @@ namespace PoliSim.Simulation
             if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = IsBundestag(countryId) ? "THE BUNDESPRÄSIDENT HAS NOT ASKED YOUR PARTY" : "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
             refusedBecause = null;
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} does not form a government");
+            if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(country.PlayerPartyAbbrev)) { round.StoodInPhase2.Add(country.PlayerPartyAbbrev); }   // §706: a pass in the fourteen days nominates no one
             AskNext(country, round);
             return true;
         }
@@ -3534,6 +3627,7 @@ namespace PoliSim.Simulation
             Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             if (verdict != null && verdict.Passes) { TableAndVote(country, round, without); return true; }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - {(IsBundestagRound(round) ? "the next party in the order stands its candidate" : "the Speaker moves on")}");
+            if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Asked)) { round.StoodInPhase2.Add(round.Asked); }   // §706: its nomination has had its turn
             AskNext(country, round);
             return true;
         }

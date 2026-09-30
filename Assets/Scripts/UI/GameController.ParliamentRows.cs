@@ -196,7 +196,8 @@ namespace PoliSim.UI
         }
 
         /// <summary>What passing does: the Speaker asks the next party; in the Bundestag the next party in the order stands its candidate.</summary>
-        private static string RoundPassLine(SpeakerRound round) => round.Bundestag ? "THE NEXT PARTY IN THE ORDER STANDS ITS CANDIDATE" : "THE SPEAKER ASKS THE NEXT PARTY";
+        private static string RoundPassLine(SpeakerRound round) => !round.Bundestag ? "THE SPEAKER ASKS THE NEXT PARTY"
+            : round.Phase >= 2 ? "YOUR PARTY NOMINATES NO ONE IN THE FOURTEEN DAYS" : "THE BUNDESPRÄSIDENT PROPOSES ANOTHER PARTY'S CANDIDATE";   // §706: a pass in the fourteen days is not re-asked
 
         private void DrawSpeakerRound(PeopleSlips.Book book)
         {
@@ -247,6 +248,14 @@ namespace PoliSim.UI
             }
             switch (round.Stage)
             {
+                case RoundStage.Consulting when round.Asked == null:
+                    // §706 (GO-BT § 4 Abs. 2): no nomination is signed by a quarter of the members - the fourteen days run out unballoted
+                    Words("NO NOMINATION STANDS · THE FOURTEEN DAYS RUN TO", caption);
+                    DateStamp(round.SecondPhaseUntil);
+                    SlipAnchor(row, "round/stage");
+                    book.Anchors["round/stage"] = new SlipContent("NO NOMINATION STANDS").Add("A NOMINATION NEEDS A QUARTER OF THE MEMBERS' SIGNATURES")
+                        .Add("OR A FRAKTION OF A QUARTER (THE BUNDESTAG'S RULES OF PROCEDURE)").Add("THEN A BALLOT THE MOST VOTES WIN (ART. 63 ABS. 4)");
+                    break;
                 case RoundStage.Consulting:
                     Mark(round.Asked);
                     Words(round.Turn == 0 ? "ASKED FIRST · PROPOSAL DUE" : "ASKED · PROPOSAL DUE", caption);

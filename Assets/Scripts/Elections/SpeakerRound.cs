@@ -79,6 +79,10 @@ namespace PoliSim.Elections
         /// the ballot the most votes win (Art. 63 Abs. 4); a party that passed or was never asked is not made a candidate by the game.</summary>
         public bool PlayerStood;
 
+        /// <summary>§706 (the review's defect 1): the parties whose nomination has stood in the fourteen days (Art. 63 Abs. 3), or whose party
+        /// passed there - each at most once, so a pass cannot re-ask the same party on the same day and hold the clock for good.</summary>
+        public List<string> StoodInPhase2 = new List<string>();
+
         /// <summary>§705: the round is the Bundestag's chancellor election - it carries the day the new Bundestag convenes.</summary>
         public bool Bundestag => Convenes != DateTime.MinValue;
 

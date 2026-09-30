@@ -85,3 +85,8 @@ CSU–Linke pair likewise. A formation that turns on them says it formed on deri
 | [BT-KW25] | (fetched 2026-09-24) | Deutscher Bundestag, Textarchiv | 6. Mai 2025 | `bt_2025-05-06_kanzlerwahl.html` | 317116 | `1a14d5dbab76e9df7e5bd9961c5b784bab657e40b2d9ef635b31004f6da96ded` |
 | [BT-BREG25] | (fetched 2026-09-24) | Deutscher Bundestag | 6. Mai 2025 | `bt_2025-05-06_bundesregierung.html` | — | see `records_by_date.md` |
 | [BWL-99-25] | https://www.bundeswahlleiterin.de/bundestagswahlen/2025/ergebnisse/bund-99.html | Die Bundeswahlleiterin | endgültiges Ergebnis | `bwl_2025_bund-99_2026-09-30.html` | 67870 | `fb353c6e361a6a12927bab2b623967b70c04ff951ec11bcf137539321086fe82` |
+| [GOBT-4] | https://www.btg-bestellservice.de/pdf/10080000.pdf (accessed 2026-10-01; linked from https://www.bundestag.de/parlament/aufgaben/rechtsgrundlagen/go_btg/go-bt-1115332) | Deutscher Bundestag, *Geschäftsordnung des Deutschen Bundestages*, Neuauflage 21. Wahlperiode | "Stand: 11. Juli 2026" | `gobt_2026-07-11.pdf` | 766917 | `10efe43ca6a36303e8376bdd8340aae4d75c67a3a971c6ecd99ad2b0781c2db8` |
+
+[GOBT-4] is read for § 4 (*Wahl des Bundeskanzlers*) Abs. 2 and 3 — who may nominate in Art. 63's later ballots — and § 10 (a Fraktion
+is at least five per cent of the members). The game applies it in `SimulationManager.Nominated` (`COMPLETED.md` §706). Every file above
+also has its line in `raw/records/SHA256SUMS.txt`.
