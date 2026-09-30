@@ -112,6 +112,38 @@ namespace PoliSim.EditorTools
                     double reported = NationalElection.LastRegionalWorstAbsError;
                     Check(order != null && worst < 1e-9 && Math.Abs(worst - reported) < 1e-9, F("the Länder's vote-weighted total reproduces the national shares: worst {0:E1} of a share ({2}), the swing's own residual {1:E1} - a one-Land party's swing spread over its Land alone, scaled (§689)", worst, reported, worstParty));
                 }
+
+                // (e) §696: THE SNAP START'S HISTORY - 2021 against 2017, the pair a German game's 2025 election reads on the 20th chamber
+                bool pair = PartySystems.TryHistory(CountryId.Germany, out double[] l21, out double[] p17, ElectionVintage.Germany2021);
+                bool later = PartySystems.TryHistory(CountryId.Germany, out double[] l25, out double[] p21, ElectionVintage.Germany2025);
+                IReadOnlyList<PoliticalParty> roster = PartySystems.For(CountryId.Germany);
+                int atBsw = -1, atSsw = -1;
+                for (int i = 0; i < roster.Count; i++) { if (roster[i].Abbrev == "BSW") { atBsw = i; } else if (roster[i].Abbrev == "SSW") { atSsw = i; } }
+                bool same2021 = pair && later && l21.Length == p21.Length;
+                for (int i = 0; same2021 && i < l21.Length; i++) { same2021 &= l21[i] == p21[i]; }
+                double sum17 = 0.0;
+                if (pair) { foreach (double share17 in p17) { sum17 += share17; } }
+                Check(pair && same2021 && p17.Length == roster.Count && atBsw >= 0 && atSsw >= 0 && p17[atBsw] == 0.0 && p17[atSsw] == 0.0 && sum17 > 90.0 && sum17 < 100.0,
+                    F("the 20th chamber's pair: 2021 the same figures the 21st chamber's pair reads as its previous; 2017 the Bundeswahlleiterin's seven, summing {0:F1} %, with the SSW (no 2017 candidacy) and the BSW (not yet founded) at true zeros", sum17));
+                using (PoliSim.Simulation.SimulationManager.EpochScope())
+                {
+                    WorldClock.ApplyStart(CountryId.Germany);   // the snap start, 6 Nov 2024 - the seated vintage the 2021 chamber
+                    bool predicts = NationalElection.TryPredictShares(CountryId.Germany, out Dictionary<string, double> snap);
+                    Check(predicts && snap != null && snap.Count > 0, "on the snap start the vote model predicts the 2025 election - a German game's own polling day had no prior and no loyalty to read before this pair");
+                    if (predicts && later)
+                    {
+                        // printed, not asserted: the 2025 count the game plays toward, beside what the model predicts from 2021 and 2017 - out of sample
+                        var readLine = new StringBuilder("    read      the 2025 prediction from 2021 and 2017 against the 2025 count (pp):");
+                        double absDev = 0.0; int counted = 0;
+                        for (int k = 0; k < roster.Count && k < l25.Length; k++)
+                        {
+                            if (!snap.TryGetValue(roster[k].Abbrev, out double predicted)) { continue; }
+                            readLine.Append(F(" {0} {1:F1}/{2:F1}", roster[k].Abbrev, predicted * 100.0, l25[k]));
+                            absDev += Math.Abs(predicted * 100.0 - l25[k]); counted++;
+                        }
+                        sb.Append(readLine).Append(F(" - mean absolute deviation {0:F2} pp over {1}\n", counted > 0 ? absDev / counted : double.NaN, counted));
+                    }
+                }
             }
             catch (Exception e) { failures++; sb.Append("    FAIL      threw: ").Append(e.Message).Append('\n'); }
             sb.Append(failures == 0 ? "    CLEAN\n" : F("    {0} failure(s)\n", failures));

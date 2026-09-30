@@ -503,8 +503,9 @@ namespace PoliSim.Data
         ///
         /// <para>K-1 (2026-09-23): <b>Sweden carries two vintages.</b> The live game reads <see cref="ElectionVintage.Seated"/> -
         /// 2026 as the prior and 2022→2026 as the loyalty; the backtests that assert a 2022 result pin
-        /// <see cref="ElectionVintage.Sweden2022"/> - 2022 and 2018, the pair every figure above was measured on. Germany has
-        /// one vintage and reads it whatever is asked.</para>
+        /// <see cref="ElectionVintage.Sweden2022"/> - 2022 and 2018, the pair every figure above was measured on. §696: <b>Germany carries
+        /// two as well</b> - 2025 against 2021 on the 21st chamber, and 2021 against 2017 on the 20th, the chamber a game opened on the
+        /// snap start sits on.</para>
         /// </summary>
         public static bool TryHistory(CountryId id, out double[] latest, out double[] previous, ElectionVintage vintage = ElectionVintage.Seated)
         {
@@ -539,7 +540,14 @@ namespace PoliSim.Data
                 case CountryId.Sweden when vintage == ElectionVintage.Sweden2018:
                     latest = null; previous = null; return false;   // 2018 against 2014 is not on disk; no start seats the 2018 Riksdag
                 case CountryId.Germany when vintage == ElectionVintage.Germany2021:
-                    latest = null; previous = null; return false;   // 2021 against 2017 is not on disk
+                    // §696 (PS-4): the snap start's pair - a game opened on 6 Nov 2024 sits on the 2021 chamber, and its 2025 election reads 2021 as
+                    // the prior and 2017->2021 as the loyalty. 2021 as the branch below derives it (the per-Land counts, land_votes_2021.csv);
+                    // 2017 Die Bundeswahlleiterin's final Zweitstimmen shares (priors/previous_elections.md, bund-99.html), PUBLISHED TO ONE
+                    // DECIMAL, all seven parties mapping CLEAN to 2021. In For(Germany) order: CDU, AfD, SPD, Grune, Linke, CSU, SSW, BSW, FDP.
+                    // SSW did not contest 2017 and BSW did not exist - TRUE ZEROS, not missing figures.
+                    latest   = new[] { 18.95, 10.39, 25.71, 14.72, 4.87, 5.19, 0.12, 0.00, 11.43 };
+                    previous = new[] { 26.8, 12.6, 20.5, 8.9, 9.2, 6.2, 0.0, 0.0, 10.7 };
+                    return true;
                 case CountryId.Sweden when vintage == ElectionVintage.Sweden2022:
                     // 2022 and 2018 final shares, Valmyndigheten (returns_2022.md, priors/previous_elections.md),
                     // in For(Sweden) order: S, SD, M, V, C, KD, MP, L.
