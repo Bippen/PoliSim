@@ -287,7 +287,7 @@ namespace PoliSim.UI
         {
             0 => "Name, short name, mark, ink and origin.",
             1 => "Where the party stands on the two axes the vote model reads.",
-            2 => "Red lines, the candidacy and whether it supports from outside. Declared now; the coalition talks do not read them yet.",
+            2 => "Red lines, the candidacy and whether it supports from outside. The coalition talks read them like every party's.",
             3 => "The leader's name; the pips are the origin's.",
             _ => "The party as it will enter the campaign. START registers it and seats you as it.",
         };

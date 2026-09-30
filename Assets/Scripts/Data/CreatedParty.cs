@@ -40,8 +40,8 @@ namespace PoliSim.Data
         /// <summary>§676 (SP-4): the party's declarations as the creation flow stores them, by real party KEY (an index moves with the roster, a key
         /// does not) - the parties it will not sit in or support a cabinet with (a symmetric red line), the parties it will not sit in or support any
         /// cabinet CONTAINING (one-way, K-1's shape), the party whose leader it backs for prime minister (its own key for its own leader, empty for
-        /// none), and whether it refuses every cabinet it is not in (in-or-against, K-1f's shape). ⚠ STORED, NOT YET READ: the formation's wiring
-        /// (`DeclaredRedLines`, the round) is owed.</summary>
+        /// none), and whether it refuses every cabinet it is not in (in-or-against, K-1f's shape). READ by the formation since §679 (`DeclaredRedLines` appends them to the sourced declarations;
+        /// every reading, dated or not).</summary>
         public List<string> RedLinesAgainst = new List<string>();
         public List<string> OneWayAgainst = new List<string>();
         public string BacksCandidateOf;

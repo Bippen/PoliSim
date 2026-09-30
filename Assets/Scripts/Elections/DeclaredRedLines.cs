@@ -37,7 +37,7 @@ namespace PoliSim.Elections
         /// <summary>The derived lines plus any declared ones this country has on disk, in the party order
         /// of <paramref name="parties"/>, as of <paramref name="vintage"/> - the seated election's unless a
         /// backtest pins 2022's.</summary>
-        public static List<RedLine> For(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
+        private static List<RedLine> ForSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage)
         {
             vintage = WorldClock.Resolve(country, vintage);   // PS-1 (§618): the seated chamber's election - every election reads its own date's declarations
             var lrGen = new double[parties.Count];
@@ -145,7 +145,7 @@ namespace PoliSim.Elections
         /// found). Only S and M declared their own in either vintage. 2026: `coalition_declarations_2026.md`'s K-1f section; 2022:
         /// `coalition_declarations_2022.md`'s.</para>
         /// </summary>
-        public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> Candidacies(CountryId country, ElectionVintage vintage = ElectionVintage.Seated)
+        private static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesSourced(CountryId country, ElectionVintage vintage)
         {
             if (country != CountryId.Sweden) { return System.Array.Empty<(string, string, string)>(); }
             vintage = WorldClock.Resolve(country, vintage);
@@ -220,7 +220,7 @@ namespace PoliSim.Elections
         /// score, on which a single party's cohesion is whole, and KD and L hold out for their own cabinet only where it outscores S alone. In
         /// the Riksdag the Speaker put Kristersson first, carried by a majority for him. 2022 carries no V rule (none was found).</para>
         /// </summary>
-        public static List<InOrAgainst> InOrAgainstFor(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
+        private static List<InOrAgainst> InOrAgainstForSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage)
         {
             var rules = new List<InOrAgainst>();
             vintage = WorldClock.Resolve(country, vintage);
@@ -365,7 +365,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden only; the other countries return derived lines alone.</summary>
-        public static List<RedLine> ForDate(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
+        private static List<RedLine> ForDateSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
             var lrGen = new double[parties.Count];
             var galtan = new double[parties.Count];
@@ -384,7 +384,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The own-leader candidacies standing on <paramref name="asOf"/> (§621: 2022's carry until 2026's replace them).</summary>
-        public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesAt(CountryId country, System.DateTime asOf)
+        private static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesAtSourced(CountryId country, System.DateTime asOf)
         {
             var found = new List<(string, string, string)>();
             if (country != CountryId.Sweden) { return found; }
@@ -393,7 +393,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The in-or-against rules standing on <paramref name="asOf"/>.</summary>
-        public static List<InOrAgainst> InOrAgainstAt(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
+        private static List<InOrAgainst> InOrAgainstAtSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
             var rules = new List<InOrAgainst>();
             if (country != CountryId.Sweden) { return rules; }
@@ -421,6 +421,101 @@ namespace PoliSim.Elections
                                + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + declared[j].Abbrev + "'s is "
                                + declared[j].Candidate + " (" + declared[j].Basis + ")."));
                 }
+            }
+        }
+
+        // ── §679: A CREATED PARTY'S DECLARATIONS FEED THE FORMATION LIKE EVERY PARTY'S ──────────────────────────────────────────────────────
+        // The six readers the formation calls (through `DeclarationReading`) are the sourced declarations plus the created parties' (SP-4 stores
+        // them on `CreatedParty` by KEY). A red line is symmetric and support-blocking (the flow's "will not sit in or support a cabinet with");
+        // a one-way line is K-1's shape; an own-leader candidacy joins the candidacy list, so the ruled pairing rule makes it refuse the declared
+        // candidates' cabinets and theirs refuse it; backing a real party's candidate refuses the OTHER candidates' cabinets, one way; in-or-against
+        // is K-1f's rule, voting against. With none registered every list is exactly the sourced one.
+
+        /// <summary>The basis every created party's declaration carries - a founder's declaration, not a citation.</summary>
+        public const string CreatedPrefix = "DECLARED at the party's founding: ";
+
+        public static List<RedLine> For(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
+        {
+            List<RedLine> lines = ForSourced(country, parties, vintage);
+            AddCreatedLines(country, lines, parties, Candidacies(country, vintage));
+            return lines;
+        }
+
+        public static List<RedLine> ForDate(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
+        {
+            List<RedLine> lines = ForDateSourced(country, parties, asOf);
+            AddCreatedLines(country, lines, parties, CandidaciesAt(country, asOf));
+            return lines;
+        }
+
+        public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> Candidacies(CountryId country, ElectionVintage vintage = ElectionVintage.Seated) =>
+            WithCreatedCandidacies(country, CandidaciesSourced(country, vintage));
+
+        public static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> CandidaciesAt(CountryId country, System.DateTime asOf) =>
+            WithCreatedCandidacies(country, CandidaciesAtSourced(country, asOf));
+
+        public static List<InOrAgainst> InOrAgainstFor(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage = ElectionVintage.Seated)
+        {
+            List<InOrAgainst> rules = InOrAgainstForSourced(country, parties, vintage);
+            AddCreatedRules(country, rules, parties);
+            return rules;
+        }
+
+        public static List<InOrAgainst> InOrAgainstAt(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
+        {
+            List<InOrAgainst> rules = InOrAgainstAtSourced(country, parties, asOf);
+            AddCreatedRules(country, rules, parties);
+            return rules;
+        }
+
+        private static IReadOnlyList<(string Abbrev, string Candidate, string Basis)> WithCreatedCandidacies(CountryId country, IReadOnlyList<(string Abbrev, string Candidate, string Basis)> sourced)
+        {
+            if (!CreatedParties.Any(country)) { return sourced; }
+            var all = new List<(string Abbrev, string Candidate, string Basis)>(sourced);
+            foreach (CreatedParty c in CreatedParties.Of(country))
+            {
+                if (string.IsNullOrEmpty(c.BacksCandidateOf) || c.BacksCandidateOf != c.Key) { continue; }
+                all.Add((c.Key, string.IsNullOrEmpty(c.LeaderName) ? c.Key + "'s leader" : c.LeaderName, CreatedPrefix + c.Name + " named its own leader for prime minister"));
+            }
+            return all;
+        }
+
+        private static void AddCreatedLines(CountryId country, List<RedLine> lines, IReadOnlyList<PoliticalParty> parties, IReadOnlyList<(string Abbrev, string Candidate, string Basis)> candidacies)
+        {
+            foreach (CreatedParty c in CreatedParties.Of(country))
+            {
+                int me = IndexOf(parties, c.Key);
+                if (me < 0) { continue; }
+                foreach (string other in c.RedLinesAgainst ?? new List<string>())
+                {
+                    int o = IndexOf(parties, other);
+                    if (o >= 0 && o != me) { lines.Add(new RedLine(me, o, RedLineKind.Declared, blocksSupport: true, basis: CreatedPrefix + c.Name + " will not sit in or support a cabinet with " + other)); }
+                }
+                foreach (string other in c.OneWayAgainst ?? new List<string>())
+                {
+                    int o = IndexOf(parties, other);
+                    if (o >= 0 && o != me) { lines.Add(new RedLine(me, o, RedLineKind.Declared, blocksSupport: true, oneWay: true, basis: CreatedPrefix + c.Name + " will not sit in or support any cabinet that contains " + other)); }
+                }
+                // backing a REAL party's candidate: every other declared candidate's cabinet refused, one way (the candidacy lines' own strength)
+                if (!string.IsNullOrEmpty(c.BacksCandidateOf) && c.BacksCandidateOf != c.Key)
+                {
+                    foreach ((string abbrev, string candidate, string _) in candidacies)
+                    {
+                        int o = IndexOf(parties, abbrev);
+                        if (o < 0 || o == me || abbrev == c.BacksCandidateOf) { continue; }
+                        lines.Add(new RedLine(me, o, RedLineKind.Declared, blocksSupport: true, oneWay: true,
+                            basis: CandidacyPrefix + CreatedPrefix + c.Name + " backs " + c.BacksCandidateOf + "'s candidate; it refuses any cabinet led by " + abbrev + "'s, " + candidate));
+                    }
+                }
+            }
+        }
+
+        private static void AddCreatedRules(CountryId country, List<InOrAgainst> rules, IReadOnlyList<PoliticalParty> parties)
+        {
+            foreach (CreatedParty c in CreatedParties.Of(country))
+            {
+                int me = IndexOf(parties, c.Key);
+                if (me >= 0 && c.InOrAgainst) { rules.Add(new InOrAgainst(me, CreatedPrefix + c.Name + " will not support or let through a cabinet it is not in")); }
             }
         }
 
