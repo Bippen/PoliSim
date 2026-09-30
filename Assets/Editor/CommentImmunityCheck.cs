@@ -66,6 +66,9 @@ namespace PoliSim.EditorTools
             // §642 (2026-09-26): the chamber cache's guard scans the game's source for a write to who governs outside the record's methods - a write
             // surviving in a comment is not one.
             "ChamberVerdictCacheCheck",
+            // §702 (2026-09-30): the exit diagnostics count the threads, timers, file watchers and child processes the project's source starts - a start named
+            // in a comment is not one.
+            "ExitDiagnostics",
         };
 
         /// <summary>

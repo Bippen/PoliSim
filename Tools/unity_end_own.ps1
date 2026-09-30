@@ -1,4 +1,4 @@
-param([Parameter(Mandatory = $true)][int]$ProcessId)
+param([Parameter(Mandatory = $true)][int]$ProcessId, [string]$Kept = '')
 # END ONE UNITY THIS REPO'S TOOLS LAUNCHED - AND NOTHING ELSE (2026-09-29, COMPLETED.md s659).
 #   powershell -NoProfile -ExecutionPolicy Bypass -File G:\UNITY\Projects\PoliSim\Tools\unity_end_own.ps1 -ProcessId 11496
 # It ends the process only when ALL of these hold, and refuses otherwise:
@@ -8,6 +8,8 @@ param([Parameter(Mandatory = $true)][int]$ProcessId)
 #   - its command line carries -projectPath for this project.
 # The processes it started (AssetImportWorker, UnityShaderCompiler, the package server - children by parent pid) end with it.
 # Every ending is appended to PoliSim-captures/logs/unity_ended.tsv. Every ending is also a row of the committed hang ledger, Tools/unity_hangs.tsv (s692).
+# -Kept "<code - result line>" (s702, the launcher's watchdog): the run printed its result and did not exit - the row is recorded as hung at
+# teardown with that result kept in the ledger's result_kept column (the log's own phase is kept beside it where it differs).
 # WHY: a warm host can hang in Unity's native teardown after
 # 'Cleanup mono' (s656), where no code of the host's own runs and no timer inside it can end it.
 # ASCII only: PowerShell 5.1 reads a BOM-less script as ANSI.
@@ -57,11 +59,16 @@ if (Test-Path $launchLog) {
   else { $phase = 'startup' }
 }
 $ledger = Join-Path $root 'Tools\unity_hangs.tsv'
-if (-not (Test-Path $ledger)) { Set-Content -Path $ledger -Value "ended`tpid`tlabel`tmethod`tstarted`tminutes_alive`tphase`tworking_set_mb`tlast_log_line" -Encoding ASCII }
+if (-not (Test-Path $ledger)) { Set-Content -Path $ledger -Value "ended`tpid`tlabel`tmethod`tstarted`tminutes_alive`tphase`tworking_set_mb`tlast_log_line`tresult_kept" -Encoding ASCII }
+# s702: the watchdog's ending - a run that printed its result - is a teardown hang by the ruling; where the log's own phase differs it is kept beside it
+if ($Kept -and $phase -ne 'teardown') { $phase = "teardown (the log: $phase)" }
 
 $children = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$ProcessId")
+# s702: the children still alive are the Unity-side half of the exit diagnostics (the Editor logs its threads; these it cannot see)
+$childList = (($children | ForEach-Object { "$($_.Name):$($_.ProcessId)" }) -join ',')
+if ($Kept) { "END: children alive at the watchdog's end - $(if ($childList) { $childList } else { 'none' })" }
 Stop-Process -Id $ProcessId -Force
-Add-Content -Path $ledger -Encoding UTF8 -Value ("{0}`t{1}`t{2}`t{3}`t{4}`t{5}`t{6}`t{7}`t{8}" -f (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss'), $ProcessId, $row[2], $row[3], $live.ToString('yyyy-MM-ddTHH:mm:ss'), $minutes.ToString([Globalization.CultureInfo]::InvariantCulture), $phase, $workingSetMb, $lastLine)
+Add-Content -Path $ledger -Encoding UTF8 -Value (("{0}`t{1}`t{2}`t{3}`t{4}`t{5}`t{6}`t{7}`t{8}`t{9}" -f (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss'), $ProcessId, $row[2], $row[3], $live.ToString('yyyy-MM-ddTHH:mm:ss'), $minutes.ToString([Globalization.CultureInfo]::InvariantCulture), $phase, $workingSetMb, $lastLine, ($Kept -replace "`t", ' ')))
 foreach ($c in $children) { try { Stop-Process -Id $c.ProcessId -Force } catch {} }
 Add-Content -Path (Join-Path $logs 'unity_ended.tsv') -Value ("{0}`t{1}`t{2}`t{3}`t{4}" -f (Get-Date).ToString('o'), $ProcessId, $row[2], $row[3], (($children | ForEach-Object { "$($_.Name):$($_.ProcessId)" }) -join ','))
 "END: ended pid $ProcessId ($($row[2])) and $($children.Count) child process(es); the hang ledger row: phase '$phase', $workingSetMb MB, $minutes min alive"

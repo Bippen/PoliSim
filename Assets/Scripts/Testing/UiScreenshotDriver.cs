@@ -2723,6 +2723,7 @@ namespace PoliSim.Testing
             }
 
 #if UNITY_EDITOR
+            Debug.Log($"SHOT: exiting {exitCode}.");   // the result line the launcher's hang watchdog reads (Tools/unity_run.ps1): the film's work and its before-exit guards are done
             UnityEditor.EditorApplication.Exit(exitCode);
 #endif
         }

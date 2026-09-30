@@ -36,8 +36,49 @@ $a += @('-projectPath', $root, '-executeMethod', $Method) + @($Extra -split '\s+
 $p = Start-Process -FilePath $unity -ArgumentList $a -PassThru
 Add-Content -Path (Join-Path $logs 'unity_launched.tsv') -Value ("{0}`t{1}`t{2}`t{3}" -f $p.Id, $p.StartTime.ToString('o'), $Label, $Method)
 "LAUNCHED: pid $($p.Id) $Label ($Method) -> $log"
-if (-not $p.WaitForExit($TimeoutSec * 1000)) { "TIMEOUT: pid $($p.Id) still running after $TimeoutSec s - left running, not ended"; exit 124 }
-"EXITED: pid $($p.Id) code $($p.ExitCode)"
+
+# THE HANG WATCHDOG (ruled 2026-09-30, round 4 follow-up 3; COMPLETED.md s702). Four batch runs printed their result and never left - each in
+# teardown, after 'CodeReloadManager destroyed' (Tools/unity_hangs.tsv). The log is read as it grows; once it carries the run's RESULT LINE -
+#   CHECKS: ... exiting N.        the suite, the simulation group, a named subset, the document group
+#   SHOT: DRY done - ... exiting N  a dry film
+#   SHOT: exiting N.               a real film, after its before-exit guards
+#   EXITDIAG: quitting             any other method: the Editor has begun to quit (Assets/Editor/ExitDiagnostics.cs); its code is not known
+# - a process not gone 90 s later is ended by Tools/unity_end_own.ps1, recorded in the hang ledger as hung at teardown with the result kept,
+# and this script exits with the KEPT code (124 where the line carries none), so a chain continues on the result the run printed.
+$WatchdogSec = 90
+$resultRx = '^(CHECKS: .*exiting (?<code>\d+)\.|SHOT: DRY done - .*exiting (?<code>\d+)|SHOT: exiting (?<code>\d+)\.|EXITDIAG: quitting)'
+$deadline = (Get-Date).AddSeconds($TimeoutSec)
+$pos = 0L; $carry = ''; $resultAt = $null; $resultLine = $null; $resultCode = $null; $watchdogCode = $null
+while (-not $p.WaitForExit(2000)) {
+  if ((Get-Date) -gt $deadline) { "TIMEOUT: pid $($p.Id) still running after $TimeoutSec s - left running, not ended"; exit 124 }
+  if ($null -eq $resultAt -and (Test-Path $log)) {
+    try {
+      $fs = [IO.File]::Open($log, [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::ReadWrite)
+      try {
+        if ($fs.Length -gt $pos) {
+          [void]$fs.Seek($pos, [IO.SeekOrigin]::Begin)
+          $sr = New-Object IO.StreamReader($fs)
+          $chunk = $carry + $sr.ReadToEnd(); $pos = $fs.Position
+          $lines = $chunk -split "`r?`n"; $carry = $lines[$lines.Count - 1]
+          for ($i = 0; $i -lt $lines.Count - 1; $i++) {
+            if ($lines[$i] -cmatch $resultRx) { $resultAt = Get-Date; $resultLine = $lines[$i].Trim(); if ($Matches['code']) { $resultCode = [int]$Matches['code'] }; break }
+          }
+        }
+      } finally { $fs.Dispose() }
+    } catch { }
+  }
+  if ($null -ne $resultAt -and ((Get-Date) - $resultAt).TotalSeconds -ge $WatchdogSec) {
+    "WATCHDOG: pid $($p.Id) printed its result $WatchdogSec s ago and has not exited - '$resultLine'"
+    $kept = if ($null -ne $resultCode) { "code $resultCode - $resultLine" } else { "code unknown - $resultLine" }
+    & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $root 'Tools\unity_end_own.ps1') -ProcessId $p.Id -Kept $kept
+    $code = if ($null -ne $resultCode) { $resultCode } else { 124 }
+    "EXITED: pid $($p.Id) ended by the watchdog; the result kept: code $code"
+    if ($Method -notmatch 'UiScreenshotCapture\.(Run|RunDry)$') { exit $code }
+    $watchdogCode = $code
+    break
+  }
+}
+if ($null -eq $watchdogCode) { "EXITED: pid $($p.Id) code $($p.ExitCode)" }
 
 # s661: A FILM'S OWN HEADER MUST MATCH ITS REQUEST. The harness logs 'SHOT: HEADER country=<c> width=<w>' for every session it runs, from what it
 # found (the real film's width is the Game View's own). The request is read from -Extra WITHOUT regard to case - what was meant - so an argument
@@ -60,4 +101,5 @@ if ($Method -match 'UiScreenshotCapture\.(Run|RunDry)$') {
   }
   if ($bad -gt 0) { "FILM HEADER: FAILED - $bad session(s) differ from the request"; exit 5 }
 }
+if ($null -ne $watchdogCode) { exit $watchdogCode }
 exit $p.ExitCode
