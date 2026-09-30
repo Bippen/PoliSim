@@ -120,23 +120,45 @@ namespace PoliSim.EditorTools
                     int liftedRallies = Rallies(CampaignAiHarness.RunSeeded(lifted, 777));
                     Check(withCandidacy == 0 && liftedRallies > 0, F("THE PLANTED PROOF: the CSU scripted to rally in Hamburg every day - {0} rallies land where it stands (Bayern only), {1} where the candidacy is lifted", withCandidacy, liftedRallies));
 
-                    // §699: THE PLANTED PROOF of national reach - the SSW scripted to air national television every day. A national act reaches only the
-                    // voters with the party on their ballot: with its candidacy the SSW stays under its reach of the country; lifted, it campaigns to all of it
-                    // (the §698 film's warm-up election seated it with 60 of 630).
-                    int sswAt = Party("SSW");
+                    // §699: THE PLANTED PROOF of national reach - a Land-only party scripted to air national television every day. A national act reaches
+                    // only the voters with the party on their ballot. §704: the proof is the CSU's (Bayern alone) - the SSW, which the survey does not place,
+                    // keeps its prior and no act moves it, so it can prove nothing about reach.
+                    int csuAt = Party("CSU"), sswAt = Party("SSW");
                     CampaignActions.ActionSpec tv = CampaignActions.Spec(CampaignActionKind.TelevisionAd);
                     Func<int, AiDecision[]> tvScript = d => new[] { new AiDecision(CampaignActionKind.TelevisionAd, CampaignActions.ActionTarget.National(null), "Television", tv.MoneyCost, tv.Hours, 0.0, false) };
-                    LiveCampaignSetup.TryFor(CountryId.Germany, none, cal, out CampaignRun.Setup tvStaged, out _, onVoteModelCompatibility: true, playerParty: sswAt, playerScript: tvScript);
+                    LiveCampaignSetup.TryFor(CountryId.Germany, none, cal, out CampaignRun.Setup tvStaged, out _, onVoteModelCompatibility: true, playerParty: csuAt, playerScript: tvScript);
                     CampaignRun.Setup tvLifted = new CampaignRun.Setup(tvStaged.Calendar, tvStaged.Parties, tvStaged.PriorShares, tvStaged.LoyaltyPerParty, tvStaged.Compatibility, tvStaged.TrueSalience,
                         tvStaged.NationalAudience, tvStaged.Regions, tvStaged.PublicHouse, tvStaged.PublicPollEveryDays, tvStaged.InternalHouse, tvStaged.ElectorateLoyalty, tvStaged.Outlets,
                         tvStaged.DebateDays, tvStaged.Scandals, tvStaged.LiveScandalRatePerPartyDay, tvStaged.RecordShift, tvStaged.Families, tvStaged.AwarenessStart, tvStaged.Grouping,
                         tvStaged.Positions, stands: null);
-                    double sswReach = tvStaged.StandingShare(sswAt);
-                    double sswStaged = CampaignAiHarness.RunSeeded(tvStaged, 777).FinalShares[sswAt];
-                    double sswLifted = CampaignAiHarness.RunSeeded(tvLifted, 777).FinalShares[sswAt];
-                    Check(sswStaged < sswReach && sswLifted > sswStaged && Math.Abs(setup.StandingShare(Party("CDU")) + setup.StandingShare(Party("CSU")) - 1.0) < 1e-9,
-                        F("THE PLANTED PROOF of reach: the SSW scripted to air national television daily ends at {0:F2} % with its candidacy (its reach of the country {1:F2} %, Schleswig-Holstein's), {2:F2} % where it is lifted; the CDU's and CSU's reaches sum to the country",
-                            sswStaged * 100.0, sswReach * 100.0, sswLifted * 100.0));
+                    double csuReach = tvStaged.StandingShare(csuAt);
+                    double csuStaged = CampaignAiHarness.RunSeeded(tvStaged, 777).FinalShares[csuAt];
+                    double csuLifted = CampaignAiHarness.RunSeeded(tvLifted, 777).FinalShares[csuAt];
+                    Check(csuStaged <= csuReach && csuLifted > csuStaged && Math.Abs(setup.StandingShare(Party("CDU")) + setup.StandingShare(Party("CSU")) - 1.0) < 1e-9,
+                        F("THE PLANTED PROOF of reach: the CSU scripted to air national television daily ends at {0:F2} % with its candidacy (its reach of the country {1:F2} %, Bayern's), {2:F2} % where it is lifted and the whole country hears it; the CDU's and CSU's reaches sum to the country",
+                            csuStaged * 100.0, csuReach * 100.0, csuLifted * 100.0));
+
+                    // §704 (round 4 follow-up 1): THE SSW IS BOUNDED TO ITS LAND, NOT ZEROED. The survey does not place it (no CHES 2024 position) and it did not
+                    // stand in 2017, so the spatial layer gave it nothing and the 2017-2021 pair no loyal base - its 2021 prior was discarded on day 0 and it
+                    // ended every German campaign at 0.00 %. A party the survey does not place keeps its prior: day 0 is its prior exactly, it ends above zero,
+                    // and the reach cap bounds it (3.81 %, Schleswig-Holstein's) without binding.
+                    double sswReach = setup.StandingShare(sswAt);
+                    double[] blended0 = PreferenceModel.Preference(setup.Compatibility, setup.PriorShares, setup.LoyaltyPerParty);
+                    double priorSum0 = 0.0; foreach (double p0 in setup.PriorShares) { priorSum0 += p0; }
+                    double sswPrior = setup.PriorShares[sswAt] / priorSum0;
+                    double sswAuto = CampaignAiHarness.RunSeeded(setup, 777).FinalShares[sswAt];
+                    // the per-party blend renormalises: each party's weight is lambda_i * prior_i + (1 - lambda_i) * spatial_i over their total - the SSW's
+                    // weight is its prior alone (lambda 1), so its day-0 share is its prior over that total
+                    double[] spatial0 = PreferenceModel.PersuadedShares(setup.Compatibility);
+                    double blendTotal = 0.0;
+                    for (int i = 0; i < spatial0.Length; i++)
+                    {
+                        double lambda = ElectionScales.Clamp(setup.LoyaltyPerParty[i]) / ElectionScales.Max;
+                        blendTotal += lambda * setup.PriorShares[i] / priorSum0 + (1.0 - lambda) * spatial0[i];
+                    }
+                    Check(Math.Abs(blended0[sswAt] - sswPrior / blendTotal) < 1e-9 && sswAuto > 0.0 && sswAuto <= sswReach && setup.LoyaltyPerParty[sswAt] == NationalElection.UnplacedLoyalty,
+                        F("the SSW keeps its prior: its day-0 weight is its 2021 share of the prior, {1:F3} %, alone (full loyalty, no spatial share) - {0:F3} % after the blend's renormalisation; the campaign's end {2:F3} % - above zero, bounded by its reach {3:F2} %",
+                            blended0[sswAt] * 100.0, sswPrior * 100.0, sswAuto * 100.0, sswReach * 100.0));
 
                     // (h) the run-up refuses an office where the party has no list
                     PreCampaignRun.State pre = PreCampaignRun.Begin(scripted, csu, new Random(1));
@@ -211,9 +233,16 @@ namespace PoliSim.EditorTools
                         for (int p = 0; sswResult != null && p < keys.Length && p < sswResult.FinalShares.Length; p++) { shares.Append(F(" {0} {1:F1}", keys[p], sswResult.FinalShares[p] * 100.0)); }
                         sb.Append(shares).Append('\n');
                         double sswShare = sswResult != null && sswKey >= 0 ? sswResult.FinalShares[sswKey] : double.NaN;
-                        Check(sswResult != null && sswShare < setup.StandingShare(sswKey),
-                            F("a German game played as the SSW: its campaign ends at {0:F2} %, under its reach of the country ({1:F2} %) - the §698 film's warm-up seated it with 60 of 630",
-                                sswShare * 100.0, setup.StandingShare(sswKey) * 100.0));
+                        // §704: bounded, not zeroed - and the count seats it as the Bundestag's did, a national minority's list exempt from the 5 % line
+                        int sswSeats = -1;
+                        if (sswResult != null)
+                        {
+                            ElectionRecord sswNight = NationalElection.Run(CountryId.Germany, 0, NationalElection.SharesFromCampaign(CountryId.Germany, keys, sswResult.FinalShares), new DateTime(2025, 2, 23));
+                            sswSeats = sswNight.Seats.TryGetValue("SSW", out int won) ? won : -1;
+                        }
+                        Check(sswResult != null && sswShare > 0.0 && sswShare <= setup.StandingShare(sswKey) && sswSeats >= 1,
+                            F("a German game played as the SSW: its campaign ends at {0:F2} % - above zero, within its reach of the country ({1:F2} %) - and the count seats it with {2} (the Bundestag's 2025: 1 seat on 0.153 %; §698's film had 60 of 630, §699's 0)",
+                                sswShare * 100.0, setup.StandingShare(sswKey) * 100.0, sswSeats));
                     }
                     finally { UnityEngine.Object.DestroyImmediate(hostSsw); EnergyMarket.ResetTurnState(); }
                     sb.Append("    note     ").Append(note.Replace("\n", "\n             ").Trim()).Append('\n');

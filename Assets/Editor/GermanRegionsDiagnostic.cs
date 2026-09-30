@@ -139,7 +139,8 @@ namespace PoliSim.EditorTools
                         var compared = new List<int>();
                         for (int k = 0; k < roster.Count && k < l25.Length; k++)
                         {
-                            if (!snap.TryGetValue(roster[k].Abbrev, out double predicted)) { continue; }
+                            // §704: the unplaced SSW is predicted now (at its prior); §696's and §703's figures stay over the eight the model places
+                            if (!roster[k].HasPosition || !snap.TryGetValue(roster[k].Abbrev, out double predicted)) { continue; }
                             readLine.Append(F(" {0} {1:F1}/{2:F1}", roster[k].Abbrev, predicted * 100.0, l25[k]));
                             absDev += Math.Abs(predicted * 100.0 - l25[k]); counted++;
                             // round 4 follow-up 2 (§703): the no-change forecast - the 2021 result taken as the 2025 prediction - on the same basis
@@ -186,6 +187,39 @@ namespace PoliSim.EditorTools
                 }
                 Check(fromFile.Count == 16 && eligibleMisses == 0 && sum21 == 61_172_771L && sum25 == 60_510_631L,
                     F("the registered electorate: sixteen Länder, every figure the sourced file's (land_eligible.csv), summing to the Bund's own rows - 2021 {0:N0}, 2025 {1:N0}", sum21, sum25));
+
+                // (g) §704 (round 4 follow-up 1): THE GAME'S OWN COUNT ON THE OFFICIAL 2025 RESULT - NationalElection.Run, the procedure a German game
+                // counts by, on the Bund's exact Zweitstimmen (national_counts_2025.csv, kerg2) as fractions of all valid votes, reproduces the
+                // Bundestag's 630 exactly, the SSW's seat included: exempt from the 5 % line as a national minority's list (§ 4 Abs. 2 Satz 3 BWahlG,
+                // recognised by the Bundeswahlausschuss for 2025), the BSW (4.981 %) and the FDP (4.328 %) below it against ALL valid votes
+                string countsPath = Path.Combine(Path.GetDirectoryName(Application.dataPath), "ElectionsData/germany/national_counts_2025.csv");
+                var counts = new Dictionary<string, long>();
+                foreach (string raw in File.ReadAllLines(countsPath))
+                {
+                    if (raw.StartsWith("#", StringComparison.Ordinal) || raw.StartsWith("party;", StringComparison.Ordinal) || raw.Trim().Length == 0) { continue; }
+                    string[] cells = raw.Split(';');
+                    string key = cells[0] == "GRUENE" ? "Grune" : cells[0] == "Die Linke" ? "Linke" : cells[0];
+                    counts[key] = long.Parse(cells[1], CultureInfo.InvariantCulture);
+                }
+                long valid25 = counts.TryGetValue("Gueltige", out long gv) ? gv : 0L;
+                var official = new Dictionary<string, double>();
+                foreach (KeyValuePair<string, long> kv in counts) { if (kv.Key != "Gueltige") { official[kv.Key] = (double)kv.Value / valid25; } }
+                ElectionRecord counted2025 = NationalElection.Run(CountryId.Germany, 0, official, new DateTime(2025, 2, 23));
+                var realSeats = new Dictionary<string, int> { { "CDU", 164 }, { "AfD", 152 }, { "SPD", 120 }, { "Grune", 85 }, { "Linke", 64 }, { "CSU", 44 }, { "SSW", 1 }, { "BSW", 0 }, { "FDP", 0 } };   // SOURCED: bwl_2025_bund-99_2026-09-30.html, the final result
+                int seatMisses = 0, seatTotal = 0;
+                var seatLine = new StringBuilder();
+                foreach (KeyValuePair<string, int> kv in realSeats)
+                {
+                    int got = counted2025.Seats.TryGetValue(kv.Key, out int s) ? s : -1;
+                    seatTotal += Math.Max(0, got);
+                    if (got != kv.Value) { seatMisses++; }
+                    seatLine.Append(F(" {0} {1}/{2}", kv.Key, got, kv.Value));
+                }
+                Check(valid25 == 49_649_512L && seatMisses == 0 && seatTotal == 630,
+                    F("the game's own count on the official 2025 Zweitstimmen reproduces the Bundestag's 630 exactly, the SSW's seat on {0:F3} % included (game/real):{1}", official["SSW"] * 100.0, seatLine));
+                int[] withoutExemption = SeatAllocation.AllocateWithThreshold(new[] { counts["SSW"], counts["CDU"] }, valid25, 0.05, 630, SeatAllocation.SainteLagueDivisor);
+                Check(withoutExemption[0] == 0 && NationalElection.ExemptFromThreshold(CountryId.Germany, "SSW") && !NationalElection.ExemptFromThreshold(CountryId.Germany, "BSW"),
+                    "the exemption is the SSW's alone, and it is what seats it: held to the 5 % line the SSW takes nothing");
             }
             catch (Exception e) { failures++; sb.Append("    FAIL      threw: ").Append(e.Message).Append('\n'); }
             sb.Append(failures == 0 ? "    CLEAN\n" : F("    {0} failure(s)\n", failures));

@@ -85,6 +85,17 @@ namespace PoliSim.Elections
         private const double GermanThreshold = 0.05;
 
         /// <summary>
+        /// Round 4 follow-up 1 (§704): **THE NATIONAL-MINORITY EXEMPTION.** § 4 Abs. 2 Satz 3 BWahlG (the text as served 2026-09-30,
+        /// `ElectionsData/germany/raw/records/bwahlg_4_2026-09-30.html`): *"Satz 2 Nummer 2 findet keine Anwendung auf Listen, die von Parteien
+        /// nationaler Minderheiten eingereicht wurden."* The Bundeswahlausschuss recognised the SSW as such a party for the 2025 election
+        /// (press release 06/25 of 14 January 2025, `bwl_2025-01-14_ergebnisse-1bwa.html`: *"Auch wird die 5-Prozent-Klausel auf den SSW nicht
+        /// angewendet."*), and it won one seat on 76,138 Zweitstimmen, 0.2 % (the final result, `bwl_2025_bund-99_2026-09-30.html`). The game
+        /// counted every party against the 5 % line, so the SSW could never be seated. ⚠ Premise, stated: the recognition is made for each
+        /// election; an election the game holds after 2025 carries it forward.
+        /// </summary>
+        public static bool ExemptFromThreshold(CountryId country, string abbrev) => country == CountryId.Germany && abbrev == "SSW";
+
+        /// <summary>
         /// W-G1: the vote shares an election returns for a country, through the vote model''s
         /// GOOD layer rather than its bare one.
         ///
@@ -122,28 +133,47 @@ namespace PoliSim.Elections
             var priorList = new List<double>();
             var latestOfMeasured = new List<double>();
             var previousOfMeasured = new List<double>();
+            var placed = new List<bool>();
 
             for (int i = 0; i < parties.Count; i++)
             {
                 PoliticalParty party = parties[i];
-                // A party with no published position cannot be placed on the model''s two axes. It
-                // stands, it simply cannot be predicted - so it takes no share rather than a made-up
-                // one. Neither Sweden nor Germany has such a party, but the guard is real for the
-                // countries a live path may be built for later.
-                if (!party.HasPosition) { continue; }
-                points.Add(new VoteModel.PartyPoint(party.Abbrev, party.LrEcon, party.Galtan));
+                // Round 4 follow-up 1 (§704): A PARTY THE SURVEY DOES NOT PLACE KEEPS ITS PRIOR. It cannot be put on the model's two axes, so the spatial
+                // layer can neither draw voters to it nor away from it - but it stands, and its last result is a measured share, not a made-up one. It
+                // was dropped here ("it takes no share"), under a note that neither Sweden nor Germany had such a party: Germany's SSW (not in CHES 2024)
+                // is one, and a German game counted it at zero - its 2021 prior discarded, its seat never won. It is carried now at full loyalty, so its
+                // preference is exactly its prior, and its regions derive as every one-Land party's do (§689).
+                if (party.HasPosition) { points.Add(new VoteModel.PartyPoint(party.Abbrev, party.LrEcon, party.Galtan)); }
+                placed.Add(party.HasPosition);
                 keyList.Add(party.Abbrev);
                 priorList.Add(latest[i]);
                 latestOfMeasured.Add(latest[i]);
                 previousOfMeasured.Add(previous[i]);
             }
 
-            double[] national = VoteModel.PredictShares(points.ToArray(), electorate, economicWeight);
+            double[] placedCompatibility = ToCompatScale(VoteModel.PredictShares(points.ToArray(), electorate, economicWeight));
             keys = keyList.ToArray();
-            compatibility = ToCompatScale(national);
             prior = priorList.ToArray();
             loyalty = LoyaltyModel.PartyLoyalties(latestOfMeasured.ToArray(), previousOfMeasured.ToArray());
+            compatibility = new double[keys.Length];
+            for (int i = 0, j = 0; i < keys.Length; i++)
+            {
+                if (placed[i]) { compatibility[i] = placedCompatibility[j++]; }
+                else { compatibility[i] = 0.0; loyalty[i] = UnplacedLoyalty; }
+            }
             return true;
+        }
+
+        /// <summary>§704: an unplaced party's loyalty - the scale's top, so <c>PreferenceModel</c> gives it exactly its prior share (λ = 1).</summary>
+        public const double UnplacedLoyalty = ElectionScales.Max;
+
+        /// <summary>§704: a staging's loyalties with every unplaced party set to <see cref="UnplacedLoyalty"/> - the campaign's staging reads the same rule
+        /// the idle prediction does.</summary>
+        public static double[] UnplacedKeepTheirPrior(IReadOnlyList<PoliticalParty> parties, double[] loyalty)
+        {
+            if (loyalty == null || parties == null) { return loyalty; }
+            for (int i = 0; i < loyalty.Length && i < parties.Count; i++) { if (!parties[i].HasPosition) { loyalty[i] = UnplacedLoyalty; } }
+            return loyalty;
         }
 
         /// <summary>§681: every key's awareness before a campaign - 1 for every real party (established parties seed at full awareness), a created party's
@@ -387,10 +417,12 @@ namespace PoliSim.Elections
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
             var keys = new List<string>();
             var votes = new List<long>();
+            var exempt = new List<bool>();   // §704: a national minority's list is not held to the threshold
             long total = 0;
 
             foreach (PoliticalParty party in parties)
             {
+                exempt.Add(ExemptFromThreshold(country, party.Abbrev));
                 double share = shares != null && shares.TryGetValue(party.Abbrev, out double s) ? s : 0.0;
                 // Shares to notional votes: only the RATIOS matter to a divisor method, and a large
                 // scale keeps a small party's rounding from deciding whether it clears the threshold.
@@ -401,7 +433,11 @@ namespace PoliSim.Elections
                 record.Shares[party.Abbrev] = share;
             }
 
-            int[] seats = SeatAllocation.AllocateWithThreshold(votes.ToArray(), total, threshold, chamber, divisor);
+            // §704: the threshold's base is ALL valid votes (§ 4 Abs. 2 BWahlG: "der im Wahlgebiet abgegebenen gültigen Zweitstimmen"). Shares are fractions
+            // of the valid vote; where they sum to less than one, the rest went to lists the roster does not carry, and they still count in the base - on
+            // the official 2025 counts the BSW's 4.981 % read 5.21 % of the roster's sum and would have cleared the line. A game's shares sum to one.
+            long thresholdBase = System.Math.Max(total, 100_000_000L);
+            int[] seats = SeatAllocation.AllocateWithThreshold(votes.ToArray(), thresholdBase, threshold, chamber, divisor, exempt.ToArray());
             for (int i = 0; i < keys.Count; i++)
             {
                 record.Seats[keys[i]] = seats[i];

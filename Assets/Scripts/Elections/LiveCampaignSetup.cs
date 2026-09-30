@@ -204,7 +204,9 @@ namespace PoliSim.Elections
             string latestYear = snap ? "2021" : "2025", previousYear = snap ? "2017" : "2021";
             var sb = new StringBuilder();
             double[] prior = Normalised(latestShares);
-            double[] loyalty = LoyaltyModel.PartyLoyalties(latestShares, previousShares);
+            // §704: a party the survey does not place (the SSW) keeps its prior - its 2017 absence gave it no loyalty and its missing position no
+            // spatial share, and the campaign had counted it at zero from day 0
+            double[] loyalty = NationalElection.UnplacedKeepTheirPrior(PartySystems.For(CountryId.Germany), LoyaltyModel.PartyLoyalties(latestShares, previousShares));
             // DERIVED: the fixed point where an idle campaign reproduces the prior (Sweden's form); the game hands in the vote model's instead (TryFor).
             double maxPrior = 0.0;
             foreach (double p in prior) { if (p > maxPrior) { maxPrior = p; } }
