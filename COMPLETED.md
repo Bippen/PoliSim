@@ -35248,3 +35248,29 @@ The plates' slips are filled on the repaint that lays them out and joined to the
 
 
 **Tier UI:** cheap bar **78 of 78** (`cheap694d`, the final tree; `cheap694` found the write-only fields and a § in a log string); simulation bar **56 of 56**, the sentinel on the baseline for both seeds (`sim694` - before the order's correction and the film's two shots, neither of which touches a simulation path).
+
+
+## 695. PS-4 PART TWO - THE CASTS FROM THE SURVEY: EVERY AI PARTY'S CAMPAIGN PERSONALITY DERIVED FROM ITS CHES POSITION BY ONE STATED RULE; SWEDEN'S HAND CASTS RETIRED (FOUR OF EIGHT MOVE); THE HARNESSES KEEP A FIXTURE CAST, STATED AS ONE (2026-09-30)
+
+**The ruling** (Elias, 2026-09-30, item 6): *continue PS-4: party profiles from the survey, …* - the spec's stage 4 *casts derived from CHES*, under the standing decision 5 (`POLITICAL_SYSTEM_SPEC.md` §10): *AI party casts are derived from each party's CHES position (the people-versus-elite item, left–right, GAL–TAN) by a stated rule — never a hand-written characterisation of a real party.* It had resolved D-22 (*Germany's personality cast*) that way; Sweden's eight were still the hand list C-R4b wrote ([AUTHORED-DRAFT]).
+
+**The rule** (`Assets/Scripts/Elections/CampaignCasts.cs`, new). Three CHES 2024 items, quoted on `PoliticalParty`'s fields, read in a fixed order - the first that holds decides:
+1. **Populist** - `anti_elite_salience` above the scale's midpoint (> 5): anti-establishment rhetoric is salient to the party (§32's populist).
+2. **Grassroots** - `galtan` in the libertarian/post-materialist third (< 10/3) **and** `lrecon` left of centre (< 5): the left-libertarian movement parties (§32's volunteers and doors). The economic half is what keeps a libertarian party of the right (C, FDP) out of it.
+3. **Establishment** - `people_v_elite` in the elected-representatives' third (< 10/3): *elected office holders should make the most important decisions* (§32's traditional media, broad messaging, moderate policies).
+4. **Professional** - every other party.
+**Chaotic**, §32's fifth, is cast to no real party - no CHES item measures a strategy's inconsistency; it stays in the catalog for a created party or a fixture. A missing item fails its test and the rule reads on (the SSW, with no CHES position, and the USA's GPS pair without a salience item). The cut points are the scales' own midpoint and thirds - reading choices, [AUTHORED-DRAFT], each strikeable.
+
+**What it casts** (`CampaignCastDiagnostic`, the cheap bar's 79th, prints every real party's three items beside its cast and the test that decided):
+- **Sweden:** S establishment (was professional), SD populist, M establishment, **V populist** (was grassroots - salience 5.50), **C establishment** (was chaotic), KD establishment, MP grassroots, **L establishment** (was professional). **Four of eight move.** Five of the eight are now establishment and none professional - a reading of the survey, not a characterisation, and the price of it: Sweden's AI campaigns are less varied than the hand list made them. Elias's to strike or re-cut (the cut points are the lever).
+- **Germany** (its real roster): CDU establishment, SPD establishment (people-vs-elite 3.09, just inside the third), AfD populist, Linke populist (salience 6.88), Grüne grassroots, CSU professional (3.88), SSW professional (no position).
+- **The USA:** DEM grassroots (GPS social 2.41, economic 3.73), REP professional (its people-vs-elite 7.00 is the tagged draft; no salience item).
+The diagnostic also holds the stated order on planted parties (salient and left-libertarian → populist; libertarian, economically right, representative-sceptic → professional; no items → professional), that no real party is chaotic, and that the live campaign reads the rule for every Swedish party with no hand array standing.
+
+**Wired:** `LiveCampaignSetup.SwedenPersonalities` is now derived (`CastsOf`), and `PersonalityOf` gives any real party its rule cast; a created party keeps its origin's ([AUTHORED-DRAFT], §675), a Splinter its parent's - now the rule's.
+
+**The harnesses.** `CampaignAiHarness` and every harness that stages through it (`CampaignReactivityHarness`, `VoteAttributionHarness`, `CampaignPoolSizingDiagnostic`) measure the five personalities' MECHANICS and need all five on the field; under the rule Sweden has no professional and nobody has chaotic. Their assignment is now a **fixture** the harness owns - the old eight-seat list, stated as a test assignment and not the game's cast - handed to the staging through a new `castOverride` (the game never passes one). With the fixture the list the harnesses ran before, their staging is the one they measured: `CampaignAiHarness` and `CampaignReactivityHarness` pass. `CampaignClockHarness` stages the game's own cast, and its **8e** had named the cast in its assertion (*the professional: EXPLAIN*) - S is establishment now, and apologised 13 of 13; the assertion now reads party 0's cast off the staging and expects that personality's own instinct (W-B8's table), and passes.
+
+**Found on the way:** the diagnostic's first run printed the machine's sv-SE decimal commas in its *why* strings; they are formatted invariant now, as every figure the game prints.
+
+**Tier SIMULATION:** cheap bar **79 of 79** (`cheap695b`); simulation bar **56 of 56**, the sentinel on the baseline for both seeds (`sim695` - the sentinel's run stages no live campaign, so the casts cannot reach it); `CampaignAiHarness` and `CampaignReactivityHarness` clean on the fixture (`h695_*`); `CampaignClockHarness` all assertions pass (`h695b_clock`, after 8e was read off the staging). No screen shows a cast; no film is owed.

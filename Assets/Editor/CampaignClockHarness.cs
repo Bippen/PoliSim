@@ -247,14 +247,17 @@ namespace PoliSim.EditorTools
                     mine >= 1 && apologies == mine && heldOvernight == mine && pendingOnlyToday && st.PendingScandals.Count == 0,
                     $"{mine} stories of party 0, {apologies} apologised; held overnight {heldOvernight}, {st.PendingScandals.Count} pending at the close; pending lists carried only the day's own: {pendingOnlyToday}");
 
-                // The same party with a script that answers nothing: the run answers as its personality would (the professional explains,
-                // or denies when the evidence looks weak) - a run no player watches never blocks.
+                // The same party with a script that answers nothing: the run answers as its personality would (W-B8's table - its instinct,
+                // or a denial when the evidence looks weak) - a run no player watches never blocks. §695: the personality is read off the
+                // staging (party 0's cast, by the CHES rule), not named here - the assertion held S professional until the rule cast it establishment.
                 CampaignRun.Setup unanswered = LiveCampaignSetup.Sweden(none, out _, vintage: ElectionVintage.Sweden2022, playerParty: 0, playerScript: d => new AiDecision[0],
                     playerScandalScript: d => null, liveScandalRate: 0.2);
+                AiPersonality cast0 = unanswered.Parties[0].Personality;
+                ScandalResponse instinctive = CampaignRun.ScandalResponseFor(cast0, 1.0);
                 CampaignRun.Result instinct = CampaignAiHarness.RunSeeded(unanswered, 777);
                 int mine2 = 0, byInstinct = 0;
-                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in instinct.Scandals) { if (xParty == 0) { mine2++; if (xResponse == ScandalResponse.Explain || xResponse == ScandalResponse.Deny) { byInstinct++; } } }
-                failures += Assert(sb, "8e. a scripted party that answers nothing is answered by its personality's instinct (the professional: EXPLAIN, or DENY on weak evidence)",
+                foreach ((int xDay, int xParty, ScandalResponse xResponse, ScandalOutcome xOutcome) in instinct.Scandals) { if (xParty == 0) { mine2++; if (xResponse == instinctive || xResponse == ScandalResponse.Deny) { byInstinct++; } } }
+                failures += Assert(sb, $"8e. a scripted party that answers nothing is answered by its personality's instinct (party 0, {cast0}: {instinctive}, or DENY on weak evidence)",
                     mine2 >= 1 && byInstinct == mine2, $"{mine2} stories of party 0, {byInstinct} by instinct");
 
                 // The picker's seam: a queued act carrying a region lands in that region - the ledger's own log names it.

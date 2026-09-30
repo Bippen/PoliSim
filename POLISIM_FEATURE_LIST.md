@@ -75,7 +75,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 
 | # | owner | item | needs | done when |
 |---|---|---|---|---|
-| PS-4 | Code | **Germany**: Länder catalog, casts derived from CHES, the snap start, the constructive vote of no confidence | PS-3 | a German game is playable from its start **- STARTED 2026-09-30 (`COMPLETED.md` §688): part one, the Länder catalog (generated from the sourced kerg2 returns, read on the chamber seated that day, wired as a readout); the snap start was already ruled (§618). Next: casts from CHES, the campaign on the Länder, the constructive vote, the Länder night map.** |
+| PS-4 | Code | **Germany**: Länder catalog, casts derived from CHES, the snap start, the constructive vote of no confidence | PS-3 | a German game is playable from its start **- STARTED 2026-09-30 (`COMPLETED.md` §688): part one, the Länder catalog (generated from the sourced kerg2 returns, read on the chamber seated that day, wired as a readout); the snap start was already ruled (§618). Part two (§695): every country's AI casts derived from CHES by a stated rule (Sweden's hand casts retired). Next: the campaign on the Länder, the constructive vote, the Länder night map.** |
 | **D-DE** | Design | Germany's election-night map of the Länder | PS-4 | boards answered → built |
 | PS-5 | Code | **Poland**: 41 districts, parties and committees with their thresholds, the PiS government at the start, the presidential veto | PS-4 | playable |
 | **D-PL** | Design | Poland's district map | PS-5 | answered → built |

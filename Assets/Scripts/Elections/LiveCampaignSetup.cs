@@ -53,12 +53,23 @@ namespace PoliSim.Elections
         /// <summary>CONVENTION - how often the published tracker fields, in days; W-E4's ladder.</summary>
         public const int PublicPollEveryDays = 7;
 
-        /// <summary>[AUTHORED-DRAFT] §32's five personalities cast onto Sweden's eight, in `TryHistory`'s order: S professional, SD populist, M establishment, V grassroots, C chaotic, KD establishment, MP grassroots, L professional.</summary>
-        public static readonly AiPersonality[] SwedenPersonalities =
+        /// <summary>§695 (decision 5): Sweden's eight cast by the CHES rule (<see cref="CampaignCasts"/>), in `TryHistory`'s order - DERIVED, never cast by hand.
+        /// It retires C-R4b's hand list ([AUTHORED-DRAFT]: S professional, SD populist, M establishment, V grassroots, C chaotic, KD establishment,
+        /// MP grassroots, L professional); the rule casts S, M, C, KD and L establishment, SD and V populist, MP grassroots (`CampaignCastDiagnostic`).</summary>
+        public static AiPersonality[] SwedenPersonalities => CastsOf(CountryId.Sweden, SwedenParties);
+
+        /// <summary>§695: the rule's cast of each key among the country's real parties; a key that is not a real party's reads as <see cref="AiPersonality.Professional"/>, the rule's own last line.</summary>
+        public static AiPersonality[] CastsOf(CountryId country, string[] keys)
         {
-            AiPersonality.Professional, AiPersonality.Populist, AiPersonality.Establishment, AiPersonality.Grassroots,
-            AiPersonality.Chaotic, AiPersonality.Establishment, AiPersonality.Grassroots, AiPersonality.Professional,
-        };
+            PoliticalParty[] roster = PartySystems.RealRoster(country);
+            var casts = new AiPersonality[keys.Length];
+            for (int i = 0; i < keys.Length; i++)
+            {
+                int at = Array.FindIndex(roster, p => p.Abbrev == keys[i]);
+                casts[i] = at >= 0 ? CampaignCasts.Of(roster[at]) : AiPersonality.Professional;
+            }
+            return casts;
+        }
 
         /// <summary>The party keys in the order the staging uses - `PartySystems.TryHistory(Sweden)`'s. ⚠ NOT the returns catalogs' column order
         /// (S, M, SD, C, V, KD, L, MP): every read of a catalog maps by key, never by position. (This doc said the two orders were one until K-1.)</summary>
@@ -74,11 +85,14 @@ namespace PoliSim.Elections
             return keys;
         }
 
-        /// <summary>§675: a party's cast personality - the real eight's as cast; a created party's by its origin ([AUTHORED-DRAFT]): Grassroots and Single-issue grassroots,
+        /// <summary>§675: a party's cast personality - a real party's by the CHES rule (§695); a created party's by its origin ([AUTHORED-DRAFT]): Grassroots and Single-issue grassroots,
         /// a Splinter its parent's, Protest populist, Business-backed professional, Regional grassroots (its ground game).</summary>
         public static AiPersonality PersonalityOf(int index, string key)
         {
             if (index < SwedenParties.Length && SwedenParties[index] == key) { return SwedenPersonalities[index]; }
+            PoliticalParty[] real = PartySystems.RealRoster(CountryId.Sweden);
+            int realAt = Array.FindIndex(real, p => p.Abbrev == key);
+            if (realAt >= 0) { return CampaignCasts.Of(real[realAt]); }
             CreatedParty c = null;
             foreach (CreatedParty x in CreatedParties.Of(CountryId.Sweden)) { if (x.Key == key) { c = x; } }
             if (c == null) { return AiPersonality.Professional; }
@@ -155,10 +169,13 @@ namespace PoliSim.Elections
         }
 
         /// <summary>Sweden's campaign staging from the runtime tables - on the seated election (2026's) in the game; on 2022's where a harness
-        /// pins <see cref="ElectionVintage.Sweden2022"/>, the staging `CampaignAiHarness` has run since W-C1, kept byte for byte by K-1.</summary>
+        /// pins <see cref="ElectionVintage.Sweden2022"/>, the staging `CampaignAiHarness` has run since W-C1, kept byte for byte by K-1.
+        /// §695: <paramref name="castOverride"/> - a harness's FIXTURE cast, one personality per seat, where a harness measures the personalities'
+        /// mechanics and needs all five on the field; the game never passes one, and every party it stages is cast by the CHES rule.</summary>
         public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
             double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
-            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, ElectionVintage vintage = ElectionVintage.Seated)
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, ElectionVintage vintage = ElectionVintage.Seated,
+            AiPersonality[] castOverride = null)
         {
             vintage = WorldClock.Resolve(CountryId.Sweden, vintage);   // PS-1 (§618): the seated chamber's election at the world's epoch
             if (!PartySystems.TryHistory(CountryId.Sweden, out double[] latestShares, out double[] previousShares, vintage))
@@ -197,7 +214,7 @@ namespace PoliSim.Elections
             {
                 var match = new double[IssueVector.IssueCount];
                 for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
-                AiPersonality personality = PersonalityOf(p, cast[p]);
+                AiPersonality personality = castOverride != null && p < castOverride.Length ? castOverride[p] : PersonalityOf(p, cast[p]);
                 // C-R4b step 4b: the player's party plays the HQ's queue (a scripted party, W-C2's seam);
                 // every other party, and the player's until a script is given, is its cast personality.
                 // CL-1 (2026-09-12): the player's party brings its PRE-campaign's outcome to day 0 - the chest as the run-up

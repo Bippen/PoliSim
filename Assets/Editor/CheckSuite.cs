@@ -185,6 +185,7 @@ namespace PoliSim.EditorTools
             ("RegionalSumCheck", RegionalSumCheck.Run),   // §689 (ruled): every party's regions sum to its national share within rounding - Sweden and both German chambers, the model's prediction and seeded random results, a planted error caught every run
             ("SaveMigrationCheck", SaveMigrationCheck.Run),   // §693 (ruled): a planted save and preference carried from the old identity's location to the new one intact, the originals untouched, once, a new location that holds data left alone
             ("DeskRoleCheck", DeskRoleCheck.Run),   // §694 (ruled): the effects card's subject and note by role - no note names a lever the role does not hold; the rail lights exactly one cell in every state, the old per-cell rule caught lighting two
+            ("CampaignCastDiagnostic", CampaignCastDiagnostic.Run),   // §695 (PS-4, decision 5): every real party's campaign cast derived from its CHES position by the stated rule, printed with the test that decided; the live campaign reads it
             ("EntrantLayerDiagnostic", EntrantLayerDiagnostic.Run),   // §681: the entrant layer - the proportional property confirmed, the CHES families read back, inert with no entrant, the twin and newcomer gates
             ("ScreenEdgeSelfTest", ScreenEdgeCheck.SelfTest),   // §680 (PF-17): the edge guard on planted frames - a clean sheet passes, the measured wedge is NOT FLUSH, a planted overflow is CLIPPED
             ("PartyMarkCoverageCheck", PartyMarkCoverageCheck.Run),
