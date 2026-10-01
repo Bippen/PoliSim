@@ -6,8 +6,9 @@ namespace PoliSim.Elections
     /// §706 (Elias's ruling of 2026-10-01): WHAT A CABINET POST IS WORTH IN THE GAMSON SHARE - Druckman &amp; Warwick's expert-survey salience
     /// ("The missing piece", EJPR 44, 2005: each post scored against an average portfolio of 1.00; the appendix per country), mapped onto the
     /// game's six portfolios as `ElectionsData/portfolios/portfolio_salience.md` records: a portfolio that stands for several of the country's
-    /// separate ministries weighs their sum, one that stands for one ministry its score (Italy's MEF, one ministry merged from three rated posts,
-    /// its highest). The head of government's weight is credited to its party, never allocated. Poland and the USA take the mean of the four
+    /// separate ministries weighs their sum, one that stands for one ministry its score - and Italy's MEF, one ministry merged from the three posts the
+    /// paper rates (Treasury, Finance, Budget), weighs their SUM as the paper does (Elias's ruling of 2026-10-01, item 8; §717 - the miss it makes
+    /// against the record is recorded there, the method unadjusted). The head of government's weight is credited to its party, never allocated. Poland and the USA take the mean of the four
     /// countries rated [DERIVED - the play-calibration list's 23rd entry, key SAL-POL: Druckman &amp; Roberts' Polish table is owed].
     /// </summary>
     public static class PortfolioSalience
@@ -68,7 +69,7 @@ namespace PoliSim.Elections
                 case CountryId.Italy:
                     switch (portfolio)
                     {
-                        case CabinetPortfolio.FinanceTreasury: return 1.64;               // Treasury - the MEF merged it with Finance 1.32 and Budget 0.98
+                        case CabinetPortfolio.FinanceTreasury: return 1.64 + 1.32 + 0.98;   // the MEF: Treasury + Finance + Budget, summed as the paper does (§717; was the highest, 1.64)
                         case CabinetPortfolio.InteriorJustice: return 1.78 + 1.23;
                         case CabinetPortfolio.HealthSocialAffairs: return 1.06 + 1.19;   // Labour & Social Security/Welfare + Health
                         case CabinetPortfolio.Defense: return 1.19;
@@ -79,7 +80,7 @@ namespace PoliSim.Elections
             }
             switch (portfolio)   // DERIVED: the mean of the four countries rated
             {
-                case CabinetPortfolio.FinanceTreasury: return 1.705;
+                case CabinetPortfolio.FinanceTreasury: return 2.28;   // (1.58 + 1.68 + 1.92 + 3.94) / 4 - Italy's summed MEF in the mean (§717; was 1.705)
                 case CabinetPortfolio.InteriorJustice: return 2.35;
                 case CabinetPortfolio.HealthSocialAffairs: return 2.215;
                 case CabinetPortfolio.Defense: return 1.17;

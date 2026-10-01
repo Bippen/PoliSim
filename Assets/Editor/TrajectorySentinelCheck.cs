@@ -101,16 +101,21 @@ namespace PoliSim.EditorTools
         /// no move); France's RN sits at Finance only in a PROVISIONAL stand-in, which no partner runs (the review's decision A). Germany first moves at turn 1
         /// (approval -0.75 from the rise); at turn 100 GDP -0.38 / -0.47 % (Germany), +0.09 / +0.11 % (Italy) on 777 / 424242; France moves in late digits through the euro-zone rate
         /// and trade, Sweden, Poland and the USA through trade. The family `fp716b` (the first dump `fp716`, before decision A, moved France too). Before it 'ps3k'.</summary>
-        public const string BaselineLabel = "fp716b";   // §716: the Finance partner (above). PS-3k (§638): `ps3k` is BYTE-IDENTICAL to `ps3i` (no dump seats a player, so no election reads the record); PS-3i (§636): `ps3i` is BYTE-IDENTICAL to `ps3h` (every confidence trigger is a player verb); PS-3h (§635): `ps3h` is BYTE-IDENTICAL to `ps3g` (no dump tables a bill); PS-3g (§634): `ps3g` is BYTE-IDENTICAL to `ps3e` (the allocation reads seats and gates levers no dump pulls); PS-3e (§632): `ps3e` is BYTE-IDENTICAL to `ps3c` (the AI government's bill is the PLAYER'S country's path alone - no player, no bill); PS-3c (§630): `ps3c` is BYTE-IDENTICAL to `ps3a` (the dump passes no bill and sets no player, so the role gate is never asked); PS-3a (§628): `ps3a` is BYTE-IDENTICAL to `ps2cal` - the dump sets no player and the no-policy century no party, so the who-governs gate reads as before; `ps2cal` was identical to `ps1wc` in turn - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
+        /// <summary>§717 (2026-10-01, Elias's ruling item 8): ITALY'S MEF SUMS ITS THREE RATED POSTS AS THE PAPER DOES (3.94; the derived mean 2.28) -
+        /// Meloni's Finance goes to FdI, the head's own (a miss against the record's Giorgetti, recorded), so Italy's partner rule stops, and Tusk's to
+        /// KO (the record's Domański). Against 'fp716b' Italy alone moves beyond late digits (the rest through the euro-zone rate and currency
+        /// strength): t100 GDP -0.090 / -0.109 % on 777 / 424242, back to 'ps3k''s figures within
+        /// late digits; against 'ps3k' Germany alone moves (its SPD partner, §716). The family `fp717`. Before it 'fp716b'.</summary>
+        public const string BaselineLabel = "fp717";   // §717: Italy's MEF summed (above). §716: the Finance partner (above). PS-3k (§638): `ps3k` is BYTE-IDENTICAL to `ps3i` (no dump seats a player, so no election reads the record); PS-3i (§636): `ps3i` is BYTE-IDENTICAL to `ps3h` (every confidence trigger is a player verb); PS-3h (§635): `ps3h` is BYTE-IDENTICAL to `ps3g` (no dump tables a bill); PS-3g (§634): `ps3g` is BYTE-IDENTICAL to `ps3e` (the allocation reads seats and gates levers no dump pulls); PS-3e (§632): `ps3e` is BYTE-IDENTICAL to `ps3c` (the AI government's bill is the PLAYER'S country's path alone - no player, no bill); PS-3c (§630): `ps3c` is BYTE-IDENTICAL to `ps3a` (the dump passes no bill and sets no player, so the role gate is never asked); PS-3a (§628): `ps3a` is BYTE-IDENTICAL to `ps2cal` - the dump sets no player and the no-policy century no party, so the who-governs gate reads as before; `ps2cal` was identical to `ps1wc` in turn - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_fp716b_s{seed}_t100.csv` (before §716 `traj_ps1wc`'s).</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_fp717_s{seed}_t100.csv` (before §716 `traj_ps1wc`'s).</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "bd910875dad81c808fcd4c43d1e0f081c3fd1b52c10b8725b8d4ed4df84b1e0b"),
-            (424242, "6a3e305bfc8d5e20a0bc692af75932eb1741171965bf24a9ea486fe4fac9bacf"),
+            (777, "510cae2ad6e35031a522c92247347f460c75b1e8f5109afc10ef834513d7771b"),
+            (424242, "b6a7b990ded301e520f0d89d85d98f31ef50dc192439f6cc7a73b41014b247d5"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

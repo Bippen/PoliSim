@@ -90,6 +90,21 @@ namespace PoliSim.EditorTools
                     F("Sweden 2026 (M {0} · KD {1} · L {2}), M+KD+L: Finance with {3} - KD's 0.056 lead in entitlement is a near-tie (under a tenth of the post's 1.68), so the larger party takes it (§711) [{4}]",
                         sweden.ParliamentSeats["M"], sweden.ParliamentSeats["KD"], sweden.ParliamentSeats["L"], Holder(se26, CabinetPortfolio.FinanceTreasury), Describe(se26)));
 
+                // §717 (Elias's ruling of 2026-10-01, item 8): Italy's MEF sums its three rated posts as the paper does (1.64 + 1.32 + 0.98 = 3.94), the
+                // derived mean Poland and the USA take moves with it (1.705 -> 2.28); the resulting MISS against the record is recorded, the method unadjusted.
+                Check(Math.Abs(PortfolioSalience.Weight(CountryId.Italy, CabinetPortfolio.FinanceTreasury) - 3.94) < 1e-9 && Math.Abs(PortfolioSalience.Weight(CountryId.Poland, CabinetPortfolio.FinanceTreasury) - 2.28) < 1e-9,
+                    F("Italy's MEF weighs {0:0.00} (Treasury 1.64 + Finance 1.32 + Budget 0.98, the paper's three posts summed); the derived mean {1:0.00}",
+                      PortfolioSalience.Weight(CountryId.Italy, CabinetPortfolio.FinanceTreasury), PortfolioSalience.Weight(CountryId.Poland, CabinetPortfolio.FinanceTreasury)));
+                Country italy = world.GetCountry(CountryId.Italy);
+                italy.ParliamentSeats = PartySystems.InitialSeats(CountryId.Italy, ElectionVintage.Italy2022);
+                Dictionary<string, List<CabinetPortfolio>> it22 = GovernmentRecord.GamsonPosts(italy, new[] { "FdI", "Lega", "FI", "NM" }, "FdI");
+                Check(Holder(it22, CabinetPortfolio.FinanceTreasury) == "FdI",
+                    F("Italy 2022, Meloni's FdI+Lega+FI+NM: Finance with {0} - a MISS against the record's Giorgetti (Lega), recorded and not adjusted (§717) [{1}]", Holder(it22, CabinetPortfolio.FinanceTreasury), Describe(it22)));
+                Country poland = world.GetCountry(CountryId.Poland);
+                poland.ParliamentSeats = PartySystems.InitialSeats(CountryId.Poland, ElectionVintage.Poland2023);
+                Dictionary<string, List<CabinetPortfolio>> pl23 = GovernmentRecord.GamsonPosts(poland, new[] { "KO", "TD", "NL" }, "KO");
+                Check(Holder(pl23, CabinetPortfolio.FinanceTreasury) == "KO", F("Poland 2023, Tusk's KO+TD+NL on the derived weights: Finance with {0} - the record's Domański (KO); TD held it on the old mean (1.705), §716's owed decision B, which the summed MEF's move in the mean closes [{1}]", Holder(pl23, CabinetPortfolio.FinanceTreasury), Describe(pl23)));
+
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { EnergyMarket.ResetTurnState(); }

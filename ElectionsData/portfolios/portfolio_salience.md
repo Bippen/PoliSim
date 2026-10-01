@@ -39,13 +39,14 @@ The Eastern European companion (Druckman & Roberts, EJPR 47, 2008) would give Po
 ## The mapping onto the game's six portfolios (DERIVED)
 
 The game's six portfolios stand for ministries: **a portfolio that stands for several of the country's separate ministries weighs their
-sum; one that stands for one ministry weighs its score**. Where one ministry of today merged several rated posts (Italy's MEF: Treasury,
-Finance and Budget), it weighs the highest of them — a merged ministry is one post, not three.
+sum; one that stands for one ministry weighs its score**. Italy's MEF, one ministry of today that merged three posts the paper rates (Treasury, Finance and Budget), weighs their
+SUM, as the paper does (Elias's ruling of 2026-10-01, item 8, §717; it weighed the highest, 1.64, before). The miss this makes against the
+record is recorded and the method is not adjusted: Meloni's Finance goes to FdI, the record's minister is Giorgetti (Lega).
 
 | game portfolio | Germany | Sweden | France | Italy | the rest (mean of the four) |
 |---|---:|---:|---:|---:|---:|
 | head of government (credited, not allocated) | 2.12 | 2.19 | 2.75 | 2.48 | 2.385 |
-| FinanceTreasury | 1.58 | 1.68 | 1.92 | 1.64 | 1.705 |
+| FinanceTreasury | 1.58 | 1.68 | 1.92 | 3.94 (1.64 + 1.32 + 0.98) | 2.28 |
 | InteriorJustice | 2.29 (1.27 + 1.02) | 0.99 | 3.11 (1.63 + 1.48) | 3.01 (1.78 + 1.23) | 2.35 |
 | HealthSocialAffairs | 2.01 (1.21 + 0.80) | 2.48 (1.22 + 1.26) | 2.12 (1.13 + 0.99) | 2.25 (1.06 + 1.19) | 2.215 |
 | Defense | 1.12 | 0.99 | 1.38 | 1.19 | 1.17 |
