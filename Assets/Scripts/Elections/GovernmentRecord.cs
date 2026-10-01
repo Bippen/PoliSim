@@ -135,10 +135,15 @@ namespace PoliSim.Elections
         /// §706 (Elias's ruling of 2026-10-01: the Treasury lock lifted, Finance weighed): allocates the six portfolios by Gamson's law WITH
         /// SALIENCE - each post at Druckman &amp; Warwick's published weight (<see cref="PortfolioSalience"/>), the head of government's weight
         /// credited to its party. [AUTHORED-DRAFT] the method: a party's entitlement is its share of the cabinet's seats times the total weight;
-        /// the posts, heaviest first, each go to the party with the most entitlement outstanding (a tie to the larger party); the head's party holds
+        /// the posts, heaviest first, each go to the party with the most entitlement outstanding (a near-tie to the larger party, §711); the head's party holds
         /// at least one post (the rule before, kept - its levers pass the gates anyway, the post is its minister's). Finance goes where the weights put it: to the partner in
         /// the 2025 and 2021 chambers, as the record has it (PortfolioSalienceDiagnostic), and it carries its levers to whoever holds it (§634).
         /// </summary>
+        /// <summary>§711 [AUTHORED-DRAFT], the play-calibration list's 25th entry: an entitlement gap smaller than this share of a post's own weight is a
+        /// near-tie, and the post goes to the larger party (Elias's ruling of 2026-10-01, item 2). A tenth of the post: the 2026 Riksdag's Finance
+        /// gap (0.056 of 1.68, a thirtieth) is one; the 2021 and 2025 Bundestags' Finance gaps (0.32 and 1.30 of 1.58) are not.</summary>
+        public const double NearTieShare = 0.10;
+
         public void AllocatePortfolios(Country country)
         {
             Portfolios.Clear();
@@ -163,8 +168,14 @@ namespace PoliSim.Elections
             posts.Sort((a, b) => PortfolioSalience.Weight(country.Id, b).CompareTo(PortfolioSalience.Weight(country.Id, a)) is int c && c != 0 ? c : ((int)a).CompareTo((int)b));   // heaviest first, a tie in the enum's order
             foreach (CabinetPortfolio post in posts)
             {
+                // §711 (Elias's ruling of 2026-10-01, item 2: "Near-ties in portfolio allocation go to the larger party"): the post goes to the larger
+                // party of any whose outstanding entitlement is within a near-tie of the most outstanding - [AUTHORED-DRAFT] a near-tie is less than
+                // NearTieShare of the post's own weight (the play-calibration list's 25th entry). Order is by seats, so the first such party is the larger.
+                double most = double.MinValue;
+                foreach (string party in order) { most = Math.Max(most, outstanding[party]); }
+                double nearTie = NearTieShare * PortfolioSalience.Weight(country.Id, post);
                 string taker = null;
-                foreach (string party in order) { if (taker == null || outstanding[party] > outstanding[taker] + 1e-9) { taker = party; } }   // order is by seats: a tie stays with the larger party
+                foreach (string party in order) { if (outstanding[party] >= most - nearTie - 1e-9) { taker = party; break; } }
                 Portfolios[taker].Add(post);
                 outstanding[taker] -= PortfolioSalience.Weight(country.Id, post);
             }

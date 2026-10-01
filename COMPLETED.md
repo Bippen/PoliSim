@@ -35679,3 +35679,14 @@ Latent, stated: **the cost** - a formation per candidate every German day was ~1
 **Checked**: the film's map assert is now the chips' (`AssertMapChips`: six chips, none overlapping - R-SP5's label-separation assert retired with the names it measured): *"6 chip(s), the tag each one's label, smallest gap 26.0 px, 0 overlapping pair(s)"*; the International slips frame pins Germany's chip slip (*GERMANY · GDP US$5.21T · UNEMPLOYMENT 4.4% · APPROVAL 45.7*), in place of the pair head's; the ladder film's caption reads `chips N gap G`.
 
 **Tier UI**: the cheap bar **86 of 86** (`cheap710`); the dry film `drys710` (Sweden 155, Germany 147, 0 failed); the real film `se710b_1280` (Sweden, 155 captured, 0 failed, exit 0) - `se710_1280` before it exited 1 on eighteen HEIGHT MISMATCH frames from `06h` on (the editor's window resized mid-film to 947 px, environmental; the re-run clean).
+
+
+## 711. NEAR-TIES IN PORTFOLIO ALLOCATION GO TO THE LARGER PARTY: A GAP UNDER A TENTH OF THE POST'S OWN WEIGHT [AUTHORED-DRAFT]; SWEDEN 2026'S FINANCE RETURNS TO M (2026-10-01)
+
+**The ruling** (Elias, 2026-10-01, item 2): *Near-ties in portfolio allocation go to the larger party ([AUTHORED-DRAFT], calibration list).*
+
+**Built** (`GovernmentRecord.AllocatePortfolios`): each post, heaviest first, goes to the LARGER party of any whose outstanding entitlement lies within a near-tie of the most outstanding - **[AUTHORED-DRAFT] a near-tie is a gap smaller than `NearTieShare` = 0.10 of the post's own weight** (the play-calibration list's **25th entry**; the thing to look for in play: a post the record gives the larger party going to a smaller one by a hair, or the reverse). Before, only an exact tie went to the larger party.
+
+**What moved** (named checks `n711b`, all six clean): **Sweden 2026** (M 70 · KD 22 · L 19): Finance **KD -> M** - KD's 0.056 lead (§706's pin, the review's note B, owed to Elias in the overnight report) is a thirtieth of Finance's 1.68, a near-tie; the pin is now the rule's answer: M HealthSocial/Finance, KD Foreign/InteriorJustice, L Education/Defence. **Sweden 2022**: M HealthSocial/Finance/InteriorJustice, KD Foreign/Defence, L Education (Defence and InteriorJustice swap between M and KD; Finance stays M's). **Unmoved**: the ruling's tests - 2021 Finance with the FDP (a 0.32 gap), 2025 with the SPD (1.30), Education 2021 with the FDP; the formation sweep's digest (`86fbf292…`, 250 formations) unchanged.
+
+**Tier SIMULATION** (the review skipped: the sentinel did not move, nothing books money): the cheap bar **86 of 86** (`cheap711`); the simulation bar **57 of 57**, both sentinels the baseline's (`sim711`).

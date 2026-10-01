@@ -14,8 +14,8 @@ namespace PoliSim.EditorTools
     /// §706 (Elias's rulings of 2026-10-01): THE TREASURY LOCK LIFTED AND FINANCE WEIGHED - the Gamson share counts each post at Druckman &amp;
     /// Warwick's published salience (`PortfolioSalience`), the head of government's weight credited to its party, the heaviest posts first to the
     /// party with the most entitlement outstanding. The ruling's tests: the 2021 chamber's SPD+Grüne+FDP puts Finance with the FDP, the 2025
-    /// chamber's CDU+CSU+SPD with the SPD - each the record's. Sweden 2022 keeps Finance with M on the weights alone; Sweden 2026 is PINNED at the
-    /// method's answer (KD). The lock's removal is `SpeakerRoundDiagnostic` (3)'s: a sheet giving a partner Finance is answered on its merits.
+    /// chamber's CDU+CSU+SPD with the SPD - each the record's. Sweden 2022 keeps Finance with M on the weights alone; Sweden 2026 by §711's near-tie
+    /// rule (KD's lead under a tenth of the post - the larger party, M). The lock's removal is `SpeakerRoundDiagnostic` (3)'s: a sheet giving a partner Finance is answered on its merits.
     /// </summary>
     public static class PortfolioSalienceDiagnostic
     {
@@ -81,14 +81,13 @@ namespace PoliSim.EditorTools
                 Check(Holder(se, CabinetPortfolio.FinanceTreasury) == "M",
                     F("Sweden 2022, Kristersson's M+KD+L: Finance with {0} on the weights alone - the record's Svantesson (M) [{1}]", Holder(se, CabinetPortfolio.FinanceTreasury), Describe(se)));
 
-                // PINNED, the method's answer and not a record's (the review of §706, note B): on the Riksdag elected 2026-09-13 M+KD+L gives Finance
-                // to KD by 0.056 of entitlement - M's credited 2.19 for the prime minister and HealthSocialAffairs' 2.48 leave M 2.059 outstanding
-                // against KD's 2.115. The 2026 government is not yet on record; this is Elias's to look at with the method (the play-calibration
-                // list's 24th entry). A change to the weights or the method that moves it shows here.
+                // §711 (Elias's ruling of 2026-10-01, item 2: near-ties go to the larger party): on the Riksdag elected 2026-09-13 M+KD+L had given
+                // Finance to KD by 0.056 of entitlement (§706's pin, the review's note B) - under a tenth of Finance's 1.68, a near-tie, so it goes to M,
+                // the larger party. The 2026 government is not yet on record; a change to the weights or the method that moves it shows here.
                 sweden.ParliamentSeats = PartySystems.InitialSeats(CountryId.Sweden, ElectionVintage.Sweden2026);
                 Dictionary<string, List<CabinetPortfolio>> se26 = GovernmentRecord.GamsonPosts(sweden, new[] { "M", "KD", "L" }, "M");
-                Check(sweden.ParliamentSeats["M"] == 70 && sweden.ParliamentSeats["KD"] == 22 && sweden.ParliamentSeats["L"] == 19 && Holder(se26, CabinetPortfolio.FinanceTreasury) == "KD",
-                    F("PINNED - Sweden 2026 (M {0} · KD {1} · L {2}), M+KD+L: Finance with {3} by the method, not by any record (the 2026 government is not yet on record; Elias's to look at) [{4}]",
+                Check(sweden.ParliamentSeats["M"] == 70 && sweden.ParliamentSeats["KD"] == 22 && sweden.ParliamentSeats["L"] == 19 && Holder(se26, CabinetPortfolio.FinanceTreasury) == "M",
+                    F("Sweden 2026 (M {0} · KD {1} · L {2}), M+KD+L: Finance with {3} - KD's 0.056 lead in entitlement is a near-tie (under a tenth of the post's 1.68), so the larger party takes it (§711) [{4}]",
                         sweden.ParliamentSeats["M"], sweden.ParliamentSeats["KD"], sweden.ParliamentSeats["L"], Holder(se26, CabinetPortfolio.FinanceTreasury), Describe(se26)));
 
             }
