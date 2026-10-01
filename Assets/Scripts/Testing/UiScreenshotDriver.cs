@@ -805,12 +805,14 @@ namespace PoliSim.Testing
                 }
                 if (Tabs[i] == "Demographics")
                 {
-                    // §666 (19b): two pinned chains - the 35-39 band's slip with WORKING AGE's level 2 open, and the turnout head's - pinned through the
-                    // controller's own pin (a pointer's slip cannot be filmed; a pinned one is drawn whatever the pointer does), filmed, then let go.
+                    // §732 (UI v3.5): People is one scrolled page of sections - a frame below the fold scrolls the page to its section's head, by the
+                    // page's own record (_peopleSectionTops, ScrollPeopleTo), and a slip is filmed pinned through the controller's own hook (a pointer's
+                    // slip cannot be filmed; a pinned one is drawn whatever the pointer does).
                     MethodInfo pinSlip = controller.GetType().GetMethod("PinSlipForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
                     FieldInfo pins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
                     if (pinSlip != null && pins != null)
                     {
+                        // §666 (19b): two pinned chains - the 35-39 band's slip with WORKING AGE's level 2 open, and the turnout head's
                         pinSlip.Invoke(controller, new object[] { "band:7", "WORKING AGE", new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.24f) });
                         pinSlip.Invoke(controller, new object[] { "head:turnout", null, new Vector2(UiScreen.Width * 0.58f, UiScreen.Height * 0.06f) });
                         yield return Settle();
@@ -820,116 +822,49 @@ namespace PoliSim.Testing
                         yield return Settle();
                     }
                     else { Debug.LogError("SHOT: §666 - the controller has no PinSlipForFilm / _slipPins; 04i_people_slips_pinned NOT written."); _failed++; }
-                    // P6-1 (board 8a): the sector pie sits deep in the People page - scroll to where the renderer laid it out (its LastArea, read after a settled frame), the disc with its outside labels on film.
-                    var pie = controller.GetType().GetField("_sectorEmploymentPieChart", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as PieChartRenderer;
-                    float pieY = pie != null ? pie.LastArea.y : 2400f;
-                    ScrollBy(controller, Mathf.Max(0f, pieY - UiScreen.Height * 0.12f));
-                    yield return Settle();
-                    yield return Capture("04a_demographics_pie");
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    // P5-C2 (2026-09-05, board 9c): the health family's plate sits under the pie - scroll to where the renderer laid it out.
-                    var plateField = controller.GetType().GetField("_healthPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                    float plateY = plateField != null ? ((Rect)plateField.GetValue(controller)).y : 3000f;
-                    ScrollBy(controller, Mathf.Max(0f, plateY - UiScreen.Height * 0.08f));
-                    yield return Settle();
-                    yield return Capture("04b_people_health_plate");
-                    // Board 16c (§589): a row OPENED IN PLACE - the film cannot click, so it opens two rows the way a click on their names
-                    // would (the waiting row and 16d's supporting readouts), films them, and closes them again; the neighbours stay at rest.
-                    var openRows = controller.GetType().GetField("_plateRowsOpen", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as HashSet<string>;
-                    if (openRows != null)
-                    {
-                        openRows.Add("Health|Waiting · cataract");
-                        openRows.Add("Health|Supporting readouts");
-                        yield return Settle();
-                        yield return Settle();
-                        yield return Capture("04b2_people_health_rows_open");
-                        openRows.Clear();
-                        yield return Settle();
-                    }
-                    else { Debug.LogError("SHOT: 16c - the controller carries no _plateRowsOpen set; 04b2_people_health_rows_open NOT written."); }
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    // P5-C3 (2026-09-06): the education plate sits under the health plate.
-                    var eduField = controller.GetType().GetField("_educationPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                    float eduY = eduField != null ? ((Rect)eduField.GetValue(controller)).y : 3600f;
-                    ScrollBy(controller, Mathf.Max(0f, eduY - UiScreen.Height * 0.08f));
-                    yield return Settle();
-                    yield return Capture("04c_people_education_plate");
-                    // §686 (board 20b rule 5): the BILLED glyph's slip, pinned through the controller's own hook - a pointer's slip is never filmed.
-                    var plateSlipRects = controller.GetType().GetField("_plateSlipRects", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<string, Rect>;
-                    MethodInfo pin = controller.GetType().GetMethod("PinSlipForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
-                    string billedId = null;
-                    if (plateSlipRects != null) { foreach (KeyValuePair<string, Rect> kv in plateSlipRects) { if (kv.Key.StartsWith("Education|", StringComparison.Ordinal) && kv.Key.EndsWith("/BILLED", StringComparison.Ordinal)) { billedId = kv.Key; break; } } }
-                    if (billedId == null || pin == null)
-                    {
-                        Debug.LogError("SHOT: 04c2_people_education_billed_pinned - no BILLED glyph slip on the education plate (20b rule 5); NOT written.");
-                        _failed++;
-                    }
-                    else
-                    {
-                        Rect glyph = plateSlipRects[billedId];
-                        pin.Invoke(controller, new object[] { billedId, null, new Vector2(glyph.xMax + 6f, glyph.y) });
-                        yield return Settle();
-                        yield return Settle();
-                        yield return Capture("04c2_people_education_billed_pinned");
-                        (controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as System.Collections.IList)?.Clear();
-                        Debug.Log("SHOT: §686 - the education plate's BILLED glyph slip pinned: " + billedId);
-                    }
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    // P5-C4 (2026-09-06): the infrastructure plate sits under the education plate.
-                    var infraField = controller.GetType().GetField("_infrastructurePlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                    float infraY = infraField != null ? ((Rect)infraField.GetValue(controller)).y : 4200f;
-                    ScrollBy(controller, Mathf.Max(0f, infraY - UiScreen.Height * 0.08f));
-                    yield return Settle();
-                    yield return Capture("04d_people_infrastructure_plate");
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    // P5-C5 (2026-09-06): the environment plate sits under the infrastructure plate.
-                    var envField = controller.GetType().GetField("_environmentPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                    float envY = envField != null ? ((Rect)envField.GetValue(controller)).y : 4800f;
-                    ScrollBy(controller, Mathf.Max(0f, envY - UiScreen.Height * 0.08f));
-                    yield return Settle();
-                    yield return Capture("04e_people_environment_plate");
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    // P5-C6 (2026-09-06): the immigration-and-poverty plate sits under the environment plate.
-                    var migField = controller.GetType().GetField("_migrationPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                    float migY = migField != null ? ((Rect)migField.GetValue(controller)).y : 5400f;
-                    ScrollBy(controller, Mathf.Max(0f, migY - UiScreen.Height * 0.08f));
-                    yield return Settle();
-                    yield return Capture("04f_people_migration_plate");
-                    ResetScrolls(controller);
-                    yield return Settle();
 
-                    // P6-B1 (2026-09-17): THE SAME PLATE IN PROVENANCE. The families' seed lines moved behind
-                    // the `†` this item, and the rule they moved under is that provenance ADDS lines - so the
-                    // film has to carry both states of one page, or "nothing is deleted" is a claim with no
-                    // frame behind it. The health plate is the anchor because it is the first family.
+                    foreach ((string section, string stem, string pinned, string pinnedStem) in new[]
+                    {
+                        ("dependency", "04a_people_dependency_electorate", null, null),
+                        // the cataract wait's slip carries the knee replacement the composition leaves off the page
+                        ("health", "04b_people_health", "health:cataract", "04b2_people_health_wait_pinned"),
+                        // 20b rule 5 kept: BILLED is the glyph in the figure's slot, its sentence the slip's
+                        ("education", "04c_people_education", "education:pisa", "04c2_people_education_billed_pinned"),
+                        ("infrastructure", "04d_people_infrastructure", null, null),
+                        ("environment", "04e_people_environment", null, null),
+                        ("migration", "04f_people_migration_employment", null, null),
+                    })
+                    {
+                        ScrollPeopleTo(controller, section);
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture(stem);
+                        if (pinned != null && pinSlip != null && pins != null)
+                        {
+                            pinSlip.Invoke(controller, new object[] { pinned, null, new Vector2(UiScreen.Width * 0.45f, UiScreen.Height * 0.22f) });
+                            yield return Settle();
+                            yield return Settle();
+                            yield return Capture(pinnedStem);
+                            (pins.GetValue(controller) as System.Collections.IList)?.Clear();
+                            yield return Settle();
+                        }
+                    }
+
+                    // P6-B1 / §686, in v3.5 (rule 3): THE SAME PAGE BEHIND THE †. Every slip prints as its tile's dotted line under the section - the
+                    // census the tiles took off at rest, filmed at four sections and at the head.
                     _provenanceToRestore = DeskProvenance.On;
                     DeskProvenance.On = true;
                     yield return Settle();
-                    float provY = plateField != null ? ((Rect)plateField.GetValue(controller)).y : 3000f;
-                    ScrollBy(controller, Mathf.Max(0f, provY - UiScreen.Height * 0.08f));
-                    yield return Settle();
-                    yield return Settle();
-                    yield return Capture("04g_people_health_plate_provenance");
-                    // §686 (board 20b): every word the plates took off at rest is on the dense view (19c) - the other three plates behind the †, filmed.
-                    foreach ((string field, string stem) in new[] { ("_educationPlateLastArea", "04g2_people_education_plate_provenance"),
-                        ("_infrastructurePlateLastArea", "04g3_people_infrastructure_plate_provenance"), ("_environmentPlateLastArea", "04g4_people_environment_plate_provenance") })
+                    foreach ((string section, string stem) in new[] { ("health", "04g_people_health_dense"), ("education", "04g2_people_education_dense"),
+                        ("infrastructure", "04g3_people_infrastructure_dense"), ("environment", "04g4_people_environment_dense") })
                     {
-                        ResetScrolls(controller);
-                        yield return Settle();
-                        FieldInfo provField = controller.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
-                        float provPlateY = provField != null ? ((Rect)provField.GetValue(controller)).y : 3600f;
-                        ScrollBy(controller, Mathf.Max(0f, provPlateY - UiScreen.Height * 0.08f));
+                        yield return Settle();   // the dense lines lengthen the page: the tops are re-recorded before the scroll reads them
+                        ScrollPeopleTo(controller, section);
                         yield return Settle();
                         yield return Settle();
                         yield return Capture(stem);
                     }
-                    // §662 (board 20a part C): People's head in the dense view - the cohort instruments as lines, every word that left the page at rest.
-                    ResetScrolls(controller);
+                    ScrollPeopleTo(controller, null);
                     yield return Settle();
                     yield return Settle();
                     yield return Capture("04h_people_dense");
@@ -2008,6 +1943,31 @@ namespace PoliSim.Testing
                 return;
             }
             scroll.SetValue(controller, new Vector2(0f, top));
+        }
+
+        /// <summary>
+        /// §732 (UI v3.5): People is a scrolled page of sections - a frame below the fold scrolls the page to its section's head, a little above it so
+        /// the head is on film (the controller records each section's top by name, <c>_peopleSectionTops</c>); <paramref name="section"/> null puts it
+        /// back at the top. A section with no recorded top is an error, as on the desk.
+        /// </summary>
+        private void ScrollPeopleTo(GameController controller, string section)
+        {
+            FieldInfo scroll = controller.GetType().GetField("_demographicsScrollPosition", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo tops = controller.GetType().GetField("_peopleSectionTops", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (scroll == null || tops == null)
+            {
+                Debug.LogError("SHOT: People's scroll (_demographicsScrollPosition/_peopleSectionTops) not found - a People frame below the fold films the fold.");
+                _failed++;
+                return;
+            }
+            if (section == null) { scroll.SetValue(controller, Vector2.zero); return; }
+            if (!(tops.GetValue(controller) is Dictionary<string, float> map) || !map.TryGetValue(section, out float top))
+            {
+                Debug.LogError($"SHOT: People's '{section}' section has no recorded top - the frame would film the fold, not the section.");
+                _failed++;
+                return;
+            }
+            scroll.SetValue(controller, new Vector2(0f, Mathf.Max(0f, top - V35.Px(8f))));
         }
 
         private IEnumerator CaptureSavesMenu(GameController controller)

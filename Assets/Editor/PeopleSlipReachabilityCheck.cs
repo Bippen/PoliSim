@@ -14,21 +14,36 @@ using Debug = UnityEngine.Debug;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// §666 (UI v3.3 §1: *a removed word that no slip can reach fails the bar*): **EVERY WORD PEOPLE'S COHORT BLOCK TOOK OFF THE PAGE AT REST IS ON A
-    /// SLIP WITHIN TWO LEVELS.** The removed words are MEASURED, not listed: `docs/generated/PEOPLE_AT_REST_REMOVED.tsv` is the dry films' own
-    /// difference (`Tools/text_baseline.pl removed`, before the retrofit against after). The slips are the page's own book (`PeopleSlips.Build`) on
-    /// Sweden's seed world: level 1 is every anchor's slip, level 2 the slip of every term a level-1 slip marks - nothing deeper counts.
-    /// <para>Asserted: (a) every band's label and figure on its band's slip; (b) every voter group's name and share on its group's slip - the data
-    /// rows of the removed list, whose figures are the day's; (c) every other segment of every removed draw (split at · — : ; and full stops,
-    /// figures read as #) in the reachable text. A segment naming a code identifier leaves the page by Design's table E (class (c)), logged.</para>
+    /// §666 (UI v3.3 §1: *a removed word that no slip can reach fails the bar*): **EVERY WORD PEOPLE TOOK OFF THE PAGE AT REST IS ON A SLIP WITHIN
+    /// TWO LEVELS.** The removed words are MEASURED, not listed: `docs/generated/PEOPLE_AT_REST_REMOVED.tsv` is the dry films' own difference for
+    /// the cohort block's retrofit (§666, `Tools/text_baseline.pl removed`), and `docs/generated/PEOPLE_V35_AT_REST_REMOVED.tsv` the whole page's for
+    /// UI v3.5 (§732, `removed-set`: what the People frames showed at rest before and none of them draws after). The slips are the page's own book
+    /// (`PeopleSlips.BuildPage`) on Sweden's seed world: level 1 is every anchor's slip, level 2 the slip of every term a level-1 slip marks -
+    /// nothing deeper counts.
+    /// <para>Asserted: (a) every band's label and figure on its band's slip; (b) every voter group's name and share within the two levels (§732: the
+    /// electorate's bar is gone, and the groups are the eligible's level 2) - the data rows of the removed lists, whose figures are the day's; (c) every
+    /// other segment of every removed draw (split at · — : ; and full stops, figures read as #) in the reachable text. A segment naming a code
+    /// identifier leaves the page by Design's table E (class (c)), logged; a segment that described a mark the v3.5 page no longer draws retires with
+    /// it, by name in <see cref="RetiredWithTheirMark"/>, logged.</para>
     /// </summary>
     public static class PeopleSlipReachabilityCheck
     {
-        private const string RemovedList = "docs/generated/PEOPLE_AT_REST_REMOVED.tsv";
+        private static readonly string[] RemovedLists = { "docs/generated/PEOPLE_AT_REST_REMOVED.tsv", "docs/generated/PEOPLE_V35_AT_REST_REMOVED.tsv" };
         private static readonly Regex Figure = new Regex(@"\d+(?:[.,]\d+)?", RegexOptions.CultureInvariant);
         private static readonly Regex Split = new Regex(@" · | - | — | – |: |; |\. ", RegexOptions.CultureInvariant);
         private static readonly Regex CodeName = new Regex(@"\b[A-Z][a-z]+[A-Z]\w*", RegexOptions.CultureInvariant);
         private static readonly Regex DataOnly = new Regex(@"^[#\s\-+kM%.,()]*$", RegexOptions.CultureInvariant);
+
+        /// <summary>
+        /// §732: segments of the §666 list that DESCRIBED A MARK the v3.5 page no longer draws - they retire with the mark, by name and with the reason,
+        /// because a slip that still said them would describe a drawing that is not there. Nothing else may be listed here: a word that names a reading or
+        /// a rule stays reachable.
+        /// </summary>
+        private static readonly Dictionary<string, string> RetiredWithTheirMark = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "DASHED WHERE NOT", "§732: the turnout column draws NO lane where a band cannot vote (the composition's) - the dashed empty lane is gone" },
+            { "# GROUPS, ONE INK WITH HAIRLINE BREAKS", "§732: the electorate's one-ink bar is gone - the voter groups are the eligible's level 2" },
+        };
 
         private static string N(string s)
         {
@@ -40,11 +55,13 @@ namespace PoliSim.EditorTools
         public static void Run()
         {
             CheckExit.ArmLogFold();
-            var sb = new StringBuilder("=== PeopleSlipReachabilityCheck (§666): every word the cohort block took off the page at rest, on a slip within two levels ===\n");
+            var sb = new StringBuilder("=== PeopleSlipReachabilityCheck (§666, §732): every word People took off the page at rest, on a slip within two levels ===\n");
             int failures = 0;
             string root = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-            string listPath = Path.Combine(root, RemovedList);
-            if (!File.Exists(listPath)) { Debug.LogError($"  {RemovedList} is missing - VERIFIED NOTHING"); CheckExit.Finish(1); return; }
+            foreach (string list in RemovedLists)
+            {
+                if (!File.Exists(Path.Combine(root, list))) { Debug.LogError($"  {list} is missing - VERIFIED NOTHING"); CheckExit.Finish(1); return; }
+            }
 
             using IDisposable epoch = SimulationManager.EpochScope();
             WorldClock.ApplyStart(CountryId.Sweden);
@@ -57,9 +74,7 @@ namespace PoliSim.EditorTools
                 PopulationCohorts cohorts = sweden?.Cohorts;
                 if (cohorts == null) { Debug.LogError("  Sweden carries no cohort substrate - VERIFIED NOTHING"); CheckExit.Finish(1); return; }
                 CohortVoterGroups.Group[] groups = CohortVoterGroups.For(sweden);
-                int votingAge = CohortVoterGroups.VotingAge(CountryId.Sweden);
-                bool sourced = groups.Length > 0 && !double.IsNaN(groups[0].TurnoutBase);
-                PeopleSlips.Book book = PeopleSlips.Build(cohorts, groups, votingAge, sourced);
+                PeopleSlips.Book book = PeopleSlips.BuildPage(sweden, world);
 
                 // The two levels: every anchor's slip, and the slip of every term those mark.
                 var reach = new StringBuilder();
@@ -90,32 +105,36 @@ namespace PoliSim.EditorTools
                 {
                     groupRows++;
                     string share = (groups[i].PopulationShare * 100.0).ToString("0", CultureInfo.InvariantCulture);
-                    string text = book.Anchors.TryGetValue("group:" + i.ToString(CultureInfo.InvariantCulture), out SlipContent s) ? string.Join("\n", s.Lines) : string.Empty;
-                    if (!text.Contains(groups[i].Name + " " + share)) { failures++; sb.Append($"    FAIL      voter group {groups[i].Name} {share}: on no group slip\n"); }
+                    if (reachable.IndexOf(N(groups[i].Name + " " + share), StringComparison.Ordinal) < 0) { failures++; sb.Append($"    FAIL      voter group {groups[i].Name} {share}: on no slip within two levels\n"); }
                 }
-                sb.Append($"    ok        (a) {bands} bands and (b) {groupRows} voter groups: each one's label and figure on its own slip\n");
+                sb.Append($"    ok        (a) {bands} bands, each one's label and figure on its own slip; (b) {groupRows} voter groups, each one's name and share within two levels\n");
 
                 // (c): the measured removed draws, segment by segment.
-                int draws = 0, segments = 0, data = 0, leaves = 0, missing = 0;
-                bool header = false;
-                foreach (string raw in File.ReadAllLines(listPath))
+                foreach (string list in RemovedLists)
                 {
-                    if (raw.StartsWith("#", StringComparison.Ordinal)) { continue; }
-                    if (!header) { header = true; continue; }
-                    if (raw.Length == 0) { continue; }
-                    draws++;
-                    foreach (string part in Split.Split(N(raw)))
+                    int draws = 0, segments = 0, data = 0, leaves = 0, retired = 0, missing = 0;
+                    bool header = false;
+                    foreach (string raw in File.ReadAllLines(Path.Combine(root, list)))
                     {
-                        string seg = part.Trim().TrimEnd('.', ',');
-                        if (seg.Length == 0) { continue; }
-                        if (DataOnly.IsMatch(seg)) { data++; continue; }
-                        segments++;
-                        if (CodeName.IsMatch(RawSegment(raw, seg))) { leaves++; sb.Append($"    leaves    '{seg}' - a code identifier; it leaves the page by Design's table E, class (c)\n"); continue; }
-                        if (reachable.IndexOf(seg, StringComparison.Ordinal) < 0) { missing++; failures++; sb.Append($"    FAIL      '{seg}' (from '{raw}') is on no slip within two levels\n"); }
+                        if (raw.StartsWith("#", StringComparison.Ordinal)) { continue; }
+                        if (!header) { header = true; continue; }
+                        if (raw.Length == 0) { continue; }
+                        draws++;
+                        foreach (string part in Split.Split(N(raw)))
+                        {
+                            // a draw that opens with its separator (" · DIABETES ") keeps none of it: the separator is not one of its words
+                            string seg = part.Trim().TrimStart('·').Trim().TrimEnd('.', ',');
+                            if (seg.Length == 0) { continue; }
+                            if (DataOnly.IsMatch(seg)) { data++; continue; }
+                            segments++;
+                            if (CodeName.IsMatch(RawSegment(raw, seg))) { leaves++; sb.Append($"    leaves    '{seg}' - a code identifier; it leaves the page by Design's table E, class (c)\n"); continue; }
+                            if (RetiredWithTheirMark.TryGetValue(seg, out string why)) { retired++; sb.Append($"    retired   '{seg}' - {why}\n"); continue; }
+                            if (reachable.IndexOf(seg, StringComparison.Ordinal) < 0) { missing++; failures++; sb.Append($"    FAIL      '{seg}' (from '{raw}', {Path.GetFileName(list)}) is on no slip within two levels\n"); }
+                        }
                     }
+                    if (draws == 0) { Debug.LogError($"  {list} lists no draws - VERIFIED NOTHING"); CheckExit.Finish(1); return; }
+                    sb.Append($"    {(missing == 0 ? "ok        " : "FAIL      ")}(c) {Path.GetFileName(list)}: {draws} removed draws, {segments} word segments, {segments - leaves - retired - missing} on a slip within two levels, {leaves} leaving by ruling, {retired} retired with their mark, {missing} unreachable; {data} figure-only segments\n");
                 }
-                if (draws == 0) { Debug.LogError($"  {RemovedList} lists no draws - VERIFIED NOTHING"); CheckExit.Finish(1); return; }
-                sb.Append($"    {(missing == 0 ? "ok        " : "FAIL      ")}(c) {draws} removed draws: {segments} word segments, {segments - leaves - missing} on a slip within two levels, {leaves} leaving by ruling, {missing} unreachable; {data} figure-only segments (a)/(b)\n");
             }
             finally { EnergyMarket.ResetTurnState(); }
 

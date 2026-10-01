@@ -218,6 +218,8 @@ namespace PoliSim.UI
             public bool SparkBelow;
             /// <summary>The figure's size: the live tile's 24, a Society tile's 21.</summary>
             public float FigurePx = V35.Figure;
+            /// <summary>§732: a mark after the figure that is not one of D24's glyphs - D16's ‡ TWO DEFINITIONS - in the secondary ink.</summary>
+            public string Mark;
         }
 
         /// <summary>A tile's height for its content - the head (the icon, or the figure over the name), and the gauge's band under it where it has one.</summary>
@@ -254,10 +256,13 @@ namespace PoliSim.UI
             if (Event.current.type != EventType.Repaint) { return reading; }
 
             float fx = x;
-            if (t.Glyph == Symbol.Absent)
+            if (t.Glyph == Symbol.Absent || t.Glyph == Symbol.Billed)
             {
-                float side = Mathf.Round(figureHeight * 0.8f);
-                DrawStateGlyph(new Rect(fx, y + Mathf.Round((figureHeight - side) * 0.5f), side, side), Symbol.Absent, PoliSimTheme.TextMuted);
+                // V35_ASK rule 3: ABSENT and BILLED take the figure's own slot - there is no figure to follow. §732: the glyph's file is a square
+                // canvas around a wide dashed box, so it is drawn at 1.6 figure-heights, centred on the figure's line - the box itself then reads at the
+                // figure's size (the composition's 45 x 20), not at a third of it
+                float side = Mathf.Round(figureHeight * 1.6f);
+                DrawStateGlyph(new Rect(fx, y + Mathf.Round((figureHeight - side) * 0.5f), side, side), t.Glyph.Value, PoliSimTheme.TextMuted);
                 fx += side + 6f;
             }
             else if (!string.IsNullOrEmpty(t.Figure))
@@ -271,6 +276,13 @@ namespace PoliSim.UI
                     float side = Mathf.Round(changeFace.fontSize * 1.0f);
                     DrawStateGlyph(new Rect(fx, y + Mathf.Round((figureHeight - side) * 0.5f), side, side), t.Glyph.Value, PoliSimTheme.TextSecondary);
                     fx += side + 6f;
+                }
+                if (!string.IsNullOrEmpty(t.Mark))
+                {
+                    GUIStyle markFace = V35Mono(15f, PoliSimTheme.TextSecondary, bold: true);
+                    float mw = Mathf.Ceil(markFace.CalcSize(new GUIContent(t.Mark)).x) + 2f;
+                    GUI.Label(new Rect(fx, y, mw, figureHeight), t.Mark, markFace);
+                    fx += mw + 6f;
                 }
             }
             if (!string.IsNullOrEmpty(t.Change))
@@ -296,6 +308,132 @@ namespace PoliSim.UI
                 PoliSimTheme.Rule(track, PoliSimTheme.BarTrack);
                 PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(t.Fill), track.height), t.FillInk);
             }
+            return reading;
+        }
+
+        /// <summary>§732: one part of a share bar - its name and figure, its ink and its words' ink, its length in the bar's unit, and the slip its
+        /// segment opens (null for none).</summary>
+        private struct V35Part
+        {
+            public string Name, Figure, Anchor;
+            public Color Ink, Text;
+            public float Length;
+            public V35Part(string name, string figure, Color ink, Color text, float length, string anchor = null)
+            {
+                Name = name; Figure = figure; Ink = ink; Text = text; Length = Mathf.Max(0f, length); Anchor = anchor;
+            }
+        }
+
+        /// <summary>A share bar's words, laid out once for its width: each part's words inside its segment where they fit at the floor (the name and
+        /// the figure, else the name alone), the rest on the key line in bar order, and how many rows the key wraps to.</summary>
+        private sealed class V35BarLayout
+        {
+            public string[] Inside;
+            public readonly List<int> Keyed = new List<int>();
+            public float[] KeyWidths;
+            public int KeyRows;
+        }
+
+        private V35BarLayout LayOutV35Bar(float width, IList<V35Part> parts, float whole)
+        {
+            GUIStyle inside = V35Serif(V35.Floor, PoliSimTheme.TextOnDesk, TextAnchor.MiddleCenter);
+            GUIStyle keyName = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+            GUIStyle keyFigure = V35Mono(V35.Floor, PoliSimTheme.TextSecondary);
+            float pad = V35.Px(6f), swatch = V35.Px(10f), entryGap = V35.Px(16f);
+            var l = new V35BarLayout { Inside = new string[parts.Count], KeyWidths = new float[parts.Count] };
+            for (int i = 0; i < parts.Count; i++)
+            {
+                float w = width * Mathf.Clamp01(parts[i].Length / Mathf.Max(0.0001f, whole));
+                string both = parts[i].Name + " " + parts[i].Figure;
+                if (inside.CalcSize(new GUIContent(both)).x + pad * 2f <= w) { l.Inside[i] = both; }
+                else if (inside.CalcSize(new GUIContent(parts[i].Name)).x + pad * 2f <= w) { l.Inside[i] = parts[i].Name; }
+                else { l.Keyed.Add(i); }
+            }
+            float run = 0f;
+            foreach (int i in l.Keyed)
+            {
+                l.KeyWidths[i] = swatch + V35.Px(5f) + keyName.CalcSize(new GUIContent(parts[i].Name)).x + V35.Px(4f) + keyFigure.CalcSize(new GUIContent(parts[i].Figure)).x;
+                if (l.KeyRows == 0) { l.KeyRows = 1; }
+                else if (run + entryGap + l.KeyWidths[i] > width) { l.KeyRows++; run = 0f; }
+                run += (run > 0f ? entryGap : 0f) + l.KeyWidths[i];
+            }
+            return l;
+        }
+
+        /// <summary>The bar's height with its key rows.</summary>
+        private static float V35BarHeight(V35BarLayout l) => V35.Px(26f) + (l.KeyRows > 0 ? V35.Px(8f) + l.KeyRows * V35.Px(22f) : 0f);
+
+        /// <summary>
+        /// The share bar (V35_ASK rule 7, board 23a ⑧): each segment's length is its part of <paramref name="whole"/>; a part's name and figure INSIDE its
+        /// segment where they fit at the floor, then the name alone, else the part goes to ONE key line under the bar, in bar order - never slip-only.
+        /// <paramref name="anchor"/> registers a part's slip on its segment and its key entry.
+        /// </summary>
+        private void DrawV35Bar(Rect area, IList<V35Part> parts, float whole, V35BarLayout l, System.Action<Rect, string> anchor)
+        {
+            var bar = new Rect(area.x, area.y, area.width, V35.Px(26f));
+            if (Event.current.type != EventType.Repaint) { return; }
+            PoliSimTheme.Rule(bar, PoliSimTheme.BarTrack);
+            float x = bar.x;
+            for (int i = 0; i < parts.Count; i++)
+            {
+                float w = bar.width * Mathf.Clamp01(parts[i].Length / Mathf.Max(0.0001f, whole));
+                var segment = new Rect(x, bar.y, w, bar.height);
+                PoliSimTheme.Rule(segment, parts[i].Ink);
+                if (i > 0) { PoliSimTheme.Rule(new Rect(Mathf.Round(x), bar.y, 1f, bar.height), V35.CardPaper); }
+                if (l.Inside[i] != null) { PoliSimWidgets.MeasuredLabel(segment, l.Inside[i], V35Serif(V35.Floor, parts[i].Text, TextAnchor.MiddleCenter)); }
+                if (parts[i].Anchor != null) { anchor?.Invoke(segment, parts[i].Anchor); }
+                x += w;
+            }
+            GUIStyle keyName = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+            GUIStyle keyFigure = V35Mono(V35.Floor, PoliSimTheme.TextSecondary);
+            float swatch = V35.Px(10f), entryGap = V35.Px(16f), keyPitch = V35.Px(22f);
+            float kx = area.x, ky = bar.yMax + V35.Px(8f);
+            foreach (int i in l.Keyed)
+            {
+                if (kx > area.x && kx + l.KeyWidths[i] > area.xMax + 0.5f) { kx = area.x; ky += keyPitch; }
+                PoliSimTheme.Rule(new Rect(kx, ky + (keyPitch - swatch) * 0.5f, swatch, swatch), parts[i].Ink);
+                float nx = kx + swatch + V35.Px(5f);
+                float nw = Mathf.Ceil(keyName.CalcSize(new GUIContent(parts[i].Name)).x);
+                PoliSimWidgets.MeasuredLabel(new Rect(nx, ky, nw, keyPitch), parts[i].Name, keyName);
+                float fw = Mathf.Ceil(keyFigure.CalcSize(new GUIContent(parts[i].Figure)).x);
+                PoliSimWidgets.MeasuredLabel(new Rect(nx + nw + V35.Px(4f), ky, fw, keyPitch), parts[i].Figure, keyFigure);
+                if (parts[i].Anchor != null) { anchor?.Invoke(new Rect(kx, ky, l.KeyWidths[i], keyPitch), parts[i].Anchor); }
+                kx += l.KeyWidths[i] + entryGap;
+            }
+        }
+
+        /// <summary>A tile's head drawn borderless inside a larger card (a share card's): the icon, the figure over the name. Returns the reading's rect.</summary>
+        private Rect DrawV35TileHead(Rect r, V35TileData t)
+        {
+            float iconSide = V35.Px(V35.CardIcon);
+            DrawV35Icon(new Rect(r.x, r.y + Mathf.Round((r.height - iconSide) * 0.5f), iconSide, iconSide), t.Icon, t.IconInk);
+            GUIStyle figure = V35Mono(t.FigurePx, PoliSimTheme.TextPrimary, bold: true);
+            GUIStyle name = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
+            float fh = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y), nh = Mathf.Ceil(name.CalcSize(new GUIContent("Ag")).y);
+            float x = r.x + iconSide + V35.Px(12f), y = r.y + Mathf.Round((r.height - fh - 2f - nh) * 0.5f);
+            var reading = new Rect(x, y, Mathf.Max(1f, r.xMax - x), fh + 2f + nh);
+            if (Event.current.type != EventType.Repaint) { return reading; }
+            GUI.Label(new Rect(x, y, r.xMax - x, fh), t.Figure, figure);
+            PoliSimWidgets.MeasuredLabel(new Rect(x, y + fh + 2f, r.xMax - x, nh), V35Fit(t.Name, name, r.xMax - x, out _), name);
+            return reading;
+        }
+
+        /// <summary>§732: a SHARE CARD's height at <paramref name="width"/> - the composition's tile with a bar (People's age split, attainment and
+        /// emissions; Statistics' economy by sector): the tile's head, the bar, its key.</summary>
+        private float V35ShareCardHeight(float width, V35TileData head, IList<V35Part> parts, float whole)
+        {
+            V35BarLayout l = LayOutV35Bar(width - V35.Px(V35.CardPadX) * 2f, parts, whole);
+            return V35TileHeight(head) + V35.Px(10f) + V35BarHeight(l);
+        }
+
+        /// <summary>A share card in <paramref name="r"/>: the card, the tile's head, the bar under it. Returns the head's reading rect (its slip's anchor).</summary>
+        private Rect DrawV35ShareCard(Rect r, V35TileData head, IList<V35Part> parts, float whole, System.Action<Rect, string> anchor)
+        {
+            Rect inner = DrawV35Card(r);
+            float headHeight = V35TileHeight(head) - V35.Px(V35.CardPadY) * 2f;
+            Rect reading = DrawV35TileHead(new Rect(inner.x, inner.y, inner.width, headHeight), head);
+            V35BarLayout l = LayOutV35Bar(inner.width, parts, whole);
+            DrawV35Bar(new Rect(inner.x, inner.y + headHeight + V35.Px(10f), inner.width, V35BarHeight(l)), parts, whole, l, anchor);
             return reading;
         }
 

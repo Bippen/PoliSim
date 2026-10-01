@@ -104,5 +104,21 @@ namespace PoliSim.UI
         public static Color CardEdge => PoliSimTheme.RuleRow;
         /// <summary>The rule under a list row (#E6DCC8).</summary>
         public static readonly Color ListRule = PoliSimTheme.Hex(0xE6DCC8);
+
+        // ---- the data inks (§732, the composition's People: a population's bars and a share bar's parts) ----
+        /// <summary>The population's bars of working age, and the turnout's ticks (#47708E).</summary>
+        public static readonly Color DataSlate = PoliSimTheme.Hex(0x47708E);
+        /// <summary>The dependent bands' bars, and a share bar's lightest slate part (#9AA7B4).</summary>
+        public static readonly Color DataSlateLight = PoliSimTheme.Hex(0x9AA7B4);
+        /// <summary>The age split's 65-and-over part (#7A8A9C).</summary>
+        public static readonly Color DataSlateMid = PoliSimTheme.Hex(0x7A8A9C);
+        /// <summary>A share bar's first part where it reads as the remainder (below upper secondary, electricity) (#B7A98C).</summary>
+        public static readonly Color DataSand = PoliSimTheme.Hex(0xB7A98C);
+        /// <summary>A share bar's deepest part (tertiary, everything else) (#5F6672).</summary>
+        public static readonly Color DataDeep = PoliSimTheme.Hex(0x5F6672);
+        /// <summary>A part's words on a dark part (#F6EFDF), and on a light one (#2B2620).</summary>
+        public static readonly Color OnDataDark = PoliSimTheme.Hex(0xF6EFDF), OnDataLight = PoliSimTheme.Hex(0x2B2620);
+        /// <summary>The population's two dashed thresholds, 15 and 65 (#8A7A5C).</summary>
+        public static readonly Color PyramidThreshold = PoliSimTheme.Hex(0x8A7A5C);
     }
 }

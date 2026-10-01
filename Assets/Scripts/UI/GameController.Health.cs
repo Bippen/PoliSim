@@ -20,6 +20,10 @@ namespace PoliSim.UI
     /// chip are one mark now - six pips, own tall and solid at its rank, a peer that reports short and solid, a country with no series an
     /// open slot. A gap row keeps its word and its reason at reading size: a mark may replace a word only where the word was a label on
     /// something already drawn, and it may not replace a gap.</para>
+    ///
+    /// <para><b>§732 (UI v3.5): THE FIVE FAMILIES LEFT THE PLATES.</b> People draws its families as v3.5 tiles (GameController.PeopleV35.cs) and their
+    /// census as slips (PeopleSlips.BuildPage); the health, education, infrastructure, environment and migration plates retired with it. What stays
+    /// here is the shared core the Energy page still draws on, until its own pass.</para>
     /// </summary>
     public partial class GameController
     {
@@ -75,9 +79,6 @@ namespace PoliSim.UI
         private readonly HashSet<string> _plateRowsOpen = new HashSet<string>(System.StringComparer.Ordinal);
         private readonly Dictionary<string, Rect> _plateNameRects = new Dictionary<string, Rect>(System.StringComparer.Ordinal);
 
-        /// <summary>Where the plate was laid out last frame - the film driver scrolls to it (UiScreenshotDriver, 04b_people_health_plate).</summary>
-        private Rect _healthPlateLastArea;
-
         /// <summary>
         /// Board 20b (§686): **PEOPLE'S LOWER PLATES, THE ROW GRAMMAR OF 20a-D.** Set by the People page around its five plates, and read by the
         /// shared core only there - the Energy page draws on the same core and its retrofit is its own turn (UI v3.3 §3). Eight rules, at rest
@@ -88,8 +89,10 @@ namespace PoliSim.UI
         /// and ABSENT are the glyph in the figure's own slot, their sentence the glyph's slip; (6) a share bar's part keeps its figure where it is
         /// at least 40 px wide, the rest on a slip that names it; (7) a headline's tail (≥ UPPER SEC.) stays; (8) the supporting readouts line
         /// stays as built.
+        /// <para>§732 (UI v3.5): People draws no plates now - its families are v3.5 tiles (GameController.PeopleV35.cs) - so nothing sets this, and
+        /// it is a constant until the Energy pass retires the core with its last caller.</para>
         /// </summary>
-        private bool _plateRetrofit20b;
+        private const bool PlateRetrofit20b = false;
 
         /// <summary>20b's slips, filled on the repaint that lays the plates out and merged into the People page's book before its slips draw -
         /// the plates' core returns early off the repaint, and a slip's content must still be there on the MouseDown that pins it.</summary>
@@ -110,134 +113,8 @@ namespace PoliSim.UI
 
         private static readonly CountryId[] PeerOrder = { CountryId.Sweden, CountryId.Germany, CountryId.France, CountryId.Italy, CountryId.Poland, CountryId.USA };
 
-        private float[] HealthPeers(System.Func<HealthSeeds, float> read)
-        {
-            var peers = new List<float>();
-            World world = _simulationManager.World;
-            if (world == null) { return peers.ToArray(); }
-            foreach (CountryId id in PeerOrder)
-            {
-                if (id == PlayerCountryId) { continue; }
-                Country c = world.GetCountry(id);
-                if (c?.Health == null || !c.Health.Seeded) { continue; }
-                float v = read(c.Health);
-                if (v >= 0f) { peers.Add(v); }
-            }
-            return peers.ToArray();
-        }
-
         private static string PlateFigure(float value, int decimals, string symbol = "")
             => value < 0f ? "absent" : value.ToString(decimals == 0 ? "0" : "0." + new string('0', decimals), CultureInfo.InvariantCulture) + symbol;
-
-        private void DrawHealthFamilyPlate()
-        {
-            Country country = _playerCountry;
-            HealthSeeds h = country.Health;
-            if (h == null || !h.Seeded)
-            {
-                PlateFamily("Health", "", "");
-                DrawPlateFamilyHeader("Health", "", "");
-                GUILayout.Label("This country carries no health family - the spine covers six, and this is not one of them.", _labelStyle);
-                return;
-            }
-
-            EconomyState s = country.State;
-            StatHistory history = country.History;
-            bool draftLive = false;
-            float draftHealthSpending = 0f, standingHealthSpending = 0f;
-            foreach (SpendingLine line in country.SpendingLines)
-            {
-                if (!HealthFamily.IsHealthLine(line.Category)) { continue; }
-                standingHealthSpending += line.Amount;
-                if (_spendingLineInputs.TryGetValue(line.Category, out float drafted)) { draftHealthSpending += drafted; draftLive = true; }
-                else { draftHealthSpending += line.Amount; }
-            }
-
-            string effectivenessChip = "EFFECTIVENESS (C7) ▸";
-            string coverageYear = h.CoverageYear > 0 ? " · " + h.CoverageYear : "";
-            string tmYear = h.TreatableMortalityYear > 0 ? " · " + h.TreatableMortalityYear : "";
-            string waitYear = h.WaitYear > 0 ? " · " + h.WaitYear : "";
-            bool waits = h.HasWaits;
-            var rows = new List<PlateRow>
-            {
-                new PlateRow("Coverage", "% OF POPULATION · CORE SERVICES", "OECD HEALTH_PROT · TPRIBASI" + coverageYear, PlateFigure(s.HealthCoverage, 1),
-                    PlateBand.Bounded, 0f, h.CoverageCeiling, s.HealthCoverage, HealthPeers(x => x.Coverage), false, new[] { "HEALTH LINE — HEAD ▸" }, history?.HealthCoverage.Quarterly, new[] { "SOURCED" }, true, unitGlyph: "%"),
-                new PlateRow("… of which public", "% OF POPULATION · GOVERNMENT / COMPULSORY", "OECD HEALTH_PROT · COVGCMED ÷ TPRIBASI", PlateFigure(HealthFamily.PublicCoverageNow(country), 1),
-                    PlateBand.Bounded, 0f, 100f, HealthFamily.PublicCoverageNow(country), HealthPeers(x => x.CoveragePublic), false, new[] { "READOUT · NOTHING REACHES IT" }, null, new[] { "DERIVED" }, false, unitGlyph: "%"),
-                new PlateRow("Retiree coverage", "% OF THE 65+ COHORT", "DERIVED · F2 SUBSTRATE × COVERAGE", PlateFigure(HealthFamily.RetireeCoverage(country), 1),
-                    PlateBand.None, 0f, 0f, 0f, null, false, new[] { "READOUT" }, null, new[] { "DERIVED" }, false, unitGlyph: "%"),
-                new PlateRow("Quality · treatable mortality", "DEATHS / 100 000 · AGE-STD · LOWER IS BETTER", "OECD HEALTH_STAT · TRTM" + tmYear, PlateFigure(s.TreatableMortality, 0),
-                    PlateBand.Open, 40f, 120f, s.TreatableMortality, HealthPeers(x => x.TreatableMortality), true, new[] { "HEALTH LINE — AGE-COST ▸", "EFFICIENCY ▸", effectivenessChip }, history?.TreatableMortality.Quarterly, new[] { "SOURCED" }, true, unitGlyph: "⁄100k"),
-                waits
-                    ? new PlateRow("Waiting · cataract", "MEAN DAYS · SPECIALIST TO TREATMENT", "OECD DF_WAITING · CM131_138" + waitYear, PlateFigure(s.WaitCataractDays, 0),
-                        PlateBand.Open, 0f, 180f, s.WaitCataractDays, HealthPeers(x => x.WaitCataract), true, new[] { effectivenessChip }, null, new[] { "SOURCED" }, true, unitGlyph: "d")
-                    : new PlateRow("Waiting · cataract", "MEAN DAYS · SPECIALIST TO TREATMENT", "OECD DF_WAITING · NO ROWS FOR " + country.Id.ToString().ToUpperInvariant(), "absent",
-                        PlateBand.Absent, 0f, 180f, -1f, null, true, new[] { "NOT SIMULATED — EFFECTIVENESS REACHES QUALITY DIRECTLY" }, null, new[] { "ABSENT · STATED" }, false, "NO COMPARABLE SERIES PUBLISHED · SE IT PL REPORT"),
-                waits
-                    ? new PlateRow("Waiting · knee replacement", "MEAN DAYS", "OECD DF_WAITING · CM8154" + waitYear, PlateFigure(s.WaitKneeDays, 0),
-                        PlateBand.Open, 0f, 400f, s.WaitKneeDays, HealthPeers(x => x.WaitKnee), true, new[] { effectivenessChip }, null, new[] { "SOURCED" }, true, unitGlyph: "d")
-                    : new PlateRow("Waiting · knee replacement", "MEAN DAYS", "OECD DF_WAITING · NO ROWS FOR " + country.Id.ToString().ToUpperInvariant(), "absent",
-                        PlateBand.Absent, 0f, 400f, -1f, null, true, new[] { "NOT SIMULATED — EFFECTIVENESS REACHES QUALITY DIRECTLY" }, null, new[] { "ABSENT · STATED" }, false, "NO COMPARABLE SERIES PUBLISHED · SE IT PL REPORT"),
-            };
-
-            Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare);
-            PlateFamily("Health", h.CoverageYear > 0 ? h.CoverageYear + "–25" : "2022–25", "SOURCED · OECD", keyRow: "Coverage");   // 16b: the family's key, DECLARED
-            string footText = "SEEDS: OECD SDMX, LATEST OBSERVATION PER COUNTRY, SEX TOTAL · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS ARE THE OTHER FIVE AT SEED · A BAND'S ENDS ARE THE FAMILY'S STATED RANGE, NOT THE DATA'S · COUPLINGS: THE HEALTH SPINE'S TABLES, DRAFT UNTIL MEASURED";
-            _healthPlateLastArea = DrawPlateRows(rows, areaInk, footText, draftLive, row =>
-            {
-                if (!draftLive || !row.Name.StartsWith("Quality")) { return null; }
-                float with = HealthFamily.ProjectTreatableMortality(country, draftHealthSpending);
-                float without = HealthFamily.ProjectTreatableMortality(country, standingHealthSpending);
-                return (with - without, true, "PER 100 000");
-            }, extraRowHeightFor: (nameH, capH, srcH, smallH) => Mathf.Max(capH + Mathf.Ceil(DeskCaptionHeight(DeskCaption(7f, PoliSimTheme.TextPrimary, true))) + srcH + StatsUnit(8f), nameH + capH + srcH + StatsUnit(8f)),
-            drawExtraRow: (x, y, pad, styles) =>
-            {
-                // Supporting readouts: moved by the quality key, never coupled. Board 16d (§589): at rest ONE line in the caption register - five names in
-                // TextMuted and five figures in TextPrimary across the figure and band columns - so supporting figures never out-ink the figures they support;
-                // the built five-column form, with its units and the quality-key line, is the OPEN form (a click on the name, or the † tab).
-                PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + (styles.Open ? StatsUnit(2f) : StatsUnit(6f)), x[1] - x[0] - pad, styles.NameH), "Supporting readouts", h.HasSupporting ? styles.Name : styles.NameAbsent);
-                if (styles.Open)
-                {
-                    PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH, x[1] - x[0] - pad, styles.CapH), "MOVED BY THE QUALITY KEY · NEVER COUPLED", styles.Caption);
-                    PoliSimWidgets.MeasuredLabel(new Rect(x[0] + pad, y + StatsUnit(2f) + styles.NameH + styles.CapH, x[1] - x[0] - pad, styles.SrcH), "OECD HCQO · DF_PC · DF_AC" + (h.SupportingYear > 0 ? " · " + h.SupportingYear : ""), styles.Source);
-                }
-                if (h.HasSupporting && !styles.Open)
-                {
-                    GUIStyle restName = DeskCaption(7f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleLeft);
-                    GUIStyle restFigure = DeskCaption(7f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleLeft);
-                    float lineH = Mathf.Ceil(DeskCaptionHeight(restFigure));
-                    float lx = x[1] + pad, lineY = y + StatsUnit(6f) + Mathf.Max(0f, (styles.NameH - lineH) * 0.5f), lineEnd = x[3] - pad;
-                    for (int i = 0; i < 5 && lx < lineEnd; i++)
-                    {
-                        string part = (i > 0 ? " · " : "") + HealthFamily.SupportingNames[i] + " ";
-                        string fig = PlateFigure(HealthFamily.SupportingNow(country, i), 1);
-                        float pw = restName.CalcSize(new GUIContent(part)).x, fw = restFigure.CalcSize(new GUIContent(fig)).x;
-                        PoliSimWidgets.MeasuredLabel(new Rect(lx, lineY, Mathf.Min(pw, lineEnd - lx), lineH), part, restName);
-                        lx += pw;
-                        PoliSimWidgets.MeasuredLabel(new Rect(lx, lineY, Mathf.Max(1f, Mathf.Min(fw, lineEnd - lx)), lineH), fig, restFigure);
-                        lx += fw;
-                    }
-                }
-                else if (h.HasSupporting)
-                {
-                    // the open form: the built five columns, the figures dropped from the data figure's register to the caption's bold (16d)
-                    GUIStyle openFigure = DeskCaption(7f, PoliSimTheme.TextPrimary, true, TextAnchor.UpperLeft);
-                    float openFigH = Mathf.Ceil(DeskCaptionHeight(openFigure));
-                    float cellW = (x[x.Length - 2] - x[1]) / 5f;
-                    for (int i = 0; i < 5; i++)
-                    {
-                        float sx = x[1] + i * cellW + pad;
-                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f), cellW - pad, styles.CapH), HealthFamily.SupportingNames[i], styles.Caption);
-                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH, cellW - pad, openFigH), PlateFigure(HealthFamily.SupportingNow(country, i), 1), openFigure);
-                        PoliSimWidgets.MeasuredLabel(new Rect(sx, y + StatsUnit(3f) + styles.CapH + openFigH, cellW - pad, styles.SrcH), HealthFamily.SupportingUnits[i], styles.Source);
-                    }
-                }
-                else
-                {
-                    PoliSimWidgets.MeasuredLabel(new Rect(x[1] + pad, y + StatsUnit(8f), x[x.Length - 2] - x[1] - pad, Mathf.Max(StatsUnit(12f), Mathf.Ceil(DeskCaptionHeight(styles.AbsentWord)))), "absent · THE HCQO FLOWS HOLD NO ROWS FOR THIS COUNTRY", styles.AbsentWord);
-                }
-            }, extraRowName: "Supporting readouts");   // 16d: the extra row opens in place like any row (16c)
-        }
 
         /// <summary>The plate's styles and measured heights, handed to a family's extra row.</summary>
         private readonly struct PlateStyles
@@ -388,7 +265,7 @@ namespace PoliSim.UI
             // A gap row's reason is the only prose on the page and it earns its reading size, so the row grows to hold it.
             float gapReasonWidth = Mathf.Max(10f, (gapTracks[2] / PlateGrid.Content) * Mathf.Max(10f, UiScreen.Width * 0.8f));
             // 20b rule 5: at rest a gap's sentence is its glyph's slip, so a gap row keeps the rows' pitch.
-            bool rest20b = _plateRetrofit20b && !prov;
+            bool rest20b = PlateRetrofit20b && !prov;
             float gapRowHeight = rowHeightRest;
             foreach (PlateRow r in rows)
             {
@@ -459,7 +336,7 @@ namespace PoliSim.UI
                 else
                 {
                     DrawPlateRow(new Rect(area.x, y, area.width, h), x, row, areaInk, open, arrowFor, name, nameAbsent, flagStyle, caption, source, figure, figureUnit, figureAbsent, chip, draftChip, rankStyle, nameH, capH, srcH, figH, rankH, lane, pipsLane, chipH, pad, anyDistribution ? segH : 0f, plateId: plateId);
-                    float slot = _plateRetrofit20b && !open ? StatsUnit(20f) : 0f;   // 20b: the name after the row's leading state slot
+                    float slot = PlateRetrofit20b && !open ? StatsUnit(20f) : 0f;   // 20b: the name after the row's leading state slot
                     Dagger(new Rect(x[0] + pad + slot, y + StatsUnit(6f), Mathf.Min(x[1] - x[0] - pad * 2f - slot, name.CalcSize(new GUIContent(row.Name)).x + StatsUnit(2f)), nameH), plateId + row.Name);
                 }
                 y += h;
@@ -504,7 +381,7 @@ namespace PoliSim.UI
             float familyW = familyStyle.CalcSize(new GUIContent(familyName)).x;
             var familyRect = new Rect(x[0] + pad, top - StatsUnit(2f), familyW, familyH);
             PoliSimWidgets.MeasuredLabel(familyRect, familyName, familyStyle);
-            bool rest20b = _plateRetrofit20b && !prov && plateId != null;
+            bool rest20b = PlateRetrofit20b && !prov && plateId != null;
             if (rest20b)
             {
                 // 20b rules 1-2: the sub-title leaves the header for the plate name's slip (its line 2); the year becomes ◇ beside the name, the
@@ -572,7 +449,7 @@ namespace PoliSim.UI
         {
             float top = row.y + StatsUnit(6f);
             // 20b: at rest a row's name follows a leading state slot (✕ where a draft moves it the wrong way) - Design's 18 px column.
-            bool rest20b = _plateRetrofit20b && !prov && plateId != null;
+            bool rest20b = PlateRetrofit20b && !prov && plateId != null;
             float slot = rest20b ? StatsUnit(20f) : 0f;
             // 1 · Name, with its qualification glyph. The unit and the source line are lines the tab adds beneath it. In the header lane (16b)
             // the family's header draws the name cell itself - the family name, the row's name as its qualifier.

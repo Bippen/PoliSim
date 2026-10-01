@@ -183,91 +183,19 @@ namespace PoliSim.UI
             var percents = new List<float>(shares.Count);
             foreach ((SectorType _, float p) in shares) { percents.Add(p); }
             float other = StatsReadings.SectorRemainderPercent(percents);
-            var entries = new List<(string Name, string Figure, Color Ink, float Part, bool Other)>();
+            var parts = new List<V35Part>();
             for (int i = 0; i < shares.Count; i++)
             {
                 // Spaced, NOT Of: SectorType.Energy resolves through the curated policy table to "Energy (Spending)", a discretionary spending line.
-                entries.Add((DisplayName.Spaced(shares[i].Type.ToString()), UiFormat.Number(shares[i].SharePercent, 1) + "%", UiPalette.GetCategoricalColor(i), Mathf.Max(0f, shares[i].SharePercent), false));
+                parts.Add(new V35Part(DisplayName.Spaced(shares[i].Type.ToString()), UiFormat.Number(shares[i].SharePercent, 1) + "%", UiPalette.GetCategoricalColor(i), PoliSimTheme.TextOnDesk, shares[i].SharePercent));
             }
-            entries.Add(("Other", UiFormat.Number(other, 1) + "%", PoliSimTheme.Neutral, other, true));
+            parts.Add(new V35Part("Other", UiFormat.Number(other, 1) + "%", PoliSimTheme.Neutral, PoliSimTheme.TextOnDesk, other, "sector:other"));
 
+            // 23a ⑧: a segment's length is its share of GDP - the bar's whole is 100 % of it; the card's head is the tile's, drawn borderless inside it
             var head = new V35TileData { Icon = "sectors", IconInk = area, Figure = UiFormat.Number(100f - other, 1) + "%", Name = "Share of the economy" };
-            float innerWidth = contentWidth - V35.Px(V35.CardPadX) * 2f;
-            GUIStyle inside = V35Serif(V35.Floor, PoliSimTheme.TextOnDesk, TextAnchor.MiddleCenter);
-            GUIStyle keyName = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
-            GUIStyle keyFigure = V35Mono(V35.Floor, PoliSimTheme.TextSecondary);
-            float pad = V35.Px(6f);
-            // Each part's label: name and figure where they fit inside its segment, then the name alone, else the key line.
-            var label = new string[entries.Count];
-            var keyed = new List<int>();
-            for (int i = 0; i < entries.Count; i++)
-            {
-                float w = innerWidth * Mathf.Clamp01(entries[i].Part / 100f);
-                string both = entries[i].Name + " " + entries[i].Figure;
-                if (inside.CalcSize(new GUIContent(both)).x + pad * 2f <= w) { label[i] = both; }
-                else if (inside.CalcSize(new GUIContent(entries[i].Name)).x + pad * 2f <= w) { label[i] = entries[i].Name; }
-                else { keyed.Add(i); }
-            }
-            float swatch = V35.Px(10f), entryGap = V35.Px(16f), keyPitch = V35.Px(22f);
-            var widths = new float[entries.Count];
-            foreach (int i in keyed) { widths[i] = swatch + V35.Px(5f) + keyName.CalcSize(new GUIContent(entries[i].Name)).x + V35.Px(4f) + keyFigure.CalcSize(new GUIContent(entries[i].Figure)).x; }
-            int keyRows = keyed.Count == 0 ? 0 : 1;
-            float run = 0f;
-            foreach (int i in keyed)
-            {
-                if (run > 0f && run + entryGap + widths[i] > innerWidth) { keyRows++; run = 0f; }
-                run += (run > 0f ? entryGap : 0f) + widths[i];
-            }
-
-            float headHeight = V35TileHeight(head) - V35.Px(V35.CardPadY) * 2f;
-            float barHeight = V35.Px(26f);
-            float cardHeight = V35.Px(V35.CardPadY) * 2f + headHeight + V35.Px(10f) + barHeight + (keyRows > 0 ? V35.Px(8f) + keyRows * keyPitch : 0f);
+            float cardHeight = V35ShareCardHeight(contentWidth, head, parts, 100f);
             Rect card = GUILayoutUtility.GetRect(contentWidth, cardHeight, GUILayout.Width(contentWidth), GUILayout.Height(cardHeight));
-            Rect inner = DrawV35Card(card);
-            // the head is the tile's, drawn borderless inside this card (the card is the section's)
-            DrawStatsSectorHead(new Rect(inner.x, inner.y, inner.width, headHeight), head);
-            if (Event.current.type != EventType.Repaint) { return; }
-
-            var bar = new Rect(inner.x, inner.y + headHeight + V35.Px(10f), inner.width, barHeight);
-            PoliSimTheme.Rule(bar, PoliSimTheme.BarTrack);
-            float x = bar.x;
-            for (int i = 0; i < entries.Count; i++)
-            {
-                float w = bar.width * Mathf.Clamp01(entries[i].Part / 100f);   // 23a ⑧: a segment's length is its share of GDP
-                var segment = new Rect(x, bar.y, w, bar.height);
-                PoliSimTheme.Rule(segment, entries[i].Ink);
-                if (i > 0) { PoliSimTheme.Rule(new Rect(Mathf.Round(x), bar.y, 1f, bar.height), V35.CardPaper); }
-                if (label[i] != null) { PoliSimWidgets.MeasuredLabel(segment, label[i], inside); }
-                if (entries[i].Other) { StatsAnchor(segment, "sector:other"); }
-                x += w;
-            }
-            float kx = inner.x, ky = bar.yMax + V35.Px(8f);
-            foreach (int i in keyed)
-            {
-                if (kx > inner.x && kx + widths[i] > inner.xMax + 0.5f) { kx = inner.x; ky += keyPitch; }
-                PoliSimTheme.Rule(new Rect(kx, ky + (keyPitch - swatch) * 0.5f, swatch, swatch), entries[i].Ink);
-                float nx = kx + swatch + V35.Px(5f);
-                float nw = Mathf.Ceil(keyName.CalcSize(new GUIContent(entries[i].Name)).x);
-                PoliSimWidgets.MeasuredLabel(new Rect(nx, ky, nw, keyPitch), entries[i].Name, keyName);
-                float fw = Mathf.Ceil(keyFigure.CalcSize(new GUIContent(entries[i].Figure)).x);
-                PoliSimWidgets.MeasuredLabel(new Rect(nx + nw + V35.Px(4f), ky, fw, keyPitch), entries[i].Figure, keyFigure);
-                if (entries[i].Other) { StatsAnchor(new Rect(kx, ky, widths[i], keyPitch), "sector:other"); }
-                kx += widths[i] + entryGap;
-            }
-        }
-
-        /// <summary>The sector card's head: the tile's icon, figure and name, without a card of its own.</summary>
-        private void DrawStatsSectorHead(Rect r, V35TileData t)
-        {
-            float iconSide = V35.Px(V35.CardIcon);
-            DrawV35Icon(new Rect(r.x, r.y + Mathf.Round((r.height - iconSide) * 0.5f), iconSide, iconSide), t.Icon, t.IconInk);
-            if (Event.current.type != EventType.Repaint) { return; }
-            GUIStyle figure = V35Mono(t.FigurePx, PoliSimTheme.TextPrimary, bold: true);
-            GUIStyle name = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
-            float fh = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y), nh = Mathf.Ceil(name.CalcSize(new GUIContent("Ag")).y);
-            float x = r.x + iconSide + V35.Px(12f), y = r.y + Mathf.Round((r.height - fh - 2f - nh) * 0.5f);
-            GUI.Label(new Rect(x, y, r.xMax - x, fh), t.Figure, figure);
-            PoliSimWidgets.MeasuredLabel(new Rect(x, y + fh + 2f, r.xMax - x, nh), t.Name, name);
+            DrawV35ShareCard(card, head, parts, 100f, StatsAnchor);
         }
 
         /// <summary>The live series' icons, by chart id (the manifest's rows).</summary>
