@@ -121,6 +121,18 @@ namespace PoliSim.EditorTools
                         "board 12f's geometry, delivered AHEAD of its board being read (§448). The digest question is CLOSED (Design, 2026-09-15, item 3): the drawing was never wrong - an export embedded a C2PA block (9 155 bytes against the stated 1 795); Design stripped it and corrected MANIFEST row 62 to 1 381 bytes, 42a3ebe1…, and this pack's copy with its <metadata> block and c2pa namespace removed is those bytes exactly (§509). Still held: its board, 12f, is not built (instrument-first, §452 - no map is asked)"),
                 }
             },
+            {
+                // §722 (UI v3.5, Design 2026-10-01): the package's 69 icons are imported (Resources/Art/UI/V35/); what stays in the pack is the file's own
+                "V35_desk.zip", new (Func<string, bool>, string)[]
+                {
+                    (n => n.StartsWith("mark_se_", StringComparison.Ordinal),
+                        "the D18 Swedish marks PRE-TINTED with the ruled inks, for the composition file only - V35_ASK: \"the build tints its own; these are for the file\" (the game's marks are mark_party_se_*, white on alpha, tinted at draw)"),
+                    (n => n.StartsWith("portrait_", StringComparison.Ordinal),
+                        "the composition's three illustrative faces (the Cabinet page's candidates) - the game draws its own portraits"),
+                    (n => n.StartsWith("rail_", StringComparison.Ordinal),
+                        "the composition's rendered rail cells - the build draws its rail from the imported icons (the manifest's rows marked Rail:), tinted at draw"),
+                }
+            },
         };
 
         /// <summary>
