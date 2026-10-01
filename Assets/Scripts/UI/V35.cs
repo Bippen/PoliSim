@@ -120,5 +120,10 @@ namespace PoliSim.UI
         public static readonly Color OnDataDark = PoliSimTheme.Hex(0xF6EFDF), OnDataLight = PoliSimTheme.Hex(0x2B2620);
         /// <summary>The population's two dashed thresholds, 15 and 65 (#8A7A5C).</summary>
         public static readonly Color PyramidThreshold = PoliSimTheme.Hex(0x8A7A5C);
+
+        // ---- the slip (§733, V35_ASK rule 2) ----
+        /// <summary>The slip's paper (#F6EFDF), its 1 px edge (#8A7A5C) and its 2 px shadow (the ink at a quarter).</summary>
+        public static readonly Color SlipPaper = PoliSimTheme.Hex(0xF6EFDF), SlipEdge = PoliSimTheme.Hex(0x8A7A5C);
+        public static readonly Color SlipShadow = new Color(43f / 255f, 38f / 255f, 32f / 255f, 0.25f);
     }
 }

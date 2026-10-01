@@ -127,6 +127,8 @@ namespace PoliSim.UI
         public Rect HeadDatedRect { get; private set; }
         public Rect HeadDeltaRect { get; private set; }
         public Rect PlotAreaRect { get; private set; }
+        /// <summary>§733: where the threshold line's label (NAIRU, comfortable) drew - its slip's anchor; empty where none drew.</summary>
+        public Rect ThresholdLabelRect { get; private set; }
         public string HeadFigureText { get; private set; }
         public string HeadDeltaText { get; private set; }
         /// <summary>The verdict glyph that led the name (19a: only where the sign and the verdict can disagree), or null.</summary>
@@ -177,7 +179,7 @@ namespace PoliSim.UI
             _deltaDecimals = deltaInPoints ? 2 : 1;
             if (Event.current.type == EventType.Repaint)
             {
-                HeadTitleRect = HeadVerdictRect = HeadFigureRect = HeadDatedRect = HeadDeltaRect = PlotAreaRect = Rect.zero;
+                HeadTitleRect = HeadVerdictRect = HeadFigureRect = HeadDatedRect = HeadDeltaRect = PlotAreaRect = ThresholdLabelRect = Rect.zero;
                 HeadFigureText = HeadDeltaText = null;
                 HeadVerdict = null;
                 WindowFirstLive = WindowLast = float.NaN;
@@ -785,6 +787,8 @@ namespace PoliSim.UI
             // describes keeps the fill amber - the same idea at the two weights the palette split.
             style.normal.textColor = PoliSimTheme.Caution;
             GUI.Label(new Rect(rect.x + 2f, y - labelHeight * 0.5f, rect.width - 4f, labelHeight), thresholdLabel, style);
+            float labelWidth = Mathf.Min(rect.width - 4f, Mathf.Ceil(style.CalcSize(new GUIContent(thresholdLabel)).x));
+            ThresholdLabelRect = new Rect(rect.xMax - 2f - labelWidth, y - labelHeight * 0.5f, labelWidth, labelHeight);   // §733: the label's own extent, its slip's anchor
         }
 
         private bool NeedsRedraw(IReadOnlyList<float> history, float? projectedValue, float? thresholdValue)

@@ -906,7 +906,7 @@ namespace PoliSim.Testing
                         if (pinStats != null && statsPins != null)
                         {
                             bool domestic = stem == "02a_statistics_domestic";
-                            string[] ids = domestic ? new[] { "card:history", "sector:other", "chart:unemployment/verdict" } : new[] { "map:chip:Germany", "links:tariff", "relations" };   // §710: a chip's slip, the name first
+                            string[] ids = domestic ? new[] { "card:history", "sector:other", "chart:unemployment/nairu" } : new[] { "map:chip:Germany", "links:tariff", "relations" };   // §710: a chip's slip, the name first
                             Vector2[] at = domestic
                                 ? new[] { new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.22f), new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.52f), new Vector2(UiScreen.Width * 0.40f, UiScreen.Height * 0.78f) }
                                 : new[] { new Vector2(UiScreen.Width * 0.20f, UiScreen.Height * 0.46f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.62f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.80f) };

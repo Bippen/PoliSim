@@ -483,6 +483,9 @@ namespace PoliSim.UI
             StatsAnchor(graph.HeadVerdictRect, id + "/verdict");
             StatsAnchor(graph.HeadDatedRect, id + "/dated");
             if (c.Id == "gdp") { StatsAnchor(graph.HeadTitleRect, id + "/name"); }
+            // §733: the threshold line's label opens the slip the book has always held for it (NAIRU, comfortable) - no anchor had registered it
+            if (c.Id == "unemployment") { StatsAnchor(graph.ThresholdLabelRect, id + "/nairu"); }
+            if (c.Id == "debt") { StatsAnchor(graph.ThresholdLabelRect, id + "/comfortable"); }
             if (c.HeldSeed.HasValue && graph.PlotAreaRect.width > 0f)
             {
                 // 23a ⑭: the empty paper before the first live point opens the held seed's slip

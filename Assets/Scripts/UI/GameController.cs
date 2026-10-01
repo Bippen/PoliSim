@@ -2757,6 +2757,7 @@ namespace PoliSim.UI
             // FederalReserve[gated]) - see each DrawXTab method below for where it applies its own
             // gate at the right granularity, matching the old per-case behavior exactly.
             AutoOpenFormationSheet();   // §647, premise 1: the Speaker's request opens the sheet
+            KeepSlipPinsToPage();   // §733 (V35 rule 2): the pins are cleared on leaving the page
             if (_formationSheetOpen && FormationSheetAvailable())
             {
                 DrawFormationSheetStage(tabContentHeight, rightColumnWidth);
