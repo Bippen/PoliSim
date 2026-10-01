@@ -182,3 +182,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	726497d0cff1bcd6e648369682e3
 file	Assets/Scripts/Simulation/SimulationManager.cs	1698acaf5ce2c4487a4cac3a76280ab90b35b0e1808b6ef66127b1aa3ba27670	reviewed	2026-10-01	s713	Reviews/2026-10-01_s713_every_ballot_persons.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	486b53d600195d78814c9a51f5ac44d79c7e8428f16d248863d5380dddfc0ff6	reviewed	2026-10-01	s714	Reviews/2026-10-01_s714_formation_time.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	587faa81d77d98fd361317cedd73738939d9037bf405ef14454950e06efec2ae	reviewed	2026-10-01	s715	Reviews/2026-10-01_s715_nomination_pool.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	546eb36370f7df81544894a0433375c5cfb9dc854b2c4a39e2dcedc9b4c2599b	reviewed	2026-10-01	s716	Reviews/2026-10-01_s716_finance_partner.md	-
+baseline	777	bd910875dad81c808fcd4c43d1e0f081c3fd1b52c10b8725b8d4ed4df84b1e0b	reviewed	2026-10-01	s716	Reviews/2026-10-01_s716_finance_partner.md	traj_fp716b seed 777 - the Finance partner holds its levers in fact
+baseline	424242	6a3e305bfc8d5e20a0bc692af75932eb1741171965bf24a9ea486fe4fac9bacf	reviewed	2026-10-01	s716	Reviews/2026-10-01_s716_finance_partner.md	traj_fp716b seed 424242 - the Finance partner holds its levers in fact
+file	Assets/Scripts/Simulation/FinancePartner.cs	4ff0ba2212e3feee19f0bbf088d8aba2d72afcb1d3d7c6f50f68e942b69143d5	reviewed	2026-10-01	s716	Reviews/2026-10-01_s716_finance_partner.md	the reviewed state with the constant's CONVENTION mark (a comment; ConstantProvenanceCheck)

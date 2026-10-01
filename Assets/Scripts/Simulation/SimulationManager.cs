@@ -1167,7 +1167,11 @@ namespace PoliSim.Simulation
         public void TableGovernmentBudget(Country country)
         {
             if (country == null || _pendingBudgetBillByCountry.ContainsKey(country.Id)) { return; }
-            BudgetBill bill = AiFinanceMinistry.AsBudgetBill(country, AiFinanceMinistry.Decide(country, GetLastFiscalReport(country.Id)));
+            PolicyDecision governmentDecision = AiFinanceMinistry.Decide(country, GetLastFiscalReport(country.Id));
+            // §716 (the review's defect 1): the Finance partner's step rides the government's own bill, after the ministry's rule (its first claim kept) -
+            // the player's country under an AI head takes no boundary step (PartnerStepsAtBoundary)
+            if (FinancePartnerRuns(country)) { FinancePartner.Record(country, FinancePartner.Apply(country, governmentDecision, CurrentDate), CurrentDate); }   // once in any year (StepDue)
+            BudgetBill bill = AiFinanceMinistry.AsBudgetBill(country, governmentDecision);
             bill.DaysRemaining = ParliamentSystem.BillDurationDays;
             _pendingBudgetBillByCountry[country.Id] = bill;
             _pendingBudgetProcessByCountry.Remove(country.Id);
@@ -1293,6 +1297,18 @@ namespace PoliSim.Simulation
             if (_pendingBudgetBillByCountry.ContainsKey(countryId))
             {
                 return false;
+            }
+            // §716: the household rates are the Finance partner's where one holds it - the player's budget carries the rest and leaves those two standing
+            if (FinancePartnerOfPlayer(countryId) is string financePartner)
+            {
+                Country budgeted = _world.GetCountry(countryId);
+                foreach (TaxLine line in budgeted.TaxLines)
+                {
+                    if (!FinancePartner.IsHouseholdRate(line.Type)) { continue; }
+                    if (bill.TaxLines.TryGetValue(line.Type, out float asked) && !Mathf.Approximately(asked, line.Rate)) { Debug.Log($"LEVERS: {countryId} - the budget's {line.Type} at {asked.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)} left out: the Finance minister's lever, held by {financePartner}"); }
+                    bill.TaxLines.Remove(line.Type);
+                    bill.BracketRates.Remove(line.Type);
+                }
             }
 
             bill.DaysRemaining = ParliamentSystem.BillDurationDays;
@@ -2445,7 +2461,16 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool PlayerMayIntroduce(CountryId countryId, CabinetPortfolio? portfolio, out string lockedBecause)
         {
-            if (PlayerMayIntroduce(countryId, out lockedBecause)) { return true; }
+            if (PlayerMayIntroduce(countryId, out lockedBecause))
+            {
+                // §716 (Elias's ruling, item 7): a partner holding Finance holds its levers IN FACT - under the player's own head of government too
+                if (portfolio == CabinetPortfolio.FinanceTreasury && FinancePartnerOfPlayer(countryId) is string partner)
+                {
+                    lockedBecause = $"THE FINANCE MINISTER'S LEVER · HELD BY {PartySystems.ShortName(countryId, partner)}";
+                    return false;
+                }
+                return true;
+            }
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { return false; }
             if (portfolio.HasValue && country.Government.HoldsPortfolio(country.PlayerPartyAbbrev, portfolio.Value)) { lockedBecause = null; return true; }
@@ -2455,6 +2480,30 @@ namespace PoliSim.Simulation
                 : $"JUNIOR PARTNER · THE PRIME MINISTER'S LEVER · YOURS: {yours}";
             return false;
         }
+
+        /// <summary>§716: the partner whose positions run Finance in the player's own government - the AI party holding it where the player's party
+        /// leads; null where the player leads none, holds Finance itself, or the country is the instrument's hand (no party seated: the AI keeps off it).</summary>
+        public string FinancePartnerOfPlayer(CountryId countryId)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || string.IsNullOrEmpty(country.PlayerPartyAbbrev) || !PlayerGoverns(country)) { return null; }
+            return FinancePartner.AiHolder(country);
+        }
+
+        /// <summary>§716: the Finance partner's rule runs where the AI's hand on the book does (the ministry's switch, which every harness measuring one
+        /// rule alone turns off) and never on the instrument's hand (a player country with no party seated).</summary>
+        private bool FinancePartnerRuns(Country country) =>
+            AiFinanceMinistryEnabled && !(PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && string.IsNullOrEmpty(country.PlayerPartyAbbrev));
+
+        /// <summary>§716: the date of the boundary the current turn closes at - the epoch plus the turns so far and this one, a year each (the day
+        /// count AdvanceDay's boundary test reads). The Finance partner's step is judged due as of it, at the boundary and in the preview alike.</summary>
+        private System.DateTime ComingBoundaryDate => EpochDate.AddDays((CurrentTurn + 1) * (double)DaysPerTurn);
+
+        /// <summary>§716 (the review's defect 1): the partner steps the household rates AT THE BOUNDARY - where its rule runs, except the player's own
+        /// country under an AI head, where the ministry's rule goes to the chamber as the government's bill and the partner's step rides it
+        /// (<see cref="TableGovernmentBudget"/>). One rule, read by the boundary and by the preview.</summary>
+        private bool PartnerStepsAtBoundary(Country country) =>
+            FinancePartnerRuns(country) && !(AiFinanceMinistryEnabled && !PlayerGoverns(country) && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id);
 
         /// <summary>PS-3g (§634): the portfolio a law bill belongs to by its category - crime INTERIOR; the fiscal, monetary and electricity-tax categories FINANCE; the labour categories none (the prime minister's).</summary>
         public static CabinetPortfolio? PortfolioOfLaw(LawBill bill)
@@ -4427,6 +4476,11 @@ namespace PoliSim.Simulation
                     if (!ministryByBill) { ministryWrote = AiFinanceMinistry.Apply(country, GetLastFiscalReport(country.Id), decision); }
                     AiFinanceMinistry.Observe(country);
                 }
+                // §716 (Elias's ruling, item 7): a partner holding Finance moves the household rates from its own positions, whoever leads - after the
+                // ministry, whose treaty rule has first claim on a rate it wrote; withdrawn after the turn as the ministry's is.
+                FinancePartner.Written partnerWrote = PartnerStepsAtBoundary(country) ? FinancePartner.Apply(country, decision, ComingBoundaryDate) : null;
+                FinancePartner.Record(country, partnerWrote, ComingBoundaryDate);
+                if (partnerWrote != null && partnerWrote.Moves.Count > 0 && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id) { Debug.Log($"LEVERS: {country.Id} - the Finance minister's party ({FinancePartner.AiHolder(country)}) moves {string.Join("; ", partnerWrote.Moves)}"); }
                 // THE AI ENERGY MINISTRY (P6-F2d, §544): HELD - AiEnergyMinistry.Live is false until its family is dumped and ruled; with it on, a country the player
                 // does not govern answers its own statute with orders in its connection queue, which land through EnergyFleet.Advance like the player's.
                 if (AiEnergyMinistry.Live && !PlayerGoverns(country)) { AiEnergyMinistry.Decide(country, PensionAgeStatute.SeedYear + CurrentTurn + 1, CurrentTurn + 1); }   // the year about to be played and its turn: an order placed at the boundary waits its lead time from the coming year
@@ -4434,6 +4488,7 @@ namespace PoliSim.Simulation
                 // §388: what the ministry wrote leaves the decision again - a caller (the trajectory dump, a harness) may hand the same object in next turn,
                 // and the first builds re-applied year 2's cuts for a century because it did not.
                 if (ministryWrote != null) { AiFinanceMinistry.Withdraw(decision, ministryWrote); }
+                if (partnerWrote != null) { FinancePartner.Withdraw(decision, partnerWrote); }
 
                 // Political Systems Overhaul Part B (Parliament), Master Sequence step 4: recomputed
                 // for EVERY country every turn (not just the player's - see ParliamentSeats' own doc
@@ -4700,7 +4755,16 @@ namespace PoliSim.Simulation
             // PS-3g (§634): a decision reaches the player where its portfolio is the player's - and the roll is not made at all for a player holding none (the reader: a roll draws the RNG per minister; the whole skip keeps a film's frames where they were).
             Country rolling = _world.GetCountry(country.Id);
             bool holdsAny = PlayerMayIntroduce(country.Id, out _) || (rolling?.Government != null && rolling.Government.Portfolios.TryGetValue(rolling.PlayerPartyAbbrev ?? string.Empty, out List<CabinetPortfolio> heldByPlayer) && heldByPlayer.Count > 0);
-            if (holdsAny) { foreach ((CabinetPortfolio portfolio, CabinetDecision rolled) in CabinetSystem.TryRollDecisions(country)) { if (PlayerMayIntroduce(country.Id, portfolio, out _)) { pendingDecisions.Add((portfolio, rolled)); } } }   // PS-3c (§630): a cabinet decision is the government's - none rolls for a player country the AI governs
+            var partnerResolves = new List<(CabinetPortfolio Portfolio, CabinetDecision Decision)>();
+            if (holdsAny) { foreach ((CabinetPortfolio portfolio, CabinetDecision rolled) in CabinetSystem.TryRollDecisions(country)) { if (PlayerMayIntroduce(country.Id, portfolio, out _)) { pendingDecisions.Add((portfolio, rolled)); } else if (portfolio == CabinetPortfolio.FinanceTreasury && FinancePartnerOfPlayer(country.Id) != null) { partnerResolves.Add((portfolio, rolled)); } } }   // PS-3c (§630): a cabinet decision is the government's - none rolls for a player country the AI governs
+            // §716: under the player's head of government, the Finance decision is the partner's who holds Finance - resolved by its positions, after the roll
+            foreach ((CabinetPortfolio portfolio, CabinetDecision rolled) in partnerResolves)
+            {
+                string partner = FinancePartnerOfPlayer(country.Id);
+                CabinetDecisionOption chosen = FinancePartner.Choose(rolling, partner, rolled);
+                Debug.Log($"CABINET: {country.Id} - the Finance minister's party ({partner}) decides '{rolled.Name}': {chosen.Label}");
+                ResolveCabinetDecision(country.Id, portfolio, rolled, chosen);
+            }
             // P2-5.2: LOYALTY's term - under pressure, a disloyal minister may resign or leak; the record goes to the
             // country for the Docket, the approval move to the ledger like any cabinet event.
             foreach (CabinetEventRecord cabinetEvent in CabinetSystem.TryRollCabinetEvents(country, CurrentDate))
@@ -4827,6 +4891,16 @@ namespace PoliSim.Simulation
                 : 0f;
 
             CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
+            // §716 (the review's defect 4): the Finance partner's boundary step, as the boundary takes it - after the ministry's claim, which the preview
+            // reads (Decide is pure) without running it. Computed on the real country (the clone carries no government; its lines are the real ones'),
+            // written into the caller's decision for the preview and withdrawn before it returns.
+            Country previewedReal = _world.GetCountry(countryId);
+            FinancePartner.Written previewPartner = null;
+            if (previewedReal != null && PartnerStepsAtBoundary(previewedReal))
+            {
+                ICollection<TaxType> claimedByMinistry = AiFinanceMinistryEnabled && !PlayerGoverns(previewedReal) ? AiFinanceMinistry.Decide(previewedReal, GetLastFiscalReport(countryId)).TaxRateOverrides.Keys : null;
+                previewPartner = FinancePartner.Apply(previewedReal, decision, ComingBoundaryDate, claimedByMinistry);   // due as of the boundary the preview stands for; recorded never
+            }
             float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
             ApplyMinimumWageChange(previewCountry, decision);
@@ -4937,6 +5011,7 @@ namespace PoliSim.Simulation
             float previewApprovalBeforeFormula = state.ApprovalRating;
             MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
             MacroSystem.RecordApprovalAttribution(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, previewApprovalBeforeFormula);
+            if (previewPartner != null) { FinancePartner.Withdraw(decision, previewPartner); }   // §716: the caller's decision as it came in, after every reader the boundary keeps it for
 
             return new PolicyPreview
             {

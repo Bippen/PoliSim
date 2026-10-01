@@ -179,6 +179,9 @@ namespace PoliSim.Data
         public float DebtRatioSeed;
         public float DebtRatioLastReport;
         public float DebtRatioReportBefore;
+        /// <summary>§716: the day the Finance partner last wrote its step on the household rates (the boundary's decision or the government's own budget
+        /// bill) - it steps at most once in any year (FinancePartner.StepDue). MinValue = never; a save from before loads it so.</summary>
+        public System.DateTime FinancePartnerSteppedOn;
         /// <summary>FT-7 (§391): the participation rate as it stood at the last boundary, so the jobs lag reads the year's change in labour supply. 0 = not yet seen.</summary>
         public float ParticipationAtLastBoundary;
         /// <summary>FT-8 (§398): the participation the pyramid implied at the sourced rates by age (ParticipationRateTable.StructuralRate) as it stood at the last
@@ -253,7 +256,7 @@ namespace PoliSim.Data
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }
             // F4-2: the seeded rate on the income line is the shift's origin, and the statute's yield over the seed's cohorts is the ratio's denominator
-            foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax) { line.RateSeed = line.Rate; } }
+            foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax || line.Type == TaxType.VAT) { line.RateSeed = line.Rate; } }   // §716 (the review's defect 2): VAT's too - the Finance partner's anchor; no revenue site reads VAT's seed
             IncomeTaxSeedAer = (float)TaxSchedule.AverageEffectiveRate(this, 0.0, 1.0, 1.0);
             for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;

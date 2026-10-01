@@ -177,21 +177,21 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Digital Tax Enforcement Pilot",
                     "Treasury analysts have identified a wave of unreported income moving through online marketplaces. A mandatory digital-reporting pilot could close the gap - but merchants warn of real compliance costs.",
-                    new CabinetDecisionOption("Launch the pilot", budgetImpact: 180f, approvalEffect: -1f),
-                    new CabinetDecisionOption("Delay for further study", approvalEffect: 0.5f)),
+                    new CabinetDecisionOption("Launch the pilot", budgetImpact: 180f, approvalEffect: -1f, stateLean: 1),
+                    new CabinetDecisionOption("Delay for further study", approvalEffect: 0.5f, stateLean: -1)),
                 new CabinetDecision(
                     "Loophole Closure Package",
                     "Your Finance Minister has drafted a package closing several long-standing corporate deduction loopholes. Business groups are already lobbying against it.",
-                    new CabinetDecisionOption("Push it through", budgetImpact: 220f, approvalEffect: -1.5f),
-                    new CabinetDecisionOption("Water it down first", budgetImpact: 90f)),
+                    new CabinetDecisionOption("Push it through", budgetImpact: 220f, approvalEffect: -1.5f, stateLean: 1),
+                    new CabinetDecisionOption("Water it down first", budgetImpact: 90f, stateLean: -1)),
             },
             [(CabinetPortfolio.FinanceTreasury, CabinetMinisterPhilosophy.Pragmatic)] = new List<CabinetDecision>
             {
                 new CabinetDecision(
                     "Audit Staffing Shortfall",
                     "The tax authority is understaffed for the coming filing season, risking a real drop in collections. Emergency contract hires would help, but cost money now.",
-                    new CabinetDecisionOption("Approve emergency hiring", budgetImpact: -60f),
-                    new CabinetDecisionOption("Have staff cover the gap", budgetImpact: -150f)),
+                    new CabinetDecisionOption("Approve emergency hiring", budgetImpact: -60f, stateLean: 1),
+                    new CabinetDecisionOption("Have staff cover the gap", budgetImpact: -150f, stateLean: -1)),
                 new CabinetDecision(
                     "Unexpected Revenue Windfall",
                     "A one-time settlement with a major delinquent taxpayer has landed in Treasury's lap. Your minister wants direction on where it goes.",
@@ -203,13 +203,13 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Routine Compliance Sweep",
                     "A standard, unglamorous compliance sweep of existing filings has turned up more back-taxes owed than usual this cycle.",
-                    new CabinetDecisionOption("Collect in full", budgetImpact: 140f, approvalEffect: -0.5f),
-                    new CabinetDecisionOption("Offer a payment-plan amnesty", budgetImpact: 70f, approvalEffect: 0.5f)),
+                    new CabinetDecisionOption("Collect in full", budgetImpact: 140f, approvalEffect: -0.5f, stateLean: 1),
+                    new CabinetDecisionOption("Offer a payment-plan amnesty", budgetImpact: 70f, approvalEffect: 0.5f, stateLean: -1)),
                 new CabinetDecision(
                     "Legacy System Failure Risk",
                     "Your minister warns the Treasury's aging filing infrastructure is one bad quarter from real failures. He wants a modest maintenance budget, not a rebuild.",
-                    new CabinetDecisionOption("Fund the maintenance", budgetImpact: -80f),
-                    new CabinetDecisionOption("Push it another year", budgetImpact: 0f, approvalEffect: -0.5f)),
+                    new CabinetDecisionOption("Fund the maintenance", budgetImpact: -80f, stateLean: 1),
+                    new CabinetDecisionOption("Push it another year", budgetImpact: 0f, approvalEffect: -0.5f, stateLean: -1)),
             },
             [(CabinetPortfolio.InteriorJustice, CabinetMinisterPhilosophy.Reformist)] = new List<CabinetDecision>
             {

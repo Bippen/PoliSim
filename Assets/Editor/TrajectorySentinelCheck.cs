@@ -94,16 +94,23 @@ namespace PoliSim.EditorTools
         /// roster's own seats in every chamber) measures the second channel, recorded in §618. At turn 100 the largest movers are France's real household
         /// energy price change (−3.6 %), budget (−1.1 %) and population growth (−1.0 %) on seed 777; Germany's population growth rate moves ±10–14 % on a
         /// figure of 0.002; Sweden, Poland and the USA move in late digits. Before it 'k1ep' - K-1 part (3) (§604).</summary>
-        public const string BaselineLabel = "ps3k";   // PS-3k (§638): `ps3k` is BYTE-IDENTICAL to `ps3i` (no dump seats a player, so no election reads the record); PS-3i (§636): `ps3i` is BYTE-IDENTICAL to `ps3h` (every confidence trigger is a player verb); PS-3h (§635): `ps3h` is BYTE-IDENTICAL to `ps3g` (no dump tables a bill); PS-3g (§634): `ps3g` is BYTE-IDENTICAL to `ps3e` (the allocation reads seats and gates levers no dump pulls); PS-3e (§632): `ps3e` is BYTE-IDENTICAL to `ps3c` (the AI government's bill is the PLAYER'S country's path alone - no player, no bill); PS-3c (§630): `ps3c` is BYTE-IDENTICAL to `ps3a` (the dump passes no bill and sets no player, so the role gate is never asked); PS-3a (§628): `ps3a` is BYTE-IDENTICAL to `ps2cal` - the dump sets no player and the no-policy century no party, so the who-governs gate reads as before; `ps2cal` was identical to `ps1wc` in turn - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
+        /// <summary>§716 (2026-10-01, Elias's ruling item 7): A PARTNER HOLDING FINANCE HOLDS ITS LEVERS IN FACT - the household rates (income tax, VAT) move
+        /// a quarter point a year toward the seeded rate less a quarter point per CHES `redistribution` point the partner stands right of the head
+        /// ([AUTHORED-DRAFT], calibration 26th). On the dump's world (18 January 2026, no election re-forms an AI government) three partners hold Finance:
+        /// Germany's SPD under the CDU (2.89 against 6.39: +0.875 points), Italy's Lega under FdI (7.71 against 7.07: -0.16), Poland's TD (no CHES position:
+        /// no move); France's RN sits at Finance only in a PROVISIONAL stand-in, which no partner runs (the review's decision A). Germany first moves at turn 1
+        /// (approval -0.75 from the rise); at turn 100 GDP -0.38 / -0.47 % (Germany), +0.09 / +0.11 % (Italy) on 777 / 424242; France moves in late digits through the euro-zone rate
+        /// and trade, Sweden, Poland and the USA through trade. The family `fp716b` (the first dump `fp716`, before decision A, moved France too). Before it 'ps3k'.</summary>
+        public const string BaselineLabel = "fp716b";   // §716: the Finance partner (above). PS-3k (§638): `ps3k` is BYTE-IDENTICAL to `ps3i` (no dump seats a player, so no election reads the record); PS-3i (§636): `ps3i` is BYTE-IDENTICAL to `ps3h` (every confidence trigger is a player verb); PS-3h (§635): `ps3h` is BYTE-IDENTICAL to `ps3g` (no dump tables a bill); PS-3g (§634): `ps3g` is BYTE-IDENTICAL to `ps3e` (the allocation reads seats and gates levers no dump pulls); PS-3e (§632): `ps3e` is BYTE-IDENTICAL to `ps3c` (the AI government's bill is the PLAYER'S country's path alone - no player, no bill); PS-3c (§630): `ps3c` is BYTE-IDENTICAL to `ps3a` (the dump passes no bill and sets no player, so the role gate is never asked); PS-3a (§628): `ps3a` is BYTE-IDENTICAL to `ps2cal` - the dump sets no player and the no-policy century no party, so the who-governs gate reads as before; `ps2cal` was identical to `ps1wc` in turn - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_ps1wc_s{seed}_t100.csv`.</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_fp716b_s{seed}_t100.csv` (before §716 `traj_ps1wc`'s).</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "438e1148d46691f5086116373a6ab3d5cb08d92087b807931f2c1a1d83569446"),
-            (424242, "fc163628c6dd184b47c6d472d6923343ba3345913ff511118ee372b5dc6ee905"),
+            (777, "bd910875dad81c808fcd4c43d1e0f081c3fd1b52c10b8725b8d4ed4df84b1e0b"),
+            (424242, "6a3e305bfc8d5e20a0bc692af75932eb1741171965bf24a9ea486fe4fac9bacf"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

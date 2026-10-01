@@ -11750,6 +11750,7 @@ namespace PoliSim.UI
                 {
                     continue;
                 }
+                if (FinancePartnerHoldsRate(taxLine)) { continue; }   // §716 (the review's defect 4): the partner's lever - a draft left from before it took Finance reaches neither the bill nor its preview
                 bill.TaxLines[taxLine.Type] = GetTaxRateInput(taxLine.Type, taxLine.Rate);
                 // F4-4: the sub-rows' figures ride the same bill - the drafted rate per sub-row, −1 where the statute's (or the standing own) figure stands
                 if (taxLine.Type == TaxType.IncomeTax && _bracketRateInputs.Count > 0 && TaxSchedule.Responds(_playerCountry.Id))
@@ -11848,6 +11849,8 @@ namespace PoliSim.UI
             // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class) - the row's own furniture says it:
             // the hatched draft, the figure pair, the WOULD PASS verdict and the standalone Remove.
             GUILayout.Space(8f);
+            // §716: where a partner holds Finance, the page says whose levers these are - the programme's toggles lock, the household rates move by its positions
+            if (_simulationManager.FinancePartnerOfPlayer(PlayerCountryId) != null) { DrawLeverLock(null, 0f, CabinetPortfolio.FinanceTreasury); GUILayout.Space(6f); }
 
             float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
@@ -11856,6 +11859,9 @@ namespace PoliSim.UI
                 GUILayout.Space(10f);
             }
         }
+
+        /// <summary>§716: a household rate (the income tax, VAT) is the Finance partner's to move where an AI partner holds Finance under the player's head of government.</summary>
+        private bool FinancePartnerHoldsRate(TaxLine taxLine) => FinancePartner.IsHouseholdRate(taxLine.Type) && _simulationManager.FinancePartnerOfPlayer(PlayerCountryId) != null;
 
         /// <summary>Widest TaxType name as rendered in _labelStyle (the style DrawTaxLineRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached), same reasoning as GetSectorNameColumnWidth. The original fixed "_labelStyle.fontSize * 8f" heuristic here undersized the column for the longest name ("CapitalGainsTax"), the same label-truncation root cause found in the Sector/World-Map/Policy-Web labels.</summary>
         private float GetTaxTypeNameColumnWidth()
@@ -11931,7 +11937,7 @@ namespace PoliSim.UI
             // The slider IS the current draft (defaulting to the standing Rate until dragged), bounded
             // by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a meaningful
             // policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
-            float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+            float draftRate = FinancePartnerHoldsRate(taxLine) ? taxLine.Rate : GetTaxRateInput(taxLine.Type, taxLine.Rate);   // §716: a held rate shows no draft of the player's
             bool schedule = taxLine.Type == TaxType.IncomeTax && TaxSchedule.Of(_playerCountry.Id).Kind != TaxScheduleKind.Flat;   // F4-4: the statute's row and its sub-rows
 
             // Only an IMPLEMENTED line can have a pending rate change - an unimplemented one is changed
@@ -11960,7 +11966,7 @@ namespace PoliSim.UI
                 taxLine.IsImplemented ? TaxRateText(taxLine, taxLine.Rate) : "—",   // P5-1 (board 6a): the Implement button and the verdict carry the state; a status word in a figure column cost the track its reach
                 hasDraft ? TaxRateText(taxLine, draftRate) : null,
                 taxLine.IsImplemented ? UiFormat.Money(estimatedRevenue, MoneyUnit.Billions) : "-",
-                taxLine.IsImplemented && pendingBill == null,   // P5-1 (board 6a): PENDING - the knob says it cannot be moved; the row stays drawn and counted
+                taxLine.IsImplemented && pendingBill == null && !FinancePartnerHoldsRate(taxLine),   // §716: a household rate is the Finance partner's where one holds it. P5-1 (board 6a): PENDING - the knob says it cannot be moved; the row stays drawn and counted
                 _labelStyle,
                 _labelStyle,
                 _sliderStyle,
@@ -12018,7 +12024,7 @@ namespace PoliSim.UI
                 return;
             }
 
-            bool live = taxLine.IsImplemented && pendingBill == null;
+            bool live = taxLine.IsImplemented && pendingBill == null && !FinancePartnerHoldsRate(taxLine);   // §716: the partner's lever
             float standingShift = taxLine.Rate - TaxSchedule.RateSeedOf(taxLine);
             float draftLever = GetTaxRateInput(taxLine.Type, taxLine.Rate);
             float draftShift = draftLever - TaxSchedule.RateSeedOf(taxLine);

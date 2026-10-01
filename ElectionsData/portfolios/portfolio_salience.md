@@ -62,7 +62,7 @@ Gamson's law with salience (Druckman & Warwick's own use of the scores, "salienc
    six portfolios');
 2. the head of government's party is credited the head's weight;
 3. the portfolios, heaviest first, each go to the party with the largest entitlement still outstanding (a tie to the larger party);
-4. the head's party holds at least one portfolio (the rule before this ruling, kept; the head's party passes every lever gate anyway - the post is its minister's).
+4. the head's party holds at least one portfolio (the rule before this ruling, kept; the head's party passes every lever gate but Finance's where a partner holds Finance - §716: that partner holds its levers in fact, run from its own positions).
 
 **The ruling's tests** (`PortfolioSalienceDiagnostic`): the 2025 chamber's CDU+CSU+SPD puts Finance with **the SPD** (Klingbeil, the
 record); the 2021 chamber's SPD+Grüne+FDP puts it with **the FDP** (Lindner, the record) — and Education with the FDP too, as the record
