@@ -344,7 +344,7 @@ namespace PoliSim.UI
                 SlipAnchor(Shifted(bar, rightShift), "investiture");
                 book.Anchors["investiture"] = person
                     ? new SlipContent(wins ? "YOUR CANDIDATE WOULD BE ELECTED" : "YOUR CANDIDATE WOULD NOT BE ELECTED")
-                        .Add(string.Format(CultureInfo.InvariantCulture, "THE BALLOT ON THE NOMINATIONS STANDING: {0} FOR YOURS, {1} FOR THE OTHERS", carrying, against))
+                        .Add(string.Format(CultureInfo.InvariantCulture, round.Phase <= 1 ? "THE BUNDESPRÄSIDENT'S CANDIDATE: {0} FOR, A MAJORITY OF THE MEMBERS ELECTS" : "THE BALLOT ON THE NOMINATIONS STANDING: {0} FOR YOURS, {1} FOR THE OTHERS", carrying, against))
                         .Add(string.Format(CultureInfo.InvariantCulture, "THE TICK: A MAJORITY OF THE MEMBERS, {0} OF {1}", majority, totalSeats))
                     : new SlipContent(inv.Wins ? "IT WOULD PASS" : "IT WOULD FAIL")
                         .Add(string.Format(CultureInfo.InvariantCulture, "AS IT WOULD STAND: {0} CARRYING IT, {1} AGAINST", inv.SupportedSeats, inv.OpposedSeats))

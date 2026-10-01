@@ -3190,37 +3190,17 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>R7: the investiture - the formation's own vote under the country's rule, recorded as a division; a win installs, a loss counts to the
-        /// limit (the Riksdag) or moves the chancellor's election to its next phase (the Bundestag, Art. 63 GG).</summary>
+        /// limit (the Riksdag, RF 6 kap. 5 §). §713: a Bundestag round never comes here - every ballot of Art. 63 is a vote on the person (<see cref="PersonBallot"/>).</summary>
         private void Investiture(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
         {
-            if (IsBundestagRound(round) && round.Phase >= 2) { FourteenDaysBallot(country, g, round); return; }   // §712: in the fourteen days the Bundestag votes on persons
+            if (IsBundestagRound(round)) { PersonBallot(country, g, round); return; }   // §712-§713: the Bundestag votes on persons, in every phase
             Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
-            bool bundestag = IsBundestagRound(round);
-            string title = bundestag
-                ? $"Chancellor's election (Art. 63 Abs. {(round.Phase <= 1 ? 2 : 3)} GG): {CandidateOf(country, round, round.Proposal.Formateur)}, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "elected" : "not elected")}"
-                : $"Investiture: {round.Proposal.Formateur}'s proposal, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "approved" : "rejected")}";
+            string title = $"Investiture: {round.Proposal.Formateur}'s proposal, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "approved" : "rejected")}";
             RecordInvestiture(country, verdict, title, verdict.Passes);
             if (verdict.Passes) { Install(country, g, round, verdict); return; }
             round.Rejections++;
             var refusals = new List<string>();
             foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.Accepts) { refusals.Add(answer.Party + " " + answer.Reason); } }
-            if (bundestag)
-            {
-                // §705: Art. 63 - the Bundespräsident's candidate not elected opens the fourteen days (Abs. 3), in which the Bundestag may elect any
-                // candidate with a majority of its members; a candidate not elected inside them leaves the ballot the most votes win (Abs. 4)
-                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag does not elect {CandidateOf(country, round, round.Proposal.Formateur)} - {verdict.Investiture?.SupportedSeats ?? 0} for, {MajorityOf(country)} needed, a majority of the members ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)})");
-                Debug.Log($"SPEAKER: {country.Id} - {title}{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
-                if (round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Proposal.Formateur)) { round.StoodInPhase2.Add(round.Proposal.Formateur); }   // §706: stood once in the fourteen days
-                if (round.Phase <= 1)
-                {
-                    round.Phase = 2;
-                    round.SecondPhaseUntil = CurrentDate.AddDays(Elections.SpeakerRound.BundestagSecondPhaseDays);
-                    round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag has until {round.SecondPhaseUntil:yyyy-MM-dd} to elect a chancellor with a majority of its members (Art. 63 Abs. 3 GG)");
-                }
-                if (CurrentDate > round.SecondPhaseUntil) { PluralityBallot(country, g, round); return; }
-                AskNext(country, round);
-                return;
-            }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {round.Proposal.Formateur}'s proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
             Debug.Log($"SPEAKER: {country.Id} - {title}; {round.Rejections} rejected{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
             if (round.Rejections >= Elections.SpeakerRound.ProposalLimit) { BreakOff(country, g, round); return; }
@@ -3255,24 +3235,30 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// §712 (Elias's ruling of 2026-10-01, item 3: "The 14-day ballot is a vote on the person: signers vote for their nominee, and members choose
-        /// among the nominated candidates"). Art. 63 Abs. 3 GG: "Wird der Vorgeschlagene nicht gewählt, so kann der Bundestag binnen vierzehn Tagen
-        /// nach dem Wahlgange mit mehr als der Hälfte seiner Mitglieder einen Bundeskanzler wählen." A ballot in the fourteen days puts EVERY
-        /// nomination then standing before the Bundestag at once (GO-BT § 4 Abs. 2, <see cref="Nominated"/>) - the formateur whose tabling called it
-        /// among them; the player's party only where the player tabled. Each party votes by the ballot's tally (<see cref="Tally"/>): a nomination's
-        /// signers are the members who would vote for it, so they vote for their nominee; a candidate with a majority of the members is elected and
-        /// its government drawn as the final ballot draws one (<see cref="ElectedGovernment"/>). None elected, every nomination in the ballot has
-        /// stood (§706's premise: a nomination stands once in the fourteen days) and the round asks for the next, if any stands - else the days run
-        /// out to the ballot the most votes win (Abs. 4). Before §712 a ballot in the fourteen days was the formateur's investiture: the members who
-        /// had signed a nomination did not vote for it (the review of §706, note A).
+        /// §712-§713 (Elias's rulings of 2026-10-01, items 3 and 4): EVERY BALLOT OF ART. 63 IS A VOTE ON THE PERSON. "The 14-day ballot is a vote
+        /// on the person: signers vote for their nominee, and members choose among the nominated candidates" (item 3); "In every ballot, parties
+        /// vote for the nominee they prefer, never one they've declared against, and abstain if none is acceptable" (item 4).
+        /// - **Phase 1** (Art. 63 Abs. 1-2: "Der Bundeskanzler wird auf Vorschlag des Bundespräsidenten vom Bundestage ohne Aussprache gewählt.
+        ///   Gewählt ist, wer die Stimmen der Mehrheit der Mitglieder des Bundestages auf sich vereinigt."): the Bundespräsident's one candidate.
+        /// - **The fourteen days** (Abs. 3: "... so kann der Bundestag binnen vierzehn Tagen nach dem Wahlgange mit mehr als der Hälfte seiner
+        ///   Mitglieder einen Bundeskanzler wählen."): every nomination then standing (GO-BT § 4 Abs. 2, <see cref="FourteenDaysCandidates"/>).
+        /// Each party votes by the ballot's tally (<see cref="Tally"/>): a party bound by the tabled government (<see cref="Commitments"/>) for its
+        /// candidate; a nomination's own party and its signers for it; every other party for the nominee it prefers - the nearest - among those it
+        /// may vote for, abstaining where it may vote for none. A candidate with a majority of the members is elected and its government drawn
+        /// (<see cref="ElectedGovernment"/>). Not elected in phase 1, the fourteen days open; in them, every nomination in the ballot has stood
+        /// (§706: one ballot) and the days run out to the ballot the most votes win (Abs. 4). Before §713 phase 1 was the formateur's investiture
+        /// (its cabinet and supporters carrying it): a nominee the other parties would vote for was not elected for want of a formation.
         /// </summary>
-        private void FourteenDaysBallot(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
+        private void PersonBallot(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
         {
             Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
             int IndexOf(string key) { for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == key) { return p; } } return -1; }
             string player = country.PlayerPartyAbbrev;
+            bool firstPhase = round.Phase <= 1;
+            string abs = firstPhase ? "Abs. 2" : "Abs. 3";
             Dictionary<string, string> committed = Commitments(country, round, round.Proposal);
-            List<string> candidates = FourteenDaysCandidates(country, round, chamber, parties, round.Proposal, committed, out string how);
+            string how = "the Bundespräsident's proposal (Art. 63 Abs. 1 GG)";
+            List<string> candidates = firstPhase ? new List<string> { round.Proposal.Formateur } : FourteenDaysCandidates(country, round, chamber, parties, round.Proposal, committed, out how);
             Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> cast, committed);
             string leader = candidates[0];
             foreach (string c in candidates) { if (votes[c] > votes[leader]) { leader = c; } }
@@ -3288,27 +3274,36 @@ namespace PoliSim.Simulation
                 sides.Add(new DivisionSide { Abbrev = party, ShortName = parties[IndexOf(party)].ShortName, Seats = SeatsOf(country, party), Side = s, Alignment = s,
                     Reason = votedFor == null ? why : "votes for " + CandidateOf(country, round, votedFor) + " - " + why });
             }
-            string title = $"Chancellor's election (Art. 63 Abs. 3 GG): {string.Join(", ", tally)} - "
-                + (elected ? $"{CandidateOf(country, round, leader)} elected, a majority of the members" : $"no candidate elected ({majority} a majority of the members)");
+            string title = $"Chancellor's election (Art. 63 {abs} GG): {string.Join(", ", tally)} - "
+                + (elected ? $"{CandidateOf(country, round, leader)} elected, a majority of the members" : $"{(firstPhase ? "not elected" : "no candidate elected")} ({majority} a majority of the members)");
             country.Divisions.Append(title, CurrentDate, elected ? 1f : -1f, elected, 0f, (int)BillAxis.Fiscal, sides);
             country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: a ballot in the fourteen days (Art. 63 Abs. 3 GG) on the nominations standing ({how}): {string.Join(", ", tally)} - "
-                + (elected ? $"{CandidateOf(country, round, leader)} is elected with a majority of the members, {majority}" : $"none reaches a majority of the members, {majority}"));
+            round.Log.Add(firstPhase
+                ? $"{CurrentDate:yyyy-MM-dd}: the Bundestag votes on {CandidateOf(country, round, leader)}, the Bundespräsident's candidate (Art. 63 Abs. 2 GG): {votes[leader]} for - " + (elected ? $"elected, {majority} a majority of the members" : $"not elected, {majority} needed, a majority of the members")
+                : $"{CurrentDate:yyyy-MM-dd}: a ballot in the fourteen days (Art. 63 Abs. 3 GG) on the nominations standing ({how}): {string.Join(", ", tally)} - "
+                    + (elected ? $"{CandidateOf(country, round, leader)} is elected with a majority of the members, {majority}" : $"none reaches a majority of the members, {majority}"));
             Debug.Log($"SPEAKER: {country.Id} - {title}");
-            foreach (string c in candidates) { if (!round.StoodInPhase2.Contains(c)) { round.StoodInPhase2.Add(c); } }   // §706: each stood once in the fourteen days
+            if (!firstPhase) { foreach (string c in candidates) { if (!round.StoodInPhase2.Contains(c)) { round.StoodInPhase2.Add(c); } } }   // §706: each stood once in the fourteen days
             if (elected)
             {
                 Elections.FormationProposal government = ElectedGovernment(country, round, leader, round.Proposal, out Elections.ProposalVerdict verdict, out bool seatedByGroup);
                 if (government != null)
                 {
                     round.Proposal = government;
-                    Install(country, g, round, verdict, $"the chancellor's election {round.Occasion}: {CandidateOf(country, round, leader)} elected in the fourteen days with a majority of the members, {votes[leader]} (Art. 63 Abs. 3 GG)");
+                    Install(country, g, round, verdict, $"the chancellor's election {round.Occasion}: {CandidateOf(country, round, leader)} elected {(firstPhase ? "on the Bundespräsident's proposal" : "in the fourteen days")} with a majority of the members, {votes[leader]} (Art. 63 {abs} GG)");
                     if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {CandidateOf(country, round, leader)}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
                     return;
                 }
                 round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {CandidateOf(country, round, leader)} is elected, and no government can be drawn on its party; the round goes on");
             }
             round.Rejections++;
+            if (firstPhase)
+            {
+                // §705: the Bundespräsident's candidate not elected opens the fourteen days (Abs. 3)
+                round.Phase = 2;
+                round.SecondPhaseUntil = CurrentDate.AddDays(Elections.SpeakerRound.BundestagSecondPhaseDays);
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag has until {round.SecondPhaseUntil:yyyy-MM-dd} to elect a chancellor with a majority of its members (Art. 63 Abs. 3 GG)");
+            }
             if (CurrentDate > round.SecondPhaseUntil) { PluralityBallot(country, g, round); return; }
             AskNext(country, round);
         }
@@ -3328,18 +3323,18 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// §712 (the review's defect 4): what a proposal the player would table faces in the Bundestag's ballot in the fourteen days - the same
-        /// nominations, the same tally and the same commitments the ballot itself reads (<see cref="FourteenDaysBallot"/>): the votes for its
-        /// formateur's candidate, for every other candidate, and the majority of the members. False outside a Bundestag round in the fourteen days.
+        /// nominations, the same tally and the same commitments the ballot itself reads (<see cref="PersonBallot"/>, §713: in phase 1 the Bundespräsident's one candidate): the votes for its
+        /// formateur's candidate, for every other candidate, and the majority of the members. §713: in phase 1 the Bundespräsident's one candidate; false outside a Bundestag round.
         /// </summary>
         public bool ProjectPersonBallot(CountryId countryId, Elections.FormationProposal proposal, out int forCandidate, out int forOthers, out int majority)
         {
             forCandidate = forOthers = majority = 0;
             Country country = _world?.GetCountry(countryId);
             Elections.SpeakerRound round = RoundOf(countryId);
-            if (country == null || round == null || proposal == null || !IsBundestagRound(round) || round.Phase < 2) { return false; }
+            if (country == null || round == null || proposal == null || !IsBundestagRound(round)) { return false; }
             Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
             Dictionary<string, string> committed = Commitments(country, round, proposal);
-            List<string> candidates = FourteenDaysCandidates(country, round, chamber, parties, proposal, committed, out string _);
+            List<string> candidates = round.Phase <= 1 ? new List<string> { proposal.Formateur } : FourteenDaysCandidates(country, round, chamber, parties, proposal, committed, out string _);
             Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> _, committed);
             foreach (KeyValuePair<string, int> kv in votes) { if (kv.Key == proposal.Formateur) { forCandidate = kv.Value; } else { forOthers += kv.Value; } }
             majority = MajorityOf(country);
@@ -3417,10 +3412,17 @@ namespace PoliSim.Simulation
         /// - the most votes elect, a tie to the earlier in the order.
         /// The elected candidate's government is its party's draft with every invited partner accepting - the player's party never drafted in unasked
         /// (the review's defect 2: the player auto-accepts, so an AI draft could seat it, even after a pass) - else its party and group alone; the
-        /// player's own candidate stands on its party and group alone, the partners it never tabled not drafted for it. Elected with a majority of the
-        /// members the Bundespräsident must appoint (Satz 2); short of it he "hat ... entweder ihn zu ernennen oder den Bundestag aufzulösen" (Satz 3)
-        /// - [AUTHORED-DRAFT] the game takes the appointment (the choice is the Bundespräsident's, none has faced it, and a dissolution's election is
-        /// not modelled), and the division's title says it is the game's premise.
+        /// player's own candidate stands on its party and group alone, the partners it never tabled not drafted for it.
+        /// §713 (Elias's ruling of 2026-10-01, item 4: "The final ballot follows Art. 63(4) as written, with the premise for the President's choice
+        /// stated"). Art. 63 Abs. 4 Satz 2-3 GG, as written: "Vereinigt der Gewählte die Stimmen der Mehrheit der Mitglieder des Bundestages auf sich,
+        /// so muß der Bundespräsident ihn binnen sieben Tagen nach der Wahl ernennen. Erreicht der Gewählte diese Mehrheit nicht, so hat der
+        /// Bundespräsident binnen sieben Tagen entweder ihn zu ernennen oder den Bundestag aufzulösen." With a majority the appointment is the
+        /// article's; without one the choice is the Bundespräsident's, and **THE PREMISE FOR HIS CHOICE, STATED [AUTHORED-DRAFT]: he appoints.**
+        /// Why: no Bundespräsident has faced the choice, so no record decides it; and a dissolution calls a new election within sixty days (Art. 39
+        /// Abs. 1 Satz 4 GG), which is not modelled for Germany. He appoints at once, inside the seven days - as the record's chancellors were appointed
+        /// on the day of their election (Merz, 6 May 2025 [BT-KW25]). The premise is on the division's title, the round's log and the government's basis.
+        /// In every ballot (item 4) each party votes for the nominee it prefers among those it may vote for, never one it has declared against
+        /// (`Tally`) - the reading taken: "acceptable" keeps the model's derived lines too, so a party never votes across a line the model derives.
         /// </summary>
         private void PluralityBallot(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
         {
@@ -3456,7 +3458,7 @@ namespace PoliSim.Simulation
                     Reason = votedFor == null ? why : "votes for " + CandidateOf(country, round, votedFor) + " - " + why });
             }
             string title = $"Chancellor's election (Art. 63 Abs. 4 GG): {candidate} - elected with the most votes, {votes[winner]}"
-                + (absolute ? ", a majority of the members" : ", short of a majority - appointed, not dissolved (the game's premise)");
+                + (absolute ? ", a majority of the members - the Bundespräsident must appoint within seven days (Satz 2)" : ", short of a majority - appointed within seven days, not dissolved (Satz 3: the choice is the Bundespräsident's; the premise for it stated, the game's)");
             country.Divisions.Append(title, CurrentDate, 1f, true, 0f, (int)BillAxis.Fiscal, sides);
             country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
 
@@ -3475,11 +3477,11 @@ namespace PoliSim.Simulation
             var tally = new List<string>();
             foreach (string c in candidates) { tally.Add(c + " " + votes[c]); }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the fourteen days pass; in the ballot the most votes win ({string.Join(", ", tally)}), {candidate} is elected with {votes[winner]} ({majority} a majority of the members)"
-                + (absolute ? " - the Bundespräsident must appoint (Art. 63 Abs. 4 Satz 2 GG)" : " - short of a majority, the Bundespräsident appoints rather than dissolve the Bundestag (Art. 63 Abs. 4 Satz 3 GG; the game's premise)"));
+                + (absolute ? " - the Bundespräsident must appoint him within seven days (Art. 63 Abs. 4 Satz 2 GG) and does so at once" : " - short of a majority, the Bundespräsident has seven days to appoint him or dissolve the Bundestag (Art. 63 Abs. 4 Satz 3 GG); the premise for his choice, stated: he appoints, at once - no Bundespräsident has faced the choice, and a dissolution's new election (Art. 39 Abs. 1 Satz 4 GG) is not modelled for Germany"));
             Debug.Log($"SPEAKER: {country.Id} - {title}; the tally {string.Join(", ", tally)}");
             Install(country, g, round, verdict, absolute
                 ? $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, a majority of the members (Art. 63 Abs. 4 Satz 2 GG)"
-                : $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, short of a majority, and appointed - the game's premise, not a dissolution (Art. 63 Abs. 4 Satz 3 GG)");
+                : $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, short of a majority, and appointed within the seven days rather than the Bundestag dissolved - the premise for the Bundespräsident's choice, stated (Art. 63 Abs. 4 Satz 3 GG)");
             // the review's fourth pass (E): the rule that seated the player's party is on the government it sits in, where the desk reads it
             if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {candidate}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
         }
@@ -3765,7 +3767,7 @@ namespace PoliSim.Simulation
             Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             // §712 (the review's defect 2): in the fourteen days the ballot decides, not the investiture - the government without the player is tabled
             // where every invited party accepts it and it splits no group, and its candidate meets the nominations standing
-            bool personBallot = IsBundestagRound(round) && round.Phase >= 2;
+            bool personBallot = IsBundestagRound(round);   // §713: every phase
             if (verdict != null && (personBallot ? verdict.AllAccept && verdict.Investiture != null && !verdict.Investiture.SplitsJointGroup : verdict.Passes)) { TableAndVote(country, round, without); return true; }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - {(IsBundestagRound(round) ? "the next party in the order stands its candidate" : "the Speaker moves on")}");
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Asked)) { round.StoodInPhase2.Add(round.Asked); }   // §706: its nomination has had its turn

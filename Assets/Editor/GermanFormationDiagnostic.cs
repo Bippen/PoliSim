@@ -117,7 +117,7 @@ namespace PoliSim.EditorTools
                     + (outgoing.Breaks.Count > 0 ? outgoing.Breaks[outgoing.Breaks.Count - 1] : "no break recorded"));
                 Check(elected != outgoing && !r1.Open && Sorted(elected.Cabinet) == Sorted(new List<string> { "CDU", "CSU", "SPD" }) && elected.PmParty == "CDU" && elected.FormedOn == new DateTime(2025, 3, 25)
                       && (elected.Basis ?? string.Empty).Contains("Art. 63 Abs. 2") && ballot != null && ballot.Motion && ballot.Passed
-                      && ballot.Title.StartsWith("Chancellor's election (Art. 63 Abs. 2 GG): Friedrich Merz (CDU)", StringComparison.Ordinal) && ballot.Title.EndsWith("- elected", StringComparison.Ordinal) && forSeats >= 328,
+                      && ballot.Title.StartsWith("Chancellor's election (Art. 63 Abs. 2 GG): Friedrich Merz (CDU)", StringComparison.Ordinal) && ballot.Title.Contains("Friedrich Merz (CDU) elected, a majority of the members") && forSeats >= 328,   // §713: phase 1 a vote on the person
                     F("(d) {0:yyyy-MM-dd}: '{1}' - {2} for, 316 needed; {3} takes office led by {4} ({5})", s1.CurrentDate, ballot?.Title ?? "no ballot", forSeats, string.Join("+", elected.Cabinet), elected.PmParty, elected.Basis));
                 // The record's chancellor was elected on 6 May 2025, after 72 days of coalition talks; the game's formateur consults for seven days
                 // (premise 7), so its chancellor is elected on the convening day - a readout of the premise, not a claim about the talks.
@@ -174,7 +174,7 @@ namespace PoliSim.EditorTools
                 bool sincere = last != null && last.Sides.Exists(s => (s.Reason ?? string.Empty).Contains("the game's premise: sincere votes"));
                 Check(pluralityOn == new DateTime(2025, 4, 9) && !r3.Open && appointed != outgoing3 && last != null
                       && last.Title.StartsWith("Chancellor's election (Art. 63 Abs. 4 GG): Robert Habeck (Grune) - elected with the most votes, 269", StringComparison.Ordinal)
-                      && last.Title.Contains("appointed, not dissolved (the game's premise)") && last.Sides.TrueForAll(s => !string.IsNullOrEmpty(s.Reason))
+                      && last.Title.Contains("appointed within seven days, not dissolved (Satz 3") && last.Sides.TrueForAll(s => !string.IsNullOrEmpty(s.Reason))
                       && appointed.PmParty == "Grune" && appointed.Cabinet.Contains("Grune") && (appointed.Basis ?? string.Empty).Contains("Art. 63 Abs. 4 Satz 3"),
                     F("(e) {0:yyyy-MM-dd}, the day after: '{1}'; {2} takes office led by {3} - every side carries its reason ({4})", pluralityOn ?? DateTime.MinValue, last?.Title ?? "no ballot",
                         string.Join("+", appointed.Cabinet), appointed.PmParty, sincere ? "sincere votes" : "NOT STATED"));
@@ -272,6 +272,29 @@ namespace PoliSim.EditorTools
                       && g7.Government.PmParty == "CDU" && Sorted(g7.Government.Cabinet) == Sorted(new List<string> { "CDU", "CSU", "SPD" }) && (g7.Government.Basis ?? string.Empty).Contains("Art. 63 Abs. 3"),
                     F("(e4) §712: the CDU passes the Bundespräsident's proposal, is asked first in the fourteen days, tables {0} and is elected on the persons' ballot - '{1}'; the SPD: {2}",
                         string.Join("+", g7.Government.Cabinet), persons7?.Title ?? "no ballot", persons7?.Sides.Find(s => s.Abbrev == "SPD")?.Reason ?? "no side"));
+
+                // (e5) §713 (item 4: "In every ballot, parties vote for the nominee they prefer, never one they've declared against, and abstain if none is
+                // acceptable"): the CDU refuses the SPD and the Greens as partners (one-way, planted), so its draft is CDU+CSU alone - a minority. In phase 1
+                // the Bundestag votes on the PERSON: the SPD has declared nothing against the CDU, prefers Merz to no one, and votes for him; he is
+                // elected on the Bundespräsident's proposal with a majority of the members, and CDU+CSU governs. Before §713 phase 1 was the formation's
+                // investiture, and a minority formation could not carry it.
+                (SimulationManager s8, Country g8) = Open(hosts, "Linke", table25, poll25);
+                g8.ElectionHistory.Add(new ElectionRecord { Date = poll25, CountryId = CountryId.Germany.ToString(), Method = ElectionMethod.GermanyNationalProportional });
+                Days(s8, 1);
+                SpeakerRound r8 = s8.RoundOf(CountryId.Germany);
+                r8?.Refusals.AddRange(new[] { "CDU>SPD", "CDU>Grune" });
+                for (int d = 0; d < 120 && r8 != null && r8.Open; d++)
+                {
+                    if (r8.Stage == RoundStage.PlayerAsked) { s8.PassFormation(CountryId.Germany, out string _); }
+                    else if (r8.Stage == RoundStage.OfferToPlayer) { s8.AnswerOffer(CountryId.Germany, false, out string _); }
+                    Days(s8, 1);
+                }
+                DivisionRecord first8 = g8.Divisions.Entries.Find(e => e.Title.StartsWith("Chancellor's election (Art. 63 Abs. 2 GG)", StringComparison.Ordinal));
+                DivisionSide spd8 = first8?.Sides.Find(s => s.Abbrev == "SPD");
+                Check(first8 != null && first8.Title.Contains("Friedrich Merz (CDU) elected") && spd8 != null && spd8.Side > 0 && !g8.Government.Cabinet.Contains("SPD")
+                      && Sorted(g8.Government.Cabinet) == Sorted(new List<string> { "CDU", "CSU" }) && g8.Government.PmParty == "CDU",
+                    F("(e5) §713: phase 1 is a vote on the person - the CDU's draft is CDU+CSU alone, and the SPD, outside it, votes for Merz ({0}); '{1}'; {2} governs",
+                        spd8?.Reason ?? "no side", first8?.Title ?? "no ballot", string.Join("+", g8.Government.Cabinet)));
 
                 // (f) the reference: the real result and the government that formed
                 bool hasRef = WorldClock.TryReference(CountryId.Germany, poll25, out WorldClock.Reference reference);
