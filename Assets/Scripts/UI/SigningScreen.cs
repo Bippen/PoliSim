@@ -373,6 +373,10 @@ namespace PoliSim.UI
             // 2b. The stances - P3-A3 (2026-09-03): every party's side with the reason the model gave it, as the vote
             // was (the record carries the alignment and the reason since this row); drawn structurally until D12.
             Transform stances = PlatePanel(plate.transform, "Stances", 1.6f, 240f);   // P3 close: the column shrank under the images at 1280 and every AGAINST row wrapped (canvas clip 89d/89e); the minimum holds the longest row
+            // §718 (found filming the ceremony at last - item 9's seam lines): with Sweden's eight parties the column's seventeen texts, centred, ran
+            // past the plate's two rules and up into the bill's title (89e had shown it since P3; 89 now too). Its rows sit 1 unit apart, not the
+            // plates' 4 - the 48 px it frees at 1280 hold the column inside the band; the other panels keep their spacing.
+            stances.GetComponent<VerticalLayoutGroup>().spacing = StanceRowSpacing;
             PlateCaption(stances, "THE STANCES");   // P3 close: the longer captions wrapped at 1280 (canvas clip 89d/89e); the row says party · seats · side · alignment
             // ⚠ ONE STATEMENT, ONE ROW (§432, found by filming Italy). The column was sized on Sweden's eight parties,
             // two texts each; Italy seats fourteen, eight of which say the identical thing - UNDECIDED +0.00, "no
@@ -439,6 +443,9 @@ namespace PoliSim.UI
                 PlateCaption(estimate, "no estimate travelled with this division - no preview was held for its turn, or it predates the arrows");
             }
         }
+
+        /// <summary>§718: the stance column's rows' spacing, in canvas units - tighter than a plate panel's 4 so Sweden's seventeen texts stay between the rules.</summary>
+        private const float StanceRowSpacing = 1f;
 
         private static Transform PlatePanel(Transform parent, string name, float weight, float minWidth = 0f)
         {

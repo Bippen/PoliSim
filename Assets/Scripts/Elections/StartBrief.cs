@@ -40,6 +40,17 @@ namespace PoliSim.Elections
         /// <summary>The chamber's name as the cards and the ledger say it: Riksdag, Bundestag, Sejm, Camera, House, Assemblée.</summary>
         public static string ChamberOf(CountryId id) => ChamberName.TryGetValue(id, out string name) ? name : "chamber";
 
+        private static readonly Dictionary<CountryId, string> ChamberFullName = new Dictionary<CountryId, string>
+        {
+            { CountryId.Sweden, "Riksdag" }, { CountryId.Germany, "Bundestag" }, { CountryId.Poland, "Sejm" },
+            { CountryId.Italy, "Camera dei deputati" }, { CountryId.USA, "House of Representatives" }, { CountryId.France, "Assemblée nationale" },
+        };
+
+        /// <summary>§718 (Elias's ruling of 2026-10-01, item 9: the chamber names per country): the chamber's full name, as a page's caption names it -
+        /// the Riksdag, the Bundestag, the Sejm, the Camera dei deputati, the House of Representatives, the Assemblée nationale (the Politics screen's
+        /// caption said THE NATIONAL ASSEMBLY for all six).</summary>
+        public static string ChamberFullOf(CountryId id) => ChamberFullName.TryGetValue(id, out string name) ? name : ChamberOf(id);
+
         /// <summary>The chamber's largest party and its seats - a presidential brief's second half (PS-3b, §629).</summary>
         private static (string party, int seats) Majority(Dictionary<string, int> seats)
         {

@@ -468,7 +468,7 @@ namespace PoliSim.UI
                     rowRect,
                     party.Name,
                     totalSeats > 0 ? count / (float)totalSeats : -1f,
-                    count.ToString(CultureInfo.InvariantCulture) + " seats",
+                    UiFormat.Seats(count),   // §718: "1 seat"
                     percent.ToString("F0", CultureInfo.InvariantCulture) + "%",
                     PoliSimTheme.PartyLaddered(country, party.Abbrev),
                     labelStyle,

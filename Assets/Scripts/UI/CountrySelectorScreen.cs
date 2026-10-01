@@ -98,11 +98,18 @@ namespace PoliSim.UI
             // P6-A2: the scenario controls are faces now, not lines, so the block is taller by the face's
             // padding and starts correspondingly higher. ⚠ The grid below is anchored to the centre and did
             // not move; the block grows into the gap above it, not into it.
-            titleRect.anchoredPosition = new Vector2(0f, -40f);
-            titleRect.sizeDelta = new Vector2(0f, 172f);
+            // §718 (Elias's ruling of 2026-10-01, item 9: the scenario buttons' spacing): the block was a fixed 172 units from 40 down while its
+            // content - the wordmark, the rules, the subtitle and one faced line PER scenario - came to 181 with two scenarios, so it ran into the
+            // grid, which is anchored to the CENTRE (its top 192 units down on the 1064-unit canvas of the 1280x699 window). The scenarios now share
+            // ONE row (up to ScenarioStripColumns), the block is exactly its content's height and starts 28 down: one row ends 167 down, 25 clear of
+            // the grid at 1064 and 33 at the reference 1080. The film measures the clearance (UiScreenshotDriver, 01_country_selector).
+            int scenarioRows = scenarios != null && onScenario != null && scenarios.Count > 0 ? (scenarios.Count + ScenarioStripColumns - 1) / ScenarioStripColumns : 0;
+            titleRect.anchoredPosition = new Vector2(0f, -TitleTop);
+            titleRect.sizeDelta = new Vector2(0f, WordmarkMinHeight + TitleSpacing + 1f + TitleSpacing + SubtitleMinHeight
+                + (scenarioRows > 0 ? TitleSpacing + scenarioRows * ScenarioButtonHeight + (scenarioRows - 1) * TitleSpacing : 0f));
             VerticalLayoutGroup titleLayout = title.AddComponent<VerticalLayoutGroup>();
             titleLayout.childAlignment = TextAnchor.UpperCenter;
-            titleLayout.spacing = 8f;
+            titleLayout.spacing = TitleSpacing;
             titleLayout.childControlHeight = true;
             titleLayout.childControlWidth = true;
             titleLayout.childForceExpandHeight = false;
@@ -127,11 +134,24 @@ namespace PoliSim.UI
             // and a scenario is a different KIND of start (it brings its own country), so it reads as
             // its own line rather than as a seventh peer. The strip is built from the library, so the
             // slate growing from one to six adds lines here with no layout edit.
-            if (scenarios != null && onScenario != null)
+            if (scenarioRows > 0)
             {
+                // §718: one strip, the scenarios side by side and centred, a new row only past ScenarioStripColumns
+                var strip = new GameObject("ScenarioStrip");
+                strip.transform.SetParent(title.transform, false);
+                strip.AddComponent<RectTransform>();
+                GridLayoutGroup stripLayout = strip.AddComponent<GridLayoutGroup>();
+                stripLayout.cellSize = new Vector2(ScenarioButtonWidth, ScenarioButtonHeight);
+                stripLayout.spacing = new Vector2(ScenarioStripGap, TitleSpacing);
+                stripLayout.childAlignment = TextAnchor.UpperCenter;
+                stripLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                stripLayout.constraintCount = Mathf.Min(ScenarioStripColumns, scenarios.Count);
+                LayoutElement stripSize = strip.AddComponent<LayoutElement>();
+                stripSize.preferredWidth = stripSize.minWidth = stripLayout.constraintCount * ScenarioButtonWidth + (stripLayout.constraintCount - 1) * ScenarioStripGap;
+                stripSize.preferredHeight = stripSize.minHeight = scenarioRows * ScenarioButtonHeight + (scenarioRows - 1) * TitleSpacing;
                 foreach (ScenarioDefinition definition in scenarios)
                 {
-                    BuildScenarioLine(title.transform, definition, onScenario);
+                    BuildScenarioLine(strip.transform, definition, onScenario);
                 }
             }
 
@@ -852,6 +872,21 @@ namespace PoliSim.UI
 
         /// <summary>See <see cref="ScenarioButtonWidth"/>.</summary>
         private const float ScenarioButtonHeight = 34f;
+
+        /// <summary>§718: the scenarios on one row, up to this many; the slate is two today, three fit the grid's 1680 width.</summary>
+        private const int ScenarioStripColumns = 3;
+
+        /// <summary>§718: the gap between two scenario faces on the strip, in canvas units.</summary>
+        private const float ScenarioStripGap = 24f;
+
+        /// <summary>§718: the title block's top, in canvas units below the canvas's top.</summary>
+        private const float TitleTop = 28f;
+
+        /// <summary>§718: the title block's children's spacing, in canvas units (P6-A2's 8).</summary>
+        private const float TitleSpacing = 8f;
+
+        /// <summary>§718: the least clearance between the scenario strip and the folder grid the film accepts, in canvas units.</summary>
+        public const float MinScenarioClearance = 16f;
 
         /// <summary>
         /// One scenario line, on the chrome's own brass face (P6-A2, 2026-09-17).

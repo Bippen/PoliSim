@@ -660,8 +660,8 @@ namespace PoliSim.UI
 
         private void Start()
         {
-            // §568 (2026-09-22, Design's drift row D1): THE DESK'S ONE NUMBER LOCALE, before anything draws - the machine's culture with the invariant number format,
-            // so a figure interpolated into a string reads the same as one through UiFormat. Dates keep the machine's culture: the calendar sheet is drawn from it.
+            // §568, §718 (Elias's ruling of 2026-10-01, item 9): ONE FIXED ENGLISH CULTURE for all dates and numbers, before anything draws - en-GB's names and
+            // calendar with the invariant number format, whatever the machine's; the calendar sheet reads JAN and MON on every machine (it read JAN. and MÅN on sv-SE).
             UiCulture.Install();
             SetupCameraBackground();
 
@@ -7611,9 +7611,11 @@ namespace PoliSim.UI
                 case PoliticsCategory.Parliament:
                     int seats = 0;
                     foreach (KeyValuePair<string, int> kvp in _playerCountry.ParliamentSeats) { seats += kvp.Value; }
-                    return $"THE NATIONAL ASSEMBLY — {seats} SEATS";
-                case PoliticsCategory.Compass: return "THE POLITICAL COMPASS — SIX COUNTRIES, LIVE";
-                case PoliticsCategory.Cabinet: return "THE CABINET — THREE PORTFOLIOS, LIVE";
+                    // §718 (Elias's ruling of 2026-10-01, item 9): the chamber by its own name, the counts from data - it read THE NATIONAL ASSEMBLY for all six
+                    // chambers, SIX COUNTRIES and THREE PORTFOLIOS as literals (the cabinet page draws all six portfolios since R4-4)
+                    return $"THE {StartBrief.ChamberFullOf(PlayerCountryId).ToUpperInvariant()} — {UiFormat.Seats(seats).ToUpperInvariant()}";
+                case PoliticsCategory.Compass: return $"THE POLITICAL COMPASS — {UiFormat.CountWord(_simulationManager.World.Countries.Count)} COUNTRIES, LIVE";
+                case PoliticsCategory.Cabinet: return $"THE CABINET — {UiFormat.CountWord(System.Enum.GetValues(typeof(CabinetPortfolio)).Length)} PORTFOLIOS, LIVE";
                 default: return $"{GetCentralBankName(PlayerCountryId).ToUpperInvariant()} — LIVE";
             }
         }
@@ -9658,7 +9660,7 @@ namespace PoliSim.UI
             Rect rowRect = GUILayoutUtility.GetRect(contentWidth, LedgerRow.Height(_labelStyle), GUILayout.Width(contentWidth));
             float sideWidth = Mathf.Max(0f, rowRect.width * 0.28f);
             LedgerRow.Cell(new Rect(rowRect.x, rowRect.y, rowRect.width - sideWidth, rowRect.height),
-                $"{name} - {seats} seats", _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+                $"{name} - {UiFormat.Seats(seats)}", _labelStyle, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             LedgerRow.Cell(new Rect(rowRect.x + rowRect.width - sideWidth, rowRect.y, sideWidth, rowRect.height),
                 side, _labelStyle, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
         }

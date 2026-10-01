@@ -89,7 +89,7 @@ namespace PoliSim.UI
             {
                 CompassPositions.Point? mean = CompassPositions.ChamberMean(country, out int leftOut);
                 string tail = mean.HasValue
-                    ? string.Format(CultureInfo.InvariantCulture, "{0} · {1} seats{2}", Pair(mean.Value), mean.Value.Seats, leftOut > 0 ? string.Format(CultureInfo.InvariantCulture, " ({0} publish no pair)", leftOut) : string.Empty)
+                    ? string.Format(CultureInfo.InvariantCulture, "{0} · {1}{2}", Pair(mean.Value), UiFormat.Seats(mean.Value.Seats), leftOut > 0 ? string.Format(CultureInfo.InvariantCulture, " ({0} publish no pair)", leftOut) : string.Empty)
                     : "no seated party publishes a pair";
                 lines.Add(new LegendLine($"{country.Name}{(ReferenceEquals(country, player) ? " (ringed)" : string.Empty)}  {tail}", UiPalette.GetCountryColor(country.Id), false, false));
             }
@@ -107,7 +107,7 @@ namespace PoliSim.UI
                 }
                 else
                 {
-                    string tail = cabinetMean.HasValue ? string.Format(CultureInfo.InvariantCulture, "{0} · {1} seats", Pair(cabinetMean.Value), cabinetMean.Value.Seats) : "no member publishes a pair";
+                    string tail = cabinetMean.HasValue ? string.Format(CultureInfo.InvariantCulture, "{0} · {1}", Pair(cabinetMean.Value), UiFormat.Seats(cabinetMean.Value.Seats)) : "no member publishes a pair";
                     lines.Add(new LegendLine($"{string.Join("+", cabinet)}  {tail}", UiPalette.GetCountryColor(player.Id), true, false));
                 }
 

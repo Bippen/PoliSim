@@ -434,11 +434,7 @@ namespace PoliSim.UI
             }
         }
 
-        private static string Words(int n)
-        {
-            string[] words = { "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE" };
-            return n >= 0 && n < words.Length ? words[n] : n.ToString(CultureInfo.InvariantCulture);
-        }
+        private static string Words(int n) => UiFormat.CountWord(n);   // §718: the one rule, shared with the captions
 
         private static bool IsTarget(PolicyNodeId lever, StatNodeId stat, Country country)
         {

@@ -229,8 +229,8 @@ namespace PoliSim.Testing
                 var culture = new System.Globalization.CultureInfo(Locale);
                 System.Globalization.CultureInfo.DefaultThreadCurrentCulture = culture;
                 System.Threading.Thread.CurrentThread.CurrentCulture = culture;
-                // §568: the desk's own number locale rides on top of the requested one, exactly as it does in the game - so -shotlocale= moves the DATE names and
-                // proves the numbers do not move with them.
+                // §718: the game's one fixed English culture replaces the requested one, exactly as it does over a machine's - so -shotlocale= plays a foreign
+                // machine and proves NOTHING moves with it, dates or numbers (§568 had kept the dates in the requested culture).
                 UiCulture.Install();
                 Debug.Log($"SHOT: thread culture overridden to {Locale}.");
             }
@@ -330,6 +330,7 @@ namespace PoliSim.Testing
             Claim("selector");
             yield return Capture("01_country_selector");
             RecordCanvasTextAssert("01_country_selector", controller);
+            AssertSelectorClearance();
 
             try
             {
@@ -2061,6 +2062,31 @@ namespace PoliSim.Testing
         private readonly HashSet<string> _expectedFrames = new HashSet<string>();
         private readonly HashSet<string> _capturedFrames = new HashSet<string>();
         private void Expect(params string[] frames) { foreach (string f in frames) { _expectedFrames.Add(f); } }
+
+        /// <summary>§718 (Elias's ruling of 2026-10-01, item 9: the scenario buttons' spacing): on the built selector, the scenario strip's bottom
+        /// stands at least <see cref="CountrySelectorScreen.MinScenarioClearance"/> canvas units above the highest thing drawn in the folder grid (a
+        /// folder's tab included) - the gap the fixed 172-unit block had closed to nothing on the 1280x699 window. An error, counted, when it does not.</summary>
+        private static void AssertSelectorClearance()
+        {
+            GameObject strip = GameObject.Find("ScenarioStrip"), grid = GameObject.Find("Folders");
+            if (strip == null || grid == null) { Debug.LogError($"SHOT: 01_country_selector - no {(strip == null ? "ScenarioStrip" : "Folders")} live on the selector; the scenarios' clearance is NOT measured."); return; }
+            Canvas canvas = strip.GetComponentInParent<Canvas>();
+            float scale = canvas != null && canvas.scaleFactor > 0f ? canvas.scaleFactor : 1f;
+            var corners = new Vector3[4];
+            ((RectTransform)strip.transform).GetWorldCorners(corners);
+            float stripBottom = corners[0].y;
+            float gridTop = float.MinValue;
+            foreach (RectTransform drawn in grid.GetComponentsInChildren<RectTransform>())
+            {
+                if (drawn.gameObject == grid) { continue; }
+                drawn.GetWorldCorners(corners);
+                gridTop = Mathf.Max(gridTop, corners[1].y);
+            }
+            float clearance = (stripBottom - gridTop) / scale;
+            string line = string.Format(CultureInfo.InvariantCulture, "SHOT: 01_country_selector - the scenario strip clears the folder grid by {0:0.0} canvas units at {1}x{2} (scale {3:0.000}; the floor {4:0})",
+                clearance, Screen.width, Screen.height, scale, CountrySelectorScreen.MinScenarioClearance);
+            if (clearance < CountrySelectorScreen.MinScenarioClearance) { Debug.LogError(line + " - TOO CLOSE."); } else { Debug.Log(line + "."); }
+        }
 
         /// <summary>
         /// Waits until the takeover seam is settled in the REQUESTED state: <paramref name="wantActive"/>
@@ -3921,20 +3947,46 @@ namespace PoliSim.Testing
                 }
             }
 
+            // PF-12 (§598): THE FILM'S OWN COUNTRY, BACK. The Italy scenario above seats Italy (StartScenario → SelectPlayerCountry), and Italy has no regional
+            // count, so the night's pin looked for Sweden's night in Italy's game and logged "Sweden showed no election night" - the name was the film's, the country
+            // was not. The pin puts the film's country back the way the scenario took it away, and clears the finished scenarios so no verdict screen
+            // stands over what follows. §718 (Elias's ruling of 2026-10-01, item 9: the signing screen's seam lines): it stood AFTER the signing ceremony, so
+            // since §598 the ceremony was asked of Italy's game - whose division log held nothing to sign - and every real film logged two "canvas seam never
+            // settled" lines at 89_signing_document and 89c_signing_rejected and captured the budget page under the ceremony's name. It now stands before it.
+            var seatedField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (seatedField?.GetValue(controller) is Country seated && seated.Id != _countryId)
+            {
+                Debug.Log($"SHOT: PF-12 - the scenarios left {seated.Id} seated; the signing and election pins seat {_countryId} again, the scenario's own way.");
+                InvokeOneArg(controller, "SelectPlayerCountry", _countryId);
+            }
+            // SetPrivateField type-checks the VALUE, so it refuses a null; the three fields are written directly
+            foreach ((string name, object value) in new (string, object)[] { ("_scenario", null), ("_scenarioProgress", null), ("_scenarioVerdictPending", false) })
+            {
+                FieldInfo scenarioField = controller.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (scenarioField != null) { scenarioField.SetValue(controller, value); }
+                else { Debug.LogError($"SHOT: PF-12 - the controller has no {name}; the finished scenarios are NOT cleared before the signing and election pins."); }
+            }
+            // §718: the country seated again, read again - a seat re-taken may open its own book, and `player` above is the one the film began with
+            Country filmed = seatedField?.GetValue(controller) as Country ?? player;
+
             // --- E2. THE SIGNING CEREMONY (Canvas screen 2) — pinned via the controller's own queue
             // method (ceremonies fire only from play's day tick, never from harness sim-advances, so
             // this pass stays clean; TriggerSigningForNewestDivision fills the same queue the day
             // tick fills). SignPendingDivision is the SIGN button's own method — the reflection call
-            // exits the screen exactly like a click, the selector's idiom.
+            // exits the screen exactly like a click, the selector's idiom. §718: the passed division is
+            // staged with content, as 89c's rejected one is - the film's own country's book may hold none.
+            StageDivisionWithContent(filmed, sim, "Harness Test Bill (staged for the signing capture)", 30f, passed: true);
             InvokeNoArg(controller, "TriggerSigningForNewestDivision");
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
+            Claim("signing");   // §718: the ceremony is filmed now - before it, these frames showed the budget page and claimed nothing
             yield return Capture("89_signing_document");
             RecordCanvasTextAssert("89_signing_document", controller);
 
             InvokeNoArg(controller, "SignPendingDivision");
             yield return null;
             yield return null;
+            Claim("signing");   // §718: the seal mid-beat, still the signing board
             yield return Capture("89a_signing_yielding");
 
             yield return WaitForCanvasSettle(controller, wantActive: false);
@@ -3949,10 +4001,11 @@ namespace PoliSim.Testing
             // (the same DivisionLog.Append every real resolution goes through) to pin the branch the
             // fix actually changed — the election win/loss pair's own precedent for a binary outcome
             // that must not go unpinned by chance.
-            StageDivisionWithContent(player, sim, "Harness Test Bill (injected for rejected-signing coverage)", -30f, passed: false);   // P2-4.3: with sides and an estimate
+            StageDivisionWithContent(filmed, sim, "Harness Test Bill (injected for rejected-signing coverage)", -30f, passed: false);   // P2-4.3: with sides and an estimate; §718 the seated country's
             InvokeNoArg(controller, "TriggerSigningForNewestDivision");
             yield return WaitForCanvasSettle(controller, wantActive: true);
             yield return Settle();
+            Claim("signing");   // §718
             yield return Capture("89c_signing_rejected");
             RecordCanvasTextAssert("89c_signing_rejected", controller);
 
@@ -3964,24 +4017,7 @@ namespace PoliSim.Testing
             // P2-0.2 (2026-09-02): the approval-threshold reveal this block used to force (a WIN and a LOSS
             // frame by writing approval) is retired with the rule. The election is election night's count
             // and the office verdict on its foot; a country without a live vote model shows no screen, and
-            // this says so rather than filming the desk under the night's name (S-20).
-            // PF-12 (§598): THE FILM'S OWN COUNTRY, BACK. The Italy scenario above seats Italy (StartScenario → SelectPlayerCountry), and Italy has no regional
-            // count, so this pin looked for Sweden's night in Italy's game and logged "Sweden showed no election night" - the name was the film's, the country
-            // was not. The pin now puts the film's country back the way the scenario took it away, and clears the finished scenarios so no verdict screen
-            // stands over the takeover.
-            var seatedField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (seatedField?.GetValue(controller) is Country seated && seated.Id != _countryId)
-            {
-                Debug.Log($"SHOT: PF-12 - the scenarios left {seated.Id} seated; the election pin seats {_countryId} again, the scenario's own way.");
-                InvokeOneArg(controller, "SelectPlayerCountry", _countryId);
-            }
-            // SetPrivateField type-checks the VALUE, so it refuses a null; the three fields are written directly
-            foreach ((string name, object value) in new (string, object)[] { ("_scenario", null), ("_scenarioProgress", null), ("_scenarioVerdictPending", false) })
-            {
-                FieldInfo scenarioField = controller.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
-                if (scenarioField != null) { scenarioField.SetValue(controller, value); }
-                else { Debug.LogError($"SHOT: PF-12 - the controller has no {name}; the finished scenarios are NOT cleared before the election pin."); }
-            }
+            // this says so rather than filming the desk under the night's name (S-20). The film's own country was seated again before the signing (PF-12, §718).
             if (AdvanceToElectionTurn(sim, noDecisions))
             {
                 InvokeNoArg(controller, "CheckElection");

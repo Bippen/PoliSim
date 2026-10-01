@@ -148,15 +148,15 @@ namespace PoliSim.UI
             }
 
             DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "CABINET",
-                string.Format(CultureInfo.InvariantCulture, "{0}   {1} seats", s.Name(g.Cabinet), g.CabinetSeats),
+                string.Format(CultureInfo.InvariantCulture, "{0}   {1}", s.Name(g.Cabinet), UiFormat.Seats(g.CabinetSeats)),
                 DeskBody(11f, PoliSimTheme.TextPrimary), figure);
             y += rowHeight;
             DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "CARRIED FROM OUTSIDE BY",
-                g.Support == 0 ? "nobody" : string.Format(CultureInfo.InvariantCulture, "{0}   {1} seats together", s.Name(g.Support), g.SupportedSeats),
+                g.Support == 0 ? "nobody" : string.Format(CultureInfo.InvariantCulture, "{0}   {1} together", s.Name(g.Support), UiFormat.Seats(g.SupportedSeats)),
                 DeskBody(11f, PoliSimTheme.TextSecondary), figure);
             y += rowHeight;
             DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "VOTING AGAINST",
-                g.OpposedSeats.ToString(CultureInfo.InvariantCulture) + " seats",
+                UiFormat.Seats(g.OpposedSeats),   // §718
                 DeskBody(11f, PoliSimTheme.TextSecondary), figure);
         }
 

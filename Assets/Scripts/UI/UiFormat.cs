@@ -158,6 +158,18 @@ namespace PoliSim.UI
             return value.ToString("F" + decimals, CultureInfo.InvariantCulture);
         }
 
+        /// <summary>§718 (Elias's ruling of 2026-10-01, item 9: the "1 seats" plural): a seat count with its noun agreeing - "1 seat", "0 seats",
+        /// "349 seats". Every label that prints a count of seats a party or a bloc may hold one of goes through here.</summary>
+        public static string Seats(int count) => count.ToString(CultureInfo.InvariantCulture) + (count == 1 ? " seat" : " seats");
+
+        /// <summary>§718: a small count as the captions spell it - ZERO to TWELVE in words, the figure past it (the Policy Web's own rule, lifted
+        /// here so the captions that name a count from data share it).</summary>
+        public static string CountWord(int count)
+        {
+            string[] words = { "ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX", "SEVEN", "EIGHT", "NINE", "TEN", "ELEVEN", "TWELVE" };
+            return count >= 0 && count < words.Length ? words[count] : count.ToString(CultureInfo.InvariantCulture);
+        }
+
         /// <summary>
         /// Three significant digits total, so the decimal places shrink as the integer part grows:
         /// 850 -> "850", 29.0 -> "29.0", 1.53 -> "1.53". Keeps every rendered amount to at most five
