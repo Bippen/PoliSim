@@ -1,0 +1,92 @@
+# ElectionsData/rules — fetch log, 2026-10-01 (17:40-18:11 UTC), sourcing agent (minimum wage + fiscal rules pass)
+# Tool: curl 8.21.0 -sL, browser User-Agent, saved with -o into raw/ (byte-exact as served; see the two NOTE lines on transport decoding / tar extraction).
+# Columns (TAB): fetch time UTC, HTTP status, bytes on disk at log time, saved file (raw/), source URL.
+# Lines beginning '#' are annotations. Files with non-200 status, bot walls or maintenance pages were deleted and are not relied on.
+2026-10-01T17:40:27Z	200	4585	de_milog_p1.html	https://www.gesetze-im-internet.de/milog/__1.html
+2026-10-01T17:40:28Z	200	6862	de_gg_art109.html	https://www.gesetze-im-internet.de/gg/art_109.html
+2026-10-01T17:40:28Z	200	6212	de_gg_art115.html	https://www.gesetze-im-internet.de/gg/art_115.html
+2026-10-01T17:40:29Z	200	4642	de_gg_art143h.html	https://www.gesetze-im-internet.de/gg/art_143h.html
+2026-10-01T17:40:29Z	200	4717	de_gg_art109a.html	https://www.gesetze-im-internet.de/gg/art_109a.html
+2026-10-01T17:40:29Z	200	10714	de_milog_index.html	https://www.gesetze-im-internet.de/milog/index.html
+2026-10-01T17:40:30Z	200	6140	de_aktuell.html	https://www.gesetze-im-internet.de/aktuell.html
+2026-10-01T17:40:43Z	404	236	de_milov5_index.html	https://www.gesetze-im-internet.de/milov_5/index.html
+2026-10-01T17:40:43Z	404	236	de_milov4_index.html	https://www.gesetze-im-internet.de/milov_4/index.html
+2026-10-01T17:40:44Z	200	5558	de_milov5b_index.html	https://www.gesetze-im-internet.de/milov5/index.html
+2026-10-01T17:40:44Z	200	5558	de_milov4b_index.html	https://www.gesetze-im-internet.de/milov4/index.html
+2026-10-01T17:40:44Z	200	33452	de_gg_index.html	https://www.gesetze-im-internet.de/gg/index.html
+2026-10-01T17:40:57Z	200	5375	de_milov5_full.html	https://www.gesetze-im-internet.de/milov5/BJNR10C0A0025.html
+2026-10-01T17:40:58Z	200	0	de_milov4_full.html	https://www.gesetze-im-internet.de/milov4/BJNR1410A0023.html
+2026-10-01T17:41:11Z	200	305445	de_gg_full.html	https://www.gesetze-im-internet.de/gg/BJNR000010949.html
+2026-10-01T17:41:18Z	200	14617	us_29usc206.html	https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title29-section206&num=0&edition=prelim
+2026-10-01T17:41:19Z	200	14615	us_31usc3101.html	https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title31-section3101&num=0&edition=prelim
+2026-10-01T17:41:19Z	200	14618	us_2usc931.html	https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title2-section931&num=0&edition=prelim
+2026-10-01T17:41:20Z	200	14617	us_2usc933.html	https://uscode.house.gov/view.xhtml?req=granuleid:USC-prelim-title2-section933&num=0&edition=prelim
+# NOTE 2026-10-01T17:41Z: the four uscode.house.gov fetches above returned HTTP 200 with a 'Site is currently under maintenance' page (14.6 KB); files deleted, not relied on. govinfo.gov used instead.
+2026-10-01T17:41:43Z	200	61304	us_29usc206_govinfo2024.htm	https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29-chap8-sec206.htm
+2026-10-01T17:41:43Z	200	56279	us_31usc3101_govinfo2024.htm	https://www.govinfo.gov/content/pkg/USCODE-2024-title31/html/USCODE-2024-title31-subtitleIII-chap31-subchapI-sec3101.htm
+2026-10-01T17:42:10Z	200	5543	us_treasury_mspd_table2_2026-08-31.json	https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/debt/mspd/mspd_table_2?filter=record_date:eq:2026-08-31&page%5Bsize%5D=50
+2026-10-01T17:42:17Z	200	1217741	us_plaw119-21.htm	https://www.govinfo.gov/content/pkg/PLAW-119publ21/html/PLAW-119publ21.htm
+2026-10-01T17:42:18Z	200	2636	us_2usc931_govinfo2024.htm	https://www.govinfo.gov/content/pkg/USCODE-2024-title2/html/USCODE-2024-title2-chap20A-sec931.htm
+2026-10-01T17:42:18Z	200	23520	us_2usc933_govinfo2024.htm	https://www.govinfo.gov/content/pkg/USCODE-2024-title2/html/USCODE-2024-title2-chap20A-sec933.htm
+2026-10-01T17:42:31Z	403	410	us_dol_state_minimum_wage.html	https://www.dol.gov/agencies/whd/minimum-wage/state
+2026-10-01T17:42:31Z	202	0	eu_tfeu_pro12.html	https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:12016E/PRO/12
+2026-10-01T17:42:32Z	202	0	eu_tfeu_art126.html	https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:12016E126
+2026-10-01T17:42:46Z	200	5785	eu_tfeu_protocol12_cellar.xhtml	http://publications.europa.eu/resource/celex/12016E%2FPRO%2F12
+2026-10-01T17:42:47Z	200	10897	eu_tfeu_art126_cellar.xhtml	http://publications.europa.eu/resource/celex/12016E126
+2026-10-01T17:42:56Z	200	123388	eu_dir2022-2041_cellar.xhtml	http://publications.europa.eu/resource/celex/32022L2041
+2026-10-01T17:42:57Z	200	108674	eu_eurostat_minimum_wage_statistics.html	https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Minimum_wage_statistics
+2026-10-01T17:43:14Z	200	125982	fr_servicepublic_F2300_smic.html	https://www.service-public.fr/particuliers/vosdroits/F2300
+2026-10-01T17:43:14Z	200	5559	fr_travail_emploi_smic.html	https://travail-emploi.gouv.fr/le-salaire-minimum-interprofessionnel-de-croissance-smic
+# NOTE: fr_travail_emploi_smic.html (travail-emploi.gouv.fr) was an F5 TSPD JavaScript bot wall (5.6 KB); file deleted, not relied on.
+2026-10-01T17:43:33Z	403	5817	fr_legifrance_arrete_2026-05-22_smic.html	https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000054126589
+# NOTE: Légifrance (www.legifrance.gouv.fr) answered 403 with a Cloudflare 'Just a moment...' challenge; file deleted, not relied on. Wayback id_ captures of the same Légifrance URLs used instead where they exist.
+2026-10-01T17:44:59Z	200	160836	fr_dila_JORF_20260524-002330.tar.gz	https://echanges.dila.gouv.fr/OPENDATA/JORF/JORF_20260524-002330.tar.gz
+# EXTRACTED (byte-exact, tar -xzf) from fr_dila_JORF_20260524-002330.tar.gz: 20260524-002330/jorf/global/texte/version/JORF/TEXT/00/00/54/12/65/JORFTEXT000054126589.xml -> fr_jorf_JORFTEXT000054126589_arrete_2026-05-22_smic_version.xml ; .../article/JORF/ARTI/00/00/54/12/66/JORFARTI000054126607.xml -> fr_jorf_JORFARTI000054126607_arrete_2026-05-22_art1.xml
+2026-10-01T17:45:18Z	200	304401	fr_dila_JORF_20251218-003435.tar.gz	https://echanges.dila.gouv.fr/OPENDATA/JORF/JORF_20251218-003435.tar.gz
+# EXTRACTED (byte-exact) from fr_dila_JORF_20251218-003435.tar.gz: .../texte/version/JORF/TEXT/00/00/53/04/25/JORFTEXT000053042520.xml -> fr_jorf_JORFTEXT000053042520_decret_2025-1228_version.xml ; .../article/.../JORFARTI000053042543.xml -> fr_jorf_JORFARTI000053042543_decret_2025-1228_art1.xml
+2026-10-01T17:47:00Z	200	138074	fr_conseil_constitutionnel_constitution_1958.html	https://www.conseil-constitutionnel.fr/le-bloc-de-constitutionnalite/texte-integral-de-la-constitution-du-4-octobre-1958-en-vigueur
+2026-10-01T17:52:20Z	429	620	fr_wb20241231_legifrance_LOLF_2001-692.html	https://web.archive.org/web/20241231074446id_/https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000394028
+# NOTE: the fetch_log line above for fr_wb20241231_legifrance_LOLF_2001-692.html (429, 620 B) was a Wayback rate-limit page; it was REPLACED by the byte-exact page from the immediately preceding fetch of the same id_ URL at 2026-10-01T17:52Z (curl without --compressed, HTTP 200, Content-Encoding: gzip, 60352 B on the wire; transport-decoded with zcat to 432091 B; original Légifrance page 'Version en vigueur au 31 décembre 2024', Wayback capture 20241231074446).
+2026-10-01T17:53:23Z	200	168807	it_normattiva_costituzione_art81.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:costituzione:1947-12-27~art81
+2026-10-01T17:53:25Z	200	83933	it_normattiva_legge_2012-243_art3.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2012-12-24;243~art3
+2026-10-01T17:53:26Z	200	81897	it_normattiva_legge_2012-243_art4.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2012-12-24;243~art4
+2026-10-01T17:53:27Z	200	86943	it_normattiva_legge_2012-243_art1.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2012-12-24;243~art1
+2026-10-01T17:54:17Z	200	73485	it_normattiva_legge_2025-144_art1.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:legge:2025-09-26;144~art1
+2026-10-01T17:54:19Z	200	166963	it_normattiva_costituzione_art36.html	https://www.normattiva.it/uri-res/N2Ls?urn:nir:stato:costituzione:1947-12-27~art36
+2026-10-01T17:55:23Z	200	976	pl_eli_DU_2025_1242.json	https://api.sejm.gov.pl/eli/acts/DU/2025/1242
+2026-10-01T17:55:24Z	200	1015	pl_eli_DU_2024_1362.json	https://api.sejm.gov.pl/eli/acts/DU/2024/1362
+2026-10-01T17:55:25Z	200	1106	pl_eli_DU_2024_1773.json	https://api.sejm.gov.pl/eli/acts/DU/2024/1773
+2026-10-01T17:55:37Z	200	146481	pl_eli_DU_2025_1242_text.pdf	https://api.sejm.gov.pl/eli/acts/DU/2025/1242/text.pdf
+2026-10-01T17:55:39Z	200	3741	pl_eli_DU_2024_1362_text.html	https://api.sejm.gov.pl/eli/acts/DU/2024/1362/text.html
+2026-10-01T17:55:40Z	200	97898	pl_eli_DU_2024_1773_text.html	https://api.sejm.gov.pl/eli/acts/DU/2024/1773/text.html
+2026-10-01T17:55:41Z	200	3113	pl_eli_DU_2002_1679.json	https://api.sejm.gov.pl/eli/acts/DU/2002/1679
+2026-10-01T17:57:13Z	200	943	pl_eli_DU_2026_1213.json	https://api.sejm.gov.pl/eli/acts/DU/2026/1213
+2026-10-01T17:57:15Z	200	144927	pl_eli_DU_2026_1213_text.pdf	https://api.sejm.gov.pl/eli/acts/DU/2026/1213/text.pdf
+2026-10-01T17:58:11Z	200	1444876	pl_eli_DU_2025_1483_text.pdf	https://api.sejm.gov.pl/eli/acts/DU/2025/1483/text.pdf
+2026-10-01T17:58:13Z	200	273173	pl_eli_DU_2026_426_text.pdf	https://api.sejm.gov.pl/eli/acts/DU/2026/426/text.pdf
+2026-10-01T17:58:14Z	200	283474	pl_eli_DU_2026_635_text.pdf	https://api.sejm.gov.pl/eli/acts/DU/2026/635/text.pdf
+2026-10-01T17:58:15Z	200	21444	pl_eli_DU_2009_1240.json	https://api.sejm.gov.pl/eli/acts/DU/2009/1240
+2026-10-01T17:58:16Z	200	5753	pl_eli_DU_2025_1483.json	https://api.sejm.gov.pl/eli/acts/DU/2025/1483
+2026-10-01T17:58:54Z	200	7298	pl_sejm_konstytucja_kon1.htm	https://www.sejm.gov.pl/prawo/konst/polski/kon1.htm
+# NOTE: pl_sejm_konstytucja_kon1.htm (www.sejm.gov.pl) was a frameset wrapped in an F5 TSPD script (7.3 KB); deleted, not relied on. ELI API used instead.
+2026-10-01T17:59:10Z	200	79643	pl_eli_DU_1997_483.json	https://api.sejm.gov.pl/eli/acts/DU/1997/483
+2026-10-01T17:59:16Z	200	13232489	pl_eli_DU_1997_483_text.pdf	https://api.sejm.gov.pl/eli/acts/DU/1997/483/text.pdf
+2026-10-01T18:00:11Z	200	143568	se_riksdagen_skr_2025-26-76_HD0376.html	https://data.riksdagen.se/dokument/HD0376.html
+2026-10-01T18:00:12Z	200	88491	se_riksdagen_bet_2025-26-FiU14_HD01FiU14.html	https://data.riksdagen.se/dokument/HD01FiU14.html
+2026-10-01T18:00:12Z	200	103752	se_riksdagen_bet_2025-26-FiU14_dokumentstatus.json	https://data.riksdagen.se/dokumentstatus/HD01FiU14.json
+2026-10-01T18:04:01Z	200	37445	se_riksdagen_sfs_2011-203_budgetlag.html	https://data.riksdagen.se/dokument/sfs-2011-203.html
+2026-10-01T18:04:22Z	200	1952142	se_riksdagen_bet_2025-26-FiU1_HD01FiU1.html	https://data.riksdagen.se/dokument/HD01FiU1.html
+2026-10-01T18:05:45Z	200	2345589	se_riksdagen_bet_2025-26-FiU1_dokumentstatus.json	https://data.riksdagen.se/dokumentstatus/HD01FiU1.json
+# NOTE: se_riksdagen_bet_2025-26-FiU14_HD01FiU14.html and se_riksdagen_bet_2025-26-FiU14_dokumentstatus.json (bet. 2025/26:FiU14 on Skr. 2025/26:76) were fetched for context, not relied on, and deleted.
+2026-10-01T18:06:15Z	200	51667	se_riksdagen_fpm_2020-21-FPM41_H806FPM41.html	https://data.riksdagen.se/dokument/H806FPM41.html
+2026-10-01T18:06:43Z	200	201330	eu_cjeu_C-19-23_judgment_cellar.xhtml	http://publications.europa.eu/resource/celex/62023CJ0019
+2026-10-01T18:09:53Z	200	5478	us_29usc218_govinfo2024.htm	https://www.govinfo.gov/content/pkg/USCODE-2024-title29/html/USCODE-2024-title29-chap8-sec218.htm
+2026-10-01T18:10:06Z	200	5542	us_treasury_mspd_table2_2025-06-30.json	https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/debt/mspd/mspd_table_2?filter=record_date:eq:2025-06-30&page%5Bsize%5D=50
+2026-10-01T18:10:08Z	200	5542	us_treasury_mspd_table2_2025-07-31.json	https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/debt/mspd/mspd_table_2?filter=record_date:eq:2025-07-31&page%5Bsize%5D=50
+2026-10-01T18:10:30Z	200	4576	de_hgrg_p51.html	https://www.gesetze-im-internet.de/hgrg/__51.html
+# NOTE: de_milov4_full.html logged '0' bytes because of a filesystem size-read race in the logging step (fixed for later lines); the file on disk is 5340 B and is the 200 response (checked by SHA256SUMS.txt).
+# NOTE: 404 lines for de_milov5_index.html / de_milov4_index.html (wrong slug 'milov_5'/'milov_4'): 236-B error pages deleted; correct slugs 'milov5'/'milov4' fetched.
+# NOTE: us_dol_state_minimum_wage.html: www.dol.gov answered 403 (Akamai 'Access Denied'); deleted. State minimum wages are evidenced instead by 29 U.S.C. 218(a) (govinfo).
+# NOTE: eu_tfeu_pro12.html / eu_tfeu_art126.html: eur-lex.europa.eu answered 202 with an empty body (AWS WAF JavaScript challenge); deleted. The same CELEX documents were fetched from the Publications Office Cellar (publications.europa.eu/resource/celex/..., Accept: application/xhtml+xml, Accept-Language: eng), which serves the EUR-Lex manifestation.
+# NOTE: www.hcfp.fr and www.ccomptes.fr: no connection (curl status 000) from this machine on 2026-10-01; not fetched.
+# NOTE: web.archive.org began answering 429 ('suspected abusive bot traffic') at 17:52Z after ~4 requests; no further Wayback fetches were possible.
