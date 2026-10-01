@@ -36105,3 +36105,17 @@ The cheap bar **90 of 90** (`cheap729`).
 
 **Tier (Editor instrument, data read-only).** Named `n730` (PolishSejmAllocationDiagnostic, MojibakeCheck) 2 of 2.
 The cheap bar **91 of 91** (`cheap730`).
+
+
+## 731. UI v3.5, THE DOCKET AS A LIST - ONE CARD PER THING WAITING ON THE PLAYER (THE AREA'S STRIPE, THE ICON, THE NAME AND ONE LINE, THE STAMP, THE ACTION), AN ITEM'S BODY OPENING UNDER ITS CARD; THE CENTRAL BANK'S CANDIDATES AS CARDS (2026-10-01)
+
+**The ruling** (the main session's order: the third screen; V35_ASK rule 1 and the composition's Docket).
+
+**The list** (`GameController.DocketV35.cs`, replacing `DrawDecisionsTab`'s gathered dossiers): the title *Docket* and †; then one card per pending item, as the composition draws them - **the area's stripe** at the left, the icon, the item's name in the serif and **one muted line** under it, **the urgency as a stamp** (*Holds time* in the caution ink - the clock is held until it is answered - or *Can wait*), and **its action**. The items are the ones the docket has always gathered: the central bank's appointment (the bank icon, *Next Riksbank governor*), a foreign-policy meeting (*Decide*), each cabinet decision (*Cabinet decision · Interior & Justice*, the line *Amara Osei-Bonsu · Reformist*, *Decide*), the year's cabinet events as alerts that can wait, and the budget process (*Open*). **An item's body opens under its card when its action is taken** (one open at a time; the action reads *Close* while it is open) - drawn by the renderers the docket has always used (`DrawCabinetDecisionModal`, `DrawForeignPolicyMeetingModal`, `DrawBudgetBillStatusAndIntroduce`), kept as built on a card. **The central bank's candidates are the composition's cards**: the portrait, the name, the philosophy as an outlined chip, *Appoint* - behind the role's own gate (a player who may not appoint reads *Locked*, the reason on the card's slip); each candidate's description is the card's slip.
+
+**Off the page at rest, and where it went:** the subtitle (*Everything currently waiting on your response*) - the page's title says it; the MINISTER ALERTS card's line per pending decision - its minister and philosophy are the item's line, the decision's name the item's slip; the dossier captions - the item's name.
+
+**The film** (`UiScreenshotDriver`): `03a_decisions_options` opens the staged decision's item (`_docketOpenItem`) before it scrolls; `03c` opens the budget process's; `SetPrivateField` now takes null for a field of a reference type (it read `IsInstanceOfType(null)` as a wrong type).
+
+**Tier UI.** Named `n731` (DeadStateCheck, UnwiredSubsystemCheck, MetaTextCheck, InkContrastCheck, NumberLocaleCheck) 5 of 5; the dry film **`drys731c` Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes** (`drys731`: the driver's null, above); the real films **`film731s` (Sweden, 1280, `-shotstates`): 186 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas text violations, the edge guard 0 clipped, exit 0**, and `film731b` (to People, after the list's right margin) - `03_decisions` the list, `03a_decisions_options` the opened decision.
+The cheap bar **91 of 91** (`cheap731`).

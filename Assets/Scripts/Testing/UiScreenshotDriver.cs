@@ -785,9 +785,13 @@ namespace PoliSim.Testing
                 if (Tabs[i] == "Decisions")
                 {
                     // P4-E3 (2026-09-04): the staged Cabinet decision's options scrolled into view - two options, each with its cost line, plate and scope line.
-                    ScrollBy(controller, UiScreen.Height * 0.8f);
+                    // §731 (UI v3.5): the docket is a list - the staged decision's item is OPENED (its Decide), its options under it, then scrolled into view.
+                    SetPrivateField(controller, "_docketOpenItem", "cabinet:" + CabinetPortfolio.InteriorJustice);
+                    yield return Settle();
+                    ScrollBy(controller, UiScreen.Height * 0.3f);
                     yield return Settle();
                     yield return Capture("03a_decisions_options");
+                    SetPrivateField(controller, "_docketOpenItem", null);
                     ResetScrolls(controller);
                     yield return Settle();
 
@@ -2673,9 +2677,12 @@ namespace PoliSim.Testing
 
             yield return Settle();
             yield return Capture("03b_decisions_budget_process");
+            SetPrivateField(controller, "_docketOpenItem", "budget");   // §731: the budget process's item opened - its panel under it
+            yield return Settle();
             ScrollBy(controller, UiScreen.Height * 0.5f);
             yield return Settle();
             yield return Capture("03c_decisions_budget_process_scrolled");
+            SetPrivateField(controller, "_docketOpenItem", null);
             ResetScrolls(controller);
 
             // The Budget tab in the same state: the screen whose own rows sit above the process panel, and
@@ -3132,7 +3139,9 @@ namespace PoliSim.Testing
         private static bool SetPrivateField(object target, string field, object value)
         {
             FieldInfo f = target.GetType().GetField(field, BindingFlags.Instance | BindingFlags.NonPublic);
-            if (f == null || !f.FieldType.IsInstanceOfType(value))
+            // §731: null is a value too, for a field of a reference type (the docket's open item closed) - IsInstanceOfType says false for it
+            bool fits = f != null && (value == null ? !f.FieldType.IsValueType || Nullable.GetUnderlyingType(f.FieldType) != null : f.FieldType.IsInstanceOfType(value));
+            if (!fits)
             {
                 Debug.LogError($"SHOT: field {field} not found or wrong type.");
                 return false;
