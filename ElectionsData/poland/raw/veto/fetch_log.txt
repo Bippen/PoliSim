@@ -1,0 +1,6 @@
+# fetch_log for ElectionsData/poland/raw/veto/ - PS-5 part four (the veto and its override), 2026-10-02 (UTC 2026-10-01)
+# columns: utc_timestamp  http_status(final, curl -L)  bytes_downloaded  saved_as  url
+# curl -s -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" -o <saved_as> <url>; no re-encoding. Failed attempts (the Konstytucja HTML: 0 bytes, ELI textHTML false; sejm.gov.pl and prezydent.pl: 302 loops and 403 bot walls) were deleted; they are not sources. Art. 224 is read from ../president/eli_DU_1997_483_konstytucja_U_D19970483Lj.pdf (held since §720).
+2026-10-01T23:39:13Z 200 46702 eli_search_MP_regulamin_sejmu.json https://api.sejm.gov.pl/eli/acts/search?publisher=MP&title=Regulamin%20Sejmu&limit=50
+2026-10-01T23:42:35Z 200 1239 eli_meta_MP_2026_573.json https://api.sejm.gov.pl/eli/acts/MP/2026/573
+2026-10-01T23:42:37Z 200 1420988 eli_MP_2026_573_regulamin_sejmu_tekst_jednolity.pdf https://api.sejm.gov.pl/eli/acts/MP/2026/573/text.pdf
