@@ -75,9 +75,14 @@ namespace PoliSim.Elections
         /// <summary>The last day of the fourteen after the first failed ballot (Art. 63 Abs. 3); MinValue before one fails.</summary>
         public DateTime SecondPhaseUntil;
 
-        /// <summary>§705 (the review's second pass, defect 2): the player's party tabled a proposal in this round - only then does its candidate stand in
-        /// the ballot the most votes win (Art. 63 Abs. 4); a party that passed or was never asked is not made a candidate by the game.</summary>
+        /// <summary>§705 (the review's second pass, defect 2): the player's party tabled a proposal in this round - its candidate stands in the ballot the
+        /// most votes win (Art. 63 Abs. 4) whatever it did before.</summary>
         public bool PlayerStood;
+
+        /// <summary>§715 (the review's decision; Elias's ruling, item 6: "any qualifying quarter may nominate"): the player's party PASSED when asked in this
+        /// round - only a pass keeps it off the ballot the most votes win (a pass is not a candidacy, §705); a player's party never asked stands there as
+        /// an AI party in its seat would. Saved; an older round loads false.</summary>
+        public bool PlayerPassed;
 
         /// <summary>§706 (the review's defect 1): the parties whose nomination has stood in the fourteen days (Art. 63 Abs. 3), or whose party
         /// passed there - each at most once, so a pass cannot re-ask the same party on the same day and hold the clock for good.</summary>

@@ -3096,18 +3096,19 @@ namespace PoliSim.Simulation
             if (IsBundestagRound(round) && round.Phase >= 2 && round.Asked != null)
             {
                 // §706 (GO-BT § 4 Abs. 2): in the fourteen days a candidate stands only on a nomination signed by a quarter of the members, or by a
-                // Fraktion of a quarter - the next party in the order whose nomination stands; none standing, the fourteen days run out unballoted
+                // Fraktion of a quarter - a party whose nomination stands; none standing, the fourteen days run out unballoted
                 Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
                 List<string> standing = Nominated(country, round, chamber, parties, pluralityBallot: false, out string how);
                 // the review of §706 (defect 1): a nomination stands once in the fourteen days - one that has stood, or a party that passed, is not
                 // asked again (a pass re-asked the player's party on the same day, and the clock held on it for good)
                 standing.RemoveAll(p => round.StoodInPhase2.Contains(p));
                 if (standing.Count == 0 && !how.Contains("no nomination")) { how = "every nomination signed by a quarter of the members has stood or passed (GO-BT § 4 Abs. 2)"; }
-                int tries = 0;
                 // §712 (the review's defect 3): the player's nomination, where it stands, is asked FIRST - it tables or passes before any ballot is called,
-                // so every nomination meets in the one ballot (else an AI's ballot left it out and it was balloted alone a week later, on other votes)
-                if (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && standing.Contains(country.PlayerPartyAbbrev)) { round.Asked = country.PlayerPartyAbbrev; }
-                while (!standing.Contains(round.Asked) && tries++ < round.Order.Count) { round.Turn++; round.Asked = round.Order[round.Turn % round.Order.Count]; }
+                // so every nomination meets in the one ballot (else an AI's ballot left it out and it was balloted alone a week later, on other votes).
+                // §715 (item 6): otherwise the first nomination standing - from every party seated, largest Fraktion first; the Bundespräsident's order
+                // is phase 1's alone (a party outside it, the Linke's, may nominate here)
+                round.Asked = !string.IsNullOrEmpty(country.PlayerPartyAbbrev) && standing.Contains(country.PlayerPartyAbbrev) ? country.PlayerPartyAbbrev
+                    : standing.Count > 0 ? standing[0] : null;
                 if (!standing.Contains(round.Asked))
                 {
                     round.Asked = null;
@@ -3416,7 +3417,7 @@ namespace PoliSim.Simulation
         /// - [AUTHORED-DRAFT] a candidate's own party and its group vote for it; every other seated party votes for the candidate NEAREST it (the
         ///   formation's compatibility) whose party it does not refuse (a line that blocks its support, declared, derived or standing in the round),
         ///   and abstains where it refuses them all - sincere votes, no party voting tactically; each side's reason on the division says so;
-        /// - the most votes elect, a tie to the earlier in the order.
+        /// - the most votes elect, a tie to the larger Fraktion (§715: the pool runs largest Fraktion first).
         /// The elected candidate's government is its party's draft with every invited partner accepting - the player's party never drafted in unasked
         /// (the review's defect 2: the player auto-accepts, so an AI draft could seat it, even after a pass) - else its party and group alone; the
         /// player's own candidate stands on its party and group alone, the partners it never tabled not drafted for it.
@@ -3484,7 +3485,7 @@ namespace PoliSim.Simulation
             var tally = new List<string>();
             foreach (string c in candidates) { tally.Add(c + " " + votes[c]); }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the fourteen days pass; in the ballot the most votes win ({string.Join(", ", tally)}), {candidate} is elected with {votes[winner]} ({majority} a majority of the members)"
-                + (absolute ? " - the Bundespräsident must appoint him within seven days (Art. 63 Abs. 4 Satz 2 GG) and does so at once" : " - short of a majority, the Bundespräsident has seven days to appoint him or dissolve the Bundestag (Art. 63 Abs. 4 Satz 3 GG); the premise for his choice, stated: he appoints, at once - no Bundespräsident has faced the choice, and a dissolution's new election (Art. 39 Abs. 1 Satz 4 GG) is not modelled for Germany"));
+                + (absolute ? " - the Bundespräsident must appoint the candidate within seven days (Art. 63 Abs. 4 Satz 2 GG) and does so at once" : " - short of a majority, the Bundespräsident has seven days to appoint the candidate or dissolve the Bundestag (Art. 63 Abs. 4 Satz 3 GG); the premise for his choice, stated: he appoints, at once - no Bundespräsident has faced the choice, and a dissolution's new election (Art. 39 Abs. 1 Satz 4 GG) is not modelled for Germany"));
             Debug.Log($"SPEAKER: {country.Id} - {title}; the tally {string.Join(", ", tally)}");
             Install(country, g, round, verdict, absolute
                 ? $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, a majority of the members (Art. 63 Abs. 4 Satz 2 GG)"
@@ -3546,6 +3547,10 @@ namespace PoliSim.Simulation
                     {
                         int ci = IndexOf(c);
                         if (ci < 0) { continue; }
+                        // §715: a nominee whose party holds no surveyed position cannot be NEAR anyone - its compatibility is 0 everywhere, which beats every
+                        // negative one, and the first run with every party in the pool had the chamber elect the SSW's candidate 630 to 0. It draws its own
+                        // party's vote and its bound and group votes, never a sincere one (the SSW's own vote abstains for the same reason, above)
+                        if (!parties[ci].HasPosition) { continue; }
                         int cp = SeatedGroupPartner(country, c) is string cPartner ? IndexOf(cPartner) : -1;
                         bool refuses = false;
                         foreach (Elections.RedLine line in chamber.Lines) { if (line.RefusesSupport(p, ci) || (cp >= 0 && line.RefusesSupport(p, cp))) { refuses = true; break; } }
@@ -3575,20 +3580,25 @@ namespace PoliSim.Simulation
         /// Mitglieder des Bundestages unterzeichnet."
         /// A party too small to nominate alone gathers other members' signatures: [AUTHORED-DRAFT] the members who would vote for its candidate sign
         /// it (the ballot's sincere tally, <see cref="Tally"/>, over the nominations standing - iterated, since a nomination that falls moves the
-        /// votes it held). A Fraktion is a group of at least five per cent of the members (§ 10 Abs. 1 GO-BT, as §705's record quotes it). The pool
-        /// is the Bundespräsident's order (a group standing one, its larger member's); in the ballot the most votes win the player's party only where
-        /// it stood in the round.
+        /// votes it held). A Fraktion is a group of at least five per cent of the members (§ 10 Abs. 1 GO-BT, as §705's record quotes it).
+        /// §715 (Elias's ruling of 2026-10-01, item 6: "Nominations follow GO-BT §4's text: any qualifying quarter may nominate. The President's order
+        /// applies only to phase 1"): THE POOL IS EVERY PARTY SEATED - a parliamentary group standing one, its larger member's - largest Fraktion
+        /// first (a tie in the chamber's order); the Bundespräsident's order is phase 1's alone (<see cref="AskNext"/>). In the ballot the most votes
+        /// win the player's party stands only where it stood in the round.
         /// </summary>
         private List<string> Nominated(Country country, Elections.SpeakerRound round, Elections.CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties,
             bool pluralityBallot, out string how, IReadOnlyDictionary<string, string> committed = null)
         {
             string player = country.PlayerPartyAbbrev;
             var pool = new List<string>();
-            foreach (string party in round.Order)
+            var seated = new List<int>();
+            for (int p = 0; p < parties.Count; p++) { if (SeatsOf(country, parties[p].Abbrev) > 0 && !IsSmallerGroupMember(country, parties[p].Abbrev)) { seated.Add(p); } }
+            seated.Sort((a, b) => GroupSeats(country, parties[b].Abbrev) != GroupSeats(country, parties[a].Abbrev) ? GroupSeats(country, parties[b].Abbrev).CompareTo(GroupSeats(country, parties[a].Abbrev)) : a.CompareTo(b));
+            foreach (int p in seated)
             {
-                if (pluralityBallot && party == player && !round.PlayerStood) { continue; }   // §705's second pass: a pass is not a candidacy
-                bool known = false; foreach (PoliticalParty pp in parties) { if (pp.Abbrev == party) { known = true; } }
-                if (known && SeatsOf(country, party) > 0 && !IsSmallerGroupMember(country, party) && !pool.Contains(party)) { pool.Add(party); }
+                string party = parties[p].Abbrev;
+                if (pluralityBallot && party == player && round.PlayerPassed && !round.PlayerStood) { continue; }   // §705: a pass is not a candidacy; §715: only a pass keeps it off - a player's party never asked stands as an AI party would
+                pool.Add(party);
             }
             int members = 0;
             foreach (int s in chamber.Seats) { members += s; }
@@ -3749,6 +3759,7 @@ namespace PoliSim.Simulation
             if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = IsBundestag(countryId) ? "THE BUNDESPRÄSIDENT HAS NOT ASKED YOUR PARTY" : "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
             refusedBecause = null;
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} does not form a government");
+            round.PlayerPassed = true;   // §715 (the review's decision): a pass keeps the player's party off the ballot the most votes win; never asked, it stands like any party
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(country.PlayerPartyAbbrev)) { round.StoodInPhase2.Add(country.PlayerPartyAbbrev); }   // §706: a pass in the fourteen days nominates no one
             AskNext(country, round);
             return true;
@@ -3776,7 +3787,7 @@ namespace PoliSim.Simulation
             // where every invited party accepts it and it splits no group, and its candidate meets the nominations standing
             bool personBallot = IsBundestagRound(round);   // §713: every phase
             if (verdict != null && (personBallot ? verdict.AllAccept && verdict.Investiture != null && !verdict.Investiture.SplitsJointGroup : verdict.Passes)) { TableAndVote(country, round, without); return true; }
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - {(IsBundestagRound(round) ? "the next party in the order stands its candidate" : "the Speaker moves on")}");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - {(IsBundestagRound(round) ? (round.Phase <= 1 ? "the Bundespräsident proposes the next party's candidate" : "the next nomination standing is asked") : "the Speaker moves on")}");
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Asked)) { round.StoodInPhase2.Add(round.Asked); }   // §706: its nomination has had its turn
             AskNext(country, round);
             return true;

@@ -35775,3 +35775,23 @@ Latent, stated: **the cost** - a formation per candidate every German day was ~1
 **The review** (`Reviews/2026-10-01_s714_formation_time.md`): NOT READY on one fix (the vote's day on the player's lines), fixed; the derivation checked by hand against `WorldClock.Governments` (Germany 73 and 72, Sweden 37, Poland 33 and 59, Italy 27, France 60 with Attal's caretaker entry skipped, the USA none) and the window shown not to decide anything (every span counted is at most 73 days, every government excluded took office at least 1,077 days after); RF 6 kap. 4 § read with the Speaker choosing when to submit. Ledger row: `SimulationManager.cs` at `486b53d6`, s714.
 
 **Tier SIMULATION + UI** (a money path - reviewed): named `n714e` (FormationTimeDiagnostic, GermanFormationDiagnostic, SpeakerRoundDiagnostic, ConfidenceDiagnostic, AiMotionReachDiagnostic - the review's owed run - MojibakeCheck, MetaTextCheck) clean; the cheap bar **87 of 87** (`cheap714`); the simulation bar **57 of 57**, both sentinels the baseline's (`sim714`, `sim714b`); the dry film `drys714` (Sweden 155, Germany 147).
+
+
+## 715. NOMINATIONS FOLLOW GO-BT § 4'S TEXT: ANY QUALIFYING QUARTER MAY NOMINATE - THE POOL IS EVERY PARTY SEATED, THE BUNDESPRÄSIDENT'S ORDER PHASE 1'S ALONE; THE LINKE NOW NOMINATES (2026-10-01)
+
+**The ruling** (Elias, 2026-10-01, item 6): *Nominations follow GO-BT §4's text: any qualifying quarter may nominate. The President's order applies only to phase 1.* (The overnight report's owed item: the pool was the Bundespräsident's order, so the Linke never nominated.)
+
+**Built** (`SimulationManager.Nominated`, `AskNext`):
+- **the pool is every party seated** - a parliamentary group standing one, its larger member's - **largest Fraktion first** (a tie in the chamber's order); GO-BT § 4's thresholds unchanged (a quarter, 158 of 630, or a Fraktion of a quarter; Abs. 3's Fraktion or five per cent for the ballot the most votes win);
+- **the Bundespräsident's order is phase 1's alone**; in the fourteen days the round asks the player's nomination first where it stands, else the first nomination standing - from any party seated (stated: so it is always the largest standing Fraktion's coalition the one ballot binds - the old order had rotated that role);
+- **the player's party in the ballot the most votes win** (the review's decision, taken): only an actual pass keeps it off (`SpeakerRound.PlayerPassed`, saved; §705's "a pass is not a candidacy"); a player's party never asked stands there as an AI party in its seat would - before, a player's party was kept off unless it had tabled, so a player playing the Linke was never a candidate where the AI Linke is.
+
+**A defect the wider pool exposed, fixed** (`Tally`): a nominee whose party holds no surveyed position (the SSW) is never anyone's NEAREST - its compatibility is 0 to every party, which beats every negative one, and the first run with every party in the pool had the chamber elect the SSW's candidate 630 to 0 in the ballot the most votes win. It draws its own party's vote and its bound and group votes, never a sincere one (the SSW's own vote already abstained for the same reason, §704/§705). Before §715 the SSW was never in a pool, so the defect could not fire.
+
+**Checked** (`GermanFormationDiagnostic`): **(e2)** the Abs. 3 nominations now *AfD, SPD, Grune, Linke* - the Linke, outside the Bundespräsident's order, among them; the CDU, the player's, passed and stands none; Weidel elected with the most votes, 152; **(e6)**, new - a planted chamber where no party is a quarter and every party refuses every other: the Linke, the player's, never asked, stands among *AfD, CDU, SPD, Grune, Linke, BSW* - the AfD's Weidel elected with 152; (d), (e), (e3), (e4), (e5) unchanged; the formation sweep's digest unchanged (`86fbf292…`).
+
+**Wording** (the review's): the ballot the most votes win breaks a tie to the larger Fraktion; the decline log is phase-aware (*the Bundespräsident proposes the next party's candidate* / *the next nomination standing is asked*); the final ballot's log says *appoint the candidate*.
+
+**The review** (`Reviews/2026-10-01_s715_nomination_pool.md` and the author's note): READY WITH ONE DECISION (taken, above); confirmed: nothing else reads the order for phase 2 or the final ballot; the SSW skip cannot change phase 1, the Riksdag or Art. 67 (`Tally` is the Art. 63 tally alone); the pool's order matters only in ties, none wrongly. Ledger row: `SimulationManager.cs` at `587faa81`, s715.
+
+**Tier SIMULATION** (a money path - reviewed): named `n715c`-`n715g` clean; the cheap bar **87 of 87** (`cheap715`); the simulation bar **57 of 57**, both sentinels the baseline's (`sim715`, `sim715b`).

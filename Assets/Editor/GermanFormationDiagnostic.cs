@@ -217,8 +217,8 @@ namespace PoliSim.EditorTools
                 if (r5 != null) { foreach (string line in r5.Log) { sb.Append("    log e2    ").Append(line).Append((char)10); } }
                 DivisionRecord final5 = g5.Divisions.Entries.FindLast(e => e.Title.Contains("Art. 63 Abs. 4"));
                 DivisionSide cduSide = final5?.Sides.Find(s => s.Abbrev == "CDU");
-                Check(r5 != null && r5.Log.Exists(l => l.Contains("GO-BT § 4 Abs. 3")),
-                    F("(e2) GO-BT § 4 Abs. 3: with the CDU standing none, no nomination reaches a quarter; the Fraktionen nominate - {0}", r5?.Log.Find(l => l.Contains("GO-BT § 4 Abs. 3")) ?? "no Abs. 3 line"));
+                Check(r5 != null && r5.Log.Exists(l => l.Contains("GO-BT § 4 Abs. 3") && l.Contains("Linke")),   // §715: any qualifying party nominates - the Linke, outside the Bundespräsident's order, among them
+                    F("(e2) GO-BT § 4 Abs. 3: with the CDU standing none, no nomination reaches a quarter; the Fraktionen nominate, the Linke - outside the Bundespräsident's order - among them (§715) - {0}", r5?.Log.Find(l => l.Contains("GO-BT § 4 Abs. 3")) ?? "no Abs. 3 line"));
                 Check(cduPassed && final5 != null && cduSide != null && !(cduSide.Reason ?? string.Empty).Contains("its own candidate") && !(final5.Title.Contains("Friedrich Merz")),
                     F("(e2) the CDU, the player's party, passed when asked: in the ballot the most votes win it stands no candidate - {0}; {1}", cduSide?.Reason ?? "no side", final5?.Title ?? "no ballot"));
 
@@ -297,6 +297,29 @@ namespace PoliSim.EditorTools
                       && Sorted(g8.Government.Cabinet) == Sorted(new List<string> { "CDU", "CSU" }) && g8.Government.PmParty == "CDU",
                     F("(e5) §713: phase 1 is a vote on the person - the CDU's draft is CDU+CSU alone, and the SPD, outside it, votes for Merz ({0}); '{1}'; {2} governs",
                         spd8?.Reason ?? "no side", first8?.Title ?? "no ballot", string.Join("+", g8.Government.Cabinet)));
+
+                // (e6) §715 (the review's decision): a player's party NEVER ASKED stands in the ballot the most votes win as an AI party in its seat would -
+                // the Linke, the player's, on a planted chamber where no party is a quarter and every party refuses every other (Abs. 3 reached): outside the Bundespräsident's order, never asked,
+                // and among the Fraktionen that nominate; only a pass keeps a player's party off (e2's CDU)
+                var noQuarter = new Dictionary<string, int>(table25) { ["CDU"] = 150, ["CSU"] = 0, ["BSW"] = 58 };   // planted: no party a quarter (158 of 630), no Union group
+                (SimulationManager s9, Country g9) = Open(hosts, "Linke", noQuarter, poll25);
+                g9.ElectionHistory.Add(new ElectionRecord { Date = poll25, CountryId = CountryId.Germany.ToString(), Method = ElectionMethod.GermanyNationalProportional });
+                Days(s9, 1);
+                SpeakerRound r9 = s9.RoundOf(CountryId.Germany);
+                var apart = new List<string>();   // planted: every party refuses every other - each signs only its own, so no nomination reaches a quarter
+                foreach (string a in new[] { "CDU", "AfD", "SPD", "Grune", "Linke", "BSW" }) { foreach (string b in new[] { "CDU", "AfD", "SPD", "Grune", "Linke", "BSW" }) { if (a != b) { apart.Add(a + ">" + b); } } }
+                r9?.Refusals.AddRange(apart);
+                bool linkeAsked = false;
+                for (int d = 0; d < 120 && r9 != null && r9.Open; d++)
+                {
+                    if (r9.Stage == RoundStage.PlayerAsked) { linkeAsked = true; s9.PassFormation(CountryId.Germany, out string _); }
+                    else if (r9.Stage == RoundStage.OfferToPlayer) { s9.AnswerOffer(CountryId.Germany, false, out string _); }
+                    Days(s9, 1);
+                }
+                if (r9 != null) { foreach (string line in r9.Log) { sb.Append("    log e6    ").Append(line).Append((char)10); } }
+                string abs3 = r9?.Log.Find(l => l.Contains("GO-BT § 4 Abs. 3"));
+                Check(!linkeAsked && abs3 != null && abs3.Contains("Linke"),
+                    F("(e6) §715: the Linke, the player's party, never asked, stands in the ballot the most votes win as an AI party in its seat would - {0}", abs3 ?? "no Abs. 3 line"));
 
                 // (f) the reference: the real result and the government that formed
                 bool hasRef = WorldClock.TryReference(CountryId.Germany, poll25, out WorldClock.Reference reference);
