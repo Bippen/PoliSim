@@ -686,7 +686,7 @@ namespace PoliSim.UI
         /// `history.Count`, which grows every turn. So the control count changed spontaneously, driven by
         /// background state rather than by anything the player did.
         ///
-        /// That is the hazard `GameController.DrawTaxPolicyContent` documents, and this was the only
+        /// That is the hazard `GameController.DrawBudgetRevenue` documents, and this was the only
         /// site in the codebase where it could genuinely fire: GraphRenderer is drawn on screens that
         /// also carry sliders (Labor Market's participation graph, Welfare's poverty graph), so a graph
         /// crossing the pagination threshold mid-drag would shift the control ID of every slider below

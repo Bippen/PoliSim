@@ -121,6 +121,14 @@ namespace PoliSim.UI
         /// <summary>The population's two dashed thresholds, 15 and 65 (#8A7A5C).</summary>
         public static readonly Color PyramidThreshold = PoliSimTheme.Hex(0x8A7A5C);
 
+        // ---- the dial (§734, the composition's Budget) ----
+        /// <summary>An Off dial's paper (#EFE6D5) - muted, behind a dashed edge in <see cref="DataSand"/>.</summary>
+        public static readonly Color OffPaper = PoliSimTheme.Hex(0xEFE6D5);
+        /// <summary>A switch's track when off (#D9CBAE), inside the slip's edge ink.</summary>
+        public static readonly Color SwitchTrack = PoliSimTheme.Hex(0xD9CBAE);
+        /// <summary>The call to action's brass (#C9A23A), the drafted knob's and the *Introduce* button's.</summary>
+        public static readonly Color Brass = PoliSimTheme.Hex(0xC9A23A);
+
         // ---- the slip (§733, V35_ASK rule 2) ----
         /// <summary>The slip's paper (#F6EFDF), its 1 px edge (#8A7A5C) and its 2 px shadow (the ink at a quarter).</summary>
         public static readonly Color SlipPaper = PoliSimTheme.Hex(0xF6EFDF), SlipEdge = PoliSimTheme.Hex(0x8A7A5C);

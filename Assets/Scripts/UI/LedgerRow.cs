@@ -157,7 +157,7 @@ namespace PoliSim.UI
         /// <para><b>Control-ID stability.</b> This emits EXACTLY ONE control - the slider - on every
         /// path, every frame, whether or not the row is interactive. A non-applicable row is drawn
         /// disabled via <c>GUI.enabled</c>, never by omitting the control. The Budget screen's own doc
-        /// comment on <c>DrawTaxPolicyContent</c> explains why that is a hang trigger rather than a
+        /// comment on <c>DrawBudgetRevenue</c> explains why that is a hang trigger rather than a
         /// style preference: GUILayout allocates control IDs positionally, and a background bill can
         /// resolve mid-drag.</para>
         ///
@@ -279,7 +279,6 @@ namespace PoliSim.UI
 
             if (Event.current.type == EventType.Repaint)
             {
-                DrawTrackFurniture(trackRect, standing, draft, min, max, scale, interactive, tickStep, ghost);
                 DrawEndNames(trackRect, trailingText, figureStyle, scale, interactive);
                 // P4-B2: the last row's track and scale, for a caller that draws a range caption into the caption band
                 // beneath it (the band DrawEndNames uses) after this returns - read on the same Repaint, never stored.
@@ -292,33 +291,12 @@ namespace PoliSim.UI
             }
 
             // ALWAYS emitted, enabled or not - see the control-ID note above. A knob-less row emits nothing: it is a reading, and paints the track itself.
-            float result = draft;
-            if (knob)
-            {
-                bool ambient = GUI.enabled;
-                GUI.enabled = ambient && interactive;
-                result = GUI.HorizontalSlider(trackRect, draft, min, max, sliderStyle, KnobStyle(thumbStyle, scale, interactive));
-                GUI.enabled = ambient;
-            }
-            else if (Event.current.type == EventType.Repaint)
-            {
-                sliderStyle.Draw(trackRect, GUIContent.none, false, false, false, false);
-            }
-            // P2-1.3 (2026-09-02): FINER STEP - the draft snaps to SnapStep, so a whole point is a value the
-            // thumb can rest on rather than one it passes through; and the film records the range each pixel
-            // covers, which is the reach a whole point needs (the driver fails a run where it exceeds the snap).
-            // EN-8: `unitsPerPixel` and `step` are computed above the name cell, in the row's grain.
-            if (interactive && !Mathf.Approximately(result, draft))
-            {
-                result = Mathf.Clamp(Mathf.Round(result / step) * step, min, max);
-                if (!Mathf.Approximately(result, draft)) { AudioDirector.FireStep(); }   // P4-2: the draft snapped to its next step
-            }
+            float result = Track(trackRect, name, standing, draft, min, max, interactive, sliderStyle, thumbStyle, scale, grain, tickStep, ghost, knob);
 
             // Repaint only: on the Layout event GetRect hands the caller a dummy rect, the columns squeeze to their
             // minimum and the record would keep that ghost as the row's worst (it did, on the first film).
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && trackRect.width > 0f && Event.current.type == EventType.Repaint)
             {
-                RecordReach(UiGuardContext.CurrentScreen + " / " + name, unitsPerPixel);
                 GeometryByRow[UiGuardContext.CurrentScreen + " / " + name] = (nameRect, trackRect, figureRect, trailingRect);
             }
 
@@ -329,6 +307,54 @@ namespace PoliSim.UI
 
             return interactive ? result : draft;
         }
+
+        /// <summary>
+        /// §734 (UI v3.5): THE TRACK ALONE - its furniture (the gradation ticks, the standing tick, the draft's hatch), the ONE slider control (always
+        /// emitted where the row has a knob, enabled or not - the control-ID note on <see cref="Draw"/>), the snap to the row's step in its grain, and the
+        /// film's reach record. <see cref="Draw"/> lays a ledger row's columns around it; a v3.5 dial tile lays out its own name, figure and end labels
+        /// and calls this for the track, so the two can never drift in how a draft is dragged, snapped or recorded.
+        /// </summary>
+        public static float Track(Rect track, string name, float standing, float draft, float min, float max, bool interactive, GUIStyle sliderStyle, GUIStyle thumbStyle,
+            float scale, float grain = 1f, float tickStep = 0f, float ghost = float.NaN, bool knob = true)
+        {
+            grain = grain > 0f ? grain : 1f;
+            float unitsPerPixel = track.width > 0f ? (max - min) / track.width / grain : float.PositiveInfinity;
+            float step = StepFor(unitsPerPixel) * grain;
+            if (Event.current.type == EventType.Repaint) { DrawTrackFurniture(track, standing, draft, min, max, scale, interactive, tickStep, ghost); }
+
+            float result = draft;
+            if (knob)
+            {
+                bool ambient = GUI.enabled;
+                GUI.enabled = ambient && interactive;
+                result = GUI.HorizontalSlider(track, draft, min, max, sliderStyle, KnobStyle(thumbStyle, scale, interactive));
+                GUI.enabled = ambient;
+            }
+            else if (Event.current.type == EventType.Repaint)
+            {
+                sliderStyle.Draw(track, GUIContent.none, false, false, false, false);
+            }
+            // P2-1.3 (2026-09-02): FINER STEP - the draft snaps to SnapStep, so a whole point is a value the
+            // thumb can rest on rather than one it passes through; and the film records the range each pixel
+            // covers, which is the reach a whole point needs (the driver fails a run where it exceeds the snap).
+            // EN-8: the step is in the row's grain.
+            if (interactive && !Mathf.Approximately(result, draft))
+            {
+                result = Mathf.Clamp(Mathf.Round(result / step) * step, min, max);
+                if (!Mathf.Approximately(result, draft)) { AudioDirector.FireStep(); }   // P4-2: the draft snapped to its next step
+            }
+            if (interactive && PoliSim.Testing.CaptureIdentity.Armed && track.width > 0f && Event.current.type == EventType.Repaint)
+            {
+                RecordReach(UiGuardContext.CurrentScreen + " / " + name, unitsPerPixel);
+            }
+            return interactive ? result : draft;
+        }
+
+        /// <summary>§734: the track's height at <paramref name="style"/>'s scale - a v3.5 dial lays its track out at the height the ledger's is.</summary>
+        public static float TrackHeight(GUIStyle style) => Mathf.Round(RefTrackHeight * Scale(style));
+
+        /// <summary>§734: a style's scale against the ledger's reference size - what <see cref="Track"/> takes.</summary>
+        public static float ScaleOf(GUIStyle style) => Scale(style);
 
         /// <summary>
         /// The four column rects, shared by <see cref="Draw"/> and <see cref="DrawReadOnly"/> so a

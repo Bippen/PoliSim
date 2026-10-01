@@ -81,38 +81,6 @@ namespace PoliSim.UI
                 : UiPalette.GetDeltaColor(DeltaValue, higherIsBetter: true);
         }
 
-        /// <summary>P2-1.4 (2026-09-02): the Budget screen's persistent header - the five fiscal readings a draft is
-        /// judged against, every one derived: the closed year's balance, revenue and spending from the fiscal report
-        /// (a dash before the first close - a figure no year has computed is stated, never drawn), the debt stock and
-        /// its ratio from the live state. Drawn in the chip-strip idiom above the Budget's columns, outside their
-        /// scroll, so it is on screen whatever the columns show.</summary>
-        private List<HeadlineReading> BuildFiscalReadings()
-        {
-            EconomyState state = _playerCountry.State;
-            StatHistory history = _playerCountry.History;
-            FiscalTurnReport lastYear = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            return new List<HeadlineReading>
-            {
-                // P3-C2 (2026-09-03): the year's balance beside last year's - the preview's own figure (revenue minus spending on the previewed
-                // year, WITH the draft; a turn is a year), and at year one last year is the seed and says so: the seeded accumulator is
-                // the seed's standing balance, and no year has closed to replace it.
-                lastYear != null
-                    ? new HeadlineReading(_simulationManager.CurrentTurn == 0 ? "Balance · last year · the seed" : "Balance · last year", UiFormat.MoneyDelta(lastYear.BudgetBalance, MoneyUnit.Billions), null, false, history?.BudgetBalanceAnnual)
-                    : new HeadlineReading("Balance · the seed", UiFormat.MoneyDelta(state.Budget, MoneyUnit.Billions), null, false, null),
-                new HeadlineReading("Balance · this year · projected", _cachedPreview != null ? UiFormat.MoneyDelta(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate, MoneyUnit.Billions) : "-",
-                    _cachedPreview != null && _cachedPreviewWithoutDraft != null && !Mathf.Approximately(_cachedPreview.RevenueEstimate - _cachedPreview.SpendingEstimate, _cachedPreviewWithoutDraft.RevenueEstimate - _cachedPreviewWithoutDraft.SpendingEstimate)
-                        ? "WITH THE DRAFT" : null, true, null),
-                // Item 5 (2026-09-07, §371): the lines' share of GDP - this year against nominal GDP, and NEXT on the lines' own next-year figures over
-                // next year's nominal GDP at potential growth and the printed inflation. §367 measured the player's share falling from 42 % to 21 % over a
-                // century of no decisions (the player's lines take drivers and prices only); this is the figure that says so, once, on the strip.
-                new HeadlineReading("Lines · share of GDP", UiFormat.Number(LinesShareOfGdpPercent(), 1) + "%", "NEXT " + UiFormat.Number(LinesShareOfGdpNextPercent(), 1) + "%", false, null),   // the caption is the chip's width (107 px at 1280, the guard measured): NEXT and the figure; the terms - potential growth, the printed inflation - are in LinesShareOfGdpNextPercent's doc and the record
-                new HeadlineReading("Government debt", UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), null, false, null),
-                new HeadlineReading("Debt-to-GDP", UiFormat.Number(state.DebtToGdpRatio, 1) + "%", null, false, history?.DebtToGdpRatio.Quarterly),
-                new HeadlineReading("Revenue · last year", lastYear != null ? UiFormat.Money(lastYear.Revenue, MoneyUnit.Billions) : "-", null, false, null),
-                new HeadlineReading("Spending · last year", lastYear != null ? UiFormat.Money(lastYear.TotalSpending, MoneyUnit.Billions) : "-", null, false, null),
-            };
-        }
-
         /// <summary>Item 5: every spending line's nominal amount summed, over nominal GDP, in per cent.</summary>
         private float LinesShareOfGdpPercent()
         {

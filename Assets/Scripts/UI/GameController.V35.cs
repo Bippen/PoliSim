@@ -90,6 +90,34 @@ namespace PoliSim.UI
             if (PoliSimWidgets.Button(tab, GUIContent.none, GUIStyle.none)) { DeskProvenance.On = !DeskProvenance.On; }
         }
 
+        /// <summary>§728, a primitive since §734: a page's title, its sub-tabs as words (the active one underlined in <paramref name="area"/>'s ink) and the †
+        /// control, on one row - the composition's Statistics and Budget heads. <paramref name="titleAnchor"/> takes the title's rect (its slip). Returns the
+        /// tab clicked, or -1.</summary>
+        private int DrawV35TitleTabs(Rect row, string title, string[] tabs, int selected, Color area, System.Action<Rect> titleAnchor = null)
+        {
+            GUIStyle titleFace = new GUIStyle(_headerStyle) { fontSize = V35.FontPx(V35.PageTitle), alignment = TextAnchor.MiddleLeft, wordWrap = false };
+            titleFace.padding = new RectOffset(0, 0, 0, 0);
+            float titleWidth = Mathf.Ceil(titleFace.CalcSize(new GUIContent(title)).x);
+            titleAnchor?.Invoke(new Rect(row.x, row.y, titleWidth, row.height));
+            DrawV35PageTitle(row, title);
+            int clicked = -1;
+            float x = row.x + titleWidth + V35.Px(32f);
+            for (int i = 0; i < tabs.Length; i++)
+            {
+                GUIStyle face = V35Serif(V35.Name, i == selected ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
+                float w = Mathf.Ceil(face.CalcSize(new GUIContent(tabs[i])).x);
+                var tab = new Rect(x, row.y, w, row.height);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    PoliSimWidgets.MeasuredLabel(tab, tabs[i], face);
+                    if (i == selected) { PoliSimTheme.Rule(new Rect(tab.x, tab.yMax - V35.Px(8f), tab.width, 2f), area); }
+                }
+                if (PoliSimWidgets.Button(tab, GUIContent.none, GUIStyle.none)) { clicked = i; }
+                x += w + V35.Px(24f);
+            }
+            return clicked;
+        }
+
         private static Texture2D _v35CardTexture;
         private static GUIStyle _v35CardStyle;
         private static int _v35CardStyleHeight = -1;
@@ -220,6 +248,8 @@ namespace PoliSim.UI
             public float FigurePx = V35.Figure;
             /// <summary>§732: a mark after the figure that is not one of D24's glyphs - D16's ‡ TWO DEFINITIONS - in the secondary ink.</summary>
             public string Mark;
+            /// <summary>§734: the figure's ink - the draft's Caution where the figure is drafted, the warning past a statutory rule; the primary ink otherwise.</summary>
+            public Color FigureInk = PoliSimTheme.TextPrimary;
         }
 
         /// <summary>A tile's height for its content - the head (the icon, or the figure over the name), and the gauge's band under it where it has one.</summary>
@@ -239,7 +269,7 @@ namespace PoliSim.UI
         private Rect DrawV35Tile(Rect r, V35TileData t)
         {
             Rect inner = DrawV35Card(r);
-            GUIStyle figureFace = V35Mono(t.FigurePx, PoliSimTheme.TextPrimary, bold: true);
+            GUIStyle figureFace = V35Mono(t.FigurePx, t.FigureInk, bold: true);
             GUIStyle changeFace = V35Mono(15f, t.ChangeInk, bold: true);
             GUIStyle nameFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
             float figureHeight = Mathf.Ceil(figureFace.CalcSize(new GUIContent("0")).y);

@@ -34,32 +34,8 @@ namespace PoliSim.UI
 
         /// <summary>The page's title, its two tabs and the † control on one row (the composition's: the title, then the tabs' words, the active one
         /// underlined in the area's ink). Returns the tab clicked, or -1.</summary>
-        private int DrawStatsV35Title(Rect row, int selected)
-        {
-            string[] tabs = { "Domestic", "International" };
-            GUIStyle titleFace = new GUIStyle(_headerStyle) { fontSize = V35.FontPx(V35.PageTitle), alignment = TextAnchor.MiddleLeft, wordWrap = false };
-            titleFace.padding = new RectOffset(0, 0, 0, 0);
-            float titleWidth = Mathf.Ceil(titleFace.CalcSize(new GUIContent("Statistics")).x);
-            StatsAnchor(new Rect(row.x, row.y, titleWidth, row.height), "title");
-            DrawV35PageTitle(row, "Statistics");
-            int clicked = -1;
-            float x = row.x + titleWidth + V35.Px(32f);
-            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
-            for (int i = 0; i < tabs.Length; i++)
-            {
-                GUIStyle face = V35Serif(V35.Name, i == selected ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
-                float w = Mathf.Ceil(face.CalcSize(new GUIContent(tabs[i])).x);
-                var tab = new Rect(x, row.y, w, row.height);
-                if (Event.current.type == EventType.Repaint)
-                {
-                    PoliSimWidgets.MeasuredLabel(tab, tabs[i], face);
-                    if (i == selected) { PoliSimTheme.Rule(new Rect(tab.x, tab.yMax - V35.Px(8f), tab.width, 2f), area); }
-                }
-                if (PoliSimWidgets.Button(tab, GUIContent.none, GUIStyle.none)) { clicked = i; }
-                x += w + V35.Px(24f);
-            }
-            return clicked;
-        }
+        private int DrawStatsV35Title(Rect row, int selected) =>
+            DrawV35TitleTabs(row, "Statistics", new[] { "Domestic", "International" }, selected, UiPalette.GetAreaColor(UiPalette.SystemArea.Global), r => StatsAnchor(r, "title"));
 
         /// <summary>
         /// Public finances (board 2a's fiscal position in the composition's card): the tax burden, spending, the deficit and the primary balance as bars

@@ -350,7 +350,7 @@ namespace PoliSim.UI
         // the margin roll only re-run when the draft PolicyDecision or the turn number actually
         // changed since last frame, so the displayed numbers read as one stable forecast rather than
         // flickering every OnGUI call even while the player isn't touching anything. Implementing/
-        // removing a tax bypasses this cache entirely (see DrawTaxLineRow) since that's an immediate
+        // removing a tax bypasses this cache entirely (see DrawBudgetTaxTile) since that's an immediate
         // action, not a draft value tracked here.
         private bool _hasCachedPreview;
         private List<EffectArrow> _effectsAtTurnEnd;   // P2-4.3: the preview's arrows as the turn closed, for the divisions it resolves
@@ -381,7 +381,7 @@ namespace PoliSim.UI
         private float _cachedApprovalChangeRaw;
 
         // C-C1: the Budget draft's own fiscal estimate, cached on the draft's signature and the turn.
-        // Two PreviewTurn runs over two clones is not a per-frame cost - see DrawBudgetDraftFiscalImpact.
+        // Two PreviewTurn runs over two clones is not a per-frame cost - see EnsureBudgetImpact (GameController.BudgetV35.cs, §734).
         private BudgetBillEstimate _cachedBudgetImpact;
         private string _cachedBudgetImpactSignature;
         private int _cachedBudgetImpactTurn = -1;
@@ -4772,7 +4772,7 @@ namespace PoliSim.UI
             if (_tierConcernForBreakdown != null && !_tierConcernForBreakdown.IsEmpty)
             {
                 GUILayout.Space(8f);
-                // The Budget's own width term for its breakdown (DrawPolicyPreview): a share of the screen, not a measured
+                // The Budget's own width term for its breakdown (the effects panel it once sat under; since §734 the Budget prints the breakdown on its count's slip): a share of the screen, not a measured
                 // rect, so the breakdown's width is the same on every event and never a Layout-pass dummy.
                 DrawStanceBreakdown(_tierConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.6f, _boxStyle)));
             }
@@ -4938,7 +4938,7 @@ namespace PoliSim.UI
             // ⚠ BEHAVIOUR 5 FIX, found during the v2.0 conversion rather than by a capture. This used to
             // `return` early for a country with no statutory minimum wage (Sweden, which bargains
             // collectively), drawing a sentence and NO SLIDER - an omitted control, which is exactly what
-            // behaviour 5 forbids and exactly the hazard DrawTaxPolicyContent's doc comment describes:
+            // behaviour 5 forbids and exactly the hazard DrawBudgetRevenue's doc comment describes:
             // GUILayout allocates control IDs positionally, so a screen whose control COUNT depends on
             // mutable state can desync a live drag. It is now always drawn, disabled when there is no
             // statutory wage, with the reason in the column that explains a dial's meaning.
@@ -5002,52 +5002,6 @@ namespace PoliSim.UI
             Color areaInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Infrastructure);
             DrawPlateRows(rows, areaInk, "NO DIAL HERE · THE INFRASTRUCTURE LINE ON THE SPENDING TAB DRIVES THESE · THE OWN TICK IS THIS COUNTRY, THE SHORT TICKS THE OTHER FIVE", draftLive, row => null);
         }
-
-        /// <summary>
-        /// Live estimate of this turn's effect under the sliders' current values, via
-        /// SimulationManager.PreviewTurn (reuses the real MacroSystem/SimulationManager formulas
-        /// against a throwaway clone rather than a separate hand-rolled estimate). Checked every OnGUI call
-        /// but only actually recomputed when the draft OR the selected horizon has changed since last frame -
-        /// see PolicyInputsChangedSinceLastPreview - so it reads as one stable forecast rather than a
-        /// flickering number, while still updating live as the player drags a slider or switches
-        /// horizon.
-        ///
-        /// P2-2.1 (2026-09-02): the horizons - 1 Day / 1 Week / 1 Month / 1 Year, four rescaled copies of one
-        /// full-turn projection - are retired. The panel shows the point the preview produced, next year, its scope
-        /// stated once, as an arrow per outcome the draft moves (EffectArrowsRenderer); the budget delta stands
-        /// above it in the same column (DrawBudgetDraftFiscalImpact).
-        /// </summary>
-        private void DrawPolicyPreview()
-        {
-            if (PolicyInputsChangedSinceLastPreview())
-            {
-                RecomputePolicyPreview();
-            }
-
-            GUILayout.Space(10f);   // P2-2.2: one space where two (and a note about the retired horizon buttons) were
-            // Board 5c (D11 row 3): the plate's title in the family's own words - THIS DRAFT here, AS ENACTED on
-            // the signing takeover, the chamber's first budget on election night - and the scope line verbatim
-            // under the arrows; the three parts of the grammar, never fewer.
-            DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleDraft);
-            // P2-2.1 (2026-09-02): the point, its scope stated once (C-C1's precedent) - no horizon buttons, no
-            // rescaled copies of one projection. The budget delta stands above in this same column
-            // (DrawBudgetDraftFiscalImpact); here the OUTCOMES the draft moves, each an arrow whose length is
-            // the preview's own figure against the largest on the panel and whose ink is the verdict on it.
-            if (_cachedPreviewEffects.Count == 0)
-            {
-                GUILayout.Label("Move a dial - the outcomes it moves appear here, an arrow each.", _labelStyle);
-            }
-            else
-            {
-                Rect arrows = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
-                EffectArrowsRenderer.Draw(arrows, _cachedPreviewEffects, _labelStyle);
-                EffectArrowsRenderer.DrawScopeLine(_labelStyle);
-            }
-            if (_budgetConcernForBreakdown != null && !_budgetConcernForBreakdown.IsEmpty) { DrawStanceBreakdown(_budgetConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.3f, _boxStyle))); }
-        }
-
-        /// <summary>P3-C1: the Budget draft's concern, kept from the support preview for the breakdown drawn after the arrows.</summary>
-        private BillConcern _budgetConcernForBreakdown;
 
         /// <summary>PF-1 (2026-09-17): every screen's question to the chamber - a line's verdict, a draft's count, seat map and
         /// breakdown - asked once per chamber and concern instead of on every draw; see <see cref="ChamberVerdicts"/>.</summary>
@@ -6558,7 +6512,7 @@ namespace PoliSim.UI
             return _taxRateInputs.TryGetValue(type, out float value) ? value : fallbackRate;
         }
 
-        /// <summary>Master Sequence step 5d: the pending TaxProgramBill for this specific TaxType, or null if none is currently before Parliament - used to grey out DrawTaxLineRow's Implement/Remove button (only one bill per TaxType may be pending at a time) and show its own countdown.</summary>
+        /// <summary>Master Sequence step 5d: the pending TaxProgramBill for this specific TaxType, or null if none is currently before Parliament - used to grey out the tax tile's switch (DrawBudgetTaxTile) (only one bill per TaxType may be pending at a time) and show its own countdown.</summary>
         private TaxProgramBill FindPendingTaxProgramBill(TaxType type)
         {
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
@@ -7436,7 +7390,7 @@ namespace PoliSim.UI
             return Mathf.Max(_tabButtonStyle.fixedHeight, stackedHeight);
         }
 
-        /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors DrawBudgetProcessCategoryButton's exact established pattern (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above). RULED 2026-08-12 (Elias): the no-area-tint decision STANDS against §A.8's "bottom 3px area ink" strip and the manifest's "ui_subtab_on's bottom hue strip = ui_tab_spine flipped" - the main-tab spine carries area identity one level up, so the strip would be redundant, not missing.</summary>
+        /// <summary>Generic sub-category tab button, shared by Statistics/Policy-Laws/Politics' own category rows - mirrors the pattern the Budget's retired category buttons set (Primary when selected, Neutral otherwise - no per-area tinting at this second level, unlike the top-level tabs above). RULED 2026-08-12 (Elias): the no-area-tint decision STANDS against §A.8's "bottom 3px area ink" strip and the manifest's "ui_subtab_on's bottom hue strip = ui_tab_spine flipped" - the main-tab spine carries area identity one level up, so the strip would be redundant, not missing.</summary>
         private void DrawSubCategoryButton<T>(string label, T category, ref T selectedCategory, float maxWidth = 0f, float rowHeight = 0f, UiPalette.SystemArea iconArea = UiPalette.SystemArea.Neutral) where T : struct, System.Enum
         {
             bool selected = EqualityComparer<T>.Default.Equals(selectedCategory, category);
@@ -8888,7 +8842,7 @@ namespace PoliSim.UI
             GUILayout.Space(LawRowGap);
         }
 
-        /// <summary>R-K4: the Budget screen's own gap between ledger rows (DrawTaxPolicyContent /
+        /// <summary>R-K4: the Budget screen's own gap between ledger rows (the retired tax rows, /
         /// DrawSpendingPolicyContent draw `GUILayout.Space(10f)` after each instrument). Kept under
         /// R-C1's one-line row: the pitch is OneLineHeight + this.</summary>
         private const float LawRowGap = 10f;
@@ -10613,57 +10567,6 @@ namespace PoliSim.UI
             DrawClosedBalanceRow("Balance", report, UiFormat.MoneyDelta(report.BudgetBalance, MoneyUnit.Billions), "as recorded");
         }
 
-        /// <summary>
-        /// Re-surfaces any pending blocking interrupt inside the Budget screen itself.
-        /// </summary>
-        /// <summary>
-        /// The Budget screen's standing explanation. A const rather than a literal at the draw site
-        /// because it is now DRAWN in one place and MEASURED in another
-        /// (<see cref="BudgetProcessHeaderHeight"/>), and at ordinary window sizes it is the tallest of
-        /// the pieces above the columns row — a copy that drifted from the original would take the
-        /// reserve with it.
-        /// </summary>
-        private const string BudgetProcessDescription =
-            "Consolidates Tax, Spending, Welfare, Infrastructure, and Sovereign Wealth Fund drafts onto one screen. " +
-            "Left: category. Center: that category's line-items (the same draft as its own standalone tab - edits " +
-            "apply either place). Right: this year's live estimate across your whole current draft.";
-
-        /// <summary>
-        /// Everything <see cref="DrawBudgetProcessTab"/> draws ABOVE its three-column row, measured from
-        /// the real strings at the real width rather than assumed from a multiple of the font size.
-        ///
-        /// ⚠ **This replaces the label-clipping class's original signature.** The old figure was
-        /// `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` — a constant standing in for
-        /// content, which is precisely the shape CLAUDE.md's seven-instance write-up describes. Seven
-        /// site-specific fixes did not end that class; sharing one measurement between the reserve and
-        /// the drawing does.
-        ///
-        /// <para>Four pieces, in the order they are drawn: the header, the standing description, the
-        /// bill-status line, and the Introduce button (the interrupt banner left this sheet for the
-        /// folded frame's own banner in OnGUI, v3.0, and is measured there). Each is
-        /// measured in the style it renders in, at
-        /// <see cref="PoliSimWidgets.InnerWidth"/> of the available width — measuring at the raw width
-        /// would under-count the wrapped lines, which is the quiet way to reintroduce this bug.</para>
-        /// </summary>
-        /// <summary>P2-1.4: the fiscal strip's height - the desk strip's 53 board px scaled by the window height (R-B10's law), so the
-        /// Budget's header and the desk's foot are one strip at one size.</summary>
-        private float FiscalStripHeight() => Mathf.Round(53f * UiScreen.Height / DeskBoardHeight);
-
-        private float BudgetProcessHeaderHeight(float availableWidth)
-        {
-            float textWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, 1, _labelStyle);
-
-            float height = _headerStyle.CalcHeight(new GUIContent("Budget Process"), textWidth) + _headerStyle.margin.vertical;
-            height += FiscalStripHeight() + 8f;   // P2-1.4: the fiscal chip strip and its space
-
-
-            height += _labelStyle.CalcHeight(new GUIContent(BuildBudgetBillStatusText()), textWidth) + _labelStyle.margin.vertical;
-            height += _implementButtonStyle.fixedHeight + _implementButtonStyle.margin.vertical;   // §568: the budget bill's button, brass at the class's one width
-            height += 8f;
-
-            return height;
-        }
-
         // The Budget tab's full-screen interrupt banner (DrawFullScreenPendingInterruptBanner /
         // BuildFullScreenInterruptText, 2026-08-01 → 2026-08-28) lived here. It re-surfaced a pending
         // interrupt because going full-screen hid the calendar/speed strip - the only always-visible
@@ -10671,221 +10574,6 @@ namespace PoliSim.UI
         // that hiding the FOLDED state of every screen, so the banner became the folded frame's own:
         // DrawFoldedInterruptBanner / BuildFoldedInterruptText, drawn by OnGUI above the content sheet
         // on every folded screen, the Budget ledger's own pause still left out on this screen.
-
-        /// <summary>
-        /// Master Sequence step 5b: the Budget Process full-screen UI shell - left category selector /
-        /// center selected category's line-items / right live summary, consolidating the existing Tax,
-        /// Spending, Welfare, Infrastructure, and Sovereign Wealth Fund content onto one screen (their
-        /// own standalone tabs stay as independent entry points too, per the design's own "5e does tab
-        /// consolidation, not 5b" sequencing - both read/write the exact same draft state, since the
-        /// center column calls the SAME *Content methods those tabs call). No new bill logic here -
-        /// that's 5c/5d's job; the right column reuses the EXISTING live Policy Preview panel as this
-        /// phase's "live summary," not a new estimate.
-        ///
-        /// Stable-control-layout note: the center column's content switches based on
-        /// _budgetProcessCategory, which only the player's own left-column button click can change -
-        /// unlike a bill resolving in the background, a click can never race an active drag on a
-        /// DIFFERENT control (one mouse, one control at a time), so this particular conditional swap
-        /// isn't the hazard class DrawTaxPolicy's own doc comment warns about. Each *Content method
-        /// reused here (DrawTaxPolicyContent etc.) already carries its own stable-control-layout
-        /// guarantee independently - that safety property carries over automatically by reuse.
-        /// </summary>
-        private void DrawBudgetProcessTab(float availableHeight, float availableWidth)
-        {
-            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content (see the tab heads above) -
-            // this one overran the frame by some 260 px at 720 and fell 20 px short at 1440 on its own arithmetic.
-            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
-
-            // ⚠ availableWidth IS THE WIDTH OF THE PAPER, NOT OF THE SPACE ON IT. Everything below this
-            // line sits inside _boxStyle, so the width anything may claim is the paper minus its own
-            // padding. Measured at runtime 2026-08-10: a label given availableWidth laid out at 1536
-            // starting at x=14, while the box's content ran 14..1522 - overflowing by exactly 28.0,
-            // which is padding.horizontal to the pixel.
-            //
-            // This is the SAME idiom already used by SubTabShare and the Policy/Laws sub-screens; those
-            // sites subtract padding and do not clip. These three did not, which is the whole defect.
-            float contentWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle);
-
-            DrawColoredLabel("Budget Process", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            // P2-1.4 (2026-09-02): the persistent fiscal header - the chip strip, outside the columns' scroll.
-            Rect fiscalStrip = GUILayoutUtility.GetRect(contentWidth, FiscalStripHeight(), GUILayout.Width(contentWidth), GUILayout.Height(FiscalStripHeight()));
-            DrawChipStrip(fiscalStrip, BuildFiscalReadings());
-            GUILayout.Space(8f);
-            // Explicit Width, not left to GUILayout's own inference - the horizontal 3-column row
-            // below can otherwise push this outer group's computed "natural" width past the screen
-            // edge (a boxed column's GUILayout.Width request plus its GUIStyle's own padding can add
-            // up to more than requested), which made this label wrap against an inflated width and
-            // clip mid-word rather than wrap. Tying it directly to availableWidth makes its wrap
-            // boundary correct regardless of what the row does.
-            // P2-1.3 (2026-09-02): the paragraph that restated the screen (a (b)-class duplicate) is cut; the
-            // sub-tabs and the columns say what it said. BudgetProcessDescription stays as the record of it.
-
-            DrawBudgetBillStatusAndIntroduce();
-            GUILayout.Space(8f);
-
-            // ⚠ INSTANCE #12, BUDGET. The old reserve was
-            // `_labelStyle.fontSize * 7f + _headerStyle.fontSize + 16f` - seven notional lines of body
-            // type - which is a CONSTANT STANDING IN FOR MEASURED CONTENT, the label-clipping class's
-            // original signature. It under-counted whenever the description wrapped past seven lines or
-            // the interrupt banner appeared, and the columns row below then ran past the clip rect.
-            float columnsHeight = Mathf.Max(0f, availableHeight - BudgetProcessHeaderHeight(availableWidth));
-            float columnSpacing = 10f;
-
-            // The right column reuses DrawPolicyPreview UNCHANGED from its original dashboard-left-
-            // column home, where it unconditionally gets Screen.width * LeftColumnWidthFraction
-            // (0.45). A previous attempt capped this at half the row's own budget "so category/center
-            // never collapse to nothing on a narrow window" - confirmed via a debug-instrumented
-            // screenshot that this cap, not the Screen.width calculation, was the actual binding
-            // constraint at ordinary window sizes (~641px observed vs. the ~864px the panel actually
-            // needs), starving the panel at EVERY window size, not just narrow ones. Fixed: the
-            // preview panel gets its natural width unconditionally; category/center get sane MINIMUM
-            // widths instead of being derived from whatever's left over. If the three don't all fit at
-            // their natural/minimum sizes, that's a genuine narrow-window case, handled explicitly via
-            // a horizontal scrollview below rather than silently squeezing any one column.
-            // FIXED 2026-08-01: all three columns are now derived from availableWidth - the width this TAB
-            // actually owns - and are guaranteed to sum to LESS than it, so the row cannot scroll
-            // horizontally at any window size.
-            //
-            // The bug: summaryColumnWidth was `Screen.width * LeftColumnWidthFraction` (0.45), i.e. 45% of
-            // the WHOLE window - but this tab lives in the right column and owns only ~52% of the window.
-            // That single column therefore claimed ~86% of the row, and the center column holding every
-            // bill line item was pushed off-screen behind a horizontal scrollbar that could not
-            // practically be used. The reasoning previously recorded here - give the preview panel "its
-            // natural width unconditionally" - measured that natural width against the panel's ORIGINAL
-            // home in the 45%-wide LEFT column, and was never re-derived when it was reused inside the
-            // much narrower right column.
-            float scrollbarAllowance = 18f;
-            float usableWidth = contentWidth - columnSpacing * 2f - scrollbarAllowance;
-            // Floor raised from 5x to 7x the label font: even with wrapping, a button's minimum width is
-            // its longest WORD, and "Sovereign" needs ~97px at the smallest supported font - more than the
-            // 94px this column got at 16% on a 1227x690 window. Below this floor the category buttons
-            // overflow their own column, which is the exact failure the rest of this screen just had.
-            // §564 (2026-09-22): the column is AS WIDE AS ITS WIDEST NAME, measured in the face the buttons are drawn in with the icon's inset - the ceiling of ten label
-            // fonts was sized for "Sovereign" and broke "Infrastructure" mid-word at 1280 ("Infrastructur / e", Design's sitting, part A item 2).
-            float categoryColumnWidth = Mathf.Clamp(usableWidth * 0.16f, _labelStyle.fontSize * 7f, _labelStyle.fontSize * 10f);
-            // The extra the widest name needs comes out of the SUMMARY column, never the ledger's: the first film of this fix took it from the centre and "Means-Tested
-            // Welfare" lost the three pixels it had (four overflows on the Spending and Welfare tabs at 1280).
-            float categoryExtra = Mathf.Max(0f, BudgetCategoryColumnNeed() - categoryColumnWidth);
-            categoryColumnWidth += categoryExtra;
-            float summaryColumnWidth = usableWidth * 0.34f - categoryExtra;
-            float centerColumnWidth = usableWidth - categoryColumnWidth - summaryColumnWidth;
-            float totalRowWidth = categoryColumnWidth + columnSpacing + centerColumnWidth + columnSpacing + summaryColumnWidth;
-
-            // ⚠ PLAYTEST FIX (2026-08-18): this used to be a SECOND, OUTER scroll wrapping the one
-            // below it - a nested pair, found by a project-wide enumeration of every BeginScrollView
-            // call site (18 across 2 files; this was the only literal nesting among them). It dates
-            // from before the 2026-08-01 fix above: back when the three columns could overflow
-            // contentWidth and needed a horizontal safety net. That fix guarantees they now sum to
-            // LESS than it - "the row cannot scroll horizontally at any window size" per its own
-            // comment above - so the wrapper had nothing left to do. One scroll now: the center
-            // column's own, kept deliberately, because its content genuinely does vary by category
-            // and does overflow columnsHeight.
-            GUILayout.BeginHorizontal(GUILayout.Width(totalRowWidth), GUILayout.Height(columnsHeight));
-
-            GUILayout.BeginVertical(GUILayout.Width(categoryColumnWidth));
-            DrawBudgetProcessCategoryButton("Tax", BudgetProcessCategory.Tax);
-            DrawBudgetProcessCategoryButton("Spending", BudgetProcessCategory.Spending);
-            DrawBudgetProcessCategoryButton("Welfare", BudgetProcessCategory.Welfare, UiPalette.SystemArea.Welfare);
-            DrawBudgetProcessCategoryButton("Infrastructure", BudgetProcessCategory.Infrastructure, UiPalette.SystemArea.Infrastructure);
-            DrawBudgetProcessCategoryButton("Sovereign Wealth Fund", BudgetProcessCategory.Swf, UiPalette.SystemArea.SovereignWealth);
-            GUILayout.EndVertical();
-
-            GUILayout.Space(columnSpacing);
-
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(centerColumnWidth));
-
-            // Step B2: pinned ABOVE this column's scroll view, not inside it. The row describes what
-            // the line items below it move, so scrolling the list must not scroll the summary of the
-            // list out of sight - the same reasoning that keeps the calendar panel outside the left
-            // column's scroll view.
-            float statRowWidth = PoliSimWidgets.InnerWidth(centerColumnWidth, _boxStyle) - 8f;
-            UiPalette.SystemArea statArea = GetPolicyScreenArea(_budgetProcessCategory);
-            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth, country: _playerCountry);
-            PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
-
-            // Step 2: the trace panel under the chips, pinned with them above the scroll view -
-            // its height leaves the scroll budget the same way the stat row's does.
-            float budgetTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
-            // The host's remaining height under the chips - the panel takes at most its share and
-            // scrolls for the rest. Found by the debt section's first capture at 1600 (2026-08-25):
-            // this tab's budget-pause state has ~7 rows of room here, and a section measured
-            // against the row cap alone ran past the window with every containment guard silent.
-            float budgetTraceHostHeight = Mathf.Max(0f, columnsHeight - _labelStyle.fontSize - statRowHeight);
-            float budgetTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, budgetTraceGapStance, _labelStyle, statRowWidth, budgetTraceHostHeight);
-            StatTracePanel.Draw(_playerCountry, budgetTraceGapStance, _labelStyle, _labelStyle, statRowWidth, budgetTraceHostHeight);
-
-            _budgetProcessCenterScrollPosition = GUILayout.BeginScrollView(_budgetProcessCenterScrollPosition, GUILayout.Height(Mathf.Max(0f, columnsHeight - _labelStyle.fontSize - statRowHeight - budgetTraceHeight)));
-            switch (_budgetProcessCategory)
-            {
-                case BudgetProcessCategory.Tax:
-                    DrawTaxPolicyContent();
-                    break;
-                case BudgetProcessCategory.Spending:
-                    DrawSpendingPolicyContent();
-                    break;
-                case BudgetProcessCategory.Welfare:
-                    DrawWelfarePolicyContent();
-                    break;
-                case BudgetProcessCategory.Infrastructure:
-                    DrawInfrastructureContent();
-                    break;
-                case BudgetProcessCategory.Swf:
-                    DrawSwfPolicyContent();
-                    break;
-            }
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-
-            GUILayout.Space(columnSpacing);
-
-            GUILayout.BeginVertical(_boxStyle, GUILayout.Width(summaryColumnWidth));
-            DrawLegislativeSupportEstimate();
-            GUILayout.Space(10f);
-            DrawPolicyPreview();
-            GUILayout.EndVertical();
-
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>§564: the width the widest single WORD of the category labels needs in the sub-tab face, plus the icon's inset and the button's own padding - so no label breaks inside a word.</summary>
-        private float BudgetCategoryColumnNeed()
-        {
-            GUIStyle style = BuildSubTabStyle(false);
-            float iconInset = Mathf.Round(style.fontSize * SubTabIconFontMultiple) + SubTabIconGap;
-            float need = 0f;
-            foreach (string word in new[] { "Tax", "Spending", "Welfare", "Infrastructure", "Sovereign", "Wealth", "Fund" })
-            {
-                need = Mathf.Max(need, style.CalcSize(new GUIContent(word)).x);
-            }
-            return Mathf.Ceil(need + iconInset + style.padding.horizontal + style.margin.horizontal + 4f);
-        }
-
-        private void DrawBudgetProcessCategoryButton(string label, BudgetProcessCategory category, UiPalette.SystemArea iconArea = UiPalette.SystemArea.Neutral)
-        {
-            bool selected = _budgetProcessCategory == category;
-            GUIStyle style = BuildSubTabStyle(selected);
-            // Omnibus 2026-08-28 (R-K6): the category column is a sub-tab row stood on end, so the
-            // welfare / infrastructure / sovereign-wealth icons lead their labels here - the same
-            // reserve-on-the-clone + overlay draw as DrawSubCategoryButton.
-            Texture2D icon = IconLibrary.GetAreaIcon(iconArea);
-            float iconSize = 0f;
-            float iconLeft = style.padding.left;
-            if (icon != null)
-            {
-                iconSize = Mathf.Round(style.fontSize * SubTabIconFontMultiple);
-                style.padding.left += Mathf.RoundToInt(iconSize + SubTabIconGap);
-            }
-            // Same treatment as the horizontal sub-tabs (see BuildSubTabStyle), and this column is where
-            // it matters most: it is the narrowest surface in the UI, so "Sovereign Wealth Fund" and
-            // "Infrastructure" wrap here even at large window sizes.
-            if (PoliSimWidgets.Button(label, style, GUILayout.ExpandWidth(true), GUILayout.MinHeight(_tabButtonStyle.fixedHeight)))
-            {
-                _budgetProcessCategory = category;
-            }
-
-            DrawSubTabIcon(GUILayoutUtility.GetLastRect(), icon, iconSize, iconLeft, iconArea);
-        }
 
         /// <summary>
         /// Master Sequence step 5c: pending-bill status plus the "Introduce Budget Bill" action -
@@ -11026,8 +10714,8 @@ namespace PoliSim.UI
 
         /// <summary>
         /// The bill-status line's text. Split out for the same reason as
-        /// <see cref="BuildFoldedInterruptText"/>: it is drawn here and MEASURED in
-        /// <see cref="BudgetProcessHeaderHeight"/>, and its three variants differ in length enough to
+        /// <see cref="BuildFoldedInterruptText"/>: it is drawn under the Budget's call to action and in the docket's body,
+        /// and its three variants differ in length enough to
         /// change how many lines it wraps to.
         /// </summary>
         private string BuildBudgetBillStatusText()
@@ -11057,93 +10745,6 @@ namespace PoliSim.UI
                 : _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
                 : "No budget bill currently before Parliament. The annual process opens on your country's own fiscal-year date.";
-        }
-
-        /// <summary>
-        /// Master Sequence step 5c's "live support estimate" - recomputes every OnGUI call (cheap:
-        /// BuildBudgetBillFromDrafts and ParliamentSystem's formulas are all O(a handful of items), no
-        /// cloning, unlike PreviewTurn/RecomputePolicyPreview's own caching, which exists specifically
-        /// because THAT computation is comparatively expensive) so it updates live as the player edits
-        /// ANY draft - budget or standalone - not just after introducing, per the revised Part B
-        /// design's own explicit instruction.
-        /// </summary>
-        /// <summary>
-        /// Master Sequence step 5e, Phase C batch 5: the annual budget bill's own live estimate. This was
-        /// a FIFTH copy of the same renderer batch 4 collapsed for the four standalone tiers - and the
-        /// one on the most important screen in the game. It now shares DrawBillLiveEstimate, so the
-        /// budget bill gains the same lean bar as every other bill and, more importantly, the same
-        /// zero-direction handling: WouldBillPass's BudgetBill overload is documented as computing the
-        /// bill's direction and delegating to the float core, so passing that direction through is
-        /// exactly equivalent to the overload this used to call.
-        /// </summary>
-        private void DrawLegislativeSupportEstimate()
-        {
-            BudgetBill draft = BuildBudgetBillFromDrafts();
-
-            GUILayout.Label("Support (current draft)", _headerStyle);   // P2-2.1: one line at 720, so the arrows below stay in frame
-            // P3-C1: the breakdown of THIS column draws after the arrows (DrawPolicyPreview), so the arrows stay in frame at 720.
-            _budgetConcernForBreakdown = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft);
-            DrawBillLiveEstimate(_budgetConcernForBreakdown, withBreakdown: false);
-
-            DrawBudgetDraftFiscalImpact(draft);
-        }
-
-        /// <summary>
-        /// C-C1 (Playtest-1 finding 3): **what this draft would do to the year's budget, before it is
-        /// enacted** — revenue, spending and the net, from `SimulationManager.EstimateBudgetBill`.
-        ///
-        /// <para><b>Why it is here.</b> The Estimated Effects panel does not see a tax or spending
-        /// draft and never has — `PolicyInputsChangedSinceLastPreview`'s own comment records that those
-        /// drafts *"no longer change what the preview would show at all"* since step 5c/5d. So this
-        /// screen was showing whether a draft would PASS while showing nothing about what it would
-        /// COST. The two now sit together, from the same `BuildBudgetBillFromDrafts()` snapshot, so the
-        /// verdict and the price can never describe different drafts.</para>
-        ///
-        /// <para>⚠ <b>CACHED, unlike the support estimate above it.</b> That estimate's own doc calls
-        /// itself cheap — "no cloning, unlike PreviewTurn/RecomputePolicyPreview's own caching, which
-        /// exists specifically because THAT computation is comparatively expensive". This one runs
-        /// PreviewTurn TWICE over two clones, so recomputing it every OnGUI frame would put exactly the
-        /// cost that comment warns about onto the most-used screen in the game. It recomputes when the
-        /// draft's own signature changes or the turn advances, and not otherwise.</para>
-        ///
-        /// <para>⚠ <b>No margin is printed, and that is deliberate.</b> `PreviewTurn` never rolls an
-        /// event and is deterministic by contract, so two runs of it have no spread: a ± here would be
-        /// authored rather than measured. W-E3 ruled on this exact shape — a zero-width band prints as
-        /// a point with its reason, never as `x – x`. What the figure EXCLUDES is stated beneath it
-        /// instead, which is the poll's own idiom (its ± carries "SAMPLING ERROR ONLY" for the same
-        /// reason: without the scope, a margin is a decoration).</para>
-        /// </summary>
-        private void DrawBudgetDraftFiscalImpact(BudgetBill draft)
-        {
-            string signature = BudgetDraftSignature(draft);
-            if (!_hasCachedBudgetImpact
-                || _simulationManager.CurrentTurn != _cachedBudgetImpactTurn
-                || !string.Equals(signature, _cachedBudgetImpactSignature, System.StringComparison.Ordinal))
-            {
-                _cachedBudgetImpact = _simulationManager.EstimateBudgetBill(PlayerCountryId, draft);
-                _cachedBudgetImpactSignature = signature;
-                _cachedBudgetImpactTurn = _simulationManager.CurrentTurn;
-                _hasCachedBudgetImpact = true;
-            }
-
-            GUILayout.Label("Budget impact", _headerStyle);   // P2-2.1: one line; the scope sentence below says the year
-
-            // Revenue and spending rising are not the same KIND of good, so neither takes a
-            // semantic colour: only the NET carries one, on the same higher-is-better convention
-            // the rest of the screen uses for a balance.
-            // P2-2.2: one line where three were, so the seat map above fits the column at 720 - the net alone carries the colour.
-            // P4-1 film (2026-09-03): the one line wrapped INSIDE the net figure ("Net +" / "$5.72B") once seven arrows
-            // narrowed the column - a money value broken across two lines is briefly a different number (§A.9a).
-            // Two lines, always: the pair, then the net alone in its ink. Never one line that may or may not hold.
-            GUILayout.Label($"Revenue {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)} · Spending {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)}", _labelStyle);
-            // §725 (Elias's ruling): a change in the balance has no consensus direction - its direction in the neutral ink; the warning is a LEVEL's, past a rule
-            DrawColoredLabel($"Net {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
-                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, (bool?)null));
-
-            // P2-2.1: the scope, once, for the delta above and the arrows below - one line, so both fit a 720 frame.
-            // Board 5c (D11 row 3): the scope sentence that stood here is the scope LINE under the arrows now - said
-            // once, verbatim, under every panel of the family; the first 5c film at 720 clipped that line under
-            // this one, and the column has one copy of the fact.
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the
@@ -11193,7 +10794,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// Bundles every current draft - Tax, Spending, Welfare, SWF - into one omnibus BudgetBill,
-        /// exactly as it stands at the moment of the call (used both for DrawLegislativeSupportEstimate's
+        /// exactly as it stands at the moment of the call (used both for the if-passed panel's (§734)
         /// live, continuously-recomputed estimate and for the real bill DrawBudgetBillStatusAndIntroduce
         /// submits - the SAME snapshot logic either way, so the estimate the player saw is exactly what
         /// gets introduced). Infrastructure has no direct lever of its own - see BudgetBill's own doc
@@ -11270,183 +10871,8 @@ namespace PoliSim.UI
         /// <summary>CONVENTION: one month in years - the pension dial snaps to it, as the statutes write their ages in years and months.</summary>
         private const float PensionAgeMonth = 1f / 12f;
 
-        /// <summary>
-        /// Political Systems Overhaul Part B, full rollout: the Tax Policy category's sliders/toggles
-        /// remain DRAFT values (adjusting costs nothing, no vote needed) - since Master Sequence step
-        /// 5c, the "Introduce Budget Bill" action lives centrally on this same Budget Process screen
-        /// (an omnibus bill covering Tax+Spending+Welfare+SWF together, superseding the step 4 pilot's
-        /// Tax-only TaxBill), and a PASSED bill is the only way a draft here ever reaches the real,
-        /// standing TaxLines. Master Sequence step 5e, Phase A: the old standalone Tax Policy tab is
-        /// retired (folds into the new Tax/Spending consolidated tabs, both of which are just entry
-        /// points into this same Budget Process screen) - this content-only method is now reached
-        /// exclusively via DrawBudgetProcessTab.
-        ///
-        /// STABLE CONTROL LAYOUT PATTERN (mandatory for every gated tab, not just this one - see
-        /// "Background/timed state mutation vs. active UI interaction" among the working-discipline
-        /// failure patterns, retired as standing text and preserved in COMPLETED.md section 35): once a background system can resolve on ANY simulated
-        /// day - a bill passing/failing, and every one of the seven remaining tabs will gain this the
-        /// moment Master Sequence step 5 lands - it can mutate the exact standing value a slider on
-        /// this tab is reading, on a day the player has an active multi-frame drag in progress on that
-        /// slider. GUILayout allocates control IDs positionally (call order within OnGUI), not by a
-        /// stable key, so DrawTaxLineRow below (and DrawBudgetBillStatusAndIntroduce, which follows the
-        /// exact same pattern for the omnibus bill's own status/introduce controls) must NEVER change
-        /// which controls they emit, in what order, based on live/mutable state (a bill pending or not, a TaxType
-        /// drafted-implemented or not). Swapping a Button for a Label, or omitting a Slider some
-        /// frames, changes the control count/sequence a currently-hot (mid-drag) control was allocated
-        /// against, which is a documented Unity IMGUI hang/desync trigger inside a ScrollView - this
-        /// is genuinely new risk, not previously reachable, because nothing before Parliament + real-
-        /// time day advancement could mutate this tab's own state out from under a live drag. The fix:
-        /// every control this tab can ever draw is drawn EVERY frame, in the SAME order; "not
-        /// currently applicable" is represented via GUI.enabled = false (greyed, non-interactive, but
-        /// still present and control-ID-stable), never by branching the control itself in/out of
-        /// existence. Every step-5 tab must follow this same shape from its first draft, not
-        /// retrofit it after finding the bug fresh a second time.
-        /// </summary>
-        private void DrawTaxPolicyContent()
-        {
-            DrawColoredLabel("Tax Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class) - the row's own furniture says it:
-            // the hatched draft, the figure pair, the WOULD PASS verdict and the standalone Remove.
-            GUILayout.Space(8f);
-            // §716: where a partner holds Finance, the page says whose levers these are - the programme's toggles lock, the household rates move by its positions
-            if (_simulationManager.FinancePartnerOfPlayer(PlayerCountryId) != null) { DrawLeverLock(null, 0f, CabinetPortfolio.FinanceTreasury); GUILayout.Space(6f); }
-
-            float taxTypeNameColumnWidth = GetTaxTypeNameColumnWidth();
-            foreach (TaxLine taxLine in _playerCountry.TaxLines)
-            {
-                DrawTaxLineRow(taxLine, taxTypeNameColumnWidth);
-                GUILayout.Space(10f);
-            }
-        }
-
         /// <summary>§716: a household rate (the income tax, VAT) is the Finance partner's to move where an AI partner holds Finance under the player's head of government.</summary>
         private bool FinancePartnerHoldsRate(TaxLine taxLine) => FinancePartner.IsHouseholdRate(taxLine.Type) && _simulationManager.FinancePartnerOfPlayer(PlayerCountryId) != null;
-
-        /// <summary>Widest TaxType name as rendered in _labelStyle (the style DrawTaxLineRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached), same reasoning as GetSectorNameColumnWidth. The original fixed "_labelStyle.fontSize * 8f" heuristic here undersized the column for the longest name ("CapitalGainsTax"), the same label-truncation root cause found in the Sector/World-Map/Policy-Web labels.</summary>
-        private float GetTaxTypeNameColumnWidth()
-        {
-            float widest = 0f;
-            foreach (TaxType type in System.Enum.GetValues(typeof(TaxType)))
-            {
-                widest = Mathf.Max(widest, _labelStyle.CalcSize(new GUIContent(type.ToString())).x);
-            }
-            return widest + 12f;
-        }
-
-        /// <summary>
-        /// Master Sequence step 5d: Implement/Remove is now its OWN standalone TaxProgramBill,
-        /// introduced immediately on click (not drafted first - a binary implement/remove decision has
-        /// no separate "adjust before submitting" step the way a rate does), resolving independently of
-        /// the annual budget cycle. The rate slider below stays a DRAFT feeding the annual BudgetBill,
-        /// unchanged from 5c.
-        ///
-        /// Follows DrawTaxPolicy's stable-control-layout pattern: every control here (the toggle
-        /// button, both status labels, the slider) renders every frame regardless of taxLine.
-        /// IsImplemented or whether a TaxProgramBill is currently pending for this TaxType - "not
-        /// currently applicable" is expressed via GUI.enabled = false (composed with, never clobbering,
-        /// ambient enabled state) and/or a different label, never by omitting a control. This matters
-        /// here specifically because BOTH taxLine.IsImplemented (ParliamentSystem.ApplyTaxProgramBillResult)
-        /// and taxLine.Rate (ParliamentSystem.ApplyBillResult) can now change out from under an active
-        /// drag on this exact row, from two independently-resolving bill tiers.
-        /// </summary>
-        private void DrawTaxLineRow(TaxLine taxLine, float labelWidth)
-        {
-            TaxProgramBill pendingBill = FindPendingTaxProgramBill(taxLine.Type);
-
-            string toggleLabel = pendingBill != null
-                // Short labels on purpose. "Introduce Implement Bill" plus the tax/program name beside it
-                // needed ~362px inside a column that is 293px at ordinary window sizes, so the button drew
-                // straight past the column edge - the same overflow that clipped the preview panel. The
-                // words dropped are recoverable from context: the row already names the program, and this
-                // screen's own header explains that implementing or removing submits a standalone bill.
-                ? $"Pending ({pendingBill.DaysRemaining}d)"
-                : taxLine.IsImplemented ? "Remove" : "Implement";
-            GUIStyle toggleStyle = pendingBill != null ? _pendingButtonStyle : taxLine.IsImplemented ? _removeButtonStyle : _implementButtonStyle;   // P5-1 (board 6a): three faces, one width
-
-            // ONE ROW, not four stacked lines. Until the first live capture this drew a full-width
-            // button, then a sentence-long estimate, then the ledger row - three lines per instrument on
-            // the densest screen in the game, where the board draws one. The button and the verdict move
-            // onto the row itself; the estimate's prose collapses to the verdict word it was carrying.
-            //
-            // ⚠ CONTROL ORDER IS PRESERVED EXACTLY: button, then slider, every frame. That is the whole
-            // constraint DrawTaxPolicyContent's doc comment describes - GUILayout allocates control IDs
-            // positionally and a background bill can resolve mid-drag - and it is order STABILITY that
-            // matters, so drawing the same two controls in the same sequence at different rects is safe
-            // where varying the sequence would not be.
-            Rect fullRow = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            LedgerFamilyColumns(fullRow, out Rect ledgerRect, out Rect verdictRect, out Rect actionRect);   // P5-1 (board 6a): the family's one arithmetic
-
-            // Control 1 of 2.
-            bool ambientEnabledForButton = GUI.enabled;
-            GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.FinanceTreasury)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
-            {
-                _simulationManager.IntroduceTaxProgramBill(PlayerCountryId, taxLine.Type, !taxLine.IsImplemented);
-            }
-            GUI.enabled = ambientEnabledForButton;
-
-            DrawTaxProgramBillVerdict(taxLine, pendingBill, verdictRect);
-
-            // v2.0 (COMPLETED.md §187 §A.9): the three stacked labels this row used to draw -
-            // "Standing:", "Draft rate:", and a bare slider - collapse into ONE ledger row where the
-            // standing value is a tick on the track, the draft is the knob, and the span between them
-            // is hatched in draft amber. Behaviour 1 stops being a colour on a label and becomes a
-            // distance the player can read at a glance.
-            //
-            // The slider IS the current draft (defaulting to the standing Rate until dragged), bounded
-            // by this TaxType's own TaxTypeRateRanges - not a small per-turn delta, so a meaningful
-            // policy shift (e.g. IncomeTax 37% -> 55%) is reachable in one bill.
-            float draftRate = FinancePartnerHoldsRate(taxLine) ? taxLine.Rate : GetTaxRateInput(taxLine.Type, taxLine.Rate);   // §716: a held rate shows no draft of the player's
-            bool schedule = taxLine.Type == TaxType.IncomeTax && TaxSchedule.Of(_playerCountry.Id).Kind != TaxScheduleKind.Flat;   // F4-4: the statute's row and its sub-rows
-
-            // Only an IMPLEMENTED line can have a pending rate change - an unimplemented one is changed
-            // by its own standalone Implement/Remove bill above, not by this slider, so it must never
-            // show the amber cue regardless of what the (inactive) draft value happens to hold.
-            bool hasDraft = taxLine.IsImplemented && !Mathf.Approximately(draftRate, taxLine.Rate);
-
-            // B3: no call site renders currency without naming a MoneyUnit. This is the same per-line
-            // figure the revenue breakdown uses, so the two can never disagree.
-            float estimatedRevenue = TaxBases.Revenue(_playerCountry, taxLine);   // P5-B3: the same base the turn's revenue reads
-
-            // GetRect + GUI.HorizontalSlider is exactly what GUILayout.HorizontalSlider does internally,
-            // so the control-ID sequence this row emits is unchanged: button, then slider, every frame.
-            // See DrawTaxPolicyContent's doc comment on why that ordering is a hang trigger, not taste.
-            // Control 2 of 2 - the slider, inside the ledger row.
-            float newRate = LedgerRow.Draw(
-                ledgerRect,
-                DisplayName.Of(taxLine.Type.ToString()),
-                taxLine.Rate,
-                draftRate,
-                taxLine.MinRate,
-                taxLine.MaxRate,
-                // InvariantCulture, deliberately. UiFormat pins money for this reason and its doc comment
-                // names the exact string this machine's sv-SE locale produced ("$29,0T"); a rate printed
-                // beside a pinned money figure must not disagree with it about what a decimal point is.
-                taxLine.IsImplemented ? TaxRateText(taxLine, taxLine.Rate) : "—",   // P5-1 (board 6a): the Implement button and the verdict carry the state; a status word in a figure column cost the track its reach
-                hasDraft ? TaxRateText(taxLine, draftRate) : null,
-                taxLine.IsImplemented ? UiFormat.Money(estimatedRevenue, MoneyUnit.Billions) : "-",
-                taxLine.IsImplemented && pendingBill == null && !FinancePartnerHoldsRate(taxLine),   // §716: a household rate is the Finance partner's where one holds it. P5-1 (board 6a): PENDING - the knob says it cannot be moved; the row stays drawn and counted
-                _labelStyle,
-                _labelStyle,
-                _sliderStyle,
-                _sliderThumbStyle,
-                // EN-8 (2026-09-12): a per-tonne rate steps and reaches in its ceiling's hundredth (TaxLine.DialGrain), a rate in
-                // points in whole points as before; the coarse step is printed under the name in the currency the figure uses.
-                grain: taxLine.DialGrain,
-                grainUnit: taxLine.IsPerTonne ? EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t" : null,
-                // F4-4 / board 15b: the statute's kind under the name; the average effective rate at the mean income under the figure - the row's one figure
-                // P6-E1 (2026-09-17): the rate WITH the credit does not fit beside this one - the figure cell is 52 px at 1280 and the pair needed 115, which the
-                // film's overflow guard reported on six captures - so it rides the statute's own foot line under the curve below, where a sentence wraps.
-                figureSecondLine: schedule ? "AER " + TaxSchedule.AverageEffectiveRateAtMeanIncome(_playerCountry, taxLine, draftRate).ToString("0.0", CultureInfo.InvariantCulture) : null,   // the average effective rate at the mean income, in the figure cell's 52 px at 1280
-                nameSecondLine: schedule ? TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind) : null);
-            if (schedule && Event.current.type == EventType.Repaint) { _incomeTaxTrackRect = LedgerRow.LastTrackRect; }
-
-            if (taxLine.IsImplemented)
-            {
-                _taxRateInputs[taxLine.Type] = newRate;
-            }
-            if (schedule) { GUILayout.Space(4f); DrawTaxScheduleRows(taxLine, pendingBill); }
-        }
 
         /// <summary>
         /// F4-4 / board 15b (2026-09-13): THE SCHEDULE ROW - one grammar, six honest shapes. Under the income tax's own D13 row (the lever, the one
@@ -11630,38 +11056,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>
-        /// Master Sequence step 5d bugfix: DrawTaxLineRow's own Implement/Remove bill had no live
-        /// pass/fail indicator, unlike every other bill tier (the annual BudgetBill's Legislative
-        /// Support estimate, and every tier-3 tab's own estimate) - a player had no way to see whether
-        /// their current click would actually pass BEFORE committing to a 21-day wait, and could easily
-        /// end up looking at a DIFFERENT bill's estimate (e.g. the Budget Process tab's) and mistakenly
-        /// think it applied here. If no bill is pending, this scores a HYPOTHETICAL bill for "click
-        /// Implement/Remove right now" (the exact action the button above would take); if one IS
-        /// pending, it scores THAT bill instead, since introducing a new one isn't the live question
-        /// anymore.
-        /// </summary>
-        private void DrawTaxProgramBillVerdict(TaxLine taxLine, TaxProgramBill pendingBill, Rect rect)
-        {
-            TaxProgramBill bill = pendingBill ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !taxLine.IsImplemented };
-            float direction = ParliamentSystem.GetTaxProgramBillDirection(_playerCountry, bill);
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill));   // §654: the bill's own concern, its author voting for it, as the vote reads it
-
-            // The sentence this used to print - "If introduced now: WOULD PASS (current seat
-            // composition)" - said the same thing on every one of thirteen rows, so twelve repetitions
-            // were carrying no information while costing a line each. The qualifier moves to the
-            // screen's own header; the row keeps the verdict, which is the part that varies.
-            // "PENDING" when a bill is already in flight, because then the live question is not whether
-            // introducing one would pass.
-            string text = pendingBill != null ? "PENDING" : wouldPass ? "WOULD PASS" : "WOULD FAIL";
-            Color ink = pendingBill != null
-                ? PoliSimTheme.TextMuted
-                : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
-
-            LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
-        }
-
-        /// <summary>Every WelfareProgramType for the player's country: an Implement/Remove toggle (immediate - see DrawWelfareProgramRow) plus, only while implemented, a slider that directly sets this turn's target GenerosityLevel. Mirrors DrawTaxPolicyContent/DrawTaxLineRow exactly. Master Sequence step 5e, Phase A: the old standalone Welfare Policy tab is retired (folds into Tax/Spending, same as Tax) - reached exclusively via DrawBudgetProcessTab now.</summary>
+        /// <summary>Every WelfareProgramType for the player's country: an Implement/Remove toggle (immediate - see DrawWelfareProgramRow) plus, only while implemented, a slider that directly sets this turn's target GenerosityLevel. Mirrors the tax tiles (DrawBudgetRevenue / DrawBudgetTaxTile, §734) exactly. Master Sequence step 5e, Phase A: the old standalone Welfare Policy tab is retired (folds into Tax/Spending, same as Tax) - reached exclusively via DrawBudgetProcessTab now.</summary>
         private void DrawWelfarePolicyContent()
         {
             DrawColoredLabel("Welfare Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
@@ -11677,7 +11072,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, same reasoning as GetSectorNameColumnWidth/GetTaxTypeNameColumnWidth. The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
+        /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, same reasoning as GetSectorNameColumnWidth (and the retired tax rows' own). The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
         private float GetWelfareProgramNameColumnWidth()
         {
             float widest = 0f;
@@ -11691,7 +11086,7 @@ namespace PoliSim.UI
         /// <summary>
         /// Master Sequence step 5d: Implement/Remove is now its OWN standalone WelfareProgramBill,
         /// introduced immediately on click, resolving independently of the annual budget cycle -
-        /// mirrors DrawTaxLineRow's own doc comment exactly (GenerosityLevel in place of Rate).
+        /// mirrors DrawBudgetTaxTile's own doc comment exactly (GenerosityLevel in place of Rate).
         /// </summary>
         private void DrawWelfareProgramRow(WelfareProgram welfareProgram, float labelWidth)
         {
@@ -11707,7 +11102,7 @@ namespace PoliSim.UI
                 : welfareProgram.IsImplemented ? "Remove" : "Implement";
             GUIStyle toggleStyle = pendingBill != null ? _pendingButtonStyle : welfareProgram.IsImplemented ? _removeButtonStyle : _implementButtonStyle;   // P5-1 (board 6a): three faces, one width
 
-            // Identical shape to DrawTaxLineRow - see that method for the control-order reasoning, which
+            // Identical shape to DrawBudgetTaxTile - see that method for the control-order reasoning, which
             // applies here unchanged: button, then slider, every frame, same sequence at different rects.
             float draftGenerosity = GetWelfareGenerosityInput(welfareProgram.Type, welfareProgram.GenerosityLevel);
             bool hasDraft = welfareProgram.IsImplemented
@@ -11767,7 +11162,7 @@ namespace PoliSim.UI
             float direction = ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill);
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill));   // §654: the bill's own concern (its cuts and its author), as the vote reads it
 
-            // See DrawTaxProgramBillVerdict - the "(current seat composition)" qualifier moved to the
+            // See the tax tile's switch slip (DrawBudgetTaxTile) - the "(current seat composition)" qualifier moved to the
             // screen header there for the same reason it moves here, and it is declared to Design as V1.
             string text = pendingBill != null ? "PENDING" : wouldPass ? "WOULD PASS" : "WOULD FAIL";
             Color ink = pendingBill != null
@@ -12120,7 +11515,7 @@ namespace PoliSim.UI
         ///
         /// Political Systems Overhaul Part B, full rollout (Master Sequence step 5c): Create/Dissolve
         /// now edits DRAFT state only (_swfExistsDraft) - it no longer mutates
-        /// Country.SovereignWealthFund directly, mirroring DrawTaxLineRow/DrawWelfareProgramRow.
+        /// Country.SovereignWealthFund directly, mirroring DrawBudgetTaxTile/DrawWelfareProgramRow.
         /// Follows the SAME stable-control-layout pattern: every control below (both info labels, all
         /// six sliders) is emitted every frame regardless of whether a real fund currently exists - a
         /// BudgetBill can create/dissolve the fund in the background (ParliamentSystem.ApplyBillResult
@@ -12180,7 +11575,7 @@ namespace PoliSim.UI
             // encoding it in a label.
             //
             // Every row emits exactly one control, in the same order as before: Create/Dissolve button
-            // above, then contribution, domestic, and the four weights. See DrawTaxPolicyContent's doc
+            // above, then contribution, domestic, and the four weights. See DrawBudgetRevenue's doc
             // comment for why that ordering is a hang trigger rather than a preference.
             float SwfRow(string name, float standing, float draft, float min, float max,
                 string format, string suffix, string trailing)
