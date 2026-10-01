@@ -63,6 +63,74 @@ namespace PoliSim.Simulation
                 Value = country.State.NominalGdp,   // P5-B6: the published GDP is in current prices
                 Status = RevisionStatus.Final
             });
+            SeedPreStartRecord(country);
+        }
+
+        /// <summary>
+        /// §709 (Elias's ruling of 2026-10-01, item 0: "If the incumbent's term before the start is missing, seed it from sourced macro data for the
+        /// period since the previous election, the retrospective economy Duch &amp; Stevenson measure, per country"). Measured first: the perceived
+        /// economy read nothing from before a start - unemployment and inflation were never seeded, and every print whose month began before the
+        /// start is suppressed, so a German game reached its campaign's opening on 29 December 2024 with nothing published and judged the
+        /// government's record at a flat 50.
+        /// <para>The two series the reading takes, as the real releases had them (<see cref="Elections.Generated.PreStartRecord"/>, SOURCED: Eurostat
+        /// une_rt_m and the HICP annual rate for the EU five, BLS U-3 and CPI-U for the USA; `ElectionsData/macro/prestart_record.md`), one entry
+        /// per month from the month of the election that opened the incumbent's term (<see cref="PreStartWindowOpens"/>) to the last month the
+        /// game's own calendar would have published before the start (<see cref="ReleaseCalendar.MonthlyReleaseDate"/>) - nothing published on or
+        /// after the start, so nothing the start's day could not have read. Final, as an inherited figure is. A month the source never published
+        /// (the BLS's October 2025) is left out, never read as zero. A series already holding entries (a save) is left as it is.</para>
+        /// <para>Nothing in the economy reads these two series - the perceived reading (the government's record at a campaign's opening, the night's
+        /// prediction) is their only reader (§709's measurement).</para>
+        /// </summary>
+        public static int SeedPreStartRecord(Country country)
+        {
+            System.DateTime start = SimulationManager.EpochDate;
+            System.DateTime opens = PreStartWindowOpens(country.Id, start);
+            if (opens == System.DateTime.MinValue) { return 0; }
+            var first = new System.DateTime(opens.Year, opens.Month, 1);
+            (int Year, int Month, float Unemployment, float Inflation)[] months = Elections.Generated.PreStartRecord.For(country.Id);
+            int added = 0;
+            foreach (PublishedStat stat in new[] { PublishedStat.Unemployment, PublishedStat.Inflation })
+            {
+                PublishedSeries series = country.Published.GetOrCreate(stat);
+                if (series.Entries.Count > 0) { continue; }
+                foreach ((int year, int month, float unemployment, float inflation) in months)
+                {
+                    var periodStart = new System.DateTime(year, month, 1);
+                    if (periodStart < first) { continue; }
+                    float value = stat == PublishedStat.Unemployment ? unemployment : inflation;
+                    if (float.IsNaN(value)) { continue; }
+                    System.DateTime? published = ReleaseCalendar.MonthlyReleaseDate(stat, country.Id, year, month);
+                    if (!published.HasValue || published.Value >= start) { break; }   // oldest first: every later month publishes later still
+                    series.Entries.Add(new PublishedEntry
+                    {
+                        ReferencePeriodStart = periodStart,
+                        ReferencePeriodEnd = periodStart.AddMonths(1).AddDays(-1),
+                        PublicationDate = published.Value,
+                        Value = value,
+                        Status = RevisionStatus.Final
+                    });
+                    added++;
+                }
+            }
+            return added;
+        }
+
+        /// <summary>
+        /// §709: the day the incumbent's term opened - the latest election of record before <paramref name="start"/> that chose the head of
+        /// government: the chamber's in a parliamentary country, the presidential election in the USA (the president's party carries the economic
+        /// vote, Duch &amp; Stevenson's coding; a midterm elects no executive). MinValue where the clock holds none.
+        /// </summary>
+        public static System.DateTime PreStartWindowOpens(CountryId id, System.DateTime start)
+        {
+            System.DateTime opens = System.DateTime.MinValue;
+            foreach (Elections.WorldClock.ChamberOfRecord chamber in Elections.WorldClock.Chambers(id))
+            {
+                System.DateTime day = chamber.ElectionDay;
+                if (day == System.DateTime.MinValue || day >= start) { continue; }
+                if (id == CountryId.USA && day.Year % 4 != 0) { continue; }
+                if (day > opens) { opens = day; }
+            }
+            return opens;
         }
 
         /// <summary>

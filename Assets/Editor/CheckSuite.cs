@@ -212,6 +212,7 @@ namespace PoliSim.EditorTools
             ("GermanFormationDiagnostic", GermanFormationDiagnostic.Run),   // §705: the chancellor's election under Art. 63 GG on the parties' dated declarations - the Union one group, convening, the fourteen days, the most votes, the reference
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature
+            ("PreStartRecordDiagnostic", PreStartRecordDiagnostic.Run),   // §709: the pre-start record - the generated table its CSV, every start's seed window, the reading before and after, Germany 2025 and Sweden 2026 with the record
             ("PortraitCoverageCheck", PortraitCoverageCheck.Run),
             ("AreaIconCoverageCheck", AreaIconCoverageCheck.Run),
             ("ChromeV2CoverageCheck", ChromeV2CoverageCheck.Run),

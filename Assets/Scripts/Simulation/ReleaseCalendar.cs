@@ -192,6 +192,30 @@ namespace PoliSim.Simulation
             return new System.DateTime(date.Year, lastQuarterEndMonth, System.DateTime.DaysInMonth(date.Year, lastQuarterEndMonth));
         }
 
+        /// <summary>
+        /// §709 (the pre-start record): the day the game's calendar publishes a MONTHLY figure describing <paramref name="year"/>-<paramref name="month"/> -
+        /// the month after it, by the same rules <see cref="IsReleaseDay"/> tests (unemployment and its family on the first Friday; inflation and its family
+        /// on the 12th in the USA, on the last working day elsewhere). Null for a stat that is not monthly.
+        /// </summary>
+        public static System.DateTime? MonthlyReleaseDate(PublishedStat stat, CountryId country, int year, int month)
+        {
+            var next = new System.DateTime(year, month, 1).AddMonths(1);
+            switch (stat)
+            {
+                case PublishedStat.Unemployment:
+                case PublishedStat.YouthUnemployment:
+                    for (int day = 1; day <= 7; day++) { var d = new System.DateTime(next.Year, next.Month, day); if (IsFirstFridayOfMonth(d)) { return d; } }
+                    return null;
+                case PublishedStat.Inflation:
+                case PublishedStat.RealWageIndex:
+                    if (country == CountryId.USA) { return new System.DateTime(next.Year, next.Month, 12); }
+                    for (int day = System.DateTime.DaysInMonth(next.Year, next.Month); day >= 1; day--) { var d = new System.DateTime(next.Year, next.Month, day); if (IsLastWorkingDayOfMonth(d)) { return d; } }
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
         private static bool IsFirstFridayOfMonth(System.DateTime date)
         {
             return date.DayOfWeek == System.DayOfWeek.Friday && date.Day <= 7;
