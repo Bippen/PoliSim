@@ -2300,7 +2300,7 @@ namespace PoliSim.UI
                     {
                         foreach (EffectArrow a in _effectsAtTurnEnd)
                         {
-                            record.Effects.Add(new DivisionEffect { Name = a.Name, Value = a.Value, HigherIsBetter = a.HigherIsBetter, Figure = a.Figure });
+                            record.Effects.Add(new DivisionEffect { Name = a.Name, Value = a.Value, HigherIsBetter = a.HigherIsBetter ?? true, Neutral = !a.HigherIsBetter.HasValue, Figure = a.Figure });
                         }
                     }
                     _signingQueue.Enqueue(record);
@@ -7849,8 +7849,9 @@ namespace PoliSim.UI
             if (!DeskProvenance.On)
             {
                 // 19b: the sheet's slips - the book built from the model each frame, the one StatsSlipReachabilityCheck reads - drawn last, over the sheet
+                FiscalTurnReport closed = _simulationManager.GetLastFiscalReport(PlayerCountryId);
                 PeopleSlips.Book book = StatsSlips.Build(_playerCountry, _world, PairPartner(), _statsSeriesSection.PageFromEnd, _statsTradeSection.PageFromEnd,
-                    _simulationManager.GetLastFiscalReport(PlayerCountryId)?.TariffPassThroughPp);
+                    closed?.TariffPassThroughPp, DerivedStats.DeficitPercentOfGdp(_playerCountry, closed));
                 DrawSlips(book, sheet);
             }
         }
@@ -9804,6 +9805,17 @@ namespace PoliSim.UI
             LedgerRow.DrawReadOnly(rowRect, name, fill, figureText, trailingText, barInk, _labelStyle, _labelStyle);
         }
 
+        /// <summary>§725 (Elias's ruling, 2026-10-01): a closed year's balance - the fiscal family's neutral ink, the warning only where its deficit breaches the
+        /// country's statutory rule (<see cref="FiscalRules"/>), the caption then naming the rule. Until today the balance was green or red by its sign.</summary>
+        private void DrawClosedBalanceRow(string name, FiscalTurnReport closed, string figureText, string caption)
+        {
+            float? deficit = DerivedStats.DeficitPercentOfGdp(_playerCountry, closed);
+            string rule = null;
+            Color ink = deficit.HasValue ? V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Deficit, deficit.Value, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), out rule)
+                : UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
+            DrawDerivedStatRow(name, -1f, figureText, rule != null ? FiscalRules.Short(FiscalRules.Measure.Deficit) : caption, ink);
+        }
+
         /// <summary>Read-only headline readout for the five non-player countries; the full dashboard-level detail set for USA (the player's own country) - matches the task's explicit "read-only for the five, full detail for USA" split.</summary>
         private void DrawSelectedMapCountryPanel(CountryId countryId)
         {
@@ -9834,7 +9846,7 @@ namespace PoliSim.UI
             {
                 DrawDerivedStatRow("Poverty rate", -1f, $"{state.PovertyRate:F1}%", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Welfare));
                 FiscalTurnReport lastYearReport = _simulationManager.GetLastFiscalReport(PlayerCountryId);   // P2-0.4: the year, not the accumulator
-                DrawDerivedStatRow("Budget balance", -1f, lastYearReport != null ? UiFormat.MoneyDelta(lastYearReport.BudgetBalance, MoneyUnit.Billions) : "-", "last closed year", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
+                DrawClosedBalanceRow("Budget balance", lastYearReport, lastYearReport != null ? UiFormat.MoneyDelta(lastYearReport.BudgetBalance, MoneyUnit.Billions) : "-", "last closed year");
                 DrawDerivedStatRow("Currency strength", -1f, $"{state.CurrencyStrength:F1}", null, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
             }
 
@@ -10063,14 +10075,14 @@ namespace PoliSim.UI
         private List<EffectArrow> CabinetOptionArrows(CabinetDecisionOption option)
         {
             var arrows = new List<EffectArrow>();
-            void Add(string name, float value, bool higherIsBetter, string unit)
+            void Add(string name, float value, bool? higherIsBetter, string unit)
             {
                 if (Mathf.Abs(value) >= 0.005f) { arrows.Add(new EffectArrow(name, value, higherIsBetter, value.ToString("+0.##;-0.##", CultureInfo.CurrentCulture) + unit)); }
             }
             Add("Crime index", option.CrimeIndexShock, higherIsBetter: false, "");
             Add("Poverty rate", option.PovertyRateShock, higherIsBetter: false, " pts");
             Add("Approval", option.ApprovalEffect, higherIsBetter: true, " pts");
-            Add("Trade balance", option.TradeBalanceShock, higherIsBetter: true, "");
+            Add("Trade balance", option.TradeBalanceShock, higherIsBetter: null, "");   // §725 (V35 rule 5): a mix - direction only, neutral ink
             Add("Youth unemployment", option.YouthUnemploymentShock, higherIsBetter: false, " pts");
             return arrows;
         }
@@ -11121,7 +11133,7 @@ namespace PoliSim.UI
                 // EN-7b: the electricity tax's receipts above the 2023 statute - a law in force moved them
                 DrawDerivedStatRow("Electricity tax", -1f, UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "vs the 2023 statute", ink);
             }
-            DrawDerivedStatRow("Balance", -1f, UiFormat.MoneyDelta(report.BudgetBalance, MoneyUnit.Billions), "as recorded", UiPalette.GetDeltaColor(report.BudgetBalance, higherIsBetter: true));
+            DrawClosedBalanceRow("Balance", report, UiFormat.MoneyDelta(report.BudgetBalance, MoneyUnit.Billions), "as recorded");
         }
 
         /// <summary>
@@ -11647,8 +11659,9 @@ namespace PoliSim.UI
             // narrowed the column - a money value broken across two lines is briefly a different number (§A.9a).
             // Two lines, always: the pair, then the net alone in its ink. Never one line that may or may not hold.
             GUILayout.Label($"Revenue {UiFormat.MoneyDelta(_cachedBudgetImpact.RevenueDelta, MoneyUnit.Billions)} · Spending {UiFormat.MoneyDelta(_cachedBudgetImpact.SpendingDelta, MoneyUnit.Billions)}", _labelStyle);
+            // §725 (Elias's ruling): a change in the balance has no consensus direction - its direction in the neutral ink; the warning is a LEVEL's, past a rule
             DrawColoredLabel($"Net {UiFormat.MoneyDelta(_cachedBudgetImpact.NetDelta, MoneyUnit.Billions)}",
-                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, higherIsBetter: true));
+                _labelStyle, UiPalette.GetDeltaColor(_cachedBudgetImpact.NetDelta, (bool?)null));
 
             // P2-2.1: the scope, once, for the delta above and the arrows below - one line, so both fit a 720 frame.
             // Board 5c (D11 row 3): the scope sentence that stood here is the scope LINE under the arrows now - said

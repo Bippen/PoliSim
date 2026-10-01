@@ -84,6 +84,9 @@ namespace PoliSim.UI
         /// </summary>
         private MoneyUnit? _moneyUnit;
 
+        /// <summary>§725 (Elias's ruling): the statutory rule the head's level breaches, or null - this draw's, set by <see cref="Draw"/>.</summary>
+        private System.Func<float, string> _breachOf;
+
         /// <summary>0 = most recent window (the only page that can show a next-turn projection); increases going further back in time. Clamped to the valid range fresh every Draw call against the CURRENT history length, so a page index that's now out of range (e.g. right after a fresh game/country switch with less history) never gets stuck showing a blank page.</summary>
         private int _pageFromEnd;
 
@@ -148,9 +151,10 @@ namespace PoliSim.UI
         /// <paramref name="section"/> shares one pager among a section's charts and drops this chart's pager and foot (their words are the section's
         /// slips); <paramref name="datedHead"/> marks the head's figure ◇ DATED - the window's last point, beside a live card.</para>
         public void Draw(string title, IReadOnlyList<float> history, float? projectedValue, GUIStyle labelStyle, bool? higherIsBetter, MoneyUnit? moneyUnit, float? thresholdValue = null, string thresholdLabel = null, IReadOnlyList<float> enactmentPositions = null, IReadOnlyList<float> shadowHistory = null, bool deltaInPoints = false,
-            ReadingUnit? reading = null, float? heldSeed = null, GraphSection section = null, bool datedHead = false)
+            ReadingUnit? reading = null, float? heldSeed = null, GraphSection section = null, bool datedHead = false, System.Func<float, string> breachOf = null)
         {
             EnsureOverlayStylesInitialized(labelStyle);
+            _breachOf = breachOf;
             _moneyUnit = moneyUnit;
             _unit = reading ?? (moneyUnit.HasValue ? ReadingUnit.Money : deltaInPoints ? ReadingUnit.Percent : ReadingUnit.Score);
             _deltaDecimals = deltaInPoints ? 2 : 1;
@@ -466,12 +470,14 @@ namespace PoliSim.UI
             GUILayout.BeginHorizontal();
             // D-ST (23a ⑪, 19a): the verdict glyph leads the name only where the sign and the verdict can disagree - a reading where lower is better -
             // and never on a FLAT move (a move under its printed precision carries no verdict).
-            if (!string.IsNullOrEmpty(title) && liveCount >= 2 && higherIsBetter == false && !flat)
+            // §725 (Elias's ruling): a level past its statutory rule leads with the warning whatever its move - the LEVEL's state, its slip naming the rule.
+            bool breached = _breachOf != null && liveCount >= 1 && _breachOf(last) != null;
+            if (!string.IsNullOrEmpty(title) && (breached || (liveCount >= 2 && higherIsBetter == false && !flat)))
             {
-                Symbol verdict = change < 0f ? Symbol.Good : Symbol.Bad;
+                Symbol verdict = breached ? Symbol.Bad : change < 0f ? Symbol.Good : Symbol.Bad;
                 float side = Mathf.Round(_pageLabelStyle.fontSize * 1.1f);
                 Rect g = GUILayoutUtility.GetRect(side, _pageLabelStyle.lineHeight + 4f, GUILayout.Width(side), GUILayout.ExpandWidth(false));
-                SymbolRegistry.Draw(g, verdict, verdict == Symbol.Good ? PoliSimTheme.Good : PoliSimTheme.Bad, _pageLabelStyle);
+                SymbolRegistry.Draw(g, verdict, breached ? V35.Warning : verdict == Symbol.Good ? PoliSimTheme.Good : PoliSimTheme.Bad, _pageLabelStyle);
                 if (repaint) { HeadVerdictRect = g; HeadVerdict = verdict; }
                 GUILayout.Space(4f);
             }
@@ -506,9 +512,10 @@ namespace PoliSim.UI
                     // D-ST (23a ⑩): the change in the reading's OWN unit - US$ for money, pp for a percentage, a plain number for a score - never a
                     // relative per cent of a rate (the foot had said MONEY, NEVER % beside a Δ of +8.2 %); a FLAT move prints its zero, unsigned and neutral.
                     string deltaText = StatsReadings.DeltaText(first, last, _unit, _moneyUnit, _deltaDecimals);
-                    _changeLabelStyle.normal.textColor = flat || !higherIsBetter.HasValue
-                        ? UiPalette.NeutralChangeColor
-                        : UiPalette.GetDeltaColor(change, higherIsBetter.Value);
+                    // §725: no consensus direction prints the move in the neutral ink (V35 rule 5); a level past its rule, in the warning
+                    _changeLabelStyle.normal.textColor = flat ? UiPalette.NeutralChangeColor
+                        : breached ? V35.Warning
+                        : UiPalette.GetDeltaColor(change, higherIsBetter);
                     GUILayout.Space(6f);
                     GUILayout.Label(deltaText, _changeLabelStyle, GUILayout.ExpandWidth(false));
                     if (repaint) { HeadDeltaRect = GUILayoutUtility.GetLastRect(); HeadDeltaText = deltaText; }

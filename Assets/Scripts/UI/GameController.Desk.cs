@@ -671,7 +671,7 @@ namespace PoliSim.UI
             // what is before the chamber - the player's alternative once tabled, else the government's budget - then the alternative as drafted, then the book as it stands (DeskEffectsNote).
             DeskEffectsSubject subject = DeskEffectsSubjectNow(out string rateLever, out bool mayTable, out int chamberDays);
             PolicyPreview shown = DeskEffectsPreview(subject);
-            var rows = new List<(string label, float value, string text, bool higherIsBetter, float range)>
+            var rows = new List<(string label, float value, string text, bool? higherIsBetter, float range)>
             {
                 ("GDP growth", shown.GdpGrowthPercent, Signed(shown.GdpGrowthPercent) + "%", true, DeskRangeGdpGrowthPercent),
                 ("Inflation", shown.InflationChange, Signed(shown.InflationChange) + " pts", false, DeskRangeInflationPoints),
@@ -680,7 +680,7 @@ namespace PoliSim.UI
                 ("Poverty rate", shown.PovertyRateChange, Signed(shown.PovertyRateChange) + " pts", false, DeskRangePovertyPoints),
                 ("Labor force participation", shown.LaborForceParticipationRateChange, Signed(shown.LaborForceParticipationRateChange) + " pts", true, DeskRangeParticipationPoints),
                 ("Crime index", shown.CrimeIndexChange, Signed(shown.CrimeIndexChange), false, DeskRangeCrimeIndex),
-                ("Net budget", shown.NetBudgetImpact, UiFormat.MoneyDelta(shown.NetBudgetImpact, MoneyUnit.Billions), true, DeskRangeNetBudgetShareOfGdp * gdp)
+                ("Net budget", shown.NetBudgetImpact, UiFormat.MoneyDelta(shown.NetBudgetImpact, MoneyUnit.Billions), null, DeskRangeNetBudgetShareOfGdp * gdp)   // §725 (V35 rule 5, Elias's ruling): a change in the balance has no consensus direction - its arrow in the neutral ink
             };
 
             // §568 (2026-09-22, Design's drift row D2): BOARD 5c'S ARROWS, not a column of centred bars. The desk was the last surface in the game estimating an effect in

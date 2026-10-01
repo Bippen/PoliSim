@@ -253,10 +253,12 @@ namespace PoliSim.UI
             { StatNodeId.Unemployment, new StatNodeInfo { Name = "Unemployment", HigherIsBetter = false } },
             { StatNodeId.Inflation, new StatNodeInfo { Name = "Inflation", HigherIsBetter = null } },
             { StatNodeId.Approval, new StatNodeInfo { Name = "Approval Rating", HigherIsBetter = true } },
-            { StatNodeId.DebtToGdp, new StatNodeInfo { Name = "Debt-to-GDP", HigherIsBetter = false } },
+            // §725 (Elias's ruling, 2026-10-01): debt has no consensus direction - neutral by default, the warning state only past a statutory limit (FiscalRules), which a web edge has no level to test
+            { StatNodeId.DebtToGdp, new StatNodeInfo { Name = "Debt-to-GDP", HigherIsBetter = null } },
             { StatNodeId.Poverty, new StatNodeInfo { Name = "Poverty Rate", HigherIsBetter = false } },
             { StatNodeId.InterestRate, new StatNodeInfo { Name = "Interest Rate", HigherIsBetter = null } },
-            { StatNodeId.TradeBalance, new StatNodeInfo { Name = "Trade Balance", HigherIsBetter = true, Unit = MoneyUnit.Billions } },
+            // §725 (V35 rule 5): the trade balance is a mix, not an outcome most agree on - direction only, neutral ink
+            { StatNodeId.TradeBalance, new StatNodeInfo { Name = "Trade Balance", HigherIsBetter = null, Unit = MoneyUnit.Billions } },
             { StatNodeId.Lfpr, new StatNodeInfo { Name = "Labor Force Participation", HigherIsBetter = true } },
             { StatNodeId.Crime, new StatNodeInfo { Name = "Crime Index", HigherIsBetter = false } },
             { StatNodeId.PrisonPopulation, new StatNodeInfo { Name = "Incarceration Rate", HigherIsBetter = null } },

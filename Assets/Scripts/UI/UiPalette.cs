@@ -112,6 +112,14 @@ namespace PoliSim.UI
             return isGoodChange ? PositiveChangeColor : NegativeChangeColor;
         }
 
+        /// <summary>§725 (V35 rule 5): the same judgment where the stat may have NO consensus direction - null is a lever, a mix, the trade balance, or
+        /// debt and the balance short of a statutory breach, and prints its direction only, in <see cref="V35.DirectionNeutral"/>.</summary>
+        public static Color GetDeltaColor(float delta, bool? higherIsBetter)
+        {
+            if (higherIsBetter.HasValue) { return GetDeltaColor(delta, higherIsBetter.Value); }
+            return Mathf.Abs(delta) < NeutralChangeThreshold ? NeutralChangeColor : V35.DirectionNeutral;
+        }
+
         // --- System-area hues: one distinct family per part of the game, spread around the wheel so no two are confusable, and none of them overlap the pure green/red reserved for the change convention above. ---
         private static readonly Dictionary<SystemArea, Color> AreaColors = new Dictionary<SystemArea, Color>
         {

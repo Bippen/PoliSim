@@ -8,10 +8,11 @@ namespace PoliSim.UI
     {
         public readonly string Name;
         public readonly float Value;
-        public readonly bool HigherIsBetter;
+        /// <summary>§725: null where the outcome has no consensus direction (V35 rule 5) - the arrow keeps its direction in the neutral ink.</summary>
+        public readonly bool? HigherIsBetter;
         public readonly string Figure;
 
-        public EffectArrow(string name, float value, bool higherIsBetter, string figure)
+        public EffectArrow(string name, float value, bool? higherIsBetter, string figure)
         {
             Name = name;
             Value = value;

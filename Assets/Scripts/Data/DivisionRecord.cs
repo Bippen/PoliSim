@@ -145,5 +145,7 @@ namespace PoliSim.Data
         public float Value;
         public bool HigherIsBetter;
         public string Figure;
+        /// <summary>§725 (V35 rule 5): the outcome has no consensus direction - drawn in the neutral ink, <see cref="HigherIsBetter"/> unread. False on every effect saved before it.</summary>
+        public bool Neutral;
     }
 }

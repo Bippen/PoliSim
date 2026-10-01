@@ -71,5 +71,13 @@ namespace PoliSim.UI
         // ---- the colour states (V35_ASK rule 5, 27a §5) ----
         /// <summary>A change with no consensus direction (levers, mixes, prices, the trade balance): direction only, in the composition's muted ink.</summary>
         public static readonly Color DirectionNeutral = PoliSimTheme.Hex(0x665E4F);
+
+        /// <summary>§725: the warning state - a figure past a statutory limit (<see cref="FiscalRules"/>); D6's bad ink.</summary>
+        public static Color Warning => PoliSimTheme.Bad;
+
+        /// <summary>§725 (Elias's ruling): debt's or the balance's ink - <paramref name="neutral"/> by default, <see cref="Warning"/> only where the level
+        /// breaches the country's statutory rule; <paramref name="rule"/> names it for the slip.</summary>
+        public static Color FiscalInk(PoliSim.Data.CountryId country, FiscalRules.Measure measure, float percentOfGdp, Color neutral, out string rule) =>
+            FiscalRules.Breaches(country, measure, percentOfGdp, out rule) ? Warning : neutral;
     }
 }

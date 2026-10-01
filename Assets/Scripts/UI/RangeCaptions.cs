@@ -377,13 +377,15 @@ namespace PoliSim.UI
             // BASELINE half), so no line claims the older worker stays at work.
             { "Pension age", new Dial("Pension age", "the pension line", -1, 0.5f, new[]
             {
-                B("Early release", "Pensions from sixty. The line carries a generation.", +1),
+                // §725: every line held to 45 characters - France's lane between the end-names is 329 px at 1280, 45 of the 7.2 px caption face (drys725 read
+                // "Customary" 81 px over on three pension frames); the six longer lines cut, same names, same signs
+                B("Early release", "From sixty. The line carries a generation.", +1),
                 B("Generous", "An early exit for most. The line runs heavy.", +1),
-                B("Relaxed", "More pensioners than custom. The line is larger.", +1),
-                B("Accommodating", "A year under the custom. The line a shade over.", +1),
-                B("Customary", "Retirement at sixty-five. The line as the pyramid has it.", 0),
-                B("Deferred", "A year past custom. Fewer pensioners; a lighter line.", -1),
-                B("Extended", "Two years on. The line eases; the pyramid does not.", -1),
+                B("Relaxed", "More pensioners than custom; a larger line.", +1),
+                B("Accommodating", "A year under custom. The line a shade over.", +1),
+                B("Customary", "Sixty-five. The line as the pyramid has it.", 0),
+                B("Deferred", "A year past custom; a lighter line.", -1),
+                B("Extended", "Two years on. The line eases.", -1),
                 B("Late", "Three years on. The line is smaller.", -1),   // §697: shortened - the German film's pension frames overflowed it by 38.6 px
                 B("Very late", "Few reach it young. The line is lean.", -1),
                 B("Terminal", "Pensions from seventy. The line at its floor.", -1),

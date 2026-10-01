@@ -828,7 +828,7 @@ namespace PoliSim.UI
             }
 
             var arrows = new List<EffectArrow>(standingBudget.Count);
-            foreach (DivisionEffect e in standingBudget) { arrows.Add(new EffectArrow(e.Name, e.Value, e.HigherIsBetter, e.Figure)); }
+            foreach (DivisionEffect e in standingBudget) { arrows.Add(new EffectArrow(e.Name, e.Value, e.Neutral ? (bool?)null : e.HigherIsBetter, e.Figure)); }
 
             var art = new GameObject("Arrows");
             art.transform.SetParent(parent, false);

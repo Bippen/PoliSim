@@ -432,7 +432,7 @@ namespace PoliSim.UI
                 var arrows = new List<EffectArrow>(record.Effects.Count);
                 foreach (DivisionEffect e in record.Effects)
                 {
-                    arrows.Add(new EffectArrow(e.Name, e.Value, e.HigherIsBetter, e.Figure));
+                    arrows.Add(new EffectArrow(e.Name, e.Value, e.Neutral ? (bool?)null : e.HigherIsBetter, e.Figure));
                 }
                 PlateImage(estimate, "Arrows", CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF4ECDC)), 420f / 120f);
                 PlateCaption(estimate, EffectArrowsRenderer.FiguresLine(arrows));

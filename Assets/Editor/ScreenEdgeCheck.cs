@@ -203,9 +203,14 @@ namespace PoliSim.EditorTools
             Case("pf17_wedge", (x, row) => !(row < 4 && x >= 1222 + 116 * row && x <= 1727), false, true);
             Case("planted_overflow", (x, row) => x >= 400 && row >= 300 && row < 900, true, false);
             Case("ground_takeover", (x, row) => false, false, false);
+            // §725: the v3.5 rail - the frame's first columns desk ground, the tabs and the sheet from there on - is a clean frame, not a clip; a
+            // band of ground wider than the rail's (the tabs not reaching their edge) still is
+            int railGround = RailGroundColumns(h) - 1;
+            Case("v35_rail_ground", (x, row) => x >= railGround, false, false);
+            Case("v35_rail_short", (x, row) => x >= railGround + 12, true, true);
 
             if (failures.Count > 0) { Debug.LogError(sb + $"EDGE SELF-TEST: {failures.Count} case(s) wrong - {string.Join(", ", failures)}"); CheckExit.Finish(1); return; }
-            Debug.Log(sb + "=== ScreenEdgeCheck self-test: ALL FOUR CASES AS WANTED ===");
+            Debug.Log(sb + "=== ScreenEdgeCheck self-test: ALL SIX CASES AS WANTED ===");
             CheckExit.Finish(0);
         }
         /// <summary>P2-1.1: the share of a margin line a frame edge must cover to count as flush at zero margin. The
@@ -270,6 +275,7 @@ namespace PoliSim.EditorTools
 
                 int marginX = Mathf.RoundToInt(width * marginFraction);
                 int marginY = Mathf.RoundToInt(height * marginFraction);
+                int leftX = marginX + RailGroundColumns(height);
                 int rightX = width - marginX - 1;
                 int bottomY = marginY;                  // bottom-up: the capture's bottom edge is low y
                 int topY = height - marginY - 1;
@@ -279,7 +285,7 @@ namespace PoliSim.EditorTools
                 int leftRun = 0, rightRun = 0, topRun = 0, bottomRun = 0;
                 for (int y = 0; y < height; y++)
                 {
-                    leftRun = IsContent(pixels[y * width + marginX], desk) ? leftRun + 1 : 0;
+                    leftRun = IsContent(pixels[y * width + leftX], desk) ? leftRun + 1 : 0;
                     rightRun = IsContent(pixels[y * width + rightX], desk) ? rightRun + 1 : 0;
                     left = Mathf.Max(left, leftRun);
                     right = Mathf.Max(right, rightRun);
@@ -300,6 +306,16 @@ namespace PoliSim.EditorTools
                 UnityEngine.Object.DestroyImmediate(texture);
             }
         }
+
+        /// <summary>
+        /// §725: WHERE THE LEFT LINE IS READ. Until UI v3.5 the rail's tongues ran to the frame's left edge and the left line was the frame's first
+        /// column; v3.5's rail (§723, Design's V35 item 7) draws its folder tabs flush to the PAGE, 80 of the rail's 84 px, so the frame's first
+        /// 4 px (at 1280 x 699) are desk ground by design - and every frame of the first v3.5 films read "left not flush, right flush", a CLIPPED
+        /// that was the rail's ground, not a clip. The line is read one pixel inside the tab column at the capture's own height, so it still asks
+        /// what it asked: do the tabs REACH their frame edge (a run one tab tall), and a band of ground there still fails.
+        /// </summary>
+        private static int RailGroundColumns(int height) =>
+            Mathf.RoundToInt((PoliSim.UI.V35.RailWidth - PoliSim.UI.V35.TabWidth) * height / PoliSim.UI.V35.ReferenceHeight) + 1;
 
         private static bool IsContent(Color32 pixel, Color32 desk)
         {

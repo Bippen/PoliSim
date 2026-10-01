@@ -419,16 +419,20 @@ namespace PoliSim.UI
             }
 
             Color fiscalInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
-            var rows = new List<(string name, float? value, Color ink)>
+            // §725 (Elias's ruling, 2026-10-01): the deficit is neutral ink - the fiscal family's, as its siblings - and turns to the warning only past the country's
+            // statutory rule (FiscalRules), its slip naming the rule; the primary deficit is under no rule and stays neutral. Until today both were green or red by sign.
+            string deficitRule = null;
+            Color deficitInk = deficit.HasValue ? V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Deficit, deficit.Value, fiscalInk, out deficitRule) : fiscalInk;
+            var rows = new List<(string name, float? value, Color ink, string anchor)>
             {
-                ("Tax burden", tax, fiscalInk),
-                ("Government spending", spending, fiscalInk),
+                ("Tax burden", tax, fiscalInk, null),
+                ("Government spending", spending, fiscalInk, null),
                 (deficit.HasValue && deficit.Value < 0f ? "Surplus" : "Deficit",
                     deficit.HasValue ? Mathf.Abs(deficit.Value) : (float?)null,
-                    deficit.HasValue ? UiPalette.GetDeltaColor(deficit.Value, higherIsBetter: false) : fiscalInk),
+                    deficitInk, deficitRule != null ? "fiscal:rule" : null),
                 (primary.HasValue && primary.Value < 0f ? "Primary surplus" : "Primary deficit",
                     primary.HasValue ? Mathf.Abs(primary.Value) : (float?)null,
-                    primary.HasValue ? UiPalette.GetDeltaColor(primary.Value, higherIsBetter: false) : fiscalInk)
+                    fiscalInk, null)
             };
 
             Rect head = DrawStatsSectionCaption("FISCAL POSITION");
@@ -462,7 +466,9 @@ namespace PoliSim.UI
                     var track = new Rect(barX, y + (rowHeight - barHeight) * 0.5f, barWidth, barHeight);
                     PoliSimTheme.Rule(track, PoliSimTheme.BarTrack);
                     PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(row.value.Value / axisMax), track.height), row.ink);
-                    PoliSimWidgets.MeasuredLabel(new Rect(block.xMax - valueWidth, y, valueWidth, rowHeight), UiFormat.Number(row.value.Value, 1) + "%", value);
+                    var figureRect = new Rect(block.xMax - valueWidth, y, valueWidth, rowHeight);
+                    PoliSimWidgets.MeasuredLabel(figureRect, UiFormat.Number(row.value.Value, 1) + "%", row.anchor != null ? Inked(new GUIStyle(value), V35.Warning) : value);
+                    if (row.anchor != null) { StatsAnchor(new Rect(track.x, y, figureRect.xMax - track.x, rowHeight), row.anchor); }   // §725: the bar and its figure open the rule's slip
                 }
                 else
                 {
@@ -831,7 +837,8 @@ namespace PoliSim.UI
             bool dated = series.LastQuarterlyDate.HasValue && series.LastQuarterlyDate.Value < _simulationManager.CurrentDate;
             GraphRenderer graph = StatsGraphFor(c.Id);
             graph.Draw(c.Title, series.Quarterly, projected, graphLabel, c.HigherIsBetter, c.Money, threshold, thresholdLabel, enactments, shadow,
-                reading: c.Unit, heldSeed: c.HeldSeed, section: section, datedHead: dated);
+                reading: c.Unit, heldSeed: c.HeldSeed, section: section, datedHead: dated,
+                breachOf: c.Rule.HasValue ? level => c.BreachOf(PlayerCountryId, level) : (System.Func<float, string>)null);   // §725: the head's warning, the slip's test
             string id = "chart:" + c.Id;
             StatsAnchor(graph.HeadDeltaRect, id + "/delta");
             StatsAnchor(graph.HeadVerdictRect, id + "/verdict");
@@ -917,14 +924,14 @@ namespace PoliSim.UI
             // Debt is carried in the same money as GDP, so it takes GDP's declared unit rather than a
             // MoneyUnit literal here - a literal would be a second place that knows what the seed's
             // money is, which is how the P2 unit bug spread across 21 sites.
-            DrawImpactRow("Government debt", "GovernmentDebt", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), false);
+            DrawImpactRow("Government debt", "GovernmentDebt", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), null);   // §725 (Elias's ruling): debt's move has no consensus direction
         }
 
         /// <summary>One stat's line: the divergence, then each family's share of it largest first, then
         /// the interaction. ⚠ A family whose share rounds away is dropped from the sentence rather than
         /// printed as a zero it is not - but the interaction is printed whatever its size, because its
         /// smallness is the reader's business as much as its largeness.</summary>
-        private void DrawImpactRow(string label, string statField, MoneyUnit? unit, bool higherIsBetter)
+        private void DrawImpactRow(string label, string statField, MoneyUnit? unit, bool? higherIsBetter)
         {
             List<ImpactLine> lines = _impactLedger.LinesFor(_playerCountry, statField, out float divergence);
 

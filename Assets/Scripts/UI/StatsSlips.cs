@@ -17,13 +17,19 @@ namespace PoliSim.UI
         public readonly float? HeldSeed;
         public readonly Func<StatHistory, MultiResolutionSeries> Series;
         public readonly StatNodeId? MoneyStat;
+        /// <summary>§725 (Elias's ruling): the statutory rule the reading's level is judged against (<see cref="FiscalRules"/>), or null - debt's chart has no
+        /// direction, only the warning state past the rule.</summary>
+        public readonly FiscalRules.Measure? Rule;
 
-        public StatsChart(string id, string title, ReadingUnit unit, bool? higherIsBetter, float? heldSeed, Func<StatHistory, MultiResolutionSeries> series, StatNodeId? moneyStat = null)
+        public StatsChart(string id, string title, ReadingUnit unit, bool? higherIsBetter, float? heldSeed, Func<StatHistory, MultiResolutionSeries> series, StatNodeId? moneyStat = null, FiscalRules.Measure? rule = null)
         {
-            Id = id; Title = title; Unit = unit; HigherIsBetter = higherIsBetter; HeldSeed = heldSeed; Series = series; MoneyStat = moneyStat;
+            Id = id; Title = title; Unit = unit; HigherIsBetter = higherIsBetter; HeldSeed = heldSeed; Series = series; MoneyStat = moneyStat; Rule = rule;
         }
 
         public MoneyUnit? Money => MoneyStat.HasValue ? PolicyWebRenderer.GetStatUnit(MoneyStat.Value) : (MoneyUnit?)null;
+
+        /// <summary>§725: the rule this level breaches in <paramref name="country"/>, or null - the head's warning and its slip read the same test.</summary>
+        public string BreachOf(CountryId country, float level) => Rule.HasValue && FiscalRules.Breaches(country, Rule.Value, level, out string rule) ? rule : null;
     }
 
     /// <summary>
@@ -48,10 +54,10 @@ namespace PoliSim.UI
             new StatsChart("inflation", "Inflation", ReadingUnit.Percent, false, null, h => h.Inflation),
             new StatsChart("approval", "Approval rating", ReadingUnit.Score, true, ApprovalSeed, h => h.ApprovalRating),
             new StatsChart("poverty", "Poverty rate", ReadingUnit.Percent, false, null, h => h.PovertyRate),
-            new StatsChart("debt", "Debt-to-GDP", ReadingUnit.Percent, false, null, h => h.DebtToGdpRatio),
+            new StatsChart("debt", "Debt-to-GDP", ReadingUnit.Percent, null, null, h => h.DebtToGdpRatio, rule: FiscalRules.Measure.Debt),   // §725: no direction - the warning past the statutory limit
         };
 
-        public static readonly StatsChart Trade = new StatsChart("trade", "Trade balance · goods and services", ReadingUnit.Money, true, TradeBalanceSeed, h => h.TradeBalance, StatNodeId.TradeBalance);
+        public static readonly StatsChart Trade = new StatsChart("trade", "Trade balance · goods and services", ReadingUnit.Money, null, TradeBalanceSeed, h => h.TradeBalance, StatNodeId.TradeBalance);
 
         /// <summary>The ten headline readings that keep no history (their sparkline slot is ABSENT).</summary>
         public static bool KeepsNoHistory(string label) => label == "Currency Strength" || label == "Government Debt" || label == "Credit Rating";
@@ -60,8 +66,8 @@ namespace PoliSim.UI
 
         /// <summary>The book for the sheet as it stands: <paramref name="partner"/> the pair page's partner (null with no other country),
         /// <paramref name="seriesPage"/> and <paramref name="tradePage"/> the two sections' pages, <paramref name="passThroughPp"/> the last closed
-        /// year's tariff pass-through (null before one closed).</summary>
-        public static PeopleSlips.Book Build(Country home, World world, Country partner, int seriesPage, int tradePage, float? passThroughPp)
+        /// year's tariff pass-through (null before one closed); <paramref name="deficitPercentOfGdp"/> the closed year's deficit (§725's rule test, null before one closed).</summary>
+        public static PeopleSlips.Book Build(Country home, World world, Country partner, int seriesPage, int tradePage, float? passThroughPp, float? deficitPercentOfGdp = null)
         {
             var book = new PeopleSlips.Book();
             StatHistory history = home.History;
@@ -88,6 +94,15 @@ namespace PoliSim.UI
             book.Anchors["fiscal:percapita"] = new SlipContent("GDP PER CAPITA").Add("LEVEL · NO GAUGE").Add("CURRENCY PER PERSON - NOT A SHARE OF GDP");
             book.Anchors["fiscal:notyet"] = new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("NOT YET COMPUTED — ADVANCE A YEAR")
                 .Add("A SHARE OF A YEAR NO YEAR HAS CLOSED");
+            // §725 (Elias's ruling): the deficit row is neutral ink unless it breaches the country's statutory rule - then the warning, and this slip names the rule
+            if (deficitPercentOfGdp.HasValue && FiscalRules.Breaches(home.Id, FiscalRules.Measure.Deficit, deficitPercentOfGdp.Value, out string deficitRule))
+            {
+                SlipContent warning = new SlipContent(SymbolRegistry.Word(Symbol.Bad))
+                    .Add("DEFICIT " + deficitPercentOfGdp.Value.ToString("0.0", CultureInfo.InvariantCulture) + "% OF GDP · " + deficitRule.ToUpperInvariant());
+                string national = FiscalRules.NationalNote(home.Id);
+                if (national != null) { warning.Add(national.ToUpperInvariant()); }
+                book.Anchors["fiscal:rule"] = warning;
+            }
 
             // ---- the sectors (23a ⑧) --------------------------------------------------------------------------------------------------------
             var shares = new List<float>();
@@ -103,7 +118,7 @@ namespace PoliSim.UI
             int pages = 1;
             foreach (StatsChart c in Domestic) { pages = Math.Max(pages, GraphRenderer.PagesFor(history == null ? null : c.Series(history).Quarterly)); }
             book.Anchors["series:pager"] = Pager(pages, seriesPage, history?.Gdp, "THE SIX CHARTS MOVE TOGETHER");
-            foreach (StatsChart c in Domestic) { AddChart(book, c, history == null ? null : c.Series(history), seriesPage); }
+            foreach (StatsChart c in Domestic) { AddChart(book, c, history == null ? null : c.Series(history), seriesPage, home.Id); }
             book.Anchors["chart:gdp/name"] = new SlipContent("REAL GDP").Add("AT THE PRICES THE GAME OPENED ON").Add("THE CARD ABOVE IS NOMINAL - IN TODAY'S PRICES");
             book.Anchors["chart:unemployment/nairu"] = new SlipContent("NAIRU").Add("THE RATE UNEMPLOYMENT SETTLES AT WITH INFLATION STEADY").Add("THE MODEL'S OWN, READ ON THE LABOUR FORCE TODAY");
             book.Anchors["chart:debt/comfortable"] = new SlipContent("COMFORTABLE").Add("THE DEBT RATIO THIS COUNTRY CARRIES WITHOUT A RATING'S PRESSURE");
@@ -178,7 +193,7 @@ namespace PoliSim.UI
                 ? new SlipContent("TARIFF PASS-THROUGH").Add("TARIFF PASS-THROUGH TO PRICES").Add("PP OF INFLATION, THE LAST CLOSED YEAR")
                 : new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("TARIFF PASS-THROUGH TO PRICES").Add("ADVANCE A YEAR - NO YEAR HAS CLOSED");
             book.Anchors["trade:pager"] = Pager(GraphRenderer.PagesFor(history?.TradeBalance.Quarterly), tradePage, history?.TradeBalance, "ONE CHART, ITS OWN PAGER");
-            AddChart(book, Trade, history?.TradeBalance, tradePage);
+            AddChart(book, Trade, history?.TradeBalance, tradePage, home.Id);
             return book;
         }
 
@@ -238,7 +253,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>A chart's slips: its Δ, its verdict glyph, its dated head and its held seed - each the head's own figures, from the same window arithmetic.</summary>
-        private static void AddChart(PeopleSlips.Book book, StatsChart chart, MultiResolutionSeries series, int page)
+        private static void AddChart(PeopleSlips.Book book, StatsChart chart, MultiResolutionSeries series, int page, CountryId country)
         {
             string id = "chart:" + chart.Id;
             book.Anchors[id + "/delta"] = new SlipContent("Δ CHANGE").Add("Δ = LAST − FIRST IN WINDOW").Add(chart.Unit == ReadingUnit.Money
@@ -262,6 +277,15 @@ namespace PoliSim.UI
                     Symbol verdict = last < first ? Symbol.Good : Symbol.Bad;
                     book.Anchors[id + "/verdict"] = new SlipContent(SymbolRegistry.Word(verdict)).Add(delta + " · " + firstText + " → " + lastText).Add("LOWER IS BETTER");
                 }
+            }
+            // §725 (Elias's ruling): the warning state is the LEVEL's, past the country's statutory rule - named here, the national rule beside it
+            string breach = chart.BreachOf(country, last);
+            if (breach != null)
+            {
+                SlipContent warning = new SlipContent(SymbolRegistry.Word(Symbol.Bad)).Add(lastText + " · " + breach.ToUpperInvariant());
+                string national = FiscalRules.NationalNote(country);
+                if (national != null) { warning.Add(national.ToUpperInvariant()); }
+                book.Anchors[id + "/verdict"] = warning;
             }
             string when = series.LastQuarterlyDate.HasValue ? " · " + series.LastQuarterlyDate.Value.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() : string.Empty;
             book.Anchors[id + "/dated"] = new SlipContent(SymbolRegistry.Word(Symbol.Dated)).Add(lastText + " · THE WINDOW'S LAST POINT" + when).Add("THE CARD ABOVE IS LIVE");
