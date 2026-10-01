@@ -729,7 +729,10 @@ namespace PoliSim.UI
                 if (width >= minLabelUnits)
                 {
                     Text label = CanvasChrome.MakeText(cell.transform, "Label", party.ShortName, PoliSimTheme.Document, 10, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
-                    label.horizontalOverflow = HorizontalWrapMode.Wrap;
+                    // §707: one line or none - a name wider than its segment WRAPPED to two lines and clipped (the German snap card's "Linke": 30.4 px
+                    // of text in a 27 px rect, every German real film since §698); the cartogram's rule: a label that does not fit is not drawn
+                    label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                    if (label.preferredWidth > width - 1f) { label.gameObject.SetActive(false); continue; }
                     var labelRect = (RectTransform)label.transform;
                     labelRect.anchorMin = Vector2.zero;
                     labelRect.anchorMax = Vector2.one;

@@ -4431,6 +4431,9 @@ namespace PoliSim.Testing
         /// campaign's opening (P2-0.3) and election night's takeover (P2-0.2). Set from the command line;
         /// the run ends here.</summary>
         public bool Interrupts;
+        /// <summary>§707 (`-shotformation`, with `-shotinterrupts`): after the night, the game played on to its formation - the round opened, the
+        /// sheet where the player's party is asked, the ballot's eve, the government installed.</summary>
+        public bool Formation;
 
         /// <summary>Frames the clock is watched for at VeryFast (0.25 s per day): long enough that a running
         /// clock moves several days, so "no day passed" is a held clock and not a slow frame.</summary>
@@ -4691,11 +4694,163 @@ namespace PoliSim.Testing
             {
                 yield return ReportClockAfterDismissal(controller, sim, "election night");
             }
+            if (_countryId == CountryId.Germany)
+            {
+                yield return CaptureGermanNightPartial(controller, sim);
+            }
+
+            if (Formation && !over && sim.RoundsApply(_countryId))
+            {
+                yield return CaptureFormationTail(controller, sim, noDecisions);
+            }
+            else if (Formation)
+            {
+                Debug.LogError($"SHOT: -shotformation - {_countryId}'s game {(over ? "ended on its verdict" : "runs no round")}; the formation is NOT filmed.");
+                _failed++;
+            }
 
             Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
             Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// §707 (D-DE, board 24b B): THE GERMAN NIGHT PART-WAY - the night the film just played, staged at 11 of 16 Länder declared (the state
+        /// 24b measured): the undeclared Länder dashed at full size, the seats OWED, the swing like for like against the same Länder. Built from
+        /// that election's own Land count (NationalElection's last), in a screen of its own, filmed with the Canvas guard and destroyed - the
+        /// game is not touched. A staged frame, named so: the live night opens at its final minute.
+        /// </summary>
+        private IEnumerator CaptureGermanNightPartial(GameController controller, SimulationManager sim)
+        {
+            Country germany = sim.World?.GetCountry(CountryId.Germany);
+            if (NationalElection.LastRegionalKeys == null || germany == null)
+            {
+                Debug.LogError("SHOT: §707 - no German count in hand, so the night part-way is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            var keys = new List<string>(NationalElection.LastRegionalKeys);
+            int seats = 0;
+            foreach (int s in germany.ParliamentSeats.Values) { seats += s; }
+            DateTime polled = sim.CurrentDate;
+            int minute = (int)Math.Round(ElectionNightFromModel.FinalMinute * 11.0 / 16.0);
+            NightState partial = ElectionNightFromModel.At(minute, CountryId.Germany, keys, seats, 0.05, polled);
+            if (partial == null || partial.Complete)
+            {
+                Debug.LogError($"SHOT: §707 - the German night at minute {minute} is {(partial == null ? "not built" : "already complete")}; the night part-way is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            ElectionVintage seatedDe = WorldClock.SeatedVintage(CountryId.Germany, polled);
+            Dictionary<string, int> seatedTable = PartySystems.InitialSeats(CountryId.Germany, seatedDe);
+            var previousSeats = new int[keys.Count];
+            for (int k = 0; k < keys.Count; k++) { seatedTable.TryGetValue(keys[k], out previousSeats[k]); }
+
+            SetPrivateField(controller, "_canvasLive", true);
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            ElectionNightScreen screen = ElectionNightScreen.Build(partial, keys.ToArray(), "GERMANY", polled.Date.AddHours(18), seats,
+                previousLabel: "GERMANY " + WorldClock.ElectionDayOf(CountryId.Germany, seatedDe).Year.ToString(CultureInfo.InvariantCulture),
+                previousByConstituency: GermanRegions.PreviousVotes(keys, polled), previousSeats: previousSeats, inkCountry: CountryId.Germany,
+                ledger: sim.PlayerCampaignLedger, ledgerParty: sim.PlayerCampaignLedgerParty);   // the game's own campaign, as the live night carries it
+            if (screen == null)
+            {
+                Debug.LogError("SHOT: §707 - the board did not build for the German night part-way; nothing filmed.");
+                _failed++;
+            }
+            else
+            {
+                yield return Settle();
+                Claim("electionnight");
+                yield return Capture("e7e_election_night_partial_staged");
+                RecordCanvasTextAssert("e7e_election_night_partial_staged", controller);
+                Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: §707 - the German night staged part-way: minute {0}, {1} of {2} Länder declared, seats owed; map {3} full / {4} compact / {5} minimal, {6} with VS 2021.",
+                    minute, partial.DeclaredCount, partial.TotalConstituencies, screen.Laender?.LastFull ?? -1, screen.Laender?.LastCompact ?? -1, screen.Laender?.LastMinimal ?? -1, screen.Laender?.LastWithSwing ?? -1));
+                if (screen.Root != null) { UnityEngine.Object.Destroy(screen.Root); }
+            }
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+            SetPrivateField(controller, "_canvasLive", false);
+            yield return Settle();
+        }
+
+        /// <summary>
+        /// §707 (Elias's round-4 follow-up 5, "a German game filmed from its start to its formation"): after the night the game is played on as
+        /// play plays it (the day path, the country's day tick) until the round concludes - the chancellor's election under Art. 63 GG in
+        /// Germany (§705). Four frames of the Parliament tab: the round opened, the sheet the game opens where the player's party is asked
+        /// (premise 1), the eve of the ballot, the government installed. Where the round waits on the player the film answers as the least choice
+        /// there is: the sheet's own opening draft tabled as it stands, a pass where a partner refuses it; an offer the formation made accepted.
+        /// </summary>
+        private IEnumerator CaptureFormationTail(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
+        {
+            Expect("e8a_formation_round_opened", "e8d_formation_government");
+            Country country = sim.World.GetCountry(_countryId);
+            FieldInfo sheetField = typeof(GameController).GetField("_formationSheetOpen", BindingFlags.Instance | BindingFlags.NonPublic);
+            void Step()
+            {
+                bool boundary = sim.AdvanceDay();
+                MemTick(sim);
+                sim.AdvanceCountryDayTick(_countryId);
+                if (boundary) { sim.AdvanceTurn(noDecisions); }
+            }
+            IEnumerator Film(string stem, bool sheet)
+            {
+                SetPrivateField(controller, "_onDesk", false);
+                SetEnumField(controller, "_consolidatedTab", "Politics");
+                SetEnumField(controller, "_politicsCategory", "Parliament");
+                sheetField?.SetValue(controller, sheet);
+                ResetScrolls(controller);
+                if (!sheet) { ScrollBy(controller, 900f); }
+                yield return Settle();
+                sheetField?.SetValue(controller, sheet);   // the controller's Update may have opened it again on the player's turn
+                yield return Settle();
+                Claim("imgui");
+                yield return Capture(stem);
+            }
+            for (int d = 0; d < 3 && sim.RoundOf(_countryId) == null; d++) { Step(); }
+            SpeakerRound round = sim.RoundOf(_countryId);
+            if (round == null)
+            {
+                Debug.LogError($"SHOT: -shotformation - no round opened for {_countryId} in the three days after the night; the formation is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            yield return Film("e8a_formation_round_opened", false);
+            Debug.Log($"SHOT: -shotformation - the round opened {sim.CurrentDate:yyyy-MM-dd}: {round.Log[round.Log.Count - 1]}");
+            bool sheetFilmed = false, eveFilmed = false;
+            for (int d = 0; d < 240 && round.Open; d++)
+            {
+                if (round.Stage == RoundStage.PlayerAsked)
+                {
+                    if (!sheetFilmed) { yield return Film("e8b_formation_sheet", true); sheetFilmed = true; }
+                    FormationProposal opening = sim.DraftProposal(country, round, country.PlayerPartyAbbrev);
+                    bool tabled = sim.SubmitFormation(_countryId, opening, out ProposalVerdict _, out string refused);
+                    if (!tabled) { sim.PassFormation(_countryId, out string _); }
+                    sheetField?.SetValue(controller, false);
+                    Debug.Log($"SHOT: -shotformation - {sim.CurrentDate:yyyy-MM-dd} the player's party asked: {(tabled ? "tabled the sheet's opening draft, " + string.Join("+", opening.CabinetParties) : "passed (" + refused + ")")}.");
+                    continue;
+                }
+                if (round.Stage == RoundStage.OfferToPlayer)
+                {
+                    sim.AnswerOffer(_countryId, true, out string _);
+                    Debug.Log($"SHOT: -shotformation - {sim.CurrentDate:yyyy-MM-dd} the player's party accepted the formation's offer.");
+                    continue;
+                }
+                if (!eveFilmed && round.Stage == RoundStage.VotePending && sim.CurrentDate.AddDays(1) >= round.VoteOn)
+                {
+                    yield return Film("e8c_formation_ballot_eve", false);
+                    eveFilmed = true;
+                }
+                Step();
+            }
+            if (round.Open)
+            {
+                Debug.LogError($"SHOT: -shotformation - the round is still open on {sim.CurrentDate:yyyy-MM-dd}, 240 days on; the government is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            yield return Film("e8d_formation_government", false);
+            GovernmentRecord formed = country.Government;
+            Debug.Log($"SHOT: -shotformation - {sim.CurrentDate:yyyy-MM-dd} the round concluded: {string.Join("+", formed.Cabinet)} led by {formed.PmParty} ({formed.Basis}).");
         }
 
         /// <summary>

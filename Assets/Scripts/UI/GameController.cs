@@ -6933,16 +6933,28 @@ namespace PoliSim.UI
                 // share, so it has no count to declare either. Drawing it at zero would be a claim.
                 if (party.HasPosition) { keys.Add(party.Abbrev); }
             }
+            // §707 (D-DE): a German night counts every list the election counted, in the election's own order - the SSW included (it has no
+            // surveyed position and keeps its prior, §704; its seat is exempt from the 5 %). Sweden's keys are unchanged.
+            bool german = PlayerCountryId == CountryId.Germany;
+            if (german && NationalElection.LastRegionalKeys != null) { keys = new List<string>(NationalElection.LastRegionalKeys); }
+            int chamberSeats = 349;
+            if (german) { chamberSeats = 0; foreach (int s in _playerCountry.ParliamentSeats.Values) { chamberSeats += s; } }
 
             try
             {
                 NightState state = ElectionNightFromModel.At(
                     ElectionNightFromModel.FinalMinute, PlayerCountryId, keys,
-                    _playerCountry.ParliamentSeats.Count > 0 ? 349 : 349, 0.04);
+                    chamberSeats, german ? 0.05 : 0.04, german ? _simulationManager.CurrentDate : (System.DateTime?)null);   // §707: the Bundestag's 630 at 5 % on the election's register
                 if (state == null)
                 {
                     Debug.Log($"ELECTION: no election night for {PlayerCountryId} - the model produced no night state.");
                     return;
+                }
+                if (german && state.Complete)
+                {
+                    // §707: at 16 of 16 the night's seats ARE the chamber's - the count the election seated (NationalElection's), so the screen and the
+                    // result cannot disagree (F1's rule); the night's own projection on the rounded Land votes is a second computation of the same thing.
+                    for (int k = 0; k < keys.Count; k++) { state.SeatsOnCounted[k] = _playerCountry.ParliamentSeats.TryGetValue(keys[k], out int seated) ? seated : 0; }
                 }
 
                 // Board 5c (D11 row 3): the estimate that travelled with the standing budget act - the newest
@@ -6967,7 +6979,18 @@ namespace PoliSim.UI
                 double[] previousShares = null;
                 var previousSeats = new int[keys.Count];
                 string previousLabel;
-                if (earlier == null)
+                if (earlier == null && german)
+                {
+                    // §707: the previous count per Land - the chamber the world seated at the German start, 2021's (24a ⑥: the swing compares with the
+                    // last election in the game's world)
+                    System.DateTime polled = _simulationManager.CurrentDate;
+                    previousByConstituency = GermanRegions.PreviousVotes(keys, polled);
+                    ElectionVintage seatedDe = PoliSim.Elections.WorldClock.SeatedVintage(CountryId.Germany, polled);
+                    System.Collections.Generic.Dictionary<string, int> seatedDeTable = PartySystems.InitialSeats(CountryId.Germany, seatedDe);
+                    for (int k = 0; k < keys.Count; k++) { seatedDeTable.TryGetValue(keys[k], out previousSeats[k]); }
+                    previousLabel = "GERMANY " + PoliSim.Elections.WorldClock.ElectionDayOf(CountryId.Germany, seatedDe).Year.ToString(CultureInfo.InvariantCulture);
+                }
+                else if (earlier == null)
                 {
                     // PS-1 (§618, the review's R7): the previous count is the chamber the world SEATED - the election of record at its start - not the roster's latest.
                     ElectionVintage seatedVintage = PoliSim.Elections.WorldClock.SeatedVintage(CountryId.Sweden, SimulationManager.EpochDate);
@@ -7016,7 +7039,7 @@ namespace PoliSim.UI
                 AudioDirector.Fire(AudioCue.ConstituencyDeclares);   // P4-2: the count is in - the night is built at its final minute, so this fires once
                 _electionNight = ElectionNightScreen.Build(
                     state, keys.ToArray(), PlayerCountryId.ToString().ToUpperInvariant(),
-                    pollingDay.AddHours(20), 349, previousLabel: previousLabel, verdict: _pendingElectionVerdict,   // PS-2: the game's polling day at the polls' close, not the wall clock
+                    pollingDay.AddHours(german ? 18 : 20), chamberSeats, previousLabel: previousLabel, verdict: _pendingElectionVerdict,   // §707: German polls close at 18:00   // PS-2: the game's polling day at the polls' close, not the wall clock
                     ledger: _simulationManager.PlayerCampaignLedger, ledgerParty: _simulationManager.PlayerCampaignLedgerParty,   // P2-4.3
                     standingBudget: standingBudget?.Effects,
                     standingBudgetCitation: standingBudget == null ? null
@@ -7053,7 +7076,7 @@ namespace PoliSim.UI
                 // D-10 (a): the tactical layer (§23) over the campaign's shares, believing the last
                 // PUBLISHED tracker - the poll the electorate saw - about who clears the threshold.
                 shareByParty = NationalElection.SharesFromCampaign(PlayerCountryId, keys, campaign.FinalShares,
-                    _simulationManager.PlayerCampaign.PublicPoll, out TacticalResult tactical);
+                    _simulationManager.PlayerCampaign.PublicPoll, out TacticalResult tactical, on: _simulationManager.CurrentDate);   // §707: the Länder derived on the polling day
                 Debug.Log($"ELECTION: counted the campaign's shares for {PlayerCountryId} - " + string.Join(" ", System.Array.ConvertAll(campaign.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
                 if (tactical != null)
                 {

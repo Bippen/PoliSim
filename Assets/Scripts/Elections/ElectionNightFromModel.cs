@@ -36,7 +36,7 @@ namespace PoliSim.Elections
         /// <summary>Whether the player's country can produce a night at all. ⚠ It is not "is there a
         /// screen" but "is there a per-constituency RESULT", which is the thing that was missing.</summary>
         public static bool Available(CountryId country) =>
-            country == CountryId.Sweden && NationalElection.LastRegionalShares != null;
+            (country == CountryId.Sweden || country == CountryId.Germany) && NationalElection.LastRegionalShares != null;   // §707 (D-DE): the sixteen Länder
 
         /// <summary>
         /// Build the night from the prediction `NationalElection.TryPredictShares` most recently made.
@@ -44,7 +44,7 @@ namespace PoliSim.Elections
         /// "no night to show" rather than as an empty one.
         /// </summary>
         public static NightState At(int minute, CountryId country, IReadOnlyList<string> partyKeys,
-            int totalSeats, double threshold)
+            int totalSeats, double threshold, DateTime? on = null)
         {
             if (!Available(country)) { return null; }
 
@@ -74,7 +74,7 @@ namespace PoliSim.Elections
                 // Using the weight would make the shares reconcile by construction and hide the rounding
                 // residue - a number that agrees because it was told to is not evidence.
                 valid[r] = cast;
-                eligible[r] = SwedishRegions.EligibleAt(r);
+                eligible[r] = country == CountryId.Germany ? GermanRegions.EligibleForElection(r, on ?? DateTime.MinValue) : SwedishRegions.EligibleAt(r);   // §707: the Land's registered electorate (24a ①)
             }
 
             int[] arrivals = ArrivalsBySize(eligible);
@@ -82,6 +82,13 @@ namespace PoliSim.Elections
             var partyNames = new string[partyKeys.Count];
             for (int p = 0; p < partyKeys.Count; p++) { partyNames[p] = partyKeys[p]; }
 
+            if (country == CountryId.Germany)
+            {
+                // §707: the Bundestag's count - pure Sainte-Laguë (BWahlG § 6), the national minority's list exempt from the 5 % (§ 4 Abs. 2 Satz 3)
+                var exempt = new bool[partyNames.Length];
+                for (int p = 0; p < partyNames.Length; p++) { exempt[p] = NationalElection.ExemptFromThreshold(country, partyNames[p]); }
+                return ElectionNight.At(minute, names, votes, valid, eligible, arrivals, totalSeats, threshold, partyNames, SeatAllocation.SainteLagueDivisor, null, exempt);
+            }
             return ElectionNight.At(minute, names, votes, valid, eligible, arrivals, totalSeats, threshold, partyNames);
         }
 

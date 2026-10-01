@@ -218,7 +218,7 @@ namespace PoliSim.UI
 
             BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
             ValkretsCartogramView map = BuildBody(content.transform, state, partyNames, totalSeats, previous, ledger, ledgerParty,
-                standingBudget, standingBudgetCitation, government, inkCountry, reference);
+                standingBudget, standingBudgetCitation, government, inkCountry, reference, out LaenderTileView laender);
             BuildFooter(content.transform, verdict, screen, continueLabel, speaker, root.transform);
 
             // The map lays itself in the rect the page gives it; resolve the page now so the first frame already has it,
@@ -227,7 +227,9 @@ namespace PoliSim.UI
             // past a rect without one - a rebuild asked of the document lays nothing (measured: every band read its default 100).
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
             if (map != null) { map.Rebuild(); }
+            if (laender != null) { laender.Rebuild(); }
             screen.Map = map;
+            screen.Laender = laender;
 
             // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
             // fails on the pixels rather than passing on a clean exit code.
@@ -235,6 +237,9 @@ namespace PoliSim.UI
             return screen;
         }
         private const float DocumentWidth = 1240f;
+
+        /// <summary>§707: the Länder map on a German night (null on Sweden's) - read by the film's log line.</summary>
+        public LaenderTileView Laender { get; private set; }
 
 
         /// <summary>§A.14: institution + title left, timestamp and the declared chip right.</summary>
@@ -291,7 +296,7 @@ namespace PoliSim.UI
             chip.AddComponent<Image>().color = PoliSimTheme.Hex(0x5D564A);
             chip.AddComponent<LayoutElement>().minHeight = 22f;
             Text chipText = CanvasChrome.MakeTextRealWeight(chip.transform, "ChipText",
-                string.Format(CultureInfo.InvariantCulture, "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies),
+                string.Format(CultureInfo.InvariantCulture, countryName.Equals("GERMANY", StringComparison.OrdinalIgnoreCase) ? "{0} OF {1} LÄNDER DECLARED" : "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies),
                 PoliSimTheme.Display, 11, PoliSimTheme.Hex(0xF4ECDC), TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(chipText.GetComponent<RectTransform>());
         }
@@ -305,8 +310,9 @@ namespace PoliSim.UI
         private static ValkretsCartogramView BuildBody(Transform parent, NightState state, string[] partyNames, int totalSeats,
             Previous previous, VoteAttribution.Ledger ledger, string ledgerParty,
             IReadOnlyList<DivisionEffect> standingBudget, string standingBudgetCitation,
-            GovernmentFormation.View government, CountryId inkCountry, Reference reference)
+            GovernmentFormation.View government, CountryId inkCountry, Reference reference, out LaenderTileView laender)
         {
+            laender = null;
             var body = new GameObject("Body");
             body.transform.SetParent(parent, false);
             body.AddComponent<RectTransform>();
@@ -323,6 +329,23 @@ namespace PoliSim.UI
             // units), so the layout compressed every text in it below its own height. The column takes width from the map, which had
             // spare height under it (1.8 : 1.2 - at 1.6 : 1.4 the narrower tiles dropped their labels), and the effects plate and the
             // column's line gap yield the rest (BuildEstimate, below): 19 clipped texts at 1280 to none.
+            if (inkCountry == CountryId.Germany)
+            {
+                // §707 (D-DE, boards 24a-24b): Germany's night is Sweden's sheet as built with the Länder at its centre - the count with the 5 %
+                // line, the single-Land and exempt lists tagged, the seats owed until 16 of 16; the Länder map; WHO GOVERNS the chamber alone
+                // (the Bundestag elects the chancellor weeks later, §705) with WHY as Sweden's; no ESTIMATED IMPACT (no German budget act carries one).
+                Transform countDe = Column(body.transform, "Count", 1.0f);
+                BuildTallyGermany(countDe, state, partyNames, totalSeats, previous);
+                BuildCalls(countDe, state, partyNames);
+                BuildReference(countDe, state, partyNames, reference, inkCountry);
+                Transform centreDe = Column(body.transform, "MapColumn", 1.8f);
+                laender = BuildLaenderMap(centreDe, state, partyNames, previous, inkCountry);
+                Transform rightDe = Column(body.transform, "Governs", 1.2f);
+                rightDe.GetComponent<VerticalLayoutGroup>().spacing = 1f;
+                BuildChamberGermany(rightDe, state, partyNames, totalSeats, inkCountry);
+                BuildLedger(rightDe, ledger, ledgerParty);
+                return null;
+            }
             Transform count = Column(body.transform, "Count", 1.0f);
             BuildTally(count, state, partyNames, totalSeats, previous);
             BuildCalls(count, state, partyNames);
@@ -358,6 +381,209 @@ namespace PoliSim.UI
             column.childForceExpandWidth = true;
             column.spacing = 2f;
             return go.transform;
+        }
+
+        /// <summary>
+        /// §707 (24a ⑤, 24b B): THE GERMAN COUNT - one row per list in vote order, the 5 % as a rule across the rows between the last list above
+        /// it and the first below, a single-Land list tagged (IN BY), the national minority's below the rule, tagged EXEMPT (§ 4 Abs. 2
+        /// Satz 3 BWahlG); the seats OWED until 16 of 16 (a partial count seats the wrong lists - 24b measured the BSW at 5.72 % and 39 seats at
+        /// 11 of 16, the CSU at 0.00 % until Bayern declares); the swing like for like against the same Länder in 2021, a list with no 2021 base
+        /// ABSENT (19a); the Erststimme's gap row where it would change a result (24a ⑦).
+        /// </summary>
+        private static void BuildTallyGermany(Transform parent, NightState state, string[] partyNames, int totalSeats, Previous previous)
+        {
+            Heading(parent, state.Complete
+                ? "THE COUNT — COMPLETE"
+                : string.Format(CultureInfo.InvariantCulture, "THE COUNT SO FAR — {0} OF {1} LÄNDER · SEATS OWED UNTIL {1} OF {1}", state.DeclaredCount, state.TotalConstituencies));
+            if (state.CountedValid <= 0)
+            {
+                Row(parent, "NOTHING HAS DECLARED", "—", 13, PoliSimTheme.TextMuted);
+                return;
+            }
+            var order = new List<int>();
+            for (int p = 0; p < partyNames.Length; p++) { order.Add(p); }
+            order.Sort((a, b) => state.CountedVotes[b].CompareTo(state.CountedVotes[a]));
+            double[] swing = null;
+            bool[] hasBase = null;
+            var counted = new bool[partyNames.Length];
+            if (previous.ByConstituency != null)
+            {
+                var now = new double[partyNames.Length];
+                var before = new double[partyNames.Length];
+                double nowTotal = 0.0, beforeTotal = 0.0;
+                for (int r = 0; r < state.TotalConstituencies; r++)
+                {
+                    if (!state.Constituencies[r].Declared) { continue; }
+                    for (int p = 0; p < partyNames.Length; p++) { now[p] += state.Constituencies[r].Votes[p]; before[p] += previous.ByConstituency[r][p]; }
+                }
+                foreach (double v in now) { nowTotal += v; }
+                foreach (double v in before) { beforeTotal += v; }
+                if (nowTotal > 0.0 && beforeTotal > 0.0)
+                {
+                    swing = new double[partyNames.Length];
+                    hasBase = new bool[partyNames.Length];
+                    for (int p = 0; p < partyNames.Length; p++) { swing[p] = (now[p] / nowTotal - before[p] / beforeTotal) * 100.0; hasBase[p] = before[p] > 0.0; counted[p] = now[p] > 0.0; }
+                }
+            }
+            bool ruled = false;
+            int seatsShown = 0;
+            foreach (int p in order)
+            {
+                double share = state.CountedShare(p);
+                bool exempt = NationalElection.ExemptFromThreshold(CountryId.Germany, partyNames[p]);
+                if (!ruled && share < 0.05)   // §707's real film (24a ⑤): the rule above every list under it - the SSW below it, seated as exempt
+                {
+                    Row(parent, "5 %", "the line - a list below it is seated only if exempt", 10, PoliSimTheme.TextMuted);
+                    ruled = true;
+                }
+                // 24a's "IN SH · EXEMPT" wrapped beside the SSW's figures in the 1280 column; the rule above it says what the exemption is
+                string tag = partyNames[p] == "CSU" ? " IN BY" : exempt ? " · EXEMPT" : string.Empty;
+                string seats = state.Complete ? state.SeatsOnCounted[p].ToString(CultureInfo.InvariantCulture) + (state.SeatsOnCounted[p] == 1 ? " seat" : " seats") : "owed";   // the heading says "SEATS OWED UNTIL 16 OF 16"; the row's word is the short one, so the SSW's row holds one line
+                if (state.Complete) { seatsShown += state.SeatsOnCounted[p]; }
+                string sw = swing == null ? string.Empty : hasBase[p] ? string.Format(CultureInfo.InvariantCulture, "  {0:+0.00;−0.00;0.00} pp", swing[p]) : counted[p] ? "  ABSENT" : "  —";   // ABSENT is a list with no 2021 base; a list with no vote yet where it stands (the CSU before Bayern) is not yet
+                Row(parent, PartySystems.ShortName(CountryId.Germany, partyNames[p]).ToUpperInvariant() + tag, string.Format(CultureInfo.InvariantCulture, "{0:N0}  {1:P2}  {2}{3}", state.CountedVotes[p], share, seats, sw), 12, PoliSimTheme.TextPrimary, nameWidth: 34f);
+            }
+            if (!ruled) { Row(parent, "5 %", "every list counted is above the line", 10, PoliSimTheme.TextMuted); }
+            Row(parent, "ERSTSTIMME · THREE-CONSTITUENCY RULE", "NOT YET MODELLED", 10, PoliSimTheme.TextMuted);
+            Row(parent, "COUNTED", state.Complete
+                ? string.Format(CultureInfo.InvariantCulture, "{0:N0} votes    {1} of {2} seats", state.CountedValid, seatsShown, totalSeats)
+                : string.Format(CultureInfo.InvariantCulture, "{0:N0} votes    seats owed until {1} of {1}", state.CountedValid, state.TotalConstituencies), 12, PoliSimTheme.TextSecondary, bold: true);
+            Wrapped(parent, swing != null
+                ? "SWING (the last column), against " + (previous.Label ?? "GERMANY 2021") + (state.Complete ? ", every Land" : string.Format(CultureInfo.InvariantCulture, ", the same {0} Länder", state.DeclaredCount)) + " · ABSENT: no list in 2021 to compare"
+                : "SWING - no previous election is on hand to compare against", 11, PoliSimTheme.TextSecondary);
+        }
+
+        /// <summary>§707 (24a ②③, 24b A): the Länder map - each declared Land in its leader's ink, the lead in points and VS 2021 (the leader's
+        /// own change there, like for like).</summary>
+        private static LaenderTileView BuildLaenderMap(Transform parent, NightState state, string[] partyNames, Previous previous, CountryId inkCountry)
+        {
+            if (state == null || state.TotalConstituencies != LaenderTileView.Table.Length)
+            {
+                Heading(parent, "THE MAP - NONE FOR THIS COUNT");
+                Row(parent, "the map draws the sixteen Länder; this count has " + (state?.TotalConstituencies ?? 0), "—", 11, PoliSimTheme.TextMuted);
+                return null;
+            }
+            Heading(parent, "THE LÄNDER · TILE AREA = REGISTERED ELECTORATE · EACH IN ITS LEADER'S INK");
+            var results = new LaenderTileView.TileResult[state.TotalConstituencies];
+            for (int r = 0; r < results.Length; r++)
+            {
+                ConstituencyReport c = state.Constituencies[r];
+                if (!c.Declared || c.Votes == null) { continue; }
+                int first = -1, second = -1;
+                long total = 0;
+                for (int p = 0; p < c.Votes.Length; p++)
+                {
+                    total += c.Votes[p];
+                    if (first < 0 || c.Votes[p] > c.Votes[first]) { second = first; first = p; }
+                    else if (second < 0 || c.Votes[p] > c.Votes[second]) { second = p; }
+                }
+                if (first < 0 || total <= 0) { continue; }
+                double lead = (c.Votes[first] - (second >= 0 ? c.Votes[second] : 0)) * 100.0 / total;
+                bool hasSwing = false;
+                double swing = 0.0;
+                if (previous.ByConstituency != null && previous.ByConstituency.Length == results.Length)
+                {
+                    long beforeTotal = 0;
+                    foreach (long v in previous.ByConstituency[r]) { beforeTotal += v; }
+                    if (beforeTotal > 0 && previous.ByConstituency[r][first] > 0)
+                    {
+                        swing = (c.Votes[first] / (double)total - previous.ByConstituency[r][first] / (double)beforeTotal) * 100.0;
+                        hasSwing = true;
+                    }
+                }
+                string key = partyNames[first];
+                results[r] = new LaenderTileView.TileResult
+                {
+                    Declared = true,
+                    Leader = PartySystems.ShortName(inkCountry, key).ToUpperInvariant(),
+                    Ink = PoliSimTheme.PartyLaddered(inkCountry, key),
+                    Mark = MarkOf(inkCountry, key),
+                    LeadPp = lead,
+                    HasSwing = hasSwing,
+                    SwingPp = swing,
+                };
+            }
+            LaenderTileView view = LaenderTileView.Create(parent, results);
+            Wrapped(parent, "FOUR BANDS NORTH TO SOUTH · A TILE'S FIGURE IS THE LEADER'S LEAD IN POINTS · VS 2021 IS THE LEADER'S CHANGE THERE · DASHED = NOT DECLARED", 10, PoliSimTheme.TextMuted);
+            return view;
+        }
+
+        private static Texture2D MarkOf(CountryId country, string key)
+        {
+            foreach (PoliticalParty party in PartySystems.For(country)) { if (string.Equals(party.Abbrev, key, StringComparison.Ordinal)) { return IconLibrary.GetPartyMark(party.MarkName); } }
+            return null;
+        }
+
+        /// <summary>
+        /// §707 (24a ⑧, ⑤): WHO GOVERNS on a German night is the chamber alone - the Bundestag elects the chancellor under Art. 63 weeks later
+        /// (§705), so nothing is drawn in a formation's place: the bar by Fraktion (the Union one block, the CSU hairlined inside it), largest first,
+        /// the tick at a majority of the members. During the count the chamber waits with the seats.
+        /// </summary>
+        private static void BuildChamberGermany(Transform parent, NightState state, string[] partyNames, int totalSeats, CountryId inkCountry)
+        {
+            Heading(parent, "WHO GOVERNS — THE NEW BUNDESTAG");
+            int majority = totalSeats / 2 + 1;
+            Row(parent, "THE BUNDESTAG ELECTS THE CHANCELLOR", string.Format(CultureInfo.InvariantCulture, "{0} of {1}", majority, totalSeats), 12, PoliSimTheme.TextPrimary, bold: true);
+            if (state == null || !state.Complete)
+            {
+                Row(parent, "the chamber waits with the seats, owed until the last Land declares", "—", 11, PoliSimTheme.TextMuted);
+                return;
+            }
+            // the Fraktionen: the Union's two lists one block (§ 10 Abs. 1 GO-BT), every other seated list its own
+            var blocks = new List<(string Name, List<(string Abbrev, int Seats)> Lists)>();
+            int cdu = Array.IndexOf(partyNames, "CDU"), csu = Array.IndexOf(partyNames, "CSU");
+            if (cdu >= 0 && csu >= 0 && state.SeatsOnCounted[cdu] > 0 && state.SeatsOnCounted[csu] > 0)
+            {
+                blocks.Add(("UNION", new List<(string, int)> { ("CDU", state.SeatsOnCounted[cdu]), ("CSU", state.SeatsOnCounted[csu]) }));
+            }
+            for (int p = 0; p < partyNames.Length; p++)
+            {
+                if (state.SeatsOnCounted[p] <= 0) { continue; }
+                if (blocks.Count > 0 && blocks[0].Name == "UNION" && (p == cdu || p == csu)) { continue; }
+                blocks.Add((PartySystems.ShortName(inkCountry, partyNames[p]).ToUpperInvariant(), new List<(string, int)> { (partyNames[p], state.SeatsOnCounted[p]) }));
+            }
+            int BlockSeats((string Name, List<(string Abbrev, int Seats)> Lists) b) { int n = 0; foreach ((string _, int s) in b.Lists) { n += s; } return n; }
+            blocks.Sort((a, b) => BlockSeats(b).CompareTo(BlockSeats(a)));
+            var line = new List<string>();
+            foreach (var b in blocks) { line.Add(b.Name + " " + BlockSeats(b).ToString(CultureInfo.InvariantCulture)); }
+            Wrapped(parent, string.Join(" · ", line), 11, PoliSimTheme.TextPrimary);
+
+            const int w = 480, h = 22;
+            var texture = new Texture2D(w, h, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+            var pixels = new Color32[w * h];
+            Color32 paper = PoliSimTheme.CardInset;
+            for (int i = 0; i < pixels.Length; i++) { pixels[i] = paper; }
+            float perSeat = totalSeats > 0 ? w / (float)totalSeats : 0f;
+            float x = 0f;
+            foreach (var b in blocks)
+            {
+                for (int l = 0; l < b.Lists.Count; l++)
+                {
+                    (string abbrev, int seats) = b.Lists[l];
+                    Color32 ink = PoliSimTheme.PartyLaddered(inkCountry, abbrev);
+                    int from = Mathf.RoundToInt(x), to = Mathf.RoundToInt(x + seats * perSeat);
+                    for (int px = from; px < to && px < w; px++) { for (int py = 0; py < h; py++) { pixels[py * w + px] = ink; } }
+                    if (l > 0 && from >= 0 && from < w) { for (int py = 0; py < h; py++) { pixels[py * w + from] = PoliSimTheme.Hairline; } }   // the CSU hairlined inside the Union
+                    x += seats * perSeat;
+                }
+                int edge = Mathf.RoundToInt(x) - 1;
+                if (edge >= 0 && edge < w) { for (int py = 0; py < h; py++) { pixels[py * w + edge] = paper; } }
+            }
+            int tick = Mathf.Clamp(Mathf.RoundToInt(majority * perSeat), 1, w - 2);
+            for (int py = 0; py < h; py++) { pixels[py * w + tick] = PoliSimTheme.TextPrimary; pixels[py * w + tick - 1] = PoliSimTheme.TextPrimary; }
+            texture.SetPixels32(pixels);
+            texture.Apply();
+            var art = new GameObject("ChamberBar");
+            art.transform.SetParent(parent, false);
+            art.AddComponent<RectTransform>();
+            LayoutElement element = art.AddComponent<LayoutElement>();
+            element.minHeight = 22f;
+            element.preferredHeight = 22f;
+            RawImage image = art.AddComponent<RawImage>();
+            image.texture = texture;
+            image.raycastTarget = false;
+            Wrapped(parent, string.Format(CultureInfo.InvariantCulture, "a block per Fraktion, largest first · the tick is {0} of {1} · the Bundespräsident proposes, the Bundestag elects once it convenes (Art. 63 GG)",
+                majority, totalSeats), 10, PoliSimTheme.TextMuted);
         }
 
         /// <summary>
@@ -906,7 +1132,16 @@ namespace PoliSim.UI
             else { CanvasRows.Caption(head, SymbolRegistry.Word(Symbol.Dated), 10, PoliSimTheme.TextMuted); }
             CanvasRows.Slip(head.gameObject, null, "DATED", new[] { "THE REAL RESULT, AS THE RECORD HOLDS IT", "THE RECORD AS OF " + DeskDay(reference.RecordDate) });
 
-            const float markW = 16f, nameW = 30f, figW = 50f, pitch = 18f;
+            const float markW = 16f, figW = 50f, pitch = 18f;
+            // §707's real film: Sweden's letters fit 30 px, Germany's names do not ("GRÜNE" wrapped to two lines in an 18 px row) - the column is
+            // its widest name as the face sets it, 30 px at the least; the names upper case, as the count's rows print them
+            float nameW = 30f;
+            foreach (string abbrev in partyNames)
+            {
+                Text probe = CanvasChrome.MakeTextRealWeight(null, "Probe", PartySystems.ShortName(country, abbrev).ToUpperInvariant(), PoliSimTheme.Body, 13, Color.white, TextAnchor.MiddleLeft);
+                nameW = Mathf.Max(nameW, Mathf.Ceil(probe.preferredWidth + 2f));
+                UnityEngine.Object.Destroy(probe.gameObject);
+            }
             Transform keys = CanvasRows.HRow(parent, "ReferenceKeys", 16f, 8f);
             CanvasRows.FixedCell(keys, string.Empty, markW + 8f + nameW, 10, PoliSimTheme.TextMuted);
             CanvasRows.FixedCell(keys, "PLAYED", figW, 10, PoliSimTheme.TextMuted);
@@ -921,7 +1156,7 @@ namespace PoliSim.UI
                 int played = state.SeatsOnCounted[p], real = reference.Seats[p], diff = played - real;
                 Transform row = CanvasRows.HRow(parent, "Reference " + partyNames[p], pitch, 8f);
                 CanvasRows.Mark(row, country, partyNames[p], markW);
-                CanvasRows.FixedCell(row, PartySystems.ShortName(country, partyNames[p]), nameW, 13, PoliSimTheme.TextPrimary, font: PoliSimTheme.Body);
+                CanvasRows.FixedCell(row, PartySystems.ShortName(country, partyNames[p]).ToUpperInvariant(), nameW, 13, PoliSimTheme.TextPrimary, font: PoliSimTheme.Body);
                 CanvasRows.FixedCell(row, played.ToString(CultureInfo.InvariantCulture), figW, 13, PoliSimTheme.TextPrimary);
                 CanvasRows.FixedCell(row, real.ToString(CultureInfo.InvariantCulture), figW, 12, PoliSimTheme.TextMuted);
                 CanvasRows.FixedCell(row, diff > 0 ? "+" + diff.ToString(CultureInfo.InvariantCulture) : diff < 0 ? "−" + (-diff).ToString(CultureInfo.InvariantCulture) : "0", figW, 12, PoliSimTheme.TextPrimary);
@@ -1064,13 +1299,13 @@ namespace PoliSim.UI
                 // passes time). The two sentences are the control's slip.
                 Transform speakerRow = CanvasRows.HRow(parent, "Footer", 56f, 12f);
                 Transform asks = CanvasRows.HRow(speakerRow, "Asks", 30f, 10f);
-                CanvasRows.Caption(asks, "THE SPEAKER ASKS FIRST", 12, PoliSimTheme.TextPrimary);
+                CanvasRows.Caption(asks, speaker.Country == CountryId.Germany ? "THE BUNDESPRÄSIDENT PROPOSES FIRST" : "THE SPEAKER ASKS FIRST", 12, PoliSimTheme.TextPrimary);   // §707
                 if (speaker.FirstAsked != null) { CanvasRows.Mark(asks, speaker.Country, speaker.FirstAsked, 18f); }
                 else { CanvasRows.Caption(asks, "NO PARTY", 12, PoliSimTheme.TextMuted); }
                 if (speaker.PlayerFirst) { CanvasRows.Stamp(asks, "YOUR PARTY", 11, PoliSimTheme.TextPrimary); }
                 CanvasRows.Caption(asks, "· OUTGOING GOVERNMENT", 12, PoliSimTheme.TextMuted);
                 CanvasRows.Stamp(asks, "CARETAKER", 11, PoliSimTheme.TextPrimary);
-                CanvasRows.Slip(asks.gameObject, overlay, "THE SPEAKER ASKS FIRST", SlipLines(speaker.Sentence));
+                CanvasRows.Slip(asks.gameObject, overlay, speaker.Country == CountryId.Germany ? "THE BUNDESPRÄSIDENT PROPOSES FIRST" : "THE SPEAKER ASKS FIRST", SlipLines(speaker.Sentence));
                 CanvasRows.Spacer(speakerRow);
                 string face = speaker.PlayerFirst ? ContinueToSheet : "CONTINUE";
                 float width = speaker.PlayerFirst ? 320f : 200f;

@@ -163,7 +163,7 @@ namespace PoliSim.Elections
         /// </summary>
         public static NightState At(int minute, string[] names, long[][] votes, long[] valid, long[] eligible,
             int[] arrivals, int seats, double threshold, string[] partyNames,
-            Func<int, double> divisor = null, IDictionary<string, int[]> blocs = null)
+            Func<int, double> divisor = null, IDictionary<string, int[]> blocs = null, bool[] exempt = null)
         {
             if (names == null || votes == null || arrivals == null) { throw new ArgumentNullException(nameof(names)); }
             int regions = names.Length;
@@ -196,11 +196,11 @@ namespace PoliSim.Elections
 
             Func<int, double> d = divisor ?? SeatAllocation.ModifiedSainteLagueDivisor;
             state.SeatsOnCounted = state.CountedValid > 0
-                ? SeatAllocation.AllocateWithThreshold(state.CountedVotes, state.CountedValid, threshold, seats, d)
+                ? SeatAllocation.AllocateWithThreshold(state.CountedVotes, state.CountedValid, threshold, seats, d, exempt)   // §707: Germany's national minority
                 : new int[parties];
 
-            state.Calls = SafeCalls(state, seats, threshold, partyNames, d, blocs);
-            StampLandings(state, votes, valid, eligible, arrivals, seats, threshold, partyNames, d, blocs);
+            state.Calls = SafeCalls(state, seats, threshold, partyNames, d, blocs, exempt);
+            StampLandings(state, votes, valid, eligible, arrivals, seats, threshold, partyNames, d, blocs, exempt);
             return state;
         }
 
@@ -217,7 +217,7 @@ namespace PoliSim.Elections
         /// constituencies declare, so a break should not happen; this is written so it would not lie if one did.</para>
         /// </summary>
         private static void StampLandings(NightState state, long[][] votes, long[] valid, long[] eligible, int[] arrivals,
-            int seats, double threshold, string[] partyNames, Func<int, double> divisor, IDictionary<string, int[]> blocs)
+            int seats, double threshold, string[] partyNames, Func<int, double> divisor, IDictionary<string, int[]> blocs, bool[] exempt = null)
         {
             if (state.Calls.Count == 0) { return; }
             int regions = arrivals.Length;
@@ -249,7 +249,7 @@ namespace PoliSim.Elections
                 }
 
                 var safeNow = new HashSet<string>();
-                foreach (ElectionCall call in SafeCalls(step, seats, threshold, partyNames, divisor, blocs))
+                foreach (ElectionCall call in SafeCalls(step, seats, threshold, partyNames, divisor, blocs, exempt))
                 {
                     string key = CallKey(call);
                     safeNow.Add(key);
@@ -291,7 +291,7 @@ namespace PoliSim.Elections
         /// not an approximation of it, draws.
         /// </summary>
         private static List<ElectionCall> SafeCalls(NightState state, int seats, double threshold,
-            string[] partyNames, Func<int, double> divisor, IDictionary<string, int[]> blocs)
+            string[] partyNames, Func<int, double> divisor, IDictionary<string, int[]> blocs, bool[] exempt = null)
         {
             var calls = new List<ElectionCall>();
             int parties = state.CountedVotes.Length;
@@ -305,7 +305,8 @@ namespace PoliSim.Elections
                 double shareFloor = (double)state.CountedVotes[p] / ceilingValid;
                 double shareCeiling = ceilingValid > 0 ? (double)(state.CountedVotes[p] + o) / ceilingValid : 0.0;
 
-                if (shareFloor > threshold)
+                if (exempt != null && p < exempt.Length && exempt[p]) { }   // §707: an exempt list (§ 4 Abs. 2 Satz 3 BWahlG) is not called against the line
+                else if (shareFloor > threshold)
                 {
                     calls.Add(new ElectionCall(CallKind.ThresholdCleared, p, null, state.DeclaredCount, state.TotalConstituencies, shareFloor - threshold));
                 }

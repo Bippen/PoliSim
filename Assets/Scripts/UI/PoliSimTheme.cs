@@ -256,6 +256,20 @@ namespace PoliSim.UI
             { "Sweden/KD", DeskSeated(0x1B5CB1) },
             { "Sweden/MP", DeskSeated(0x008000) },
             { "Sweden/L",  DeskSeated(0x3399FF) },
+            // §707 (D-DE, board 24a's legend, stamped LOOKED AT 30 SEP 2026) - [AUTHORED-REFERENCE]: Germany had no inks (E12 held it uninked,
+            // and 24a's note says it should not ship that way). The board seats brand hues in common use at the desk's S 0.52 · V 0.46, as
+            // DeskSeated does; the Union's black has no hue to seat and is drawn at #403C38 (oklab L 0.359, 0.153 clear of the Neutral) - so
+            // the board's hexes are taken as drawn, not re-seated. One ink for the Union (24a ④, Q3): the CSU is the CDU's colour, its mark the
+            // CDU's square with a bar. The pairs 24b measured inside the 0.06 fence (SPD/LINKE 0.042, SSW/AfD 0.053) take the nudge as every pair does.
+            { "Germany/CDU",   Hex(0x403C38) },
+            { "Germany/CSU",   Hex(0x403C38) },
+            { "Germany/AfD",   Hex(0x386375) },
+            { "Germany/SPD",   Hex(0x75383C) },
+            { "Germany/Grune", Hex(0x477538) },
+            { "Germany/Linke", Hex(0x753856) },
+            { "Germany/BSW",   Hex(0x653875) },
+            { "Germany/FDP",   Hex(0x757138) },
+            { "Germany/SSW",   Hex(0x385275) },
         };
 
         /// <summary>
@@ -436,6 +450,13 @@ namespace PoliSim.UI
             { "S", 107 }, { "SD", 73 }, { "M", 68 }, { "V", 24 }, { "C", 24 }, { "KD", 19 }, { "MP", 18 }, { "L", 16 },
         };
 
+        /// <summary>§707 (D-DE Q3): two lists of one parliamentary group (the Union) - one ink, never nudged or fenced apart.</summary>
+        private static bool SameGroup(PoliSim.Data.CountryId country, string a, string b)
+        {
+            foreach ((string ga, string gb) in PoliSim.Elections.ChamberRules.JointGroups(country)) { if ((ga == a && gb == b) || (ga == b && gb == a)) { return true; } }
+            return false;
+        }
+
         private static int InkLadderSeats(PoliSim.Data.CountryId country, PoliSim.Data.PoliticalParty party)
         {
             if (country == PoliSim.Data.CountryId.Sweden && InkLadderSeatsSweden2022.TryGetValue(party.Abbrev, out int ruled)) { return ruled; }
@@ -456,6 +477,16 @@ namespace PoliSim.UI
             for (int i = 0; i < parties.Count; i++)
             {
                 string abbrev = parties[i].Abbrev;
+                // §707 (D-DE Q3): a parliamentary group draws ONE ink - the smaller member takes its larger partner's (drawn first: the ladder is by
+                // seats) and is never nudged apart from it; the marks and the names keep the two lists apart
+                string groupPartner = null;
+                foreach ((string ga, string gb) in PoliSim.Elections.ChamberRules.JointGroups(country)) { if (ga == abbrev) { groupPartner = gb; } else if (gb == abbrev) { groupPartner = ga; } }
+                if (groupPartner != null && table.TryGetValue(groupPartner, out Color groupInk))
+                {
+                    table[abbrev] = groupInk;
+                    log.Add(abbrev + ": one ink with " + groupPartner + " - one parliamentary group draws one ink");
+                    continue;
+                }
                 Color ink = Party(country, abbrev);
                 ToOklab(ink, out float L, out float a, out float b);
                 float moved = 0f;
@@ -524,6 +555,7 @@ namespace PoliSim.UI
                     {
                         string larger = parties[j].Abbrev;
                         if (PoliSim.Elections.NationalElection.BlocOf(country, larger) != bloc) { continue; }
+                        if (SameGroup(country, abbrev, larger)) { continue; }   // §707 (D-DE Q3): a parliamentary group is one ink, never fenced apart
                         ToOklch(table[larger], out float lj, out float _, out float hj);
                         if (Mathf.Abs(Mathf.DeltaAngle(H, hj)) >= BlocFenceHueDegrees) { continue; }   // hue carries it
                         float short_ = BlocFenceLightness - Mathf.Abs(L - lj);
@@ -552,6 +584,13 @@ namespace PoliSim.UI
                 }
 
                 if (!anyMoved) { break; }
+            }
+
+            // §707 (D-DE Q3): the group's smaller member ends on its partner's settled ink, whatever the fence did to the partner
+            foreach ((string ga, string gb) in PoliSim.Elections.ChamberRules.JointGroups(country))
+            {
+                int ia = parties.FindIndex(p => p.Abbrev == ga), ib = parties.FindIndex(p => p.Abbrev == gb);
+                if (ia >= 0 && ib >= 0) { if (ia <= ib) { table[gb] = table[ga]; } else { table[ga] = table[gb]; } }   // the list is by ladder seats, larger first
             }
 
             NudgedCache[country] = table;

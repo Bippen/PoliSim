@@ -265,7 +265,7 @@ namespace PoliSim.Elections
         /// regional breakdown is derived from the shifted shares, so the constituencies add up to the
         /// headline the layer produced.
         /// </summary>
-        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares, Poll? tracker, out TacticalResult tactical)
+        public static Dictionary<string, double> SharesFromCampaign(CountryId country, string[] keys, double[] finalShares, Poll? tracker, out TacticalResult tactical, System.DateTime? on = null)
         {
             tactical = null;
             double[] counted = finalShares;
@@ -287,7 +287,7 @@ namespace PoliSim.Elections
             }
             var shares = new Dictionary<string, double>();
             for (int i = 0; i < keys.Length && i < counted.Length; i++) { shares[keys[i]] = counted[i]; }
-            DeriveRegional(country, keys, counted);
+            DeriveRegional(country, keys, counted, on);   // §707: the polling day - Germany derives its Länder on it (a campaign's count dropped it, and no German night was ever shown)
             return shares;
         }
 

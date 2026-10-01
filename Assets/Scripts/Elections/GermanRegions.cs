@@ -41,6 +41,10 @@ namespace PoliSim.Elections
         public static long EligibleAt(int region, DateTime date) => (WorldClock.SeatedVintage(CountryId.Germany, date) == ElectionVintage.Germany2021 ? Eligible2021 : Eligible2025)[region];
 
         /// <summary>§697: the Land's valid Zweitstimmen on the chamber seated on <paramref name="date"/> - a campaign's audience there.</summary>
+        /// <summary>§707 (D-DE, 24a ①): the register an ELECTION is held on - 2025's for the 2025 election and after (the latest the record holds),
+        /// 2021's before it. Not <see cref="EligibleAt"/>: on the 2025 polling day the 2021 chamber still sits, but the night counts 2025's register.</summary>
+        public static long EligibleForElection(int region, DateTime pollingDay) => (pollingDay >= new DateTime(2025, 2, 23) ? Eligible2025 : Eligible2021)[region];
+
         public static long ValidAt(int region, DateTime date) => Catalog(WorldClock.SeatedVintage(CountryId.Germany, date)).Valid[region];
 
         /// <summary>The Land's name at <paramref name="region"/>, in the catalogs' shared order.</summary>

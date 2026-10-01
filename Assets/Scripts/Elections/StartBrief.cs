@@ -161,12 +161,12 @@ namespace PoliSim.Elections
                 {
                     int cabinetSeats = 0;
                     foreach (string abbrev in government.Cabinet) { if (seats.TryGetValue(abbrev, out int n)) { cabinetSeats += n; } }
-                    rows.Add(new Row("Government", string.Join(" + ", government.Cabinet) + " · " + government.Head, basis));
+                    rows.Add(new Row("Government", string.Join(" + ", System.Array.ConvertAll(government.Cabinet, a => PartySystems.ShortName(id, a))) + " · " + government.Head, basis));   // §707: the party's name, not the data key ("Grune")
                     rows.Add(new Row("Since", Stamp(government.From), basis));
                     rows.Add(new Row("Seats", cabinetSeats.ToString(CultureInfo.InvariantCulture) + " OF " + size.ToString(CultureInfo.InvariantCulture), basis + "; the seats " + chamber.Basis));
                     if (government.Support != null && government.Support.Length > 0)
                     {
-                        rows.Add(new Row("Support", string.Join(" + ", government.Support), basis));
+                        rows.Add(new Row("Support", string.Join(" + ", System.Array.ConvertAll(government.Support, a => PartySystems.ShortName(id, a))), basis));
                     }
                     if (government.President != null) { rows.Add(new Row("President", government.President, basis)); }   // PS-3b (§629): France's cabinet sits under its president
                 }
