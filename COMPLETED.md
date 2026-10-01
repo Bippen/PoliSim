@@ -36091,3 +36091,17 @@ The cheap bar **90 of 90** (`cheap728`).
 
 **Tier UI.** Named `n729` (StatsSheetCheck, StatsSlipReachabilityCheck, DeadStateCheck, UnwiredSubsystemCheck, MetaTextCheck, NumberLocaleCheck) 6 of 6, `n729c` 2 of 2; the dry film **`drys729c` Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes**; the real films `film729b` and **`film729c` (Sweden, 1280, to the Docket): 29 captured, 0 overflows, 0 escapes** - `02b_statistics_international` the map and trade cards, `_rows` partners and peers (the growth card diverging) above the pair page.
 The cheap bar **90 of 90** (`cheap729`).
+
+
+## 730. PS-5, PART THREE: POLAND'S SEJM BY ITS OWN LAW - 41 DISTRICTS, D'HONDT IN EACH, THE 5 % AND 8 % THRESHOLDS, THE MINORITY'S EXEMPTION - GIVES THE 2023 CHAMBER SEAT FOR SEAT; AN INSTRUMENT BEFORE IT GOES LIVE (2026-10-01)
+
+**The ruling** (the main session: *PS-5's model parts continue in between - ... the 41 districts*; the political-system spec's stage 5: *the 41 districts; parties and coalition committees with their different thresholds (sourced)*).
+
+**The law, as the sources on disk cite it** (`ElectionsData/poland/returns_2023.md`, Rules, from the Kodeks wyborczy and the PKW's notice): 41 multi-member districts (art. 201); **d'Hondt in each district, no national tier** (art. 232 §1); the national thresholds on all valid votes - **5 % for a party's committee, 8 % for a coalition committee** (art. 196 §1-2); a national minority's committee exempt on declaration (art. 197). The committees' kinds by their names in the notice: KO and TD were *koalicyjny* committees, PiS, NL and Konf party committees, MN the minority's voters' committee.
+
+**The instrument (`PolishSejmAllocationDiagnostic`, in the cheap bar - now 91 checks)** runs the law on the KBW's district votes (`district_votes_2023.csv`, every committee's national sum already cross-checked against the notice) and the districts' magnitudes (the returns file's table, read, **summing to 460**): **PiS 194, KO 157, TD 65, NL 26, Konf 18, MN 0 - the 10th-term Sejm the PKW announced (Dz.U. 2023 poz. 2234), seat for seat, on the first run**. The thresholds' edges planted: a coalition committee at 7.9 % is out where a party's at 7.9 % is in; the minority's committee at 0.3 % takes part in the division and wins nothing its quotients do not reach.
+
+**Not live yet, and why.** Poland's chamber is `NotImplemented` on the live path (`NationalElection`'s reason: *d'Hondt separately in 41 districts with no national compensatory tier*). Wiring the law in needs each district's share from the national vote on the polling day - a uniform swing from 2023's district results is the standard reading, a DERIVED choice to state - and it moves Poland's trajectory at its next election, so it lands as **its own sentinel family**, with the president's veto and its 3/5 override (Art. 122 ust. 5) and the PiS start - the parts still owed.
+
+**Tier (Editor instrument, data read-only).** Named `n730` (PolishSejmAllocationDiagnostic, MojibakeCheck) 2 of 2.
+The cheap bar **91 of 91** (`cheap730`).

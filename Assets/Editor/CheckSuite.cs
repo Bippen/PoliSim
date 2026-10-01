@@ -214,6 +214,7 @@ namespace PoliSim.EditorTools
             ("FormationTimeDiagnostic", FormationTimeDiagnostic.Run),   // §714: each country's formation time from the record's own dates (election to installation)
             ("PresidentialElectionDiagnostic", PresidentialElectionDiagnostic.Run),   // PS-5 with S7 (§720): the two-round rule counted on the PKW's four rounds - the run-offs, the presidents of record, the terms, the rule's edges
             ("PresidentialVoteBacktest", PresidentialVoteBacktest.Run),   // PS-5 with S7, part two (§727): the vote that feeds the count - first rounds inherited from the Sejm, run-offs by transfer in two spaces, measured on 2020 and 2025 and pinned
+            ("PolishSejmAllocationDiagnostic", PolishSejmAllocationDiagnostic.Run),   // PS-5 part three (§730): the Sejm by its own law - 41 districts, d'Hondt each, the 5 % and 8 % thresholds, MN exempt - gives the 2023 chamber seat for seat
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature
             ("PreStartRecordDiagnostic", PreStartRecordDiagnostic.Run),   // §709: the pre-start record - the generated table its CSV, every start's seed window, the reading before and after, Germany 2025 and Sweden 2026 with the record
