@@ -95,7 +95,7 @@ namespace PoliSim.UI
             book.Anchors["fiscal:notyet"] = new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("NOT YET COMPUTED — ADVANCE A YEAR")
                 .Add("A SHARE OF A YEAR NO YEAR HAS CLOSED");
             // §728 (UI v3.5): the readings the composition's sections do not carry, kept as their own section
-            book.Anchors["readings:head"] = new SlipContent("MORE READINGS").Add("THE HEADLINE READINGS NO OTHER SECTION OF THE SHEET CARRIES")
+            book.Anchors["more:head"] = new SlipContent("MORE READINGS").Add("THE HEADLINE READINGS NO OTHER SECTION OF THE SHEET CARRIES")
                 .Add("THE DESK'S STRIP CARRIES ALL TEN");
             // §725 (Elias's ruling): the deficit row is neutral ink unless it breaches the country's statutory rule - then the warning, and this slip names the rule
             if (deficitPercentOfGdp.HasValue && FiscalRules.Breaches(home.Id, FiscalRules.Measure.Deficit, deficitPercentOfGdp.Value, out string deficitRule))
@@ -192,6 +192,12 @@ namespace PoliSim.UI
             book.Anchors["relations"] = new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("NO BILATERAL RELATIONS STATE").Add("THE MODEL HOLDS NONE — NO RELATIONS SCORE,")
                 .Add("NO ALLIANCE OR TREATY STANDING,").Add("NO DIPLOMATIC HISTORY");
             book.Anchors["trade:head"] = new SlipContent("TRADE").Add("THE HOME COUNTRY'S TRADE WITH THE WORLD").Add("DOTTED = ZERO, WHERE THE SCALE SPANS IT");
+            // §729 (UI v3.5): partners and peers - the composition's two cards, each read off the model (its figures were illustrative; these are not)
+            book.Anchors["partners:head"] = new SlipContent("PARTNERS AND PEERS").Add("THE MODEL'S OWN TRADE LINKS AND THE SIX GDP HISTORIES");
+            book.Anchors["partners:card"] = new SlipContent("TRADE PARTNERS").Add("EACH PARTNER'S SHARE OF THE HOME COUNTRY'S TRADE WITH THE FIVE")
+                .Add("EXPORTS AND IMPORTS TOGETHER, OFF THE MAP'S OWN LINKS");
+            book.Anchors["peers:card"] = new SlipContent("GDP GROWTH, SIX STATES").Add("REAL · THE LAST FOUR QUARTERS, EACH STATE'S OWN SERIES")
+                .Add("THE HOME COUNTRY IN THE AREA'S INK · ABSENT WHERE A YEAR IS NOT YET KEPT");
             book.Anchors["trade:passthrough"] = passThroughPp.HasValue
                 ? new SlipContent("TARIFF PASS-THROUGH").Add("TARIFF PASS-THROUGH TO PRICES").Add("PP OF INFLATION, THE LAST CLOSED YEAR")
                 : new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("TARIFF PASS-THROUGH TO PRICES").Add("ADVANCE A YEAR - NO YEAR HAS CLOSED");

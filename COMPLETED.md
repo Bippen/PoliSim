@@ -36073,3 +36073,21 @@ The cheap bar **90 of 90** (`cheap727`).
 
 **Tier UI.** Named `n728b` (StatsSheetCheck, StatsSlipReachabilityCheck, DeadStateCheck, UnwiredSubsystemCheck, MetaTextCheck, InkContrastCheck, NumberLocaleCheck) 7 of 7, `n728d` (the reachability on the new list) 2 of 2; the dry film **`drys728b` Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes** with the floor guarded on the page (`drys728`: 29 overflows - a Society figure beside its sparkline, a GDP growth five tiles across - the sparklines moved under the head, the readings four across); the real film `film728a` (Sweden, 1280, to International): 25 captured, 0 overflows, 0 escapes - `02a_statistics_domestic` the composition's first three sections, `_deep` Society, More readings and Your policies.
 The cheap bar **90 of 90** (`cheap728`).
+
+
+## 729. UI v3.5, STATISTICS › INTERNATIONAL: THE WORLD TRADE CARD, THE TRADE CARD BESIDE THE RATING, PARTNERS AND PEERS READ OFF THE MODEL (THE COMPOSITION'S FIGURES WERE ILLUSTRATIVE); THE PAIR PAGE KEPT AND ASKED (2026-10-01)
+
+**The ruling** (the main session's order: the second screen's second tab; V35_ASK rules 1, 5, 7 and the map-chip ruling - *one form per map*).
+
+**The page** (`DrawInternationalStatisticsV35`): **World trade** on a card (the globe, the map; its chips the composition's 38 x 26 with the code at the floor - **the desk's form, one form per map**; the chips keep their slips; a pinned country or event opens its panel inside the card); **Trade** - the section head with its pager, the trade balance's chart card (the v3.5 head, the tariff pass-through row at the floor under it) beside **the credit rating's tile** (the shield, the outlook as its change); **Partners and peers** - two cards the composition drew with figures it called illustrative, here **read off the model**: **Trade partners** (each partner's share of the home country's trade with the five, exports and imports together, off the map's own links - Germany 36.6 % of Sweden's) and **GDP growth, six states** (each state's real growth over its last four quarters, the home country first in the area's ink, ABSENT where a year is not kept). **A negative figure is not a short positive one**: where any row is below zero the card's axis diverges - zero at the centre, each bar toward its sign (France −0.1 %, Italy −0.7 % on the seed run). `MapRenderer.TagOf` gives the code for the rows' NAME · CODE.
+
+**Kept, not in the composition - asked:** the **pair page** (both sides' readings, the trade arrows, the tariffs each way, bloc and currency, the stance lanes, RELATIONS ABSENT) - as built, after the composition's sections; its faces are D-ST's until Design says where the pair lives in v3.5.
+
+**Retired:** `DrawWorldMapContent` and `DrawTradeStatsContent` (their parts are the cards above); the map's section caption WORLD MAP is the card head's slip.
+
+**⚠ A correction to §728.** Its More readings head hung on the anchor id `readings:head` - **the pair page's own id** - so the Domestic head opened the pair's READINGS slip (the book's later entry won). Renamed `more:head`; the book's entry with it.
+
+**The removed words**, regenerated with this page in (`removed-set`, `drys698` against `drys729c`): **92 removed draws, 105 word segments - 94 on a slip or the dense line, 11 leaving by finding, 0 unreachable**.
+
+**Tier UI.** Named `n729` (StatsSheetCheck, StatsSlipReachabilityCheck, DeadStateCheck, UnwiredSubsystemCheck, MetaTextCheck, NumberLocaleCheck) 6 of 6, `n729c` 2 of 2; the dry film **`drys729c` Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes**; the real films `film729b` and **`film729c` (Sweden, 1280, to the Docket): 29 captured, 0 overflows, 0 escapes** - `02b_statistics_international` the map and trade cards, `_rows` partners and peers (the growth card diverging) above the pair page.
+The cheap bar **90 of 90** (`cheap729`).

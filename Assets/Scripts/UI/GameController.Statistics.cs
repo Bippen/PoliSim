@@ -627,14 +627,12 @@ namespace PoliSim.UI
         /// (2026-08-28) drops E24, the turn log that lived here (its content is the calendar's and
         /// the event card's now), and the "International" header with it - the sub-tab says it.
         /// <para>D-ST (23b, 2026-09-30): one heading face on the page - WORLD MAP, PAIR and TRADE take the section rule, as Domestic's heads do.</para>
+        /// <para>§729 (UI v3.5): the composition's page (<see cref="DrawInternationalStatisticsV35"/>) - the map and trade cards, partners and peers -
+        /// then the pair page, kept as built.</para>
         /// </summary>
-        private void DrawInternationalStatisticsContent()
+        private void DrawInternationalStatisticsContent(float contentWidth)
         {
-            DrawWorldMapContent();
-            GUILayout.Space(StatsUnit(10f));
-            DrawCountryPageContent();
-            GUILayout.Space(StatsUnit(10f));
-            DrawTradeStatsContent();
+            DrawInternationalStatisticsV35(contentWidth);
         }
 
         /// <summary>

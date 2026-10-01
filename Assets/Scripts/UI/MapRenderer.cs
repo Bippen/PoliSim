@@ -410,6 +410,9 @@ namespace PoliSim.UI
             GUI.Label(rect, ChipTag(id), _chipTagStyle);
         }
 
+        /// <summary>§729: a country's two-letter code as its chip prints it - for a surface that names the country beside its code (NAME · CODE).</summary>
+        public static string TagOf(CountryId id) => ChipTag(id);
+
         private static string ChipTag(CountryId id)
         {
             switch (id)

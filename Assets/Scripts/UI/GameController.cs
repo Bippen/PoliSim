@@ -7821,7 +7821,7 @@ namespace PoliSim.UI
                     V35.FloorGuarded = false;
                     break;
                 case StatisticsCategory.International:
-                    DrawInternationalStatisticsContent();
+                    DrawInternationalStatisticsContent(contentWidth);
                     break;
             }
             GUILayout.EndScrollView();
@@ -9703,66 +9703,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// World Map tab (Phase 5): a stylized, non-geographic map (see MapRenderer) showing all six
-        /// countries as clickable markers plus fading event dots. Clicking a marker/dot pins a detail
-        /// panel below the map - clicking a country clears any pinned event and vice versa, so
-        /// exactly one detail panel shows at a time. Every stat and event description shown here is
-        /// read straight from existing SimulationManager/EconomyState/EconomicEvent data - no new
-        /// simulation data of any kind.
-        /// </summary>
-        /// <summary>World-map content, extracted from the former World Map sub-tab so the International
-        /// sub-tab can compose it alongside Trade. Wrapper (box + scroll view) removed - the caller owns
-        /// scrolling now, and nesting a scroll view inside one breaks wheel handling.</summary>
-        private void DrawWorldMapContent()
-        {
-            // D-ST (23b ② ③): the page's one heading face - WORLD MAP on the section rule; what the map draws (§565's caption) is the map's slip
-            Rect mapHead = DrawStatsSectionCaption("WORLD MAP");
-            StatsAnchor(new Rect(mapHead.x, mapHead.y, Mathf.Min(mapHead.width, StatsUnit(160f)), mapHead.height), "map");
-            GUILayout.Space(6f);
-
-            Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
-            _mapRenderer.VisibleClip = _statsVisibleContent;   // D-ST: this map scrolls - its rotated lines clip to what the view shows; the Desk's map never does
-            _mapRenderer.OwnTooltip = false;   // §710: this sheet hangs its own slips on the chips (below) - the name the first line
-            _mapRenderer.Draw(
-                mapRect,
-                _world.Countries,
-                PlayerCountryId,
-                _mapEventMarkers,
-                _simulationManager.CurrentTurn,
-                EventMarkerFadeTurns,
-                _labelStyle,
-                out CountryId? clickedCountry,
-                out MapEventMarker? clickedEvent);
-            _mapRenderer.VisibleClip = null;
-            _mapRenderer.OwnTooltip = true;
-            // §710 (R-SP5 retired): the chip's tag is the label; each chip's slip carries the name first (StatsSlips, "map:chip:")
-            foreach (KeyValuePair<CountryId, Rect> chip in _mapRenderer.LastChipRects) { StatsAnchor(chip.Value, "map:chip:" + chip.Key); }
-
-            if (clickedCountry.HasValue)
-            {
-                _selectedMapCountry = clickedCountry;
-                _selectedMapEvent = null;
-            }
-            else if (clickedEvent.HasValue)
-            {
-                _selectedMapEvent = clickedEvent;
-                _selectedMapCountry = null;
-            }
-
-            GUILayout.Space(10f);
-
-            if (_selectedMapEvent.HasValue)
-            {
-                DrawSelectedMapEventPanel(_selectedMapEvent.Value);
-            }
-            else if (_selectedMapCountry.HasValue)
-            {
-                DrawSelectedMapCountryPanel(_selectedMapCountry.Value);
-            }
-            // D-ST (23b ⑤): nothing pinned draws nothing - a pin is a chip's state
-        }
-
-        /// <summary>
         /// Macro overhaul Step A4's derived stats, finally on screen. The directive defines A4 as "pure
         /// display arithmetic" — it was built (`70798e9`) and trajectory-validated (`3d77b11`) but
         /// displayed nothing for a day, which is precisely the "built but uncalled" state this project
@@ -10807,58 +10747,9 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>
-        /// Master Sequence step 5e, Phase A: the old standalone Trade tab SPLIT across two new
-        /// destinations, per Elias's own confirmed mapping - informational content (this piece, the
-        /// Trade Balance graph) to Statistics, policy content (DrawTradePolicyContent below) to
-        /// Policy/Laws. Implementation refinement Elias also confirmed: per-partner rows (bars AND
-        /// override controls together) stay bundled as one unit under Policy/Laws rather than
-        /// splitting a single row's own bars from its own controls across two different tabs - a
-        /// player adjusting an override wants the volume bars right next to it for context. No outer
-        /// box/scrollview here, matching this codebase's own established "*Content" convention.
-        /// </summary>
-        private void DrawTradeStatsContent()
-        {
-            // D-ST (23b ② ⑬-⑮): TRADE on the section rule with its chart's pager at its right; the pass-through a row - name and figure, a zero
-            // unsigned - and ABSENT before a year has closed; the chart as the domestic series draw (its Δ in money, its feet slips, the trade balance's
-            // seed 0.00 held until the first year's close is empty paper, not a history).
-            StatHistory history = _playerCountry.History;
-            DrawStatsPagedHead("Trade", "trade:head", "trade:pager", _statsTradeSection, GraphRenderer.PagesFor(history.TradeBalance.Quarterly), 0f);   // §728: the v3.5 head (0: the row's own width)
-            GUILayout.Space(StatsUnit(4f));
-            // Pass 6: the tariff pass-through that actually printed over the last period (the closing FiscalPeriod's applied term on the report); null
-            // before the first boundary.
-            FiscalTurnReport lastTradeReport = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            GUIStyle name = DeskBody(12f, PoliSimTheme.TextPrimary);
-            GUIStyle figure = DeskNumeral(12f, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
-            float rowHeight = Mathf.Ceil(figure.CalcSize(new GUIContent("0")).y) + StatsUnit(4f);
-            Rect row = GUILayoutUtility.GetRect(10f, rowHeight, GUILayout.ExpandWidth(true));
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, row.width * 0.6f, row.height), "Tariff pass-through", name);
-                PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), PoliSimTheme.RuleRow);
-            }
-            if (lastTradeReport != null)
-            {
-                float pp = lastTradeReport.TariffPassThroughPp;
-                string text = (StatsReadings.IsFlat(pp, 2) ? 0f.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
-                    : StatsReadings.TrueMinus(pp.ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture))) + " pp";   // 23b ⑬: a zero has no sign
-                float w = figure.CalcSize(new GUIContent(text)).x + StatsUnit(4f);
-                var cell = new Rect(row.xMax - w, row.y, w, row.height);
-                if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(cell, text, figure); }
-                StatsAnchor(cell, "trade:passthrough");
-            }
-            else
-            {
-                float side = Mathf.Min(rowHeight, StatsUnit(14f));
-                var slot = new Rect(row.xMax - side, row.y + (row.height - side) * 0.5f, side, side);
-                if (Event.current.type == EventType.Repaint) { DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted); }
-                StatsAnchor(slot, "trade:passthrough");
-            }
-            GUILayout.Space(StatsUnit(6f));
-            DrawStatsChart(StatsSlips.Trade, history, null, StatsGraphLabelStyle(), null, null, null, null, _statsTradeSection);
-        }
-
-        /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - see DrawTradeStatsContent's own doc comment for the split reasoning. Called from DrawPolicyLawsTab.</summary>
+        /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - Master Sequence step 5e split the old tab: its informational
+        /// half (the trade balance) went to Statistics (since §729 the International page's trade card), its policy half here, the per-partner rows with their
+        /// override controls kept together. Called from DrawPolicyLawsTab.</summary>
         private void DrawTradePolicyContent(float contentWidth)
         {
             DrawColoredLabel("Trade Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));

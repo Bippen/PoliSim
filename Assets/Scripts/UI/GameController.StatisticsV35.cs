@@ -358,6 +358,208 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// §729 (UI v3.5): STATISTICS › INTERNATIONAL as the composition lays it - the World trade card (the map, its chips the composition's, one form
+        /// with the desk's - Elias's "one form per map"); the trade balance's card beside the credit rating's tile; PARTNERS AND PEERS - the share of the
+        /// trade each partner takes and the six states' growth, both the model's own (the composition's figures were illustrative; these are read off
+        /// the trade links and the six GDP histories). The PAIR page the composition does not draw is KEPT as built, after them, and asked.
+        /// </summary>
+        private void DrawInternationalStatisticsV35(float contentWidth)
+        {
+            V35.FloorGuarded = true;
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
+
+            // ---- World trade ----
+            GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(contentWidth));
+            float headSide = V35.Px(V35.CardIcon);
+            Rect head = GUILayoutUtility.GetRect(10f, headSide, GUILayout.ExpandWidth(true));
+            DrawV35CardHead(head, "globe", "World trade", area);
+            StatsAnchor(new Rect(head.x, head.y, Mathf.Min(head.width, V35.Px(220f)), head.height), "map");
+            GUILayout.Space(V35.Px(V35.CardHeadGap));
+            Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
+            _mapRenderer.VisibleClip = _statsVisibleContent;   // D-ST: this map scrolls - its rotated lines clip to what the view shows
+            _mapRenderer.OwnTooltip = false;   // §710: this sheet hangs its own slips on the chips - the name the first line
+            _mapRenderer.V35Chips = true;      // §729: the composition's chip, the desk's form (one form per map)
+            _mapRenderer.Draw(mapRect, _world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns,
+                V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true), out CountryId? clickedCountry, out MapEventMarker? clickedEvent);
+            _mapRenderer.V35Chips = false;
+            _mapRenderer.VisibleClip = null;
+            _mapRenderer.OwnTooltip = true;
+            foreach (KeyValuePair<CountryId, Rect> chip in _mapRenderer.LastChipRects) { StatsAnchor(chip.Value, "map:chip:" + chip.Key); }
+            if (clickedCountry.HasValue) { _selectedMapCountry = clickedCountry; _selectedMapEvent = null; }
+            else if (clickedEvent.HasValue) { _selectedMapEvent = clickedEvent; _selectedMapCountry = null; }
+            if (_selectedMapEvent.HasValue) { GUILayout.Space(V35.Px(8f)); DrawSelectedMapEventPanel(_selectedMapEvent.Value); }
+            else if (_selectedMapCountry.HasValue) { GUILayout.Space(V35.Px(8f)); DrawSelectedMapCountryPanel(_selectedMapCountry.Value); }
+            GUILayout.EndVertical();
+            StatsSectionGap();
+
+            // ---- the trade balance's card beside the credit rating's tile ----
+            StatHistory history = _playerCountry.History;
+            DrawStatsPagedHead("Trade", "trade:head", "trade:pager", _statsTradeSection, GraphRenderer.PagesFor(history.TradeBalance.Quarterly), contentWidth);
+            GUILayout.Space(V35.Px(6f));
+            float gutter = V35.Px(V35.Gutter);
+            float half = V35Span(contentWidth, 6);
+            GUILayout.BeginHorizontal(GUILayout.Width(contentWidth));
+            GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(half));
+            DrawStatsChart(StatsSlips.Trade, history, null, StatsGraphLabelStyle(), null, null, null, null, _statsTradeSection);
+            DrawTradePassThroughRow();
+            GUILayout.EndVertical();
+            GUILayout.Space(gutter);
+            GUILayout.BeginVertical(GUILayout.Width(contentWidth - half - gutter));
+            HeadlineReading rating = default;
+            bool hasRating = false;
+            foreach (HeadlineReading r in BuildHeadlineReadings()) { if (r.Label == "Credit Rating") { rating = r; hasRating = true; } }
+            if (hasRating)
+            {
+                var tile = new V35TileData { Icon = "shield", IconInk = area, Figure = rating.Value, Name = "Credit rating", FigurePx = V35.FigureSmall };
+                if (!string.IsNullOrEmpty(rating.Delta)) { tile.Change = rating.Delta; tile.ChangeInk = rating.DeltaInk; }
+                float h = V35TileHeight(tile);
+                Rect r = GUILayoutUtility.GetRect(contentWidth - half - gutter, h, GUILayout.ExpandWidth(true), GUILayout.Height(h));
+                DrawV35Tile(r, tile);
+            }
+            GUILayout.EndVertical();
+            GUILayout.EndHorizontal();
+            StatsSectionGap();
+
+            // ---- partners and peers ----
+            DrawStatsV35Head("Partners and peers", "partners:head", contentWidth);
+            GUILayout.Space(V35.Px(6f));
+            var partners = new List<(string Name, string Code, float Value, bool Absent, bool Own)>();
+            float tradeSum = 0f;
+            foreach (TradePartner p in _playerCountry.TradePartners) { tradeSum += Mathf.Max(0f, p.ExportVolume) + Mathf.Max(0f, p.ImportVolume); }
+            foreach (TradePartner p in _playerCountry.TradePartners)
+            {
+                Country c = _world.GetCountry(p.PartnerId);
+                if (c == null) { continue; }
+                float share = tradeSum > 0f ? 100f * (Mathf.Max(0f, p.ExportVolume) + Mathf.Max(0f, p.ImportVolume)) / tradeSum : 0f;
+                partners.Add((c.Name, MapRenderer.TagOf(c.Id), share, false, false));
+            }
+            partners.Sort((a, b) => b.Value.CompareTo(a.Value));
+            var peers = new List<(string Name, string Code, float Value, bool Absent, bool Own)>();
+            foreach (Country c in _world.Countries)
+            {
+                float? g = StatsReadings.YearOnYearGrowthPercent(c.History?.Gdp.Quarterly);
+                var row = (c.Name, MapRenderer.TagOf(c.Id), g ?? 0f, !g.HasValue, c.Id == PlayerCountryId);
+                if (row.Item5) { peers.Insert(0, row); } else { peers.Add(row); }   // the home country first, as the composition sets it
+            }
+            float cardHeight = Mathf.Max(StatsBarCardHeight(partners.Count), StatsBarCardHeight(peers.Count));
+            Rect band = GUILayoutUtility.GetRect(contentWidth, cardHeight, GUILayout.Width(contentWidth), GUILayout.Height(cardHeight));
+            DrawStatsBarCard(new Rect(band.x, band.y, half, cardHeight), "trade", "Trade partners", partners, "% of trade", "partners:card");
+            DrawStatsBarCard(new Rect(band.x + half + gutter, band.y, band.width - half - gutter, cardHeight), "chart", "GDP growth, six states", peers, "%", "peers:card");
+            V35.FloorGuarded = false;
+
+            // ---- KEPT (not in the composition; asked): the pair page, as built ----
+            StatsSectionGap();
+            DrawCountryPageContent();
+        }
+
+        /// <summary>The tariff pass-through row inside the trade card, at the floor: the last closed period's applied term, ABSENT before one closed.</summary>
+        private void DrawTradePassThroughRow()
+        {
+            FiscalTurnReport last = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            GUIStyle name = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+            GUIStyle figure = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleRight);
+            float rowHeight = V35.Px(V35.ListRow);
+            GUILayout.Space(V35.Px(6f));
+            Rect row = GUILayoutUtility.GetRect(10f, rowHeight, GUILayout.ExpandWidth(true));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, row.width * 0.6f, row.height), "Tariff pass-through", name);
+                PoliSimTheme.Rule(new Rect(row.x, row.y - 1f, row.width, 1f), V35.ListRule);
+            }
+            if (last != null)
+            {
+                float pp = last.TariffPassThroughPp;
+                string text = (StatsReadings.IsFlat(pp, 2) ? 0f.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)
+                    : StatsReadings.TrueMinus(pp.ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture))) + " pp";   // 23b ⑬: a zero has no sign
+                float w = Mathf.Ceil(figure.CalcSize(new GUIContent(text)).x) + V35.Px(4f);
+                var cell = new Rect(row.xMax - w, row.y, w, row.height);
+                if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(cell, text, figure); }
+                StatsAnchor(cell, "trade:passthrough");
+            }
+            else
+            {
+                float side = Mathf.Min(rowHeight, V35.Px(16f));
+                var slot = new Rect(row.xMax - side, row.y + (row.height - side) * 0.5f, side, side);
+                if (Event.current.type == EventType.Repaint) { DrawStateGlyph(slot, Symbol.Absent, PoliSimTheme.TextMuted); }
+                StatsAnchor(slot, "trade:passthrough");
+            }
+        }
+
+        /// <summary>A bar card's height for <paramref name="rows"/> rows: the head, the rows, the axis line.</summary>
+        private static float StatsBarCardHeight(int rows) =>
+            V35.Px(V35.CardPadY) * 2f + V35.Px(V35.CardIcon) + V35.Px(V35.CardHeadGap) + rows * V35.Px(31f) + V35.Px(24f);
+
+        /// <summary>
+        /// §729: a card of rows on one axis (the composition's Trade partners and GDP growth cards) - each row the globe, NAME · CODE, the bar, the
+        /// figure; the axis's two ends under them. The bars are the neutral slate (a share and a growth figure ranked side by side say no verdict);
+        /// the player's own row takes the area's ink, as the composition marks it. A row with no figure yet draws ABSENT, never a zero; a negative
+        /// figure draws its magnitude and prints its sign.
+        /// </summary>
+        private void DrawStatsBarCard(Rect card, string icon, string title, List<(string Name, string Code, float Value, bool Absent, bool Own)> rows, string unit, string anchor)
+        {
+            Rect inner = DrawV35Card(card);
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Global);
+            Rect head = DrawV35CardHead(inner, icon, title, area);
+            StatsAnchor(head, anchor);
+            if (Event.current.type != EventType.Repaint) { return; }
+            float max = 0f;
+            bool anyNegative = false;
+            foreach (var r in rows) { if (!r.Absent) { max = Mathf.Max(max, Mathf.Abs(r.Value)); anyNegative |= r.Value < 0f; } }
+            float axisMax = max <= 0f ? 1f : max <= 5f ? Mathf.Ceil(max) : Mathf.Ceil(max / 10f) * 10f;
+            // a negative figure is not a short positive one: where any row is below zero the axis diverges - zero at the centre, each bar toward its sign
+            GUIStyle nameFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
+            GUIStyle valueFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleRight);
+            GUIStyle axisFace = V35Serif(V35.Floor, PoliSimTheme.TextMuted);
+            float rowHeight = V35.Px(31f), iconSide = V35.Px(20f);
+            float nameWidth = V35.Px(170f), valueWidth = V35.Px(64f);
+            float barX = inner.x + iconSide + V35.Px(8f) + nameWidth;
+            float barWidth = Mathf.Max(1f, inner.xMax - valueWidth - V35.Px(10f) - barX);
+            float barHeight = V35.Px(13f);
+            float y = head.yMax + V35.Px(V35.CardHeadGap);
+            foreach (var r in rows)
+            {
+                DrawV35Icon(new Rect(inner.x, y + Mathf.Round((rowHeight - iconSide) * 0.5f), iconSide, iconSide), "globe", area);
+                string label = r.Name + " · " + r.Code;
+                PoliSimWidgets.MeasuredLabel(new Rect(inner.x + iconSide + V35.Px(8f), y, nameWidth, rowHeight), V35Fit(label, nameFace, nameWidth, out _), nameFace);
+                if (r.Absent)
+                {
+                    float side = V35.Px(16f);
+                    DrawStateGlyph(new Rect(inner.xMax - side, y + Mathf.Round((rowHeight - side) * 0.5f), side, side), Symbol.Absent, PoliSimTheme.TextMuted);
+                }
+                else
+                {
+                    var track = new Rect(barX, y + Mathf.Round((rowHeight - barHeight) * 0.5f), barWidth, barHeight);
+                    PoliSimTheme.Rule(track, PoliSimTheme.BarTrack);
+                    Color ink = r.Own ? area : PoliSimTheme.Neutral;
+                    if (anyNegative)
+                    {
+                        float centre = Mathf.Round(track.x + track.width * 0.5f);
+                        float w = track.width * 0.5f * Mathf.Clamp01(Mathf.Abs(r.Value) / axisMax);
+                        PoliSimTheme.Rule(r.Value >= 0f ? new Rect(centre, track.y, w, track.height) : new Rect(centre - w, track.y, w, track.height), ink);
+                        PoliSimTheme.Rule(new Rect(centre, track.y - 2f, 1f, track.height + 4f), PoliSimTheme.HairlineStrong);
+                    }
+                    else
+                    {
+                        PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(Mathf.Abs(r.Value) / axisMax), track.height), ink);
+                    }
+                    string figure = StatsReadings.TrueMinus(UiFormat.Number(r.Value, 1)) + "%";
+                    PoliSimWidgets.MeasuredLabel(new Rect(inner.xMax - valueWidth, y, valueWidth, rowHeight), figure, valueFace);
+                }
+                y += rowHeight;
+            }
+            string zero = anyNegative ? StatsReadings.Minus + axisMax.ToString("0", System.Globalization.CultureInfo.InvariantCulture) : "0";
+            PoliSimWidgets.MeasuredLabel(new Rect(barX, y, V35.Px(48f), V35.Px(24f)), zero, axisFace);
+            if (anyNegative)
+            {
+                GUIStyle mid = V35Serif(V35.Floor, PoliSimTheme.TextMuted, TextAnchor.UpperCenter);
+                PoliSimWidgets.MeasuredLabel(new Rect(barX + barWidth * 0.5f - V35.Px(20f), y, V35.Px(40f), V35.Px(24f)), "0", mid);
+            }
+            string end = axisMax.ToString("0", System.Globalization.CultureInfo.InvariantCulture) + unit;
+            float endWidth = Mathf.Ceil(axisFace.CalcSize(new GUIContent(end)).x) + 2f;
+            PoliSimWidgets.MeasuredLabel(new Rect(barX + barWidth - endWidth, y, endWidth, V35.Px(24f)), end, axisFace);
+        }
+
+        /// <summary>
         /// KEPT (not in the composition; asked): the readings the composition's sections do not carry - GDP at current prices with its growth, the
         /// debt stock, the closed year's balance, the rating with its outlook, the currency - from the ten headline readings (ONE list with the
         /// desk's strip), as tiles. A reading with no figure yet prints its dash, as the strip does.
@@ -379,7 +581,7 @@ namespace PoliSim.UI
                 }
             }
             if (tiles.Count == 0) { return; }
-            DrawStatsV35Head("More readings", "readings:head", contentWidth);
+            DrawStatsV35Head("More readings", "more:head", contentWidth);
             GUILayout.Space(V35.Px(6f));
             DrawStatsTileRows(contentWidth, tiles, 4);
         }
