@@ -385,6 +385,13 @@ namespace PoliSim.UI
             {
                 fitted.fontSize = Mathf.Max(MinMeasuredLabelFontSize, Mathf.FloorToInt(fitted.fontSize * (available / size.x)));
                 size = fitted.CalcSize(new GUIContent(text));
+                // §726 (UI v3.5, the 14 px floor): on a v3.5 surface a shrink below the floor IS an overflow - the floor is the rule, not a preference -
+                // so it is told to the guard at the size it would have needed, and the film fails on it where it would have passed it quietly.
+                int floor = V35.FontPx(V35.Floor);
+                if (V35.FloorGuarded && style.fontSize >= floor && fitted.fontSize < floor)
+                {
+                    UiOverflowGuard.Check("[below the v3.5 floor] " + text, new Vector2(available + 1f, size.y), new Vector2(available, rect.height), fitted.fontSize);
+                }
             }
 
             // Shrink-to-fit has now done everything it can. If it still does not fit, the label clips -

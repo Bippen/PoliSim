@@ -98,7 +98,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>Lays the arrows out across <paramref name="area"/>. An empty list draws the caller's own idle text instead; this draws nothing for it.</summary>
-        public static void Draw(Rect area, IReadOnlyList<EffectArrow> arrows, GUIStyle labelStyle)
+        /// <param name="captionFloor">§726 (UI v3.5): the smallest the captions may shrink to - 8 by the resort ladder; a v3.5 surface passes its 14 px
+        /// floor, so the captions start AT the floor and, where the words do not fit there, the lanes fall to equal shares and the guard reports the
+        /// break instead of the caption shrinking under it.</param>
+        public static void Draw(Rect area, IReadOnlyList<EffectArrow> arrows, GUIStyle labelStyle, int captionFloor = 8)
         {
             if (arrows == null || arrows.Count == 0 || Event.current.type != EventType.Repaint)
             {
@@ -110,7 +113,7 @@ namespace PoliSim.UI
             if (maxAbs <= 0f) { return; }
 
             GUIStyle caption = new GUIStyle(labelStyle) { alignment = TextAnchor.MiddleCenter, wordWrap = true, clipping = TextClipping.Overflow };
-            caption.fontSize = Mathf.Max(8, Mathf.RoundToInt(labelStyle.fontSize * 0.72f));
+            caption.fontSize = Mathf.Max(captionFloor, Mathf.RoundToInt(labelStyle.fontSize * 0.72f));
             float line = Mathf.Max(caption.lineHeight, caption.fontSize + 4f);
             float nameHeight = line * 3f;   // three lines: "Labor force participation" needs them at a 1280 column
             float figureHeight = line;
@@ -127,7 +130,7 @@ namespace PoliSim.UI
             // to equal shares, where the guard reports the break.
             float needSum = 0f;
             bool wordsFit = false;
-            for (int size = caption.fontSize; size >= 8; size--)
+            for (int size = caption.fontSize; size >= captionFloor; size--)
             {
                 caption.fontSize = size;
                 needSum = 0f;

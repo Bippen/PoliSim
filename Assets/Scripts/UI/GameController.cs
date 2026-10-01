@@ -3617,12 +3617,15 @@ namespace PoliSim.UI
         /// guess - the same "measured, not assumed" discipline CalendarAndSpeedControlsHeight documents
         /// for the pad beside it.
         /// </summary>
-        private void DrawCalendarMonthGrid(System.DateTime monthStart, System.DateTime today, Dictionary<int, List<CalendarMarker>> markers)
+        private void DrawCalendarMonthGrid(System.DateTime monthStart, System.DateTime today, Dictionary<int, List<CalendarMarker>> markers, bool withTitle = true)
         {
             // Board 1k, rule 5: the sheet's first section rule sits between the country header and
-            // the month page (see DrawCalendarMonthLedger for the second).
-            DrawCalendarSheetRule();
-            GUILayout.Label(monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture), _headerStyle);
+            // the month page (see DrawCalendarMonthLedger for the second). §726: the desk's v3.5 card names the month in its head, so it asks for neither.
+            if (withTitle)
+            {
+                DrawCalendarSheetRule();
+                GUILayout.Label(monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture), _headerStyle);
+            }
 
             DateTimeFormatInfo dtfi = DateTimeFormatInfo.CurrentInfo;
             System.DayOfWeek firstDow = dtfi.FirstDayOfWeek;

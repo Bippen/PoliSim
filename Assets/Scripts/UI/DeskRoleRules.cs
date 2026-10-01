@@ -51,6 +51,20 @@ namespace PoliSim.UI
         /// <summary>Whether the card draws its dashed empty state (nothing of the player's or before the chamber moves the estimate).</summary>
         public static bool IsEmptyState(DeskEffectsSubject subject) => subject == DeskEffectsSubject.NothingDrafted || subject == DeskEffectsSubject.StandingBook;
 
+        /// <summary>§726 (v3.5): the card's NAME says whose budget the arrows estimate - §694's ruling kept at rest, where the scope line under the arrows,
+        /// now the head's slip, used to say it.</summary>
+        public static string Head(DeskEffectsSubject subject)
+        {
+            switch (subject)
+            {
+                case DeskEffectsSubject.YourDraft: return "Effects of your draft";
+                case DeskEffectsSubject.YourAlternativeTabled: return "Effects of your alternative";
+                case DeskEffectsSubject.YourAlternativeDrafted: return "Effects of your alternative, drafted";
+                case DeskEffectsSubject.GovernmentDraft: return "Effects of the government's budget";
+                default: return "Estimated effects";
+            }
+        }
+
         private const string Tail = "NO MARGIN: THE PROJECTION IS DETERMINISTIC · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE";
 
         /// <summary>

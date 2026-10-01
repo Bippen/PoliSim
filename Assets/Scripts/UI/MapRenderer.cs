@@ -124,6 +124,12 @@ namespace PoliSim.UI
         private const float ChipWidth = 26f;
         private const float ChipHeight = 20f;
 
+        /// <summary>§726 (UI v3.5, the composition's chip): 38 x 26 at the 14 px floor, the code in the mono bold AT the label's size (not 0.55 of it) -
+        /// set by a v3.5 surface; the board-6b chip otherwise.</summary>
+        public bool V35Chips;
+        private const float V35ChipWidth = 38f;
+        private const float V35ChipHeight = 26f;
+
         private Texture2D _backgroundTexture;
         private Texture2D _lineTexture;
 
@@ -219,8 +225,9 @@ namespace PoliSim.UI
                 // P5-2 (board 6b row 1): a chip, 26 x 20 at 1x, in the country's own outline at its centre - the node's size no longer
                 // says anything (the disc's diameter did); the chip carries the two-letter tag - and since §710 the tag is the label, the name the first line of the chip's tooltip.
                 float u = Mathf.Max(1f, labelStyle.fontSize) / 14f;
-                var nodeRect = new Rect(Mathf.Round(pixel.x - ChipWidth * u * 0.5f), Mathf.Round(pixel.y - ChipHeight * u * 0.5f), Mathf.Round(ChipWidth * u), Mathf.Round(ChipHeight * u));
-                DrawChip(nodeRect, UiPalette.GetCountryColor(country.Id), country.Id, labelStyle);
+                float chipW = V35Chips ? V35ChipWidth : ChipWidth, chipH = V35Chips ? V35ChipHeight : ChipHeight;
+                var nodeRect = new Rect(Mathf.Round(pixel.x - chipW * u * 0.5f), Mathf.Round(pixel.y - chipH * u * 0.5f), Mathf.Round(chipW * u), Mathf.Round(chipH * u));
+                DrawChip(nodeRect, UiPalette.GetCountryColor(country.Id), country.Id, labelStyle, V35Chips ? 1f : 0.55f);
                 nodeRects[country.Id] = nodeRect;
 
                 if (nodeRect.Contains(mousePosition))
@@ -386,15 +393,16 @@ namespace PoliSim.UI
         private static GUIStyle _chipTagStyle;
 
         /// <summary>P5-2: the chip - a paper plate in the country's own outline with its two-letter tag.</summary>
-        private static void DrawChip(Rect rect, Color outline, CountryId id, GUIStyle labelStyle)
+        private static void DrawChip(Rect rect, Color outline, CountryId id, GUIStyle labelStyle, float tagScale)
         {
             Color previous = GUI.color;
             GUI.color = outline; GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = PoliSimTheme.Card; GUI.DrawTexture(new Rect(rect.x + 1.5f, rect.y + 1.5f, rect.width - 3f, rect.height - 3f), Texture2D.whiteTexture);
             GUI.color = previous;
-            if (_chipTagStyle == null || _chipTagStyle.fontSize != Mathf.Max(7, Mathf.RoundToInt(labelStyle.fontSize * 0.55f)))
+            int tagSize = Mathf.Max(7, Mathf.RoundToInt(labelStyle.fontSize * tagScale));
+            if (_chipTagStyle == null || _chipTagStyle.fontSize != tagSize)
             {
-                _chipTagStyle = new GUIStyle(labelStyle) { fontSize = Mathf.Max(7, Mathf.RoundToInt(labelStyle.fontSize * 0.55f)), alignment = TextAnchor.MiddleCenter, wordWrap = false, fontStyle = FontStyle.Bold };
+                _chipTagStyle = new GUIStyle(labelStyle) { fontSize = tagSize, alignment = TextAnchor.MiddleCenter, wordWrap = false, fontStyle = FontStyle.Bold };
                 if (PoliSimTheme.Document != null) { _chipTagStyle.font = PoliSimTheme.Document; }
                 _chipTagStyle.padding = new RectOffset(0, 0, 0, 0);
             }

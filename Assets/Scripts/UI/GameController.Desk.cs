@@ -220,19 +220,23 @@ namespace PoliSim.UI
             float uy = inner.height / DeskBoardInnerHeight;
             Rect Board(float x, float y, float w, float h) => new Rect(inner.x + x * ux, inner.y + y * uy, w * ux, h * uy);
 
-            // Board 1m-r2's placements at the 1156×680 inner area.
+            // Board 1m-r2's masthead and strip at the 1156×680 inner area; between them, since §726, the v3.5 page.
             BeginSlipAnchors();   // §685 (21e): the role chip's slip
             _deskSlipBook = new PeopleSlips.Book();
             DrawDeskMasthead(Board(0f, 0f, 1156f, 28f), isTimePaused);
 
-            DrawDeskMapPlate(Board(0f, 36f, 440f, 320f));
-            DrawDeskApprovalLedger(Board(0f, 368f, 440f, 244f));
-
-            DrawDeskCompass(Board(453f, 36f, 250f, 250f));
-            DrawDeskEffectsCard(Board(453f, 298f, 250f, 314f));
-
-            DrawDeskCalendarSheet(Board(716f, 36f, 440f, 420f));
-            DrawDeskEventCard(Board(716f, 468f, 440f, 144f));
+            // §726 (UI v3.5, Design's V35): THE DESK AS A v3.5 PAGE - its title and the † control, then the cards on the twelve columns as the composition
+            // lays them (World trade 7 | the calendar 5; Approval 7 | This month 5), scrolled, because at the 14 px floor they no longer fit one screen
+            // (the nine-row ledger alone needs some 260 px of the 232 the board gave it). The composition draws no compass, no estimated effects and no
+            // event card on the desk; the desk keeps all three (the effects card's content is §694's ruling) as a third and fourth row in the same
+            // grammar, and asks Design where they go (BOARDS_BUILT). The masthead (17c's controls) and the strip stay where they were: the strip is
+            // HELD as built - the composition's nine tiles clip at 1280 (§721 item 4, asked).
+            float pageTop = Board(0f, 36f, 1f, 1f).y;
+            float pageBottom = Board(0f, 612f, 1f, 1f).y;
+            var titleRow = new Rect(inner.x, pageTop, inner.width, V35.Px(DeskTitleRow));
+            DrawV35PageTitle(titleRow, "Desk");
+            float viewTop = titleRow.yMax + V35.Px(6f);
+            DrawDeskCards(new Rect(inner.x, viewTop, inner.width, Mathf.Max(1f, pageBottom - viewTop)));
 
             // The strip's rule (1m-r2: the strip is part of the sheet - a rule at +8, padding 6,
             // hairline dividers between the cells, no plates).
@@ -460,28 +464,80 @@ namespace PoliSim.UI
             return clicked;
         }
 
-        /// <summary>A caption at the plate's corner, the board's own placement for every plate's label (1m-r2: 8.5).</summary>
-        private void DrawDeskPlateCaption(Rect plate, string text, float ux, float uy)
+        // ---- §726: the v3.5 page's measures (px at 1280 x 699, the composition's) ----
+        /// <summary>The page title's row.</summary>
+        private const float DeskTitleRow = 40f;
+        /// <summary>The first row (World trade | the calendar): the composition's map card.</summary>
+        private const float DeskRowWorld = 330f;
+        /// <summary>The second row (Approval | This month): the nine-term ledger under its head.</summary>
+        private const float DeskRowLedger = 300f;
+        /// <summary>The third row the composition does not draw (estimated effects | the compass): two panels of four arrows, the compass square.</summary>
+        private const float DeskRowEffects = 340f;
+        /// <summary>The fourth row the composition does not draw (the event card).</summary>
+        private const float DeskRowEvent = 150f;
+
+        /// <summary>§726: the desk's scroll.</summary>
+        private Vector2 _deskScrollPosition;
+        /// <summary>§726: the scroll's content origin in the page's space - a slip anchor drawn inside the scroll is registered where the pointer is.</summary>
+        private Vector2 _deskAnchorOffset;
+        /// <summary>§726: the film's hook - each card's top in the scroll's content, so a frame that films a card below the fold scrolls to it by name.</summary>
+        private readonly Dictionary<string, float> _deskCardTops = new Dictionary<string, float>();
+
+        /// <summary>A slip anchor for a rect drawn inside the desk's scroll.</summary>
+        private void DeskAnchor(Rect r, string id) => SlipAnchor(new Rect(r.position + _deskAnchorOffset, r.size), id);
+
+        /// <summary>
+        /// §726: the desk's cards on the twelve columns, in a scroll inside <paramref name="view"/>: World trade (7) beside the calendar (5); Approval (7)
+        /// beside This month (5) - the composition's two rows; then the two rows it does not draw, kept: Estimated effects (7) beside the compass (5), and
+        /// the event card across the twelve.
+        /// </summary>
+        private void DrawDeskCards(Rect view)
         {
-            GUIStyle caption = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
-            float height = DeskCaptionHeight(caption);
-            PoliSimWidgets.MeasuredLabel(new Rect(plate.x + Mathf.Round(8f * ux), plate.y + Mathf.Round(5f * uy), plate.width - Mathf.Round(16f * ux), height), text, caption);
+            float scrollbar = Mathf.Max(GUI.skin.verticalScrollbar.fixedWidth, V35.Px(12f)) + V35.Px(4f);
+            float width = Mathf.Max(1f, view.width - scrollbar);
+            float gutter = V35.Px(V35.Gutter);
+            float left = V35Span(width, 7);
+            float right = width - left - gutter;
+            float rowWorld = V35.Px(DeskRowWorld), rowLedger = V35.Px(DeskRowLedger), rowEffects = V35.Px(DeskRowEffects), rowEvent = V35.Px(DeskRowEvent);
+            var content = new Rect(0f, 0f, width, rowWorld + rowLedger + rowEffects + rowEvent + gutter * 3f);
+
+            _deskScrollPosition = GUI.BeginScrollView(view, _deskScrollPosition, content, false, true);
+            _deskAnchorOffset = view.position - _deskScrollPosition;
+            V35.FloorGuarded = true;   // §726: the v3.5 page - a shrink below the floor is an overflow here
+            float y = 0f;
+            _deskCardTops["world"] = y;
+            DrawDeskMapCard(new Rect(0f, y, left, rowWorld));
+            DrawDeskCalendarCard(new Rect(left + gutter, y, right, rowWorld));
+            y += rowWorld + gutter;
+            _deskCardTops["approval"] = y;
+            DrawDeskApprovalLedger(new Rect(0f, y, left, rowLedger));
+            DrawDeskMonthCard(new Rect(left + gutter, y, right, rowLedger));
+            y += rowLedger + gutter;
+            _deskCardTops["effects"] = y;
+            DrawDeskEffectsCard(new Rect(0f, y, left, rowEffects));
+            DrawDeskCompass(new Rect(left + gutter, y, right, rowEffects));
+            y += rowEffects + gutter;
+            _deskCardTops["event"] = y;
+            DrawDeskEventCard(new Rect(0f, y, width, rowEvent));
+            V35.FloorGuarded = false;
+            GUI.EndScrollView();
         }
 
-        /// <summary>The world map (Annex B I1) on its plate, read-only on the stage (R-B6: a click pins nothing here - the International document is where a readout lives); the renderer's own hover readout stays. Names at the board's 11 px, on §A.9a's ladder (R-SP5).</summary>
-        private void DrawDeskMapPlate(Rect r)
+        /// <summary>The world map (Annex B I1) on its v3.5 card (§726: globe, "World trade"; the old corner caption is the head's slip), read-only on the
+        /// stage (R-B6: a click pins nothing here - the International document is where a readout lives); the renderer's own hover readout stays. The
+        /// chips' codes at the floor, mono bold, as the composition sets them.</summary>
+        private void DrawDeskMapCard(Rect r)
         {
-            float ux = r.width / 440f;
-            float uy = r.height / 320f;
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.RoundedCard(r, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
-            }
-
-            GUIStyle names = DeskBody(11f, PoliSimTheme.TextPrimary);
+            Rect inner = DrawV35Card(r);
+            var slip = new SlipContent("WORLD TRADE").Add("THE WORLD — TRADE VOLUME").Add("A CHIP NAMES ITS COUNTRY ON HOVER");
+            _deskSlipBook.Anchors["card:world"] = slip;
+            Rect head = DrawV35CardHead(inner, "globe", "World trade", PoliSimTheme.TextSecondary);
+            DeskAnchor(head, "card:world");
+            Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
             _mapRenderer.OwnTooltip = true;   // §710: the Desk hangs no slips on the chips - the renderer's own hover box, the name its first line
-            _mapRenderer.Draw(r,_world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, names, out _, out _);
-            DrawDeskPlateCaption(r, "THE WORLD — TRADE VOLUME", ux, uy);
+            _mapRenderer.V35Chips = true;     // §726: the composition's chip (38 x 26, the code at the floor); the renderer is shared, so it is put back
+            _mapRenderer.Draw(body, _world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true), out _, out _);
+            _mapRenderer.V35Chips = false;
         }
 
         /// <summary>
@@ -497,68 +553,59 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawDeskApprovalLedger(Rect r)
         {
-            float ux = r.width / 440f;
-            float uy = r.height / 244f;
-            float y = r.y;
-
-            GUIStyle header = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
-            float headerHeight = DeskCaptionHeight(header);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, headerHeight), "APPROVAL — NINE-TERM ATTRIBUTION · LEDGER", header);
-            y += headerHeight + Mathf.Round(3f * uy);
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.Rule(new Rect(r.x, y, r.width, 1f), PoliSimTheme.Hairline);
-            }
-            y += Mathf.Round(4f * uy);
-
+            // §726 (v3.5, the composition's list card): the icon, the live approval as the hero figure and the card's name in its head; the caption that
+            // stood beside the hero ("APPROVAL RATING · LIVE") and the ledger's title are the head's slip. The FIRST ATTRIBUTION promise chip is a state,
+            // not sub-text, and stays in the head at the right.
+            Rect inner = DrawV35Card(r);
             List<StatTracePanel.DeskTerm> terms = StatTracePanel.BuildApprovalDeskTerms(_playerCountry);
             bool empty = terms == null || terms.Count == 0;
+            var slip = new SlipContent("APPROVAL").Add("APPROVAL RATING · LIVE").Add("NINE-TERM ATTRIBUTION · LEDGER - WHAT MOVED IT THIS PERIOD, BY TERM");
+            _deskSlipBook.Anchors["card:approval"] = slip;
 
-            GUIStyle hero = DeskNumeral(34f, PoliSimTheme.TextPrimary);
+            float iconSide = V35.Px(V35.ListIcon);
+            GUIStyle hero = V35Mono(34f, PoliSimTheme.TextPrimary, bold: true);
             string heroText = UiFormat.Number(_playerCountry.State.ApprovalRating, 1);
             Vector2 heroSize = hero.CalcSize(new GUIContent(heroText));
-            var heroRect = new Rect(r.x, y, heroSize.x + 4f, heroSize.y);
+            float headHeight = Mathf.Max(iconSide, Mathf.Ceil(heroSize.y));
+            var head = new Rect(inner.x, inner.y, inner.width, headHeight);
+            DrawV35Icon(new Rect(head.x, head.y + Mathf.Round((headHeight - iconSide) * 0.5f), iconSide, iconSide), "check", PoliSimTheme.TextSecondary);
+            float x = head.x + iconSide + V35.Px(12f);
+            var heroRect = new Rect(x, head.y, Mathf.Ceil(heroSize.x) + 2f, headHeight);
             PoliSimWidgets.MeasuredLabel(heroRect, heroText, hero);
-            GUIStyle heroCaption = DeskCaption(9f, PoliSimTheme.TextSecondary, false, TextAnchor.LowerLeft);
-            float captionLeft = heroRect.xMax + Mathf.Round(10f * ux);
-            float captionRight = r.xMax;
+            x = heroRect.xMax + V35.Px(12f);
+            float nameRight = head.xMax;
 
             if (empty)
             {
-                // The promise chip (1m-r2): the date the first period closes, in the caution ink
-                // and border - the model's boundary, never the board's placeholder.
-                GUIStyle chipStyle = DeskCaption(8.5f, PoliSimTheme.Caution, bold: true, anchor: TextAnchor.MiddleCenter);
+                // The promise chip (1m-r2): the date the first period closes, in the caution ink and border - the model's boundary, never a placeholder.
+                GUIStyle chipStyle = V35Mono(V35.Floor, PoliSimTheme.Caution, bold: true, TextAnchor.MiddleCenter);
                 string chipText = $"FIRST ATTRIBUTION — {DeskFirstAttributionDate().ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()}";
-                float chipPadX = Mathf.Round(6f * ux);
-                float chipWidth = Mathf.Ceil(chipStyle.CalcSize(new GUIContent(chipText)).x) + chipPadX * 2f;
-                float chipHeight = Mathf.Ceil(DeskCaptionHeight(chipStyle)) + Mathf.Round(4f * uy);
-                var chipRect = new Rect(r.xMax - chipWidth, y + Mathf.Round((heroSize.y - chipHeight) * 0.5f), chipWidth, chipHeight);
+                float chipWidth = Mathf.Ceil(chipStyle.CalcSize(new GUIContent(chipText)).x) + V35.Px(12f);
+                float chipHeight = Mathf.Ceil(chipStyle.CalcSize(new GUIContent(chipText)).y) + V35.Px(6f);
+                var chipRect = new Rect(head.xMax - chipWidth, head.y + Mathf.Round((headHeight - chipHeight) * 0.5f), chipWidth, chipHeight);
                 if (Event.current.type == EventType.Repaint)
                 {
-                    PoliSimTheme.RoundedCard(chipRect, PoliSimTheme.Tile, PoliSimTheme.Caution, 0f);
+                    PoliSimTheme.RoundedCard(chipRect, V35.CardPaper, PoliSimTheme.Caution, 0f);
                     PoliSimWidgets.MeasuredLabel(chipRect, chipText, chipStyle);
                 }
-                captionRight = chipRect.x - Mathf.Round(8f * ux);
+                nameRight = chipRect.x - V35.Px(8f);
             }
+            PoliSimWidgets.MeasuredLabel(new Rect(x, head.y, Mathf.Max(1f, nameRight - x), headHeight), "Approval", V35Serif(17f, PoliSimTheme.TextPrimary));
+            DeskAnchor(new Rect(head.x, head.y, Mathf.Max(1f, nameRight - head.x), headHeight), "card:approval");
 
-            PoliSimWidgets.MeasuredLabel(new Rect(captionLeft, y, Mathf.Max(1f, captionRight - captionLeft), heroSize.y - Mathf.Round(4f * uy)), "APPROVAL RATING · LIVE", heroCaption);
-            y += heroSize.y + Mathf.Round(2f * uy);
-
-            // The board's rows: the term's name at 14 px, its signed figure in mono 12 at the right,
-            // a 17 px pitch - two measured labels on one rect, not the gauge lane (whose bar slot and
-            // name column made a 40 px row and wrapped "Reversion toward 50" on the first v3desk film).
-            GUIStyle nameStyle = DeskBody(14f, empty ? PoliSimTheme.TextSecondary : PoliSimTheme.TextPrimary);
-            GUIStyle figureStyle = DeskCaption(12f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight);
-            float rowHeight = Mathf.Max(Mathf.Round(17f * uy), nameStyle.CalcSize(new GUIContent("Ag")).y);
-            int room = Mathf.Max(0, Mathf.FloorToInt((r.yMax - y) / rowHeight));
+            Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
+            float rowHeight = V35.Px(V35.ListRow) + 1f;
+            int room = Mathf.Max(0, Mathf.FloorToInt(body.height / rowHeight));
+            float y = body.y;
 
             if (empty)
             {
+                // Year 0 (1m-r2): the nine rows with the em dash in the muted ink, never a zero.
                 string[] names = StatTracePanel.ApprovalDeskTermNames;
                 int shownNames = Mathf.Min(names.Length, room);
                 for (int i = 0; i < shownNames; i++)
                 {
-                    DrawDeskTermRow(new Rect(r.x, y, r.width, rowHeight), names[i], null, nameStyle, figureStyle);
+                    DrawDeskTermRow(new Rect(body.x, y, body.width, rowHeight), names[i], null);
                     y += rowHeight;
                 }
                 return;
@@ -567,7 +614,7 @@ namespace PoliSim.UI
             int shown = terms.Count <= room ? terms.Count : Mathf.Max(0, room - 1);
             for (int i = 0; i < shown; i++)
             {
-                DrawDeskTermRow(new Rect(r.x, y, r.width, rowHeight), terms[i].Name, terms[i].Value, nameStyle, figureStyle);
+                DrawDeskTermRow(new Rect(body.x, y, body.width, rowHeight), terms[i].Name, terms[i].Value);
                 y += rowHeight;
             }
 
@@ -575,18 +622,17 @@ namespace PoliSim.UI
             {
                 float rest = 0f;
                 for (int i = shown; i < terms.Count; i++) { rest += terms[i].Value; }
-                DrawDeskTermRow(new Rect(r.x, y, r.width, rowHeight), $"+{terms.Count - shown} more terms", rest, nameStyle, figureStyle);
+                DrawDeskTermRow(new Rect(body.x, y, body.width, rowHeight), $"+{terms.Count - shown} more terms", rest);
             }
         }
 
-        /// <summary>One ledger row; a null value is the Year-0 em dash in the muted ink (1m-r2), never a zero.</summary>
-        private static void DrawDeskTermRow(Rect rect, string name, float? value, GUIStyle nameStyle, GUIStyle figureStyle)
+        /// <summary>One ledger row (§726: the v3.5 list row - the term in the serif, its signed figure in the mono at the right, the row's rule); a null value
+        /// is the Year-0 em dash in the muted ink (1m-r2), never a zero.</summary>
+        private void DrawDeskTermRow(Rect rect, string name, float? value)
         {
-            float figureWidth = Mathf.Ceil(figureStyle.CalcSize(new GUIContent("+00.00")).x) + 6f;
-            PoliSimWidgets.MeasuredLabel(new Rect(rect.x, rect.y, Mathf.Max(1f, rect.width - figureWidth - 8f), rect.height), name, nameStyle);
-            GUIStyle figure = Inked(new GUIStyle(figureStyle), value.HasValue ? UiPalette.GetDeltaColor(value.Value, higherIsBetter: true) : PoliSimTheme.TextMuted);
-            string text = value.HasValue ? value.Value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) : "—";
-            PoliSimWidgets.MeasuredLabel(new Rect(rect.xMax - figureWidth, rect.y, figureWidth, rect.height), text, figure);
+            Color ink = value.HasValue ? UiPalette.GetDeltaColor(value.Value, higherIsBetter: true) : PoliSimTheme.TextMuted;
+            string text = value.HasValue ? StatsReadings.TrueMinus(value.Value.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)) : "—";
+            DrawV35ListRow(rect, null, 0f, name, text, ink);
         }
 
         /// <summary>
@@ -595,27 +641,26 @@ namespace PoliSim.UI
         /// band the captions need at this width - the captions inside the declared rect, which is the
         /// board's D3 ("axis captions drawn INSIDE its rect") as the renderer already draws it.
         /// </summary>
-        private void DrawDeskCompass(Rect box)
+        private void DrawDeskCompass(Rect card)
         {
-            float ux = box.width / 250f;
-            float uy = box.height / 250f;
-            GUIStyle style = DeskBody(9f, PoliSimTheme.TextPrimary);
-            Vector2 probe = _politicalCompassRenderer.Footprint(_world.Countries, box.width, box.width, style, PlayerCountryId, withLegend: false);
-            float band = Mathf.Max(0f, probe.y - box.width);
-            float plot = Mathf.Max(1f, box.height - band);
-            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, plot, box.width, style, PlayerCountryId, withLegend: false);
+            // §726: on a v3.5 card (compass, "Political compass"); the corner caption and the two axis captions that stood under the plot are the head's
+            // slip (V35 rule 1). Not in the composition's desk - kept, asked.
+            Rect inner = DrawV35Card(card);
+            (string axisX, string axisY) = PoliticalCompassRenderer.AxisCaptionTexts;
+            var slip = new SlipContent("POLITICAL COMPASS").Add("POLITICAL COMPASS · SIX STATES").Add(axisX.ToUpperInvariant()).Add(axisY.ToUpperInvariant());
+            _deskSlipBook.Anchors["card:compass"] = slip;
+            Rect head = DrawV35CardHead(inner, "compass", "Political compass", PoliSimTheme.TextSecondary);
+            DeskAnchor(head, "card:compass");
+            Rect box = DrawV35DenseLine(V35UnderHead(inner, head), slip);
+            GUIStyle style = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+            _politicalCompassRenderer.AxisCaptions = false;   // the renderer is shared - put back below
+            Vector2 footprint = _politicalCompassRenderer.Footprint(_world.Countries, Mathf.Min(box.width, box.height), box.width, style, PlayerCountryId, withLegend: false);
             // The full box width, not the footprint's: the renderer paints its own paper over the rect
             // it is given, and a narrower rect left a strip of the plate showing at the right (the
             // first matrix at 1600/1920); the plot side is bounded by the height either way.
             var rect = new Rect(box.x, box.y, box.width, Mathf.Min(box.height, footprint.y));
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.RoundedCard(box, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
-            }
-
             _politicalCompassRenderer.Draw(rect, _world.Countries, PlayerCountryId, style, withLegend: false);
-            DrawDeskPlateCaption(box, "POLITICAL COMPASS · SIX STATES", ux, uy);
+            _politicalCompassRenderer.AxisCaptions = true;
         }
 
         /// <summary>
@@ -635,42 +680,41 @@ namespace PoliSim.UI
                 RecomputePolicyPreview();
             }
 
-            float ux = r.width / 250f;
-            float uy = r.height / 314f;
-            float y = r.y;
-
-            GUIStyle header = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
-            float headerHeight = Mathf.Max(DeskCaptionHeight(header), Mathf.Round(16f * uy));
-
-            GUIStyle chipCaption = DeskCaption(7.5f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
-            // P2-2.1 (2026-09-02): the horizon chips (1D / 1W / 1M / 1Y - four rescaled copies of one projection) are
-            // retired with the horizons; the card shows the point the preview produced for next year, and the chip
-            // says so. The rows below read the same full-turn figures the Statistics projections read.
-            const string scopeChip = "NEXT YEAR";
-            float chipPad = Mathf.Round(4f * ux);
-            float x = r.xMax;
-            float scopeWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(scopeChip)).x) + chipPad * 2f;
-            x -= scopeWidth;
-            DrawDeskChipButton(new Rect(x, y, scopeWidth, headerHeight), scopeChip, chipCaption, selected: true, disabled: true);
-
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, Mathf.Max(1f, x - Mathf.Round(6f * ux) - r.x), headerHeight), "ESTIMATED EFFECTS", header);
-            y += headerHeight + Mathf.Round(3f * uy);
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.Rule(new Rect(r.x, y, r.width, 1f), PoliSimTheme.Hairline);
-            }
-            y += Mathf.Round(4f * uy);
-
-            // The numerals from the same cached scaled figures the OPEN panel prints, formatted here
-            // WITHOUT the per-row "(±…)" margin: the board states the margin once (C19, below), and
-            // the margin texts overflowed the value column at the floor on the first v3desk film.
-            // Invariant culture, as the tiles print.
-            float gdp = Mathf.Max(1f, _playerCountry.State.GDP);
-            string Signed(float v) => v.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture);
             // §694 (ruled 2026-09-30): WHAT THE CARD ESTIMATES IS THE ROLE'S. A governing player's own draft (the cached preview, as before); any other role's
             // what is before the chamber - the player's alternative once tabled, else the government's budget - then the alternative as drafted, then the book as it stands (DeskEffectsNote).
             DeskEffectsSubject subject = DeskEffectsSubjectNow(out string rateLever, out bool mayTable, out int chamberDays);
             PolicyPreview shown = DeskEffectsPreview(subject);
+            bool emptyState = DeskEffectsNote.IsEmptyState(subject);
+
+            // §726 (v3.5): on a card - the head NAMES whose budget the arrows estimate (§694's line, at rest), the scope chip at its right (P2-2.1: the
+            // horizons retired; the card shows the point the preview produced for next year, and the chip says so). The scope line and the methodology
+            // that stood under the arrows are the head's slip (V35 rule 1); the empty state's note is the card's content and stays. Not in the
+            // composition's desk - kept, asked.
+            Rect inner = DrawV35Card(r);
+            GUIStyle chipCaption = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleCenter);
+            const string scopeChip = "NEXT YEAR";
+            float scopeWidth = Mathf.Ceil(chipCaption.CalcSize(new GUIContent(scopeChip)).x) + V35.Px(12f);
+            Rect head = DrawV35CardHead(inner, "chart", DeskEffectsNote.Head(subject), PoliSimTheme.TextSecondary, reserveRight: scopeWidth + V35.Px(8f));
+            DrawDeskChipButton(new Rect(head.xMax - scopeWidth, head.y + V35.Px(2f), scopeWidth, Mathf.Max(1f, head.height - V35.Px(4f))), scopeChip, chipCaption, selected: true, disabled: true);
+            string scopeText = DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays);
+            var slip = new SlipContent("ESTIMATED EFFECTS").Add(scopeText);
+            if (!emptyState) { slip.Add(DeskEffectsNote.Method(subject, SimulationManager.DaysPerTurn)); }
+            _deskSlipBook.Anchors["card:effects"] = slip;
+            DeskAnchor(new Rect(head.x, head.y, Mathf.Max(1f, head.width - scopeWidth - V35.Px(8f)), head.height), "card:effects");
+            Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
+
+            // 1m-r2's empty state: while nothing moves the estimate, one caption in a dashed frame under the arrows. Its claim is aligned to the model, not
+            // copied from the board: the preview reads the budget sheet's draft (P3-C1) and the rate lever as drafted and every other bill as it passes
+            // (R-B4's discipline). §694 (ruled): the caption names a lever only where the role holds it. C-C14: no rolled margin.
+            GUIStyle note = V35SerifWrapped(V35.Floor, PoliSimTheme.TextMuted);
+            float notePad = V35.Px(8f);
+            float noteWidth = Mathf.Max(1f, body.width - notePad * 2f);
+            float noteHeight = emptyState ? Mathf.Ceil(note.CalcHeight(new GUIContent(scopeText), noteWidth)) : 0f;
+            float noteBlock = emptyState ? noteHeight + notePad * 2f + V35.Px(6f) : 0f;
+
+            // The numerals from the same cached scaled figures the OPEN panel prints, formatted here WITHOUT the per-row "(±…)" margin. Invariant culture, as the tiles print.
+            float gdp = Mathf.Max(1f, _playerCountry.State.GDP);
+            string Signed(float v) => StatsReadings.TrueMinus(v.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture));
             var rows = new List<(string label, float value, string text, bool? higherIsBetter, float range)>
             {
                 ("GDP growth", shown.GdpGrowthPercent, Signed(shown.GdpGrowthPercent) + "%", true, DeskRangeGdpGrowthPercent),
@@ -683,82 +727,31 @@ namespace PoliSim.UI
                 ("Net budget", shown.NetBudgetImpact, UiFormat.MoneyDelta(shown.NetBudgetImpact, MoneyUnit.Billions), null, DeskRangeNetBudgetShareOfGdp * gdp)   // §725 (V35 rule 5, Elias's ruling): a change in the balance has no consensus direction - its arrow in the neutral ink
             };
 
-            // §568 (2026-09-22, Design's drift row D2): BOARD 5c'S ARROWS, not a column of centred bars. The desk was the last surface in the game estimating an effect in
-            // its own grammar: every other one - the Budget's column, a sector card, the signing document's plate, election night's - draws EffectArrowsRenderer, where the
-            // arrows rise and fall from ONE hairline baseline and the figure sits under each. The eight readings are drawn as two panels of four, because eight lanes in a
-            // 250-unit column would shrink the captions to the floor; the renderer sizes its own lanes by their widest word and the guard reports it if they break.
-            float panelHeight = Mathf.Round(104f * uy);
-            GUIStyle arrowLabel = DeskBody(11f, PoliSimTheme.TextPrimary);
+            // §568 (2026-09-22, Design's drift row D2): BOARD 5c'S ARROWS, not a column of centred bars - the one grammar every surface estimating an effect
+            // draws (EffectArrowsRenderer: the arrows rise and fall from one hairline baseline, the figure under each). Two panels of four; the renderer
+            // sizes its own lanes by their widest word and the guard reports it if they break. §726: the labels at the floor.
+            float gap = V35.Px(4f);
+            float panelHeight = Mathf.Max(1f, Mathf.Floor((body.height - noteBlock - gap) * 0.5f));
+            GUIStyle arrowLabel = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
             var arrows = new List<EffectArrow>(rows.Count);
             foreach (var row in rows) { arrows.Add(new EffectArrow(row.label, row.value, row.higherIsBetter, row.text)); }
             int half = Mathf.CeilToInt(arrows.Count * 0.5f);
-            EffectArrowsRenderer.Draw(new Rect(r.x, y, r.width, panelHeight), arrows.GetRange(0, half), arrowLabel);
-            y += panelHeight + Mathf.Round(4f * uy);
-            EffectArrowsRenderer.Draw(new Rect(r.x, y, r.width, panelHeight), arrows.GetRange(half, arrows.Count - half), arrowLabel);
-            y += panelHeight;
+            float y = body.y;
+            EffectArrowsRenderer.Draw(new Rect(body.x, y, body.width, panelHeight), arrows.GetRange(0, half), arrowLabel, V35.FontPx(V35.Floor));
+            y += panelHeight + gap;
+            EffectArrowsRenderer.Draw(new Rect(body.x, y, body.width, panelHeight), arrows.GetRange(half, arrows.Count - half), arrowLabel, V35.FontPx(V35.Floor));
+            y += panelHeight + V35.Px(6f);
 
-            y += Mathf.Round(6f * uy);
-            if (DeskEffectsNote.IsEmptyState(subject))
+            if (emptyState)
             {
-                // 1m-r2's empty state: while nothing moves the estimate the two footer captions become one
-                // caption in a dashed frame. Its claim is aligned to the model, not copied from the
-                // board: the preview reads the budget sheet's draft (P3-C1) and the rate lever as drafted
-                // and every other bill as it passes (R-B4's discipline). §694 (ruled): the caption names a lever
-                // only where the role holds it - the fixed caption it replaced named the rate dial to every
-                // role, in opposition too and where a chair sets the rate (Design's sighting 21e).
-                GUIStyle note = DeskCaptionWrapped(8f, PoliSimTheme.TextMuted);
-                // C-C14 (2026-08-31): "±5–10% MARGIN" is gone from this caption. It was a rolled number,
-                // and the scope it sat beside is the part that was doing the work.
-                string noteText = DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays);
-                float notePadX = Mathf.Round(7f * ux);
-                float notePadY = Mathf.Round(5f * uy);
-                float noteWidth = Mathf.Max(1f, r.width - notePadX * 2f);
-                float noteHeight = note.CalcHeight(new GUIContent(noteText), noteWidth);
-                float boxHeight = Mathf.Min(Mathf.Max(1f, r.yMax - y), noteHeight + notePadY * 2f);
-                DeskDashedFrame(new Rect(r.x, y, r.width, boxHeight), PoliSimTheme.HairlineStrong, 4f, 3f);
+                float boxHeight = Mathf.Min(Mathf.Max(1f, body.yMax - y), noteHeight + notePad * 2f);
+                DeskDashedFrame(new Rect(body.x, y, body.width, boxHeight), PoliSimTheme.HairlineStrong, 4f, 3f);
                 if (Event.current.type == EventType.Repaint)
                 {
-                    UiContainmentGuard.Check("Desk effects no-draft caption", new Rect(r.x + notePadX, y + notePadY, noteWidth, noteHeight), r);
+                    UiContainmentGuard.Check("Desk effects no-draft caption", new Rect(body.x + notePad, y + notePad, noteWidth, noteHeight), body);
                 }
-                GUI.Label(new Rect(r.x + notePadX, y + notePadY, noteWidth, Mathf.Max(1f, boxHeight - notePadY * 2f)), noteText, note);
-                return;
+                GUI.Label(new Rect(body.x + notePad, y + notePad, noteWidth, Mathf.Max(1f, boxHeight - notePad * 2f)), scopeText, note);
             }
-
-            // C-C14: the margin line becomes the scope line. The board's slot stays - a reader who has
-            // learned to look here for "how much should I trust this" still finds an answer, and now it
-            // is a true one. Same style, same height, same position, so no layout below it moves.
-            if (subject == DeskEffectsSubject.YourDraft)
-            {
-                GUIStyle margin = DeskCaption(8f, PoliSimTheme.TextSecondary);
-                float marginHeight = DeskCaptionHeight(margin);
-                PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, marginHeight), DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays), margin);
-                y += marginHeight + Mathf.Round(2f * uy);
-            }
-            else
-            {
-                // §694: the slot names WHOSE budget the arrows estimate - the player's alternative or the government's - in the scope line's ink,
-                // wrapped (the chamber's day count does not fit one line at the floor); the margin's clause moves into the methodology below.
-                GUIStyle scope = DeskCaptionWrapped(8f, PoliSimTheme.TextSecondary);
-                string scopeText = DeskEffectsNote.Line(subject, rateLever, mayTable, chamberDays);
-                float scopeHeight = scope.CalcHeight(new GUIContent(scopeText), r.width);
-                if (Event.current.type == EventType.Repaint)
-                {
-                    UiContainmentGuard.Check("Desk effects subject", new Rect(r.x, y, r.width, scopeHeight), r);
-                }
-                GUI.Label(new Rect(r.x, y, r.width, Mathf.Min(Mathf.Max(1f, r.yMax - y), scopeHeight)), scopeText, scope);
-                y += scopeHeight + Mathf.Round(2f * uy);
-            }
-
-            GUIStyle method = DeskCaptionWrapped(8f, PoliSimTheme.TextMuted);
-            string methodText = DeskEffectsNote.Method(subject, SimulationManager.DaysPerTurn);
-            float methodHeight = Mathf.Min(Mathf.Max(1f, r.yMax - y), method.CalcHeight(new GUIContent(methodText), r.width));
-            if (Event.current.type == EventType.Repaint)
-            {
-                // Wrapped by design (two lines on the board); the overflow guard measures the
-                // one-line form, so this caption is checked against its own wrapped height instead.
-                UiContainmentGuard.Check("Desk effects methodology", new Rect(r.x, y, r.width, method.CalcHeight(new GUIContent(methodText), r.width)), r);
-            }
-            GUI.Label(new Rect(r.x, y, r.width, methodHeight), methodText, method);
         }
 
         /// <summary>
@@ -791,33 +784,50 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The 1k calendar sheet in the third column (Annex B I5): the month page as built
-        /// (DrawCalendarMonthGrid - the section rule, C7's month, C8's weekday row, C9's cells) inside
-        /// a GUILayout island, then the dated ledger's rows drawn on rects beneath it on Repaint,
-        /// where the grid's own rect is known: C10's "This Month" and C13's empty sentence are dropped
-        /// on this surface (the 1k precedent, board 1m); rows that do not fit are stated as "+N more".
+        /// The 1k calendar sheet (Annex B I5): the month page as built (DrawCalendarMonthGrid - C8's weekday row, C9's cells) inside a GUILayout
+        /// island, on its v3.5 card since §726; the dated ledger that stood beneath it is This month's card (<see cref="DrawDeskMonthCard"/>).
         /// </summary>
-        private void DrawDeskCalendarSheet(Rect r)
+        private void DrawDeskCalendarCard(Rect r)
+        {
+            // §726 (v3.5): the month grid on its own card - the calendar icon and the month as the card's name (the grid's own title and section rule
+            // drop, the head says it); the dated ledger beneath it is This month's card, beside the Approval ledger, as the composition lays them.
+            System.DateTime today = _simulationManager.CurrentDate;
+            var monthStart = new System.DateTime(today.Year, today.Month, 1);
+            Dictionary<int, List<CalendarMarker>> markers = BuildCalendarMonthMarkers(monthStart, today);
+
+            Rect inner = DrawV35Card(r);
+            var slip = new SlipContent("CALENDAR").Add("TODAY · " + today.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture))
+                .Add("A DOT IS AN ENTRY IN THIS MONTH'S LEDGER, IN ITS AREA'S INK · A STRUCK DAY HAS PASSED");
+            _deskSlipBook.Anchors["card:calendar"] = slip;
+            Rect head = DrawV35CardHead(inner, "cal", monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture), PoliSimTheme.TextSecondary);
+            DeskAnchor(head, "card:calendar");
+            Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
+
+            GUILayout.BeginArea(body);
+            GUILayout.BeginVertical();
+            DrawCalendarMonthGrid(monthStart, today, markers, withTitle: false);
+            GUILayout.EndVertical();
+            GUILayout.EndArea();
+        }
+
+        /// <summary>
+        /// §726 (v3.5): THIS MONTH - the dated ledger (Annex B I5's rows, C10) on its own card (bell, "This month"), as the composition lays it beside the
+        /// Approval ledger: each row the day in the mono at the floor, the area's dot, the entry in the serif, the row's rule; rows that do not fit are
+        /// stated as "+N more this month", never trimmed quietly.
+        /// </summary>
+        private void DrawDeskMonthCard(Rect r)
         {
             System.DateTime today = _simulationManager.CurrentDate;
             var monthStart = new System.DateTime(today.Year, today.Month, 1);
             Dictionary<int, List<CalendarMarker>> markers = BuildCalendarMonthMarkers(monthStart, today);
 
-            GUILayout.BeginArea(r);
-            GUILayout.BeginVertical();
-            DrawCalendarMonthGrid(monthStart, today, markers);
-            GUILayout.EndVertical();
-            Rect grid = GUILayoutUtility.GetLastRect();
-            GUILayout.EndArea();
-
-            if (Event.current.type != EventType.Repaint)
-            {
-                return;
-            }
-
-            float top = r.y + grid.yMax + 6f;
-            PoliSimTheme.Rule(new Rect(r.x, top, r.width, 1.5f), PoliSimTheme.HairlineStrong);
-            top += 1.5f + 5f;
+            Rect inner = DrawV35Card(r);
+            var slip = new SlipContent("THIS MONTH").Add("THE MONTH'S DATED ENTRIES, BY DAY - FIGURES PUBLISHED, THE FISCAL YEAR'S DATES").Add("A DOT'S INK IS THE ENTRY'S AREA");
+            _deskSlipBook.Anchors["card:month"] = slip;
+            Rect head = DrawV35CardHead(inner, "bell", "This month", PoliSimTheme.TextSecondary);
+            DeskAnchor(head, "card:month");
+            Rect body = DrawV35DenseLine(V35UnderHead(inner, head), slip);
+            bool repaint = Event.current.type == EventType.Repaint;
 
             var days = new List<int>(markers.Keys);
             days.Sort();
@@ -832,35 +842,48 @@ namespace PoliSim.UI
                 }
             }
 
+            GUIStyle dateFace = V35Mono(V35.Floor, PoliSimTheme.TextMuted);
+            GUIStyle labelFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
+            float rowHeight = V35.Px(V35.ListRow) + 1f;
             if (rows.Count == 0)
             {
+                if (repaint) { PoliSimWidgets.MeasuredLabel(new Rect(body.x, body.y, body.width, rowHeight), "Nothing dated this month", Inked(new GUIStyle(labelFace), PoliSimTheme.TextMuted)); }
                 return;
             }
 
-            GUIStyle date = DeskCaption(10f, PoliSimTheme.TextSecondary);
-            GUIStyle label = DeskBody(12.5f, PoliSimTheme.TextPrimary);
-            // The board's ledger pitch (1m-r2: 22 on the 420 sheet; date 10, label 12.5), never the
-            // gauge lane's height (which fit one row under the grid on the second v3desk film).
-            float rowHeight = Mathf.Max(Mathf.Round(22f * (r.height / 420f)), label.CalcSize(new GUIContent("Ag")).y);
-            int room = Mathf.Max(0, Mathf.FloorToInt((r.yMax - top) / rowHeight));
+            int room = Mathf.Max(0, Mathf.FloorToInt(body.height / rowHeight));
             int shown = rows.Count <= room ? rows.Count : Mathf.Max(0, room - 1);
-            float dateWidth = date.CalcSize(new GUIContent("12/31")).x + 4f;
-            float ux = r.width / 440f;
+            float dateWidth = Mathf.Ceil(dateFace.CalcSize(new GUIContent("31 Jan")).x) + V35.Px(4f);
+            float dot = V35.Px(6f);
+            float top = body.y;
             for (int i = 0; i < shown; i++)
             {
-                var row = new Rect(r.x, top, r.width, rowHeight);
-                PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, dateWidth, rowHeight), $"{monthStart.Month}/{rowDays[i]}", date);
-                float dotX = row.x + dateWidth + Mathf.Round(7f * ux);
-                PoliSimTheme.Pill(new Rect(dotX, row.y + (rowHeight - CalendarDotSize) * 0.5f, CalendarDotSize, CalendarDotSize), UiPalette.GetAreaColor(rows[i].Area));
-                float textX = dotX + CalendarDotSize + Mathf.Round(7f * ux);
-                PoliSimWidgets.MeasuredLabel(new Rect(textX, row.y, Mathf.Max(1f, row.xMax - textX), rowHeight), rows[i].Label, Inked(new GUIStyle(label), UiPalette.GetAreaColor(rows[i].Area)));
-                UiContainmentGuard.Check("Desk calendar row", row, r);
+                var row = new Rect(body.x, top, body.width, rowHeight);
+                float dotX = row.x + dateWidth + V35.Px(6f);
+                float textX = dotX + dot + V35.Px(8f);
+                float textWidth = Mathf.Max(1f, row.xMax - textX);
+                // §726: a long entry is cut at a word with an ellipsis (the floor forbids shrinking it), and the whole entry is the row's slip
+                string label = V35Fit(rows[i].Label, labelFace, textWidth, out bool cut);
+                string date = new System.DateTime(monthStart.Year, monthStart.Month, rowDays[i]).ToString("d MMM", CultureInfo.CurrentCulture);
+                if (cut)
+                {
+                    _deskSlipBook.Anchors["month:" + i] = new SlipContent(date.ToUpper(CultureInfo.CurrentCulture)).Add(rows[i].Label.ToUpper(CultureInfo.CurrentCulture));
+                    DeskAnchor(row, "month:" + i);
+                }
+                if (repaint)
+                {
+                    PoliSimWidgets.MeasuredLabel(new Rect(row.x, row.y, dateWidth, rowHeight), date, dateFace);
+                    PoliSimTheme.Pill(new Rect(dotX, row.y + Mathf.Round((rowHeight - dot) * 0.5f), dot, dot), UiPalette.GetAreaColor(rows[i].Area));
+                    PoliSimWidgets.MeasuredLabel(new Rect(textX, row.y, textWidth, rowHeight), label, labelFace);
+                    PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), V35.ListRule);
+                    UiContainmentGuard.Check("Desk month row", row, body);
+                }
                 top += rowHeight;
             }
 
-            if (shown < rows.Count && room > 0)
+            if (repaint && shown < rows.Count && room > 0)
             {
-                PoliSimWidgets.MeasuredLabel(new Rect(r.x, top, r.width, rowHeight), $"+{rows.Count - shown} more this month", Inked(new GUIStyle(label), PoliSimTheme.TextMuted));
+                PoliSimWidgets.MeasuredLabel(new Rect(body.x, top, body.width, rowHeight), $"+{rows.Count - shown} more this month", Inked(new GUIStyle(labelFace), PoliSimTheme.TextMuted));
             }
         }
 
@@ -874,45 +897,35 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawDeskEventCard(Rect r)
         {
+            // §726 (v3.5): the event card across the twelve columns - not in the composition's desk; kept, asked. The empty state is the reservation as
+            // before (a dashed frame, one line at the floor); a live event is a card: the BREAKING stamp and the event's name as its head, the description
+            // (the event's only text - content, not sub-text) in the serif, the three shocks as the diverging bars with their labels at the floor.
             EconomicEvent activeEvent = _simulationManager.GetLastEvent(PlayerCountryId);
-            float ux = r.width / 440f;
-            float uy = r.height / 144f;
-            float padX = Mathf.Round(11f * ux);
-            float padY = Mathf.Round(9f * uy);
             if (activeEvent == null)
             {
-                DrawDeskEventReservation(r, padX, padY, uy);
+                DrawDeskEventReservation(r);
                 return;
             }
 
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.RoundedCard(r, PoliSimTheme.Tile, PoliSimTheme.Hairline, 0f);
-            }
-
-            float y = r.y + padY;
-
-            GUIStyle chipStyle = DeskCaption(9f, PoliSimTheme.Caution, bold: true, anchor: TextAnchor.MiddleCenter);
+            Rect inner = DrawV35Card(r);
+            GUIStyle chipStyle = V35Mono(V35.Floor, PoliSimTheme.Caution, bold: true, TextAnchor.MiddleCenter);
             const string chipText = "BREAKING";
             Vector2 chipSize = PoliSimWidgets.StampSize(chipText, chipStyle);   // §568: the stamp's one face
-            var chipRect = new Rect(r.x + padX, y, chipSize.x, chipSize.y);
+            float headHeight = Mathf.Max(V35.Px(V35.CardIcon), chipSize.y);
+            var chipRect = new Rect(inner.x, inner.y + Mathf.Round((headHeight - chipSize.y) * 0.5f), chipSize.x, chipSize.y);
             PoliSimWidgets.Stamp(chipRect, chipText, chipStyle, PoliSimTheme.Caution);
+            float nameX = chipRect.xMax + V35.Px(12f);
+            PoliSimWidgets.MeasuredLabel(new Rect(nameX, inner.y, Mathf.Max(1f, inner.xMax - nameX), headHeight), activeEvent.Name, V35Serif(V35.Name, PoliSimTheme.TextPrimary));
+            float y = inner.y + headHeight + V35.Px(V35.CardHeadGap);
 
-            GUIStyle name = DeskCaption(9.5f, PoliSimTheme.TextPrimary, bold: true);
-            float nameX = chipRect.xMax + Mathf.Round(9f * ux);
-            PoliSimWidgets.MeasuredLabel(new Rect(nameX, y, Mathf.Max(1f, r.xMax - padX - nameX), chipSize.y), activeEvent.Name.ToUpperInvariant(), name);
-            y += chipSize.y + Mathf.Round(5f * uy);
-
-            GUIStyle description = DeskCaptionWrapped(8.5f, PoliSimTheme.TextSecondary);
-            string descriptionText = activeEvent.Description.ToUpperInvariant();
-            float descriptionWidth = r.width - padX * 2f;
-            float descriptionHeight = description.CalcHeight(new GUIContent(descriptionText), descriptionWidth);
+            GUIStyle description = V35SerifWrapped(V35.Floor, PoliSimTheme.TextSecondary);
+            float descriptionHeight = Mathf.Ceil(description.CalcHeight(new GUIContent(activeEvent.Description), inner.width));
             if (Event.current.type == EventType.Repaint)
             {
-                UiContainmentGuard.Check("Desk event description", new Rect(r.x + padX, y, descriptionWidth, descriptionHeight), r);
+                UiContainmentGuard.Check("Desk event description", new Rect(inner.x, y, inner.width, descriptionHeight), inner);
             }
-            GUI.Label(new Rect(r.x + padX, y, descriptionWidth, descriptionHeight), descriptionText, description);
-            y += descriptionHeight + Mathf.Round(7f * uy);
+            GUI.Label(new Rect(inner.x, y, inner.width, descriptionHeight), activeEvent.Description, description);
+            y += descriptionHeight + V35.Px(8f);
 
             var bars = new List<(string label, float value, bool higherIsBetter, float range)>
             {
@@ -920,23 +933,23 @@ namespace PoliSim.UI
                 ("INFL", activeEvent.InflationShockPoints, false, DeskRangeEventInflationPoints),
                 ("APPR", activeEvent.ApprovalEffect, true, DeskRangeEventApproval)
             };
-            GUIStyle barLabel = DeskCaption(8f, PoliSimTheme.TextSecondary);
-            float barWidth = Mathf.Round(44f * ux);
-            float barHeight = Mathf.Max(4f, Mathf.Round(8f * uy));
-            float rowHeight = Mathf.Max(barHeight, DeskCaptionHeight(barLabel));
-            float x = r.x + padX;
+            GUIStyle barLabel = V35Mono(V35.Floor, PoliSimTheme.TextSecondary);
+            float barWidth = V35.Px(88f);
+            float barHeight = V35.Px(10f);
+            float rowHeight = Mathf.Max(barHeight, Mathf.Ceil(barLabel.CalcSize(new GUIContent("Ag")).y));
+            float x = inner.x;
             for (int i = 0; i < bars.Count; i++)
             {
-                float labelWidth = barLabel.CalcSize(new GUIContent(bars[i].label)).x + 2f;
+                float labelWidth = Mathf.Ceil(barLabel.CalcSize(new GUIContent(bars[i].label)).x) + 2f;
                 PoliSimWidgets.MeasuredLabel(new Rect(x, y, labelWidth, rowHeight), bars[i].label, barLabel);
-                x += labelWidth + Mathf.Round(5f * ux);
+                x += labelWidth + V35.Px(6f);
                 var bar = new Rect(x, y + (rowHeight - barHeight) * 0.5f, barWidth, barHeight);
                 DrawDeskDivergingBar(bar, bars[i].value, bars[i].range, bars[i].higherIsBetter);
                 if (Event.current.type == EventType.Repaint)
                 {
-                    UiContainmentGuard.Check("Desk event bar", bar, r);
+                    UiContainmentGuard.Check("Desk event bar", bar, inner);
                 }
-                x += barWidth + Mathf.Round(14f * ux);
+                x += barWidth + V35.Px(24f);
             }
         }
 
@@ -1030,7 +1043,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>1m-r2's empty state for the event card: the reservation DRAWN - a dashed frame, its purpose as one caption at the corner, the quiet as two centred lines (the board's "YEAR 0 OPENS QUIET" at turn 0; the same sentence at any later turn names that turn). Nothing in it is a figure.</summary>
-        private void DrawDeskEventReservation(Rect r, float padX, float padY, float uy)
+        private void DrawDeskEventReservation(Rect r)
         {
             if (Event.current.type != EventType.Repaint)
             {
@@ -1039,13 +1052,10 @@ namespace PoliSim.UI
 
             // P4-D3 (2026-09-04): the empty slot is an instrument-class line, not a paragraph - the dashed reservation and
             // one caption in the card's own mono, centred in the band: the year and the fact. The purpose line and the
-            // two-line paragraph it replaces restated what the frame already says.
+            // two-line paragraph it replaces restated what the frame already says. §726: the line at the floor.
             DeskDashedFrame(r, PoliSimTheme.HairlineStrong, 5f, 4f);
-            GUIStyle quiet = DeskCaption(8.5f, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
-            float lineHeight = DeskCaptionHeight(quiet);
-            int turn = _simulationManager.CurrentTurn;
-            float centreY = r.y + padY + Mathf.Max(0f, (r.height - padY * 2f - lineHeight) * 0.5f);
-            PoliSimWidgets.MeasuredLabel(new Rect(r.x + padX, centreY, Mathf.Max(1f, r.width - padX * 2f), lineHeight), $"YEAR {turn} · NO EVENT LIVE", quiet);
+            GUIStyle quiet = V35Mono(V35.Floor, PoliSimTheme.TextMuted, false, TextAnchor.MiddleCenter);
+            PoliSimWidgets.MeasuredLabel(r, $"YEAR {_simulationManager.CurrentTurn} · NO EVENT LIVE", quiet);
         }
 
         /// <summary>

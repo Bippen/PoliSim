@@ -1967,16 +1967,43 @@ namespace PoliSim.Testing
             }
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
+            ScrollDeskTo(controller, "effects");   // §726: the effects card is the v3.5 desk's third row, below the fold
+            yield return Settle();
             Debug.Log($"SHOT: 93a_desk_government_budget - {player.PlayerPartyAbbrev} in opposition, the government's budget before the chamber, decided in {pending.DaysRemaining} day(s)");
             yield return Capture("93a_desk_government_budget");
             if (!sim.TableShadowBudget(player.Id, draft.Invoke(controller, null) as BudgetBill, out string refused))
             {
                 Debug.Log($"SHOT: 93b_desk_alternative_tabled - the alternative was refused ({refused}); skipped, not missing.");
+                ScrollDeskTo(controller, null);
                 yield break;
             }
             yield return Settle();
             Debug.Log($"SHOT: 93b_desk_alternative_tabled - {player.PlayerPartyAbbrev}'s alternative tabled against the government's budget");
             yield return Capture("93b_desk_alternative_tabled");
+            ScrollDeskTo(controller, null);
+        }
+
+        /// <summary>
+        /// §726 (UI v3.5): the desk is a scrolled page - a frame that films a card below the fold scrolls the desk to that card's top (the controller
+        /// records each card's top by name, <c>_deskCardTops</c>, on every pass of the page); <paramref name="card"/> null puts it back at the top. A card
+        /// with no recorded top is an error: the frame would film the fold under the name of the card.
+        /// </summary>
+        private static void ScrollDeskTo(GameController controller, string card)
+        {
+            FieldInfo scroll = controller.GetType().GetField("_deskScrollPosition", BindingFlags.Instance | BindingFlags.NonPublic);
+            FieldInfo tops = controller.GetType().GetField("_deskCardTops", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (scroll == null || tops == null)
+            {
+                Debug.LogError("SHOT: the desk's scroll (_deskScrollPosition/_deskCardTops) not found - a desk frame below the fold films the fold.");
+                return;
+            }
+            if (card == null) { scroll.SetValue(controller, Vector2.zero); return; }
+            if (!(tops.GetValue(controller) is Dictionary<string, float> map) || !map.TryGetValue(card, out float top))
+            {
+                Debug.LogError($"SHOT: the desk's '{card}' card has no recorded top - the frame would film the fold, not the card.");
+                return;
+            }
+            scroll.SetValue(controller, new Vector2(0f, top));
         }
 
         private IEnumerator CaptureSavesMenu(GameController controller)
@@ -4112,7 +4139,10 @@ namespace PoliSim.Testing
             bool had = lastEvents.TryGetValue(_countryId, out EconomicEvent previous);
             lastEvents[_countryId] = pool[0];
             yield return Settle();
+            ScrollDeskTo(controller, "event");   // §726: the event card is the v3.5 desk's fourth row, below the fold
+            yield return Settle();
             yield return Capture("01e_desk_event");
+            ScrollDeskTo(controller, null);
             Debug.Log($"SHOT: 01e_desk_event - the card filled with the pool's own \"{pool[0].Name}\" (GDP {pool[0].GdpShockPercent:+0.0;-0.0}%, inflation {pool[0].InflationShockPoints:+0.0;-0.0} pts, approval {pool[0].ApprovalEffect:+0.0;-0.0}).");
             if (had) { lastEvents[_countryId] = previous; } else { lastEvents.Remove(_countryId); }
             yield return Settle();

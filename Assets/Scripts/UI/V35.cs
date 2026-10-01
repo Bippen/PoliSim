@@ -35,6 +35,11 @@ namespace PoliSim.UI
         // ---- the type scale (27a §3) ----
         /// <summary>The 14 px floor, everywhere - the rail and the masthead included.</summary>
         public const float Floor = 14f;
+
+        /// <summary>§726: THE FLOOR'S GUARD - true while a v3.5 surface draws (a retrofitted screen sets it around its page), and
+        /// <see cref="PoliSimWidgets.MeasuredLabel"/> then reports a shrink below the floor to the overflow guard as an overflow. A screen not yet
+        /// retrofitted keeps its faces and is not asked.</summary>
+        public static bool FloorGuarded;
         /// <summary>Section headings, small caps.</summary>
         public const float Heading = 15f;
         /// <summary>Row and tile names (16-17).</summary>
@@ -79,5 +84,25 @@ namespace PoliSim.UI
         /// breaches the country's statutory rule; <paramref name="rule"/> names it for the slip.</summary>
         public static Color FiscalInk(PoliSim.Data.CountryId country, FiscalRules.Measure measure, float percentOfGdp, Color neutral, out string rule) =>
             FiscalRules.Breaches(country, measure, percentOfGdp, out rule) ? Warning : neutral;
+
+        // ---- the card and the page (§726, the composition's map, calendar and list cards) ----
+        /// <summary>The grid's gutter between two cards, and between two rows of cards.</summary>
+        public const float Gutter = 12f;
+        /// <summary>A card's inside: 14 px left and right, 12 px top and bottom.</summary>
+        public const float CardPadX = 14f, CardPadY = 12f;
+        /// <summary>The space between a card's head and its content.</summary>
+        public const float CardHeadGap = 8f;
+        /// <summary>A card's head icon, and a list card's (the Approval ledger's) larger one.</summary>
+        public const float CardIcon = 28f, ListIcon = 30f;
+        /// <summary>A list row's line (the composition's 24 px rows under a 1 px rule).</summary>
+        public const float ListRow = 24f;
+        /// <summary>A page's title (the composition's "Desk", "Statistics").</summary>
+        public const float PageTitle = 30f;
+        /// <summary>A card's paper (#F5EDDE) - a shade lighter than the page's.</summary>
+        public static readonly Color CardPaper = PoliSimTheme.Hex(0xF5EDDE);
+        /// <summary>A card's edge (#D5C8AB, the theme's row rule).</summary>
+        public static Color CardEdge => PoliSimTheme.RuleRow;
+        /// <summary>The rule under a list row (#E6DCC8).</summary>
+        public static readonly Color ListRule = PoliSimTheme.Hex(0xE6DCC8);
     }
 }

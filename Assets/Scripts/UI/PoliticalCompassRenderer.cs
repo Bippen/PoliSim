@@ -61,6 +61,15 @@ namespace PoliSim.UI
             ("X: economic left (0) to right (10) - CHES lrecon.",
              "Y: liberal / GAL (0) to conservative / TAN (10) - CHES galtan.");
 
+        /// <summary>§726 (UI v3.5, at rest almost no sub-text): the two axis captions, for a surface that carries them on its slip instead of under the plot.</summary>
+        public static (string X, string Y) AxisCaptionTexts => CaptionTexts();
+
+        /// <summary>§726: whether the axis captions draw under the plot (and take their band). A v3.5 surface sets it false for its own draw and puts it
+        /// back - the renderer is shared, and the Politics page keeps its captions until its own pass.</summary>
+        public bool AxisCaptions = true;
+
+        private float BandOf((string X, string Y) captions, GUIStyle captionStyle, float width) => AxisCaptions ? CaptionBandHeight(captions, captionStyle, width) : 0f;
+
         private static GUIStyle CaptionStyle(GUIStyle labelStyle, bool wrap)
         {
             var style = new GUIStyle(labelStyle) { fontSize = Mathf.Max(9, labelStyle.fontSize - 2), wordWrap = wrap, alignment = TextAnchor.UpperLeft };
@@ -176,14 +185,14 @@ namespace PoliSim.UI
             {
                 float need = Mathf.Max(flat.CalcSize(new GUIContent(captions.X)).x, flat.CalcSize(new GUIContent(captions.Y)).x);
                 float width = Mathf.Min(Mathf.Max(availableWidth, 1f), Mathf.Max(plotSize, need));
-                return new Vector2(width, plotSize + CaptionBandHeight(captions, wrapped, width));
+                return new Vector2(width, plotSize + BandOf(captions, wrapped, width));
             }
 
             List<LegendLine> lines = BuildLegend(countries, Find(countries, playerCountryId));
             float legendHeight = LegendHeight(lines, labelStyle, flat);
             float plotWidth = Mathf.Max(1f, availableWidth - Mathf.Min(LegendWidthNeed(lines, labelStyle, flat), availableWidth * LegendShareOfWidth) - LegendGap);
             float side = Mathf.Min(plotSize, plotWidth);
-            return new Vector2(Mathf.Max(availableWidth, 1f), Mathf.Max(side + CaptionBandHeight(captions, wrapped, side), legendHeight));
+            return new Vector2(Mathf.Max(availableWidth, 1f), Mathf.Max(side + BandOf(captions, wrapped, side), legendHeight));
         }
 
         public void Draw(Rect rect, IReadOnlyList<Country> countries, CountryId playerCountryId, GUIStyle labelStyle, bool withLegend)
@@ -200,14 +209,14 @@ namespace PoliSim.UI
             List<LegendLine> lines = withLegend ? BuildLegend(countries, player) : null;
             float legendWidth = withLegend ? Mathf.Min(LegendWidthNeed(lines, labelStyle, tagStyle), rect.width * LegendShareOfWidth) : 0f;
             float plotWidthAvailable = withLegend ? rect.width - legendWidth - LegendGap : rect.width;
-            float bandHeight = CaptionBandHeight(captions, captionStyle, Mathf.Max(1f, plotWidthAvailable));
+            float bandHeight = BandOf(captions, captionStyle, Mathf.Max(1f, plotWidthAvailable));
             float plotSide = Mathf.Max(1f, Mathf.Min(plotWidthAvailable, rect.height - bandHeight));
             // PF-3 (§595): beside a legend the captions wrap at the PLOT'S side, not the width available to it - so where the height, not the width, sets the side,
             // the band measured at the wider figure was a line short, and the USA's y-axis caption (the longest) stood 15.1 px below the container at 1280. The band
             // is re-measured at the width it will wrap at and the side re-taken from it until the two agree (a narrower side can only add lines; four passes settle it).
             for (int pass = 0; withLegend && pass < 4; pass++)
             {
-                float wrappedBand = CaptionBandHeight(captions, captionStyle, plotSide);
+                float wrappedBand = BandOf(captions, captionStyle, plotSide);
                 if (wrappedBand <= bandHeight + 0.01f) { break; }
                 bandHeight = wrappedBand;
                 plotSide = Mathf.Max(1f, Mathf.Min(plotWidthAvailable, rect.height - bandHeight));
@@ -316,16 +325,19 @@ namespace PoliSim.UI
             }
 
             // The captions wrap at the width the footprint measured them at: the plot's beside a legend, the rect's without one.
-            float captionWidth = withLegend ? plotSide : rect.width;
-            float xHeight = captionStyle.CalcHeight(new GUIContent(captions.X), captionWidth);
-            float yHeight = captionStyle.CalcHeight(new GUIContent(captions.Y), captionWidth);
-            var xRect = new Rect(rect.x, plotSquare.yMax + CaptionGap, captionWidth, xHeight);
-            var yRect = new Rect(rect.x, xRect.yMax + CaptionLineGap, captionWidth, yHeight);
-            GUI.Label(xRect, captions.X, captionStyle);
-            GUI.Label(yRect, captions.Y, captionStyle);
             UiContainmentGuard.Check("Compass plot", plotSquare, rect);
-            UiContainmentGuard.Check("Compass caption X", xRect, rect);
-            UiContainmentGuard.Check("Compass caption Y", yRect, rect);
+            if (AxisCaptions)
+            {
+                float captionWidth = withLegend ? plotSide : rect.width;
+                float xHeight = captionStyle.CalcHeight(new GUIContent(captions.X), captionWidth);
+                float yHeight = captionStyle.CalcHeight(new GUIContent(captions.Y), captionWidth);
+                var xRect = new Rect(rect.x, plotSquare.yMax + CaptionGap, captionWidth, xHeight);
+                var yRect = new Rect(rect.x, xRect.yMax + CaptionLineGap, captionWidth, yHeight);
+                GUI.Label(xRect, captions.X, captionStyle);
+                GUI.Label(yRect, captions.Y, captionStyle);
+                UiContainmentGuard.Check("Compass caption X", xRect, rect);
+                UiContainmentGuard.Check("Compass caption Y", yRect, rect);
+            }
 
             if (withLegend)
             {
