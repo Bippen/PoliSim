@@ -72,6 +72,9 @@ namespace PoliSim.UI
                 case BudgetProcessCategory.Tax:
                     DrawBudgetRevenue(leftWidth);
                     break;
+                case BudgetProcessCategory.Spending:
+                    DrawBudgetSpending(leftWidth);
+                    break;
                 default:
                     DrawBudgetKeptCategory(leftWidth);
                     break;
@@ -529,10 +532,244 @@ namespace PoliSim.UI
         }
 
         // =============================================================================================================================================
+        // Spending: the lines as tiles (§735)
+        // =============================================================================================================================================
+
+        /// <summary>A spending line's icon, by the words of its name as this country prints it (the categories are the USA's; each country names its own).</summary>
+        private static string BudgetSpendingIcon(string name)
+        {
+            string n = name.ToLowerInvariant();
+            if (n.Contains("health") || n.Contains("medic") || n.Contains("sickness")) { return "cross"; }
+            if (n.Contains("educat") || n.Contains("student") || n.Contains("school")) { return "book"; }
+            if (n.Contains("defen") || n.Contains("homeland") || n.Contains("security service")) { return "shield"; }
+            if (n.Contains("justice") || n.Contains("police") || n.Contains("court")) { return "gavel"; }
+            if (n.Contains("pension") || n.Contains("retire") || n.Contains("old age") || n.Contains("social security")) { return "people"; }
+            if (n.Contains("famil") || n.Contains("child")) { return "family"; }
+            if (n.Contains("unemploy") || n.Contains("income")) { return "shield"; }
+            if (n.Contains("hous")) { return "home"; }
+            if (n.Contains("transport") || n.Contains("infra")) { return "trade"; }
+            if (n.Contains("energy")) { return "bolt"; }
+            if (n.Contains("agricult") || n.Contains("food")) { return "wheat"; }
+            if (n.Contains("environ") || n.Contains("climate")) { return "drop"; }
+            if (n.Contains("culture") || n.Contains("media")) { return "gem"; }
+            if (n.Contains("foreign") || n.Contains("aid") || n.Contains("international")) { return "globe"; }
+            if (n.Contains("tax")) { return "receipt"; }
+            if (n.Contains("financ")) { return "safe"; }
+            if (n.Contains("labo") || n.Contains("work")) { return "jobs"; }
+            if (n.Contains("science") || n.Contains("research") || n.Contains("space")) { return "atom"; }
+            if (n.Contains("regional") || n.Contains("commerce") || n.Contains("business")) { return "office"; }
+            if (n.Contains("veteran")) { return "flag"; }
+            if (n.Contains("central") || n.Contains("government") || n.Contains("interior")) { return "bank"; }
+            return "coins";
+        }
+
+        /// <summary>
+        /// §735: the spending lines as dial tiles, two to a row, in their two groups - MANDATORY (±15 %, a higher approval cost for its size) and
+        /// DISCRETIONARY (±30 %); a group this country has none of draws nothing, as before. The pensions' statutory row and the payment under it are kept as
+        /// built in a card after the group that holds the pension line; then the closed year's book as a list card. One control a tile (the slider), the
+        /// pension row's own after the tiles; the order follows the country's lines, which do not change within a session.
+        /// </summary>
+        private void DrawBudgetSpending(float width)
+        {
+            bool hasMandatory = false, hasDiscretionary = false;
+            foreach (SpendingLine line in _playerCountry.SpendingLines) { if (line.IsMandatory) { hasMandatory = true; } else { hasDiscretionary = true; } }
+            _budgetSlipBook.Anchors["budget:mandatory"] = new SlipContent("MANDATORY LINES")
+                .Add("THIS YEAR'S ALLOWED CHANGE ±" + MandatoryPercentChangeRange.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE · A HIGHER APPROVAL COST FOR ITS SIZE THAN A DISCRETIONARY CHANGE")
+                .Add("THE DRAFT IS A FIGURE; THE BILL CARRIES IT AS A NOMINAL TARGET");
+            _budgetSlipBook.Anchors["budget:discretionary"] = new SlipContent("DISCRETIONARY LINES")
+                .Add("THIS YEAR'S ALLOWED CHANGE ±" + DiscretionaryPercentChangeRange.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE")
+                .Add("THE DRAFT IS A FIGURE; THE BILL CARRIES IT AS A NOMINAL TARGET");
+            if (hasMandatory) { DrawBudgetSpendingGroup(width, true); }
+            if (hasDiscretionary) { DrawBudgetSpendingGroup(width, false); }
+            DrawBudgetLastYearBook(width);
+        }
+
+        private void DrawBudgetSpendingGroup(float width, bool mandatory)
+        {
+            DrawBudgetSectionHead(mandatory ? "Mandatory lines" : "Discretionary lines", mandatory ? "budget:mandatory" : "budget:discretionary", width);
+            var lines = new List<SpendingLine>();
+            foreach (SpendingLine line in _playerCountry.SpendingLines) { if (line.IsMandatory == mandatory) { lines.Add(line); } }
+            float gutter = V35.Px(V35.Gutter), tileWidth = V35Span(V35Span(width, 12), 6);
+            float rowHeight = BudgetDialTileHeight(false);
+            bool pension = false;
+            for (int i = 0; i < lines.Count; i += 2)
+            {
+                Rect row = GUILayoutUtility.GetRect(width, rowHeight, GUILayout.Width(width), GUILayout.Height(rowHeight));
+                for (int k = 0; k < 2 && i + k < lines.Count; k++)
+                {
+                    DrawBudgetSpendingTile(new Rect(row.x + k * (tileWidth + gutter), row.y, tileWidth, rowHeight), lines[i + k], mandatory ? MandatoryPercentChangeRange : DiscretionaryPercentChangeRange);
+                    if (lines[i + k].Category == SpendingCategory.SocialSecurity) { pension = true; }
+                }
+                GUILayout.Space(gutter);
+            }
+            if (pension && PensionAgeStatute.Has(_playerCountry.Id))
+            {
+                // board 15c / PN-1 / PN-2: the pension line's statutory age (the law's path on the track, a lever since §590) and what the line pays - kept as built
+                DrawBudgetSectionHead("Pensions · the statutory age and the payment", "budget:pensions", width);
+                _budgetSlipBook.Anchors["budget:pensions"] = new SlipContent("PENSIONS")
+                    .Add("THE STATUTORY AGE - THE LAW'S PATH ON THE TRACK, THE KNOB THE DRAFT, RIDING THE BUDGET BILL; WHAT THE PENSION LINE PAYS AT IT")
+                    .Add("KEPT AS BUILT - THE COMPOSITION'S BUDGET DRAWS NEITHER; ASKED");
+                bool guarded = V35.FloorGuarded;
+                V35.FloorGuarded = false;
+                GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(width));
+                DrawPensionAgeRow();
+                DrawPensionPaymentRow();
+                GUILayout.EndVertical();
+                V35.FloorGuarded = guarded;
+                GUILayout.Space(gutter);
+            }
+        }
+
+        /// <summary>
+        /// One spending line as a tile: the icon, the figure (the draft's, in the draft's ink, while it differs), the name, the chip (its share of GDP), the
+        /// track - this year's allowed change around the standing figure, the year-open amount its third tick (9b) - and its two ends; while the draft is moving
+        /// the line's range caption speaks in the ends' lane (P4-B2), the ends yielding it. The census the row printed - the portfolio and its effectiveness, the
+        /// driver, next year's figure, the change since the year opened, the step - is the slip's. A draft is stored as the figure; back on the standing figure
+        /// it is dropped. One control: the slider.
+        /// </summary>
+        private void DrawBudgetSpendingTile(Rect r, SpendingLine line, float rangePercent)
+        {
+            string name = DisplayName.Of(line.Category.ToString());
+            string id = "spend:" + line.Category;
+            float standing = line.Amount;
+            float draft = GetSpendingLineInput(line.Category, standing);
+            bool drafted = !Mathf.Approximately(draft, standing);
+            // P5-B5 / SC-1: the track is this year's allowed change around the standing figure - on the line's own path where a dial cost stands outside it
+            float min = standing * (1f - rangePercent / 100f), max = standing * (1f + rangePercent / 100f);
+            float dialCost = SimulationManager.DialCostOf(_playerCountry, line);
+            if (dialCost != 0f)
+            {
+                float own = standing - dialCost;
+                min = SimulationManager.LandedTotalOf(_playerCountry, line, own * (1f - rangePercent / 100f) + dialCost);
+                max = SimulationManager.LandedTotalOf(_playerCountry, line, own * (1f + rangePercent / 100f) + dialCost);
+            }
+            float grain = SpendingGrain(min, max);   // BR-1
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
+            float gdp = _playerCountry.State.NominalGdp;
+            string share = gdp > 0f ? UiFormat.Number(standing / gdp * 100f, 1) + "% of GDP" : null;
+
+            Rect inner = DrawBudgetTileCard(r, drafted, false);
+            Rect chip = DrawBudgetChip(inner, share, drafted);
+            Rect figureRect = DrawBudgetTileHead(inner, BudgetSpendingIcon(name), area, UiFormat.Money(drafted ? draft : standing, MoneyUnit.Billions),
+                drafted ? PoliSimTheme.Caution : PoliSimTheme.TextPrimary, name, PoliSimTheme.TextPrimary, chip);
+            SlipAnchor(new Rect(inner.x, inner.y, inner.width, figureRect.yMax - inner.y + V35.Px(20f)), id);
+
+            Rect track = BudgetTrackRect(inner, out Rect endLane);
+            float ghost = line.LastDriverRatio > 0f ? line.LastYearAmount : float.NaN;   // 9b: the year-open tick (SC-1: "a year has run" is the index's mark)
+            float result = LedgerRow.Track(track, name, standing, draft, min, max, true, _sliderStyle, _sliderThumbStyle, LedgerRow.ScaleOf(_labelStyle), grain, 0f, ghost);
+            if (Event.current.type == EventType.Repaint)
+            {
+                // Two literal keys so RangeCaptionCheck's enumeration of the drawn dials reads them off the controller's partials.
+                bool speaking = line.IsMandatory
+                    ? DrawRangeCaption("Mandatory line", line.Category.ToString(), result, standing, min, max, endLane)
+                    : DrawRangeCaption("Discretionary line", line.Category.ToString(), result, standing, min, max, endLane);
+                if (!speaking) { DrawBudgetEndLabels(endLane, UiFormat.Money(min, MoneyUnit.Billions), UiFormat.Money(max, MoneyUnit.Billions), false); }
+            }
+            if (Mathf.Approximately(result, standing)) { _spendingLineInputs.Remove(line.Category); }
+            else { _spendingLineInputs[line.Category] = result; }
+            if (PoliSim.Testing.CaptureIdentity.Armed && Event.current.type == EventType.Repaint)
+            {
+                LedgerRow.GeometryByRow[UiGuardContext.CurrentScreen + " / " + name] = (r, track, figureRect, chip);   // P4-1: the tile's rects at rest equal its rects mid-drag
+            }
+
+            // the tile's slip: the census the row printed
+            var slip = new SlipContent(name.ToUpperInvariant() + " · " + UiFormat.Money(standing, MoneyUnit.Billions));
+            if (drafted) { slip.Add("DRAFTED · " + UiFormat.Money(draft, MoneyUnit.Billions) + " · WAS " + UiFormat.Money(standing, MoneyUnit.Billions)); }
+            if (share != null) { slip.Add(share.ToUpperInvariant()); }
+            slip.Add(SpendingRowCaption(line, rangePercent, out _));
+            slip.Add("THIS YEAR'S ALLOWED CHANGE ±" + rangePercent.ToString("0", CultureInfo.InvariantCulture) + " % · " + UiFormat.Money(min, MoneyUnit.Billions) + " – " + UiFormat.Money(max, MoneyUnit.Billions)
+                + (dialCost != 0f ? " · ON THE LINE'S OWN PATH, ITS DIAL COST ON TOP" : string.Empty));
+            SpendingDriver of = SpendingDrivers.Of(line.Category);
+            slip.Add((line.Pinned ? "PINNED" : of == SpendingDriver.None ? "NO DRIVER" : "DRIVEN BY " + SpendingDrivers.Short(of, _playerCountry))
+                + " · NEXT YEAR " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions));
+            string delta = SpendingDeltaText(line, drafted ? draft : standing);
+            if (delta != null) { slip.Add(delta + " SINCE THE YEAR OPENED · ITS TICK ON THE TRACK"); }
+            if (track.width > 0f)
+            {
+                float step = LedgerRow.StepFor((max - min) / track.width / Mathf.Max(0.0001f, grain)) * grain;
+                if (step > 1f) { slip.Add("BY " + UiFormat.Money(step, MoneyUnit.Billions) + " A STEP"); }
+            }
+            _budgetSlipBook.Anchors[id] = slip;
+        }
+
+        /// <summary>
+        /// §735: the range caption (P4-B2) in a v3.5 tile's lane - the draft's band from the catalog (P4-B1) at the presenter's alpha (held, then fading), at
+        /// the floor: the band's NAME in bold, a middle dot, its line; the name drops where both do not fit, and where the line alone does not fit the band
+        /// stays empty and the guard is told. The tile's ends yield the lane while it speaks. Returns whether it was painted.
+        /// </summary>
+        private bool DrawRangeCaption(string name, string captionKey, float draft, float standing, float min, float max, Rect lane)
+        {
+            if (!RangeCaptions.TryGet(name, out RangeCaptions.Dial dial)) { return false; }
+            int band = RangeCaptions.BandIndex(draft, min, max);
+            float alpha = RangeCaptionPresenter.Alpha(captionKey, band, !Mathf.Approximately(draft, standing));
+            if (alpha <= 0f) { return false; }
+            RangeCaptions.Band b = dial.Bands[band];
+            Color ink = PoliSimTheme.TextPrimary;
+            ink.a *= alpha;
+            GUIStyle line = V35Serif(V35.Floor, ink, TextAnchor.MiddleLeft);
+            GUIStyle nameFace = V35Serif(V35.Floor, ink, TextAnchor.MiddleLeft);
+            nameFace.fontStyle = FontStyle.Bold;
+            string nameText = b.Name.ToUpperInvariant() + " · ";
+            float nameWidth = Mathf.Ceil(nameFace.CalcSize(new GUIContent(nameText)).x), lineWidth = Mathf.Ceil(line.CalcSize(new GUIContent(b.Line)).x);
+            bool withName = nameWidth + lineWidth <= lane.width;
+            if (!withName && lineWidth > lane.width)
+            {
+                UiOverflowGuard.Check(b.Line, new Vector2(lineWidth, lane.height), new Vector2(lane.width, lane.height), line.fontSize);
+                return false;
+            }
+            float total = (withName ? nameWidth : 0f) + lineWidth;
+            float x = lane.x + Mathf.Round((lane.width - total) * 0.5f);
+            if (withName) { PoliSimWidgets.MeasuredLabel(new Rect(x, lane.y, nameWidth, lane.height), nameText, nameFace); x += nameWidth; }
+            PoliSimWidgets.MeasuredLabel(new Rect(x, lane.y, lineWidth, lane.height), b.Line, line);
+            return true;
+        }
+
+        /// <summary>§735: the closed year's book (§564's) as a list card - each line of the fiscal report and its figure, the recorded balance last in the fiscal
+        /// family's neutral ink, the warning only past the country's rule (§725); each line's caption its slip.</summary>
+        private void DrawBudgetLastYearBook(float width)
+        {
+            FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
+            DrawBudgetSectionHead("Last year · the book as closed", "budget:book", width);
+            _budgetSlipBook.Anchors["budget:book"] = new SlipContent("LAST YEAR · THE BOOK AS CLOSED").Add("THE FISCAL REPORT'S LINES, UNCHANGED; THE BALANCE IS THE RECORDED ONE, NEVER A HAND SUM");
+            var rows = new List<(string Name, string Figure, string Caption, Color Ink)>();
+            if (report == null) { rows.Add(("No year closed", "—", "AT THE YEAR'S END", PoliSimTheme.TextMuted)); }
+            else
+            {
+                Color neutral = PoliSimTheme.TextPrimary;
+                rows.Add(("Revenue", UiFormat.Money(report.Revenue, MoneyUnit.Billions), "TAX, TARIFFS, FUND", neutral));
+                rows.Add(("Baseline", UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions), "SPENDING", neutral));
+                rows.Add(("Discretionary", UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions), "CHANGE THIS YEAR", neutral));
+                rows.Add(("Mandatory", UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions), "SPENDING", neutral));
+                rows.Add(("Unemployment", UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions), "BENEFITS", neutral));
+                rows.Add(("Interest", UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions), "ON DEBT, AUTOMATIC", neutral));
+                rows.Add(("Welfare", UiFormat.Money(report.WelfareCost, MoneyUnit.Billions), "PROGRAMMES", neutral));
+                rows.Add(("Tariffs", UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions), "AT THE STATED RATES", neutral));
+                if (report.ElectricityTaxRevenue != 0f) { rows.Add(("Electricity tax", UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "VS THE 2023 STATUTE", neutral)); }   // EN-7b
+                float? deficit = DerivedStats.DeficitPercentOfGdp(_playerCountry, report);
+                string rule = null;
+                Color balanceInk = deficit.HasValue ? V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Deficit, deficit.Value, neutral, out rule) : neutral;
+                rows.Add(("Balance", UiFormat.MoneyDelta(report.BudgetBalance, MoneyUnit.Billions), rule ?? "AS RECORDED", balanceInk));
+            }
+            float rowH = V35.Px(V35.ListRow);
+            float height = V35.Px(V35.CardPadY) * 2f + rowH * rows.Count;
+            Rect card = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width), GUILayout.Height(height));
+            Rect inner = DrawV35Card(card);
+            for (int i = 0; i < rows.Count; i++)
+            {
+                var row = new Rect(inner.x, inner.y + i * rowH, inner.width, rowH);
+                DrawV35ListRow(row, null, 0f, rows[i].Name, rows[i].Figure, rows[i].Ink);
+                string rid = "budget:book:" + rows[i].Name;
+                SlipAnchor(row, rid);
+                _budgetSlipBook.Anchors[rid] = new SlipContent(rows[i].Name.ToUpperInvariant() + " · " + rows[i].Figure).Add(rows[i].Caption.ToUpperInvariant());
+            }
+            GUILayout.Space(V35.Px(V35.Gutter));
+        }
+
+        // =============================================================================================================================================
         // The kept categories, the kept readings, the action
         // =============================================================================================================================================
 
-        /// <summary>Welfare, infrastructure and the fund - and, until §735, spending - drawn as built under their tab, the floor's guard lifted (kept, asked).</summary>
+        /// <summary>Welfare, infrastructure and the fund, drawn as built under their tab, the floor's guard lifted (kept, asked).</summary>
         private void DrawBudgetKeptCategory(float width)
         {
             bool guarded = V35.FloorGuarded;
@@ -540,7 +777,6 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(width));
             switch (_budgetProcessCategory)
             {
-                case BudgetProcessCategory.Spending: DrawSpendingPolicyContent(); break;
                 case BudgetProcessCategory.Welfare: DrawWelfarePolicyContent(); break;
                 case BudgetProcessCategory.Infrastructure: DrawInfrastructureContent(); break;
                 case BudgetProcessCategory.Swf: DrawSwfPolicyContent(); break;

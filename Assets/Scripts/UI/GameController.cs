@@ -416,7 +416,6 @@ namespace PoliSim.UI
         private readonly GraphRenderer _corruptionGraph = new GraphRenderer();
         private readonly GraphRenderer _laborForceParticipationGraph = new GraphRenderer();
         private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
-        private readonly GraphRenderer _debtToGdpGraph = new GraphRenderer();
         private readonly GraphRenderer _povertyRateGraph = new GraphRenderer();
 
         // Phase 5 of the UI revamp: the World Map tab. Event markers are tracked here (not in
@@ -8842,8 +8841,8 @@ namespace PoliSim.UI
             GUILayout.Space(LawRowGap);
         }
 
-        /// <summary>R-K4: the Budget screen's own gap between ledger rows (the retired tax rows, /
-        /// DrawSpendingPolicyContent draw `GUILayout.Space(10f)` after each instrument). Kept under
+        /// <summary>R-K4: the Budget screen's own gap between ledger rows (the retired tax and spending rows
+        /// drew `GUILayout.Space(10f)` after each instrument). Kept under
         /// R-C1's one-line row: the pitch is OneLineHeight + this.</summary>
         private const float LawRowGap = 10f;
 
@@ -10536,37 +10535,6 @@ namespace PoliSim.UI
             return bill;
         }
 
-        /// <summary>
-        /// §564 (2026-09-22): LAST YEAR'S BOOK AS CLOSED - the fiscal report's lines as the family's read-only rows under a section caption, AFTER the dials (Design's
-        /// sitting, part A item 2: *"Spending opens on a prose ledger … before its dial rows"*). Until then nine body-serif sentences and a coloured net line stood at the
-        /// head of the page. The figures are the report's, unchanged; the net is the RECORDED balance, never a hand sum (pass 5).
-        /// </summary>
-        private void DrawLastYearBook()
-        {
-            Color ink = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
-            FiscalTurnReport report = _simulationManager.GetLastFiscalReport(PlayerCountryId);
-            DrawStatsSectionCaption("LAST YEAR — THE BOOK AS CLOSED");
-            if (report == null)
-            {
-                DrawDerivedStatRow("No year closed", -1f, "—", "at the year's end", ink);
-                return;
-            }
-            DrawDerivedStatRow("Revenue", -1f, UiFormat.Money(report.Revenue, MoneyUnit.Billions), "tax, tariffs, fund", ink);
-            DrawDerivedStatRow("Baseline", -1f, UiFormat.Money(report.BaselineGovernmentSpending, MoneyUnit.Billions), "spending", ink);
-            DrawDerivedStatRow("Discretionary", -1f, UiFormat.MoneyDelta(report.DiscretionarySpending, MoneyUnit.Billions), "change this year", ink);
-            DrawDerivedStatRow("Mandatory", -1f, UiFormat.Money(report.MandatorySpending, MoneyUnit.Billions), "spending", ink);
-            DrawDerivedStatRow("Unemployment", -1f, UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions), "benefits", ink);
-            DrawDerivedStatRow("Interest", -1f, UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions), "on debt, automatic", ink);
-            DrawDerivedStatRow("Welfare", -1f, UiFormat.Money(report.WelfareCost, MoneyUnit.Billions), "programmes", ink);
-            DrawDerivedStatRow("Tariffs", -1f, UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions), "at the stated rates", ink);
-            if (report.ElectricityTaxRevenue != 0f)
-            {
-                // EN-7b: the electricity tax's receipts above the 2023 statute - a law in force moved them
-                DrawDerivedStatRow("Electricity tax", -1f, UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "vs the 2023 statute", ink);
-            }
-            DrawClosedBalanceRow("Balance", report, UiFormat.MoneyDelta(report.BudgetBalance, MoneyUnit.Billions), "as recorded");
-        }
-
         // The Budget tab's full-screen interrupt banner (DrawFullScreenPendingInterruptBanner /
         // BuildFullScreenInterruptText, 2026-08-01 → 2026-08-28) lived here. It re-surfaced a pending
         // interrupt because going full-screen hid the calendar/speed strip - the only always-visible
@@ -11681,191 +11649,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The player country's detailed spending portfolio (Phase 1: USA only - see CLAUDE.md's
-        /// "Detailed Spending Portfolio"), grouped Mandatory / Discretionary, plus Interest on Debt
-        /// as a read-only automatic line. Both groups now get a this-turn PERCENTAGE-change slider
-        /// (SimulationManager.ApplySpendingLineChanges applies it to that line's own Amount) -
-        /// Mandatory's range is narrower, reflecting the real political difficulty of entitlement
-        /// reform, and a Mandatory change carries a distinctly higher approval-rating penalty per
-        /// relative size than a Discretionary one (see MacroSystem.MandatorySpendingApprovalMultiplier).
-        /// Master Sequence step 5e, Phase A: the old standalone Spending Policy tab is retired (folds
-        /// into Tax/Spending, both just entry points into this same Budget Process screen) - reached
-        /// exclusively via DrawBudgetProcessTab now.
-        /// </summary>
-        private void DrawSpendingPolicyContent()
-        {
-            DrawColoredLabel("Spending Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal));
-            // P2-1.3 (2026-09-02): the mechanism paragraph is cut ((c)-class); the row and the mandatory marker say it.
-            // §564 (2026-09-22): THE DIALS LEAD. The book as closed (DrawLastYearBook) and the debt graph follow the two groups - the page opens on what the player moves.
-            GUILayout.Space(8f);
-
-            // The per-row size bar is GONE, and its within-group scaling with it.
-            //
-            // It gave an at-a-glance relative size inside each group, which the ledger's SHARE column now
-            // gives numerically and across both groups. At 29 rows the bar cost 8px each - 232px of pure
-            // height on the one screen D3 was about - and the board draws no such bar. A row is a line;
-            // anything that makes it two is spending the density this screen does not have.
-            //
-            // MANDATORY vs DISCRETIONARY STAYS EXACTLY AS IT IS: two section headers, each with its own
-            // slider range. **The boards never express this distinction at all** - it does not appear
-            // anywhere in pass 3's 1b - so there is no spec treatment to adopt and inventing a row-level
-            // one would be inventing, not implementing. It is also not a row property: it is a property
-            // of a GROUP, and a header is what a group heading looks like. Declared to Design as V2.
-            // Each group's bars scale to that group's own largest line, and the header says which scale
-            // is in force. Q1's answer keeps SHARE global (a share of GDP means the same thing in both
-            // sections, and rebasing it per group would make the column lie), which is only survivable
-            // because the bar now carries within-group discrimination that the share column cannot.
-            // Ship one without the other and the discretionary tail reads 0.4/0.4/0.3/0.3/0.2 with
-            // nothing to tell those rows apart - which is exactly the state Q1 was raised about.
-            // ⚠ COUNTRY-COVERAGE FINDING 2, FIXED 2026-08-12 (ruled A): AN EMPTY GROUP RENDERS NOTHING.
-            // All five non-USA countries have no Mandatory lines (SeedGenericSpendingLines is
-            // discretionary-only), and this method rendered the Mandatory header over zero rows with
-            // "bars to $100k" — GroupSpendingMax's divide-by-zero guard formatted as a real money
-            // figure. A group header is furniture for its group — the stamps ruling's own logic — and
-            // suppressing it is also what keeps the guard value where it belongs: in the arithmetic,
-            // never on screen. Group presence varies by COUNTRY, not by frame, so the control set is
-            // stable within any session.
-            bool hasMandatory = false;
-            bool hasDiscretionary = false;
-            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-            {
-                if (spendingLine.IsMandatory) { hasMandatory = true; } else { hasDiscretionary = true; }
-            }
-
-            if (hasMandatory)
-            {
-                float mandatoryMax = GroupSpendingMax(isMandatory: true);
-                DrawStatsSectionCaption($"MANDATORY LINES · NARROWER RANGE, HIGHER APPROVAL COST · BARS TO {UiFormat.Money(mandatoryMax, MoneyUnit.Billions)}");
-                foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-                {
-                    if (!spendingLine.IsMandatory)
-                    {
-                        continue;
-                    }
-
-                    DrawSpendingLineRow(spendingLine, MandatoryPercentChangeRange, mandatoryMax);
-                }
-
-                GUILayout.Space(10f);
-            }
-
-            if (hasDiscretionary)
-            {
-                float discretionaryMax = GroupSpendingMax(isMandatory: false);
-                DrawStatsSectionCaption($"DISCRETIONARY LINES · BARS TO {UiFormat.Money(discretionaryMax, MoneyUnit.Billions)}");
-                foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-                {
-                    if (spendingLine.IsMandatory)
-                    {
-                        continue;
-                    }
-
-                    DrawSpendingLineRow(spendingLine, DiscretionaryPercentChangeRange, discretionaryMax);
-                }
-            }
-
-            // §564: the book as closed and the debt path, after the dials (the interest line is one of the book's rows - a read-only, automatic figure).
-            GUILayout.Space(16f);
-            DrawLastYearBook();
-            GUILayout.Space(10f);
-            _debtToGdpGraph.Draw("Debt-to-GDP", _playerCountry.History.DebtToGdpRatio.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null,
-                thresholdValue: _playerCountry.ComfortableDebtToGdpPercent, thresholdLabel: "Comfortable", reading: ReadingUnit.Percent);
-        }
-
-        /// <summary>One SpendingLine's row: a slider representing a PERCENTAGE change of its own current Amount, bounded by <paramref name="rangePercent"/> (narrower for Mandatory - see DrawSpendingPolicy), showing both the requested percentage and the dollar amount it implies at the line's current size, plus a bar sized relative to <paramref name="maxAmountInGroup"/> (its own Mandatory/Discretionary group's largest line) for an at-a-glance size comparison.</summary>
-        /// <summary>The largest line in one spending group - the denominator its bars scale against (V2). Guarded above zero so an empty or all-zero group cannot divide by it.</summary>
-        private float GroupSpendingMax(bool isMandatory)
-        {
-            float max = 0f;
-            foreach (SpendingLine spendingLine in _playerCountry.SpendingLines)
-            {
-                if (spendingLine.IsMandatory == isMandatory)
-                {
-                    max = Mathf.Max(max, spendingLine.Amount);
-                }
-            }
-
-            return Mathf.Max(max, 0.0001f);
-        }
-
-        private void DrawSpendingLineRow(SpendingLine spendingLine, float rangePercent, float groupMax)
-        {
-            float standing = spendingLine.Amount;
-            float draft = GetSpendingLineInput(spendingLine.Category, standing);
-            bool hasDraft = !Mathf.Approximately(draft, standing);
-
-            // P5-B5 (2026-09-05): THE SLIDER CARRIES THE FIGURE. Before this pass it carried a percentage change with
-            // its standing tick at 0; now the standing tick is the line's nominal amount - the figure the index carried
-            // here (P5-B2) - and the track is this year's allowed change around it (±rangePercent, the law
-            // ApplySpendingLineChanges enforces on a percentage change; Mandatory narrower). The bill carries the
-            // figure as a nominal target (BudgetBill.SpendingNominalTargets), and the parliament weighs it as the
-            // percentage it implies (ParliamentSystem.SpendingPercentChangesOf). A draft is stored as the figure; no
-            // draft is the standing amount, which is why a slider left where it stands stores nothing.
-            float min = standing * (1f - rangePercent / 100f);
-            float max = standing * (1f + rangePercent / 100f);
-            float dialCost = SimulationManager.DialCostOf(_playerCountry, spendingLine);
-            if (dialCost != 0f)
-            {
-                // SC-1 (ruled 2026-09-15): the allowed change is the law on the line's OWN path (a percentage moves the own path; the dial cost stands outside the
-                // seed band), so the track is the own path's ±rangePercent with the cost on top, each end the total that figure lands at - a line a cut holds at
-                // zero keeps a track. A line with no dial cost reads its standing amount as it always has.
-                float own = standing - dialCost;
-                min = SimulationManager.LandedTotalOf(_playerCountry, spendingLine, own * (1f - rangePercent / 100f) + dialCost);
-                max = SimulationManager.LandedTotalOf(_playerCountry, spendingLine, own * (1f + rangePercent / 100f) + dialCost);
-            }
-            float grain = SpendingGrain(min, max);   // BR-1
-            Rect rowRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-
-            float result = LedgerRow.Draw(
-                rowRect,
-                DisplayName.Of(spendingLine.Category.ToString()),
-                standing,
-                draft,
-                min,
-                max,
-                UiFormat.Money(standing, MoneyUnit.Billions),
-                hasDraft ? UiFormat.Money(draft, MoneyUnit.Billions) : null,
-                SpendingTrailingText(spendingLine),
-                interactive: true,
-                _labelStyle,
-                _labelStyle,
-                _sliderStyle,
-                _sliderThumbStyle,
-                barFraction: standing / groupMax,
-                ghost: spendingLine.LastDriverRatio > 0f ? spendingLine.LastYearAmount : float.NaN,   // 9b: the year-open tick (SC-1: "a year has run" is the index's mark, not a positive amount - a line a cut held at zero opened its year at zero)
-                figureSecondLine: SpendingDeltaText(spendingLine, hasDraft ? draft : standing),   // 9b: Δ under the figure, measured from the ghost
-                nameSecondLine: SpendingRowCaption(spendingLine, rangePercent, out Color captionInk),   // 9d: PORTFOLIO · EFF ×r, or the class word
-                nameSecondLineInk: captionInk,
-                grain: grain);   // BR-1: the step in the row's grain; the step is stated at the band's left end (9d holds the name's second line)
-
-            if (Event.current.type == EventType.Repaint)
-            {
-                // Two literal keys so RangeCaptionCheck's enumeration of the drawn dials reads them off this file.
-                // PF-2 (§592): the caption's lane is what the instruments leave AS DRAWN in their caption-state pieces (PF-8's rule on the end-names), measured here
-                // before either is painted - the fixed middle three fifths was 163-179 px at 1280 and no line of the twenty fitted it
-                SpendingCaptionPieces(spendingLine, out string pieceLeft, out string pieceRight);
-                GUIStyle pieceFace = LedgerRow.CaptionStyle(_labelStyle);
-                float leftInk = Mathf.Ceil(pieceFace.CalcSize(new GUIContent(pieceLeft)).x), rightInk = Mathf.Ceil(pieceFace.CalcSize(new GUIContent(pieceRight)).x);
-                bool captionShown = spendingLine.IsMandatory
-                    ? DrawRangeCaption("Mandatory line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true, endPieceLeftInk: leftInk, endPieceRightInk: rightInk)
-                    : DrawRangeCaption("Discretionary line", spendingLine.Category.ToString(), result, standing, min, max, endPieces: true, endPieceLeftInk: leftInk, endPieceRightInk: rightInk);
-                DrawSpendingLineInstruments(spendingLine, captionShown);
-            }
-
-            if (Mathf.Approximately(result, standing)) { _spendingLineInputs.Remove(spendingLine.Category); }
-            else { _spendingLineInputs[spendingLine.Category] = result; }
-
-            // board 15c (2026-09-13): the statutory mark under the pension line - the law's path beside this year's figure (PN-1's statute layer; the driver deferred)
-            if (spendingLine.Category == SpendingCategory.SocialSecurity && PensionAgeStatute.Has(_playerCountry.Id))
-            {
-                GUILayout.Space(4f);
-                DrawPensionAgeRow();
-                // PN-2 (2026-09-16): and under the law, what the line PAYS - the readout, on the read-only row of the same family
-                DrawPensionPaymentRow();
-            }
-        }
-
-        /// <summary>
         /// PN-2 (2026-09-16, the plan's S6): **the payment the pension line implies, under the age that sets who draws it.** The line over the
         /// cohorts at or above the statutory age is an average benefit; that benefit over the mean income the tax schedules read is a
         /// replacement rate, and a replacement rate is a proportion - so the row is the family's READ-ONLY form with the rate as its fill,
@@ -12140,65 +11923,11 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// P5-B5: the row's small instruments, in the two ends of the caption band beneath the track. Left, the driver:
-        /// its short name and the ratio the last index applied (`65+ ×1.013`), or NO DRIVER, or PINNED. Right, NEXT -
-        /// the projection <see cref="SpendingLine.ProjectNextYear"/>, the same arithmetic the turn runs. The ends take
-        /// 35 % of the band each at rest; while a range caption is painted (mid-drag and its fade) they take 20 %, as
-        /// end-names do, and the caption keeps the middle. A piece that does not fit its end at the width in force is
-        /// shortened (the ratio dropped) rather than clipped - the caption checks measure, they do not guess. The delta
-        /// against the amount the year opened with sits beside NEXT and is the first thing dropped when the end is narrow.
-        /// </summary>
-        private void DrawSpendingLineInstruments(SpendingLine line, bool captionShown)
-        {
-            Rect band = LedgerRow.LastCaptionBand;
-            if (band.width <= 8f) { return; }
-            GUIStyle face = LedgerRow.CaptionStyle(_labelStyle);
-            float end = band.width * (captionShown ? 0.2f : 0.35f);
-            string driver = SpendingDrivers.Short(SpendingDrivers.Of(line.Category), _playerCountry);   // PN-1's driver (§520): the pension line's band reads the age in force
-            string leftFull = line.Pinned ? "PINNED"   // 9b: a driver STATE like NO DRIVER - a word, nowhere else
-                : SpendingDrivers.Of(line.Category) == SpendingDriver.None ? "NO DRIVER"
-                : line.LastDriverRatio > 0f ? driver + " ×" + line.LastDriverRatio.ToString("F3", CultureInfo.InvariantCulture) : driver;
-            string leftShort = line.Pinned ? "PINNED" : driver;
-            if (LedgerRow.LastStep > 1f)
-            {
-                // BR-1: a coarse step is stated on the row, never discovered by dragging (EN-8's rule) - ahead of the driver, since 9d's caption
-                // holds the name's second line; the driver is the first thing dropped when the end is narrow
-                string by = "BY $" + LedgerRow.LastStep.ToString("0.#", CultureInfo.InvariantCulture) + "B";
-                leftFull = by + " · " + leftFull;
-                leftShort = face.CalcSize(new GUIContent(by + " · " + leftShort)).x <= end ? by + " · " + leftShort : by;
-            }
-            string left = face.CalcSize(new GUIContent(leftFull)).x <= end ? leftFull : leftShort;
-            string next = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
-            string right = next;   // 9b: NEXT alone - the delta moved under the figure (SpendingDeltaText)
-            float leftEnd = end, rightEnd = end;
-            if (captionShown)
-            {
-                // PF-2 (§592): while the caption speaks the ends draw their caption-state pieces at their own measured width - the lane the caption was laid in
-                SpendingCaptionPieces(line, out left, out right);
-                leftEnd = Mathf.Ceil(face.CalcSize(new GUIContent(left)).x) + 1f;
-                rightEnd = Mathf.Ceil(face.CalcSize(new GUIContent(right)).x) + 1f;
-            }
-            Color ink = PoliSimTheme.TextSecondary;
-            GUI.Label(new Rect(band.x, band.y, leftEnd, band.height), left, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperLeft, clipping = TextClipping.Clip }, ink));
-            GUI.Label(new Rect(band.xMax - rightEnd, band.y, rightEnd, band.height), right, Inked(new GUIStyle(face) { alignment = TextAnchor.UpperRight, clipping = TextClipping.Clip }, ink));
-        }
-
-        /// <summary>PF-2 (§592): a spending row's instruments while its range caption speaks - the shortest pieces that still say the row's state: a coarse step (BR-1's
-        /// rule: stated on the row, never discovered) or else the driver's short name, PINNED or NO DRIVER; and NEXT with its figure. The ratio is the first thing dropped.</summary>
-        private void SpendingCaptionPieces(SpendingLine line, out string left, out string right)
-        {
-            SpendingDriver of = SpendingDrivers.Of(line.Category);
-            left = LedgerRow.LastStep > 1f ? "BY $" + LedgerRow.LastStep.ToString("0.#", CultureInfo.InvariantCulture) + "B"
-                : line.Pinned ? "PINNED" : of == SpendingDriver.None ? "NO DRIVER" : SpendingDrivers.Short(of, _playerCountry);
-            right = "NEXT " + UiFormat.Money(line.ProjectNextYear(_playerCountry.State.Inflation), MoneyUnit.Billions);
-        }
-
-        /// <summary>
         /// BR-1 (2026-09-14; EN-8's device on the spending rows): a spending row's GRAIN in dollars billions - its track's range's hundredth rounded up
         /// to a 1-2-5 step and never under one billion - so a line whose allowed change spans hundreds of billions (the USA's Defense at ±15 %)
         /// rests on and reaches every grain the way a smaller line reaches every billion, on any track of a hundred pixels or more. A range of a
         /// hundred billion or less keeps the grain of one and snaps exactly as it did; a wider range snaps in its grain, and its step is printed
-        /// on the row only where it is coarser than a billion (`DrawSpendingLineInstruments`).
+        /// on the row only where it is coarser than a billion (the tile's slip since §735).
         /// </summary>
         private static float SpendingGrain(float min, float max)
         {
@@ -12231,25 +11960,6 @@ namespace PoliSim.UI
             if (line.LastDriverRatio <= 0f) { return null; }   // SC-1: before the first index - a line held at zero by a cut has a year and a zero to read against
             float delta = figure - line.LastYearAmount;
             return Mathf.Abs(delta) < 0.0005f ? "Δ $0" : "Δ " + UiFormat.MoneyDelta(delta, MoneyUnit.Billions);
-        }
-
-        /// <summary>The trailing cell of a spending row: the share of GDP (B3: the unit named).</summary>
-        private string SpendingTrailingText(SpendingLine line)
-        {
-            // The delta lives in the band's right end beside NEXT (the trailing cell is drawn under the figure and spilled into the band when it carried both).
-            return SpendingShareOfGdpText(line.Amount);
-        }
-
-        /// <summary>This line's share of GDP, the board's trailing column for a spending row. B3: the unit is named, and a share is not money so it takes a format string rather than a MoneyUnit.</summary>
-        private string SpendingShareOfGdpText(float amount)
-        {
-            float gdp = _playerCountry.State.NominalGdp;   // P5-B6: a nominal figure over nominal GDP
-            if (gdp <= 0f)
-            {
-                return "-";
-            }
-
-            return (amount / gdp * 100f).ToString("F1", CultureInfo.InvariantCulture) + "% GDP";
         }
     }
 }

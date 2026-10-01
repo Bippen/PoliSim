@@ -1171,7 +1171,8 @@ namespace PoliSim.Testing
                             // on film with the row it belongs to. §564 (2026-09-22): the row's OWN laid-out rect, read off LedgerRow.GeometryByRow at scroll zero - the fixed
                             // offset was the prose summary block's height, and that block now follows the dials.
                             // by the Social Security line the pension row sits under: the pension row itself is read-only, and only interactive rows are recorded
-                            float pensionY = RowTop(" / Social Security");
+                            float pensionY = RowTop(" / Pension age");   // §735: the pension row sits in its own card after the mandatory tiles - scroll to the row itself
+                            if (pensionY < 0f) { pensionY = RowTop(" / Social Security"); }
                             if (pensionY < 0f) { Debug.LogError($"SHOT: {stem}_pension - the pension row's geometry was not recorded; the frame is filmed at the page's head, not at the row."); _failed++; }
                             ScrollBy(controller, Mathf.Max(0f, pensionY - UiScreen.Height * 0.14f));
                             yield return Settle();

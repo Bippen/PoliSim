@@ -36189,3 +36189,21 @@ The cheap bar **91 of 91** (`cheap733`).
 
 **Tier UI.** The dry film **`drys734` Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes**, the geometry stable on `05a` (75 rows) and `05b` (159), the worst Budget reach 0.362 grains per pixel; the real film **`film734a` (Sweden, 1280, to `05e`): 72 captured, 0 failed, 0 overflows, 0 escapes, the edge guard 0 clipped** - `05a_budget_tax`, `_dragged`, `_rows`, `_rows_carbon`, `05c_budget_welfare` the page on film.
 The cheap bar **91 of 91** (`cheap734b`; `cheap734` failed DeadStateCheck on `DrawTaxPolicyContent`, above).
+
+
+## 735. UI v3.5, THE BUDGET'S SPENDING - THE LINES AS DIAL TILES IN THEIR TWO GROUPS, THE RANGE CAPTION AT THE FLOOR, THE PENSIONS KEPT, THE CLOSED YEAR AS A LIST (2026-10-02)
+
+**The ruling** (the main session's order: the Budget's second tab; the composition's *Spending lines*).
+
+**The tiles** (`GameController.BudgetV35.cs`): each spending line a dial tile, two to a row in the left eight columns beside the *if passed* columns: the icon (by the words of the line's name as the country prints it - the categories are the USA's, each country names its own), the figure (the draft's, in the draft's ink, while it differs), the name, **the chip - its share of GDP** (the composition's), the track (this year's allowed change around the standing figure, on the line's own path where a dial cost stands outside it - SC-1; the year-open amount its third tick - 9b) and its two ends in money. **The two groups stay** - *Mandatory lines* (±15 %, a higher approval cost for its size) and *Discretionary lines* (±30 %) - because the range differs by group (the composition draws one head; the model's two ranges would be one head's lie); a group a country has none of draws nothing, as before. The census the row printed - the portfolio and its effectiveness (9d), the driver and next year's figure, the change since the year opened, the step where it is coarser than a billion, the allowed range - is the tile's slip. One control a tile.
+
+**The range caption at the floor** (P4-B2): while a draft moves, the line's band - its NAME and its line - speaks in the tile's ends' lane at 14 px, the ends yielding it, then fading; the old caption drew at about 9.5 px in the band between the row's instruments, where twenty of its lines had never fitted (PF-2). A `DrawRangeCaption` overload takes the lane; the two literal keys stay in the controller's partials, where `RangeCaptionCheck` reads them.
+
+**Kept and asked**: the pensions' statutory age (the law's path on the track, a lever since §590) and what the pension line pays - kept as built in a card after the group that holds the pension line (*Pensions · the statutory age and the payment*). **The closed year's book** (§564's) is a v3.5 list card - each line of the fiscal report and its figure, the recorded balance in the neutral ink with the warning only past the rule (§725), each caption its row's slip. The Debt-to-GDP chart that followed the book leaves the Budget: Statistics draws it among the live series (with its *comfortable* line, whose slip has an anchor since §733).
+
+**Retired**: `DrawSpendingPolicyContent`, `GroupSpendingMax`, `DrawSpendingLineRow`, `DrawSpendingLineInstruments`, `SpendingCaptionPieces`, `SpendingTrailingText`, `SpendingShareOfGdpText`, `DrawLastYearBook` and the `_debtToGdpGraph` field; `SpendingGrain`, `SpendingRowCaption` and `SpendingDeltaText` stay (the tiles read them). The film's pension frames scroll to the pension row itself (`Pension age`), the Social Security tile its fallback.
+
+**§734's open question, answered.** The Spending tab had shown every line hatched and the change count at 27: that is the film's own `DraftSpendingLines`, which drafts EVERY line (×1.06 and ×0.96, alternating) so the hatch, the draft figure and the pencil render - staging, not a stale draft the game keeps.
+
+**Tier UI.** The dry film **`drys735` Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes**, the geometry stable on `05b_budget_spending` (159 rows at rest and mid-drag, every rect identical); the real film **`film735a` (Sweden, 1280, to `05c`): 66 captured, 0 failed, 0 overflows** - `05b_budget_spending_rows_dragged` (the range captions at the floor), `05b_budget_spending_pension` (the card) on film.
+The cheap bar **91 of 91** (`cheap735`).
