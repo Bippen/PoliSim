@@ -35907,3 +35907,34 @@ First divergence turn 1 - Germany's approval −0.75 from the rise (`TaxHikeAppr
 **Not yet - the next parts, in the spec's order:** (2) the vote that feeds the count - the candidates' first-vote shares from the parties' (the backing is [SECONDARY] where it exists; TD carries no CHES position, and several 2025 candidates no party in the roster) and the run-off's transfers, backtested on 2020 and 2025 from the 2019 and 2023 Sejm; the game's own 2025 election on the clock; (3) the president's veto and the 3/5 override (Art. 122 ust. 5, sourced in this pass) and cohabitation; the 41 districts and the committees' thresholds (5 % and 8 %); the PiS government at the start. **A first reading for part two, stated not built**: the 2023 Sejm's blocs alone - KO + TD + NL 53.71 % against PiS + Konf 42.54 % (`returns_2023.md`) - would put the 2025 run-off with Trzaskowski, and the record elected Nawrocki with 50.89 %; candidate effects and the transfers decide the model, and its backtest will say how much.
 
 **Tier SIMULATION by its reading of `ElectionsData/`, no family** (the rule and the presidents read by nothing the turn runs yet; the trajectory untouched): named `n720a`, `n720b` (with StartPointsDiagnostic, StartBriefDiagnostic, UnwiredSubsystemCheck, MojibakeCheck) clean; the cheap bar **89 of 89** (`cheap720b`; `cheap720` named the unwired count); no surface draws the start card's basis, so no film.
+
+
+## 721. UI v3.5 RECEIVED AND VERIFIED - V35_desk.zip 93 OF 93 BY DIGEST, THE COMPOSITION RENDERED IN 26 STATES AND CHECKED AGAINST ELIAS'S RULINGS: SEVEN CARRIED (ONE IN PART); THE PLACES IT DOES NOT, LISTED, NOTHING BUILT THERE (2026-10-01)
+
+**Received** (Design, 2026-10-01: *Build UI v3.5 from V35_desk.zip ... Send back BOARDS_BUILT.md and anything the model can't do*; and the main session's: *Read send/V35_ASK.md, pull V35_desk.zip ..., verify every part and the whole by digest ... First, verify the composition carries Elias's rulings ... List any place it doesn't, and build nothing in that place until it's resolved*).
+
+**The package, verified.** The store serves at most 192 KiB of a file (196 608 bytes, the channel's cap, s610), so `send/V35_desk.zip` (1 278 775 bytes) could not be pulled whole; Elias placed it at `AssetPackArchive/V35_desk.zip`. **Its first 196 608 bytes are byte-identical to the store's pull** - the same file; whole SHA-256 `8396fd87…be78`; **93 of 93 files match `MANIFEST.sha256`**, none missing, none extra (`PoliSim v3.5.dc.html`, `support.js`, `V35_ASK.md`, 69 icons with their `MANIFEST.md`, the eight Swedish marks pre-tinted, three portraits, nine rail cells). Board 27a pulled from the store (`assets/v35/frag_27a.html`, `v_27a.html`, both whole); **its RULED block is not in either file nor in the zip** - the ruled rules are taken from V35_ASK.md's "The rules (Elias, ruled 2026-10-01)", which reverse four of 27a's own §10 proposals (the honesty glyphs, the † view and the pins stay; the chips carry the code).
+
+**Rendered** (Edge headless, the composition's own React state set per render, the page unclipped): all 8 tabs and 16 sub-tabs, opposition and governing where they differ, the signing plate, the † dense view (26 renders, `PoliSim-captures/design/V35_check/`).
+
+**Elias's rulings, checked:**
+
+| ruling | carried? | where seen |
+|---|---|---|
+| honesty marks at rest, as D24's glyphs | **yes** | ◇ dated beside the prices and the electorate; ABSENT dashed slots (PISA, graduation, congestion, road length); BILLED dashed tile (Build costs) |
+| the † dense view | **yes** | one line per card under a rule, the slip's content (Energy, Budget) |
+| pinned tooltips and the second level | **yes** (source - interactive) | pins ①-③, at most three, ESC unpins the newest (`slice(0, -1)`), the level-2 slip with GO TO chips, 250 ms open |
+| map chips identifiable without hovering, one form per map | **yes** | the two-letter code on every chip - the desk's and Statistics' trade maps one form; the wholesale ticks; the compass's chips carry the party mark and code |
+| stacked bars readable without hovering | **yes** | names inside segments where they fit, else a key line (Homes' price, age split, education, CO2, the seat bar's party codes) |
+| neutral colour on contested figures | **in part** | taxes, spending, prices, trade balance, tariff neutral - **but government debt and the balance are coloured** (the strip's debt ▲ red, *if passed*'s balance ▼ red), against the ruling that they are neutral unless the country's own fiscal rule is breached |
+| dial titles that name the axis, direction unchanged | **yes, but one** | the four Energy renames keep today's 0/100 meaning - two FIX a title that contradicted its own ends (*Market liberalisation* ran 0 LIBERALISED - 100 REGULATED; *State ownership* 0 NATIONALIZED - 100 DEREGULATED); Crime's and Sectors' poles keep the model's direction; **the working week (35 h left, 60 h right) runs OPPOSITE to the model's overtime index (0 unregulated, long hours - 100 strict caps)** |
+
+**Where the composition does not carry the rulings - NOTHING BUILT THERE until resolved:**
+1. **Number format and the calendar's words** - the composition prints the country's decimal mark (46,1) and Swedish weekday names (*Mån Tis Ons*); this morning's item 9 (§718) ruled *one fixed English culture for all dates and numbers*. V35_ASK's rule 4 (country decimal mark, thin space for thousands) contradicts it. **Elias's call.**
+2. **Debt and the balance in colour** (above) - the ruling (neutral by default; the warning state only on a breach of the country's statutory rule, the rule named in the slip) is sent to Design with the dial table.
+3. **Crime draws three of the model's six levers** (average prison term, drug possession, border checks) - police funding, bail reform and judicial funding are not on the page; **Sectors draw four of five** (the subsidy is not); **Trade draws no per-partner tariff** (the model's partner overrides). Asked of Design.
+4. **The desk's KPI strip clips** its figures and names at 1280 (*$671 bn ▲ 5…*, *Government …*) - asked.
+5. **The working-week dial's direction** (above) - and the units the model does not compute: a read of every dial (a read-only audit, file and line for each) finds almost every one a 0-100 index whose 50 is the country's status quo, so hours, kr a month, months in prison, ¢/kWh of support, % of homes, % planned and a private share are not quantities the model holds. The table of what Code can show goes to Design next (§723).
+6. **One field, two names**: the Energy page's four dials ARE the Energy sector's sector dials (one draft with Sectors) - the composition names them differently on the two pages. **Crime's six are set by law** in the model (no knob today); the composition draws three as dials.
+
+**Documents tier.**
