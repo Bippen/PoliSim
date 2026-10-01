@@ -3097,6 +3097,9 @@ namespace PoliSim.Simulation
                 standing.RemoveAll(p => round.StoodInPhase2.Contains(p));
                 if (standing.Count == 0 && !how.Contains("no nomination")) { how = "every nomination signed by a quarter of the members has stood or passed (GO-BT § 4 Abs. 2)"; }
                 int tries = 0;
+                // §712 (the review's defect 3): the player's nomination, where it stands, is asked FIRST - it tables or passes before any ballot is called,
+                // so every nomination meets in the one ballot (else an AI's ballot left it out and it was balloted alone a week later, on other votes)
+                if (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && standing.Contains(country.PlayerPartyAbbrev)) { round.Asked = country.PlayerPartyAbbrev; }
                 while (!standing.Contains(round.Asked) && tries++ < round.Order.Count) { round.Turn++; round.Asked = round.Order[round.Turn % round.Order.Count]; }
                 if (!standing.Contains(round.Asked))
                 {
@@ -3190,6 +3193,7 @@ namespace PoliSim.Simulation
         /// limit (the Riksdag) or moves the chancellor's election to its next phase (the Bundestag, Art. 63 GG).</summary>
         private void Investiture(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
         {
+            if (IsBundestagRound(round) && round.Phase >= 2) { FourteenDaysBallot(country, g, round); return; }   // §712: in the fourteen days the Bundestag votes on persons
             Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             bool bundestag = IsBundestagRound(round);
             string title = bundestag
@@ -3251,6 +3255,158 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// §712 (Elias's ruling of 2026-10-01, item 3: "The 14-day ballot is a vote on the person: signers vote for their nominee, and members choose
+        /// among the nominated candidates"). Art. 63 Abs. 3 GG: "Wird der Vorgeschlagene nicht gewählt, so kann der Bundestag binnen vierzehn Tagen
+        /// nach dem Wahlgange mit mehr als der Hälfte seiner Mitglieder einen Bundeskanzler wählen." A ballot in the fourteen days puts EVERY
+        /// nomination then standing before the Bundestag at once (GO-BT § 4 Abs. 2, <see cref="Nominated"/>) - the formateur whose tabling called it
+        /// among them; the player's party only where the player tabled. Each party votes by the ballot's tally (<see cref="Tally"/>): a nomination's
+        /// signers are the members who would vote for it, so they vote for their nominee; a candidate with a majority of the members is elected and
+        /// its government drawn as the final ballot draws one (<see cref="ElectedGovernment"/>). None elected, every nomination in the ballot has
+        /// stood (§706's premise: a nomination stands once in the fourteen days) and the round asks for the next, if any stands - else the days run
+        /// out to the ballot the most votes win (Abs. 4). Before §712 a ballot in the fourteen days was the formateur's investiture: the members who
+        /// had signed a nomination did not vote for it (the review of §706, note A).
+        /// </summary>
+        private void FourteenDaysBallot(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round)
+        {
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
+            int IndexOf(string key) { for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == key) { return p; } } return -1; }
+            string player = country.PlayerPartyAbbrev;
+            Dictionary<string, string> committed = Commitments(country, round, round.Proposal);
+            List<string> candidates = FourteenDaysCandidates(country, round, chamber, parties, round.Proposal, committed, out string how);
+            Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> cast, committed);
+            string leader = candidates[0];
+            foreach (string c in candidates) { if (votes[c] > votes[leader]) { leader = c; } }
+            int majority = MajorityOf(country);
+            bool elected = votes[leader] >= majority;
+            var tally = new List<string>();
+            foreach (string c in candidates) { tally.Add(CandidateOf(country, round, c) + " " + votes[c]); }
+
+            var sides = new List<DivisionSide>();
+            foreach ((string party, string votedFor, string why) in cast)
+            {
+                int s = elected ? (votedFor == leader ? 1 : votedFor == null ? 0 : -1) : (votedFor == null ? 0 : -1);
+                sides.Add(new DivisionSide { Abbrev = party, ShortName = parties[IndexOf(party)].ShortName, Seats = SeatsOf(country, party), Side = s, Alignment = s,
+                    Reason = votedFor == null ? why : "votes for " + CandidateOf(country, round, votedFor) + " - " + why });
+            }
+            string title = $"Chancellor's election (Art. 63 Abs. 3 GG): {string.Join(", ", tally)} - "
+                + (elected ? $"{CandidateOf(country, round, leader)} elected, a majority of the members" : $"no candidate elected ({majority} a majority of the members)");
+            country.Divisions.Append(title, CurrentDate, elected ? 1f : -1f, elected, 0f, (int)BillAxis.Fiscal, sides);
+            country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: a ballot in the fourteen days (Art. 63 Abs. 3 GG) on the nominations standing ({how}): {string.Join(", ", tally)} - "
+                + (elected ? $"{CandidateOf(country, round, leader)} is elected with a majority of the members, {majority}" : $"none reaches a majority of the members, {majority}"));
+            Debug.Log($"SPEAKER: {country.Id} - {title}");
+            foreach (string c in candidates) { if (!round.StoodInPhase2.Contains(c)) { round.StoodInPhase2.Add(c); } }   // §706: each stood once in the fourteen days
+            if (elected)
+            {
+                Elections.FormationProposal government = ElectedGovernment(country, round, leader, round.Proposal, out Elections.ProposalVerdict verdict, out bool seatedByGroup);
+                if (government != null)
+                {
+                    round.Proposal = government;
+                    Install(country, g, round, verdict, $"the chancellor's election {round.Occasion}: {CandidateOf(country, round, leader)} elected in the fourteen days with a majority of the members, {votes[leader]} (Art. 63 Abs. 3 GG)");
+                    if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {CandidateOf(country, round, leader)}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
+                    return;
+                }
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {CandidateOf(country, round, leader)} is elected, and no government can be drawn on its party; the round goes on");
+            }
+            round.Rejections++;
+            if (CurrentDate > round.SecondPhaseUntil) { PluralityBallot(country, g, round); return; }
+            AskNext(country, round);
+        }
+
+        /// <summary>§712 (the review's defect 1): the parties a tabled government binds - where every invited party accepts it, each cabinet partner and
+        /// supporter (the player's party included, where it accepted) votes for its formateur's candidate in the ballot it calls. Null where none.</summary>
+        private Dictionary<string, string> Commitments(Country country, Elections.SpeakerRound round, Elections.FormationProposal proposal)
+        {
+            if (proposal == null || string.IsNullOrEmpty(proposal.Formateur)) { return null; }
+            Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
+            if (!verdict.AllAccept) { return null; }
+            var bound = new Dictionary<string, string>();
+            foreach (string p in proposal.CabinetParties) { if (p != proposal.Formateur) { bound[p] = proposal.Formateur; } }
+            foreach (string p in proposal.Supporters) { if (p != proposal.Formateur) { bound[p] = proposal.Formateur; } }
+            return bound;
+        }
+
+        /// <summary>
+        /// §712 (the review's defect 4): what a proposal the player would table faces in the Bundestag's ballot in the fourteen days - the same
+        /// nominations, the same tally and the same commitments the ballot itself reads (<see cref="FourteenDaysBallot"/>): the votes for its
+        /// formateur's candidate, for every other candidate, and the majority of the members. False outside a Bundestag round in the fourteen days.
+        /// </summary>
+        public bool ProjectPersonBallot(CountryId countryId, Elections.FormationProposal proposal, out int forCandidate, out int forOthers, out int majority)
+        {
+            forCandidate = forOthers = majority = 0;
+            Country country = _world?.GetCountry(countryId);
+            Elections.SpeakerRound round = RoundOf(countryId);
+            if (country == null || round == null || proposal == null || !IsBundestagRound(round) || round.Phase < 2) { return false; }
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
+            Dictionary<string, string> committed = Commitments(country, round, proposal);
+            List<string> candidates = FourteenDaysCandidates(country, round, chamber, parties, proposal, committed, out string _);
+            Dictionary<string, int> votes = Tally(country, round, chamber, parties, candidates, out List<(string Party, string For, string Reason)> _, committed);
+            foreach (KeyValuePair<string, int> kv in votes) { if (kv.Key == proposal.Formateur) { forCandidate = kv.Value; } else { forOthers += kv.Value; } }
+            majority = MajorityOf(country);
+            return true;
+        }
+
+        /// <summary>§712 (the second pass, defect 5, and its note on drift): a ballot in the fourteen days' candidates, ONE rule for the ballot and the
+        /// sheet's projection - the nominations standing with the tabled government's commitments in the signing (a bound party signs its
+        /// formateur's nomination, never a rival's), less any that has stood, the player's only where the player tabled; the formateur's tabling is
+        /// its nomination.</summary>
+        private List<string> FourteenDaysCandidates(Country country, Elections.SpeakerRound round, Elections.CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties,
+            Elections.FormationProposal proposal, IReadOnlyDictionary<string, string> committed, out string how)
+        {
+            string player = country.PlayerPartyAbbrev;
+            List<string> candidates = Nominated(country, round, chamber, parties, pluralityBallot: false, out how, committed);
+            candidates.RemoveAll(c => round.StoodInPhase2.Contains(c) || (c == player && proposal.Formateur != player));
+            if (!candidates.Contains(proposal.Formateur)) { candidates.Insert(0, proposal.Formateur); }
+            return candidates;
+        }
+
+        /// <summary>
+        /// §712: the government a candidate elected by the Bundestag forms - shared by the ballot in the fourteen days and the ballot the most votes win
+        /// (§705's rule, moved here unchanged): the proposal its own party TABLED in the round where it carries every invited partner's acceptance
+        /// and splits no group; else, for a candidate not the player's, its party's draft with every invited partner accepting - the player's party
+        /// never drafted in unasked; else its party and its parliamentary group alone (a group governs as one, the game's premise). Null where no
+        /// government can be drawn.
+        /// </summary>
+        private Elections.FormationProposal ElectedGovernment(Country country, Elections.SpeakerRound round, string winner, Elections.FormationProposal tabled,
+            out Elections.ProposalVerdict verdict, out bool seatedByGroup)
+        {
+            string player = country.PlayerPartyAbbrev;
+            Elections.FormationProposal government = null;
+            verdict = null;
+            seatedByGroup = false;
+            if (tabled != null && tabled.Formateur == winner)
+            {
+                government = tabled;
+                verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
+                if (!verdict.AllAccept || verdict.Investiture == null || verdict.Investiture.SplitsJointGroup) { government = null; }
+            }
+            else if (winner != player)
+            {
+                string decline = string.IsNullOrEmpty(player) ? null : player + ">" + winner;
+                bool added = decline != null && !round.Declines.Contains(decline);
+                if (added) { round.Declines.Add(decline); }
+                government = DraftProposal(country, round, winner);
+                if (added) { round.Declines.Remove(decline); }
+                verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
+                if (Involves(government, player) || !verdict.AllAccept || verdict.Investiture == null || verdict.Investiture.SplitsJointGroup) { government = null; }   // (B) a split group is no government
+            }
+            if (government == null)
+            {
+                government = new Elections.FormationProposal { Formateur = winner };
+                government.CabinetParties.Add(winner);
+                if (SeatedGroupPartner(country, winner) is string winnerPartner)
+                {
+                    government.CabinetParties.Add(winnerPartner);
+                    if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {CandidateOf(country, round, winner)}'s cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
+                }
+                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
+                government.FreezeTabled(country, CurrentDate, _world);
+                verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
+            }
+            return verdict?.Investiture == null ? null : government;
+        }
+
+        /// <summary>
         /// §705: Art. 63 Abs. 4 GG - "Kommt eine Wahl innerhalb dieser Frist nicht zustande, so findet unverzüglich ein neuer Wahlgang statt, in dem
         /// gewählt ist, wer die meisten Stimmen erhält." A BALLOT, NOT A FORMATION (the review's defect 3: the first cut elected the government the
         /// most seats accepted - in phase 3 none holds, so every draft was a party alone and the largest group won by default):
@@ -3308,33 +3464,8 @@ namespace PoliSim.Simulation
             // else its party and group alone. The player's own candidate stands on its party and group alone. [AUTHORED-DRAFT] a parliamentary
             // group governs as one: where the elected candidate's group partner is the player's party, it sits in the cabinet by the group's rule
             // (the review's third pass, B and C - leaving it out split the Union, and drawing no government left Germany under a caretaker for good).
-            Elections.FormationProposal government = null;
-            Elections.ProposalVerdict verdict = null;
-            bool seatedByGroup = false;
-            if (winner != player)
-            {
-                string decline = string.IsNullOrEmpty(player) ? null : player + ">" + winner;
-                bool added = decline != null && !round.Declines.Contains(decline);
-                if (added) { round.Declines.Add(decline); }
-                government = DraftProposal(country, round, winner);
-                if (added) { round.Declines.Remove(decline); }
-                verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
-                if (Involves(government, player) || !verdict.AllAccept || verdict.Investiture == null || verdict.Investiture.SplitsJointGroup) { government = null; }   // (B) a split group is no government
-            }
+            Elections.FormationProposal government = ElectedGovernment(country, round, winner, null, out Elections.ProposalVerdict verdict, out bool seatedByGroup);   // §712: the shared rule, unchanged
             if (government == null)
-            {
-                government = new Elections.FormationProposal { Formateur = winner };
-                government.CabinetParties.Add(winner);
-                if (SeatedGroupPartner(country, winner) is string winnerPartner)
-                {
-                    government.CabinetParties.Add(winnerPartner);
-                    if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {candidate}'s cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
-                }
-                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
-                government.FreezeTabled(country, CurrentDate, _world);
-                verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
-            }
-            if (verdict?.Investiture == null)
             {
                 round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {candidate} is elected with the most votes, and no government can be drawn on its party (Art. 63 Abs. 4 GG); the outgoing government serves on");
                 round.Stage = Elections.RoundStage.Concluded;
@@ -3360,7 +3491,7 @@ namespace PoliSim.Simulation
         /// Also what signs a nomination (§706): the members who would vote for a candidate sign it.
         /// </summary>
         private Dictionary<string, int> Tally(Country country, Elections.SpeakerRound round, Elections.CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties,
-            List<string> candidates, out List<(string Party, string For, string Reason)> cast)
+            List<string> candidates, out List<(string Party, string For, string Reason)> cast, IReadOnlyDictionary<string, string> committed = null)
         {
             int IndexOf(string key) { for (int p = 0; p < parties.Count; p++) { if (parties[p].Abbrev == key) { return p; } } return -1; }
             string player = country.PlayerPartyAbbrev;
@@ -3390,7 +3521,14 @@ namespace PoliSim.Simulation
                     cast.Add((key, choice, reason));
                     continue;
                 }
-                if (choice != null) { reason = "its own candidate"; }
+                if (committed != null && committed.TryGetValue(key, out string partnerOf) && candidates.Contains(partnerOf))
+                {
+                    // §712 (the review's defect 1): a party that accepted a tabled government votes for its candidate - the coalition's word; without it a
+                    // coalition every partner accepted could fail its own ballot
+                    choice = partnerOf;
+                    reason = "accepted " + partnerOf + "'s government - votes for its candidate (the coalition's word, the game's premise)";
+                }
+                else if (choice != null) { reason = "its own candidate"; }
                 else if (!parties[p].HasPosition) { reason = "holds no surveyed position to be near to - abstains (the game's premise)"; }   // the SSW: compatibility 0 everywhere would hand its vote to the order's first
                 else
                 {
@@ -3433,7 +3571,7 @@ namespace PoliSim.Simulation
         /// it stood in the round.
         /// </summary>
         private List<string> Nominated(Country country, Elections.SpeakerRound round, Elections.CoalitionFormation.Chamber chamber, IReadOnlyList<PoliticalParty> parties,
-            bool pluralityBallot, out string how)
+            bool pluralityBallot, out string how, IReadOnlyDictionary<string, string> committed = null)
         {
             string player = country.PlayerPartyAbbrev;
             var pool = new List<string>();
@@ -3453,7 +3591,7 @@ namespace PoliSim.Simulation
             var standing = new List<string>(pool);
             for (int pass = 0; pass < pool.Count + 1 && standing.Count > 0; pass++)
             {
-                Dictionary<string, int> backing = Tally(country, round, chamber, parties, standing, out _);
+                Dictionary<string, int> backing = Tally(country, round, chamber, parties, standing, out _, committed);   // §712 (the second pass, defect 5): a bound party signs its formateur's nomination, never a rival's
                 string weakest = null;
                 foreach (string c in standing)
                 {
@@ -3466,7 +3604,7 @@ namespace PoliSim.Simulation
             }
             if (standing.Count > 0) { how = F($"signed by a quarter of the members, {quarter} of {members}, or a Fraktion of a quarter (GO-BT § 4 Abs. 2)"); return standing; }
             if (!pluralityBallot) { how = F($"no nomination reaches a quarter of the members, {quarter} of {members} (GO-BT § 4 Abs. 2)"); return standing; }
-            Dictionary<string, int> fallback = Tally(country, round, chamber, parties, pool, out _);
+            Dictionary<string, int> fallback = Tally(country, round, chamber, parties, pool, out _, committed);
             List<string> byFraktion = pool.FindAll(c => GroupSeats(country, c) >= fivePercent || fallback[c] >= fivePercent);
             if (byFraktion.Count > 0) { how = F($"none reached a quarter of the members; signed by a Fraktion or five per cent, {fivePercent} of {members} (GO-BT § 4 Abs. 3)"); return byFraktion; }
             how = "none reached a quarter, none a Fraktion or five per cent - every member may nominate (GO-BT § 4 Abs. 3)";
@@ -3625,7 +3763,10 @@ namespace PoliSim.Simulation
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} declines {round.Asked}'s offer and stays in opposition");
             Elections.FormationProposal without = DraftProposal(country, round, round.Asked);
             Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
-            if (verdict != null && verdict.Passes) { TableAndVote(country, round, without); return true; }
+            // §712 (the review's defect 2): in the fourteen days the ballot decides, not the investiture - the government without the player is tabled
+            // where every invited party accepts it and it splits no group, and its candidate meets the nominations standing
+            bool personBallot = IsBundestagRound(round) && round.Phase >= 2;
+            if (verdict != null && (personBallot ? verdict.AllAccept && verdict.Investiture != null && !verdict.Investiture.SplitsJointGroup : verdict.Passes)) { TableAndVote(country, round, without); return true; }
             round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - {(IsBundestagRound(round) ? "the next party in the order stands its candidate" : "the Speaker moves on")}");
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Asked)) { round.StoodInPhase2.Add(round.Asked); }   // §706: its nomination has had its turn
             AskNext(country, round);

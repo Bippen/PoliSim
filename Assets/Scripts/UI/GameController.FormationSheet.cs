@@ -321,23 +321,34 @@ namespace PoliSim.UI
             {
                 CoalitionFormation.CabinetEvaluation inv = verdict.Investiture;
                 int majority = totalSeats / 2 + 1;
-                DrawVerdictSlot(new Rect(bar.x, bar.y, 20f * ux, bar.height), inv.Wins);
+                // §712 (the review's defect 4): in the fourteen days the tabling meets a ballot on persons, not the investiture - the bar shows that ballot as
+                // it would stand (the votes for your candidate against those for the other nominations, the tick a majority of the members)
+                (bool shownBallot, int forYours, int forOthers, int needed) = round.Bundestag ? FormationPersonBallot(draft) : (false, 0, 0, 0);   // cached by draft and day (the second pass, defect 6)
+                bool person = shownBallot;
+                int carrying = person ? forYours : inv.SupportedSeats, against = person ? forOthers : inv.OpposedSeats;
+                bool wins = person ? forYours >= needed : inv.Wins;
+                if (person) { majority = needed; }
+                DrawVerdictSlot(new Rect(bar.x, bar.y, 20f * ux, bar.height), wins);
                 float trackW = Mathf.Min(366f * ux, bar.width - 28f * ux - StatsUnit(110f));
                 float trackH = StatsUnit(12f);
                 var track = new Rect(bar.x + 28f * ux, bar.y + Mathf.Round((bar.height - trackH) * 0.5f), trackW, trackH);
                 if (Event.current.type == EventType.Repaint)
                 {
                     PoliSimTheme.Rule(track, PoliSimTheme.MagnitudeStepEmpty);
-                    PoliSimTheme.Rule(new Rect(track.x, track.y, Mathf.Round(track.width * Mathf.Clamp01(inv.SupportedSeats / (float)totalSeats)), track.height), PoliSimTheme.TextPrimary);
+                    PoliSimTheme.Rule(new Rect(track.x, track.y, Mathf.Round(track.width * Mathf.Clamp01(carrying / (float)totalSeats)), track.height), PoliSimTheme.TextPrimary);
                     float tick = track.x + Mathf.Round(track.width * majority / (float)totalSeats);
                     PoliSimTheme.Rule(new Rect(tick - 1f, track.y - StatsUnit(4f), 2f, track.height + StatsUnit(8f)), PoliSimTheme.Bad);
                 }
-                float fx = DrawFigurePair(track.xMax + StatsUnit(10f), bar, inv.SupportedSeats.ToString(CultureInfo.InvariantCulture), "⁄");
-                PoliSimWidgets.MeasuredLabel(new Rect(fx + StatsUnit(4f), bar.y, StatsUnit(40f), bar.height), inv.OpposedSeats.ToString(CultureInfo.InvariantCulture), figure);
+                float fx = DrawFigurePair(track.xMax + StatsUnit(10f), bar, carrying.ToString(CultureInfo.InvariantCulture), "⁄");
+                PoliSimWidgets.MeasuredLabel(new Rect(fx + StatsUnit(4f), bar.y, StatsUnit(40f), bar.height), against.ToString(CultureInfo.InvariantCulture), figure);
                 SlipAnchor(Shifted(bar, rightShift), "investiture");
-                book.Anchors["investiture"] = new SlipContent(inv.Wins ? "IT WOULD PASS" : "IT WOULD FAIL")
-                    .Add(string.Format(CultureInfo.InvariantCulture, "AS IT WOULD STAND: {0} CARRYING IT, {1} AGAINST", inv.SupportedSeats, inv.OpposedSeats))
-                    .Add(string.Format(CultureInfo.InvariantCulture, "THE TICK: A MAJORITY OF THE CHAMBER, {0} OF {1}", majority, totalSeats));
+                book.Anchors["investiture"] = person
+                    ? new SlipContent(wins ? "YOUR CANDIDATE WOULD BE ELECTED" : "YOUR CANDIDATE WOULD NOT BE ELECTED")
+                        .Add(string.Format(CultureInfo.InvariantCulture, "THE BALLOT ON THE NOMINATIONS STANDING: {0} FOR YOURS, {1} FOR THE OTHERS", carrying, against))
+                        .Add(string.Format(CultureInfo.InvariantCulture, "THE TICK: A MAJORITY OF THE MEMBERS, {0} OF {1}", majority, totalSeats))
+                    : new SlipContent(inv.Wins ? "IT WOULD PASS" : "IT WOULD FAIL")
+                        .Add(string.Format(CultureInfo.InvariantCulture, "AS IT WOULD STAND: {0} CARRYING IT, {1} AGAINST", inv.SupportedSeats, inv.OpposedSeats))
+                        .Add(string.Format(CultureInfo.InvariantCulture, "THE TICK: A MAJORITY OF THE CHAMBER, {0} OF {1}", majority, totalSeats));
             }
             y += bar.height;
             if (_formationRefusal != null)

@@ -180,10 +180,14 @@ namespace PoliSim.EditorTools
                         string.Join("+", appointed.Cabinet), appointed.PmParty, sincere ? "sincere votes" : "NOT STATED"));
                 // §706 (GO-BT § 4 Abs. 2): in the fourteen days only a nomination signed by a quarter of the members stands - the Union's (208 of 630,
                 // a Fraktion of a quarter) and the Greens' (signed by the 269 who would vote for him); the AfD's 152 fall short and nobody signs them.
-                // Each stands once; then no nomination stands and the fourteen days run out with no candidate before the Bundestag
-                Check(inPhase2.Exists(e => e.Title.Contains("Friedrich Merz (CDU)")) && inPhase2.Exists(e => e.Title.Contains("Robert Habeck (Grune)")) && inPhase2.Count == 2
+                // Each stands once; then no nomination stands and the fourteen days run out with no candidate before the Bundestag. §712 (item 3, the
+                // ballot a vote on the person): the two stand in ONE ballot - the signers vote for their nominee (the Greens' 269), the Union for its
+                // own (208) - and neither has a majority of the members
+                DivisionRecord persons = inPhase2.Count == 1 ? inPhase2[0] : null;
+                Check(persons != null && persons.Title.Contains("Friedrich Merz (CDU) 208") && persons.Title.Contains("Robert Habeck (Grune) 269") && persons.Title.Contains("no candidate elected")
+                      && persons.Sides.Exists(s => s.Abbrev == "SPD" && (s.Reason ?? string.Empty).Contains("votes for Robert Habeck"))
                       && !ballots.Exists(e => e.Title.Contains("Alice Weidel")) && r3.Log.Exists(l => l.Contains("GO-BT § 4 Abs. 2") && l.Contains("with no candidate before the Bundestag")),
-                    F("(e) GO-BT § 4 Abs. 2: the fourteen days ballot the Union's candidate (a Fraktion of a quarter) and the Greens' (signed by the members who would vote for him), each once; the AfD's 152 stand in none; then no candidate is before the Bundestag ({0})",
+                    F("(e) GO-BT § 4 Abs. 2 and §712: the fourteen days hold one ballot on the persons nominated - the Union's candidate (a Fraktion of a quarter) and the Greens' (signed by the members who vote for him), each once; the AfD's 152 stand in none; then no candidate is before the Bundestag ({0})",
                         string.Join("; ", inPhase2.ConvertAll(e => e.Title))));
                 if (last != null) { foreach (DivisionSide s in last.Sides) { sb.Append(F("    side      {0} {1} ({2}): {3}\n", s.Abbrev, s.Side > 0 ? "for" : s.Side < 0 ? "other" : "abstains", s.Seats, s.Reason)); } }
                 Check(extra == DateTime.MinValue && !r3.Log.Exists(l => l.Contains("breaks off")) && ballots.Count >= 3,
@@ -238,6 +242,36 @@ namespace PoliSim.EditorTools
                       && r6 != null && r6.Log.Exists(l => l.Contains("sits in") && l.Contains("the game's premise")) && g6.Government.Breaks.Exists(b => b.Contains("a group votes and governs as one")) && (csuSide?.Reason ?? string.Empty).Contains("the game's premise"),
                     F("(e3) the CSU, the player's party, declined the CDU's offer: in the ballot it votes with its group ({0}); {1} - {2} takes office led by {3}, the CSU in it by the group's rule",
                         csuSide?.Reason ?? "no side", final6?.Title ?? "no ballot", string.Join("+", g6.Government.Cabinet), g6.Government.PmParty));
+
+                // (e4) §712 (the review's defects 1 and 3, and the elected branch no check reached): the CDU, the player's party, passes the Bundespräsident's
+                // proposal; in the fourteen days its nomination (a Fraktion of a quarter) is asked FIRST, it tables CDU+CSU+SPD, and the SPD - having
+                // accepted - votes for its candidate (the coalition's word): Merz elected in the fourteen days with a majority of the members
+                (SimulationManager s7, Country g7) = Open(hosts, "CDU", table25, poll25);
+                g7.ElectionHistory.Add(new ElectionRecord { Date = poll25, CountryId = CountryId.Germany.ToString(), Method = ElectionMethod.GermanyNationalProportional });
+                Days(s7, 1);
+                SpeakerRound r7 = s7.RoundOf(CountryId.Germany);
+                bool passedFirst = false, tabledSecond = false;
+                int phaseAtTabling = 0;
+                for (int d = 0; d < 120 && r7 != null && r7.Open; d++)
+                {
+                    if (r7.Stage == RoundStage.PlayerAsked && r7.Phase <= 1 && !passedFirst) { passedFirst = s7.PassFormation(CountryId.Germany, out string _); }
+                    else if (r7.Stage == RoundStage.PlayerAsked && r7.Phase >= 2 && !tabledSecond)
+                    {
+                        FormationProposal mine = s7.DraftProposal(g7, r7, "CDU");
+                        phaseAtTabling = r7.Phase;
+                        tabledSecond = s7.SubmitFormation(CountryId.Germany, mine, out ProposalVerdict _, out string why7);
+                        if (!tabledSecond) { sb.Append("    log e4    the CDU's draft not tabled: ").Append(why7).Append('\n'); s7.PassFormation(CountryId.Germany, out string _); }
+                    }
+                    else if (r7.Stage == RoundStage.OfferToPlayer) { s7.AnswerOffer(CountryId.Germany, false, out string _); }
+                    Days(s7, 1);
+                }
+                if (r7 != null) { foreach (string line in r7.Log) { sb.Append("    log e4    ").Append(line).Append('\n'); } }
+                DivisionRecord persons7 = g7.Divisions.Entries.Find(e => e.Title.StartsWith("Chancellor's election (Art. 63 Abs. 3 GG)", StringComparison.Ordinal));
+                Check(passedFirst && tabledSecond && phaseAtTabling == 2 && persons7 != null && persons7.Title.Contains("Friedrich Merz (CDU) elected")
+                      && persons7.Sides.Exists(s => s.Abbrev == "SPD" && (s.Reason ?? string.Empty).Contains("accepted CDU's government"))
+                      && g7.Government.PmParty == "CDU" && Sorted(g7.Government.Cabinet) == Sorted(new List<string> { "CDU", "CSU", "SPD" }) && (g7.Government.Basis ?? string.Empty).Contains("Art. 63 Abs. 3"),
+                    F("(e4) §712: the CDU passes the Bundespräsident's proposal, is asked first in the fourteen days, tables {0} and is elected on the persons' ballot - '{1}'; the SPD: {2}",
+                        string.Join("+", g7.Government.Cabinet), persons7?.Title ?? "no ballot", persons7?.Sides.Find(s => s.Abbrev == "SPD")?.Reason ?? "no side"));
 
                 // (f) the reference: the real result and the government that formed
                 bool hasRef = WorldClock.TryReference(CountryId.Germany, poll25, out WorldClock.Reference reference);

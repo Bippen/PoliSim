@@ -11548,6 +11548,24 @@ namespace PoliSim.UI
             return _formationVerdict;
         }
 
+        private int _personBallotVersion = -1;
+        private System.DateTime _personBallotDate = System.DateTime.MinValue;
+        private (bool Shown, int ForYours, int ForOthers, int Needed) _personBallot;
+
+        /// <summary>§712 (the second pass, defect 6): the ballot in the fourteen days as the draft would face it (<see cref="SimulationManager.ProjectPersonBallot"/>)
+        /// - recomputed only when the draft changes or the day turns, as the verdict beside it is; a frame never re-forms the chamber.</summary>
+        private (bool Shown, int ForYours, int ForOthers, int Needed) FormationPersonBallot(PoliSim.Elections.FormationProposal draft)
+        {
+            if (_personBallotVersion != _formationDraftVersion || _personBallotDate != _simulationManager.CurrentDate)
+            {
+                bool shown = _simulationManager.ProjectPersonBallot(PlayerCountryId, draft, out int forYours, out int forOthers, out int needed);
+                _personBallot = (shown, forYours, forOthers, needed);
+                _personBallotVersion = _formationDraftVersion;
+                _personBallotDate = _simulationManager.CurrentDate;
+            }
+            return _personBallot;
+        }
+
         /// <summary>
         /// The bill-status line's text. Split out for the same reason as
         /// <see cref="BuildFoldedInterruptText"/>: it is drawn here and MEASURED in

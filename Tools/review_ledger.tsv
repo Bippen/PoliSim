@@ -178,3 +178,4 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	3d94c957ca34eb365aca9984c9e3
 file	Assets/Scripts/Simulation/SimulationManager.cs	b11664305a6deafa67d0f843b4b59a28f70898f9703db9473e8a5e50b13bd525	reviewed	2026-09-30	s698	Reviews/2026-09-30_s698_constructive_vote.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	14b9ee89efb278bfa6af63e91ff00a13c3a8feb28c662cf6343d061ce65007f4	reviewed	2026-10-01	s705	Reviews/2026-09-30_s705_chancellors_election.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	dc58ea1ad015fc1b6e3ed4ab674ffffb46e0309dc2b52d6c2233250074f42c63	reviewed	2026-10-01	s706	Reviews/2026-10-01_s706_treasury_nominations.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	726497d0cff1bcd6e648369682e34efd14b9ccea0a2f3ae510bbf1a57fca3335	reviewed	2026-10-01	s712	Reviews/2026-10-01_s712_fourteen_days_ballot.md	-
