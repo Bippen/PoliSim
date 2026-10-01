@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace PoliSim.UI
@@ -89,6 +90,32 @@ namespace PoliSim.UI
             if (PoliSimWidgets.Button(tab, GUIContent.none, GUIStyle.none)) { DeskProvenance.On = !DeskProvenance.On; }
         }
 
+        private static Texture2D _v35CardTexture;
+        private static GUIStyle _v35CardStyle;
+        private static int _v35CardStyleHeight = -1;
+
+        /// <summary>§728: the card as a GUILayout box - the card paper inside a 1 px edge (a 3 x 3 nine-slice), the 12 x 14 padding - for content laid out
+        /// in the flow (a chart's head and plot), whose own rects then stay in the flow's coordinates. Rebuilt when the window's height changes.</summary>
+        private static GUIStyle V35CardStyle()
+        {
+            if (_v35CardTexture == null)
+            {
+                _v35CardTexture = new Texture2D(3, 3, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, hideFlags = HideFlags.HideAndDontSave };
+                var px = new Color[9];
+                for (int i = 0; i < 9; i++) { px[i] = i == 4 ? V35.CardPaper : V35.CardEdge; }
+                _v35CardTexture.SetPixels(px);
+                _v35CardTexture.Apply();
+            }
+            if (_v35CardStyle == null || _v35CardStyleHeight != UiScreen.Height)
+            {
+                _v35CardStyleHeight = UiScreen.Height;
+                int padX = Mathf.RoundToInt(V35.Px(V35.CardPadX)), padY = Mathf.RoundToInt(V35.Px(V35.CardPadY));
+                _v35CardStyle = new GUIStyle { border = new RectOffset(1, 1, 1, 1), padding = new RectOffset(padX, padX, padY, padY), margin = new RectOffset(0, 0, 0, 0) };
+                _v35CardStyle.normal.background = _v35CardTexture;
+            }
+            return _v35CardStyle;
+        }
+
         /// <summary>A card: the card paper behind its edge. Returns the inside, the composition's 12 x 14 padding taken off.</summary>
         private static Rect DrawV35Card(Rect r)
         {
@@ -131,6 +158,14 @@ namespace PoliSim.UI
             return head;
         }
 
+        /// <summary>A section head across <paramref name="r"/>: the serif in capitals at the floor, in the muted ink (the composition's 15 px small caps -
+        /// IMGUI has none, and the floor holds).</summary>
+        private void DrawV35SectionHead(Rect r, string text)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            PoliSimWidgets.MeasuredLabel(r, text.ToUpperInvariant(), V35Serif(V35.Floor, PoliSimTheme.TextMuted, TextAnchor.LowerLeft));
+        }
+
         /// <summary>The content's rect under a card head.</summary>
         private static Rect V35UnderHead(Rect inner, Rect head)
         {
@@ -160,6 +195,108 @@ namespace PoliSim.UI
             float nameWidth = Mathf.Max(1f, row.xMax - figureWidth - V35.Px(8f) - x);
             PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, nameWidth, row.height), V35Fit(name, nameFace, nameWidth, out _), nameFace);
             PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), V35.ListRule);
+        }
+
+        /// <summary>§728 (UI v3.5): a TILE's content, the composition's T - the icon, the figure with its state glyph and its change, the name, and under
+        /// them a share's gauge or a history's sparkline. A glyph of ABSENT takes the figure's slot (never a zero); DATED follows the figure.</summary>
+        private sealed class V35TileData
+        {
+            public string Icon;
+            public Color IconInk = PoliSimTheme.TextSecondary;
+            public string Figure;
+            public Symbol? Glyph;
+            public string Change;
+            public Color ChangeInk = PoliSimTheme.TextMuted;
+            public string Name;
+            /// <summary>A share's gauge under the head, 0..1; negative for none.</summary>
+            public float Fill = -1f;
+            public Color FillInk = PoliSimTheme.Neutral;
+            /// <summary>A kept history at the head's right; null for none.</summary>
+            public IReadOnlyList<float> Spark;
+            public float? SparkReference;
+            /// <summary>The sparkline as a band under the head (the gauge's place) rather than at its right - for a tile too narrow for both.</summary>
+            public bool SparkBelow;
+            /// <summary>The figure's size: the live tile's 24, a Society tile's 21.</summary>
+            public float FigurePx = V35.Figure;
+        }
+
+        /// <summary>A tile's height for its content - the head (the icon, or the figure over the name), and the gauge's band under it where it has one.</summary>
+        private float V35TileHeight(V35TileData t)
+        {
+            float figure = Mathf.Ceil(V35Mono(t.FigurePx, PoliSimTheme.TextPrimary, bold: true).CalcSize(new GUIContent("0")).y);
+            float name = Mathf.Ceil(V35Serif(V35.Name, PoliSimTheme.TextPrimary).CalcSize(new GUIContent("Ag")).y);
+            float head = Mathf.Max(V35.Px(V35.CardIcon), figure + 2f + name);
+            float below = t.Fill >= 0f ? V35.Px(10f) + V35.Px(8f) : t.Spark != null && t.SparkBelow ? V35.Px(8f) + V35.Px(24f) : 0f;
+            return V35.Px(V35.CardPadY) * 2f + head + below;
+        }
+
+        /// <summary>
+        /// §728: a tile in <paramref name="r"/> (its card included). Returns the rect of its figure and name - the reading's anchor for its slip. The
+        /// figure is never cut: where it does not fit the guard is told (a cut number is a wrong number).
+        /// </summary>
+        private Rect DrawV35Tile(Rect r, V35TileData t)
+        {
+            Rect inner = DrawV35Card(r);
+            GUIStyle figureFace = V35Mono(t.FigurePx, PoliSimTheme.TextPrimary, bold: true);
+            GUIStyle changeFace = V35Mono(15f, t.ChangeInk, bold: true);
+            GUIStyle nameFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
+            float figureHeight = Mathf.Ceil(figureFace.CalcSize(new GUIContent("0")).y);
+            float nameHeight = Mathf.Ceil(nameFace.CalcSize(new GUIContent("Ag")).y);
+            float iconSide = V35.Px(V35.CardIcon);
+            float headHeight = Mathf.Max(iconSide, figureHeight + 2f + nameHeight);
+            var head = new Rect(inner.x, inner.y, inner.width, headHeight);
+            DrawV35Icon(new Rect(head.x, head.y + Mathf.Round((headHeight - iconSide) * 0.5f), iconSide, iconSide), t.Icon, t.IconInk);
+            float x = head.x + iconSide + V35.Px(12f);
+            float sparkWidth = t.Spark != null && !t.SparkBelow ? V35.Px(100f) : 0f;
+            float right = head.xMax - (sparkWidth > 0f ? sparkWidth + V35.Px(8f) : 0f);
+            float y = head.y + Mathf.Round((headHeight - figureHeight - 2f - nameHeight) * 0.5f);
+            var reading = new Rect(x, y, Mathf.Max(1f, right - x), figureHeight + 2f + nameHeight);
+            if (Event.current.type != EventType.Repaint) { return reading; }
+
+            float fx = x;
+            if (t.Glyph == Symbol.Absent)
+            {
+                float side = Mathf.Round(figureHeight * 0.8f);
+                DrawStateGlyph(new Rect(fx, y + Mathf.Round((figureHeight - side) * 0.5f), side, side), Symbol.Absent, PoliSimTheme.TextMuted);
+                fx += side + 6f;
+            }
+            else if (!string.IsNullOrEmpty(t.Figure))
+            {
+                float w = Mathf.Ceil(figureFace.CalcSize(new GUIContent(t.Figure)).x) + 2f;
+                UiOverflowGuard.Check(t.Figure, new Vector2(w, figureHeight), new Vector2(Mathf.Max(1f, right - fx), figureHeight), figureFace.fontSize);
+                GUI.Label(new Rect(fx, y, w, figureHeight), t.Figure, figureFace);
+                fx += w + 6f;
+                if (t.Glyph.HasValue)
+                {
+                    float side = Mathf.Round(changeFace.fontSize * 1.0f);
+                    DrawStateGlyph(new Rect(fx, y + Mathf.Round((figureHeight - side) * 0.5f), side, side), t.Glyph.Value, PoliSimTheme.TextSecondary);
+                    fx += side + 6f;
+                }
+            }
+            if (!string.IsNullOrEmpty(t.Change))
+            {
+                float cw = Mathf.Ceil(changeFace.CalcSize(new GUIContent(t.Change)).x) + 2f;
+                UiOverflowGuard.Check(t.Change, new Vector2(cw, figureHeight), new Vector2(Mathf.Max(1f, right - fx), figureHeight), changeFace.fontSize);
+                GUI.Label(new Rect(fx, y, cw, figureHeight), t.Change, changeFace);
+            }
+            float nameWidth = Mathf.Max(1f, right - x);
+            PoliSimWidgets.MeasuredLabel(new Rect(x, y + figureHeight + 2f, nameWidth, nameHeight), V35Fit(t.Name, nameFace, nameWidth, out _), nameFace);
+
+            if (t.Spark != null)
+            {
+                var spark = t.SparkBelow
+                    ? new Rect(inner.x, head.yMax + V35.Px(8f), inner.width, V35.Px(24f))
+                    : new Rect(head.xMax - sparkWidth, head.y + Mathf.Round((headHeight - V35.Px(24f)) * 0.5f), sparkWidth, V35.Px(24f));
+                if (t.Spark.Count >= 2) { GraphRenderer.DrawSparkline(spark, t.Spark, PoliSimTheme.Neutral, reference: t.SparkReference); }
+                else { DeskDottedBaseline(spark); }
+            }
+            if (t.Fill >= 0f)
+            {
+                var track = new Rect(inner.x, head.yMax + V35.Px(10f), inner.width, V35.Px(8f));
+                PoliSimTheme.Rule(track, PoliSimTheme.BarTrack);
+                PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(t.Fill), track.height), t.FillInk);
+            }
+            return reading;
         }
 
         /// <summary>The † dense view's line at the foot of a card's inside (V35_ASK rule 3): the head's slip as one dotted line. Returns the inside less

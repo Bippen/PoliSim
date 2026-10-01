@@ -45,6 +45,20 @@ namespace PoliSim.UI
             return "Δ " + (change > 0f ? "+" : Minus) + Mathf.Abs(change).ToString(format, CultureInfo.InvariantCulture) + suffix;
         }
 
+        /// <summary>§728 (UI v3.5, rule 5): the change as a v3.5 head prints it - ▲ or ▼ and the magnitude in the reading's own unit (the arrow carries the
+        /// direction its ink judges); a FLAT move its zero, with no arrow. The slip keeps <see cref="DeltaText"/>'s Δ form as the definition.</summary>
+        public static string ArrowText(float first, float last, ReadingUnit unit, MoneyUnit? money, int decimals = 1)
+        {
+            float change = last - first;
+            string format = decimals <= 1 ? "0.0" : "0.00";
+            string suffix = unit == ReadingUnit.Percent ? " pp" : string.Empty;
+            if (unit != ReadingUnit.Money && IsFlat(change, decimals)) { return 0f.ToString(format, CultureInfo.InvariantCulture) + suffix; }
+            string magnitude = unit == ReadingUnit.Money && money.HasValue
+                ? UiFormat.Money(Mathf.Abs(change), money.Value)
+                : Mathf.Abs(change).ToString(format, CultureInfo.InvariantCulture) + suffix;
+            return (change > 0f ? "▲ " : change < 0f ? "▼ " : string.Empty) + magnitude;
+        }
+
         /// <summary>19a's FLAT: a move below half the printed step rounds to nothing, so it carries no verdict and no sign.</summary>
         public static bool IsFlat(float change, int decimals = 1) => Mathf.Abs(change) < (decimals <= 1 ? PrintedStep : PrintedStep * 0.1f) * 0.5f;
 

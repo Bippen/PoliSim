@@ -50,6 +50,7 @@ namespace PoliSim.EditorTools
             ("NOTHING ON THIS PAGE READS WARM OR COOL", "23b ⑫: explained the page, not the absence - cut"),
             ("AND NO SCORE IS DRAWN IN ITS PLACE", "23b ⑫: the same sentence"),
             ("APPROVAL", "renamed ON THE PAGE, not removed: the pair's row reads APPROVAL RATING, the card's own name (one name per reading)"),
+            ("DEU", "R-SP5 B (ruled): a map's chips carry the two-letter code - DEU reads DE on the chip, the name leading its slip"),
         };
 
         private static string N(string s)

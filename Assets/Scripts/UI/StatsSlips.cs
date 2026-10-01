@@ -94,6 +94,9 @@ namespace PoliSim.UI
             book.Anchors["fiscal:percapita"] = new SlipContent("GDP PER CAPITA").Add("LEVEL · NO GAUGE").Add("CURRENCY PER PERSON - NOT A SHARE OF GDP");
             book.Anchors["fiscal:notyet"] = new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("NOT YET COMPUTED — ADVANCE A YEAR")
                 .Add("A SHARE OF A YEAR NO YEAR HAS CLOSED");
+            // §728 (UI v3.5): the readings the composition's sections do not carry, kept as their own section
+            book.Anchors["readings:head"] = new SlipContent("MORE READINGS").Add("THE HEADLINE READINGS NO OTHER SECTION OF THE SHEET CARRIES")
+                .Add("THE DESK'S STRIP CARRIES ALL TEN");
             // §725 (Elias's ruling): the deficit row is neutral ink unless it breaches the country's statutory rule - then the warning, and this slip names the rule
             if (deficitPercentOfGdp.HasValue && FiscalRules.Breaches(home.Id, FiscalRules.Measure.Deficit, deficitPercentOfGdp.Value, out string deficitRule))
             {
@@ -274,8 +277,9 @@ namespace PoliSim.UI
                 if (flat) { book.Anchors[id + "/flat"] = new SlipContent(SymbolRegistry.Word(Symbol.TrendFlat)).Add(delta + " · BELOW ITS PRINTED PRECISION").Add("NO VERDICT"); }
                 else if (chart.HigherIsBetter == false)
                 {
+                    // §728 (UI v3.5): the ✓/✗ that led a lower-is-better head retired - the ▲▼'s ink carries the verdict - so its words ride the change's slip
                     Symbol verdict = last < first ? Symbol.Good : Symbol.Bad;
-                    book.Anchors[id + "/verdict"] = new SlipContent(SymbolRegistry.Word(verdict)).Add(delta + " · " + firstText + " → " + lastText).Add("LOWER IS BETTER");
+                    book.Anchors[id + "/delta"].Add(SymbolRegistry.Word(verdict) + " · LOWER IS BETTER");
                 }
             }
             // §725 (Elias's ruling): the warning state is the LEVEL's, past the country's statutory rule - named here, the national rule beside it

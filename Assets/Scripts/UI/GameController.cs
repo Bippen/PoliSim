@@ -7797,23 +7797,14 @@ namespace PoliSim.UI
             // sub-tabs is the title's slip. The slips are off in the dense view, as on People.
             _statsSlipPage = !DeskProvenance.On;
             BeginSlipAnchors();
-            DrawPageHeaderWithProvenanceTab("Statistics", UiPalette.GetAreaColor(UiPalette.SystemArea.Global));
-            Rect titleRow = GUILayoutUtility.GetLastRect();
-            StatsAnchor(new Rect(titleRow.x, titleRow.y, Mathf.Min(titleRow.width, _headerStyle.CalcSize(new GUIContent("Statistics")).x), titleRow.height), "title");
-            GUILayout.BeginHorizontal();
-            float subTabShare = SubTabShare(availableWidth, 2);
-            // Instance #13: the row's height is measured once (SubTabRowHeight) and shared between the
-            // buttons and the content reserve below - see the accessor's own doc for the ECB case.
-            // §568 (D10): the row's icons are the row's - Domestic has no area of its own, so this row carries none either.
-            bool statisticsIcons = SubTabRowFitsIcons(subTabShare, "Domestic", "International")
-                && EveryAreaHasAnIcon(UiPalette.SystemArea.Neutral, UiPalette.SystemArea.Global);
-            float subTabRowHeight = SubTabRowHeight(subTabShare, statisticsIcons, "Domestic", "International");
-            DrawSubCategoryButton("Domestic", StatisticsCategory.Domestic, ref _statisticsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("International", StatisticsCategory.International, ref _statisticsCategory, subTabShare, subTabRowHeight, statisticsIcons ? UiPalette.SystemArea.Global : UiPalette.SystemArea.Neutral);
-            GUILayout.EndHorizontal();
-            GUILayout.Space(6f);
+            // §728 (UI v3.5): the title, its two tabs and the † on one row, as the composition sets them - the tabs are words, the active one underlined
+            float titleHeight = V35.Px(44f);
+            Rect titleRow = GUILayoutUtility.GetRect(10f, titleHeight, GUILayout.ExpandWidth(true), GUILayout.Height(titleHeight));
+            int clickedTab = DrawStatsV35Title(titleRow, _statisticsCategory == StatisticsCategory.Domestic ? 0 : 1);
+            if (clickedTab >= 0) { _statisticsCategory = clickedTab == 0 ? StatisticsCategory.Domestic : StatisticsCategory.International; }
+            GUILayout.Space(V35.Px(4f));
 
-            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f;   // D-ST: the subtitle's band is the title's slip now
+            float contentHeight = availableHeight - titleHeight - V35.Px(4f);   // §728: the title row is the page's one header
             float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
             // Board 2a (2026-08-28): the grids lay their columns out from the content width on the
             // Layout event (GameController.Statistics.cs), so it is derived here, not measured a frame late.
@@ -7825,7 +7816,9 @@ namespace PoliSim.UI
             switch (_statisticsCategory)
             {
                 case StatisticsCategory.Domestic:
+                    V35.FloorGuarded = true;   // §728: the v3.5 page - a shrink below the floor is an overflow here
                     DrawDomesticStatisticsContent(contentWidth);
+                    V35.FloorGuarded = false;
                     break;
                 case StatisticsCategory.International:
                     DrawInternationalStatisticsContent();
@@ -10830,7 +10823,7 @@ namespace PoliSim.UI
             // unsigned - and ABSENT before a year has closed; the chart as the domestic series draw (its Δ in money, its feet slips, the trade balance's
             // seed 0.00 held until the first year's close is empty paper, not a history).
             StatHistory history = _playerCountry.History;
-            DrawStatsPagedHead("TRADE", "trade:head", "trade:pager", _statsTradeSection, GraphRenderer.PagesFor(history.TradeBalance.Quarterly));
+            DrawStatsPagedHead("Trade", "trade:head", "trade:pager", _statsTradeSection, GraphRenderer.PagesFor(history.TradeBalance.Quarterly), 0f);   // §728: the v3.5 head (0: the row's own width)
             GUILayout.Space(StatsUnit(4f));
             // Pass 6: the tariff pass-through that actually printed over the last period (the closing FiscalPeriod's applied term on the report); null
             // before the first boundary.

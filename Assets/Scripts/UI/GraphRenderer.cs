@@ -87,6 +87,23 @@ namespace PoliSim.UI
         /// <summary>§725 (Elias's ruling): the statutory rule the head's level breaches, or null - this draw's, set by <see cref="Draw"/>.</summary>
         private System.Func<float, string> _breachOf;
 
+        /// <summary>§728 (UI v3.5): the faces of a v3.5 tile head - the area's icon, the figure, the change, the name - and the plot's axis face at the floor.</summary>
+        public sealed class V35HeadFaces
+        {
+            public Texture2D Icon;
+            public Color IconInk;
+            public float IconSide;
+            public GUIStyle Figure, Delta, Name, Axis;
+        }
+
+        /// <summary>§728 (UI v3.5): THE HEAD AS A v3.5 TILE - the icon, the figure with its ◇ and the ▲▼ change, the name under them - set by a v3.5
+        /// surface for its own draw (the Statistics sheet's live series) and cleared after; the Riksbank's and People's charts keep board 8b's head until
+        /// their passes. Null: the board-8b head.</summary>
+        public V35HeadFaces V35Head;
+
+        /// <summary>The plot's axis face: the v3.5 head's (at the floor) while one is set, board 8b's otherwise.</summary>
+        private GUIStyle AxisFace => V35Head?.Axis ?? _axisLabelStyle;
+
         /// <summary>0 = most recent window (the only page that can show a next-turn projection); increases going further back in time. Clamped to the valid range fresh every Draw call against the CURRENT history length, so a page index that's now out of range (e.g. right after a fresh game/country switch with less history) never gets stuck showing a blank page.</summary>
         private int _pageFromEnd;
 
@@ -449,7 +466,7 @@ namespace PoliSim.UI
             // D-ST: the gutter fits its own two labels - a negative money label ("-US$2.89B") ran past the Statistics sheet's smaller gutter and lost its head
             if (_axisLabelStyle != null)
             {
-                float widest = Mathf.Max(_axisLabelStyle.CalcSize(new GUIContent(FormatValue(_lastMax))).x, _axisLabelStyle.CalcSize(new GUIContent(FormatValue(_lastMin))).x);
+                float widest = Mathf.Max(AxisFace.CalcSize(new GUIContent(FormatValue(_lastMax))).x, AxisFace.CalcSize(new GUIContent(FormatValue(_lastMin))).x);
                 gutter = Mathf.Max(gutter, Mathf.Ceil(widest) + TickWidth + 4f);
             }
             return new Rect(rect.x + gutter, rect.y, Mathf.Max(10f, rect.width - gutter), rect.height);
@@ -457,6 +474,7 @@ namespace PoliSim.UI
 
         private void DrawHeadRow(string title, IReadOnlyList<float> visibleWindow, int firstLive, bool? higherIsBetter, GUIStyle labelStyle, bool deltaInPoints, int totalPages, GraphSection section, bool datedHead)
         {
+            if (V35Head != null) { DrawV35HeadRow(title, visibleWindow, firstLive, higherIsBetter, deltaInPoints, datedHead); return; }
             bool repaint = Event.current.type == EventType.Repaint;
             int liveCount = visibleWindow == null ? 0 : visibleWindow.Count - firstLive;
             float last = liveCount >= 1 ? visibleWindow[visibleWindow.Count - 1] : float.NaN;
@@ -527,6 +545,82 @@ namespace PoliSim.UI
                 DrawPager(totalPages);
             }
             GUILayout.EndHorizontal();
+        }
+
+        /// <summary>
+        /// §728 (UI v3.5): the head as a v3.5 tile, on one rect - the icon at the left, then the figure (the window's last point, ◇ DATED where the
+        /// caller says so) and its change as ▲▼ in the outcome's ink (neutral where there is no consensus, the warning past a statutory rule - §725),
+        /// and the name in the serif under them. The lower-is-better ✓/✗ the board-8b head led with retires: the arrow's ink carries the verdict now;
+        /// the breach keeps its ✗, after the change, carrying the rule's slip. The head's rects are recorded as before, for the sheet's slips.
+        /// </summary>
+        private void DrawV35HeadRow(string title, IReadOnlyList<float> visibleWindow, int firstLive, bool? higherIsBetter, bool deltaInPoints, bool datedHead)
+        {
+            V35HeadFaces f = V35Head;
+            bool repaint = Event.current.type == EventType.Repaint;
+            int liveCount = visibleWindow == null ? 0 : visibleWindow.Count - firstLive;
+            float last = liveCount >= 1 ? visibleWindow[visibleWindow.Count - 1] : float.NaN;
+            float first = liveCount >= 1 ? visibleWindow[firstLive] : float.NaN;
+            float change = liveCount >= 2 ? last - first : 0f;
+            bool flat = liveCount >= 2 && _unit != ReadingUnit.Money && StatsReadings.IsFlat(change, _deltaDecimals);
+            bool breached = _breachOf != null && liveCount >= 1 && _breachOf(last) != null;
+            if (repaint) { WindowFirstLive = first; WindowLast = last; }
+
+            float figureHeight = Mathf.Ceil(f.Figure.CalcSize(new GUIContent("0")).y);
+            float nameHeight = Mathf.Ceil(f.Name.CalcSize(new GUIContent("Ag")).y);
+            float headHeight = Mathf.Max(f.IconSide, figureHeight + 2f + nameHeight);
+            Rect head = GUILayoutUtility.GetRect(10f, headHeight, GUILayout.ExpandWidth(true));
+            if (!repaint) { return; }
+
+            if (f.Icon != null)
+            {
+                Color before = GUI.color;
+                GUI.color = f.IconInk;
+                GUI.DrawTexture(new Rect(head.x, head.y + Mathf.Round((headHeight - f.IconSide) * 0.5f), f.IconSide, f.IconSide), f.Icon, ScaleMode.ScaleToFit);
+                GUI.color = before;
+            }
+            float x = head.x + f.IconSide + Mathf.Round(f.IconSide / 3f);
+            float y = head.y + Mathf.Round((headHeight - figureHeight - 2f - nameHeight) * 0.5f);
+            if (liveCount >= 1)
+            {
+                string figure = deltaInPoints ? last.ToString("0.00", CultureInfo.InvariantCulture) : FormatHead(last);
+                float w = Mathf.Ceil(f.Figure.CalcSize(new GUIContent(figure)).x) + 2f;
+                HeadFigureRect = new Rect(x, y, w, figureHeight);
+                HeadFigureText = figure;
+                GUI.Label(HeadFigureRect, figure, f.Figure);
+                x += w + 4f;
+                if (datedHead)
+                {
+                    float side = Mathf.Round(f.Delta.fontSize * 1.0f);
+                    HeadDatedRect = new Rect(x, y + Mathf.Round((figureHeight - side) * 0.5f), side, side);
+                    SymbolRegistry.Draw(HeadDatedRect, Symbol.Dated, PoliSimTheme.TextSecondary, f.Delta);
+                    x += side + 6f;
+                }
+                if (liveCount >= 2)
+                {
+                    string deltaText = StatsReadings.ArrowText(first, last, _unit, _moneyUnit, _deltaDecimals);
+                    var ink = flat ? UiPalette.NeutralChangeColor : breached ? V35.Warning : UiPalette.GetDeltaColor(change, higherIsBetter);
+                    GUIStyle delta = new GUIStyle(f.Delta);
+                    delta.normal.textColor = ink;
+                    float dw = Mathf.Ceil(delta.CalcSize(new GUIContent(deltaText)).x) + 2f;
+                    HeadDeltaRect = new Rect(x, y, dw, figureHeight);
+                    HeadDeltaText = deltaText;
+                    GUI.Label(HeadDeltaRect, deltaText, delta);
+                    x += dw + 6f;
+                }
+                if (breached)
+                {
+                    float side = Mathf.Round(f.Delta.fontSize * 1.1f);
+                    HeadVerdictRect = new Rect(x, y + Mathf.Round((figureHeight - side) * 0.5f), side, side);
+                    HeadVerdict = Symbol.Bad;
+                    SymbolRegistry.Draw(HeadVerdictRect, Symbol.Bad, V35.Warning, f.Delta);
+                }
+            }
+            if (!string.IsNullOrEmpty(title))
+            {
+                float nx = head.x + f.IconSide + Mathf.Round(f.IconSide / 3f);
+                HeadTitleRect = new Rect(nx, y + figureHeight + 2f, Mathf.Max(1f, head.xMax - nx), nameHeight);
+                PoliSimWidgets.MeasuredLabel(HeadTitleRect, title, f.Name);
+            }
         }
 
         /// <summary>The head's figure in the reading's own form: money in its money, a percentage at one decimal with its unit, a score at one decimal.</summary>
@@ -605,12 +699,12 @@ namespace PoliSim.UI
         {
             // 8b: the labels sit in the gutter at the plot's left, right-aligned, a 4 px tick each; the plot's left edge is a hairline.
             // D-ST (23a ⑬): the middle label is gone - it is always the mean of the two ends; the midline stays in the plot
-            float labelHeight = _axisLabelStyle.fontSize + 4f;
+            float labelHeight = AxisFace.fontSize + 4f;
             float labelWidth = Mathf.Max(8f, plot.x - TickWidth - 2f - rect.x);
-            _axisLabelStyle.alignment = TextAnchor.MiddleRight;
+            AxisFace.alignment = TextAnchor.MiddleRight;
             foreach ((float value, float y) in new[] { (_lastMax, plot.y), (_lastMin, plot.y + plot.height - labelHeight) })
             {
-                GUI.Label(new Rect(rect.x, y, labelWidth, labelHeight), FormatValue(value), _axisLabelStyle);
+                GUI.Label(new Rect(rect.x, y, labelWidth, labelHeight), FormatValue(value), AxisFace);
                 PoliSimTheme.Rule(new Rect(plot.x - TickWidth, y + labelHeight * 0.5f - 0.5f, TickWidth, 1f), PoliSimTheme.Hairline);
             }
             PoliSimTheme.Rule(new Rect(plot.x - 0.5f, plot.y, 1f, plot.height), PoliSimTheme.Hairline);
@@ -682,11 +776,11 @@ namespace PoliSim.UI
         /// <summary>Right-aligned label at the threshold line's own Y position, in ThresholdLineColor so it visually pairs with the line it describes rather than blending into the plain axis labels on the left.</summary>
         private void DrawThresholdLabelOverlay(Rect rect, float thresholdValue, string thresholdLabel)
         {
-            float labelHeight = _axisLabelStyle.fontSize + 4f;
+            float labelHeight = AxisFace.fontSize + 4f;
             float normalized = _lastMax > _lastMin ? Mathf.InverseLerp(_lastMin, _lastMax, thresholdValue) : 0.5f;
             float y = rect.y + rect.height * (1f - normalized);
 
-            var style = new GUIStyle(_axisLabelStyle) { alignment = TextAnchor.MiddleRight };
+            var style = new GUIStyle(AxisFace) { alignment = TextAnchor.MiddleRight };
             // D6: the label is TEXT at 10-16 px and takes the darkened Caution ink; the line it
             // describes keeps the fill amber - the same idea at the two weights the palette split.
             style.normal.textColor = PoliSimTheme.Caution;

@@ -8,6 +8,7 @@ convention's GENERATED destination (`CLAUDE.md`): a derived figure lives in a ma
 |---|---|---|
 | `docs/generated/LEVER_MAP.md` | `PoliSim.EditorTools.LeverMapDump` | `-executeMethod PoliSim.EditorTools.LeverMapDump.Run [-levermapout=<path>]` |
 | `docs/generated/PEOPLE_AT_REST_REMOVED.tsv` | `Tools/text_baseline.pl removed` (§666) | `perl Tools/text_baseline.pl removed <before labels.tsv> <after labels.tsv> 04_demographics People EMPLOYMENT` - the before and after dry films the file's header names |
+| `docs/generated/STATS_AT_REST_REMOVED.tsv` | `Tools/text_baseline.pl removed-set` (§728) | `perl Tools/text_baseline.pl removed-set <before labels.tsv> <after labels.tsv> Statistics 02a_statistics_domestic 02a_statistics_domestic_deep 02a_statistics_domestic_rows 02b_statistics_international 02b_statistics_international_deep 02b_statistics_international_rows` - before = drys698 (pre-D-ST), after = the latest Statistics pass's dry film, as the file's header names |
 | `docs/generated/BUDGET_PREMISE.md` | `PoliSim.EditorTools.BudgetPremiseDump` | `-executeMethod PoliSim.EditorTools.BudgetPremiseDump.Run [-premiseout=<path>]` |
 | `docs/generated/ENERGY_LAYER_PREMISE.md` | `PoliSim.EditorTools.EnergyLayerDump` | `-executeMethod PoliSim.EditorTools.EnergyLayerDump.Run [-energyout=<path>]` |
 | `docs/generated/POTENTIAL_PREMISE.md` | `PoliSim.EditorTools.PotentialPremiseDump` | `-executeMethod PoliSim.EditorTools.PotentialPremiseDump.Run` |
