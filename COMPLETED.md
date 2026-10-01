@@ -36032,3 +36032,28 @@ The cheap bar **89 of 89** (`cheap725b`, after the guard's fix; `cheap725` 89 of
 **Tier UI.** Named `n726` (DeskRoleCheck, DeadStateCheck, UnwiredSubsystemCheck, MetaTextCheck, InkContrastCheck, NumberLocaleCheck) 6 of 6; the dry film `drys726c` (row `drys726`) **Sweden 155, Germany 147, 0 failed, 0 overflows, 0 escapes** with the floor guard armed (`drys726`, `drys726b` clean too - the floor guard was not seen to fire on this pass: the one shrink the first real film showed, the fiscal year's long entry, was cut by `V35Fit` before the guard was written); the real films `film726a`/`film726b` (to Statistics) and **`film726s` (Sweden, 1280, a window, `-shotstates`): 186 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas text violations across 11 asserts, the edge guard 0 clipped, exit 0** - `01c_desk` the composition's two rows, `01e_desk_event` and `93a_desk_government_budget` scrolled to their cards (*Effects of the government's budget*, the arrows' captions at 14 px, the net budget's arrow in the neutral ink).
 
 The cheap bar **89 of 89** (`cheap726`).
+
+
+## 727. PS-5 WITH S7, PART TWO: THE VOTE THAT FEEDS THE COUNT, MEASURED BEFORE IT GOES LIVE - FIRST ROUNDS INHERITED FROM THE SEJM, RUN-OFFS BY TRANSFER IN TWO SPACES, BACKTESTED ON 2020 AND 2025 WITH NOTHING FITTED; WHICH SPACE GOES LIVE IS ELIAS'S (2026-10-01)
+
+**The ruling** (the main session: *PS-5's model parts continue in between* - first, *the presidential vote model*; §720's next part: *the candidates' first-vote shares from the parties' ... and the run-off's transfers, backtested on 2020 and 2025 from the 2019 and 2023 Sejm*).
+
+**The instrument (`PresidentialVoteBacktest`, Editor, in the cheap bar - now 90 checks).** It reads only what is on disk and sourced: the PKW's four rounds (`presidential_votes.csv`, §720), **the 2019 Sejm's national votes off the PKW notice as saved** (`raw/records/eli_DU_2019_1955_pkw_sejm2019.html`, Dział I rozdz. 3: PiS 8 051 935 · KO 5 060 355 · SLD 2 319 946 · PSL 1 578 523 · Konf 1 256 953 of 18 470 710 valid), the 2023 Sejm's (`returns_2023.md`), the **CHES 2024 rows for Poland's seven parties** (`positions/raw/CHES_2024_final_v2.csv`: lrecon, galtan, nationalism, the EU position - Polska 2050, PSL and Razem included, which the roster leaves unplaced), and **Poland's own τ (8.00) and economic weight (0.54)** from `PartySystems.TryElectorate` - nothing chosen here. Each candidate's committee and CHES row is a stated DERIVED mapping (Hołownia 2020 at Polska 2050's 2024 row, an anachronism said; Braun at Konfederacja's, the list he was elected on; Zandberg at Razem's; independents unplaced).
+
+**The pure spatial model was tried first and is not a candidate**: the calibrated electorate choosing among the candidates gives PiS **67.2 %** in any run-off (record 51.03 and 50.89) and Trzaskowski 15.8 % in the 2025 first round (record 31.36) - the calibration reproduces Sejm shares only with the live chain's loyalty and prior.
+
+**What the instrument reads** (pinned - a change to the positions, the returns or the rule moves it and the check fails):
+
+| | 2020 | 2025 |
+|---|---|---|
+| first round, inherited from the previous Sejm - mean absolute miss over the field | **5.68 pp** (Hołownia −13.87: no committee to inherit; Biedroń +10.48, Kosiniak-Kamysz +6.28: the Sejm's lists do not carry over) | **5.86 pp** (Nawrocki +7.22, Mentzen −7.36, Braun −6.34, Hołownia +9.97: the 2023-25 movement - Konfederacja's rise, Trzecia Droga's fall) |
+| run-off from the record's first round - transfers on **the vote model's plane** (lrecon, galtan) | Duda 50.10 (record 51.03, −0.93) | Nawrocki **40.13** (record 50.89, −10.75) - **THE WRONG WINNER**: Konfederacja is economically beside KO on this plane, and its voters went the other way |
+| run-off from the record's first round - transfers in **the sovereignty space** (galtan, nationalism, EU, equal weights) | Duda **52.89** (+1.86), the winner of record | Nawrocki **52.81** (+1.92), the winner of record |
+| the whole chain (the modelled first round, then the sovereignty run-off) | Duda 55.61, the winner of record | Nawrocki **45.16 - THE WRONG WINNER**: the 2023 Sejm's opinion carried into 2025 |
+
+**The reading.** The transfer step is the model's to make, and **the sovereignty space gets both run-offs' winners right within two points with nothing fitted**; the plane the live vote model uses gets 2025 wrong by eleven. The first round's misses are the opinion that moves between a Sejm and a presidential year, plus the candidates' own pull - in the game the first round reads the parties' standing **on the polling day** (the live prediction), not the last Sejm, so the backtest's inheritance step overstates the error the game will carry; the candidates' pull stays unmodelled and is said.
+
+**Owed to Elias (a ruling, before it goes live):** which transfer space the game's own presidential run-offs use - **the sovereignty space is the evidence's answer**; and whether an independent with no committee (Hołownia 2020, Stanowski 2025) may stand in the game's field at all, since the model has no share for one to inherit. **Not built here** (part three): the game's own 2025 election on the clock, the president's veto and its 3/5 override (Art. 122 ust. 5), the 41 districts and the committees' thresholds, the PiS start.
+
+**Tier (Editor instrument, data read-only).** Named `n727b` (PresidentialVoteBacktest, PresidentialElectionDiagnostic, MojibakeCheck, UnwiredSubsystemCheck) 4 of 4.
+The cheap bar **90 of 90** (`cheap727`).
