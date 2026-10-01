@@ -103,11 +103,12 @@ namespace PoliSim.EditorTools
                 Check(!movedDuring && (whyNot ?? string.Empty).Contains("ART. 63"),
                     F("(d) no constructive vote while the chancellor's election runs - the old Bundestag sits, and a successor it elected would never be discharged: {0}", whyNot ?? "MOVED"));
                 Days(s1, SpeakerRound.ConsultationDays);
-                Check(r1.Stage == RoundStage.VotePending && r1.VoteOn == r1.Convenes && r1.Proposal != null && Sorted(r1.Proposal.CabinetParties) == Sorted(new List<string> { "CDU", "CSU", "SPD" }),
-                    F("(d) {0:yyyy-MM-dd}: the CDU forms {1}; the ballot waits for the new Bundestag - {2:yyyy-MM-dd}", s1.CurrentDate, r1.Proposal != null ? string.Join("+", r1.Proposal.CabinetParties) : "nothing", r1.VoteOn));
+                Check(r1.Stage == RoundStage.VotePending && r1.VoteOn == r1.FormationDue && r1.FormationDue == new DateTime(2025, 5, 6) && r1.Proposal != null && Sorted(r1.Proposal.CabinetParties) == Sorted(new List<string> { "CDU", "CSU", "SPD" }),
+                    F("(d) {0:yyyy-MM-dd}: the CDU forms {1}; the ballot waits for the formation's time on record (§714: 72 days, the median of 2021's 73 and 2025's 72) - {2:yyyy-MM-dd}, the record's own day", s1.CurrentDate, r1.Proposal != null ? string.Join("+", r1.Proposal.CabinetParties) : "nothing", r1.VoteOn));
                 while (s1.CurrentDate < r1.Convenes.AddDays(-1)) { Days(s1, 1); }
                 bool inOfficeEve = g1.Government == outgoing && !outgoing.Caretaker;
                 Days(s1, 1);
+                while (s1.CurrentDate < r1.FormationDue) { Days(s1, 1); }   // §714: the caretaker governs until the formation's time has run
                 GovernmentRecord elected = g1.Government;
                 DivisionRecord ballot = g1.Divisions.Entries.Count > 0 ? g1.Divisions.Entries[g1.Divisions.Entries.Count - 1] : null;
                 int forSeats = 0;
@@ -115,14 +116,15 @@ namespace PoliSim.EditorTools
                 Check(inOfficeEve && outgoing.Caretaker && outgoing.Breaks.Exists(b => b.Contains("Art. 69 Abs. 2")),
                     "(d) the eve of the convening the outgoing government is in office; on the day its office ends and it serves on (Art. 69 Abs. 2-3) - "
                     + (outgoing.Breaks.Count > 0 ? outgoing.Breaks[outgoing.Breaks.Count - 1] : "no break recorded"));
-                Check(elected != outgoing && !r1.Open && Sorted(elected.Cabinet) == Sorted(new List<string> { "CDU", "CSU", "SPD" }) && elected.PmParty == "CDU" && elected.FormedOn == new DateTime(2025, 3, 25)
+                Check(elected != outgoing && !r1.Open && Sorted(elected.Cabinet) == Sorted(new List<string> { "CDU", "CSU", "SPD" }) && elected.PmParty == "CDU" && elected.FormedOn == new DateTime(2025, 5, 6)
                       && (elected.Basis ?? string.Empty).Contains("Art. 63 Abs. 2") && ballot != null && ballot.Motion && ballot.Passed
                       && ballot.Title.StartsWith("Chancellor's election (Art. 63 Abs. 2 GG): Friedrich Merz (CDU)", StringComparison.Ordinal) && ballot.Title.Contains("Friedrich Merz (CDU) elected, a majority of the members") && forSeats >= 328,   // §713: phase 1 a vote on the person
                     F("(d) {0:yyyy-MM-dd}: '{1}' - {2} for, 316 needed; {3} takes office led by {4} ({5})", s1.CurrentDate, ballot?.Title ?? "no ballot", forSeats, string.Join("+", elected.Cabinet), elected.PmParty, elected.Basis));
-                // The record's chancellor was elected on 6 May 2025, after 72 days of coalition talks; the game's formateur consults for seven days
-                // (premise 7), so its chancellor is elected on the convening day - a readout of the premise, not a claim about the talks.
+                // The record's chancellor was elected on 6 May 2025, after 72 days of coalition talks. §714 (Elias's ruling, item 5): the formation takes
+                // the country's time on record - the mean of 2021's 73 and 2025's 72 days, 72 - so the game's chancellor is elected on the record's day too
+                // (premise 7's gap, owed in the overnight report, closed by the ruling).
                 foreach (string line in r1.Log) { sb.Append("    log       ").Append(line).Append('\n'); }
-                sb.Append(F("    readout   the game elects on {0:yyyy-MM-dd}, the record on 2025-05-06 (Merz, second ballot 325 of 618): the consultation is premise 7's seven days, the record's talks took 72\n", elected.FormedOn));
+                sb.Append(F("    readout   the game elects on {0:yyyy-MM-dd}, the record on 2025-05-06 (Merz, second ballot 325 of 618): the formation's time on record, 72 days (§714)\n", elected.FormedOn));
 
                 // The round rides the save with its Art. 63 fields (no version bump: before §705 no German round could exist in a save).
                 (SimulationManager s2, Country g2) = Open(hosts, "Linke", table25, poll25);
@@ -130,7 +132,7 @@ namespace PoliSim.EditorTools
                 Days(s2, 1 + SpeakerRound.ConsultationDays);
                 Persistence.SaveGame saved = Persistence.SaveGameService.CreateSaveGame(s2, s2.World, CountryId.Germany, null);
                 SpeakerRound back = Persistence.SaveGameService.Deserialize(Persistence.SaveGameService.Serialize(saved)).World.GetCountry(CountryId.Germany).Government.Round;
-                Check(back != null && back.Bundestag && back.Phase == 1 && back.Convenes == new DateTime(2025, 3, 25) && back.VoteOn == back.Convenes && back.Stage == RoundStage.VotePending,
+                Check(back != null && back.Bundestag && back.Phase == 1 && back.Convenes == new DateTime(2025, 3, 25) && back.VoteOn == new DateTime(2025, 5, 6) && back.FormationDue == new DateTime(2025, 5, 6) && back.Stage == RoundStage.VotePending,
                     F("(d) the tabled round rides the save: phase {0}, convenes {1:yyyy-MM-dd}, the ballot {2:yyyy-MM-dd}", back?.Phase ?? -1, back?.Convenes ?? DateTime.MinValue, back?.VoteOn ?? DateTime.MinValue));
 
                 // A save made after a pre-§705 German election: the government formed at once, dated the polling day. Loaded, the election is the one
@@ -166,13 +168,13 @@ namespace PoliSim.EditorTools
                 List<DivisionRecord> inPhase2 = ballots.FindAll(e => e.Title.Contains("Art. 63 Abs. 3"));
                 FieldInfo extraDate = typeof(SimulationManager).GetField("_extraElectionDate", BindingFlags.Instance | BindingFlags.NonPublic);
                 DateTime extra = extraDate != null ? (DateTime)extraDate.GetValue(s3) : DateTime.MaxValue;
-                Check(phase2On == new DateTime(2025, 3, 25) && secondUntil == new DateTime(2025, 4, 8) && inPhase2.Count >= 1 && inPhase2.TrueForAll(e => e.Date <= secondUntil),
+                Check(phase2On == new DateTime(2025, 5, 6) && secondUntil == new DateTime(2025, 5, 20) && inPhase2.Count >= 1 && inPhase2.TrueForAll(e => e.Date <= secondUntil),
                     F("(e) the Bundespräsident's candidate not elected on {0:yyyy-MM-dd}: the fourteen days run to {1:yyyy-MM-dd} (Art. 63 Abs. 3), {2} ballot(s) inside them, each on the day its candidate stood ({3})",
                         phase2On ?? DateTime.MinValue, secondUntil, inPhase2.Count, string.Join(", ", inPhase2.ConvertAll(e => e.Date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))));
                 // §706: the planted SPD>CDU sends the SPD's and the Linke's members to the Greens' candidate - they sign his nomination (GO-BT § 4 Abs. 2,
                 // [AUTHORED-DRAFT] the members who would vote for a candidate sign it) and vote for him: 85 + 120 + 64 = 269 against the Union's 208
                 bool sincere = last != null && last.Sides.Exists(s => (s.Reason ?? string.Empty).Contains("the game's premise: sincere votes"));
-                Check(pluralityOn == new DateTime(2025, 4, 9) && !r3.Open && appointed != outgoing3 && last != null
+                Check(pluralityOn == new DateTime(2025, 5, 21) && !r3.Open && appointed != outgoing3 && last != null
                       && last.Title.StartsWith("Chancellor's election (Art. 63 Abs. 4 GG): Robert Habeck (Grune) - elected with the most votes, 269", StringComparison.Ordinal)
                       && last.Title.Contains("appointed within seven days, not dissolved (Satz 3") && last.Sides.TrueForAll(s => !string.IsNullOrEmpty(s.Reason))
                       && appointed.PmParty == "Grune" && appointed.Cabinet.Contains("Grune") && (appointed.Basis ?? string.Empty).Contains("Art. 63 Abs. 4 Satz 3"),

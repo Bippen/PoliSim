@@ -83,6 +83,21 @@ namespace PoliSim.Elections
         /// passed there - each at most once, so a pass cannot re-ask the same party on the same day and hold the clock for good.</summary>
         public List<string> StoodInPhase2 = new List<string>();
 
+        /// <summary>§714 (Elias's ruling of 2026-10-01, item 5): after an election, the day the formation's time on record runs out - the polling day plus
+        /// <see cref="WorldClock.FormationDays"/>; no proposal comes to its vote before it, and the caretaker governs meanwhile. MinValue for a mid-term
+        /// round, a country with no formation on record, and a round saved before §714 (it loads as it was).</summary>
+        public DateTime FormationDue;
+
+        /// <summary>§714 (the review's defect 1): the day a proposal tabled on <paramref name="today"/> comes to its vote - ONE rule, read by the tabling
+        /// and by every line that tells the player the day: the Bundestag's not before it convenes nor before the formation's day (the same day once
+        /// both have passed, "ohne Aussprache"); the Riksdag's on the fourth day after the Speaker submits it (RF 6 kap. 4 §), and not before the
+        /// formation's day - the Speaker submits it when the formation's time has run.</summary>
+        public DateTime VoteDayIfTabled(DateTime today)
+        {
+            DateTime vote = Bundestag ? (today > Convenes ? today : Convenes) : today.AddDays(VoteDays);
+            return vote < FormationDue ? FormationDue : vote;
+        }
+
         /// <summary>§705: the round is the Bundestag's chancellor election - it carries the day the new Bundestag convenes.</summary>
         public bool Bundestag => Convenes != DateTime.MinValue;
 

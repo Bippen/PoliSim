@@ -293,6 +293,50 @@ namespace PoliSim.Elections
         /// <summary>Sets the world's epoch to this country's start. Called before the world is created; the epoch never moves while a world lives.</summary>
         public static void ApplyStart(CountryId id) => Simulation.SimulationManager.SetEpoch(StartDate(id));
 
+        /// <summary>
+        /// §714 (Elias's ruling of 2026-10-01, item 5: "Formation time comes from each country's recent formations, election date to installation,
+        /// derived from the record's own dates. The caretaker governs meanwhile"): the days a formation takes, from the record's own dates - for every
+        /// election of record, the first CABINET of record that took office after it (a caretaker entry is not a formation) within a year of it
+        /// ([AUTHORED-DRAFT] the window: a government that took office later is not that election's formation - the record lacks some, Löfven II,
+        /// Merkel IV, Conte I, and the next government of record then is a mid-term one, as Andersson's of 2021 is), the span polling day to
+        /// installation; the formation time is their MEDIAN in whole days, rounded down ([AUTHORED-DRAFT]). Germany: 73 (2021, Scholz) and 72 (2025, Merz) - 72;
+        /// Sweden: 37 (2022, Kristersson); Poland: 33 (2019) and 59 (2023) - 46; Italy: 27 (2022, Meloni); France: 60 (2024, Barnier - France holds
+        /// no round). Null where none is on record (the USA's presidency, whose term opens on a fixed day).
+        /// </summary>
+        public static int? FormationDays(CountryId id) => FormationDays(id, out _);
+
+        /// <summary>§714: the same, with each formation it averages - "2025-02-23 -> 2025-05-06, 72 days" - for the round's log and the checks.</summary>
+        public static int? FormationDays(CountryId id, out List<string> formations)
+        {
+            formations = new List<string>();
+            var spans = new List<int>();
+            foreach (ChamberOfRecord chamber in Chambers(id))
+            {
+                DateTime polled = chamber.ElectionDay;
+                if (polled == DateTime.MinValue) { continue; }
+                GovernmentOfRecord? first = null;
+                foreach (GovernmentOfRecord g in Governments(id))
+                {
+                    if (g.Kind != ExecutiveKind.Cabinet || g.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0) { continue; }
+                    if (g.From <= polled || g.From > polled.AddDays(FormationWindowDays)) { continue; }
+                    if (!first.HasValue || g.From < first.Value.From) { first = g; }
+                }
+                if (!first.HasValue) { continue; }
+                int days = (int)(first.Value.From - polled).TotalDays;
+                spans.Add(days);
+                formations.Add($"{polled:yyyy-MM-dd} -> {first.Value.From:yyyy-MM-dd}, {days} days ({first.Value.Head})");
+            }
+            if (spans.Count == 0) { return null; }
+            // [AUTHORED-DRAFT] the MEDIAN, whole days rounded down (the review of §714: it equals the mean while a country has at most two formations on
+            // record, and stays near the typical formation as the record grows - one long formation, Merkel IV's, would pull a mean far from the rest)
+            spans.Sort();
+            int mid = spans.Count / 2;
+            return spans.Count % 2 == 1 ? spans[mid] : (spans[mid - 1] + spans[mid]) / 2;
+        }
+
+        /// <summary>§714 [AUTHORED-DRAFT]: a cabinet that took office more than this many days after an election is not that election's formation.</summary>
+        public const int FormationWindowDays = 365;
+
         /// <summary>The polling day of the election a vintage names, or MinValue where the record bills it (France's XVIe).</summary>
         public static DateTime ElectionDayOf(CountryId id, ElectionVintage vintage)
         {

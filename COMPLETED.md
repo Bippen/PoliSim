@@ -35744,3 +35744,34 @@ Latent, stated: **the cost** - a formation per candidate every German day was ~1
 **The review** (`Reviews/2026-10-01_s713_every_ballot_persons.md` and the author's note): READY WITH ONE STRING (the phase-1 slip, fixed) and the two owed rulings; confirmed: the Riksdag's `Investiture` byte-identical, the Art. 63 quotes against [GG-63], the appointment premise against [GG-39] and [BT-KW25]. Ledger row: `SimulationManager.cs` at `1698acaf`, s713.
 
 **Tier SIMULATION + UI** (a money path - reviewed): named `n713b`, `n713c` clean, the sweep digest unchanged; the simulation bar **57 of 57**, both sentinels the baseline's (`sim713`, before the review's string edits, which no simulation check reads); the cheap bar **86 of 86** (`cheap713`); the dry film `drys713` (Sweden 155, Germany 147).
+
+
+## 714. FORMATION TIME FROM EACH COUNTRY'S RECORD: THE MEDIAN OF ITS FORMATIONS, POLLING DAY TO INSTALLATION, FROM THE RECORD'S OWN DATES; NO VOTE BEFORE IT, THE CARETAKER GOVERNS MEANWHILE - THE 2025 BUNDESTAG NOW ELECTS ON 6 MAY, THE RECORD'S DAY (2026-10-01)
+
+**The ruling** (Elias, 2026-10-01, item 5): *Formation time comes from each country's recent formations, election date to installation, derived from the record's own dates. The caretaker governs meanwhile.* (The overnight report's premise 7: the game elected Merz on 25 March, the record on 6 May.)
+
+**Built**:
+- **`WorldClock.FormationDays`**: for every election of record, the first CABINET of record that took office after it - a caretaker entry is not a formation - **within a year** ([AUTHORED-DRAFT] `FormationWindowDays` = 365: the record lacks some formations - Löfven II, Merkel IV, Conte I - and the next government of record is then a mid-term one, as Andersson's of 2021 is to 2018's election); the span polling day to installation; **the formation time is their median, in whole days, rounded down** ([AUTHORED-DRAFT] - the review's: equal to the mean while a country has at most two formations on record, and near the typical formation as the record grows):
+
+| country | formations on record | formation time |
+|---|---|---:|
+| Germany | 2021-09-26 -> 2021-12-08, 73 (Scholz); 2025-02-23 -> 2025-05-06, 72 (Merz) | **72** |
+| Sweden | 2022-09-11 -> 2022-10-18, 37 (Kristersson) | **37** |
+| Poland | 2019-10-13 -> 2019-11-15, 33 (Morawiecki); 2023-10-15 -> 2023-12-13, 59 (Tusk) | **46** |
+| Italy | 2022-09-25 -> 2022-10-22, 27 (Meloni) | **27** |
+| France | 2024-07-07 -> 2024-09-05, 60 (Barnier) - France holds no round | 60 |
+| USA | none - the president's term opens on a fixed day | - |
+
+- **`SpeakerRound.FormationDue`** (saved; an older round loads with none): a round opened by an election carries the polling day plus the formation time, and its log names the formations it averages - *"the formation takes 72 days, the median of the record's (2021-09-26 -> 2021-12-08, 73 days (Olaf Scholz (SPD)); 2025-02-23 -> 2025-05-06, 72 days (Friedrich Merz (CDU))) - no vote before 2025-05-06; the outgoing government governs meanwhile"*;
+- **no proposal comes to its vote before it** (`Table`): the Bundestag's ballot not before the convening nor the formation's day; the Riksdag's vote four days after the Speaker submits a proposal (RF 6 kap. 4 §) and not before the formation's day - the Speaker submits it when the formation's time has run;
+- **the caretaker governs meanwhile**: Germany's outgoing government serves on from the convening at the Bundespräsident's request (Art. 69 Abs. 3), Sweden's from the round's opening (RF 6 kap. 11 §) - unchanged. A mid-term round (no election) has no formation time.
+
+**Checked**: `FormationTimeDiagnostic` (new, the cheap bar's) - every country's derivation, each formation printed, the result asserted; `GermanFormationDiagnostic` (d): **the 2025 Bundestag elects Merz on 2025-05-06, the record's own day** - *"the game elects on 2025-05-06, the record on 2025-05-06"* (premise 7's gap closed by the ruling); the saved round carries `FormationDue`; (e)'s Art. 63 dates move with it (the fourteen days 06 May - 20 May, the final ballot 21 May).
+
+**The vote's day, one rule** (the review's defect 1): `SpeakerRound.VoteDayIfTabled` - read by the tabling and by every line that tells the player the day: the Parliament row and the sheet say *VOTE ON <day>* and, while the formation runs, *NO VOTE BEFORE <day> · THE FORMATION'S TIME ON RECORD* (they had said "VOTE ON DAY 4" or the convening day); the Riksdag's log names the day the Speaker submits the proposal, four days before the vote.
+
+**Stated for Elias (latent, the review's):** (d) is partly in-sample - 2025's own 72 days are in the median, which lands on the record's day; "recent" is how far the record goes - Sweden rests on one formation, and adding Löfven II and Merkel IV would give about 85 and about 105 days by the mean (the median keeps nearer the typical); caretaker detection reads the head's text (a flag on the record would be safer); the wait sits after tabling - a proposal waits weeks as VotePending with its cabinet frozen, where the record's long phase is the talks; a failed first vote then runs past the formation time.
+
+**The review** (`Reviews/2026-10-01_s714_formation_time.md`): NOT READY on one fix (the vote's day on the player's lines), fixed; the derivation checked by hand against `WorldClock.Governments` (Germany 73 and 72, Sweden 37, Poland 33 and 59, Italy 27, France 60 with Attal's caretaker entry skipped, the USA none) and the window shown not to decide anything (every span counted is at most 73 days, every government excluded took office at least 1,077 days after); RF 6 kap. 4 § read with the Speaker choosing when to submit. Ledger row: `SimulationManager.cs` at `486b53d6`, s714.
+
+**Tier SIMULATION + UI** (a money path - reviewed): named `n714e` (FormationTimeDiagnostic, GermanFormationDiagnostic, SpeakerRoundDiagnostic, ConfidenceDiagnostic, AiMotionReachDiagnostic - the review's owed run - MojibakeCheck, MetaTextCheck) clean; the cheap bar **87 of 87** (`cheap714`); the simulation bar **57 of 57**, both sentinels the baseline's (`sim714`, `sim714b`); the dry film `drys714` (Sweden 155, Germany 147).

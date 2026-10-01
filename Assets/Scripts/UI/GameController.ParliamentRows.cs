@@ -173,6 +173,12 @@ namespace PoliSim.UI
         /// <summary>The round's rule, two lines for a slip.</summary>
         private string[] RoundRule(SpeakerRound round)
         {
+            // §714 (the review's defect 1): while the formation's time on record runs, the rule says so - no vote before its day
+            if (round.FormationDue > _simulationManager.CurrentDate)
+            {
+                return new[] { round.Bundestag ? "PHASE 1 OF 3 · ART. 63 ABS. 1-2 GG" : string.Format(CultureInfo.InvariantCulture, "{0} OF {1} PROPOSALS REJECTED", round.Rejections, SpeakerRound.ProposalLimit),
+                    "NO VOTE BEFORE " + DeskDay(round.FormationDue) + " · THE FORMATION'S TIME ON RECORD" };
+            }
             if (!round.Bundestag)
             {
                 return new[] { string.Format(CultureInfo.InvariantCulture, "{0} OF {1} PROPOSALS REJECTED", round.Rejections, SpeakerRound.ProposalLimit),
@@ -186,13 +192,21 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>When a proposal tabled today comes to its vote: the Riksdag's fourth day, or the Bundestag's day - once it has convened, the same day.</summary>
+        /// <summary>When a proposal tabled today comes to its vote - the round's one rule (<see cref="SpeakerRound.VoteDayIfTabled"/>, §714): the Riksdag's
+        /// fourth day after the Speaker submits it, the Bundestag's day once it has convened - and neither before the formation's time on record has run.</summary>
         private string RoundVoteWhen(SpeakerRound round, bool brief)
         {
-            if (!round.Bundestag) { return brief ? "VOTE ON DAY " + SpeakerRound.VoteDays.ToString(CultureInfo.InvariantCulture) : "TABLED, THE CHAMBER VOTES ON THE " + Ordinal(SpeakerRound.VoteDays) + " DAY"; }
             System.DateTime today = _simulationManager.CurrentDate;
-            if (today >= round.Convenes) { return brief ? "VOTE THE SAME DAY" : "TABLED, THE BUNDESTAG VOTES THE SAME DAY"; }
-            return brief ? "VOTE ON " + DeskDay(round.Convenes) : "TABLED, THE BUNDESTAG VOTES WHEN IT CONVENES ON " + DeskDay(round.Convenes);
+            System.DateTime vote = round.VoteDayIfTabled(today);
+            bool formationHolds = vote == round.FormationDue && vote > (round.Bundestag ? (today > round.Convenes ? today : round.Convenes) : today.AddDays(SpeakerRound.VoteDays));
+            if (!round.Bundestag)
+            {
+                if (formationHolds) { return brief ? "VOTE ON " + DeskDay(vote) : "TABLED, THE SPEAKER SUBMITS IT WHEN THE FORMATION'S TIME ON RECORD HAS RUN; THE CHAMBER VOTES ON " + DeskDay(vote); }
+                return brief ? "VOTE ON DAY " + SpeakerRound.VoteDays.ToString(CultureInfo.InvariantCulture) : "TABLED, THE CHAMBER VOTES ON THE " + Ordinal(SpeakerRound.VoteDays) + " DAY";
+            }
+            if (vote == today) { return brief ? "VOTE THE SAME DAY" : "TABLED, THE BUNDESTAG VOTES THE SAME DAY"; }
+            if (formationHolds) { return brief ? "VOTE ON " + DeskDay(vote) : "TABLED, THE BUNDESTAG VOTES WHEN THE FORMATION'S TIME ON RECORD HAS RUN, ON " + DeskDay(vote); }
+            return brief ? "VOTE ON " + DeskDay(vote) : "TABLED, THE BUNDESTAG VOTES WHEN IT CONVENES ON " + DeskDay(vote);
         }
 
         /// <summary>What passing does: the Speaker asks the next party; in the Bundestag the next party in the order stands its candidate.</summary>

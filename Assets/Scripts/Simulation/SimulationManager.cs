@@ -3054,6 +3054,13 @@ namespace PoliSim.Simulation
             round.Log.Add(bundestag
                 ? $"{CurrentDate:yyyy-MM-dd}: the chancellor's election opens {occasion} (Art. 63 GG) - {(electionDay.HasValue ? "the new Bundestag convenes by " + round.Convenes.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + " (Art. 39 Abs. 2)" : "the Bundestag sits")}; the Bundespräsident's order is {string.Join(", ", round.Order)}"
                 : $"{CurrentDate:yyyy-MM-dd}: the Speaker's round opens {occasion}; the order is {string.Join(", ", round.Order)}");
+            // §714 (Elias's ruling of 2026-10-01, item 5): after an election the formation takes the country's time on record, polling day to installation;
+            // no proposal comes to its vote before it runs out, and the outgoing government governs meanwhile as a caretaker
+            if (electionDay.HasValue && Elections.WorldClock.FormationDays(country.Id, out List<string> formations) is int formationDays)
+            {
+                round.FormationDue = electionDay.Value.Date.AddDays(formationDays);
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the formation takes {formationDays} days, the median of the record's ({string.Join("; ", formations)}) - no vote before {round.FormationDue:yyyy-MM-dd}; the outgoing government governs meanwhile");
+            }
             AskNext(country, round);
         }
 
@@ -3130,12 +3137,12 @@ namespace PoliSim.Simulation
             {
                 // §705: the Bundestag elects "ohne Aussprache" (Art. 63 Abs. 1) and sets no delay - the ballot the day the candidate stands, but never
                 // before the new Bundestag convenes: the chancellor is the new chamber's to elect
-                round.VoteOn = CurrentDate > round.Convenes ? CurrentDate : round.Convenes;
+                round.VoteOn = round.VoteDayIfTabled(CurrentDate);   // §714: not before it convenes nor before the formation's day (SpeakerRound.VoteDayIfTabled, the one rule)
                 round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {proposal.Formateur} forms {string.Join("+", proposal.CabinetParties)}{(proposal.Supporters.Count > 0 ? " with " + string.Join("+", proposal.Supporters) : string.Empty)}; the Bundestag elects the chancellor on {round.VoteOn:yyyy-MM-dd} (Art. 63 GG)");
                 return;
             }
-            round.VoteOn = CurrentDate.AddDays(Elections.SpeakerRound.VoteDays);
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {proposal.Formateur} tables {string.Join("+", proposal.CabinetParties)}{(proposal.Supporters.Count > 0 ? " with " + string.Join("+", proposal.Supporters) : string.Empty)}; the Riksdag votes on {round.VoteOn:yyyy-MM-dd} (RF 6 kap. 4 §)");
+            round.VoteOn = round.VoteDayIfTabled(CurrentDate);   // §714: the fourth day after the Speaker submits it (RF 6 kap. 4 §), not before the formation's day
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {proposal.Formateur} tables {string.Join("+", proposal.CabinetParties)}{(proposal.Supporters.Count > 0 ? " with " + string.Join("+", proposal.Supporters) : string.Empty)}; {(round.VoteOn > CurrentDate.AddDays(Elections.SpeakerRound.VoteDays) ? "the Speaker submits it on " + round.VoteOn.AddDays(-Elections.SpeakerRound.VoteDays).ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture) + ", once the formation's time on record has run, and " : string.Empty)}the Riksdag votes on {round.VoteOn:yyyy-MM-dd} (RF 6 kap. 4 §)");
         }
 
         /// <summary>§705 (the review's defect 4): tabled, a proposal comes to its vote - in a convened Bundestag the same day ("ohne Aussprache",
