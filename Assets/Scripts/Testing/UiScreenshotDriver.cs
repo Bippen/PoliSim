@@ -970,7 +970,14 @@ namespace PoliSim.Testing
                             Vector2[] at = domestic
                                 ? new[] { new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.22f), new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.52f), new Vector2(UiScreen.Width * 0.40f, UiScreen.Height * 0.78f) }
                                 : new[] { new Vector2(UiScreen.Width * 0.20f, UiScreen.Height * 0.46f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.62f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.80f) };
-                            for (int p = 0; p < ids.Length; p++) { pinStats.Invoke(controller, new object[] { ids[p], null, at[p] }); }
+                            // §708 (D-ST's return, flag 3): each pin is made on its anchor nearest the film's point, as a player's click makes it, so the
+                            // slip opens there and the 19b addition places it clear of the figure it qualifies
+                            MethodInfo pinOnAnchor = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                            for (int p = 0; p < ids.Length; p++)
+                            {
+                                if (pinOnAnchor != null) { pinOnAnchor.Invoke(controller, new object[] { ids[p], at[p] }); }
+                                else { pinStats.Invoke(controller, new object[] { ids[p], null, at[p] }); }
+                            }
                             yield return Settle();
                             yield return Settle();
                             yield return Capture(stem + "_slips_pinned");

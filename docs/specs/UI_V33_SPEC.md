@@ -38,7 +38,9 @@ Also on the retrofit list (built before the slip existed): **the formation sheet
 
 1. **The slip - a two-level pinnable tooltip** (19b): level 1 opens after 250 ms at rest on a symbol, instrument or marked name, below-right
    of its anchor; level 2 from a marked term in level 1; a click on the head pins (three pinned chains a page); a slip never commits
-   anything. Its first line is always the glyph's own word, so every slip is its own legend entry.
+   anything. Its first line is always the glyph's own word, so every slip is its own legend entry. **A slip never covers the anchor it
+   was opened on** (Design's addition to 19b, D-ST's return; built `COMPLETED.md` §708): below it, else above it, else where it opened;
+   flipped left at the page's right edge.
 2. **An icon registry with honest fallbacks until assets land.** A symbol the registry cannot load draws its WORD in its place - never a
    blank, never a stand-in glyph - and the registry's coverage check names every symbol drawn as a fallback. The D24 vocabulary (19a,
    sixteen glyphs) is installed from Design's delivery **as one zip, never written from a pulled image**.

@@ -639,10 +639,10 @@ namespace PoliSim.UI
         /// <summary>
         /// Board 2a: the Society rows in two columns - name 12, then a 70×8 gauge for a share (youth
         /// unemployment, Gini on its 0–100 scale, homeownership), a 44×13 row-end sparkline for an
-        /// index or level that keeps a history (real wages, house prices, productivity - a base-100
+        /// index or level that keeps a history (real wages, house prices, productivity, life expectancy - a base-100
         /// index is unbounded by construction and any fill denominator an invented ceiling, §A.9b, so
-        /// its own history is the honest instrument), nothing for a level that keeps none (life
-        /// expectancy); the figure in mono 10.5. The housing three keep their asymmetry (overburden
+        /// its own history is the honest instrument; §708, D-ST's return: life expectancy's history is kept, so by Q3's rule it takes the
+        /// sparkline, where 23a drew the old empty slot); the figure in mono 10.5. The housing three keep their asymmetry (overburden
         /// first for the EU five, homeownership primary for the USA) and the USA's overburden row is
         /// ABSENT by ruling - never a zero: drawing "0.0%" would fabricate a figure no source publishes.
         /// <para>D-ST (23a ⑰): the unit phrases left the row. A true unit rides in the figure (83.8 Y, 92.1 $/H); a definition or a denominator goes
@@ -657,7 +657,7 @@ namespace PoliSim.UI
             var rows = new List<SocietyReading>
             {
                 new SocietyReading("Youth unemployment", state.YouthUnemployment / 100f, null, StatsReadings.Rate(state.YouthUnemployment)),
-                new SocietyReading("Life expectancy", -1f, null, UiFormat.Number(state.LifeExpectancy, 1) + " Y"),
+                new SocietyReading("Life expectancy", -1f, history?.LifeExpectancy.Quarterly, UiFormat.Number(state.LifeExpectancy, 1) + " Y"),   // §708 (D-ST return): a kept history takes the sparkline (Q3)
                 new SocietyReading("Income inequality (Gini)", state.Gini / 100f, null, UiFormat.Number(state.Gini, 1)),
                 new SocietyReading("Real wages", -1f, history?.RealWageIndex.Quarterly, UiFormat.Number(state.RealWageIndex, 1), index: true),
                 new SocietyReading("Productivity", -1f, history?.Productivity.Quarterly, UiFormat.Number(state.Productivity, 1) + " $/H"),

@@ -283,10 +283,13 @@ namespace PoliSim.UI
             {
                 float value = shadowHistory[shadowStart + i];
                 float t = i / (float)(points - 1);
-                float y = 1f - Mathf.InverseLerp(_lastMin, _lastMax, value);
-                var here = new Vector2(rect.x + t * rect.width, rect.y + Mathf.Clamp01(y) * rect.height);
+                // §708 (D-ST's return, flag 1): unclamped - an estimate past the axis is not drawn there. InverseLerp clamped it onto the plot's
+                // edge, where the approval sheet's dashed line ran out along the bottom as if it were a value. The range stays the live series'
+                // (C-C9: the player's own line must not move for what they did not do - Design's second option, "or the estimate is not drawn").
+                float y = 1f - (value - _lastMin) / (_lastMax - _lastMin);
+                var here = new Vector2(rect.x + t * rect.width, rect.y + y * rect.height);
 
-                if (i > 0) { DrawDashedOverlaySegment(previous, here, ProjectedLineColor); }
+                if (i > 0) { DrawClippedDashed(previous, here, rect.yMin, rect.yMax); }
 
                 previous = here;
             }
@@ -295,6 +298,23 @@ namespace PoliSim.UI
         /// <summary>A dashed segment drawn as an overlay rather than into the plot texture, so the
         /// counterfactual costs no regeneration — the same technique the release and enactment markers
         /// use.</summary>
+        /// <summary>§708: a dashed estimate segment clipped to the plot's height - the part inside drawn, the part outside not.</summary>
+        private static void DrawClippedDashed(Vector2 from, Vector2 to, float yMin, float yMax)
+        {
+            if ((from.y < yMin && to.y < yMin) || (from.y > yMax && to.y > yMax)) { return; }
+            Vector2 Clip(Vector2 inside, Vector2 outside)
+            {
+                float edge = outside.y < yMin ? yMin : outside.y > yMax ? yMax : outside.y;
+                if (Mathf.Approximately(outside.y, inside.y)) { return outside; }
+                float s = (edge - inside.y) / (outside.y - inside.y);
+                return Vector2.Lerp(inside, outside, Mathf.Clamp01(s));
+            }
+            Vector2 a = from, b = to;
+            if (a.y < yMin || a.y > yMax) { a = Clip(b, a); }
+            if (b.y < yMin || b.y > yMax) { b = Clip(a, b); }
+            DrawDashedOverlaySegment(a, b, ProjectedLineColor);
+        }
+
         private static void DrawDashedOverlaySegment(Vector2 from, Vector2 to, Color color)
         {
             const float Dash = 4f;

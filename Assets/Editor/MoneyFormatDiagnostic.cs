@@ -63,11 +63,11 @@ namespace PoliSim.EditorTools
             // and the net position is specifically expected to go NEGATIVE once the debt floor is removed.
             total++;
             bool check3 = true;
-            check3 &= Expect("negative trade balance", -1200f, MoneyUnit.Billions, "-US$1.20T");
-            check3 &= Expect("negative net position", -599f, MoneyUnit.Billions, "-US$599B");
+            check3 &= Expect("negative trade balance", -1200f, MoneyUnit.Billions, "−US$1.20T");
+            check3 &= Expect("negative net position", -599f, MoneyUnit.Billions, "−US$599B");
             check3 &= Expect("zero", 0f, MoneyUnit.Billions, "US$0");
             check3 &= ExpectDelta("a positive change", 42f, MoneyUnit.Billions, "+US$42.0B");
-            check3 &= ExpectDelta("a negative change", -42f, MoneyUnit.Billions, "-US$42.0B");
+            check3 &= ExpectDelta("a negative change", -42f, MoneyUnit.Billions, "−US$42.0B");
             check3 &= ExpectDelta("no change", 0f, MoneyUnit.Billions, "+US$0");
             if (check3) { passed++; }
             Debug.Log($"{(check3 ? "PASS" : "FAIL")} CHECK 3 signed amounts and zero.");

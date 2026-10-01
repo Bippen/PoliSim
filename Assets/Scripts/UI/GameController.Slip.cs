@@ -55,7 +55,7 @@ namespace PoliSim.UI
             {
                 (string anchor, string term, Vector2 at) = _slipPins[i];
                 if (!book.Anchors.TryGetValue(anchor, out SlipContent pinned)) { continue; }
-                Rect box = SlipBox(pinned, at, bounds, pinned: true, out Rect head, out List<(Rect Rect, string Term)> _);
+                Rect box = SlipBox(pinned, at, bounds, pinned: true, out Rect head, out List<(Rect Rect, string Term)> _, AnchorRectOf(anchor, at));
                 if (term != null && book.Terms.TryGetValue(term, out SlipContent pinnedTerm)) { SlipBox(pinnedTerm, new Vector2(box.xMax + 6f, box.y), bounds, pinned: false, out Rect _, out List<(Rect Rect, string Term)> _); }
                 if (e.type == EventType.MouseDown && head.Contains(mouse)) { _slipPins.RemoveAt(i); e.Use(); return; }
             }
@@ -76,7 +76,7 @@ namespace PoliSim.UI
             }
             if (_slipOpenId == null || !book.Anchors.TryGetValue(_slipOpenId, out SlipContent open)) { return; }
 
-            _slipOpenRect = SlipBox(open, _slipOpenAt, bounds, pinned: false, out Rect openHead, out List<(Rect Rect, string Term)> terms);
+            _slipOpenRect = SlipBox(open, _slipOpenAt, bounds, pinned: false, out Rect openHead, out List<(Rect Rect, string Term)> terms, AnchorRectOf(_slipOpenId, _slipOpenAt));
             // Level 2: a marked term under the pointer, after the delay; kept while the pointer is on that term or on the level-2 slip.
             string termHovered = null;
             foreach ((Rect r, string t) in terms) { if (r.Contains(mouse)) { termHovered = t; break; } }
@@ -100,9 +100,34 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>§708 (D-ST's return, flag 3): the rect the anchor <paramref name="id"/> registered on this repaint nearest <paramref name="near"/>
+        /// (one id can anchor several cells - the three ABSENT cards share "card:history" - and the slip clears the one it was opened on), or null.</summary>
+        private Rect? AnchorRectOf(string id, Vector2 near)
+        {
+            if (id == null) { return null; }
+            Rect? best = null;
+            float bestDistance = float.MaxValue;
+            foreach ((string anchorId, Rect r) in _slipAnchors)
+            {
+                if (anchorId != id) { continue; }
+                float dx = Mathf.Max(0f, Mathf.Max(r.xMin - near.x, near.x - r.xMax)), dy = Mathf.Max(0f, Mathf.Max(r.yMin - near.y, near.y - r.yMax));
+                float distance = dx * dx + dy * dy;
+                if (distance < bestDistance) { best = r; bestDistance = distance; }
+            }
+            return best;
+        }
+
+        /// <summary>§708: the film's pin as a player's is made - a click on the anchor nearest <paramref name="near"/> (its left end, mid-height),
+        /// so the slip opens on its anchor and the rule above places it clear of it. Pins at <paramref name="near"/> itself where no such anchor drew.</summary>
+        private void PinSlipOnAnchorForFilm(string anchor, Vector2 near)
+        {
+            Rect? r = AnchorRectOf(anchor, near);
+            PinSlipForFilm(anchor, null, r.HasValue ? new Vector2(r.Value.x + Mathf.Min(6f, r.Value.width * 0.5f), r.Value.center.y) : near);
+        }
+
         /// <summary>One slip's box at <paramref name="at"/> (kept inside <paramref name="bounds"/>): the head, then the lines, the marked terms dotted
         /// underneath; returns the box, and gives the head's rect and each marked term's rect. Draws on a repaint only; measures always.</summary>
-        private Rect SlipBox(SlipContent c, Vector2 at, Rect bounds, bool pinned, out Rect head, out List<(Rect Rect, string Term)> terms)
+        private Rect SlipBox(SlipContent c, Vector2 at, Rect bounds, bool pinned, out Rect head, out List<(Rect Rect, string Term)> terms, Rect? avoid = null)
         {
             terms = new List<(Rect Rect, string Term)>();
             GUIStyle headStyle = DeskCaption(8f, PoliSimTheme.TextPrimary, true);
@@ -115,6 +140,16 @@ namespace PoliSim.UI
             float h = lineH * (c.Lines.Count + 1) + StatsUnit(10f);
             float x = Mathf.Min(at.x, bounds.xMax - w);
             var box = new Rect(Mathf.Max(bounds.x, x), at.y, w, h);
+            // §708 (D-ST's return, flag 3, proposed for 19b): a slip never covers the figure its own lines point at - "THE FIGURE ABOVE IS LIVE"
+            // was pinned over the card's own figure. Opened on its anchor, the slip goes below it; past the page's right edge it flips left.
+            // Below the anchor if the page holds it there, else above it; where neither fits, where it opened (a slip off the page is worse).
+            if (avoid.HasValue && box.Overlaps(avoid.Value))
+            {
+                float below = avoid.Value.yMax + StatsUnit(4f), above = avoid.Value.yMin - StatsUnit(4f) - h;
+                if (below + h <= bounds.yMax) { box.y = below; }
+                else if (above >= bounds.y) { box.y = above; }
+                if (box.y != at.y && at.x + w > bounds.xMax) { box.x = Mathf.Max(bounds.x, avoid.Value.xMax - w); }
+            }
             head = new Rect(box.x, box.y, box.width, lineH + StatsUnit(5f));
             bool paint = Event.current.type == EventType.Repaint;
             if (paint)

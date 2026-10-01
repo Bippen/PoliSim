@@ -78,13 +78,14 @@ namespace PoliSim.UI
         /// rather than the "$1000B" a round-then-scale order would produce.
         ///
         /// <paramref name="explicitPlus"/> prefixes a "+" on positives, for the sites showing a change
-        /// rather than a level. The sign sits outside the "$", as "-$1.2T" rather than "$-1.2T".
+        /// rather than a level. The sign sits outside the "$", as "−$1.2T" rather than "$-1.2T" - the TRUE minus (U+2212), §708: the Statistics
+        /// sheet printed it alone and so disagreed with every other page (D-ST's return, re-opening D5); the logs keep their hyphens.
         /// </summary>
         public static string Money(float value, MoneyUnit unit, bool explicitPlus = false)
         {
             double dollars = (double)value * DollarsPerUnit(unit);
             double magnitude = Math.Abs(dollars);
-            string sign = dollars < 0d ? "-" : (explicitPlus ? "+" : string.Empty);
+            string sign = dollars < 0d ? "−" : (explicitPlus ? "+" : string.Empty);   // §708 (D-ST return, D5): the true minus on every display; the logs keep their own formats
 
             // Zero gets its own branch so it reads "US$0" rather than "US$0.00".
             if (magnitude < 0.5d)
