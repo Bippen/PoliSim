@@ -63,8 +63,9 @@ namespace PoliSim.UI
 
         public static IEnumerable<Dial> All => Catalog.Values;
 
-        /// <summary>PF-2 (§592): CONVENTION - the longest line a spending row's caption may carry, in characters: the narrowest lane its instruments leave at 1280, 171.9 px at 7.2 px a character (dry591).</summary>
-        public const int SpendingLineCaptionMax = 23;
+        /// <summary>PF-2 (§592): CONVENTION - the longest line a spending row's caption may carry, in characters: the narrowest lane its instruments leave at 1280, 171.9 px at 7.2 px a character (dry591).
+        /// §723: the v3.5 rail (84 px) took some thirty pixels from the page and the narrowest lane is now 129.5 px (drys723) - 17 characters of the same face, with seven to spare.</summary>
+        public const int SpendingLineCaptionMax = 17;
 
         private static Band B(string name, string line, int sign) => new Band(name, line, sign);
 
@@ -277,31 +278,32 @@ namespace PoliSim.UI
             // deed on an entitlement than on a programme.
             // PF-2 (2026-09-23, §592): SHORT LINES. The lane between a spending row's instruments is a third of a dial's, and the first twenty lines (58-95 characters)
             // never drew at 1280 or 2560; cut to what the lane the instruments leave holds - SpendingLineCaptionMax, asserted by RangeCaptionCheck - same names, same signs. The first cut (25-37 characters) still overran lanes of 172-228 px on film591: the narrowest lane at 1280 holds 23 characters of the 12 px caption face, so 23 is the cap.
+            // §723: cut again to 17 (the v3.5 rail's narrower page) - same names, same signs, the second clause kept where it still fits.
             { "Discretionary line", new Dial("Discretionary line", "the line's provision", +1, 0.5f, new[]
             {
-                B("Gutted", "A third gone overnight.", -1),
-                B("Slashed", "Quarter off. Closures.", -1),
-                B("Cut", "Economies, then none.", -1),
-                B("Trimmed", "A shade under. Unseen.", -1),
-                B("As it stands", "The index did this.", 0),
-                B("Topped up", "A shade over; noted.", +1),
-                B("Raised", "Something new opens.", +1),
-                B("Expanded", "A fifth more. Noticed.", +1),
-                B("Surged", "A quarter more. Frowns.", +1),
-                B("Doubled down", "A signature third more.", +1),
+                B("Gutted", "A third gone.", -1),
+                B("Slashed", "A quarter shut.", -1),
+                B("Cut", "Thrift runs dry.", -1),
+                B("Trimmed", "Under, unseen.", -1),
+                B("As it stands", "Index-driven.", 0),
+                B("Topped up", "Over, and noted.", +1),
+                B("Raised", "Something opens.", +1),
+                B("Expanded", "A fifth; noticed.", +1),
+                B("Surged", "A quarter more.", +1),
+                B("Doubled down", "A third more.", +1),
             }) },
             { "Mandatory line", new Dial("Mandatory line", "the line's provision", +1, 0.5f, new[]
             {
-                B("Clawed back", "A seventh off. Letters.", -1),
+                B("Clawed back", "A seventh off.", -1),
                 B("Cut", "A promise cut.", -1),
-                B("Tightened", "Narrower. Litigated.", -1),
-                B("Trimmed", "A shade under. Felt.", -1),
-                B("As it stands", "Its cohort did this.", 0),
-                B("Uprated", "An honest uprating.", +1),
-                B("Raised", "A real rise. Noticed.", +1),
-                B("Widened", "A tenth more. It stays.", +1),
-                B("Enlarged", "Big rise, every year.", +1),
-                B("Recast", "A new social contract.", +1),
+                B("Tightened", "Narrowed; sued.", -1),
+                B("Trimmed", "Under, and felt.", -1),
+                B("As it stands", "Cohort-driven.", 0),
+                B("Uprated", "Honestly uprated.", +1),
+                B("Raised", "A real rise.", +1),
+                B("Widened", "A tenth, to stay.", +1),
+                B("Enlarged", "Big, every year.", +1),
+                B("Recast", "A new contract.", +1),
             }) },
             // ---- P6-F2b (2026-09-21, §542): THE ENERGY TAB'S FOUR INSTRUMENTS - the Energy sector's own dials under the names the spec-let's S9 maps them to,
             // each speaking to what the instrument reaches in the energy layer. Same ranges, same drafts, same save keys as the sector's rows above.

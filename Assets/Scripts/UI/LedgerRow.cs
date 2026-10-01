@@ -395,7 +395,7 @@ namespace PoliSim.UI
             float nameWidth = Mathf.Max(row.width * 0.18f, RefKnobWidth * scale * 4f);
             if (nameNeed > nameWidth)
             {
-                nameWidth = Mathf.Min(nameNeed, row.width * 0.30f);   // P2-1.3: a name that cannot wrap takes up to 30 %
+                nameWidth = Mathf.Min(nameNeed, row.width * 0.34f);   // P2-1.3: a name that cannot wrap takes up to 30 % - §723: 34 %, the v3.5 rail's narrower page put "Means-Tested Welfare" 5 px past 30 % on the welfare rows
             }
             float figureWidth = Mathf.Max(row.width * 0.13f, RefKnobWidth * scale * 3f);
             // P5-1 (board 6a, measured on film, 2026-09-03): NO TRAILING COLUMN. The board's rate cell carries its measure beneath it, so the

@@ -5306,8 +5306,6 @@ namespace PoliSim.UI
         /// 2026-09-21): 8 %, down from 12 % - Design measured the 7.5 px caption at 4.30:1 on the 12 % wash, under the text floor on Energy and on Sectors, and
         /// ONE token lifts every active cell rather than six hand-set tints. Public so InkContrastCheck reads the token itself, never a copy of it.</summary>
         public const float RailActiveWashAlpha = 0.08f;
-        /// <summary>Board 1n-r2 (2026-08-28): the HOME cell's wash while the Desk is up - brass at 0.16 (`rgba(156,129,72,0.16)`), the spine brass at the nav cells' width.</summary>
-        private const float RailHomeWashAlpha = 0.16f;
 
         // ------------------------------------------------------------------------------------------
         // Board 1n-r3 (D11 row 4, 2026-09-02): the cells become FOLDER TONGUES. Each cell is a paper
@@ -5322,7 +5320,6 @@ namespace PoliSim.UI
         // The tongue's width is the rail's (RailWidth) - edge to edge with the sheet, P2-1.1's zero
         // tokens holding; the cell's derivation (RailCellWidth and its three fractions) is unchanged.
         // ------------------------------------------------------------------------------------------
-        private const float RailSpineUnits = 3f;
         private const float RailTongueOverlapPx = 2f;
         /// <summary>The recessed tint as a multiplier on the paper sprite: the plate's tint over the paper's, per channel - a derivation of two tokens, not a third colour.</summary>
         private static readonly Color RailRecessedTint = new Color(
@@ -5365,9 +5362,6 @@ namespace PoliSim.UI
             return _railTongueStyle;
         }
 
-        /// <summary>The spine's width: 3 u of the icons' 24-unit grid (board 1n-r3), never thinner than two pixels.</summary>
-        private float RailSpineWidth() => Mathf.Max(2f, Mathf.Round(RailIconSize() * RailSpineUnits / RailIconGridUnits));
-
         /// <summary>One tongue's paper: the sheet's sliced paper drawn at <paramref name="face"/> but clipped to <paramref name="clip"/>, in the recessed tint when inactive. Repaint only.</summary>
         private void DrawRailTonguePaper(Rect face, Rect clip, bool recessed)
         {
@@ -5400,31 +5394,9 @@ namespace PoliSim.UI
         // the caption in TextSecondary; hover = a faint stock wash (the plate face that answered the
         // cursor is gone). The glyphs themselves are the delivered set - a redraw was refused by 1n-r2
         // as a costed follow-up. The utility block (chip · lamp · PAUSE/RUN) is unchanged.
+        // §723 (UI v3.5): the 1n-r2 cell's arithmetic (glyph 22/39, pad 5/39, the 7.5 mono caption) retires with the tab it sized - the v3.5 tab is
+        // V35's measures (80 x 56, the 24 px icon, the 14 px caption), DrawRailCell below.
         // ------------------------------------------------------------------------------------------
-        private static float RailGlyphSize(float cell) => Mathf.Round(cell * (22f / 39f));
-        private static float RailCellPad(float cell) => Mathf.Round(cell * (5f / 39f));
-        private static float RailCaptionGap(float cell) => Mathf.Max(1f, Mathf.Round(cell * (2f / 39f)));
-
-        /// <summary>1n-r2's caption: mono, 7.5 at the 39 cell scaled with the cell (8 / 9 / 11 / 12 - the guard's 8 is the floor, and 7.5 rounds to it at 1280), bold when the cell is active.</summary>
-        private GUIStyle RailCaptionStyle(float cell, Color ink, bool bold)
-        {
-            var style = new GUIStyle(_calendarMetaStyle)
-            {
-                fontSize = Mathf.Max(PoliSimWidgets.MinMeasuredLabelFontSize, Mathf.RoundToInt(7.5f * cell / 39f)),
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = false,
-                fontStyle = bold ? FontStyle.Bold : FontStyle.Normal
-            };
-            style.padding = new RectOffset(0, 0, 0, 0);
-            return Inked(style, ink);
-        }
-
-        /// <summary>1n-r2's cell height: pad · glyph · gap · caption · pad, from the cell's own width.</summary>
-        private float RailCellHeight(float cell)
-        {
-            GUIStyle caption = RailCaptionStyle(cell, PoliSimTheme.TextSecondary, false);
-            return RailCellPad(cell) * 2f + RailGlyphSize(cell) + RailCaptionGap(cell) + caption.CalcSize(new GUIContent("ÅG")).y;
-        }
 
         /// <summary>
         /// One 1n-r2 cell: an invisible button over the whole rect (emitted on every event - the control
@@ -5434,17 +5406,26 @@ namespace PoliSim.UI
         /// </summary>
         private bool DrawRailCell(string key, float cell, bool active, Color wash, Color spineInk, string caption, Color captionInk, List<KeyValuePair<string, Rect>> cells, out Rect glyphSlot)
         {
-            // Board 1n-r3: the tongue is the rail's full width (flush to the sheet); the cell's own
-            // measure still sizes the glyph, the pad and the caption inside it.
-            float height = RailCellHeight(cell);
-            float tongue = RailWidth();
-            Rect rect = GUILayoutUtility.GetRect(tongue, height, GUILayout.Width(tongue), GUILayout.Height(height));
+            // §723 (UI v3.5, V35_ASK rule 8): THE FOLDER TAB - 80 x 56, flush to the page, in an 84 px rail (the other 4 px desk ground); the 24 px icon
+            // over a 14 px caption, centred in the tab's field (the 4 px spine on the left and a 4 px inset on the right left out). Active: the page's own
+            // paper carried over the seam (no line between tab and document) and the area-ink spine; inactive: #D9CDB4 between hairline edges. The
+            // caption is the composition's - title case in the body face, TextPrimary when active, #4A433A otherwise; `caption` stays the rail's
+            // key (RailLit) in capitals. The 1n washes retire: v3.5's tab carries the state by paper and spine alone.
+            float height = V35.Px(V35.TabHeight);
+            float railWidth = RailWidth();
+            Rect rect = GUILayoutUtility.GetRect(railWidth, height, GUILayout.Width(railWidth), GUILayout.Height(height));
             bool clicked = PoliSimWidgets.Button(rect, GUIContent.none, GUIStyle.none);
 
-            float pad = RailCellPad(cell);
-            float glyph = RailGlyphSize(cell);
-            glyphSlot = new Rect(rect.x + (rect.width - glyph) * 0.5f, rect.y + pad, glyph, glyph);
-            float captionTop = glyphSlot.yMax + RailCaptionGap(cell);   // §576: known before the paint, because the wash now stops where the caption starts
+            float tabWidth = V35.Px(V35.TabWidth);
+            var tab = new Rect(rect.xMax - tabWidth, rect.y, tabWidth, rect.height);
+            float spine = V35.Px(V35.RailSpine);
+            float fieldX = tab.x + spine;
+            float fieldWidth = tab.width - spine - V35.Px(V35.RailFieldInset);
+            float icon = V35.Px(V35.RailIcon);
+            float iconGap = V35.Px(V35.RailIconGap);
+            float captionLine = V35.Px(V35.RailCaptionLine);
+            float top = tab.y + Mathf.Round((tab.height - (icon + iconGap + captionLine)) * 0.5f);
+            glyphSlot = new Rect(fieldX + Mathf.Round((fieldWidth - icon) * 0.5f), top, icon, icon);
 
             if (Event.current.type != EventType.Repaint)
             {
@@ -5453,45 +5434,44 @@ namespace PoliSim.UI
 
             if (active)
             {
-                // The sheet's own paper: the face runs under the sheet by the sprite's border so no edge
-                // pixel of the tongue's paper lands in the seam strip; the strip itself is painted again
-                // after the sheet (DrawRailActiveTongueOverlap) - the paper carried 2 px over the seam.
-                var face = new Rect(rect.x, rect.y, rect.width + RailTongueStyle().border.right, rect.height);
-                DrawRailTonguePaper(face, rect, recessed: false);
+                // The sheet's own paper: the face runs under the sheet by the sprite's border so no edge pixel of the tab's paper lands in the seam
+                // strip; the strip itself is painted again after the sheet (DrawRailActiveTongueOverlap) - the paper carried 2 px over the seam.
+                var face = new Rect(tab.x, tab.y, tab.width + RailTongueStyle().border.right, tab.height);
+                DrawRailTonguePaper(face, tab, recessed: false);
                 _railActiveTongueFace = face;
-                _railActiveTongueStrip = new Rect(rect.xMax - 1f, rect.y, RailTongueOverlapPx + 1f, rect.height);
+                _railActiveTongueStrip = new Rect(tab.xMax - 1f, tab.y, RailTongueOverlapPx + 1f, tab.height);
                 _railActiveTongueSet = true;
                 _railLitDrawn.Add(caption);   // §694: what the paint lit, counted at the rail's foot
-                // §576 (flag (ii), Design's SECOND alternative, ruled 2026-09-22): THE WASH STOPS AT THE CAPTION BAND. The 8 % wash of §575 lifted every
-                // active caption by about two tenths of a contrast point and carried four of twelve areas over the 4.5 text floor; the caption on PLAIN TONGUE
-                // carries all twelve, because the ink is then the same area ink on the same paper the sheet's own headers clear the floor on. The wash still
-                // marks the cell - it runs the glyph's field, from the tongue's top to the caption's - and the spine still runs the cell's full height.
-                PoliSimTheme.Rule(new Rect(rect.x, rect.y, rect.width, captionTop - rect.y), wash);
-                PoliSimTheme.Rule(new Rect(rect.x, rect.y, RailSpineWidth(), rect.height), spineInk);
+                PoliSimTheme.Rule(new Rect(tab.x, tab.y, spine, tab.height), spineInk);
             }
             else
             {
-                DrawRailTonguePaper(rect, rect, recessed: true);
+                PoliSimTheme.Rule(tab, V35.TabInactive);
                 if (rect.Contains(Event.current.mousePosition))
                 {
-                    PoliSimTheme.Rule(rect, PoliSimTheme.Tint(PoliSimTheme.StockOff, 0.45f));
+                    PoliSimTheme.Rule(tab, PoliSimTheme.Tint(PoliSimTheme.StockOff, 0.45f));
                 }
-                // The seam: one hairline against the sheet.
-                PoliSimTheme.Rule(new Rect(rect.xMax - 1f, rect.y, 1f, rect.height), PoliSimTheme.Hairline);
+                // The edges: a hairline above and below, and the seam against the sheet.
+                PoliSimTheme.Rule(new Rect(tab.x, tab.y, tab.width, 1f), PoliSimTheme.Hairline);
+                PoliSimTheme.Rule(new Rect(tab.x, tab.yMax - 1f, tab.width, 1f), PoliSimTheme.Hairline);
+                PoliSimTheme.Rule(new Rect(tab.xMax - 1f, tab.y, 1f, tab.height), PoliSimTheme.Hairline);
             }
 
-            GUIStyle captionStyle = RailCaptionStyle(cell, captionInk, active);
-            // The weight yields before the size: the cell's width is the rail's fixed measure and the
-            // caption already sits at the guard's floor at 1280, so a bold caption that does not fit
-            // the cell (POLITICS, 43 px in 39 on the first v31b film - the bold face is wider) draws at
-            // regular weight in the area ink rather than shrinking below the floor or overflowing.
-            if (active && captionStyle.CalcSize(new GUIContent(caption)).x > rect.width)
-            {
-                captionStyle.fontStyle = FontStyle.Normal;
-            }
-            PoliSimWidgets.MeasuredLabel(new Rect(rect.x, captionTop, rect.width, Mathf.Max(1f, rect.yMax - pad - captionTop)), caption, captionStyle);
+            PoliSimWidgets.MeasuredLabel(new Rect(fieldX, glyphSlot.yMax + iconGap, fieldWidth, captionLine), RailCaptionText(caption), V35RailCaptionStyle(active ? PoliSimTheme.TextPrimary : V35.RailCaptionInactive));
             cells.Add(new KeyValuePair<string, Rect>(key, rect));
             return clicked;
+        }
+
+        /// <summary>§723: a rail key (DESK, STATS, ...) as the v3.5 tab writes it - title case ("Desk", "Stats").</summary>
+        private static string RailCaptionText(string key) => string.IsNullOrEmpty(key) ? key : key.Substring(0, 1).ToUpperInvariant() + key.Substring(1).ToLowerInvariant();
+
+        /// <summary>§723: the v3.5 tab's caption - the body face at 14 px (V35's floor), centred, one line.</summary>
+        private GUIStyle V35RailCaptionStyle(Color ink)
+        {
+            var style = new GUIStyle(_labelStyle) { fontSize = V35.FontPx(V35.Floor), alignment = TextAnchor.MiddleCenter, wordWrap = false, fontStyle = FontStyle.Normal };
+            style.padding = new RectOffset(0, 0, 0, 0);
+            style.margin = new RectOffset(0, 0, 0, 0);
+            return Inked(style, ink);
         }
 
         /// <summary>The rail's icon is the tongue's icon, at the tongue's own measure (one accessor with DrawConsolidatedTabButton's arithmetic, so the two can never disagree).</summary>
@@ -5508,12 +5488,12 @@ namespace PoliSim.UI
         /// <summary>The rail's outer width: one cell plus the paper sheet's own padding. ONE ACCESSOR, READ BY BOTH SITES: OnGUI reserves the column at it and DrawFoldedRail lays the cells out inside it.</summary>
         private float RailWidth()
         {
-            return RailCellWidth() + _boxStyle.padding.horizontal;
+            return V35.Px(V35.RailWidth);   // §723 (UI v3.5, V35_ASK rule 8): 84 px at 1280 x 699 - it grows to carry the 14 px captions (was the icon cell plus the box's padding)
         }
 
         private float RailGap()
         {
-            return Mathf.Round(RailIconSize() * (4f / RailIconGridUnits));
+            return V35.Px(V35.RailGap);   // §723 (v3.5): 4 px of desk ground between two tabs
         }
 
         /// <summary>
@@ -5541,24 +5521,24 @@ namespace PoliSim.UI
 
             // v3.1 R-E2 (2026-08-28): HOME first; board 1n-r2 gave it its face the same day; 1n-r3 makes it the first tongue.
             DrawRailHomeCell(cell, cells);
-            DrawRailHomeSeparator(cell);
+            GUILayout.Space(RailGap());   // §723 (v3.5): the Desk is a tab like the others - R-E2's separator rule retires with the flag
 
             // 1n-r2's captions (≤ 8 characters each; the documents' names stay on their own sheets).
-            DrawRailNavCell("STATS", ConsolidatedTab.Statistics, "icon_nav_statistics", cell, cells);
+            DrawRailNavCell("STATS", ConsolidatedTab.Statistics, "chart", cell, cells);
             GUILayout.Space(RailGap());
-            DrawRailNavCell("DOCKET", ConsolidatedTab.Decisions, "icon_nav_decisions", cell, cells);
+            DrawRailNavCell("DOCKET", ConsolidatedTab.Decisions, "docket", cell, cells);
             GUILayout.Space(RailGap());
-            DrawRailNavCell("PEOPLE", ConsolidatedTab.Demographics, "icon_nav_demographics", cell, cells);
+            DrawRailNavCell("PEOPLE", ConsolidatedTab.Demographics, "people", cell, cells);
             GUILayout.Space(RailGap());
-            DrawRailNavCell("BUDGET", ConsolidatedTab.Budget, "icon_area_fiscal", cell, cells);
+            DrawRailNavCell("BUDGET", ConsolidatedTab.Budget, "coins", cell, cells);
             GUILayout.Space(RailGap());
-            DrawRailNavCell("LAWS", ConsolidatedTab.PolicyLaws, "icon_nav_policylaws", cell, cells);
+            DrawRailNavCell("LAWS", ConsolidatedTab.PolicyLaws, "gavel", cell, cells);
             GUILayout.Space(RailGap());
-            DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "icon_area_political", cell, cells);
+            DrawRailNavCell("POLITICS", ConsolidatedTab.Politics, "chamber", cell, cells);
             GUILayout.Space(RailGap());
             // P6-F1 (2026-09-17): the ninth cell. Its icon is board 16a's solid bolt, installed 2026-09-21 (§556); until then the cell drew the caption's initial by this
             // rail's own missing-icon contract (DrawRailInitial, kept for the next area that arrives before its art).
-            DrawRailNavCell("ENERGY", ConsolidatedTab.Energy, "icon_area_energy", cell, cells);
+            DrawRailNavCell("ENERGY", ConsolidatedTab.Energy, "bolt", cell, cells);
             GUILayout.Space(RailGap());
             DrawRailCampaignCell(cell, cells);   // C-R4b step 4a: present only while the player's campaign runs
 
@@ -5616,7 +5596,9 @@ namespace PoliSim.UI
             // TextPrimary (brass text on paper would whisper - the D6 flip's own reasoning; a build
             // call, one literal). Off the Desk: the flag alone over DESK in TextSecondary.
             bool active = _railLitCell == RailLit.Desk;   // §694: the one rule (was _onDesk alone)
-            if (DrawRailCell("shell rail: home", cell, active, PoliSimTheme.Tint(PoliSimTheme.Brass, RailHomeWashAlpha), PoliSimTheme.Brass,
+            // §723 (UI v3.5): the Desk is a tab like the others - its icon (icon_v35_desk) where the flag stood, the composition's ink for the Desk
+            // (#5D564A, TextSecondary) on the icon and the spine; the country's identity is the masthead's now.
+            if (DrawRailCell("shell rail: home", cell, active, Color.clear, PoliSimTheme.TextSecondary,
                     "DESK", active ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary, cells, out Rect slot))
             {
                 CloseLiveCampaign();   // C-R4b step 4a: the live HQ yields to the Desk
@@ -5628,31 +5610,15 @@ namespace PoliSim.UI
                 return;
             }
 
-            float flagWidth = Mathf.Round(cell * (24f / 39f));
-            float flagHeight = Mathf.Round(flagWidth * (2f / 3f));
-            var flagRect = new Rect(slot.x + (slot.width - flagWidth) * 0.5f, slot.y + (slot.height - flagHeight) * 0.5f, flagWidth, flagHeight);
-            Texture2D flag = IconLibrary.GetFlag(PlayerCountryId);
-            if (flag != null)
+            Texture2D icon = IconLibrary.V35("desk");
+            if (icon != null)
             {
-                GUI.DrawTexture(flagRect, flag, ScaleMode.StretchToFill, true);
+                UiPalette.DrawTintedIcon(slot, icon, PoliSimTheme.TextSecondary);
             }
             else
             {
-                LedgerRow.Cell(flagRect, "H", _tabButtonStyle, PoliSimTheme.Brass, TextAnchor.MiddleCenter);
+                DrawRailInitial(slot, "D", PoliSimTheme.TextSecondary);
             }
-        }
-
-        /// <summary>The rule beneath HOME (R-E2: "first position + a separator rule beneath") - a hairline-strong rule across the cell with the rail's gap on either side.</summary>
-        private void DrawRailHomeSeparator(float cell)
-        {
-            GUILayout.Space(RailGap());
-            float tongue = RailWidth();   // board 1n-r3: the rule spans the tongue column, on the desk ground between HOME and the documents
-            Rect rule = GUILayoutUtility.GetRect(tongue, 1f, GUILayout.Width(tongue), GUILayout.Height(1f));
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.Rule(new Rect(rule.x + 3f, rule.y, Mathf.Max(1f, rule.width - 6f), 1f), PoliSimTheme.HairlineStrong);
-            }
-            GUILayout.Space(RailGap());
         }
 
         /// <summary>One navigation cell of the rail (board 1n-r2): the tongue's glyph bare on the sheet over its caption. Active = the area-ink wash and spine, the glyph and the caption in the area ink; inactive = the delivered tab-swatch tint on the glyph, the caption in TextSecondary. A missing sprite degrades to the caption's initial in the same ink - the rail never shows a blank cell that navigates somewhere.</summary>
@@ -5694,9 +5660,9 @@ namespace PoliSim.UI
 
             // Board 1n (2026-08-28), the active convention, kept by 1n-r2: the wash and the spine are
             // DrawRailCell's; the glyph in the area ink when active, the tab-swatch tint otherwise.
-            Color ink = selected ? areaInk : PoliSimTheme.TabSwatchTint(area);
+            Color ink = selected ? areaInk : PoliSimTheme.TextSecondary;   // §723 (v3.5): the inactive icon in #5D564A, the active in its area ink
             DrawHeldCellMark(slot, HoldCellOf(tab));   // §648 (PF-11): the cell a hold points at shows it
-            Texture2D icon = IconLibrary.Get(iconName);
+            Texture2D icon = IconLibrary.V35(iconName);   // §723: the v3.5 rail icons (the manifest's rows marked Rail:)
             if (icon != null)
             {
                 UiPalette.DrawTintedIcon(slot, icon, ink);
@@ -6628,10 +6594,11 @@ namespace PoliSim.UI
             return _minimumWageInput ?? fallbackLevel;
         }
 
-        /// <summary>A tax rate as the row prints it: a percentage to two decimals, or - the carbon tax (EN-4c) - the country's currency per tonne of CO₂ to the unit, the stored figure itself. InvariantCulture, for the reason the row states.</summary>
+        /// <summary>A tax rate as the row prints it: a percentage to two decimals, or - the carbon tax (EN-4c) - the country's currency per tonne of CO₂ to the unit, the stored figure itself. InvariantCulture, for the reason the row states.
+        /// §723: per tonne as v3.5 prints it (*1 330 kr/t*) - the row's name says carbon, so the figure drops "CO2" and fits the figure column the 84 px rail narrowed.</summary>
         private string TaxRateText(TaxLine line, float rate)
         {
-            if (line.IsPerTonne) { return rate.ToString("F0", CultureInfo.InvariantCulture) + " " + EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t CO2"; }
+            if (line.IsPerTonne) { return rate.ToString("F0", CultureInfo.InvariantCulture) + " " + EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t"; }
             return rate.ToString("F2", CultureInfo.InvariantCulture) + "%";
         }
 

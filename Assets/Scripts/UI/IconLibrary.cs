@@ -26,6 +26,13 @@ namespace PoliSim.UI
             return Load(IconResourcesPath + iconName);
         }
 
+        /// <summary>§723 (UI v3.5): one of the 69 v3.5 icons (`Resources/Art/UI/V35/icon_v35_&lt;name&gt;`, white on alpha, tinted at draw), by its short
+        /// name - <c>V35("desk")</c>; null where the file is missing, the same contract as <see cref="Get"/>.</summary>
+        public static Texture2D V35(string shortName)
+        {
+            return Load("Art/UI/V35/icon_v35_" + shortName);
+        }
+
         /// <summary>
         /// The area icon for a <see cref="UiPalette.SystemArea"/> - `icon_area_&lt;area&gt;`, the
         /// filename derived from the enum like every other art category here. Omnibus 2026-08-28

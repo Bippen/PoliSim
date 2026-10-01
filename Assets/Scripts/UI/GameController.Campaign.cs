@@ -266,12 +266,10 @@ namespace PoliSim.UI
             }
             if (Event.current.type != EventType.Repaint) { return; }
             DrawHeldCellMark(slot, HoldCell.Campaign);   // §648 (PF-11): the opening and a story point here
-            Texture2D icon = IconLibrary.Get("icon_area_political");
+            Texture2D icon = IconLibrary.V35("ballot");   // §723 (v3.5): the rail's icons are the v3.5 set; the glyph slot is the tab's 24 px icon field
             if (icon == null) { return; }
-            float size = RailGlyphSize(cell);
-            var iconRect = new Rect(slot.x + (slot.width - size) * 0.5f, slot.y + RailCellPad(cell), size, size);
-            GUI.color = areaInk;
-            GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, true);
+            GUI.color = selected ? areaInk : PoliSimTheme.TextSecondary;
+            GUI.DrawTexture(slot, icon, ScaleMode.ScaleToFit, true);
             GUI.color = Color.white;
         }
 

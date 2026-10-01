@@ -60,7 +60,7 @@ namespace PoliSim.UI
                 // the book's dollars per kWh, like every money figure on these screens; the sources' euro and krona and zloty rows reach it through the catalog's ECB 2023 rates
                 string unit = PoliSim.Simulation.EnergyLedger.BookCurrency + " PER kWh";
                 const float perKwhHigh = 0.5f;
-                rows.Add(new PlateRow("Electricity price, households", unit + " · WHOLESALE + MARGIN + NETWORK + LEVIES + TAX + VAT", "EUROSTAT nrg_pc_204 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyHouseholdPrice, 2),
+                rows.Add(new PlateRow("Electricity price, households", unit + " · WHOLESALE + MARGIN + GRID + LEVIES + TAX + VAT", "EUROSTAT nrg_pc_204 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyHouseholdPrice, 2),
                     PlateBand.Open, 0f, perKwhHigh, s.EnergyHouseholdPrice, null, true, new[] { "ENERGY LINE ▸", "DISPATCH ▸" }, null, new[] { "DERIVED" }, false));
                 rows.Add(new PlateRow("Electricity price, industry", unit + " · EXCLUDING RECOVERABLE VAT", "EUROSTAT nrg_pc_205 · EIA · 2023 · THIS YEAR'S STACK", PlateFigure(s.EnergyIndustryPrice, 2),
                     PlateBand.Open, 0f, perKwhHigh, s.EnergyIndustryPrice, null, true, new[] { "ENERGY LINE ▸", "BUSINESS CONFIDENCE ▸" }, null, new[] { "DERIVED" }, false));
