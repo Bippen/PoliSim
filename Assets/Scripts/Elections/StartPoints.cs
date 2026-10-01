@@ -50,6 +50,8 @@ namespace PoliSim.Elections
 
         /// <summary>18b: the one reason every locked card carries today, in the player's words.</summary>
         public const string LockedPrefix = "LOCKED · ";
+        /// <summary>18b's words, kept at §720: the count is modelled (TwoRoundElection, part one of PS-5 with S7) but the system as a playable election -
+        /// the vote that feeds it, part two - is not, here or in France (S8).</summary>
         public const string TwoRoundReason = "THE TWO-ROUND SYSTEM IS NOT YET MODELLED";
         public const string RoundDatesNote = "ROUND DATES NOT IN THE RECORD";
 
@@ -67,9 +69,12 @@ namespace PoliSim.Elections
                     break;
                 case CountryId.Poland:
                     list.Add(Ruled(id, "SEJM ELECTION", "the PKW's notice, Dz.U. 2023 poz. 2234 (poland/returns_2023.md); the run-up by the standard window (§618)"));
-                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", D(2025, 5, 18), null, DateTime.MinValue, false,
+                    // §720 (PS-5 with S7, part one): the presidential start reads its record through the two-round rule - the first vote's day from the
+                    // PKW's returns, the verdict, the run-off and the term counted, not typed; the vote that would feed a played election is part two
+                    TwoRoundElection.RoundOfRecord(id, 2025, 1, out DateTime firstVote2025);
+                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", firstVote2025, null, DateTime.MinValue, false,
                         LockedPrefix + TwoRoundReason,
-                        "poland/records_by_date.md (the run-off of 2025-06-01, the first round 2025-05-18; the inauguration 2025-08-06); the two-round presidential model is not built (S7)"));
+                        TwoRoundElection.RecordBrief(id, 2025) + " (the PKW's notices, poland/presidential_returns.md; the oaths, poland/records_by_date.md)"));
                     break;
                 case CountryId.Italy:
                     list.Add(Ruled(id, "GENERAL ELECTION (SNAP)", "DPR 97/2022 [DPR-97]; opens on the dissolution of 2022-07-21 [DPR-96] (§618)"));

@@ -1,0 +1,763 @@
+# Poland - presidential elections 2020 and 2025, returns per województwo (voivodeship) per round [SOURCED]
+# Source: KBW open data (danewyborcze.kbw.gov.pl), files 'wyniki ... po województwach' (CSV, UTF-8); 2025 abroad/ships rows from 'po powiatach'. Accessed 2026-10-01.
+#   87abcfe163baa9c8b50fa8ed48a24b96b4bb0aa969eb6f0327fbb99c37c49261  kbw_2020_1_wyniki_gl_na_kand_po_wojewodztwach_csv.zip  https://danewyborcze.kbw.gov.pl/dane/2020/prezydent/1/wyniki_gl_na_kand_po_wojewodztwach_csv.zip
+#   126d61eef750b94c851cd860bcdbe43b57212e07fd3e7d4bb6e47b12560c9144  kbw_2020_2_wyniki_gl_na_kand_po_wojewodztwach_csv.zip  https://danewyborcze.kbw.gov.pl/dane/2020/prezydent/2/wyniki_gl_na_kand_po_wojewodztwach_csv.zip
+#   b87f9dac93cf15acc12320b706c5d88656bf4c0b3939047c9b5b6e2cab1d9615  kbw_2025_1_wyniki_gl_na_kandydatow_po_wojewodztwach_csv.1752152970.zip  https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/1/wyniki_gl_na_kandydatow_po_wojewodztwach_csv.1752152970.zip
+#   6dacdba518dd0cae3c5531cff4f83c619eb4e78d98d9908210af0ed94d48627b  kbw_2025_2_wyniki_gl_na_kandydatow_po_wojewodztwach_w_drugiej_turze_csv.1752152970.zip  https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/2/wyniki_gl_na_kandydatow_po_wojewodztwach_w_drugiej_turze_csv.1752152970.zip
+#   46f24f327af9c7b8981b16fcf4d39c8ea5babfc3edbcb552ff84206e02f249d9  kbw_2025_1_wyniki_gl_na_kandydatow_po_powiatach_csv.1752152970.zip  https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/1/wyniki_gl_na_kandydatow_po_powiatach_csv.1752152970.zip
+#   f2bb0566ca466403d7e97a87ed15eb1ef437e4e05ca7075c238dbd33db8e87a1  kbw_2025_2_wyniki_gl_na_kandydatow_po_powiatach_w_drugiej_turze_csv.1752152970.zip  https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/2/wyniki_gl_na_kandydatow_po_powiatach_w_drugiej_turze_csv.1752152970.zip
+# unit = the voivodeship name as the KBW prints it (lower case), or, for 2025 only, 'zagranica' (voting abroad) and 'statki' (Polish sea-going ships),
+#   which the 2025 voivodeship files leave out and the 2025 powiat files carry as their own rows. The 2020 KBW voivodeship files have no such rows:
+#   their 16 rows already sum to the national obwieszczenie figures (checked), so 2020 has 16 units per round and 2025 has 18.
+# candidate keys and the four totals rows as in presidential_votes.csv (__BALLOTS__ = 'Liczba kart ważnych'). Every unit's candidate votes sum to its __VALID__ (checked).
+election,round,date,unit,candidate,votes
+2020,1,2020-06-28,dolnośląskie,BIEDROŃ Robert,37245
+2020,1,2020-06-28,dolnośląskie,BOSAK Krzysztof,91793
+2020,1,2020-06-28,dolnośląskie,DUDA Andrzej Sebastian,545001
+2020,1,2020-06-28,dolnośląskie,HOŁOWNIA Szymon Franciszek,201050
+2020,1,2020-06-28,dolnośląskie,JAKUBIAK Marek,2323
+2020,1,2020-06-28,dolnośląskie,KOSINIAK-KAMYSZ Władysław Marcin,27210
+2020,1,2020-06-28,dolnośląskie,PIOTROWSKI Mirosław Mariusz,1353
+2020,1,2020-06-28,dolnośląskie,TANAJNO Paweł Jan,2356
+2020,1,2020-06-28,dolnośląskie,TRZASKOWSKI Rafał Kazimierz,512357
+2020,1,2020-06-28,dolnośląskie,WITKOWSKI Waldemar Włodzimierz,2163
+2020,1,2020-06-28,dolnośląskie,ŻÓŁTEK Stanisław Józef,3542
+2020,1,2020-06-28,dolnośląskie,__VALID__,1426393
+2020,1,2020-06-28,dolnośląskie,__INVALID__,4560
+2020,1,2020-06-28,dolnośląskie,__BALLOTS__,1430953
+2020,1,2020-06-28,dolnośląskie,__ELIGIBLE__,2254674
+2020,1,2020-06-28,kujawsko-pomorskie,BIEDROŃ Robert,22250
+2020,1,2020-06-28,kujawsko-pomorskie,BOSAK Krzysztof,56532
+2020,1,2020-06-28,kujawsko-pomorskie,DUDA Andrzej Sebastian,380190
+2020,1,2020-06-28,kujawsko-pomorskie,HOŁOWNIA Szymon Franciszek,148597
+2020,1,2020-06-28,kujawsko-pomorskie,JAKUBIAK Marek,1310
+2020,1,2020-06-28,kujawsko-pomorskie,KOSINIAK-KAMYSZ Władysław Marcin,24234
+2020,1,2020-06-28,kujawsko-pomorskie,PIOTROWSKI Mirosław Mariusz,912
+2020,1,2020-06-28,kujawsko-pomorskie,TANAJNO Paweł Jan,1309
+2020,1,2020-06-28,kujawsko-pomorskie,TRZASKOWSKI Rafał Kazimierz,322961
+2020,1,2020-06-28,kujawsko-pomorskie,WITKOWSKI Waldemar Włodzimierz,1082
+2020,1,2020-06-28,kujawsko-pomorskie,ŻÓŁTEK Stanisław Józef,2083
+2020,1,2020-06-28,kujawsko-pomorskie,__VALID__,961460
+2020,1,2020-06-28,kujawsko-pomorskie,__INVALID__,2814
+2020,1,2020-06-28,kujawsko-pomorskie,__BALLOTS__,964274
+2020,1,2020-06-28,kujawsko-pomorskie,__ELIGIBLE__,1580004
+2020,1,2020-06-28,lubelskie,BIEDROŃ Robert,17010
+2020,1,2020-06-28,lubelskie,BOSAK Krzysztof,83403
+2020,1,2020-06-28,lubelskie,DUDA Andrzej Sebastian,591234
+2020,1,2020-06-28,lubelskie,HOŁOWNIA Szymon Franciszek,108987
+2020,1,2020-06-28,lubelskie,JAKUBIAK Marek,2095
+2020,1,2020-06-28,lubelskie,KOSINIAK-KAMYSZ Władysław Marcin,31756
+2020,1,2020-06-28,lubelskie,PIOTROWSKI Mirosław Mariusz,2268
+2020,1,2020-06-28,lubelskie,TANAJNO Paweł Jan,1430
+2020,1,2020-06-28,lubelskie,TRZASKOWSKI Rafał Kazimierz,201571
+2020,1,2020-06-28,lubelskie,WITKOWSKI Waldemar Włodzimierz,1027
+2020,1,2020-06-28,lubelskie,ŻÓŁTEK Stanisław Józef,2561
+2020,1,2020-06-28,lubelskie,__VALID__,1043342
+2020,1,2020-06-28,lubelskie,__INVALID__,3415
+2020,1,2020-06-28,lubelskie,__BALLOTS__,1046757
+2020,1,2020-06-28,lubelskie,__ELIGIBLE__,1679712
+2020,1,2020-06-28,lubuskie,BIEDROŃ Robert,10413
+2020,1,2020-06-28,lubuskie,BOSAK Krzysztof,28743
+2020,1,2020-06-28,lubuskie,DUDA Andrzej Sebastian,161894
+2020,1,2020-06-28,lubuskie,HOŁOWNIA Szymon Franciszek,84590
+2020,1,2020-06-28,lubuskie,JAKUBIAK Marek,686
+2020,1,2020-06-28,lubuskie,KOSINIAK-KAMYSZ Władysław Marcin,9583
+2020,1,2020-06-28,lubuskie,PIOTROWSKI Mirosław Mariusz,405
+2020,1,2020-06-28,lubuskie,TANAJNO Paweł Jan,756
+2020,1,2020-06-28,lubuskie,TRZASKOWSKI Rafał Kazimierz,174894
+2020,1,2020-06-28,lubuskie,WITKOWSKI Waldemar Włodzimierz,572
+2020,1,2020-06-28,lubuskie,ŻÓŁTEK Stanisław Józef,913
+2020,1,2020-06-28,lubuskie,__VALID__,473449
+2020,1,2020-06-28,lubuskie,__INVALID__,1542
+2020,1,2020-06-28,lubuskie,__BALLOTS__,474991
+2020,1,2020-06-28,lubuskie,__ELIGIBLE__,773526
+2020,1,2020-06-28,łódzkie,BIEDROŃ Robert,29022
+2020,1,2020-06-28,łódzkie,BOSAK Krzysztof,77759
+2020,1,2020-06-28,łódzkie,DUDA Andrzej Sebastian,589185
+2020,1,2020-06-28,łódzkie,HOŁOWNIA Szymon Franciszek,163294
+2020,1,2020-06-28,łódzkie,JAKUBIAK Marek,2143
+2020,1,2020-06-28,łódzkie,KOSINIAK-KAMYSZ Władysław Marcin,31245
+2020,1,2020-06-28,łódzkie,PIOTROWSKI Mirosław Mariusz,1322
+2020,1,2020-06-28,łódzkie,TANAJNO Paweł Jan,1824
+2020,1,2020-06-28,łódzkie,TRZASKOWSKI Rafał Kazimierz,363209
+2020,1,2020-06-28,łódzkie,WITKOWSKI Waldemar Włodzimierz,1703
+2020,1,2020-06-28,łódzkie,ŻÓŁTEK Stanisław Józef,2901
+2020,1,2020-06-28,łódzkie,__VALID__,1263607
+2020,1,2020-06-28,łódzkie,__INVALID__,4119
+2020,1,2020-06-28,łódzkie,__BALLOTS__,1267726
+2020,1,2020-06-28,łódzkie,__ELIGIBLE__,1931018
+2020,1,2020-06-28,małopolskie,BIEDROŃ Robert,34230
+2020,1,2020-06-28,małopolskie,BOSAK Krzysztof,138603
+2020,1,2020-06-28,małopolskie,DUDA Andrzej Sebastian,912452
+2020,1,2020-06-28,małopolskie,HOŁOWNIA Szymon Franciszek,206034
+2020,1,2020-06-28,małopolskie,JAKUBIAK Marek,3217
+2020,1,2020-06-28,małopolskie,KOSINIAK-KAMYSZ Władysław Marcin,52483
+2020,1,2020-06-28,małopolskie,PIOTROWSKI Mirosław Mariusz,1763
+2020,1,2020-06-28,małopolskie,TANAJNO Paweł Jan,2116
+2020,1,2020-06-28,małopolskie,TRZASKOWSKI Rafał Kazimierz,426950
+2020,1,2020-06-28,małopolskie,WITKOWSKI Waldemar Włodzimierz,2371
+2020,1,2020-06-28,małopolskie,ŻÓŁTEK Stanisław Józef,5015
+2020,1,2020-06-28,małopolskie,__VALID__,1785234
+2020,1,2020-06-28,małopolskie,__INVALID__,4818
+2020,1,2020-06-28,małopolskie,__BALLOTS__,1790052
+2020,1,2020-06-28,małopolskie,__ELIGIBLE__,2663068
+2020,1,2020-06-28,mazowieckie,BIEDROŃ Robert,81797
+2020,1,2020-06-28,mazowieckie,BOSAK Krzysztof,209037
+2020,1,2020-06-28,mazowieckie,DUDA Andrzej Sebastian,1305649
+2020,1,2020-06-28,mazowieckie,HOŁOWNIA Szymon Franciszek,408502
+2020,1,2020-06-28,mazowieckie,JAKUBIAK Marek,7104
+2020,1,2020-06-28,mazowieckie,KOSINIAK-KAMYSZ Władysław Marcin,72663
+2020,1,2020-06-28,mazowieckie,PIOTROWSKI Mirosław Mariusz,3513
+2020,1,2020-06-28,mazowieckie,TANAJNO Paweł Jan,4850
+2020,1,2020-06-28,mazowieckie,TRZASKOWSKI Rafał Kazimierz,1099956
+2020,1,2020-06-28,mazowieckie,WITKOWSKI Waldemar Włodzimierz,6128
+2020,1,2020-06-28,mazowieckie,ŻÓŁTEK Stanisław Józef,7706
+2020,1,2020-06-28,mazowieckie,__VALID__,3206905
+2020,1,2020-06-28,mazowieckie,__INVALID__,9414
+2020,1,2020-06-28,mazowieckie,__BALLOTS__,3216319
+2020,1,2020-06-28,mazowieckie,__ELIGIBLE__,4572339
+2020,1,2020-06-28,opolskie,BIEDROŃ Robert,8039
+2020,1,2020-06-28,opolskie,BOSAK Krzysztof,26661
+2020,1,2020-06-28,opolskie,DUDA Andrzej Sebastian,176552
+2020,1,2020-06-28,opolskie,HOŁOWNIA Szymon Franciszek,72609
+2020,1,2020-06-28,opolskie,JAKUBIAK Marek,702
+2020,1,2020-06-28,opolskie,KOSINIAK-KAMYSZ Władysław Marcin,10146
+2020,1,2020-06-28,opolskie,PIOTROWSKI Mirosław Mariusz,440
+2020,1,2020-06-28,opolskie,TANAJNO Paweł Jan,622
+2020,1,2020-06-28,opolskie,TRZASKOWSKI Rafał Kazimierz,139125
+2020,1,2020-06-28,opolskie,WITKOWSKI Waldemar Włodzimierz,536
+2020,1,2020-06-28,opolskie,ŻÓŁTEK Stanisław Józef,919
+2020,1,2020-06-28,opolskie,__VALID__,436351
+2020,1,2020-06-28,opolskie,__INVALID__,1424
+2020,1,2020-06-28,opolskie,__BALLOTS__,437775
+2020,1,2020-06-28,opolskie,__ELIGIBLE__,772390
+2020,1,2020-06-28,podkarpackie,BIEDROŃ Robert,14802
+2020,1,2020-06-28,podkarpackie,BOSAK Krzysztof,95350
+2020,1,2020-06-28,podkarpackie,DUDA Andrzej Sebastian,646103
+2020,1,2020-06-28,podkarpackie,HOŁOWNIA Szymon Franciszek,100742
+2020,1,2020-06-28,podkarpackie,JAKUBIAK Marek,1947
+2020,1,2020-06-28,podkarpackie,KOSINIAK-KAMYSZ Władysław Marcin,27287
+2020,1,2020-06-28,podkarpackie,PIOTROWSKI Mirosław Mariusz,1201
+2020,1,2020-06-28,podkarpackie,TANAJNO Paweł Jan,1122
+2020,1,2020-06-28,podkarpackie,TRZASKOWSKI Rafał Kazimierz,172789
+2020,1,2020-06-28,podkarpackie,WITKOWSKI Waldemar Włodzimierz,875
+2020,1,2020-06-28,podkarpackie,ŻÓŁTEK Stanisław Józef,2341
+2020,1,2020-06-28,podkarpackie,__VALID__,1064559
+2020,1,2020-06-28,podkarpackie,__INVALID__,3025
+2020,1,2020-06-28,podkarpackie,__BALLOTS__,1067584
+2020,1,2020-06-28,podkarpackie,__ELIGIBLE__,1684688
+2020,1,2020-06-28,podlaskie,BIEDROŃ Robert,8746
+2020,1,2020-06-28,podlaskie,BOSAK Krzysztof,42823
+2020,1,2020-06-28,podlaskie,DUDA Andrzej Sebastian,280113
+2020,1,2020-06-28,podlaskie,HOŁOWNIA Szymon Franciszek,92088
+2020,1,2020-06-28,podlaskie,JAKUBIAK Marek,1024
+2020,1,2020-06-28,podlaskie,KOSINIAK-KAMYSZ Władysław Marcin,11681
+2020,1,2020-06-28,podlaskie,PIOTROWSKI Mirosław Mariusz,602
+2020,1,2020-06-28,podlaskie,TANAJNO Paweł Jan,747
+2020,1,2020-06-28,podlaskie,TRZASKOWSKI Rafał Kazimierz,114076
+2020,1,2020-06-28,podlaskie,WITKOWSKI Waldemar Włodzimierz,518
+2020,1,2020-06-28,podlaskie,ŻÓŁTEK Stanisław Józef,1299
+2020,1,2020-06-28,podlaskie,__VALID__,553717
+2020,1,2020-06-28,podlaskie,__INVALID__,1713
+2020,1,2020-06-28,podlaskie,__BALLOTS__,555430
+2020,1,2020-06-28,podlaskie,__ELIGIBLE__,920327
+2020,1,2020-06-28,pomorskie,BIEDROŃ Robert,30155
+2020,1,2020-06-28,pomorskie,BOSAK Krzysztof,72978
+2020,1,2020-06-28,pomorskie,DUDA Andrzej Sebastian,397169
+2020,1,2020-06-28,pomorskie,HOŁOWNIA Szymon Franciszek,189390
+2020,1,2020-06-28,pomorskie,JAKUBIAK Marek,1702
+2020,1,2020-06-28,pomorskie,KOSINIAK-KAMYSZ Władysław Marcin,22400
+2020,1,2020-06-28,pomorskie,PIOTROWSKI Mirosław Mariusz,1210
+2020,1,2020-06-28,pomorskie,TANAJNO Paweł Jan,1795
+2020,1,2020-06-28,pomorskie,TRZASKOWSKI Rafał Kazimierz,453006
+2020,1,2020-06-28,pomorskie,WITKOWSKI Waldemar Włodzimierz,1671
+2020,1,2020-06-28,pomorskie,ŻÓŁTEK Stanisław Józef,2716
+2020,1,2020-06-28,pomorskie,__VALID__,1174192
+2020,1,2020-06-28,pomorskie,__INVALID__,3434
+2020,1,2020-06-28,pomorskie,__BALLOTS__,1177626
+2020,1,2020-06-28,pomorskie,__ELIGIBLE__,1796422
+2020,1,2020-06-28,śląskie,BIEDROŃ Robert,50805
+2020,1,2020-06-28,śląskie,BOSAK Krzysztof,157010
+2020,1,2020-06-28,śląskie,DUDA Andrzej Sebastian,913421
+2020,1,2020-06-28,śląskie,HOŁOWNIA Szymon Franciszek,341169
+2020,1,2020-06-28,śląskie,JAKUBIAK Marek,3565
+2020,1,2020-06-28,śląskie,KOSINIAK-KAMYSZ Władysław Marcin,42625
+2020,1,2020-06-28,śląskie,PIOTROWSKI Mirosław Mariusz,2429
+2020,1,2020-06-28,śląskie,TANAJNO Paweł Jan,3535
+2020,1,2020-06-28,śląskie,TRZASKOWSKI Rafał Kazimierz,693193
+2020,1,2020-06-28,śląskie,WITKOWSKI Waldemar Włodzimierz,3047
+2020,1,2020-06-28,śląskie,ŻÓŁTEK Stanisław Józef,5399
+2020,1,2020-06-28,śląskie,__VALID__,2216198
+2020,1,2020-06-28,śląskie,__INVALID__,6392
+2020,1,2020-06-28,śląskie,__BALLOTS__,2222590
+2020,1,2020-06-28,śląskie,__ELIGIBLE__,3455664
+2020,1,2020-06-28,świętokrzyskie,BIEDROŃ Robert,10728
+2020,1,2020-06-28,świętokrzyskie,BOSAK Krzysztof,42544
+2020,1,2020-06-28,świętokrzyskie,DUDA Andrzej Sebastian,343752
+2020,1,2020-06-28,świętokrzyskie,HOŁOWNIA Szymon Franciszek,62383
+2020,1,2020-06-28,świętokrzyskie,JAKUBIAK Marek,1018
+2020,1,2020-06-28,świętokrzyskie,KOSINIAK-KAMYSZ Władysław Marcin,19494
+2020,1,2020-06-28,świętokrzyskie,PIOTROWSKI Mirosław Mariusz,614
+2020,1,2020-06-28,świętokrzyskie,TANAJNO Paweł Jan,668
+2020,1,2020-06-28,świętokrzyskie,TRZASKOWSKI Rafał Kazimierz,130670
+2020,1,2020-06-28,świętokrzyskie,WITKOWSKI Waldemar Włodzimierz,555
+2020,1,2020-06-28,świętokrzyskie,ŻÓŁTEK Stanisław Józef,1214
+2020,1,2020-06-28,świętokrzyskie,__VALID__,613640
+2020,1,2020-06-28,świętokrzyskie,__INVALID__,1914
+2020,1,2020-06-28,świętokrzyskie,__BALLOTS__,615554
+2020,1,2020-06-28,świętokrzyskie,__ELIGIBLE__,991408
+2020,1,2020-06-28,warmińsko-mazurskie,BIEDROŃ Robert,14025
+2020,1,2020-06-28,warmińsko-mazurskie,BOSAK Krzysztof,42365
+2020,1,2020-06-28,warmińsko-mazurskie,DUDA Andrzej Sebastian,253931
+2020,1,2020-06-28,warmińsko-mazurskie,HOŁOWNIA Szymon Franciszek,93598
+2020,1,2020-06-28,warmińsko-mazurskie,JAKUBIAK Marek,1062
+2020,1,2020-06-28,warmińsko-mazurskie,KOSINIAK-KAMYSZ Władysław Marcin,15689
+2020,1,2020-06-28,warmińsko-mazurskie,PIOTROWSKI Mirosław Mariusz,625
+2020,1,2020-06-28,warmińsko-mazurskie,TANAJNO Paweł Jan,959
+2020,1,2020-06-28,warmińsko-mazurskie,TRZASKOWSKI Rafał Kazimierz,208922
+2020,1,2020-06-28,warmińsko-mazurskie,WITKOWSKI Waldemar Włodzimierz,755
+2020,1,2020-06-28,warmińsko-mazurskie,ŻÓŁTEK Stanisław Józef,1261
+2020,1,2020-06-28,warmińsko-mazurskie,__VALID__,633192
+2020,1,2020-06-28,warmińsko-mazurskie,__INVALID__,2251
+2020,1,2020-06-28,warmińsko-mazurskie,__BALLOTS__,635443
+2020,1,2020-06-28,warmińsko-mazurskie,__ELIGIBLE__,1112335
+2020,1,2020-06-28,wielkopolskie,BIEDROŃ Robert,41200
+2020,1,2020-06-28,wielkopolskie,BOSAK Krzysztof,106367
+2020,1,2020-06-28,wielkopolskie,DUDA Andrzej Sebastian,666539
+2020,1,2020-06-28,wielkopolskie,HOŁOWNIA Szymon Franciszek,293107
+2020,1,2020-06-28,wielkopolskie,JAKUBIAK Marek,2543
+2020,1,2020-06-28,wielkopolskie,KOSINIAK-KAMYSZ Władysław Marcin,44134
+2020,1,2020-06-28,wielkopolskie,PIOTROWSKI Mirosław Mariusz,1698
+2020,1,2020-06-28,wielkopolskie,TANAJNO Paweł Jan,2498
+2020,1,2020-06-28,wielkopolskie,TRZASKOWSKI Rafał Kazimierz,595803
+2020,1,2020-06-28,wielkopolskie,WITKOWSKI Waldemar Włodzimierz,3246
+2020,1,2020-06-28,wielkopolskie,ŻÓŁTEK Stanisław Józef,3932
+2020,1,2020-06-28,wielkopolskie,__VALID__,1761067
+2020,1,2020-06-28,wielkopolskie,__INVALID__,4743
+2020,1,2020-06-28,wielkopolskie,__BALLOTS__,1765810
+2020,1,2020-06-28,wielkopolskie,__ELIGIBLE__,2696143
+2020,1,2020-06-28,zachodniopomorskie,BIEDROŃ Robert,21662
+2020,1,2020-06-28,zachodniopomorskie,BOSAK Krzysztof,45412
+2020,1,2020-06-28,zachodniopomorskie,DUDA Andrzej Sebastian,287328
+2020,1,2020-06-28,zachodniopomorskie,HOŁOWNIA Szymon Franciszek,127257
+2020,1,2020-06-28,zachodniopomorskie,JAKUBIAK Marek,1211
+2020,1,2020-06-28,zachodniopomorskie,KOSINIAK-KAMYSZ Władysław Marcin,16735
+2020,1,2020-06-28,zachodniopomorskie,PIOTROWSKI Mirosław Mariusz,710
+2020,1,2020-06-28,zachodniopomorskie,TANAJNO Paweł Jan,1322
+2020,1,2020-06-28,zachodniopomorskie,TRZASKOWSKI Rafał Kazimierz,307858
+2020,1,2020-06-28,zachodniopomorskie,WITKOWSKI Waldemar Włodzimierz,1041
+2020,1,2020-06-28,zachodniopomorskie,ŻÓŁTEK Stanisław Józef,1617
+2020,1,2020-06-28,zachodniopomorskie,__VALID__,812153
+2020,1,2020-06-28,zachodniopomorskie,__INVALID__,2723
+2020,1,2020-06-28,zachodniopomorskie,__BALLOTS__,814876
+2020,1,2020-06-28,zachodniopomorskie,__ELIGIBLE__,1320966
+2020,2,2020-07-12,dolnośląskie,DUDA Andrzej Sebastian,663831
+2020,2,2020-07-12,dolnośląskie,TRZASKOWSKI Rafał Kazimierz,824109
+2020,2,2020-07-12,dolnośląskie,__VALID__,1487940
+2020,2,2020-07-12,dolnośląskie,__INVALID__,12953
+2020,2,2020-07-12,dolnośląskie,__BALLOTS__,1500893
+2020,2,2020-07-12,dolnośląskie,__ELIGIBLE__,2240376
+2020,2,2020-07-12,kujawsko-pomorskie,DUDA Andrzej Sebastian,476728
+2020,2,2020-07-12,kujawsko-pomorskie,TRZASKOWSKI Rafał Kazimierz,542472
+2020,2,2020-07-12,kujawsko-pomorskie,__VALID__,1019200
+2020,2,2020-07-12,kujawsko-pomorskie,__INVALID__,8142
+2020,2,2020-07-12,kujawsko-pomorskie,__BALLOTS__,1027342
+2020,2,2020-07-12,kujawsko-pomorskie,__ELIGIBLE__,1572933
+2020,2,2020-07-12,lubelskie,DUDA Andrzej Sebastian,725453
+2020,2,2020-07-12,lubelskie,TRZASKOWSKI Rafał Kazimierz,368630
+2020,2,2020-07-12,lubelskie,__VALID__,1094083
+2020,2,2020-07-12,lubelskie,__INVALID__,10164
+2020,2,2020-07-12,lubelskie,__BALLOTS__,1104247
+2020,2,2020-07-12,lubelskie,__ELIGIBLE__,1671659
+2020,2,2020-07-12,lubuskie,DUDA Andrzej Sebastian,199589
+2020,2,2020-07-12,lubuskie,TRZASKOWSKI Rafał Kazimierz,296849
+2020,2,2020-07-12,lubuskie,__VALID__,496438
+2020,2,2020-07-12,lubuskie,__INVALID__,3888
+2020,2,2020-07-12,lubuskie,__BALLOTS__,500326
+2020,2,2020-07-12,lubuskie,__ELIGIBLE__,770309
+2020,2,2020-07-12,łódzkie,DUDA Andrzej Sebastian,718404
+2020,2,2020-07-12,łódzkie,TRZASKOWSKI Rafał Kazimierz,600673
+2020,2,2020-07-12,łódzkie,__VALID__,1319077
+2020,2,2020-07-12,łódzkie,__INVALID__,11779
+2020,2,2020-07-12,łódzkie,__BALLOTS__,1330856
+2020,2,2020-07-12,łódzkie,__ELIGIBLE__,1909980
+2020,2,2020-07-12,małopolskie,DUDA Andrzej Sebastian,1107590
+2020,2,2020-07-12,małopolskie,TRZASKOWSKI Rafał Kazimierz,749165
+2020,2,2020-07-12,małopolskie,__VALID__,1856755
+2020,2,2020-07-12,małopolskie,__INVALID__,17000
+2020,2,2020-07-12,małopolskie,__BALLOTS__,1873755
+2020,2,2020-07-12,małopolskie,__ELIGIBLE__,2662442
+2020,2,2020-07-12,mazowieckie,DUDA Andrzej Sebastian,1630346
+2020,2,2020-07-12,mazowieckie,TRZASKOWSKI Rafał Kazimierz,1784947
+2020,2,2020-07-12,mazowieckie,__VALID__,3415293
+2020,2,2020-07-12,mazowieckie,__INVALID__,28953
+2020,2,2020-07-12,mazowieckie,__BALLOTS__,3444246
+2020,2,2020-07-12,mazowieckie,__ELIGIBLE__,4666787
+2020,2,2020-07-12,opolskie,DUDA Andrzej Sebastian,215648
+2020,2,2020-07-12,opolskie,TRZASKOWSKI Rafał Kazimierz,239682
+2020,2,2020-07-12,opolskie,__VALID__,455330
+2020,2,2020-07-12,opolskie,__INVALID__,3891
+2020,2,2020-07-12,opolskie,__BALLOTS__,459221
+2020,2,2020-07-12,opolskie,__ELIGIBLE__,766446
+2020,2,2020-07-12,podkarpackie,DUDA Andrzej Sebastian,785645
+2020,2,2020-07-12,podkarpackie,TRZASKOWSKI Rafał Kazimierz,322133
+2020,2,2020-07-12,podkarpackie,__VALID__,1107778
+2020,2,2020-07-12,podkarpackie,__INVALID__,9732
+2020,2,2020-07-12,podkarpackie,__BALLOTS__,1117510
+2020,2,2020-07-12,podkarpackie,__ELIGIBLE__,1680845
+2020,2,2020-07-12,podlaskie,DUDA Andrzej Sebastian,352489
+2020,2,2020-07-12,podlaskie,TRZASKOWSKI Rafał Kazimierz,233621
+2020,2,2020-07-12,podlaskie,__VALID__,586110
+2020,2,2020-07-12,podlaskie,__INVALID__,5529
+2020,2,2020-07-12,podlaskie,__BALLOTS__,591639
+2020,2,2020-07-12,podlaskie,__ELIGIBLE__,919765
+2020,2,2020-07-12,pomorskie,DUDA Andrzej Sebastian,512916
+2020,2,2020-07-12,pomorskie,TRZASKOWSKI Rafał Kazimierz,764363
+2020,2,2020-07-12,pomorskie,__VALID__,1277279
+2020,2,2020-07-12,pomorskie,__INVALID__,10855
+2020,2,2020-07-12,pomorskie,__BALLOTS__,1288134
+2020,2,2020-07-12,pomorskie,__ELIGIBLE__,1839064
+2020,2,2020-07-12,śląskie,DUDA Andrzej Sebastian,1110233
+2020,2,2020-07-12,śląskie,TRZASKOWSKI Rafał Kazimierz,1155894
+2020,2,2020-07-12,śląskie,__VALID__,2266127
+2020,2,2020-07-12,śląskie,__INVALID__,20767
+2020,2,2020-07-12,śląskie,__BALLOTS__,2286894
+2020,2,2020-07-12,śląskie,__ELIGIBLE__,3417778
+2020,2,2020-07-12,świętokrzyskie,DUDA Andrzej Sebastian,419367
+2020,2,2020-07-12,świętokrzyskie,TRZASKOWSKI Rafał Kazimierz,231748
+2020,2,2020-07-12,świętokrzyskie,__VALID__,651115
+2020,2,2020-07-12,świętokrzyskie,__INVALID__,5427
+2020,2,2020-07-12,świętokrzyskie,__BALLOTS__,656542
+2020,2,2020-07-12,świętokrzyskie,__ELIGIBLE__,989213
+2020,2,2020-07-12,warmińsko-mazurskie,DUDA Andrzej Sebastian,325723
+2020,2,2020-07-12,warmińsko-mazurskie,TRZASKOWSKI Rafał Kazimierz,369736
+2020,2,2020-07-12,warmińsko-mazurskie,__VALID__,695459
+2020,2,2020-07-12,warmińsko-mazurskie,__INVALID__,5742
+2020,2,2020-07-12,warmińsko-mazurskie,__BALLOTS__,701201
+2020,2,2020-07-12,warmińsko-mazurskie,__ELIGIBLE__,1128441
+2020,2,2020-07-12,wielkopolskie,DUDA Andrzej Sebastian,829590
+2020,2,2020-07-12,wielkopolskie,TRZASKOWSKI Rafał Kazimierz,1011128
+2020,2,2020-07-12,wielkopolskie,__VALID__,1840718
+2020,2,2020-07-12,wielkopolskie,__INVALID__,15901
+2020,2,2020-07-12,wielkopolskie,__BALLOTS__,1856619
+2020,2,2020-07-12,wielkopolskie,__ELIGIBLE__,2681058
+2020,2,2020-07-12,zachodniopomorskie,DUDA Andrzej Sebastian,367096
+2020,2,2020-07-12,zachodniopomorskie,TRZASKOWSKI Rafał Kazimierz,523113
+2020,2,2020-07-12,zachodniopomorskie,__VALID__,890209
+2020,2,2020-07-12,zachodniopomorskie,__INVALID__,7001
+2020,2,2020-07-12,zachodniopomorskie,__BALLOTS__,897210
+2020,2,2020-07-12,zachodniopomorskie,__ELIGIBLE__,1351364
+2025,1,2025-05-18,dolnośląskie,BARTOSZEWICZ Artur,6727
+2025,1,2025-05-18,dolnośląskie,BIEJAT Magdalena Agnieszka,66320
+2025,1,2025-05-18,dolnośląskie,BRAUN Grzegorz Michał,77921
+2025,1,2025-05-18,dolnośląskie,HOŁOWNIA Szymon Franciszek,66643
+2025,1,2025-05-18,dolnośląskie,JAKUBIAK Marek,9662
+2025,1,2025-05-18,dolnośląskie,MACIAK Maciej,2717
+2025,1,2025-05-18,dolnośląskie,MENTZEN Sławomir Jerzy,192749
+2025,1,2025-05-18,dolnośląskie,NAWROCKI Karol Tadeusz,362779
+2025,1,2025-05-18,dolnośląskie,SENYSZYN Joanna,17342
+2025,1,2025-05-18,dolnośląskie,STANOWSKI Krzysztof Jakub,17430
+2025,1,2025-05-18,dolnośląskie,TRZASKOWSKI Rafał Kazimierz,519319
+2025,1,2025-05-18,dolnośląskie,WOCH Marek Marian,1249
+2025,1,2025-05-18,dolnośląskie,ZANDBERG Adrian Tadeusz,80976
+2025,1,2025-05-18,dolnośląskie,__VALID__,1421834
+2025,1,2025-05-18,dolnośląskie,__INVALID__,6436
+2025,1,2025-05-18,dolnośląskie,__BALLOTS__,1428270
+2025,1,2025-05-18,dolnośląskie,__ELIGIBLE__,2179515
+2025,1,2025-05-18,kujawsko-pomorskie,BARTOSZEWICZ Artur,4296
+2025,1,2025-05-18,kujawsko-pomorskie,BIEJAT Magdalena Agnieszka,44077
+2025,1,2025-05-18,kujawsko-pomorskie,BRAUN Grzegorz Michał,49699
+2025,1,2025-05-18,kujawsko-pomorskie,HOŁOWNIA Szymon Franciszek,49495
+2025,1,2025-05-18,kujawsko-pomorskie,JAKUBIAK Marek,6378
+2025,1,2025-05-18,kujawsko-pomorskie,MACIAK Maciej,2087
+2025,1,2025-05-18,kujawsko-pomorskie,MENTZEN Sławomir Jerzy,141713
+2025,1,2025-05-18,kujawsko-pomorskie,NAWROCKI Karol Tadeusz,251323
+2025,1,2025-05-18,kujawsko-pomorskie,SENYSZYN Joanna,10304
+2025,1,2025-05-18,kujawsko-pomorskie,STANOWSKI Krzysztof Jakub,12039
+2025,1,2025-05-18,kujawsko-pomorskie,TRZASKOWSKI Rafał Kazimierz,339442
+2025,1,2025-05-18,kujawsko-pomorskie,WOCH Marek Marian,879
+2025,1,2025-05-18,kujawsko-pomorskie,ZANDBERG Adrian Tadeusz,41052
+2025,1,2025-05-18,kujawsko-pomorskie,__VALID__,952784
+2025,1,2025-05-18,kujawsko-pomorskie,__INVALID__,4060
+2025,1,2025-05-18,kujawsko-pomorskie,__BALLOTS__,956844
+2025,1,2025-05-18,kujawsko-pomorskie,__ELIGIBLE__,1508883
+2025,1,2025-05-18,lubelskie,BARTOSZEWICZ Artur,5551
+2025,1,2025-05-18,lubelskie,BIEJAT Magdalena Agnieszka,28625
+2025,1,2025-05-18,lubelskie,BRAUN Grzegorz Michał,96862
+2025,1,2025-05-18,lubelskie,HOŁOWNIA Szymon Franciszek,44662
+2025,1,2025-05-18,lubelskie,JAKUBIAK Marek,9634
+2025,1,2025-05-18,lubelskie,MACIAK Maciej,2143
+2025,1,2025-05-18,lubelskie,MENTZEN Sławomir Jerzy,170886
+2025,1,2025-05-18,lubelskie,NAWROCKI Karol Tadeusz,402906
+2025,1,2025-05-18,lubelskie,SENYSZYN Joanna,9009
+2025,1,2025-05-18,lubelskie,STANOWSKI Krzysztof Jakub,10828
+2025,1,2025-05-18,lubelskie,TRZASKOWSKI Rafał Kazimierz,213269
+2025,1,2025-05-18,lubelskie,WOCH Marek Marian,1811
+2025,1,2025-05-18,lubelskie,ZANDBERG Adrian Tadeusz,36471
+2025,1,2025-05-18,lubelskie,__VALID__,1032657
+2025,1,2025-05-18,lubelskie,__INVALID__,4289
+2025,1,2025-05-18,lubelskie,__BALLOTS__,1036946
+2025,1,2025-05-18,lubelskie,__ELIGIBLE__,1581156
+2025,1,2025-05-18,lubuskie,BARTOSZEWICZ Artur,2133
+2025,1,2025-05-18,lubuskie,BIEJAT Magdalena Agnieszka,17529
+2025,1,2025-05-18,lubuskie,BRAUN Grzegorz Michał,25954
+2025,1,2025-05-18,lubuskie,HOŁOWNIA Szymon Franciszek,22352
+2025,1,2025-05-18,lubuskie,JAKUBIAK Marek,2605
+2025,1,2025-05-18,lubuskie,MACIAK Maciej,779
+2025,1,2025-05-18,lubuskie,MENTZEN Sławomir Jerzy,64453
+2025,1,2025-05-18,lubuskie,NAWROCKI Karol Tadeusz,105266
+2025,1,2025-05-18,lubuskie,SENYSZYN Joanna,4520
+2025,1,2025-05-18,lubuskie,STANOWSKI Krzysztof Jakub,5159
+2025,1,2025-05-18,lubuskie,TRZASKOWSKI Rafał Kazimierz,183321
+2025,1,2025-05-18,lubuskie,WOCH Marek Marian,383
+2025,1,2025-05-18,lubuskie,ZANDBERG Adrian Tadeusz,18325
+2025,1,2025-05-18,lubuskie,__VALID__,452779
+2025,1,2025-05-18,lubuskie,__INVALID__,2190
+2025,1,2025-05-18,lubuskie,__BALLOTS__,454969
+2025,1,2025-05-18,lubuskie,__ELIGIBLE__,735151
+2025,1,2025-05-18,łódzkie,BARTOSZEWICZ Artur,6133
+2025,1,2025-05-18,łódzkie,BIEJAT Magdalena Agnieszka,56981
+2025,1,2025-05-18,łódzkie,BRAUN Grzegorz Michał,75641
+2025,1,2025-05-18,łódzkie,HOŁOWNIA Szymon Franciszek,58080
+2025,1,2025-05-18,łódzkie,JAKUBIAK Marek,10181
+2025,1,2025-05-18,łódzkie,MACIAK Maciej,2391
+2025,1,2025-05-18,łódzkie,MENTZEN Sławomir Jerzy,172049
+2025,1,2025-05-18,łódzkie,NAWROCKI Karol Tadeusz,400817
+2025,1,2025-05-18,łódzkie,SENYSZYN Joanna,13629
+2025,1,2025-05-18,łódzkie,STANOWSKI Krzysztof Jakub,15248
+2025,1,2025-05-18,łódzkie,TRZASKOWSKI Rafał Kazimierz,377192
+2025,1,2025-05-18,łódzkie,WOCH Marek Marian,1043
+2025,1,2025-05-18,łódzkie,ZANDBERG Adrian Tadeusz,56702
+2025,1,2025-05-18,łódzkie,__VALID__,1246087
+2025,1,2025-05-18,łódzkie,__INVALID__,5608
+2025,1,2025-05-18,łódzkie,__BALLOTS__,1251695
+2025,1,2025-05-18,łódzkie,__ELIGIBLE__,1834708
+2025,1,2025-05-18,małopolskie,BARTOSZEWICZ Artur,8090
+2025,1,2025-05-18,małopolskie,BIEJAT Magdalena Agnieszka,63052
+2025,1,2025-05-18,małopolskie,BRAUN Grzegorz Michał,120425
+2025,1,2025-05-18,małopolskie,HOŁOWNIA Szymon Franciszek,89634
+2025,1,2025-05-18,małopolskie,JAKUBIAK Marek,14918
+2025,1,2025-05-18,małopolskie,MACIAK Maciej,2845
+2025,1,2025-05-18,małopolskie,MENTZEN Sławomir Jerzy,295847
+2025,1,2025-05-18,małopolskie,NAWROCKI Karol Tadeusz,643054
+2025,1,2025-05-18,małopolskie,SENYSZYN Joanna,18951
+2025,1,2025-05-18,małopolskie,STANOWSKI Krzysztof Jakub,22519
+2025,1,2025-05-18,małopolskie,TRZASKOWSKI Rafał Kazimierz,445859
+2025,1,2025-05-18,małopolskie,WOCH Marek Marian,1592
+2025,1,2025-05-18,małopolskie,ZANDBERG Adrian Tadeusz,99552
+2025,1,2025-05-18,małopolskie,__VALID__,1826338
+2025,1,2025-05-18,małopolskie,__INVALID__,7119
+2025,1,2025-05-18,małopolskie,__BALLOTS__,1833457
+2025,1,2025-05-18,małopolskie,__ELIGIBLE__,2630055
+2025,1,2025-05-18,mazowieckie,BARTOSZEWICZ Artur,15830
+2025,1,2025-05-18,mazowieckie,BIEJAT Magdalena Agnieszka,151315
+2025,1,2025-05-18,mazowieckie,BRAUN Grzegorz Michał,170378
+2025,1,2025-05-18,mazowieckie,HOŁOWNIA Szymon Franciszek,150536
+2025,1,2025-05-18,mazowieckie,JAKUBIAK Marek,28446
+2025,1,2025-05-18,mazowieckie,MACIAK Maciej,4944
+2025,1,2025-05-18,mazowieckie,MENTZEN Sławomir Jerzy,409064
+2025,1,2025-05-18,mazowieckie,NAWROCKI Karol Tadeusz,897133
+2025,1,2025-05-18,mazowieckie,SENYSZYN Joanna,38173
+2025,1,2025-05-18,mazowieckie,STANOWSKI Krzysztof Jakub,42731
+2025,1,2025-05-18,mazowieckie,TRZASKOWSKI Rafał Kazimierz,957329
+2025,1,2025-05-18,mazowieckie,WOCH Marek Marian,2736
+2025,1,2025-05-18,mazowieckie,ZANDBERG Adrian Tadeusz,168936
+2025,1,2025-05-18,mazowieckie,__VALID__,3037551
+2025,1,2025-05-18,mazowieckie,__INVALID__,13358
+2025,1,2025-05-18,mazowieckie,__BALLOTS__,3050909
+2025,1,2025-05-18,mazowieckie,__ELIGIBLE__,4156733
+2025,1,2025-05-18,opolskie,BARTOSZEWICZ Artur,2107
+2025,1,2025-05-18,opolskie,BIEJAT Magdalena Agnieszka,14838
+2025,1,2025-05-18,opolskie,BRAUN Grzegorz Michał,26750
+2025,1,2025-05-18,opolskie,HOŁOWNIA Szymon Franciszek,23534
+2025,1,2025-05-18,opolskie,JAKUBIAK Marek,2821
+2025,1,2025-05-18,opolskie,MACIAK Maciej,936
+2025,1,2025-05-18,opolskie,MENTZEN Sławomir Jerzy,63664
+2025,1,2025-05-18,opolskie,NAWROCKI Karol Tadeusz,107179
+2025,1,2025-05-18,opolskie,SENYSZYN Joanna,3976
+2025,1,2025-05-18,opolskie,STANOWSKI Krzysztof Jakub,5116
+2025,1,2025-05-18,opolskie,TRZASKOWSKI Rafał Kazimierz,148253
+2025,1,2025-05-18,opolskie,WOCH Marek Marian,408
+2025,1,2025-05-18,opolskie,ZANDBERG Adrian Tadeusz,16984
+2025,1,2025-05-18,opolskie,__VALID__,416566
+2025,1,2025-05-18,opolskie,__INVALID__,2009
+2025,1,2025-05-18,opolskie,__BALLOTS__,418575
+2025,1,2025-05-18,opolskie,__ELIGIBLE__,726177
+2025,1,2025-05-18,podkarpackie,BARTOSZEWICZ Artur,4824
+2025,1,2025-05-18,podkarpackie,BIEJAT Magdalena Agnieszka,23395
+2025,1,2025-05-18,podkarpackie,BRAUN Grzegorz Michał,96959
+2025,1,2025-05-18,podkarpackie,HOŁOWNIA Szymon Franciszek,40971
+2025,1,2025-05-18,podkarpackie,JAKUBIAK Marek,8845
+2025,1,2025-05-18,podkarpackie,MACIAK Maciej,2032
+2025,1,2025-05-18,podkarpackie,MENTZEN Sławomir Jerzy,185021
+2025,1,2025-05-18,podkarpackie,NAWROCKI Karol Tadeusz,449871
+2025,1,2025-05-18,podkarpackie,SENYSZYN Joanna,7691
+2025,1,2025-05-18,podkarpackie,STANOWSKI Krzysztof Jakub,10695
+2025,1,2025-05-18,podkarpackie,TRZASKOWSKI Rafał Kazimierz,188299
+2025,1,2025-05-18,podkarpackie,WOCH Marek Marian,886
+2025,1,2025-05-18,podkarpackie,ZANDBERG Adrian Tadeusz,32335
+2025,1,2025-05-18,podkarpackie,__VALID__,1051824
+2025,1,2025-05-18,podkarpackie,__INVALID__,4185
+2025,1,2025-05-18,podkarpackie,__BALLOTS__,1056009
+2025,1,2025-05-18,podkarpackie,__ELIGIBLE__,1609302
+2025,1,2025-05-18,podlaskie,BARTOSZEWICZ Artur,3810
+2025,1,2025-05-18,podlaskie,BIEJAT Magdalena Agnieszka,16375
+2025,1,2025-05-18,podlaskie,BRAUN Grzegorz Michał,43059
+2025,1,2025-05-18,podlaskie,HOŁOWNIA Szymon Franciszek,32337
+2025,1,2025-05-18,podlaskie,JAKUBIAK Marek,4490
+2025,1,2025-05-18,podlaskie,MACIAK Maciej,1781
+2025,1,2025-05-18,podlaskie,MENTZEN Sławomir Jerzy,95487
+2025,1,2025-05-18,podlaskie,NAWROCKI Karol Tadeusz,199325
+2025,1,2025-05-18,podlaskie,SENYSZYN Joanna,4967
+2025,1,2025-05-18,podlaskie,STANOWSKI Krzysztof Jakub,6547
+2025,1,2025-05-18,podlaskie,TRZASKOWSKI Rafał Kazimierz,130372
+2025,1,2025-05-18,podlaskie,WOCH Marek Marian,399
+2025,1,2025-05-18,podlaskie,ZANDBERG Adrian Tadeusz,20277
+2025,1,2025-05-18,podlaskie,__VALID__,559226
+2025,1,2025-05-18,podlaskie,__INVALID__,2607
+2025,1,2025-05-18,podlaskie,__BALLOTS__,561833
+2025,1,2025-05-18,podlaskie,__ELIGIBLE__,874307
+2025,1,2025-05-18,pomorskie,BARTOSZEWICZ Artur,5805
+2025,1,2025-05-18,pomorskie,BIEJAT Magdalena Agnieszka,58120
+2025,1,2025-05-18,pomorskie,BRAUN Grzegorz Michał,61414
+2025,1,2025-05-18,pomorskie,HOŁOWNIA Szymon Franciszek,69922
+2025,1,2025-05-18,pomorskie,JAKUBIAK Marek,8098
+2025,1,2025-05-18,pomorskie,MACIAK Maciej,2052
+2025,1,2025-05-18,pomorskie,MENTZEN Sławomir Jerzy,171136
+2025,1,2025-05-18,pomorskie,NAWROCKI Karol Tadeusz,268441
+2025,1,2025-05-18,pomorskie,SENYSZYN Joanna,15856
+2025,1,2025-05-18,pomorskie,STANOWSKI Krzysztof Jakub,16683
+2025,1,2025-05-18,pomorskie,TRZASKOWSKI Rafał Kazimierz,460423
+2025,1,2025-05-18,pomorskie,WOCH Marek Marian,1165
+2025,1,2025-05-18,pomorskie,ZANDBERG Adrian Tadeusz,70843
+2025,1,2025-05-18,pomorskie,__VALID__,1209958
+2025,1,2025-05-18,pomorskie,__INVALID__,5466
+2025,1,2025-05-18,pomorskie,__BALLOTS__,1215424
+2025,1,2025-05-18,pomorskie,__ELIGIBLE__,1759968
+2025,1,2025-05-18,śląskie,BARTOSZEWICZ Artur,10551
+2025,1,2025-05-18,śląskie,BIEJAT Magdalena Agnieszka,93143
+2025,1,2025-05-18,śląskie,BRAUN Grzegorz Michał,122604
+2025,1,2025-05-18,śląskie,HOŁOWNIA Szymon Franciszek,115554
+2025,1,2025-05-18,śląskie,JAKUBIAK Marek,15248
+2025,1,2025-05-18,śląskie,MACIAK Maciej,3948
+2025,1,2025-05-18,śląskie,MENTZEN Sławomir Jerzy,322362
+2025,1,2025-05-18,śląskie,NAWROCKI Karol Tadeusz,599900
+2025,1,2025-05-18,śląskie,SENYSZYN Joanna,23672
+2025,1,2025-05-18,śląskie,STANOWSKI Krzysztof Jakub,29062
+2025,1,2025-05-18,śląskie,TRZASKOWSKI Rafał Kazimierz,722469
+2025,1,2025-05-18,śląskie,WOCH Marek Marian,2090
+2025,1,2025-05-18,śląskie,ZANDBERG Adrian Tadeusz,104539
+2025,1,2025-05-18,śląskie,__VALID__,2165142
+2025,1,2025-05-18,śląskie,__INVALID__,9307
+2025,1,2025-05-18,śląskie,__BALLOTS__,2174449
+2025,1,2025-05-18,śląskie,__ELIGIBLE__,3283581
+2025,1,2025-05-18,świętokrzyskie,BARTOSZEWICZ Artur,2626
+2025,1,2025-05-18,świętokrzyskie,BIEJAT Magdalena Agnieszka,18283
+2025,1,2025-05-18,świętokrzyskie,BRAUN Grzegorz Michał,46923
+2025,1,2025-05-18,świętokrzyskie,HOŁOWNIA Szymon Franciszek,24745
+2025,1,2025-05-18,świętokrzyskie,JAKUBIAK Marek,4702
+2025,1,2025-05-18,świętokrzyskie,MACIAK Maciej,1121
+2025,1,2025-05-18,świętokrzyskie,MENTZEN Sławomir Jerzy,85188
+2025,1,2025-05-18,świętokrzyskie,NAWROCKI Karol Tadeusz,236151
+2025,1,2025-05-18,świętokrzyskie,SENYSZYN Joanna,4996
+2025,1,2025-05-18,świętokrzyskie,STANOWSKI Krzysztof Jakub,6035
+2025,1,2025-05-18,świętokrzyskie,TRZASKOWSKI Rafał Kazimierz,140322
+2025,1,2025-05-18,świętokrzyskie,WOCH Marek Marian,496
+2025,1,2025-05-18,świętokrzyskie,ZANDBERG Adrian Tadeusz,19749
+2025,1,2025-05-18,świętokrzyskie,__VALID__,591337
+2025,1,2025-05-18,świętokrzyskie,__INVALID__,2628
+2025,1,2025-05-18,świętokrzyskie,__BALLOTS__,593965
+2025,1,2025-05-18,świętokrzyskie,__ELIGIBLE__,929724
+2025,1,2025-05-18,warmińsko-mazurskie,BARTOSZEWICZ Artur,3188
+2025,1,2025-05-18,warmińsko-mazurskie,BIEJAT Magdalena Agnieszka,26577
+2025,1,2025-05-18,warmińsko-mazurskie,BRAUN Grzegorz Michał,37144
+2025,1,2025-05-18,warmińsko-mazurskie,HOŁOWNIA Szymon Franciszek,31510
+2025,1,2025-05-18,warmińsko-mazurskie,JAKUBIAK Marek,4597
+2025,1,2025-05-18,warmińsko-mazurskie,MACIAK Maciej,1250
+2025,1,2025-05-18,warmińsko-mazurskie,MENTZEN Sławomir Jerzy,96346
+2025,1,2025-05-18,warmińsko-mazurskie,NAWROCKI Karol Tadeusz,168158
+2025,1,2025-05-18,warmińsko-mazurskie,SENYSZYN Joanna,5983
+2025,1,2025-05-18,warmińsko-mazurskie,STANOWSKI Krzysztof Jakub,7187
+2025,1,2025-05-18,warmińsko-mazurskie,TRZASKOWSKI Rafał Kazimierz,215229
+2025,1,2025-05-18,warmińsko-mazurskie,WOCH Marek Marian,562
+2025,1,2025-05-18,warmińsko-mazurskie,ZANDBERG Adrian Tadeusz,25111
+2025,1,2025-05-18,warmińsko-mazurskie,__VALID__,622842
+2025,1,2025-05-18,warmińsko-mazurskie,__INVALID__,3219
+2025,1,2025-05-18,warmińsko-mazurskie,__BALLOTS__,626061
+2025,1,2025-05-18,warmińsko-mazurskie,__ELIGIBLE__,1035537
+2025,1,2025-05-18,wielkopolskie,BARTOSZEWICZ Artur,8353
+2025,1,2025-05-18,wielkopolskie,BIEJAT Magdalena Agnieszka,87208
+2025,1,2025-05-18,wielkopolskie,BRAUN Grzegorz Michał,97413
+2025,1,2025-05-18,wielkopolskie,HOŁOWNIA Szymon Franciszek,104788
+2025,1,2025-05-18,wielkopolskie,JAKUBIAK Marek,12307
+2025,1,2025-05-18,wielkopolskie,MACIAK Maciej,3060
+2025,1,2025-05-18,wielkopolskie,MENTZEN Sławomir Jerzy,258786
+2025,1,2025-05-18,wielkopolskie,NAWROCKI Karol Tadeusz,433259
+2025,1,2025-05-18,wielkopolskie,SENYSZYN Joanna,21174
+2025,1,2025-05-18,wielkopolskie,STANOWSKI Krzysztof Jakub,22660
+2025,1,2025-05-18,wielkopolskie,TRZASKOWSKI Rafał Kazimierz,619185
+2025,1,2025-05-18,wielkopolskie,WOCH Marek Marian,1733
+2025,1,2025-05-18,wielkopolskie,ZANDBERG Adrian Tadeusz,97235
+2025,1,2025-05-18,wielkopolskie,__VALID__,1767161
+2025,1,2025-05-18,wielkopolskie,__INVALID__,7510
+2025,1,2025-05-18,wielkopolskie,__BALLOTS__,1774671
+2025,1,2025-05-18,wielkopolskie,__ELIGIBLE__,2641294
+2025,1,2025-05-18,zachodniopomorskie,BARTOSZEWICZ Artur,3562
+2025,1,2025-05-18,zachodniopomorskie,BIEJAT Magdalena Agnieszka,35057
+2025,1,2025-05-18,zachodniopomorskie,BRAUN Grzegorz Michał,42219
+2025,1,2025-05-18,zachodniopomorskie,HOŁOWNIA Szymon Franciszek,38167
+2025,1,2025-05-18,zachodniopomorskie,JAKUBIAK Marek,4834
+2025,1,2025-05-18,zachodniopomorskie,MACIAK Maciej,1368
+2025,1,2025-05-18,zachodniopomorskie,MENTZEN Sławomir Jerzy,100468
+2025,1,2025-05-18,zachodniopomorskie,NAWROCKI Karol Tadeusz,190398
+2025,1,2025-05-18,zachodniopomorskie,SENYSZYN Joanna,8155
+2025,1,2025-05-18,zachodniopomorskie,STANOWSKI Krzysztof Jakub,9356
+2025,1,2025-05-18,zachodniopomorskie,TRZASKOWSKI Rafał Kazimierz,315978
+2025,1,2025-05-18,zachodniopomorskie,WOCH Marek Marian,671
+2025,1,2025-05-18,zachodniopomorskie,ZANDBERG Adrian Tadeusz,33598
+2025,1,2025-05-18,zachodniopomorskie,__VALID__,783831
+2025,1,2025-05-18,zachodniopomorskie,__INVALID__,3884
+2025,1,2025-05-18,zachodniopomorskie,__BALLOTS__,787715
+2025,1,2025-05-18,zachodniopomorskie,__ELIGIBLE__,1241872
+2025,1,2025-05-18,statki,BARTOSZEWICZ Artur,3
+2025,1,2025-05-18,statki,BIEJAT Magdalena Agnieszka,7
+2025,1,2025-05-18,statki,BRAUN Grzegorz Michał,15
+2025,1,2025-05-18,statki,HOŁOWNIA Szymon Franciszek,16
+2025,1,2025-05-18,statki,JAKUBIAK Marek,1
+2025,1,2025-05-18,statki,MACIAK Maciej,0
+2025,1,2025-05-18,statki,MENTZEN Sławomir Jerzy,36
+2025,1,2025-05-18,statki,NAWROCKI Karol Tadeusz,15
+2025,1,2025-05-18,statki,SENYSZYN Joanna,2
+2025,1,2025-05-18,statki,STANOWSKI Krzysztof Jakub,2
+2025,1,2025-05-18,statki,TRZASKOWSKI Rafał Kazimierz,65
+2025,1,2025-05-18,statki,WOCH Marek Marian,2
+2025,1,2025-05-18,statki,ZANDBERG Adrian Tadeusz,7
+2025,1,2025-05-18,statki,__VALID__,171
+2025,1,2025-05-18,statki,__INVALID__,1
+2025,1,2025-05-18,statki,__BALLOTS__,172
+2025,1,2025-05-18,statki,__ELIGIBLE__,173
+2025,1,2025-05-18,zagranica,BARTOSZEWICZ Artur,2051
+2025,1,2025-05-18,zagranica,BIEJAT Magdalena Agnieszka,28459
+2025,1,2025-05-18,zagranica,BRAUN Grzegorz Michał,51537
+2025,1,2025-05-18,zagranica,HOŁOWNIA Szymon Franciszek,15955
+2025,1,2025-05-18,zagranica,JAKUBIAK Marek,2931
+2025,1,2025-05-18,zagranica,MACIAK Maciej,917
+2025,1,2025-05-18,zagranica,MENTZEN Sławomir Jerzy,77193
+2025,1,2025-05-18,zagranica,NAWROCKI Karol Tadeusz,74829
+2025,1,2025-05-18,zagranica,SENYSZYN Joanna,5798
+2025,1,2025-05-18,zagranica,STANOWSKI Krzysztof Jakub,4182
+2025,1,2025-05-18,zagranica,TRZASKOWSKI Rafał Kazimierz,171471
+2025,1,2025-05-18,zagranica,WOCH Marek Marian,233
+2025,1,2025-05-18,zagranica,ZANDBERG Adrian Tadeusz,30140
+2025,1,2025-05-18,zagranica,__VALID__,465696
+2025,1,2025-05-18,zagranica,__INVALID__,1937
+2025,1,2025-05-18,zagranica,__BALLOTS__,467633
+2025,1,2025-05-18,zagranica,__ELIGIBLE__,524204
+2025,2,2025-06-01,dolnośląskie,NAWROCKI Karol Tadeusz,673218
+2025,2,2025-06-01,dolnośląskie,TRZASKOWSKI Rafał Kazimierz,850305
+2025,2,2025-06-01,dolnośląskie,__VALID__,1523523
+2025,2,2025-06-01,dolnośląskie,__INVALID__,14336
+2025,2,2025-06-01,dolnośląskie,__BALLOTS__,1537859
+2025,2,2025-06-01,dolnośląskie,__ELIGIBLE__,2177407
+2025,2,2025-06-01,kujawsko-pomorskie,NAWROCKI Karol Tadeusz,470660
+2025,2,2025-06-01,kujawsko-pomorskie,TRZASKOWSKI Rafał Kazimierz,539860
+2025,2,2025-06-01,kujawsko-pomorskie,__VALID__,1010520
+2025,2,2025-06-01,kujawsko-pomorskie,__INVALID__,8990
+2025,2,2025-06-01,kujawsko-pomorskie,__BALLOTS__,1019510
+2025,2,2025-06-01,kujawsko-pomorskie,__ELIGIBLE__,1501949
+2025,2,2025-06-01,lubelskie,NAWROCKI Karol Tadeusz,720119
+2025,2,2025-06-01,lubelskie,TRZASKOWSKI Rafał Kazimierz,362053
+2025,2,2025-06-01,lubelskie,__VALID__,1082172
+2025,2,2025-06-01,lubelskie,__INVALID__,9458
+2025,2,2025-06-01,lubelskie,__BALLOTS__,1091630
+2025,2,2025-06-01,lubelskie,__ELIGIBLE__,1567771
+2025,2,2025-06-01,lubuskie,NAWROCKI Karol Tadeusz,201982
+2025,2,2025-06-01,lubuskie,TRZASKOWSKI Rafał Kazimierz,281477
+2025,2,2025-06-01,lubuskie,__VALID__,483459
+2025,2,2025-06-01,lubuskie,__INVALID__,4235
+2025,2,2025-06-01,lubuskie,__BALLOTS__,487694
+2025,2,2025-06-01,lubuskie,__ELIGIBLE__,731055
+2025,2,2025-06-01,łódzkie,NAWROCKI Karol Tadeusz,701859
+2025,2,2025-06-01,łódzkie,TRZASKOWSKI Rafał Kazimierz,617350
+2025,2,2025-06-01,łódzkie,__VALID__,1319209
+2025,2,2025-06-01,łódzkie,__INVALID__,12518
+2025,2,2025-06-01,łódzkie,__BALLOTS__,1331727
+2025,2,2025-06-01,łódzkie,__ELIGIBLE__,1821514
+2025,2,2025-06-01,małopolskie,NAWROCKI Karol Tadeusz,1132733
+2025,2,2025-06-01,małopolskie,TRZASKOWSKI Rafał Kazimierz,791494
+2025,2,2025-06-01,małopolskie,__VALID__,1924227
+2025,2,2025-06-01,małopolskie,__INVALID__,17516
+2025,2,2025-06-01,małopolskie,__BALLOTS__,1941743
+2025,2,2025-06-01,małopolskie,__ELIGIBLE__,2625479
+2025,2,2025-06-01,mazowieckie,NAWROCKI Karol Tadeusz,1585019
+2025,2,2025-06-01,mazowieckie,TRZASKOWSKI Rafał Kazimierz,1602996
+2025,2,2025-06-01,mazowieckie,__VALID__,3188015
+2025,2,2025-06-01,mazowieckie,__INVALID__,30412
+2025,2,2025-06-01,mazowieckie,__BALLOTS__,3218427
+2025,2,2025-06-01,mazowieckie,__ELIGIBLE__,4152285
+2025,2,2025-06-01,opolskie,NAWROCKI Karol Tadeusz,210321
+2025,2,2025-06-01,opolskie,TRZASKOWSKI Rafał Kazimierz,236992
+2025,2,2025-06-01,opolskie,__VALID__,447313
+2025,2,2025-06-01,opolskie,__INVALID__,3997
+2025,2,2025-06-01,opolskie,__BALLOTS__,451310
+2025,2,2025-06-01,opolskie,__ELIGIBLE__,720842
+2025,2,2025-06-01,podkarpackie,NAWROCKI Karol Tadeusz,780429
+2025,2,2025-06-01,podkarpackie,TRZASKOWSKI Rafał Kazimierz,318485
+2025,2,2025-06-01,podkarpackie,__VALID__,1098914
+2025,2,2025-06-01,podkarpackie,__INVALID__,8380
+2025,2,2025-06-01,podkarpackie,__BALLOTS__,1107294
+2025,2,2025-06-01,podkarpackie,__ELIGIBLE__,1594072
+2025,2,2025-06-01,podlaskie,NAWROCKI Karol Tadeusz,357847
+2025,2,2025-06-01,podlaskie,TRZASKOWSKI Rafał Kazimierz,225062
+2025,2,2025-06-01,podlaskie,__VALID__,582909
+2025,2,2025-06-01,podlaskie,__INVALID__,5114
+2025,2,2025-06-01,podlaskie,__BALLOTS__,588023
+2025,2,2025-06-01,podlaskie,__ELIGIBLE__,867625
+2025,2,2025-06-01,pomorskie,NAWROCKI Karol Tadeusz,521725
+2025,2,2025-06-01,pomorskie,TRZASKOWSKI Rafał Kazimierz,754823
+2025,2,2025-06-01,pomorskie,__VALID__,1276548
+2025,2,2025-06-01,pomorskie,__INVALID__,12413
+2025,2,2025-06-01,pomorskie,__BALLOTS__,1288961
+2025,2,2025-06-01,pomorskie,__ELIGIBLE__,1775803
+2025,2,2025-06-01,śląskie,NAWROCKI Karol Tadeusz,1111205
+2025,2,2025-06-01,śląskie,TRZASKOWSKI Rafał Kazimierz,1172343
+2025,2,2025-06-01,śląskie,__VALID__,2283548
+2025,2,2025-06-01,śląskie,__INVALID__,21826
+2025,2,2025-06-01,śląskie,__BALLOTS__,2305374
+2025,2,2025-06-01,śląskie,__ELIGIBLE__,3261536
+2025,2,2025-06-01,świętokrzyskie,NAWROCKI Karol Tadeusz,401863
+2025,2,2025-06-01,świętokrzyskie,TRZASKOWSKI Rafał Kazimierz,229895
+2025,2,2025-06-01,świętokrzyskie,__VALID__,631758
+2025,2,2025-06-01,świętokrzyskie,__INVALID__,5056
+2025,2,2025-06-01,świętokrzyskie,__BALLOTS__,636814
+2025,2,2025-06-01,świętokrzyskie,__ELIGIBLE__,921271
+2025,2,2025-06-01,warmińsko-mazurskie,NAWROCKI Karol Tadeusz,320797
+2025,2,2025-06-01,warmińsko-mazurskie,TRZASKOWSKI Rafał Kazimierz,343483
+2025,2,2025-06-01,warmińsko-mazurskie,__VALID__,664280
+2025,2,2025-06-01,warmińsko-mazurskie,__INVALID__,5758
+2025,2,2025-06-01,warmińsko-mazurskie,__BALLOTS__,670038
+2025,2,2025-06-01,warmińsko-mazurskie,__ELIGIBLE__,1035396
+2025,2,2025-06-01,wielkopolskie,NAWROCKI Karol Tadeusz,837129
+2025,2,2025-06-01,wielkopolskie,TRZASKOWSKI Rafał Kazimierz,1030175
+2025,2,2025-06-01,wielkopolskie,__VALID__,1867304
+2025,2,2025-06-01,wielkopolskie,__INVALID__,18057
+2025,2,2025-06-01,wielkopolskie,__BALLOTS__,1885361
+2025,2,2025-06-01,wielkopolskie,__ELIGIBLE__,2633052
+2025,2,2025-06-01,zachodniopomorskie,NAWROCKI Karol Tadeusz,359267
+2025,2,2025-06-01,zachodniopomorskie,TRZASKOWSKI Rafał Kazimierz,496666
+2025,2,2025-06-01,zachodniopomorskie,__VALID__,855933
+2025,2,2025-06-01,zachodniopomorskie,__INVALID__,7540
+2025,2,2025-06-01,zachodniopomorskie,__BALLOTS__,863473
+2025,2,2025-06-01,zachodniopomorskie,__ELIGIBLE__,1254853
+2025,2,2025-06-01,statki,NAWROCKI Karol Tadeusz,67
+2025,2,2025-06-01,statki,TRZASKOWSKI Rafał Kazimierz,105
+2025,2,2025-06-01,statki,__VALID__,172
+2025,2,2025-06-01,statki,__INVALID__,4
+2025,2,2025-06-01,statki,__BALLOTS__,176
+2025,2,2025-06-01,statki,__ELIGIBLE__,204
+2025,2,2025-06-01,zagranica,NAWROCKI Karol Tadeusz,220637
+2025,2,2025-06-01,zagranica,TRZASKOWSKI Rafał Kazimierz,383722
+2025,2,2025-06-01,zagranica,__VALID__,604359
+2025,2,2025-06-01,zagranica,__INVALID__,3684
+2025,2,2025-06-01,zagranica,__BALLOTS__,608043
+2025,2,2025-06-01,zagranica,__ELIGIBLE__,721608

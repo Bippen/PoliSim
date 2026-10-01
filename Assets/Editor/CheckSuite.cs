@@ -212,6 +212,7 @@ namespace PoliSim.EditorTools
             ("GermanNightDiagnostic", GermanNightDiagnostic.Run),   // §707 (D-DE): the German night's arithmetic - the count on the 2025 returns reproduces the Bundestag, 24b's tiles k × register, one Union ink
             ("GermanFormationDiagnostic", GermanFormationDiagnostic.Run),   // §705: the chancellor's election under Art. 63 GG on the parties' dated declarations - the Union one group, convening, the fourteen days, the most votes, the reference
             ("FormationTimeDiagnostic", FormationTimeDiagnostic.Run),   // §714: each country's formation time from the record's own dates (election to installation)
+            ("PresidentialElectionDiagnostic", PresidentialElectionDiagnostic.Run),   // PS-5 with S7 (§720): the two-round rule counted on the PKW's four rounds - the run-offs, the presidents of record, the terms, the rule's edges
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature
             ("PreStartRecordDiagnostic", PreStartRecordDiagnostic.Run),   // §709: the pre-start record - the generated table its CSV, every start's seed window, the reading before and after, Germany 2025 and Sweden 2026 with the record

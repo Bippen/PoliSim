@@ -1,0 +1,61 @@
+# fetch_log for ElectionsData/poland/raw/president/ - S7 presidential returns sourcing, 2026-10-01
+# columns: utc_timestamp  http_status(final, curl -L)  bytes_downloaded  saved_as  url
+# curl -s -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" -o <saved_as> <url>; no re-encoding. The second ISAP batch used a cookie jar (-c/-b).
+# Lines marked [NOT KEPT] are failed attempts whose bodies (0-byte, Incapsula 403 or 404 pages) were deleted; they are not sources.
+2026-10-01T11:45:51Z 200 944 eli_meta_DU_2025_652.json https://api.sejm.gov.pl/eli/acts/DU/2025/652
+2026-10-01T11:45:52Z 200 916 eli_meta_DU_2025_714.json https://api.sejm.gov.pl/eli/acts/DU/2025/714
+2026-10-01T11:45:53Z 200 989 eli_meta_DU_2020_1163.json https://api.sejm.gov.pl/eli/acts/DU/2020/1163
+2026-10-01T11:45:54Z 200 957 eli_meta_DU_2020_1238.json https://api.sejm.gov.pl/eli/acts/DU/2020/1238
+2026-10-01T11:46:06Z 200 612769 eli_DU_2025_652_pkw_prezydent2025_r1.pdf https://api.sejm.gov.pl/eli/acts/DU/2025/652/text.pdf
+2026-10-01T11:46:08Z 200 530558 eli_DU_2025_714_pkw_prezydent2025_r2.pdf https://api.sejm.gov.pl/eli/acts/DU/2025/714/text.pdf
+2026-10-01T11:46:09Z 200 1795722 eli_DU_2020_1163_pkw_prezydent2020_r1.pdf https://api.sejm.gov.pl/eli/acts/DU/2020/1163/text.pdf
+2026-10-01T11:46:10Z 200 560082 eli_DU_2020_1238_pkw_prezydent2020_r2.pdf https://api.sejm.gov.pl/eli/acts/DU/2020/1238/text.pdf
+2026-10-01T11:46:11Z 200 36225 eli_DU_2020_1163_pkw_prezydent2020_r1.html https://api.sejm.gov.pl/eli/acts/DU/2020/1163/text.html
+2026-10-01T11:46:13Z 200 637459 eli_DU_2020_1238_pkw_prezydent2020_r2.html https://api.sejm.gov.pl/eli/acts/DU/2020/1238/text.html
+2026-10-01T11:47:21Z 200 11565 kbw_page_Prezydent_2025.html https://danewyborcze.kbw.gov.pl/index8faa.html?title=Prezydent_2025
+2026-10-01T11:47:22Z 200 11566 kbw_page_Prezydent_2020.html https://danewyborcze.kbw.gov.pl/index5ac3.html?title=Prezydent_2020
+2026-10-01T11:47:22Z 200 15377 kbw_page_2025-05-18.html https://danewyborcze.kbw.gov.pl/indexe988.html?title=2025-05-18
+2026-10-01T11:47:23Z 200 15462 kbw_page_2025-06-01.html https://danewyborcze.kbw.gov.pl/indexef2f.html?title=2025-06-01
+2026-10-01T11:47:24Z 200 15075 kbw_page_2020-06-28.html https://danewyborcze.kbw.gov.pl/index55b7.html?title=2020-06-28
+2026-10-01T11:47:24Z 200 15068 kbw_page_2020-07-12.html https://danewyborcze.kbw.gov.pl/indexdeda.html?title=2020-07-12
+2026-10-01T11:47:25Z 200 3740 kbw_2025_1_komitety_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/1/komitety_csv.1752152970.zip
+2026-10-01T11:47:25Z 200 1673 kbw_2025_1_kandydaci_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/1/kandydaci_csv.1752152970.zip
+2026-10-01T11:47:26Z 200 2813 kbw_2025_1_wyniki_gl_na_kandydatow_po_wojewodztwach_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/1/wyniki_gl_na_kandydatow_po_wojewodztwach_csv.1752152970.zip
+2026-10-01T11:47:27Z 200 734 kbw_2025_2_kandydaci_w_drugiej_turze_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/2/kandydaci_w_drugiej_turze_csv.1752152970.zip
+2026-10-01T11:47:27Z 200 2154 kbw_2025_2_wyniki_gl_na_kandydatow_po_wojewodztwach_w_drugiej_turze_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/2/wyniki_gl_na_kandydatow_po_wojewodztwach_w_drugiej_turze_csv.1752152970.zip
+2026-10-01T11:47:28Z 200 1590 kbw_2020_1_kandydaci_csv.zip https://danewyborcze.kbw.gov.pl/dane/2020/prezydent/1/kandydaci_csv.zip
+2026-10-01T11:47:29Z 200 2684 kbw_2020_1_wyniki_gl_na_kand_po_wojewodztwach_csv.zip https://danewyborcze.kbw.gov.pl/dane/2020/prezydent/1/wyniki_gl_na_kand_po_wojewodztwach_csv.zip
+2026-10-01T11:47:29Z 200 689 kbw_2020_2_kandydaci_csv.zip https://danewyborcze.kbw.gov.pl/dane/2020/prezydent/2/kandydaci_csv.zip
+2026-10-01T11:47:30Z 200 2128 kbw_2020_2_wyniki_gl_na_kand_po_wojewodztwach_csv.zip https://danewyborcze.kbw.gov.pl/dane/2020/prezydent/2/wyniki_gl_na_kand_po_wojewodztwach_csv.zip
+2026-10-01T11:48:37Z 200 966 eli_meta_MP_2025_376.json https://api.sejm.gov.pl/eli/acts/MP/2025/376
+2026-10-01T11:48:38Z 200 968 eli_meta_MP_2020_532.json https://api.sejm.gov.pl/eli/acts/MP/2020/532
+2026-10-01T11:48:39Z 200 168433 eli_MP_2025_376_pkw_lista_kandydatow_2025.pdf https://api.sejm.gov.pl/eli/acts/MP/2025/376/text.pdf
+2026-10-01T11:48:40Z 200 268586 eli_MP_2020_532_pkw_lista_kandydatow_2020.pdf https://api.sejm.gov.pl/eli/acts/MP/2020/532/text.pdf
+2026-10-01T11:49:29Z 302 0 isap_WDU19970780483_DocDetails.html https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU19970780483  [NOT KEPT: Incapsula cookie redirect loop, nothing written]
+2026-10-01T11:49:31Z 302 0 isap_WDU19970780483_konstytucja_O_D19970483.pdf https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU19970780483/O/D19970483.pdf  [NOT KEPT: Incapsula cookie redirect loop, nothing written]
+2026-10-01T11:49:32Z 302 0 isap_WDU19970780483_konstytucja_U_D19970483Lj.pdf https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU19970780483/U/D19970483Lj.pdf  [NOT KEPT: Incapsula cookie redirect loop, nothing written]
+2026-10-01T11:49:33Z 200 79643 eli_meta_DU_1997_483.json https://api.sejm.gov.pl/eli/acts/DU/1997/483
+2026-10-01T11:49:50Z 403 967 isap_WDU19970780483_konstytucja_U_D19970483Lj.pdf https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU19970780483/U/D19970483Lj.pdf  [NOT KEPT: Incapsula 403 "Request unsuccessful", body deleted]
+2026-10-01T11:49:50Z 403 969 isap_WDU19970780483_konstytucja_O_D19970483.pdf https://isap.sejm.gov.pl/isap.nsf/download.xsp/WDU19970780483/O/D19970483.pdf  [NOT KEPT: Incapsula 403 "Request unsuccessful", body deleted]
+2026-10-01T11:49:51Z 403 969 isap_WDU19970780483_DocDetails.html https://isap.sejm.gov.pl/isap.nsf/DocDetails.xsp?id=WDU19970780483  [NOT KEPT: Incapsula 403 "Request unsuccessful", body deleted]
+2026-10-01T11:50:20Z 200 13232489 eli_DU_1997_483_konstytucja.pdf https://api.sejm.gov.pl/eli/acts/DU/1997/483/text.pdf
+2026-10-01T11:50:35Z 200 293929 eli_DU_1997_483_konstytucja_U_D19970483Lj.pdf https://api.sejm.gov.pl/eli/acts/DU/1997/483/text/U/D19970483Lj.pdf
+2026-10-01T11:52:04Z 200 162816 secondary_pis_org_pl_rada-polityczna-prawa-i-sprawiedliwosci.html https://pis.org.pl/aktualnosci/rada-polityczna-prawa-i-sprawiedliwosci
+2026-10-01T11:52:06Z 200 164875 secondary_pis_org_pl_nawrocki2025.html https://pis.org.pl/nawrocki2025/
+2026-10-01T11:52:07Z 404 96039 secondary_lewica_org_pl_11355-magdalena-biejat-kandydatka-lewicy.html https://lewica.org.pl/aktualnosci/11355-magdalena-biejat-kandydatka-lewicy-w-wyborach-prezydenckich  [NOT KEPT: 404 page, body deleted; article re-fetched at its new slug below]
+2026-10-01T11:52:48Z 200 105075 secondary_lewica_org_pl_magdalena-biejat-kandydatka-lewicy.html https://lewica.org.pl/aktualnosci/magdalena-biejat-kandydatka-lewicy-w-wyborach-prezydenckich/
+2026-10-01T11:54:48Z 200 32028 kbw_2025_1_wyniki_gl_na_kandydatow_po_powiatach_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/1/wyniki_gl_na_kandydatow_po_powiatach_csv.1752152970.zip
+2026-10-01T11:54:49Z 200 23930 kbw_2025_2_wyniki_gl_na_kandydatow_po_powiatach_w_drugiej_turze_csv.1752152970.zip https://danewyborcze.kbw.gov.pl/dane/2025/prezydent/2/wyniki_gl_na_kandydatow_po_powiatach_w_drugiej_turze_csv.1752152970.zip
+2026-10-01T11:56:33Z 200 15847 eli_search_DU_2025_prezydent.json https://api.sejm.gov.pl/eli/acts/search?publisher=DU&year=2025&title=Prezydenta%20Rzeczypospolitej&limit=200
+2026-10-01T11:56:34Z 200 2323 eli_search_DU_2020_obwieszczenie_PKW.json https://api.sejm.gov.pl/eli/acts/search?publisher=DU&year=2020&title=Obwieszczenie%20Pa%C5%84stwowej%20Komisji%20Wyborczej&limit=200
+2026-10-01T11:56:34Z 200 1307 eli_search_MP_2025_kandydat.json https://api.sejm.gov.pl/eli/acts/search?publisher=MP&year=2025&title=kandydat&limit=200
+2026-10-01T11:56:35Z 200 5220 eli_search_MP_2020_kandydat.json https://api.sejm.gov.pl/eli/acts/search?publisher=MP&year=2020&title=kandydat&limit=200
+2026-10-01T11:56:36Z 200 21700 kbw_page_Strona_glowna.html https://danewyborcze.kbw.gov.pl/indexc4fa.html?title=Strona_g%C5%82%C3%B3wna
+2026-10-01T11:56:44Z 200 996 eli_meta_DU_2020_967.json https://api.sejm.gov.pl/eli/acts/DU/2020/967
+# Probes NOT saved (tried 2026-10-01 ~11:51Z from the scratchpad, for a committee statement on party support; none relied on):
+#   000 0      https://karolnawrocki2025.pl/            (no response)
+#   403 5323   https://kw.trzaskowski.pl                 (final https://kw.trzaskowski.pl/)
+#   200 31652  https://biejat2025.pl/                    (now an unrelated portal)
+#   200 90802  http://www.holownia2025.pl                (redirects to https://pchig.pl/, unrelated)
+#   000 0      http://komitet.mentzen2025.pl             (no response)
+#   200 122739 https://www.braun2025.pl/komitet          (final https://www.braun2025.pl/komitet/; no party-support text found)
