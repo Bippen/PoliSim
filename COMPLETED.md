@@ -35664,3 +35664,18 @@ Latent, stated: **the cost** - a formation per candidate every German day was ~1
 **What the measurement says, for Elias (owed, not tuned):** the reading scores LEVELS against fixed neutrals (6 % unemployment, 2 % inflation, the same for every country) and never takes growth, so it reads Germany's late-2024 economy as good whatever output did (3.4 % unemployment scores 93), and the government it judges GAINS. Duch & Stevenson's unit is a retrospective CHANGE (better / same / worse over the past year). The seed gives the record the term it lacked; what the record makes of a term is the reading's, unchanged here by the ruling's "tune nothing". The USA's, Italy's and Poland's records are seeded but no election is on their calendars yet, so none of them is judged.
 
 **Tier SIMULATION** (11 simulation paths; the review skipped: the sentinel did not move, nothing books money): the simulation bar **57 of 57**, both sentinels the baseline's (`sim709`; `PublicationCadenceCheck` clean with the USA's seeded entries); the cheap bar **86 of 86** (`cheap709`); named `n709a` (PreStartRecordDiagnostic, EconomicVoteDiagnostic, PublicationCadenceCheck, GermanCampaignDiagnostic - whose German campaign now logs *"perceived index 70.0: SPD +1.76 pp, Grune +0.37 pp, FDP +0.22 pp"*); the elections backtests `elec709a` / `elec709b`.
+
+
+## 710. R-SP5 RETIRED ON EVERY MAP THE RENDERER DRAWS: THE CHIP'S TWO-LETTER CODE IS THE LABEL, THE NAME THE FIRST LINE OF THE CHIP'S TOOLTIP (2026-10-01)
+
+**The ruling** (Elias, 2026-10-01, item 1): *R-SP5 retired on every map the renderer draws: the chip's two-letter code is the label, and the name goes first in the chip's tooltip.* (Design's Q7, board 23b, which §701 held for Elias and the overnight report printed verbatim.)
+
+**Built** (`MapRenderer`, the one renderer behind the Desk's map, the Statistics sheet's and the ladder film's):
+- **no name is drawn beside a chip** - §A.9a's ladder for the names (full name -> ISO alpha-3 -> shrink), its metrics (`LastLabelRects`, `LastMinLabelSeparation`, `LastLabelRung`, `LastLabelViolation`, `MinLabelSeparationPx`) and the ISO-3 table retired with it; the chip's tag is the label;
+- **nothing reserved for a name**: the right-hand reserve the widest name had taken is gone, so the six spread over the map's width;
+- **the name first in the chip's tooltip**: the renderer's own hover box already led with the name and stays on the Desk; the Statistics sheet, which carries 19b slips, turns it off (`OwnTooltip`) and hangs a slip on each chip (`map:chip:<country>`, `StatsSlips`): the country's name its head, then GDP, unemployment and approval (what the hover box had carried) - the slip clear of its chip by §708's rule;
+- what the renderer laid down is published for the harness and the page: `LastChipRects`, `LastMinChipSeparation`.
+
+**Checked**: the film's map assert is now the chips' (`AssertMapChips`: six chips, none overlapping - R-SP5's label-separation assert retired with the names it measured): *"6 chip(s), the tag each one's label, smallest gap 26.0 px, 0 overlapping pair(s)"*; the International slips frame pins Germany's chip slip (*GERMANY · GDP US$5.21T · UNEMPLOYMENT 4.4% · APPROVAL 45.7*), in place of the pair head's; the ladder film's caption reads `chips N gap G`.
+
+**Tier UI**: the cheap bar **86 of 86** (`cheap710`); the dry film `drys710` (Sweden 155, Germany 147, 0 failed); the real film `se710b_1280` (Sweden, 155 captured, 0 failed, exit 0) - `se710_1280` before it exited 1 on eighteen HEIGHT MISMATCH frames from `06h` on (the editor's window resized mid-film to 947 px, environmental; the re-run clean).

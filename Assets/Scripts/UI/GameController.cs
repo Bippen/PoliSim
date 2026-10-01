@@ -6020,11 +6020,11 @@ namespace PoliSim.UI
                         float h = Mathf.Round(w * 0.6f);
                         Rect r = cursor.Place(w, h, captionHeight);
                         GUIStyle style = LadderStyle(w, 480f);
+                        _mapRenderer.OwnTooltip = true;
                         _mapRenderer.Draw(r, _world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, style, out _, out _);
-                        // R-SP5: the measurement on the film itself - the names' highest ladder rung and
-                        // the smallest gap the renderer measured at this rung (inf = one label or none).
-                        string separation = float.IsPositiveInfinity(_mapRenderer.LastMinLabelSeparation) ? "-" : Mathf.Round(_mapRenderer.LastMinLabelSeparation).ToString(CultureInfo.InvariantCulture);
-                        LadderCaption(r, $"{w}x{h} type {style.fontSize} rung {_mapRenderer.LastLabelRung} gap {separation}", captionHeight);
+                        // §710 (R-SP5 retired): the measurement on the film itself - the smallest gap between two chips at this size (- with fewer than two)
+                        string separation = float.IsPositiveInfinity(_mapRenderer.LastMinChipSeparation) ? "-" : Mathf.Round(_mapRenderer.LastMinChipSeparation).ToString(CultureInfo.InvariantCulture);
+                        LadderCaption(r, $"{w}x{h} type {style.fontSize} chips {_mapRenderer.LastChipRects.Count} gap {separation}", captionHeight);
                     }
                     break;
                 case "compass":
@@ -9756,6 +9756,7 @@ namespace PoliSim.UI
 
             Rect mapRect = GUILayoutUtility.GetRect(10f, WorldMapHeight, GUILayout.ExpandWidth(true));
             _mapRenderer.VisibleClip = _statsVisibleContent;   // D-ST: this map scrolls - its rotated lines clip to what the view shows; the Desk's map never does
+            _mapRenderer.OwnTooltip = false;   // §710: this sheet hangs its own slips on the chips (below) - the name the first line
             _mapRenderer.Draw(
                 mapRect,
                 _world.Countries,
@@ -9767,6 +9768,9 @@ namespace PoliSim.UI
                 out CountryId? clickedCountry,
                 out MapEventMarker? clickedEvent);
             _mapRenderer.VisibleClip = null;
+            _mapRenderer.OwnTooltip = true;
+            // §710 (R-SP5 retired): the chip's tag is the label; each chip's slip carries the name first (StatsSlips, "map:chip:")
+            foreach (KeyValuePair<CountryId, Rect> chip in _mapRenderer.LastChipRects) { StatsAnchor(chip.Value, "map:chip:" + chip.Key); }
 
             if (clickedCountry.HasValue)
             {

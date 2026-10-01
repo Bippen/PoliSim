@@ -164,12 +164,8 @@ namespace PoliSim.UI
 
             Dictionary<CountryId, float> nodeDiameters = GetNodeDiameters(countries);
 
-            // Measured against labelStyle (the style country names actually render in below), not a
-            // fixed guess - recomputed every call since labelStyle's own font size changes every frame
-            // in GameController.RescaleStylesToScreen as the window resizes. The original fixed 90f
-            // LabelReserveWidth undersized this for "Sweden"/"Germany" at some window sizes, the same
-            // label-truncation root cause found in the Sector/TaxLine/WelfareProgram/Policy-Web labels.
-            float labelReserveWidth = GetLabelReserveWidth(countries, labelStyle);
+            // §710 (R-SP5 retired): no name beside a chip, so nothing is reserved on the right for one - the inset is the margin and the chip's own half
+            float labelReserveWidth = 0f;
             _lastLabelStyle = labelStyle;   // P5-2: the links snap to the same grid the chips do
 
             // Trade lines render first (underneath the nodes) - real TradePartner data, not decoration.
@@ -221,7 +217,7 @@ namespace PoliSim.UI
                 Vector2 pixel = placed[country.Id];
                 float diameter = nodeDiameters[country.Id];
                 // P5-2 (board 6b row 1): a chip, 26 x 20 at 1x, in the country's own outline at its centre - the node's size no longer
-                // says anything (the disc's diameter did); the chip carries the two-letter tag, the label beside it keeps the name.
+                // says anything (the disc's diameter did); the chip carries the two-letter tag - and since §710 the tag is the label, the name the first line of the chip's tooltip.
                 float u = Mathf.Max(1f, labelStyle.fontSize) / 14f;
                 var nodeRect = new Rect(Mathf.Round(pixel.x - ChipWidth * u * 0.5f), Mathf.Round(pixel.y - ChipHeight * u * 0.5f), Mathf.Round(ChipWidth * u), Mathf.Round(ChipHeight * u));
                 DrawChip(nodeRect, UiPalette.GetCountryColor(country.Id), country.Id, labelStyle);
@@ -237,13 +233,10 @@ namespace PoliSim.UI
                 }
             }
 
-            // R-SP5: the names on their ladder, measured; drawn after every node so no name sits under a dot.
-            foreach (LabelPlacement label in PlaceLabels(countries, nodeRects, labelStyle))
-            {
-                GUI.Label(label.Rect, label.Text, label.Style);
-            }
+            // §710 (R-SP5 retired): the chip's tag is the label - no name is drawn beside it; the chips are recorded for the harness and the page's slips
+            RecordChips(nodeRects);
 
-            if (hoveredCountry.HasValue)
+            if (hoveredCountry.HasValue && OwnTooltip)
             {
                 DrawCountryTooltip(mousePosition, hoveredCountry.Value, countries, labelStyle);
             }
@@ -480,47 +473,30 @@ namespace PoliSim.UI
             return true;
         }
 
-        /// <summary>Reserved space (px) on every side so a node - and, on the right, its name label, which always renders to the right of the node - can never sit flush against or past the panel's actual edge, at any panel size. The largest a node can ever be (BaseNodeDiameter, before the size-clamp shrinks smaller-GDP countries further); the label's own width is now measured (see GetLabelReserveWidth), not a fixed guess.</summary>
+        /// <summary>Reserved space (px) on every side so a chip can never sit flush against or past the panel's actual edge, at any panel size (§710: no name renders beside a chip any more, so nothing is reserved on the right for one).</summary>
         private const float PanelMargin = 12f;
         private const float LabelGap = 3f;
 
         /// <summary>
-        /// R-SP5 (the stage-prep micro-pass, 2026-08-28): country names on the map take §A.9a's resort
-        /// ladder - the full name, then the abbreviation, then shrink toward the guard's floor - and the
-        /// renderer MEASURES what it laid down (LastMinLabelSeparation) for the harness to assert. The
-        /// abbreviation rung is ISO 3166-1 alpha-3: a standard identifier, not an invention (the seed
-        /// sourcing already speaks in these codes). No label is ever moved off its node's row: a name
-        /// that still cannot clear the floor after the ladder is RECORDED, never nudged.
+        /// §710 (Elias's ruling of 2026-10-01, item 1: "R-SP5 retired on every map the renderer draws: the chip's two-letter code is the label, and
+        /// the name goes first in the chip's tooltip"). No name is drawn beside a chip - the chip's tag IS the label (Design's Q7, board 23b: "the
+        /// name beside it is a second channel for the same fact"; R-SP5's ladder of 2026-08-28 had put DEU beside a chip reading DE). The name is the
+        /// first line of the chip's tooltip: the renderer's own hover box (<see cref="DrawCountryTooltip"/>), or - where the page hangs its own slips
+        /// on the chips (the Statistics sheet) - the page's, with <see cref="OwnTooltip"/> off. Nothing is reserved beside a chip for a name any
+        /// more, so the six spread over the map's width. What the last Draw laid down is published for the harness and the page's anchors: each
+        /// chip's rect, and the smallest gap between two chips.
         /// </summary>
-        private static readonly Dictionary<CountryId, string> Iso3Codes = new Dictionary<CountryId, string>
-        {
-            { CountryId.USA, "USA" },
-            { CountryId.Sweden, "SWE" },
-            { CountryId.Germany, "DEU" },
-            { CountryId.France, "FRA" },
-            { CountryId.Italy, "ITA" },
-            { CountryId.Poland, "POL" },
-        };
+        private readonly Dictionary<CountryId, Rect> _lastChipRects = new Dictionary<CountryId, Rect>();
 
-        /// <summary>The clearance every label must keep from every other label and every other country's node - asserted by the harness after the map's captures, carried per rung on the ladder film.</summary>
-        public const float MinLabelSeparationPx = 4f;
+        /// <summary>Each chip's rect as the last Draw laid it down.</summary>
+        public IReadOnlyDictionary<CountryId, Rect> LastChipRects => _lastChipRects;
 
-        private readonly List<(string Text, Rect Rect)> _lastLabelRects = new List<(string Text, Rect Rect)>();
+        /// <summary>The smallest gap between two chips in the last Draw (zero where two touch or overlap); infinity with fewer than two.</summary>
+        public float LastMinChipSeparation { get; private set; } = float.PositiveInfinity;
 
-        /// <summary>What the last Draw laid down, for the harness: the label rects; the smallest gap between any label and any other label or node; the highest rung the ladder needed (1 the full name, 3 the abbreviation, 4 the shrink); and the first pair still under the floor, or null.</summary>
-        public IReadOnlyList<(string Text, Rect Rect)> LastLabelRects => _lastLabelRects;
-        public float LastMinLabelSeparation { get; private set; } = float.PositiveInfinity;
-        public int LastLabelRung { get; private set; } = 1;
-        public string LastLabelViolation { get; private set; }
-
-        private struct LabelPlacement
-        {
-            public CountryId Id;
-            public string Text;
-            public Rect Rect;
-            public GUIStyle Style;
-            public int Rung;
-        }
+        /// <summary>False where the page hangs its own slips on the chips (the Statistics sheet): the renderer then draws no hover box of its own.
+        /// The one renderer serves every map, so each call site sets it.</summary>
+        public bool OwnTooltip { get; set; } = true;
 
         /// <summary>The gap between two rects along whichever axis separates them; zero when they overlap.</summary>
         private static float Gap(Rect a, Rect b)
@@ -530,153 +506,18 @@ namespace PoliSim.UI
             return Mathf.Max(dx, dy);
         }
 
-        private static Rect LabelRect(Rect node, string text, GUIStyle style)
+        /// <summary>§710: the chips' rects recorded, and the smallest gap between two of them.</summary>
+        private void RecordChips(Dictionary<CountryId, Rect> nodeRects)
         {
-            Vector2 size = style.CalcSize(new GUIContent(text));
-            return new Rect(node.xMax + LabelGap, node.center.y - size.y * 0.5f, size.x, size.y);
-        }
-
-        private static bool Clears(LabelPlacement p, int index, List<LabelPlacement> all, Dictionary<CountryId, Rect> nodeRects)
-        {
-            for (int j = 0; j < all.Count; j++)
+            _lastChipRects.Clear();
+            var rects = new List<Rect>(nodeRects.Count);
+            foreach (KeyValuePair<CountryId, Rect> kv in nodeRects) { _lastChipRects[kv.Key] = kv.Value; rects.Add(kv.Value); }
+            float smallest = float.PositiveInfinity;
+            for (int i = 0; i < rects.Count; i++)
             {
-                if (j == index)
-                {
-                    continue;
-                }
-
-                if (Gap(p.Rect, all[j].Rect) < MinLabelSeparationPx || Gap(p.Rect, nodeRects[all[j].Id]) < MinLabelSeparationPx)
-                {
-                    return false;
-                }
+                for (int j = i + 1; j < rects.Count; j++) { smallest = Mathf.Min(smallest, Gap(rects[i], rects[j])); }
             }
-
-            return true;
-        }
-
-        /// <summary>How wide the label may be before its right edge comes within the floor of the nearest obstacle to its right on its own rows - the width the shrink rung aims at.</summary>
-        private static float AllowedWidth(LabelPlacement p, int index, List<LabelPlacement> all, Dictionary<CountryId, Rect> nodeRects)
-        {
-            float allowed = float.PositiveInfinity;
-            for (int j = 0; j < all.Count; j++)
-            {
-                if (j == index)
-                {
-                    continue;
-                }
-
-                foreach (Rect obstacle in new[] { all[j].Rect, nodeRects[all[j].Id] })
-                {
-                    bool onMyRows = obstacle.yMax > p.Rect.y - MinLabelSeparationPx && obstacle.y < p.Rect.yMax + MinLabelSeparationPx;
-                    if (onMyRows && obstacle.x >= p.Rect.x)
-                    {
-                        allowed = Mathf.Min(allowed, obstacle.x - MinLabelSeparationPx - p.Rect.x);
-                    }
-                }
-            }
-
-            return Mathf.Max(0f, allowed);
-        }
-
-        /// <summary>
-        /// §A.9a's ladder for the map's names (R-SP5): every name at full size to the right of its node;
-        /// a name whose rect comes within MinLabelSeparationPx of another label or another country's
-        /// node takes its ISO code; one that still does shrinks toward the guard's floor to the width
-        /// that clears; one that still does not clear is recorded, never nudged - no repositioning
-        /// algorithm is invented here. Labels are settled left to right so a label's obstacles to its
-        /// left are already final. Deterministic, measured, no search.
-        /// </summary>
-        private List<LabelPlacement> PlaceLabels(IReadOnlyList<Country> countries, Dictionary<CountryId, Rect> nodeRects, GUIStyle labelStyle)
-        {
-            // Measured and drawn unwrapped: the label style wraps by default, and a wrapped name is not a
-            // rect the ladder can reason about.
-            var flat = new GUIStyle(labelStyle) { wordWrap = false };
-            var placements = new List<LabelPlacement>(countries.Count);
-            foreach (Country country in countries)
-            {
-                placements.Add(new LabelPlacement
-                {
-                    Id = country.Id,
-                    Text = country.Name,
-                    Style = flat,
-                    Rung = 1,
-                    Rect = LabelRect(nodeRects[country.Id], country.Name, flat),
-                });
-            }
-
-            placements.Sort((a, b) => a.Rect.x.CompareTo(b.Rect.x));
-
-            int highestRung = 1;
-            for (int i = 0; i < placements.Count; i++)
-            {
-                LabelPlacement p = placements[i];
-                if (!Clears(p, i, placements, nodeRects) && Iso3Codes.TryGetValue(p.Id, out string code) && code != p.Text)
-                {
-                    p.Text = code;
-                    p.Rung = 3;
-                    p.Rect = LabelRect(nodeRects[p.Id], p.Text, p.Style);
-                }
-
-                if (!Clears(p, i, placements, nodeRects))
-                {
-                    float allowed = AllowedWidth(p, i, placements, nodeRects);
-                    float fullWidth = p.Style.CalcSize(new GUIContent(p.Text)).x;
-                    if (allowed < fullWidth && fullWidth > 0f)
-                    {
-                        int size = Mathf.Max(PoliSimWidgets.MinMeasuredLabelFontSize, Mathf.FloorToInt(p.Style.fontSize * allowed / fullWidth));
-                        p.Style = new GUIStyle(flat) { fontSize = size };
-                        p.Rung = 4;
-                        p.Rect = LabelRect(nodeRects[p.Id], p.Text, p.Style);
-                    }
-                }
-
-                placements[i] = p;
-                highestRung = Mathf.Max(highestRung, p.Rung);
-            }
-
-            // The measurement the harness asserts: the smallest gap between any label and any other
-            // label or node, and the first pair still under the floor.
-            float minGap = float.PositiveInfinity;
-            string violation = null;
-            _lastLabelRects.Clear();
-            for (int i = 0; i < placements.Count; i++)
-            {
-                _lastLabelRects.Add((placements[i].Text, placements[i].Rect));
-                for (int j = 0; j < placements.Count; j++)
-                {
-                    if (i == j)
-                    {
-                        continue;
-                    }
-
-                    float gap = Mathf.Min(Gap(placements[i].Rect, placements[j].Rect), Gap(placements[i].Rect, nodeRects[placements[j].Id]));
-                    if (gap < minGap)
-                    {
-                        minGap = gap;
-                    }
-
-                    if (gap < MinLabelSeparationPx && violation == null)
-                    {
-                        violation = placements[i].Text + " / " + placements[j].Text;
-                    }
-                }
-            }
-
-            LastMinLabelSeparation = placements.Count > 1 ? minGap : float.PositiveInfinity;
-            LastLabelRung = highestRung;
-            LastLabelViolation = violation;
-            return placements;
-        }
-
-        /// <summary>Widest country Name as rendered in labelStyle (the style the name labels actually use in Draw), plus a small right-side pad - recomputed every Draw call, not cached, since labelStyle's own font size changes every frame in GameController.RescaleStylesToScreen as the window resizes. Replaces a fixed 90f constant that undersized this for "Sweden"/"Germany" at some window sizes (they truncated to "Swede"/"Germa") - the same label-truncation root cause found in the Sector/TaxLine/WelfareProgram/Policy-Web labels.</summary>
-        private static float GetLabelReserveWidth(IReadOnlyList<Country> countries, GUIStyle labelStyle)
-        {
-            float widest = 0f;
-            foreach (Country country in countries)
-            {
-                widest = Mathf.Max(widest, labelStyle.CalcSize(new GUIContent(country.Name)).x);
-            }
-            return widest + 6f;
+            LastMinChipSeparation = smallest;
         }
 
         /// <summary>

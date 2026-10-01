@@ -129,6 +129,14 @@ namespace PoliSim.UI
             // ---- International (23b) ---------------------------------------------------------------------------------------------------------
             book.Anchors["map"] = new SlipContent("WORLD MAP").Add("THE SIX · MARKERS ARE COUNTRIES").Add("DOTS ARE EVENTS OF THE LAST FEW YEARS,")
                 .Add(SymbolRegistry.Word(Symbol.Good) + " HELPED AND " + SymbolRegistry.Word(Symbol.Bad) + " HURT,").Add("SIZED BY THE SHOCK AND FADING WITH IT");
+            // §710 (Elias's ruling: R-SP5 retired on every map - the chip's two-letter code is the label, the name first in the chip's tooltip): each chip's
+            // slip, the country's name its head, then what the map's own hover box had carried
+            foreach (Country c in world.Countries)
+            {
+                book.Anchors["map:chip:" + c.Id] = new SlipContent(c.Name.ToUpperInvariant())
+                    .Add("GDP " + UiFormat.Money(c.State.NominalGdp, MoneyUnit.Billions) + " · UNEMPLOYMENT " + StatsReadings.Rate(c.State.Unemployment))
+                    .Add("APPROVAL " + c.State.ApprovalRating.ToString("0.0", CultureInfo.InvariantCulture) + (c.Id == home.Id ? " · HOME" : string.Empty));
+            }
             book.Anchors["pair:head"] = new SlipContent("PAIR").Add("PAIR PAGE · THE MODEL'S OWN LINKS").Add("A CODE IS A PARTNER - A CLICK ON ONE IS THE STEP");
             foreach (Country c in world.Countries)
             {

@@ -479,7 +479,8 @@ namespace PoliSim.UI
             }
 
             GUIStyle names = DeskBody(11f, PoliSimTheme.TextPrimary);
-            _mapRenderer.Draw(r, _world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, names, out _, out _);
+            _mapRenderer.OwnTooltip = true;   // §710: the Desk hangs no slips on the chips - the renderer's own hover box, the name its first line
+            _mapRenderer.Draw(r,_world.Countries, PlayerCountryId, _mapEventMarkers, _simulationManager.CurrentTurn, EventMarkerFadeTurns, names, out _, out _);
             DrawDeskPlateCaption(r, "THE WORLD — TRADE VOLUME", ux, uy);
         }
 

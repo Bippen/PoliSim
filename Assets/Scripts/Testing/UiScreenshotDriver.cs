@@ -952,10 +952,10 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Capture(stem);
 
-                    // R-SP5: the map's label separation, measured by the renderer on the capture frame.
+                    // §710 (R-SP5 retired): the map's chips, measured by the renderer on the capture frame.
                     if (stem == "02b_statistics_international")
                     {
-                        AssertMapLabelSeparation(controller, stem);
+                        AssertMapChips(controller, stem);
                     }
 
                     // D-ST (§701, 19b): the sheet's slips on film - three pinned chains per tab through the controller's own pin, filmed, then let go.
@@ -966,7 +966,7 @@ namespace PoliSim.Testing
                         if (pinStats != null && statsPins != null)
                         {
                             bool domestic = stem == "02a_statistics_domestic";
-                            string[] ids = domestic ? new[] { "card:history", "sector:other", "chart:unemployment/verdict" } : new[] { "pair:head", "links:tariff", "relations" };
+                            string[] ids = domestic ? new[] { "card:history", "sector:other", "chart:unemployment/verdict" } : new[] { "map:chip:Germany", "links:tariff", "relations" };   // §710: a chip's slip, the name first
                             Vector2[] at = domestic
                                 ? new[] { new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.22f), new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.52f), new Vector2(UiScreen.Width * 0.40f, UiScreen.Height * 0.78f) }
                                 : new[] { new Vector2(UiScreen.Width * 0.20f, UiScreen.Height * 0.46f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.62f), new Vector2(UiScreen.Width * 0.62f, UiScreen.Height * 0.80f) };
@@ -4113,26 +4113,26 @@ namespace PoliSim.Testing
         }
 
         /// <summary>
-        /// R-SP5 (2026-08-28): after the map's capture, the separation its renderer measured - every
-        /// label at least <see cref="MapRenderer.MinLabelSeparationPx"/> from every other label and
-        /// node, after §A.9a's ladder - is asserted. A miss is an error: the ladder could not clear the
-        /// floor at this size, which is the measurement the ruling wants reported, and the run's fold
-        /// turns red on it.
+        /// §710 (R-SP5 retired, Elias's ruling of 2026-10-01): after the map's capture, what its renderer laid down - the six chips, the tag
+        /// each one's label, no two overlapping - is asserted (R-SP5's label-separation assert retired with the names it measured). A miss is an
+        /// error, so the run's fold turns red on it.
         /// </summary>
-        private static void AssertMapLabelSeparation(GameController controller, string screen)
+        private static void AssertMapChips(GameController controller, string screen)
         {
             FieldInfo field = controller.GetType().GetField("_mapRenderer", BindingFlags.Instance | BindingFlags.NonPublic);
             if (!(field?.GetValue(controller) is MapRenderer map))
             {
-                Debug.LogError("SHOT: _mapRenderer not found - the map-label separation assert VERIFIED NOTHING.");
+                Debug.LogError("SHOT: _mapRenderer not found - the map's chip assert VERIFIED NOTHING.");
                 return;
             }
 
-            float gap = map.LastMinLabelSeparation;
-            Debug.Log($"SHOT: map labels on {screen} - {map.LastLabelRects.Count} label(s), smallest gap {gap:F1} px against the {MapRenderer.MinLabelSeparationPx} px floor, ladder rung {map.LastLabelRung}.");
-            if (gap < MapRenderer.MinLabelSeparationPx)
+            var rects = new List<Rect>(map.LastChipRects.Values);
+            int overlapping = 0;
+            for (int i = 0; i < rects.Count; i++) { for (int j = i + 1; j < rects.Count; j++) { if (rects[i].Overlaps(rects[j])) { overlapping++; } } }
+            Debug.Log($"SHOT: map chips on {screen} - {rects.Count} chip(s), the tag each one's label, smallest gap {map.LastMinChipSeparation:F1} px, {overlapping} overlapping pair(s).");
+            if (rects.Count != 6 || overlapping > 0)
             {
-                Debug.LogError($"SHOT: MAP LABELS {gap:F1} px apart on {screen} ({map.LastLabelViolation}) - the resort ladder could not clear the floor at this size.");
+                Debug.LogError($"SHOT: MAP CHIPS on {screen}: {rects.Count} drawn, {overlapping} overlapping pair(s) - six chips, none overlapping, is the map.");
             }
         }
 
