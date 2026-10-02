@@ -36596,3 +36596,12 @@ The cheap bar **92 of 92** (`cheap737b`; `cheap737` the two findings above).
 **Into the plan** (`POLISIM_FEATURE_LIST.md`, PS-6's row): the limit as a dated statute with the figures above, the episode's order (the limit, extraordinary measures, Congress or the game's cut) and the corrections. Nothing is built: PS-6 is the USA's stage.
 
 **Tier: the cheap bar; the simulation bar not owed** - a plan and the pages it reads; nothing the game runs reads them (PS-6 is the USA's stage). The cheap bar **94 of 94** (`cheap759`).
+
+
+## 760. RULING B8 INSTALLED: ONE ENGLISH NUMBER FORMAT, AS RULED ON 1 OCTOBER - DESIGN'S RULE 4 (THE COUNTRY'S DECIMAL MARK) DECLINED, SAID SO IN BOARDS_BUILT AND RESENT (2026-10-02)
+
+**The ruling** (Elias, B8 of the list resent 2026-10-02): *One English number format, as ruled on 1 October. Design's rule 4 is declined; say so in BOARDS_BUILT.*
+
+**Nothing in the game changes**: §718's one fixed English culture (`UiCulture`, held by `NumberLocaleCheck`, the cheap bar's) already prints every number and date in it, in every country. **BOARDS_BUILT.md** (`PoliSim-captures/design/V35_built/`): the rule-4 row (*the country's decimal mark, thin-space thousands*) read *held for his call*; it now reads **Declined** (Elias's ruling B8, 2026-10-02) - every figure keeps the point and the English grouping in every country; ¢/kWh is a unit, not the culture - and the short list at its head says one decision has come since (the Asked count unchanged: rule 4 was held, never asked). **Resent** to Design (project `b3dec27b`, `uploads/V35_built/`): `BOARDS_BUILT.md`, `MANIFEST.sha256` re-hashed for it (`bd193c81…`; every other line verified), and `V35_built_A.zip` with its copy replaced - the zip tested, the entry byte-equal to the file (7.38 MB, under the route's 12 MB).
+
+**Tier DOCUMENTS** (the record alone in the repository): the cheap bar **94 of 94** (`cheap760`).
