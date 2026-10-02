@@ -44,12 +44,33 @@ namespace PoliSim.UI
         public static string Short(Measure measure) =>
             "over the EU's " + (measure == Measure.Deficit ? AiFinanceMinistry.EuDeficitReferencePercent : AiFinanceMinistry.EuDebtReferencePercent).ToString("0", CultureInfo.InvariantCulture) + " % limit";
 
+        /// <summary>SOURCED - Sweden's debt anchor, % of GDP: "Skuldankaret är satt till 35 procent av BNP och gäller tills vidare" (Regeringens skrivelse
+        /// 2025/26:76, <c>ElectionsData/rules/sweden_fiscal_framework.md</c>).</summary>
+        public const float SwedenDebtAnchorPercent = 35f;
+        /// <summary>SOURCED - the deviation that obliges an explanation, points of GDP: "Om skuldkvoten avviker, uppåt eller nedåt, från skuldankaret med mer
+        /// än 5 procent av BNP ..." (skr. 2025/26:76).</summary>
+        public const float SwedenDebtAnchorBandPoints = 5f;
+
+        /// <summary>
+        /// §758 (Elias's ruling B6, 2026-10-02: "Yes, as a notice, not a breach ... Neutral ink, per A6"): a NOTICE the reading's level triggers under
+        /// the country's own framework without breaching a rule - Sweden's debt more than <see cref="SwedenDebtAnchorBandPoints"/> points of GDP from its
+        /// anchor, up or down: the government must explain the deviation to the Riksdag in a skrivelse with the spring fiscal policy bill (skr. 2025/26:76).
+        /// The ink stays neutral; the words ride the slip. Read here on the year's level (the skrivelse reads the previous year's outcome or the current or
+        /// next year's forecast - the model holds the level, stated). Null where none applies.
+        /// </summary>
+        public static string Notice(CountryId country, Measure measure, float percentOfGdp)
+        {
+            if (country != CountryId.Sweden || measure != Measure.Debt || !(System.Math.Abs(percentOfGdp - SwedenDebtAnchorPercent) > SwedenDebtAnchorBandPoints)) { return null; }
+            return "More than " + SwedenDebtAnchorBandPoints.ToString("0", CultureInfo.InvariantCulture) + " points of GDP " + (percentOfGdp > SwedenDebtAnchorPercent ? "above" : "below")
+                + " Sweden's " + SwedenDebtAnchorPercent.ToString("0", CultureInfo.InvariantCulture) + " % debt anchor - a notice, not a breach: the government explains why to the Riksdag with the spring fiscal policy bill (skr. 2025/26:76)";
+        }
+
         /// <summary>The country's own national rule in one line, and why the model does not test it - the slip's second line.</summary>
         public static string NationalNote(CountryId country)
         {
             switch (country)
             {
-                case CountryId.Sweden: return "Sweden's net-lending target is an average over a business cycle and its 35 % debt anchor a benchmark - neither is a yearly limit";
+                case CountryId.Sweden: return "Sweden's net-lending target is an average over a business cycle - a third of a per cent of GDP, balance (0 %) from 2027 (rskr. 2025/26:64) - and its 35 % debt anchor a benchmark (skr. 2025/26:76) - neither is a yearly limit";
                 case CountryId.Germany: return "Germany's debt brake (Basic Law Art. 109, 115) limits the structural federal balance, which the model does not compute";
                 case CountryId.France: return "France has no binding national numeric limit (Constitution Art. 34, an objective of balance)";
                 case CountryId.Italy: return "Italy's balanced-budget rule (Constitution Art. 81) is the structural medium-term objective, which the model does not compute";

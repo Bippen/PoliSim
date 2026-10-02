@@ -1,0 +1,272 @@
+<utskottsforslag><dokument>
+ <hangar_id>5243786</hangar_id>
+ <dok_id>HD01FiU1</dok_id>
+ <rm>2025/26</rm>
+ <beteckning>FiU1</beteckning>
+ <typ>bet</typ>
+ <subtyp>bet</subtyp>
+ <doktyp>bet</doktyp>
+ <typrubrik>Betänkande 2025/26:FiU1</typrubrik>
+ <dokumentnamn>Betänkande</dokumentnamn>
+ <debattnamn>Debatt om förslag</debattnamn>
+ <tempbeteckning></tempbeteckning>
+ <organ>FiU</organ>
+ <mottagare></mottagare>
+ <nummer>1</nummer>
+ <slutnummer>0</slutnummer>
+ <datum>2025-11-21 00:00:00</datum>
+ <systemdatum>2026-02-06 11:02:32</systemdatum>
+ <publicerad>2025-04-24 08:03:31</publicerad>
+ <titel>Statens budget 2026 - Rambeslutet</titel>
+ <subtitel></subtitel>
+ <status>Webbpublicering</status>
+ <htmlformat>html</htmlformat>
+ <relaterat_id></relaterat_id>
+ <source>RIM</source>
+ <sourceid>7fec84c0-6449-4b9a-b37c-64ff8adc2e4f</sourceid>
+ <dokument_url_text>https://data.riksdagen.se/dokument/HD01FiU1/text</dokument_url_text>
+ <dokument_url_html>https://data.riksdagen.se/dokument/HD01FiU1</dokument_url_html>
+ <dokumentstatus_url_xml>https://data.riksdagen.se/dokumentstatus/HD01FiU1</dokumentstatus_url_xml>
+ <utskottsforslag_url_xml>https://data.riksdagen.se/utskottsforslag/HD01FiU1</utskottsforslag_url_xml>
+ <html />
+</dokument>
+<dokutskottsforslag>
+<utskottsforslag>
+<punkt>1</punkt>
+<rubrik>Riktlinjerna för den ekonomiska politiken och budgetpolitiken</rubrik>
+<forslag>Riksdagen godk&amp;auml;nner de riktlinjer f&amp;ouml;r den ekonomiska politiken och budgetpolitiken som regeringen f&amp;ouml;resl&amp;aring;r.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 2 och avslår motionerna 
+
+2025/26:2792 av Nooshi Dadgostar m.fl. (V) yrkande 1, 
+
+2025/26:3551 av Magdalena Andersson m.fl. (S) yrkande 1, 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkande 1 och 
+
+2025/26:3811 av Elisabeth Thand Ringqvist m.fl. (C) yrkande 1.&lt;BR/&gt;&lt;BR/&gt;</forslag>
+<beslutstyp>röstning</beslutstyp>
+<motforslag_nummer>1</motforslag_nummer>
+<motforslag_partier>"S"</motforslag_partier>
+<votering_id>8ffed8c8-41a8-48ea-b543-cb4f38f4d09a</votering_id>
+<votering_sammanfattning_html><table class="vottabell" summary="Voteringsresultat"><caption><b>Omröstning i sakfrågan</b><br />Utskottets förslag mot reservation 1 (S)</caption><thead><tr class="vottabellrubik"><th scope="col">Parti</th><th scope="col">Ja</th><th scope="col">Nej</th><th scope="col">Avstående</th><th scope="col">Frånvarande</th></tr></thead><tbody><tr><th scope="row" class="parti">S</th><td class="rost_ja">0</td><td class="rost_nej">93</td><td class="rost_avstar">0</td><td class="rost_franvarande">13</td></tr><tr><th scope="row" class="parti">SD</th><td class="rost_ja">61</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">11</td></tr><tr><th scope="row" class="parti">M</th><td class="rost_ja">60</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">8</td></tr><tr><th scope="row" class="parti">V</th><td class="rost_ja">0</td><td class="rost_nej">0</td><td class="rost_avstar">17</td><td class="rost_franvarande">5</td></tr><tr><th scope="row" class="parti">C</th><td class="rost_ja">0</td><td class="rost_nej">0</td><td class="rost_avstar">20</td><td class="rost_franvarande">4</td></tr><tr><th scope="row" class="parti">KD</th><td class="rost_ja">16</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">3</td></tr><tr><th scope="row" class="parti">MP</th><td class="rost_ja">0</td><td class="rost_nej">0</td><td class="rost_avstar">14</td><td class="rost_franvarande">4</td></tr><tr><th scope="row" class="parti">L</th><td class="rost_ja">12</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">4</td></tr><tr><th scope="row" class="parti">-</th><td class="rost_ja">1</td><td class="rost_nej">1</td><td class="rost_avstar">1</td><td class="rost_franvarande">1</td></tr></tbody><tfooter><tr><th scope="row"  class="totalt">Totalt</th><td class="summa_ja">150</td><td class="summa_nej">94</td><td class="summa_avstar">52</td><td class="summa_franvarande">53</td></tr></tfooter></table><br/></votering_sammanfattning_html>
+<votering_url_xml>http://data.riksdagen.se/votering/8FFED8C8-41A8-48EA-B543-CB4F38F4D09A</votering_url_xml>
+<rm>2025/26</rm>
+<bet>FiU1</bet>
+<vinnare>utskottet</vinnare>
+<voteringskrav>Enkel majoritet</voteringskrav>
+<beslutsregelkvot></beslutsregelkvot>
+<beslutsregelparagraf></beslutsregelparagraf>
+<punkttyp></punkttyp>
+</utskottsforslag>
+<utskottsforslag>
+<punkt>2</punkt>
+<rubrik>Rambeslutet - utgiftstak, utgiftsramar och inkomsterna i statens budget</rubrik>
+<forslag>a) Målet för den offentliga förvaltningens finansiella sparande&lt;BR/&gt;Riksdagen fastst&amp;auml;ller m&amp;aring;let f&amp;ouml;r den offentliga f&amp;ouml;rvaltningens finansiella sparande till ett sparande i balans &amp;ouml;ver en konjunkturcykel fr.o.m. 2027.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 5 och avslår motionerna 
+
+2025/26:3422 av Katarina Luhr m.fl. (MP) yrkande 22 och 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkande 3.&lt;BR/&gt;&lt;BR/&gt;b) Utgiftstak för staten 2026-2028&lt;BR/&gt;Riksdagen fastst&amp;auml;ller utgiftstaket f&amp;ouml;r staten, inklusive &amp;aring;lderspensionssystemet vid sidan av statens budget till 1&amp;#160;936 miljarder kronor f&amp;ouml;r 2026, 2&amp;#160;009 miljarder kronor f&amp;ouml;r 2027 och 2&amp;#160;105 miljarder kronor f&amp;ouml;r 2028.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkterna 3 och 4 samt avslår motionerna 
+
+2025/26:2792 av Nooshi Dadgostar m.fl. (V) yrkande 2, 
+
+2025/26:3551 av Magdalena Andersson m.fl. (S) yrkande 2, 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkande 2 och 
+
+2025/26:3811 av Elisabeth Thand Ringqvist m.fl. (C) yrkande 2.&lt;BR/&gt;&lt;BR/&gt;c) Utgiftsramar för utgiftsområdena 2026&lt;BR/&gt;Riksdagen beslutar om f&amp;ouml;rdelning av utgifter p&amp;aring; utgiftsomr&amp;aring;den f&amp;ouml;r 2026 enligt regeringens f&amp;ouml;rslag.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 8 och avslår motionerna 
+
+2025/26:2792 av Nooshi Dadgostar m.fl. (V) yrkande 5, 
+
+2025/26:3551 av Magdalena Andersson m.fl. (S) yrkande 5, 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkande 6 och 
+
+2025/26:3811 av Elisabeth Thand Ringqvist m.fl. (C) yrkande 3.&lt;BR/&gt;&lt;BR/&gt;d) Övriga utgifter i statens budget 2026&lt;BR/&gt;Riksdagen godk&amp;auml;nner ber&amp;auml;kningen av f&amp;ouml;r&amp;auml;ndringen av anslagsbeh&amp;aring;llningar, Riksg&amp;auml;ldskontorets nettoutl&amp;aring;ning och den kassam&amp;auml;ssiga korrigeringen f&amp;ouml;r 2026 enligt regeringens f&amp;ouml;rslag.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkterna 9, 13 och 14.&lt;BR/&gt;&lt;BR/&gt;e) Beräkningen av inkomster i statens budget 2026&lt;BR/&gt;Riksdagen godk&amp;auml;nner ber&amp;auml;kningen av inkomster i statens budget f&amp;ouml;r 2026 enligt regeringens f&amp;ouml;rslag.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 6 och avslår motionerna 
+
+2025/26:2792 av Nooshi Dadgostar m.fl. (V) yrkande 3 i denna del, 
+
+2025/26:3551 av Magdalena Andersson m.fl. (S) yrkande 3 i denna del, 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkande 4 i denna del och 
+
+2025/26:3811 av Elisabeth Thand Ringqvist m.fl. (C) yrkande 5 i denna del.&lt;BR/&gt;&lt;BR/&gt;f) Ändringar i skatte- och avgiftsregler i proposition 2025/26:1 och 2025/26:16 punkt 2.2&lt;BR/&gt;Riksdagen antar regeringens f&amp;ouml;rslag till&lt;br /&gt;1. lag om &amp;auml;ndring i kupongskattelagen (1970:624),&lt;br /&gt;2. lag om &amp;auml;ndring i lagen (1986:468) om avr&amp;auml;kning av utl&amp;auml;ndsk skatt,&amp;#160;&lt;br /&gt;3. lag om &amp;auml;ndring i lagen (1991:586) om s&amp;auml;rskild inkomstskatt f&amp;ouml;r utomlands bosatta,&lt;br /&gt;4. lag om &amp;auml;ndring i lagen (1991:586) om s&amp;auml;rskild inkomstskatt f&amp;ouml;r utomlands bosatta,&lt;br /&gt;5. lag om &amp;auml;ndring i lagen (1994:1776) om skatt p&amp;aring; energi,&lt;br /&gt;6. lag om &amp;auml;ndring i lagen (1994:1776) om skatt p&amp;aring; energi,&lt;br /&gt;7. lag om &amp;auml;ndring i lagen (1994:1776) om skatt p&amp;aring; energi,&lt;br /&gt;8. lag om &amp;auml;ndring i lagen (1994:1920) om allm&amp;auml;n l&amp;ouml;neavgift,&amp;#160;&lt;br /&gt;9. lag om &amp;auml;ndring i inkomstskattelagen (1999:1229),&amp;#160;&lt;br /&gt;10. lag om &amp;auml;ndring i socialavgiftslagen (2000:980),&amp;#160;&lt;br /&gt;11. lag om &amp;auml;ndring i v&amp;auml;gtrafikskattelagen (2006:227),&lt;br /&gt;12. lag om upph&amp;auml;vande av lagen (2008:205) om lagerskatt p&amp;aring; flygbensin,&amp;#160;&lt;br /&gt;13. lag om &amp;auml;ndring i lagen (2011:1200) om elcertifikat med den &amp;auml;ndringen att 4 kap. 5 &amp;sect; ska ha den lydelse som utskottet f&amp;ouml;resl&amp;aring;r i bilaga 7,&amp;#160;&lt;br /&gt;14. lag om &amp;auml;ndring i skattef&amp;ouml;rfarandelagen (2011:1244),&lt;br /&gt;15. lag om &amp;auml;ndring i lagen (2019:453) om godk&amp;auml;nnande av g&amp;aring;vomottagare vid skattereduktion f&amp;ouml;r g&amp;aring;va,&amp;#160;&lt;br /&gt;16. lag om &amp;auml;ndring i lagen (2023:362) om &amp;auml;ndring i lagen (1994:1776) om skatt p&amp;aring; energi,&lt;br /&gt;17. lag om &amp;auml;ndring i lagen (2024:294) om &amp;auml;ndring i v&amp;auml;gtrafikskattelagen (2006:227),&lt;br /&gt;18. lag om &amp;auml;ndring i lagen (2025:539) om &amp;auml;ndring i inkomstskattelagen (1999:1229),&lt;br /&gt;19. lag om &amp;auml;ndring i lagen (2025:540) om &amp;auml;ndring i skattef&amp;ouml;rfarandelagen (2011:1244).&lt;BR/&gt;Därmed bifaller riksdagen propositionerna 2025/26:1 finansplanen punkterna 18-36 och 2025/26:16 punkt 2.2 och avslår motionerna 
+
+2025/26:2792 av Nooshi Dadgostar m.fl. (V) yrkande 3 i denna del, 
+
+2025/26:3551 av Magdalena Andersson m.fl. (S) yrkande 3 i denna del, 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkande 4 i denna del och 
+
+2025/26:3811 av Elisabeth Thand Ringqvist m.fl. (C) yrkande 5 i denna del.&lt;BR/&gt;&lt;BR/&gt;g) Ändringar i skatte- och avgiftsregler i proposition 2024/25:168&lt;BR/&gt;Riksdagen antar regeringens f&amp;ouml;rslag till lag om &amp;auml;ndring i lagen (1984:1052) om statlig fastighetsskatt.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2024/25:168.&lt;BR/&gt;&lt;BR/&gt;h) Ändringar i skatte- och avgiftsregler i proposition 2024/25:188&lt;BR/&gt;Riksdagen antar regeringens f&amp;ouml;rslag till lag om &amp;auml;ndring i lagen (2021:1256) om riskskatt f&amp;ouml;r kreditinstitut.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2024/25:188 och avslår motion 
+
+2025/26:270 av Martin Ådahl (C).&lt;BR/&gt;&lt;BR/&gt;i) Ändringar i skatte- och avgiftsregler i proposition 2025/26:31&lt;BR/&gt;Riksdagen antar regeringens f&amp;ouml;rslag till lag om &amp;auml;ndring i inkomstskattelagen (1999:1229).&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:31 och avslår motion 
+
+2025/26:3839 av Martin Ådahl (C).&lt;BR/&gt;&lt;BR/&gt;j) Ändringar i skatte- och avgiftsregler i proposition 2025/26:32&lt;BR/&gt;Riksdagen antar regeringens f&amp;ouml;rslag till &lt;br /&gt;1. lag om &amp;auml;ndring i inkomstskattelagen (1999:1229).&lt;br /&gt;2. lag om &amp;auml;ndring i lagen (2024:1140) om &amp;auml;ndring i lagen (2023:758) om &amp;auml;ndring i lagen (2022:887) om &amp;auml;ndring i inkomstskattelagen (1999:1229).&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:32 punkterna 1 och 2 samt avslår motionerna 
+
+2025/26:3837 av Martin Ådahl (C) och 
+
+2025/26:3840 av Janine Alm Ericson m.fl. (MP).&lt;BR/&gt;&lt;BR/&gt;k) Ålderspensionssystemets utgifter 2026&lt;BR/&gt;Riksdagen godk&amp;auml;nner ber&amp;auml;kningen av utgifterna f&amp;ouml;r &amp;aring;lderspensionssystemet vid sidan av statens budget f&amp;ouml;r 2026 enligt regeringens f&amp;ouml;rslag.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 10.&lt;BR/&gt;&lt;BR/&gt;l) Preliminära utgiftsramar och beräkningar av inkomster i statens budget 2027 och 2028&lt;BR/&gt;Riksdagen godk&amp;auml;nner prelimin&amp;auml;ra utgiftsramar f&amp;ouml;r utgiftsomr&amp;aring;dena och prelimin&amp;auml;ra ber&amp;auml;kningar av inkomster i statens budget f&amp;ouml;r 2027 och 2028 som riktlinje f&amp;ouml;r regeringens budgetarbete enligt regeringens f&amp;ouml;rslag.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkterna 7 och 11 samt avslår motionerna 
+
+2025/26:2792 av Nooshi Dadgostar m.fl. (V) yrkandena 4 och 6, 
+
+2025/26:3551 av Magdalena Andersson m.fl. (S) yrkandena 4 och 6, 
+
+2025/26:3770 av Amanda Lind m.fl. (MP) yrkandena 5 och 7 samt 
+
+2025/26:3811 av Elisabeth Thand Ringqvist m.fl. (C) yrkandena 4 och 6.&lt;BR/&gt;&lt;BR/&gt;</forslag>
+<beslutstyp>röstning</beslutstyp>
+<motforslag_nummer>5</motforslag_nummer>
+<motforslag_partier>"S"</motforslag_partier>
+<votering_id>7e8c7c5f-60a7-45be-aa2f-365d9ad231d2</votering_id>
+<votering_sammanfattning_html><table class="vottabell" summary="Voteringsresultat"><caption><b>Omröstning i sakfrågan</b><br />Utskottets förslag mot reservation 5 (S)</caption><thead><tr class="vottabellrubik"><th scope="col">Parti</th><th scope="col">Ja</th><th scope="col">Nej</th><th scope="col">Avstående</th><th scope="col">Frånvarande</th></tr></thead><tbody><tr><th scope="row" class="parti">S</th><td class="rost_ja">0</td><td class="rost_nej">92</td><td class="rost_avstar">0</td><td class="rost_franvarande">14</td></tr><tr><th scope="row" class="parti">SD</th><td class="rost_ja">61</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">11</td></tr><tr><th scope="row" class="parti">M</th><td class="rost_ja">60</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">8</td></tr><tr><th scope="row" class="parti">V</th><td class="rost_ja">0</td><td class="rost_nej">0</td><td class="rost_avstar">17</td><td class="rost_franvarande">5</td></tr><tr><th scope="row" class="parti">C</th><td class="rost_ja">0</td><td class="rost_nej">1</td><td class="rost_avstar">19</td><td class="rost_franvarande">4</td></tr><tr><th scope="row" class="parti">KD</th><td class="rost_ja">16</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">3</td></tr><tr><th scope="row" class="parti">MP</th><td class="rost_ja">0</td><td class="rost_nej">0</td><td class="rost_avstar">14</td><td class="rost_franvarande">4</td></tr><tr><th scope="row" class="parti">L</th><td class="rost_ja">12</td><td class="rost_nej">0</td><td class="rost_avstar">0</td><td class="rost_franvarande">4</td></tr><tr><th scope="row" class="parti">-</th><td class="rost_ja">1</td><td class="rost_nej">1</td><td class="rost_avstar">1</td><td class="rost_franvarande">1</td></tr></tbody><tfooter><tr><th scope="row"  class="totalt">Totalt</th><td class="summa_ja">150</td><td class="summa_nej">94</td><td class="summa_avstar">51</td><td class="summa_franvarande">54</td></tr></tfooter></table><br/></votering_sammanfattning_html>
+<votering_url_xml>http://data.riksdagen.se/votering/7E8C7C5F-60A7-45BE-AA2F-365D9AD231D2</votering_url_xml>
+<rm>2025/26</rm>
+<bet>FiU1</bet>
+<vinnare>utskottet</vinnare>
+<voteringskrav>Enkel majoritet</voteringskrav>
+<beslutsregelkvot></beslutsregelkvot>
+<beslutsregelparagraf></beslutsregelparagraf>
+<punkttyp></punkttyp>
+</utskottsforslag>
+<utskottsforslag>
+<punkt>3</punkt>
+<rubrik>Bemyndigande om upplåning</rubrik>
+<forslag>Riksdagen bemyndigar regeringen att under 2026 ta upp l&amp;aring;n enligt 5 kap. budgetlagen (2011:203).&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 12.&lt;BR/&gt;&lt;BR/&gt;</forslag>
+<beslutstyp>acklamation</beslutstyp>
+<motforslag_nummer>0</motforslag_nummer>
+<motforslag_partier></motforslag_partier>
+<votering_id></votering_id>
+<votering_sammanfattning_html></votering_sammanfattning_html>
+<votering_url_xml></votering_url_xml>
+<rm>2025/26</rm>
+<bet>FiU1</bet>
+<vinnare>utskottet</vinnare>
+<voteringskrav></voteringskrav>
+<beslutsregelkvot></beslutsregelkvot>
+<beslutsregelparagraf></beslutsregelparagraf>
+<punkttyp></punkttyp>
+</utskottsforslag>
+<utskottsforslag>
+<punkt>4</punkt>
+<rubrik>Lån för myndigheternas investeringar i anläggningstillgångar</rubrik>
+<forslag>Riksdagen bemyndigar regeringen att f&amp;ouml;r 2026 besluta om l&amp;aring;n i Riksg&amp;auml;ldskontoret f&amp;ouml;r investeringar i anl&amp;auml;ggningstillg&amp;aring;ngar som anv&amp;auml;nds i statens verksamhet som inklusive tidigare uppl&amp;aring;ning uppg&amp;aring;r till h&amp;ouml;gst 74 900 000 000 kronor.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 15.&lt;BR/&gt;&lt;BR/&gt;</forslag>
+<beslutstyp>acklamation</beslutstyp>
+<motforslag_nummer>0</motforslag_nummer>
+<motforslag_partier></motforslag_partier>
+<votering_id></votering_id>
+<votering_sammanfattning_html></votering_sammanfattning_html>
+<votering_url_xml></votering_url_xml>
+<rm>2025/26</rm>
+<bet>FiU1</bet>
+<vinnare>utskottet</vinnare>
+<voteringskrav></voteringskrav>
+<beslutsregelkvot></beslutsregelkvot>
+<beslutsregelparagraf></beslutsregelparagraf>
+<punkttyp></punkttyp>
+</utskottsforslag>
+<utskottsforslag>
+<punkt>5</punkt>
+<rubrik>Myndigheternas räntekontokrediter</rubrik>
+<forslag>Riksdagen bemyndigar regeringen att f&amp;ouml;r 2026 besluta om krediter f&amp;ouml;r myndigheternas r&amp;auml;ntekonton i Riksg&amp;auml;ldskontoret som inklusive tidigare utnyttjade krediter uppg&amp;aring;r till h&amp;ouml;gst 23 400 000 000 kronor.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 16.&lt;BR/&gt;&lt;BR/&gt;</forslag>
+<beslutstyp>acklamation</beslutstyp>
+<motforslag_nummer>0</motforslag_nummer>
+<motforslag_partier></motforslag_partier>
+<votering_id></votering_id>
+<votering_sammanfattning_html></votering_sammanfattning_html>
+<votering_url_xml></votering_url_xml>
+<rm>2025/26</rm>
+<bet>FiU1</bet>
+<vinnare>utskottet</vinnare>
+<voteringskrav></voteringskrav>
+<beslutsregelkvot></beslutsregelkvot>
+<beslutsregelparagraf></beslutsregelparagraf>
+<punkttyp></punkttyp>
+</utskottsforslag>
+<utskottsforslag>
+<punkt>6</punkt>
+<rubrik>Bemyndigande att överskrida anslag</rubrik>
+<forslag>Riksdagen bemyndigar regeringen att under 2026, med de begr&amp;auml;nsningar som f&amp;ouml;ljer av 3 kap. 8 &amp;sect; andra stycket budgetlagen (2011:203), besluta att ett anslag som inte avser f&amp;ouml;rvaltnings&amp;auml;ndam&amp;aring;l f&amp;aring;r &amp;ouml;verskridas om ett riksdagsbeslut om &amp;auml;ndring av anslaget inte hinner inv&amp;auml;ntas och &amp;ouml;verskridandet ryms inom det fastst&amp;auml;llda utgiftstaket f&amp;ouml;r staten.&lt;BR/&gt;Därmed bifaller riksdagen proposition 2025/26:1 finansplanen punkt 17.&lt;BR/&gt;&lt;BR/&gt;</forslag>
+<beslutstyp>acklamation</beslutstyp>
+<motforslag_nummer>0</motforslag_nummer>
+<motforslag_partier></motforslag_partier>
+<votering_id></votering_id>
+<votering_sammanfattning_html></votering_sammanfattning_html>
+<votering_url_xml></votering_url_xml>
+<rm>2025/26</rm>
+<bet>FiU1</bet>
+<vinnare>utskottet</vinnare>
+<voteringskrav></voteringskrav>
+<beslutsregelkvot></beslutsregelkvot>
+<beslutsregelparagraf></beslutsregelparagraf>
+<punkttyp></punkttyp>
+</utskottsforslag>
+</dokutskottsforslag>
+<dokmotforslag>
+<motforslag>
+<nummer>1</nummer>
+<rubrik></rubrik>
+<partier>"S"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>1</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>2</nummer>
+<rubrik></rubrik>
+<partier>"V"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>1</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>3</nummer>
+<rubrik></rubrik>
+<partier>"C"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>1</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>4</nummer>
+<rubrik></rubrik>
+<partier>"MP"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>1</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>5</nummer>
+<rubrik></rubrik>
+<partier>"S"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>2</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>6</nummer>
+<rubrik></rubrik>
+<partier>"V"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>2</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>7</nummer>
+<rubrik></rubrik>
+<partier>"C"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>2</utskottsforslag_punkt>
+</motforslag>
+<motforslag>
+<nummer>8</nummer>
+<rubrik></rubrik>
+<partier>"MP"</partier>
+<typ>reservation</typ>
+<utskottsforslag_punkt>2</utskottsforslag_punkt>
+</motforslag>
+</dokmotforslag>
+<dokbilaga>
+<bilaga>
+<dok_id>HD01FiU1</dok_id>
+<subtitel></subtitel>
+<filnamn>2025_26_FiU1_20251121103850_Publicering.pdf</filnamn>
+<filstorlek>38050131</filstorlek>
+<filtyp>pdf</filtyp>
+<titel>Statens budget 2026 - Rambeslutet</titel>
+<fil_url>https://data.riksdagen.se/fil/A43B691C-8B7B-4003-96D5-8B01550F5CC4</fil_url>
+</bilaga>
+</dokbilaga>
+</utskottsforslag>

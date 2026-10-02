@@ -189,6 +189,7 @@ namespace PoliSim.UI
             debt.FigureInk = V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio, PoliSimTheme.TextPrimary, out string debtRule);
             var debtSlip = new SlipContent("GOVERNMENT DEBT · " + debt.Figure).Add(UiFormat.Number(state.DebtToGdpRatio, 1) + "% OF GDP");
             if (debtRule != null) { debtSlip.Add(debtRule); }
+            if (FiscalRules.Notice(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio) is string debtNotice) { debtSlip.Add(debtNotice.ToUpperInvariant()); }   // §758 (ruling B6): a notice, neutral ink
             debtSlip.Add("THE STOCK KEEPS NO YEARLY HISTORY - NO CHANGE IS DRAWN RATHER THAN ONE INVENTED");
 
             // last year's revenue and spending

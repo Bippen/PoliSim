@@ -217,6 +217,7 @@ namespace PoliSim.EditorTools
             ("PolishSejmAllocationDiagnostic", PolishSejmAllocationDiagnostic.Run),   // PS-5 part three (§730): the Sejm by its own law - 41 districts, d'Hondt each, the 5 % and 8 % thresholds, MN exempt - gives the 2023 chamber seat for seat
             ("PresidentialVetoDiagnostic", PresidentialVetoDiagnostic.Run),   // PS-5 part four (§736): the veto and the Sejm's 3/5 override on the law - the constants against the held texts, the count's edges, the 2023 Sejm with the president of record, the budget exempt
             ("MinimumWageRatesCheck", MinimumWageRatesCheck.Run),   // §756 (ruling A5): the statutory minimum wages dated and sourced by read - the table held to its file row by row, Sweden and Italy OFF
+            ("FiscalRulesCheck", FiscalRulesCheck.Run),   // §758 (rulings A6 and B6): the statutory rules' ink (A6, §725) and Sweden's debt anchor a notice, never a breach - the constants against the held quotes
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature
             ("PreStartRecordDiagnostic", PreStartRecordDiagnostic.Run),   // §709: the pre-start record - the generated table its CSV, every start's seed window, the reading before and after, Germany 2025 and Sweden 2026 with the record

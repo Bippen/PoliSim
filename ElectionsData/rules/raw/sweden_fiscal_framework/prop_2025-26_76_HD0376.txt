@@ -1,0 +1,1943 @@
+<dokumentstatus><dokument>
+ <hangar_id>5275189</hangar_id>
+ <dok_id>HD0376</dok_id>
+ <rm>2025/26</rm>
+ <beteckning>76</beteckning>
+ <typ>prop</typ>
+ <subtyp>skr</subtyp>
+ <doktyp>prop</doktyp>
+ <typrubrik>Regeringens skrivelse 2025/26:76</typrubrik>
+ <dokumentnamn>Regeringens skrivelse</dokumentnamn>
+ <debattnamn>Proposition</debattnamn>
+ <tempbeteckning></tempbeteckning>
+ <organ>Finansdepartementet</organ>
+ <mottagare>FiU</mottagare>
+ <nummer>76</nummer>
+ <slutnummer>0</slutnummer>
+ <datum>2025-12-09 00:00:00</datum>
+ <systemdatum>2026-02-25 16:35:57</systemdatum>
+ <publicerad>2025-12-09 00:00:00</publicerad>
+ <titel>Det finanspolitiska ramverket</titel>
+ <subtitel></subtitel>
+ <status>Klar</status>
+ <htmlformat>html-ec</htmlformat>
+ <relaterat_id></relaterat_id>
+ <source>prop-RIM</source>
+ <sourceid>ff919349-3505-4543-a579-9b99607fd324</sourceid>
+ <dokument_url_text>https://data.riksdagen.se/dokument/HD0376/text</dokument_url_text>
+ <dokument_url_html>https://data.riksdagen.se/dokument/HD0376</dokument_url_html>
+ <dokumentstatus_url_xml>https://data.riksdagen.se/dokumentstatus/HD0376</dokumentstatus_url_xml>
+ <html>&lt;div style="margin:3px;"&gt;
+&lt;STYLE type="text/css"&gt;
+
+body {margin-top: 0px;margin-left: 0px;}
+
+#page_1 {position:relative; overflow: hidden;z:b;margin:10px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+#page_1 #p1dimg1 {position:absolute;top:0px;left:546px;z-index:-1;width:54px;height:97px;}
+#page_1 #p1dimg1 #p1img1 {width:54px;height:97px;}
+
+
+
+
+#page_2 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 676px;}
+#page_2 #id_1 {float:left;border:none;z:b;margin:0px 0px 0px 10px ;padding: 0px;border:none;width: 90px;overflow: hidden;}
+#page_2 #id_2 {float:left;border:none;z:b;margin:1px 0px 0px 10px ;padding: 0px;border:none;width: 541px;overflow: hidden;}
+
+
+
+
+
+#page_3 {position:relative; overflow: hidden;z:b;margin:15px 0px 21px 10px ;padding: 0px;border: none;width: 676px;}
+
+#page_3 #p3dimg1 {position:absolute;top:278px;left:0px;z-index:-1;width:393px;height:181px;}
+#page_3 #p3dimg1 #p3img1 {width:393px;height:181px;}
+
+
+
+
+#page_4 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 676px;}
+
+
+
+
+
+#page_5 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_6 {position:relative; overflow: hidden;z:b;margin:15px 0px 21px 10px ;padding: 0px;border: none;width: 586px;}
+
+
+
+
+
+#page_7 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_8 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 676px;}
+
+
+
+
+
+#page_9 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 676px;}
+#page_9 #id_1 {float:left;border:none;z:b;margin:0px 0px 0px 10px ;padding: 0px;border:none;width: 451px;overflow: hidden;}
+#page_9 #id_2 {float:left;border:none;z:b;margin:0px 0px 0px 10px ;padding: 0px;border:none;width: 180px;overflow: hidden;}
+
+
+
+
+
+#page_10 {position:relative; overflow: hidden;z:b;margin:15px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_11 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_12 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_13 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_14 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 631px;}
+#page_14 #id_1 {border:none;z:b;margin:0px 0px 0px 10px ;padding: 0px;border:none;width: 586px;overflow: hidden;}
+#page_14 #id_2 {border:none;z:b;margin:1px 0px 0px 10px ;padding: 0px;border:none;width: 586px;overflow: hidden;}
+#page_14 #id_2 #id_2_1 {float:left;border:none;z:b;margin:97px 0px 0px 10px ;padding: 0px;border:none;width: 135px;overflow: hidden;}
+#page_14 #id_2 #id_2_2 {float:left;border:none;z:b;margin:0px 0px 0px 10px ;padding: 0px;border:none;width: 451px;overflow: hidden;}
+
+
+
+
+
+#page_15 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_16 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_17 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_18 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_19 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_20 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_21 {position:relative; overflow: hidden;z:b;margin:15px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_22 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_23 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+
+
+
+
+#page_24 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 721px;}
+
+
+
+
+
+#page_25 {position:relative; overflow: hidden;z:b;margin:16px 0px 21px 10px ;padding: 0px;border: none;width: 766px;}
+
+#page_25 #p25dimg1 {position:absolute;top:250px;left:63px;z-index:-1;width:112px;height:1px;font-size: 1px !important;l-h:nHeight;}
+#page_25 #p25dimg1 #p25img1 {width:112px;height:1px;}
+
+
+
+
+.dclr {clear:both;float:none;height:1px;margin:0px;padding:0px;overflow:hidden;}
+
+.ft0{font:  18px 'Verdana' !important;l-h: 29px;}
+.ft1{font:  14px 'Verdana' !important;l-h: 22px;}
+.ft2{font:  10px 'Verdana' !important;l-h: 1px;}
+.ft3{font:  12px 'Verdana' !important;l-h: 15px;}
+.ft4{font: italic  12px 'Verdana' !important;l-h: 15px;}
+.ft5{font:  12px 'Verdana' !important;margin-left: 12px;l-h: 15px;}
+.ft6{font:  14px 'Verdana' !important;l-h: 20px;}
+.ft7{font:  12px 'Verdana' !important;margin-left: 32px;l-h: 15px;}
+.ft8{font:  10px 'Verdana' !important;l-h: 8px;}
+.ft9{font: bold  12px 'Verdana' !important;l-h: 15px;}
+.ft10{font: bold  10px 'Verdana' !important;l-h: 12px;}
+.ft11{font: bold  10px 'Verdana' !important;l-h: 10px;}
+.ft12{font:  10px 'Verdana' !important;l-h: 6px;}
+.ft13{font: bold  10px 'Verdana' !important;l-h: 11px;}
+.ft14{font: bold  10px 'Verdana' !important;l-h: 6px;}
+.ft15{font: bold  10px 'Verdana' !important;l-h: 7px;}
+.ft16{font:  10px 'Verdana' !important;l-h: 7px;}
+.ft17{font:  10px 'Verdana' !important;l-h: 4px;}
+.ft18{font: bold  10px 'Verdana' !important;l-h: 5px;}
+.ft19{font:  10px 'Verdana' !important;l-h: 5px;}
+.ft20{font:  10px 'Verdana' !important;l-h: 12px;}
+.ft21{font:  10px 'Verdana' !important;l-h: 13px;}
+.ft22{font:  12px 'Verdana' !important;l-h: 15px;}
+.ft23{font:  14px 'Verdana' !important;margin-left: 51px;l-h: 22px;}
+.ft24{font:  14px 'Verdana' !important;l-h: 19px;}
+.ft25{font:  14px 'Verdana' !important;margin-left: 39px;l-h: 19px;}
+.ft26{font:  12px 'Verdana' !important;l-h: 14px;}
+.ft27{font:  12px 'Verdana' !important;margin-left: 6px;l-h: 15px;}
+.ft28{font:  12px 'Verdana' !important;margin-left: 13px;l-h: 15px;}
+.ft29{font:  14px 'Verdana' !important;l-h: 19px;}
+.ft30{font:  12px 'Verdana' !important;l-h: 13px;}
+.ft31{font:  14px 'Verdana' !important;margin-left: 50px;l-h: 22px;}
+
+.p0{text-align: left;padding-left: 0px;padding-right: 441px;margin-top: 25px;margin-bottom: 0px !important;}
+.p1{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p2{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p3{text-align: left;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p4{text-align: left;padding-left: 0px;margin-top: 20px;margin-bottom: 0px !important;}
+.p5{text-align: left;padding-left: 0px;margin-top: 15px;margin-bottom: 0px !important;}
+.p6{text-align: left;padding-left: 0px;margin-top: 32px;margin-bottom: 0px !important;}
+.p7{text-align: left;padding-left: 180px;padding-right: 399px;margin-top: 20px;margin-bottom: 0px !important;}
+.p8{text-align: left;padding-left: 0px;margin-top: 51px;margin-bottom: 0px !important;}
+.p9{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 28px;margin-bottom: 0px !important;}
+.p10{text-align: left;padding-left: 0px;margin-top: 2px;margin-bottom: 0px !important;}
+.p11{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p12{text-align: left;padding-left: 0px;margin-top: 1px;margin-bottom: 0px !important;}
+.p13{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;}
+.p14{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 15px;margin-bottom: 0px !important;}
+.p15{text-align: right;padding-right: 42px;margin-top: 94px;margin-bottom: 0px !important;}
+.p16{text-align: left;margin-top: 0px;margin-bottom: 0px !important;}
+.p17{text-align: left;padding-left: 0px;margin-top: 753px;margin-bottom: 0px !important;}
+.p18{text-align: right;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p19{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p20{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p21{text-align: left;padding-left: 0px;margin-top: 1px;margin-bottom: 0px !important;}
+.p22{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p23{text-align: right;padding-right: 42px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p24{text-align: right;padding-right: 21px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p25{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p26{text-align: left;padding-right: 168px;margin-top: 16px;margin-bottom: 0px !important;}
+.p27{text-align: left;padding-right: 168px;margin-top: 1px;margin-bottom: 0px !important;text-indent: 11px;}
+.p28{text-align: left;padding-left: 0px;margin-top: 52px;margin-bottom: 0px !important;}
+.p29{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p30{text-align: center;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p31{text-align: center;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p32{text-align: center;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p33{text-align: center;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p34{text-align: center;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p35{text-align: center;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p36{text-align: center;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p37{text-align: center;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p38{text-align: center;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p39{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;}
+.p40{text-align: left;padding-left: 0px;margin-top: 1px;margin-bottom: 0px !important;}
+.p41{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p42{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.112px;}
+.p43{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 2px;margin-bottom: 0px !important;text-indent: 11px;}
+.p44{text-align: left;padding-left: 0px;margin-top: 49px;margin-bottom: 0px !important;}
+.p45{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p46{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p47{text-align: right;padding-right: 42px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p48{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;}
+.p49{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 0px;margin-bottom: 0px !important;}
+.p50{text-align: left;padding-left: 0px;margin-top: 50px;margin-bottom: 0px !important;}
+.p51{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 17px;margin-bottom: 0px !important;}
+.p52{text-align: left;padding-left: 0px;padding-right: 294px;margin-top: 33px;margin-bottom: 0px !important;text-indent: 0.61px;}
+.p53{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 13px;margin-bottom: 0px !important;}
+.p54{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 2px;margin-bottom: 0px !important;text-indent: 11px;}
+.p55{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 7px;margin-bottom: 0px !important;text-indent: 11px;}
+.p56{text-align: right;padding-right: 42px;margin-top: 0px;margin-bottom: 0px !important;}
+.p57{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p58{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p59{text-align: left;padding-left: 0px;margin-top: 34px;margin-bottom: 0px !important;}
+.p60{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 12px;margin-bottom: 0px !important;}
+.p61{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 3px;margin-bottom: 0px !important;text-indent: 11px;}
+.p62{text-align: left;padding-left: 0px;margin-top: 36px;margin-bottom: 0px !important;}
+.p63{text-align: left;padding-left: 0px;padding-right: 147px;margin-top: 11px;margin-bottom: 0px !important;}
+.p64{text-align: left;padding-left: 0px;margin-top: 2px;margin-bottom: 0px !important;}
+.p65{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.112px;}
+.p66{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 4px;margin-bottom: 0px !important;text-indent: 11px;}
+.p67{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 1px;margin-bottom: 0px !important;text-indent: 11px;}
+.p68{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 1px;margin-bottom: 0px !important;}
+.p69{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 19px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p70{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p71{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 1px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p72{text-align: left;padding-left: 0px;margin-top: 1px;margin-bottom: 0px !important;}
+.p73{text-align: left;margin-top: 16px;margin-bottom: 0px !important;}
+.p74{text-align: left;padding-right: 1px;margin-top: 0px;margin-bottom: 0px !important;}
+.p75{text-align: left;margin-top: 4px;margin-bottom: 0px !important;text-indent: 11px;}
+.p76{text-align: left;padding-left: 0px;padding-right: 1px;margin-top: 17px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p77{text-align: left;padding-left: 0px;padding-right: 1px;margin-top: 3px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p78{text-align: left;padding-left: 0px;padding-right: 1px;margin-top: 1px;margin-bottom: 0px !important;text-indent: 0.19px;}
+.p79{text-align: left;padding-right: 1px;margin-top: 16px;margin-bottom: 0px !important;}
+.p80{text-align: left;padding-right: 1px;margin-top: 3px;margin-bottom: 0px !important;text-indent: 11px;}
+.p81{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;}
+.p82{text-align: right;padding-right: 42px;margin-top: 752px;margin-bottom: 0px !important;}
+.p83{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p84{text-align: left;padding-left: 0px;margin-top: 49px;margin-bottom: 0px !important;}
+.p85{text-align: left;padding-left: 0px;padding-right: 147px;margin-top: 0px;margin-bottom: 0px !important;}
+.p86{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 1px;margin-bottom: 0px !important;text-indent: 11px;}
+.p87{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 11px;margin-bottom: 0px !important;}
+.p88{text-align: left;padding-left: 0px;padding-right: 147px;margin-top: 2px;margin-bottom: 0px !important;text-indent: 11px;}
+.p89{text-align: right;padding-right: 42px;margin-top: 1px;margin-bottom: 0px !important;}
+.p90{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.112px;}
+.p91{text-align: left;padding-left: 0px;margin-top: 35px;margin-bottom: 0px !important;}
+.p92{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 11px;margin-bottom: 0px !important;}
+.p93{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 2px;margin-bottom: 0px !important;text-indent: 11px;}
+.p94{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 4px;margin-bottom: 0px !important;text-indent: 11px;}
+.p95{text-align: left;padding-left: 0px;margin-top: 34px;margin-bottom: 0px !important;}
+.p96{text-align: left;padding-left: 0px;margin-top: 4px;margin-bottom: 0px !important;}
+.p97{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;}
+.p98{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 11px;}
+.p99{text-align: left;padding-left: 0px;padding-right: 378px;margin-top: 52px;margin-bottom: 0px !important;text-indent: 0.61px;}
+.p100{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 18px;margin-bottom: 0px !important;}
+.p101{text-align: left;padding-left: 0px;margin-top: 3px;margin-bottom: 0px !important;}
+.p102{text-align: left;padding-left: 0px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.112px;}
+.p103{text-align: left;padding-right: 5px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 11px;}
+.p104{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 35px;margin-bottom: 0px !important;text-indent: 0.60px;}
+.p105{text-align: left;padding-right: 5px;margin-top: 12px;margin-bottom: 0px !important;}
+.p106{text-align: left;padding-right: 5px;margin-top: 2px;margin-bottom: 0px !important;text-indent: 11px;}
+.p107{text-align: left;padding-left: 0px;margin-top: 37px;margin-bottom: 0px !important;}
+.p108{text-align: left;padding-left: 0px;padding-right: 147px;margin-top: 12px;margin-bottom: 0px !important;}
+.p109{text-align: left;padding-left: 0px;margin-top: 65px;margin-bottom: 0px !important;}
+.p110{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 17px;margin-bottom: 0px !important;}
+.p111{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 1px;margin-bottom: 0px !important;text-indent: 11px;}
+.p112{text-align: left;padding-left: 0px;margin-top: 33px;margin-bottom: 0px !important;}
+.p113{text-align: left;padding-left: 0px;padding-right: 147px;margin-top: 4px;margin-bottom: 0px !important;text-indent: 11px;}
+.p114{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 4px;margin-bottom: 0px !important;text-indent: 11px;}
+.p115{text-align: right;padding-right: 42px;margin-top: 17px;margin-bottom: 0px !important;}
+.p116{text-align: left;padding-left: 160px;padding-right: 105px;margin-top: 34px;margin-bottom: 0px !important;text-indent: 0.60px;}
+.p117{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 12px;margin-bottom: 0px !important;}
+.p118{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 5px;margin-bottom: 0px !important;text-indent: 11px;}
+.p119{text-align: left;margin-top: 60px;margin-bottom: 0px !important;}
+.p120{text-align: right;padding-right: 0px;margin-top: 0px;margin-bottom: 0px !important;white-space: nowrap;}
+.p121{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 10px;margin-bottom: 0px !important;}
+.p122{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 5px;margin-bottom: 0px !important;text-indent: 11px;}
+.p123{text-align: left;padding-left: 0px;margin-top: 35px;margin-bottom: 0px !important;}
+.p124{text-align: left;padding-left: 0px;margin-top: 1px;margin-bottom: 0px !important;}
+.p125{text-align: left;margin-top: 63px;margin-bottom: 0px !important;}
+.p126{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 16px;margin-bottom: 0px !important;}
+.p127{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 33px;margin-bottom: 0px !important;text-indent: 0.61px;}
+.p128{text-align: right;padding-right: 42px;margin-top: 3px;margin-bottom: 0px !important;}
+.p129{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 0.112px;}
+.p130{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 3px;margin-bottom: 0px !important;text-indent: 11px;}
+.p131{text-align: left;margin-top: 2px;margin-bottom: 0px !important;}
+.p132{text-align: left;padding-left: 0px;padding-right: 63px;margin-top: 0px;margin-bottom: 0px !important;text-indent: 11px;}
+.p133{text-align: left;padding-left: 0px;padding-right: 315px;margin-top: 51px;margin-bottom: 0px !important;text-indent: 0.61px;}
+.p134{text-align: left;margin-top: 569px;margin-bottom: 0px !important;}
+.p135{text-align: left;padding-left: 440px;margin-top: 0px;margin-bottom: 0px !important;}
+.p136{text-align: left;padding-left: 0px;margin-top: 13px;margin-bottom: 0px !important;}
+.p137{text-align: left;padding-left: 0px;padding-right: 168px;margin-top: 16px;margin-bottom: 0px !important;}
+.p138{text-align: left;padding-left: 0px;margin-top: 17px;margin-bottom: 0px !important;}
+.p139{text-align: left;padding-left: 0px;margin-top: 76px;margin-bottom: 0px !important;}
+.p140{text-align: right;padding-right: 42px;margin-top: 455px;margin-bottom: 0px !important;}
+
+.td0{padding: 0px;margin: 0px;width: 333px;vertical-align: bottom;}
+.td1{padding: 0px;margin: 0px;width: 193px;vertical-align: bottom;}
+.td2{border-bottom: #000000 1px solid;padding: 0px;margin: 0px;width: 333px;vertical-align: bottom;}
+.td3{border-bottom: #000000 1px solid;padding: 0px;margin: 0px;width: 193px;vertical-align: bottom;}
+.td4{padding: 0px;margin: 0px;width: 6px;vertical-align: bottom;}
+.td5{padding: 0px;margin: 0px;width: 390px;vertical-align: bottom;}
+.td6{padding: 0px;margin: 0px;width: 14px;vertical-align: bottom;}
+.td7{padding: 0px;margin: 0px;width: 68px;vertical-align: bottom;}
+.td8{padding: 0px;margin: 0px;width: 322px;vertical-align: bottom;}
+.td9{padding: 0px;margin: 0px;width: 55px;vertical-align: bottom;}
+.td10{padding: 0px;margin: 0px;width: 334px;vertical-align: bottom;}
+.td11{padding: 0px;margin: 0px;width: 45px;vertical-align: bottom;}
+.td12{padding: 0px;margin: 0px;width: 351px;vertical-align: bottom;}
+.td13{padding: 0px;margin: 0px;width: 396px;vertical-align: bottom;}
+.td14{padding: 0px;margin: 0px;width: 36px;vertical-align: bottom;}
+.td15{padding: 0px;margin: 0px;width: 389px;vertical-align: bottom;}
+.td16{padding: 0px;margin: 0px;width: 90px;vertical-align: bottom;}
+.td17{padding: 0px;margin: 0px;width: 79px;vertical-align: bottom;}
+.td18{padding: 0px;margin: 0px;width: 159px;vertical-align: bottom;}
+.td19{padding: 0px;margin: 0px;width: 133px;vertical-align: bottom;}
+.td20{padding: 0px;margin: 0px;width: 106px;vertical-align: bottom;}
+.td21{padding: 0px;margin: 0px;width: 63px;vertical-align: bottom;}
+.td22{padding: 0px;margin: 0px;width: 60px;vertical-align: bottom;}
+.td23{padding: 0px;margin: 0px;width: 33px;vertical-align: bottom;}
+.td24{padding: 0px;margin: 0px;width: 35px;vertical-align: bottom;}
+.td25{padding: 0px;margin: 0px;width: 468px;vertical-align: bottom;}
+.td26{padding: 0px;margin: 0px;width: 61px;vertical-align: bottom;}
+.td27{padding: 0px;margin: 0px;width: 469px;vertical-align: bottom;}
+.td28{padding: 0px;margin: 0px;width: 105px;vertical-align: bottom;}
+.td29{padding: 0px;margin: 0px;width: 427px;vertical-align: bottom;}
+.td30{padding: 0px;margin: 0px;width: 57px;vertical-align: bottom;}
+.td31{padding: 0px;margin: 0px;width: 369px;vertical-align: bottom;}
+.td32{padding: 0px;margin: 0px;width: 69px;vertical-align: bottom;}
+.td33{padding: 0px;margin: 0px;width: 43px;vertical-align: bottom;}
+.td34{padding: 0px;margin: 0px;width: 383px;vertical-align: bottom;}
+
+.tr0{heightzzz: 27px;}
+.tr1{heightzzz: 23px;}
+.tr2{heightzzz: 18px;}
+.tr3{heightzzz: 22px;}
+.tr4{heightzzz: 15px;}
+.tr5{heightzzz: 16px;}
+.tr6{heightzzz: 26px;}
+.tr7{heightzzz: 8px;}
+.tr8{heightzzz: 14px;}
+.tr9{heightzzz: 20px;}
+.tr10{heightzzz: 6px;}
+.tr11{heightzzz: 10px;}
+.tr12{heightzzz: 11px;}
+.tr13{heightzzz: 7px;}
+.tr14{heightzzz: 9px;}
+.tr15{heightzzz: 4px;}
+.tr16{heightzzz: 5px;}
+.tr17{heightzzz: 13px;}
+.tr18{heightzzz: 31px;}
+.tr19{heightzzz: 24px;}
+.tr20{heightzzz: 19px;}
+
+.t0{width: 552px;margin-leftZ: 69px;margin-top: 12px;f:20px 'Verdana' !important;}
+.t1{width: 431px;margin-top: 16px;f:13px 'Verdana' !important;}
+.t2{width: 431px;f:13px 'Verdana' !important;}
+.t3{width: 541px;f:20px 'Verdana' !important;}
+.t4{width: 250px;margin-top: 20px;f:bold 10px 'Verdana' !important;}
+.t5{width: 415px;margin-leftZ: 4px;margin-top: 32px;f:bold 8px 'Verdana' !important;}
+.t6{width: 555px;margin-top: 8px;f:13px 'Verdana' !important;}
+.t7{width: 556px;margin-top: 14px;f:13px 'Verdana' !important;}
+.t8{width: 557px;f:13px 'Verdana' !important;}
+.t9{width: 557px;margin-leftZ: 6px;f:13px 'Verdana' !important;}
+.t10{width: 564px;margin-top: 13px;f:13px 'Verdana' !important;}
+.t11{width: 564px;margin-top: 9px;f:13px 'Verdana' !important;}
+.t12{width: 541px;margin-leftZ: 68px;f:17px 'Verdana' !important;}
+.t13{width: 541px;margin-leftZ: 68px;f:20px 'Verdana' !important;}
+
+&lt;/STYLE&gt;
+
+
+
+&lt;DIV id="page_1"&gt;
+&lt;DIV id="p1dimg1"&gt;
+&lt;INGENBILD zsrc="HD03761x1.jpg/" id="p1img1"&gt;
+&lt;/DIV&gt;
+
+
+&lt;DIV class="dclr"&gt;&lt;/DIV&gt;
+&lt;P class="p0 ft0"&gt;Regeringens skrivelse 2025/26:76&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t0"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr0 td0"&gt;&lt;SPAN class="p1 ft1"&gt;Det finanspolitiska ramverket&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr0 td1"&gt;&lt;SPAN class="p2 ft1"&gt;Skr.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr1 td2"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr1 td3"&gt;&lt;SPAN class="p2 ft1"&gt;2025/26:76&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p4 ft3"&gt;Regeringen överlämnar denna skrivelse till riksdagen.&lt;/P&gt;
+&lt;P class="p5 ft3"&gt;Stockholm den 4 december 2025&lt;/P&gt;
+&lt;P class="p6 ft4"&gt;Ulf Kristersson&lt;/P&gt;
+&lt;P class="p7 ft4"&gt;Elisabeth Svantesson &lt;SPAN class="ft3"&gt;(Finansdepartementet)&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p8 ft1"&gt;Skrivelsens huvudsakliga innehåll&lt;/P&gt;
+&lt;P class="p9 ft3"&gt;I skrivelsen redogör regeringen för det finanspolitiska ramverket. Skrivelsen, som fungerar som en uppförandekod för såväl regeringen som de aktörer som granskar finanspolitiken, syftar till att redovisa de lagar och andra regler samt praxis som utgör det finanspolitiska ramverket. Skrivelsen syftar också till att i vissa delar precisera ramverket och regeringens tillämpning av det.&lt;/P&gt;
+&lt;P class="p10 ft3"&gt;Det finanspolitiska ramverket består av flera delar:&lt;/P&gt;
+&lt;P class="p11 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;de budgetpolitiska målen (ett mål för den offentliga förvaltningens finansiella sparande, ett riktmärke för den offentliga skulden, ett utgiftstak och ett kommunalt balanskrav)&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p12 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;en stram statlig budgetprocess&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p13 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;principer för finanspolitisk konjunkturstabilisering&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p12 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;öppenhet och tydlighet&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p13 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;extern uppföljning.&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p14 ft3"&gt;En samlad redovisning av de lagar, regler och praxis som utgör det finanspolitiska ramverket och regeringens tillämpning av det bidrar till att öka förtroendet för finanspolitiken. Detta förbättrar i sin tur förutsättningarna för att finanspolitiken får avsedd effekt.&lt;/P&gt;
+&lt;P class="p15 ft3"&gt;1&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_2"&gt;
+
+
+&lt;DIV&gt;
+&lt;DIV id="id_1"&gt;
+&lt;P class="p16 ft3"&gt;Skr. 2025/26:76&lt;/P&gt;
+&lt;P class="p17 ft3"&gt;2&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="id_2"&gt;
+&lt;P class="p16 ft6"&gt;Innehållsförteckning&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t1"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr2 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_3"&gt;1&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr2 td5"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_3"&gt;Sammanfattning ................................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_3"&gt;3&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr3 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_4"&gt;2&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_4"&gt;Ärendet&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td8"&gt;&lt;SPAN class="p1 ft3"&gt;&lt;A href="#page_4"&gt;.............................................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_4"&gt;4&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr3 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_5"&gt;3&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr3 td5"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_5"&gt;De budgetpolitiska målen .................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_5"&gt;5&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_5"&gt;3.1&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_5"&gt;Målet för den offentliga förvaltningens finansiella&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td7"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_5"&gt;sparande..............................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_5"&gt;5&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_7"&gt;3.2&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_7"&gt;Skuldankaret.......................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_7"&gt;7&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_7"&gt;3.3&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_7"&gt;Utgiftstaket.........................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_7"&gt;7&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_10"&gt;3.4&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_10"&gt;Det kommunala balanskravet ...........................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_10"&gt;10&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr3 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_10"&gt;4&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr3 td5"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_10"&gt;En stram statlig budgetprocess........................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_10"&gt;10&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_11"&gt;4.1&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_11"&gt;Budgetberedningen...........................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_11"&gt;11&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_12"&gt;4.2&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_12"&gt;Finansieringsprinciper ......................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_12"&gt;12&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_12"&gt;4.3&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_12"&gt;Budget- och redovisningsprinciper...................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_12"&gt;12&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td7"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_13"&gt;4.4&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td8"&gt;&lt;SPAN class="p20 ft3"&gt;&lt;A href="#page_13"&gt;Redovisning av skatteutgifter ...........................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_13"&gt;13&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr3 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_13"&gt;5&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr3 td5"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_13"&gt;Principer för finanspolitisk konjunkturstabilisering........................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_13"&gt;13&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p21 ft3"&gt;&lt;SPAN class="ft3"&gt;5.1&lt;/SPAN&gt;&lt;A href="#page_14"&gt;&lt;SPAN class="ft7"&gt;När ska finanspolitiken bidra aktivt till&lt;/SPAN&gt;&lt;/A&gt;&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t2"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_14"&gt;konjunkturstabiliseringen? ...............................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_14"&gt;14&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_15"&gt;5.2&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_15"&gt;Finanspolitiska stabiliseringsinstrument ..........................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_15"&gt;15&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_15"&gt;5.3&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_15"&gt;Samspelet mellan finans- och penningpolitik...................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_15"&gt;15&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr3 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_16"&gt;6&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr3 td5"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_16"&gt;Öppenhet och tydlighet ...................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_16"&gt;16&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_16"&gt;6.1&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_16"&gt;Den ekonomiska vårpropositionen ...................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_16"&gt;16&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_17"&gt;6.2&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_17"&gt;Budgetpropositionen ........................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_17"&gt;17&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p21 ft3"&gt;&lt;SPAN class="ft3"&gt;6.3&lt;/SPAN&gt;&lt;A href="#page_18"&gt;&lt;SPAN class="ft7"&gt;Propositioner med förslag till ändringar i statens&lt;/SPAN&gt;&lt;/A&gt;&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t2"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_18"&gt;budget...............................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_18"&gt;18&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_19"&gt;6.4&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_19"&gt;Årsredovisningen för staten..............................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_19"&gt;19&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_19"&gt;6.5&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_19"&gt;Riskanalyser av statliga garantier och krediter.................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_19"&gt;19&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_19"&gt;6.6&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_19"&gt;Prognoser och effektberäkningar......................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_19"&gt;19&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td4"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td9"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_20"&gt;6.7&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td10"&gt;&lt;SPAN class="p22 ft3"&gt;&lt;A href="#page_20"&gt;Finanspolitikens långsiktiga hållbarhet ............................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_20"&gt;20&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr3 td4"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;7&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr3 td5"&gt;&lt;SPAN class="p19 ft3"&gt;&lt;A href="#page_21"&gt;Extern uppföljning ..........................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;21&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p21 ft3"&gt;&lt;SPAN class="ft3"&gt;7.1&lt;/SPAN&gt;&lt;A href="#page_21"&gt;&lt;SPAN class="ft7"&gt;Flera myndigheter följer upp finanspolitiken på&lt;/SPAN&gt;&lt;/A&gt;&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t2"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td11"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td12"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;nationell nivå ....................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;21&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td11"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;7.2&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td12"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;Finanspolitiska rådets särskilda roll .................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_21"&gt;21&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td11"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_22"&gt;7.3&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td12"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_22"&gt;Uppföljningen på &lt;/A&gt;&lt;NOBR&gt;&lt;A href="#page_22"&gt;EU-nivå ...............................................&lt;/A&gt;&lt;/NOBR&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_22"&gt;22&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD colspan=2 class="tr3 td13"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_23"&gt;8 Återkommande översyner av det finanspolitiska ramverket ...........&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_23"&gt;23&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD colspan=2 class="tr3 td13"&gt;&lt;SPAN class="p23 ft3"&gt;&lt;A href="#page_25"&gt;Utdrag ur protokoll vid regeringssammanträde den 4 december&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr3 td6"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td11"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td12"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_25"&gt;2025 .......................................................................................&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td6"&gt;&lt;SPAN class="p18 ft3"&gt;&lt;A href="#page_25"&gt;25&lt;/A&gt;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;/DIV&gt;
+&lt;/DIV&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_3"&gt;
+&lt;DIV id="p3dimg1"&gt;
+&lt;INGENBILD zsrc="HD03763x1.jpg/" id="p3img1"&gt;
+&lt;/DIV&gt;
+
+
+&lt;TABLE cellpadding=0 cellspacing=0 class="t3"&gt;
+&lt;TR&gt;
+	&lt;TD rowspan=2 class="tr6 td14"&gt;&lt;SPAN class="p24 ft1"&gt;1&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr6 td15"&gt;&lt;SPAN class="p25 ft1"&gt;Sammanfattning&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td16"&gt;&lt;SPAN class="p3 ft3"&gt;Skr. 2025/26:76&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr7 td16"&gt;&lt;SPAN class="p3 ft8"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p26 ft3"&gt;Det finanspolitiska ramverket har sitt ursprung i den djupa ekonomiska kris som Sverige genomgick i början av &lt;NOBR&gt;1990-talet.&lt;/NOBR&gt; Ramverket är utformat för att säkerställa långsiktigt hållbara offentliga finanser och för att främja en finanspolitik som bidrar till en hög och hållbar ekonomisk tillväxt, välfärd och ett stabilt resursutnyttjande.&lt;/P&gt;
+&lt;P class="p27 ft3"&gt;Det finanspolitiska ramverket omfattar fyra centrala budgetpolitiska mål: ett mål för den offentliga förvaltningens finansiella sparande, ett riktmärke för den offentliga skulden (skuldankaret), ett utgiftstak och ett kommunalt balanskrav (se &lt;A href="#page_3"&gt;figur)&lt;/A&gt;. Till detta kommer regler i bl.a. regeringsformen, riksdagsordningen och budgetlagen (2011:203), samt praxis för den statliga budgetprocessen. Ramverket innehåller också principer för finanspolitisk konjunkturstabilisering, öppenhet och tydlighet samt extern uppföljning.&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t4"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td17"&gt;&lt;SPAN class="p3 ft9"&gt;Figur&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td18"&gt;&lt;SPAN class="p3 ft10"&gt;Det finanspolitiska ramverket&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p28 ft10"&gt;Det finanspolitiska ramverket&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t5"&gt;
+&lt;TR&gt;
+	&lt;TD colspan=3 class="tr8 td19"&gt;&lt;SPAN class="p29 ft11"&gt;Budgetpolitiska mål&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr8 td20"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr9 td21"&gt;&lt;SPAN class="p30 ft11"&gt;Principer för&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr8 td22"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr8 td23"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr10 td22"&gt;&lt;SPAN class="p3 ft12"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr10 td14"&gt;&lt;SPAN class="p3 ft12"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr10 td24"&gt;&lt;SPAN class="p3 ft12"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr5 td20"&gt;&lt;SPAN class="p31 ft13"&gt;Stram&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr5 td22"&gt;&lt;SPAN class="p32 ft11"&gt;Öppenhet&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr5 td23"&gt;&lt;SPAN class="p33 ft11"&gt;Extern&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr11 td22"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr11 td14"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr11 td24"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr11 td21"&gt;&lt;SPAN class="p30 ft11"&gt;finans-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr12 td22"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td14"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td24"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td20"&gt;&lt;SPAN class="p34 ft11"&gt;budget-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td21"&gt;&lt;SPAN class="p30 ft11"&gt;politisk&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td22"&gt;&lt;SPAN class="p35 ft11"&gt;och&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td23"&gt;&lt;SPAN class="p33 ft11"&gt;upp-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr12 td22"&gt;&lt;SPAN class="p30 ft14"&gt;Mål för den&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td14"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td24"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td20"&gt;&lt;SPAN class="p34 ft11"&gt;process&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td21"&gt;&lt;SPAN class="p30 ft11"&gt;konjunktur-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td22"&gt;&lt;SPAN class="p30 ft11"&gt;tydlighet&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr12 td23"&gt;&lt;SPAN class="p33 ft11"&gt;följning&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr13 td22"&gt;&lt;SPAN class="p30 ft15"&gt;offentliga&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr12 td14"&gt;&lt;SPAN class="p1 ft15"&gt;Skuld-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr12 td24"&gt;&lt;SPAN class="p36 ft15"&gt;Utgifts-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr12 td20"&gt;&lt;SPAN class="p3 ft15"&gt;Kommunalt&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr12 td21"&gt;&lt;SPAN class="p30 ft11"&gt;stabilisering&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr13 td22"&gt;&lt;SPAN class="p3 ft16"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr13 td23"&gt;&lt;SPAN class="p3 ft16"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD rowspan=2 class="tr14 td22"&gt;&lt;SPAN class="p37 ft14"&gt;förvaltningens&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr15 td22"&gt;&lt;SPAN class="p3 ft17"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr15 td23"&gt;&lt;SPAN class="p3 ft17"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr16 td14"&gt;&lt;SPAN class="p3 ft18"&gt;ankare&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr16 td24"&gt;&lt;SPAN class="p38 ft18"&gt;tak&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr16 td20"&gt;&lt;SPAN class="p1 ft18"&gt;balanskrav&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr16 td21"&gt;&lt;SPAN class="p3 ft19"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr16 td22"&gt;&lt;SPAN class="p3 ft19"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr16 td23"&gt;&lt;SPAN class="p3 ft19"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p39 ft15"&gt;finansiella&lt;/P&gt;
+&lt;P class="p40 ft15"&gt;sparande&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t6"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr17 td25"&gt;&lt;SPAN class="p3 ft20"&gt;Källa: Finansdepartementet.&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr17 td26"&gt;&lt;SPAN class="p3 ft21"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr18 td25"&gt;&lt;SPAN class="p3 ft3"&gt;Målet för den offentliga förvaltningens finansiella sparande är en&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr18 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;tredjedels procent av BNP i genomsnitt över en konjunkturcykel. Från och&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td25"&gt;&lt;SPAN class="p3 ft3"&gt;med 2027 och tills vidare är målet att uppnå balans över en konjunktur-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;cykel. Skuldankaret på 35 procent av BNP är ett riktmärke för den&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;offentliga förvaltningens konsoliderade bruttoskuld (den s.k. Maastricht-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td25"&gt;&lt;SPAN class="p3 ft3"&gt;skulden) på medellång sikt. Utgiftstaket utgör en övre gräns för den&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;nominella utgiftsnivån i staten och ålderspensionssystemet. Det kom-&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;munala balanskravet innebär att kommuner och regioner ska budgetera så&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td25"&gt;&lt;SPAN class="p3 ft3"&gt;att intäkterna överstiger kostnaderna. Både utgiftstaket och balanskravet&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;stödjer målet för den offentliga förvaltningens finansiella sparande genom&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;att stärka budgetdisciplinen.&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td25"&gt;&lt;SPAN class="p41 ft3"&gt;En stram budgetprocess är av central betydelse för att målen i det&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;finanspolitiska ramverket ska nås. Budgetprocessen är medelfristig och&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;utgår från ett &lt;NOBR&gt;uppifrån-och-ner-perspektiv,&lt;/NOBR&gt; där utgiftsökningar prövas&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td25"&gt;&lt;SPAN class="p3 ft3"&gt;utifrån ett på förhand fastställt ekonomiskt utrymme som bestäms med&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;beaktande av utgiftstaket och målet för den offentliga förvaltningens&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;finansiella sparande.&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td25"&gt;&lt;SPAN class="p41 ft3"&gt;Principer för finanspolitisk konjunkturstabilisering syftar till att vägleda&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td25"&gt;&lt;SPAN class="p3 ft3"&gt;regeringen vid stabiliseringspolitiska beslut och därigenom öka politikens&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr9 td26"&gt;&lt;SPAN class="p18 ft3"&gt;3&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr16 td25"&gt;&lt;SPAN class="p3 ft19"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_4"&gt;
+
+
+&lt;P class="p42 ft3"&gt;Skr. 2025/26:76 trovärdighet, förutsebarhet och genomslag. Tydliga principer bidrar också till att underlätta samspelet mellan finans- och penningpolitiken och att minska risken för systematiska offentligfinansiella underskott.&lt;/P&gt;
+&lt;P class="p43 ft3"&gt;Öppenhet och tydlighet innebär att redovisningen av finanspolitiken ska vara transparent. Syftet med den externa uppföljningen av finanspolitiken på nationell nivå är att säkerställa att politiken utformas i enlighet med befintliga mål, bl.a. genom att öka de politiska kostnaderna för att inte följa ramverket.&lt;/P&gt;
+&lt;P class="p43 ft3"&gt;Det finanspolitiska ramverket ses över av en parlamentarisk kommitté varannan mandatperiod. I samband med dessa översyner kan eventuella behov av förändringar av ramverket beaktas. Återkommande översyner av det finanspolitiska ramverket ger ramverket en stark politisk förankring och bidrar till tydlighet och kontinuitet.&lt;/P&gt;
+&lt;P class="p44 ft1"&gt;2 Ärendet&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t7"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr2 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td27"&gt;&lt;SPAN class="p45 ft3"&gt;Regeringen tillsatte i november 2023 en parlamentariskt sammansatt&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;kommitté med uppgift att se över nivån på målet för den offentliga&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;sektorns finansiella sparande (dir. 2023:162). Regeringen beslutade i juni&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;2024 tilläggsdirektiv till kommittén (dir. 2024:62). Genom tilläggsdirek-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;tiven fick kommittén även i uppdrag att analysera och ta ställning till hur&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;det svenska finanspolitiska ramverket behöver anpassas för att uppfylla&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;kraven i rådets direktiv (EU) 2024/1265 av den 29 april 2024 om ändring&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;av direktiv 2011/85/EU om krav på medlemsstaternas budgetramverk.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p46 ft3"&gt;Kommittén överlämnade i november 2024 betänkandet Från överskotts-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;mål till balansmål (SOU 2024:76) till regeringen.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p46 ft3"&gt;Regeringen har tidigare behandlat huvuddelen av kommitténs förslag&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;och bedömningar i 2025 års ekonomiska vårproposition (prop.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;2024/25:100 avsnitt 5.5) och i budgetpropositionen för 2026 (prop.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5). I denna&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;skrivelse behandlas därutöver kommitténs bedömning i fråga om&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;konsekvenser av åtaganden som följer av den gemensamma upplåningen&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;inom EU genom Next Generation EU.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p46 ft22"&gt;I budgetpropositionen för 2026 har regeringen föreslagit vissa ändringar&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;i budgetlagen, bl.a. att benämningen offentlig sektor ska ersättas med&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;benämningen offentlig förvaltning och att uttrycket överskottsmål ska tas&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;bort ur lagen. Regeringen har även i övrigt redovisat förslag och bedöm-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;ningar som syftar till att genomföra rådets direktiv (EU) 2024/1265, t.ex.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;i fråga om nya uppgifter för Finanspolitiska rådet.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p46 ft3"&gt;Riksdagen har antagit regeringens förslag till ändringar i budgetlagen&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;(bet. 2025/26:KU1, rskr. 2025/26:86). Ändringarna har utfärdats och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;träder i kraft den 31 december 2025. Regeringen har vidare beslutat om&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;ändringar i Finanspolitiska rådets instruktion som träder i kraft den 31&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;december 2025. Beskrivningen av det finanspolitiska ramverket i denna&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;skrivelse utgår från hur ramverket kommer att vara utformat när de&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;beslutade ändringarna har trätt i kraft.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td26"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p46 ft3"&gt;Skrivelsen, som fungerar som en uppförandekod för såväl regeringen&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD rowspan=2 class="tr9 td26"&gt;&lt;SPAN class="p47 ft3"&gt;4&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;som de aktörer som granskar finanspolitiken, syftar till att redovisa de&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr16 td27"&gt;&lt;SPAN class="p3 ft19"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_5"&gt;
+
+
+&lt;P class="p48 ft3"&gt;lagar och andra regler samt praxis som utgör det finanspolitiska ramverket, Skr. 2025/26:76 för att på det sättet bidra till att öka förtroendet för finanspolitikens&lt;/P&gt;
+&lt;P class="p49 ft3"&gt;utformning. Skrivelsen syftar också till att i vissa delar precisera ramverket och regeringens tillämpning av det. Därigenom tydliggörs även hur Sverige uppfyller kraven i EU:s stabilitets- och tillväxtpakt samt EU:s krav på nationella budgetramverk.&lt;/P&gt;
+&lt;P class="p50 ft1"&gt;&lt;SPAN class="ft1"&gt;3&lt;/SPAN&gt;&lt;SPAN class="ft23"&gt;De budgetpolitiska målen&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p51 ft3"&gt;Det finanspolitiska ramverket omfattar fyra centrala budgetpolitiska mål: ett mål för den offentliga förvaltningens finansiella sparande, ett riktmärke för den offentliga skulden (skuldankaret), ett utgiftstak och ett kommunalt balanskrav.&lt;/P&gt;
+&lt;P class="p52 ft24"&gt;&lt;SPAN class="ft24"&gt;3.1&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Målet för den offentliga förvaltningens finansiella sparande&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p53 ft3"&gt;Regeringen ska till riksdagen lämna ett förslag till mål för den offentliga förvaltningens finansiella sparande (2 kap. 1 § budgetlagen). Målet innebär att staten har ett övergripande ansvar för att beakta sparandet i alla delar av den offentliga förvaltningen, dvs. i staten, kommunsektorn och ålderspensionssystemet. Att målet omfattar hela den offentliga förvaltningens sparande stämmer också överens med stabilitets- och tillväxtpaktens restriktioner och krav på rapportering, vilket underlättar för internationella organisationer att utvärdera finanspolitiken.&lt;/P&gt;
+&lt;P class="p54 ft3"&gt;Målet för den offentliga förvaltningens finansiella sparande är en tredjedels procent av BNP i genomsnitt över en konjunkturcykel (prop. 2017/18:1 Förslag till statens budget, finansplan m.m. avsnitt 5.6, bet. 2017/18:FiU1, rskr. 2017/18:54). Riksdagen har fastställt att målet för den offentliga förvaltningens finansiella sparande fr.o.m. 2027 ska vara ett sparande i balans över en konjunkturcykel (prop. 2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.4, bet. 2025/26:FiU1, rskr. 2025/26:64). Det innebär att det offentliga finansiella sparandet ska uppgå till 0 procent av BNP i genomsnitt över en konjunkturcykel. Att målet är formulerat som ett genomsnitt över en konjunkturcykel beror på att den offentliga förvaltningens finansiella sparande i hög utsträckning påverkas av konjunkturläget. Målets formulering möjliggör stabilisering av konjunkturen via automatiska stabilisatorer och, vid behov, aktiv finanspolitik (se vidare avsnitt 5). Om målet hade varit formulerat som ett årligt mål skulle finanspolitiken behöva bedrivas procykliskt, dvs. på ett sätt som ökar konjunktursvängningarna, vilket skulle ha en destabiliserande effekt på ekonomin. Vidare skulle det finnas en risk för att temporärt höga överskott i en högkonjunktur används för att finansiera permanent högre utgifter eller sänkta skatter.&lt;/P&gt;
+&lt;P class="p55 ft3"&gt;För att bedöma måluppfyllelsen i ett framåtblickande perspektiv används det strukturella sparandet, som är en uppskattning av vad det&lt;/P&gt;
+&lt;P class="p56 ft3"&gt;5&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_6"&gt;
+
+
+&lt;TABLE cellpadding=0 cellspacing=0 class="t8"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr2 td28"&gt;&lt;SPAN class="p3 ft3"&gt;Skr. 2025/26:76&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td29"&gt;&lt;SPAN class="p57 ft3"&gt;finansiella sparandet skulle vara om det inte påverkades av konjunktur-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;läget eller av engångseffekter. Vidare sker en extern uppföljning av&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;måluppfyllelsen, i vilken Finanspolitiska rådet har en viktig roll (se avsnitt&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;7.2).&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Sverige har som medlem i EU förbundit sig att följa reglerna inom&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;stabilitets- och tillväxtpakten. De budgetpolitiska mål som bestäms ska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;vara förenliga med gränsvärdena i den förebyggande delen av stabilitets-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;och tillväxtpakten, som bl.a. omfattar den offentliga förvaltningens finan-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft22"&gt;siella sparande respektive skuldsättning (se vidare avsnitt 7.3). För att inte&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;begränsa det finanspolitiska handlingsutrymmet bör målet för den&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;offentliga förvaltningens finansiella sparande sättas med marginal till&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft22"&gt;stabilitets- och tillväxtpaktens regler, inklusive nettoutgiftsbanan (se prop.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.4).&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Regeringen ska vid minst två tillfällen per år redovisa för riksdagen hur&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;målet för den offentliga förvaltningens finansiella sparande uppnås, och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;vid en bedömd avvikelse från målet redogöra för hur en återgång till målet&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;ska ske (2 kap. 1 a § budgetlagen). Med målavvikelse avses att det struk-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;turella sparandet under det innevarande eller det närmast följande året&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;tydligt avviker från målnivån. Riktmärket för en tydlig avvikelse är att det&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;strukturella sparandet avviker med mer än 0,5 procent av potentiell BNP&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;från målnivån (se prop. 2024/2025:100 s. 90). En avvikelse ska inte&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;likställas med att politiken är felaktigt utformad eller att det finanspolitiska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;ramverket inte följs. Det kan t.ex. av stabiliseringspolitiska skäl vara&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;motiverat att bedriva en finanspolitik som innebär att det strukturella&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;sparandet avviker från målnivån.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Vid en avvikelse ska regeringen i budgetpropositionen och den eko-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;nomiska vårpropositionen förklara vad som motiverar avvikelsen och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;redogöra för hur en återgång till målet ska ske. Planen för återgången bör&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;vara tidsatt och i normalfallet inledas under nästkommande år, vanligtvis&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft22"&gt;genom förslag i budgetpropositionen. I praktiken är det i det årliga beslutet&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;om budgeten för nästkommande år som det avgörs hur regeringen lever&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;upp till målet. Om en avvikelse inte korrigeras under det närmast följande&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;året bör regeringens plan innehålla ett tydligt politiskt åtagande för det&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;strukturella sparandet för åren därefter. Ett sådant åtagande bör normalt&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;utformas så att målet för sparandet nås när konjunkturen är i balans.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Hur snabbt en avvikelse bör korrigeras beror på avvikelsens storlek,&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;konjunkturläget och samspelet mellan penning- och finanspolitiken i&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;stabiliseringen av ekonomin (se vidare avsnitt 5). Även andra faktorer kan&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;behöva beaktas. En negativ avvikelse från målet bör vid normala konjunk-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;tursvängningar minska i samma takt som det strukturella sparandet skulle&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;ha förstärkts utan några aktiva politiska beslut. En sådan s.k. automatisk&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;budgetförstärkning uppstår till följd av att skatteintäkterna normalt ökar i&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;samma takt som BNP i löpande priser, medan de statliga utgifterna ökar&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;något långsammare. I normalfallet bör en negativ avvikelse från målet&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;återtas snabbare i en högkonjunktur och långsammare i en lågkonjunktur.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;På samma sätt bör i normalfallet en positiv avvikelse från målet återtas&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;snabbare i en lågkonjunktur och långsammare i en högkonjunktur.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Enligt en parlamentarisk överenskommelse från den 19 juni 2025 kan&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;nya försvarsutgifter och stöd till Ukraina medge en avvikelse från målet&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;för det offentliga finansiella sparandet &lt;NOBR&gt;2026–2034&lt;/NOBR&gt; (se Överenskommelse&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p1 ft3"&gt;6&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;om försvaret, bilaga 1). De nya försvarsutgifterna och stödet ska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_7"&gt;
+
+
+&lt;P class="p48 ft3"&gt;finansieras successivt, så att det offentliga finansiella sparandet är i balans Skr. 2025/26:76 senast 2035. Senast 2030 ska en ny bedömning av det säkerhetspolitiska&lt;/P&gt;
+&lt;P class="p49 ft3"&gt;läget göras och en bana för återgång till målet presenteras. I den ekonomiska vårpropositionen och i budgetpropositionen ska regeringen redovisa hur nya försvarsutgifter och stöd till Ukraina påverkar det strukturella sparandet och därmed eventuella avvikelser från målet (se prop. 2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.5).&lt;/P&gt;
+&lt;P class="p59 ft24"&gt;&lt;SPAN class="ft24"&gt;3.2&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Skuldankaret&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p60 ft3"&gt;Skuldankaret är ett riktmärke för den offentliga förvaltningens konsoliderade bruttoskuld (Maastrichtskulden). Skuldankaret är satt till 35 procent av BNP och gäller tills vidare. Till skillnad mot målet för den offentliga förvaltningens finansiella sparande är skuldankaret inte ett operativt mål i den meningen att det styr finanspolitiken på kort sikt (prop. 2016/17:100, bet. 2016/17:FiU20, rskr. 2016/17:349 och prop. 2017/18:1 Förslag till statens budget, finansplan m.m. avsnitt 5.6, bet. 2017/18:FiU1, rskr. 2017/18:54). Ett skäl till detta är att den konsoliderade bruttoskulden kan förändras av orsaker som inte nödvändigtvis förändrar den finansiella nettoförmögenheten, t.ex. omklassificeringar i statistiken.&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;Skuldankaret, och bedömningen av en lämplig nivå för detta, spelar en central roll när målet för den offentliga förvaltningens finansiella sparande ska bestämmas. Skuldankaret ska tillsammans med det nämnda målet säkerställa att Sveriges offentliga finanser är långsiktigt hållbara. En låg skuldnivå ger god marginal till stabilitets- och tillväxtpaktens regler, goda möjligheter att vid behov stötta ekonomin med finanspolitisk konjunkturstabilisering och bidrar till statens goda kreditvärdighet.&lt;/P&gt;
+&lt;P class="p54 ft3"&gt;Regeringen ska årligen redogöra för bruttoskuldens utveckling i den ekonomiska vårpropositionen. Om skuldkvoten avviker, uppåt eller nedåt, från skuldankaret med mer än 5 procent av BNP enligt utfallet i nationalräkenskaperna för det föregående året, eller enligt prognoserna för det innevarande eller nästkommande budgetåret, ska regeringen i samband med den ekonomiska vårpropositionen i en skrivelse till riksdagen förklara vad som har orsakat avvikelsen och hur den ska hanteras. Finansutskottet kan vid sin behandling av skrivelsen besluta om en offentlig utfrågning av finansministern om skuldsituationen.&lt;/P&gt;
+&lt;P class="p62 ft24"&gt;&lt;SPAN class="ft24"&gt;3.3&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Utgiftstaket&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p63 ft3"&gt;Enligt budgetlagen ska regeringen i budgetpropositionen lämna förslag till tak för statens utgifter för det tredje tillkommande budgetåret (2 kap. 2 §). Riksdagen fastställer utgiftstaket, som är den övergripande restriktionen för budgetprocessen och de totala utgifterna. Enligt praxis gör regeringen i den ekonomiska vårpropositionen en preliminär bedömning av lämplig nivå på utgiftstaket för det tredje tillkommande budgetåret. Bedömningen ligger normalt till grund för den nivå på utgiftstaket som sedan föreslås i den efterföljande budgetpropositionen. Från att nivån på utgiftstaket för&lt;/P&gt;
+&lt;P class="p64 ft26"&gt;ett år är fastställt till dess att det året har passerat, understryks behovet av&lt;/P&gt;
+&lt;P class="p56 ft3"&gt;7&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_8"&gt;
+
+
+&lt;P class="p65 ft3"&gt;Skr. 2025/26:76 prioriteringar mellan olika utgifter. Det medelfristiga perspektivet minskar risken för att tillfälligt höga inkomster används för att finansiera permanent högre utgifter. I och med detta begränsas risken för en procyklisk finanspolitik på budgetens utgiftssida. Utgiftstaket ska främja en önskvärd långsiktig utveckling av de statliga utgifterna. Därigenom ger utgiftstaket förutsättningar för att uppnå målet för den offentliga förvaltningens finansiella sparande. Tillsammans med detta mål är utgiftstaket styrande för det totala skatteuttagets nivå och bidrar till att förhindra en utveckling där skatteuttaget stegvis måste höjas till följd av bristfällig utgiftskontroll.&lt;/P&gt;
+&lt;P class="p66 ft3"&gt;Om det finns en risk för att ett beslutat utgiftstak kommer att överskridas, ska regeringen vidta sådana åtgärder som den har befogenhet till eller föreslå nödvändiga åtgärder till riksdagen för att undvika att taket överskrids (2 kap. 4 § budgetlagen).&lt;/P&gt;
+&lt;P class="p67 ft3"&gt;Vilka utgifter som utgiftstaket ska omfatta regleras inte i lag. Den praxis som har etablerats innebär att de takbegränsade utgifterna utgörs av budgetens utgiftsområden &lt;NOBR&gt;1–25&lt;/NOBR&gt; och 27 samt utgifterna i ålderspensionssystemet vid sidan av statens budget. Utgiftsområde 26 Statsskuldsräntor&lt;/P&gt;
+&lt;P class="p68 ft3"&gt;&lt;SPAN class="ft3"&gt;m.m.&lt;/SPAN&gt;&lt;SPAN class="ft27"&gt;omfattas däremot inte. Utgiftstaket fastställs i nominella termer, vilket möjliggör en transparent och enkel uppföljning. Dessutom bidrar ett nominellt fastställt utgiftstak till att staten inte driver på inflationen i situationer med en hög pris- och löneökningstakt.&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p43 ft3"&gt;Utgiftstakets begränsande effekt på de statliga utgifterna ska vara densamma från det att nivån för ett nytt år har fastställts till dess att det året har passerat. Den praxis som har utvecklats innebär att utgiftstakets nivå inte ändras annat än i undantagsfall.&lt;/P&gt;
+&lt;P class="p67 ft3"&gt;Det finns inga formella hinder för riksdagen att besluta om att ändra en fastställd nivå på utgiftstaket. Om den fastställda nivån inte gick att ändra skulle en ny regerings möjligheter att vidta förändringar i finanspolitiken kraftigt begränsas och finanspolitiken skulle inte heller kunna anpassas till nya, ändrade yttre förutsättningar. Utgiftstaket har därför ändrats vid några tillfällen. Det har skett i samband med flera regeringsskiften, under covid- &lt;NOBR&gt;19-pandemin&lt;/NOBR&gt; och med anledning av stödet till Ukraina.&lt;/P&gt;
+&lt;P class="p43 ft3"&gt;Ett viktigt syfte med utgiftstaket är att i hög grad frigöra diskussionen om hur stort utrymmet för statliga utgifter är från diskussionen om vilka utgifter som är nödvändiga eller angelägna. Regeringens förslag till nivå på utgiftstaket för ett nytt år motiveras med utgångspunkt i utgiftstakets relation till målet för den offentliga förvaltningens finansiella sparande och andra makroekonomiska storheter. I regeringens förslag beskrivs vidare hur utgiftstaket kan tillämpas för att uppnå det nämnda målet och en godtagbar nivå på det samlade skatteuttaget. När förslag till ny nivå på utgiftstaket tas fram beaktas bl.a. följande:&lt;/P&gt;
+&lt;P class="p69 ft3"&gt;&lt;SPAN class="ft22"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft28"&gt;utgiftstakets relation till målet för den offentliga förvaltningens finansiella sparande&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p70 ft3"&gt;&lt;SPAN class="ft22"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft28"&gt;utvecklingen av utgiftstaket och de totala offentliga utgifterna i förhållande till BNP&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p71 ft3"&gt;&lt;SPAN class="ft22"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft28"&gt;utvecklingen av de takbegränsade utgifterna och budgeteringsmarginalens storlek över tid&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p72 ft3"&gt;&lt;SPAN class="ft22"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft28"&gt;utvecklingen av de takbegränsade utgifterna i fasta priser.&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p73 ft3"&gt;8&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_9"&gt;
+
+
+&lt;DIV&gt;
+&lt;DIV id="id_1"&gt;
+&lt;P class="p74 ft3"&gt;Varje beslut om nivån på utgiftstaket innebär att taket definieras på ett visst sätt i förhållande till de takbegränsade utgifterna. Det gäller dels vilka utgifter som omfattas av taket, dels hur dessa utgifter redovisas i statens budget. Under en så lång period som tre år sker dock normalt budgetmässiga förändringar av olika slag som förändrar de takbegränsade utgifterna, men som inte motsvaras av ett förändrat samlat offentligt åtagande. Omvänt kan förändringar genomföras som påverkar det offentliga åtagandet, men som av tekniska skäl inte påverkar de takbegränsade utgifterna. För att utgiftstaket ska behålla den ursprungliga finansiella stramheten, och vara förenligt med målet för den offentliga förvaltningens finansiella sparande under hela perioden, måste därför beslutade nivåer på utgiftstaket justeras så att budgetförändringar av sådant slag neutraliseras. Detta sker genom s.k. tekniska justeringar, som enligt praxis föreslås i budgetpropositionen.&lt;/P&gt;
+&lt;P class="p75 ft3"&gt;En teknisk justering av utgiftstaket ska göras om den förändring som ger upphov till justeringen inte har samma nettoeffekt på den konsoliderade offentliga förvaltningens utgifter eller det offentliga finansiella sparandet som på de takbegränsade utgifterna. Regeringens förslag till tekniska justeringar av utgiftstaket utgår från följande principer:&lt;/P&gt;
+&lt;P class="p76 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;Vid budgettekniska omläggningar som inte påverkar det offentliga åtagandet (t.ex. vid en övergång från bruttotill nettoredovisning eller tvärtom) ska tekniska justeringar göras av beslutade nivåer på utgiftstaket. Det gäller oavsett om nettoredovisningen uppkommer på budgetens utgiftssida (t.ex. genom specialdestinering av avgifter) eller inkomstsida (t.ex. genom att utgifter krediteras mot en skattskyldigs skattekonto).&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p77 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;Vid förändringar som påverkar det offentliga åtagandet, men som inte påverkar de takbegränsade utgifterna (t.ex. en åtgärd som innebär att nya utgifter krediteras mot en skattskyldigs skattekonto), ska tekniska justeringar genomföras.&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p78 ft3"&gt;&lt;SPAN class="ft3"&gt;–&lt;/SPAN&gt;&lt;SPAN class="ft5"&gt;Tekniska justeringar ska göras oavsett om det innebär att utgiftstakets nivå höjs eller sänks.&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p79 ft3"&gt;Skillnaden mellan utgiftstaket och de takbegränsade utgifterna utgörs av den s.k. budgeteringsmarginalen. Marginalen ska i första hand fungera som en buffert om utgifterna på grund av konjunkturutvecklingen skulle utvecklas på ett annat sätt än beräknat. Den riktlinje som regeringen använder sig av är att budgeteringsmarginalen bör vara minst 1 procent av de takbegränsade utgifterna för innevarande år, minst 1,5 procent för det därpå följande året, minst 2 procent för året därefter och minst 3 procent för det tredje tillkommande året. Samtidigt finns det skäl för att budgeteringsmarginalen för det tredje året inte ska vara så stor att utgiftstaket inte har en rimligt styrande effekt för utgiftsutvecklingen.&lt;/P&gt;
+&lt;P class="p80 ft3"&gt;Utgiftstaket ska inte ses som ett utgiftsmål. Budgeteringsmarginalen kan dock stegvis tas i anspråk för åtgärder och andra utgifter som inte är en följd av konjunkturutvecklingen, i takt med att behovet av en säkerhetsmarginal minskar. Det gäller under förutsättning att utgiftsförändringarna är förenliga med målet för den offentliga förvaltningens finansiella sparande.&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="id_2"&gt;
+&lt;P class="p81 ft3"&gt;Skr. 2025/26:76&lt;/P&gt;
+&lt;P class="p82 ft3"&gt;9&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;/DIV&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_10"&gt;
+
+
+&lt;TABLE cellpadding=0 cellspacing=0 class="t9"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr19 td28"&gt;&lt;SPAN class="p3 ft3"&gt;Skr. 2025/26:76&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr19 td30"&gt;&lt;SPAN class="p57 ft24"&gt;3.4&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr19 td31"&gt;&lt;SPAN class="p83 ft24"&gt;Det kommunala balanskravet&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr6 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr6 td29"&gt;&lt;SPAN class="p57 ft3"&gt;Kommuner och regioner ska enligt kommunallagen (2017:725) ha en god&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;ekonomisk hushållning (11 kap. 1 §) och budgetera så att intäkterna&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;överstiger kostnaderna, det s.k. balanskravet (11 kap. 5 §). Mål som är av&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft22"&gt;betydelse för en god ekonomisk hushållning ska anges i budgeten (11 kap.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;6 §). Balanskravet redovisas med hjälp av resultatmåttet balanskravs-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;resultat som definieras i lagen (2018:597) om kommunal bokföring och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;redovisning (11 kap. 10 §). Vid beräkningen av balanskravsresultatet ska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;årets resultat justeras för vissa poster, bl.a. vissa realisationsvinster och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;realisationsförluster, orealiserade vinster och förluster i värdepapper och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;förändring av resultatreserven.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Undantag från balanskravet får göras dels i den utsträckning som medel&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;från en resultatreserv tas i anspråk, dels om det finns synnerliga skäl&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;(11 kap. 5 § kommunallagen). Kommuner och regioner får i en resultat-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;reserv reservera medel som får användas för att en god ekonomisk&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;hushållning ska uppnås (11 kap. 14 § kommunallagen). Resultatreserven&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;bör enligt förarbetena t.ex. kunna användas för att täcka vissa särskilda,&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;planerade kostnader ett enskilt år, som exempelvis uppstår till följd av&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;omstrukturering av verksamhet för att på sikt nå en god ekonomisk&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft22"&gt;hushållning, eller för att hantera oförutsedda utgiftsökningar eller inkomst-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;bortfall (prop. 2022/23:119 s. 21). Som exempel på synnerliga skäl för att&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;göra undantag från balanskravet kan nämnas en stark finansiell ställning&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;eller att kommunen vidtar större omstruktureringsåtgärder som under&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;budgetåret medför kostnader, men som på sikt främjar en god ekonomisk&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;hushållning (prop. 2003/04:105 s. 25).&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p58 ft22"&gt;Negativa balanskravsresultat ska enligt kommunallagen som huvudregel&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;återställas inom tre år (11 kap. 12 §). Fullmäktige får dock besluta att ett&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;negativt balanskravsresultat inte ska återställas om det finns synnerliga&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;skäl (11 kap. 13 §).&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Ett resultat där intäkterna i stort sett endast täcker kostnaderna är&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;förenligt med balanskravet, men är inte tillräckligt för att kravet på en god&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft22"&gt;ekonomisk hushållning ska anses uppfyllt. Resultatet bör i stället i normal-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;fallet ligga på en nivå som faktiskt sett åtminstone konsoliderar, dvs.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;stärker, ekonomin och som möjliggör att reinvesteringar på lång sikt kan&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;göras utan finansiering med nya lån. Kommunernas och regionernas&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;årsredovisningar ska innehålla en redovisning av om balanskravet och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;målen för god ekonomisk hushållning har uppnåtts.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p58 ft3"&gt;Det kommunala balanskravet understödjer målet för den offentliga&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr4 td29"&gt;&lt;SPAN class="p57 ft3"&gt;förvaltningens finansiella sparande. Välskötta finanser i kommuner och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td28"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD colspan=2 class="tr5 td29"&gt;&lt;SPAN class="p57 ft3"&gt;regioner bidrar till att detta mål nås.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p84 ft1"&gt;4 En stram statlig budgetprocess&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t10"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr2 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td27"&gt;&lt;SPAN class="p45 ft3"&gt;Den statliga budgetprocessen är medelfristig och utgår från ett uppifrån-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;&lt;NOBR&gt;och-ner-perspektiv,&lt;/NOBR&gt; där olika utgifter ställs mot varandra och utgifts-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;ökningar prövas utifrån ett på förhand fastställt ekonomiskt utrymme som&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD rowspan=2 class="tr9 td32"&gt;&lt;SPAN class="p47 ft3"&gt;10&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;följer av de budgetpolitiska målen. Budgetprocessen bidrar därmed till att&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr16 td27"&gt;&lt;SPAN class="p3 ft19"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_11"&gt;
+
+
+&lt;P class="p48 ft3"&gt;summan av alla budgetförslag inte blir större än vad som är förenligt med Skr. 2025/26:76 en hållbar finanspolitik. Budgetprocessens medelfristiga karaktär skapar&lt;/P&gt;
+&lt;P class="p85 ft3"&gt;vidare förutsättningar för att bedömningen av budgetutrymmet, de statliga utgifternas samlade storlek och en lämplig nivå på skatteuttaget ska kunna hållas isär från diskussionen om specifika behov och önskvärda utgifter.&lt;/P&gt;
+&lt;P class="p86 ft3"&gt;Budgetprocessen regleras i regeringsformen, riksdagsordningen och budgetlagen. I april varje år lämnar regeringen den ekonomiska vårpropositionen till riksdagen. Propositionen innehåller regeringens förslag till riktlinjer för den ekonomiska politiken och finanspolitiken. Riksdagens beslut om vårpropositionens riktlinjer omsätts sedan till ett konkret årligt budgetförslag under hösten. Själva budgetarbetet koncentreras därför till budgetpropositionen (se avsnitt 6.2).&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;Finansdepartementet samordnar budgetarbetet inom Regeringskansliet och ansvarar för tidsplanen och riktlinjerna för arbetet samt för processen för budgetförhandlingarna. Finansdepartementet ansvarar även för att ta fram underlag i form av makroekonomiska prognoser och bedömningar av budgetutrymmet respektive behovet av budgetförstärkningar. Budgetutrymmet utgörs av omfattningen av de budgetförsvagande åtgärder eller budgetförstärkande åtgärder som är förenliga med att målet för den offentliga förvaltningens finansiella sparande nås. Denna bedömning görs i ett framåtblickande perspektiv.&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;Finansdepartementet gör löpande nya bedömningar av den ekonomiska utvecklingen, vilket bl.a. kan leda till att delar av budgeten behöver ändras under innevarande budgetår. Förslag på sådana ändringar lämnas som huvudregel samlat till riksdagen i samband med den ekonomiska vårpropositionen och budgetpropositionen (se vidare avsnitt 6.3).&lt;/P&gt;
+&lt;P class="p59 ft24"&gt;&lt;SPAN class="ft24"&gt;4.1&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Budgetberedningen&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p87 ft3"&gt;Budgetarbetet inom Regeringskansliet är inte reglerat i lag, utan bestäms av regeringen och Regeringskansliet. Grundläggande för arbetet är regleringen om gemensam beredning i förordningen (1996:1515) med instruktion för Regeringskansliet (13 och 15 §§). Av denna följer att ett ärende som rör flera departements verksamhetsområden ska handläggas inom det departement till vilket det huvudsakligen hör och beredas i samråd med övriga berörda statsråd. Därutöver finns det interna riktlinjer för arbetet, bl.a. i promemorian Samrådsformer i Regeringskansliet (SB PM 2012:1, rev. 2024).&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;Ärenden som har finansiell innebörd för staten eller andra ekonomiska konsekvenser för det allmänna ska alltid beredas med Finansdepartementet. Utgångspunkten för budgetprocessen inom Regeringskansliet är att ett fullständigt budgetförslag ska tas fram, där de övergripande restriktionerna utgörs av utgiftstaket och målet för den offentliga förvaltningens finansiella sparande.&lt;/P&gt;
+&lt;P class="p88 ft22"&gt;Centralt i budgetprocessen är de prognoser som görs för det innevarande året och de tre kommande åren över den offentliga förvaltningens inkomster och utgifter. Beräkningarna baseras på gällande regler i skatte- och utgiftssystemen. Finansdepartementet analyserar dessa beräkningar och prövar om de innebär att de budgetpolitiska målen för de närmaste&lt;/P&gt;
+&lt;P class="p89 ft3"&gt;11&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_12"&gt;
+
+
+&lt;P class="p90 ft3"&gt;Skr. 2025/26:76 åren följs. Om målen inte bedöms kunna nås tas förslag på budgetförstärkningar fram. Samtliga departement är ansvariga för att det finns tillräckligt underlag för att göra övergripande prioriteringar mellan olika delsektorer inom offentlig förvaltning och mellan olika utgiftsområden inom statens budget. Finansdepartementet har en sammanhållande roll i detta arbete.&lt;/P&gt;
+&lt;P class="p91 ft24"&gt;&lt;SPAN class="ft29"&gt;4.2&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Finansieringsprinciper&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p92 ft3"&gt;Det interna beredningsarbetet av budgeten styrs även av ett antal finansieringsprinciper. Principerna är en följd av riksdagens beslut om utgiftstak och mål för den offentliga förvaltningens finansiella sparande, och är viktiga för att få en långsiktig stabilitet i den statliga utgiftsutvecklingen. Finansieringsprinciperna avser såväl budgetens utgiftssom inkomstsida.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Huvudprincipen för förändringar av statens utgifter i budgetarbetet är att utgiftsökningar ska finansieras med utgiftsminskningar. Av detta följer principen om att varaktiga utgiftsökningar ska finansieras med varaktiga utgiftsminskningar. Tillfälliga besparingar kan därmed inte användas för att finansiera permanenta utgiftsökningar. Vidare gäller principen om att finansieringen av en åtgärd ska kunna härledas till en föreslagen regeländring eller annan konkret åtgärd. Eventuella dynamiska effekter, dvs. hur en åtgärd påverkar företagens eller hushållens beteende över tid, bör inte användas som finansiering. Dock bör en dynamisk analys ingå som en del av beslutsunderlaget.&lt;/P&gt;
+&lt;P class="p94 ft3"&gt;För statens inkomster gäller principen om att en inkomstsänkning ska finansieras med en motsvarande sänkning av en utgift eller en motsvarande höjning av en skatt eller avgift. Inkomster från försäljning av statliga tillgångar, utdelningar eller återbetalning av statligt kapital får inte användas för att finansiera ökade utgifter.&lt;/P&gt;
+&lt;P class="p95 ft24"&gt;&lt;SPAN class="ft29"&gt;4.3&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Budget- och redovisningsprinciper&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p92 ft3"&gt;Vad statens budget ska omfatta regleras i budgetlagen. Regeringens förslag till budget ska i enlighet med fullständighetsprincipen omfatta alla inkomster och utgifter samt andra betalningar som påverkar statens lånebehov (3 kap. 3 §). Vidare ska statens inkomster och utgifter i enlighet med bruttoprincipen budgeteras och redovisas brutto på inkomsttitlar och anslag (3 kap. 4 §). Det innebär att utgifter ska redovisas på budgetens utgiftssida, medan inkomster ska redovisas på budgetens inkomstsida. Undantag från bruttoprincipen får göras om riksdagen har beslutat att inkomster får tas i anspråk för ett bestämt ändamål på annat sätt än genom beslut om anslag (specialdestination). Sådana inkomster ska inte budgeteras och redovisas mot inkomsttitlar. Undantaget omfattar inte inkomster av skatter. Dessa ska alltid budgeteras och redovisas mot inkomsttitlar (3 kap. 6 §).&lt;/P&gt;
+&lt;P class="p96 ft3"&gt;I budgetlagen finns en särskild bestämmelse om att utgifter inte får&lt;/P&gt;
+&lt;P class="p97 ft26"&gt;budgeteras och redovisas mot inkomsttitlar (3 kap. 5 §). Bestämmelsen tar&lt;/P&gt;
+&lt;P class="p16 ft3"&gt;12&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_13"&gt;
+
+
+&lt;P class="p48 ft3"&gt;sikte på sådana stöd som normalt ska finansieras med anslag och som inte Skr. 2025/26:76 har någon koppling till skattelagstiftningen (se vidare avsnitt 4.4).&lt;/P&gt;
+&lt;P class="p98 ft3"&gt;Budgetlagen reglerar även vilka redovisningsprinciper som ska gälla för olika typer av inkomster och utgifter (4 kap. 2 och 3 §§). På inkomstsidan gäller att inkomster av skatter och avgifter ska redovisas mot inkomsttitel det budgetår som intäkterna hänför sig till, vilket innebär att skatter och avgifter ska redovisas det aktuella beskattningsåret. Övriga inkomster ska redovisas mot inkomsttitel det budgetår som inkomsterna hänför sig till, dvs. vid debiterings- eller faktureringstillfället. På utgiftssidan gäller att utgifter för transfereringar ska redovisas det budgetår då betalning sker, förvaltningsutgifter det budgetår som kostnaderna hänför sig till och övriga utgifter det budgetår som utgifterna hänför sig till, dvs. i praktiken det år som fakturering eller motsvarande sker.&lt;/P&gt;
+&lt;P class="p62 ft24"&gt;&lt;SPAN class="ft24"&gt;4.4&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Redovisning av skatteutgifter&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p60 ft3"&gt;Enligt budgetlagen ska regeringen varje år lämna en redovisning av skatteutgifter till riksdagen (10 kap. 4 §). Med skatteutgifter avses effekter på skatteintäkterna som uppstår till följd av särregleringar i skattelagstiftningen. Denna redovisning lämnas i en särskild skrivelse, men skatteutgifter redovisas även i utgiftsområdesavsnitten i budgetpropositionen. Redovisningen av skatteutgifter fyller i huvudsak två syften. För det första tydliggör den de indirekta stöd till hushåll och företag som finns på budgetens inkomstsida och som helt eller delvis kan ha samma funktion som stöd på budgetens utgiftssida. Genom att redovisa skatteutgifter inom de olika utgiftsområdena ges ett bredare underlag för prioritering mellan olika områden i budgeten. För det andra bidrar redovisningen till att beskriva graden av enhetlighet i skattesystemet.&lt;/P&gt;
+&lt;P class="p99 ft1"&gt;&lt;SPAN class="ft1"&gt;5&lt;/SPAN&gt;&lt;SPAN class="ft23"&gt;Principer för finanspolitisk konjunkturstabilisering&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p100 ft3"&gt;Finans- och penningpolitiken påverkar resursutnyttjandet i ekonomin och inflationen. Penningpolitiken påverkar främst genom styrräntan, medan finanspolitiken påverkar via offentliga utgifter och inkomster.&lt;/P&gt;
+&lt;P class="p86 ft3"&gt;Finans- och penningpolitiken verkar inom olika ramar och med skilda syften. Enligt lagen (2022:1568) om Sveriges riksbank är penningpolitikens överordnade mål att upprätthålla varaktigt låg och stabil inflation (2 kap. 1 §). Riksbanken ska även bidra till en balanserad utveckling av produktion och sysselsättning. Långsiktigt hållbara offentliga finanser stärker penningpolitikens genomslag, och är en grundförutsättning för att kunna bedriva finanspolitisk konjunkturstabilisering. Inom denna ram kan finanspolitiken bidra till en balanserad utveckling av produktion och sysselsättning, samt en varaktigt låg och stabil inflation.&lt;/P&gt;
+&lt;P class="p101 ft3"&gt;Förutsättningarna för att fatta beslut om finansrespektive penning-&lt;/P&gt;
+&lt;P class="p13 ft30"&gt;politiken är olika och besluten verkar med fördröjning – från identifiering&lt;/P&gt;
+&lt;P class="p56 ft3"&gt;13&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_14"&gt;
+
+
+&lt;DIV id="id_1"&gt;
+&lt;P class="p102 ft3"&gt;Skr. 2025/26:76 av ekonomiska störningar till beslut, genomförande och effekt. Penningpolitiken kan normalt anpassas snabbare, men när finanspolitiska åtgärder väl är genomförda har dessa ofta snabbare effekt på ekonomin. Dessa olika egenskaper påverkar hur den finanspolitiska konjunkturstabiliseringen utformas.&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="id_2"&gt;
+&lt;DIV id="id_2_1"&gt;
+&lt;P class="p16 ft3"&gt;14&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="id_2_2"&gt;
+&lt;P class="p103 ft3"&gt;Mot bakgrund av att finans- och penningpolitiken kompletterar varandra, men verkar under olika villkor, är det centralt att finanspolitisk konjunkturstabilisering vilar på tydliga och förutsägbara principer. Sådana principer ökar förutsägbarheten i den förda politiken, vilket stärker samspelet mellan finans- och penningpolitiken, ökar politikens genomslag samt förbättrar möjligheterna till uppföljning och utvärdering.&lt;/P&gt;
+&lt;P class="p104 ft24"&gt;&lt;SPAN class="ft29"&gt;5.1&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;När ska finanspolitiken bidra aktivt till konjunkturstabiliseringen?&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p105 ft3"&gt;Vid normala konjunktursvängningar är penningpolitiken det huvudsakliga verktyget för att stabilisera ekonomin, medan finanspolitiken främst verkar genom s.k. automatiska stabilisatorer, dvs. regler som gör att offentliga inkomster och utgifter automatiskt förändras med konjunkturen och därigenom bidrar till att jämna ut konjunktursvängningarna. Som exempel på sådana stabilisatorer kan nämnas inkomstberoende skatter och arbetslöshetsförsäkringen.&lt;/P&gt;
+&lt;P class="p106 ft3"&gt;I en lågkonjunktur orsakad av större negativa efterfrågestörningar kan penningpolitiken behöva kompletteras med en aktiv finanspolitik för att stabilisera ekonomin och motverka att lågkonjunkturen får varaktigt negativa konsekvenser för produktion och sysselsättning (s.k. persistenseffekter). I sådana situationer är den aktiva finanspolitikens genomslag särskilt stort, inte minst om penningpolitiken är begränsad av den nedre effektiva gränsen för styrräntan eller av andra skäl inte kan verka fullt ut. Med den nedre effektiva gränsen avses den nivå på styrräntan där ytterligare sänkningar har mycket liten eller ingen stimulerande effekt på efterfrågan i ekonomin.&lt;/P&gt;
+&lt;P class="p75 ft22"&gt;Beslut om aktiv finanspolitisk konjunkturstabilisering bör därför inte enbart baseras på bedömningar av resursutnyttjandet och inflationstrycket, utan även på penningpolitikens handlingsutrymme. När styrräntan närmar sig den nedre effektiva gränsen minskar möjligheten till ytterligare sänkningar, vilket kan leda till otillräcklig konjunkturstabilisering. Detta kan leda till utdragna perioder med inflation under inflationsmålet. I sådana lägen bör finanspolitiken aktivt stödja penningpolitiken.&lt;/P&gt;
+&lt;P class="p106 ft3"&gt;I en högkonjunktur orsakad av större positiva efterfrågestörningar kan den aktiva finanspolitiken behöva komplettera penningpolitiken för att undvika att snabba och kraftiga räntehöjningar får negativa konsekvenser för hushåll och företag. En överhettad ekonomi kan leda till felallokering av resurser och orsaka finansiell instabilitet. Dessa risker förstärks om situationen hanteras enbart genom penningpolitiken, eftersom det då kan krävas kraftiga räntehöjningar med potentiellt destabiliserande effekter.&lt;/P&gt;
+&lt;P class="p106 ft3"&gt;Finanspolitisk konjunkturstabilisering bör så långt som möjligt bedrivas symmetriskt över konjunkturcykeln, dvs. expansivt i en lågkonjunktur och åtstramande i en högkonjunktur. En symmetrisk finanspolitik stärker&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;/DIV&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_15"&gt;
+
+
+&lt;P class="p48 ft3"&gt;möjligheterna att nå målet för den offentliga förvaltningens finansiella Skr. 2025/26:76 sparande över konjunkturcykeln och skapar utrymme för finanspolitiken&lt;/P&gt;
+&lt;P class="p13 ft3"&gt;att komplettera penningpolitiken i lågkonjunkturer.&lt;/P&gt;
+&lt;P class="p86 ft3"&gt;Den finanspolitiska konjunkturstabiliseringen bör samspela med penningpolitiken för att uppnå en effektiv sammantagen stabiliseringspolitik, som i sin tur kan leda till en balanserad utveckling av produktion och sysselsättning, samt en låg och stabil inflation. Den finanspolitiska stimulansen eller åtstramningen bör anpassas till det samlade stabiliseringsbehovet i ekonomin, med hänsyn tagen till det faktiska handlingsutrymmet för penningpolitiken och dess genomslag på efterfrågan.&lt;/P&gt;
+&lt;P class="p54 ft3"&gt;Utbudsstörningar är en särskild utmaning för stabiliseringspolitiken. Negativa utbudsstörningar, t.ex. kraftigt stigande energipriser eller störningar i leveranskedjor, höjer inflationen och sänker BNP. Det skapar en målkonflikt mellan prisstabilitet och realekonomisk stabilitet, eftersom åtgärder för att dämpa en för hög inflation riskerar att förvärra ett redan lågt resursutnyttjande. Eftersom negativa utbudsstörningar kan leda till betydande välfärdsförluster – exempelvis genom långvarigt hög arbetslöshet till följd av negativa persistenseffekter – kan riktade finanspolitiska åtgärder vara motiverade för att hantera dessa störningar, under förutsättning att stimulansen inte är större än att penningpolitiken kan hantera dess effekt på inflationen. Även positiva utbudsstörningar, t.ex. produktivitetsökningar eller fallande importpriser, behöver beaktas vid utformningen av finanspolitiken.&lt;/P&gt;
+&lt;P class="p107 ft24"&gt;&lt;SPAN class="ft24"&gt;5.2&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Finanspolitiska stabiliseringsinstrument&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p87 ft3"&gt;Inom finanspolitiken finns ett urval av stabiliseringspolitiska instrument på både inkomst- och utgiftssidan i statens budget. Eftersom de historiska erfarenheterna pekar på att varje hög- och lågkonjunktur har sina egna särdrag är det väsentligt att finanspolitiken anpassas efter omständigheterna.&lt;/P&gt;
+&lt;P class="p54 ft3"&gt;Vägledande vid valet av stabiliseringspolitiska instrument är att åtgärder bör vara generellt verkande, ha stor effekt på BNP (hög multiplikator), ha snabb effekt och kunna användas temporärt. Även finanspolitiska åtgärder som genomförs av strukturpolitiska skäl kan ha en expansiv eller åtstramande effekt på ekonomin. Det är därför viktigt att permanenta och strukturellt motiverade åtgärder genomförs med beaktande av konjunkturläget.&lt;/P&gt;
+&lt;P class="p59 ft24"&gt;&lt;SPAN class="ft24"&gt;5.3&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Samspelet mellan finans- och penningpolitik&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p108 ft3"&gt;En utmaning i samspelet mellan finans- och penningpolitiken är att regeringen och Riksbanken kan göra olika bedömningar av konjunkturutvecklingen, och vad som är lämplig stabiliseringspolitik. Samspelet stärks av en välfungerande kommunikation. Regelbundna samtal mellan regeringen och Riksbanken om konjunkturläget och stabiliseringspolitiken bidrar till en effektivare och mer flexibel stabiliseringspolitik. De redo-&lt;/P&gt;
+&lt;P class="p12 ft26"&gt;görelser för bedömningar och antaganden som görs om finansrespektive&lt;/P&gt;
+&lt;P class="p56 ft3"&gt;15&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_16"&gt;
+
+
+&lt;P class="p90 ft3"&gt;Skr. 2025/26:76 penningpolitiken i ekonomiska propositioner och penningpolitiska rapporter är också av betydelse. Samtidigt är det viktigt att regeringen och Riksbanken fattar sina beslut självständigt, inom sina respektive ansvarsområden.&lt;/P&gt;
+&lt;P class="p109 ft1"&gt;&lt;SPAN class="ft1"&gt;6&lt;/SPAN&gt;&lt;SPAN class="ft31"&gt;Öppenhet och tydlighet&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p110 ft3"&gt;För att det finanspolitiska ramverket ska vara styrande för politiken, och för att finanspolitiken ska vara möjlig att följa upp, är det viktigt att redovisningen av finanspolitiken är transparent och heltäckande. Medborgarna ska ha möjlighet till insyn i finanspolitiken.&lt;/P&gt;
+&lt;P class="p111 ft3"&gt;Bestämmelser om innehållet i den ekonomiska vårpropositionen, budgetpropositionen, propositioner med förslag till ändringar i statens budget och årsredovisningen för staten finns i regeringsformen, riksdagsordningen och budgetlagen. Det närmare innehållet i de ekonomiska propositionerna har därtill utvecklats genom praxis.&lt;/P&gt;
+&lt;P class="p95 ft24"&gt;6.1 Den ekonomiska vårpropositionen&lt;/P&gt;
+&lt;TABLE cellpadding=0 cellspacing=0 class="t11"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr2 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td27"&gt;&lt;SPAN class="p45 ft3"&gt;Bestämmelser om innehållet i den ekonomiska vårpropositionen finns i&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;riksdagsordningen och i budgetlagen. Enligt tilläggsbestämmelse 9.5.2 till&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;riksdagsordningen ska regeringen senast den 15 april varje år lämna en&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;proposition med förslag till riktlinjer för den ekonomiska politiken och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;budgetpolitiken. I tilläggsbestämmelse 9.5.3 anges att beslut i fråga om&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;vilka ändamål och verksamheter som ska innefattas i ett utgiftsområde&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft22"&gt;fattas i samband med riksdagens beslut med anledning av den ekonomiska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;vårpropositionen.&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p46 ft3"&gt;Riksdagsordningen innehåller ingen närmare precisering av vad rikt-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;linjerna för den ekonomiska politiken eller finanspolitiken ska innehålla. I&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft22"&gt;budgetlagen anges att regeringen ska redovisa hur målet för den offentliga&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;förvaltningens finansiella sparande uppnås (2 kap. 1 a §) och följa upp&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;utfallet av statens budget (9 kap. 1 §). Av budgetlagen framgår även att&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;regeringen ska redovisa medelfristiga prognoser över bl.a. den makro-&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;ekonomiska utvecklingen och statens inkomster och utgifter (9 kap. 3 §)&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;och redovisa en bedömning av de offentliga finansernas långsiktiga&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;hållbarhet (9 kap. 4 §). Detta innebär bl.a. att regeringen i den ekonomiska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;vårpropositionen redovisar sin syn på det aktuella ekonomiska läget, gör&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;prognoser över den ekonomiska utvecklingen för tre år framåt i tiden och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;följer upp de budgetpolitiska målen. Från och med 2026 kommer&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;regeringen vid bedömningen av de offentliga finansernas medel- och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;långfristiga hållbarhet, så långt det är möjligt, att beakta makroekonomiska&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p45 ft3"&gt;risker som är en följd av klimatförändringarna samt deras miljö- och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;fördelningseffekter (se prop. 2025/26:1 Förslag till statens budget,&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;finansplan m.m. avsnitt 5.5.9).&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr5 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr5 td27"&gt;&lt;SPAN class="p46 ft3"&gt;Därutöver är det praxis att regeringen redogör för de struktur- och&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr4 td32"&gt;&lt;SPAN class="p3 ft2"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;stabiliseringspolitiska utmaningar som politiken står inför. Regeringen&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD rowspan=2 class="tr20 td32"&gt;&lt;SPAN class="p47 ft3"&gt;16&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr4 td27"&gt;&lt;SPAN class="p45 ft3"&gt;redovisar även en särskild fördelningspolitisk redogörelse och gör en&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr15 td27"&gt;&lt;SPAN class="p3 ft17"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_17"&gt;
+
+
+&lt;P class="p48 ft3"&gt;preliminär bedömning av lämplig nivå på utgiftstaket för det tredje till- Skr. 2025/26:76 kommande budgetåret.&lt;/P&gt;
+&lt;P class="p112 ft24"&gt;&lt;SPAN class="ft24"&gt;6.2&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Budgetpropositionen&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p87 ft3"&gt;Riktlinjerna för finanspolitiken i den ekonomiska vårpropositionen omsätts i budgetpropositionen i konkreta förslag för framför allt det kommande budgetåret.&lt;/P&gt;
+&lt;P class="p86 ft3"&gt;Av regeringsformen framgår det att regeringen lämnar en budgetproposition till riksdagen (9 kap. 2 §). I riksdagsordningen finns bestämmelser om budgetpropositionens innehåll (9 kap. 5 §). Där anges att budgetåret börjar den 1 januari och att regeringen dessförinnan ska lämna en proposition med förslag till statens inkomster och utgifter för budgetåret. Budgetpropositionen ska enligt samma reglering innehålla en finansplan och ett förslag till beslut om statens budget. Om inte riksdagen har beslutat något annat genom lag, ska förslaget innehålla en fördelning av anslagen på utgiftsområden. Budgetpropositionen ska vara fullständig när den lämnas, och andra propositioner med utbrutna budgetförslag får normalt inte lämnas under perioden fram till det nya budgetårets början (se vidare avsnitt 6.3).&lt;/P&gt;
+&lt;P class="p113 ft3"&gt;I tilläggsbestämmelse 9.5.1 till riksdagsordningen anges att budgetpropositionen ska lämnas senast den 20 september. Sista dag för att lämna budgetpropositionen de år som det är val till riksdagen i augusti eller september är kopplad till den obligatoriska statsministeromröstningen enligt 6 kap. 3 § regeringsformen. Om regeringen sitter kvar efter statsministeromröstningen ska budgetpropositionen lämnas inom tre veckor. Om riksdagen i stället väljer en ny statsminister ska den nya regeringen lämna budgetpropositionen inom tre veckor från det att den tillträtt. Budgetpropositionen får dock inte lämnas senare än den 15 november.&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;I budgetlagen anges att regeringen ska redovisa hur målet för den offentliga förvaltningens finansiella sparande uppnås (2 kap. 1 a §). Vidare anges att regeringen i budgetpropositionen ska lämna förslag till utgiftstak för det tredje tillkommande budgetåret (2 kap. 2 §) och preliminära inkomstberäkningar och utgiftsramar för det andra och tredje tillkommande budgetåret (2 kap. 3 §). Av budgetlagen framgår även att regeringen ska följa upp utfallet av statens budget (9 kap. 1 §) och redovisa medelfristiga prognoser över bl.a. den ekonomiska utvecklingen och statens inkomster och utgifter (9 kap. 3 §). Vidare ska regeringen i budgetpropositionen lämna en redovisning av de resultat som uppnåtts i verksamheten i förhållande till de mål som har beslutats av riksdagen (10 kap. 3 §).&lt;/P&gt;
+&lt;P class="p114 ft3"&gt;Budgetlagen innehåller även detaljerade bestämmelser om vad statens budget omfattar samt om budgetens inkomsttitlar och anslag (3 och 4 kap.). Vidare innehåller lagen bestämmelser om ekonomiska åtaganden och utlåning (6 kap.), finansiering av investeringar och utlåning (7 kap.) samt om förvärv och överlåtelse av egendom (8 kap.). Förslag inom dessa områden lämnas i regel i budgetpropositionen eller i en proposition med förslag till ändringar i statens budget (se avsnitt 6.3).&lt;/P&gt;
+&lt;P class="p115 ft3"&gt;17&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_18"&gt;
+
+
+&lt;P class="p90 ft3"&gt;Skr. 2025/26:76 Budgetpropositionen innehåller en redogörelse för fördelningspolitiska konsekvenser av de åtgärder som regeringen föreslår eller aviserar i propositionen. Utöver detta innehåller budgetpropositionen en klimatredovisning enligt 4 § klimatlagen (2017:720) och en redogörelse för den ekonomiska jämställdheten. Budgetpropositionen bör även, så långt det är möjligt, innehålla en redovisning av katastrof- och klimatrelaterade åtaganden (se prop. 2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.10).&lt;/P&gt;
+&lt;P class="p94 ft3"&gt;Vidare bör budgetpropositionen innehålla en redovisning av statens ekonomiska åtaganden genom EU:s offentligfinansiella system som bl.a. avser EU:s gemensamma upplåning inom ramen för Next Generation EU och finansiellt stöd till Ukraina samt övriga relevanta åtaganden. Redovisningen bör även avse konsekvenserna för statens finanser om dessa åtaganden skulle infrias.&lt;/P&gt;
+&lt;P class="p116 ft24"&gt;&lt;SPAN class="ft29"&gt;6.3&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Propositioner med förslag till ändringar i statens budget&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p117 ft3"&gt;Under budgetåret kan riksdagen besluta om en ny beräkning av statens inkomster och om nya eller ändrade anslag (9 kap. 4 § regeringsformen). Enligt riksdagsordningen får regeringen vid högst två tillfällen lämna en proposition med förslag till ändringar i statens budget för det löpande budgetåret (9 kap. 6 § första stycket). En sådan proposition lämnas enligt tilläggsbestämmelse 9.6.1 i anslutning till budgetpropositionen (höständringsbudget) eller den ekonomiska vårpropositionen (vårändringsbudget). Förslag till ändringar i budgeten får dock lämnas vid andra tillfällen, om regeringen anser att det finns särskilda skäl för detta (9 kap. 6 § andra stycket), genom extra propositioner med förslag till ändringar i statens budget. Endast om regeringen anser att det finns synnerliga &lt;NOBR&gt;ekonomisk-politiska&lt;/NOBR&gt; skäl får en proposition om statens inkomster eller utgifter för det närmast följande budgetåret lämnas efter budgetpropositionen (9 kap. 5 § riksdagsordningen).&lt;/P&gt;
+&lt;P class="p118 ft3"&gt;Budgetpropositionen utgör grunden för den samlade budgetprövningen och ska vara fullständig när den lämnas. Förslag till ändringar i budgeten ska därför framför allt komplettera den av riksdagen beslutade budgeten med anledning av förändringar som inte var möjliga att förutse vid beslutstillfället. Åtgärder med varaktiga budgetära konsekvenser bör därmed som huvudregel beslutas i samband med riksdagens behandling av budgetpropositionen på hösten. Hanteringen av ändringar i en beslutad budget måste ske ordnat och processen för sådana ändringar måste vara stram. De krav som ställs på exempelvis finansiering vid beredningen av förslag till budgetpropositionen ska därmed även beaktas vid beredningen av förslag till ändringar i budgeten. Vid beredningen bör regeringen även analysera och redovisa förslagets konsekvenser för statens budget och de budgetpolitiska målen.&lt;/P&gt;
+&lt;P class="p119 ft3"&gt;18&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_19"&gt;
+
+
+&lt;TABLE cellpadding=0 cellspacing=0 class="t12"&gt;
+&lt;TR&gt;
+	&lt;TD class="tr9 td33"&gt;&lt;SPAN class="p120 ft24"&gt;6.4&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr9 td34"&gt;&lt;SPAN class="p19 ft24"&gt;Årsredovisningen för staten&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr9 td16"&gt;&lt;SPAN class="p3 ft3"&gt;Skr. 2025/26:76&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p121 ft3"&gt;Regeringen lämnar en årsredovisning för staten till riksdagen (9 kap. 10 § regeringsformen). Enligt budgetlagen ska årsredovisningen lämnas senast den 15 april året efter budgetåret (10 kap. 5 §). Därutöver innehåller budgetlagen detaljerade bestämmelser om årsredovisningens innehåll och avgränsning, grundläggande regler för redovisningen samt uppställningsformer för resultaträkningen, balansräkningen och finansieringsanalysen (10 kap. &lt;NOBR&gt;6–10&lt;/NOBR&gt; §§). Årsredovisningen ska ha ett sådant innehåll att den ansluter till riksdagens beslut om statens budget. En redovisning ska lämnas av utfallet på de olika inkomsttitlarna och anslagen jämfört med budgeterade belopp. Årsredovisningen ska även avspegla de övriga ekonomiska beslut som riksdagen har fattat, t.ex. bemyndiganden att beställa varor och tjänster samt att besluta om bidrag, ersättningar och lån som medför utgifter under kommande år. Riksdagen ska också i årsredovisningen få information om förväntade förluster och väsentliga risker i statens utlåning och utställda garantier (se vidare avsnitt 6.5).&lt;/P&gt;
+&lt;P class="p122 ft3"&gt;Årsredovisningen ska även innehålla en uppföljning av de budgetpolitiska mål som riksdagen har beslutat om. Vidare ska årsredovisningen innehålla en resultaträkning, en balansräkning och en finansieringsanalys, en redovisning av utvecklingen av statsskulden, en samlad redovisning av vilka åtgärder regeringen har vidtagit med anledning av Riksrevisionens iakttagelser och en redovisning av &lt;NOBR&gt;EU-räkenskaperna.&lt;/NOBR&gt;&lt;/P&gt;
+&lt;P class="p123 ft24"&gt;&lt;SPAN class="ft24"&gt;6.5&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Riskanalyser av statliga garantier och krediter&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p87 ft3"&gt;Som ett komplement till de beskrivningar av den statliga garanti- och utlåningsverksamheten som görs i årsredovisningen för staten har Riksgäldskontoret i uppdrag att årligen göra en samlad riskanalys av statens utställda garantier och utlåning med kreditrisk. Till skillnad från uppföljningen i årsredovisningen för staten, som i första hand fokuserar på förväntad förlust samt redovisning och sammanställning av enskilda åtaganden, är syftet med Riksgäldskontorets samlade riskanalys att bedöma risken för stora oväntade förluster. I den samlade riskanalysen analyseras både kredit- och likviditetsrisker. Riskanalysen bidrar till stabilitet och förtroende för statens finanser. Vid större risker utgör analysen ett viktigt underlag för beslutsfattarna, som kan behöva vidta åtgärder för att öka motståndskraften mot störningar eller minska riskerna. En sammanfattning av den samlade riskanalysen lämnas även i årsredovisningen för staten.&lt;/P&gt;
+&lt;P class="p107 ft24"&gt;&lt;SPAN class="ft24"&gt;6.6&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Prognoser och effektberäkningar&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p87 ft3"&gt;Prognoser och effektberäkningar bör utarbetas med bästa möjliga metoder. De metoder och modeller som används ska i så stor utsträckning som möjligt vara förankrade i aktuell forskning.&lt;/P&gt;
+&lt;P class="p124 ft3"&gt;Regeringen gör prognoser för minst tre år framåt i tiden och presenterar&lt;/P&gt;
+&lt;P class="p13 ft26"&gt;i samband med den ekonomiska vårpropositionen och budgetproposi-&lt;/P&gt;
+&lt;P class="p56 ft3"&gt;19&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_20"&gt;
+
+
+&lt;P class="p90 ft3"&gt;Skr. 2025/26:76 tionen en bedömning av hur den svenska ekonomin och de offentliga finanserna utvecklas. Regeringen redovisar också däremellan offentligt sin bedömning av den ekonomiska situationen.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Prognoser är osäkra. Regeringen presenterar därför i den ekonomiska vårpropositionen och i budgetpropositionen alternativscenarier som speglar risker för en mer respektive mindre gynnsam ekonomisk utveckling. Det är därutöver viktigt att regeringens prognoser följs upp. Konjunkturinstitutet redovisar årligen en jämförelse mellan olika prognosmakares prognoser och prognosprecision.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;De prognoser för den offentliga förvaltningens finanser som regeringen redovisar i budgetpropositionen och den ekonomiska vårpropositionen tar hänsyn till tidigare beslutade, föreslagna och aviserade förändringar av skatteregler och statens utgifter samt de förändringar som föreslås eller aviseras i, eller i anslutning till, den aktuella propositionen. När förslag kan förväntas ha betydande samhällsekonomiska konsekvenser analyseras, i den utsträckning det är möjligt, effekterna på BNP, sysselsättning, inkomstfördelning och ekonomisk jämställdhet.&lt;/P&gt;
+&lt;P class="p91 ft24"&gt;&lt;SPAN class="ft29"&gt;6.7&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Finanspolitikens långsiktiga hållbarhet&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p92 ft3"&gt;Regeringen ska i den ekonomiska vårpropositionen redovisa en bedömning av finanspolitikens långsiktiga hållbarhet (9 kap. 4 § budgetlagen). En sådan bedömning baseras på framskrivningar som sträcker sig så långt fram i tiden att de beaktar alla väsentliga demografiska och ekonomiska förändringar som rimligen kan förutses. Regeringen gör framskrivningar som omfattar utvecklingen av den offentliga förvaltningens samtliga inkomster och utgifter de kommande hundra åren.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Konjunkturinstitutet har i uppdrag att årligen redovisa en bedömning av de offentliga finansernas långsiktiga hållbarhet. Därtill utvärderas finansernas långsiktiga hållbarhet återkommande av Europeiska kommissionen och OECD.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Långsiktskalkyler syftar främst till att svara på frågan om den nuvarande finanspolitiken är långsiktigt hållbar. Det bedöms vara fallet om de skatteintäkter som de aktuella skattereglerna genererar är tillräckliga för att långsiktigt finansiera den offentliga förvaltningens utgifter som följer av gällande regler. Framskrivningen bygger på att finanspolitiken är oförändrad och att de regler som påverkar den offentliga förvaltningens inkomster och utgifter inte ändras, samtidigt som hänsyn tas till den förväntade demografiska utvecklingen.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Osäkerheten i denna typ av bedömningar är stor och de måste därför tolkas med försiktighet, med hänsyn tagen till hur bedömningen ändras vid olika beräkningsförutsättningar. En bedömning av hållbarheten bör omfatta en analys av varför olika indikatorer för den långsiktiga hållbarheten ligger på en viss nivå, och hur den offentliga förvaltningens primära sparande förväntas utvecklas över tiden.&lt;/P&gt;
+&lt;P class="p125 ft3"&gt;20&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_21"&gt;
+
+
+&lt;TABLE cellpadding=0 cellspacing=0 class="t13"&gt;
+&lt;TR&gt;
+	&lt;TD rowspan=2 class="tr6 td14"&gt;&lt;SPAN class="p24 ft1"&gt;7&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD rowspan=2 class="tr6 td15"&gt;&lt;SPAN class="p25 ft1"&gt;Extern uppföljning&lt;/SPAN&gt; &lt;/TD&gt;
+	&lt;TD class="tr2 td16"&gt;&lt;SPAN class="p3 ft3"&gt;Skr. 2025/26:76&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;TR&gt;
+	&lt;TD class="tr7 td16"&gt;&lt;SPAN class="p3 ft8"&gt;&amp;nbsp;&lt;/SPAN&gt; &lt;/TD&gt;
+&lt;/TR&gt;
+&lt;/TABLE&gt;
+&lt;P class="p126 ft3"&gt;En väl fungerande extern uppföljning är viktig för att säkerställa att politiken utformas i enlighet med befintliga mål, bl.a. genom att öka de politiska kostnaderna för att inte följa ramverket.&lt;/P&gt;
+&lt;P class="p127 ft24"&gt;&lt;SPAN class="ft24"&gt;7.1&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Flera myndigheter följer upp finanspolitiken på nationell nivå&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p60 ft3"&gt;Den externa uppföljningen av finanspolitiken på nationell nivå syftar till att politiken ska utformas i enlighet med det finanspolitiska ramverket. Ett antal myndigheter under regeringen ansvarar för olika delar av uppföljningen av finanspolitiken på nationell nivå. Ekonomistyrningsverket, som i januari 2026 slås samman med Statskontoret under det gemensamma namnet Statskontoret, och Konjunkturinstitutet gör bedömningar av den makroekonomiska och offentligfinansiella utvecklingen. Finanspolitiska rådet har ett särskilt ansvar för att analysera hur väl regeringen uppfyller de budgetpolitiska målen, och om finanspolitiken är förenlig med långsiktigt hållbara offentliga finanser (se avsnitt 7.2).&lt;/P&gt;
+&lt;P class="p114 ft3"&gt;Riksrevisionen är en myndighet under riksdagen med uppdrag att granska den statliga verksamheten. Riksrevisorn, som leder myndigheten, beslutar självständigt, med beaktande av de bestämmelser som finns i lag, vad som ska granskas. Sedan 2006 har myndigheten årligen granskat regeringens tillämpning av det finanspolitiska ramverket. Regeringen ska inom fyra månader från det att den har tagit emot en granskningsrapport från Riksrevisionen lämna en skrivelse till riksdagen med en redovisning av vilka åtgärder regeringen har vidtagit eller avser att vidta med anledning av iakttagelserna i rapporten (9 kap. 19 § riksdagsordningen).&lt;/P&gt;
+&lt;P class="p123 ft24"&gt;&lt;SPAN class="ft24"&gt;7.2&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Finanspolitiska rådets särskilda roll&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p87 ft3"&gt;Finanspolitiska rådet har ett särskilt ansvar för uppföljningen av det finanspolitiska ramverket. Myndighetens verksamhet regleras i förordningen (2011:446) med instruktion för Finanspolitiska rådet. Enligt förordningen finns det vid myndigheten ett särskilt råd som utför de uppgifter som en oberoende finanspolitisk institution ska ha enligt rådets direktiv 2011/85/EU av den 8 november 2011 om krav på medlemsstaternas budgetramverk, i lydelsen enligt rådets direktiv (EU) 2024/1265.&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;Finanspolitiska rådet har i uppgift att bedöma om finanspolitiken är förenlig med långsiktigt hållbara offentliga finanser och de budgetpolitiska målen, särskilt målet för den offentliga förvaltningens finansiella sparande och utgiftstaket, men också skuldankaret och vid behov det kommunala balanskravet. Om rådet vid sin bedömning av finanspolitiken konstaterar att det finns en tydlig avvikelse från målet för den offentliga förvaltningens finansiella sparande, ska rådet även bedöma de skäl som regeringen har anfört för avvikelsen samt regeringens redogörelse för hur en återgång till målet ska ske. Rådet ska vidare bedöma de prognoser över&lt;/P&gt;
+&lt;P class="p128 ft3"&gt;21&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_22"&gt;
+
+
+&lt;P class="p129 ft3"&gt;Skr. 2025/26:76 den makroekonomiska utvecklingen som regeringen redovisar i budgetpropositionen.&lt;/P&gt;
+&lt;P class="p111 ft3"&gt;Rådet redovisar sina bedömningar i en årlig rapport. Regeringen redovisar sin syn på bedömningarna i den ekonomiska vårpropositionen (se vidare prop. 2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.7).&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Finanspolitiska rådet har även i uppgift att bedöma om det finanspolitiska ramverket är konsekvent, sammanhängande och effektivt. Denna bedömning ska redovisas inför den översyn av det finanspolitiska ramverket som bör genomföras varannan mandatperiod. Därmed kan rådets bedömning beaktas i direktiven till den utredning som ska göra översynen (se prop. 2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.7).&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Rådet ska vidare yttra sig om prognosen och de antaganden som ligger till grund för nettoutgiftsbanan i den nationella medelfristiga finans- och strukturpolitiska planen. Regeringen ska bemöta rådets synpunkter inom två månader.&lt;/P&gt;
+&lt;P class="p111 ft3"&gt;Finanspolitiska rådet har även i uppgift att utvärdera regeringens prognoser för ekonomins utveckling samt redovisningen till riksdagen av de offentliga finanserna och kostnaderna för reformförslag. Denna utvärdering ska redovisas i rådets årliga rapport. Rådet ska dessutom efter inbjudan delta i offentliga sammanträden och öppna utfrågningar i riksdagen samt verka för en offentlig diskussion i samhället om finanspolitiken.&lt;/P&gt;
+&lt;P class="p130 ft3"&gt;Som en oberoende finanspolitisk institution ska rådet ha kapacitet att utan onödigt dröjsmål kommunicera sina bedömningar och synpunkter offentligt. För att rådet ska kunna fullgöra sina uppgifter på ett effektivt sätt ska det ha tillräckliga och stabila medel. Det är viktigt att rådet utan onödigt dröjsmål får tillräcklig tillgång till den information som det behöver för att fullgöra sina uppgifter. Hur informationen ska tillgängliggöras bör avgöras i dialog mellan rådet och Regeringskansliet.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Rådet ska regelbundet vara föremål för externa utvärderingar som utförs av oberoende utvärderare (se prop. 2025/26:1 Förslag till statens budget, finansplan m.m. avsnitt 5.5.6). Dessa utvärderingar ska ske varannan mandatperiod och redovisas inför den regelbundna översynen av det finanspolitiska ramverket. Utvärderingarnas inriktning kan variera, men en bedömning av rådets översyn av uppfyllelsen av de budgetpolitiska målen i det finanspolitiska ramverket ska vara ett stående inslag. Utvärderingarna ska inte belasta myndighetens budget.&lt;/P&gt;
+&lt;P class="p91 ft24"&gt;&lt;SPAN class="ft29"&gt;7.3&lt;/SPAN&gt;&lt;SPAN class="ft25"&gt;Uppföljningen på &lt;/SPAN&gt;&lt;NOBR&gt;EU-nivå&lt;/NOBR&gt;&lt;/P&gt;
+&lt;P class="p92 ft3"&gt;Sverige ska som medlem i EU följa stabilitets- och tillväxtpaktens regler för att främja hållbara offentliga finanser. Som framgår av avsnitt 3.1 ska medlemsstaterna bl.a. följa två budgetpolitiska gränsvärden. Det ena är att den offentliga förvaltningens finansiella sparande inte får understiga &lt;NOBR&gt;-3&lt;/NOBR&gt; procent av BNP, det andra är att den offentliga förvaltningens konsoliderade bruttoskuld (Maastrichtskulden) inte får överstiga 60 procent av BNP.&lt;/P&gt;
+&lt;P class="p131 ft3"&gt;22&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_23"&gt;
+
+
+&lt;P class="p132 ft3"&gt;Enligt Europaparlamentets och rådets förordning (EU) 2024/1263 av Skr. 2025/26:76 den 29 april 2024 om en effektiv samordning av den ekonomiska politiken&lt;/P&gt;
+&lt;P class="p49 ft3"&gt;och om multilateral budgetövervakning samt om upphävande av rådets förordning (EG) nr 1466/97 ska samtliga medlemsstater presentera en nettoutgiftsbana som anger en årlig och en kumulativ tillväxttakt för nationellt finansierade primära nettoutgifter, dvs. de totala offentliga utgifterna exklusive räntebetalningar, cykliskt känsliga arbetslöshetsrelaterade utgifter samt diskretionära inkomståtgärder. Nettoutgiftsbanan bestäms av medlemsstaterna, men den måste förhålla sig till en övre gräns för tillväxttakten i nettoutgifterna som följer av förordningens krav på hållbara offentliga finanser.&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;För Sveriges del innebär detta att nettoutgiftsbanan ska säkerställa att den offentliga förvaltningens finansiella sparande och den konsoliderade bruttoskulden på medellång sikt håller sig inom gränsvärdena i EU- ramverket, dvs. inom ramen för den medelfristiga planens fyra år och de efterföljande tio åren. Bedömningen av om nettoutgiftsbanan uppfyller dessa krav ska enligt Europaparlamentets och rådets förordning (EU) 2024/1263 göras i enlighet med en &lt;NOBR&gt;EU-gemensam&lt;/NOBR&gt; metodologi.&lt;/P&gt;
+&lt;P class="p61 ft3"&gt;Medlemsstater som håller sig inom förordningens gränsvärden har möjlighet att begära vägledning för skattningen av nettoutgiftsbanan i form av s.k. teknisk information från Europeiska kommissionen. Informationen anger en skattad gräns för det primära strukturella sparande som medlemsstaterna ska förhålla sig till för att uppfylla kraven på att den offentliga förvaltningens finansiella sparande och konsoliderade bruttoskuld ska ligga inom &lt;NOBR&gt;EU-ramverkets&lt;/NOBR&gt; gränsvärden på medellång sikt.&lt;/P&gt;
+&lt;P class="p54 ft3"&gt;Den finanspolitiska övervakningen inom EU baseras på medlemsstaternas nettoutgiftsbanor. Som en del av detta förfarande redovisar regeringen under den medelfristiga planens genomförandeperiod årliga lägesrapporter som redogör för tillväxttakten i nettoutgifterna och hur dessa förhåller sig till nettoutgiftsbanan. Om Sverige avviker från sin nettoutgiftsbana ska orsakerna till avvikelsen framgå av redovisningen.&lt;/P&gt;
+&lt;P class="p54 ft3"&gt;Rådets förordning (EG) nr 1467/97 av den 7 juli 1997 om påskyndande och förtydligande av tillämpningen av förfarandet vid alltför stora underskott reglerar underskottsförfarandet, dvs. det förfarande som kan tillämpas på medlemsstater som inte följer de ovan nämnda gränsvärdena. Det är först vid ett sådant förfarande som åtgärder, t.ex. krav på årlig förstärkning av det strukturella sparandet, behöver vidtas för att anpassa underskott och bruttoskuld i linje med referensvärdena.&lt;/P&gt;
+&lt;P class="p133 ft1"&gt;&lt;SPAN class="ft1"&gt;8&lt;/SPAN&gt;&lt;SPAN class="ft23"&gt;Återkommande översyner av det finanspolitiska ramverket&lt;/SPAN&gt;&lt;/P&gt;
+&lt;P class="p51 ft3"&gt;Det finanspolitiska ramverket ses enligt praxis över varannan mandatperiod av en parlamentarisk kommitté. I samband med dessa översyner kan eventuella behov av förändringar av ramverket beaktas. Översynen bör göras mot slutet av respektive mandatperiod, så att ett eventuellt&lt;/P&gt;
+&lt;P class="p12 ft26"&gt;reviderat mål för den offentliga förvaltningens finansiella sparande kan&lt;/P&gt;
+&lt;P class="p56 ft3"&gt;23&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_24"&gt;
+
+
+&lt;P class="p90 ft3"&gt;Skr. 2025/26:76 träda i kraft första året efter ordinarie riksdagsval. Inför en översyn ska Finanspolitiska rådet bedöma om ramverket är konsekvent, sammanhängande och effektivt.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Den parlamentariska kommittén bör eftersträva en bred majoritet i riksdagen för att värna ramverkets stabilitet och trovärdighet, samt bidra till att minska osäkerheten om den framtida utformningen av finanspolitiken. Minskad osäkerhet skapar i sin tur bättre förutsättningar för att finanspolitiken ska få avsedd effekt.&lt;/P&gt;
+&lt;P class="p93 ft3"&gt;Eventuella bedömningar eller förslag på ändringar med anledning av en översyn lämnas i någon av de ekonomiska propositionerna. När de aktuella förslagen har antagits av riksdagen lämnar regeringen en ny skrivelse till riksdagen som innehåller en uppdaterad beskrivning av det finanspolitiska ramverket.&lt;/P&gt;
+&lt;P class="p134 ft3"&gt;24&lt;/P&gt;
+&lt;/DIV&gt;
+&lt;DIV id="page_25"&gt;
+&lt;DIV id="p25dimg1"&gt;
+&lt;INGENBILD zsrc="HD037625x1.jpg/" id="p25img1"&gt;
+&lt;/DIV&gt;
+
+
+&lt;P class="p135 ft3"&gt;Skr. 2025/26:76&lt;/P&gt;
+&lt;P class="p112 ft1"&gt;Finansdepartementet&lt;/P&gt;
+&lt;P class="p136 ft3"&gt;Utdrag ur protokoll vid regeringssammanträde den 4 december 2025&lt;/P&gt;
+&lt;P class="p137 ft3"&gt;Närvarande: statsminister Kristersson, ordförande, och statsråden Busch, Svantesson, Edholm, Waltersson Grönvall, Strömmer, Forssmed, Tenje, Forssell, Slottner, Wykman, Malmer Stenergard, Kullgren, Liljestrand, Bohlin, Pourmokhtari, Rosencrantz, Dousa, Larsson, Britz, Mohamsson, Lann&lt;/P&gt;
+&lt;P class="p138 ft3"&gt;Föredragande: statsrådet Svantesson&lt;/P&gt;
+&lt;P class="p139 ft3"&gt;Regeringen beslutar skrivelse Det finanspolitiska ramverket&lt;/P&gt;
+&lt;P class="p140 ft3"&gt;25&lt;/P&gt;
+&lt;/DIV&gt;
+
+&lt;/div&gt;&lt;style&gt;
+
+
+TD,TD.p2h {
+zzzfont-size:90%;
+zzzmargin-right:2px;
+zzzoverflow:visable;
+zzzword-wrap: break-word;
+}
+
+P {
+zdisplay:block;
+}
+
+.divbreak {
+clear:both;
+display:block;
+zwidth: 100%;
+zheight: 1px;
+zword-wrap: break-word;
+}
+
+
+.xecp {
+  display:block;
+  margin: 0px !important;
+  padding: 0px !important;
+  
+}
+
+.ec {
+  border-style:solid;
+  border-width:1px;
+  display:block;
+  margin: 0px !important;
+  padding: 0px !important;
+}
+
+.TOPS {
+  overflow:visable;
+  margin:2px;
+  width:690px !important;
+}
+
+&lt;/style&gt;
+</html>
+</dokument>
+<dokaktivitet>
+<aktivitet>
+<kod>B</kod>
+<namn>Bordlagd</namn>
+<datum>2025-12-09 00:00:00</datum>
+<status>inträffat</status>
+<ordning>0</ordning>
+<process>behandling</process>
+</aktivitet>
+<aktivitet>
+<kod>INL</kod>
+<namn>Inlämnad</namn>
+<datum>2025-12-09 00:00:00</datum>
+<status>inträffat</status>
+<ordning>0</ordning>
+<process>behandling</process>
+</aktivitet>
+<aktivitet>
+<kod>HÄN</kod>
+<namn>Hänvisad</namn>
+<datum>2025-12-10 00:00:00</datum>
+<status>inträffat</status>
+<ordning>0</ordning>
+<process>behandling</process>
+</aktivitet>
+<aktivitet>
+<kod>MOT</kod>
+<namn>Motionstid slutar</namn>
+<datum>2026-01-16 00:00:00</datum>
+<status>inträffat</status>
+<ordning>0</ordning>
+<process>behandling</process>
+</aktivitet>
+</dokaktivitet>
+<dokintressent>
+<intressent>
+<intressent_id>0222691314314</intressent_id>
+<namn>Ulf Kristersson</namn>
+<partibet>M</partibet>
+<ordning>1</ordning>
+<roll>Statsråd1</roll>
+</intressent>
+<intressent>
+<intressent_id>0899112324519</intressent_id>
+<namn>Elisabeth Svantesson</namn>
+<partibet>M</partibet>
+<ordning>2</ordning>
+<roll>Statsråd2</roll>
+</intressent>
+</dokintressent>
+<dokuppgift>
+<uppgift>
+<kod>inlamnatav</kod>
+<namn>Inlämnat av</namn>
+<text>Finansdepartementet</text>
+<dok_id>HD0376</dok_id>
+<systemdatum>2026-02-25 16:35:57</systemdatum>
+</uppgift>
+<uppgift>
+<kod>statustext</kod>
+<namn>statustext</namn>
+<text>Skrivelsen är avslutad</text>
+<dok_id>HD0376</dok_id>
+<systemdatum>2026-02-25 16:12:40</systemdatum>
+</uppgift>
+<uppgift>
+<kod>tilldelat</kod>
+<namn>Tilldelat</namn>
+<text>Finansutskottet</text>
+<dok_id>HD0376</dok_id>
+<systemdatum>2026-02-25 16:35:57</systemdatum>
+</uppgift>
+</dokuppgift>
+<dokbilaga>
+<bilaga>
+<dok_id>HD0376</dok_id>
+<subtitel></subtitel>
+<filnamn>Skrivelse_76_202526.pdf</filnamn>
+<filstorlek>289932</filstorlek>
+<filtyp>pdf</filtyp>
+<titel>Det finanspolitiska ramverket</titel>
+<fil_url>https://data.riksdagen.se/fil/9FF16874-235A-4F74-9698-A92C2AF7AB78</fil_url>
+</bilaga>
+</dokbilaga>
+<dokreferens>
+<referens>
+<referenstyp>behandlas_i</referenstyp>
+<uppgift>2025/26:FiU14</uppgift>
+<ref_dok_id>HD01FiU14</ref_dok_id>
+<ref_dok_typ>bet</ref_dok_typ>
+<ref_dok_rm>2025/26</ref_dok_rm>
+<ref_dok_bet>FiU14</ref_dok_bet>
+<ref_dok_titel>Det finanspolitiska ramverket</ref_dok_titel>
+<ref_dok_subtitel></ref_dok_subtitel>
+<ref_dok_subtyp>bet</ref_dok_subtyp>
+<ref_dok_dokumentnamn>Betänkande</ref_dok_dokumentnamn>
+</referens>
+</dokreferens>
+</dokumentstatus>
