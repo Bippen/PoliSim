@@ -10,7 +10,8 @@ namespace PoliSim.UI
     /// and the † (the bank's tab named as the country's bank is); the Parliament tab as the composition lays it - the chamber as one bar with the
     /// blocs over it and the majority tick through it, then the parties as tiles - and, under them, what the composition does not draw, kept as
     /// built (asked): the bills before the chamber with their counts, the blocs, formation and confidence rows, and the division records. Compass,
-    /// Cabinet and the bank draw as built under the new frame until their own items.
+    /// Cabinet and the bank draw as built under the new frame until their own items. §744: the Compass tab - the parties on two axes beside their
+    /// positions, the six countries' compass kept under them.
     /// </summary>
     public partial class GameController
     {
@@ -43,14 +44,16 @@ namespace PoliSim.UI
             // §685 (21b): the political blocks lay their rows to the VISIBLE width - a right-aligned act laid to the content's edge was off-screen
             _parliamentVisibleWidth = contentWidth;
 
-            if (_politicsCategory == PoliticsCategory.Parliament)
+            if (_politicsCategory == PoliticsCategory.Parliament || _politicsCategory == PoliticsCategory.Compass)
             {
+                // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name)
+                bool parliament = _politicsCategory == PoliticsCategory.Parliament;
                 int scrolledFrom = _slipAnchors.Count;
                 float viewport = Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f);
-                _parliamentScrollPosition = GUILayout.BeginScrollView(_parliamentScrollPosition, GUILayout.Height(viewport));
-                DrawParliamentV35(contentWidth);
+                Vector2 scroll = GUILayout.BeginScrollView(parliament ? _parliamentScrollPosition : _politicsContentScrollPosition, GUILayout.Height(viewport));
+                if (parliament) { _parliamentScrollPosition = scroll; DrawParliamentV35(contentWidth); } else { _politicsContentScrollPosition = scroll; DrawCompassV35(contentWidth); }
                 GUILayout.EndScrollView();
-                MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), _parliamentScrollPosition);
+                MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), scroll);
                 GUILayout.EndVertical();
                 if (!DeskProvenance.On) { DrawSlips(_politicsSlipBook, GUILayoutUtility.GetLastRect()); }
                 return;
@@ -61,12 +64,6 @@ namespace PoliSim.UI
             float contentHeight = bodyHeight - ScreenCaptionBlockHeight();
             switch (_politicsCategory)
             {
-                case PoliticsCategory.Compass:
-                    float compassScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    _politicsContentScrollPosition = GUILayout.BeginScrollView(_politicsContentScrollPosition, GUILayout.Height(compassScrollHeight));
-                    DrawPoliticalCompassContent(availableWidth);
-                    GUILayout.EndScrollView();
-                    break;
                 case PoliticsCategory.Cabinet:
                     float cabinetScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
                     GUI.enabled = !_isGameOver;
@@ -161,6 +158,135 @@ namespace PoliSim.UI
             DrawParliamentPoliticalBlocks();   // PS-3h (§635), the caretaker line, §646's round, PS-3i (§636) - board 21b's rows (§685)
             GUILayout.Space(10f);
             DrawRecentDivisions();
+        }
+
+
+        /// <summary>
+        /// §744 (the composition's Politics › Compass): <b>the parties on two axes</b> - the chamber's seated parties as chips (their mark and short
+        /// name, edged in their ink: `HemicycleRenderer.DrawPartyChip`) at their published CHES 2024 pair (`CompassPositions.Party`; economic left to
+        /// right across, 0-10) - beside <b>their positions</b> as a list. Under them, kept as built (asked): the six countries' compass - each chamber's
+        /// seat-weighted mean, the cabinet's ring, the electorate's diamond and the trails (`DrawPoliticalCompassContent`).
+        ///
+        /// <para><b>The vertical axis keeps the game's direction</b> - liberal (GAL) at the top, conservative (TAN) at the foot, as P2-3.2 drew it and as
+        /// the six countries' compass under it and the Desk's compass card draw it; the composition sets conservative at the top (its social axis is
+        /// marked illustrative). Two compasses on one page cannot disagree about which way is up: asked, not flipped.</para>
+        /// </summary>
+        private void DrawCompassV35(float width)
+        {
+            Country c = _playerCountry;
+            V35.FloorGuarded = true;
+            var parties = new List<PoliticalParty>();
+            foreach (PoliticalParty p in PartySystems.For(PlayerCountryId)) { if (c.ParliamentSeats.TryGetValue(p.Abbrev, out int n) && n > 0) { parties.Add(p); } }
+            parties.Sort((a, b) => c.ParliamentSeats[b.Abbrev].CompareTo(c.ParliamentSeats[a.Abbrev]));
+            float gutter = V35.Px(V35.Gutter);
+            float leftW = V35Span(width, 8), rightW = width - leftW - gutter;
+            float headH = V35.Px(V35.CardIcon), labelH = V35.Px(20f);
+            float plotH = Mathf.Clamp((leftW - V35.Px(V35.CardPadX) * 2f) * 0.52f, V35.Px(220f), V35.Px(360f));
+            float rowH = V35.Px(V35.ListRow + 4f);
+            float cardH = Mathf.Max(V35.Px(V35.CardPadY) * 2f + headH + V35.Px(8f) + plotH + labelH, V35.Px(V35.CardPadY) * 2f + headH + V35.Px(8f) + parties.Count * rowH);
+            Rect band = GUILayoutUtility.GetRect(width, cardH, GUILayout.Width(width), GUILayout.Height(cardH));
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Political);
+            bool repaint = Event.current.type == EventType.Repaint;
+
+            // ---- the plot ----
+            Rect plotCard = new Rect(band.x, band.y, leftW, cardH);
+            Rect inner = DrawV35Card(plotCard);
+            Rect head = DrawV35CardHead(inner, "compass", "Parties on two axes", area);
+            SlipAnchor(head, "compass:plot");
+            _politicsSlipBook.Anchors["compass:plot"] = new SlipContent("PARTIES ON TWO AXES")
+                .Add("EACH SEATED PARTY AT ITS PUBLISHED PAIR - CHES 2024: ECONOMIC LEFT (0) TO RIGHT (10) ACROSS, LIBERAL (0) TO CONSERVATIVE (10) DOWN")
+                .Add("A PARTY THAT PUBLISHES NO PAIR IS NOT PLACED - THE LIST SAYS SO")
+                .Add("THE SIX COUNTRIES' CHAMBERS, THE CABINET AND THE ELECTORATE ARE ON THE COMPASS BELOW");
+            var plot = new Rect(inner.x, head.yMax + V35.Px(8f), inner.width, plotH);
+            if (repaint)
+            {
+                for (int i = 1; i < 4; i++)
+                {
+                    PoliSimTheme.Rule(new Rect(Mathf.Round(plot.x + plot.width * i / 4f), plot.y, 1f, plot.height), V35.ListRule);
+                    PoliSimTheme.Rule(new Rect(plot.x, Mathf.Round(plot.y + plot.height * i / 4f), plot.width, 1f), V35.ListRule);
+                }
+                PoliSimTheme.Rule(new Rect(plot.x, plot.y, plot.width, 1f), V35.CardEdge);
+                PoliSimTheme.Rule(new Rect(plot.x, plot.yMax - 1f, plot.width, 1f), V35.CardEdge);
+                PoliSimTheme.Rule(new Rect(plot.x, plot.y, 1f, plot.height), V35.CardEdge);
+                PoliSimTheme.Rule(new Rect(plot.xMax - 1f, plot.y, 1f, plot.height), V35.CardEdge);
+                GUIStyle corner = V35Serif(V35.Floor, PoliSimTheme.TextSecondary, TextAnchor.UpperRight);
+                GUIStyle cornerLow = V35Serif(V35.Floor, PoliSimTheme.TextSecondary, TextAnchor.LowerRight);
+                GUI.Label(new Rect(plot.x, plot.y + V35.Px(4f), plot.width - V35.Px(6f), labelH), "Liberal", corner);
+                GUI.Label(new Rect(plot.x, plot.yMax - labelH - V35.Px(4f), plot.width - V35.Px(6f), labelH), "Conservative", cornerLow);
+                GUIStyle axis = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+                GUIStyle axisRight = V35Serif(V35.Floor, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
+                GUI.Label(new Rect(plot.x, plot.yMax + V35.Px(2f), plot.width * 0.5f, labelH), "Economic left", axis);
+                GUI.Label(new Rect(plot.x + plot.width * 0.5f, plot.yMax + V35.Px(2f), plot.width * 0.5f, labelH), "Economic right", axisRight);
+            }
+            GUIStyle chipFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true);
+            float chipH = V35.Px(22f);
+            var placed = new List<Rect>();
+            foreach (PoliticalParty party in parties)
+            {
+                CompassPositions.Point? point = CompassPositions.Party(party);
+                if (!point.HasValue) { continue; }
+                float cw = HemicycleRenderer.PartyChipWidth(party, chipFace);
+                float cx = plot.x + plot.width * Mathf.InverseLerp(CompassPositions.ScaleMin, CompassPositions.ScaleMax, point.Value.LrEcon);
+                float cy = plot.y + plot.height * Mathf.InverseLerp(CompassPositions.ScaleMin, CompassPositions.ScaleMax, point.Value.Galtan);
+                var chip = new Rect(Mathf.Clamp(cx - cw * 0.5f, plot.x + 2f, plot.xMax - cw - 2f), Mathf.Clamp(cy - chipH * 0.5f, plot.y + 2f, plot.yMax - chipH - 2f), cw, chipH);
+                // two parties at nearly one pair would print one chip over the other: the later (smaller) one steps down, or up at the plot's foot
+                for (int tries = 0; tries < 8 && placed.Exists(r => r.Overlaps(chip)); tries++)
+                {
+                    float down = chip.y + chipH + 2f;
+                    chip.y = down + chipH <= plot.yMax - 2f ? down : chip.y - chipH * (tries + 2);
+                    chip.y = Mathf.Clamp(chip.y, plot.y + 2f, plot.yMax - chipH - 2f);
+                }
+                placed.Add(chip);
+                HemicycleRenderer.DrawPartyChip(chip, PlayerCountryId, party, chipFace, V35.CardPaper);
+                SlipAnchor(chip, "compass:party:" + party.Abbrev);
+            }
+
+            // ---- the positions ----
+            Rect listCard = new Rect(band.x + leftW + gutter, band.y, rightW, cardH);
+            Rect listInner = DrawV35Card(listCard);
+            Rect listHead = DrawV35CardHead(listInner, "compass", "Positions", area);
+            SlipAnchor(listHead, "compass:positions");
+            _politicsSlipBook.Anchors["compass:positions"] = new SlipContent("POSITIONS")
+                .Add("EACH SEATED PARTY'S PUBLISHED PAIR, ECONOMIC · SOCIAL, ON CHES 2024'S 0-10 SCALES - BY SEATS");
+            GUIStyle abbrevFace = V35Mono(V35.Floor, PoliSimTheme.TextMuted);
+            GUIStyle nameFace = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+            GUIStyle pairFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleRight);
+            GUIStyle absentFace = V35Serif(V35.Floor, PoliSimTheme.TextMuted, TextAnchor.MiddleRight);
+            float y = listHead.yMax + V35.Px(8f);
+            foreach (PoliticalParty party in parties)
+            {
+                var row = new Rect(listInner.x, y, listInner.width, rowH);
+                CompassPositions.Point? point = CompassPositions.Party(party);
+                string pair = point.HasValue ? UiFormat.Number(point.Value.LrEcon, 1) + " · " + UiFormat.Number(point.Value.Galtan, 1) : "no pair";
+                if (repaint)
+                {
+                    PoliSimTheme.Rule(new Rect(row.x, row.yMax - 1f, row.width, 1f), V35.ListRule);
+                    float abbrevW = V35.Px(34f), pairW = Mathf.Ceil(pairFace.CalcSize(new GUIContent("10.0 · 10.0")).x) + 4f;
+                    GUI.Label(new Rect(row.x, row.y, abbrevW, row.height), party.ShortName, abbrevFace);
+                    float nameW = Mathf.Max(1f, row.width - abbrevW - pairW - V35.Px(6f));
+                    string shown = V35Fit(party.Name, nameFace, nameW, out bool cut);
+                    if (cut && party.Name.Contains("-")) { shown = V35Fit(party.Name.Substring(party.Name.LastIndexOf('-') + 1), nameFace, nameW, out _); }
+                    PoliSimWidgets.MeasuredLabel(new Rect(row.x + abbrevW, row.y, nameW, row.height), shown, nameFace);
+                    GUI.Label(new Rect(row.xMax - pairW, row.y, pairW, row.height), pair, point.HasValue ? pairFace : absentFace);
+                }
+                SlipAnchor(row, "compass:party:" + party.Abbrev);
+                _politicsSlipBook.Anchors["compass:party:" + party.Abbrev] = new SlipContent(party.ShortName.ToUpperInvariant() + " · " + pair.ToUpperInvariant())
+                    .Add(party.Name.ToUpperInvariant())
+                    .Add(point.HasValue
+                        ? "ECONOMIC " + UiFormat.Number(point.Value.LrEcon, 1) + " OF 10 (LEFT 0 … RIGHT 10) · SOCIAL " + UiFormat.Number(point.Value.Galtan, 1) + " OF 10 (LIBERAL 0 … CONSERVATIVE 10)"
+                        : "IT PUBLISHES NO PAIR IN CHES 2024 - IT IS NOT PLACED, AND NO POSITION IS AUTHORED FOR IT")
+                    .Add(UiFormat.Seats(c.ParliamentSeats[party.Abbrev]).ToUpperInvariant() + " · CHES 2024, THE PARTY'S PUBLISHED PAIR");
+                y += rowH;
+            }
+            V35.FloorGuarded = false;
+            GUILayout.Space(gutter);
+
+            // ---- kept as built (not in the composition; asked): the six countries' compass ----
+            DrawPoliticsSectionHead("Six countries", "compass:countries", width);
+            _politicsSlipBook.Anchors["compass:countries"] = new SlipContent("SIX COUNTRIES")
+                .Add("EACH CHAMBER AT THE SEAT-WEIGHTED MEAN OF ITS PARTIES' PAIRS, THE SITTING CABINET RINGED, THE ELECTORATE AS A DIAMOND, EACH CHAMBER'S TRAIL")
+                .Add("KEPT AS BUILT UNDER THE NEW PAGE - THE COMPOSITION DRAWS THE HOME CHAMBER'S PARTIES ALONE");
+            DrawPoliticalCompassContent(width);
         }
 
         private float PartyTileHeight()

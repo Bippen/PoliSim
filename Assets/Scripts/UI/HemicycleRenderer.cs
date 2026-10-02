@@ -513,6 +513,33 @@ namespace PoliSim.UI
         /// <summary>§743: the bloc's name as the bar labels it - the composition's case.</summary>
         private static string BlocBarName(int rank) => rank == 0 ? "Left bloc" : rank == 1 ? "Unaffiliated" : "Right bloc";
 
+        /// <summary>
+        /// §744 (UI v3.5, the composition's Politics › Compass): A PARTY AS A CHIP - its mark and its display short name in a box edged in its
+        /// laddered ink, on the card's paper. Drawn HERE for the bar's reason: the chip's subject is the party itself (where it stands), and the
+        /// chamber is the one surface that may draw party ink (`PartyInkDrawSiteCheck`). The chip's width for a face, so a caller can lay chips out.
+        /// </summary>
+        public static float PartyChipWidth(PoliticalParty party, GUIStyle face) => Mathf.Ceil(face.CalcSize(new GUIContent(party.ShortName)).x) + face.fontSize + 14f;
+
+        /// <summary>§744: draws <see cref="PartyChipWidth"/>'s chip in <paramref name="rect"/>.</summary>
+        public static void DrawPartyChip(Rect rect, CountryId country, PoliticalParty party, GUIStyle face, Color paper)
+        {
+            if (Event.current.type != EventType.Repaint) { return; }
+            Color previous = GUI.color;
+            Color ink = PoliSimTheme.PartyLaddered(country, party.Abbrev);
+            GUI.color = paper;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = ink;
+            float edge = 1.5f;
+            GUI.DrawTexture(new Rect(rect.x, rect.y, rect.width, edge), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.x, rect.yMax - edge, rect.width, edge), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.x, rect.y, edge, rect.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(rect.xMax - edge, rect.y, edge, rect.height), Texture2D.whiteTexture);
+            GUI.color = previous;
+            float side = Mathf.Min(rect.height - 6f, face.fontSize);
+            DrawMark(new Rect(rect.x + 4f, rect.y + Mathf.Round((rect.height - side) * 0.5f), side, side), country, party);
+            GUI.Label(new Rect(rect.x + 4f + side + 3f, rect.y, rect.width - side - 9f, rect.height), party.ShortName, face);
+        }
+
         /// <summary>The bloc's name as the arc labels it.</summary>
         private static string BlocRankName(int rank) => rank == 0 ? "LEFT BLOC" : rank == 1 ? "UNAFFILIATED" : "RIGHT BLOC";
 
