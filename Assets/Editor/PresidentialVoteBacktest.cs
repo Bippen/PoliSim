@@ -28,8 +28,15 @@ namespace PoliSim.EditorTools
     /// galtan at the country's economic weight) and <b>the sovereignty space</b> (galtan, nationalism and the EU position, equally weighted - the
     /// dimensions a head of state's office turns on). Then the whole chain: the first round as modelled, then the run-off.</para>
     ///
-    /// <para>Nothing is tuned. The numbers below are PINNED: a change to the positions, the returns or the rule moves them and this fails, so the
-    /// reading Elias rules on is the reading the code still gives. Which space goes live is his (owed).</para>
+    /// <para>The numbers below are PINNED: a change to the positions, the returns or the rule moves them and this fails, so the reading Elias rules on
+    /// is the reading the code still gives.</para>
+    ///
+    /// <para><b>§764 - Elias's ruling B4 (2026-10-02)</b>: <i>"Run-off transfers: the sovereignty axis, as your evidence says. [FITTED] to the Ipsos exit
+    /// poll of 1 Jun 2025 (share of each first-round electorate voting Nawrocki/Trzaskowski): Mentzen 88.1/11.9, Braun 92.5/7.5, Hołownia 13.8/86.2,
+    /// Zandberg 16.2/83.8, Biejat 9.8/90.2. Abstention rising with distance to the nearer finalist is [AUTHORED-DRAFT]."</i> The transfer's τ is
+    /// fitted to those five pairs (`runoff_transfers_2025.csv`, least squares, one parameter) and both run-offs are re-run at it; the abstention is
+    /// the stated draft (<see cref="AbstentionDraftMax"/>), printed at the draft and twice it. The fit lives here until the game's own presidential
+    /// election takes it (item C, its live wiring - held on the ruling owed at §762).</para>
     /// </summary>
     public static class PresidentialVoteBacktest
     {
@@ -85,6 +92,25 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    the transfer kernel's τ = {0:0.00} and economic weight {1:0.00} - Poland's own (PartySystems.TryElectorate), not chosen here\n", tau, wEcon));
 
                 var pins = new List<(string What, double Got, double Want)>();
+
+                // ---- §764 (Elias's ruling B4): THE TRANSFERS IN THE SOVEREIGNTY SPACE, τ [FITTED] TO THE IPSOS EXIT POLL OF 1 JUNE 2025 ----
+                // The share of each first-round electorate voting Nawrocki in the run-off (`runoff_transfers_2025.csv`, the commissioning broadcaster's
+                // publication), against exp(-d²/τ) between the two finalists' rows - one parameter, least squares over the five pairs the ruling names.
+                List<(string Surname, double ToNawrocki, Position At)> ipsos = ReadIpsosPairs(Path.Combine(root, "ElectionsData", "poland", "runoff_transfers_2025.csv"), ches);
+                var ruled = new Dictionary<string, double> { { "MENTZEN", 88.1 }, { "BRAUN", 92.5 }, { "HOŁOWNIA", 13.8 }, { "ZANDBERG", 16.2 }, { "BIEJAT", 9.8 } };
+                Check(ipsos.Count == ruled.Count && ipsos.All(x => ruled.TryGetValue(x.Surname, out double r) && Math.Abs(r - x.ToNawrocki) < 1e-9),
+                    F("B4: the file holds the ruling's five pairs - {0}", string.Join(", ", ipsos.Select(x => x.Surname + " " + x.ToNawrocki.ToString("0.0", CultureInfo.InvariantCulture)))));
+                Position atNawrocki = ches["PiS"], atTrzaskowski = ches["PO"];
+                double Sse(double t) => ipsos.Sum(x => Sq(100.0 * Transfer(x.At, atNawrocki, atTrzaskowski, Sovereignty, t) - x.ToNawrocki));
+                double tauFit = FitLogScale(Sse, 0.05, 200.0);
+                double rmse = Math.Sqrt(Sse(tauFit) / ipsos.Count), rmseOwn = Math.Sqrt(Sse(tau) / ipsos.Count);
+                sb.Append(F("\n  B4 - THE TRANSFER FITTED (sovereignty space; the ruling's five Ipsos pairs): τ = {0:0.000} (least squares; Poland's own τ {1:0.00} gives RMSE {2:0.00} pp, the fit {3:0.00} pp)\n", tauFit, tau, rmseOwn, rmse));
+                foreach ((string surname, double toNawrocki, Position at) in ipsos)
+                {
+                    double model = 100.0 * Transfer(at, atNawrocki, atTrzaskowski, Sovereignty, tauFit);
+                    sb.Append(F("    {0,-12} to Nawrocki: Ipsos {1,5:0.0}  fitted {2,5:0.0}  miss {3,6:+0.0;-0.0}\n", surname, toNawrocki, model, model - toNawrocki));
+                }
+                pins.Add(("B4: the fitted τ", tauFit, PinTauFit));
                 foreach ((int year, Candidate[] field, Dictionary<string, double> sejm) in new[] { (2020, Field2020, sejm2019), (2025, Field2025, sejm2023) })
                 {
                     List<(string Name, long Votes)> r1 = rounds[(year, 1)];
@@ -132,6 +158,18 @@ namespace PoliSim.EditorTools
                         sb.Append(F("    {0,-48} {1} {2:0.00}  miss {3:+0.00;-0.00}  {4}\n", space, fa, a, a - recordA, (a > 50.0) == (recordA > 50.0) ? "the winner of record" : "THE WRONG WINNER"));
                         pins.Add(($"{year} run-off from the record, {space}", a, Pin(year, space)));
                     }
+                    // §764 (B4): the sovereignty space at the fitted τ, then the [AUTHORED-DRAFT] abstention beside it - printed at the draft and at twice it
+                    double fitted = RunOff(recordR1, fa, fb, pa, pb, Sovereignty, tauFit);
+                    sb.Append(F("    {0,-48} {1} {2:0.00}  miss {3:+0.00;-0.00}  {4}\n", "the sovereignty space, τ fitted to Ipsos (B4)", fa, fitted, fitted - recordA,
+                        (fitted > 50.0) == (recordA > 50.0) ? "the winner of record" : "THE WRONG WINNER"));
+                    pins.Add(($"{year} run-off from the record, the fitted τ (B4)", fitted, year == 2020 ? PinFit2020 : PinFit2025));
+                    foreach (double stayMax in new[] { AbstentionDraftMax, 2.0 * AbstentionDraftMax })
+                    {
+                        double withStay = RunOff(recordR1, fa, fb, pa, pb, Sovereignty, tauFit, stayMax);
+                        sb.Append(F("      with abstention [AUTHORED-DRAFT], the farthest electorate {0:0} % at home and the rest by distance to the nearer finalist: {1} {2:0.00}  miss {3:+0.00;-0.00}\n",
+                            100.0 * stayMax, fa, withStay, withStay - recordA));
+                        if (stayMax == AbstentionDraftMax) { pins.Add(($"{year} run-off, the fitted τ with the draft abstention (B4)", withStay, year == 2020 ? PinStay2020 : PinStay2025)); }
+                    }
 
                     // ---- the whole chain: the modelled first round, then the sovereignty run-off ----
                     var chainR1 = field.Select(c => (c.Surname, model[c.Surname], c.ChesParty != null ? ches[c.ChesParty] : null)).ToList();
@@ -146,7 +184,7 @@ namespace PoliSim.EditorTools
                 }
 
                 sb.Append("\n  PINS (the reading above, held - a change to the positions, the returns or the rule moves them):\n");
-                foreach ((string what, double got, double want) in pins) { Check(Math.Abs(got - want) < 0.005, F("{0}: {1:0.00} (pinned {2:0.00})", what, got, want)); }
+                foreach ((string what, double got, double want) in pins) { Check(Math.Abs(got - want) < 0.005, F("{0}: {1:0.000} (pinned {2:0.000})", what, got, want)); }
             }
             catch (Exception ex) { failures++; sb.Append("    FAIL      threw: ").Append(ex.Message).Append('\n'); }
 
@@ -161,20 +199,90 @@ namespace PoliSim.EditorTools
 
         /// <summary>The run-off: the finalists keep their first votes; an eliminated candidate's voters split by exp(−d²/τ) toward each finalist; one
         /// with no position splits as the finalists' first votes did. Returns the first finalist's share of the two.</summary>
-        private static double RunOff(List<(string Surname, double Share, Position At)> r1, string fa, string fb, Position pa, Position pb, Func<Position, Position, double> d2, double tau)
+        /// <summary>The run-off from a first round: the finalists keep their own, each eliminated electorate splits by exp(-d²/τ) - an unplaced one as the
+        /// finalists' first votes did. §764 (B4): <paramref name="stayMax"/> > 0 adds the [AUTHORED-DRAFT] abstention - an electorate stays home in
+        /// proportion to its distance to the nearer finalist, the farthest at <paramref name="stayMax"/>; 0 leaves every share voting (the arithmetic of §727).</summary>
+        private static double RunOff(List<(string Surname, double Share, Position At)> r1, string fa, string fb, Position pa, Position pb, Func<Position, Position, double> d2, double tau, double stayMax = 0.0)
         {
             double a = r1.Where(c => c.Surname == fa).Sum(c => c.Share), b = r1.Where(c => c.Surname == fb).Sum(c => c.Share);
             double a0 = a, b0 = b;
+            double far = 0.0;   // the largest distance from an eliminated electorate to its nearer finalist - the draft abstention's scale
+            foreach ((string surname, double _, Position at) in r1) { if (surname != fa && surname != fb && at != null) { far = Math.Max(far, Math.Min(d2(at, pa), d2(at, pb))); } }
             foreach ((string surname, double share, Position at) in r1)
             {
                 if (surname == fa || surname == fb) { continue; }
                 if (at == null) { a += share * a0 / (a0 + b0); b += share * b0 / (a0 + b0); continue; }
+                double voting = stayMax > 0.0 && far > 0.0 ? share * (1.0 - stayMax * Math.Min(d2(at, pa), d2(at, pb)) / far) : share;
                 double ea = Math.Exp(-d2(at, pa) / tau), eb = Math.Exp(-d2(at, pb) / tau);
-                a += share * ea / (ea + eb);
-                b += share * eb / (ea + eb);
+                a += voting * ea / (ea + eb);
+                b += voting * eb / (ea + eb);
             }
             return 100.0 * a / (a + b);
         }
+
+        /// <summary>§764: the share of an electorate at <paramref name="at"/> going to the finalist at <paramref name="pa"/> - exp(-d²/τ) between the two.</summary>
+        private static double Transfer(Position at, Position pa, Position pb, Func<Position, Position, double> d2, double tau)
+        {
+            double ea = Math.Exp(-d2(at, pa) / tau), eb = Math.Exp(-d2(at, pb) / tau);
+            return ea / (ea + eb);
+        }
+
+        /// <summary>The sovereignty space (§727): galtan, nationalism and the EU position on the 0-10 scale, equally weighted - squared distance.</summary>
+        private static double Sovereignty(Position p, Position q) => (Sq(p.Galtan - q.Galtan) + Sq(p.Nationalism - q.Nationalism) + Sq(EuTen(p.Eu) - EuTen(q.Eu))) / 3.0;
+
+        /// <summary>§764: the minimum of a one-parameter loss over a log scale - a golden-section search on log τ, deterministic, to 1e-9 in the log.</summary>
+        private static double FitLogScale(Func<double, double> loss, double lo, double hi)
+        {
+            double a = Math.Log(lo), b = Math.Log(hi), g = (Math.Sqrt(5.0) - 1.0) / 2.0;
+            double c = b - g * (b - a), d = a + g * (b - a);
+            while (b - a > 1e-9)
+            {
+                if (loss(Math.Exp(c)) < loss(Math.Exp(d))) { b = d; } else { a = c; }
+                c = b - g * (b - a); d = a + g * (b - a);
+            }
+            return Math.Exp((a + b) / 2.0);
+        }
+
+        /// <summary>§764: the ruling's five Ipsos pairs from `runoff_transfers_2025.csv` (candidate, to_nawrocki, …; quoted fields) - each candidate at its
+        /// 2025 field's CHES row; the file's other rows (the secondary candidates, the finalists' own, R1's non-voters) are not the ruling's and are left.</summary>
+        private static List<(string Surname, double ToNawrocki, Position At)> ReadIpsosPairs(string path, Dictionary<string, Position> ches)
+        {
+            var named = new[] { "MENTZEN", "BRAUN", "HOŁOWNIA", "ZANDBERG", "BIEJAT" };
+            var result = new List<(string Surname, double ToNawrocki, Position At)>();
+            foreach (string line in File.ReadAllLines(path, Encoding.UTF8).Skip(1))
+            {
+                string[] f = SplitQuoted(line);
+                if (f.Length < 2) { continue; }
+                string surname = f[0].Trim().ToUpperInvariant();
+                if (Array.IndexOf(named, surname) < 0) { continue; }
+                Candidate c = Field2025.First(x => x.Surname == surname);
+                result.Add((surname, double.Parse(f[1], CultureInfo.InvariantCulture), ches[c.ChesParty]));
+            }
+            return result;
+        }
+
+        private static string[] SplitQuoted(string line)
+        {
+            var fields = new List<string>();
+            var cur = new StringBuilder();
+            bool quoted = false;
+            foreach (char ch in line)
+            {
+                if (ch == '"') { quoted = !quoted; continue; }
+                if (ch == ',' && !quoted) { fields.Add(cur.ToString()); cur.Clear(); continue; }
+                cur.Append(ch);
+            }
+            fields.Add(cur.ToString());
+            return fields.ToArray();
+        }
+
+        /// <summary>§764 (B4) [AUTHORED-DRAFT]: the share of the eliminated electorate farthest from both finalists that stays home in the run-off; the
+        /// others in proportion to their distance to the nearer finalist. The exit poll interviews run-off voters only, so no source measures it - the
+        /// ruling makes it authored; on the calibration list.</summary>
+        private const double AbstentionDraftMax = 0.25;
+
+        /// <summary>§764: the pinned readings of the fit (set from the first run's print; a change to the positions, the pairs or the rule moves them).</summary>
+        private const double PinTauFit = 18.301, PinFit2020 = 54.829, PinFit2025 = 52.538, PinStay2020 = 54.832, PinStay2025 = 52.321;
 
         private static double Sq(double x) => x * x;
         /// <summary>CHES's EU position runs 1 (strongly against) to 7 (strongly for); on the 0-10 scale the other two axes use.</summary>
