@@ -15,7 +15,7 @@ namespace PoliSim.UI
     /// - each technology's fleet as a tile with its order (− retires, + builds, one step a click, the connection queue's refusal on the slip), the
     /// capital cost BILLED; <b>Grid and target</b> - the operator's connection queue line by line, and the country's mandate. Under them, kept as built
     /// (asked): the plates that say why the price is what it is (the rule, the fleet and its zones, the water and the two ledgers). The Policy tab
-    /// carries the four instrument dials and what else reaches the layer, as built, until its own item. The page is its own tab with its own rail cell
+    /// carries the four instrument dials as tiles with their bill (§748), and what else reaches the layer as built. The page is its own tab with its own rail cell
     /// (P6-F1, §536: Elias played it under Sectors and overruled DS-4b's *"Rail cell: NO"*).
     /// </summary>
     public partial class GameController
@@ -48,16 +48,7 @@ namespace PoliSim.UI
             using (EnergyFleet.For(_playerCountry))   // §544: every fleet figure on the page is THIS country's - the record plus its own landed orders
             {
                 if (_energyTab == 0) { DrawEnergyOverviewV35(contentWidth); }
-                else
-                {
-                    // the Policy tab, as built until its own item: the four instruments as dials with their one bill, then what else reaches the layer
-                    if (_playerCountry != null && EnergyLayer.Has(_playerCountry.Id))
-                    {
-                        EnsureEnergyCache(_playerCountry);
-                        DrawEnergyInstrumentDials(_playerCountry);
-                        DrawEnergyPlate(EnergyPlatePart.Reaches);
-                    }
-                }
+                else { DrawEnergyPolicyV35(contentWidth); }
             }
             GUILayout.EndScrollView();
             MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), _energyScrollPosition);
@@ -308,6 +299,133 @@ namespace PoliSim.UI
             _energySlipBook.Anchors["en:why"] = new SlipContent("WHY THE PRICE IS WHAT IT IS")
                 .Add("THE RULE ON THE PRICE, THE FLEET AND ITS ZONES, THE WATER AND THE TWO LEDGERS - KEPT AS BUILT UNDER THE NEW PAGE");
             DrawEnergyPlate(EnergyPlatePart.Why);
+        }
+
+
+        /// <summary>
+        /// §748 (the composition's Energy › Policy): <b>the four instruments as dial tiles</b> - the Energy sector's own dials, one draft with the Sectors
+        /// page and one bill (P6-F2b / S9, Elias's ruling: *"the Energy sector's five dials ARE the four instruments ... mapped, not doubled"*), each named
+        /// on this page for the instrument it is, as the ruling names it - not the composition's *Price support*, *Regulated tariffs*, *State-planned new
+        /// capacity*, *Private share of generation* - with the dial table's faces (`V35_ANSWERS.md` §1, Energy): <i>Retail intervention</i> by name
+        /// (None · Today's · Large) with its cost a year (the sector's own *Subsidy* where the book carries no energy line or the stack no levy - it reaches
+        /// none); <i>Market liberalisation</i> as the OECD PMR score (the energy series' mean); <i>Investment planning</i> by name with its cost a year -
+        /// the energy layer does not read it, and its slip says so; <i>State ownership</i> by name. The literal names and the caption keys are the old
+        /// rows' (`EnergyTab/...`). Then the bill's action - the Economic Sectors bill, which these dials travel in (the composition's *energy bill* is
+        /// that bill) - and, kept as built under them, what else reaches the layer: the laws link and the instruments plate.
+        /// </summary>
+        private void DrawEnergyPolicyV35(float width)
+        {
+            Country c = _playerCountry;
+            if (c == null) { return; }
+            Sector energy = null;
+            foreach (Sector sector in c.Sectors) { if (sector.Type == SectorType.Energy) { energy = sector; break; } }
+            if (energy == null || !EnergyLayer.Has(c.Id))
+            {
+                GUILayout.Label("This country carries no energy layer - the six do, and this is not one of them.", _labelStyle);
+                return;
+            }
+            EnsureEnergyCache(c);
+            _dialSlipBookOverride = _energySlipBook;
+            V35.FloorGuarded = true;
+            float gutter = V35.Px(V35.Gutter), tileWidth = V35Span(width, 6), rowHeight = BudgetDialTileHeight(false);
+            float gdp = c.State.NominalGdp;
+            UiPalette.SystemArea area = UiPalette.SystemArea.Energy;
+            bool levied = SectorCouplings.HasEnergyLine(c) && EnergyLedger.HasPolicyLevy(c.Id);
+            bool energyLine = SectorCouplings.HasEnergyLine(c);
+
+            Rect head = DrawEnergySectionHead("Energy dials", "en:dials", width);
+            _energySlipBook.Anchors["en:dials"] = new SlipContent("ENERGY DIALS")
+                .Add("THE ENERGY SECTOR'S OWN DIALS, NAMED HERE FOR THE INSTRUMENTS THEY ARE - ONE DRAFT WITH THE SECTORS PAGE, ONE BILL")
+                .Add("A DIAL THE MODEL HOLDS AS AN INDEX IS SHOWN BY NAME - ITS BANDS' EDGES DECLARED: AUTHORED FOR THE GAME, NOT MEASURED")
+                .Add("RESEARCH GRANTS, THE SECTOR'S FIFTH DIAL, STAYS DESCRIPTIVE AND IS NOT DRAWN HERE");
+
+            // retail intervention - the subsidy's money side
+            Rect row = LawsDialRow(width, rowHeight);
+            System.Func<float, float> subsidyCost = v => SectorCouplings.SupportCost(gdp, v, 50f, 50f);
+            string lands = !energyLine ? "NO ENERGY LINE IN THIS BUDGET: THE SUBSIDY'S COST LANDS WITH THE OTHER SECTORS' SUPPORT, AND IT REACHES NO LEVY"
+                : EnergyLedger.HasPolicyLevy(c.Id)
+                    ? (c.AppliedEnergySupportCost < 0f
+                        ? "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - SUPPORT GIVEN BACK, WHICH THE POLICY LEVY TAKES UP ONE FOR ONE"
+                        : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT, DISPLACING THE POLICY LEVY ONE FOR ONE UNTIL NONE IS LEFT")
+                    : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - NO POLICY LEVY IN THE RETAIL PRICE TO DISPLACE, SO NO RETAIL EFFECT";
+            var retail = new V35DialFace
+            {
+                Icon = "tag", Title = levied ? "Retail intervention" : "Subsidy", Area = area, Stops = DialStops.RetailSupport,
+                Figure = v => CostAYear(subsidyCost(v)),
+                EndLeft = DialStops.RetailSupport.Stops[0].Name, EndRight = DialStops.RetailSupport.Stops[DialStops.RetailSupport.Stops.Length - 1].Name,
+                Census = "ITS COST A YEAR, ZERO AT 50 · " + UiFormat.Number(SectorCouplings.SubsidyBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED · " + lands,
+            };
+            if (levied)
+            {
+                _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Retail intervention",
+                    energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
+                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 sponsored",
+                    new Rect(row.x, row.y, tileWidth, rowHeight), retail, captionKey: "EnergyTab/Retail");
+            }
+            else
+            {
+                // no energy line (Germany) or no policy levy in the stack (the USA): the dial reaches no levy here, so it keeps the sector's own name and captions
+                _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Subsidy",
+                    energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
+                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
+                    new Rect(row.x, row.y, tileWidth, rowHeight), retail, captionKey: "EnergyTab/Subsidy");
+            }
+
+            // market liberalisation - the regulation dial, as the PMR score
+            float pmrAverage = PmrAverage(SectorType.Energy);
+            _sectorRegulationInputs[SectorType.Energy] = DrawDialRow("Market liberalisation",
+                energy.RegulationLevel, GetSectorRegulationInput(SectorType.Energy, energy.RegulationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 liberalised - 100 regulated",
+                new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), new V35DialFace
+                {
+                    Icon = "scales", Title = "Market liberalisation", Area = area,
+                    Figure = v => "PMR " + UiFormat.Number(v * pmrAverage / 50f, 2),
+                    EndLeft = "Liberalised", EndRight = "Regulated",
+                    Census = "THE OECD'S PRODUCT MARKET REGULATION SCORE FOR ELECTRICITY AND GAS - THE SEED'S OWN MAPPING INVERTED (50 × PMR / THE OECD MEAN, "
+                        + UiFormat.Number(pmrAverage, 2) + ") · IT SHIFTS THE SUPPLY MARGIN BETWEEN HOMES AND INDUSTRY (STEINER, OECD 2000) · NO COUNT OF HOMES IS HELD",
+                }, captionKey: "EnergyTab/Liberalisation");
+            GUILayout.Space(gutter);
+
+            // investment planning - the tax credits dial; the energy layer does not read it
+            row = LawsDialRow(width, rowHeight);
+            V35DialFace planning = SupportFace("plan", DialStops.TaxCredits, v => SectorCouplings.SupportCost(gdp, 50f, v, 50f),
+                "THE ENERGY LAYER DOES NOT READ IT - NEW CAPACITY COMES ONLY FROM THE ORDERS ON THE OVERVIEW; IT MOVES THE SECTOR'S OUTPUT AND ITS COST IS THE SECTOR'S TAX CREDIT · "
+                + UiFormat.Number(SectorCouplings.TaxCreditBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED");
+            planning.Title = "Investment planning";
+            planning.Area = area;
+            _sectorTaxCreditInputs[SectorType.Energy] = DrawDialRow("Investment planning",
+                energy.TaxCreditLevel, GetSectorTaxCreditInput(SectorType.Energy, energy.TaxCreditLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 planned",
+                new Rect(row.x, row.y, tileWidth, rowHeight), planning, captionKey: "EnergyTab/Investment");
+
+            // state ownership - the nationalization / deregulation dial
+            V35DialFace ownership = NamedFace("key", DialStops.Ownership,
+                "0 NATIONALISED … 100 DEREGULATED · NO OWNERSHIP TERM IN THE LEDGERS - IT MOVES THE SECTOR'S OUTPUT AND EMPLOYMENT, AND NO SHARE OF GENERATION IS HELD", area);
+            ownership.Title = "State ownership";
+            _sectorDeregulationInputs[SectorType.Energy] = DrawDialRow("State ownership",
+                energy.DeregulationNationalizationLevel, GetSectorDeregulationInput(SectorType.Energy, energy.DeregulationNationalizationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated",
+                new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), ownership, captionKey: "EnergyTab/Ownership");
+            GUILayout.Space(gutter);
+            if (Event.current.type == EventType.Repaint) { _energyDialsLastArea = new Rect(head.x, head.y, width, row.yMax - head.y); }
+
+            // the bill: the Economic Sectors bill, which these dials travel in
+            SectorPolicyBill pending = _simulationManager.GetPendingSectorBill(PlayerCountryId);
+            int drafted = SectorDraftChanges();
+            string status = pending != null
+                ? $"An Economic Sectors bill is before Parliament - resolves in {pending.DaysRemaining} day(s)."
+                : "No Economic Sectors bill before Parliament - these dials travel in it, one draft with the Sectors page.";
+            DrawLawsBillAction(width, "Introduce sectors bill", "en:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
+                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status);
+            V35.FloorGuarded = false;
+            _dialSlipBookOverride = null;
+
+            // ---- kept as built (not in the composition; asked): what else reaches the layer ----
+            DrawEnergySectionHead("What else reaches it", "en:reaches", width);
+            _energySlipBook.Anchors["en:reaches"] = new SlipContent("WHAT ELSE REACHES IT")
+                .Add("THE ONE LAW CATEGORY THAT REACHES THE LAYER, AND THE INSTRUMENTS' READINGS - THE ETS PRICE, EACH DIAL'S REACH, THE CARBON TAX, THE ELECTRICITY TAX")
+                .Add("KEPT AS BUILT UNDER THE NEW PAGE");
+            DrawEnergyPlate(EnergyPlatePart.Reaches);
         }
 
         /// <summary>A change over four quarters on a tile, in the neutral ink - a price or a share of GDP has no direction most agree on.</summary>

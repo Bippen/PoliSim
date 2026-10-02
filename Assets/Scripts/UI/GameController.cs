@@ -10142,26 +10142,6 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceSectorBill/GetPendingSectorBill).</summary>
-        private void DrawSectorBillStatusAndIntroduce()
-        {
-            SectorPolicyBill pendingBill = _simulationManager.GetPendingSectorBill(PlayerCountryId);
-
-            string statusText = pendingBill != null
-                ? $"An Economic Sectors bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Economic Sectors bill currently before Parliament. Introduce your current draft (across every sector) as a bill.";
-            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))
-            {
-                _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts());
-            }
-        }
-
-        /// <summary>
-        /// A bill's call to action as board 6a's button (Design's sighting, 2026-09-21: *"`INTRODUCE ECONOMIC SECTORS BILL` is the old pack's full-width face, not 6a's one-width
-        /// three-face button"*): one row - the bill's status sentence, and at its right the family's ONE-WIDTH action button in the family's own column
-        /// (<see cref="LedgerFamilyColumns"/>), brass *Introduce* when the draft can go to Parliament and the stamped-grey *Pending (NNd)* while one is before it - rendered, never
-        /// omitted, as on every tax and welfare row. The sentence names the bill, so the button does not. One control, always, enabled or not.
-        /// </summary>
         /// <summary>
         /// PS-3c (§630): THE LOCK ON A LEVER. Where the player's party does not lead the government, the call to action is not drawn - the family's caption says
         /// the role and whose the bills are (SimulationManager.PlayerMayIntroduce, the one rule the simulation refuses by). A rect draws the short word in the action's column.
@@ -10177,15 +10157,10 @@ namespace PoliSim.UI
             return true;
         }
 
-        private bool DrawBillCallToAction(string statusText, bool pending, int daysRemaining)
-        {
-            return DrawSentenceAction(statusText, pending ? $"Pending ({daysRemaining}d)" : "Introduce", !pending, pending ? _pendingButtonStyle : _implementButtonStyle) && !pending;
-        }
-
         /// <summary>
         /// §564 (2026-09-22): THE FAMILY'S FORM FOR A CALL TO ACTION, wherever one stands - a sentence saying what the action would do and, at its right, the family's ONE-WIDTH button in
-        /// the family's own column (<see cref="LedgerFamilyColumns"/>), rendered whether enabled or not. `DrawBillCallToAction` is one caller; the fund's create and dissolve, the
-        /// drawdown's introduce and a trade partner's override are the others. The sentence may carry its own ink (a drafted state in the draft's Caution ink).
+        /// the family's own column (<see cref="LedgerFamilyColumns"/>), rendered whether enabled or not. The fund's create and dissolve and the drawdown's introduce are its callers (the
+        /// bills' own call to action and a trade partner's override were callers until the v3.5 Laws and Energy pages, §741 and §748). The sentence may carry its own ink (a drafted state in the draft's Caution ink).
         /// </summary>
         private bool DrawSentenceAction(string sentence, string label, bool enabled, GUIStyle face, Color? sentenceInk = null)
         {

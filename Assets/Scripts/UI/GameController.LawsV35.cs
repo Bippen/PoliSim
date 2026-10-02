@@ -31,6 +31,11 @@ namespace PoliSim.UI
         /// <summary>§737: the Laws page's slips, built each frame as the page draws.</summary>
         private PeopleSlips.Book _lawsSlipBook = new PeopleSlips.Book();
 
+        /// <summary>§748: the book the shared dial tile and the bill's action write their slips into - the Laws page's, unless another page that draws them
+        /// (the Energy page's Policy tab) sets its own for the duration.</summary>
+        private PeopleSlips.Book _dialSlipBookOverride;
+        private PeopleSlips.Book DialSlipBook => _dialSlipBookOverride ?? _lawsSlipBook;
+
         private void DrawPolicyLawsTab(float availableHeight, float availableWidth)
         {
             // P2-1.1: the sheet is sized to the FRAME, not to its content.
@@ -1217,7 +1222,7 @@ namespace PoliSim.UI
             }
             if (!string.IsNullOrEmpty(bandNote)) { slip.Add(bandNote.ToUpperInvariant() + " · THE DIAL EDITS THE STATUTORY BASE"); }
             if (!string.IsNullOrEmpty(trailing) && face.Stops == null && !face.Off) { slip.Add(trailing.ToUpperInvariant()); }
-            _lawsSlipBook.Anchors["dial:" + name] = slip;
+            DialSlipBook.Anchors["dial:" + name] = slip;
             return interactive ? result : draft;
         }
 
@@ -1242,7 +1247,7 @@ namespace PoliSim.UI
                     PoliSimWidgets.MeasuredLabel(new Rect(row.x + V35.Px(24f), row.y, row.width - V35.Px(24f), row.height), V35Fit(lockedBecause, lockFace, row.width - V35.Px(24f), out _), lockFace);
                 }
                 SlipAnchor(row, anchor);
-                _lawsSlipBook.Anchors[anchor] = new SlipContent("LOCKED").Add(lockedBecause.ToUpperInvariant());
+                DialSlipBook.Anchors[anchor] = new SlipContent("LOCKED").Add(lockedBecause.ToUpperInvariant());
             }
             else
             {
@@ -1251,7 +1256,7 @@ namespace PoliSim.UI
                 if (DrawBudgetButton(row, text, changeChip, !pending)) { introduce(); }
                 countX = row.x + BudgetButtonWidth(text, changeChip) + V35.Px(16f);
                 SlipAnchor(new Rect(row.x, row.y, Mathf.Max(1f, countX - row.x - V35.Px(16f)), row.height), anchor);
-                _lawsSlipBook.Anchors[anchor] = new SlipContent(label.ToUpperInvariant()).Add(status.ToUpperInvariant());
+                DialSlipBook.Anchors[anchor] = new SlipContent(label.ToUpperInvariant()).Add(status.ToUpperInvariant());
 
                 // the count the draft would meet today, beside the button
                 bool contested = concern != null && !concern.IsEmpty;
@@ -1289,7 +1294,7 @@ namespace PoliSim.UI
                         countSlip.Add(stance.Party.Abbrev + " " + stance.Seats + " · " + word + (string.IsNullOrEmpty(reason) ? string.Empty : " · " + reason.ToUpperInvariant()));
                     }
                 }
-                _lawsSlipBook.Anchors[anchor + ":count"] = countSlip;
+                DialSlipBook.Anchors[anchor + ":count"] = countSlip;
             }
             GUIStyle statusFace = V35SerifWrapped(V35.Floor, PoliSimTheme.TextSecondary);
             float sh = Mathf.Ceil(statusFace.CalcHeight(new GUIContent(status), width)) + V35.Px(4f);

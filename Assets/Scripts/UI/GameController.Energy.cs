@@ -158,75 +158,6 @@ namespace PoliSim.UI
         /// <summary>P6-F2b (§542): where the instruments' dials were laid out last frame - the film scrolls to them.</summary>
         private Rect _energyDialsLastArea;
 
-        /// <summary>
-        /// The four policy instruments as dials with their range captions, on Elias's ruling (2026-09-21) and the spec-let's S9: *"the Energy
-        /// sector's five dials ARE the four instruments ... mapped, not doubled"*. Each row here IS the Energy sector's dial - the same draft the
-        /// Sectors page's Energy row writes (`_sectorSubsidyInputs` and its three siblings, keyed by `SectorType.Energy`), so a dial moved on
-        /// either page stands moved on the other and there is still no sixth control: two surfaces, one draft, one bill (the Economic Sectors
-        /// bill, introduced from here as from there). What differs is the NAME and the CAPTIONS: on this page a dial is named for the
-        /// instrument it is and its ten bands speak to what the instrument reaches in the energy layer - the levy on the bill, industry's price
-        /// against households' - or, for the two the layer does not read (investment planning, state ownership), to the sector's output, saying
-        /// so. Where the book carries no energy line or the stack no policy levy (Germany, the USA) the subsidy dial reaches no levy, and the
-        /// row keeps the sector's own name and captions rather than promise one. Research grants stays descriptive (S9) and is not drawn.
-        /// </summary>
-        private void DrawEnergyInstrumentDials(Country country)
-        {
-            Sector energy = null;
-            foreach (Sector sector in country.Sectors) { if (sector.Type == SectorType.Energy) { energy = sector; break; } }
-            if (energy == null) { return; }
-
-            GUILayout.Space(StatsUnit(6f));
-            Rect head = GUILayoutUtility.GetRect(10f, Mathf.Ceil(DeskCaptionHeight(DeskCaption(9f, PoliSimTheme.TextSecondary, true))) + StatsUnit(4f), GUILayout.ExpandWidth(true));
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimTheme.Rule(new Rect(head.x, head.y, head.width, 1f), PoliSimTheme.RuleRow);
-                PoliSimWidgets.MeasuredLabel(new Rect(head.x + StatsUnit(4f), head.y + StatsUnit(3f), head.width - StatsUnit(8f), head.height - StatsUnit(3f)),
-                    "THE FOUR INSTRUMENTS AS DIALS · THE ENERGY SECTOR'S OWN - ONE DRAFT WITH THE SECTORS PAGE, ONE BILL", DeskCaption(9f, PoliSimTheme.TextSecondary, true, TextAnchor.MiddleLeft));
-            }
-            float top = head.y;
-
-            // ONE PITCH FOR ONE NAME ON ONE PAGE (Design's sighting, 2026-09-21: the dial rows' names sat at the body face while the readout rows above carry the same four names at
-            // the plate's pitch). The dials keep D13's row - its height, columns, track and caption band are the label face's - and take the page's own name face and name lane:
-            // the plate's `DeskBody(12.5)` and its four-unit pad, the same two figures `DrawStatPlate` draws its row names with.
-            GUIStyle nameFace = DeskBody(12.5f, PoliSimTheme.TextPrimary);
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(StatsUnit(4f));
-            GUILayout.BeginVertical();
-            bool levied = SectorCouplings.HasEnergyLine(country) && EnergyLedger.HasPolicyLevy(country.Id);
-            if (levied)
-            {
-                _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Retail intervention",
-                    energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
-                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 sponsored", captionKey: "EnergyTab/Retail", nameFace: nameFace);
-            }
-            else
-            {
-                // no energy line (Germany) or no policy levy in the stack (the USA): the dial reaches no levy here, so it keeps the sector's own name and captions
-                _sectorSubsidyInputs[SectorType.Energy] = DrawDialRow("Subsidy",
-                    energy.SubsidyLevel, GetSectorSubsidyInput(SectorType.Energy, energy.SubsidyLevel),
-                    MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: "EnergyTab/Subsidy", nameFace: nameFace);
-            }
-
-            _sectorRegulationInputs[SectorType.Energy] = DrawDialRow("Market liberalisation",
-                energy.RegulationLevel, GetSectorRegulationInput(SectorType.Energy, energy.RegulationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 liberalised - 100 regulated", captionKey: "EnergyTab/Liberalisation", nameFace: nameFace);
-
-            _sectorTaxCreditInputs[SectorType.Energy] = DrawDialRow("Investment planning",
-                energy.TaxCreditLevel, GetSectorTaxCreditInput(SectorType.Energy, energy.TaxCreditLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 none - 100 planned", captionKey: "EnergyTab/Investment", nameFace: nameFace);
-
-            _sectorDeregulationInputs[SectorType.Energy] = DrawDialRow("State ownership",
-                energy.DeregulationNationalizationLevel, GetSectorDeregulationInput(SectorType.Energy, energy.DeregulationNationalizationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: "EnergyTab/Ownership", nameFace: nameFace);
-
-            // the dials travel in the Economic Sectors bill - its status and the way to introduce it, here as on the Sectors page
-            DrawSectorBillStatusAndIntroduce();
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
-            Rect last = GUILayoutUtility.GetLastRect();
-            if (Event.current.type == EventType.Repaint) { _energyDialsLastArea = new Rect(head.x, top, head.width, Mathf.Max(1f, last.yMax - top)); }
-        }
-
         private const string AbsentLoadGrowth = "THE LOAD DOES NOT GROW WITH GDP OR ELECTRIFICATION · STATED, NOT MODELLED";
 
         /// <summary>The tab's own scroll position - a new field is picked up by the film driver's scroll reflection without a driver edit.</summary>
@@ -390,11 +321,9 @@ namespace PoliSim.UI
                 instruments.Add(new PlateRow("Electricity tax", "EUR PER MWh", "NO FEDERAL ELECTRICITY EXCISE FOR " + countryUpper, "absent",
                     PlateBand.Absent, 0f, 1f, -1f, null, true, new[] { "THE LAWS ARE NOT OFFERED" }, null, new[] { "ABSENT · STATED" }, false, "THE STATES LEVY THEIR OWN GROSS-RECEIPTS TAXES · NO NATIONAL STATUTE FOR THIS HOUSE TO MOVE"));
             }
-            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - FOUR OF THEM SET BELOW, THE SAME DRAFT AS THE SECTORS PAGE'S, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
+            string foot4 = "THE ENERGY SECTOR'S FIVE DIALS ARE THE INSTRUMENTS FROM RETAIL INTERVENTION TO RESEARCH GRANTS - FOUR OF THEM THE TILES ABOVE, THE SAME DRAFT AS THE SECTORS PAGE'S, NO SIXTH CONTROL · THE ETS PRICE IS THE MARKET'S, THE CARBON TAX A BUDGET ROW, THE ELECTRICITY TAX THE LAWS' · WHAT EACH REACHES IS ITS CHIP · WHAT THE LAYER LACKS IS DRAWN AS ABSENT WHERE THE QUANTITY WOULD SIT";
             // §569: WHAT ELSE REACHES IT closes the page - the laws chip at the head of the instrument readouts, as Design's order puts it; the dials themselves are
             // with the decisions at the top, because moving one is a decision and reading one is not.
-            GUILayout.Space(StatsUnit(8f));
-            DrawStatsSectionCaption("WHAT ELSE REACHES IT");
             DrawEnergyLawsLink(country);          // P6-F2c (§543): the one law category that reaches the layer, at the head of the rows its laws move
             _energyInstrumentsLastArea = DrawPlateRows(instruments, areaInk, foot4, false, row => null);
             }
