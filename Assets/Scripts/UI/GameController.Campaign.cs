@@ -150,7 +150,7 @@ namespace PoliSim.UI
         {
             if (_simulationManager == null || _playerCountry == null) { return null; }
             if (_simulationManager.PlayerCampaign == null && _simulationManager.PlayerPreCampaign == null) { return null; }
-            double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
+            double perceived = EconomicVote.RecordTermIndex(_playerCountry, _simulationManager.CurrentDate);   // §752 (A1): what the election scores - the change over the term
             // CL-1: the run-up fills the same screen from the pre-campaign's state until the campaign opens on its outcome.
             if (_simulationManager.PlayerCampaign == null)
             {
@@ -171,7 +171,7 @@ namespace PoliSim.UI
         {
             // a map left open when its campaign is gone (the run dropped after polling day, a load) closes rather than freezing
             if (_simulationManager?.PlayerCampaign == null || _playerCountry == null || !CampaignMapDrawn()) { CloseLiveCampaignMap(); return; }
-            double perceived = PerceivedPerformance.Perceived(_playerCountry, null).Index;
+            double perceived = EconomicVote.RecordTermIndex(_playerCountry, _simulationManager.CurrentDate);   // §752 (A1): what the election scores - the change over the term
             CampaignMapSnapshot? map = LiveCampaignSnapshot.BuildMap(_simulationManager.PlayerCampaign, _playerCountry, perceived, _simulationManager.CampaignRecord, CampaignPick());
             if (!map.HasValue) { CloseLiveCampaignMap(); return; }
             _campaignMapScreen = map;
@@ -483,7 +483,7 @@ namespace PoliSim.UI
                 nameStyle, figureStyle);
             y += rowHeight;
 
-            DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Perceived economy",
+            DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Economy over the term",   // §752 (A1): the change since the government took office, what the election scores
                 string.Format(CultureInfo.InvariantCulture, "{0:F0} / 100", s.PerceivedEconomyIndex),
                 nameStyle, figureStyle);
             y += rowHeight;

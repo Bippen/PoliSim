@@ -6,8 +6,9 @@ namespace PoliSim.Elections
 {
     /// <summary>
     /// W-A5 / SPEC §19 — **the vote model reads PERCEIVED government performance, not actual.**
-    /// PURE FUNCTIONS (R-N2). Since PS-3k (§638) <see cref="Perceived"/> IS read: the government's record in the player's election
-    /// (EconomicVote) takes its index; the incumbency multiplier below stays wired to nothing.
+    /// PURE FUNCTIONS (R-N2). Since PS-3k (§638) the government's record in the player's election (EconomicVote) reads it - and since §752
+    /// (Elias's ruling A1) it reads <see cref="OverTerm"/>, the CHANGE since the government took office, never <see cref="Perceived"/>'s levels;
+    /// <see cref="Perceived"/> stays the level reading the published-against-true comparison prints. The incumbency multiplier stays wired to nothing.
     ///
     /// The spec asks for a difference between "Actual Economy" and "Perceived Economy". The gap
     /// table found that half of this already exists and is the game's most under-used asset:
@@ -27,8 +28,9 @@ namespace PoliSim.Elections
     ///
     /// **[AUTHORED-DRAFT] constants** (R-N4; logged one line each in the prototype log, all
     /// strikeable, all to be calibrated by play rather than argued about now):
-    /// - `UnemploymentNeutral = 6.0` %, `UnemploymentSpan = 6.0` — 6 % reads neutral; 0 % reads 100,
-    ///   12 % reads 0. A band wide enough that ordinary movement does not saturate the index.
+    /// - `UnemploymentNeutral = 6.0` %, `UnemploymentSpan = 6.0` — 6 % reads neutral; 3 % reads 100,
+    ///   9 % reads 0 (the score saturates half a span either side - corrected at §752, the line read "0 % ... 12 %"); the term's
+    ///   reading (§752) scores a CHANGE on the same span, so a move of 3 points either way saturates it.
     /// - `InflationNeutral = 2.0` %, `InflationSpan = 6.0` — 2 % neutral (the target most central
     ///   banks in the model actually run), and **deviation in EITHER direction is punished**:
     ///   deflation is not a bonus, which a naive lower-is-better mapping would wrongly imply.
@@ -148,6 +150,83 @@ namespace PoliSim.Elections
             int used = actualGrowthPct.HasValue ? 3 : 2;
             double sum = unemploymentScore + inflationScore + (actualGrowthPct.HasValue ? growthScore : 0.0);
             return new Reading(sum / used, unemploymentScore, inflationScore, growthScore, used, true, true, true);
+        }
+
+        /// <summary>§752: one component of the term's reading - its value when the government took office and on the day it is judged, or null where none was published.</summary>
+        public readonly struct TermValues
+        {
+            public readonly double? Then, Now;
+            public readonly DateTime ThenPeriod, NowPeriod;
+            public TermValues(double? then, DateTime thenPeriod, double? now, DateTime nowPeriod) { Then = then; ThenPeriod = thenPeriod; Now = now; NowPeriod = nowPeriod; }
+            public bool Complete => Then.HasValue && Now.HasValue;
+        }
+
+        /// <summary>§752: the term's reading - the index the election scores, the date the government took office, the day it is judged, and each component's two values.</summary>
+        public readonly struct TermReading
+        {
+            public readonly Reading Reading;
+            public readonly DateTime TookOffice, AsOf;
+            public readonly TermValues Unemployment, Inflation;
+            public TermReading(Reading reading, DateTime tookOffice, DateTime asOf, TermValues unemployment, TermValues inflation)
+            {
+                Reading = reading; TookOffice = tookOffice; AsOf = asOf; Unemployment = unemployment; Inflation = inflation;
+            }
+            public double Index => Reading.Index;
+        }
+
+        /// <summary>
+        /// §752 (Elias's ruling A1, 2026-10-02): **ELECTIONS SCORE THE CHANGE OVER THE GOVERNMENT'S TERM, NEVER LEVELS** - the election-day value minus
+        /// the value when it took office. Each component is its series' value on the day the government is judged (the latest figure published BEFORE
+        /// <paramref name="asOf"/>: what the electorate had in hand, a print released that day not counted) against its value for the period the
+        /// government took office in (the newest figure for the latest reference period starting on or before <paramref name="tookOffice"/>, as
+        /// published before <paramref name="asOf"/>). The change is scored on the level reading's own spans around a neutral of NO change - no new
+        /// number: unemployment a point lower is better by the same 50 / 3 a point; inflation's value is its distance from 2 % as the level reading
+        /// defines it, so a fall toward the target is better and a slide into deflation is not a bonus. Growth stays out, as every caller left it.
+        /// A component with no figure at either end drops out of the average; none left reads the neutral 50. Read only from `Published` and only
+        /// as of a date. A judgement the count reads is stored on the campaign record and never re-made on a replay
+        /// (`PlayerCampaignRecord.CountRecordShift`): the government and the chamber it is weighed on are not dated.
+        /// </summary>
+        public static TermReading OverTerm(Country country, DateTime tookOffice, DateTime asOf)
+        {
+            TermValues u = Term(country, PublishedStat.Unemployment, tookOffice, asOf);
+            TermValues p = Term(country, PublishedStat.Inflation, tookOffice, asOf);
+            double sum = 0.0, unemploymentScore = 0.0, inflationScore = 0.0;
+            int used = 0;
+            if (u.Complete)
+            {
+                unemploymentScore = LowerIsBetter(u.Now.Value - u.Then.Value, 0.0, UnemploymentSpan);
+                sum += unemploymentScore; used++;
+            }
+            if (p.Complete)
+            {
+                inflationScore = LowerIsBetter(Math.Abs(p.Now.Value - InflationNeutral) - Math.Abs(p.Then.Value - InflationNeutral), 0.0, InflationSpan);
+                sum += inflationScore; used++;
+            }
+            var reading = new Reading(used > 0 ? sum / used : 50.0, unemploymentScore, inflationScore, 0.0, used, u.Now.HasValue, p.Now.HasValue, false);
+            return new TermReading(reading, tookOffice, asOf, u, p);
+        }
+
+        private static TermValues Term(Country country, PublishedStat stat, DateTime tookOffice, DateTime asOf)
+        {
+            if (!country.Published.Series.TryGetValue(stat, out PublishedSeries series)) { return new TermValues(null, DateTime.MinValue, null, DateTime.MinValue); }
+            PublishedEntry now = null;
+            DateTime thenPeriod = DateTime.MinValue;
+            foreach (PublishedEntry e in series.Entries)
+            {
+                if (e.PublicationDate >= asOf) { continue; }
+                if (now == null || e.PublicationDate >= now.PublicationDate) { now = e; }
+                if (e.ReferencePeriodStart <= tookOffice && e.ReferencePeriodStart > thenPeriod) { thenPeriod = e.ReferencePeriodStart; }
+            }
+            PublishedEntry then = null;
+            if (thenPeriod != DateTime.MinValue)
+            {
+                foreach (PublishedEntry e in series.Entries)
+                {
+                    if (e.PublicationDate >= asOf || e.ReferencePeriodStart != thenPeriod) { continue; }
+                    if (then == null || e.PublicationDate >= then.PublicationDate) { then = e; }
+                }
+            }
+            return new TermValues(then?.Value, thenPeriod, now?.Value, now?.ReferencePeriodStart ?? DateTime.MinValue);
         }
 
         /// <summary>The incumbent's multiplier from a performance index: 1 ± <see cref="IncumbentSwingSpan"/> at the extremes, 1.0 at a neutral 50.</summary>

@@ -6652,8 +6652,8 @@ namespace PoliSim.UI
                         + string.Join(" ", System.Array.ConvertAll(tactical.Preference, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
                 }
             }
-            // PS-3k (§638, ruled): with no campaign the prediction reads the government's record on polling day; a campaign's shares already carry it.
-            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty, EconomicVote.RecordShiftOf(_playerCountry, PerceivedPerformance.Perceived(_playerCountry, null).Index),
+            // PS-3k (§638, ruled): with no campaign the prediction reads the government's record on polling day - over its term (§752, A1); a campaign's shares already carry it.
+            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty, EconomicVote.RecordOverTerm(_playerCountry, _simulationManager.CurrentDate, out _),
                     on: _simulationManager.CurrentDate))   // PS-4 (§688): the day it is held, so Germany derives its Länder on the chamber then seated
             {
                 _playerCountry.ElectionHistory.Add(new ElectionRecord

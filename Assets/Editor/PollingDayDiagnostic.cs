@@ -91,6 +91,7 @@ namespace PoliSim.EditorTools
                     var none = new System.Collections.Generic.Dictionary<CountryId, PolicyDecision>();
                     foreach (Country c in world.Countries) { none[c.Id] = PolicyDecision.None(); }
                     int flagged = 0, flaggedOn = -1; DateTime flaggedDate = DateTime.MinValue; bool runUpBegun = false, campaignResultOnPollingDay = false; DateTime recordDate = DateTime.MinValue;
+                    int countJudged = -1, openingJudged = -1;   // §752: the record judged at the opening and again for the count, both stored on the record
                     for (int day = 1; day <= 365; day++)
                     {
                         if (sim.AdvanceDay()) { sim.AdvanceTurn(none); }
@@ -100,11 +101,14 @@ namespace PoliSim.EditorTools
                             flagged++; flaggedOn = day; flaggedDate = sim.CurrentDate;
                             campaignResultOnPollingDay = sim.PlayerCampaignResult != null && sim.CampaignRecord != null && sim.CampaignRecord.ElectionDate == sim.CurrentDate;
                             recordDate = sim.CampaignRecord != null ? sim.CampaignRecord.ElectionDate : DateTime.MinValue;
+                            countJudged = sim.CampaignRecord?.CountRecordShift?.Count ?? -1;
+                            openingJudged = sim.CampaignRecord?.RecordShift?.Count ?? -1;
                         }
                     }
                     Check(runUpBegun, "the run-up begins on the first advanced day (the pre-campaign is live)");
                     Check(flagged == 1 && flaggedDate == new DateTime(2026, 9, 13) && flaggedOn == 238, F("PollingDayToday was raised {0} time(s) in the first year - on day {1}, {2:yyyy-MM-dd}", flagged, flaggedOn, flaggedDate));
                     Check(campaignResultOnPollingDay, F("on polling day the campaign that ran up to it has a result, its record's election {0:yyyy-MM-dd}", recordDate));
+                    Check(openingJudged > 0 && countJudged > 0, F("§752: the government's record judged at the campaign's opening ({0} part(y/ies)) and again for the count, stored for a replay ({1})", openingJudged, countJudged));
                     Check(sim.TryPlayerPollingDay(out DateTime next) && next == new DateTime(2030, 9, 8), F("after the year the manager offers {0:yyyy-MM-dd}", next));
                     Check(sim.PlayerCampaign == null, "the 2026 campaign's running state was dropped once its polling day had passed");
                 }

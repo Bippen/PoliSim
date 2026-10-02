@@ -12,7 +12,9 @@ namespace PoliSim.Elections
     /// of days stepped, `SimulationManager.RestoreCampaign` rebuilds the same Setup from the runtime
     /// tables, rewinds the three streams to these counts, steps the same days and lands on the same
     /// state - and on the same draw counts the save recorded, which it asserts. The replay is the
-    /// harness's own reproducibility proof (`CampaignAiHarness` 1a) used as a save format.
+    /// harness's own reproducibility proof (`CampaignAiHarness` 1a) used as a save format. What the
+    /// runtime tables cannot rebuild is stored: the government's record judged at the opening
+    /// (<see cref="RecordShift"/>) and for the count (<see cref="CountRecordShift"/>, §752).
     /// </summary>
     [Serializable]
     public class PlayerCampaignRecord
@@ -31,8 +33,16 @@ namespace PoliSim.Elections
         /// </summary>
         public int PreCampaignDays;
         public int PreCampaignDaysStepped;
-        /// <summary>PS-3k (§638): the government's record as each party's vote-share shift, judged once at the campaign's opening and replayed from here - a load rebuilds the same campaign (save format 34).</summary>
+        /// <summary>PS-3k (§638): the government's record as each party's vote-share shift, judged at the campaign's opening and replayed from here for every day
+        /// but the count's - a load rebuilds the same campaign (save format 34). Since §752 judged over the government's term (Elias's ruling A1).</summary>
         public Dictionary<string, double> RecordShift;
+        /// <summary>
+        /// §752 (Elias's ruling A1: the ELECTION-DAY value): the record judged again for the campaign's last day - the day the count is taken from - as it
+        /// was judged live, stored the moment it is, so a load replays the count on it and never re-judges it on a government or a chamber the save holds
+        /// later (the review's defect 1: a support withdrawn on the eve, then a load, would have moved the count). ADDITIVE: null on a record that has not
+        /// reached that day, and on one written before §752 - which replays its last day on <see cref="RecordShift"/>, as the build that wrote it did.
+        /// </summary>
+        public Dictionary<string, double> CountRecordShift;
         /// <summary>The three campaign streams' draw counts the moment the campaign began - the replay's rewind point.</summary>
         public Dictionary<SimulationRandom.Stream, int> DrawCountsAtStart = new Dictionary<SimulationRandom.Stream, int>();
 

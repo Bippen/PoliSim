@@ -177,6 +177,13 @@ namespace PoliSim.EditorTools
                 failures += Assert(sb, "5. P-A2: PerceivedPerformance.Perceived reads country.Published and never country.State (the display cut changes nothing the election model reads)",
                     perceivedBody.Contains(".Published") && !perceivedBody.Contains(".State."),
                     $"Perceived's body: Published {(perceivedBody.Contains(".Published") ? "read" : "NOT read")}, State {(perceivedBody.Contains(".State.") ? "READ" : "not read")}");
+                // 5b. §752 (A1): the election reads OverTerm now - the same guard over it and the series reader it calls
+                int termStart = modelSource.IndexOf("public static TermReading OverTerm(", StringComparison.Ordinal);
+                int termEnd = modelSource.IndexOf("public static double IncumbentMultiplier(", StringComparison.Ordinal);
+                string termBody = termStart >= 0 && termEnd > termStart ? modelSource.Substring(termStart, termEnd - termStart) : "";
+                failures += Assert(sb, "5b. §752: PerceivedPerformance.OverTerm (the term's reading the election scores) and its series reader read country.Published and never country.State",
+                    termBody.Contains(".Published") && !termBody.Contains(".State."),
+                    $"OverTerm's body: Published {(termBody.Contains(".Published") ? "read" : "NOT read")}, State {(termBody.Contains(".State.") ? "READ" : "not read")}");
             }
             finally
             {

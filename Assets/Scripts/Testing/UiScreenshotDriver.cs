@@ -4243,8 +4243,8 @@ namespace PoliSim.Testing
         /// error come out of that draw; momentum is a real <see cref="MomentumTracker"/> shock
         /// decayed on §22's half-life; every queued action's cost is read from
         /// <see cref="CampaignActions.Spec"/>; the legality list is
-        /// <see cref="CampaignLegality.LegalActions"/>; the perceived-economy index is
-        /// <see cref="PerceivedPerformance.Perceived"/> read off the LIVE warmed-up country. The war
+        /// <see cref="CampaignLegality.LegalActions"/>; the economy reading (§752: over the term, what the election scores) is
+        /// <see cref="EconomicVote.RecordTermIndex"/> read off the LIVE warmed-up country. The war
         /// chest, the volunteer counts and the office upkeep are [AUTHORED-DRAFT] staging (W-F5 will
         /// source real party finances) and no figure here is a spec illustration.
         ///
@@ -4299,10 +4299,10 @@ namespace PoliSim.Testing
         private IEnumerator CaptureElectionNightFromModel(GameController controller)
         {
             // PS-3k (§638): the model's night reads the government's record as play's polling day does with no campaign - the loaded or warmed game's
-            // Sweden, its perceived economy today; a harness with no game in hand predicts without it, and says so.
+            // Sweden, its record over the term today (§752); a harness with no game in hand predicts without it, and says so.
             var modelSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
             Country modelCountry = modelSim?.World?.GetCountry(CountryId.Sweden);
-            Dictionary<string, double> modelRecord = modelCountry != null ? EconomicVote.RecordShiftOf(modelCountry, PerceivedPerformance.Perceived(modelCountry, null).Index) : null;
+            Dictionary<string, double> modelRecord = modelCountry != null ? EconomicVote.RecordOverTerm(modelCountry, modelSim.CurrentDate, out _) : null;   // §752 (A1): over the term
             Debug.Log(modelRecord == null ? "SHOT: F1 - no game in hand, the model's night is predicted WITHOUT the government's record." : "SHOT: F1 - the model's night reads the government's record: " + string.Join(", ", System.Linq.Enumerable.Select(modelRecord, kv => kv.Key + " " + (kv.Value * 100.0).ToString("+0.00;-0.00", CultureInfo.InvariantCulture) + " pp")));
             if (!NationalElection.TryPredictShares(CountryId.Sweden, out _, modelRecord))
             {
@@ -5047,7 +5047,7 @@ namespace PoliSim.Testing
             yield return CaptureCoalitionScreen(controller);
 
             Debug.Log($"SHOT: Campaign HQ - poll drawn by PollingSystem.Conduct against the SOURCED Sweden 2022 vector " +
-                      $"(seed {CampaignFilmSeed}); perceived economy {perceived:F1}/100 read off the live country; " +
+                      $"(seed {CampaignFilmSeed}); economy over the term {perceived:F1}/100 read off the live country; " +
                       "war chest, volunteers and office upkeep are [AUTHORED-DRAFT] staging (W-F5 sources party finances).");
             Debug.Log($"SHOT: campaign done, {_captured} captured, {_failed} failed.");
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
@@ -5677,18 +5677,19 @@ namespace PoliSim.Testing
         }
 
         /// <summary>§19's index off the LIVE warmed-up country — the one figure on the screen that
-        /// comes from the running game rather than from staging.</summary>
+        /// comes from the running game rather than from staging. §752 (A1): the term's reading, the row's own figure now.</summary>
         private double ReadPerceivedEconomy(GameController controller)
         {
             FieldInfo simField = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic);
-            Country player = (simField?.GetValue(controller) as SimulationManager)?.World?.GetCountry(_countryId);
+            var sim = simField?.GetValue(controller) as SimulationManager;
+            Country player = sim?.World?.GetCountry(_countryId);
             if (player == null)
             {
-                Debug.LogError("SHOT: the live country could not be read - the perceived-economy figure would be invented, so the pass fails rather than guessing.");
+                Debug.LogError("SHOT: the live country could not be read - the economy-over-the-term figure would be invented, so the pass fails rather than guessing.");
                 return double.NaN;
             }
 
-            return PerceivedPerformance.Perceived(player, null).Index;
+            return EconomicVote.RecordTermIndex(player, sim.CurrentDate);
         }
 
         /// <summary>The ladder's kinds, in the order they are filmed - one capture each, named `ladder_{kind}`.</summary>

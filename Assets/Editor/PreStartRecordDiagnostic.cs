@@ -23,7 +23,14 @@ namespace PoliSim.EditorTools
     /// BEFORE (the two series emptied, as every start had them) and AFTER - printed. At the opening the publication calendar is stepped day by day
     /// over the seed's state (the game's own prints carry the seed economy's values, not a played one's - stated where they are the latest).
     /// (c) Germany 2025 and Sweden 2026: the vote model's prediction with the government's record applied as judged at the opening, before and
-    /// after, beside the plain prediction the backtests print - printed, nothing tuned.
+    /// after, beside the plain prediction the backtests print - printed, nothing tuned; and since §752 (Elias's ruling A1) with the record judged
+    /// OVER THE TERM for the count, as play now judges it.
+    /// (d) §752: the term's reading at the opening and for the count, and the day the government took office - the two starts' asserted, and
+    /// `EconomicVote.TookOffice` on planted governments, one per branch today's records can show, each failing without it: the walk over a
+    /// partner's exit; the stop at the election that opened the term (a caretaker after it); the clamp to that election (an outgoing government of
+    /// record, a president's lame weeks); a stand-in seated after it; the outcome gate; the head's party gate; a stand-in taking its record head's
+    /// day (Poland's PiS, no walk); the midterm that opens no president's term - asserted. (The same-person test is masked on today's records: an
+    /// election falls between every change of head - the fourth review's note.)
     /// </summary>
     public static class PreStartRecordDiagnostic
     {
@@ -35,6 +42,10 @@ namespace PoliSim.EditorTools
             public PerceivedPerformance.Reading AtStart, AtOpening;
             public string LatestAtStart, LatestAtOpening;
             public Dictionary<string, double> Shift;
+            // §752 (A1): the record over the term - at the campaign's opening and for the count, the government's took-office day
+            public DateTime? TookOffice, CountDay;
+            public PerceivedPerformance.TermReading TermAtOpening, TermAtCount;
+            public Dictionary<string, double> TermShiftOpening, TermShiftCount;
             public int SeededUnemployment, SeededInflation;
             public string FirstLast;
             public bool NothingOnOrAfterStart, ValuesTheTable;
@@ -85,6 +96,7 @@ namespace PoliSim.EditorTools
                 var order = new[] { CountryId.Germany, CountryId.Sweden, CountryId.USA, CountryId.Italy, CountryId.Poland, CountryId.France };
                 var shiftAfter = new Dictionary<CountryId, Dictionary<string, double>>();
                 var shiftBefore = new Dictionary<CountryId, Dictionary<string, double>>();
+                var measuredAfter = new Dictionary<CountryId, Measured>();
                 foreach (CountryId id in order)
                 {
                     using (SimulationManager.EpochScope())
@@ -94,7 +106,7 @@ namespace PoliSim.EditorTools
                         DateTime opens = PublicationSystem.PreStartWindowOpens(id, start);
                         Measured before = Measure(id, start, seeded: false);
                         Measured after = Measure(id, start, seeded: true);
-                        shiftBefore[id] = before.Shift; shiftAfter[id] = after.Shift;
+                        shiftBefore[id] = before.Shift; shiftAfter[id] = after.Shift; measuredAfter[id] = after;
                         Check(after.NothingOnOrAfterStart && after.ValuesTheTable && (opens == DateTime.MinValue || after.SeededUnemployment > 0 || start < opens.AddDays(40)),
                             F("(b) {0}: start {1:yyyy-MM-dd}, the term opened {2} - {3} unemployment and {4} inflation month(s) seeded{5}; none published on or after the start, every figure the table's",
                                 id, start, opens == DateTime.MinValue ? "(no election of record before it)" : opens.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
@@ -109,9 +121,53 @@ namespace PoliSim.EditorTools
                     }
                 }
 
-                // (c) the predictions with the record, Germany 2025 and Sweden 2026
-                Predict(sb, CountryId.Germany, ElectionVintage.Germany2025, "2025", shiftBefore[CountryId.Germany], shiftAfter[CountryId.Germany]);
-                Predict(sb, CountryId.Sweden, ElectionVintage.Sweden2026, "2026", shiftBefore[CountryId.Sweden], shiftAfter[CountryId.Sweden]);
+                // (d) §752 (Elias's ruling A1): the record over the government's TERM - the day it took office (the record's head walked back),
+                // the change from then to the opening and to the count; the two the record gives asserted
+                foreach (CountryId id in order)
+                {
+                    Measured m = measuredAfter[id];
+                    if (m.Opening == DateTime.MinValue) { continue; }
+                    sb.Append(F("    read      {0} (A1) AT ITS CAMPAIGN'S OPENING {1:yyyy-MM-dd}: {2} -> {3}\n", id, m.Opening, EconomicVote.Describe(m.TermAtOpening), Shifts(m.TermShiftOpening)));
+                    sb.Append(F("    read      {0} (A1) FOR THE COUNT {1:yyyy-MM-dd}: {2} -> {3}\n", id, m.CountDay, EconomicVote.Describe(m.TermAtCount), Shifts(m.TermShiftCount)));
+                }
+                Check(measuredAfter[CountryId.Germany].TookOffice == new DateTime(2021, 12, 8),
+                    F("(d) Germany's government took office {0:yyyy-MM-dd} - Scholz's; the start sits in his first row, no walk (the planted minority below walks)", measuredAfter[CountryId.Germany].TookOffice));
+                Check(measuredAfter[CountryId.Sweden].TookOffice == new DateTime(2022, 10, 18),
+                    F("(d) Sweden's government took office {0:yyyy-MM-dd} - Kristersson's, 2022-10-18", measuredAfter[CountryId.Sweden].TookOffice));
+                // (d) the walk-back itself, on planted governments (the first review's defect 3: no start reaches it), where it must stop - at the latest
+                // election, by election day (the second review's defect 1) - and every branch proven by a plant that fails without it (its defect 2)
+                DateTime? Took(CountryId id, DateTime formed, string pm, string outcome, bool provisional, WorldClock.ExecutiveKind kind = WorldClock.ExecutiveKind.Cabinet)
+                {
+                    using (SimulationManager.EpochScope())
+                    {
+                        WorldClock.ApplyStart(id);
+                        Country c = WorldFactory.CreateDefault().GetCountry(id);
+                        c.Government = new GovernmentRecord { FormedOn = formed, PmParty = pm, Outcome = outcome, Provisional = provisional, Kind = kind };
+                        return EconomicVote.TookOffice(c);
+                    }
+                }
+                DateTime? scholzMinority = Took(CountryId.Germany, new DateTime(2024, 11, 7), "SPD", "of record", false);
+                Check(scholzMinority == new DateTime(2021, 12, 8), F("(d) planted: Scholz's minority of record from 2024-11-07 took office {0:yyyy-MM-dd} - walked back to 2021-12-08 over the FDP's exit (the walk)", scholzMinority));
+                DateTime? caretaker = Took(CountryId.Sweden, new DateTime(2026, 9, 17), "M", "of record", false);
+                Check(caretaker == new DateTime(2026, 9, 17), F("(d) planted: Kristersson's caretaker of record from 2026-09-17 took office {0:yyyy-MM-dd} - the 2026-09-13 election stops the walk short of 2022-10-18 (the of-record stop)", caretaker));
+                DateTime? window = Took(CountryId.Germany, new DateTime(2025, 3, 25), "SPD", "of record", false);
+                Check(window == new DateTime(2025, 2, 23), F("(d) planted: Scholz's minority of record in an epoch of 2025-03-25, after the election and before Merz, measured from {0:yyyy-MM-dd} - the 2025-02-23 election, where §709's seed opens (the clamp)", window));
+                DateTime? standIn = Took(CountryId.Sweden, new DateTime(2026, 10, 1), "M", "the formation's", true);
+                Check(standIn == new DateTime(2026, 10, 1), F("(d) planted: an M-led stand-in seated after the 2026-09-13 election on 2026-10-01 took office {0:yyyy-MM-dd} - its own, never the outgoing term (the stand-in's stop)", standIn));
+                DateTime? formedInPlay = Took(CountryId.Germany, new DateTime(2025, 4, 30), "SPD", "formed", false);
+                Check(formedInPlay == new DateTime(2025, 4, 30), F("(d) planted: an SPD government formed in play on 2025-04-30, the record's head's party, took office {0:yyyy-MM-dd} - its own formation day (the outcome gate)", formedInPlay));
+                DateTime? biden = Took(CountryId.USA, new DateTime(2024, 3, 12), "DEM", "of record", false, WorldClock.ExecutiveKind.Presidency);
+                Check(biden == new DateTime(2021, 1, 20), F("(d) planted: Biden's presidency of record at 2024-03-12 took office {0:yyyy-MM-dd} - the 2022 midterm opens no president's term (§709's window: the presidential election)", biden));
+                DateTime? lameDuck = Took(CountryId.USA, new DateTime(2025, 1, 10), "DEM", "of record", false, WorldClock.ExecutiveKind.Presidency);
+                Check(lameDuck == new DateTime(2024, 11, 5), F("(d) planted: Biden of record in an epoch of 2025-01-10, after his successor's election, measured from {0:yyyy-MM-dd} - the 2024-11-05 election, where §709's seed opens (the third review's lame weeks)", lameDuck));
+                DateTime? polandStandIn = Took(CountryId.Poland, new DateTime(2023, 2, 19), "PiS", "the formation's", true);
+                Check(polandStandIn == new DateTime(2019, 11, 15), F("(d) planted: Poland's PiS stand-in at its 2023-02-19 start took office {0:yyyy-MM-dd} - the record's head (Morawiecki) from 2019-11-15 (the stand-in branch of the gate)", polandStandIn));
+                DateTime? otherParty = Took(CountryId.Germany, new DateTime(2024, 11, 7), "CDU", "of record", false);
+                Check(otherParty == new DateTime(2024, 11, 7), F("(d) planted: a CDU government of record on 2024-11-07, where the record's head is the SPD's, took office {0:yyyy-MM-dd} - its own day, never Scholz's (the head's party gate)", otherParty));
+
+                // (c) the predictions with the record, Germany 2025 and Sweden 2026 - and §752's: over the term, for the count (Germany's vote gap re-run)
+                Predict(sb, CountryId.Germany, ElectionVintage.Germany2025, "2025", shiftBefore[CountryId.Germany], shiftAfter[CountryId.Germany], measuredAfter[CountryId.Germany].TermShiftCount);
+                Predict(sb, CountryId.Sweden, ElectionVintage.Sweden2026, "2026", shiftBefore[CountryId.Sweden], shiftAfter[CountryId.Sweden], measuredAfter[CountryId.Sweden].TermShiftCount);
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { EnergyMarket.ResetTurnState(); }
@@ -157,6 +213,12 @@ namespace PoliSim.EditorTools
                 m.AtOpening = PerceivedPerformance.Perceived(country, null);
                 m.LatestAtOpening = Latest(country, start);
                 m.Shift = EconomicVote.RecordShiftOf(country, m.AtOpening.Index);
+                // §752 (A1): the record over the term - judged at the opening, then for the count on the campaign's last day, as play judges it
+                m.TookOffice = EconomicVote.TookOffice(country);
+                m.TermShiftOpening = EconomicVote.RecordOverTerm(country, m.Opening, out m.TermAtOpening);
+                m.CountDay = calendar.CampaignStart.AddDays(calendar.TotalCampaignDays - 1);
+                for (DateTime d = m.Opening; d <= m.CountDay.Value; d = d.AddDays(1)) { PublicationSystem.PublishDueFigures(country, d); }
+                m.TermShiftCount = EconomicVote.RecordOverTerm(country, m.CountDay.Value, out m.TermAtCount);
             }
             return m;
         }
@@ -184,7 +246,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The model's prediction of an election from its start, plain and with the record as judged before and after, against the count.</summary>
-        private static void Predict(StringBuilder sb, CountryId id, ElectionVintage counted, string year, Dictionary<string, double> before, Dictionary<string, double> after)
+        private static void Predict(StringBuilder sb, CountryId id, ElectionVintage counted, string year, Dictionary<string, double> before, Dictionary<string, double> after, Dictionary<string, double> overTerm)
         {
             using (SimulationManager.EpochScope())
             {
@@ -207,6 +269,7 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    read      {0} {1} from its start, against the count: {2}\n", id, year, Line("the plain prediction (every backtest's)", null)));
                 sb.Append(F("    read      {0} {1}, the record as judged BEFORE: {2}\n", id, year, Line("with the record", before)));
                 sb.Append(F("    read      {0} {1}, the record as judged AFTER: {2}\n", id, year, Line("with the record", after)));
+                sb.Append(F("    read      {0} {1}, the record OVER THE TERM for the count (§752, A1 - what play now judges): {2}\n", id, year, Line("with the record", overTerm)));
             }
         }
     }

@@ -101,7 +101,7 @@ namespace PoliSim.Elections
             public readonly (int Day, int Party, Scandal Scandal)[] Scandals;
             /// <summary>CL-2 (DS-10): the probability per party per day that a story breaks in this run, every party equal (`Scandals.LiveRatePerPartyDay` in the game; 0 in every harness, so no staged digest moves).</summary>
             public readonly double LiveScandalRatePerPartyDay;
-            /// <summary>PS-3k (§638): each party's vote-share shift from the government's record (EconomicVote), one per party - NaN for a party the record does not name (it absorbs the governing parties' moves), null for no record - applied to every day's preference.</summary>
+            /// <summary>PS-3k (§638): each party's vote-share shift from the government's record (EconomicVote), one per party - NaN for a party the record does not name (it absorbs the governing parties' moves), null for no record - the opening's judgement until the last day takes the count's (§752, SimulationManager.StepPlayerCampaignDay), applied to every day's preference.</summary>
             public readonly double[] RecordShift;
             /// <summary>§681: each party's CHES family (`PartyFamilies`, -1 none) for the entrant layer; null = no layer (every harness staging).</summary>
             public readonly int[] Families;
@@ -149,7 +149,7 @@ namespace PoliSim.Elections
                 bool[][] stands = null)
             {
                 Stands = stands;   // §697: the candidacy fact per party and region; null everywhere
-                RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening
+                RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening and, for the count, again on its last day (§752)
                 Families = families;
                 AwarenessStart = awarenessStart;
                 Grouping = grouping;

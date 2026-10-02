@@ -3872,6 +3872,47 @@ namespace PoliSim.Simulation
             return shift;
         }
 
+        /// <summary>A record's shifts in one line, for the logs.</summary>
+        private static string RecordShiftLine(System.Collections.Generic.Dictionary<string, double> byParty)
+        {
+            if (byParty == null || byParty.Count == 0) { return "no party carries it"; }
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (System.Collections.Generic.KeyValuePair<string, double> kv in byParty) { parts.Add(kv.Key + " " + (kv.Value * 100.0).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pp"); }
+            return string.Join(", ", parts);
+        }
+
+        /// <summary>
+        /// One day of the player's campaign - and §752 (Elias's ruling A1): the count reads the ELECTION-DAY value, so before the campaign's last day
+        /// (the eve; polling day itself is never stepped - `CampaignClock`) the government's record is judged again over its term as of that day (the
+        /// figures published before it - <see cref="Elections.PerceivedPerformance.OverTerm"/>) and carried into the day the count is taken from. The
+        /// days before it keep the opening's judgement, the electorate's running reading. Live, the count's judgement is STORED on the record
+        /// (<see cref="Elections.PlayerCampaignRecord.CountRecordShift"/>) the moment it is made; a load that replays the campaign
+        /// (<see cref="RestoreCampaign"/>) replays the stored one and never re-judges - the government and the chamber a save holds may have moved
+        /// since (the review's defect 1). A record written before §752 carries none and replays its last day on the opening's, as its build did.
+        /// </summary>
+        private void StepPlayerCampaignDay(Elections.PlayerCampaignRecord record, bool live)
+        {
+            if (PlayerCampaign.Day == PlayerCampaign.TotalDays - 1 && PlayerCountryId.HasValue && record != null)
+            {
+                if (record.CountRecordShift != null)
+                {
+                    PlayerCampaign.Setup = PlayerCampaign.Setup.WithRecordShift(RecordShiftFor(PlayerCampaign.Setup, record.CountRecordShift));
+                }
+                else if (live)
+                {
+                    Country recordCountry = _world.GetCountry(PlayerCountryId.Value);
+                    if (recordCountry != null && recordCountry.Government != null)
+                    {
+                        System.DateTime countDay = PlayerCampaign.Setup.Calendar.CampaignStart.AddDays(PlayerCampaign.Day);
+                        record.CountRecordShift = Elections.EconomicVote.RecordOverTerm(recordCountry, countDay, out Elections.PerceivedPerformance.TermReading term);
+                        PlayerCampaign.Setup = PlayerCampaign.Setup.WithRecordShift(RecordShiftFor(PlayerCampaign.Setup, record.CountRecordShift));
+                        UnityEngine.Debug.Log($"RECORD: the government's record judged for the count on {countDay:yyyy-MM-dd} for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(term)}: " + RecordShiftLine(record.CountRecordShift));
+                    }
+                }
+            }
+            Elections.CampaignRun.StepDay(PlayerCampaign);
+        }
+
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
         public bool TryPlayerPollingDay(out System.DateTime pollingDay)
         {
@@ -3947,15 +3988,13 @@ namespace PoliSim.Simulation
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
                 CampaignRecord = record;
-                // PS-3k (§638, ruled): the government's record judged once at the campaign's opening, stored on the record so a replay is the same campaign.
+                // PS-3k (§638, ruled): the government's record judged at the campaign's opening, stored on the record so a replay is the same campaign -
+                // §752 (A1): over the government's TERM, the change since it took office, never levels; judged again for the count (StepPlayerCampaignDay).
                 Country recordCountry = _world.GetCountry(PlayerCountryId.Value);
                 if (record.RecordShift == null && recordCountry != null)
                 {
-                    double perceivedIndex = Elections.PerceivedPerformance.Perceived(recordCountry, null).Index;
-                    record.RecordShift = Elections.EconomicVote.RecordShiftOf(recordCountry, perceivedIndex);
-                    var parts = new System.Collections.Generic.List<string>();
-                    foreach (System.Collections.Generic.KeyValuePair<string, double> kv in record.RecordShift) { parts.Add(kv.Key + " " + (kv.Value * 100.0).ToString("+0.00;-0.00", System.Globalization.CultureInfo.InvariantCulture) + " pp"); }
-                    UnityEngine.Debug.Log($"RECORD: the government's record judged at the campaign's opening for {PlayerCountryId.Value} - perceived index {perceivedIndex.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)}: " + (parts.Count == 0 ? "no party carries it" : string.Join(", ", parts)));
+                    record.RecordShift = Elections.EconomicVote.RecordOverTerm(recordCountry, CurrentDate, out Elections.PerceivedPerformance.TermReading term);
+                    UnityEngine.Debug.Log($"RECORD: the government's record judged at the campaign's opening for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(term)}: " + RecordShiftLine(record.RecordShift));
                 }
                 setup = setup.WithRecordShift(RecordShiftFor(setup, record.RecordShift));
                 System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();   // a stream that has never drawn is absent, and absent means 0
@@ -3972,7 +4011,7 @@ namespace PoliSim.Simulation
             int todayIndex = (int)(CurrentDate - calendar.CampaignStart).TotalDays;
             while (PlayerCampaign.Day <= todayIndex && !PlayerCampaign.Finished)
             {
-                Elections.CampaignRun.StepDay(PlayerCampaign);
+                StepPlayerCampaignDay(CampaignRecord, live: true);
                 CampaignRecord.DaysStepped = PlayerCampaign.Day;
             }
             if (PlayerCampaign.Finished && PlayerCampaignResult == null)
@@ -4234,7 +4273,7 @@ namespace PoliSim.Simulation
             SimulationRandom.RestoreState(masterSeed, rewound);
             PlayerCampaign = Elections.CampaignRun.Begin(setup, SimulationRandom.For(SimulationRandom.Stream.CampaignAi),
                 SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
-            for (int i = 0; i < record.DaysStepped && !PlayerCampaign.Finished; i++) { Elections.CampaignRun.StepDay(PlayerCampaign); }
+            for (int i = 0; i < record.DaysStepped && !PlayerCampaign.Finished; i++) { StepPlayerCampaignDay(record, live: false); }
             if (PlayerCampaign.Finished) { PlayerCampaignResult = Elections.CampaignRun.Finish(PlayerCampaign); RecordCampaignLedger(); }
             UnityEngine.Debug.Log($"CAMPAIGN REPLAY: {record.DaysStepped} day(s) re-stepped for {PlayerCountryId.Value} toward {record.ElectionDate:yyyy-MM-dd}");
             AssertReplayLandedOn(savedCounts, record.DaysStepped, CampaignStreams);
