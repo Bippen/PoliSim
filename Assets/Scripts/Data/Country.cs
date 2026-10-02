@@ -179,9 +179,20 @@ namespace PoliSim.Data
         public float DebtRatioSeed;
         public float DebtRatioLastReport;
         public float DebtRatioReportBefore;
-        /// <summary>§716: the day the Finance partner last wrote its step on the household rates (the boundary's decision or the government's own budget
-        /// bill) - it steps at most once in any year (FinancePartner.StepDue). MinValue = never; a save from before loads it so.</summary>
+        /// <summary>§716: the day the Finance partner last wrote its step (since §755 on the fiscal stance; the boundary's decision or the government's
+        /// own budget bill) - it steps at most once in any year (FinancePartner.StepDue). MinValue = never; a save from before loads it so.</summary>
         public System.DateTime FinancePartnerSteppedOn;
+        /// <summary>§755 (Elias's ruling A2): the fiscal stance the Finance partner has moved so far, points of GDP (+ = expansion) - the count its next
+        /// step is judged against (FinancePartner.Applied), kept for <see cref="FinanceStanceHolder"/> alone: a new holder starts from zero. 0 in a save from before.</summary>
+        public float FinanceStanceApplied;
+        /// <summary>§755: the party whose stance <see cref="FinanceStanceApplied"/> counts. Null = none yet; a save from before loads it so.</summary>
+        public string FinanceStanceHolder;
+        /// <summary>§755 (the review's defect 2): the government (its FormedOn) the count was made under - the same holder in a new government starts from zero.
+        /// MinValue in a save from before (its count then reads zero once).</summary>
+        public System.DateTime FinanceStanceGovernment;
+        /// <summary>§755: the stance the PLAYER's party asks while it holds Finance as a partner, points of GDP (+ = expansion) - the Budget page's dial,
+        /// within FinancePartner.PlayerTargetLimit. 0 = no change asked; a save from before loads it so.</summary>
+        public float FinanceStancePlayerTarget;
         /// <summary>FT-7 (§391): the participation rate as it stood at the last boundary, so the jobs lag reads the year's change in labour supply. 0 = not yet seen.</summary>
         public float ParticipationAtLastBoundary;
         /// <summary>FT-8 (§398): the participation the pyramid implied at the sourced rates by age (ParticipationRateTable.StructuralRate) as it stood at the last
@@ -256,7 +267,7 @@ namespace PoliSim.Data
             LaborTaxRateSeed = 0f;   // FT-5
             foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax && line.IsImplemented) { LaborTaxRateSeed = line.Rate; } }
             // F4-2: the seeded rate on the income line is the shift's origin, and the statute's yield over the seed's cohorts is the ratio's denominator
-            foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax || line.Type == TaxType.VAT) { line.RateSeed = line.Rate; } }   // §716 (the review's defect 2): VAT's too - the Finance partner's anchor; no revenue site reads VAT's seed
+            foreach (TaxLine line in TaxLines) { if (line.Type == TaxType.IncomeTax || line.Type == TaxType.VAT) { line.RateSeed = line.Rate; } }   // §716 (the review's defect 2): VAT's too - then the Finance partner's anchor (§755 retired that read: the partner moves the stance); no revenue site reads VAT's seed
             IncomeTaxSeedAer = (float)TaxSchedule.AverageEffectiveRate(this, 0.0, 1.0, 1.0);
             for (int d = 0; d < TaxBases.DriverCount; d++) { RevenueBaseSeeds[d] = TaxBases.Level((TaxBaseDriver)d, this); }
             NaturalUnemploymentRateBase = NaturalUnemploymentRate;

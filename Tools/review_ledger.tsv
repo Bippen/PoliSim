@@ -191,3 +191,8 @@ baseline	424242	b6a7b990ded301e520f0d89d85d98f31ef50dc192439f6cc7a73b41014b247d5
 file	Assets/Scripts/Simulation/SimulationManager.cs	1e449872fc23f84990f1d3b03344fc6d9a623a738e5639196867c2a028449dfb	reviewed	2026-10-02	s752	Reviews/2026-10-02_s752_term_record.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	56a9ded76a4b7b52bae8e1b5ed63c306d8438b204ffc1bffb91e61b577f0b921	reviewed	2026-10-02	s753	Reviews/2026-10-02_s753_merged_ministries.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	9ad0025a2ed7f3152066a47ef24088692d80dd54c4a36dde9b649dd1ca28c051	reviewed	2026-10-02	s754	Reviews/2026-10-02_s754_constructive_person.md	-
+file	Assets/Scripts/Simulation/FinancePartner.cs	19e16222e1bc02bb60f2cb5961f27cb86f414d94c3a4399c179b87c35122d1e6	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	09359dfbed753f674ff252eed1054897bc88eadd2756d80e1aa04f5f84f14168	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	-
+baseline	777	2f70e004111451927f85fb1d0743f4c1d872b7f449e9449dae97bdd07fdb1b04	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	traj_fp755 seed 777 - the Finance partner's stance (Germany's SPD under the CDU)
+baseline	424242	35b65eca7bfda2c64c410cedc7eb135178634c022b43ab5c585afde1b1bf6886	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	traj_fp755 seed 424242 - the Finance partner's stance
+file	Assets/Scripts/Data/BudgetBill.cs	fdfc14890f45f9a12740bd490117b5d418d3d62847535f1254357188effcc9bb	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	-

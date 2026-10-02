@@ -9763,7 +9763,6 @@ namespace PoliSim.UI
                 {
                     continue;
                 }
-                if (FinancePartnerHoldsRate(taxLine)) { continue; }   // §716 (the review's defect 4): the partner's lever - a draft left from before it took Finance reaches neither the bill nor its preview
                 bill.TaxLines[taxLine.Type] = GetTaxRateInput(taxLine.Type, taxLine.Rate);
                 // F4-4: the sub-rows' figures ride the same bill - the drafted rate per sub-row, −1 where the statute's (or the standing own) figure stands
                 if (taxLine.Type == TaxType.IncomeTax && _bracketRateInputs.Count > 0 && TaxSchedule.Responds(_playerCountry.Id))
@@ -9824,9 +9823,6 @@ namespace PoliSim.UI
         /// <summary>CONVENTION: one month in years - the pension dial snaps to it, as the statutes write their ages in years and months.</summary>
         private const float PensionAgeMonth = 1f / 12f;
 
-        /// <summary>§716: a household rate (the income tax, VAT) is the Finance partner's to move where an AI partner holds Finance under the player's head of government.</summary>
-        private bool FinancePartnerHoldsRate(TaxLine taxLine) => FinancePartner.IsHouseholdRate(taxLine.Type) && _simulationManager.FinancePartnerOfPlayer(PlayerCountryId) != null;
-
         /// <summary>
         /// F4-4 / board 15b (2026-09-13): THE SCHEDULE ROW - one grammar, six honest shapes. Under the income tax's own D13 row (the lever, the one
         /// dial that shifts every taxed band), the statute is drawn as it is: the marginal rate over income as a CURVE in the track column (x the
@@ -9862,7 +9858,7 @@ namespace PoliSim.UI
                 return;
             }
 
-            bool live = taxLine.IsImplemented && pendingBill == null && !FinancePartnerHoldsRate(taxLine);   // §716: the partner's lever
+            bool live = taxLine.IsImplemented && pendingBill == null;   // §755: nothing is frozen - §716's partner no longer holds the household rates
             float standingShift = taxLine.Rate - TaxSchedule.RateSeedOf(taxLine);
             float draftLever = GetTaxRateInput(taxLine.Type, taxLine.Rate);
             float draftShift = draftLever - TaxSchedule.RateSeedOf(taxLine);

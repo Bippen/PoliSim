@@ -36,6 +36,12 @@ namespace PoliSim.Data
         public bool GovernmentBill;
         /// <summary>PS-3e (§632): the party that tabled this budget as an ALTERNATIVE to the government's (the Riksdag's budget motion - a shadow budget); null for a government's own.</summary>
         public string TabledBy;
+        /// <summary>§755 (Elias's ruling A2; the review's defect 1): the Finance partner's stance step this government bill carries - its holder (null for none),
+        /// the points of GDP it moves, the count before it and the government that tabled it - counted only if the chamber adopts the bill (FinancePartner.CreditAdopted).</summary>
+        public string FinanceStanceHolder;
+        public float FinanceStancePoints;
+        public float FinanceStanceAppliedBefore;
+        public System.DateTime FinanceStanceGovernment;
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<TaxType, float> TaxLines = new Dictionary<TaxType, float>();
         /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the statute's figure stands; only the income tax carries one.</summary>

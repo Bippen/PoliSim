@@ -208,7 +208,7 @@ namespace PoliSim.EditorTools
             ("FormateurDiagnostic", FormateurDiagnostic.Run),   // §646: every AI party answers a proposal from the formation's own model (the formateur's premises 2-3)
             ("SpeakerRoundDiagnostic", SpeakerRoundDiagnostic.Run),   // §646: the Speaker's round, dated - the AI asked, the offer to the player, the player asked
             ("PortfolioSalienceDiagnostic", PortfolioSalienceDiagnostic.Run),   // §706: Finance weighed by Druckman & Warwick's salience, the Treasury lock lifted - the 2021 and 2025 chambers put Finance where the record has it
-            ("FinancePartnerDiagnostic", FinancePartnerDiagnostic.Run),   // §716: a partner holding Finance holds its levers in fact - the household rates from its positions, the gate under a player head, the budget stripped of the two
+            ("FinancePartnerDiagnostic", FinancePartnerDiagnostic.Run),   // §755 (ruling A2): nothing frozen - a partner holding Finance acts through the fiscal stance only, the same step for the player and the AI; §716's household-rate step and refusals replaced
             ("GermanNightDiagnostic", GermanNightDiagnostic.Run),   // §707 (D-DE): the German night's arithmetic - the count on the 2025 returns reproduces the Bundestag, 24b's tiles k × register, one Union ink
             ("GermanFormationDiagnostic", GermanFormationDiagnostic.Run),   // §705: the chancellor's election under Art. 63 GG on the parties' dated declarations - the Union one group, convening, the fourteen days, the most votes, the reference
             ("FormationTimeDiagnostic", FormationTimeDiagnostic.Run),   // §714: each country's formation time from the record's own dates (election to installation)

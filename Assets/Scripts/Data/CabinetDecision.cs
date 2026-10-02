@@ -49,7 +49,8 @@ namespace PoliSim.Data
 
         /// <summary>§716 (the review's defect 3): which side of the state this option takes - +1 the more-state side (raises revenue for services, or spends on
         /// them), -1 the less-state side (forgoes revenue, or saves), 0 neither. One signed budget figure mixes revenue and spending, so a party's
-        /// `spendvtax` reads this, not <see cref="BudgetImpact"/> (FinancePartner.Choose). Authored on the Finance decisions; 0 elsewhere and in an older save.</summary>
+        /// `spendvtax` read this, not <see cref="BudgetImpact"/> (§716's FinancePartner.Choose). §755 (Elias's ruling A2: nothing is frozen, the partner acts through the
+        /// fiscal stance only) retired Choose - no rule reads this now; kept as authored data. Authored on the Finance decisions; 0 elsewhere and in an older save.</summary>
         public int StateLean;
 
         public CabinetDecisionOption(string label, float crimeIndexShock = 0f, float povertyRateShock = 0f, float budgetImpact = 0f, float approvalEffect = 0f, float tradeBalanceShock = 0f, float youthUnemploymentShock = 0f, int stateLean = 0)

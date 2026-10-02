@@ -160,7 +160,11 @@ namespace PoliSim.EditorTools
 
                     failures += AssertTerm(c.Id, "Reversion", real.Reversion, prev.Reversion);
                     failures += AssertTerm(c.Id, "TaxHikePenalty", real.TaxHikePenalty, prev.TaxHikePenalty);
-                    failures += AssertTerm(c.Id, "SpendingEffect", real.SpendingEffect, prev.SpendingEffect);
+                    // §755 (ruling A2): a Finance partner's stance step writes LINES into the no-op decision, so SpendingEffect is no longer 0 there - and the
+                    // term divides by GDP and damps by the debt ratio, which the preview advances (the coming period's, by design): expected-different where
+                    // the partner has stepped (the harness runs one boundary, so it stepped at this one), asserted everywhere else
+                    if (c.FinanceStanceHolder != null && c.FinancePartnerSteppedOn != System.DateTime.MinValue) { Debug.Log($"PARITY: {c.Id} SpendingEffect expected-different - the Finance partner's stance step ({c.FinanceStanceHolder}, {c.FinanceStanceApplied:+0.000;-0.000} pp) wrote lines into the no-op decision, and the term reads GDP and the debt ratio, which the preview advances: {real.SpendingEffect:F4}/{prev.SpendingEffect:F4}"); }
+                    else { failures += AssertTerm(c.Id, "SpendingEffect", real.SpendingEffect, prev.SpendingEffect); }
                     failures += AssertTerm(c.Id, "WelfareEffect", real.WelfareEffect, prev.WelfareEffect);
                     failures += AssertTerm(c.Id, "PaidLeaveEffect", real.PaidLeaveEffect, prev.PaidLeaveEffect);
                     failures += AssertTerm(c.Id, "DrugPolicyEffect", real.DrugPolicyEffect, prev.DrugPolicyEffect);
@@ -335,6 +339,9 @@ namespace PoliSim.EditorTools
             { "FiscalLedgerAccruing", "null on the clone by design - the preview never runs the daily path, and a shared reference would be a latent escape (Step 2's third section)" },
             { "FiscalLedgerLastPeriod", "null on the clone by design, as the accruing ledger" },
             { "ApprovalLedgerLastPeriod", "null on the clone by design - a preview has no history and nothing reads it; the accruing ledger is a fresh one" },
+            { "FinanceStanceApplied", "§755: the Finance partner's count - the preview computes the partner's step on the REAL country (previewedReal: the clone carries no government) and records never; the clone never reads it" },
+            { "FinanceStanceHolder", "§755: the partner the count belongs to - read on the real country only, as FinanceStanceApplied" },
+            { "FinanceStancePlayerTarget", "§755: the player partner's dial - read on the real country only, as FinanceStanceApplied" },
         };
 
         private static int AssertTerm(CountryId id, string name, float real, float preview)

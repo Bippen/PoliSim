@@ -390,6 +390,21 @@ namespace PoliSim.UI
                 B("Very late", "Few reach it young. The line is lean.", -1),
                 B("Terminal", "Pensions from seventy. The line at its floor.", -1),
             }) },
+            // §755 (Elias's ruling A2): the Finance partner's stance on its -2.5..+2.5 track, points of GDP (+ = expansion). FinancePartner: the step moves the
+            // lines (the household rates only for what the lines' limits leave) by the points of GDP asked, so a higher stance is a lower balance. Neutral = 0, the track's middle.
+            { "Fiscal stance", new Dial("Fiscal stance", "the budget balance", -1, 0.5f, new[]
+            {
+                B("Austerity", "Up to 2.5 points tightened. Lines cut.", +1),
+                B("Hard squeeze", "Two points tightened. Lines cut deep.", +1),
+                B("Squeeze", "A point and a half tightened.", +1),
+                B("Tightening", "A point off. The balance improves.", +1),
+                B("Neutral", "The stance as the book stands.", 0),
+                B("Loosening", "Half a point of GDP more spent.", -1),
+                B("Easing", "A point more spent. The balance slips.", -1),
+                B("Stimulus", "A point and a half. The deficit widens.", -1),
+                B("Big stimulus", "Two points more. The deficit widens.", -1),
+                B("Open taps", "Up to 2.5 points more. A wide deficit.", -1),
+            }) },
         };
     }
 }

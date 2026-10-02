@@ -162,11 +162,30 @@ namespace PoliSim.EditorTools
                 case "Investment planning": basis = "the Tax Credits dial under its instrument's name (S9): MacroSystem's sector sensitivity, by sign"; return MacroSystem.SectorDialOutputSign("Tax Credits");
                 case "State ownership": basis = "the Nationalization / Deregulation dial under its instrument's name (S9): MacroSystem's sector sensitivity, by sign"; return MacroSystem.SectorDialOutputSign("Nationalization / Deregulation");
                 case "Pension age": return PensionAgeSign(out basis);
+                case "Fiscal stance": return FiscalStanceSign(out basis);
                 default:
                     int sector = MacroSystem.SectorDialOutputSign(key);
                     basis = sector != 0 ? "MacroSystem's sector sensitivity, by sign" : "no coupling known for this dial";
                     return sector;
             }
+        }
+
+        /// <summary>§755 (ruling A2): the stance's sign on the balance, read off the step itself - Germany's Finance partner as a player's dial at +1 point
+        /// of GDP: the lines FinancePartner.Apply writes (more spent is a lower balance).</summary>
+        private static int FiscalStanceSign(out string basis)
+        {
+            PoliSim.Data.World world = PoliSim.Data.WorldFactory.CreateDefault();
+            PoliSim.Data.Country de = world.GetCountry(PoliSim.Data.CountryId.Germany);
+            string holder = FinancePartner.Holder(de);
+            basis = "FinancePartner.Apply on Germany's partner (" + (holder ?? "none") + ") as a player's dial at +1 pp of GDP: the lines it writes";
+            if (holder == null) { return 0; }
+            de.PlayerPartyAbbrev = holder;
+            de.FinanceStancePlayerTarget = 1f;
+            var decision = new PoliSim.Data.PolicyDecision();
+            FinancePartner.Apply(de, decision, new System.DateTime(2030, 1, 1));
+            float sum = 0f;
+            foreach (KeyValuePair<PoliSim.Data.SpendingCategory, float> kv in decision.SpendingLineChanges) { sum += kv.Value; }
+            return sum > 0f ? -1 : sum < 0f ? 1 : 0;
         }
 
         /// <summary>PN-1's dial (§590): the pension line's driver as the age rises - SpendingDrivers.Level(StatutoryPensionAge) on a fresh world's Sweden with the age SET BY A

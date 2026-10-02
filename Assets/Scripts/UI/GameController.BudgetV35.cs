@@ -260,15 +260,7 @@ namespace PoliSim.UI
             _budgetSlipBook.Anchors["budget:taxes"] = new SlipContent("TAXES")
                 .Add("A RATE'S DRAFT RIDES THE BUDGET BILL · LEVYING OR REMOVING A TAX IS A BILL OF ITS OWN, VOTED WHEN IT IS INTRODUCED")
                 .Add("THE CHIP IS WHAT THE TAX RAISES IN A YEAR AT THE STANDING RATE");
-            // §716: where a partner holds Finance, the page says whose levers the household rates are
-            if (_simulationManager.FinancePartnerOfPlayer(PlayerCountryId) != null && !_simulationManager.PlayerMayIntroduce(PlayerCountryId, CabinetPortfolio.FinanceTreasury, out string held))
-            {
-                GUIStyle note = V35SerifWrapped(V35.Floor, PoliSimTheme.TextSecondary);
-                float h = Mathf.Ceil(note.CalcHeight(new GUIContent(held), width)) + V35.Px(4f);
-                Rect noteRect = GUILayoutUtility.GetRect(width, h, GUILayout.Width(width), GUILayout.Height(h));
-                if (Event.current.type == EventType.Repaint) { GUI.Label(noteRect, held, note); }
-                GUILayout.Space(V35.Px(6f));
-            }
+            DrawBudgetFinanceStance(width);
 
             float gutter = V35.Px(V35.Gutter), tileWidth = V35Span(V35Span(width, 12) + gutter * 0f, 6);
             List<TaxLine> lines = _playerCountry.TaxLines;
@@ -301,6 +293,40 @@ namespace PoliSim.UI
                 V35.FloorGuarded = guarded;
                 GUILayout.Space(gutter);
             }
+        }
+
+        /// <summary>
+        /// §755 (Elias's ruling A2: "A partner holding Finance acts through the fiscal stance only. The rule is symmetric"): THE FINANCE PARTNER'S STANCE,
+        /// at the head of the Taxes tab, where a partner holds Finance in the player's government - an AI partner's read (what it asks, what it has moved),
+        /// the player's own as its dial (the stance it asks, within <see cref="FinancePartner.PlayerTargetLimit"/> points of GDP; set at once - the
+        /// minister's call, no bill: the step rides the year's budget). Drawn only where a partner holds Finance, a role that changes at a formation, never
+        /// inside a frame; the dial is interactive only for the player's own party.
+        /// </summary>
+        private void DrawBudgetFinanceStance(float width)
+        {
+            Country c = _playerCountry;
+            string holder = FinancePartner.Holder(c);
+            if (holder == null) { return; }
+            bool mine = holder == c.PlayerPartyAbbrev;
+            FinancePartner.Target(c, holder, out float asked);
+            float moved = FinancePartner.Applied(c, holder);
+            string who = PartySystems.ShortName(PlayerCountryId, holder);
+            string Signed(float v) => (v > 0f ? "+" : v < 0f ? "−" : string.Empty) + UiFormat.Number(Mathf.Abs(v), 2);
+            float tileWidth = V35Span(width, 6), rowHeight = BudgetDialTileHeight(false);
+            Rect row = GUILayoutUtility.GetRect(width, rowHeight, GUILayout.Width(width), GUILayout.Height(rowHeight));
+            _dialSlipBookOverride = _budgetSlipBook;
+            float set = DrawDialRow("Fiscal stance", asked, asked, -FinancePartner.PlayerTargetLimit, FinancePartner.PlayerTargetLimit, "F2", " pp", "pp of GDP",
+                new Rect(row.x, row.y, tileWidth, rowHeight), new V35DialFace
+                {
+                    Icon = "coins", Title = mine ? "Your fiscal stance" : who + "'s fiscal stance", Area = UiPalette.SystemArea.Fiscal,
+                    Figure = v => Signed(v) + " pp of GDP",
+                    EndLeft = "Tighten", EndRight = "Expand",
+                    Census = (mine ? "YOU HOLD FINANCE AS A PARTNER · YOU ACT THROUGH THE STANCE ONLY" : "THE FINANCE MINISTER (" + who.ToUpperInvariant() + ") ACTS THROUGH THE STANCE ONLY · THE HEAD OF GOVERNMENT KEEPS EVERY OTHER LEVER")
+                        + " · MOVED SO FAR IN THIS GOVERNMENT " + Signed(moved) + " PP · AT MOST " + UiFormat.Number(FinancePartner.StepPointsPerYear, 2) + " PP OF GDP A YEAR, THROUGH THE LINES - IN A TIGHTENING THE INCOME TAX AND VAT ONLY FOR WHAT THE LINES' LIMITS LEAVE",
+                }, mine);
+            _dialSlipBookOverride = null;
+            if (mine && !Mathf.Approximately(set, asked)) { _simulationManager.SetFinanceStanceTarget(PlayerCountryId, set); }
+            GUILayout.Space(V35.Px(V35.Gutter));
         }
 
         /// <summary>A section's head over the left columns, its slip on its words.</summary>
@@ -442,11 +468,10 @@ namespace PoliSim.UI
             string name = DisplayName.Of(taxLine.Type.ToString());
             string id = "tax:" + taxLine.Type;
             TaxProgramBill pending = FindPendingTaxProgramBill(taxLine.Type);
-            bool held = FinancePartnerHoldsRate(taxLine);
             bool levied = taxLine.IsImplemented;
-            float draftRate = held ? taxLine.Rate : GetTaxRateInput(taxLine.Type, taxLine.Rate);
+            float draftRate = GetTaxRateInput(taxLine.Type, taxLine.Rate);
             bool drafted = levied && !Mathf.Approximately(draftRate, taxLine.Rate);
-            bool interactive = levied && pending == null && !held;
+            bool interactive = levied && pending == null;
             Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
 
             Rect inner = DrawBudgetTileCard(r, drafted, !levied);
@@ -506,7 +531,6 @@ namespace PoliSim.UI
                 slip.Add(TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind) + " · AVERAGE EFFECTIVE RATE AT THE MEAN INCOME "
                     + TaxSchedule.AverageEffectiveRateAtMeanIncome(_playerCountry, taxLine, draftRate).ToString("0.0", CultureInfo.InvariantCulture) + "% · THE STATUTE BELOW");
             }
-            if (held) { slip.Add("THE FINANCE PARTNER'S LEVER - IT MOVES BY THE PARTNER'S POSITIONS, NOT A DRAFT OF YOURS"); }
             if (pending != null) { slip.Add("PENDING - A PROGRAMME BILL IS BEFORE PARLIAMENT; THE RATE WAITS FOR IT"); }
             if (!levied) { slip.Add("NOT LEVIED - THE SWITCH INTRODUCES THE BILL THAT WOULD LEVY IT"); }
             _budgetSlipBook.Anchors[id] = slip;
