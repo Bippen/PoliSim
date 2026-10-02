@@ -13,7 +13,8 @@ namespace PoliSim.UI
     /// blocs over it and the majority tick through it, then the parties as tiles - and, under them, what the composition does not draw, kept as
     /// built (asked): the bills before the chamber with their counts, the blocs, formation and confidence rows, and the division records. Compass,
     /// Cabinet and the bank draw as built under the new frame until their own items. §744: the Compass tab - the parties on two axes beside their
-    /// positions, the six countries' compass kept under them. §745: the Cabinet tab - one card per portfolio, the shortlists in their cards.
+    /// positions, the six countries' compass kept under them. §745: the Cabinet tab - one card per portfolio, the shortlists in their cards. §746: the bank - the rate, its path, what the rule reads, the readings it weighs
+    /// and the governor, the full rate page kept under them; a bank with no governor of its own keeps its tab as built.
     /// </summary>
     public partial class GameController
     {
@@ -46,22 +47,40 @@ namespace PoliSim.UI
             // §685 (21b): the political blocks lay their rows to the VISIBLE width - a right-aligned act laid to the content's edge was off-screen
             _parliamentVisibleWidth = contentWidth;
 
-            if (_politicsCategory != PoliticsCategory.FederalReserve)
+            if (_politicsCategory != PoliticsCategory.FederalReserve || _playerCountry.CurrentFedChair != null)
             {
                 // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name)
                 PoliticsCategory tab = _politicsCategory;
                 int scrolledFrom = _slipAnchors.Count;
                 float viewport = Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f);
-                Vector2 previous = tab == PoliticsCategory.Parliament ? _parliamentScrollPosition : tab == PoliticsCategory.Compass ? _politicsContentScrollPosition : _cabinetScrollPosition;
+                Vector2 previous = tab == PoliticsCategory.Parliament ? _parliamentScrollPosition : tab == PoliticsCategory.Compass ? _politicsContentScrollPosition
+                    : tab == PoliticsCategory.Cabinet ? _cabinetScrollPosition : _federalReserveScrollPosition;
                 Vector2 scroll = GUILayout.BeginScrollView(previous, GUILayout.Height(viewport));
                 switch (tab)
                 {
                     case PoliticsCategory.Parliament: _parliamentScrollPosition = scroll; DrawParliamentV35(contentWidth); break;
                     case PoliticsCategory.Compass: _politicsContentScrollPosition = scroll; DrawCompassV35(contentWidth); break;
-                    default:
+                    case PoliticsCategory.Cabinet:
                         _cabinetScrollPosition = scroll;
                         GUI.enabled = !_isGameOver;
                         DrawCabinetV35(contentWidth);
+                        GUI.enabled = true;
+                        break;
+                    default:
+                        // §746: the bank with a governor of its own - the composition's page, then the full rate page as built (kept, asked) and the selection
+                        _federalReserveScrollPosition = scroll;
+                        GUI.enabled = !_isGameOver;
+                        FedChair chair = _playerCountry.CurrentFedChair;
+                        DrawBankV35(contentWidth, chair);
+                        DrawPoliticsSectionHead("The rate page", "bank:page", contentWidth);
+                        _politicsSlipBook.Anchors["bank:page"] = new SlipContent("THE RATE PAGE")
+                            .Add("THE PATH'S CHART WITH ITS WINDOW, THE MOVES A YEAR AND TWO OUT, THE RULE TERM BY TERM AND ITS INPUTS AS READINGS, THE POLITICAL HALF")
+                            .Add("KEPT AS BUILT UNDER THE NEW PAGE - THE COMPOSITION DRAWS THE PAGE ABOVE");
+                        _riksbankCaptions.Clear();
+                        _riksbankPeekWanted = false;
+                        DrawRiksbankPage(chair, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+                        _riksbankRecording = false;
+                        DrawFedChairSelectionModal();
                         GUI.enabled = true;
                         break;
                 }
@@ -549,6 +568,188 @@ namespace PoliSim.UI
             }
             return lines;
         }
+
+
+        /// <summary>
+        /// §746 (the composition's Politics › the bank): where the country's own bank sets its rate under a governor - <b>the policy rate</b> (its change
+        /// over four quarters in the neutral ink: a rate has no direction most agree on) beside <b>the rate path</b> (the projection two years out, the
+        /// history its sparkline); <b>what the rule reads</b> - the rule's rate and its four terms as one bar (the neutral real rate, inflation, the
+        /// inflation gap at its weight, the unemployment gap at its weight; `TaylorRule`, the page's own terms) where every term is positive, as a signed
+        /// list where one is not (a negative term cannot stack); the two readings the rule weighs - <b>inflation against its target</b>, <b>unemployment
+        /// against the NAIRU</b>; and <b>the governor</b> - the head's title and name, *Holds time* while a choice of successor stands. Under them, kept
+        /// as built (asked): the full rate page - the path's chart with its window, the moves a year and two out, the rule's waterfall and its inputs as
+        /// readings, the political half (`DrawRiksbankPage`) - and the selection itself. A bank without a governor of its own (the euro area) keeps its
+        /// tab as built.
+        /// </summary>
+        private void DrawBankV35(float width, FedChair chair)
+        {
+            Country c = _playerCountry;
+            float rate = c.CurrencyZone.InterestRate;
+            float suggested = TaylorRule.GetSuggestedInterestRate(c);
+            float gutter = V35.Px(V35.Gutter);
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Political);
+            string bank = GetCentralBankName(PlayerCountryId);
+            V35.FloorGuarded = true;
+
+            // ---- the rate and its path ----
+            if (!_hasCachedPreview || _simulationManager.CurrentTurn != _cachedPreviewTurn) { RecomputePolicyPreview(); }
+            RatePathProjection.Step[] path = RatePathProjection.Project(c, _cachedPreview);
+            IReadOnlyList<float> history = c.History.InterestRate.Quarterly;
+            var rateTile = new V35TileData { Icon = "bank", IconInk = area, Figure = UiFormat.Number(rate, 2) + "%", Name = "Policy rate", FigurePx = V35.FigureSmall };
+            var rateSlip = new SlipContent("POLICY RATE · " + rateTile.Figure).Add("SET BY " + bank.ToUpperInvariant() + " AT EACH BOUNDARY, MOVING TOWARD ITS TARGET");
+            if (history != null && history.Count >= 5)
+            {
+                float d = history[history.Count - 1] - history[history.Count - 5];
+                if (Mathf.Abs(d) >= 0.005f)
+                {
+                    rateTile.Change = (d > 0f ? "▲ " : "▼ ") + UiFormat.Number(Mathf.Abs(d), 2) + " pts";
+                    rateTile.ChangeInk = V35.DirectionNeutral;
+                    rateSlip.Add((d > 0f ? "UP " : "DOWN ") + UiFormat.Number(Mathf.Abs(d), 2) + " POINTS OVER FOUR QUARTERS - NEUTRAL INK: A RATE HAS NO DIRECTION MOST AGREE ON");
+                }
+            }
+            RatePathProjection.Step? far = null;
+            if (path != null) { foreach (RatePathProjection.Step step in path) { if (!far.HasValue || step.YearsAhead > far.Value.YearsAhead) { far = step; } } }
+            var pathTile = new V35TileData { Icon = "chart", IconInk = area, Figure = far.HasValue ? UiFormat.Number(far.Value.Rate, 2) + "%" : null, Glyph = far.HasValue ? (Symbol?)null : Symbol.Absent,
+                Name = far.HasValue && far.Value.YearsAhead > 0 ? "Rate path · " + far.Value.YearsAhead + (far.Value.YearsAhead == 1 ? " year out" : " years out") : "Rate path", FigurePx = V35.FigureSmall, Spark = history };
+            var pathSlip = new SlipContent("RATE PATH").Add("THE HISTORY IS THE SPARKLINE; THE FIGURE IS THE PROJECTION'S FAR END - THE PREVIEW'S YEAR AHEAD AND THE ONE AFTER, ON THE GOVERNOR'S TARGET AND SPEED");
+            if (path != null) { foreach (RatePathProjection.Step step in path) { pathSlip.Add((step.YearsAhead == 0 ? "TODAY " : "+" + step.YearsAhead + " YR ") + UiFormat.Number(step.Rate, 2) + " %"); } }
+            pathSlip.Add("THE FULL PATH, ITS WINDOW AND THE RULE DOTTED ARE ON THE RATE PAGE BELOW");
+            float rowH = Mathf.Max(V35TileHeight(rateTile), V35TileHeight(pathTile));
+            Rect row = GUILayoutUtility.GetRect(width, rowH, GUILayout.Width(width), GUILayout.Height(rowH));
+            float left = V35Span(width, 4);
+            var rateRect = new Rect(row.x, row.y, left, rowH);
+            var pathRect = new Rect(row.x + left + gutter, row.y, row.xMax - (row.x + left + gutter), rowH);
+            DrawV35Tile(rateRect, rateTile); SlipAnchor(rateRect, "bank:rate"); _politicsSlipBook.Anchors["bank:rate"] = rateSlip;
+            DrawV35Tile(pathRect, pathTile); SlipAnchor(pathRect, "bank:path"); _politicsSlipBook.Anchors["bank:path"] = pathSlip;
+            GUILayout.Space(gutter);
+
+            // ---- what the rule reads ----
+            DrawPoliticsSectionHead("What the rule reads", "bank:rulehead", width);
+            float inflation = c.State.Inflation;
+            float target = TaylorRule.InflationTarget(c);
+            float neutralReal = TaylorRule.NeutralRealRate(c);
+            float inflationGap = TaylorRule.InflationGapWeight(c) * (inflation - target);
+            float unemploymentGap = TaylorRule.GetGapTermPercentagePoints(c);
+            _politicsSlipBook.Anchors["bank:rulehead"] = new SlipContent("WHAT THE RULE READS")
+                .Add("THE RULE'S RATE IS THE SUM OF FOUR TERMS: THE NEUTRAL REAL RATE, INFLATION, THE INFLATION GAP AT ITS WEIGHT ("
+                    + TaylorRule.InflationGapWeight(c).ToString("0.##", CultureInfo.InvariantCulture) + ") AND THE UNEMPLOYMENT GAP AT ITS WEIGHT ("
+                    + TaylorRule.UnemploymentGapWeight(c).ToString("0.##", CultureInfo.InvariantCulture) + ")")
+                .Add("THE GOVERNOR'S TARGET IS THE RULE'S RATE PLUS THE GOVERNOR'S LEAN; THE RATE MOVES TOWARD IT AT ITS SPEED");
+            var terms = new[]
+            {
+                ("Neutral real rate", neutralReal, V35.DataSand),
+                ("Inflation", inflation, V35.DataSlateLight),
+                ("Inflation gap", inflationGap, V35.DataSlateMid),
+                ("Unemployment gap", unemploymentGap, V35.DataDeep),
+            };
+            bool stacks = true;
+            foreach (var t in terms) { stacks &= t.Item2 >= 0f; }
+            // the head as the tile head lays it out - the figure over the name, or the icon where taller (the first film's bar sat on the name)
+            float pad = V35.Px(V35.CardPadX), padY = V35.Px(V35.CardPadY);
+            float headH = Mathf.Max(V35.Px(V35.ListIcon), Mathf.Ceil(V35Mono(V35.FigureSmall, PoliSimTheme.TextPrimary, bold: true).CalcSize(new GUIContent("0")).y) + 2f
+                + Mathf.Ceil(V35Serif(V35.Name, PoliSimTheme.TextPrimary).CalcSize(new GUIContent("Ag")).y));
+            var parts = new List<V35Part>();
+            V35BarLayout layout = null;
+            float sum = neutralReal + inflation + inflationGap + unemploymentGap;
+            if (stacks)
+            {
+                foreach (var t in terms)
+                {
+                    // the words' ink by the segment's lightness - light words on the two dark inks (the first film's unemployment gap read dark on dark)
+                    float luminance = 0.299f * t.Item3.r + 0.587f * t.Item3.g + 0.114f * t.Item3.b;
+                    parts.Add(new V35Part(t.Item1, UiFormat.Number(t.Item2, 2), t.Item3, luminance < 0.55f ? V35.OnDataDark : V35.OnDataLight, t.Item2, "bank:term:" + t.Item1));
+                }
+                layout = LayOutV35Bar(width - pad * 2f, parts, Mathf.Max(0.0001f, sum));
+            }
+            float bodyH = stacks ? V35BarHeight(layout) : terms.Length * V35.Px(V35.ListRow + 2f);
+            float cardH = padY * 2f + headH + V35.Px(10f) + bodyH;
+            Rect card = GUILayoutUtility.GetRect(width, cardH, GUILayout.Width(width), GUILayout.Height(cardH));
+            Rect inner = DrawV35Card(card);
+            Rect figureRect = DrawBudgetTileHead(inner, "scales", area, UiFormat.Number(suggested, 2) + "%", PoliSimTheme.TextPrimary, "The rule reads", PoliSimTheme.TextPrimary, new Rect(inner.xMax, inner.y, 0f, 0f));
+            SlipAnchor(new Rect(inner.x, inner.y, inner.width, headH), "bank:rule");
+            var ruleSlip = new SlipContent("THE RULE READS " + UiFormat.Number(suggested, 2) + " %");
+            foreach (var t in terms) { ruleSlip.Add(t.Item1.ToUpperInvariant() + " " + t.Item2.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)); }
+            if (sum < 0f) { ruleSlip.Add("THE TERMS SUM BELOW ZERO; THE RULE READS ZERO"); }
+            _politicsSlipBook.Anchors["bank:rule"] = ruleSlip;
+            var body = new Rect(inner.x, inner.y + headH + V35.Px(10f), inner.width, bodyH);
+            if (stacks)
+            {
+                DrawV35Bar(body, parts, Mathf.Max(0.0001f, sum), layout, (r, id) => SlipAnchor(r, id));
+                foreach (var t in terms)
+                {
+                    _politicsSlipBook.Anchors["bank:term:" + t.Item1] = new SlipContent(t.Item1.ToUpperInvariant() + " · " + UiFormat.Number(t.Item2, 2) + " POINTS")
+                        .Add("ONE OF THE RULE'S FOUR TERMS - THE SEGMENT IS ITS SHARE OF " + UiFormat.Number(sum, 2));
+                }
+            }
+            else if (Event.current.type == EventType.Repaint)
+            {
+                // a negative term cannot stack on the others: the four as a signed list
+                GUIStyle nameFace = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+                GUIStyle figureFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleRight);
+                float lh = V35.Px(V35.ListRow + 2f);
+                for (int i = 0; i < terms.Length; i++)
+                {
+                    var line = new Rect(body.x, body.y + i * lh, body.width, lh);
+                    PoliSimTheme.Rule(new Rect(line.x, line.y + V35.Px(5f), V35.Px(10f), V35.Px(10f)), terms[i].Item3);
+                    GUI.Label(new Rect(line.x + V35.Px(18f), line.y, line.width * 0.6f, line.height), terms[i].Item1, nameFace);
+                    GUI.Label(line, StatsReadings.TrueMinus(terms[i].Item2.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)), figureFace);
+                }
+            }
+            GUILayout.Space(gutter);
+
+            // ---- the two readings the rule weighs ----
+            float nairu = c.EffectiveNaturalUnemploymentRate;
+            var inflationTile = new V35TileData { Icon = "infl", IconInk = area, Figure = UiFormat.Number(inflation, 1) + "%", Name = "Inflation · target " + UiFormat.Number(target, 1) + " %", FigurePx = V35.FigureSmall };
+            var unemploymentTile = new V35TileData { Icon = "jobs", IconInk = area, Figure = UiFormat.Number(c.State.Unemployment, 1) + "%", Name = "Unemployment · NAIRU " + UiFormat.Number(nairu, 1) + " %", FigurePx = V35.FigureSmall };
+            float half = V35Span(width, 6), readH = Mathf.Max(V35TileHeight(inflationTile), V35TileHeight(unemploymentTile));
+            Rect readRow = GUILayoutUtility.GetRect(width, readH, GUILayout.Width(width), GUILayout.Height(readH));
+            var inflRect = new Rect(readRow.x, readRow.y, half, readH);
+            var unRect = new Rect(readRow.x + half + gutter, readRow.y, readRow.xMax - (readRow.x + half + gutter), readH);
+            DrawV35Tile(inflRect, inflationTile); SlipAnchor(inflRect, "bank:inflation");
+            DrawV35Tile(unRect, unemploymentTile); SlipAnchor(unRect, "bank:unemployment");
+            _politicsSlipBook.Anchors["bank:inflation"] = new SlipContent("INFLATION · " + inflationTile.Figure).Add("THE TARGET " + UiFormat.Number(target, 1) + " % · THE GAP " + (inflation - target).ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + " POINTS, WEIGHED AT " + TaylorRule.InflationGapWeight(c).ToString("0.##", CultureInfo.InvariantCulture));
+            _politicsSlipBook.Anchors["bank:unemployment"] = new SlipContent("UNEMPLOYMENT · " + unemploymentTile.Figure).Add("THE NAIRU " + UiFormat.Number(nairu, 1) + " % - THE RATE AT WHICH WAGES NEITHER SPEED NOR SLOW · THE GAP IS WEIGHED AT " + TaylorRule.UnemploymentGapWeight(c).ToString("0.##", CultureInfo.InvariantCulture));
+            GUILayout.Space(gutter);
+
+            // ---- the governor ----
+            bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
+            string head = GetCentralBankHeadTitle(PlayerCountryId);
+            float govH = padY * 2f + V35.Px(44f);
+            Rect gov = GUILayoutUtility.GetRect(width, govH, GUILayout.Width(width), GUILayout.Height(govH));
+            Rect govInner = DrawV35Card(gov);
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.Rule(new Rect(gov.x, gov.y, Mathf.Max(2f, V35.Px(3f)), gov.height), pending ? PoliSimTheme.Caution : area);
+                float side = V35.Px(24f);
+                DrawV35Icon(new Rect(govInner.x, govInner.y + Mathf.Round((govInner.height - side) * 0.5f), side, side), "person", area);
+                float tx = govInner.x + side + V35.Px(12f);
+                GUI.Label(new Rect(tx, govInner.y, govInner.width * 0.7f, V35.Px(24f)), head + " · " + chair.Name, V35Serif(V35.Name, PoliSimTheme.TextPrimary));
+                GUI.Label(new Rect(tx, govInner.y + V35.Px(24f), govInner.width * 0.7f, V35.Px(20f)),
+                    pending ? CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates for the next term - the choice is below and on the Docket" : chair.Philosophy + " · the term ends on the bank's own cycle",
+                    V35Serif(V35.Floor, PoliSimTheme.TextSecondary));
+                if (pending)
+                {
+                    GUIStyle stamp = V35Mono(V35.Floor, PoliSimTheme.Caution, bold: true, TextAnchor.MiddleCenter);
+                    float sw = Mathf.Ceil(stamp.CalcSize(new GUIContent("Holds time")).x) + V35.Px(14f), sh = V35.Px(22f);
+                    var sr = new Rect(govInner.xMax - sw, govInner.y + Mathf.Round((govInner.height - sh) * 0.5f), sw, sh);
+                    PoliSimTheme.Rule(new Rect(sr.x, sr.y, sr.width, 1f), PoliSimTheme.Caution);
+                    PoliSimTheme.Rule(new Rect(sr.x, sr.yMax - 1f, sr.width, 1f), PoliSimTheme.Caution);
+                    PoliSimTheme.Rule(new Rect(sr.x, sr.y, 1f, sr.height), PoliSimTheme.Caution);
+                    PoliSimTheme.Rule(new Rect(sr.xMax - 1f, sr.y, 1f, sr.height), PoliSimTheme.Caution);
+                    GUI.Label(sr, "Holds time", stamp);
+                }
+            }
+            SlipAnchor(gov, "bank:governor");
+            _politicsSlipBook.Anchors["bank:governor"] = new SlipContent(head.ToUpperInvariant() + " · " + chair.Name.ToUpperInvariant())
+                .Add(chair.Philosophy.ToString().ToUpperInvariant() + " · LEAN " + chair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " ON THE RULE'S RATE")
+                .Add(chair.Description.ToUpperInvariant())
+                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - TIME HOLDS UNTIL ONE IS" : "THE TERM ENDS ON THE BANK'S OWN CYCLE; A SHORTLIST IS DRAWN THEN");
+            V35.FloorGuarded = false;
+            GUILayout.Space(gutter);
+        }
+
+        /// <summary>§746: a count word as a sentence starts it - "Two", not "TWO" or "two".</summary>
+        private static string CapitalWord(string word) => string.IsNullOrEmpty(word) ? word : char.ToUpperInvariant(word[0]) + word.Substring(1).ToLowerInvariant();
 
         private float PartyTileHeight()
         {
