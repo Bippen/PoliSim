@@ -10752,49 +10752,7 @@ namespace PoliSim.UI
             LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
         }
 
-        /// <summary>
-        /// Every Sector for the player's country: current Output/Employment/SectorMetric (read-only,
-        /// descriptive - see Sector.cs for why they don't feed back into GDP/Unemployment in this
-        /// pass) plus five always-adjustable sliders (Subsidy/Regulation/Tax Credits/Research Grants/
-        /// Deregulation-Nationalization, all absolute targets like TaxLine.Rate - no implement/remove,
-        /// every country has all four Sectors always). The last three were added in Round 3 item 2.
-        /// </summary>
-        private void DrawSectorPolicy(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _sectorPolicyScrollPosition = GUILayout.BeginScrollView(_sectorPolicyScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Economic Sectors", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));
-            // §565: the paragraph is cut to the two facts it carried that no row states - the readouts do not feed back, and the dials are one bill's draft.
-            DrawStatsSectionCaption("READOUTS ONLY · THE FIVE DIALS MOVE THEM AND NOTHING ELSE READS THEM · EVERY DIAL ACROSS EVERY SECTOR IS ONE BILL'S DRAFT");
-            GUILayout.Space(8f);
-
-            BeginAreaCard("ECONOMIC SECTORS BILL", UiPalette.SystemArea.Sectors);
-            DrawSectorBillStatusAndIntroduce();
-            DrawSectorLiveEstimate();
-            EndAreaCard(UiPalette.SystemArea.Sectors);
-
-            // Measured (not guessed) against _headerStyle - the style the name column is actually
-            // drawn in - since _headerStyle's font is both bigger and bolder than _labelStyle's, a
-            // width budget borrowed from _labelStyle's own metrics (the original bug here) undersizes
-            // the column for the longest name ("Manufacturing"), which then wraps and collides with
-            // the adjacent stats text sharing the same horizontal row.
-            float sectorNameColumnWidth = GetSectorNameColumnWidth();
-            foreach (Sector sector in _playerCountry.Sectors)
-            {
-                DrawSectorRow(sector, sectorNameColumnWidth);
-                GUILayout.Space(10f);
-            }
-
-            DrawTierBreakdownAfterRows();   // P4-B2: the sectors bill's breakdown, after the forty rows
-            // P6-F1 (2026-09-17): the energy page drew here under the Sectors category from EN-6 to this pass (DS-4b); it is its own tab now, whole.
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>Widest SectorType name as rendered in _headerStyle (the style DrawSectorRow's name column actually uses), plus a small right-side pad - recomputed each call (not cached) since _headerStyle's font size itself changes every frame in RescaleStylesToScreen as the window resizes.</summary>
+        /// <summary>Widest SectorType name as rendered in _headerStyle (the style the Trade partners' name column uses - measured for the Sectors rows, tiles since §739), plus a small right-side pad - recomputed each call (not cached) since _headerStyle's font size itself changes every frame in RescaleStylesToScreen as the window resizes.</summary>
         private float GetSectorNameColumnWidth()
         {
             float widest = 0f;
@@ -10820,47 +10778,6 @@ namespace PoliSim.UI
                 case SectorType.Telecommunications: return "Broadband Penetration";
                 default: return "Sector Metric";
             }
-        }
-
-        private void DrawSectorRow(Sector sector, float nameColumnWidth)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(DisplayName.Spaced(sector.Type.ToString()), _headerStyle, GUILayout.Width(nameColumnWidth));
-            GUILayout.Label(
-                $"Output {sector.OutputShareOfGdp:F1}% of GDP | Employment {sector.EmploymentShare:F1}% | {GetSectorMetricLabel(sector.Type)} {sector.SectorMetric:F1}",
-                _labelStyle);
-            GUILayout.EndHorizontal();
-
-            // ⚠ THE SECTOR IS THE GROUP; EACH DIAL IS A ROW. That mapping is not new - it is exactly how
-            // Spending groups its 29 lines under Mandatory/Discretionary headings, and the sector's
-            // descriptive line above is group CONTEXT (output, employment, its own metric) in the same
-            // way "narrower range, higher approval cost" is context for mandatory spending. A dial is the
-            // thing with a standing value and a draft; a sector is not.
-            //
-            // This is the densest sub-screen in the game: eight sectors x five dials is forty rows,
-            // against Spending's 29. The group header is what keeps it navigable - it breaks the run
-            // into eights, and a reader scans headers rather than rows.
-            _sectorSubsidyInputs[sector.Type] = DrawDialRow("Subsidy",
-                sector.SubsidyLevel, GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: sector.Type + "/Subsidy");
-
-            _sectorRegulationInputs[sector.Type] = DrawDialRow("Regulation",
-                sector.RegulationLevel, GetSectorRegulationInput(sector.Type, sector.RegulationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 light - 100 heavy", captionKey: sector.Type + "/Regulation");
-
-            _sectorTaxCreditInputs[sector.Type] = DrawDialRow("Tax Credits",
-                sector.TaxCreditLevel, GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: sector.Type + "/Tax Credits");
-
-            _sectorResearchGrantsInputs[sector.Type] = DrawDialRow("Research Grants",
-                sector.ResearchGrantsLevel, GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null, captionKey: sector.Type + "/Research Grants");
-
-            _sectorDeregulationInputs[sector.Type] = DrawDialRow("Nationalization / Deregulation",   // P3-C3: one axis, both ends in the trailing's order
-                sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated", captionKey: sector.Type + "/Deregulation");
-
-            DrawSectorCostAndImpact(sector);   // P4-B3: the cost line and the 5c plate beneath the five dials
         }
 
         /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceSectorBill/GetPendingSectorBill).</summary>
@@ -10932,13 +10849,6 @@ namespace PoliSim.UI
             return clicked && enabled;
         }
 
-        /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern.</summary>
-        private void DrawSectorLiveEstimate()
-        {
-            _tierConcernForBreakdown = ParliamentSystem.GetSectorBillConcern(_playerCountry, BuildSectorBillFromDrafts());   // P3-A3
-            DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);   // P4-B2: the breakdown after the rows
-        }
-
         // ------------------------------------------------------------------------------------------
         // P4-B3 (2026-09-04): the sectors page's own preview - the whole sector draft applied to a clone
         // (SimulationManager.PreviewTurnWithSectorDraft) and every sector's output, employment and metric
@@ -10979,88 +10889,11 @@ namespace PoliSim.UI
                     foreach (KeyValuePair<SectorType, (float Output, float Employment, float Metric)> kv in _cachedSectorPreview.SectorDeltas)
                     {
                         if (Mathf.Abs(kv.Value.Output) + Mathf.Abs(kv.Value.Employment) + Mathf.Abs(kv.Value.Metric) < 0.0005f) { continue; }
-                        Debug.Log($"SECTOR PREVIEW: {kv.Key} output {kv.Value.Output:+0.000;-0.000} pp, employment {kv.Value.Employment:+0.000;-0.000} pp, metric {kv.Value.Metric:+0.000;-0.000} - the arrows on the sheet.");
+                        Debug.Log($"SECTOR PREVIEW: {kv.Key} output {kv.Value.Output:+0.000;-0.000} pp, employment {kv.Value.Employment:+0.000;-0.000} pp, metric {kv.Value.Metric:+0.000;-0.000} - the sector tiles' changes and slips on the sheet.");
                     }
                 }
             }
             return _cachedSectorPreview;
-        }
-
-        /// <summary>
-        /// P4-B3: beneath a sector's five dials, the cost line in the Budget's own words and the 5c plate - an arrow per
-        /// outcome the draft moves (output share, employment share, the sector's own metric), the figure at the head in
-        /// the arrow's ink, the scope line under the panel. The cost is SectorCouplings' at the draft against the standing
-        /// dials; the arrows are the sector preview's deltas. A sector at rest draws the cost line at zero and the plate's
-        /// empty sentence, so the page stays navigable at rest and the plate appears where a dial has moved.
-        /// </summary>
-        private void DrawSectorCostAndImpact(Sector sector)
-        {
-            float gdp = _playerCountry.State.NominalGdp;   // P5-B6: a nominal figure over nominal GDP
-            float standingCost = SectorCouplings.SupportCost(gdp, sector.SubsidyLevel, sector.TaxCreditLevel, sector.ResearchGrantsLevel);
-            float draftCost = SectorCouplings.SupportCost(gdp,
-                GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel),
-                GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel),
-                GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel));
-            float costDelta = draftCost - standingCost;
-            bool moved = !Mathf.Approximately(GetSectorSubsidyInput(sector.Type, sector.SubsidyLevel), sector.SubsidyLevel)
-                || !Mathf.Approximately(GetSectorRegulationInput(sector.Type, sector.RegulationLevel), sector.RegulationLevel)
-                || !Mathf.Approximately(GetSectorTaxCreditInput(sector.Type, sector.TaxCreditLevel), sector.TaxCreditLevel)
-                || !Mathf.Approximately(GetSectorResearchGrantsInput(sector.Type, sector.ResearchGrantsLevel), sector.ResearchGrantsLevel)
-                || !Mathf.Approximately(GetSectorDeregulationInput(sector.Type, sector.DeregulationNationalizationLevel), sector.DeregulationNationalizationLevel);
-
-            DrawColoredLabel($"Cost of this draft {UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions)}/yr · support standing {UiFormat.Money(standingCost, MoneyUnit.Billions)}/yr",
-                _labelStyle, costDelta > 0f ? PoliSimTheme.Bad : costDelta < 0f ? PoliSimTheme.Good : PoliSimTheme.TextSecondary);
-            bool energyLine = sector.Type == SectorType.Energy && SectorCouplings.HasEnergyLine(_playerCountry);
-            if (sector.Type == SectorType.Energy)
-            {
-                // EN-7a: the subsidy is retail intervention's money side - where its cost lands decides what it does; the figure is what the line carries
-                // (SC-1: the tracker carries the whole cost outside the line's own range, short of it only where a cut would take the line below zero)
-                string carried = UiFormat.Money(_playerCountry.AppliedEnergySupportCost, MoneyUnit.Billions);
-                string subsidy = !energyLine ? "No energy line in this budget: the subsidy's cost lands with the other sectors' support"
-                    : EnergyLedger.HasPolicyLevy(_playerCountry.Id) ? (_playerCountry.AppliedEnergySupportCost < 0f   // PF-4: under neutral the line gives support BACK, and the levy takes it up
-                        ? $"The energy line carries {carried}/yr of the subsidy - support given back, which the policy levy takes up one for one"
-                        : $"The energy line carries {carried}/yr of the subsidy, displacing the policy levy one for one until none is left")
-                    : $"The energy line carries {carried}/yr of the subsidy - no policy levy in the retail price to displace, so no retail effect";
-                DrawColoredLabel(subsidy + " · regulation below its seeded level moves supply margin from industry to households", _labelStyle, PoliSimTheme.TextMuted);
-                if (Event.current.type == EventType.Repaint) { _energySectorCostLastArea = GUILayoutUtility.GetLastRect(); }
-            }
-            SpendingLine supportLine = SectorCouplings.SupportLine(_playerCountry);
-            if (supportLine == null)
-            {
-                // a book with no support line (none of the six since SC-1's ruling): the cost is said not to be booked, where it is printed
-                DrawColoredLabel(energyLine
-                        ? "No spending line in this budget carries the tax credits' and research grants' cost - it is not booked"
-                        : "No spending line in this budget carries sector support - the cost above is not booked",
-                    _labelStyle, PoliSimTheme.TextMuted);
-            }
-            else
-            {
-                // SC-1 (ruled 2026-09-15, COMPLETED.md §503): where the support cost lands, and that the line's own range does not bound it
-                DrawColoredLabel((energyLine ? "Its tax credits and research grants land on " : "Sector support lands on ") + DisplayName.Of(supportLine.Category.ToString()) + ", outside the line's own range",
-                    _labelStyle, PoliSimTheme.TextMuted);
-            }
-
-            // The plate is RESERVED at rest and drawn into on a move - the same height either way - so a drag never grows
-            // the sector and never shifts the rows beneath it (P4-1's invariant; the first film moved five rows by 129 px).
-            var arrows = new List<EffectArrow>();
-            PolicyPreview preview = moved ? SectorPreview() : null;
-            if (preview != null && preview.SectorDeltas != null && preview.SectorDeltas.TryGetValue(sector.Type, out (float Output, float Employment, float Metric) delta))
-            {
-                arrows.Add(new EffectArrow("Output share", delta.Output, true, $"{delta.Output:+0.00;-0.00} pp"));
-                arrows.Add(new EffectArrow("Employment share", delta.Employment, true, $"{delta.Employment:+0.00;-0.00} pp"));
-                arrows.Add(new EffectArrow(GetSectorMetricLabel(sector.Type), delta.Metric, true, $"{delta.Metric:+0.00;-0.00}"));
-            }
-            DrawStatsSectionCaption(EffectArrowsRenderer.PlateTitleDraft);
-            Rect plate = GUILayoutUtility.GetRect(10f, EffectArrowsRenderer.MeasureHeight(_labelStyle), GUILayout.ExpandWidth(true));
-            if (arrows.Count == 0)
-            {
-                GUI.Label(plate, "Move a dial - the outcomes it moves appear here, an arrow each.", _labelStyle);
-            }
-            else
-            {
-                EffectArrowsRenderer.Draw(plate, arrows, _labelStyle);
-            }
-            EffectArrowsRenderer.DrawScopeLine(_labelStyle);
         }
 
         /// <summary>Bundles every current Sector draft, across every SectorType, into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts.</summary>

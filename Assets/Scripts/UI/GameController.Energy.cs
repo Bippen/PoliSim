@@ -38,9 +38,6 @@ namespace PoliSim.UI
         /// <summary>Where the energy plate was laid out last frame - the film driver scrolls to it (06c_policylaws_sectors_energy).</summary>
         private Rect _energyPlateLastArea;
 
-        /// <summary>EN-7a: where the Energy sector's cost sentence was laid out last frame - the film driver scrolls to it (06c_policylaws_sectors_energy_sector_cost).</summary>
-        private Rect _energySectorCostLastArea;
-
         /// <summary>EN-7b: where plate 4 (the instruments) was laid out last frame - the film driver scrolls to its foot (06c_policylaws_sectors_energy_electricity_tax_provenance).</summary>
         private Rect _energyInstrumentsLastArea;
 

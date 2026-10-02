@@ -48,7 +48,6 @@ namespace PoliSim.UI
         // a range is forbidden by the row.
         // ------------------------------------------------------------------------------------------
         public const string ScopeLine = "ESTIMATE · NEXT YEAR · WITH vs WITHOUT THIS DRAFT · NO EVENTS · ONE DETERMINISTIC POINT — NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.";
-        public const string PlateTitleDraft = "ESTIMATED IMPACT · THIS DRAFT";
         public const string PlateTitleEnacted = "ESTIMATED IMPACT · AS ENACTED";
         public const string PlateTitleInherited = "ESTIMATED IMPACT · THE NEW CHAMBER'S FIRST BUDGET, IF UNCHANGED";
         public const string PlateTitleOption = "ESTIMATED IMPACT · THIS OPTION";   // P4-E3 (2026-09-04): the Docket's option, in the same grammar
@@ -65,17 +64,8 @@ namespace PoliSim.UI
             return style;
         }
 
-        /// <summary>The scope line under a panel on an IMGUI sheet - laid out by GUILayout so it wraps to the column it is in.</summary>
-        public static void DrawScopeLine(GUIStyle labelStyle)
-        {
-            GUILayout.Label(ScopeLine, ScopeStyle(labelStyle));
-        }
-
-        /// <summary>P4-E3: the same line in the same style with another scope's words.</summary>
-        public static void DrawScopeLine(GUIStyle labelStyle, string line)
-        {
-            GUILayout.Label(line, ScopeStyle(labelStyle));
-        }
+        // §739: the sheet's own plate (THIS DRAFT, with its scope line laid out under it) retired with its last panel, the Sectors page's per-sector
+        // plate - the v3.5 sheets carry a draft's estimate on their tiles and slips; the takeovers' plates and the Docket's option keep the grammar.
 
         /// <summary>Board 5c's figures line for a painted plate: each figure signed in its own arrow's ink (uGUI rich text), in lane order, separated by middle dots.</summary>
         public static string FiguresLine(IReadOnlyList<EffectArrow> arrows)

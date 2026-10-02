@@ -9,8 +9,9 @@ namespace PoliSim.UI
     /// <summary>
     /// §737 (UI v3.5, Design's V35 composition): THE LAWS PAGE'S FRAME AND ITS LABOUR TAB. The title *Laws* with its six tabs as words and the †; the
     /// Labour tab as the composition lays it - *What these dials move* (the readings the tab's dials reach, as tiles) and *Labour dials* (each dial a
-    /// tile, two to a row) - and the bill's call to action. §738: the Crime & justice tab - its six dials as tiles SET BY LAW (no knob, no control). The other four tabs are drawn as built under the new frame until
-    /// their own items.
+    /// tile, two to a row) - and the bill's call to action. §738: the Crime & justice tab - its six dials as tiles SET BY LAW (no knob, no control).
+    /// §739: the Sectors tab - the eight sectors as tiles, the chosen sector's five dials as tiles. The other three tabs are drawn as built under the new
+    /// frame until their own items.
     ///
     /// <para><b>The dials' units</b> are the main session's rule (relayed 2026-10-01: *a real unit only where the model computes one; named settings,
     /// band edges [AUTHORED-DRAFT], where the dial is an abstract index; never a unit the model does not compute*) applied as Code's table sent to
@@ -42,17 +43,18 @@ namespace PoliSim.UI
             GUILayout.Space(V35.Px(4f));
             float bodyHeight = Mathf.Max(0f, availableHeight - titleHeight - V35.Px(4f));
 
-            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket || _policyLawsCategory == PolicyLawsCategory.CrimeJustice)
+            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket || _policyLawsCategory == PolicyLawsCategory.CrimeJustice || _policyLawsCategory == PolicyLawsCategory.Sectors)
             {
                 // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name - UiScreenshotDriver.ResetScrolls)
-                bool labour = _policyLawsCategory == PolicyLawsCategory.LaborMarket;
+                PolicyLawsCategory tab = _policyLawsCategory;
                 float contentWidth = StatsContentWidth(availableWidth);
                 int scrolledFrom = _slipAnchors.Count;
-                Vector2 scroll = GUILayout.BeginScrollView(labour ? _laborMarketScrollPosition : _crimeJusticeScrollPosition, GUILayout.Height(Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f)));
-                if (labour) { _laborMarketScrollPosition = scroll; } else { _crimeJusticeScrollPosition = scroll; }
+                Vector2 previous = tab == PolicyLawsCategory.LaborMarket ? _laborMarketScrollPosition : tab == PolicyLawsCategory.CrimeJustice ? _crimeJusticeScrollPosition : _sectorPolicyScrollPosition;
+                Vector2 scroll = GUILayout.BeginScrollView(previous, GUILayout.Height(Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f)));
+                if (tab == PolicyLawsCategory.LaborMarket) { _laborMarketScrollPosition = scroll; } else if (tab == PolicyLawsCategory.CrimeJustice) { _crimeJusticeScrollPosition = scroll; } else { _sectorPolicyScrollPosition = scroll; }
                 GUI.enabled = !_isGameOver;
                 V35.FloorGuarded = true;
-                if (labour) { DrawLabourV35(contentWidth); } else { DrawCrimeV35(contentWidth); }
+                if (tab == PolicyLawsCategory.LaborMarket) { DrawLabourV35(contentWidth); } else if (tab == PolicyLawsCategory.CrimeJustice) { DrawCrimeV35(contentWidth); } else { DrawSectorsV35(contentWidth); }
                 V35.FloorGuarded = false;
                 GUI.enabled = true;
                 GUILayout.EndScrollView();
@@ -62,7 +64,7 @@ namespace PoliSim.UI
                 return;
             }
 
-            // The five tabs not yet retrofitted - drawn as built under the v3.5 title: the screen's caption, the stat chips its levers reach, the trace a
+            // The tabs not yet retrofitted - drawn as built under the v3.5 title: the screen's caption, the stat chips its levers reach, the trace a
             // chip opens, the content.
             DrawScreenCaption(PolicyLawsScreenCaption());
             float statRowWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - 8f;
@@ -76,11 +78,6 @@ namespace PoliSim.UI
             float contentHeight = Mathf.Max(0f, bodyHeight - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
             {
-                case PolicyLawsCategory.Sectors:
-                    GUI.enabled = !_isGameOver;
-                    DrawSectorPolicy(contentHeight);
-                    GUI.enabled = true;
-                    break;
                 case PolicyLawsCategory.PolicyWeb:
                     DrawPolicyWebTab(contentHeight);
                     break;
@@ -349,6 +346,279 @@ namespace PoliSim.UI
             slip.Add("THE INDEX " + UiFormat.Number(level, 0) + " OF 100 · 50 IS THE COUNTRY'S STATUS QUO");
             slip.Add(laws.Count == 0 ? "SET BY LAW · NONE IN FORCE" : "SET BY LAW · " + laws.Count + " IN FORCE - " + string.Join(" · ", laws));
             _lawsSlipBook.Anchors["dial:" + name] = slip;
+        }
+
+        // =============================================================================================================================================
+        // Sectors
+        // =============================================================================================================================================
+
+        /// <summary>§739: the sector whose dials the Sectors tab shows - a click on a sector's tile (UI state, not saved).</summary>
+        private SectorType _sectorsV35Selected = SectorType.Manufacturing;
+
+        /// <summary>
+        /// §739 (UI v3.5, the composition's Laws › Sectors): <b>Sectors · share of GDP</b> - the eight sectors as tiles, each its output's share of GDP; a click
+        /// shows that sector's dials - then <b>its dials</b> as tiles, the bill's action, and <i>What these dials move</i> last. The dials of all eight sectors
+        /// are still ONE bill's draft (the selected sector only chooses which five are drawn - five controls on every frame, whichever sector).
+        ///
+        /// <para><b>The faces</b> (`V35_ANSWERS.md` §1, Sectors): tax credits and research grants by name (<see cref="DialStops"/>; the composition's
+        /// "% of R&amp;D wages" and "% of output" are not computed - the credit is a general sector credit) with <b>their cost a year</b> as the figure
+        /// (SectorCouplings: zero at 50); regulation as <b>the OECD PMR score</b> - the seed's own mapping inverted (level = 50 × PMR / the OECD average);
+        /// ownership by name (no ownership share is computed); the subsidy, which the composition does not draw (asked), kept as its cost a year - and on
+        /// the Energy sector as <i>Retail price support</i> by name, the cost a year its figure, as the table sent. The Energy page draws the same five
+        /// drafts under its own names until its pass (the one-name question is asked).</para>
+        ///
+        /// <para><b>Folded</b>: each sector's line (output, employment, its own metric) into its tile and slip; the per-sector cost line and the support
+        /// line's routing into the dials' slips; the per-sector effects plate into the tiles - while a draft stands, each sector's tile carries the
+        /// preview's change in its output share in the draft's ink, and its slip all three changes (`SectorPreview`, unchanged).</para>
+        /// </summary>
+        private void DrawSectorsV35(float width)
+        {
+            Country c = _playerCountry;
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors);
+            int drafted = SectorDraftChanges();
+            PolicyPreview preview = drafted > 0 ? SectorPreview() : null;
+
+            // ---- the sectors ----
+            DrawLawsSectionHead("Sectors · share of GDP", "laws:sectors", width);
+            float outputSum = 0f, employmentSum = 0f;
+            foreach (Sector s in c.Sectors) { outputSum += s.OutputShareOfGdp; employmentSum += s.EmploymentShare; }
+            _lawsSlipBook.Anchors["laws:sectors"] = new SlipContent("SECTORS · SHARE OF GDP")
+                .Add("EACH SECTOR'S OUTPUT AS A SHARE OF GDP · A CLICK SHOWS ITS DIALS")
+                .Add("THE EIGHT HOLD " + UiFormat.Number(outputSum, 1) + " % OF GDP AND " + UiFormat.Number(employmentSum, 1) + " % OF ALL JOBS")
+                .Add("READOUTS ONLY - THE DIALS MOVE THEM AND NOTHING ELSE IN THE MODEL READS THEM")
+                .Add(drafted > 0 ? "WHILE A DRAFT STANDS, A TILE CARRIES THE CHANGE IT WOULD MAKE TO THE SECTOR'S OUTPUT SHARE, IN THE DRAFT'S INK" : "NO DRAFT STANDS");
+            float gutter = V35.Px(V35.Gutter), sectorWidth = V35Span(width, 3);
+            var tiles = new List<(Sector Sector, V35TileData Tile)>();
+            float sectorHeight = 0f;
+            foreach (Sector s in c.Sectors)
+            {
+                string metric = GetSectorMetricLabel(s.Type);
+                var t = new V35TileData { Icon = SectorIcon(s.Type), IconInk = area, Figure = UiFormat.Number(s.OutputShareOfGdp, 1) + "%", Name = DisplayName.Spaced(s.Type.ToString()), FigurePx = V35.FigureSmall };
+                var slip = new SlipContent(DisplayName.Spaced(s.Type.ToString()).ToUpperInvariant() + " · " + t.Figure + " OF GDP")
+                    .Add("EMPLOYMENT " + UiFormat.Number(s.EmploymentShare, 1) + " % OF ALL JOBS · " + metric.ToUpperInvariant() + " " + UiFormat.Number(s.SectorMetric, 1));
+                int moved = SectorDialsMoved(s);
+                if (preview != null && preview.SectorDeltas != null && preview.SectorDeltas.TryGetValue(s.Type, out (float Output, float Employment, float Metric) d))
+                {
+                    if (Mathf.Abs(d.Output) >= 0.005f)
+                    {
+                        t.Change = (d.Output > 0f ? "▲ " : "▼ ") + UiFormat.Number(Mathf.Abs(d.Output), 2);
+                        t.ChangeInk = PoliSimTheme.Caution;
+                    }
+                    if (Mathf.Abs(d.Output) + Mathf.Abs(d.Employment) + Mathf.Abs(d.Metric) >= 0.0005f)
+                    {
+                        slip.Add("IF THE DRAFT PASSED · OUTPUT " + SignedFigure(d.Output, 2) + " PP · EMPLOYMENT " + SignedFigure(d.Employment, 2) + " PP · " + metric.ToUpperInvariant() + " " + SignedFigure(d.Metric, 2))
+                            .Add("THE PREVIEW: THE WHOLE SECTORS DRAFT APPLIED TO A COPY OF THE COUNTRY FOR A TURN");
+                    }
+                }
+                slip.Add(moved == 0 ? "THE DRAFT MOVES NONE OF ITS DIALS" : "THE DRAFT MOVES " + moved + " OF ITS FIVE DIALS");
+                slip.Add(s.Type == _sectorsV35Selected ? "ITS DIALS ARE SHOWN BELOW" : "A CLICK SHOWS ITS DIALS");
+                _lawsSlipBook.Anchors["sector:" + s.Type] = slip;
+                tiles.Add((s, t));
+                sectorHeight = Mathf.Max(sectorHeight, V35TileHeight(t));
+            }
+            for (int i = 0; i < tiles.Count; i += 4)
+            {
+                Rect row = GUILayoutUtility.GetRect(width, sectorHeight, GUILayout.Width(width), GUILayout.Height(sectorHeight));
+                for (int j = i; j < Mathf.Min(i + 4, tiles.Count); j++)
+                {
+                    var r = new Rect(row.x + (j - i) * (sectorWidth + gutter), row.y, sectorWidth, sectorHeight);
+                    // the tile's control, every frame for every sector (stable control layout); a click only chooses which five dials are drawn
+                    if (PoliSimWidgets.Button(r, GUIContent.none, GUIStyle.none)) { _sectorsV35Selected = tiles[j].Sector.Type; }
+                    DrawV35Tile(r, tiles[j].Tile);
+                    if (tiles[j].Sector.Type == _sectorsV35Selected && Event.current.type == EventType.Repaint)
+                    {
+                        float line = Mathf.Max(1f, V35.Px(2f));
+                        PoliSimTheme.Rule(new Rect(r.x, r.y, r.width, line), area);
+                        PoliSimTheme.Rule(new Rect(r.x, r.yMax - line, r.width, line), area);
+                        PoliSimTheme.Rule(new Rect(r.x, r.y, line, r.height), area);
+                        PoliSimTheme.Rule(new Rect(r.xMax - line, r.y, line, r.height), area);
+                    }
+                    SlipAnchor(r, "sector:" + tiles[j].Sector.Type);
+                }
+                GUILayout.Space(gutter);
+            }
+
+            // ---- the selected sector's dials ----
+            Sector sector = null;
+            foreach (Sector s in c.Sectors) { if (s.Type == _sectorsV35Selected) { sector = s; break; } }
+            if (sector == null && c.Sectors.Count > 0) { sector = c.Sectors[0]; _sectorsV35Selected = sector.Type; }
+            if (sector != null) { DrawSectorDialsV35(width, sector); }
+
+            // ---- the bill ----
+            SectorPolicyBill pending = _simulationManager.GetPendingSectorBill(PlayerCountryId);
+            float gdp = c.State.NominalGdp, standingCost = 0f, draftCost = 0f;
+            foreach (Sector s in c.Sectors)
+            {
+                standingCost += SectorCouplings.SupportCost(gdp, s.SubsidyLevel, s.TaxCreditLevel, s.ResearchGrantsLevel);
+                draftCost += SectorCouplings.SupportCost(gdp, GetSectorSubsidyInput(s.Type, s.SubsidyLevel), GetSectorTaxCreditInput(s.Type, s.TaxCreditLevel), GetSectorResearchGrantsInput(s.Type, s.ResearchGrantsLevel));
+            }
+            float costDelta = draftCost - standingCost;
+            string status = pending != null
+                ? $"An Economic Sectors bill is before Parliament - resolves in {pending.DaysRemaining} day(s)."
+                : "No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft"
+                    + (Mathf.Abs(costDelta) >= 0.0005f ? " · it would change sector support by " + UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions) + " a year." : ".");
+            DrawLawsBillAction(width, "Introduce sectors bill", "laws:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
+                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status);
+
+            DrawLawsReadings(width, UiPalette.SystemArea.Sectors);
+        }
+
+        /// <summary>
+        /// §739: one sector's five dials as tiles, two to a row, in the composition's order - tax credits, research grants, regulation, ownership - and the
+        /// subsidy the composition does not draw, kept fifth. The literal names and the caption keys are the old rows' (`DialLabelCheck`,
+        /// `RangeCaptionCheck`, the film's `RowTop(" / Subsidy")`).
+        /// </summary>
+        private void DrawSectorDialsV35(float width, Sector sector)
+        {
+            Country c = _playerCountry;
+            SectorType type = sector.Type;
+            string sectorName = DisplayName.Spaced(type.ToString());
+            UiPalette.SystemArea area = UiPalette.SystemArea.Sectors;
+            bool energy = type == SectorType.Energy;
+            bool energyLine = energy && SectorCouplings.HasEnergyLine(c);
+            SpendingLine supportLine = SectorCouplings.SupportLine(c);
+            string supportLands = supportLine != null
+                ? "SECTOR SUPPORT LANDS ON " + DisplayName.Of(supportLine.Category.ToString()).ToUpperInvariant() + ", OUTSIDE THE LINE'S OWN RANGE"
+                : "NO SPENDING LINE IN THIS BUDGET CARRIES SECTOR SUPPORT - ITS COST IS NOT BOOKED";
+
+            DrawLawsSectionHead(sectorName + " dials", "laws:sectordials", width);
+            _lawsSlipBook.Anchors["laws:sectordials"] = new SlipContent(sectorName.ToUpperInvariant() + " DIALS")
+                .Add("THE DIALS OF ALL EIGHT SECTORS ARE ONE BILL'S DRAFT · A SECTOR'S TILE SHOWS ITS FIVE")
+                .Add("SUPPORT - TAX CREDITS, RESEARCH GRANTS, THE SUBSIDY - SHOWS ITS COST A YEAR: ZERO AT 50, THE COUNTRY'S STATUS QUO")
+                .Add("A DIAL THE MODEL HOLDS AS AN INDEX IS SHOWN BY NAME - ITS BANDS' EDGES DECLARED: AUTHORED FOR THE GAME, NOT MEASURED")
+                .Add(supportLands);
+            float gutter = V35.Px(V35.Gutter), tileWidth = V35Span(width, 6), rowHeight = BudgetDialTileHeight(false);
+            float gdp = c.State.NominalGdp;
+
+            Rect row = LawsDialRow(width, rowHeight);
+            _sectorTaxCreditInputs[type] = DrawDialRow("Tax Credits",
+                sector.TaxCreditLevel, GetSectorTaxCreditInput(type, sector.TaxCreditLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
+                new Rect(row.x, row.y, tileWidth, rowHeight), SupportFace("receipt", DialStops.TaxCredits, v => SectorCouplings.SupportCost(gdp, 50f, v, 50f),
+                    "A GENERAL TAX CREDIT TO THE SECTOR, NOT AN R&D CREDIT · " + UiFormat.Number(SectorCouplings.TaxCreditBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED · " + supportLands),
+                captionKey: type + "/Tax Credits");
+            _sectorResearchGrantsInputs[type] = DrawDialRow("Research Grants",
+                sector.ResearchGrantsLevel, GetSectorResearchGrantsInput(type, sector.ResearchGrantsLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
+                new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), SupportFace("book", DialStops.ResearchGrants, v => SectorCouplings.SupportCost(gdp, 50f, 50f, v),
+                    "THE MODEL COMPUTES NO SHARE OF OUTPUT · " + UiFormat.Number(SectorCouplings.ResearchGrantsBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED · " + supportLands),
+                captionKey: type + "/Research Grants");
+            GUILayout.Space(gutter);
+
+            row = LawsDialRow(width, rowHeight);
+            float pmrAverage = PmrAverage(type);
+            _sectorRegulationInputs[type] = DrawDialRow("Regulation",
+                sector.RegulationLevel, GetSectorRegulationInput(type, sector.RegulationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 light - 100 heavy",
+                new Rect(row.x, row.y, tileWidth, rowHeight), new V35DialFace
+                {
+                    Icon = "scales", Title = "Regulation", Area = area,
+                    Figure = v => "PMR " + UiFormat.Number(v * pmrAverage / 50f, 2),
+                    EndLeft = energy ? "Liberalised" : "Light", EndRight = energy ? "Regulated" : "Heavy",
+                    Census = "THE OECD'S PRODUCT MARKET REGULATION SCORE (0-6, LOWER IS LIGHTER) - THE SEED'S OWN MAPPING INVERTED: THE DIAL IS 50 × PMR / THE OECD AVERAGE · "
+                        + "MODERATE AT THE OECD AVERAGE, " + UiFormat.Number(pmrAverage, 2) + (PmrSectorSeries(type) ? " FOR THE SECTOR'S OWN SERIES" : " ECONOMY-WIDE")
+                        + " · LIGHT BELOW IT, HEAVY ABOVE · THE SEED HELD THE DIAL INSIDE 10-90",
+                }, captionKey: type + "/Regulation");
+            _sectorDeregulationInputs[type] = DrawDialRow("Nationalization / Deregulation",   // P3-C3: one axis, both ends in the trailing's order
+                sector.DeregulationNationalizationLevel, GetSectorDeregulationInput(type, sector.DeregulationNationalizationLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, "0 nationalized - 100 deregulated",
+                new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight), NamedFace("key", DialStops.Ownership,
+                    "0 NATIONALISED … 100 DEREGULATED · THE MODEL COMPUTES NO OWNERSHIP SHARE", area),
+                captionKey: type + "/Deregulation");
+            GUILayout.Space(gutter);
+
+            row = LawsDialRow(width, rowHeight);
+            string subsidyLands = !energy ? supportLands
+                : !energyLine ? "NO ENERGY LINE IN THIS BUDGET: THE SUBSIDY'S COST LANDS WITH THE OTHER SECTORS' SUPPORT"
+                : EnergyLedger.HasPolicyLevy(c.Id)
+                    ? (c.AppliedEnergySupportCost < 0f
+                        ? "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - SUPPORT GIVEN BACK, WHICH THE POLICY LEVY TAKES UP ONE FOR ONE"
+                        : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT, DISPLACING THE POLICY LEVY ONE FOR ONE UNTIL NONE IS LEFT")
+                    : "THE ENERGY LINE CARRIES " + UiFormat.Money(c.AppliedEnergySupportCost, MoneyUnit.Billions) + " A YEAR OF IT - NO POLICY LEVY IN THE RETAIL PRICE TO DISPLACE, SO NO RETAIL EFFECT";
+            string subsidyCensus = UiFormat.Number(SectorCouplings.SubsidyBudgetCostPercentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50, THE SIZE DECLARED · " + subsidyLands;
+            System.Func<float, float> subsidyCost = v => SectorCouplings.SupportCost(gdp, v, 50f, 50f);
+            _sectorSubsidyInputs[type] = DrawDialRow("Subsidy",
+                sector.SubsidyLevel, GetSectorSubsidyInput(type, sector.SubsidyLevel),
+                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty, null,
+                new Rect(row.x, row.y, tileWidth, rowHeight), energy
+                    ? SupportFace("coins", DialStops.RetailSupport, subsidyCost, "RETAIL INTERVENTION'S MONEY SIDE · " + subsidyCensus)
+                    : new V35DialFace
+                    {
+                        Icon = "coins", Title = "Subsidy", Area = area,
+                        Figure = v => CostAYear(subsidyCost(v)),
+                        EndLeft = UiFormat.MoneyDelta(subsidyCost(MinPolicyDialLevel), MoneyUnit.Billions), EndRight = UiFormat.MoneyDelta(subsidyCost(MaxPolicyDialLevel), MoneyUnit.Billions),
+                        Census = "ITS COST A YEAR · " + subsidyCensus,
+                    },
+                captionKey: type + "/Subsidy");
+            GUILayout.Space(gutter);
+        }
+
+        /// <summary>§739: a support dial's face - the stops' names at the ends and in the slip, the dial's cost a year as the figure.</summary>
+        private static V35DialFace SupportFace(string icon, DialStops.Dial stops, System.Func<float, float> cost, string census) => new V35DialFace
+        {
+            Icon = icon, Title = stops.Title, Stops = stops, Area = UiPalette.SystemArea.Sectors,
+            Figure = v => CostAYear(cost(v)),
+            EndLeft = stops.Stops[0].Name, EndRight = stops.Stops[stops.Stops.Length - 1].Name,
+            Census = "ITS COST A YEAR, ZERO AT 50 · " + census,
+        };
+
+        /// <summary>
+        /// §739: the OECD average the regulation seed divided by (`WorldFactory`'s regulation seed slots, R-C4): the economy-wide PMR's published "OECD
+        /// average" row, 1.3464 (PMR-Indicator_Econwide_2023-24-and-2018_02.02.2026.xlsx, oecd.org, retrieved 2026-08-28), and the 38-member simple means
+        /// of the three sector series that override it - ENERGY 1.3134, ECOMM 1.3056, RETAIL_TRADE 1.0409 (OECD.ECO.GCRD, DSD_PMR@DF_PMR 1.3, 2023). A
+        /// display scale: the model holds the dial, and the score is the dial read back through the seed's own mapping.
+        /// </summary>
+        private static float PmrAverage(SectorType type)
+        {
+            switch (type)
+            {
+                case SectorType.Energy: return 1.3134f;
+                case SectorType.Telecommunications: return 1.3056f;
+                case SectorType.Retail: return 1.0409f;
+                default: return 1.3464f;
+            }
+        }
+
+        /// <summary>Whether a sector's regulation was seeded from its own PMR series rather than the economy-wide score.</summary>
+        private static bool PmrSectorSeries(SectorType type) => type == SectorType.Energy || type == SectorType.Telecommunications || type == SectorType.Retail;
+
+        /// <summary>A sector's v3.5 icon.</summary>
+        private static string SectorIcon(SectorType type)
+        {
+            switch (type)
+            {
+                case SectorType.Manufacturing: return "factory";
+                case SectorType.Technology: return "gear";
+                case SectorType.Agriculture: return "wheat";
+                case SectorType.Finance: return "bank";
+                case SectorType.Energy: return "bolt";
+                case SectorType.Construction: return "town";
+                case SectorType.Retail: return "tag";
+                case SectorType.Telecommunications: return "antenna";
+                default: return "sectors";
+            }
+        }
+
+        private static string SignedFigure(float v, int decimals) => (v > 0f ? "+" : v < 0f ? "−" : "±") + UiFormat.Number(Mathf.Abs(v), decimals);
+
+        /// <summary>How many of one sector's five dials the draft moves off their standing levels.</summary>
+        private int SectorDialsMoved(Sector s)
+        {
+            int n = 0;
+            if (!Mathf.Approximately(GetSectorSubsidyInput(s.Type, s.SubsidyLevel), s.SubsidyLevel)) { n++; }
+            if (!Mathf.Approximately(GetSectorRegulationInput(s.Type, s.RegulationLevel), s.RegulationLevel)) { n++; }
+            if (!Mathf.Approximately(GetSectorTaxCreditInput(s.Type, s.TaxCreditLevel), s.TaxCreditLevel)) { n++; }
+            if (!Mathf.Approximately(GetSectorResearchGrantsInput(s.Type, s.ResearchGrantsLevel), s.ResearchGrantsLevel)) { n++; }
+            if (!Mathf.Approximately(GetSectorDeregulationInput(s.Type, s.DeregulationNationalizationLevel), s.DeregulationNationalizationLevel)) { n++; }
+            return n;
+        }
+
+        /// <summary>How many dials, across all eight sectors, the draft moves.</summary>
+        private int SectorDraftChanges()
+        {
+            int n = 0;
+            foreach (Sector s in _playerCountry.Sectors) { n += SectorDialsMoved(s); }
+            return n;
         }
 
         // =============================================================================================================================================

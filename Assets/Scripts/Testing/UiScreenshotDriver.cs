@@ -623,17 +623,9 @@ namespace PoliSim.Testing
                 if (Tabs[i] == "Energy")
                 {
                     string energyStem = $"{i + 2:00}_energy";
-                    // EN-7a (2026-09-14): the Energy sector's cost sentence - where its subsidy lands, what the line carries, and SC-1's unbooked support
-                    var energyCostField = controller.GetType().GetField("_energySectorCostLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
-                    float energyCostY = energyCostField != null ? ((Rect)energyCostField.GetValue(controller)).y : 0f;
-                    if (energyCostY > 0f)
-                    {
-                        ScrollBy(controller, Mathf.Max(0f, energyCostY - UiScreen.Height * 0.45f));
-                        yield return Settle();
-                        yield return Settle();
-                        yield return Capture(energyStem + "_sector_cost");
-                    }
-                    else { Debug.LogError($"SHOT: the Energy sector's cost sentence was never laid out - {energyStem}_sector_cost not filmed."); }
+                    // EN-7a (2026-09-14) filmed the Energy sector's cost sentence here as `_sector_cost`, scrolled by the rect the Sectors page laid it out at.
+                    // §739: the sentence is the Energy sector's Subsidy slip on the v3.5 Sectors page (where its subsidy lands, what the line carries) - no
+                    // rect to scroll to, and the capture retires.
                     var energyField = controller.GetType().GetField("_energyPlateLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
                     float energyY = energyField != null ? ((Rect)energyField.GetValue(controller)).y : 3600f;
                     ScrollBy(controller, Mathf.Max(0f, energyY - UiScreen.Height * 0.06f));
@@ -1071,7 +1063,10 @@ namespace PoliSim.Testing
                         {
                             var inputs = controller.GetType().GetField("_sectorSubsidyInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<SectorType, float>;
                             if (inputs != null) { before = inputs.TryGetValue(firstSector, out float b0) ? (object)b0 : null; inputs[firstSector] = 80f; }
-                            ScrollBy(controller, UiScreen.Height * 0.74f);   // past the sectors bill card so the first sector AND its plate (P4-B3) sit above the fold; to the first sector's dials (a fraction of the height: the card scales with the face)
+                            // §739: the sector's dials are tiles under the eight sector tiles, Manufacturing's by default - scrolled to the Subsidy tile's own laid-out rect
+                            float subsidyY = RowTop(" / Subsidy");
+                            if (subsidyY < 0f) { Debug.LogError($"SHOT: {stem}_caption_drag - the Subsidy tile's geometry was not recorded; the frame is filmed at the page's head."); _failed++; }
+                            ScrollBy(controller, Mathf.Max(0f, subsidyY - UiScreen.Height * 0.14f));
                         }
                         yield return Settle();
                         yield return Settle();
