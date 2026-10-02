@@ -5,6 +5,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using PoliSim.Data;
+using PoliSim.Elections;
+using PoliSim.Elections.Generated;
 using UnityEngine;
 
 namespace PoliSim.EditorTools
@@ -19,9 +22,9 @@ namespace PoliSim.EditorTools
     /// poz. 2234) - seat for seat. The thresholds' edges are planted: a coalition at 7.9 % is out where a party at 7.9 % is in, and the minority's
     /// exemption seats nothing it does not win.
     ///
-    /// <para><b>Not live yet.</b> Poland's chamber is NotImplemented on the live path (NationalElection): wiring this in needs each district's share
-    /// from the national vote on the polling day (a uniform swing from 2023's district results is the standard reading) and moves Poland's
-    /// trajectory, so it lands as its own sentinel family. This proves the law first.</para>
+    /// <para><b>LIVE since §762</b> (`PolishSejmAllocation`, `NationalElection`'s Poland case): the game's national vote spread over the districts by
+    /// a uniform swing from 2023's district results, the standard reading this instrument named. The live block below holds the generated table
+    /// (`Tools/sejm_districts_prep.pl`) against both files, reproduces the record through the game's own path, and moves it by a swing.</para>
     /// </summary>
     public static class PolishSejmAllocationDiagnostic
     {
@@ -68,6 +71,41 @@ namespace PoliSim.EditorTools
                     Check(got == r.Value, F("{0}: {1} seat(s) - the PKW's {2}", r.Key, got, r.Value));
                 }
                 Check(seats.Values.Sum() == 460, F("460 seats allocated ({0})", seats.Values.Sum()));
+
+                // ---- §762: THE COUNT LIVE - the generated table, the record through the game's own path, a swing ----
+                bool tableMatches = PolishSejmDistricts2023.Committees.SequenceEqual(committees) && PolishSejmDistricts2023.Votes.Length == votes.Count
+                    && PolishSejmDistricts2023.Magnitudes.SequenceEqual(magnitudes);
+                for (int d = 0; tableMatches && d < votes.Count; d++) { tableMatches = PolishSejmDistricts2023.Votes[d].SequenceEqual(votes[d]); }
+                string csvDigest = Sha256(Path.Combine(root, "district_votes_2023.csv")), mdDigest = Sha256(Path.Combine(root, "returns_2023.md"));
+                Check(tableMatches && PolishSejmDistricts2023.SourceDigest == csvDigest && PolishSejmDistricts2023.MagnitudesDigest == mdDigest,
+                    "§762: the generated table (Tools/sejm_districts_prep.pl) holds both files figure for figure, their digests current");
+                long six = national.Sum();
+                var shares2023 = new Dictionary<string, double>();
+                for (int c = 0; c < committees.Length; c++) { shares2023[committees[c]] = (double)national[c] / six; }
+                ElectionRecord live = NationalElection.Run(CountryId.Poland, 0, shares2023, new DateTime(2023, 10, 15));
+                bool record = live.Method == ElectionMethod.PolandDistricts;
+                foreach (KeyValuePair<string, int> r in Record2023) { record &= live.Seats.TryGetValue(r.Key, out int got) && got == r.Value; }
+                Check(record && live.Seats.Values.Sum() == 460, F("§762: NationalElection.Run on 2023's national shares (on the committees' own sum - no swing) returns the record seat for seat: {0}",
+                    string.Join(", ", live.Seats.Where(kv => kv.Value > 0).Select(kv => kv.Key + " " + kv.Value))));
+                var swung = new Dictionary<string, double>(shares2023);
+                swung["PiS"] += 0.05; swung["KO"] -= 0.05;
+                Dictionary<string, int> moved = PolishSejmAllocation.Allocate(swung, out List<Dictionary<string, int>> perDistrict);
+                Check(moved["PiS"] > Record2023["PiS"] && moved["KO"] < Record2023["KO"] && moved.Values.Sum() == 460 && perDistrict.Count == 41,
+                    F("§762: five points from KO to PiS, swung uniformly over the 41 okregi - PiS {0} (from 194), KO {1} (from 157), 460 in all", moved["PiS"], moved["KO"]));
+                // the live thresholds, seen as which lists take part in the okregi's divisions (Allocate's per-district result)
+                var edge = new Dictionary<string, double>(shares2023);
+                double toPiS = (edge["Konf"] - 0.049) + (edge["TD"] - 0.079) + (edge["NL"] - 0.05) + (edge["MN"] - 0.0001);
+                edge["Konf"] = 0.049; edge["TD"] = 0.079; edge["NL"] = 0.05; edge["MN"] = 0.0001; edge["PiS"] += toPiS;
+                Dictionary<string, int> edgeSeats = PolishSejmAllocation.Allocate(edge, out List<Dictionary<string, int>> edgeDistricts);
+                bool konfOut = edgeDistricts.All(d => !d.ContainsKey("Konf")) && edgeSeats["Konf"] == 0, tdOut = edgeDistricts.All(d => !d.ContainsKey("TD")) && edgeSeats["TD"] == 0;
+                bool nlIn = edgeDistricts.Any(d => d.ContainsKey("NL")), minorityIn = edgeDistricts.Any(d => d.ContainsKey("MN"));
+                Check(konfOut && tdOut && nlIn && minorityIn && NationalElection.ExemptFromThreshold(CountryId.Poland, "MN"),
+                    F("§762: the live thresholds - Konfederacja (a party) at 4.9 % out {0}, TD (a coalition) at 7.9 % out {1}, NL (a party) at 5.0 % in {2}, the minority at 0.01 % in {3} (NationalElection.ExemptFromThreshold)",
+                        konfOut, tdOut, nlIn, minorityIn));
+                var withSld = new Dictionary<string, double>(shares2023);
+                withSld["SLD"] = 0.06; withSld["NL"] -= 0.06;
+                Dictionary<string, int> sld = PolishSejmAllocation.Allocate(withSld, out _);
+                Check(sld["SLD"] > 0 && sld.Values.Sum() == 460, F("§762: a list with no 2023 committee (SLD at 6 %) takes its national share in every okreg - {0} seat(s)", sld["SLD"]));
 
                 // ---- the rule's edges, planted ----
                 var edgeKinds = new Dictionary<string, Kind> { { "A", Kind.Party }, { "Coalition", Kind.Coalition }, { "Party", Kind.Party } };
@@ -147,6 +185,12 @@ namespace PoliSim.EditorTools
                 if (m.Success) { byDistrict[int.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture)] = int.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture); }
             }
             return byDistrict.Values.ToArray();
+        }
+
+        /// <summary>§762: a file's SHA-256, lower-case hex - the generated table's recorded digests are checked against the files they were read from.</summary>
+        private static string Sha256(string path)
+        {
+            using (var sha = System.Security.Cryptography.SHA256.Create()) { return BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", string.Empty).ToLowerInvariant(); }
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

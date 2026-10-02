@@ -12,6 +12,8 @@ namespace PoliSim.Elections
         SwedenTwoTier,
         /// <summary>Germany: 630 seats allocated purely on nationwide Zweitstimmen by Sainte-Lague/Schepers, 5 % threshold.</summary>
         GermanyNationalProportional,
+        /// <summary>§762 (PS-5): Poland's 41 districts, d'Hondt in each, the 5 % and 8 % thresholds, the minority exempt - `PolishSejmAllocation`.</summary>
+        PolandDistricts,
     }
 
     /// <summary>
@@ -93,7 +95,9 @@ namespace PoliSim.Elections
         /// counted every party against the 5 % line, so the SSW could never be seated. ⚠ Premise, stated: the recognition is made for each
         /// election; an election the game holds after 2025 carries it forward.
         /// </summary>
-        public static bool ExemptFromThreshold(CountryId country, string abbrev) => country == CountryId.Germany && abbrev == "SSW";
+        /// <remarks>§762 (PS-5): and Poland's German minority committee - Kodeks wyborczy art. 197 § 1, the exemption on the committee's declaration,
+        /// declared at the record's elections (MN; `ElectionsData/poland/returns_2023.md`, Rules); carried forward the same way.</remarks>
+        public static bool ExemptFromThreshold(CountryId country, string abbrev) => (country == CountryId.Germany && abbrev == "SSW") || (country == CountryId.Poland && abbrev == "MN");
 
         /// <summary>
         /// W-G1: the vote shares an election returns for a country, through the vote model''s
@@ -383,6 +387,14 @@ namespace PoliSim.Elections
                         SeatConversion.NationalThreshold, SeatAllocation.ModifiedSainteLagueDivisor);
                     return record;
 
+                case CountryId.Poland:
+                    // §762 (PS-5): the Sejm by its own law - the national vote spread over the 41 okregi by a uniform swing from 2023, d'Hondt in each
+                    // among the lists that clear 5 % (a coalition 8 %; the minority exempt) - no national tier (PolishSejmAllocation)
+                    record.Method = ElectionMethod.PolandDistricts;
+                    foreach (PoliticalParty party in PartySystems.For(country)) { record.Shares[party.Abbrev] = shares != null && shares.TryGetValue(party.Abbrev, out double s) ? s : 0.0; }
+                    foreach (KeyValuePair<string, int> kv in PolishSejmAllocation.Allocate(record.Shares, out _)) { record.Seats[kv.Key] = kv.Value; }
+                    return record;
+
                 default:
                     record.Method = ElectionMethod.NotImplemented;
                     record.NotHeldReason = NotHeldReason(country);
@@ -395,8 +407,10 @@ namespace PoliSim.Elections
             switch (country)
             {
                 case CountryId.Poland:
-                    return "Poland allocates d'Hondt separately in 41 districts with no national compensatory tier. " +
-                           "This model has no district path for it, and a national allocation would be a different system.";
+                    // §762: the count is the law's now (PolishSejmAllocation); what is missing is the vote it counts - the live prediction reads the
+                    // seated chamber's result and the one before it (PartySystems.TryHistory), and Poland's lists changed between them (the mapping's ruling is owed)
+                    return "Poland's Sejm is counted by its own law - 41 districts, d'Hondt in each, 5 % for a party and 8 % for a coalition. " +
+                           "The vote it would count is not modelled yet: the lists changed between Poland's elections, and how they carry over is still to be decided.";
                 case CountryId.France:
                     return "France elects 577 single-member seats in two rounds. This model holds no second round.";
                 case CountryId.Italy:
