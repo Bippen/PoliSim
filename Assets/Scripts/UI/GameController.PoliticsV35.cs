@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Globalization;
 using PoliSim.Data;
 using PoliSim.Elections;
+using PoliSim.Simulation;
 using UnityEngine;
 
 namespace PoliSim.UI
@@ -11,7 +13,7 @@ namespace PoliSim.UI
     /// blocs over it and the majority tick through it, then the parties as tiles - and, under them, what the composition does not draw, kept as
     /// built (asked): the bills before the chamber with their counts, the blocs, formation and confidence rows, and the division records. Compass,
     /// Cabinet and the bank draw as built under the new frame until their own items. §744: the Compass tab - the parties on two axes beside their
-    /// positions, the six countries' compass kept under them.
+    /// positions, the six countries' compass kept under them. §745: the Cabinet tab - one card per portfolio, the shortlists in their cards.
     /// </summary>
     public partial class GameController
     {
@@ -44,14 +46,25 @@ namespace PoliSim.UI
             // §685 (21b): the political blocks lay their rows to the VISIBLE width - a right-aligned act laid to the content's edge was off-screen
             _parliamentVisibleWidth = contentWidth;
 
-            if (_politicsCategory == PoliticsCategory.Parliament || _politicsCategory == PoliticsCategory.Compass)
+            if (_politicsCategory != PoliticsCategory.FederalReserve)
             {
                 // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name)
-                bool parliament = _politicsCategory == PoliticsCategory.Parliament;
+                PoliticsCategory tab = _politicsCategory;
                 int scrolledFrom = _slipAnchors.Count;
                 float viewport = Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f);
-                Vector2 scroll = GUILayout.BeginScrollView(parliament ? _parliamentScrollPosition : _politicsContentScrollPosition, GUILayout.Height(viewport));
-                if (parliament) { _parliamentScrollPosition = scroll; DrawParliamentV35(contentWidth); } else { _politicsContentScrollPosition = scroll; DrawCompassV35(contentWidth); }
+                Vector2 previous = tab == PoliticsCategory.Parliament ? _parliamentScrollPosition : tab == PoliticsCategory.Compass ? _politicsContentScrollPosition : _cabinetScrollPosition;
+                Vector2 scroll = GUILayout.BeginScrollView(previous, GUILayout.Height(viewport));
+                switch (tab)
+                {
+                    case PoliticsCategory.Parliament: _parliamentScrollPosition = scroll; DrawParliamentV35(contentWidth); break;
+                    case PoliticsCategory.Compass: _politicsContentScrollPosition = scroll; DrawCompassV35(contentWidth); break;
+                    default:
+                        _cabinetScrollPosition = scroll;
+                        GUI.enabled = !_isGameOver;
+                        DrawCabinetV35(contentWidth);
+                        GUI.enabled = true;
+                        break;
+                }
                 GUILayout.EndScrollView();
                 MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), scroll);
                 GUILayout.EndVertical();
@@ -64,14 +77,6 @@ namespace PoliSim.UI
             float contentHeight = bodyHeight - ScreenCaptionBlockHeight();
             switch (_politicsCategory)
             {
-                case PoliticsCategory.Cabinet:
-                    float cabinetScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    GUI.enabled = !_isGameOver;
-                    _cabinetScrollPosition = GUILayout.BeginScrollView(_cabinetScrollPosition, GUILayout.Height(cabinetScrollHeight));
-                    DrawCabinetManagementContent();
-                    GUILayout.EndScrollView();
-                    GUI.enabled = true;
-                    break;
                 case PoliticsCategory.FederalReserve:
                     GUI.enabled = !_isGameOver;
                     DrawFederalReserveTab(contentHeight);
@@ -287,6 +292,262 @@ namespace PoliSim.UI
                 .Add("EACH CHAMBER AT THE SEAT-WEIGHTED MEAN OF ITS PARTIES' PAIRS, THE SITTING CABINET RINGED, THE ELECTORATE AS A DIAMOND, EACH CHAMBER'S TRAIL")
                 .Add("KEPT AS BUILT UNDER THE NEW PAGE - THE COMPOSITION DRAWS THE HOME CHAMBER'S PARTIES ALONE");
             DrawPoliticalCompassContent(width);
+        }
+
+
+        /// <summary>
+        /// §745 (the composition's Politics › Cabinet): <b>one card per portfolio</b>, all six (the composition's *three* is the old count - the page
+        /// draws all six since R4-4) - a held portfolio its minister's portrait in the brass frame, *Portfolio · Name*, the four attributes on one line,
+        /// the philosophy as a chip (and, where the portfolio is underfunded, the effectiveness ratio as a chip in the bad ink - board 9d's warning, kept
+        /// at rest), and *Reshuffle* at its right; a vacant one a dashed box with the portfolio's icon and *Vacant*; a vacant one whose shortlist is
+        /// drawn carries its candidates in the card, each with *Appoint*. One *Search* under the cards draws a shortlist for every vacant portfolio
+        /// with none. The attributes' glossary is the head's slip; each card's slip carries the minister's line, the effectiveness readout (flow, level,
+        /// the decomposition) and, for Health and Education, the family's keys. The lock's glyph where the role locks the portfolio's lever.
+        /// Control counts follow clicks on this page only, never background state - the exception documented on the panel it replaces.
+        /// </summary>
+        private void DrawCabinetV35(float width)
+        {
+            Country c = _playerCountry;
+            V35.FloorGuarded = true;
+            int count = System.Enum.GetValues(typeof(CabinetPortfolio)).Length;
+            DrawPoliticsSectionHead("Cabinet · " + UiFormat.CountWord(count).ToLowerInvariant() + " portfolios", "cab:head", width);
+            _politicsSlipBook.Anchors["cab:head"] = new SlipContent("CABINET")
+                .Add("LOYALTY: RESIGNS OR LEAKS UNDER PRESSURE")
+                .Add("KNOWLEDGE: CAN THE MINISTRY ESTIMATE A DECISION")
+                .Add("EFFICIENCY: THE PORTFOLIO'S SPENDING PER UNIT")
+                .Add("POPULARITY: HOW A DECISION LANDS, AND WHAT DISMISSAL COSTS");
+            var unsearched = new List<CabinetPortfolio>();
+            foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                if (!c.CabinetMinisters.ContainsKey(portfolio) && !_cabinetCandidatesByPortfolio.ContainsKey(portfolio)) { unsearched.Add(portfolio); }
+            }
+            foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                DrawCabinetCardV35(portfolio, width);
+                GUILayout.Space(V35.Px(8f));
+            }
+            if (unsearched.Count > 0)
+            {
+                float h = V35.Px(34f);
+                Rect row = GUILayoutUtility.GetRect(width, h, GUILayout.Width(width), GUILayout.Height(h));
+                const string label = "Search";
+                float bw = BudgetButtonWidth(label, null);
+                if (DrawBudgetButton(new Rect(row.x, row.y, bw, row.height), label, null, true))
+                {
+                    foreach (CabinetPortfolio portfolio in unsearched) { _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio); }
+                }
+                string sentence = unsearched.Count == 1 ? "A shortlist is drawn for the vacant portfolio; you appoint from it." : "One search draws a shortlist for every vacant portfolio; you appoint from each.";
+                if (Event.current.type == EventType.Repaint)
+                {
+                    GUIStyle face = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+                    float sx = row.x + bw + V35.Px(14f);
+                    PoliSimWidgets.MeasuredLabel(new Rect(sx, row.y, Mathf.Max(1f, row.xMax - sx), row.height), V35Fit(sentence, face, Mathf.Max(1f, row.xMax - sx), out _), face);
+                }
+            }
+            V35.FloorGuarded = false;
+        }
+
+        /// <summary>§745: one portfolio's card - held, vacant, or vacant with its shortlist.</summary>
+        private void DrawCabinetCardV35(CabinetPortfolio portfolio, float width)
+        {
+            Country c = _playerCountry;
+            string name = GetPortfolioName(portfolio);
+            UiPalette.SystemArea area = UiPalette.GetPortfolioArea(portfolio);
+            bool mayAct = _simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out string lockedBecause);
+            GUIStyle titleFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary);
+            GUIStyle lineFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+            string anchor = "cab:" + portfolio;
+            GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(width));
+            if (c.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister minister))
+            {
+                GUILayout.BeginHorizontal();
+                DrawPersonPortrait(IconLibrary.GetCabinetPortrait(portfolio, minister.Name), area);
+                GUILayout.Space(V35.Px(12f));
+                GUILayout.BeginVertical();
+                GUILayout.Label(name + " · " + minister.Name, titleFace);
+                GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "Loyalty {0:0} · Knowledge {1:0} · Efficiency {2:0} · Popularity {3:0}",
+                    minister.Loyalty, minister.Knowledge, minister.Efficiency, minister.Popularity), lineFace);
+                GUILayout.BeginHorizontal();
+                DrawCabinetChip(minister.Philosophy.ToString(), PoliSimTheme.TextPrimary);
+                float ratio = Effectiveness.RatioOf(c, portfolio);
+                if (ratio < 0.995f) { GUILayout.Space(V35.Px(8f)); DrawCabinetChip("Underfunded ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture), PoliSimTheme.Bad); }
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
+                GUILayout.FlexibleSpace();
+                if (!mayAct) { DrawCabinetLock(anchor + ":lock", lockedBecause); }
+                else if (DrawCabinetAction("Reshuffle"))
+                {
+                    c.CabinetMinisters.Remove(portfolio);
+                    float approvalBeforeReshuffle = c.State.ApprovalRating;
+                    c.State.ApprovalRating = Mathf.Clamp(c.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(c, portfolio), 0f, 100f);   // P2-5.2: dismissing a popular minister costs the full figure, an unpopular one less
+                    ApprovalLedgerRecorder.RecordEvent(c, _simulationManager.CurrentDate, $"Cabinet reshuffle ({DisplayName.Of(portfolio.ToString())})", c.State.ApprovalRating - approvalBeforeReshuffle);
+                    _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
+                }
+                GUILayout.EndHorizontal();
+                GUILayout.EndVertical();
+                if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), anchor); }
+                var slip = new SlipContent(name.ToUpperInvariant() + " · " + minister.Name.ToUpperInvariant())
+                    .Add(minister.Philosophy.ToString().ToUpperInvariant() + " · " + minister.Description.ToUpperInvariant())
+                    .Add(EffectivenessStateLine(portfolio));
+                foreach (string line in CabinetEffectivenessLines(portfolio)) { slip.Add(line); }
+                foreach (string line in CabinetFamilyKeyLines(portfolio)) { slip.Add(line); }
+                slip.Add("RESHUFFLE: THE MINISTER GOES, A SHORTLIST IS DRAWN - APPROVAL PAYS FOR A POPULAR ONE");
+                _politicsSlipBook.Anchors[anchor] = slip;
+                return;
+            }
+
+            bool shortlisted = _cabinetCandidatesByPortfolio.TryGetValue(portfolio, out List<CabinetMinister> candidates);
+            GUILayout.BeginHorizontal();
+            DrawVacantPortrait(portfolio, area);
+            GUILayout.Space(V35.Px(12f));
+            GUILayout.BeginVertical();
+            GUILayout.Label(name, titleFace);
+            GUILayout.BeginHorizontal();
+            DrawCabinetChip(shortlisted ? "Vacant · the shortlist" : "Vacant", PoliSimTheme.TextSecondary);
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            if (shortlisted)
+            {
+                foreach (CabinetMinister candidate in candidates)
+                {
+                    GUILayout.Space(V35.Px(8f));
+                    Rect rule = GUILayoutUtility.GetRect(10f, 1f, GUILayout.ExpandWidth(true));
+                    if (Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(rule, V35.ListRule); }
+                    GUILayout.Space(V35.Px(8f));
+                    GUILayout.BeginHorizontal();
+                    DrawPersonPortrait(IconLibrary.GetCabinetPortrait(portfolio, candidate.Name), area);
+                    GUILayout.Space(V35.Px(12f));
+                    GUILayout.BeginVertical();
+                    GUILayout.Label(candidate.Name, titleFace);
+                    GUILayout.Label(string.Format(CultureInfo.InvariantCulture, "Loyalty {0:0} · Knowledge {1:0} · Efficiency {2:0} · Popularity {3:0}",
+                        candidate.Loyalty, candidate.Knowledge, candidate.Efficiency, candidate.Popularity), lineFace);
+                    GUILayout.BeginHorizontal();
+                    DrawCabinetChip(candidate.Philosophy.ToString(), PoliSimTheme.TextPrimary);
+                    GUILayout.FlexibleSpace();
+                    GUILayout.EndHorizontal();
+                    GUILayout.EndVertical();
+                    GUILayout.FlexibleSpace();
+                    if (!mayAct) { DrawCabinetLock(anchor + ":lock", lockedBecause); }
+                    else if (DrawCabinetAction("Appoint"))
+                    {
+                        c.CabinetMinisters[portfolio] = candidate;
+                        _cabinetCandidatesByPortfolio.Remove(portfolio);
+                        RecomputePolicyPreview();
+                    }
+                    GUILayout.EndHorizontal();
+                    if (Event.current.type == EventType.Repaint) { SlipAnchor(GUILayoutUtility.GetLastRect(), anchor + ":" + candidate.Name); }
+                    _politicsSlipBook.Anchors[anchor + ":" + candidate.Name] = new SlipContent(candidate.Name.ToUpperInvariant() + " · FOR " + name.ToUpperInvariant())
+                        .Add(candidate.Philosophy.ToString().ToUpperInvariant() + " · " + candidate.Description.ToUpperInvariant())
+                        .Add("APPOINT: THE PORTFOLIO IS HELD FROM TODAY");
+                }
+            }
+            GUILayout.EndVertical();
+            if (Event.current.type == EventType.Repaint && !shortlisted) { SlipAnchor(GUILayoutUtility.GetLastRect(), anchor); }
+            _politicsSlipBook.Anchors[anchor] = new SlipContent(name.ToUpperInvariant() + " · VACANT")
+                .Add(shortlisted ? "ITS SHORTLIST IS DRAWN - APPOINT FROM IT" : "NO SHORTLIST DRAWN - THE SEARCH UNDER THE CARDS DRAWS ONE");
+        }
+
+        /// <summary>§745: a chip in the card's text line - a boxed word at the floor, in <paramref name="ink"/>.</summary>
+        private void DrawCabinetChip(string text, Color ink)
+        {
+            GUIStyle face = V35Serif(V35.Floor, ink, TextAnchor.MiddleCenter);
+            float w = Mathf.Ceil(face.CalcSize(new GUIContent(text)).x) + V35.Px(14f), h = V35.Px(22f);
+            Rect r = GUILayoutUtility.GetRect(w, h, GUILayout.Width(w), GUILayout.Height(h));
+            if (Event.current.type != EventType.Repaint) { return; }
+            PoliSimTheme.Rule(new Rect(r.x, r.y, r.width, 1f), ink);
+            PoliSimTheme.Rule(new Rect(r.x, r.yMax - 1f, r.width, 1f), ink);
+            PoliSimTheme.Rule(new Rect(r.x, r.y, 1f, r.height), ink);
+            PoliSimTheme.Rule(new Rect(r.xMax - 1f, r.y, 1f, r.height), ink);
+            GUI.Label(r, text, face);
+        }
+
+        /// <summary>§745: a card's action at its right - the Budget's button, one per card; true on a click.</summary>
+        private bool DrawCabinetAction(string label)
+        {
+            float w = BudgetButtonWidth(label, null), h = V35.Px(34f);
+            Rect r = GUILayoutUtility.GetRect(w, h, GUILayout.Width(w), GUILayout.Height(h));
+            return DrawBudgetButton(r, label, null, true);
+        }
+
+        /// <summary>§745: the lock's glyph in the action's place, its reason on its slip.</summary>
+        private void DrawCabinetLock(string anchor, string because)
+        {
+            float side = V35.Px(18f);
+            Rect r = GUILayoutUtility.GetRect(side, side, GUILayout.Width(side), GUILayout.Height(side));
+            if (Event.current.type == EventType.Repaint) { DrawStateGlyph(r, Symbol.Locked, PoliSimTheme.TextSecondary); SlipAnchor(r, anchor); }
+            _politicsSlipBook.Anchors[anchor] = new SlipContent("LOCKED").Add((because ?? string.Empty).ToUpperInvariant());
+        }
+
+        /// <summary>§745: a vacant portfolio's place for a portrait - a dashed box the portrait's size with the portfolio's icon in it.</summary>
+        private void DrawVacantPortrait(CabinetPortfolio portfolio, UiPalette.SystemArea area)
+        {
+            float height = _labelStyle.fontSize * 5.5f, width = Mathf.Round(height * (74f / 92f));
+            Rect r = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width), GUILayout.Height(height));
+            if (Event.current.type != EventType.Repaint) { return; }
+            Color ink = V35.PyramidThreshold;
+            float dash = V35.Px(5f), gap = V35.Px(4f);
+            DrawDashedRule(new Rect(r.x, r.y, r.width, 1f), ink, dash, gap);
+            DrawDashedRule(new Rect(r.x, r.yMax - 1f, r.width, 1f), ink, dash, gap);
+            for (float y = r.y; y < r.yMax; y += dash + gap)
+            {
+                float h = Mathf.Min(dash, r.yMax - y);
+                PoliSimTheme.Rule(new Rect(r.x, y, 1f, h), ink);
+                PoliSimTheme.Rule(new Rect(r.xMax - 1f, y, 1f, h), ink);
+            }
+            float side = Mathf.Min(V35.Px(24f), r.width * 0.5f);
+            DrawV35Icon(new Rect(r.center.x - side * 0.5f, r.center.y - side * 0.5f, side, side), CabinetIcon(portfolio), PoliSimTheme.TextSecondary);
+        }
+
+        private static string CabinetIcon(CabinetPortfolio portfolio)
+        {
+            switch (portfolio)
+            {
+                case CabinetPortfolio.FinanceTreasury: return "safe";
+                case CabinetPortfolio.InteriorJustice: return "gavel";
+                case CabinetPortfolio.HealthSocialAffairs: return "heart";
+                case CabinetPortfolio.ForeignAffairs: return "globe";
+                case CabinetPortfolio.Education: return "book";
+                default: return "shield";
+            }
+        }
+
+        /// <summary>§745: board 9d's readout as slip lines - the flow, its decomposition, the level against the seed.</summary>
+        private List<string> CabinetEffectivenessLines(CabinetPortfolio portfolio)
+        {
+            Country c = _playerCountry;
+            float ratio = Effectiveness.RatioOf(c, portfolio);
+            float efficiency = Effectiveness.EfficiencyOf(c, portfolio);
+            float allocation = c.Effectiveness != null && c.Effectiveness.TryGetValue(portfolio, out PortfolioEffectiveness e) && e.Recorded ? e.AllocationRatio : 1f;
+            float level = Effectiveness.LevelOf(c, portfolio);
+            return new List<string>
+            {
+                "EFFECTIVENESS ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture) + " - " + allocation.ToString("0.000", CultureInfo.InvariantCulture) + " ALLOC ÷ REQ × "
+                    + efficiency.ToString("0.00", CultureInfo.InvariantCulture) + " EFFICIENCY · UNITY IS THE BASELINE, BELOW IS UNDERFUNDED",
+                "LEVEL ×" + level.ToString("0.00", CultureInfo.InvariantCulture) + " · SPENDING PER UNIT AGAINST ITS SEED · "
+                    + (level < 0.995f ? "THE ASK HAS SHRUNK" : level > 1.005f ? "THE ASK HAS GROWN" : "THE ASK HOLDS ITS SEED"),
+            };
+        }
+
+        /// <summary>§745: the Health and Education ministers' cards quoted the family's keys (9c, P5-C3) - on the slip now.</summary>
+        private List<string> CabinetFamilyKeyLines(CabinetPortfolio portfolio)
+        {
+            var lines = new List<string>();
+            EconomyState s = _playerCountry.State;
+            if (portfolio == CabinetPortfolio.HealthSocialAffairs && _playerCountry.Health != null && _playerCountry.Health.Seeded)
+            {
+                lines.Add("HEALTH · COVERAGE " + PlateFigure(s.HealthCoverage, 0, " %") + " · TREATABLE MORTALITY " + PlateFigure(s.TreatableMortality, 0) + " / 100 000"
+                    + (_playerCountry.Health.HasWaits ? " · WAIT, KNEE " + PlateFigure(s.WaitKneeDays, 0) + " DAYS" : string.Empty));
+            }
+            if (portfolio == CabinetPortfolio.Education && _playerCountry.Education != null && _playerCountry.Education.Seeded)
+            {
+                lines.Add("EDUCATION · STUDENTS PER TEACHER " + PlateFigure(s.StudentsPerTeacherPrimary, 1) + " PRIMARY, " + PlateFigure(s.StudentsPerTeacherLowerSecondary, 1) + " LOWER SECONDARY"
+                    + (_playerCountry.Education.HasEarlyLeavers ? " · EARLY LEAVERS " + PlateFigure(s.EarlyLeavers, 1, " %") + " OF 18-24" : string.Empty));
+            }
+            return lines;
         }
 
         private float PartyTileHeight()
