@@ -419,7 +419,6 @@ namespace PoliSim.UI
         // next turn advances - see AdvanceTurn for where this list is appended to and pruned.
         private const int EventMarkerFadeTurns = 6;
         private readonly MapRenderer _mapRenderer = new MapRenderer();
-        private readonly PolicyWebBoard _policyWebBoard = new PolicyWebBoard();   // P3-B1: board 2b's composition over the renderer's data
 
         // Political Systems Overhaul Part C (UI/graph restyling and political visualization).
         private readonly PoliticalCompassRenderer _politicalCompassRenderer = new PoliticalCompassRenderer();
@@ -5726,7 +5725,7 @@ namespace PoliSim.UI
                     {
                         Rect r = cursor.Place(w, w, captionHeight);
                         GUIStyle style = LadderStyle(w, 640f);
-                        _policyWebBoard.Draw(r, style, style, _calendarMetaStyle, _playerCountry, null, null, out _, out _, out _);   // P3-B1: the ladder surveys the board now
+                        DrawPolicyWebCard(r, r);   // §740: the ladder surveys the v3.5 web (board 2b's PolicyWebBoard retired); its links clip to the rung
                         LadderCaption(r, $"{w}x{w} type {style.fontSize}", captionHeight);
                     }
                     break;
@@ -9249,52 +9248,6 @@ namespace PoliSim.UI
             GUILayout.Label($"Year {marker.TurnFired} (this year: {_simulationManager.CurrentTurn})", _labelStyle);
             GUILayout.EndVertical();
         }
-
-        /// <summary>
-        /// Policy Web tab - board 2b's composition (P3-B1, built 2026-09-03 against Elias's images 7 and 8; `COMPLETED.md`
-        /// §263): the levers grouped by area on the left, the books on the right with their counts, the causal band, and
-        /// the pinned pane beside the web with one line per edge - `PolicyWebBoard`, over `PolicyWebRenderer`'s own data.
-        /// The ring this tab drew from R-W1 to P3 is retired; the click idiom (a node pins, the same node or the paper
-        /// unpins) is the one C-C3 set. The board asks for the height it needs, so a short window scrolls the sheet.
-        /// </summary>
-        private void DrawPolicyWebTab(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _policyWebScrollPosition = GUILayout.BeginScrollView(_policyWebScrollPosition, GUILayout.Height(scrollHeight));
-
-            bool pinned = _selectedPolicyWebPolicyNode.HasValue || _selectedPolicyWebStatNode.HasValue;
-            float width = PoliSimWidgets.InnerWidth(UiScreen.Width - RailWidth() - 40f, _boxStyle, 1, GUI.skin.box);
-            float needed = _policyWebBoard.NeededHeight(width, _labelStyle, pinned);
-            Rect webRect = GUILayoutUtility.GetRect(10f, Mathf.Max(scrollHeight - 8f, needed), GUILayout.ExpandWidth(true));
-            _policyWebBoard.Draw(webRect, _labelStyle, _headerStyle, _calendarMetaStyle, _playerCountry, _selectedPolicyWebPolicyNode, _selectedPolicyWebStatNode,
-                out PolicyNodeId? clickedPolicy, out StatNodeId? clickedStat, out bool clickedEmptySpace);
-
-            if (clickedPolicy.HasValue)
-            {
-                bool sameNode = _selectedPolicyWebPolicyNode.HasValue && _selectedPolicyWebPolicyNode.Value == clickedPolicy.Value;
-                _selectedPolicyWebPolicyNode = sameNode ? (PolicyNodeId?)null : clickedPolicy;
-                _selectedPolicyWebStatNode = null;
-            }
-            else if (clickedStat.HasValue)
-            {
-                bool sameNode = _selectedPolicyWebStatNode.HasValue && _selectedPolicyWebStatNode.Value == clickedStat.Value;
-                _selectedPolicyWebStatNode = sameNode ? (StatNodeId?)null : clickedStat;
-                _selectedPolicyWebPolicyNode = null;
-            }
-            else if (clickedEmptySpace)
-            {
-                _selectedPolicyWebPolicyNode = null;
-                _selectedPolicyWebStatNode = null;
-            }
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-
-
 
         /// <summary>Display name per CabinetPortfolio - kept separate from the enum's own C# identifier since "FinanceTreasury"/"InteriorJustice"/"HealthSocialAffairs" read awkwardly as UI text, the same "enum identifier vs. display string" separation PolicyWebRenderer.GetPolicyName/GetStatName already established.</summary>
         private static string GetPortfolioName(CabinetPortfolio portfolio)

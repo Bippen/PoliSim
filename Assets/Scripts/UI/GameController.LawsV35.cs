@@ -10,8 +10,8 @@ namespace PoliSim.UI
     /// §737 (UI v3.5, Design's V35 composition): THE LAWS PAGE'S FRAME AND ITS LABOUR TAB. The title *Laws* with its six tabs as words and the †; the
     /// Labour tab as the composition lays it - *What these dials move* (the readings the tab's dials reach, as tiles) and *Labour dials* (each dial a
     /// tile, two to a row) - and the bill's call to action. §738: the Crime & justice tab - its six dials as tiles SET BY LAW (no knob, no control).
-    /// §739: the Sectors tab - the eight sectors as tiles, the chosen sector's five dials as tiles. The other three tabs are drawn as built under the new
-    /// frame until their own items.
+    /// §739: the Sectors tab - the eight sectors as tiles, the chosen sector's five dials as tiles. §740: the Policy web - two columns over the
+    /// model's links, one area at a time (GameController.PolicyWebV35.cs). The other two tabs are drawn as built under the new frame until their own items.
     ///
     /// <para><b>The dials' units</b> are the main session's rule (relayed 2026-10-01: *a real unit only where the model computes one; named settings,
     /// band edges [AUTHORED-DRAFT], where the dial is an abstract index; never a unit the model does not compute*) applied as Code's table sent to
@@ -43,18 +43,39 @@ namespace PoliSim.UI
             GUILayout.Space(V35.Px(4f));
             float bodyHeight = Mathf.Max(0f, availableHeight - titleHeight - V35.Px(4f));
 
-            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket || _policyLawsCategory == PolicyLawsCategory.CrimeJustice || _policyLawsCategory == PolicyLawsCategory.Sectors)
+            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket || _policyLawsCategory == PolicyLawsCategory.CrimeJustice || _policyLawsCategory == PolicyLawsCategory.Sectors
+                || _policyLawsCategory == PolicyLawsCategory.PolicyWeb)
             {
                 // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name - UiScreenshotDriver.ResetScrolls)
                 PolicyLawsCategory tab = _policyLawsCategory;
                 float contentWidth = StatsContentWidth(availableWidth);
                 int scrolledFrom = _slipAnchors.Count;
-                Vector2 previous = tab == PolicyLawsCategory.LaborMarket ? _laborMarketScrollPosition : tab == PolicyLawsCategory.CrimeJustice ? _crimeJusticeScrollPosition : _sectorPolicyScrollPosition;
-                Vector2 scroll = GUILayout.BeginScrollView(previous, GUILayout.Height(Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f)));
-                if (tab == PolicyLawsCategory.LaborMarket) { _laborMarketScrollPosition = scroll; } else if (tab == PolicyLawsCategory.CrimeJustice) { _crimeJusticeScrollPosition = scroll; } else { _sectorPolicyScrollPosition = scroll; }
-                GUI.enabled = !_isGameOver;
+                float viewport = Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f);
+                Vector2 previous;
+                switch (tab)
+                {
+                    case PolicyLawsCategory.LaborMarket: previous = _laborMarketScrollPosition; break;
+                    case PolicyLawsCategory.CrimeJustice: previous = _crimeJusticeScrollPosition; break;
+                    case PolicyLawsCategory.Sectors: previous = _sectorPolicyScrollPosition; break;
+                    default: previous = _policyWebScrollPosition; break;
+                }
+                Vector2 scroll = GUILayout.BeginScrollView(previous, GUILayout.Height(viewport));
+                switch (tab)
+                {
+                    case PolicyLawsCategory.LaborMarket: _laborMarketScrollPosition = scroll; break;
+                    case PolicyLawsCategory.CrimeJustice: _crimeJusticeScrollPosition = scroll; break;
+                    case PolicyLawsCategory.Sectors: _sectorPolicyScrollPosition = scroll; break;
+                    default: _policyWebScrollPosition = scroll; break;
+                }
+                GUI.enabled = !_isGameOver || tab == PolicyLawsCategory.PolicyWeb;   // the web is read, not drafted - browsable when the game is over
                 V35.FloorGuarded = true;
-                if (tab == PolicyLawsCategory.LaborMarket) { DrawLabourV35(contentWidth); } else if (tab == PolicyLawsCategory.CrimeJustice) { DrawCrimeV35(contentWidth); } else { DrawSectorsV35(contentWidth); }
+                switch (tab)
+                {
+                    case PolicyLawsCategory.LaborMarket: DrawLabourV35(contentWidth); break;
+                    case PolicyLawsCategory.CrimeJustice: DrawCrimeV35(contentWidth); break;
+                    case PolicyLawsCategory.Sectors: DrawSectorsV35(contentWidth); break;
+                    default: DrawPolicyWebV35(contentWidth, new Rect(-contentWidth, scroll.y, contentWidth * 3f, viewport)); break;
+                }
                 V35.FloorGuarded = false;
                 GUI.enabled = true;
                 GUILayout.EndScrollView();
@@ -78,9 +99,6 @@ namespace PoliSim.UI
             float contentHeight = Mathf.Max(0f, bodyHeight - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
             {
-                case PolicyLawsCategory.PolicyWeb:
-                    DrawPolicyWebTab(contentHeight);
-                    break;
                 case PolicyLawsCategory.Trade:
                     float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
                     _policyLawsContentScrollPosition = GUILayout.BeginScrollView(_policyLawsContentScrollPosition, GUILayout.Height(scrollHeight));
