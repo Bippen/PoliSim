@@ -66,16 +66,23 @@ text of the Sejm's standing orders (M.P. 2026 poz. 573; the ELI metadata `raw/ve
 >
 > *Gloss: **if the Sejm does not re-pass it, the legislative procedure is closed** - the vetoed statute is dead.*
 
-## 4. What is NOT sourced here, and stated so
+## 4. Ruled 2026-10-02 (B1, B2), and what is still not modelled
 
-- **How "3/5 of the votes" treats an abstention.** Neither the Konstytucja nor the standing orders' consolidated text define it (the text was
-  searched for the majority's definition, for *wstrzymujący* and for *oddanych*; nothing defines a qualified majority's denominator). The
-  instrument reads it as **3/5 of the votes cast, an abstention a vote cast** - the strict reading - and marks it **[PROVISIONAL]**; the
-  doctrine's source is owed. It changes nothing where every deputy present votes for or against.
-- **Who vetoes what.** The constitution gives the President the power, not a rule for using it. The game's rule is DECLARED and owed to Elias:
-  the proposal is that *the President vetoes an ordinary statute the party that backed him votes against* (Duda and Nawrocki, PiS-backed -
-  Nawrocki's backing [SECONDARY], `presidential_returns.md`).
-- **The record of vetoes and override votes in the 10th Sejm.** Not fetched; a backtest of the decision rule against it is owed before the
-  veto goes live.
+- **How "3/5 of the votes" treats an abstention - RULED (B2):** *"3/5 of the deputies voting, abstentions included in the base. The Sejm
+  computes qualified majorities from the number voting, with 230 present as the quorum. Required = ceil(0.6 × (yes + no + abstain))."*
+  Neither the Konstytucja nor the standing orders' consolidated text define the denominator; the Sejm's own record does: in all seven
+  override votes of the 10th term the stated required figure is ceil(3/5 of yes + no + abstain), and in the three with abstentions it counts
+  them (264 not 255, 263 not 261, 266 not 264) - `veto_record.md` §4. The [PROVISIONAL] mark of the first build is struck.
+- **Who vetoes what - RULED (B1):** *"The President vetoes an ordinary statute when a majority of his backing party's deputies voted against
+  it. Two kinds of act can't be vetoed: the budget act (Constitution art. 224: he signs within 7 days and can only refer it to the Tribunal)
+  and constitutional amendments (art. 235(7)). Budget-related acts are ordinary statutes and can be vetoed."* Duda and Nawrocki, PiS-backed
+  (Nawrocki's backing [SECONDARY], `presidential_returns.md`); "a majority of his backing party's deputies" read as more than half of the
+  club's MEMBERS at the vote, absent ones included (`veto_record.md` §2).
+- **Art. 235 ust. 7** (`raw/records/trybunal_konstytucja.html`, the Tribunal's copy of the Konstytucja): *"Po zakończeniu postępowania
+  określonego w ust. 4 i 6 Marszałek Sejmu przedstawia Prezydentowi Rzeczypospolitej uchwaloną ustawę do podpisu.
+  Prezydent Rzeczypospolitej podpisuje ustawę w ciągu 21 dni od dnia przedstawienia i zarządza jej ogłoszenie w Dzienniku Ustaw
+  Rzeczypospolitej Polskiej."* - the President signs an amendment of the Konstytucja; Art. 122 ust. 5's return is not given to him.
+- **The record of vetoes and override votes in the 10th Sejm** - fetched (`veto_record.md`, `veto_record.csv`, `third_readings_term10.csv`;
+  prezydent.pl refused with a 403, rp.pl's dated list of Nawrocki's 20 vetoes to 31 Dec 2025 matched): the backtest is the instrument's (g).
 - **The Senate** (Art. 121) and **the Tribunal referral** (Art. 122 ust. 3, Art. 224 ust. 2): not modelled; the Senate is stated absent in
   the political-system spec.

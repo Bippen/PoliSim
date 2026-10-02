@@ -36532,3 +36532,43 @@ The cheap bar **92 of 92** (`cheap737b`; `cheap737` the two findings above).
 **Checked** (`MinimumWageRatesCheck`, new, the cheap bar's - now 93): the table held to its file row by row (26 SOURCED rows, 26 steps, matched one for one, each raw page on disk); Sweden and Italy OFF in the file and in the world; the four implemented and in force on 2026-10-02; in force: Germany EUR 12.41 on 2024-11-06 (its start) and 14.60 from 2027-01-01, France EUR 12.31, Poland PLN 4 806 a month, the USA USD 7.25 on 2026-10-02. `MetaTextCheck` allows the statutes' own paragraphs on the table by the authority's name (MiLoG, MiLoV, Dz.U.), as it does `TaxSchedule`'s and `PensionAgeStatute`'s.
 
 **Tier: the cheap bar and the dry film; the simulation bar not owed** - as §720, §730 and §736: the table and the data are read by the dial's slip and by an Editor check, and by nothing the turn runs; the trajectory untouched. Named `n756b` (MinimumWageRates, DialLabel, RangeCaption, UnwiredSubsystem, ConstantProvenance, MetaText, Mojibake, NumberLocale) **8 of 8** (`n756` failed on MetaText's section signs, allowed by name); the dry film `drys756` (Germany 1280: 146 measured, 0 failed, 0 overflows); the cheap bar **93 of 93** (`cheap756`).
+
+
+## 757. RULINGS B1, B2 AND B3 INSTALLED: THE POLISH PRESIDENT'S VETO RULE ADOPTED AND BACKTESTED ON THE 10TH SEJM'S RECORD - 45 OF 53 VETOES CAUGHT, EVERY MISS LISTED; THE OVERRIDE'S BASE THE DEPUTIES VOTING, ALL SEVEN OVERRIDE VOTES OF THE TERM MATCHING; THE RECORD FETCHED FROM THE SEJM'S OWN VOTES (2026-10-02)
+
+**The rulings** (Elias, B1-B3 of the list resent 2026-10-02):
+- **B1** *Veto: your proposal is adopted. The President vetoes an ordinary statute when a majority of his backing party's deputies voted against it. Two kinds of act can't be vetoed: the budget act (Constitution art. 224: he signs within 7 days and can only refer it to the Tribunal) and constitutional amendments (art. 235(7)). Budget-related acts are ordinary statutes and can be vetoed. Test the rule on B3's record and put the hit rate and every miss in the commit.*
+- **B2** *Override: 3/5 of the deputies voting, abstentions included in the base. The Sejm computes qualified majorities from the number voting, with 230 present as the quorum. Required = ceil(0.6 × (yes + no + abstain)). Three 2025 votes match: 243+192 → 261, 246+192 → 263, 232+199 → 259.*
+- **B3** *Veto record: the President's office lists ... prezydent.pl refused my fetch with a 403, so if it refuses yours too, use rp.pl's dated list of Nawrocki's 20 vetoes to 31 Dec 2025 and say so. Votes come from the Sejm API ... sum the clubs yourself. Raw pages go to PoliSim-captures/sources/, extracts to the repo.*
+
+**B3, the record** (`ElectionsData/poland/veto_record.md`, `veto_record.csv` - 53 vetoes, Duda 8 and Nawrocki 45 - and `third_readings_term10.csv`, every whole-bill third reading of the 10th Sejm, 579; raw: 1,778 files in `PoliSim-captures/sources/poland_vetoes/`): **prezydent.pl refused with a 403 here too**; the vetoes are read from the Sejm API's own process stages ("Wniosek Prezydenta (weto)") and prints, and **rp.pl's dated list of Nawrocki's 20 vetoes to 31 December 2025 matches them**. The votes are the API's per-MP records (`term10/votings/{sitting}/{n}`), **the clubs summed here**: in all 671 votes used the sums equal the record's own yes/no/abstain fields and its non-participation count - no mismatch. The club is the one held at the vote (the `RozwojPlus` club exists from sitting 63, 31 July 2026). B2's third quoted vote (232+199 → 259) is of **17 September 2026**, not 2025 - the ruling's figure matches; its year is corrected here.
+
+**B2, the override** (`PresidentialVetoDiagnostic` (f); `veto.md` §4 rewritten - the [PROVISIONAL] mark struck): `Required(voting) = ceil(3/5 × (yes + no + abstain))`, the quorum 230 present; **all seven override votes of the term state exactly that figure** - 261, 263, 259, 263, 264, 266, 260 - and the three with abstentions count them (264 not 255, 263 not 261, 266 not 264): the Sejm's own practice, as the ruling says. Every override failed.
+
+**B1, the rule** (`PresidentialVetoDiagnostic` (g), the Editor instrument until PS-5's live wiring; `veto.md` §4): *a majority of the backing party's deputies* read as **more than half of the club's members at the vote, absent ones included** (`veto_record.md` §2); the backing party PiS for both presidents (Nawrocki's backing [SECONDARY], `presidential_returns.md`); exempt the budget act (Art. 224, quoted from the held text) and a constitutional amendment - **Art. 235 ust. 7 now quoted in `veto.md`** from the Tribunal's copy of the Konstytucja held since §736 (*"Prezydent Rzeczypospolitej podpisuje ustawę w ciągu 21 dni od dnia przedstawienia i zarządza jej ogłoszenie"*, no return); a budget-related act an ordinary statute (the Duda miss below is one). The four budget acts of the term (three budget acts, one amending one) are out of the base - all four signed.
+
+**The backtest - the hit rate: 45 of 53 vetoes** (Duda **7 of 8**, Nawrocki **38 of 45**). **Every miss:**
+- Andrzej Duda 2023-12-27: ustawy z dnia 21 grudnia 2023 r. o szczególnych rozwiązaniach służących realizacji ustawy budżetowej na rok 2024 - PiS 3 for, 5 against, 11 abstaining, 172 absent of 191
+- Karol Nawrocki 2025-08-29: ustawy z dnia 5 sierpnia 2025 r. o zmianie ustawy o przeciwdziałaniu zagrożeniom przestępczością na tle seksualnym i ochronie małoletnich oraz niektórych innych ustaw - PiS 0 for, 0 against, 172 abstaining, 17 absent of 189
+- Karol Nawrocki 2025-11-07: ustawy z dnia 26 września 2025 r. o zmianie ustawy - Prawo o ruchu drogowym oraz niektórych innych ustaw - PiS 2 for, 0 against, 170 abstaining, 16 absent of 188
+- Karol Nawrocki 2025-12-02: ustawy z dnia 7 listopada 2025 r. o zmianie ustawy o ochronie zwierząt - PiS 49 for, 84 against, 30 abstaining, 25 absent of 188
+- Karol Nawrocki 2026-01-09: ustawy z dnia 4 grudnia 2025 r. o zmianie ustawy - Kodeks cywilny, ustawy o ubezpieczeniach obowiązkowych, Ubezpieczeniowym Funduszu Gwarancyjnym i Polskim Biurze Ubezpieczycieli Komunikacyjnych oraz ustawy o działalności ubezpieczeniowej i reasekuracyjnej - PiS 1 for, 5 against, 168 abstaining, 14 absent of 188
+- Karol Nawrocki 2026-06-11: ustawy z dnia 15 maja 2026 r. o zmianie ustawy o świadczeniach opieki zdrowotnej finansowanych ze środków publicznych oraz niektórych innych ustaw - PiS 0 for, 1 against, 176 abstaining, 10 absent of 187
+- Karol Nawrocki 2026-08-28: ustawy z dnia 31 lipca 2026 r. zmieniającej ustawę o zmianie ustawy - Prawo energetyczne oraz niektórych innych ustaw - PiS 1 for, 0 against, 135 abstaining, 11 absent of 147 (RozwojPlus 3 / 0 / 35 / 2 absent)
+- Karol Nawrocki 2026-08-28: ustawy z dnia 31 lipca 2026 r. o zmianie ustawy - Prawo oświatowe oraz ustawy o systemie informacji oświatowej - PiS 5 for, 3 against, 131 abstaining, 8 absent of 147 (RozwojPlus 1 / 1 / 35 / 3 absent)
+
+**What the rule would also veto** (every vetoable act the President decided, by the president on the day of the decision):
+
+| President | the rule says veto | vetoed | signed | to the Tribunal |
+|---|---|---|---|---|
+| Duda | yes | 7 | 58 | 5 |
+| Duda | no | 1 | 149 | 3 |
+| Nawrocki | yes | 38 | 57 | 1 |
+| Nawrocki | no | 7 | 220 | 2 |
+
+- of the **166** acts the rule names, **45** were vetoed (27 %): it over-vetoes - PiS opposed and the President signed **58** acts under Duda and **57** under Nawrocki, and sent **6** to the Tribunal instead;
+- of the **382** acts it lets pass, **8** were vetoed (2 %) - the eight misses above: six of Nawrocki's are PiS abstaining as a bloc, the seventh a split club (animal protection), and Duda's one a club absent (a budget-related act).
+
+**Owed to Elias:** (1) **the PiS split** - from sitting 63 (31 July 2026) 40-41 deputies sit in the `RozwojPlus` club and PiS drops from 186 to 147; whether RozwojPlus counts as Nawrocki's backing party (two of his misses are after the split); (2) the rule's precision - it names 166 acts and the presidents vetoed 45; a rule reading abstention as opposition ("PiS not a majority YES", `veto_record.md` §3) catches all 53 and brings 82 + 126 signed acts besides; the ruled rule stands until he says otherwise.
+
+**Tier: the cheap bar; the simulation bar not owed** - as §736: the record, the texts and the rule are read by an Editor instrument and by nothing the turn runs (the veto goes live with PS-5's wiring, its own family). Named `n757c` (PresidentialVeto, Mojibake) **2 of 2** - the diagnostic 21 of 21 (`n757` failed to compile on a shadowed local, renamed); the cheap bar **93 of 93** (`cheap757`).
