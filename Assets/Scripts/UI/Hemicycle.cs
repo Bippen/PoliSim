@@ -9,7 +9,8 @@ namespace PoliSim.UI
     /// <para><b>The finding</b> (Design's whole-game reading, drift row D8): the game drew a hemicycle in three
     /// places and in three ways - Parliament's inked chamber (<see cref="HemicycleRenderer"/>), a bill card's
     /// FOR / UNDECIDED / AGAINST dots (<see cref="SeatMapRenderer"/>), and the signing document's painted vote
-    /// (<c>CanvasPaint.SeatMap</c>) - *"one painter at two sizes"* being the answer. The three did not differ in
+    /// (<c>CanvasPaint.SeatMap</c>, retired at §749 with the old signing document - the v3.5 plate counts the division
+    /// as one bar) - *"one painter at two sizes"* being the answer. The three did not differ in
     /// ARITHMETIC: all three seat a chamber on rings of a half-disc, apportion the seats to the rings in
     /// proportion to each ring's radius, and give the outermost the rounding remainder. What differed was that
     /// each had written that down for itself, twice with its own copy of the same five constants.</para>
@@ -17,7 +18,7 @@ namespace PoliSim.UI
     /// <para><b>What lives here</b> is the arithmetic and the constants: how many rings a chamber needs at a
     /// given size (<see cref="Rings"/>), how many seats each ring takes (<see cref="Apportion"/>), and where each
     /// seat sits on the arc (<see cref="Lay"/>). What does NOT live here is paint: one caller draws IMGUI
-    /// textures, one writes pixels into a <see cref="Texture2D"/>, and one cuts gaps at party and bloc
+    /// textures, one wrote pixels into a <see cref="Texture2D"/> (until §749), and one cuts gaps at party and bloc
     /// boundaries before it draws (board 10d). A painter that tried to own all three targets would be a
     /// fourth way of doing it, which is the defect rather than the fix.</para>
     ///

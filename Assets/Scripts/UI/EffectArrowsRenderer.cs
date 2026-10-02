@@ -44,11 +44,12 @@ namespace PoliSim.UI
         // verbatim. The same three parts on the sheet (the Budget mid-draft), on the signing takeover
         // (AS ENACTED) and on election night (the chamber's first budget, if unchanged); the plate is
         // one renderer painted once (CanvasPaint.Arrows on the takeovers), only the title changes.
+        // (UI v3.5: the Budget sheet took rows at §734 and the signing plate at §749 - V35Icon/V35Figure/
+        // V35Ink below, the scope on each row's slip; election night and the Docket keep the arrows.)
         // No whiskers, no bands, no ±: a deterministic preview is one point, and a range that is not
         // a range is forbidden by the row.
         // ------------------------------------------------------------------------------------------
         public const string ScopeLine = "ESTIMATE · NEXT YEAR · WITH vs WITHOUT THIS DRAFT · NO EVENTS · ONE DETERMINISTIC POINT — NOT A RANGE. ARROW LENGTH IS RELATIVE TO THE LARGEST MOVE IN THIS PANEL ONLY.";
-        public const string PlateTitleEnacted = "ESTIMATED IMPACT · AS ENACTED";
         public const string PlateTitleInherited = "ESTIMATED IMPACT · THE NEW CHAMBER'S FIRST BUDGET, IF UNCHANGED";
         public const string PlateTitleOption = "ESTIMATED IMPACT · THIS OPTION";   // P4-E3 (2026-09-04): the Docket's option, in the same grammar
         /// <summary>P4-E3: the Docket option's scope line - authored one-time shocks applied on the decision, not a previewed year.</summary>
@@ -65,7 +66,36 @@ namespace PoliSim.UI
         }
 
         // §739: the sheet's own plate (THIS DRAFT, with its scope line laid out under it) retired with its last panel, the Sectors page's per-sector
-        // plate - the v3.5 sheets carry a draft's estimate on their tiles and slips; the takeovers' plates and the Docket's option keep the grammar.
+        // plate - the v3.5 sheets carry a draft's estimate on their tiles and slips; election night's plate and the Docket's option keep the grammar.
+
+        /// <summary>§749: THE V3.5 ROW FOR ONE ESTIMATED OUTCOME - its icon, by the outcome's model name (one of the 69). Shared by the Budget's
+        /// if-passed panel (§734) and the signing plate, so the two rows cannot drift apart.</summary>
+        public static string V35Icon(string name)
+        {
+            switch (name)
+            {
+                case "GDP growth": return "chart";
+                case "Unemployment": return "jobs";
+                case "Inflation": return "infl";
+                case "Approval": return "check";
+                case "Poverty rate": return "bowl";
+                case "Labor force participation": return "people";
+                case "Crime index": return "gavel";
+                default: return "other";
+            }
+        }
+
+        /// <summary>§749: the row's figure - the direction as a glyph and the move's size, GDP growth in % and the rest in points (§734's form).</summary>
+        public static string V35Figure(string name, float value)
+        {
+            return (value > 0f ? "▲ " : "▼ ") + UiFormat.Number(Mathf.Abs(value), 2) + (name == "GDP growth" ? "%" : " pts");
+        }
+
+        /// <summary>§749: the row's ink - the good or the bad by the outcome's direction of good, the neutral ink where most do not agree on one (V35 rule 5).</summary>
+        public static Color V35Ink(float value, bool? higherIsBetter)
+        {
+            return !higherIsBetter.HasValue ? V35.DirectionNeutral : (value > 0f) == higherIsBetter.Value ? PoliSimTheme.Good : PoliSimTheme.Bad;
+        }
 
         /// <summary>Board 5c's figures line for a painted plate: each figure signed in its own arrow's ink (uGUI rich text), in lane order, separated by middle dots.</summary>
         public static string FiguresLine(IReadOnlyList<EffectArrow> arrows)

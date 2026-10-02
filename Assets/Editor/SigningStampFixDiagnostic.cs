@@ -159,7 +159,7 @@ namespace PoliSim.EditorTools
                     }
                     else
                     {
-                        string expected = passed ? "SIGN" : "FILE";
+                        string expected = passed ? "Sign" : "File";   // §749: the v3.5 plate's words
                         if (labelText.text != expected)
                         {
                             Debug.LogError($"SIGNSTAMP[{tag}]: button reads '{labelText.text}', expected '{expected}'.");
@@ -172,13 +172,14 @@ namespace PoliSim.EditorTools
                     }
                 }
 
-                // The plate's own stamp (CARRIED/REJECTED) - confirm it is still correctly wired,
+                // The plate's own stamp (CARRIED/LOST) - confirm it is still correctly wired,
                 // unaffected by this fix (it always was correct; asserting it here catches a future
-                // regression touching the same file).
-                Transform stamp = FindDeep(screen.Root.transform, "Stamp");
+                // regression touching the same file). §749: the head's outline stamp, CanvasRows.Stamp's "Stamp <words>".
+                string stampName = passed ? "Stamp CARRIED" : "Stamp LOST";
+                Transform stamp = FindDeep(screen.Root.transform, stampName);
                 if (stamp == null)
                 {
-                    Debug.LogError($"SIGNSTAMP[{tag}]: no 'Stamp' (CARRIED/REJECTED plate stamp) found.");
+                    Debug.LogError($"SIGNSTAMP[{tag}]: no '{stampName}' (the plate's verdict stamp) found.");
                     failures++;
                 }
                 else

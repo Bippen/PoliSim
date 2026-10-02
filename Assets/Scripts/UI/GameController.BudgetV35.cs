@@ -1052,31 +1052,14 @@ namespace PoliSim.UI
             foreach (EffectArrow effect in _cachedPreviewEffects)
             {
                 var r = new Rect(inner.x, y, inner.width, rowH);
-                string unit = effect.Name == "GDP growth" ? "%" : " pts";
-                string figure = (effect.Value > 0f ? "▲ " : "▼ ") + UiFormat.Number(Mathf.Abs(effect.Value), 2) + unit;
-                Color ink = !effect.HigherIsBetter.HasValue ? V35.DirectionNeutral : (effect.Value > 0f) == effect.HigherIsBetter.Value ? PoliSimTheme.Good : PoliSimTheme.Bad;
-                DrawBudgetPanelRow(r, BudgetEffectIcon(effect.Name), effect.Name, figure, ink);
+                string figure = EffectArrowsRenderer.V35Figure(effect.Name, effect.Value);   // §749: the row the signing plate shares
+                DrawBudgetPanelRow(r, EffectArrowsRenderer.V35Icon(effect.Name), effect.Name, figure, EffectArrowsRenderer.V35Ink(effect.Value, effect.HigherIsBetter));
                 string eid = "ifpassed:effect:" + effect.Name;
                 SlipAnchor(r, eid);
                 _budgetSlipBook.Anchors[eid] = new SlipContent(effect.Name.ToUpperInvariant() + " · " + figure).Add("NEXT YEAR, THE PREVIEW WITH THE DRAFT AGAINST WITHOUT").Add(BudgetPreviewScope);
                 y += rowH;
             }
             GUILayout.Space(V35.Px(V35.Gutter));
-        }
-
-        private static string BudgetEffectIcon(string name)
-        {
-            switch (name)
-            {
-                case "GDP growth": return "chart";
-                case "Unemployment": return "jobs";
-                case "Inflation": return "infl";
-                case "Approval": return "check";
-                case "Poverty rate": return "bowl";
-                case "Labor force participation": return "people";
-                case "Crime index": return "gavel";
-                default: return "other";
-            }
         }
 
         /// <summary>One row of the panel: the icon, the name, the signed figure at the right in its ink.</summary>

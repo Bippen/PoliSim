@@ -5,52 +5,15 @@ namespace PoliSim.UI
 {
     /// <summary>
     /// P2-4.3 (Playtest 2, 2026-09-02) — **the instruments as textures, for the Canvas takeovers.** The
-    /// IMGUI sheets draw the per-seat vote map (P2-2.2) and the effect arrows (P2-2.1) per frame; the
-    /// signing ceremony and election night are retained-mode Canvas screens, so the same instruments are
-    /// painted once into a <see cref="Texture2D"/> and shown through a <c>RawImage</c>. The painting rules
-    /// are the renderers' own - rings by capacity at a dot-and-a-third pitch, arrows from a baseline with
-    /// length by size relative to the largest and ink by whether the move is good for that outcome - so the
-    /// two surfaces cannot disagree about what a division or an estimate looks like.
+    /// IMGUI sheets draw the effect arrows (P2-2.1) per frame; election night is a retained-mode Canvas
+    /// screen, so the same instrument is painted once into a <see cref="Texture2D"/> and shown through a
+    /// <c>RawImage</c>. The painting rules are the renderer's own - arrows from a baseline with length by size
+    /// relative to the largest and ink by whether the move is good for that outcome - so the two surfaces
+    /// cannot disagree about what an estimate looks like. (§749: the per-seat vote map retired with the old
+    /// signing document - the v3.5 plate counts the division as one bar of the votes cast.)
     /// </summary>
     public static class CanvasPaint
     {
-        // §567 (2026-09-22, D8): the rings, the pitch, the dot and the well are Hemicycle's - the same chamber the Parliament page and every bill card draw.
-
-        /// <summary>The per-seat map: FOR left, UNDECIDED middle, AGAINST right, one dot per mandate, on a paper ground.</summary>
-        public static Texture2D SeatMap(int width, int height, int forSeats, int undecidedSeats, int againstSeats, Color paper)
-        {
-            var texture = new Texture2D(width, height, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-            var pixels = new Color32[width * height];
-            Color32 ground = paper;
-            for (int i = 0; i < pixels.Length; i++) { pixels[i] = ground; }
-
-            int total = forSeats + undecidedSeats + againstSeats;
-            if (total > 0)
-            {
-                var inks = new List<Color32>(total);
-                for (int i = 0; i < forSeats; i++) { inks.Add(PoliSimTheme.Good); }
-                for (int i = 0; i < undecidedSeats; i++) { inks.Add(PoliSimTheme.TextMuted); }
-                for (int i = 0; i < againstSeats; i++) { inks.Add(PoliSimTheme.Bad); }
-
-                // §567 (D8): the chamber's own arithmetic, shared with the Parliament page and every bill card - this method paints pixels and decides nothing about the shape.
-                float outer = Mathf.Min(width * 0.5f - 2f, height - 2f);
-                float inner = outer * Hemicycle.InnerRadiusFraction;
-                int rows = Hemicycle.Rings(total, inner, outer, out float gap, out float dot);
-                int[] perRow = Hemicycle.Apportion(total, rows, inner, gap);
-                var seats = new List<Hemicycle.Seat>(total);
-                // the lay is in IMGUI's downward y; this painter writes bottom-up, so the baseline is the texture's own top and the centres come back below it
-                Hemicycle.Lay(new Vector2(width * 0.5f, height - 1f), total, perRow, inner, gap, seats);
-                for (int seat = 0; seat < seats.Count; seat++)
-                {
-                    FillCircle(pixels, width, height, seats[seat].Centre.x, seats[seat].Centre.y, dot * 0.5f, inks[seat]);
-                }
-            }
-
-            texture.SetPixels32(pixels);
-            texture.Apply(false);
-            return texture;
-        }
-
         /// <summary>
         /// The effect arrows: one lane per arrow, a vertical shaft from a baseline at mid-height, length by the
         /// value's size relative to the largest, a head at the tip, ink by whether the move is good for that
@@ -171,20 +134,6 @@ namespace PoliSim.UI
         {
             if (x < 0 || y < 0 || x >= w || y >= h) { return; }
             px[(h - 1 - y) * w + x] = ink;
-        }
-
-        private static void FillCircle(Color32[] px, int w, int h, float cx, float cy, float r, Color32 ink)
-        {
-            int x0 = Mathf.FloorToInt(cx - r), x1 = Mathf.CeilToInt(cx + r), y0 = Mathf.FloorToInt(cy - r), y1 = Mathf.CeilToInt(cy + r);
-            float rr = r * r;
-            for (int y = y0; y <= y1; y++)
-            {
-                for (int x = x0; x <= x1; x++)
-                {
-                    float dx = x + 0.5f - cx, dy = y + 0.5f - cy;
-                    if (dx * dx + dy * dy <= rr) { Put(px, w, h, x, y, ink); }
-                }
-            }
         }
 
         private static void FillRect(Color32[] px, int w, int h, float x, float y, float width, float height, Color32 ink)
