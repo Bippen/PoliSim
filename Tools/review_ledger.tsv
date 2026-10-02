@@ -189,3 +189,4 @@ file	Assets/Scripts/Simulation/FinancePartner.cs	4ff0ba2212e3feee19f0bbf088d8aba
 baseline	777	510cae2ad6e35031a522c92247347f460c75b1e8f5109afc10ef834513d7771b	reviewed	2026-10-01	s717	Reviews/2026-10-01_s717_mef_summed.md	traj_fp717 seed 777 - Italy's MEF summed: FdI holds Finance, Italy's partner rule stops
 baseline	424242	b6a7b990ded301e520f0d89d85d98f31ef50dc192439f6cc7a73b41014b247d5	reviewed	2026-10-01	s717	Reviews/2026-10-01_s717_mef_summed.md	traj_fp717 seed 424242 - Italy's MEF summed
 file	Assets/Scripts/Simulation/SimulationManager.cs	1e449872fc23f84990f1d3b03344fc6d9a623a738e5639196867c2a028449dfb	reviewed	2026-10-02	s752	Reviews/2026-10-02_s752_term_record.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	56a9ded76a4b7b52bae8e1b5ed63c306d8438b204ffc1bffb91e61b577f0b921	reviewed	2026-10-02	s753	Reviews/2026-10-02_s753_merged_ministries.md	-

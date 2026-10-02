@@ -38,12 +38,16 @@ namespace PoliSim.EditorTools
                 // (a) who holds Finance at Germany's start, every country
                 foreach (Country c in world.Countries)
                 {
-                    sb.Append("    holder    ").Append(F("{0}: head {1}, Finance {2}{3} -> the partner {4}", c.Id, c.Government?.PmParty ?? "-", FinanceHolder(c) ?? "-", c.Government != null && c.Government.Provisional ? " (a PROVISIONAL stand-in)" : string.Empty, FinancePartner.Holder(c) ?? "none")).Append('\n');
+                    bool planted = c.Id == CountryId.Germany || c.Id == CountryId.France;
+                    sb.Append("    holder    ").Append(F("{0}: head {1}, Finance {2}{3}{5} -> the partner {4}", c.Id, c.Government?.PmParty ?? "-", FinanceHolder(c) ?? "-", c.Government != null && c.Government.Provisional ? " (a PROVISIONAL stand-in)" : string.Empty, FinancePartner.Holder(c) ?? "none",
+                        planted ? " - PLANTED by this check (§753: the allocation seats the head's own party there)" : string.Empty)).Append('\n');
                 }
-                Check(germany.Government.PmParty == "SPD" && FinancePartner.Holder(germany) == "FDP", F("Germany on 6 November 2024: the FDP holds Finance under the SPD's chancellor (the record's Lindner) - the partner ({0})", FinancePartner.Holder(germany) ?? "none"));
+                Check(germany.Government.PmParty == "SPD" && FinancePartner.Holder(germany) == "FDP", F("Germany on 6 November 2024, the record's Lindner PLANTED at Finance: the FDP holds it under the SPD's chancellor - the partner ({0})", FinancePartner.Holder(germany) ?? "none"));
                 Country france = world.GetCountry(CountryId.France);
+                // §753: France's Bercy summed with its Industry (1.92 + 1.06) is the stand-in's heaviest post and the head's own party takes it, so the check
+                // plants RN at Finance (the second review's defect 2): decision A - no partner run on a PROVISIONAL government - must refuse a real partner
                 Check(france.Government.Provisional && FinanceHolder(france) != null && FinanceHolder(france) != france.Government.PmParty && FinancePartner.Holder(france) == null,
-                    F("France's PROVISIONAL stand-in seats {0} at Finance under {1} - no partner runs it (the review's decision A: a stand-in is the model's guess at a government)", FinanceHolder(france) ?? "-", france.Government.PmParty));
+                    F("France's PROVISIONAL stand-in, {0} PLANTED at Finance under {1} - no partner runs it (the review's decision A: a stand-in is the model's guess at a government)", FinanceHolder(france) ?? "-", france.Government.PmParty));
 
                 // (b) the FDP's target on the household rates
                 Check(FinancePartner.TryPosition(CountryId.Germany, "SPD", out float spd) & FinancePartner.TryPosition(CountryId.Germany, "FDP", out float fdp), F("the SPD's and the FDP's redistribution positions read: {0:0.00} and {1:0.00}", spd, fdp));
@@ -196,9 +200,31 @@ namespace PoliSim.EditorTools
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
             World world = WorldFactory.CreateDefault();
+            PlantRecordFinance(world.GetCountry(CountryId.Germany), "FDP");
+            PlantRecordFinance(world.GetCountry(CountryId.France), "RN");   // decision A's test needs a non-head party at a stand-in's Finance (§753 seats the head's ENS there)
             SimulationManager sim = go.AddComponent<SimulationManager>();
             sim.SetWorld(world);
             return (sim, world);
+        }
+
+        /// <summary>
+        /// §753 (Elias's ruling A3): Germany's BMBF summed as Druckman &amp; Warwick sum a merged post moves the 2021 chamber's Finance from the FDP to
+        /// the SPD - a miss against the record's Lindner, recorded and not adjusted (`PortfolioSalienceDiagnostic`). This check is §716's machinery, not
+        /// the allocation's, so it plants the record's: Finance with <paramref name="party"/>, the post it held going to the party that held Finance.
+        /// </summary>
+        private static void PlantRecordFinance(Country country, string party)
+        {
+            GovernmentRecord g = country?.Government;
+            if (g == null || !g.Portfolios.TryGetValue(party, out List<CabinetPortfolio> its) || its.Contains(CabinetPortfolio.FinanceTreasury)) { return; }
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> held in g.Portfolios)
+            {
+                if (held.Value == null || !held.Value.Contains(CabinetPortfolio.FinanceTreasury)) { continue; }
+                CabinetPortfolio given = its.Count > 0 ? its[its.Count - 1] : CabinetPortfolio.Education;
+                held.Value.Remove(CabinetPortfolio.FinanceTreasury);
+                if (its.Count > 0) { its.Remove(given); held.Value.Add(given); }
+                its.Add(CabinetPortfolio.FinanceTreasury);
+                return;
+            }
         }
 
         private static string FinanceHolder(Country c)

@@ -1,3 +1,4 @@
+using System;
 using PoliSim.Data;
 
 namespace PoliSim.Elections
@@ -28,8 +29,29 @@ namespace PoliSim.Elections
             }
         }
 
-        /// <summary>A portfolio's weight in its country (an average portfolio is 1.00).</summary>
-        public static double Weight(CountryId country, CabinetPortfolio portfolio)
+        /// <summary>
+        /// §753 (Elias's ruling A3: "merged ministries coded as Druckman &amp; Warwick code them, Germany included"): the paper codes each cabinet's
+        /// posts as they stood, a merged post weighing its rated posts summed (DW05 p. 26: Ireland's justice 1.24 + communications 0.91 = 2.15), so a
+        /// country's weights are DATED. Germany's BMBF (1994) merged Science &amp; Education (0.82) with Research &amp; Technology (0.93); the cabinet of
+        /// 6 May 2025 split it - research to the BMFTR, education to the BMBFSFJ with Families &amp; Youth (0.68) - the Federal Government's cabinet page
+        /// (`ElectionsData/germany/raw/records/breg_bundeskabinett.html`) lists both, and the record's Merz government dates them (WorldClock, [BT-KW25]).
+        /// The split was the 21st Bundestag's government's own: so the key is that chamber's ELECTION, 2025-02-23 - a cabinet formed on the 2025
+        /// chamber takes the ministries as its government of record organized them, one structure through the whole formation (drafted from the day
+        /// after polling day, installed weeks later); a cabinet of the 2021 chamber the BMBF.
+        /// </summary>
+        public static readonly DateTime GermanyBmbfSplit = new DateTime(2025, 2, 23);
+
+        /// <summary>
+        /// §753: France's finance ministry has carried industry since the Borne government - the Décret du 20 mai 2022 relatif à la composition du
+        /// Gouvernement, art. 1: "M. Bruno LE MAIRE, ministre de l'économie, des finances et de la souveraineté industrielle et numérique"
+        /// (`ElectionsData/france/raw/executive/wb_legifrance_JORFTEXT000045819551.html`; the JORF of 2024-12-14 "... et de l'industrie") - a merged
+        /// post: Economy &amp; Finance (1.92) and Industry (1.06), summed. Before it, the stored JORF of 2022-05-17 reads "et de la relance".
+        /// </summary>
+        public static readonly DateTime FranceBercyIndustry = new DateTime(2022, 5, 20);
+
+        /// <summary>A portfolio's weight in its country (an average portfolio is 1.00) for a cabinet formed on <paramref name="asOf"/> - §753: the ministries as
+        /// they stood that day.</summary>
+        public static double Weight(CountryId country, CabinetPortfolio portfolio, DateTime asOf)
         {
             switch (country)
             {
@@ -41,7 +63,10 @@ namespace PoliSim.Elections
                         case CabinetPortfolio.HealthSocialAffairs: return 1.21 + 0.80;   // Labour (& Social Affairs) + Health
                         case CabinetPortfolio.Defense: return 1.12;
                         case CabinetPortfolio.ForeignAffairs: return 1.41;
-                        case CabinetPortfolio.Education: return 0.82;                     // Science & Education
+                        case CabinetPortfolio.Education:
+                            return asOf < GermanyBmbfSplit
+                                ? 0.82 + 0.93    // the BMBF: Science & Education + Research & Technology, summed as the paper sums a merged post (§753; was 0.82)
+                                : 0.82 + 0.68;   // the BMBFSFJ, cabinets of the 2025 chamber: Science & Education + Families & Youth (research gone to the BMFTR, no post of the six)
                     }
                     break;
                 case CountryId.Sweden:
@@ -58,7 +83,7 @@ namespace PoliSim.Elections
                 case CountryId.France:
                     switch (portfolio)
                     {
-                        case CabinetPortfolio.FinanceTreasury: return 1.92;               // Economy & Finance
+                        case CabinetPortfolio.FinanceTreasury: return asOf < FranceBercyIndustry ? 1.92 : 1.92 + 1.06;   // Economy & Finance; with Industry from 2022-05-20 (§753)
                         case CabinetPortfolio.InteriorJustice: return 1.63 + 1.48;
                         case CabinetPortfolio.HealthSocialAffairs: return 1.13 + 0.99;   // Employment + Public Health
                         case CabinetPortfolio.Defense: return 1.38;
@@ -74,27 +99,21 @@ namespace PoliSim.Elections
                         case CabinetPortfolio.HealthSocialAffairs: return 1.06 + 1.19;   // Labour & Social Security/Welfare + Health
                         case CabinetPortfolio.Defense: return 1.19;
                         case CabinetPortfolio.ForeignAffairs: return 1.69;
-                        case CabinetPortfolio.Education: return 1.10;
+                        case CabinetPortfolio.Education: return 1.10;                     // Istruzione - the post that holds education (Universities & Research, 0.69, a separate ministry)
                     }
                     break;
             }
-            switch (portfolio)   // DERIVED: the mean of the four countries rated
-            {
-                case CabinetPortfolio.FinanceTreasury: return 2.28;   // (1.58 + 1.68 + 1.92 + 3.94) / 4 - Italy's summed MEF in the mean (§717; was 1.705)
-                case CabinetPortfolio.InteriorJustice: return 2.35;
-                case CabinetPortfolio.HealthSocialAffairs: return 2.215;
-                case CabinetPortfolio.Defense: return 1.17;
-                case CabinetPortfolio.ForeignAffairs: return 1.455;
-                case CabinetPortfolio.Education: return 1.0975;
-                default: return 1.0;
-            }
+            if (!System.Enum.IsDefined(typeof(CabinetPortfolio), portfolio)) { return 1.0; }   // a post outside the six (a corrupt save) is average - never the mean, which would recurse (the review's note)
+            // DERIVED: the mean of the four countries rated, each at the same date (§753 - computed, so it follows their dating: Finance 2.545 and
+            // Education 1.33 before 2025-02-23, Education 1.2675 from the 2025 chamber; before §753 Finance 2.28 and Education 1.0975, §717's and §706's)
+            return (Weight(CountryId.Germany, portfolio, asOf) + Weight(CountryId.Sweden, portfolio, asOf) + Weight(CountryId.France, portfolio, asOf) + Weight(CountryId.Italy, portfolio, asOf)) / 4.0;
         }
 
-        /// <summary>The weight a set of posts carries (the head's weight added where <paramref name="head"/>).</summary>
-        public static double Of(CountryId country, System.Collections.Generic.IEnumerable<CabinetPortfolio> posts, bool head = false)
+        /// <summary>The weight a set of posts carries for a cabinet formed on <paramref name="asOf"/> (the head's weight added where <paramref name="head"/>).</summary>
+        public static double Of(CountryId country, System.Collections.Generic.IEnumerable<CabinetPortfolio> posts, DateTime asOf, bool head = false)
         {
             double sum = head ? HeadWeight(country) : 0.0;
-            if (posts != null) { foreach (CabinetPortfolio p in posts) { sum += Weight(country, p); } }
+            if (posts != null) { foreach (CabinetPortfolio p in posts) { sum += Weight(country, p, asOf); } }
             return sum;
         }
     }

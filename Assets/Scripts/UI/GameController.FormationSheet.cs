@@ -96,7 +96,7 @@ namespace PoliSim.UI
             var right = new Rect(inner.x + 584f * ux, top, inner.xMax - (inner.x + 584f * ux), inner.yMax - top);
 
             // ---- The left column: THE CABINET, THE SUPPORT.
-            Dictionary<string, List<CabinetPortfolio>> gamson = GovernmentRecord.GamsonPosts(_playerCountry, draft.CabinetParties, you);
+            Dictionary<string, List<CabinetPortfolio>> gamson = GovernmentRecord.GamsonPosts(_playerCountry, draft.CabinetParties, you, _simulationManager.CurrentDate);
             var seated = new List<PoliticalParty>();
             foreach (PoliticalParty party in PartySystems.For(PlayerCountryId))
             {
@@ -152,8 +152,8 @@ namespace PoliSim.UI
                     // §706 (the review's defect 4): the posts WEIGHED, as the partner's answer weighs them (Druckman & Warwick's salience) - a count of
                     // posts said 2 ⁄ 2 where the weights cut the partner's payoff, and marked a post short where the weights were whole
                     int offered = draft.PostsOf(key);
-                    double offeredWeight = PortfolioSalience.Of(_playerCountry.Id, draft.Posts.TryGetValue(key, out List<CabinetPortfolio> held) ? held : null);
-                    double dueWeight = PortfolioSalience.Of(_playerCountry.Id, gamson.TryGetValue(key, out List<CabinetPortfolio> g) ? g : null);
+                    double offeredWeight = PortfolioSalience.Of(_playerCountry.Id, draft.Posts.TryGetValue(key, out List<CabinetPortfolio> held) ? held : null, _simulationManager.CurrentDate);
+                    double dueWeight = PortfolioSalience.Of(_playerCountry.Id, gamson.TryGetValue(key, out List<CabinetPortfolio> g) ? g : null, _simulationManager.CurrentDate);
                     bool short_ = offeredWeight < dueWeight - 0.005;
                     float px = row.x + 356f * ux;
                     if (short_) { DrawVerdictSlot(new Rect(px, row.y, StatsUnit(16f), row.height), false); }

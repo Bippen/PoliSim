@@ -52,7 +52,7 @@ namespace PoliSim.Elections
         /// to a coalition" [BF73]; "one-to-one proportion" [WD01]; "near-perfect relationship" [WD06]), with no formateur premium [WD06]. §706
         /// (ruled 2026-10-01): each post WEIGHED by Druckman &amp; Warwick's published salience (<see cref="PortfolioSalience"/>), the prime
         /// minister's party credited the head of government's weight, the posts heaviest first to the party with the most entitlement outstanding
-        /// (<see cref="AllocatePortfolios"/>) - Finance can go to a partner (the record: 2021's FDP, 2025's SPD). STATED, UNSIZED: the literature's deviation - the large party
+        /// (<see cref="AllocatePortfolios"/>) - Finance can go to a partner (the record: 2021's FDP, 2025's SPD; since §753's dated weights the method gives 2025's to the SPD and 2021's to the SPD, a recorded miss). STATED, UNSIZED: the literature's deviation - the large party
         /// underpaid, the small overpaid [BF73] [WD01] - is on no abstract as a figure, so the model pays pure proportion and says so; Sweden's real
         /// cabinet (M 13, KD 6, L 5 of 24 for seat shares 0.66/0.18/0.16, `sweden/portfolios.md`) shows the direction. Which portfolio a party
         /// takes follows its manifesto's emphasis in the literature [BDD11] - unsourced per party here, so the enum's order stands as the premise.
@@ -136,12 +136,14 @@ namespace PoliSim.Elections
         /// SALIENCE - each post at Druckman &amp; Warwick's published weight (<see cref="PortfolioSalience"/>), the head of government's weight
         /// credited to its party. [AUTHORED-DRAFT] the method: a party's entitlement is its share of the cabinet's seats times the total weight;
         /// the posts, heaviest first, each go to the party with the most entitlement outstanding (a near-tie to the larger party, §711); the head's party holds
-        /// at least one post (the rule before, kept - its levers pass the gates anyway, the post is its minister's). Finance goes where the weights put it: to the partner in
-        /// the 2025 and 2021 chambers, as the record has it (PortfolioSalienceDiagnostic), and it carries its levers to whoever holds it (§634).
+        /// at least one post (the rule before, kept - its levers pass the gates anyway, the post is its minister's). Finance goes where the weights put it -
+        /// since §753 (Elias's ruling A3, merged ministries summed as the paper codes them, the weights DATED by the record's own day, <see cref="FormedOn"/>):
+        /// the 2025 chamber's to the SPD (the record's Klingbeil), the 2021 chamber's to the SPD too (a miss against the record's Lindner, recorded) -
+        /// PortfolioSalienceDiagnostic; it carries its levers to whoever holds it (§634).
         /// </summary>
         /// <summary>§711 [AUTHORED-DRAFT], the play-calibration list's 25th entry: an entitlement gap smaller than this share of a post's own weight is a
         /// near-tie, and the post goes to the larger party (Elias's ruling of 2026-10-01, item 2). A tenth of the post: the 2026 Riksdag's Finance
-        /// gap (0.056 of 1.68, a thirtieth) is one; the 2021 and 2025 Bundestags' Finance gaps (0.32 and 1.30 of 1.58) are not.</summary>
+        /// gap (0.056 of 1.68, a thirtieth) is one; the Bundestags' Finance gaps are not (§753's weights: 2021's SPD over the Grüne by 0.198 of 1.58).</summary>
         public const double NearTieShare = 0.10;
 
         public void AllocatePortfolios(Country country)
@@ -154,7 +156,7 @@ namespace PoliSim.Elections
             foreach (string party in Cabinet) { int held = country.ParliamentSeats != null && country.ParliamentSeats.TryGetValue(party, out int n) ? n : 0; seats[party] = held; total += held; }
             double head = PortfolioSalience.HeadWeight(country.Id);
             double weightTotal = head;
-            foreach (CabinetPortfolio p in all) { weightTotal += PortfolioSalience.Weight(country.Id, p); }
+            foreach (CabinetPortfolio p in all) { weightTotal += PortfolioSalience.Weight(country.Id, p, FormedOn); }
             var outstanding = new Dictionary<string, double>();
             foreach (string party in Cabinet)
             {
@@ -165,7 +167,7 @@ namespace PoliSim.Elections
             order.Sort((a, b) => seats[b].CompareTo(seats[a]));
             foreach (string party in order) { Portfolios[party] = new List<CabinetPortfolio>(); }
             var posts = new List<CabinetPortfolio>(all);
-            posts.Sort((a, b) => PortfolioSalience.Weight(country.Id, b).CompareTo(PortfolioSalience.Weight(country.Id, a)) is int c && c != 0 ? c : ((int)a).CompareTo((int)b));   // heaviest first, a tie in the enum's order
+            posts.Sort((a, b) => PortfolioSalience.Weight(country.Id, b, FormedOn).CompareTo(PortfolioSalience.Weight(country.Id, a, FormedOn)) is int c && c != 0 ? c : ((int)a).CompareTo((int)b));   // heaviest first, a tie in the enum's order
             foreach (CabinetPortfolio post in posts)
             {
                 // §711 (Elias's ruling of 2026-10-01, item 2: "Near-ties in portfolio allocation go to the larger party"): the post goes to the larger
@@ -173,11 +175,11 @@ namespace PoliSim.Elections
                 // NearTieShare of the post's own weight (the play-calibration list's 25th entry). Order is by seats, so the first such party is the larger.
                 double most = double.MinValue;
                 foreach (string party in order) { most = Math.Max(most, outstanding[party]); }
-                double nearTie = NearTieShare * PortfolioSalience.Weight(country.Id, post);
+                double nearTie = NearTieShare * PortfolioSalience.Weight(country.Id, post, FormedOn);
                 string taker = null;
                 foreach (string party in order) { if (outstanding[party] >= most - nearTie - 1e-9) { taker = party; break; } }
                 Portfolios[taker].Add(post);
-                outstanding[taker] -= PortfolioSalience.Weight(country.Id, post);
+                outstanding[taker] -= PortfolioSalience.Weight(country.Id, post, FormedOn);
             }
             if (PmParty != null && Portfolios.TryGetValue(PmParty, out List<CabinetPortfolio> pmHeld) && pmHeld.Count == 0)
             {
@@ -185,13 +187,13 @@ namespace PoliSim.Elections
                 string richest = null; double richestWeight = -1.0;
                 foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Portfolios)
                 {
-                    double w = PortfolioSalience.Of(country.Id, kv.Value);
+                    double w = PortfolioSalience.Of(country.Id, kv.Value, FormedOn);
                     if (kv.Value.Count > 1 && w > richestWeight) { richest = kv.Key; richestWeight = w; }
                 }
                 if (richest != null)
                 {
                     CabinetPortfolio lightest = Portfolios[richest][0];
-                    foreach (CabinetPortfolio p in Portfolios[richest]) { if (PortfolioSalience.Weight(country.Id, p) < PortfolioSalience.Weight(country.Id, lightest)) { lightest = p; } }
+                    foreach (CabinetPortfolio p in Portfolios[richest]) { if (PortfolioSalience.Weight(country.Id, p, FormedOn) < PortfolioSalience.Weight(country.Id, lightest, FormedOn)) { lightest = p; } }
                     Portfolios[richest].Remove(lightest);
                     pmHeld.Add(lightest);
                 }
@@ -222,10 +224,11 @@ namespace PoliSim.Elections
             return record;
         }
 
-        /// <summary>§646: the posts Gamson's law allocates each party of a proposed cabinet (<see cref="AllocatePortfolios"/>), each post weighed by its salience (§706) - what a partner expects.</summary>
-        public static Dictionary<string, List<CabinetPortfolio>> GamsonPosts(Country country, IEnumerable<string> cabinet, string pmParty)
+        /// <summary>§646: the posts Gamson's law allocates each party of a proposed cabinet (<see cref="AllocatePortfolios"/>), each post weighed by its salience (§706) - what a partner expects.
+        /// §753: the weights are the ministries' as they stand on <paramref name="asOf"/> (the formation's day; the world's epoch where none is named).</summary>
+        public static Dictionary<string, List<CabinetPortfolio>> GamsonPosts(Country country, IEnumerable<string> cabinet, string pmParty, DateTime? asOf = null)
         {
-            var scratch = new GovernmentRecord { PmParty = pmParty };
+            var scratch = new GovernmentRecord { PmParty = pmParty, FormedOn = asOf ?? Simulation.SimulationManager.EpochDate };
             scratch.Cabinet.AddRange(cabinet);
             scratch.AllocatePortfolios(country);
             return scratch.Portfolios;

@@ -34,7 +34,7 @@ The Eastern European companion (Druckman & Roberts, EJPR 47, 2008) would give Po
 | Health | Health 0.80 | (in the above) | Public Health 0.99 | Health 1.19 |
 | Defence | 1.12 | 0.99 | 1.38 | 1.19 |
 | Foreign Affairs | 1.41 | 1.27 | 1.45 | 1.69 |
-| Education | Science & Education 0.82 | Education (& Science) 1.07 | Education 1.40 | Education 1.10 |
+| Education | Science & Education 0.82 (and Research & Technology 0.93, the BMBF's other post) | Education (& Science) 1.07 | Education 1.40 | Education 1.10 |
 
 ## The mapping onto the game's six portfolios (DERIVED)
 
@@ -46,12 +46,12 @@ record is recorded and the method is not adjusted: Meloni's Finance goes to FdI,
 | game portfolio | Germany | Sweden | France | Italy | the rest (mean of the four) |
 |---|---:|---:|---:|---:|---:|
 | head of government (credited, not allocated) | 2.12 | 2.19 | 2.75 | 2.48 | 2.385 |
-| FinanceTreasury | 1.58 | 1.68 | 1.92 | 3.94 (1.64 + 1.32 + 0.98) | 2.28 |
+| FinanceTreasury | 1.58 | 1.68 | 2.98 (1.92 + Industry 1.06, from the decree of 20 May 2022 - §753) | 3.94 (1.64 + 1.32 + 0.98) | 2.545 |
 | InteriorJustice | 2.29 (1.27 + 1.02) | 0.99 | 3.11 (1.63 + 1.48) | 3.01 (1.78 + 1.23) | 2.35 |
 | HealthSocialAffairs | 2.01 (1.21 + 0.80) | 2.48 (1.22 + 1.26) | 2.12 (1.13 + 0.99) | 2.25 (1.06 + 1.19) | 2.215 |
 | Defense | 1.12 | 0.99 | 1.38 | 1.19 | 1.17 |
 | ForeignAffairs | 1.41 | 1.27 | 1.45 | 1.69 | 1.455 |
-| Education | 0.82 | 1.07 | 1.40 | 1.10 | 1.0975 |
+| Education | 1.75 (0.82 + 0.93, the BMBF) for a cabinet of the 2021 chamber; 1.50 (0.82 + 0.68, the BMBFSFJ) from the 2025 chamber - §753 | 1.07 | 1.40 | 1.10 | 1.33; 1.2675 from 2025-02-23 |
 
 **Poland and the USA** take the mean of the four countries rated (DERIVED — the play-calibration list's 23rd entry, key `SAL-POL`, owed
 Druckman & Roberts' Polish table; the USA's executive is a presidency, one party, so no share is ever split there).
@@ -65,6 +65,34 @@ Gamson's law with salience (Druckman & Warwick's own use of the scores, "salienc
 3. the portfolios, heaviest first, each go to the party with the largest entitlement still outstanding (a tie to the larger party);
 4. the head's party holds at least one portfolio (the rule before this ruling, kept; the head's party passes every lever gate but Finance's where a partner holds Finance - §716: that partner holds its levers in fact, run from its own positions).
 
+
+
+**Merged ministries, Germany included** (Elias's ruling A3, 2026-10-02, §753): *coded as Druckman & Warwick code them*. The paper's own
+rule (DW05, p. 26 of the authors' copy): where posts it rated separately are merged, *"it is possible to produce a salience value by summing
+the ratings of the component posts"* - its example, Ireland's justice (1.24) and communications (0.91) merged in 1989, weighs 2.15; a post
+combining a rated and an unrated area weighs the rated one plus 1; a post split in two takes half each; and it warns that summing *"may not
+be perfectly accurate"* (one could downgrade the sum) - not done here, the paper's own rule taken as written. The paper codes each CABINET's
+posts as they stood, so the weights are **DATED** (`PortfolioSalience.Weight(country, post, day)`; the day a cabinet is formed):
+- **Germany's Education**: the BMBF (1994-2025) merged Science & Education (0.82) and Research & Technology (0.93) - **1.75** for a cabinet
+  of the 2021 chamber; the 2025 chamber's government split it (6 May 2025: research to the BMFTR, education to the BMBFSFJ with family
+  affairs - the cabinet page in `germany/raw/records/breg_bundeskabinett.html`), so a cabinet formed on the 2025 chamber - keyed on its
+  ELECTION, 2025-02-23, one structure through the whole formation - weighs **1.50** (Science & Education 0.82 + Families & Youth 0.68);
+- **France's Finance**: Bercy has carried industry since the Borne government - the *Décret du 20 mai 2022 relatif à la composition
+  du Gouvernement*, art. 1: *"M. Bruno LE MAIRE, ministre de l'économie, des finances et de la souveraineté industrielle et numérique"*
+  (`france/raw/executive/wb_legifrance_JORFTEXT000045819551.html`, an archived copy - Légifrance refused the live page, 403; *"... et de
+  l'industrie"* in the JORF of 2024-12-14; the JORF of 2022-05-17 still reads *"et de la relance"*), keyed on 2022-05-20 -
+  Economy & Finance 1.92 + Industry 1.06 = **2.98**;
+- **the mean** Poland and the USA take is computed from the four at the same day: Finance **2.545**, Education 1.33 (1.2675 from 2025-02-23)
+  - so Poland's and the USA's weights move on German and French reorganisation dates (a premise, stated).
+Checked and left: Italy's Education is the post that holds education (Istruzione; Universities & Research, 0.69, a separate ministry not
+among the six); Sweden's Education is one post; the portfolios standing for several separate ministries already sum them (§706).
+**The outcomes** (`PortfolioSalienceDiagnostic`): the 2021 chamber's Finance goes to **the SPD** - a MISS against the record's Lindner (FDP),
+recorded and not adjusted (Education stays with the FDP, the record's Stark-Watzinger); the 2025 chamber's to **the SPD**, the record's
+Klingbeil (posts CDU Health/Education, SPD Interior/Finance/Defence, CSU Foreign), and the formation forms the record's CDU+CSU+SPD;
+Poland's Finance stays with KO (the record's Domański) but TD and NL swap Foreign and Education (KO Finance/Interior/Defence, TD Health/
+Foreign, NL Education); France's stand-in seats the head's ENS at Finance (RN before; no partner runs a stand-in either way, §716's
+decision A); Sweden's and Italy's hold. The no-player trajectory does not move (`fp717`, byte for byte).
+
 **The ruling's tests** (`PortfolioSalienceDiagnostic`): the 2025 chamber's CDU+CSU+SPD puts Finance with **the SPD** (Klingbeil, the
-record); the 2021 chamber's SPD+Grüne+FDP puts it with **the FDP** (Lindner, the record) — and Education with the FDP too, as the record
+record); the 2021 chamber's SPD+Grüne+FDP puts it with **the FDP** (Lindner, the record) - **until §753**: since then 2021's goes to the SPD, a recorded miss (above) — and Education with the FDP too, as the record
 has it (Stark-Watzinger).

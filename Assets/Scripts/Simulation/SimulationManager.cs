@@ -3069,7 +3069,7 @@ namespace PoliSim.Simulation
                 // group and cannot be elected, which is the rule: the Union forms together or not at all)
                 if (SeatedGroupPartner(country, party) is string partner && !round.Declines.Contains(partner + ">" + party)) { proposal.CabinetParties.Add(partner); }
             }
-            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, party)) { proposal.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, party, CurrentDate)) { proposal.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
             proposal.FreezeTabled(country, CurrentDate, _world);
             foreach (string supporter in proposal.Supporters)
             {
@@ -3451,7 +3451,7 @@ namespace PoliSim.Simulation
                     government.CabinetParties.Add(winnerPartner);
                     if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {CandidateOf(country, round, winner)}'s cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
                 }
-                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
+                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner, CurrentDate)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
                 government.FreezeTabled(country, CurrentDate, _world);
                 verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
             }

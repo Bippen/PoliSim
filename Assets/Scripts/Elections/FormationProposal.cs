@@ -139,7 +139,7 @@ namespace PoliSim.Elections
                 }
                 return best;
             }
-            Dictionary<string, List<CabinetPortfolio>> gamson = GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, proposal.Formateur);
+            Dictionary<string, List<CabinetPortfolio>> gamson = GovernmentRecord.GamsonPosts(country, proposal.CabinetParties, proposal.Formateur, date);
             var candidacies = new HashSet<string>();
             // §705: K-1f's pairing - a party whose own leader is its candidate sits only in a cabinet that candidate leads - is Sweden's ruled record,
             // not a rule of candidacies: the SPD stood Scholz in 2025 and sits in Merz's cabinet (DeclaredRedLines.CandidacyRefuses)
@@ -178,8 +178,8 @@ namespace PoliSim.Elections
                 {
                     double here = CoalitionFormation.Payoff(p, option, chamber.Seats, chamber.Compatibility, n);
                     // §706: the posts weighed, not counted - Finance counts for more than one post (Druckman & Warwick's salience, PortfolioSalience)
-                    double offeredWeight = PortfolioSalience.Of(country.Id, proposal.Posts.TryGetValue(key, out List<CabinetPortfolio> offeredPosts) ? offeredPosts : null);
-                    double expectedWeight = PortfolioSalience.Of(country.Id, gamson.TryGetValue(key, out List<CabinetPortfolio> expectedPosts) ? expectedPosts : null);
+                    double offeredWeight = PortfolioSalience.Of(country.Id, proposal.Posts.TryGetValue(key, out List<CabinetPortfolio> offeredPosts) ? offeredPosts : null, date);
+                    double expectedWeight = PortfolioSalience.Of(country.Id, gamson.TryGetValue(key, out List<CabinetPortfolio> expectedPosts) ? expectedPosts : null, date);
                     double postsFactor = expectedWeight <= 0.0 ? 1.0 : Math.Min(1.0, offeredWeight / expectedWeight);
                     answer.Payoff = here * postsFactor;
                     answer.Alternative = BestElsewhere(p, out string where);
