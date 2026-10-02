@@ -414,7 +414,6 @@ namespace PoliSim.UI
         private readonly GraphRenderer _prisonPopulationGraph = new GraphRenderer();
         private readonly GraphRenderer _organizedCrimeGraph = new GraphRenderer();
         private readonly GraphRenderer _corruptionGraph = new GraphRenderer();
-        private readonly GraphRenderer _laborForceParticipationGraph = new GraphRenderer();
         private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
         private readonly GraphRenderer _povertyRateGraph = new GraphRenderer();
 
@@ -4663,105 +4662,6 @@ namespace PoliSim.UI
             ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
         }
 
-        /// <summary>
-        /// Labor Market tab (Phase 4 - moved off the dashboard into its own home, now also including
-        /// Minimum Wage since it's a labor-market lever like the other three): Minimum Wage / Paid
-        /// Family Leave / Overtime Regulation / Retraining Program, plus a LaborForceParticipationRate
-        /// history graph.
-        /// </summary>
-        private void DrawLaborMarketTab(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _laborMarketScrollPosition = GUILayout.BeginScrollView(_laborMarketScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Labor Market", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Labor));
-            // §565: the paragraph is cut - the bill card's sentence says the draft, and a row's own trailing names the law offset when one moves its dial.
-            DrawStatsSectionCaption("THE DIALS ARE ONE BILL'S DRAFT · A LAW IN FORCE STACKS ITS OFFSET ON THE ROW IT MOVES");
-            GUILayout.Space(8f);
-
-            // §564 (2026-09-22): THE DIALS LEAD (Design's sitting, part B item 2) - the bill card follows them, then the graph and the population rows.
-            DrawMinimumWageControl();
-
-            // Pass 3 (coexistence ruling): the sliders show and edit the STATUTORY BASE - the
-            // book bills own - while the trailing column names the law offset and the composed
-            // effective value whenever enacted labor laws are moving a dial (LaborDialTrailing).
-            // Drafts fall back to the base too, so introducing an untouched bill is Neutral even
-            // with laws in force.
-            _paidFamilyLeaveWeeksInput = DrawDialRow("Paid Family Leave",
-                _playerCountry.PaidFamilyLeaveWeeksBase, GetPaidFamilyLeaveWeeksInput(_playerCountry.PaidFamilyLeaveWeeksBase),
-                MinPaidFamilyLeaveWeeks, MaxPaidFamilyLeaveWeeks, "F0", string.Empty,
-                "weeks", bandNote: LaborDialInForce(_playerCountry.PaidFamilyLeaveWeeksBase, _playerCountry.PaidFamilyLeaveWeeks));
-
-            _overtimeRegulationInput = DrawDialRow("Overtime / Working-Hour Regulation",
-                _playerCountry.OvertimeRegulationBase, GetOvertimeRegulationInput(_playerCountry.OvertimeRegulationBase),
-                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty,
-                "0 unregulated - 100 strict", bandNote: LaborDialInForce(_playerCountry.OvertimeRegulationBase, _playerCountry.OvertimeRegulationLevel));
-
-            _retrainingProgramInput = DrawDialRow("Workforce Retraining Programs",
-                _playerCountry.RetrainingProgramBase, GetRetrainingProgramInput(_playerCountry.RetrainingProgramBase),
-                MinLaborDialLevel, MaxLaborDialLevel, "F0", string.Empty,
-                null, bandNote: LaborDialInForce(_playerCountry.RetrainingProgramBase, _playerCountry.RetrainingProgramLevel));
-
-            GUILayout.Space(8f);
-            _familyPolicyInput = DrawDialRow("Family Policy",
-                _playerCountry.FamilyPolicyBase, GetFamilyPolicyInput(_playerCountry.FamilyPolicyBase),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty,
-                "0 minimal - 100 pro-natalist", bandNote: LaborDialInForce(_playerCountry.FamilyPolicyBase, _playerCountry.FamilyPolicyLevel));
-
-            _immigrationPolicyInput = DrawDialRow("Immigration Policy",
-                _playerCountry.ImmigrationPolicyBase, GetImmigrationPolicyInput(_playerCountry.ImmigrationPolicyBase),
-                MinPolicyDialLevel, MaxPolicyDialLevel, "F0", string.Empty,
-                "0 restrictive - 100 open", bandNote: LaborDialInForce(_playerCountry.ImmigrationPolicyBase, _playerCountry.ImmigrationPolicyLevel));
-
-            GUILayout.Space(10f);
-            BeginAreaCard("LABOR MARKET BILL", UiPalette.SystemArea.Labor);
-            DrawLaborBillStatusAndIntroduce();
-            DrawLaborLiveEstimate();
-            EndAreaCard(UiPalette.SystemArea.Labor);
-            DrawTierBreakdownAfterRows();   // P4-B2: the labour bill's breakdown, after the rows - under its card now that the card follows the dials
-
-            GUILayout.Space(10f);
-            _laborForceParticipationGraph.Draw("Labor Force Participation", _playerCountry.History.LaborForceParticipationRate.Quarterly, null, _labelStyle, higherIsBetter: true, moneyUnit: null, reading: ReadingUnit.Percent);
-
-            // §564: the population as the family's read-only rows, not a sentence of six figures
-            GUILayout.Space(8f);
-            EconomyState demographicState = _playerCountry.State;
-            Color laborInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Labor);
-            DrawStatsSectionCaption("POPULATION · RATES PER 1 000 A YEAR");
-            DrawDerivedStatRow("Population", -1f, UiFormat.Number(demographicState.Population, 1) + " M", demographicState.PopulationGrowthRate.ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture) + " per 1 000", laborInk);
-            DrawDerivedStatRow("Births", -1f, UiFormat.Number(demographicState.BirthRate, 1), null, laborInk);
-            DrawDerivedStatRow("Deaths", -1f, UiFormat.Number(demographicState.DeathRate, 1), null, laborInk);
-            DrawDerivedStatRow("Net migration", -1f, demographicState.NetMigrationRate.ToString("+0.0;-0.0;0.0", CultureInfo.InvariantCulture), null, laborInk);
-            DrawDerivedStatRow("Dependency", -1f, UiFormat.Number(demographicState.DependencyRatio, 1), "per 100 of working age", laborInk);
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceLaborBill/GetPendingLaborBill).</summary>
-        private void DrawLaborBillStatusAndIntroduce()
-        {
-            LaborPolicyBill pendingBill = _simulationManager.GetPendingLaborBill(PlayerCountryId);
-
-            string statusText = pendingBill != null
-                ? $"A Labor Market bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Labor Market bill before Parliament - the dials above are its draft.";
-            if (DrawLeverLock()) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
-            {
-                _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts());
-            }
-        }
-
-        private void DrawLaborLiveEstimate()
-        {
-            // P4-B2 (2026-09-04): the breakdown draws AFTER the dial rows (DrawTierBreakdownAfterRows), the Budget's own
-            // P3-C1 shape - in the card above them it appeared when a draft became contested and pushed every row 367 px
-            // down the sheet, which the geometry guard read as five rows MOVED on the first caption film.
-            _tierConcernForBreakdown = ParliamentSystem.GetLaborBillConcern(_playerCountry, BuildLaborBillFromDrafts());   // P3-A3: the draft's concern
-            DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);
-        }
-
         /// <summary>P4-B2: the concern the tier's card scored this pass, for the breakdown drawn after the rows.</summary>
         private BillConcern _tierConcernForBreakdown;
 
@@ -4923,38 +4823,6 @@ namespace PoliSim.UI
             if (Mathf.Abs(effectiveValue - baseValue) < 0.05f) { return null; }
             // §565: the band is drawn in the DOCUMENT face (the caption's mono), which carries no arrow glyph - the law's offset and the composed value read as a pair.
             return $"laws {effectiveValue - baseValue:+0.0;-0.0} · {effectiveValue:F0} in effect";
-        }
-
-        /// <summary>
-        /// Minimum wage (percent of median wage) - only shown as adjustable if
-        /// Country.MinimumWageImplemented (USA - see WorldFactory); Sweden and Italy have no
-        /// statutory minimum wage in reality, so this shows a read-only note for them instead (the
-        /// player's country is hardcoded to USA, so this branch is currently unreachable in practice,
-        /// but kept correct in case PlayerCountryId ever changes).
-        /// </summary>
-        private void DrawMinimumWageControl()
-        {
-            // ⚠ BEHAVIOUR 5 FIX, found during the v2.0 conversion rather than by a capture. This used to
-            // `return` early for a country with no statutory minimum wage (Sweden, which bargains
-            // collectively), drawing a sentence and NO SLIDER - an omitted control, which is exactly what
-            // behaviour 5 forbids and exactly the hazard DrawBudgetRevenue's doc comment describes:
-            // GUILayout allocates control IDs positionally, so a screen whose control COUNT depends on
-            // mutable state can desync a live drag. It is now always drawn, disabled when there is no
-            // statutory wage, with the reason in the column that explains a dial's meaning.
-            bool hasStatutoryWage = _playerCountry.MinimumWageImplemented;
-            float newMinimumWage = DrawDialRow("Minimum Wage",
-                _playerCountry.MinimumWagePercentOfMedianBase,
-                GetMinimumWageInput(_playerCountry.MinimumWagePercentOfMedianBase),
-                MinMinimumWagePercent, MaxMinimumWagePercent, "F0", "%",
-                hasStatutoryWage
-                    ? "% of median wage"
-                    : "none - collective bargaining",
-                hasStatutoryWage, bandNote: hasStatutoryWage ? LaborDialInForce(_playerCountry.MinimumWagePercentOfMedianBase, _playerCountry.MinimumWagePercentOfMedian) : null);
-
-            if (hasStatutoryWage)
-            {
-                _minimumWageInput = newMinimumWage;
-            }
         }
 
         /// <summary>
@@ -7605,64 +7473,10 @@ namespace PoliSim.UI
 
         /// <summary>The width a leading area icon takes from a sub-tab button: the icon at the board's
         /// ratio to the type, plus its gap - one accessor for the draw (DrawSubCategoryButton), the
-        /// measure (SubTabRowHeight) and the fit test (SubTabRowFitsIcons).</summary>
+        /// measure (SubTabRowHeight) - the fit test that read it left with the Laws page's old sub-tab row (§737).</summary>
         private float SubTabIconReserve(GUIStyle active)
         {
             return Mathf.Round(active.fontSize * SubTabIconFontMultiple) + SubTabIconGap;
-        }
-
-        /// <summary>
-        /// Whether a sub-tab row can carry leading icons at this width without any label breaking past
-        /// two lines or inside a word - decided ONCE per row so the row stays even (icons on every
-        /// button or on none), the same "a row where every button differs reads as an error" reasoning
-        /// D7 gave for ledger names. The first omni_b1600 capture is the measured case: at 1600 the
-        /// Policy/Laws row's six shares hold "Economic Sectors" beside a 24px icon only by breaking
-        /// "Econom-ic", so at that width the row goes without icons and the identity stays on the
-        /// tongue above (a stated deviation from R-K6's "on the sub-tab rows", by width, never silent).
-        /// </summary>
-        /// <summary>
-        /// §568 (2026-09-22, Design's drift row D10: *"sub-tab icons on 3 of 6 Laws sub-tabs, none on Politics"*): A ROW'S ICONS ARE THE ROW'S. Every tab in a row
-        /// carries one or none does - a row where some tabs have an area and some do not (Policy Web and Laws are cross-area by nature, and there is no icon to give
-        /// them) read as a row whose icons had gone missing. The fit test below decides whether the row CAN carry them; this decides whether it MAY.
-        /// </summary>
-        private static bool EveryAreaHasAnIcon(params UiPalette.SystemArea[] areas)
-        {
-            foreach (UiPalette.SystemArea area in areas) { if (IconLibrary.GetAreaIcon(area) == null) { return false; } }
-
-            return true;
-        }
-
-        private bool SubTabRowFitsIcons(float share, params string[] labels)
-        {
-            GUIStyle active = BuildSubTabStyle(true);
-            float labelWidth = share - SubTabIconReserve(active) - active.padding.horizontal;
-            if (labelWidth <= 0f)
-            {
-                return false;
-            }
-
-            float twoLines = active.lineHeight * 2f + active.padding.vertical + 1f;
-            bool previousWrap = active.wordWrap;
-            foreach (string label in labels)
-            {
-                active.wordWrap = false;
-                foreach (string word in label.Split(' '))
-                {
-                    if (word.Length > 0 && active.CalcSize(new GUIContent(word)).x > labelWidth)
-                    {
-                        active.wordWrap = previousWrap;
-                        return false;
-                    }
-                }
-                active.wordWrap = previousWrap;
-
-                if (active.CalcHeight(new GUIContent(label), labelWidth + active.padding.horizontal) > twoLines)
-                {
-                    return false;
-                }
-            }
-
-            return true;
         }
 
         /// <summary>
@@ -7974,102 +7788,6 @@ namespace PoliSim.UI
             }
 
             GUILayout.Space(10f);
-        }
-
-        /// <summary>
-        /// Master Sequence step 5e, Phase A: Policy/Laws tab - Labor Market/Crime &amp; Justice/
-        /// Economic Sectors (each already has its own tier-3 standalone bill from 5d), Policy Web
-        /// (Elias's own placement, overriding the original Statistics recommendation - "a relationship/
-        /// reference tool consulted while deciding what to change, closer to where bills get drafted
-        /// than to a pure stats readout"), and Trade's policy half (DrawTradePolicyContent). Per-
-        /// category gating matches the old dispatch exactly, not a blanket gate - Labor/Crime/Sectors
-        /// were gated, Policy Web/Trade were not.
-        /// </summary>
-        private void DrawPolicyLawsTab(float availableHeight, float availableWidth)
-        {
-            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
-            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
-            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
-            DrawPageHeaderWithProvenanceTab("Policy / Laws", UiPalette.GetAreaColor(UiPalette.SystemArea.Sectors));   // D16 §2: the same tab, the same corner
-            GUILayout.BeginHorizontal();
-            float subTabShare = SubTabShare(availableWidth, 6);
-            // Instance #13: one measured row height, shared with the content reserve below.
-            // R-K6's icons ride this row only where every label still fits beside one in two lines -
-            // decided once per row, measured, so the row stays even (see SubTabRowFitsIcons).
-            // §568 (D10): the row's icons are the row's - Policy Web and Laws are cross-area and have none, so this row carries none. When they are given one, the row
-            // takes icons again with no further change here.
-            bool policyIcons = SubTabRowFitsIcons(subTabShare, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws")
-                && EveryAreaHasAnIcon(UiPalette.SystemArea.Labor, UiPalette.SystemArea.CrimeJustice, UiPalette.SystemArea.Sectors, UiPalette.SystemArea.Neutral, UiPalette.SystemArea.Trade, UiPalette.SystemArea.Neutral);
-            float subTabRowHeight = SubTabRowHeight(subTabShare, policyIcons, "Labor Market", "Crime & Justice", "Economic Sectors", "Policy Web", "Trade", "Laws");
-            DrawSubCategoryButton("Labor Market", PolicyLawsCategory.LaborMarket, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Labor : UiPalette.SystemArea.Neutral);
-            DrawSubCategoryButton("Crime & Justice", PolicyLawsCategory.CrimeJustice, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.CrimeJustice : UiPalette.SystemArea.Neutral);
-            DrawSubCategoryButton("Economic Sectors", PolicyLawsCategory.Sectors, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Sectors : UiPalette.SystemArea.Neutral);
-            DrawSubCategoryButton("Policy Web", PolicyLawsCategory.PolicyWeb, ref _policyLawsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Trade", PolicyLawsCategory.Trade, ref _policyLawsCategory, subTabShare, subTabRowHeight, policyIcons ? UiPalette.SystemArea.Trade : UiPalette.SystemArea.Neutral);
-            DrawSubCategoryButton("Laws", PolicyLawsCategory.Laws, ref _policyLawsCategory, subTabShare, subTabRowHeight);
-            GUILayout.EndHorizontal();
-            GUILayout.Space(6f);
-            DrawScreenCaption(PolicyLawsScreenCaption());
-
-            // Step B2: the stats THIS sub-screen's own levers move, directly under its selector so the
-            // numbers change with the screen. Measured before it is drawn and subtracted from the
-            // content budget below, so it takes space from the tab rather than pushing the content
-            // scroll view past the bottom of the tab.
-            float statRowWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - 8f;
-            UiPalette.SystemArea statArea = GetPolicyScreenArea(_policyLawsCategory);
-            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth, country: _playerCountry);
-            PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
-
-            // Step 2: the trace panel, directly under the chips it explains - measured and
-            // subtracted from the content budget exactly like the stat row itself.
-            float policyTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
-            // The host's remaining height under the chips (the same budget contentHeight below is
-            // cut from) - the panel takes at most its share of it and scrolls for the rest, so a
-            // long section can never push the tab's own body off the window (2026-08-25).
-            float policyTraceHostHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight() - statRowHeight);
-            float policyTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, policyTraceGapStance, _labelStyle, statRowWidth, policyTraceHostHeight);
-            StatTracePanel.Draw(_playerCountry, policyTraceGapStance, _labelStyle, _labelStyle, statRowWidth, policyTraceHostHeight);
-
-            float contentHeight = Mathf.Max(0f, availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
-            switch (_policyLawsCategory)
-            {
-                case PolicyLawsCategory.LaborMarket:
-                    GUI.enabled = !_isGameOver;
-                    DrawLaborMarketTab(contentHeight);
-                    GUI.enabled = true;
-                    break;
-                case PolicyLawsCategory.CrimeJustice:
-                    GUI.enabled = !_isGameOver;
-                    DrawCrimeJusticeTab(contentHeight);
-                    GUI.enabled = true;
-                    break;
-                case PolicyLawsCategory.Sectors:
-                    GUI.enabled = !_isGameOver;
-                    DrawSectorPolicy(contentHeight);
-                    GUI.enabled = true;
-                    break;
-                case PolicyLawsCategory.PolicyWeb:
-                    DrawPolicyWebTab(contentHeight);
-                    break;
-                case PolicyLawsCategory.Trade:
-                    float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    _policyLawsContentScrollPosition = GUILayout.BeginScrollView(_policyLawsContentScrollPosition, GUILayout.Height(scrollHeight));
-                    // The pane's inner width less the scroll view's own bar - the measured budget every
-                    // wrapping label on the Trade screen takes (the 2560 wrap fix, 2026-08-28).
-                    DrawTradePolicyContent(Mathf.Max(0f, PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - GUI.skin.verticalScrollbar.fixedWidth - 12f));
-                    GUILayout.EndScrollView();
-                    break;
-                case PolicyLawsCategory.Laws:
-                    // Code-review pass (2026-08-25): NOT wrapped in `GUI.enabled = !_isGameOver` any
-                    // more - that disabled the row-select button too, permanently locking whichever
-                    // law happened to be selected at end-of-game with no way to browse another one's
-                    // (purely informational) detail. Only the actual state-changing action - the
-                    // enact/repeal button inside DrawLawDetailPane - is gated on _isGameOver now.
-                    DrawLawsTab(contentHeight, availableWidth);
-                    break;
-            }
-            GUILayout.EndVertical();
         }
 
         private static int? _crimeJusticeLawCountCache;

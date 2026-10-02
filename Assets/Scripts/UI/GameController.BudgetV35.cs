@@ -874,6 +874,14 @@ namespace PoliSim.UI
 
         /// <summary>The page's button (the composition's): brass and its edge where it acts, the paper and a muted edge where it cannot; the count in a chip
         /// inside it. One control on every frame, enabled or not.</summary>
+        /// <summary>§737: the button's width for its label and count - what <see cref="DrawBudgetButton"/> draws, for a caller placing something beside it.</summary>
+        private float BudgetButtonWidth(string label, string count)
+        {
+            float labelW = Mathf.Ceil(V35Serif(V35.Name, PoliSimTheme.TextPrimary).CalcSize(new GUIContent(label)).x);
+            float countW = count != null ? Mathf.Ceil(V35Mono(V35.Floor, V35.OnDataDark, bold: true).CalcSize(new GUIContent(count)).x) + V35.Px(12f) : 0f;
+            return V35.Px(14f) * 2f + labelW + (count != null ? V35.Px(10f) + countW : 0f);
+        }
+
         private bool DrawBudgetButton(Rect row, string label, string count, bool enabled)
         {
             GUIStyle face = V35Serif(V35.Name, enabled ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted);
@@ -881,7 +889,7 @@ namespace PoliSim.UI
             float labelW = Mathf.Ceil(face.CalcSize(new GUIContent(label)).x);
             float countW = count != null ? Mathf.Ceil(countFace.CalcSize(new GUIContent(count)).x) + V35.Px(12f) : 0f;
             float pad = V35.Px(14f);
-            var button = new Rect(row.x, row.y, pad + labelW + (count != null ? V35.Px(10f) + countW : 0f) + pad, row.height);
+            var button = new Rect(row.x, row.y, BudgetButtonWidth(label, count), row.height);
             if (Event.current.type == EventType.Repaint)
             {
                 PoliSimTheme.Rule(button, enabled ? V35.Brass : V35.OffPaper);
