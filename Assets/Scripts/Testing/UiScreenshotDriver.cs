@@ -686,6 +686,11 @@ namespace PoliSim.Testing
                         }
                     }
                     else { Debug.LogError($"SHOT: the decisions plate was never laid out - {energyStem}_decisions not filmed."); }
+                    // §747: the dials, the laws link and the instruments plate are the Policy tab's now - the frames that follow are filmed on it, and the Overview restored after
+                    SetPrivateField(controller, "_energyTab", 1);
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    yield return Settle();
                     // P6-F2b (2026-09-21, §542): the four instruments as dials - at rest, then with the liberalisation dial's DRAFT moved fifteen points down
                     // (the sector's regulation draft, the same dictionary the Sectors page writes) so its range caption and its hatch are on film, and taken back
                     var dialsField = controller.GetType().GetField("_energyDialsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -743,6 +748,7 @@ namespace PoliSim.Testing
                         SetEnumField(controller, "_lawBrowserFilter", "All");
                         SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
                         SetEnumField(controller, "_consolidatedTab", "Energy");
+                        SetPrivateField(controller, "_energyTab", 1);
                         ResetScrolls(controller);
                         yield return Settle();
                     }
@@ -751,7 +757,12 @@ namespace PoliSim.Testing
                     // the setting is the viewer's saved preference: kept and restored - after the capture, or by Finish when a -shotstop ends the run on it
                     _provenanceToRestore = DeskProvenance.On;
                     DeskProvenance.On = true;
-                    ScrollBy(controller, Mathf.Max(0f, energyY + UiScreen.Height * 1.6f));
+                    // §747: the instruments plate is on the Policy tab - scrolled to its own recorded rect, not by the Overview's plate
+                    var instrumentsHead = controller.GetType().GetField("_energyInstrumentsLastArea", BindingFlags.Instance | BindingFlags.NonPublic);
+                    Rect instrumentsAt = instrumentsHead != null ? (Rect)instrumentsHead.GetValue(controller) : Rect.zero;
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    ScrollBy(controller, Mathf.Max(0f, instrumentsAt.y - UiScreen.Height * 0.12f));
                     yield return Settle();
                     yield return Settle();
                     yield return Capture(energyStem + "_instruments_provenance");
@@ -770,6 +781,7 @@ namespace PoliSim.Testing
                     else { Debug.LogError($"SHOT: plate 4 was never laid out - {energyStem}_electricity_tax_provenance not filmed."); }
                     DeskProvenance.On = _provenanceToRestore.Value;
                     _provenanceToRestore = null;
+                    SetPrivateField(controller, "_energyTab", 0);
                     yield return Settle();
                     ResetScrolls(controller);
                     yield return Settle();
