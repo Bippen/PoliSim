@@ -217,7 +217,7 @@ namespace PoliSim.UI
             }
 
             var nodeRects = new Dictionary<CountryId, Rect>();
-            Dictionary<CountryId, Vector2> placed = SnappedPositions(rect, countries, labelReserveWidth, labelStyle);   // board 7a: the snap and the west-push, once
+            Dictionary<CountryId, Vector2> placed = SnappedPositions(rect, countries, labelReserveWidth, labelStyle, ChipPixels(labelStyle));   // board 7a: the snap and the west-push, once
             foreach (Country country in countries)
             {
                 Vector2 pixel = placed[country.Id];
@@ -308,7 +308,7 @@ namespace PoliSim.UI
                 }
             }
 
-            Dictionary<CountryId, Vector2> placed = SnappedPositions(rect, countries, labelReserveWidth, _lastLabelStyle);   // board 7a: the links follow a pushed chip
+            Dictionary<CountryId, Vector2> placed = SnappedPositions(rect, countries, labelReserveWidth, _lastLabelStyle, ChipPixels(_lastLabelStyle));   // board 7a: the links follow a pushed chip
             foreach ((CountryId a, CountryId b, float volume) in pairs)
             {
                 Vector2 from = placed[a];
@@ -332,6 +332,13 @@ namespace PoliSim.UI
         private static float SnapUnit(GUIStyle labelStyle) =>
             Mathf.Max(4f, GridUnit * (labelStyle != null ? Mathf.Max(1f, labelStyle.fontSize) / 14f : 1f));
 
+        /// <summary>§750: the chip's plate in pixels at this label face - the size Draw lays it at, and what the west-push keeps apart.</summary>
+        private Vector2 ChipPixels(GUIStyle labelStyle)
+        {
+            float u = labelStyle != null ? Mathf.Max(1f, labelStyle.fontSize) / 14f : 1f;
+            return V35Chips ? new Vector2(Mathf.Round(V35ChipWidth * u), Mathf.Round(V35ChipHeight * u)) : new Vector2(Mathf.Round(ChipWidth * u), Mathf.Round(ChipHeight * u));
+        }
+
         private static Vector2 Snap(Vector2 pixel, Rect rect, float unit) =>
             new Vector2(rect.x + Mathf.Round((pixel.x - rect.x) / unit) * unit, rect.y + Mathf.Round((pixel.y - rect.y) / unit) * unit);
 
@@ -343,8 +350,11 @@ namespace PoliSim.UI
         /// the pad at PL. Repeated until no row holds an adjacent pair, so a push that lands beside a third chip pushes again. The
         /// links read the same positions, so a pushed chip's link ends move with it. Logged once per rect size and label face, so
         /// a film's log says which chip moved and where.
+        /// <para>§750 (2026-10-02): the test is the chips' own plates meeting, at <paramref name="chip"/>'s size - 7a's pair is what that test finds
+        /// for board 6b's 26 x 20 chip on the 24 pitch, and nothing else; the v3.5 chip (38 x 26) is taller than a cell too, so two chips a row
+        /// apart and a cell across met, which 7a's row test never asked (the International map at 2560). Same move, same direction.</para>
         /// </summary>
-        private static Dictionary<CountryId, Vector2> SnappedPositions(Rect rect, IReadOnlyList<Country> countries, float labelReserveWidth, GUIStyle labelStyle)
+        private static Dictionary<CountryId, Vector2> SnappedPositions(Rect rect, IReadOnlyList<Country> countries, float labelReserveWidth, GUIStyle labelStyle, Vector2 chip)
         {
             float unit = SnapUnit(labelStyle);
             var positions = new Dictionary<CountryId, Vector2>();
@@ -355,7 +365,7 @@ namespace PoliSim.UI
             }
 
             var pushed = new List<string>();
-            for (int pass = 0; pass < 8; pass++)
+            for (int pass = 0; pass < positions.Count * positions.Count; pass++)   // one push a pass; bounded, and every push goes west
             {
                 bool moved = false;
                 foreach (CountryId a in new List<CountryId>(positions.Keys))
@@ -364,9 +374,11 @@ namespace PoliSim.UI
                     {
                         if (a == b) { continue; }
                         Vector2 pa = positions[a], pb = positions[b];
-                        if (Mathf.Abs(pa.y - pb.y) > 0.5f) { continue; }                       // not the same row
-                        if (Mathf.Abs(Mathf.Abs(pa.x - pb.x) - unit) > 0.5f) { continue; }     // not adjacent cells
-                        CountryId western = pa.x < pb.x ? a : b;
+                        // §750: two PLATES that meet, at the chip's own size (a pixel of margin for the rounding the drawn rects take) - for board 6b's
+                        // chip on its pitch that is exactly 7a's same-row adjacent pair; the v3.5 chip is wider AND taller than a cell, so a row apart
+                        // meets too (film749d at 2560: DE and IT, one cell apart on both axes)
+                        if (Mathf.Abs(pa.x - pb.x) >= chip.x + 1f || Mathf.Abs(pa.y - pb.y) >= chip.y + 1f) { continue; }
+                        CountryId western = pa.x < pb.x - 0.5f ? a : pb.x < pa.x - 0.5f ? b : pa.y > pb.y ? a : b;   // in one column, the southern
                         Vector2 before = positions[western];
                         positions[western] = new Vector2(before.x - unit, before.y);
                         pushed.Add($"{western} one cell west ({before.x - rect.x:0},{before.y - rect.y:0}) -> ({before.x - unit - rect.x:0},{before.y - rect.y:0}) beside {(western == a ? b : a)}");
@@ -378,12 +390,12 @@ namespace PoliSim.UI
                 if (!moved) { break; }
             }
 
-            string key = $"{rect.width:0}x{rect.height:0}/{unit:0}";
+            string key = $"{rect.width:0}x{rect.height:0}/{unit:0}/{chip.x:0}x{chip.y:0}";   // §750: one line per chip size too
             if (_loggedPlacements.Add(key))
             {
                 var cells = new List<string>();
                 foreach (KeyValuePair<CountryId, Vector2> kv in positions) { cells.Add($"{kv.Key} ({kv.Value.x - rect.x:0},{kv.Value.y - rect.y:0})"); }
-                Debug.Log($"MAP: chips on the {unit:0}-pitch at {rect.width:0}x{rect.height:0} - {string.Join(", ", cells)}; west-push: {(pushed.Count == 0 ? "none" : string.Join("; ", pushed))}.");
+                Debug.Log($"MAP: chips on the {unit:0}-pitch at {rect.width:0}x{rect.height:0}, {chip.x:0}x{chip.y:0} chips - {string.Join(", ", cells)}; west-push: {(pushed.Count == 0 ? "none" : string.Join("; ", pushed))}.");
             }
             return positions;
         }

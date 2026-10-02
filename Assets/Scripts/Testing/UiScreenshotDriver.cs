@@ -503,6 +503,7 @@ namespace PoliSim.Testing
             // ledger without a closed period, the rail without a spine (board 1m, D2).
             yield return Capture("01c_desk");
             AssertDeskState(controller, "01c_desk");
+            AssertMapChips(controller, "01c_desk");   // §750: the Desk's World trade is the same renderer and the v3.5 chip - its plates met at 1280 (FR under DE) with no assert to say so
 
             if (CueSweep) { RunCueSweep(); }
 
