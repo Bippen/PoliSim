@@ -12,7 +12,7 @@ namespace PoliSim.UI
     /// tile, two to a row) - and the bill's call to action. §738: the Crime & justice tab - its six dials as tiles SET BY LAW (no knob, no control).
     /// §739: the Sectors tab - the eight sectors as tiles, the chosen sector's five dials as tiles. §740: the Policy web - two columns over the
     /// model's links, one area at a time (GameController.PolicyWebV35.cs). §741: Trade - trade with the five, partners
-    /// and tariffs, the partners' override rates. The Laws tab is drawn as built under the new frame until its own item.
+    /// and tariffs, the partners' override rates. §742: the Laws tab - the laws in force and before Parliament as a list card, the statute book as built under it.
     ///
     /// <para><b>The dials' units</b> are the main session's rule (relayed 2026-10-01: *a real unit only where the model computes one; named settings,
     /// band edges [AUTHORED-DRAFT], where the dial is an abstract index; never a unit the model does not compute*) applied as Code's table sent to
@@ -88,26 +88,19 @@ namespace PoliSim.UI
                 return;
             }
 
-            // The tab not yet retrofitted - the Laws tab, drawn as built under the v3.5 title: the screen's caption, the stat chips its levers reach, the
-            // trace a chip opens, the content.
-            DrawScreenCaption(PolicyLawsScreenCaption());
-            float statRowWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - 8f;
-            UiPalette.SystemArea statArea = GetPolicyScreenArea(_policyLawsCategory);
-            float statRowHeight = PolicyScreenStatsRenderer.MeasureHeight(statArea, _labelStyle, statRowWidth, country: _playerCountry);
-            PolicyScreenStatsRenderer.Draw(statArea, _playerCountry, _labelStyle, statRowWidth);
-            float policyTraceGapStance = _simulationManager.GetWageGrowthGapAtPeriodOpen(PlayerCountryId);
-            float policyTraceHostHeight = Mathf.Max(0f, bodyHeight - ScreenCaptionBlockHeight() - statRowHeight);
-            float policyTraceHeight = StatTracePanel.MeasureHeight(_playerCountry, policyTraceGapStance, _labelStyle, statRowWidth, policyTraceHostHeight);
-            StatTracePanel.Draw(_playerCountry, policyTraceGapStance, _labelStyle, _labelStyle, statRowWidth, policyTraceHostHeight);
-            float contentHeight = Mathf.Max(0f, bodyHeight - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
-            switch (_policyLawsCategory)
-            {
-                case PolicyLawsCategory.Laws:
-                    // Not wrapped in `GUI.enabled = !_isGameOver`: browsing a law's detail is informational; only the enact/repeal action is gated.
-                    DrawLawsTab(contentHeight, availableWidth);
-                    break;
-            }
+            // §42: the Laws tab - the composition's list of the laws in force and before Parliament, then the statute book as built (kept, asked) in the
+            // height left. Not wrapped in `GUI.enabled = !_isGameOver`: browsing a law is informational; only the enact/repeal action is gated.
+            float listWidth = StatsContentWidth(availableWidth);
+            V35.FloorGuarded = true;
+            float listHeight = DrawLawsInForceCard(listWidth);
+            DrawLawsSectionHead("The statute book", "laws:book", listWidth);
+            V35.FloorGuarded = false;
+            _lawsSlipBook.Anchors["laws:book"] = new SlipContent("THE STATUTE BOOK")
+                .Add("EVERY LAW THE GAME HOLDS, BY MAGNITUDE OR NAME OR COST, WITH ITS COST AND THE COUNT IT WOULD MEET - ENACTED AND REPEALED FROM HERE")
+                .Add("KEPT AS BUILT UNDER THE NEW PAGE - THE COMPOSITION DRAWS THE LIST ABOVE AND NO WAY TO ENACT A LAW");
+            DrawLawsTab(Mathf.Max(0f, bodyHeight - listHeight - V35.Px(32f)), availableWidth);
             GUILayout.EndVertical();
+            if (!DeskProvenance.On) { DrawSlips(_lawsSlipBook, GUILayoutUtility.GetLastRect()); }
         }
 
         /// <summary>The anchors a scroll view's content registered, moved into the sheet's coordinates and kept only where the view shows them (Statistics'
@@ -887,6 +880,149 @@ namespace PoliSim.UI
                 if (link.HasPlayerTariffOverride && !Mathf.Approximately(GetPartnerTariffInput(link.PartnerId, link.PlayerTariffOverride), link.PlayerTariffOverride)) { n++; }
             }
             return n;
+        }
+
+        // =============================================================================================================================================
+        // Laws
+        // =============================================================================================================================================
+
+        /// <summary>§742: the list card's own scroll, where more laws stand than its six rows show.</summary>
+        private Vector2 _lawsListScroll;
+
+        /// <summary>
+        /// §742 (UI v3.5, the composition's Laws › Laws): <b>the laws in force and before Parliament</b> as the composition's list card - each row the
+        /// law's icon, its D24 verb (RAISE · LOWER · BAN · ALLOW - `LawVerbs`, §662's pair), its plain name and its state (*In force*, *Before
+        /// Parliament · n d*, *Repeal before Parliament · n d*); a click opens it in the statute book below. Returns the height it took.
+        ///
+        /// <para><b>The statute book stays as built, under it</b> (kept, asked): the composition draws the list and nothing to enact from - the game's
+        /// 140 laws, their filters, their cost and count and the enact and repeal actions live in the statute book, and a page without them would take
+        /// the player's laws away. The composition marks every law but the electricity tax illustrative.</para>
+        /// </summary>
+        private float DrawLawsInForceCard(float width)
+        {
+            Country c = _playerCountry;
+            IReadOnlyDictionary<string, LawBill> bills = _simulationManager.GetPendingLawBills(PlayerCountryId);
+            var rows = new List<(LawDefinition Law, string State, bool InForce, string Detail)>();
+            var listed = new HashSet<string>();
+            foreach (EnactedLaw enacted in c.EnactedLaws)
+            {
+                LawDefinition law = LawCatalog.GetById(enacted.LawId);
+                if (law == null || !listed.Add(law.Id)) { continue; }
+                bool repealing = bills != null && bills.TryGetValue(law.Id, out LawBill repeal) && repeal.IsRepeal;
+                string state = repealing ? "Repeal before Parliament · " + bills[law.Id].DaysRemaining + " d" : "In force";
+                rows.Add((law, state, true, "IN FORCE SINCE " + enacted.EnactedOn.ToString("d MMM yyyy").ToUpperInvariant() + (repealing ? " · ITS REPEAL IS BEFORE PARLIAMENT, " + bills[law.Id].DaysRemaining + " DAY(S) TO THE VOTE" : string.Empty)));
+            }
+            if (bills != null)
+            {
+                foreach (KeyValuePair<string, LawBill> kv in bills)
+                {
+                    if (kv.Value.IsRepeal || listed.Contains(kv.Key)) { continue; }
+                    LawDefinition law = LawCatalog.GetById(kv.Key);
+                    if (law == null || !listed.Add(law.Id)) { continue; }
+                    rows.Add((law, "Before Parliament · " + kv.Value.DaysRemaining + " d", false, "A BILL TO ENACT IT IS BEFORE PARLIAMENT · " + kv.Value.DaysRemaining + " DAY(S) TO THE VOTE"));
+                }
+            }
+
+            DrawLawsSectionHead("Laws", "laws:list", width);
+            _lawsSlipBook.Anchors["laws:list"] = new SlipContent("LAWS")
+                .Add(rows.Count == 0 ? "NO LAW IS IN FORCE OR BEFORE PARLIAMENT" : rows.Count + (rows.Count == 1 ? " LAW" : " LAWS") + " IN FORCE OR BEFORE PARLIAMENT")
+                .Add("EACH ROW: THE LAW'S VERB - RAISE, LOWER, BAN OR ALLOW, READ FROM THE SIGNS OF WHAT IT MOVES - ITS NAME AND ITS STATE")
+                .Add("A CLICK OPENS IT IN THE STATUTE BOOK BELOW, WHERE EVERY LAW IS ENACTED AND REPEALED");
+            float rowH = V35.Px(V35.ListRow + 7f), pad = V35.Px(V35.CardPadX), padY = V35.Px(8f);
+            int visible = Mathf.Clamp(rows.Count, 1, 6);
+            float cardH = padY * 2f + visible * rowH;
+            Rect card = GUILayoutUtility.GetRect(width, cardH, GUILayout.Width(width), GUILayout.Height(cardH));
+            DrawV35Card(card);
+            var listRect = new Rect(card.x + pad, card.y + padY, card.width - pad * 2f, cardH - padY * 2f);
+            bool repaint = Event.current.type == EventType.Repaint;
+            GUIStyle nameFace = V35Serif(V35.Floor, PoliSimTheme.TextPrimary);
+            GUIStyle chipFace = V35Serif(V35.Floor, PoliSimTheme.TextPrimary, TextAnchor.MiddleCenter);
+            GUIStyle chipMuted = V35Serif(V35.Floor, PoliSimTheme.TextSecondary, TextAnchor.MiddleCenter);
+            GUIStyle wordFace = DeskCaption(6.5f, PoliSimTheme.TextPrimary);
+            if (rows.Count == 0)
+            {
+                if (repaint) { PoliSimWidgets.MeasuredLabel(listRect, "No law is in force or before Parliament - the statute book below enacts them.", V35Serif(V35.Floor, PoliSimTheme.TextMuted)); }
+                GUILayout.Space(V35.Px(V35.Gutter));
+                return cardH + V35.Px(26f) + V35.Px(6f) + V35.Px(V35.Gutter);
+            }
+
+            bool scrolls = rows.Count > visible;
+            int scrolledFrom = _slipAnchors.Count;
+            float contentW = listRect.width - (scrolls ? GUI.skin.verticalScrollbar.fixedWidth + V35.Px(4f) : 0f);
+            if (scrolls) { _lawsListScroll = GUI.BeginScrollView(listRect, _lawsListScroll, new Rect(0f, 0f, contentW, rows.Count * rowH)); }
+            float ox = scrolls ? 0f : listRect.x, oy = scrolls ? 0f : listRect.y;
+            for (int i = 0; i < rows.Count; i++)
+            {
+                (LawDefinition law, string state, bool inForce, string detail) = rows[i];
+                var row = new Rect(ox, oy + i * rowH, contentW, rowH);
+                if (PoliSimWidgets.Button(row, GUIContent.none, GUIStyle.none)) { _pendingSelectedLawId = law.Id; _hasPendingLawSelection = true; }
+                Color area = UiPalette.GetAreaColor(LawCategoryArea(law.Category));
+                string name = string.IsNullOrEmpty(law.PlainName) ? law.Name : law.PlainName;
+                GUIStyle stateFace = inForce && !state.StartsWith("Repeal") ? chipFace : chipMuted;
+                float chipW = Mathf.Ceil(stateFace.CalcSize(new GUIContent(state)).x) + V35.Px(16f);
+                var chip = new Rect(row.xMax - chipW, row.y + Mathf.Round((rowH - V35.Px(20f)) * 0.5f), chipW, V35.Px(20f));
+                if (repaint)
+                {
+                    if (i > 0) { PoliSimTheme.Rule(new Rect(row.x, row.y, row.width, 1f), V35.ListRule); }
+                    float side = V35.Px(18f), glyph = V35.Px(14f);
+                    DrawV35Icon(new Rect(row.x, row.y + Mathf.Round((rowH - side) * 0.5f), side, side), LawV35Icon(law, name), area);
+                    Symbol? verb = SymbolRegistry.Of(LawVerbs.Of(law));
+                    if (verb.HasValue) { SymbolRegistry.Draw(new Rect(row.x + side + V35.Px(10f), row.y + Mathf.Round((rowH - glyph) * 0.5f), glyph, glyph), verb.Value, PoliSimTheme.TextPrimary, wordFace); }
+                    float nameX = row.x + side + V35.Px(10f) + glyph + V35.Px(10f);
+                    float nameW = Mathf.Max(1f, chip.x - V35.Px(10f) - nameX);
+                    PoliSimWidgets.MeasuredLabel(new Rect(nameX, row.y, nameW, rowH), V35Fit(name, nameFace, nameW, out _), nameFace);
+                    Color edge = inForce && !state.StartsWith("Repeal") ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
+                    PoliSimTheme.Rule(new Rect(chip.x, chip.y, chip.width, 1f), edge);
+                    PoliSimTheme.Rule(new Rect(chip.x, chip.yMax - 1f, chip.width, 1f), edge);
+                    PoliSimTheme.Rule(new Rect(chip.x, chip.y, 1f, chip.height), edge);
+                    PoliSimTheme.Rule(new Rect(chip.xMax - 1f, chip.y, 1f, chip.height), edge);
+                    PoliSimWidgets.MeasuredLabel(chip, state, stateFace);
+                }
+                SlipAnchor(row, "lawrow:" + law.Id);
+                LawVerb v = LawVerbs.Of(law);
+                _lawsSlipBook.Anchors["lawrow:" + law.Id] = new SlipContent(name.ToUpperInvariant() + " · " + state.ToUpperInvariant())
+                    .Add(law.Name.ToUpperInvariant() + (string.IsNullOrEmpty(law.Citation) ? string.Empty : " · " + law.Citation.ToUpperInvariant()))
+                    .Add((v == LawVerb.None ? (LawVerbs.IsBothWays(law) ? "IT MOVES ITS DIALS BOTH WAYS" : "NO VERB - IT MOVES NO DIAL ONE WAY") : "ITS VERB: " + v.ToString().ToUpperInvariant() + " - READ FROM THE SIGNS OF WHAT IT MOVES"))
+                    .Add(detail)
+                    .Add("A CLICK OPENS IT IN THE STATUTE BOOK BELOW");
+            }
+            if (scrolls)
+            {
+                GUI.EndScrollView();
+                MoveScrolledAnchors(scrolledFrom, listRect, _lawsListScroll);
+            }
+            GUILayout.Space(V35.Px(V35.Gutter));
+            return cardH + V35.Px(26f) + V35.Px(6f) + V35.Px(V35.Gutter);
+        }
+
+        /// <summary>A law's v3.5 icon - by the words of its plain name where one of the set says what it is (the composition's clock, pill, bolt …), else
+        /// its category's.</summary>
+        private static string LawV35Icon(LawDefinition law, string name)
+        {
+            string n = name.ToLowerInvariant();
+            if (n.Contains("electric")) { return "bolt"; }
+            if (n.Contains("hour") || n.Contains("overtime") || n.Contains("working time")) { return "clock"; }
+            if (n.Contains("drug")) { return "pill"; }
+            if (n.Contains("permit") || n.Contains("immigra") || n.Contains("asylum") || n.Contains("undocumented") || n.Contains("migra")) { return "passport"; }
+            if (n.Contains("coal") || n.Contains("emission") || n.Contains("carbon")) { return "smoke"; }
+            if (n.Contains("parental") || n.Contains("leave")) { return "pram"; }
+            if (n.Contains("border")) { return "gate"; }
+            if (n.Contains("bail") || n.Contains("prison")) { return "key"; }
+            if (n.Contains("police") || n.Contains("camera")) { return "shield"; }
+            if (n.Contains("court") || n.Contains("judicial") || n.Contains("defender")) { return "scales"; }
+            if (n.Contains("wage")) { return "coins"; }
+            if (n.Contains("debt") || n.Contains("deficit") || n.Contains("brake") || n.Contains("ceiling")) { return "debt"; }
+            if (n.Contains("inflation") || n.Contains("central bank") || n.Contains("rate")) { return "bank"; }
+            switch (law.Category)
+            {
+                case LawCategory.CrimeJustice: return "gavel";
+                case LawCategory.LaborMarket: return "jobs";
+                case LawCategory.LabourInstitutions: return "jobs";
+                case LawCategory.FiscalFramework: return "scales";
+                case LawCategory.MonetaryRegime: return "bank";
+                case LawCategory.ElectricityTax: return "bolt";
+                default: return "docket";
+            }
         }
 
         // =============================================================================================================================================

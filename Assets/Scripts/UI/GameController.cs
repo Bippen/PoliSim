@@ -3361,41 +3361,8 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Master Sequence step 9, Step B2: which SystemArea a Policy/Laws SUB-SCREEN actually belongs
-        /// to, for the contextual stat row.
-        ///
-        /// **Deliberately not <see cref="GetConsolidatedTabArea"/>.** That method's own doc says it
-        /// picks hues for visual DISTINCTNESS across the tab bar, not correctness - it answers
-        /// PolicyLaws with Sectors purely because Sectors was an unclaimed colour. Driving a stat row
-        /// off it would put sector stats (PotentialGrowth, Unemployment) on the Labor and Crime &amp;
-        /// Justice screens, which is worse than showing nothing: a confidently-wrong number is harder
-        /// to disbelieve than an absent one. At sub-screen granularity the mapping is exact, because
-        /// each of these screens already declares its own area for its bill card - Labor Market draws
-        /// "LABOR MARKET BILL" as SystemArea.Labor, and so on. This reads the same truth those cards do.
-        ///
-        /// Policy Web returns Neutral on purpose: it IS the whole edge list this row is derived from,
-        /// so a four-stat summary above it would be a worse view of the same data.
-        /// </summary>
-        private static UiPalette.SystemArea GetPolicyScreenArea(PolicyLawsCategory category)
-        {
-            switch (category)
-            {
-                case PolicyLawsCategory.LaborMarket: return UiPalette.SystemArea.Labor;
-                case PolicyLawsCategory.CrimeJustice: return UiPalette.SystemArea.CrimeJustice;
-                case PolicyLawsCategory.Sectors: return UiPalette.SystemArea.Sectors;
-                case PolicyLawsCategory.Trade: return UiPalette.SystemArea.Trade;
-                // Pass 3 (2026-08-26): the second LawCategory shipped and the browser spans both -
-                // the tab-level area goes Neutral (no single system owns the screen; a
-                // CrimeJustice-tinted header over a labor law would be the confidently-wrong
-                // number this method's own doc warns about). Each row accent, status color and
-                // detail kicker carries its own law's category area instead (LawCategoryArea).
-                case PolicyLawsCategory.Laws: return UiPalette.SystemArea.Neutral;
-                default: return UiPalette.SystemArea.Neutral;
-            }
-        }
-
-        /// <summary>
-        /// The same exact mapping for the Budget Process sub-screens. Tax and Spending both answer
+        /// Which SystemArea a Budget Process sub-screen belongs to, for its contextual stat row (Step B2's exact mapping; its Policy/Laws
+        /// twin retired at §42 - the Laws tabs draw the readings their dials reach as tiles). Tax and Spending both answer
         /// Fiscal, which is correct rather than a shortcut: every TaxType and every spending line runs
         /// through the same two Policy Web channels (approval on a hike, and revenue/outlay feeding
         /// DebtToGdp), so they genuinely move the same stats and their bill card is one shared
@@ -7179,23 +7146,6 @@ namespace PoliSim.UI
         private float ScreenCaptionBlockHeight()
         {
             return ScreenCaptionLineHeight() + ScreenCaptionRuleClearance + ScreenCaptionRuleHeight + ScreenCaptionRuleClearance;
-        }
-
-        /// <summary>The captions, one per sub-screen - the live/published word is the load-bearing
-        /// part (§A.8a's "live desk reading" sits under it). Text is this session's call (R-K10's
-        /// "log one line": the spec gives two examples and no table); the seat count is real.
-        /// D-ST (23a ①): Statistics' two captions are its title's slip (<see cref="StatsSlips"/>).</summary>
-        private string PolicyLawsScreenCaption()
-        {
-            switch (_policyLawsCategory)
-            {
-                case PolicyLawsCategory.LaborMarket: return "LABOR MARKET — DRAFTS UNTIL PARLIAMENT VOTES";
-                case PolicyLawsCategory.CrimeJustice: return "CRIME & JUSTICE — SET BY LAW · THE LAWS TAB MOVES THESE";   // §564: no draft here since the bill was retired
-                case PolicyLawsCategory.Sectors: return "ECONOMIC SECTORS — DRAFTS UNTIL PARLIAMENT VOTES";
-                case PolicyLawsCategory.PolicyWeb: return "THE POLICY WEB — REFERENCE, LIVE";
-                case PolicyLawsCategory.Trade: return "TRADE — DRAFTS UNTIL PARLIAMENT VOTES";
-                default: return $"THE STATUTE BOOK — {LawCatalog.All.Count} LAWS, BILLS TO THE HOUSE";
-            }
         }
 
         private string PoliticsScreenCaption()
