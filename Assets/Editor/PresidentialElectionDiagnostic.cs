@@ -62,6 +62,18 @@ namespace PoliSim.EditorTools
 
                 TwoRoundElection.Rule rule = TwoRoundElection.RuleOf(CountryId.Poland);
                 Check(rule != null && rule.RunOffDay == 14 && rule.TermYears == 5 && rule.MaxTerms == 2, F("Poland's rule: the run-off on the 14th day, a five-year term, two at most ({0})", rule?.Basis));
+
+                // §765 (Elias's ruling B5): WHO MAY STAND - the nomination gate's figures held phrase by phrase against the consolidated text's extract
+                // (`presidential_nomination.md`, quoted from Dz.U. 2026 poz. 1261; its quotes wrap over '>' lines, joined here before matching)
+                string nomination = System.Text.RegularExpressions.Regex.Replace(
+                    File.ReadAllText(Path.Combine(Application.dataPath, "..", "ElectionsData", "poland", "presidential_nomination.md"), System.Text.Encoding.UTF8), @"\s*\n>\s*", " ");
+                nomination = System.Text.RegularExpressions.Regex.Replace(nomination, @"\s+", " ");
+                Check(rule != null && !rule.PartiesNominate && nomination.Contains("mogą być tworzone wyłącznie przez wyborców"), "B5, art. 84 § 3: only voters' committees nominate - a party cannot");
+                Check(rule != null && rule.CommitteeFounders == 15 && nomination.Contains("w liczbie co najmniej 15"), "B5, art. 90 § 1: a committee of at least 15 citizens");
+                Check(rule != null && rule.RegistrationSignatures == 1000 && nomination.Contains("co najmniej 1000 podpisów") && rule.RegistrationLatestDayBefore == 55
+                      && nomination.Contains("najpóźniej w 55 dniu przed dniem wyborów"), "B5, art. 299 § 1 and § 4: registered with 1,000 signatures, by the 55th day before the election");
+                Check(rule != null && rule.NominationSignatures == 100000 && nomination.Contains("co najmniej 100 000 obywateli") && rule.NominationLatestDayBefore == 44
+                      && nomination.Contains("w 44 dniu przed dniem wyborów"), "B5, art. 296 and art. 303 § 1: nominated by 100,000 signatures, by the 44th day before the election");
                 IReadOnlyList<PresidencyOfRecord.President> presidents = PresidencyOfRecord.Of(CountryId.Poland);
                 foreach (string year in new[] { "2020", "2025" })
                 {

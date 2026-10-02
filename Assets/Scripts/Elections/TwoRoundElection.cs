@@ -30,12 +30,33 @@ namespace PoliSim.Elections
             public int CalledLatestDaysBefore;
             /// <summary>The article read, for every line that cites the rule.</summary>
             public string Basis;
+
+            // §765 (Elias's ruling B5, 2026-10-02): WHO MAY STAND - "only voters' committees nominate; parties can't ... The gate is the signatures,
+            // not a party." The figures as Kodeks wyborczy's consolidated text states them (`ElectionsData/poland/presidential_nomination.md`); an
+            // independent stands by the same gate as a party's candidate, so the game's field is whoever clears it.
+            /// <summary>Kodeks wyborczy art. 84 § 3: whether a party may nominate - in Poland's presidential election it may not; committees "mogą być
+            /// tworzone wyłącznie przez wyborców".</summary>
+            public bool PartiesNominate;
+            /// <summary>Art. 90 § 1: the citizens who form a voters' committee ("w liczbie co najmniej 15").</summary>
+            public int CommitteeFounders;
+            /// <summary>Art. 299 § 1: the signatures the committee gathers before it is registered with the PKW - counted toward the nomination's.</summary>
+            public int RegistrationSignatures;
+            /// <summary>Art. 299 § 4: the registration's last day, in days before the election.</summary>
+            public int RegistrationLatestDayBefore;
+            /// <summary>Art. 296 and Konstytucja Art. 127 ust. 3: the signatures that nominate ("co najmniej 100 000 obywateli").</summary>
+            public int NominationSignatures;
+            /// <summary>Art. 303 § 1: the nomination's last day, in days before the election (at 16:00 - the consolidated text; the act as first published read the 45th day).</summary>
+            public int NominationLatestDayBefore;
+            /// <summary>The articles read for the nomination gate.</summary>
+            public string NominationBasis;
         }
 
         private static readonly Rule Poland = new Rule
         {
             RunOffDay = 14, WithdrawalPostponementDays = 14, TermYears = 5, MaxTerms = 2, CalledEarliestDaysBefore = 100, CalledLatestDaysBefore = 75,
             Basis = "Konstytucja Art. 127 ust. 2, 4-6; Art. 128 ust. 1-2 [TK-KONST]",
+            PartiesNominate = false, CommitteeFounders = 15, RegistrationSignatures = 1000, RegistrationLatestDayBefore = 55, NominationSignatures = 100000, NominationLatestDayBefore = 44,
+            NominationBasis = "Kodeks wyborczy art. 84 § 3, art. 90 § 1, art. 296-299, art. 303 § 1 (the consolidated text, Dz.U. 2026 poz. 1261); Konstytucja Art. 127 ust. 3",
         };
 
         /// <summary>The country's two-round rule; null where no presidency is elected in two rounds or its rule is not yet sourced (France until S8).</summary>
