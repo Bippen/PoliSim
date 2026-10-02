@@ -470,8 +470,9 @@ namespace PoliSim.UI
             SlipContent slip = new SlipContent("A CONSTRUCTIVE VOTE OF NO CONFIDENCE")
                 .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} MEMBERS WOULD ELECT YOUR CANDIDATE", projected.For, projected.Members))
                 .Add(string.Format(CultureInfo.InvariantCulture, "IT NEEDS {0}, A MAJORITY OF THE MEMBERS", projected.Needed))
-                .Add("YOUR GOVERNMENT: " + Names(projected.SuccessorCabinet).ToUpperInvariant() + (projected.SuccessorSupport.Count > 0 ? " WITH " + Names(projected.SuccessorSupport).ToUpperInvariant() : string.Empty));
-            if (!projected.PartnersAccept) { slip.Add("A PARTNER REFUSES IT"); }
+                .Add("YOUR GOVERNMENT: " + Names(projected.Governing.Count > 0 ? projected.Governing : projected.SuccessorCabinet).ToUpperInvariant() + (projected.PartnersAccept && projected.SuccessorSupport.Count > 0 ? " WITH " + Names(projected.SuccessorSupport).ToUpperInvariant() : string.Empty));
+            // §754 (ruling A4): the vote elects the person - a refusing partner changes the government the elected successor forms, never his election
+            if (!projected.PartnersAccept) { slip.Add(projected.Carried ? "A PARTNER REFUSES ITS PLACE - ELECTED, YOU GOVERN WITHOUT IT" : "A PARTNER REFUSES ITS PLACE"); }
             book.Anchors["motion"] = slip;
             Rect move = RowChipRectEndingAt(row.xMax, row, "ELECT A SUCCESSOR", 26f, 12f);
             if (DrawRowChip(move, "ELECT A SUCCESSOR", ChipFace.Paper))

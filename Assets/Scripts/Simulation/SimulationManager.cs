@@ -2602,12 +2602,15 @@ namespace PoliSim.Simulation
                 // §705 (the review's defect 5): no constructive vote while the chancellor's election runs - before the convening the old Bundestag
                 // sits, and a successor it elected would never be discharged at the convening (Art. 69 Abs. 2)
                 if ((g.Round != null && g.Round.Open) || ElectionAwaitsRound(country, g)) { refusedBecause = "THE CHANCELLOR'S ELECTION IS UNDER WAY - ART. 63, NOT ART. 67"; return false; }
+                // §754 (the review's note): a party with no members moves nothing - the AI's rule, the player's too
+                if (SeatsOf(country, country.PlayerPartyAbbrev) <= 0) { refusedBecause = "YOUR PARTY HOLDS NO SEAT - A CONSTRUCTIVE VOTE IS MOVED BY MEMBERS"; return false; }
                 // §698 (Art. 67 GG): the motion IS the successor's election - carried, the successor's government takes office today
                 refusedBecause = null;
                 vote = ConstructiveVoteOf(country, country.PlayerPartyAbbrev, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
                 country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
-                if (vote.Carried) { InstallSuccessor(country, successor, verdict, vote); }
+                if (vote.Carried && successor != null) { InstallSuccessor(country, successor, verdict, vote); }
+                else if (vote.Carried) { Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev}'s candidate is elected and no government can be drawn on its party; none installed"); }   // latent (§754)
                 Debug.Log($"CONFIDENCE: {countryId} - {vote.Title()}{(vote.Refusal != null ? " - refused by " + vote.Refusal : string.Empty)}");
                 return true;
             }
@@ -2815,11 +2818,13 @@ namespace PoliSim.Simulation
         // §698 (PS-4): THE CONSTRUCTIVE VOTE OF NO CONFIDENCE - Art. 67 GG (ConfidenceProcedure.Rules.Bundestag). The motion names its successor and is
         // that successor's election: the best government the formation would form with the mover leading (DraftProposal, on the mid-term reading, the
         // standing refusals kept), every party's answer under Germany's positive rule, and - elected by a majority of the members - the successor's
-        // government installed the same day, the outgoing one gone without a caretaker, a week or a round.
+        // government installed the same day, the outgoing one gone without a caretaker, a week or a round. §754 (Elias's ruling A4): the vote is on the
+        // PERSON (ConfidenceProcedure.ConstructiveVote, on the round's chamber); elected and his drafted government not holding, the successor governs with
+        // his party and its parliamentary group alone (GroupAlone - Art. 63's rule for an elected candidate).
         // ---------------------------------------------------------------------------------------------
 
         /// <summary>§698: the successor a constructive vote by <paramref name="mover"/> would elect, and every party's answer to its government.</summary>
-        private Elections.FormationProposal DraftSuccessor(Country country, string mover, out Elections.ProposalVerdict verdict)
+        private Elections.FormationProposal DraftSuccessor(Country country, string mover, out Elections.ProposalVerdict verdict, out Elections.SpeakerRound draftRound)
         {
             var round = new Elections.SpeakerRound { MidTerm = true, OpenedOn = CurrentDate, Occasion = "the constructive vote of no confidence" };
             if (country.Government != null)
@@ -2829,7 +2834,7 @@ namespace PoliSim.Simulation
                 if (!string.IsNullOrEmpty(country.Government.PmParty) && country.Government.PmParty != mover) { round.Refusals.Add(country.Government.PmParty + ">" + mover); }
             }
             // The review's defect 1: an AI mover's successor never seats the player's party - nobody asked it (the Speaker's round OFFERS a place to the
-            // player instead); a decline keeps it out of the draft's cabinet and support, and it votes as its lines have it.
+            // player instead); a decline keeps it out of the draft's cabinet and support, and it votes on the person - by its lines and its compatibility (§754).
             if (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && country.PlayerPartyAbbrev != mover) { round.Declines.Add(country.PlayerPartyAbbrev + ">" + mover); }
             Elections.FormationProposal proposal = DraftProposal(country, round, mover);
             verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
@@ -2839,7 +2844,8 @@ namespace PoliSim.Simulation
             // with the CDU and CSU holding a majority of their own. Bounded: each pass refuses at least one more party.
             for (int pass = 0; pass < 4 && country.Government != null; pass++)
             {
-                Elections.ConfidenceProcedure.MotionVote trial = Elections.ConfidenceProcedure.ConstructiveVote(country, mover, proposal, verdict);
+                Elections.CoalitionFormation.Chamber trialChamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> trialParties);
+                Elections.ConfidenceProcedure.MotionVote trial = Elections.ConfidenceProcedure.ConstructiveVote(country, mover, proposal, verdict, trialChamber, trialParties);   // only its refusers are read here
                 var staying = new List<string>();
                 foreach (string p in proposal.CabinetParties) { if (p != mover && trial.Refusers.Contains(p) && country.Government.Cabinet.Contains(p) && !round.Refusals.Contains(p + ">" + mover)) { staying.Add(p); } }
                 if (staying.Count == 0) { break; }
@@ -2847,14 +2853,30 @@ namespace PoliSim.Simulation
                 proposal = DraftProposal(country, round, mover);
                 verdict = Elections.Formateur.Answer(country, proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             }
+            draftRound = round;
             return proposal;
         }
 
-        /// <summary>§698: the constructive vote <paramref name="mover"/> would win or lose today - nothing recorded.</summary>
+        /// <summary>§698: the constructive vote <paramref name="mover"/> would win or lose today - nothing recorded. §754 (Elias's ruling A4): counted on the
+        /// person, on the chamber the successor was drafted on (its reading and lines, the standing refusals kept); <paramref name="successor"/> is the
+        /// government the elected successor forms - the drafted one where it holds, else his party and its parliamentary group alone (<see cref="GroupAlone"/>,
+        /// the rule Art. 63 applies to an elected candidate whose government does not hold).</summary>
         private Elections.ConfidenceProcedure.MotionVote ConstructiveVoteOf(Country country, string mover, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict)
         {
-            successor = DraftSuccessor(country, mover, out verdict);
-            return Elections.ConfidenceProcedure.ConstructiveVote(country, mover, successor, verdict);
+            successor = DraftSuccessor(country, mover, out verdict, out Elections.SpeakerRound round);
+            Elections.CoalitionFormation.Chamber chamber = Elections.Formateur.ChamberOf(country, RoundReading(country, round), RoundLines(country, round), out IReadOnlyList<PoliticalParty> parties);
+            Elections.ConfidenceProcedure.MotionVote vote = Elections.ConfidenceProcedure.ConstructiveVote(country, mover, successor, verdict, chamber, parties);
+            if (!vote.PartnersAccept)
+            {
+                // drafted, not holding: the government he would form if elected (the review's note - the slip names it whether or not the count reaches it);
+                // none drawable (latent - GroupAlone's proposal is always well-formed) and no successor is installed
+                Elections.FormationProposal alone = GroupAlone(country, round, mover, out Elections.ProposalVerdict aloneVerdict, out bool seatedByGroup);
+                successor = aloneVerdict?.Investiture != null ? alone : null;
+                verdict = aloneVerdict;
+                vote.SeatedByGroup = successor != null && seatedByGroup;
+            }
+            if (successor != null) { vote.Governing.AddRange(successor.CabinetParties); }
+            return vote;
         }
 
         /// <summary>§698: the constructive vote the player's party would win or lose today - projected, nothing recorded (the Parliament page's row reads it).</summary>
@@ -2875,6 +2897,7 @@ namespace PoliSim.Simulation
                 $"the constructive vote of no confidence: the Bundestag elected {proposal.Formateur}'s candidate chancellor, {vote.For} of {vote.Members} members (Art. 67 GG)",
                 g.Kind, g.Executive, g.StandingRefusals, _world);
             formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {proposal.Formateur}'s candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {g.PmParty}'s chancellor dismissed (Art. 67 GG)");
+            if (vote.SeatedByGroup) { formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} sits in {proposal.Formateur}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }   // §754
             country.Government = formed;
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);
@@ -2912,7 +2935,7 @@ namespace PoliSim.Simulation
             {
                 if (SeatsOf(country, mover) <= 0) { continue; }   // a party with no members moves nothing
                 Elections.ConfidenceProcedure.MotionVote vote = ConstructiveVoteOf(country, mover, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
-                if (!vote.Carried) { continue; }
+                if (!vote.Carried || successor == null) { continue; }
                 double now = Elections.GovernmentFormation.PayoffIn(country, g.Cabinet, mover);
                 double after = Elections.GovernmentFormation.PayoffIn(country, successor.CabinetParties, mover);
                 if (after <= now + Elections.CoalitionFormation.DefectionMargin) { continue; }
@@ -3442,20 +3465,28 @@ namespace PoliSim.Simulation
                 verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
                 if (Involves(government, player) || !verdict.AllAccept || verdict.Investiture == null || verdict.Investiture.SplitsJointGroup) { government = null; }   // (B) a split group is no government
             }
-            if (government == null)
-            {
-                government = new Elections.FormationProposal { Formateur = winner };
-                government.CabinetParties.Add(winner);
-                if (SeatedGroupPartner(country, winner) is string winnerPartner)
-                {
-                    government.CabinetParties.Add(winnerPartner);
-                    if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {CandidateOf(country, round, winner)}'s cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
-                }
-                foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner, CurrentDate)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
-                government.FreezeTabled(country, CurrentDate, _world);
-                verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
-            }
+            if (government == null) { government = GroupAlone(country, round, winner, out verdict, out seatedByGroup); }
             return verdict?.Investiture == null ? null : government;
+        }
+
+        /// <summary>§705's last resort for an elected candidate whose government does not hold - its party and its parliamentary group alone (a group
+        /// governs as one, the game's premise), Gamson's posts. §754: moved out of <see cref="ElectedGovernment"/> unchanged, so the constructive vote's
+        /// elected successor (Art. 67) forms by the same rule as Art. 63's elected candidate.</summary>
+        private Elections.FormationProposal GroupAlone(Country country, Elections.SpeakerRound round, string winner, out Elections.ProposalVerdict verdict, out bool seatedByGroup)
+        {
+            string player = country.PlayerPartyAbbrev;
+            seatedByGroup = false;
+            var government = new Elections.FormationProposal { Formateur = winner };
+            government.CabinetParties.Add(winner);
+            if (SeatedGroupPartner(country, winner) is string winnerPartner)
+            {
+                government.CabinetParties.Add(winnerPartner);
+                if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {CandidateOf(country, round, winner)}'s cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
+            }
+            foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner, CurrentDate)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
+            government.FreezeTabled(country, CurrentDate, _world);
+            verdict = Elections.Formateur.Answer(country, government, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), player);
+            return government;
         }
 
         /// <summary>

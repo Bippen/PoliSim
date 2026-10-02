@@ -15,10 +15,12 @@ namespace PoliSim.EditorTools
     /// §698 (PS-4): **THE CONSTRUCTIVE VOTE OF NO CONFIDENCE, ART. 67 GG.** On Germany's own start (the 20th Bundestag, Scholz's SPD+Grüne minority):
     /// (a) the rules - the Bundestag's constructive vote, the Riksdag's unchanged, the other four unsourced; (b) the record's chamber - the player's CDU
     /// projects and moves its constructive vote: the successor's government, the count against a majority of the members, the motion recorded as a
-    /// division, carried exactly when the count reaches the majority and the partners accept, and - not carried - the government standing untouched;
+    /// division, elected exactly when the count reaches a majority of the members (§754: the vote is on the person), and - not elected - the government standing untouched;
     /// (c) THE PLANTED CHAMBER, the CDU and CSU holding a majority alone: the vote carries and the successor's government takes office the same day -
     /// the CDU's chancellor, no caretaker, no declaration's week, the basis naming Art. 67, the chancellor's own party having voted against; (d) the AI:
-    /// on the planted chamber, the player's party elsewhere, the CDU moves its own constructive vote by ruling (2)'s rule and installs its government.
+    /// on the planted chamber, the player's party elsewhere, the CDU moves its own constructive vote by ruling (2)'s rule and installs its government;
+    /// (f) §754 (Elias's ruling A4: "the constructive vote is a vote on the successor ... There is no separate vote against the incumbent"): every party
+    /// votes on the person, and a successor whose drafted government does not hold is still elected by a majority of the members.
     /// </summary>
     public static class ConstructiveVoteDiagnostic
     {
@@ -64,7 +66,7 @@ namespace PoliSim.EditorTools
                     (SimulationManager sim, Country de) = Open("ConstructiveVoteDiagnostic real", "CDU");
                     GovernmentRecord before = de.Government;
                     ConfidenceProcedure.MotionVote projected = sim.ProjectConstructiveVote(CountryId.Germany);
-                    Check(before != null && projected != null && projected.Constructive && projected.Carried == (projected.For >= projected.Needed && projected.PartnersAccept),
+                    Check(before != null && projected != null && projected.Constructive && projected.Carried == (projected.For >= projected.Needed),
                         F("on the start ({0} leading {1}), the CDU's constructive vote projected: {2} of {3} members for, {4} needed - {5}; the successor's government {6}{7}{8}",
                             before?.PmParty, before != null ? string.Join("+", before.Cabinet) : "none", projected?.For, projected?.Members, projected?.Needed,
                             projected != null && projected.Carried ? "ELECTED" : "not elected", projected != null ? string.Join("+", projected.SuccessorCabinet) : "none",
@@ -99,14 +101,115 @@ namespace PoliSim.EditorTools
                             vote2?.For, vote2?.Members, formed != null ? string.Join("+", formed.Cabinet) : "none", formed?.PmParty, outgoing?.PmParty, pmSide == null ? "NOTHING" : pmSide.Side < 0 ? "against" : "FOR",
                             vote2 != null && vote2.Carried ? "carried" : "NOT CARRIED", vote2 != null ? string.Join("+", vote2.SuccessorCabinet) + (vote2.SuccessorSupport.Count > 0 ? " with " + string.Join("+", vote2.SuccessorSupport) : string.Empty) : "none",
                             vote2 != null && vote2.Refusal != null ? " - refusals: " + vote2.Refusal : string.Empty));
-                    // the review's defects 3 and 4: a sitting cabinet partner drafted into the successor weighs its posts (the FDP stays), and no refusing
-                    // party is counted for the successor
-                    DivisionSide fdpSide = null; int refusersFor = 0;
-                    if (vote2 != null) { foreach (DivisionSide s in vote2.Sides) { if (s.Abbrev == "FDP") { fdpSide = s; } if (vote2.Refusers.Contains(s.Abbrev) && s.Side > 0) { refusersFor++; } } }
-                    Check(vote2 != null && refusersFor == 0 && (!vote2.SuccessorSupport.Contains("FDP") && !vote2.SuccessorCabinet.Contains("FDP") || (fdpSide != null && fdpSide.Side < 0 && vote2.Refusers.Contains("FDP") && !formed.Support.Contains("FDP") && !formed.Cabinet.Contains("FDP"))),
-                        F("a sitting partner weighs its posts and a refusing party votes no one in: the FDP, drafted {0}, votes {1} ({2}); {3} refuser(s) counted for; the installed government carries no refuser",
+                    // the review's defects 3 and 4: a sitting cabinet partner drafted into the successor weighs its posts (the FDP stays), and the installed
+                    // government seats no refusing party (§754: a refuser is no longer counted out of the vote - it votes on the person like any party)
+                    DivisionSide fdpSide = null; int refusersSeated = 0;
+                    if (vote2 != null) { foreach (DivisionSide s in vote2.Sides) { if (s.Abbrev == "FDP") { fdpSide = s; } } foreach (string r in vote2.Refusers) { if (formed.Cabinet.Contains(r) || formed.Support.Contains(r)) { refusersSeated++; } } }
+                    Check(vote2 != null && refusersSeated == 0 && (!vote2.SuccessorSupport.Contains("FDP") && !vote2.SuccessorCabinet.Contains("FDP") || (fdpSide != null && fdpSide.Side < 0 && vote2.Refusers.Contains("FDP") && !formed.Support.Contains("FDP") && !formed.Cabinet.Contains("FDP"))),
+                        F("a sitting partner weighs its posts: the FDP, drafted {0}, votes {1} ({2}); {3} refuser(s) seated in the installed government",
                             vote2 != null && vote2.SuccessorCabinet.Contains("FDP") ? "into the cabinet" : vote2 != null && vote2.SuccessorSupport.Contains("FDP") ? "as a supporter" : "not at all",
-                            fdpSide == null ? "NOTHING" : fdpSide.Side < 0 ? "against" : fdpSide.Side > 0 ? "FOR" : "abstaining", fdpSide?.Reason, refusersFor));
+                            fdpSide == null ? "NOTHING" : fdpSide.Side < 0 ? "against" : fdpSide.Side > 0 ? "FOR" : "abstaining", fdpSide?.Reason, refusersSeated));
+
+                    // (f) §754 (ruling A4): every party votes on the PERSON - each side's reason is the person ballot's, the vote listed in full
+                    string[] personReasons = { "its candidate", "parliamentary group", "elects him", "does not elect", "abstains", "coalition's word" };
+                    int personSides = 0, sincere = 0;
+                    if (vote2 != null)
+                    {
+                        foreach (DivisionSide s in vote2.Sides)
+                        {
+                            bool person = false;
+                            foreach (string r in personReasons) { if (s.Reason != null && s.Reason.Contains(r)) { person = true; } }
+                            if (person) { personSides++; }
+                            if (s.Reason != null && s.Reason.Contains("sincere votes")) { sincere++; }
+                            sb.Append(F("    side      {0} {1}: {2} - {3}\n", s.Abbrev, s.Seats, s.Side > 0 ? "elects" : s.Side < 0 ? "does not elect" : "abstains", s.Reason));
+                        }
+                    }
+                    Check(vote2 != null && personSides == vote2.Sides.Count && sincere > 0,
+                        F("§754: every party votes on the person - {0} of {1} sides carry the person ballot's reason, {2} by the sincere rule (a refusal, or the comparison - which the Linke case below decides)", personSides, vote2?.Sides.Count, sincere));
+
+                    // (f) §754: elected by a majority of the members whatever the partners answer - the CDU's candidate with the sitting chancellor's Greens
+                    // drafted into his cabinet (they stay where they sit, so that government does not hold): elected all the same, on the CDU's and CSU's 390
+                    var crafted = new FormationProposal { Formateur = "CDU" };
+                    crafted.CabinetParties.Add("CDU"); crafted.CabinetParties.Add("CSU"); crafted.CabinetParties.Add("Grune");
+                    (SimulationManager sim6, Country de6) = Open("ConstructiveVoteDiagnostic crafted", "SSW");
+                    Plant(de6);
+                    var craftedRound = new SpeakerRound { MidTerm = true, OpenedOn = sim6.CurrentDate };
+                    CoalitionFormation.Chamber craftedChamber = Formateur.ChamberOf(de6, sim6.RoundReading(de6, craftedRound), null, out IReadOnlyList<PoliticalParty> craftedParties);
+                    ProposalVerdict craftedVerdict = Formateur.Answer(de6, crafted, sim6.CurrentDate, sim6.World, sim6.RoundReading(de6, craftedRound), null, de6.PlayerPartyAbbrev);
+                    ConfidenceProcedure.MotionVote craftedVote = ConfidenceProcedure.ConstructiveVote(de6, "CDU", crafted, craftedVerdict, craftedChamber, craftedParties);
+                    Check(craftedVote.Carried && !craftedVote.PartnersAccept && craftedVote.For >= craftedVote.Needed,
+                        F("§754: CDU+CSU+Grüne drafted on the planted chamber - partners {0} ({1}); {2} of {3} for, {4} needed: {5}",
+                            craftedVote.PartnersAccept ? "ACCEPT" : "refuse", craftedVote.Refusal ?? "none", craftedVote.For, craftedVote.Members, craftedVote.Needed, craftedVote.Carried ? "elected all the same" : "NOT ELECTED"));
+
+                    // (f) the review's defect 1: a sitting partner drafted into a successor's government that does NOT hold never elects him - the FDP and the
+                    // Greens (Scholz's partners) drafted beside the Union, the Greens refusing: he would govern without them, so neither votes its chancellor out
+                    // planted: a large FDP (200) beside a small Union (100 + 20), the sitting cabinet diluted, so the FDP's posts in the draft are worth more - it
+                    // would LEAVE, so only the draft's not holding keeps it from electing (the defect's own path, not the staying one)
+                    (SimulationManager sim8, Country de8) = Open("ConstructiveVoteDiagnostic defect 1", "SSW");
+                    foreach (KeyValuePair<string, int> kv in new Dictionary<string, int> { { "CDU", 100 }, { "CSU", 20 }, { "SPD", 150 }, { "Grune", 80 }, { "FDP", 200 }, { "AfD", 50 }, { "Linke", 25 }, { "SSW", 1 }, { "BSW", 0 } }) { de8.ParliamentSeats[kv.Key] = kv.Value; }
+                    de8.Government.Cabinet.Add("AfD"); de8.Government.Cabinet.Add("Linke");   // and the sitting cabinet diluted - its cohesion and the FDP's share both fall
+                    var round8 = new SpeakerRound { MidTerm = true, OpenedOn = sim8.CurrentDate };
+                    CoalitionFormation.Chamber chamber8 = Formateur.ChamberOf(de8, sim8.RoundReading(de8, round8), null, out IReadOnlyList<PoliticalParty> parties8);
+                    var crafted2 = new FormationProposal { Formateur = "CDU" };
+                    foreach (string k in new[] { "CDU", "CSU", "FDP", "Grune" }) { crafted2.CabinetParties.Add(k); }
+                    ProposalVerdict verdict2 = Formateur.Answer(de8, crafted2, sim8.CurrentDate, sim8.World, sim8.RoundReading(de8, round8), null, de8.PlayerPartyAbbrev);
+                    ConfidenceProcedure.MotionVote vote8 = ConfidenceProcedure.ConstructiveVote(de8, "CDU", crafted2, verdict2, chamber8, parties8);
+                    DivisionSide fdp8 = null, grune8 = null;
+                    foreach (DivisionSide s in vote8.Sides) { if (s.Abbrev == "FDP") { fdp8 = s; } if (s.Abbrev == "Grune") { grune8 = s; } }
+                    Check(!vote8.PartnersAccept && fdp8 != null && fdp8.Side < 0 && fdp8.Reason.Contains("does not hold") && grune8 != null && grune8.Side < 0,
+                        F("the review's defect 1: CDU+CSU+FDP+Grüne drafted, partners {0} - the FDP {1} ({2}), the Greens {3}", vote8.PartnersAccept ? "ACCEPT" : "refuse",
+                            fdp8 == null ? "NOTHING" : fdp8.Side < 0 ? "does not elect" : "ELECTS", fdp8?.Reason, grune8 == null ? "NOTHING" : grune8.Side < 0 ? "do not elect" : "ELECT"));
+
+                    // (f) elected, the draft not holding: the government is his party and its group alone (GroupAlone, Art. 63's rule), installed by Art. 67 - and
+                    // a player's party seated only as the group's partner is recorded on it. Run through the two private steps (no planted chamber found makes
+                    // MoveNoConfidence's own draft fail to hold - the redraft drops a staying partner - so the steps are driven directly)
+                    (SimulationManager sim9, Country de9) = Open("ConstructiveVoteDiagnostic alone", "CSU");
+                    Plant(de9);
+                    var round9 = new SpeakerRound { MidTerm = true, OpenedOn = sim9.CurrentDate };
+                    MethodInfo groupAlone = typeof(SimulationManager).GetMethod("GroupAlone", BindingFlags.Instance | BindingFlags.NonPublic);
+                    MethodInfo install = typeof(SimulationManager).GetMethod("InstallSuccessor", BindingFlags.Instance | BindingFlags.NonPublic);
+                    object[] aloneArgs = { de9, round9, "CDU", null, null };
+                    var alone = groupAlone?.Invoke(sim9, aloneArgs) as FormationProposal;
+                    var aloneVerdict = aloneArgs[3] as ProposalVerdict;
+                    bool seated = aloneArgs[4] is bool b && b;
+                    craftedVote.SeatedByGroup = seated;
+                    GovernmentRecord before9 = de9.Government;
+                    if (alone != null && aloneVerdict?.Investiture != null) { install?.Invoke(sim9, new object[] { de9, alone, aloneVerdict, craftedVote }); }
+                    GovernmentRecord formed9 = de9.Government;
+                    bool noted = formed9 != null && formed9.Breaks.Exists(x => x.Contains("parliamentary group's partner"));
+                    Check(alone != null && !ReferenceEquals(formed9, before9) && formed9.PmParty == "CDU" && formed9.Cabinet.Count == 2 && formed9.Cabinet.Contains("CSU") && seated && noted && formed9.Basis.Contains("Art. 67"),
+                        F("elected, the draft not holding: {0} led by {1} takes office (the basis naming Art. 67); the CSU player seated as the group's partner {2}",
+                            formed9 != null ? string.Join("+", formed9.Cabinet) : "none", formed9?.PmParty, noted ? "- recorded on the government" : "- NOT RECORDED"));
+
+                    // (f) §754: the SINCERE comparison decides where a party sits in neither government and refuses neither person - planted: the sitting
+                    // chancellor the Linke's, governing alone, so the SPD, the Greens and the FDP sit outside both; each elects the CDU's candidate only where
+                    // it is nearer him than the Linke's chancellor (the formation's compatibility), and its seats count exactly so
+                    (SimulationManager sim7, Country de7) = Open("ConstructiveVoteDiagnostic sincere", "SSW");
+                    Plant(de7);
+                    de7.Government.PmParty = "Linke";
+                    de7.Government.Cabinet.Clear(); de7.Government.Cabinet.Add("Linke");
+                    de7.Government.Support.Clear();
+                    var round7 = new SpeakerRound { MidTerm = true, OpenedOn = sim7.CurrentDate };
+                    var draft7 = new FormationProposal { Formateur = "CDU" };
+                    draft7.CabinetParties.Add("CDU"); draft7.CabinetParties.Add("CSU");
+                    CoalitionFormation.Chamber chamber7 = Formateur.ChamberOf(de7, sim7.RoundReading(de7, round7), null, out IReadOnlyList<PoliticalParty> parties7);
+                    ProposalVerdict verdict7 = Formateur.Answer(de7, draft7, sim7.CurrentDate, sim7.World, sim7.RoundReading(de7, round7), null, de7.PlayerPartyAbbrev);
+                    ConfidenceProcedure.MotionVote vote7 = ConfidenceProcedure.ConstructiveVote(de7, "CDU", draft7, verdict7, chamber7, parties7);
+                    int I7(string k) { for (int p = 0; p < parties7.Count; p++) { if (parties7[p].Abbrev == k) { return p; } } return -1; }
+                    int sincereRight = 0, sincereChecked = 0, forSum = 0;
+                    foreach (DivisionSide s in vote7.Sides)
+                    {
+                        if (s.Side > 0) { forSum += s.Seats; }
+                        sb.Append(F("    side      {0} {1}: {2} - {3}\n", s.Abbrev, s.Seats, s.Side > 0 ? "elects" : s.Side < 0 ? "does not elect" : "abstains", s.Reason));
+                        if (s.Reason == null || !s.Reason.Contains("nearer")) { continue; }
+                        sincereChecked++;
+                        int p = I7(s.Abbrev), m = I7("CDU"), c = I7("Linke");
+                        bool nearerSuccessor = chamber7.Compatibility[p, m] > chamber7.Compatibility[p, c];
+                        if ((s.Side > 0) == nearerSuccessor) { sincereRight++; }
+                    }
+                    Check(sincereChecked > 0 && sincereRight == sincereChecked && forSum == vote7.For && vote7.Carried == (vote7.For >= vote7.Needed),
+                        F("§754: the Linke's chancellor planted - {0} part(ies) outside both governments vote by the comparison, each as its compatibility has it ({1} of {0}); {2} of {3} for the CDU's candidate, {4} needed - {5}",
+                            sincereChecked, sincereRight, vote7.For, vote7.Members, vote7.Needed, vote7.Carried ? "elected" : "not elected"));
 
                     // (d) the AI moves it - the planted chamber, the player's party the SSW; the government formed the day before, so the AI weighs today
                     (SimulationManager sim3, Country de3) = Open("ConstructiveVoteDiagnostic ai", "SSW");
