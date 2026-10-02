@@ -112,3 +112,5 @@ scope	drys741	Sweden@1280x720,Germany@1280x720	2026-10-02	s741	the Laws Trade ta
 scope	drys741u	USA@1280x720	2026-10-02	s741	the Laws Trade tab outside a bloc: the base tariff as a dial tile beside the partners
 scope	drys741b	Sweden@1280x720,Germany@1280x720,USA@1280x720	2026-10-02	s741	the Trade tab in and outside a bloc, and a tile change that does not fit beside its figure taking the name line (the USA budget strip)
 scope	drys742	Sweden@1280x720,Germany@1280x720	2026-10-02	s742	the Laws tab as v3.5: the laws in force and before Parliament as a list card (D24 verbs), the statute book as built under it
+scope	drys743	Sweden@1280x720,Germany@1280x720	2026-10-02	s743	the Politics frame and its Parliament tab as v3.5: the chamber as one bar (blocs, majority tick), the parties as tiles, the rest kept under them
+scope	drys743b	Sweden@1280x720,Germany@1280x720	2026-10-02	s743	Parliament with the display short names and the names as published on the party tiles

@@ -403,6 +403,116 @@ namespace PoliSim.UI
             return string.Empty;
         }
 
+        /// <summary>
+        /// §743 (UI v3.5, the composition's Politics › Parliament): THE CHAMBER AS ONE BAR - every seat in it, the parties in the arc's own order
+        /// (<see cref="SeatOrder"/>: the left bloc, the unaffiliated, the right bloc, by mandates within each), each a segment in its laddered ink with
+        /// its abbreviation inside where it fits; over it, where the blocs are sourced, each bloc's bracket with its name and seats; through it the
+        /// majority tick where the seat that carries the chamber falls, its number under it. Drawn HERE, the one surface that may draw party ink
+        /// (`PartyInkDrawSiteCheck`). It records what it drew against the chamber as the arc does (<see cref="LastDotsDrawn"/>, one seat to a unit of
+        /// the bar), so the film's count holds whichever of the two the page draws.
+        /// </summary>
+        public static void DrawSeatBar(Rect rect, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle caption, GUIStyle abbrev, Color paper)
+        {
+            int total = 0;
+            foreach (KeyValuePair<string, int> kvp in seats) { total += Mathf.Max(0, kvp.Value); }
+            if (total <= 0) { return; }
+            List<PoliticalParty> order = ByBlocThenMandates(country, seats);
+            bool blocsKnown = false;
+            var seatBloc = new List<int>(total);
+            foreach (PoliticalParty party in order)
+            {
+                int bloc = NationalElection.BlocOf(country, party.Abbrev);
+                blocsKnown |= bloc >= 0;
+                int count = seats.TryGetValue(party.Abbrev, out int s) ? Mathf.Max(0, s) : 0;
+                for (int j = 0; j < count; j++) { seatBloc.Add(BlocRank(bloc)); }
+            }
+            int majority = total / 2 + 1;
+            LastMajoritySeat = majority;
+            LastMajorityReading = blocsKnown ? MajorityReading(seatBloc, total) : string.Empty;
+            if (Event.current.type != EventType.Repaint) { return; }
+
+            float line = Mathf.Ceil(caption.CalcSize(new GUIContent("Ag")).y);
+            float bracketTop = rect.y + line + 2f;
+            Rect bar = SeatBarRect(rect, caption, blocsKnown);
+            Color previous = GUI.color;
+            float x = bar.x;
+            var rankFrom = new float[3] { -1f, -1f, -1f };
+            var rankTo = new float[3];
+            var rankSeats = new int[3];
+            foreach (PoliticalParty party in order)
+            {
+                int count = seats.TryGetValue(party.Abbrev, out int s) ? Mathf.Max(0, s) : 0;
+                if (count == 0) { continue; }
+                float w = bar.width * count / total;
+                var segment = new Rect(x, bar.y, w, bar.height);
+                Color ink = PoliSimTheme.PartyLaddered(country, party.Abbrev);
+                GUI.color = ink;
+                GUI.DrawTexture(segment, Texture2D.whiteTexture);
+                GUI.color = paper;
+                if (x > bar.x) { GUI.DrawTexture(new Rect(Mathf.Round(x), bar.y, 1f, bar.height), Texture2D.whiteTexture); }   // the hairline between two parties
+                GUI.color = previous;
+                float aw = abbrev.CalcSize(new GUIContent(party.ShortName)).x;   // §575: the display short name, never the key
+                if (aw + 6f <= w)
+                {
+                    var face = new GUIStyle(abbrev) { alignment = TextAnchor.MiddleCenter };
+                    float luminance = 0.299f * ink.r + 0.587f * ink.g + 0.114f * ink.b;
+                    face.normal.textColor = luminance < 0.55f ? V35.OnDataDark : V35.OnDataLight;
+                    GUI.Label(segment, party.ShortName, face);
+                }
+                int rank = BlocRank(NationalElection.BlocOf(country, party.Abbrev));
+                if (rankFrom[rank] < 0f) { rankFrom[rank] = x; }
+                rankTo[rank] = x + w;
+                rankSeats[rank] += count;
+                x += w;
+            }
+            if (blocsKnown)
+            {
+                for (int rank = 0; rank < 3; rank++)
+                {
+                    if (rankSeats[rank] == 0) { continue; }
+                    float from = rankFrom[rank] + 2f, to = rankTo[rank] - 2f;
+                    GUI.color = PoliSimTheme.TextSecondary;
+                    GUI.DrawTexture(new Rect(from, bracketTop, Mathf.Max(1f, to - from), 1f), Texture2D.whiteTexture);
+                    GUI.color = previous;
+                    string text = BlocBarName(rank) + " · " + rankSeats[rank];
+                    var face = new GUIStyle(caption) { alignment = TextAnchor.LowerCenter };
+                    GUI.Label(new Rect(from, rect.y, Mathf.Max(1f, to - from), line), text, face);
+                }
+            }
+            // the majority tick, between the seat before the one that carries the chamber and that seat - where a majority is won
+            float tickX = Mathf.Round(bar.x + bar.width * (majority - 1) / total);
+            GUI.color = PoliSimTheme.TextPrimary;
+            GUI.DrawTexture(new Rect(tickX - 1f, bar.y - 4f, 2f, bar.height + 8f), Texture2D.whiteTexture);
+            GUI.color = previous;
+            string tick = majority.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var tickFace = new GUIStyle(caption) { alignment = TextAnchor.UpperCenter };
+            float tw = tickFace.CalcSize(new GUIContent(tick)).x + 4f;
+            GUI.Label(new Rect(tickX - tw * 0.5f, bar.yMax + 4f, tw, line), tick, tickFace);
+
+            LastDotsDrawn = seatBloc.Count;
+            LastChamberSeats = total;
+            LastDeclaredSeats = PartySystems.ChamberSeats(country);
+            LastRows = 1;
+        }
+
+        /// <summary>§743: the bar's own rect inside <paramref name="rect"/> - under the bloc labels and their brackets, over the tick's number.</summary>
+        public static Rect SeatBarRect(Rect rect, GUIStyle caption, bool blocsKnown)
+        {
+            float line = Mathf.Ceil(caption.CalcSize(new GUIContent("Ag")).y);
+            float top = rect.y + (blocsKnown ? line + 8f : 4f);
+            return new Rect(rect.x, top, rect.width, Mathf.Max(4f, rect.yMax - top - line - 6f));
+        }
+
+        /// <summary>§743: whether any of the country's parties has a sourced bloc - the bar draws its brackets only then.</summary>
+        public static bool BlocsKnown(CountryId country)
+        {
+            foreach (PoliticalParty party in PartySystems.For(country)) { if (NationalElection.BlocOf(country, party.Abbrev) >= 0) { return true; } }
+            return false;
+        }
+
+        /// <summary>§743: the bloc's name as the bar labels it - the composition's case.</summary>
+        private static string BlocBarName(int rank) => rank == 0 ? "Left bloc" : rank == 1 ? "Unaffiliated" : "Right bloc";
+
         /// <summary>The bloc's name as the arc labels it.</summary>
         private static string BlocRankName(int rank) => rank == 0 ? "LEFT BLOC" : rank == 1 ? "UNAFFILIATED" : "RIGHT BLOC";
 

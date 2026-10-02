@@ -2436,11 +2436,11 @@ namespace PoliSim.Testing
                 int dots = PoliSim.UI.HemicycleRenderer.LastDotsDrawn;
                 int chamber = PoliSim.UI.HemicycleRenderer.LastChamberSeats;
                 int declared = PoliSim.UI.HemicycleRenderer.LastDeclaredSeats;
-                Debug.Log($"SHOT: hemicycle drew {dots} dot(s) on {PoliSim.UI.HemicycleRenderer.LastRows} ring(s) for a chamber of {chamber} seat(s) (declared {declared}).");
+                Debug.Log($"SHOT: the chamber drew {dots} seat(s) on {PoliSim.UI.HemicycleRenderer.LastRows} row(s) - the arc's rings, or the v3.5 seat bar's one (§743) - for a chamber of {chamber} seat(s) (declared {declared}).");
                 if (dots != chamber || chamber != declared)
                 {
                     _failed++;
-                    Debug.LogError($"SHOT: hemicycle dot count {dots} != chamber {chamber} (declared {declared}) in {name}.");
+                    Debug.LogError($"SHOT: the chamber's seat count {dots} != chamber {chamber} (declared {declared}) in {name}.");
                 }
             }
             foreach (KeyValuePair<string, float> reach in PoliSim.UI.LedgerRow.ReachByRow)

@@ -7165,27 +7165,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// The width one button of a <paramref name="count"/>-button sub-tab row may claim as its floor,
-        /// given the row's OUTER width, the container padding it will be drawn inside, and the margins
-        /// GUILayout puts BETWEEN the buttons.
-        ///
-        /// ⚠ **The margins are not decoration, they are part of the budget.** Measured 2026-08-10 on
-        /// Policy/Laws' five-button row: the row spans 806px, five floors of 157.2 sum to 786 - which
-        /// looks like it fits - but each button also carries 4px of margin a side, so the row actually
-        /// needs 826. GUILayout does not distribute that 20px shortfall evenly; it satisfies the earlier
-        /// children and takes the whole deficit out of the last one, so Trade laid out at 102px beside
-        /// siblings at 172px and read as a cut-off button rather than as a squeezed row.
-        ///
-        /// This is the third term in the same subtraction. The first version divided the outer width,
-        /// the second subtracted the container padding (the 5.7px case), and this one subtracts the
-        /// margins - each fix correct as far as it went, each leaving a smaller residue behind.
-        /// </summary>
-        private float SubTabShare(float availableWidth, int count)
-        {
-            return PoliSimWidgets.InnerWidth(availableWidth, _boxStyle, count, GUI.skin.button);
-        }
-
-        /// <summary>
         /// ⚠ LABEL-CLIPPING INSTANCE #13 — and the first reached through the COUNTRY axis (2026-08-12).
         /// The height one sub-tab row needs: the tallest label's measured wrap height at the row's own
         /// share width, in the ACTIVE face's style (the taller padding), floored at the tab bar's
@@ -8948,67 +8927,6 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Master Sequence step 5e, Phase A: Politics tab - Parliament, the Political Compass half of
-        /// the old "Compass & Demographics" tab, Cabinet's management half, and Federal Reserve (Elias's
-        /// own confirmed placement - a real political institution with its own lever, even though the
-        /// Fed/Eurozone exemption means it's never Parliament-gated). Per-category gating matches the
-        /// old dispatch exactly - Parliament/Compass were never gated, Cabinet/FederalReserve were.
-        /// </summary>
-        private void DrawPoliticsTab(float availableHeight, float availableWidth)
-        {
-            // P2-1.1 (2026-09-02): the sheet is sized to the FRAME, not to its content - the box used to end where
-            // this tab's own scroll arithmetic ended, and the desk showed through beneath it (a per-tab band, 15-38
-            // px at 720, hidden by the old margin). The campaign stages already size their box this way.
-            GUILayout.BeginVertical(_frameSheetStyle, GUILayout.Width(availableWidth), GUILayout.ExpandHeight(true));
-            DrawColoredLabel("Politics", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            GUILayout.BeginHorizontal();
-            float subTabShare = SubTabShare(availableWidth, 4);
-            // Instance #13's OWN row: GetCentralBankName is the label that varies by country, and
-            // "European Central Bank (ECB)" is the one that garbled. Measured, imposed, and shared
-            // with the reserve below.
-            string centralBankName = GetCentralBankName(PlayerCountryId);
-            float subTabRowHeight = SubTabRowHeight(subTabShare, "Parliament", "Compass", "Cabinet", centralBankName);
-            DrawSubCategoryButton("Parliament", PoliticsCategory.Parliament, ref _politicsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Compass", PoliticsCategory.Compass, ref _politicsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton("Cabinet", PoliticsCategory.Cabinet, ref _politicsCategory, subTabShare, subTabRowHeight);
-            DrawSubCategoryButton(centralBankName, PoliticsCategory.FederalReserve, ref _politicsCategory, subTabShare, subTabRowHeight);
-            GUILayout.EndHorizontal();
-            GUILayout.Space(6f);
-            DrawScreenCaption(PoliticsScreenCaption());
-
-            float contentHeight = availableHeight - _headerStyle.fontSize - subTabRowHeight - 14f - ScreenCaptionBlockHeight();
-            // §685 (21b): the Parliament tab's scroll content is wider than its view (a breakdown line sets it), so its political blocks lay their
-            // rows to the VISIBLE width - a right-aligned act laid to the content's edge was off-screen.
-            _parliamentVisibleWidth = PoliSimWidgets.InnerWidth(PoliSimWidgets.InnerWidth(availableWidth, _frameSheetStyle), _boxStyle) - StatsUnit(24f);
-            switch (_politicsCategory)
-            {
-                case PoliticsCategory.Parliament:
-                    DrawParliamentTab(contentHeight);
-                    break;
-                case PoliticsCategory.Compass:
-                    float compassScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    _politicsContentScrollPosition = GUILayout.BeginScrollView(_politicsContentScrollPosition, GUILayout.Height(compassScrollHeight));
-                    DrawPoliticalCompassContent(availableWidth);
-                    GUILayout.EndScrollView();
-                    break;
-                case PoliticsCategory.Cabinet:
-                    float cabinetScrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    GUI.enabled = !_isGameOver;
-                    _cabinetScrollPosition = GUILayout.BeginScrollView(_cabinetScrollPosition, GUILayout.Height(cabinetScrollHeight));
-                    DrawCabinetManagementContent();
-                    GUILayout.EndScrollView();
-                    GUI.enabled = true;
-                    break;
-                case PoliticsCategory.FederalReserve:
-                    GUI.enabled = !_isGameOver;
-                    DrawFederalReserveTab(contentHeight);
-                    GUI.enabled = true;
-                    break;
-            }
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
         /// Macro overhaul Step A4's derived stats, finally on screen. The directive defines A4 as "pure
         /// display arithmetic" — it was built (`70798e9`) and trajectory-validated (`3d77b11`) but
         /// displayed nothing for a day, which is precisely the "built but uncalled" state this project
@@ -9304,38 +9222,6 @@ namespace PoliSim.UI
             {
                 GUILayout.EndVertical();
             }
-        }
-
-        /// <summary>
-        /// Parliament tab (Political Systems Overhaul Part B, full rollout): the hemicycle
-        /// (HemicycleRenderer) plus a pending-bill summary. Master Sequence step 5c generalized the
-        /// pending bill from a Tax-only TaxBill to the omnibus BudgetBill (Tax+Spending+Welfare+SWF
-        /// together) - see the Budget Process tab to introduce one.
-        /// </summary>
-        private void DrawParliamentTab(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _parliamentScrollPosition = GUILayout.BeginScrollView(_parliamentScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Parliament", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
-            // §565 (Design's sitting part B item 4): the mechanism paragraph is cut - it named a field, and the chamber and every bill card say what it said.
-            GUILayout.Space(6f);
-
-            _hemicycleRenderer.Draw($"{_playerCountry.Name} - {PartySystems.ChamberSeats(PlayerCountryId)} seats", PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle);
-
-            GUILayout.Space(10f);
-            DrawPendingLegislation();
-
-            GUILayout.Space(10f);
-            DrawParliamentPoliticalBlocks();   // PS-3h (§635), the caretaker line, §646's round, PS-3i (§636) - board 21b's rows (§685)
-
-            GUILayout.Space(10f);
-            DrawRecentDivisions();
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
         }
 
         /// <summary>
