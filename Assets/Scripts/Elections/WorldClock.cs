@@ -246,7 +246,7 @@ namespace PoliSim.Elections
                 case CountryId.Poland:
                     return new[]
                     {
-                        new GovernmentOfRecord("Mateusz Morawiecki (PiS)", new[] { "PiS" }, null, D(2019, 11, 15), D(2023, 12, 13), false, "appointed 2019-11-15 [ELI-MP-2019]; the coalition partners inside the PiS committee's government are a GAP (poland records G6) - the cabinet is carried as PiS alone, unsourced beyond the head"),
+                        new GovernmentOfRecord("Mateusz Morawiecki (PiS)", new[] { "PiS" }, null, D(2019, 11, 15), D(2023, 12, 13), true, "appointed 2019-11-15 [ELI-MP-2019]; the cabinet's party DERIVED by the record (§763, PS-5's PiS start): the 9th-term Sejm API shows one PiS club of 227 and no separate club for a coalition partner (poland records G6, api_sejm_term9_clubs.json) - so in the roster's terms, clubs as seated, the cabinet is PiS; the coalition partners' own names stay the GAP G6", cabinetDerived: true),
                         new GovernmentOfRecord("Donald Tusk (KO)", new[] { "KO", "TD", "NL" }, null, D(2023, 12, 13), Open, true, "elected 2023-12-11, 248-201 [API-V1]; appointed 2023-12-13 [ELI-MP-2023]; the cabinet's parties DERIVED by the record from the ministers' clubs as of 2026-09-24 (KO, PSL-TD and Polska2050 - the TD committee, Lewica); the day-one list of 2023-12-13 is its GAP G8", cabinetDerived: true),
                     };
                 case CountryId.Italy:
@@ -479,7 +479,7 @@ namespace PoliSim.Elections
                 else
                 {
                     // The review (§619): the sentence is generic - a caretaker head means the chamber had not chosen by the record's date; any other unsourced
-                    // cabinet (Poland's Morawiecki, Italy's Draghi) means the record names the head but not the cabinet's parties.
+                    // cabinet (Italy's Draghi) means the record names the head but not the cabinet's parties.
                     bool caretaker = after.Value.Head != null && after.Value.Head.IndexOf("caretaker", StringComparison.OrdinalIgnoreCase) >= 0;
                     r.HeadIsCaretaker = caretaker;
                     r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + after.Value.Head.ToUpperInvariant()

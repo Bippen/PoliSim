@@ -15,7 +15,7 @@ namespace PoliSim.EditorTools
     /// led by M (the record's own head); by party the four roles read S OPPOSITION, M PRIME MINISTER, KD and L JUNIOR PARTNER, SD SUPPORT; the
     /// one test `PlayerGoverns` is true for M alone (a junior partner's portfolios are PS-3's next part, stated); the AI finance ministry's
     /// gate follows it (a Sweden the player's S does not lead is AI-governed); the record survives a save round trip; Germany's start reads SPD PRIME MINISTER;
-    /// Poland's and Italy's stand-ins are printed. PS-3b (§629): every start stores a record - the USA's president and party, France's cabinet under its president -
+    /// Poland's start reads its PiS government of record (§763), Italy's stand-in is printed. PS-3b (§629): every start stores a record - the USA's president and party, France's cabinet under its president -
     /// and a country with none FAILS LOUDLY at AtStart and at PlayerGoverns (proved red on §628's build first: Reviews/evidence/2026-09-25_s629_probe_red.txt).
     /// </summary>
     public static class PlayerRoleDiagnostic
@@ -85,14 +85,17 @@ namespace PoliSim.EditorTools
                 GovernmentRecord gde = de.Government = GovernmentRecord.AtStart(de, WorldClock.StartDate(CountryId.Germany), world);
                 Check(gde.PmParty == "SPD" && gde.Cabinet.Contains("SPD"), F("Germany's start: {0} led by {1}{2}", string.Join("+", gde.Cabinet), gde.PmParty, gde.Provisional ? " (provisional)" : string.Empty));
                 Check(gde.Cabinet.Contains("FDP"), "6 November 2024 is the day BEFORE the FDP ministers were dismissed - the record's SPD+Grüne+FDP cabinet still stands (§618)");
-                // The other starts, printed: the USA's president and France's cabinet under its president (§629), Poland's and Italy's the formation's stand-in.
+                // The other starts, printed: the USA's president and France's cabinet under its president (§629), Poland's PiS government of record (§763), Italy's the formation's stand-in.
                 foreach (CountryId other in new[] { CountryId.Poland, CountryId.Italy, CountryId.USA, CountryId.France })
                 {
                     Country c = world.GetCountry(other);
                     c.Government = GovernmentRecord.AtStart(c, WorldClock.StartDate(other), world);
                     sb.Append("    ").Append(GovernmentRecord.Describe(other, WorldClock.StartDate(other), c)).Append(Environment.NewLine);
                 }
-                Check(world.GetCountry(CountryId.Poland).Government != null && world.GetCountry(CountryId.Poland).Government.Provisional && world.GetCountry(CountryId.Italy).Government != null && world.GetCountry(CountryId.Italy).Government.Provisional, "Poland and Italy: the formation's stand-in, marked provisional (§605)");
+                GovernmentRecord gpl = world.GetCountry(CountryId.Poland).Government;
+                Check(gpl != null && !gpl.Provisional && gpl.PmParty == "PiS" && gpl.Cabinet.Contains("PiS"),
+                    F("Poland's start (§763, the PiS start): Morawiecki's government of record installed - {0} led by {1}{2}", gpl != null ? string.Join("+", gpl.Cabinet) : "NONE", gpl?.PmParty, gpl != null && gpl.Provisional ? " (provisional)" : string.Empty));
+                Check(world.GetCountry(CountryId.Italy).Government != null && world.GetCountry(CountryId.Italy).Government.Provisional, "Italy: the formation's stand-in, marked provisional (§605)");
 
                 // PS-3b (§629): THE EXECUTIVES, AND NO SILENT DEFAULT. Every playable start stores a government of record - the USA's is its president
                 // and their party, France's its cabinet under its president - and a country with none FAILS LOUDLY: `AtStart` throws, and `PlayerGoverns`
