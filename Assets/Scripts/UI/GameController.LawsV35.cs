@@ -11,7 +11,8 @@ namespace PoliSim.UI
     /// Labour tab as the composition lays it - *What these dials move* (the readings the tab's dials reach, as tiles) and *Labour dials* (each dial a
     /// tile, two to a row) - and the bill's call to action. §738: the Crime & justice tab - its six dials as tiles SET BY LAW (no knob, no control).
     /// §739: the Sectors tab - the eight sectors as tiles, the chosen sector's five dials as tiles. §740: the Policy web - two columns over the
-    /// model's links, one area at a time (GameController.PolicyWebV35.cs). The other two tabs are drawn as built under the new frame until their own items.
+    /// model's links, one area at a time (GameController.PolicyWebV35.cs). §741: Trade - trade with the five, partners
+    /// and tariffs, the partners' override rates. The Laws tab is drawn as built under the new frame until its own item.
     ///
     /// <para><b>The dials' units</b> are the main session's rule (relayed 2026-10-01: *a real unit only where the model computes one; named settings,
     /// band edges [AUTHORED-DRAFT], where the dial is an abstract index; never a unit the model does not compute*) applied as Code's table sent to
@@ -43,8 +44,7 @@ namespace PoliSim.UI
             GUILayout.Space(V35.Px(4f));
             float bodyHeight = Mathf.Max(0f, availableHeight - titleHeight - V35.Px(4f));
 
-            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket || _policyLawsCategory == PolicyLawsCategory.CrimeJustice || _policyLawsCategory == PolicyLawsCategory.Sectors
-                || _policyLawsCategory == PolicyLawsCategory.PolicyWeb)
+            if (_policyLawsCategory != PolicyLawsCategory.Laws)
             {
                 // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name - UiScreenshotDriver.ResetScrolls)
                 PolicyLawsCategory tab = _policyLawsCategory;
@@ -57,6 +57,7 @@ namespace PoliSim.UI
                     case PolicyLawsCategory.LaborMarket: previous = _laborMarketScrollPosition; break;
                     case PolicyLawsCategory.CrimeJustice: previous = _crimeJusticeScrollPosition; break;
                     case PolicyLawsCategory.Sectors: previous = _sectorPolicyScrollPosition; break;
+                    case PolicyLawsCategory.Trade: previous = _policyLawsContentScrollPosition; break;
                     default: previous = _policyWebScrollPosition; break;
                 }
                 Vector2 scroll = GUILayout.BeginScrollView(previous, GUILayout.Height(viewport));
@@ -65,6 +66,7 @@ namespace PoliSim.UI
                     case PolicyLawsCategory.LaborMarket: _laborMarketScrollPosition = scroll; break;
                     case PolicyLawsCategory.CrimeJustice: _crimeJusticeScrollPosition = scroll; break;
                     case PolicyLawsCategory.Sectors: _sectorPolicyScrollPosition = scroll; break;
+                    case PolicyLawsCategory.Trade: _policyLawsContentScrollPosition = scroll; break;
                     default: _policyWebScrollPosition = scroll; break;
                 }
                 GUI.enabled = !_isGameOver || tab == PolicyLawsCategory.PolicyWeb;   // the web is read, not drafted - browsable when the game is over
@@ -74,6 +76,7 @@ namespace PoliSim.UI
                     case PolicyLawsCategory.LaborMarket: DrawLabourV35(contentWidth); break;
                     case PolicyLawsCategory.CrimeJustice: DrawCrimeV35(contentWidth); break;
                     case PolicyLawsCategory.Sectors: DrawSectorsV35(contentWidth); break;
+                    case PolicyLawsCategory.Trade: DrawTradeV35(contentWidth); break;
                     default: DrawPolicyWebV35(contentWidth, new Rect(-contentWidth, scroll.y, contentWidth * 3f, viewport)); break;
                 }
                 V35.FloorGuarded = false;
@@ -85,8 +88,8 @@ namespace PoliSim.UI
                 return;
             }
 
-            // The tabs not yet retrofitted - drawn as built under the v3.5 title: the screen's caption, the stat chips its levers reach, the trace a
-            // chip opens, the content.
+            // The tab not yet retrofitted - the Laws tab, drawn as built under the v3.5 title: the screen's caption, the stat chips its levers reach, the
+            // trace a chip opens, the content.
             DrawScreenCaption(PolicyLawsScreenCaption());
             float statRowWidth = PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - 8f;
             UiPalette.SystemArea statArea = GetPolicyScreenArea(_policyLawsCategory);
@@ -99,13 +102,6 @@ namespace PoliSim.UI
             float contentHeight = Mathf.Max(0f, bodyHeight - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
             {
-                case PolicyLawsCategory.Trade:
-                    float scrollHeight = contentHeight - _labelStyle.fontSize * 2f;
-                    _policyLawsContentScrollPosition = GUILayout.BeginScrollView(_policyLawsContentScrollPosition, GUILayout.Height(scrollHeight));
-                    // The pane's inner width less the scroll view's own bar - the measured budget every wrapping label on the Trade screen takes.
-                    DrawTradePolicyContent(Mathf.Max(0f, PoliSimWidgets.InnerWidth(availableWidth, _boxStyle) - GUI.skin.verticalScrollbar.fixedWidth - 12f));
-                    GUILayout.EndScrollView();
-                    break;
                 case PolicyLawsCategory.Laws:
                     // Not wrapped in `GUI.enabled = !_isGameOver`: browsing a law's detail is informational; only the enact/repeal action is gated.
                     DrawLawsTab(contentHeight, availableWidth);
@@ -640,6 +636,260 @@ namespace PoliSim.UI
         }
 
         // =============================================================================================================================================
+        // Trade
+        // =============================================================================================================================================
+
+        /// <summary>
+        /// §741 (UI v3.5, the composition's Laws › Trade): <b>Trade with the five</b> - exports and imports as shares of GDP and the balance with its
+        /// history, as tiles - then <b>Partners and tariffs</b>: each partner's share of the trade (Statistics' card, the same figures) beside the tariff -
+        /// for the five EU members the <b>average tariff charged</b> (a reading: an EU member sets no tariff of its own, so the base rate the model holds
+        /// is never charged and draws no dial - `V35_ANSWERS.md` §1, Trade), for the USA the base tariff's dial - and then <b>the partners' override
+        /// rates</b>, the working lever, which the composition does not draw (kept, asked), each a dial tile with its Set override / Reset draft action;
+        /// the bill's action; <i>What these dials move</i> last.
+        ///
+        /// <para><b>What the model holds</b>: trade with the five other states it models - Eurostat's flows, goods and services, in the book's dollars
+        /// (`TradeMatrixTable`) - and nothing with the rest of the world; the tiles say <i>with the five</i>. The composition's export and import shares
+        /// of all trade are not computed. Exports and imports are the flows before tariffs; the balance is after the partners' tariffs and the
+        /// currency (`TradeSystem.ApplyTradeEffects`).</para>
+        /// </summary>
+        private void DrawTradeV35(float width)
+        {
+            Country c = _playerCountry;
+            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Trade);
+            float gdp = c.State.NominalGdp;
+            float gutter = V35.Px(V35.Gutter);
+
+            // ---- trade with the five ----
+            float exports = 0f, imports = 0f;
+            foreach (TradePartner link in c.TradePartners) { exports += Mathf.Max(0f, link.ExportVolume); imports += Mathf.Max(0f, link.ImportVolume); }
+            DrawLawsSectionHead("Trade with the five", "laws:trade", width);
+            _lawsSlipBook.Anchors["laws:trade"] = new SlipContent("TRADE WITH THE FIVE")
+                .Add("THE MODEL HOLDS TRADE WITH THE FIVE OTHER STATES IT MODELS - EUROSTAT'S FLOWS, GOODS AND SERVICES, IN THE BOOK'S DOLLARS · THE REST OF THE WORLD'S IS NOT MODELLED")
+                .Add("EXPORTS AND IMPORTS ARE THE FLOWS BEFORE TARIFFS; THE BALANCE IS AFTER THE PARTNERS' TARIFFS AND THE CURRENCY");
+            var exportTile = new V35TileData { Icon = "out", IconInk = area, Figure = gdp > 0f ? UiFormat.Number(100f * exports / gdp, 1) + "%" : null, Glyph = gdp > 0f ? (Symbol?)null : Symbol.Absent, Name = "Exports to the five", FigurePx = V35.FigureSmall };
+            var importTile = new V35TileData { Icon = "in", IconInk = area, Figure = gdp > 0f ? UiFormat.Number(100f * imports / gdp, 1) + "%" : null, Glyph = gdp > 0f ? (Symbol?)null : Symbol.Absent, Name = "Imports from the five", FigurePx = V35.FigureSmall };
+            IReadOnlyList<float> balanceHistory = c.History.TradeBalance.Quarterly;
+            var balanceTile = new V35TileData { Icon = "trade", IconInk = area, Figure = UiFormat.MoneyDelta(c.State.TradeBalance, MoneyUnit.Billions), Name = "Trade balance with the five", FigurePx = V35.FigureSmall, Spark = balanceHistory };
+            var balanceSlip = new SlipContent("TRADE BALANCE WITH THE FIVE · " + balanceTile.Figure.ToUpperInvariant() + " A YEAR")
+                .Add("EXPORTS AFTER THE PARTNERS' TARIFFS AND THE CURRENCY, LESS IMPORTS");
+            if (balanceHistory != null && balanceHistory.Count >= 5)
+            {
+                float d = balanceHistory[balanceHistory.Count - 1] - balanceHistory[balanceHistory.Count - 5];
+                if (Mathf.Abs(d) >= 0.005f)
+                {
+                    balanceTile.Change = (d > 0f ? "▲ " : "▼ ") + UiFormat.Money(Mathf.Abs(d), MoneyUnit.Billions);
+                    balanceTile.ChangeInk = V35.DirectionNeutral;   // V35 rule 5: the trade balance prints direction only
+                    balanceSlip.Add((d > 0f ? "UP " : "DOWN ") + UiFormat.Money(Mathf.Abs(d), MoneyUnit.Billions) + " OVER THE LAST FOUR QUARTERS");
+                }
+            }
+            balanceSlip.Add("NEUTRAL INK - A SURPLUS IS NOT A GOOD BY ITSELF, NOR A DEFICIT A BAD");
+            _lawsSlipBook.Anchors["trade:exports"] = new SlipContent("EXPORTS TO THE FIVE · " + (exportTile.Figure ?? "ABSENT") + " OF GDP")
+                .Add(UiFormat.Money(exports, MoneyUnit.Billions).ToUpperInvariant() + " A YEAR, BEFORE THE PARTNERS' TARIFFS");
+            _lawsSlipBook.Anchors["trade:imports"] = new SlipContent("IMPORTS FROM THE FIVE · " + (importTile.Figure ?? "ABSENT") + " OF GDP")
+                .Add(UiFormat.Money(imports, MoneyUnit.Billions).ToUpperInvariant() + " A YEAR, BEFORE OUR TARIFFS");
+            _lawsSlipBook.Anchors["trade:balance"] = balanceSlip;
+            float small = V35Span(width, 3), wide = V35Span(width, 6);
+            float tileH = Mathf.Max(V35TileHeight(exportTile), Mathf.Max(V35TileHeight(importTile), V35TileHeight(balanceTile)));
+            Rect row = GUILayoutUtility.GetRect(width, tileH, GUILayout.Width(width), GUILayout.Height(tileH));
+            var exportRect = new Rect(row.x, row.y, small, tileH);
+            var importRect = new Rect(row.x + small + gutter, row.y, small, tileH);
+            var balanceRect = new Rect(row.x + (small + gutter) * 2f, row.y, row.xMax - (row.x + (small + gutter) * 2f), tileH);
+            DrawV35Tile(exportRect, exportTile); SlipAnchor(exportRect, "trade:exports");
+            DrawV35Tile(importRect, importTile); SlipAnchor(importRect, "trade:imports");
+            DrawV35Tile(balanceRect, balanceTile); SlipAnchor(balanceRect, "trade:balance");
+            GUILayout.Space(gutter);
+
+            // ---- partners and tariffs ----
+            bool blocMember = _world.TradeBlocs.Exists(bloc => bloc.IsMember(PlayerCountryId));
+            DrawLawsSectionHead("Partners and tariffs", "laws:partners", width);
+            _lawsSlipBook.Anchors["laws:partners"] = new SlipContent("PARTNERS AND TARIFFS")
+                .Add("EACH PARTNER'S SHARE OF OUR TRADE WITH THE FIVE - EXPORTS AND IMPORTS TOGETHER")
+                .Add(blocMember
+                    ? "AN EU MEMBER SETS NO TARIFF OF ITS OWN: THE BLOC'S RATES APPLY TO EVERY PARTNER, SO THE BASE RATE IS NEVER CHARGED - THE TILE IS THE AVERAGE ACTUALLY CHARGED"
+                    : "THE BASE TARIFF APPLIES TO EVERY PARTNER WITH NO OVERRIDE")
+                .Add("AN OVERRIDE ON A PARTNER'S IMPORTS BEATS THE BLOC AND BASE RATES FOR THAT PARTNER; THE PARTNER MIRRORS THE EXCESS ONTO OUR EXPORTS FROM THE NEXT BOUNDARY");
+            var partners = new List<(string Name, string Code, float Value, bool Absent, bool Own)>();
+            float tradeSum = 0f;
+            foreach (TradePartner p in c.TradePartners) { tradeSum += Mathf.Max(0f, p.ExportVolume) + Mathf.Max(0f, p.ImportVolume); }
+            var shareSlip = new SlipContent("TRADE PARTNERS · SHARE OF OUR TRADE WITH THE FIVE");
+            foreach (TradePartner p in c.TradePartners)
+            {
+                Country pc = _world.GetCountry(p.PartnerId);
+                if (pc == null) { continue; }
+                float share = tradeSum > 0f ? 100f * (Mathf.Max(0f, p.ExportVolume) + Mathf.Max(0f, p.ImportVolume)) / tradeSum : 0f;
+                partners.Add((pc.Name, MapRenderer.TagOf(pc.Id), share, false, false));
+                shareSlip.Add(pc.Name.ToUpperInvariant() + " " + UiFormat.Number(share, 1) + " % · EXPORTS " + UiFormat.Money(p.ExportVolume, MoneyUnit.Billions).ToUpperInvariant()
+                    + " · IMPORTS " + UiFormat.Money(p.ImportVolume, MoneyUnit.Billions).ToUpperInvariant() + " A YEAR");
+            }
+            partners.Sort((a, b) => b.Value.CompareTo(a.Value));
+            _lawsSlipBook.Anchors["trade:partners"] = shareSlip;
+
+            // the average charged: what we charge each partner on its imports, weighted by them - standing, and with the draft's override rates
+            float weight = 0f, standingSum = 0f, draftSum = 0f;
+            var chargedLines = new List<string>();
+            foreach (TradePartner link in c.TradePartners)
+            {
+                Country partner = _world.GetCountry(link.PartnerId);
+                if (partner == null) { continue; }
+                float charged = TradeSystem.GetTariffRate(c, partner, _world.TradeBlocs);
+                float drafted = link.HasPlayerTariffOverride ? GetPartnerTariffInput(link.PartnerId, link.PlayerTariffOverride)
+                    : TradeSystem.GetStandingTariffRate(c, partner, _world.TradeBlocs, GetTariffRateInput(c.BaseTariffRate));
+                float w = Mathf.Max(0f, link.ImportVolume);
+                weight += w; standingSum += w * charged; draftSum += w * drafted;
+                chargedLines.Add(partner.Name.ToUpperInvariant() + " " + UiFormat.Number(charged, 2) + " %" + (link.HasPlayerTariffOverride ? " · OUR OVERRIDE" : string.Empty));
+            }
+            float average = weight > 0f ? standingSum / weight : 0f, averageDraft = weight > 0f ? draftSum / weight : 0f;
+
+            float cardH = StatsBarCardHeight(partners.Count);
+            Rect band = GUILayoutUtility.GetRect(width, cardH, GUILayout.Width(width), GUILayout.Height(cardH));
+            var cardRect = new Rect(band.x, band.y, wide, cardH);
+            DrawStatsBarCard(cardRect, "trade", "Trade partners", partners, "% of trade", "trade:partners");
+            SlipAnchor(cardRect, "trade:partners");   // StatsAnchor registers on the Statistics page only
+            var tariffRect = new Rect(band.x + wide + gutter, band.y, band.xMax - (band.x + wide + gutter), 0f);
+            if (blocMember)
+            {
+                bool draftMoves = Mathf.Abs(averageDraft - average) >= 0.005f;
+                var avgTile = new V35TileData { Icon = "gate", IconInk = area, Figure = UiFormat.Number(average, 2) + "%", Name = "Average tariff charged", FigurePx = V35.FigureSmall };
+                if (draftMoves) { avgTile.Change = "→ " + UiFormat.Number(averageDraft, 2) + "%"; avgTile.ChangeInk = PoliSimTheme.Caution; }
+                tariffRect.height = V35TileHeight(avgTile);
+                DrawV35Tile(tariffRect, avgTile);
+                SlipAnchor(tariffRect, "trade:average");
+                var avgSlip = new SlipContent("AVERAGE TARIFF CHARGED · " + avgTile.Figure)
+                    .Add("WHAT WE CHARGE EACH PARTNER ON ITS GOODS, WEIGHTED BY OUR IMPORTS FROM IT")
+                    .Add("SET BY THE EU'S BLOC RATES - AN EU MEMBER HAS NO TARIFF OF ITS OWN; THE BASE RATE THE MODEL HOLDS IS NEVER CHARGED, SO NO DIAL IS DRAWN FOR IT");
+                foreach (string line in chargedLines) { avgSlip.Add(line); }
+                if (draftMoves) { avgSlip.Add("WITH THE DRAFT'S OVERRIDE RATES · " + UiFormat.Number(averageDraft, 2) + " %"); }
+                _lawsSlipBook.Anchors["trade:average"] = avgSlip;
+            }
+            else
+            {
+                tariffRect.height = BudgetDialTileHeight(false);
+                _tariffRateInput = DrawDialRow("General Base Tariff",
+                    c.BaseTariffRate, GetTariffRateInput(c.BaseTariffRate),
+                    MinBaseTariffRate, MaxBaseTariffRate, "F2", "%", $"{MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}% range",
+                    tariffRect, new V35DialFace
+                    {
+                        Icon = "gate", Title = "Base tariff", Area = UiPalette.SystemArea.Trade,
+                        Figure = v => UiFormat.Number(v, 1) + "%",
+                        EndLeft = "Free trade · " + UiFormat.Number(MinBaseTariffRate, 0) + "%", EndRight = "Protection · " + UiFormat.Number(MaxBaseTariffRate, 0) + "%",
+                        Census = "THE RATE ON EVERY PARTNER WITH NO OVERRIDE · THE AVERAGE CHARGED TODAY, WEIGHTED BY OUR IMPORTS: " + UiFormat.Number(average, 2) + " % - " + string.Join(" · ", chargedLines),
+                    });
+            }
+            GUILayout.Space(gutter);
+
+            // ---- the partners' override rates (not in the composition; kept, asked) ----
+            DrawLawsSectionHead("Override rates", "laws:overrides", width);
+            _lawsSlipBook.Anchors["laws:overrides"] = new SlipContent("OVERRIDE RATES")
+                .Add("A RATE OF OUR OWN ON ONE PARTNER'S GOODS - IT BEATS THE BLOC AND BASE RATES FOR THAT PARTNER, AND THE PARTNER MIRRORS THE EXCESS ONTO OUR EXPORTS")
+                .Add("SET ONE AND IT STARTS AT TODAY'S RATE, CHANGING NOTHING; ITS RATE MOVES ONLY THROUGH THE TRADE BILL · RESET RETURNS A DRAFT TO THE STANDING OVERRIDE");
+            float tileWidth = V35Span(width, 6), dialH = BudgetDialTileHeight(false);
+            bool mayAct = _simulationManager.PlayerMayIntroduce(PlayerCountryId, CabinetPortfolio.ForeignAffairs, out string lockedBecause);
+            int index = 0;
+            Rect pairRow = default;
+            foreach (TradePartner link in c.TradePartners)
+            {
+                Country partner = _world.GetCountry(link.PartnerId);
+                if (partner == null) { continue; }
+                if (index % 2 == 0) { pairRow = LawsDialRow(width, dialH); }
+                var tile = new Rect(pairRow.x + (index % 2) * (tileWidth + gutter), pairRow.y, tileWidth, dialH);
+                DrawTradePartnerTile(link, partner, tile, index == 0, mayAct, lockedBecause);
+                if (index % 2 == 1) { GUILayout.Space(gutter); }
+                index++;
+            }
+            if (index % 2 == 1) { GUILayout.Space(gutter); }
+
+            // ---- the bill ----
+            TradePolicyBill pending = _simulationManager.GetPendingTradeBill(PlayerCountryId);
+            int changes = TradeDraftChanges(blocMember);
+            string status = pending != null
+                ? $"A Trade bill is before Parliament - resolves in {pending.DaysRemaining} day(s)."
+                : "No Trade bill before Parliament - " + (blocMember ? "the override rates are its draft" : "the base rate and the override rates are its draft");
+            if (pending == null && changes > 0)
+            {
+                // pass 6: the draft's cost at the next boundary, the real functions on throwaway clones (SimulationManager.EstimateTradeBill)
+                TradeBillEstimate estimate = _simulationManager.EstimateTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
+                status += " · at these rates the tariff take is " + UiFormat.Money(estimate.Take, MoneyUnit.Billions) + " a year (" + UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)
+                    + " on today), the trade balance moves " + UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions) + " a year as the partners mirror it, and prices "
+                    + StatsReadings.TrueMinus(estimate.PassThroughPp.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)) + " pp this year";
+            }
+            else if (pending == null) { status += "."; }
+            DrawLawsBillAction(width, "Introduce trade bill", "laws:tradebill", ParliamentSystem.GetTradeBillConcern(c, BuildTradeBillFromDrafts(), _world), pending != null,
+                pending != null ? pending.DaysRemaining : 0, changes, () => _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts()), status, CabinetPortfolio.ForeignAffairs);
+
+            DrawLawsReadings(width, UiPalette.SystemArea.Trade);
+        }
+
+        /// <summary>
+        /// §741: one partner's override rate as a dial tile - the rate we charge on its goods (our override's draft where one stands; today's bloc or base
+        /// rate, the dial disabled, where none does) - with the Set override / Reset draft action at the head's right (the lock's glyph where the role
+        /// locks Foreign Affairs' lever). The literal name and the caption key are the old row's (`DialLabelCheck`, `RangeCaptionCheck`); the first
+        /// partner keeps the film's geometry key (`RowTop(" / Override rate")`, the draft-reset pair), the others their own. Two controls, always.
+        /// </summary>
+        private void DrawTradePartnerTile(TradePartner link, Country partner, Rect tile, bool first, bool mayAct, string lockedBecause)
+        {
+            Country c = _playerCountry;
+            float tariffOnOurExports = TradeSystem.GetTariffRate(partner, c, _world.TradeBlocs);
+            float tariffOnOurImports = TradeSystem.GetTariffRate(c, partner, _world.TradeBlocs);
+            float retaliation = TradeSystem.GetRetaliatoryTariffRate(partner, c, _world.TradeBlocs);
+            bool hasOverride = link.HasPlayerTariffOverride;
+            float standing = hasOverride ? link.PlayerTariffOverride : tariffOnOurImports;
+            string tag = MapRenderer.TagOf(partner.Id);
+            string census = (hasOverride
+                    ? "OUR OVERRIDE ON " + partner.Name.ToUpperInvariant() + "'S GOODS - ITS RATE MOVES ONLY THROUGH THE TRADE BILL; RESET RETURNS THE DRAFT TO IT"
+                    : "NO OVERRIDE - TODAY'S RATE ON " + partner.Name.ToUpperInvariant() + "'S GOODS IS THE BLOC'S OR THE BASE · SET ONE AND IT STARTS HERE, CHANGING NOTHING UNTIL A TRADE BILL MOVES IT")
+                + " · THEY CHARGE " + UiFormat.Number(tariffOnOurExports, 2) + " % ON OURS"
+                + (retaliation > 0f ? " (" + UiFormat.Number(retaliation, 2) + " OF IT MIRRORS OUR OVERRIDE, FROM THE NEXT BOUNDARY)" : string.Empty);
+            float newRate = DrawDialRow("Override rate",
+                standing, GetPartnerTariffInput(link.PartnerId, standing),
+                PartnerTariffOverrideMin, PartnerTariffOverrideMax, "F2", "%",
+                hasOverride ? "via the Trade bill" : "no override set",
+                tile, new V35DialFace
+                {
+                    Icon = "globe", Title = partner.Name + " · " + tag, Area = UiPalette.SystemArea.Trade,
+                    Figure = v => UiFormat.Number(v, 2) + "% on their goods",
+                    EndLeft = UiFormat.Number(PartnerTariffOverrideMin, 0) + "%", EndRight = UiFormat.Number(PartnerTariffOverrideMax, 0) + "%",
+                    Census = census,
+                }, hasOverride, captionKey: "Override rate/" + link.PartnerId, geometryKey: first ? null : "Override rate (" + tag + ")");
+            if (hasOverride) { _partnerTariffInputs[link.PartnerId] = newRate; }
+
+            // the action, at the head's right
+            float padX = V35.Px(V35.CardPadX), padY = V35.Px(V35.CardPadY), h = V35.Px(30f);
+            if (!mayAct)
+            {
+                float side = V35.Px(16f);
+                var glyph = new Rect(tile.xMax - padX - side, tile.y + padY + Mathf.Round((h - side) * 0.5f), side, side);
+                if (Event.current.type == EventType.Repaint) { DrawStateGlyph(glyph, Symbol.Locked, PoliSimTheme.TextSecondary); }
+                SlipAnchor(glyph, "trade:lock");
+                _lawsSlipBook.Anchors["trade:lock"] = new SlipContent("LOCKED").Add((lockedBecause ?? string.Empty).ToUpperInvariant());
+                return;
+            }
+            string label = hasOverride ? "Reset draft" : "Set override";
+            float w = BudgetButtonWidth(label, null);
+            var button = new Rect(tile.xMax - padX - w, tile.y + padY, w, h);
+            if (DrawBudgetButton(button, label, null, true))
+            {
+                if (hasOverride) { ResetPartnerTariffDraft(link.PartnerId); }
+                else
+                {
+                    link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
+                    RecomputePolicyPreview();
+                }
+            }
+        }
+
+        /// <summary>How many of the Trade bill's terms the draft moves: the base rate (outside a bloc) and each standing override.</summary>
+        private int TradeDraftChanges(bool blocMember)
+        {
+            Country c = _playerCountry;
+            int n = !blocMember && !Mathf.Approximately(GetTariffRateInput(c.BaseTariffRate), c.BaseTariffRate) ? 1 : 0;
+            foreach (TradePartner link in c.TradePartners)
+            {
+                if (link.HasPlayerTariffOverride && !Mathf.Approximately(GetPartnerTariffInput(link.PartnerId, link.PlayerTariffOverride), link.PlayerTariffOverride)) { n++; }
+            }
+            return n;
+        }
+
+        // =============================================================================================================================================
         // The shared pieces: the section head, the readings, the dial tile, the bill's action
         // =============================================================================================================================================
 
@@ -799,7 +1049,7 @@ namespace PoliSim.UI
         /// force's offset) and the index itself are the slip's. One control, always, enabled or not.
         /// </summary>
         private float DrawDialRow(string name, float standing, float draft, float min, float max, string format, string suffix, string trailing, Rect tile,
-            V35DialFace face, bool interactive = true, string captionKey = null, string bandNote = null)
+            V35DialFace face, bool interactive = true, string captionKey = null, string bandNote = null, string geometryKey = null)
         {
             bool drafted = interactive && !Mathf.Approximately(standing, draft);
             Color area = UiPalette.GetAreaColor(face.Area);
@@ -817,7 +1067,8 @@ namespace PoliSim.UI
             }
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && Event.current.type == EventType.Repaint)
             {
-                LedgerRow.GeometryByRow[UiGuardContext.CurrentScreen + " / " + name] = (tile, track, figureRect, endLane);   // P4-1: rest equals mid-drag; the film's RowTop key
+                // P4-1: rest equals mid-drag; the film's RowTop key - §741: a key of its own where one name draws several tiles (the five partners' override rates)
+                LedgerRow.GeometryByRow[UiGuardContext.CurrentScreen + " / " + (geometryKey ?? name)] = (tile, track, figureRect, endLane);
             }
 
             var slip = new SlipContent(face.Title.ToUpperInvariant() + " · " + (face.Off ? "OFF" : face.Figure(standing).ToUpperInvariant()));
@@ -839,13 +1090,14 @@ namespace PoliSim.UI
         /// Parliament - beside the count the draft would meet today (✓ or ✗, FOR and AGAINST; every party's side and reason on its slip), the status under
         /// them; where the role locks the lever, the lock and its reason in the button's place (the lever lock's rule - no control is drawn there).
         /// </summary>
-        private void DrawLawsBillAction(float width, string label, string anchor, BillConcern concern, bool pending, int daysRemaining, int changes, System.Action introduce, string status)
+        private void DrawLawsBillAction(float width, string label, string anchor, BillConcern concern, bool pending, int daysRemaining, int changes, System.Action introduce, string status,
+            CabinetPortfolio? portfolio = null)
         {
             GUILayout.Space(V35.Px(4f));
             float h = V35.Px(34f);
             Rect row = GUILayoutUtility.GetRect(width, h, GUILayout.Width(width), GUILayout.Height(h));
             float countX = row.x;
-            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out string lockedBecause))
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out string lockedBecause))   // §741: the lever's portfolio, where it has one (PS-3g - a junior partner holding it draws no lock)
             {
                 if (Event.current.type == EventType.Repaint)
                 {

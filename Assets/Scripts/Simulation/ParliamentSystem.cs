@@ -416,8 +416,8 @@ namespace PoliSim.Simulation
         ///
         /// ALIGNMENT IS CAPTURED, NEVER RECOMPUTED. The caller passes the same `direction` it just
         /// scored, so a record can never disagree with the verdict printed beside it. The
-        /// zero-direction case mirrors the live estimate's own handling exactly (see
-        /// GameController.DrawBillLiveEstimate): an uncontested bill records alignment 0 rather than
+        /// zero-direction case mirrors the live count's own handling exactly (an empty concern is
+        /// uncontested - the bill action's count, GameController.DrawLawsBillAction): an uncontested bill records alignment 0 rather than
         /// GetSeatWeightedAlignment's raw net stance, which is negative in the documented tied-parties
         /// case and would contradict a PASSED verdict.
         ///

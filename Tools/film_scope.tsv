@@ -108,3 +108,6 @@ scope	drys737	Sweden@1280x720,Germany@1280x720	2026-10-02	s737	the Laws page v3.
 scope	drys738	Sweden@1280x720,Germany@1280x720	2026-10-02	s738	the Laws Crime & justice tab as v3.5: the readings it moves as tiles, the six dials as tiles set by law (no knob), named stops and the funding costs a year
 scope	drys739	Sweden@1280x720,Germany@1280x720	2026-10-02	s739	the Laws Sectors tab as v3.5: the eight sectors as tiles (share of GDP, a click shows its dials), the chosen sector's five dials as tiles (cost a year, PMR score, named stops), the bill with its count
 scope	drys740	Sweden@1280x720,Germany@1280x720	2026-10-02	s740	the Laws Policy web tab as v3.5: two columns (your levers, what they move), one area at a time, every link at rest, focus by click; board 2b retired
+scope	drys741	Sweden@1280x720,Germany@1280x720	2026-10-02	s741	the Laws Trade tab as v3.5: trade with the five as tiles, partners and the average tariff charged (EU; the base dial outside a bloc), the override rates as tiles, the bill with its estimate
+scope	drys741u	USA@1280x720	2026-10-02	s741	the Laws Trade tab outside a bloc: the base tariff as a dial tile beside the partners
+scope	drys741b	Sweden@1280x720,Germany@1280x720,USA@1280x720	2026-10-02	s741	the Trade tab in and outside a bloc, and a tile change that does not fit beside its figure taking the name line (the USA budget strip)

@@ -173,7 +173,11 @@ namespace PoliSim.UI
                 if (annual != null && annual.Count >= 2)
                 {
                     float d = annual[annual.Count - 1] - annual[annual.Count - 2];
-                    if (Mathf.Abs(d) >= 0.05f) { balance.Change = (d > 0f ? "▲ " : "▼ ") + UiFormat.Money(Mathf.Abs(d), MoneyUnit.Billions); balance.ChangeInk = V35.DirectionNeutral; }
+                    if (Mathf.Abs(d) >= 0.05f)
+                    {
+                        balance.Change = (d > 0f ? "▲ " : "▼ ") + UiFormat.Money(Mathf.Abs(d), MoneyUnit.Billions); balance.ChangeInk = V35.DirectionNeutral;
+                        balanceSlip.Add((d > 0f ? "UP " : "DOWN ") + UiFormat.Money(Mathf.Abs(d), MoneyUnit.Billions) + " ON THE YEAR BEFORE");   // §41: the slip carries the change too
+                    }
                 }
             }
             balanceSlip.Add((lastYear == null ? "THE SEED'S STANDING BALANCE · " : _simulationManager.CurrentTurn == 0 ? "LAST YEAR, THE SEED · " : "LAST YEAR · ") + UiFormat.MoneyDelta(closed, MoneyUnit.Billions))

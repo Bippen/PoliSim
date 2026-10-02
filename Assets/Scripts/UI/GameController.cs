@@ -4555,94 +4555,6 @@ namespace PoliSim.UI
             ledgerRect = new Rect(fullRow.x, fullRow.y, verdictRect.x - fullRow.x - gap, fullRow.height);
         }
 
-        /// <summary>P4-B2: the concern the tier's card scored this pass, for the breakdown drawn after the rows.</summary>
-        private BillConcern _tierConcernForBreakdown;
-
-        /// <summary>P4-B2: the breakdown beneath a tier's dial rows - the card above keeps the count and the seat map; the rows never move when a draft becomes contested.</summary>
-        private void DrawTierBreakdownAfterRows()
-        {
-            if (_tierConcernForBreakdown != null && !_tierConcernForBreakdown.IsEmpty)
-            {
-                GUILayout.Space(8f);
-                // The Budget's own width term for its breakdown (the effects panel it once sat under; since §734 the Budget prints the breakdown on its count's slip): a share of the screen, not a measured
-                // rect, so the breakdown's width is the same on every event and never a Layout-pass dummy.
-                DrawStanceBreakdown(_tierConcernForBreakdown, Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.6f, _boxStyle)));
-            }
-        }
-
-        /// <summary>
-        /// Master Sequence step 5e, Phase C batch 4: the shared live pass/fail estimate for every
-        /// standalone bill tier. All four policy screens (Labor, Crime &amp; Justice, Sectors, Trade) had a
-        /// byte-for-byte identical copy of this, differing only in which draft they built and which
-        /// direction getter they called - so the only thing that ever varied is the float now passed in.
-        ///
-        /// Collapsing them matters for more than duplication: the zero-direction trap below has to be
-        /// handled identically everywhere, and four copies is four chances to get it wrong (the Parliament
-        /// card already shipped that exact bug once - see DrawPendingBillCard).
-        ///
-        /// The lean bar shows ParliamentSystem.GetSeatWeightedAlignment, the quantity the vote is really
-        /// decided on, so a player can see HOW close a bill is rather than only which side of the line it
-        /// currently sits. Deliberately not the design pack's SupportBar widget (deleted 2026-08-27) - this
-        /// model has no seats-based majority for it to draw (see DrawPendingBillCard's own comment).
-        /// </summary>
-        private void DrawBillLiveEstimate(float direction, float wrapWidth = 0f, bool terse = false, BillAxis axis = BillAxis.Fiscal)
-            => DrawBillLiveEstimate(BillConcern.FromLegacy(direction, axis), wrapWidth, terse);
-
-        /// <summary>
-        /// P3-A3 (2026-09-03): the estimate over what the bill CONCERNS - the verdict, the per-seat map and, beneath
-        /// them, THE BREAKDOWN: every party's stance with its reason (the position on the axis, the cohesion pull or
-        /// the opposition's line, the opinion cost), from the one enumeration the vote reads (`StanceModel.Stances`).
-        /// Drawn structurally - one row per party, the reason in the caption face - until D12 gives it a grammar.
-        /// </summary>
-        private void DrawBillLiveEstimate(BillConcern concern, float wrapWidth = 0f, bool terse = false, bool withBreakdown = true)
-        {
-            // An unchanged draft is uncontested: no side, WOULD PASS, as WouldBillPass short-circuits.
-            bool contested = concern != null && !concern.IsEmpty;
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
-
-            // Free-aspect pass (2026-08-26): callers inside a width-bounded pane pass wrapWidth so
-            // these labels WRAP there instead of requesting natural width and stretching the pane's
-            // scroll content past its viewport (the intro-label class; the laws detail pane at the
-            // 1280x720 floor is the measured case). Zero keeps the four policy-screen callers'
-            // existing natural-width behavior byte-for-byte.
-            // P4-A4 (Playtest 4, 2026-09-04): "Contractionary (-30) · WOULD PASS" retires. The verdict is THE COUNT
-            // (P3-A2's ruling: seats FOR against seats AGAINST, the undecided abstaining) and the line says the count
-            // - the same enumeration the seat map colours and the breakdown beneath lists, so the three cannot
-            // disagree. The direction word and its number named a fiscal sign the budget no longer reduces to (§284);
-            // the scalar stays in the record and the lean bar, not on the line. An uncontested draft says so.
-            int forSeats = 0, againstSeats = 0, undecidedSeats = 0;
-            if (contested)
-            {
-                foreach ((PoliticalParty _, int seats, int side, float _, bool measured) in _chamberVerdicts.SeatSides(_playerCountry, concern))
-                {
-                    if (!measured) { continue; }
-                    if (side > 0) { forSeats += seats; } else if (side < 0) { againstSeats += seats; } else { undecidedSeats += seats; }
-                }
-            }
-            string verdict = wouldPass ? "WOULD PASS" : "WOULD FAIL";
-            string count = !contested ? "Nothing changes · uncontested" : $"FOR {forSeats} · AGAINST {againstSeats}{(undecidedSeats > 0 ? $" · UNDECIDED {undecidedSeats}" : "")}";
-            Color verdictInk = UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
-            if (wrapWidth > 0f)
-            {
-                // The laws detail pane and the pending cards (`terse`): the count on one line, the verdict word on the next.
-                GUILayout.Label(count, _labelStyle, GUILayout.Width(wrapWidth));
-                DrawColoredLabel(verdict, _labelStyle, verdictInk, GUILayout.Width(wrapWidth));
-            }
-            else
-            {
-                // The Budget's support panel and the four policy-screen cards: one line above the seat map.
-                DrawColoredLabel($"{count} · {verdict}", _labelStyle, verdictInk);
-            }
-
-            // P2-2.2 (2026-09-02): the lean bar is a per-seat map - every mandate coloured FOR / UNDECIDED / AGAINST
-            // for this bill, from the same enumeration the verdict above reads (ParliamentSystem.SeatSides).
-            float seatMapWidth = wrapWidth > 0f ? wrapWidth : Mathf.Max(10f, PoliSimWidgets.InnerWidth(UiScreen.Width * 0.3f, _boxStyle));
-            Rect seatMapRect = GUILayoutUtility.GetRect(10f, SeatMapRenderer.MeasureHeight(seatMapWidth, _labelStyle), GUILayout.ExpandWidth(true));
-            SeatMapRenderer.Draw(seatMapRect, _playerCountry, concern, _labelStyle, _chamberVerdicts);
-
-            if (contested && withBreakdown) { DrawStanceBreakdown(concern, seatMapWidth); }
-        }
-
         /// <summary>
         /// P3-A3: the vote breakdown - one row per seated party: its abbreviation and seats, its side in the verdict's
         /// ink, and the reason line the model gives (P3-A2's terms, verbatim), wrapped to the column. The rows are the
@@ -9855,128 +9767,6 @@ namespace PoliSim.UI
             GUILayout.EndHorizontal();
         }
 
-        /// <summary>Policy half of the old Trade tab (the TradePolicyBill and every per-partner row) - Master Sequence step 5e split the old tab: its informational
-        /// half (the trade balance) went to Statistics (since §729 the International page's trade card), its policy half here, the per-partner rows with their
-        /// override controls kept together. Called from DrawPolicyLawsTab.</summary>
-        private void DrawTradePolicyContent(float contentWidth)
-        {
-            DrawColoredLabel("Trade Policy", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.Trade));
-            // §564 (2026-09-22): the two mechanism paragraphs that opened this tab are cut (Design's sitting, part B item 1 - "the old pack whole"); the bill card's sentence
-            // names the bill, the partner's sentence names the override, and the dial's caption band names its range.
-            GUILayout.Space(6f);
-
-            BeginAreaCard("TRADE BILL", UiPalette.SystemArea.Trade);
-            DrawTradeBillStatusAndIntroduce();
-            DrawTradeLiveEstimate();
-            DrawTradeBillCostEstimate();
-            EndAreaCard(UiPalette.SystemArea.Trade);
-
-            // The long qualifier - "applies to any partner with no override, and only where it isn't
-            // superseded by trade-bloc membership" - is a property of the SCREEN, not of this row, and it
-            // is already said by the paragraph below about overrides beating the usual resolution. The
-            // row keeps the range, which is what the trailing column carries everywhere else.
-            // Pass 6 ride-along (2026-08-27): an EU member's base rate is never charged - every partner
-            // resolves at a bloc rate before the base rate is reached (TradeSystem.GetStandingTariffRate's
-            // precedence, pass 5's finding) - so the dial is drawn disabled with the reason as its
-            // trailing text. One control either way (the stable-control-layout rule); the "n/a" standing
-            // value is honest for a rate that is never charged. Since pass 6 the vote reads the average
-            // tariff actually charged, so a moved-but-inert base draft could not sway it anyway.
-            bool baseRateInert = _world.TradeBlocs.Exists(bloc => bloc.IsMember(PlayerCountryId));
-            _tariffRateInput = DrawDialRow("General Base Tariff",
-                _playerCountry.BaseTariffRate, GetTariffRateInput(_playerCountry.BaseTariffRate),
-                MinBaseTariffRate, MaxBaseTariffRate, "F2", "%",
-                baseRateInert ? "inert - bloc rates apply to every partner" : $"{MinBaseTariffRate:F0}-{MaxBaseTariffRate:F0}% range",
-                interactive: !baseRateInert);
-            GUILayout.Space(10f);
-
-            DrawStatsSectionCaption("PARTNERS · AN OVERRIDE ON OUR IMPORTS BEATS THE BLOC AND BASE RATES FOR THAT PARTNER · THE PARTNER MIRRORS THE EXCESS ONTO OUR EXPORTS FROM THE NEXT BOUNDARY");
-            GUILayout.Space(6f);
-
-            // The arrows are sized relative to the largest volume across every partner (both directions
-            // share one scale) so they stay comparable to each other, not just within one partner's own row.
-            float maxVolume = 1f;
-            foreach (TradePartner link in _playerCountry.TradePartners)
-            {
-                maxVolume = Mathf.Max(maxVolume, link.ExportVolume, link.ImportVolume);
-            }
-
-            foreach (TradePartner link in _playerCountry.TradePartners)
-            {
-                Country partner = _world.GetCountry(link.PartnerId);
-                if (partner == null)
-                {
-                    continue;
-                }
-
-                DrawTradePartnerRow(link, partner, maxVolume);
-                GUILayout.Space(10f);
-            }
-            DrawTierBreakdownAfterRows();   // P4-B2: the trade bill's breakdown, after the base rate and the partner rows
-        }
-
-        private void DrawTradePartnerRow(TradePartner link, Country partner, float maxVolume)
-        {
-            // Tariffs are asymmetric: the partner charges its own rate on what we export to
-            // them, and we charge our own rate on what we import from them - the same two
-            // GetTariffRate calls TradeSystem.ApplyTradeEffects itself makes for this link.
-            float tariffOnOurExports = TradeSystem.GetTariffRate(partner, _playerCountry, _world.TradeBlocs);
-            float tariffOnOurImports = TradeSystem.GetTariffRate(_playerCountry, partner, _world.TradeBlocs);
-            // Pass 6: the part of the partner's rate that mirrors OUR override on it. Read live, like
-            // the two rates above, while the simulation charges the rate it planned at the last
-            // boundary - so the label names the timing rather than pretend a Reset click is instant.
-            float retaliationOnOurExports = TradeSystem.GetRetaliatoryTariffRate(partner, _playerCountry, _world.TradeBlocs);
-
-            // THE PARTNER IS A GROUP HEADER, exactly as a sector is on Economic Sectors - the name at the header's weight with the tariffs as its context line
-            // (the Sectors page's idiom, the one Design accepted). §564 (2026-09-22): the volumes are board 5a's trade arrows on one shared scale, and the override's
-            // toggle is the family's sentence-and-action row; the old pack's full-width bars and its green/red pair are gone (Design's sitting, part B item 1).
-            bool hasOverride = link.HasPlayerTariffOverride;
-            GUILayout.BeginHorizontal();
-            GUILayout.Label(partner.Name, _headerStyle, GUILayout.Width(GetSectorNameColumnWidth()));
-            GUILayout.Label(
-                $"Tariff on our exports {UiFormat.Number(tariffOnOurExports, 2)}%" +
-                (retaliationOnOurExports > 0f ? $" (of which {UiFormat.Number(retaliationOnOurExports, 2)} mirrors our override, from the next boundary)" : string.Empty) +
-                $" | on our imports {UiFormat.Number(tariffOnOurImports, 2)}%" +
-                (hasOverride ? " | override active" : string.Empty),
-                _labelStyle);
-            GUILayout.EndHorizontal();
-
-            DrawPairTradeArrow("EXPORTS TO " + partner.Name.ToUpperInvariant(), link.ExportVolume, maxVolume);
-            DrawPairTradeArrow("IMPORTS FROM " + partner.Name.ToUpperInvariant(), link.ImportVolume, maxVolume);
-
-            // Both controls are always emitted (the positional-control-ID rule): one button whose label and face switch, and the dial, disabled with no override to move.
-            // R-D2 (2026-08-28): Reset is an EDITING gesture - it returns this partner's draft dial to the standing override and touches nothing live; the override's
-            // rate moves only through the Trade bill. Setting one starts it at today's effective rate, so the click itself changes nothing.
-            string overrideSentence = hasOverride
-                ? $"An override stands on imports from {partner.Name} - its rate moves only through the Trade bill; Reset returns the draft below to the standing override."
-                : $"No override on imports from {partner.Name} - one starts at today's effective rate and changes nothing until a Trade bill moves it.";
-            if (DrawLeverLock(null, 0f, CabinetPortfolio.ForeignAffairs)) { } else if (DrawSentenceAction(overrideSentence, hasOverride ? "Reset draft" : "Set override", true, hasOverride ? _removeButtonStyle : _implementButtonStyle))
-            {
-                if (hasOverride)
-                {
-                    ResetPartnerTariffDraft(link.PartnerId);
-                }
-                else
-                {
-                    link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
-                    RecomputePolicyPreview();
-                }
-            }
-
-            // The dial - always drawn, disabled when there is no override. §564: named plainly ("Override rate" - the four-space indent was the old pack's nesting cue) and keyed
-            // per partner for its caption's presenter, so one partner's caption never speaks for another's.
-            float standingOverride = hasOverride ? link.PlayerTariffOverride : tariffOnOurImports;
-            float newRate = DrawDialRow("Override rate",
-                standingOverride, GetPartnerTariffInput(link.PartnerId, standingOverride),
-                PartnerTariffOverrideMin, PartnerTariffOverrideMax, "F2", "%",
-                hasOverride ? "via the Trade bill" : "no override set",
-                hasOverride, captionKey: "Override rate/" + link.PartnerId);
-
-            if (hasOverride)
-            {
-                _partnerTariffInputs[link.PartnerId] = newRate;
-            }
-        }
-
         /// <summary>R-D2: the Reset click's whole effect - the partner's draft dial returns to the standing
         /// override (the draft entry is dropped, so GetPartnerTariffInput falls back to the live value) and
         /// the preview cache is invalidated. Nothing live is written. One method, because the capture
@@ -9985,20 +9775,6 @@ namespace PoliSim.UI
         {
             _partnerTariffInputs.Remove(partnerId);
             RecomputePolicyPreview();
-        }
-
-        /// <summary>See DrawCrimeJusticeBillStatusAndIntroduce's own doc comment - identical pattern (SimulationManager.IntroduceTradeBill/GetPendingTradeBill).</summary>
-        private void DrawTradeBillStatusAndIntroduce()
-        {
-            TradePolicyBill pendingBill = _simulationManager.GetPendingTradeBill(PlayerCountryId);
-
-            string statusText = pendingBill != null
-                ? $"A Trade bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s)."
-                : "No Trade bill before Parliament - the base rate and every override rate below are its draft.";
-            if (DrawLeverLock(null, 0f, CabinetPortfolio.ForeignAffairs)) { } else if (DrawBillCallToAction(statusText, pendingBill != null, pendingBill != null ? pendingBill.DaysRemaining : 0))   // §564: board 6a's one-width button, as on Sectors
-            {
-                _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
-            }
         }
 
         /// <summary>
@@ -10046,43 +9822,6 @@ namespace PoliSim.UI
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
             }
-        }
-
-        /// <summary>See DrawCrimeJusticeLiveEstimate's own doc comment - identical pattern. Since pass 6 (2026-08-27) the estimate reads the change in the import-weighted average tariff the draft would charge, overrides included (see ParliamentSystem.GetTradeBillDirection).</summary>
-        private void DrawTradeLiveEstimate()
-        {
-            // C-B3 / R-CL2: the tariff draft is weighed on the OPENNESS axis, so this estimate and the
-            // chamber that will actually vote on it cannot disagree about which axis was used.
-            _tierConcernForBreakdown = ParliamentSystem.GetTradeBillConcern(_playerCountry, BuildTradeBillFromDrafts(), _world);
-            DrawBillLiveEstimate(_tierConcernForBreakdown, withBreakdown: false);   // P3-A3: the tariff on openness; P4-B2: the breakdown after the partner rows, inside the concern
-        }
-
-        /// <summary>
-        /// Pass 6 (2026-08-27): what the drafted Trade bill would cost at the next boundary, from
-        /// SimulationManager.EstimateTradeBill - the real functions on throwaway clones, never a hand
-        /// sum (pass 5's lesson on the Budget "Net" line). Drafts never reach the preview
-        /// (BuildPlayerDecision carries no tariff terms), so this is the one place a draft's cost can be
-        /// read before it is introduced. One always-drawn label (wraps: _labelStyle is word-wrapped).
-        /// </summary>
-        private void DrawTradeBillCostEstimate()
-        {
-            TradeBillEstimate estimate = _simulationManager.EstimateTradeBill(PlayerCountryId, BuildTradeBillFromDrafts());
-            // Omnibus 2026-08-28 (roadmap item 4, the 2560 wrap): the explicit width did not stop IMGUI
-            // breaking the line after the "+" of "+$0/yr" (omni_c2560 shows the same break at the
-            // measured width - the sign glyph IS a break opportunity to the text engine, whatever the
-            // width), so the sentence becomes three read-only rows of the row family: each figure sits
-            // in a cell that shrinks and never wraps, and no money delta can ever sit at a line end.
-            Color tradeInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Trade);
-            // Short names, mechanism in the trailing column (the StatTracePanel lesson): the first cut's
-            // "Trade balance, partners' mirrored tariffs" shrank to a different size from its siblings
-            // in the card's narrow name column - D7's own objection.
-            DrawDerivedStatRow("Tariff take", -1f,
-                $"{UiFormat.Money(estimate.Take, MoneyUnit.Billions)}/yr",
-                $"at these rates; {UiFormat.MoneyDelta(estimate.TakeDelta, MoneyUnit.Billions)} vs today", tradeInk);
-            DrawDerivedStatRow("Trade balance", -1f,
-                $"{UiFormat.MoneyDelta(estimate.TradeBalanceDelta, MoneyUnit.Billions)}/yr", "partners' mirrored tariffs", tradeInk);
-            DrawDerivedStatRow("Prices this year", -1f,
-                $"{estimate.PassThroughPp:+0.00;-0.00} pp", "tariff pass-through", tradeInk);
         }
 
         /// <summary>Bundles the base tariff rate draft and every partner override draft into one bill - the SAME snapshot logic for both the live estimate and the real Introduce action, mirroring BuildBudgetBillFromDrafts. Only a partner with an ACTIVE override gets an entry, mirroring BuildPlayerDecision's own former "only currently-implemented" reasoning.</summary>
@@ -10605,7 +10344,7 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, same reasoning as GetSectorNameColumnWidth (and the retired tax rows' own). The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
+        /// <summary>Widest WelfareProgramType name as rendered in _labelStyle, plus a small right-side pad - recomputed each call, the reasoning the retired sector and partner name columns took (and the retired tax rows' own). The original fixed "_labelStyle.fontSize * 10f" heuristic here undersized the column for the longest name ("MeansTestedWelfare").</summary>
         private float GetWelfareProgramNameColumnWidth()
         {
             float widest = 0f;
@@ -10703,17 +10442,6 @@ namespace PoliSim.UI
                 : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
 
             LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
-        }
-
-        /// <summary>Widest SectorType name as rendered in _headerStyle (the style the Trade partners' name column uses - measured for the Sectors rows, tiles since §739), plus a small right-side pad - recomputed each call (not cached) since _headerStyle's font size itself changes every frame in RescaleStylesToScreen as the window resizes.</summary>
-        private float GetSectorNameColumnWidth()
-        {
-            float widest = 0f;
-            foreach (SectorType type in System.Enum.GetValues(typeof(SectorType)))
-            {
-                widest = Mathf.Max(widest, _headerStyle.CalcSize(new GUIContent(type.ToString())).x);
-            }
-            return widest + 12f;
         }
 
         /// <summary>The sector-specific metric's label, matching Sector.SectorMetric's per-Type real-world meaning (see Sector.cs).</summary>

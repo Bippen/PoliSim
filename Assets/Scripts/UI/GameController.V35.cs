@@ -315,13 +315,20 @@ namespace PoliSim.UI
                     fx += mw + 6f;
                 }
             }
+            float nameWidth = Mathf.Max(1f, right - x);
             if (!string.IsNullOrEmpty(t.Change))
             {
                 float cw = Mathf.Ceil(changeFace.CalcSize(new GUIContent(t.Change)).x) + 2f;
-                UiOverflowGuard.Check(t.Change, new Vector2(cw, figureHeight), new Vector2(Mathf.Max(1f, right - fx), figureHeight), changeFace.fontSize);
-                GUI.Label(new Rect(fx, y, cw, figureHeight), t.Change, changeFace);
+                if (cw <= right - fx) { GUI.Label(new Rect(fx, y, cw, figureHeight), t.Change, changeFace); }
+                else if (cw + V35.Px(24f) <= nameWidth)
+                {
+                    // §41 (the USA's budget strip: "▲ US$766B" beside "−US$1.83T" in a quarter-width tile): a change that does not fit beside the figure takes the
+                    // name's line, at its right - the figure is never cut and a change is never squeezed; the name yields the room
+                    GUI.Label(new Rect(right - cw, y + figureHeight + 2f, cw, nameHeight), t.Change, changeFace);
+                    nameWidth = Mathf.Max(1f, right - cw - V35.Px(8f) - x);
+                }
+                else { UiOverflowGuard.Check(t.Change, new Vector2(cw, figureHeight), new Vector2(Mathf.Max(1f, right - fx), figureHeight), changeFace.fontSize); }
             }
-            float nameWidth = Mathf.Max(1f, right - x);
             PoliSimWidgets.MeasuredLabel(new Rect(x, y + figureHeight + 2f, nameWidth, nameHeight), V35Fit(t.Name, nameFace, nameWidth, out _), nameFace);
 
             if (t.Spark != null)
