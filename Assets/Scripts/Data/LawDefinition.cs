@@ -88,6 +88,10 @@ namespace PoliSim.Data
 
         public LawCategory Category;
 
+        /// <summary>§761: the law amends the constitution - where a president holds a veto the game runs, it is never vetoed (Poland: Konstytucja Art. 235
+        /// ust. 7, he signs within 21 days). Read by the veto gate alone; the amendment's own majorities (Art. 235 ust. 4) are not modelled.</summary>
+        public bool ConstitutionalAmendment;
+
         /// <summary>The real-world grounding, in the CONFIRMED/DIRECTIONAL/GENRE-IDIOM voice
         /// LawCatalog's own class doc establishes - a short, UI-facing distillation of the fuller
         /// reasoning that lives in each law's own code comment (magnitude tier, secondary-dial

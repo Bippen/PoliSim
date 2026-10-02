@@ -248,9 +248,12 @@ namespace PoliSim.UI
                     }
                 }
                 bool passes = _chamberVerdicts.WouldPass(_playerCountry, concern);
+                // §761 (PS-5): a statute the President would return for good is VETOED, not carried - an amendment never is (Art. 235 ust. 7)
+                bool vetoed = passes && ChamberVerdicts.VetoStands(_chamberVerdicts.Veto(_playerCountry, concern, _simulationManager.CurrentDate,
+                    law.ConstitutionalAmendment ? PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment : PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
                 string verdictText = concern == null || concern.IsEmpty
                     ? "UNCONTESTED · CARRIES"
-                    : (passes ? "CARRIES · " : "FALLS · ") + forSeats + " ⁄ " + againstSeats;
+                    : (vetoed ? "VETOED · " : passes ? "CARRIES · " : "FALLS · ") + forSeats + " ⁄ " + againstSeats;
                 PoliSimWidgets.MeasuredLabel(new Rect(block.x + contentWidth * 0.45f, y, contentWidth * 0.5f, capH), "WILL IT PASS", small);
                 PoliSimWidgets.MeasuredLabel(new Rect(block.x + contentWidth * 0.45f, y + capH, contentWidth * 0.5f, Mathf.Ceil(DeskCaptionHeight(figure))), verdictText, verdict);
                 DrawLawVoteBar(new Rect(block.x + pad, y + capH + Mathf.Ceil(DeskCaptionHeight(figure)) + StatsUnit(6f), contentWidth - pad * 2f, barH), concern, forSeats, againstSeats);

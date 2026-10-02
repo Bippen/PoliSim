@@ -104,6 +104,34 @@ namespace PoliSim.UI
             return fresh;
         }
 
+        /// <summary>
+        /// §761 (PS-5): THE PRESIDENT'S ANSWER to a statute the chamber would pass - `PresidentialVeto.Decide` on the same cached sides the count reads,
+        /// so the page projects what the gate (`SimulationManager.PresidentialVetoGate`) will decide on the vote's own sides. Null where the chamber would
+        /// not pass it, the country's president holds no veto the game runs, or none is in office on <paramref name="date"/>. Not cached itself: it adds
+        /// integer arithmetic to the cached stances.
+        /// </summary>
+        public PoliSim.Elections.PresidentialVeto.Outcome Veto(Country country, BillConcern concern, System.DateTime date,
+            PoliSim.Elections.PresidentialVeto.Act act = PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute)
+        {
+            if (concern == null || concern.IsEmpty || !PoliSim.Elections.PresidentialVeto.Applies(country.Id) || !WouldPass(country, concern)) { return null; }
+            var projected = new List<DivisionSide>();
+            foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, concern)) { projected.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side }); }
+            return PoliSim.Elections.PresidentialVeto.Decide(country.Id, date, act, projected);
+        }
+
+        /// <summary>§761: whether a statute the chamber would pass dies on the President's veto - vetoed, and the override short of its 3/5.</summary>
+        public static bool VetoStands(PoliSim.Elections.PresidentialVeto.Outcome veto) => veto != null && veto.Vetoed && !veto.Overridden;
+
+        /// <summary>§761: the President's answer as one slip line - the party by its short name (§575: drawn, never the key). Null where there is no answer.</summary>
+        public static string VetoLine(CountryId id, PoliSim.Elections.PresidentialVeto.Outcome veto)
+        {
+            if (veto == null) { return null; }
+            string president = veto.President.ToUpperInvariant(), backing = PartySystems.ShortName(id, veto.BackingParty);
+            return veto.Vetoed
+                ? $"THE PRESIDENT ({president}) WOULD VETO IT - HIS BACKING PARTY ({backing}) VOTES AGAINST · AN OVERRIDE NEEDS {veto.Required} · {veto.Yes} FOR - " + (veto.Overridden ? "IT WOULD BE OVERRIDDEN" : "THE VETO WOULD STAND")
+                : $"THE PRESIDENT ({president}) WOULD SIGN IT - HIS BACKING PARTY ({backing}) DOES NOT VOTE AGAINST";
+        }
+
         /// <summary>`ParliamentSystem.WouldBillPass(country, direction, axis)` - a program bill's scalar direction, through the concern it stands for.</summary>
         public bool WouldPass(Country country, float direction, BillAxis axis = BillAxis.Fiscal)
         {

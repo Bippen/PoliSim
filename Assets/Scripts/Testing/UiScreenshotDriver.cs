@@ -1599,6 +1599,23 @@ namespace PoliSim.Testing
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
 
+            // (c2) §761 (PS-5): THE SEJM'S VOTE ON THE PRESIDENT'S VETO - the plate's line at 3/5 of those voting, its stamp VETO STANDS. Staged through the
+            // game's own gate (a planted passage on the 2023 Sejm's lists, PiS and Konfederacja against, handed to SimulationManager.PresidentialVetoGate),
+            // so the frame shows the record play writes; filmed real: the surface is Canvas.
+            if (player.Id == CountryId.Poland)
+            {
+                StageVetoDivision(player, sim);
+                InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                Claim("signing");
+                yield return Capture("89g_signing_veto");
+                RecordCanvasTextAssert("89g_signing_veto", controller);
+                InvokeNoArg(controller, "SignPendingDivision");
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+            }
+
             // (d) PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - the signing screen names each with its votes, the abstentions,
             // and stamps the adopted one. Staged as the frame decision the model records (S's alternative against the government's frames, the
             // government's own parties carrying them), and filmed real: the surface is Canvas.
@@ -1613,6 +1630,25 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "SignPendingDivision");
             yield return WaitForCanvasSettle(controller, wantActive: false);
             yield return Settle();
+        }
+
+        /// <summary>§761: a statute's passage on the 2023 Sejm's lists - PiS and Konfederacja against, the governing lists for - handed to the game's own veto
+        /// gate by reflection, which marks the passage a motion and records the vote on the veto as play would.</summary>
+        private static void StageVetoDivision(Country player, SimulationManager sim)
+        {
+            var seats = new (string Abbrev, int Seats, int Side)[] { ("PiS", 194, -1), ("KO", 157, 1), ("TD", 65, 1), ("NL", 26, 1), ("Konf", 18, -1) };
+            var sides = new List<DivisionSide>();
+            foreach ((string abbrev, int n, int side) in seats)
+            {
+                sides.Add(new DivisionSide { Abbrev = abbrev, ShortName = PartySystems.ShortName(player.Id, abbrev), Seats = n, Side = side, Alignment = side * 0.3f,
+                    Reason = side > 0 ? "for the statute" : "against the statute", ReasonShort = side > 0 ? "for" : "against" });
+            }
+            DivisionRecord passage = player.Divisions.Append("Enact: Cash Bail Reform Act", sim.CurrentDate, 0.08f, true, 1f, (int)BillAxis.Fiscal, sides);
+            MethodInfo gate = typeof(SimulationManager).GetMethod("PresidentialVetoGate", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (gate == null) { Debug.LogError("SHOT: SimulationManager.PresidentialVetoGate not found - 89g_signing_veto is MISSING, not clean."); return; }
+            bool stands = (bool)gate.Invoke(sim, new object[] { player, passage, true, PresidentialVeto.Act.OrdinaryStatute });
+            DivisionRecord newest = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+            Debug.Log($"SHOT: staged the vote on the President's veto through the game's own gate - stands {stands}, line {newest.Required}: {newest.Title}");
         }
 
         /// <summary>PS-3f (§633): the frame decision as the model records it - the government's parties carrying its frames, the rest by alignment toward S's alternative or abstaining - with the contest on the record.</summary>

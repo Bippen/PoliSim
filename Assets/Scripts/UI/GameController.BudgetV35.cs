@@ -490,7 +490,10 @@ namespace PoliSim.UI
             // ---- control 1 of 2: the switch ----
             bool mayIntroduce = _simulationManager.PlayerMayIntroduce(PlayerCountryId, CabinetPortfolio.FinanceTreasury, out string lockedBecause);
             var bill = pending ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !levied };
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill));
+            BillConcern taxConcern = ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, taxConcern);
+            PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, _simulationManager.CurrentDate);   // §761: a tax programme's bill is an ordinary statute
+            string taxVerdict = !wouldPass ? "WOULD FAIL" : ChamberVerdicts.VetoStands(taxVeto) ? "WOULD BE VETOED" : "WOULD PASS";
             string switchWord = !mayIntroduce ? "Locked" : pending != null ? "Pending · " + pending.DaysRemaining + " d" : levied ? "On" : "Off";
             Rect switchHit = DrawBudgetSwitch(switchRect, switchWord, levied, mayIntroduce, pending == null);
             if (mayIntroduce && switchHit.width > 0f)
@@ -503,8 +506,9 @@ namespace PoliSim.UI
             SlipAnchor(switchHit, id + "/switch");
             var switchSlip = new SlipContent(!mayIntroduce ? "LOCKED" : pending != null ? "PENDING" : levied ? "ON · LEVIED" : "OFF · NOT LEVIED");
             if (!mayIntroduce) { switchSlip.Add(lockedBecause); }
-            else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE PARLIAMENT · " + pending.DaysRemaining + " DAY(S)").Add(wouldPass ? "IT WOULD PASS ON TODAY'S COUNT" : "IT WOULD FAIL ON TODAY'S COUNT"); }
-            else { switchSlip.Add("A CLICK INTRODUCES A BILL OF ITS OWN TO " + (levied ? "REMOVE" : "LEVY") + " IT - VOTED THEN, NOT WITH THE BUDGET").Add("IF INTRODUCED NOW · " + (wouldPass ? "WOULD PASS" : "WOULD FAIL")); }
+            else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE PARLIAMENT · " + pending.DaysRemaining + " DAY(S)").Add("IT " + taxVerdict + " ON TODAY'S COUNT"); }
+            else { switchSlip.Add("A CLICK INTRODUCES A BILL OF ITS OWN TO " + (levied ? "REMOVE" : "LEVY") + " IT - VOTED THEN, NOT WITH THE BUDGET").Add("IF INTRODUCED NOW · " + taxVerdict); }
+            if (mayIntroduce && ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { switchSlip.Add(taxVetoLine); }
             _budgetSlipBook.Anchors[id + "/switch"] = switchSlip;
 
             // ---- control 2 of 2: the rate's slider ----

@@ -425,7 +425,7 @@ namespace PoliSim.Simulation
         /// OF the simulation, never an input TO it - see DivisionLog's own doc comment for why that
         /// constraint is load-bearing rather than tidiness.
         /// </summary>
-        public static void RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
+        public static DivisionRecord RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
             => RecordDivision(country, title, BillConcern.FromLegacy(direction, axis), passed, date, axis);   // P3-A3: the scalar path records through the model too, reasons included
 
         /// <summary>
@@ -1101,8 +1101,10 @@ namespace PoliSim.Simulation
             return Authored(country, new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction));
         }
 
-        /// <summary>P3-A2: the record from the concern the verdict read - every party's side from the same enumeration, the scalar direction kept for the lean bar.</summary>
-        public static void RecordDivision(Country country, string title, BillConcern concern, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
+        /// <summary>P3-A2: the record from the concern the verdict read - every party's side from the same enumeration, the scalar direction kept for the lean bar.
+        /// §761: returns the division it has just written - THIS vote, handed forward to the President's veto (`SimulationManager.PresidentialVetoGate`), so the
+        /// veto is decided on the vote's own sides and the log is still never read back.</summary>
+        public static DivisionRecord RecordDivision(Country country, string title, BillConcern concern, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
         {
             bool contested = concern != null && !concern.IsEmpty;
             float alignment = contested ? GetSeatWeightedAlignment(country, concern) : 0f;
@@ -1115,7 +1117,7 @@ namespace PoliSim.Simulation
                     sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, ShortName = stance.Party.ShortName, Seats = stance.Seats, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
                 }
             }
-            country.Divisions.Append(title, date, alignment, passed, concern?.Direction ?? 0f, (int)axis, sides);
+            return country.Divisions.Append(title, date, alignment, passed, concern?.Direction ?? 0f, (int)axis, sides);
         }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplySwfDrawdownBillEffects).</summary>

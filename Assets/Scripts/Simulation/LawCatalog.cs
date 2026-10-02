@@ -2061,6 +2061,7 @@ namespace PoliSim.Simulation
                 Description = "Writes a structural-deficit ceiling into the constitution, with an escape clause for emergencies and a repayment plan when it is used.",
                 Category = LawCategory.FiscalFramework,
                 Citation = "Germany's Schuldenbremse (Basic Law Articles 109 and 115, 2009), binding on the federation from 2016 and on the Länder from 2020.",
+                ConstitutionalAmendment = true,   // §761: "into the constitution" - never vetoed where a president holds a veto (Art. 235 ust. 7)
                 Structural = new[] { new StructuralDelta(StructuralParameter.ComfortableDebtToGdpPercent, -10f) },
                 LrEconToward10 = 1f,
                 EnactmentApprovalCost = 1.5f

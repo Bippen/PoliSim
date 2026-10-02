@@ -6,12 +6,13 @@ using System.Linq;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Elections;
+using PoliSim.Simulation;
 using UnityEngine;
 
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// PS-5, PART FOUR (§736): THE PRESIDENT'S VETO AND THE SEJM'S OVERRIDE, PROVEN ON THE LAW BEFORE IT GOES LIVE. The rule as the sources write it
+    /// PS-5, PART FOUR (§736): THE PRESIDENT'S VETO AND THE SEJM'S OVERRIDE, PROVEN ON THE LAW - LIVE SINCE §761. The rule as the sources write it
     /// (`ElectionsData/poland/veto.md`): the President signs a statute within 21 days or sends it back with reasons (Konstytucja Art. 122 ust. 2 and 5);
     /// the Sejm overrides by re-passing it with <b>3/5 of the votes, at least half the statutory number of deputies (230 of 460) present</b>, and the
     /// President then signs within 7 days (ust. 5; Regulamin Sejmu Art. 64 ust. 5); <b>a veto the Sejm does not override closes the procedure</b> -
@@ -19,8 +20,8 @@ namespace PoliSim.EditorTools
     /// does not apply to them, the President signs them within 7 days (Art. 224 ust. 1).
     ///
     /// <para>Checked: (a) the constants against the held texts, phrase by phrase - so a rule here cannot drift from its source; (b) the override's count,
-    /// its edges planted - 276 of 460 overrides and 275 does not; 229 present cannot override even unanimous, 230 present can with 138; (c) the strict
-    /// reading of an abstention (a vote cast, [PROVISIONAL] - the denominator is not defined in the sources) on a case where the two readings differ;
+    /// its edges planted - 276 of 460 overrides and 275 does not; 229 present cannot override even unanimous, 230 present can with 138; (c) an abstention
+    /// read as a vote cast, in the base (ruled by B2, the Sejm's own practice in (f)) on a case where the two readings differ;
     /// (d) on the Sejm of record (2023, the PKW's seats) with the president of record on the day - Duda, then Nawrocki from 2025-08-06: the governing
     /// coalition's 248 seats cannot override alone (276 needed with every deputy voting), nor with Konfederacja's 18; PiS's 194 can; (e) the budget act
     /// exempt.</para>
@@ -30,7 +31,9 @@ namespace PoliSim.EditorTools
     /// Budget-related acts are ordinary statutes and can be vetoed."</i> - <see cref="Vetoes"/>, backtested in (g) on the 10th Sejm's record
     /// (`ElectionsData/poland/veto_record.csv`, `third_readings_term10.csv`, from the Sejm API's per-MP votes, clubs summed). B2: <i>"3/5 of the deputies
     /// voting, abstentions included in the base ... Required = ceil(0.6 × (yes + no + abstain))"</i> - <see cref="Required"/>, checked in (f) against
-    /// every override vote of the term. Both stay in this instrument until PS-5's live wiring (C), where they become the game's rule.</para>
+    /// every override vote of the term. **LIVE since §761**: the helpers below read the runtime class (`PresidentialVeto`) the Sejm's statutes pass
+    /// through, so the backtest and the constants test the rule the game runs; (h) drives the gate itself on planted divisions (vetoed, overridden, an
+    /// amendment), and (i) drives one statute through the game's own bill path - introduced, resolved, its effect withheld where the veto stands.</para>
     /// </summary>
     public static class PresidentialVetoDiagnostic
     {
@@ -46,21 +49,20 @@ namespace PoliSim.EditorTools
 
         /// <summary>B2 (Elias's ruling, 2026-10-02): the votes an override needs - ceil(3/5 of the deputies voting, abstentions in the base), the Sejm's
         /// own practice in all seven override votes of the 10th term (`veto_record.md` §4). Integer arithmetic.</summary>
-        private static int Required(int voting) => (voting * OverrideNumerator + OverrideDenominator - 1) / OverrideDenominator;
+        private static int Required(int voting) => PresidentialVeto.OverrideRequired(voting, 0, 0);   // §761: the live rule's
 
         /// <summary>Whether the Sejm's re-pass overrides: the quorum present, and FOR at least <see cref="Required"/> of those voting - an abstention a
-        /// vote cast (B2; the strict reading, [PROVISIONAL] until the ruling).</summary>
+        /// vote cast (B2, ruled).</summary>
         private static bool Overrides(int forVotes, int against, int abstaining, int present)
         {
-            if (present < Quorum) { return false; }
-            int cast = forVotes + against + abstaining;
-            return cast > 0 && forVotes >= Required(cast);
+            return forVotes + against + abstaining > 0 && PresidentialVeto.Overrides(forVotes, against, abstaining, present);   // §761: the live rule's
         }
 
         /// <summary>B1 (Elias's ruling, 2026-10-02): the President vetoes an ordinary statute when a majority of his backing party's deputies - its
         /// MEMBERS at the vote, absent ones included - voted against it; never an act exempt (the budget act, Art. 224; a constitutional amendment,
         /// Art. 235 ust. 7).</summary>
-        private static bool Vetoes(bool exempt, int backingNo, int backingMembers) => !exempt && backingNo * 2 > backingMembers;
+        private static bool Vetoes(bool exempt, int backingNo, int backingMembers) =>
+            PresidentialVeto.Vetoes(exempt ? PresidentialVeto.Act.BudgetAct : PresidentialVeto.Act.OrdinaryStatute, backingMembers, backingNo);   // §761: the live rule's
 
         /// <summary>A CSV with a header row, each row by column name.</summary>
         private static List<Dictionary<string, string>> ReadCsv(string path)
@@ -213,6 +215,118 @@ namespace PoliSim.EditorTools
                       && T("Karol Nawrocki yes vetoed") == 38 && T("Karol Nawrocki yes signed") == 57 && T("Karol Nawrocki yes Tribunal") == 1 && T("Karol Nawrocki no vetoed") == 7 && T("Karol Nawrocki no signed") == 220 && T("Karol Nawrocki no Tribunal") == 2,
                     F("B1's precision on every vetoable act decided: of the acts the rule would veto, Duda vetoed 7, signed 58 and sent 5 to the Tribunal; Nawrocki vetoed 38, signed 57 and sent 1 - {0} of {1} the rule names were vetoed",
                         T("Andrzej Duda yes vetoed") + T("Karol Nawrocki yes vetoed"), T("Andrzej Duda yes vetoed") + T("Andrzej Duda yes signed") + T("Andrzej Duda yes Tribunal") + T("Karol Nawrocki yes vetoed") + T("Karol Nawrocki yes signed") + T("Karol Nawrocki yes Tribunal")));
+
+                // (h) §761 - THE RULE LIVE: the runtime class's constants are the texts'; Decide on the 2023 Sejm's seats; the gate itself on a planted chamber
+                Check(PresidentialVeto.StatutoryDeputies == StatutoryDeputies && PresidentialVeto.Quorum == Quorum && PresidentialVeto.OverrideNumerator == OverrideNumerator
+                      && PresidentialVeto.OverrideDenominator == OverrideDenominator && !PresidentialVeto.MayVeto(PresidentialVeto.Act.BudgetAct) && !PresidentialVeto.MayVeto(PresidentialVeto.Act.ConstitutionalAmendment),
+                    "§761: the live class's constants are the texts' (460, the quorum 230, 3/5), the budget act and an amendment never vetoed");
+                var against = new List<DivisionSide> { Side("PiS", 194, -1), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
+                PresidentialVeto.Outcome o = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against);
+                Check(o != null && o.President == "Karol Nawrocki" && o.BackingParty == "PiS" && o.Vetoed && !o.Overridden && o.Yes == 248 && o.Required == 276 && !o.Stands,
+                    F("§761: PiS against on 2026-01-01 - {0} vetoes; {1} for, {2} needed - the veto stands", o?.President, o?.Yes, o?.Required));
+                var abstaining = new List<DivisionSide> { Side("PiS", 194, 0), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
+                PresidentialVeto.Outcome signed = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, abstaining);
+                PresidentialVeto.Outcome budget = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2026, 1, 1), PresidentialVeto.Act.BudgetAct, against);
+                PresidentialVeto.Outcome dudaOutcome = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2024, 3, 1), PresidentialVeto.Act.OrdinaryStatute, against);
+                Check(signed != null && !signed.Vetoed && signed.Stands && budget != null && !budget.Vetoed && dudaOutcome != null && dudaOutcome.President == "Andrzej Duda" && dudaOutcome.Vetoed
+                      && PresidentialVeto.Decide(CountryId.Germany, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against) == null,
+                    "§761: PiS abstaining - signed (the record's bloc abstentions); the budget act - signed; Duda on 2024-03-01 - vetoes; Germany - no veto the game runs");
+                var go = new GameObject("PresidentialVetoDiagnostic gate");
+                try
+                {
+                    using (PoliSim.Simulation.SimulationManager.EpochScope())
+                    {
+                        WorldClock.ApplyStart(CountryId.Poland);
+                        World world = WorldFactory.CreateDefault();
+                        var sim = go.AddComponent<PoliSim.Simulation.SimulationManager>();
+                        sim.SetWorld(world);
+                        Country pl = world.GetCountry(CountryId.Poland);
+                        System.Reflection.MethodInfo gate = typeof(PoliSim.Simulation.SimulationManager).GetMethod("PresidentialVetoGate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
+                        // the gate is handed THIS vote's division (RecordDivision's return), never the log's last entry
+                        bool Gate(List<DivisionSide> sides, PresidentialVeto.Act act, out DivisionRecord passage, out DivisionRecord vote)
+                        {
+                            passage = pl.Divisions.Append("Enact: a planted statute", sim.CurrentDate, 0.5f, true, 1f, 0, new List<DivisionSide>(sides));
+                            int before = pl.Divisions.Entries.Count;
+                            bool stood = (bool)gate.Invoke(sim, new object[] { pl, passage, true, act });
+                            vote = pl.Divisions.Entries.Count > before ? pl.Divisions.Entries[pl.Divisions.Entries.Count - 1] : null;
+                            return stood;
+                        }
+                        bool stands = Gate(against, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passage1, out DivisionRecord vetoed);
+                        Check(!stands && passage1.Motion && vetoed != null && !vetoed.Passed && !vetoed.Motion && vetoed.Required == 276 && vetoed.Contest == null
+                              && vetoed.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && vetoed.Title.Contains("the veto stands, 248 for, 276 needed"),
+                            F("§761: the gate on Poland's start ({0}) - the statute does not stand; the passage keeps no ceremony; the vote on the veto, its line 276 and no budget contest: \"{1}\"",
+                                sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), vetoed?.Title));
+                        bool stands2 = Gate(abstaining, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passage2, out DivisionRecord none2);
+                        Check(stands2 && none2 == null && !passage2.Motion, "§761: PiS abstaining - the statute stands, nothing recorded beside its passage");
+                        // the review's untested path: an override that carries - PiS 150 against, 310 for of 460 voting, 276 needed
+                        var overridable = new List<DivisionSide> { Side("PiS", 150, -1), Side("KO", 200, 1), Side("TD", 80, 1), Side("NL", 30, 1) };
+                        bool stands3 = Gate(overridable, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passage3, out DivisionRecord overridden);
+                        Check(stands3 && passage3.Motion && overridden != null && overridden.Passed && overridden.Required == 276 && overridden.Title.Contains("overridden, 310 for, 276 needed"),
+                            F("§761: an override that carries - the statute stands on the vote on the veto, its ceremony that vote's: \"{0}\"", overridden?.Title));
+                        // the review's defect 2: a constitutional amendment never comes back, whoever opposes it (Art. 235 ust. 7)
+                        bool stands4 = Gate(against, PresidentialVeto.Act.ConstitutionalAmendment, out DivisionRecord passage4, out DivisionRecord none4);
+                        Check(stands4 && none4 == null && !passage4.Motion && LawCatalog.GetById("constitutional_debt_brake_act")?.ConstitutionalAmendment == true,
+                            "§761: a constitutional amendment PiS opposes stands unvetoed, nothing recorded; the debt brake is the catalog's amendment");
+                    }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(go); }
+
+                // (i) §761 - THE GAME'S OWN BILL PATH: the default epoch (the 10th Sejm, Tusk's government, Nawrocki president), KO the player's party; a law
+                // the chamber passes and PiS opposes is introduced and stepped to its resolution - its effect withheld, its passage a motion, the vote on the veto recorded
+                var host = new GameObject("PresidentialVetoDiagnostic bill path");
+                try
+                {
+                    using (PoliSim.Simulation.SimulationManager.EpochScope())
+                    {
+                        World world = WorldFactory.CreateDefault();
+                        var sim = host.AddComponent<PoliSim.Simulation.SimulationManager>();
+                        sim.SetWorld(world);
+                        sim.PlayerCountryId = CountryId.Poland;
+                        Country pl = world.GetCountry(CountryId.Poland);
+                        pl.PlayerPartyAbbrev = "KO";
+                        LawDefinition chosen = null;
+                        int offered = 0, passing = 0, pisAgainst = 0, pisAgainstPassing = 0, pisFor = 0, pisUndecided = 0, pisAgainstTdAbstains = 0;
+                        foreach (LawDefinition law in LawCatalog.All)
+                        {
+                            if (law.ConstitutionalAmendment || pl.EnactedLaws.Exists(e => e.LawId == law.Id) || !LawCatalog.IsWithinCompetence(world, pl, law)) { continue; }
+                            offered++;
+                            BillConcern concern = PoliSim.Simulation.ParliamentSystem.GetLawBillConcern(pl, new LawBill { LawId = law.Id });
+                            bool passes = PoliSim.Simulation.ParliamentSystem.WouldBillPass(pl, concern);
+                            var sides = new List<DivisionSide>();
+                            foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
+                            int pis = sides.Find(d => d.Abbrev == "PiS")?.Side ?? 0, td = sides.Find(d => d.Abbrev == "TD")?.Side ?? 0;
+                            if (passes) { passing++; }
+                            if (pis < 0) { pisAgainst++; if (passes) { pisAgainstPassing++; } if (td == 0) { pisAgainstTdAbstains++; } } else if (pis > 0) { pisFor++; } else { pisUndecided++; }
+                        }
+                        sb.Append(F("    info      §761 the catalog on {0}, the record's chamber: {1} laws offered, {2} the Sejm passes; PiS against {3} ({4} of them passing; TD abstaining on {7} of them), for {5}, undecided {6}\n",
+                            sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), offered, passing, pisAgainst, pisAgainstPassing, pisFor, pisUndecided, pisAgainstTdAbstains));
+                        // the record's chamber passes nothing PiS opposes (above) - the path is proved on a PLANTED chamber where KO alone carries a bill
+                        foreach (KeyValuePair<string, int> kv in new Dictionary<string, int> { { "PiS", 194 }, { "KO", 262 }, { "TD", 0 }, { "NL", 0 }, { "Konf", 4 } }) { pl.ParliamentSeats[kv.Key] = kv.Value; }
+                        foreach (LawDefinition law in LawCatalog.All)
+                        {
+                            if (law.ConstitutionalAmendment || pl.EnactedLaws.Exists(e => e.LawId == law.Id) || !LawCatalog.IsWithinCompetence(world, pl, law)) { continue; }
+                            BillConcern concern = PoliSim.Simulation.ParliamentSystem.GetLawBillConcern(pl, new LawBill { LawId = law.Id });
+                            if (!PoliSim.Simulation.ParliamentSystem.WouldBillPass(pl, concern)) { continue; }
+                            var sides = new List<DivisionSide>();
+                            foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
+                            PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
+                            if (projected != null && projected.Vetoed && !projected.Overridden) { chosen = law; break; }
+                        }
+                        Check(chosen != null, F("§761: on {0}, on the planted chamber (KO 262, PiS 194, Konf 4), the catalog holds a law the Sejm passes and PiS opposes - {1}", sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), chosen?.Id ?? "NONE"));
+                        if (chosen != null)
+                        {
+                            bool introduced = sim.IntroduceLawBill(CountryId.Poland, new LawBill { LawId = chosen.Id });
+                            int before = pl.Divisions.Entries.Count;
+                            for (int day = 0; day < 400 && sim.GetPendingLawBill(CountryId.Poland, chosen.Id) != null; day++) { sim.AdvanceLawBillsDay(CountryId.Poland); }
+                            bool enacted = pl.EnactedLaws.Exists(e => e.LawId == chosen.Id);
+                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            Check(introduced && !enacted && added.Count == 2 && added[0].Motion && added[0].Passed && !added[1].Passed && added[1].Required > 0 && added[1].Title.StartsWith("Vetoed by the President (Karol Nawrocki)", StringComparison.Ordinal),
+                                F("§761: \"{0}\" introduced ({1}), resolved through the game's own bill path - enacted {2}; recorded: {3}", chosen.Name, introduced, enacted,
+                                    string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                        }
+                    }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(host); }
             }
             catch (Exception ex) { failures++; sb.Append("    FAIL      threw: ").Append(ex.Message).Append('\n'); }
 
@@ -220,6 +334,8 @@ namespace PoliSim.EditorTools
             if (failures == 0) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
+
+        private static DivisionSide Side(string abbrev, int seats, int side) => new DivisionSide { Abbrev = abbrev, ShortName = abbrev, Seats = seats, Side = side, Alignment = side };
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
     }

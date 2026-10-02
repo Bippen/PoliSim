@@ -35,8 +35,12 @@ namespace PoliSim.Data
         /// <summary>P2-4.3 (2026-09-02): the bill's direction and axis at the division, and every party's side with its
         /// seats - what the ceremony's per-seat vote map draws. Empty on divisions recorded before this pass.</summary>
         public float Direction;
-        /// <summary>PS-3i (§636): a MOTION (no confidence), not a bill - no signing ceremony, never the standing budget act.</summary>
+        /// <summary>PS-3i (§636): a MOTION (no confidence), not a bill - no signing ceremony, never the standing budget act. §761: also a statute's passage
+        /// the President returned - its ceremony is the veto's own division, which follows it.</summary>
         public bool Motion;
+        /// <summary>§761: a QUALIFIED vote's line - the votes the motion needed, its base those voting (Poland's override of the President's veto:
+        /// ceil(3/5 of those voting, abstentions in the base), Art. 122 ust. 5). 0 for an ordinary division, where the count decides.</summary>
+        public int Required;
         public int Axis;
         public List<DivisionSide> Sides = new List<DivisionSide>();
         /// <summary>P2-4.3: the estimated impact of the turn's decision this division belonged to (the preview's arrows,
@@ -91,14 +95,16 @@ namespace PoliSim.Data
         [Newtonsoft.Json.JsonProperty] private int _lastNumber;
 
         /// <summary>Appends one division and evicts the oldest past <see cref="MaxEntries"/>. The caller supplies an alignment already captured at the vote rather than a bill, so this class never needs to know what a bill is.</summary>
-        /// <summary>P2-4.3: the division with its direction, axis and every party's side recorded, for the ceremony's map.</summary>
-        public void Append(string title, DateTime date, float alignment, bool passed, float direction, int axis, List<DivisionSide> sides)
+        /// <summary>P2-4.3: the division with its direction, axis and every party's side recorded, for the ceremony's map.
+        /// §761: returns the record it wrote - the writer's own vote, handed forward (the President's veto reads THIS division's sides); the log is still never read back.</summary>
+        public DivisionRecord Append(string title, DateTime date, float alignment, bool passed, float direction, int axis, List<DivisionSide> sides)
         {
             Append(title, date, alignment, passed);
             DivisionRecord record = Entries[Entries.Count - 1];
             record.Direction = direction;
             record.Axis = axis;
             if (sides != null) { record.Sides.AddRange(sides); }
+            return record;
         }
 
         public void Append(string title, DateTime date, float alignment, bool passed)

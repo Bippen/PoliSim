@@ -1266,6 +1266,35 @@ namespace PoliSim.Simulation
             Debug.Log($"BUDGET: {country.Id} - {title}");
         }
 
+        /// <summary>
+        /// §761 (PS-5; Elias's rulings B1 and B2): THE PRESIDENT'S VETO, LIVE. A statute the Sejm has just passed - <paramref name="passage"/>, the division
+        /// `RecordDivision` returned for THIS vote (the log is never read back) - goes to the President (<see cref="Elections.PresidentialVeto.Decide"/>):
+        /// vetoed where his backing party voted against it; the Sejm's re-pass, voted by the same sides, overrides it with 3/5 of those voting. The veto and
+        /// the vote on it are one division of their own - its line the 3/5 (`DivisionRecord.Required`), passed where overridden, failed where the veto stands -
+        /// and it carries the bill's ceremony; the passage keeps none (marked a motion, so no signing is shown for a statute the President returned). Returns
+        /// whether the statute stands. The budget act never comes here (Art. 224); a constitutional amendment passes through unvetoed (Art. 235 ust. 7,
+        /// <paramref name="act"/>); Poland alone.
+        /// </summary>
+        private bool PresidentialVetoGate(Country country, DivisionRecord passage, bool passed, Elections.PresidentialVeto.Act act = Elections.PresidentialVeto.Act.OrdinaryStatute)
+        {
+            if (!passed || passage == null || !Elections.PresidentialVeto.Applies(country.Id)) { return passed; }
+            Elections.PresidentialVeto.Outcome veto = Elections.PresidentialVeto.Decide(country.Id, CurrentDate, act, passage.Sides);
+            if (veto == null || !veto.Vetoed) { return true; }
+            passage.Motion = true;
+            var sides = new List<DivisionSide>();
+            foreach (DivisionSide s in passage.Sides)
+            {
+                sides.Add(new DivisionSide { Abbrev = s.Abbrev, ShortName = s.ShortName, Seats = s.Seats, Side = s.Side, Alignment = s.Alignment,
+                    Reason = s.Abbrev == veto.BackingParty ? "the President's backing party - voted against the statute; against overriding his veto" : s.Reason,
+                    ReasonShort = s.Abbrev == veto.BackingParty ? "the President's party - against the override" : s.ReasonShort });
+            }
+            string title = $"Vetoed by the President ({veto.President}): {passage.Title} - " + (veto.Overridden ? "overridden" : "the veto stands") + $", {veto.Yes} for, {veto.Required} needed (3/5 of those voting, Art. 122 ust. 5)";
+            DivisionRecord overrideVote = country.Divisions.Append(title, CurrentDate, passage.Alignment, veto.Overridden, passage.Direction, passage.Axis, sides);
+            overrideVote.Required = veto.Required;
+            Debug.Log($"VETO: {country.Id} - {title}");
+            return veto.Overridden;
+        }
+
         /// <summary>One line naming a budget bill's content for the log and the desk: the lines it moves and the rates it sets.</summary>
         public static string DescribeBudgetBill(BudgetBill bill)
         {
@@ -1425,7 +1454,8 @@ namespace PoliSim.Simulation
                 float direction = ParliamentSystem.GetTaxProgramBillDirection(country, bill);
                 BillConcern concern = ParliamentSystem.GetTaxProgramBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, passed, CurrentDate);
+                DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, passed, CurrentDate);
+                passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
                 float approvalBeforeTaxBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
@@ -1484,7 +1514,8 @@ namespace PoliSim.Simulation
                 float direction = ParliamentSystem.GetWelfareProgramBillDirection(country, bill);
                 BillConcern concern = ParliamentSystem.GetWelfareProgramBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-                ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, passed, CurrentDate);
+                DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, passed, CurrentDate);
+                passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
                 float approvalBeforeWelfareBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
@@ -1535,7 +1566,8 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetLaborBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetLaborBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-            ParliamentSystem.RecordDivision(country, "Labor Market bill", concern, passed, CurrentDate);
+            DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, "Labor Market bill", concern, passed, CurrentDate);
+            passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeLaborBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Labor Market bill passed" : "Labor Market bill failed", country.State.ApprovalRating - approvalBeforeLaborBill);
@@ -1624,7 +1656,8 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetCrimeJusticeBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetCrimeJusticeBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-            ParliamentSystem.RecordDivision(country, "Crime & Justice bill", concern, passed, CurrentDate);
+            DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, "Crime & Justice bill", concern, passed, CurrentDate);
+            passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeCrimeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Crime & Justice bill passed" : "Crime & Justice bill failed", country.State.ApprovalRating - approvalBeforeCrimeBill);
@@ -1695,7 +1728,8 @@ namespace PoliSim.Simulation
                 float direction = ParliamentSystem.GetLawBillDirection(country, bill);
                 BillConcern concern = ParliamentSystem.GetLawBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-                ParliamentSystem.RecordDivision(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", concern, passed, CurrentDate);
+                DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", concern, passed, CurrentDate);
+                passed = PresidentialVetoGate(country, vetoable, passed, law != null && law.ConstitutionalAmendment ? Elections.PresidentialVeto.Act.ConstitutionalAmendment : Elections.PresidentialVeto.Act.OrdinaryStatute);   // §761 (PS-5): a statute goes to the President - Poland's veto and its 3/5 override; an amendment never vetoed (Art. 235 ust. 7)
                 // Found by the fiscal-ledger pass's own bar (2026-08-25), pre-existing since the MVP
                 // slice: this was the ONE bill type resolving OUTSIDE the approval ledger's
                 // observation sites - a failed vote's BillFailedApprovalCost and a passed law's
@@ -1985,7 +2019,8 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetSectorBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetSectorBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-            ParliamentSystem.RecordDivision(country, "Economic Sectors bill", concern, passed, CurrentDate);
+            DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, "Economic Sectors bill", concern, passed, CurrentDate);
+            passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeSectorBill = country.State.ApprovalRating;
             ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Economic Sectors bill passed" : "Economic Sectors bill failed", country.State.ApprovalRating - approvalBeforeSectorBill);
@@ -2055,7 +2090,8 @@ namespace PoliSim.Simulation
             float direction = ParliamentSystem.GetSwfDrawdownBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetSwfDrawdownBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-            ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", concern, passed, CurrentDate);
+            DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", concern, passed, CurrentDate);
+            passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeSwfBill = country.State.ApprovalRating;
             // Pass 5 (2026-08-26): the drawdown is F1's THIRD writer, found by the retirement sweep -
             // it now reaches the stock through ApplyOneTimeBudgetImpact, so the debt ledger observes
@@ -2141,7 +2177,8 @@ namespace PoliSim.Simulation
             // GetSeatWeightedAlignment, with ParliamentSystem.TradeAxisAvailable saying so.
             BillConcern concern = ParliamentSystem.GetTradeBillConcern(country, bill, _world);   // P3-A2: the chamber votes on what the bill concerns
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
-            ParliamentSystem.RecordDivision(country, "Trade bill", concern, passed, CurrentDate, BillAxis.Trade);
+            DivisionRecord vetoable = ParliamentSystem.RecordDivision(country, "Trade bill", concern, passed, CurrentDate, BillAxis.Trade);
+            passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeTradeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Trade bill passed" : "Trade bill failed", country.State.ApprovalRating - approvalBeforeTradeBill);

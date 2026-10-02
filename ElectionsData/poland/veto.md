@@ -86,3 +86,7 @@ text of the Sejm's standing orders (M.P. 2026 poz. 573; the ELI metadata `raw/ve
   prezydent.pl refused with a 403, rp.pl's dated list of Nawrocki's 20 vetoes to 31 Dec 2025 matched): the backtest is the instrument's (g).
 - **The Senate** (Art. 121) and **the Tribunal referral** (Art. 122 ust. 3, Art. 224 ust. 2): not modelled; the Senate is stated absent in
   the political-system spec.
+- **LIVE since `COMPLETED.md` §761** (`PresidentialVeto`, `SimulationManager.PresidentialVetoGate`): every ordinary statute the game's Sejm
+  passes goes to the president of record on the day; the rule and the override are B1's and B2's above. Premises, stated there: the veto and
+  the vote on it are taken on the passage's day (the 21 days are not waited), and the re-pass is voted by the passage's own sides. The game's
+  budget bill is exempt as a whole (Art. 224), though it carries rates that in Poland are budget-related ordinary statutes - owed to Elias.

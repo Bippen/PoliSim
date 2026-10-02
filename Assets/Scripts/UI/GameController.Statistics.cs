@@ -211,7 +211,7 @@ namespace PoliSim.UI
 
             foreach (DivisionRecord division in _playerCountry.Divisions.Entries)
             {
-                if (!division.Passed) { continue; }
+                if (!division.Passed || division.Motion) { continue; }   // §761: a motion enacts nothing - nor a statute's passage the President returned
 
                 float daysFromStart = (float)(division.Date - first).TotalDays;
                 float t = daysFromStart / span;

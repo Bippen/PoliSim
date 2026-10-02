@@ -268,14 +268,16 @@ namespace PoliSim.UI
             CanvasRows.Spacer(head);
 
             DivisionContest contest = record.Contest;
-            string stamp = contest != null ? (contest.AlternativeAdopted ? "ALTERNATIVE ADOPTED" : "FRAMES ADOPTED") : record.Passed ? "CARRIED" : "LOST";
+            string stamp = contest != null ? (contest.AlternativeAdopted ? "ALTERNATIVE ADOPTED" : "FRAMES ADOPTED")
+                : record.Required > 0 ? (record.Passed ? "VETO OVERRIDDEN" : "VETO STANDS")   // §761: the Sejm's vote on the President's veto
+                : record.Passed ? "CARRIED" : "LOST";
             CanvasRows.Stamp(head, stamp, Figure, record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
 
             string axis = record.Axis == (int)BillAxis.Trade ? "THE OPENNESS AXIS" : "THE FISCAL AXIS";
             CanvasRows.Slip(number.gameObject, overlay, "DIVISION No. " + record.Number.ToString(CultureInfo.InvariantCulture), new[]
             {
                 day.ToUpperInvariant() + " · " + stamp,
-                "ALIGNMENT " + Signed(record.Alignment) + " ON " + axis + " - THE SEAT-WEIGHTED LEAN; IT BREAKS A TIE IN THE COUNT AND NOTHING ELSE",
+                "ALIGNMENT " + Signed(record.Alignment) + " ON " + axis + " - THE SEAT-WEIGHTED LEAN; " + (record.Required > 0 ? "IT DECIDES NOTHING HERE - THE 3/5 LINE DOES" : "IT BREAKS A TIE IN THE COUNT AND NOTHING ELSE"),   // §761
             });
 
             // The bill's own title: not in the composition, kept so the plate says what is signed (asked).
@@ -352,6 +354,21 @@ namespace PoliSim.UI
             Fixed(Blank(count), 9f, 1f);
             Word(count, against.ToString(CultureInfo.InvariantCulture), PoliSimTheme.Document, 45, PoliSimTheme.Bad, TextAnchor.LowerLeft);
             Word(count, "against", PoliSimTheme.Body, Line, PoliSimTheme.TextPrimary, TextAnchor.LowerLeft);
+            // §761: a QUALIFIED vote (the Sejm's override of the President's veto) - its line the votes it needed (3/5 of those voting), its base everyone
+            // voting, the abstaining among them; the bar runs over all of them and the line sits at its own share
+            if (record.Required > 0)
+            {
+                int voting = forSeats + against + undecided;
+                CountBar(column, forSeats, against + undecided, PoliSimTheme.Good, PoliSimTheme.Bad, record.Required, voting > 0 ? Mathf.Clamp01((float)record.Required / voting) : 0.5f);
+                if (undecided > 0) { Note(column, undecided.ToString(CultureInfo.InvariantCulture) + " abstaining - counted among those voting"); }
+                CanvasRows.Slip(count.gameObject, overlay, "THE VOTE ON THE VETO", new[]
+                {
+                    "FOR " + forSeats.ToString(CultureInfo.InvariantCulture) + " · AGAINST " + against.ToString(CultureInfo.InvariantCulture) + " · ABSTAINING " + undecided.ToString(CultureInfo.InvariantCulture),
+                    "THE SEJM OVERRIDES THE PRESIDENT'S VETO WITH 3/5 OF THOSE VOTING, ABSTENTIONS IN THE BASE - CONSTITUTION ART. 122 UST. 5",
+                    "THE LINE: " + record.Required.ToString(CultureInfo.InvariantCulture) + ", 3/5 OF THE " + voting.ToString(CultureInfo.InvariantCulture) + " VOTING",
+                });
+                return;
+            }
             CountBar(column, forSeats, against, PoliSimTheme.Good, PoliSimTheme.Bad, votesCast / 2 + 1);
             if (undecided > 0) { Note(column, undecided.ToString(CultureInfo.InvariantCulture) + " undecided - they abstain"); }
             CanvasRows.Slip(count.gameObject, overlay, "THE DIVISION", new[]
@@ -382,7 +399,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>The bar of the votes cast - the left side's share, the right's - with the line that carries it at the middle and its figure under it.</summary>
-        private static void CountBar(Transform column, int left, int right, Color leftInk, Color rightInk, int carries)
+        private static void CountBar(Transform column, int left, int right, Color leftInk, Color rightInk, int carries, float at = 0.5f)
         {
             var block = new GameObject("CountBar");
             block.transform.SetParent(column, false);
@@ -410,7 +427,7 @@ namespace PoliSim.UI
             var tick = new GameObject("Line");
             tick.transform.SetParent(block.transform, false);
             var tickRect = tick.AddComponent<RectTransform>();
-            tickRect.anchorMin = tickRect.anchorMax = new Vector2(0.5f, 1f);
+            tickRect.anchorMin = tickRect.anchorMax = new Vector2(at, 1f);   // §761: a qualified vote's line sits at its own share of the bar (3/5), the count's at the middle
             tickRect.pivot = new Vector2(0.5f, 1f);
             tickRect.sizeDelta = new Vector2(4.5f, 48f);
             tickRect.anchoredPosition = new Vector2(0f, -3f);
@@ -420,7 +437,7 @@ namespace PoliSim.UI
 
             Text label = CanvasChrome.MakeTextRealWeight(block.transform, "LineFigure", carries.ToString(CultureInfo.InvariantCulture), PoliSimTheme.Document, Caption, PoliSimTheme.TextPrimary, TextAnchor.UpperCenter);
             var labelRect = (RectTransform)label.transform;
-            labelRect.anchorMin = labelRect.anchorMax = new Vector2(0.5f, 1f);
+            labelRect.anchorMin = labelRect.anchorMax = new Vector2(at, 1f);
             labelRect.pivot = new Vector2(0.5f, 1f);
             labelRect.sizeDelta = new Vector2(150f, 30f);
             labelRect.anchoredPosition = new Vector2(0f, -54f);
@@ -461,7 +478,7 @@ namespace PoliSim.UI
             {
                 string vote = contest != null
                     ? (side.Side > 0 ? "Frames" : side.Side < 0 ? "Alternative" : "Abstains")   // PS-3f (§633): a contest's side names the proposal - in full on the slip
-                    : (side.Side > 0 ? "For" : side.Side < 0 ? "Against" : "Undecided");
+                    : (side.Side > 0 ? "For" : side.Side < 0 ? "Against" : record.Required > 0 ? "Abstains" : "Undecided");   // §761: on the vote on a veto the undecided abstain, counted among those voting
                 Color ink = contest != null ? (side.Side == 0 ? Muted : ((side.Side < 0) == contest.AlternativeAdopted ? PoliSimTheme.Good : PoliSimTheme.TextPrimary))
                     : side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : Muted;
                 bool modelled = !string.IsNullOrEmpty(side.Reason);   // a record before the stance model carries no alignment worth printing
