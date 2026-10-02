@@ -178,6 +178,11 @@ namespace PoliSim.EditorTools
             ("PensionAgeStatute.cs", "Socialförsäkringsbalken"),
             ("PensionAgeStatute.cs", "SGB VI"),
             ("PensionAgeStatute.cs", "Social Security Act"),
+            // §756 (Elias's ruling A5): the statutory minimum wages' instruments - "MiLoG § 1 Abs. 2", "MiLoV5 § 1 Nr. 1", "Dz.U. 2025 poz. 1242, § 1" - the laws' own
+            // paragraphs on the dial's slip, allowed by the authority's name beside them
+            ("MinimumWageRates.cs", "MiLoG"),
+            ("MinimumWageRates.cs", "MiLoV"),
+            ("MinimumWageRates.cs", "Dz.U."),
             ("GameController.ImmigrationPoverty.cs", "SOURCED"),   // P5-C6 (2026-09-06)
             // P4-B1 (2026-09-04): the range-caption catalog is [AUTHORED] game fiction - the desk's own deadpan on every
             // dial's ten bands - and is exempt BY NAME so its satire is not read as meta-text; RangeCaptionCheck holds it

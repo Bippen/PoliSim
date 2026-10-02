@@ -151,7 +151,7 @@ namespace PoliSim.UI
                     Icon = "coins", Title = "Minimum wage", Off = !hasWage,
                     Figure = v => UiFormat.Number(v, 0) + "% of median",
                     EndLeft = "0%", EndRight = "100% of median",
-                    Census = hasWage ? "A STATUTORY MINIMUM AS A SHARE OF THE MEDIAN WAGE · % OF MEDIAN" : "OFF · NO STATUTORY MINIMUM - WAGES ARE SET BY COLLECTIVE BARGAINING; THE MODEL HOLDS NO ACT TO INTRODUCE ONE",
+                    Census = hasWage ? "A STATUTORY MINIMUM AS A SHARE OF THE MEDIAN WAGE · % OF MEDIAN" + MinimumWageInForce(c, GetMinimumWageInput(c.MinimumWagePercentOfMedianBase)) : "OFF · NO STATUTORY MINIMUM - WAGES ARE SET BY COLLECTIVE BARGAINING; THE MODEL HOLDS NO ACT TO INTRODUCE ONE",
                 }, hasWage, bandNote: hasWage ? LaborDialInForce(c.MinimumWagePercentOfMedianBase, c.MinimumWagePercentOfMedian) : null);
             if (hasWage) { _minimumWageInput = minimumWage; }
             _paidFamilyLeaveWeeksInput = DrawDialRow("Paid Family Leave", c.PaidFamilyLeaveWeeksBase, GetPaidFamilyLeaveWeeksInput(c.PaidFamilyLeaveWeeksBase),
@@ -1155,6 +1155,25 @@ namespace PoliSim.UI
                 GUILayout.Space(gutter);
             }
             V35.FloorGuarded = guarded;
+        }
+
+        /// <summary>
+        /// §756 (Elias's ruling A5: "Germany, France, Poland and the USA carry their statutory rates, dated and sourced by read"): the minimum wage's slip
+        /// lines - the statutory rate in force on the game's date with its instrument (<see cref="MinimumWageRates"/>, Poland's monthly figure its headline),
+        /// and the rate the standing index and a draft's stand for: the statute's rate scaled by the index over the seed's (the premise, stated on the
+        /// table: the statutory steps track the median wage). Empty where no step is held.
+        /// </summary>
+        private string MinimumWageInForce(Country c, float draft)
+        {
+            if (!MinimumWageRates.TryInForce(c.Id, _simulationManager.CurrentDate, out MinimumWageRates.Step step) || c.BaselineMinimumWagePercentOfMedian <= 0f) { return string.Empty; }
+            string per = step.Unit == MinimumWageRates.Per.Month ? " A MONTH" : " AN HOUR";
+            int places = step.Unit == MinimumWageRates.Per.Month ? 0 : 2;
+            string Money(float v) => step.Currency + " " + UiFormat.Number(v, places) + per;
+            float standing = step.Rate * c.MinimumWagePercentOfMedianBase / c.BaselineMinimumWagePercentOfMedian;
+            string line = " · THE STATUTE IN FORCE " + step.From.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + ": " + Money(step.Rate) + " (" + step.Instrument.ToUpperInvariant() + ")";
+            if (!Mathf.Approximately(c.MinimumWagePercentOfMedianBase, c.BaselineMinimumWagePercentOfMedian)) { line += " · THE STANDING INDEX STANDS FOR " + Money(standing); }
+            if (!Mathf.Approximately(draft, c.MinimumWagePercentOfMedianBase)) { line += " · THE DRAFT'S FOR " + Money(step.Rate * draft / c.BaselineMinimumWagePercentOfMedian); }
+            return line;
         }
 
         /// <summary>§737: how a v3.5 dial tile prints its value - the tile's icon and name, the figure it makes of the value, the two ends, an Off state
