@@ -134,7 +134,8 @@ namespace PoliSim.UI
         /// `ui_portrait_frame_oval`, `ui_btn_paper_canvas` (+`_hover`, `_pressed`) and
         /// `ui_slider_knob_disabled` - stay held stock, delivered and counted by `DeliveredAssetCheck`,
         /// with no call site by decision (the 2026-08-12 "revivable by ruling" set plus the Canvas paper
-        /// button the pilot never needed).
+        /// button the pilot never needed). §738 (2026-10-02): `ui_chip_outline` joined them - its one drawer, the published bulletin's
+        /// badge (`PublishedFigure`), became a slip line when the Crime tab became tiles.
         /// </summary>
         public static Texture2D GetChrome(string chromeName)
         {

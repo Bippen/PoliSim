@@ -583,8 +583,9 @@ namespace PoliSim.UI
                 // would sit on aged paper looking like it had wandered in from another program. So the
                 // figure is simply inked, left-aligned where the pill used to start.
                 //
-                // ui_chip / ui_chip_outline still ship and are still used - by Badge, for the printed
-                // markers (PRELIMINARY, REVISED, ACTION REQUIRED) where a chip is period-correct.
+                // ui_chip still ships and is still used - by Badge, for the printed markers (PRELIMINARY,
+                // REVISED, ACTION REQUIRED) where a chip is period-correct. ui_chip_outline, the published
+                // bulletin's badge, is held stock since §738 (IconLibrary.GetChrome).
                 //
                 // B2 is untouched by this and must stay so: the ink is chosen by whether the change is
                 // GOOD, never by whether the number rose. `deltaIsGood` is the caller's judgment and this

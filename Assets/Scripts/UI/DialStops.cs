@@ -67,6 +67,9 @@ namespace PoliSim.UI
         public static readonly Dial DrugPolicy = new Dial("Drug possession", "Drug possession", new Stop("Decriminalised", 0f), new Stop("Fine", 20f), new Stop("Criminal", 40f), new Stop("Prison", 75f));
         /// <summary>`BorderEnforcementLevel`: 0 open … 100 strict - Design's four stops; Sweden's 50 is Spot checks. [AUTHORED-DRAFT] edges.</summary>
         public static readonly Dial Border = new Dial("Border checks", "Border checks", new Stop("Open", 0f), new Stop("Spot checks", 25f), new Stop("Systematic", 60f), new Stop("Closed", 85f));
+        /// <summary>§738: `BailReformLevel`: 0 traditional cash bail … 100 full reform. Not in the composition (asked where it goes); the middle stop is
+        /// today's, not a claim about the country's institution. [AUTHORED-DRAFT] edges.</summary>
+        public static readonly Dial Bail = new Dial("Bail", "Bail", new Stop("Cash bail", 0f), new Stop("Today's", 35f), new Stop("Reformed", 65f));
 
         // ---- Sectors and Energy (V35_ANSWERS §1, Sectors) ----
         /// <summary>`TaxCreditLevel`: a general sector tax credit (not R&D-specific). [AUTHORED-DRAFT] edges.</summary>

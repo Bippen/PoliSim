@@ -410,10 +410,6 @@ namespace PoliSim.UI
         // Phase 4's per-tab graph rollout - one GraphRenderer per newly-homed stat, same "never
         // shared across stats" reasoning as the three headline instances above.
         private readonly GraphRenderer _interestRateGraph = new GraphRenderer();
-        private readonly GraphRenderer _crimeIndexGraph = new GraphRenderer();
-        private readonly GraphRenderer _prisonPopulationGraph = new GraphRenderer();
-        private readonly GraphRenderer _organizedCrimeGraph = new GraphRenderer();
-        private readonly GraphRenderer _corruptionGraph = new GraphRenderer();
         private readonly GraphRenderer _tradeBalanceGraph = new GraphRenderer();
         private readonly GraphRenderer _povertyRateGraph = new GraphRenderer();
 
@@ -4367,111 +4363,9 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Crime &amp; Justice tab (Phase 4 - moved off the dashboard into its own home; converted to a
-        /// READ-ONLY summary 2026-08-24, law system MVP slice). The six dials below - Police Funding/
-        /// Sentencing Severity/Bail Reform/Drug Policy/Judicial Funding/Border Enforcement - are no
-        /// longer player-editable HERE: the standalone CrimeJusticePolicyBill submission this tab used
-        /// to offer is retired as a player-facing action (Elias's ruling on "the sliders' fate" - see
-        /// CLAUDE.md's law-system section). Going forward these six dials are set exclusively by
-        /// enacted law, via the Laws tab (DrawLawsTab) - a slider the player could still move here
-        /// WHILE laws also moved the same dial would be the two-books problem again.
-        ///
-        /// Deliberately NOT a rip-out: CrimeJusticePolicyBill/IntroduceCrimeJusticeBill/
-        /// AdvanceCrimeJusticeBillDay/GetPendingCrimeJusticeBill and its save-state field
-        /// (SimulationPendingState.PendingCrimeJusticeBills) all stay fully intact in code - only the
-        /// player-facing submission UI (the six draft sliders and the "Introduce Crime & Justice
-        /// Bill" button) is removed here, per the ruling's own "small, scoped, contained UI change"
-        /// framing, not a backend/save-shape change. The six _xInput draft fields, their GetXInput
-        /// accessors, and UiDraftState's capture/restore of them are also left untouched - nothing
-        /// sets them anymore in real play, so they stay permanently null (harmless dead state, never
-        /// read by anything player-visible once this tab stopped writing to them).
-        ///
-        /// Also still here: CrimeIndex/OrganizedCrimeIndex/CorruptionIndex (a clear direction - lower
-        /// is better for all three) and PrisonPopulationRate (deliberately neutral - see
-        /// PrisonPopulationRate's own doc comment on BailReformLevel/DrugPolicyLevel's honestly-
-        /// contested effects) history graphs, unaffected by this conversion.
-        /// </summary>
-        private void DrawCrimeJusticeTab(float availableHeight)
-        {
-            GUILayout.BeginVertical(_boxStyle);
-
-            float scrollHeight = availableHeight - _labelStyle.fontSize * 2f;
-            _crimeJusticeScrollPosition = GUILayout.BeginScrollView(_crimeJusticeScrollPosition, GUILayout.Height(scrollHeight));
-
-            DrawColoredLabel("Crime & Justice", _headerStyle, UiPalette.GetAreaColor(UiPalette.SystemArea.CrimeJustice));
-            GUILayout.Space(8f);
-
-            // Annual cadence, so a bulletin rather than a chart - see PublishedFigure.
-            PublishedFigure.Draw("Crime index as published",
-                _playerCountry.Published.Series.TryGetValue(PublishedStat.CrimeIndex, out PublishedSeries crimePublished) ? crimePublished : null,
-                _labelStyle, moneyUnit: null);
-            GUILayout.Space(8f);
-
-            // §564 (2026-09-22): the six dials as the family's rows with NO KNOB (Design's sitting, part B item 3: a D13 row - the track, statute ticks, the law's name as
-            // provenance). Each is set by the laws in force and nothing else: the neutral level is the ghost tick, every law that moves the dial is a tick at its
-            // running sum, the standing tick is the figure, and the laws' names stand under the figure. The rows emit no control - there is nothing to disable.
-            DrawStatsSectionCaption("SET BY LAW · THE LAWS TAB ENACTS AND REPEALS · NO BILL HERE");
-            DrawLawSetDialRow("Police Funding", _playerCountry.PoliceFundingLevel, null, law => law.PoliceFundingDelta);
-            DrawLawSetDialRow("Sentencing Severity", _playerCountry.SentencingSeverity, "0 lenient - 100 harsh", law => law.SentencingSeverityDelta);
-            DrawLawSetDialRow("Bail Reform", _playerCountry.BailReformLevel, "0 cash bail - 100 reformed", law => law.BailReformDelta);
-            DrawLawSetDialRow("Drug Policy", _playerCountry.DrugPolicyLevel, "0 decriminalized - 100 strict", law => law.DrugPolicyDelta);
-            DrawLawSetDialRow("Judicial Funding", _playerCountry.JudicialFundingLevel, null, law => law.JudicialFundingDelta);
-            DrawLawSetDialRow("Border Enforcement", _playerCountry.BorderEnforcementLevel, "0 open - 100 strict", law => law.BorderEnforcementDelta);
-
-            GUILayout.Space(10f);
-            _crimeIndexGraph.Draw("Crime Index", _playerCountry.History.CrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
-            _organizedCrimeGraph.Draw("Organized Crime Index", _playerCountry.History.OrganizedCrimeIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
-            _corruptionGraph.Draw("Corruption Index", _playerCountry.History.CorruptionIndex.Quarterly, null, _labelStyle, higherIsBetter: false, moneyUnit: null);
-            _prisonPopulationGraph.DrawNeutral("Incarceration Rate per 100k", _playerCountry.History.PrisonPopulationRate.Quarterly, null, _labelStyle, moneyUnit: null);
-
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-        }
-
-        /// <summary>
-        /// §564 (2026-09-22): a dial SET BY LAW, as the family's row with no knob - the Crime & Justice six. The standing tick is the dial's level; the ghost tick
-        /// is the neutral level every law counts from; each enacted law that moves the dial paints a statute tick at the running sum after it, in order of
-        /// enactment; the laws' names stand under the figure as provenance and the name's second line counts them. No control is emitted.
-        /// </summary>
-        private void DrawLawSetDialRow(string name, float level, string endNames, System.Func<LawDefinition, float> deltaOf)
-        {
-            var names = new List<string>();
-            var stops = new List<float>();
-            float running = CrimeJusticeCouplings.NeutralDialLevel;
-            foreach (EnactedLaw enacted in _playerCountry.EnactedLaws)
-            {
-                LawDefinition law = LawCatalog.GetById(enacted.LawId);
-                if (law == null) { continue; }
-                float delta = deltaOf(law);
-                if (Mathf.Approximately(delta, 0f)) { continue; }
-                running = Mathf.Clamp(running + delta, MinPolicyDialLevel, MaxPolicyDialLevel);
-                names.Add(law.Name);
-                stops.Add(running);
-            }
-            Rect ledgerRect = GUILayoutUtility.GetRect(10f, LedgerRow.Height(_labelStyle), GUILayout.ExpandWidth(true));
-            LedgerRow.Draw(ledgerRect, name, level, level, MinPolicyDialLevel, MaxPolicyDialLevel,
-                level.ToString("F0", CultureInfo.InvariantCulture), null, endNames, true,
-                _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle,
-                ghost: CrimeJusticeCouplings.NeutralDialLevel,
-                figureSecondLine: names.Count == 0 ? null : string.Join(" · ", names).ToUpperInvariant(),
-                nameSecondLine: names.Count == 0 ? "SET BY LAW · NONE IN FORCE" : $"SET BY LAW · {names.Count} IN FORCE",
-                nameSecondLineInk: PoliSimTheme.TextMuted, figureSecondLineWide: true, knob: false);
-            if (Event.current.type == EventType.Repaint && stops.Count > 0)
-            {
-                // the statute ticks: one per law, at the level the dial reached after it - painted over the track the row just drew, in the ghost's ink
-                Rect track = LedgerRow.LastTrackRect;
-                float scale = LedgerRow.LastScale;
-                foreach (float stop in stops)
-                {
-                    float x = track.x + track.width * Mathf.InverseLerp(MinPolicyDialLevel, MaxPolicyDialLevel, stop);
-                    PoliSimTheme.Rule(new Rect(Mathf.Round(x - 0.5f * scale), track.y - 2f * scale, Mathf.Max(1f, scale), track.height + 4f * scale), PoliSimTheme.TextMuted);
-                }
-            }
-        }
-
-        /// <summary>
         /// One Policy/Laws dial as a ledger row - the shared shape behind Labor Market, Crime & Justice,
-        /// Economic Sectors and Trade.
+        /// Economic Sectors and Trade. (§737 and §738: Labour's dials are v3.5 tiles, the tile overload in GameController.LawsV35.cs;
+        /// Crime & Justice's are tiles set by law.)
         ///
         /// **All four sub-screens were the same two lines repeated**: a `DrawDraftLabel` naming the
         /// standing and draft values plus an explanatory parenthetical, then a bare

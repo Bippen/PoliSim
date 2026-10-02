@@ -9,7 +9,8 @@ namespace PoliSim.UI
     /// <summary>
     /// §737 (UI v3.5, Design's V35 composition): THE LAWS PAGE'S FRAME AND ITS LABOUR TAB. The title *Laws* with its six tabs as words and the †; the
     /// Labour tab as the composition lays it - *What these dials move* (the readings the tab's dials reach, as tiles) and *Labour dials* (each dial a
-    /// tile, two to a row) - and the bill's call to action. The other five tabs are drawn as built under the new frame until their own items.
+    /// tile, two to a row) - and the bill's call to action. §738: the Crime & justice tab - its six dials as tiles SET BY LAW (no knob, no control). The other four tabs are drawn as built under the new frame until
+    /// their own items.
     ///
     /// <para><b>The dials' units</b> are the main session's rule (relayed 2026-10-01: *a real unit only where the model computes one; named settings,
     /// band edges [AUTHORED-DRAFT], where the dial is an abstract index; never a unit the model does not compute*) applied as Code's table sent to
@@ -41,18 +42,21 @@ namespace PoliSim.UI
             GUILayout.Space(V35.Px(4f));
             float bodyHeight = Mathf.Max(0f, availableHeight - titleHeight - V35.Px(4f));
 
-            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket)
+            if (_policyLawsCategory == PolicyLawsCategory.LaborMarket || _policyLawsCategory == PolicyLawsCategory.CrimeJustice)
             {
+                // the tabs retrofitted to v3.5, each in its own scroll (the film resets them by name - UiScreenshotDriver.ResetScrolls)
+                bool labour = _policyLawsCategory == PolicyLawsCategory.LaborMarket;
                 float contentWidth = StatsContentWidth(availableWidth);
                 int scrolledFrom = _slipAnchors.Count;
-                _laborMarketScrollPosition = GUILayout.BeginScrollView(_laborMarketScrollPosition, GUILayout.Height(Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f)));
+                Vector2 scroll = GUILayout.BeginScrollView(labour ? _laborMarketScrollPosition : _crimeJusticeScrollPosition, GUILayout.Height(Mathf.Max(0f, bodyHeight - _labelStyle.fontSize * 2f)));
+                if (labour) { _laborMarketScrollPosition = scroll; } else { _crimeJusticeScrollPosition = scroll; }
                 GUI.enabled = !_isGameOver;
                 V35.FloorGuarded = true;
-                DrawLabourV35(contentWidth);
+                if (labour) { DrawLabourV35(contentWidth); } else { DrawCrimeV35(contentWidth); }
                 V35.FloorGuarded = false;
                 GUI.enabled = true;
                 GUILayout.EndScrollView();
-                MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), _laborMarketScrollPosition);
+                MoveScrolledAnchors(scrolledFrom, GUILayoutUtility.GetLastRect(), scroll);
                 GUILayout.EndVertical();
                 if (!DeskProvenance.On) { DrawSlips(_lawsSlipBook, GUILayoutUtility.GetLastRect()); }
                 return;
@@ -72,11 +76,6 @@ namespace PoliSim.UI
             float contentHeight = Mathf.Max(0f, bodyHeight - ScreenCaptionBlockHeight() - statRowHeight - policyTraceHeight);
             switch (_policyLawsCategory)
             {
-                case PolicyLawsCategory.CrimeJustice:
-                    GUI.enabled = !_isGameOver;
-                    DrawCrimeJusticeTab(contentHeight);
-                    GUI.enabled = true;
-                    break;
                 case PolicyLawsCategory.Sectors:
                     GUI.enabled = !_isGameOver;
                     DrawSectorPolicy(contentHeight);
@@ -219,6 +218,140 @@ namespace PoliSim.UI
         }
 
         // =============================================================================================================================================
+        // Crime & justice
+        // =============================================================================================================================================
+
+        /// <summary>
+        /// §738 (UI v3.5, the composition's Laws › Crime & justice): *What these dials move* and the six dials as tiles - <b>set by law</b>. Elias's ruling on
+        /// "the sliders' fate" (2026-08-24, CLAUDE.md's law-system section) stands over the composition, which draws three of them draggable: the six move
+        /// only as the Laws tab enacts and repeals the laws that move them, so a tile has no knob and emits no control (§564's row, now a tile). The standalone
+        /// `CrimeJusticePolicyBill` and its pending state stay in code, unoffered - not a rip-out (the 2026-08-24 conversion's own note).
+        ///
+        /// <para><b>The faces</b> (`V35_ANSWERS.md` §1, Crime, under the main session's dial rule): Sentencing, Drug possession and Border checks by name
+        /// (<see cref="DialStops"/> - Design's four stops for the last two; the composition's months are not computed); police and court funding as
+        /// <b>their cost a year against today's</b> - the money the model lands on the justice line (`SimulationManager.ApplyEnforcementCostPressure`); bail
+        /// by name. The composition draws the first three; the other three are kept where they stood, the question of where they go asked.</para>
+        ///
+        /// <para><b>Folded</b>: the four history graphs (crime, organised crime, corruption, incarceration) into the readings' tiles and their sparklines -
+        /// the Policy Web's own four, corruption and approval on the head's slip with the rest - and the crime index's published bulletin into the crime
+        /// reading's slip.</para>
+        /// </summary>
+        private void DrawCrimeV35(float width)
+        {
+            Country c = _playerCountry;
+            DrawLawsReadings(width, UiPalette.SystemArea.CrimeJustice);
+
+            DrawLawsSectionHead("Crime dials · set by law", "laws:crime", width);
+            _lawsSlipBook.Anchors["laws:crime"] = new SlipContent("CRIME DIALS · SET BY LAW")
+                .Add("THE LAWS TAB ENACTS AND REPEALS THE LAWS THAT MOVE THEM · NO BILL MOVES THEM HERE")
+                .Add("ON EACH TRACK THE PALE TICK IS THE COUNTRY'S STATUS QUO; EACH LAW IN FORCE IS A TICK WHERE IT LEFT THE DIAL")
+                .Add("A DIAL THE MODEL HOLDS AS AN INDEX IS SHOWN BY NAME - ITS BANDS' EDGES DECLARED: AUTHORED FOR THE GAME, NOT MEASURED")
+                .Add("POLICE AND COURTS SHOW THEIR COST A YEAR AGAINST TODAY'S - THE MONEY THE MODEL SPENDS ON THE JUSTICE LINE");
+            float gutter = V35.Px(V35.Gutter), tileWidth = V35Span(width, 6), rowHeight = BudgetDialTileHeight(false);
+            UiPalette.SystemArea area = UiPalette.SystemArea.CrimeJustice;
+
+            Rect row = LawsDialRow(width, rowHeight);
+            float prisons = c.State.PrisonPopulationRate, prisonsBase = c.BaselinePrisonPopulationRate;
+            float prisonCost = c.State.NominalGdp * CrimeJusticeCouplings.IncarcerationCostGdpPerCapitaPerInmate * (prisons - prisonsBase) / 100000f;
+            DrawLawSetDialTile("Sentencing Severity", c.SentencingSeverity, new Rect(row.x, row.y, tileWidth, rowHeight),
+                NamedFace("gavel", DialStops.Sentencing, "0 LENIENT … 100 HARSH · THE MODEL COMPUTES NO PRISON TERM - IT MOVES THE INCARCERATION RATE, AND THE PRISONS FILL OVER YEARS", area),
+                law => law.SentencingSeverityDelta,
+                "INCARCERATION " + UiFormat.Number(prisons, 0) + " PER 100 000 · THE COUNTRY'S OWN " + UiFormat.Number(prisonsBase, 0) + " · ITS COST ON THE JUSTICE LINE "
+                    + CostAYear(prisonCost).ToUpperInvariant());
+            DrawLawSetDialTile("Drug Policy", c.DrugPolicyLevel, new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight),
+                NamedFace("pill", DialStops.DrugPolicy, "0 DECRIMINALISED … 100 STRICT · THE MODEL'S 0 IS DECRIMINALISED, NOT LEGAL", area),
+                law => law.DrugPolicyDelta);
+            GUILayout.Space(gutter);
+
+            row = LawsDialRow(width, rowHeight);
+            float borderCost = EnforcementCost(CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint, c.BorderEnforcementLevel);
+            DrawLawSetDialTile("Border Enforcement", c.BorderEnforcementLevel, new Rect(row.x, row.y, tileWidth, rowHeight),
+                NamedFace("gate", DialStops.Border, "0 OPEN … 100 STRICT", area),
+                law => law.BorderEnforcementDelta,
+                "ITS COST " + CostAYear(borderCost).ToUpperInvariant() + " - " + UiFormat.Number(CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint, 3)
+                    + " % OF GDP A POINT FROM 50, THE SIZE DECLARED");
+            DrawLawSetDialTile("Police Funding", c.PoliceFundingLevel, new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight),
+                MoneyFace("shield", "Police funding", CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint, area),
+                law => law.PoliceFundingDelta);
+            GUILayout.Space(gutter);
+
+            row = LawsDialRow(width, rowHeight);
+            DrawLawSetDialTile("Judicial Funding", c.JudicialFundingLevel, new Rect(row.x, row.y, tileWidth, rowHeight),
+                MoneyFace("scales", "Court funding", CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint, area),
+                law => law.JudicialFundingDelta);
+            DrawLawSetDialTile("Bail Reform", c.BailReformLevel, new Rect(row.x + tileWidth + gutter, row.y, tileWidth, rowHeight),
+                NamedFace("key", DialStops.Bail, "0 TRADITIONAL CASH BAIL … 100 FULL REFORM", area),
+                law => law.BailReformDelta);
+            GUILayout.Space(gutter);
+        }
+
+        /// <summary>A funding dial's money, in the book's billions a year: the share of nominal GDP a point from the neutral 50 the model lands on its line
+        /// (`SimulationManager.ApplyEnforcementCostPressure` - zero at 50, the seed's apparatus already inside the lines).</summary>
+        private float EnforcementCost(float percentOfGdpPerPoint, float level) =>
+            _playerCountry.State.NominalGdp / 100f * percentOfGdpPerPoint * (level - CrimeJusticeCouplings.NeutralDialLevel);
+
+        /// <summary>A cost a year as a figure: signed, or *Today's level* where there is none to state.</summary>
+        private static string CostAYear(float billions) => Mathf.Abs(billions) < 0.0005f ? "Today's level" : UiFormat.MoneyDelta(billions, MoneyUnit.Billions) + " a year";
+
+        /// <summary>§738: a funding dial's face - the cost a year against today's as the figure, the cost at each end as the ends.</summary>
+        private V35DialFace MoneyFace(string icon, string title, float percentOfGdpPerPoint, UiPalette.SystemArea area) => new V35DialFace
+        {
+            Icon = icon, Title = title, Area = area,
+            Figure = v => CostAYear(EnforcementCost(percentOfGdpPerPoint, v)),
+            EndLeft = UiFormat.MoneyDelta(EnforcementCost(percentOfGdpPerPoint, MinPolicyDialLevel), MoneyUnit.Billions),
+            EndRight = UiFormat.MoneyDelta(EnforcementCost(percentOfGdpPerPoint, MaxPolicyDialLevel), MoneyUnit.Billions),
+            Census = "ITS COST A YEAR AGAINST TODAY'S, ON THE JUSTICE LINE - " + UiFormat.Number(percentOfGdpPerPoint, 3) + " % OF GDP A POINT FROM 50 · THE SIZE DECLARED: AUTHORED FOR THE GAME INSIDE A BAND OF REAL SPENDING",
+        };
+
+        /// <summary>
+        /// §738 (UI v3.5): A DIAL SET BY LAW, as a tile - §564's row in the tile's grammar: the icon, the figure (the face's reading of the level), the name,
+        /// the track with the neutral level as the pale tick and one statute tick per law at the level the dial reached after it, in order of enactment; the
+        /// ends. No knob and no control: the dial moves only as laws are enacted and repealed. The laws in force, each with its move, are the slip's.
+        /// </summary>
+        private void DrawLawSetDialTile(string name, float level, Rect tile, V35DialFace face, System.Func<LawDefinition, float> deltaOf, string note = null)
+        {
+            var laws = new List<string>();
+            var stops = new List<float>();
+            float running = CrimeJusticeCouplings.NeutralDialLevel;
+            foreach (EnactedLaw enacted in _playerCountry.EnactedLaws)
+            {
+                LawDefinition law = LawCatalog.GetById(enacted.LawId);
+                if (law == null) { continue; }
+                float delta = deltaOf(law);
+                if (Mathf.Approximately(delta, 0f)) { continue; }
+                running = Mathf.Clamp(running + delta, MinPolicyDialLevel, MaxPolicyDialLevel);
+                laws.Add(law.Name.ToUpperInvariant() + " " + (delta > 0f ? "+" : "−") + UiFormat.Number(Mathf.Abs(delta), 0));
+                stops.Add(running);
+            }
+
+            Rect inner = DrawBudgetTileCard(tile, false, false);
+            Rect figureRect = DrawBudgetTileHead(inner, face.Icon, UiPalette.GetAreaColor(face.Area), face.Figure(level), PoliSimTheme.TextPrimary, face.Title, PoliSimTheme.TextPrimary,
+                new Rect(inner.xMax, inner.y, 0f, 0f));
+            SlipAnchor(new Rect(inner.x, inner.y, inner.width, figureRect.yMax - inner.y + V35.Px(20f)), "dial:" + name);
+            Rect track = BudgetTrackRect(inner, out Rect endLane);
+            float scale = LedgerRow.ScaleOf(_labelStyle);
+            LedgerRow.Track(track, name, level, level, MinPolicyDialLevel, MaxPolicyDialLevel, true, _sliderStyle, _sliderThumbStyle, scale,
+                ghost: CrimeJusticeCouplings.NeutralDialLevel, knob: false);
+            if (Event.current.type == EventType.Repaint)
+            {
+                foreach (float stop in stops)
+                {
+                    float x = track.x + track.width * Mathf.InverseLerp(MinPolicyDialLevel, MaxPolicyDialLevel, stop);
+                    PoliSimTheme.Rule(new Rect(Mathf.Round(x - 0.5f * scale), track.y - 2f * scale, Mathf.Max(1f, scale), track.height + 4f * scale), PoliSimTheme.TextMuted);
+                }
+                DrawBudgetEndLabels(endLane, face.EndLeft, face.EndRight, false);
+            }
+
+            var slip = new SlipContent(face.Title.ToUpperInvariant() + " · " + face.Figure(level).ToUpperInvariant());
+            if (!string.IsNullOrEmpty(face.Census)) { slip.Add(face.Census); }
+            if (!string.IsNullOrEmpty(note)) { slip.Add(note); }
+            if (face.Stops != null) { slip.Add("THE STOPS · " + face.Stops.Bands() + " · THE EDGES DECLARED - AUTHORED FOR THE GAME, NOT MEASURED"); }
+            slip.Add("THE INDEX " + UiFormat.Number(level, 0) + " OF 100 · 50 IS THE COUNTRY'S STATUS QUO");
+            slip.Add(laws.Count == 0 ? "SET BY LAW · NONE IN FORCE" : "SET BY LAW · " + laws.Count + " IN FORCE - " + string.Join(" · ", laws));
+            _lawsSlipBook.Anchors["dial:" + name] = slip;
+        }
+
+        // =============================================================================================================================================
         // The shared pieces: the section head, the readings, the dial tile, the bill's action
         // =============================================================================================================================================
 
@@ -247,6 +380,8 @@ namespace PoliSim.UI
             if (n.Contains("gdp") || n.Contains("growth")) { return "chart"; }
             if (n.Contains("wage")) { return "coins"; }
             if (n.Contains("crime")) { return "gavel"; }
+            if (n.Contains("incarcer") || n.Contains("prison")) { return "key"; }
+            if (n.Contains("corrupt")) { return "stamp"; }
             if (n.Contains("migration")) { return "passport"; }
             if (n.Contains("debt")) { return "debt"; }
             if (n.Contains("confidence")) { return "gear"; }
@@ -298,6 +433,11 @@ namespace PoliSim.UI
                     }
                 }
                 slip.Add(!higherIsBetter.HasValue ? "NO DIRECTION MOST AGREE ON - ITS CHANGE IN THE NEUTRAL INK" : higherIsBetter.Value ? "HIGHER IS BETTER" : "LOWER IS BETTER");
+                if (stat == StatNodeId.Crime)
+                {
+                    // §738: the crime index's bulletin, which the Crime tab carried (behaviour 6, channel 1 - an annual figure is this number, for this period, released on this date)
+                    slip.Add(PublishedFigure.Line("As published", _playerCountry.Published.Series.TryGetValue(PublishedStat.CrimeIndex, out PublishedSeries crimePublished) ? crimePublished : null));
+                }
                 if (stat == StatNodeId.PopulationGrowthRate || name.ToLowerInvariant().Contains("population"))
                 {
                     // the population rows the tab carried (§564), on the population reading's slip
@@ -349,12 +489,14 @@ namespace PoliSim.UI
             public bool Off;
             public string Census;
             public DialStops.Dial Stops;
+            /// <summary>§738: the area whose ink the icon takes.</summary>
+            public UiPalette.SystemArea Area = UiPalette.SystemArea.Labor;
         }
 
         /// <summary>A named dial's face: the stop the value falls in as the figure, the first and last stops as the ends, the bands in the slip.</summary>
-        private static V35DialFace NamedFace(string icon, DialStops.Dial stops, string census) => new V35DialFace
+        private static V35DialFace NamedFace(string icon, DialStops.Dial stops, string census, UiPalette.SystemArea area = UiPalette.SystemArea.Labor) => new V35DialFace
         {
-            Icon = icon, Title = stops.Title, Stops = stops,
+            Icon = icon, Title = stops.Title, Stops = stops, Area = area,
             Figure = v => stops.At(v).Name,
             EndLeft = stops.Stops[0].Name, EndRight = stops.Stops[stops.Stops.Length - 1].Name,
             Census = census,
@@ -372,7 +514,7 @@ namespace PoliSim.UI
             V35DialFace face, bool interactive = true, string captionKey = null, string bandNote = null)
         {
             bool drafted = interactive && !Mathf.Approximately(standing, draft);
-            Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Labor);
+            Color area = UiPalette.GetAreaColor(face.Area);
             Rect inner = DrawBudgetTileCard(tile, drafted, face.Off);
             Rect figureRect = DrawBudgetTileHead(inner, face.Icon, face.Off ? V35.PyramidThreshold : area, face.Off ? "Off" : face.Figure(drafted ? draft : standing),
                 face.Off ? PoliSimTheme.TextMuted : drafted ? PoliSimTheme.Caution : PoliSimTheme.TextPrimary, face.Title, face.Off ? PoliSimTheme.TextMuted : PoliSimTheme.TextPrimary, new Rect(inner.xMax, inner.y, 0f, 0f));
