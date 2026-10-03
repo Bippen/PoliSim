@@ -891,6 +891,11 @@ namespace PoliSim.Simulation
             return concern;
         }
 
+        /// <summary>§768 (Elias's ruling D4; the review's defect 1): THE BUDGET ACT a chamber votes - where the President holds a veto the game runs
+        /// (Poland) and the bill changes a tax rate, the bill without its rates (they are the tax act's, voted apart); otherwise the bill itself.</summary>
+        public static BudgetBill BudgetActOf(Country country, BudgetBill bill) =>
+            bill != null && Elections.PresidentialVeto.Applies(country.Id) && bill.ChangesTaxRates(country) ? bill.WithoutRateChanges() : bill;
+
         /// <summary>
         /// P4-A2 (Playtest 4, 2026-09-04): **a budget decomposes into its lines.** Each line loads the CHES axis it
         /// concerns (<see cref="BudgetLineAxes"/>), with its own signed size, so a party's stance is the seat-weighted sum

@@ -961,7 +961,7 @@ namespace PoliSim.UI
         private void DrawBudgetIfPassed(float width, BudgetBill draft, int changes)
         {
             if (changes <= 0) { return; }
-            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft);
+            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, draft));   // §768: Poland's budget act without its rates
             bool contested = concern != null && !concern.IsEmpty;
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
             int forSeats = 0, againstSeats = 0, undecided = 0;
@@ -1025,9 +1025,22 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(fx + fw + V35.Px(6f), countRow.y, Mathf.Max(1f, countRow.xMax - fx - fw - V35.Px(6f)), countH), of, V35Serif(V35.Floor, PoliSimTheme.TextMuted));
             }
             SlipAnchor(countRow, "ifpassed:count");
+            // §768 (Elias's ruling D4): where the President holds a veto, the draft's rates travel in their own tax act - its count and his answer
+            bool taxAct = PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId) && draft.ChangesTaxRates(_playerCountry);
             var countSlip = new SlipContent(wouldPass ? "WOULD PASS" : "WOULD FAIL")
-                .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "") : "NOTHING CHANGES · UNCONTESTED")
+                .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
+                    : taxAct ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED")
                 .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE");
+            if (taxAct)
+            {
+                BillConcern taxConcern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft.TaxActPart());
+                bool taxPasses = _chamberVerdicts.WouldPass(_playerCountry, taxConcern);
+                PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, _simulationManager.CurrentDate);
+                countSlip.Add("IF THE BUDGET PASSES, ITS RATES ARE A SEPARATE TAX ACT - " + (!taxPasses ? "IT WOULD FAIL; THE OLD RATES WOULD STAND"
+                    : ChamberVerdicts.VetoStands(taxVeto) ? "IT WOULD BE VETOED; THE OLD RATES WOULD STAND"
+                    : taxVeto != null && taxVeto.Vetoed ? "IT WOULD BE VETOED AND THE VETO OVERRIDDEN" : "IT WOULD PASS AND BE SIGNED"));
+                if (ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { countSlip.Add(taxVetoLine); }
+            }
             if (contested)
             {
                 foreach (PartyStance stance in _chamberVerdicts.Stances(_playerCountry, concern))

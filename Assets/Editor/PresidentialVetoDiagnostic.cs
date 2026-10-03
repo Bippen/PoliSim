@@ -331,6 +331,66 @@ namespace PoliSim.EditorTools
                     }
                 }
                 finally { UnityEngine.Object.DestroyImmediate(host); }
+
+                // (j) §768 (Elias's ruling D4): POLAND'S BUDGET IS TWO ACTS - a player's budget moving one rate and one spending line, on the planted chamber
+                // (KO 262, PiS 194, Konf 4): the budget act adopted and applied; the rate in its own tax act; where PiS opposes it the President vetoes, the
+                // veto stands, and the old rate stands while the spending moves. A rate move the planted Sejm passes and PiS opposes is searched, as (i) does.
+                var budgetHost = new GameObject("PresidentialVetoDiagnostic budget");
+                try
+                {
+                    using (PoliSim.Simulation.SimulationManager.EpochScope())
+                    {
+                        World world = WorldFactory.CreateDefault();
+                        var sim = budgetHost.AddComponent<PoliSim.Simulation.SimulationManager>();
+                        sim.SetWorld(world);
+                        sim.PlayerCountryId = CountryId.Poland;
+                        Country pl = world.GetCountry(CountryId.Poland);
+                        pl.PlayerPartyAbbrev = "KO";
+                        foreach (KeyValuePair<string, int> kv in new Dictionary<string, int> { { "PiS", 194 }, { "KO", 262 }, { "TD", 0 }, { "NL", 0 }, { "Konf", 4 } }) { pl.ParliamentSeats[kv.Key] = kv.Value; }
+                        TaxLine moved = null; float newRate = 0f;
+                        foreach (TaxLine line in pl.TaxLines)
+                        {
+                            if (!line.IsImplemented || moved != null) { continue; }
+                            foreach (float step in new[] { -2f, 2f })
+                            {
+                                var probe = new BudgetBill(); probe.TaxLines[line.Type] = line.Rate + step;
+                                BillConcern concern = PoliSim.Simulation.ParliamentSystem.GetBudgetBillConcern(pl, probe.TaxActPart());
+                                if (!PoliSim.Simulation.ParliamentSystem.WouldBillPass(pl, concern)) { continue; }
+                                var sides = new List<DivisionSide>();
+                                foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
+                                PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
+                                if (projected != null && projected.Vetoed && !projected.Overridden) { moved = line; newRate = line.Rate + step; break; }
+                            }
+                        }
+                        Check(moved != null, F("§768: on the planted chamber a rate move the Sejm passes and PiS opposes - {0}", moved != null ? moved.Type + " " + moved.Rate.ToString("0.##", CultureInfo.InvariantCulture) + " -> " + newRate.ToString("0.##", CultureInfo.InvariantCulture) : "NONE"));
+                        if (moved != null)
+                        {
+                            SpendingLine spend = pl.SpendingLines.First(l => l.Amount > 0f);
+                            float rateBefore = moved.Rate, spendBefore = spend.Amount;
+                            var bill = new BudgetBill();
+                            bill.TaxLines[moved.Type] = newRate;
+                            bill.SpendingPercentChanges[spend.Category] = 5f;
+                            bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
+                            int before = pl.Divisions.Entries.Count;
+                            for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed && !added[0].Motion
+                                && added[1].Title.StartsWith("Tax act: ", StringComparison.Ordinal) && added[1].Passed && added[1].Motion
+                                && added[2].Title.StartsWith("Vetoed by the President (Karol Nawrocki): Tax act: ", StringComparison.Ordinal) && !added[2].Passed && added[2].Required > 0;
+                            Check(introduced && shape && Math.Abs(moved.Rate - rateBefore) < 1e-6f && spend.Amount > spendBefore,
+                                F("§768: the budget through the game's own path - the budget act adopted, the spending moved ({0:0.###} -> {1:0.###}); the rate in its own tax act, vetoed, the old rate standing ({2:0.##}); recorded: {3}",
+                                    spendBefore, spend.Amount, moved.Rate, string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                            // a budget that changes no rate is one act: nothing beside it
+                            var plain = new BudgetBill(); plain.SpendingPercentChanges[spend.Category] = 5f;
+                            bool introducedPlain = sim.IntroduceBudgetBill(CountryId.Poland, plain);
+                            int beforePlain = pl.Divisions.Entries.Count;
+                            for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                            Check(introducedPlain && pl.Divisions.Entries.Count == beforePlain + 1 && pl.Divisions.Entries[beforePlain].Title == "Annual budget bill",
+                                "§768: a budget that changes no rate is one act - its division alone, no tax act beside it");
+                        }
+                    }
+                }
+                finally { UnityEngine.Object.DestroyImmediate(budgetHost); }
             }
             catch (Exception ex) { failures++; sb.Append("    FAIL      threw: ").Append(ex.Message).Append('\n'); }
 

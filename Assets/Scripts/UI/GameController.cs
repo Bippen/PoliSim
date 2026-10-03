@@ -6525,7 +6525,9 @@ namespace PoliSim.UI
                 List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
                 for (int d = divisions.Count - 1; d >= 0; d--)
                 {
-                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0) { standingBudget = divisions[d]; break; }
+                    // §768 (the review's defect 4): a tax act, or the vote on a veto, is newer than the budget act it rode with on the same day - never the standing budget
+                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0 && divisions[d].Required == 0
+                        && !divisions[d].Title.StartsWith(SimulationManager.TaxActTitlePrefix, System.StringComparison.Ordinal)) { standingBudget = divisions[d]; break; }
                 }
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
                 // against the seed - the seated election, Sweden 2026 since K-1, which the allocator reproduces seat for seat (§601's
@@ -9279,7 +9281,13 @@ namespace PoliSim.UI
             if (budgetBill != null)
             {
                 pending.Add(($"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct));   // §761: the budget act is never vetoed (Art. 224)
+                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct));   // §761: the budget act is never vetoed (Art. 224); §768: without the rates a tax act takes
+                if (!ReferenceEquals(ParliamentSystem.BudgetActOf(_playerCountry, budgetBill), budgetBill))
+                {
+                    // §768 (Elias's ruling D4): Poland's rates ride with the budget as their own tax act - voted with it, put to the President
+                    pending.Add(($"Tax act with the budget - voted if the budget passes, in {budgetBill.DaysRemaining} day(s).",
+                        ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill.TaxActPart()), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                }
             }
 
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))

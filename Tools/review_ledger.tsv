@@ -197,3 +197,6 @@ baseline	777	2f70e004111451927f85fb1d0743f4c1d872b7f449e9449dae97bdd07fdb1b04	re
 baseline	424242	35b65eca7bfda2c64c410cedc7eb135178634c022b43ab5c585afde1b1bf6886	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	traj_fp755 seed 424242 - the Finance partner's stance
 file	Assets/Scripts/Data/BudgetBill.cs	fdfc14890f45f9a12740bd490117b5d418d3d62847535f1254357188effcc9bb	reviewed	2026-10-02	s755	Reviews/2026-10-02_s755_fiscal_stance.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	572b395d97d3d7d5dd9206f5e8da27fb9e0f976eea742784fa94366e35692169	reviewed	2026-10-02	s761	Reviews/2026-10-02_s761_veto_live.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	4a00d21ed69f5e6712074b67deeec77492087471d02b4da48acd5afa9fa3c129	reviewed	2026-10-04	s768	Reviews/2026-10-03_s768_tax_act.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	e6d39fcb7bedc12cbb1995a665e76b5174fc9f15946713b0d30cba3e5d489f79	reviewed	2026-10-04	s768	Reviews/2026-10-03_s768_tax_act.md	-
+file	Assets/Scripts/Simulation/FinancePartner.cs	22161f29346ec109ad9792c49905bf12cf7e113e79b1e6ee725a53d3e74c7ac2	reviewed	2026-10-04	s768	Reviews/2026-10-03_s768_tax_act.md	-

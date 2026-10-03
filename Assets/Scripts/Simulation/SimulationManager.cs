@@ -1207,7 +1207,7 @@ namespace PoliSim.Simulation
         /// <summary>The budget's day: the country's procedure decides between the government's bill and the alternative, and what the chamber adopts is applied.</summary>
         private void ResolveGovernmentBudget(Country country, BudgetBill government)
         {
-            BillConcern concernG = ParliamentSystem.GetBudgetBillConcern(country, government);
+            BillConcern concernG = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, government));   // §768: Poland's budget act without its rates
             _pendingBudgetAlternativeByCountry.TryGetValue(country.Id, out BudgetBill alternative);
             Elections.WorldClock.BudgetProcedure procedure = Elections.WorldClock.BudgetProcedureOf(country.Id);
             float approvalBefore = country.State.ApprovalRating;
@@ -1260,10 +1260,77 @@ namespace PoliSim.Simulation
                 ? "Annual budget: the government's bill failed - the old budget stands (this country's procedure is not yet sourced)"
                 : "Annual budget: the government's bill failed with no alternative tabled - the old budget stands");
             ParliamentSystem.RecordDivision(country, title, concernG, passed, CurrentDate);
-            ParliamentSystem.ApplyBillResult(country, government, passed, ApplyBudgetBillSpendingAndSwf);
-            if (passed) { FinancePartner.CreditAdopted(country, government); }   // §755: the partner's step counted only where its bill was adopted
+            BudgetBill appliedG = passed ? PolishTaxAct(country, government) : government;   // §768 (D4): Poland's rates travel in their own act
+            approvalBefore = country.State.ApprovalRating;   // §768 (the second review): a fallen tax act's cost is its own ledger event - the budget's event starts after it
+            ParliamentSystem.ApplyBillResult(country, appliedG, passed, ApplyBudgetBillSpendingAndSwf);
+            if (passed) { FinancePartner.CreditAdopted(country, government, ratesLanded: ReferenceEquals(appliedG, government)); }   // §755: counted only where adopted; §768: only what landed
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "The government's budget adopted" : "The government's budget failed", country.State.ApprovalRating - approvalBefore);
             Debug.Log($"BUDGET: {country.Id} - {title}");
+        }
+
+        /// <summary>
+        /// §768 (Elias's ruling D4): POLAND'S BUDGET IS TWO ACTS. The budget act the Sejm has just adopted stays veto-proof (Konstytucja Art. 224); any
+        /// change to a tax rate it carries travels in a separate TAX ACT - an ordinary statute (taxes are set by statute, Art. 217), voted by the Sejm on
+        /// the rates alone (its own division) and put to the President like every ordinary statute (B1, <see cref="PresidentialVetoGate"/>). Where the
+        /// tax act fails, or its veto stands, the old rates stand and the budget runs on them: the bill applies with its rates withheld. Returns the bill
+        /// to apply. Every other country, and a bill that changes no rate, applies whole.
+        /// </summary>
+        private BudgetBill PolishTaxAct(Country country, BudgetBill bill)
+        {
+            if (!Elections.PresidentialVeto.Applies(country.Id) || bill == null || !bill.ChangesTaxRates(country)) { return bill; }
+            BudgetBill taxAct = bill.TaxActPart();
+            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, taxAct);
+            bool passed = ParliamentSystem.WouldBillPass(country, concern);
+            string title = TaxActTitle(country, taxAct);
+            DivisionRecord vote = ParliamentSystem.RecordDivision(country, title, concern, passed, CurrentDate);
+            passed = PresidentialVetoGate(country, vote, passed);
+            Debug.Log($"BUDGET: {country.Id} - {title}: {(passed ? "stands - the new rates apply" : "falls - the old rates stand and the budget runs on them")}");
+            if (passed) { return bill; }
+            // a statute that falls costs what every failed bill costs (ApplyXResult's FAIL branch) - the review's question (2), answered by the rule the others follow
+            float approvalBefore = country.State.ApprovalRating;
+            country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - ParliamentSystem.BillFailedApprovalCost, 0f, 100f);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, "Tax act failed", country.State.ApprovalRating - approvalBefore);
+            return bill.WithoutRateChanges();
+        }
+
+        /// <summary>§768: how a tax act's division title begins - the night's standing-budget scan tells it from the budget act by it.</summary>
+        public const string TaxActTitlePrefix = "Tax act: ";
+
+        /// <summary>§768: the tax act's title as a player reads it - each rate it moves, from and to (invariant numbers), and the schedule named where it moves a sub-row.</summary>
+        private static string TaxActTitle(Country country, BudgetBill taxAct)
+        {
+            var parts = new List<string>();
+            foreach (KeyValuePair<TaxType, float> kv in taxAct.TaxLines)
+            {
+                TaxLine standing = country.TaxLines.Find(t => t.Type == kv.Key);
+                if (standing == null || !standing.IsImplemented || System.Math.Abs(kv.Value - standing.Rate) <= 1e-6f) { continue; }
+                // the review's defect 2: a per-tonne line in its own unit (the Budget page's, the currency per tonne), and a rate to the hundredth, so a
+                // small step never reads "12.4 % to 12.4 %"
+                string unit = standing.IsPerTonne ? " " + EnergyLayer.CurrencyCode(country.Id) + "/t" : " %", format = standing.IsPerTonne ? "0.##" : "0.0#";
+                parts.Add(TaxWords(kv.Key) + " " + standing.Rate.ToString(format, System.Globalization.CultureInfo.InvariantCulture) + unit + " to "
+                    + kv.Value.ToString(format, System.Globalization.CultureInfo.InvariantCulture) + unit);
+            }
+            foreach (KeyValuePair<TaxType, float[]> kv in taxAct.BracketRates)
+            {
+                // the schedule named only where a sub-row it sets differs from the standing one (the second review: a passed figure stays in the draft)
+                if (kv.Value == null) { continue; }
+                TaxLine standing = country.TaxLines.Find(t => t.Type == kv.Key);
+                bool differs = false;
+                for (int i = 0; i < kv.Value.Length && !differs; i++)
+                {
+                    differs = kv.Value[i] >= 0f && (standing?.BracketRates == null || i >= standing.BracketRates.Length || System.Math.Abs(kv.Value[i] - standing.BracketRates[i]) > 1e-6f);
+                }
+                if (differs) { parts.Add(TaxWords(kv.Key) + "'s schedule"); }
+            }
+            return TaxActTitlePrefix + (parts.Count > 0 ? string.Join(", ", parts) : "the standing rates");
+        }
+
+        /// <summary>A tax type in words: "IncomeTax" reads "income tax"; an acronym ("VAT") stays as it is.</summary>
+        private static string TaxWords(TaxType type)
+        {
+            string id = type.ToString();
+            if (id == id.ToUpperInvariant()) { return id; }
+            return System.Text.RegularExpressions.Regex.Replace(id, "(?<=[a-z])(?=[A-Z])", " ").ToLowerInvariant();
         }
 
         /// <summary>
@@ -1361,11 +1428,12 @@ namespace PoliSim.Simulation
             Country country = _world.GetCountry(countryId);
             if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); CountBudgetVoteOnAgreements(country); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
             float direction = ParliamentSystem.GetBillDirection(country, bill);
-            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
+            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, bill));   // P3-A2: the chamber votes on what the bill concerns; §768: Poland's budget act without its rates
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
             ParliamentSystem.RecordDivision(country, "Annual budget bill", concern, passed, CurrentDate);
-            float approvalBeforeBill = country.State.ApprovalRating;
-            ParliamentSystem.ApplyBillResult(country, bill, passed, ApplyBudgetBillSpendingAndSwf);
+            BudgetBill applied = passed ? PolishTaxAct(country, bill) : bill;   // §768 (D4): Poland's rates travel in their own act
+            float approvalBeforeBill = country.State.ApprovalRating;   // §768 (the second review): after the tax act, whose fall is its own ledger event
+            ParliamentSystem.ApplyBillResult(country, applied, passed, ApplyBudgetBillSpendingAndSwf);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
             _pendingBudgetBillByCountry.Remove(countryId);
             CountBudgetVoteOnAgreements(country);   // §654

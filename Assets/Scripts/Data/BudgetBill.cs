@@ -40,6 +40,8 @@ namespace PoliSim.Data
         /// the points of GDP it moves, the count before it and the government that tabled it - counted only if the chamber adopts the bill (FinancePartner.CreditAdopted).</summary>
         public string FinanceStanceHolder;
         public float FinanceStancePoints;
+        /// <summary>§768: the part of <see cref="FinanceStancePoints"/> the household rates carry - withheld from the count where Poland's tax act fell.</summary>
+        public float FinanceStanceRatePoints;
         public float FinanceStanceAppliedBefore;
         public System.DateTime FinanceStanceGovernment;
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
@@ -72,5 +74,48 @@ namespace PoliSim.Data
         public const float PensionAgeMin = 60f, PensionAgeMax = 70f;
 
         public int DaysRemaining;
+
+        // §768 (Elias's ruling D4): POLAND'S BUDGET IS TWO ACTS - the budget act stays veto-proof (Konstytucja Art. 224), and any change to a tax rate
+        // travels in a separate tax act, an ordinary statute the President may veto (taxes are set by statute, Art. 217). These three split a bill so.
+
+        /// <summary>§768: whether the bill changes a tax rate in force on <paramref name="country"/> - a levied line's rate, or a sub-row's rate a schedule
+        /// sets (−1 keeps the standing figure). A bill names every levied line at its requested rate, so a line at its current rate is no change.</summary>
+        public bool ChangesTaxRates(Country country)
+        {
+            foreach (KeyValuePair<TaxType, float> kv in TaxLines)
+            {
+                TaxLine standing = country.TaxLines.Find(t => t.Type == kv.Key);
+                if (standing != null && standing.IsImplemented && System.Math.Abs(kv.Value - standing.Rate) > 1e-6f) { return true; }
+            }
+            foreach (KeyValuePair<TaxType, float[]> kv in BracketRates)
+            {
+                TaxLine standing = country.TaxLines.Find(t => t.Type == kv.Key);
+                if (standing == null || kv.Value == null) { continue; }
+                for (int i = 0; i < kv.Value.Length; i++)
+                {
+                    if (kv.Value[i] < 0f) { continue; }
+                    if (standing.BracketRates == null || i >= standing.BracketRates.Length || System.Math.Abs(kv.Value[i] - standing.BracketRates[i]) > 1e-6f) { return true; }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>§768: the tax act - this bill's rates alone (its lines and its schedule's sub-rows), tabled by whoever tabled the bill, so the chamber
+        /// votes on the rates and reads the same author.</summary>
+        public BudgetBill TaxActPart() => new BudgetBill
+        {
+            GovernmentBill = GovernmentBill, TabledBy = TabledBy,
+            TaxLines = new Dictionary<TaxType, float>(TaxLines), BracketRates = new Dictionary<TaxType, float[]>(BracketRates),
+        };
+
+        /// <summary>§768: the budget act with the rates withheld - what applies where the tax act fails or its veto stands: the old rates stand and the
+        /// budget runs on them. Every other part is this bill's own.</summary>
+        public BudgetBill WithoutRateChanges()
+        {
+            var act = (BudgetBill)MemberwiseClone();
+            act.TaxLines = new Dictionary<TaxType, float>();
+            act.BracketRates = new Dictionary<TaxType, float[]>();
+            return act;
+        }
     }
 }

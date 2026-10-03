@@ -67,16 +67,18 @@ namespace PoliSim.Simulation
             country.FinancePartnerSteppedOn = on;
             bill.FinanceStanceHolder = written.Holder;
             bill.FinanceStancePoints = written.StancePoints;
+            bill.FinanceStanceRatePoints = written.RatePoints;   // §768
             bill.FinanceStanceAppliedBefore = written.AppliedBefore;
             bill.FinanceStanceGovernment = country.Government?.FormedOn ?? System.DateTime.MinValue;
         }
 
         /// <summary>§755: the government's bill ADOPTED - its step counted, where the government that tabled it still sits (another by the vote's day: the
-        /// step is not its partner's).</summary>
-        public static void CreditAdopted(Country country, BudgetBill bill)
+        /// step is not its partner's). §768 (Elias's ruling D4; the review's defect 3): where the bill's rates were withheld - Poland's tax act fell or its
+        /// veto stood - <paramref name="ratesLanded"/> is false and only the part of the step that landed is counted (the lines', not the rates').</summary>
+        public static void CreditAdopted(Country country, BudgetBill bill, bool ratesLanded = true)
         {
             if (bill == null || string.IsNullOrEmpty(bill.FinanceStanceHolder) || country.Government == null || country.Government.FormedOn != bill.FinanceStanceGovernment) { return; }
-            Credit(country, bill.FinanceStanceHolder, bill.FinanceStanceAppliedBefore, bill.FinanceStancePoints);
+            Credit(country, bill.FinanceStanceHolder, bill.FinanceStanceAppliedBefore, ratesLanded ? bill.FinanceStancePoints : bill.FinanceStancePoints - bill.FinanceStanceRatePoints);
         }
 
         private static void Credit(Country country, string holder, float appliedBefore, float points)
@@ -101,6 +103,11 @@ namespace PoliSim.Simulation
             public float StancePoints;
             /// <summary>The stance the holder had moved before this step.</summary>
             public float AppliedBefore;
+            /// <summary>§768: the part of <see cref="StancePoints"/> the household rates carry (0 where the lines took it all) - what a Polish tax act that
+            /// falls withholds from the count (<see cref="CreditAdopted"/>).</summary>
+            public float RatePoints;
+            /// <summary>§768: the amount the rates moved, in the book's money - the tightening's own tally, read for <see cref="RatePoints"/> alone.</summary>
+            public float RateAmount;
             public bool Any => Lines.Count > 0 || Taxes.Count > 0;
         }
 
@@ -190,6 +197,7 @@ namespace PoliSim.Simulation
             written.Holder = holder;
             written.AppliedBefore = applied;
             written.StancePoints = Mathf.Sign(step) * moved / gdp * 100f;
+            written.RatePoints = Mathf.Sign(step) * written.RateAmount / gdp * 100f;   // §768: the rates' share, its own store - StancePoints's untouched
             written.Moves.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "the stance {0:+0.00;-0.00} pp of GDP ({1:+0.00;-0.00} moved before, {2:+0.00;-0.00} asked)",
                 written.StancePoints, applied, target));
             return written;
@@ -268,6 +276,7 @@ namespace PoliSim.Simulation
                 decision.TaxRateOverrides[line.Type] = to;
                 written.Taxes.Add(line.Type);
                 taken += TaxBases.Base(country, line.Type) * (to - line.Rate) / 100f;
+                written.RateAmount += TaxBases.Base(country, line.Type) * (to - line.Rate) / 100f;   // §768: the same term, tallied apart - `taken`'s sum untouched
             }
             return taken;
         }

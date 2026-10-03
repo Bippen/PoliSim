@@ -1123,6 +1123,23 @@ namespace PoliSim.Testing
                             yield return Capture(stem + "_dragged");
                             Debug.Log("SHOT: P4-1 - the Income Tax draft moved +5 for the mid-drag frame; the readout cell shows the draft in the draft cue, the track unmoved.");
                             AssertLedgerGeometryStable(restGeometry, stem);
+                            // §768 (Elias's ruling D4): where the President holds a veto the drafted rate is the budget's separate tax act - the
+                            // If passed count's slip pinned on the same draft, so its tax act line (and his answer) is on film, then let go.
+                            if (PresidentialVeto.Applies(_countryId))
+                            {
+                                MethodInfo pinTaxAct = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                                FieldInfo taxActPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                                if (pinTaxAct != null && taxActPins != null)
+                                {
+                                    pinTaxAct.Invoke(controller, new object[] { "ifpassed:count", new Vector2(UiScreen.Width * 0.85f, UiScreen.Height * 0.30f) });
+                                    yield return Settle();
+                                    yield return Settle();
+                                    yield return Capture(stem + "_taxact_slip");
+                                    (taxActPins.GetValue(controller) as IList)?.Clear();
+                                    yield return Settle();
+                                }
+                                else { Debug.LogError($"SHOT: §768 - the controller has no PinSlipOnAnchorForFilm / _slipPins; {stem}_taxact_slip NOT written."); _failed++; }
+                            }
                             if (had) { taxInputs[TaxType.IncomeTax] = before; } else { taxInputs.Remove(TaxType.IncomeTax); }
                             yield return Settle();
                             // EN-8 (2026-09-13): the same tab scrolled to its last rows, so the Carbon Tax row - the one row whose step is
