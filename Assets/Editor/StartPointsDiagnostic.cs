@@ -48,7 +48,7 @@ namespace PoliSim.EditorTools
                 }
                 Check(StartPoints.For(CountryId.Poland)[1].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.Poland)[1].PollingDay == new DateTime(2025, 5, 18), "Poland's presidential card: 18 May 2025 (the record's first round), after the Sejm's");
                 Check(StartPoints.For(CountryId.France)[0].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.France)[0].DateNote == null && StartPoints.For(CountryId.France)[0].PollingDay == new DateTime(2022, 4, 10) && !StartPoints.For(CountryId.France)[0].Playable, "France's presidential card: first round 10 April 2022 [CC-195] (E-49 closed, §629), locked, before the legislative");
-                Check(StartPoints.For(CountryId.Poland)[1].Line == "LOCKED · THE TWO-ROUND SYSTEM IS NOT YET MODELLED" && StartPoints.For(CountryId.France)[0].Line == StartPoints.For(CountryId.Poland)[1].Line, "the two locked presidential cards carry the one reason in the player's words (18b)");
+                Check(StartPoints.For(CountryId.Poland)[1].Line == "LOCKED · THE PRESIDENTIAL START IS NOT YET BUILT" && StartPoints.For(CountryId.France)[0].Line == StartPoints.For(CountryId.Poland)[1].Line, "the two locked presidential cards carry the one reason in the player's words (18b)");
                 StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint fr);
                 Check(StartPoints.DateLine(fr) == "7 JUL 2024" && StartPoints.ModeLine(fr) == "WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024", "France's playable card: stamp 7 JUL 2024 · WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024");
                 StartPoints.TryPlayable(CountryId.Sweden, out StartPoints.StartPoint se);

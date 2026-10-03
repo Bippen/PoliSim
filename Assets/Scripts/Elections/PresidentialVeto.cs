@@ -67,12 +67,13 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// The veto on a statute the Sejm has just passed, read off the passage's division (<paramref name="sides"/>): the President on the day and his backing
-        /// party (<see cref="PresidencyOfRecord"/>); vetoed where that party voted against; the override counted on the same sides. Null where the country's
-        /// president holds no veto the game runs, or none is in office on the day.
+        /// party - §770: the game's president once its own election has seated one, else the record's (<see cref="PresidentialElection.PresidentAt"/> on
+        /// <paramref name="held"/>, the country's own elections; null reads the record alone); vetoed where that party voted against; the override counted
+        /// on the same sides. Null where the country's president holds no veto the game runs, or none is in office on the day.
         /// </summary>
-        public static Outcome Decide(CountryId country, DateTime date, Act act, IReadOnlyList<DivisionSide> sides)
+        public static Outcome Decide(CountryId country, IReadOnlyList<PresidentialElection.Contest> held, DateTime date, Act act, IReadOnlyList<DivisionSide> sides)
         {
-            if (!Applies(country) || sides == null || !PresidencyOfRecord.TryAt(country, date, out PresidencyOfRecord.President president)) { return null; }
+            if (!Applies(country) || sides == null || !PresidentialElection.PresidentAt(country, held, date, out PresidencyOfRecord.President president)) { return null; }
             var outcome = new Outcome { President = president.Name, BackingParty = president.BackingParty };
             int clubMembers = 0, clubNo = 0;
             foreach (DivisionSide side in sides)

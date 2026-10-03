@@ -1288,6 +1288,55 @@ namespace PoliSim.Testing
                     yield return Settle();
                     yield return Capture(stem + "_rows");
 
+                    // §770 (PS-5 item C4): the President row with an election the game held - its own next rounds held on the live country through the
+                    // runtime's path (the first vote on the live prediction, the run-off by B4), their days then moved before the film's day so the row reads
+                    // the president-elect and the pinned slip both rounds; filmed at the rows' scroll, then the contest taken away.
+                    if (stem == "07a_politics_parliament" && TwoRoundElection.RuleOf(_countryId) != null)
+                    {
+                        SimulationManager presSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                        Country presCountry = presSim?.World?.GetCountry(_countryId);
+                        MethodInfo pinPresident = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                        FieldInfo presPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                        PresidentialElection.Contest held = null;
+                        int heldBefore = presCountry?.PresidentialElections.Count ?? 0;
+                        try
+                        {
+                            if (presCountry != null && PresidentialElection.TryNextFirstVote(presCountry, presSim.CurrentDate, out DateTime presFirst, out _, out _)
+                                && NationalElection.TryPredictShares(_countryId, out Dictionary<string, double> presShares, EconomicVote.RecordOverTerm(presCountry, presFirst, out _), on: presFirst))
+                            {
+                                held = PresidentialElection.HoldRounds(presCountry, presFirst, presShares);
+                                if (held != null && held.RunOffPending()) { PresidentialElection.HoldRounds(presCountry, held.RunOffOn, null); }
+                            }
+                            if (held == null || !held.Decided() || pinPresident == null || presPins == null)
+                            {
+                                Debug.LogError($"SHOT: §770 - the game's presidential rounds were not held for the film ({held?.Line ?? "no first vote"}); {stem}_president_elect NOT written.");
+                                _failed++;
+                            }
+                            else
+                            {
+                                // PLANTED: the rounds are the game's own, their days moved - the first vote 20 days before the film's day, a run-off its 14 after,
+                                // the oath 50 days ahead - so the row reads a president-elect; an outright winner has no run-off to move
+                                TimeSpan back = presSim.CurrentDate.AddDays(-20) - held.FirstVote;
+                                held.FirstVote += back;
+                                if (held.RunOffA != null) { held.RunOffOn += back; }
+                                held.TakesOffice = presSim.CurrentDate.AddDays(50);
+                                Debug.Log($"SHOT: §770 - PLANTED: the game's own presidential rounds held for the film ({held.Line}); their days moved to {held.FirstVote:yyyy-MM-dd}"
+                                    + (held.RunOffA != null ? $" and {held.RunOffOn:yyyy-MM-dd}" : string.Empty) + $", the oath {held.TakesOffice:yyyy-MM-dd}");
+                                yield return Settle();
+                                pinPresident.Invoke(controller, new object[] { "president", new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.50f) });
+                                yield return Settle();
+                                yield return Settle();
+                                yield return Capture(stem + "_president_elect");
+                            }
+                        }
+                        finally
+                        {
+                            (presPins?.GetValue(controller) as IList)?.Clear();
+                            if (presCountry != null && presCountry.PresidentialElections.Count > heldBefore) { presCountry.PresidentialElections.RemoveRange(heldBefore, presCountry.PresidentialElections.Count - heldBefore); }
+                        }
+                        yield return Settle();
+                    }
+
                     // ⚠ A THIRD CAPTURE, DEEPER STILL. 900px clears the preamble and shows the first few
                     // rows, which answers "does a row render". It does not answer "does this hold at
                     // depth" - and on the two screens where that is the real question it lands inside the

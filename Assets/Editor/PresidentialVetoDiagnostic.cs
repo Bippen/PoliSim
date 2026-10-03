@@ -221,15 +221,15 @@ namespace PoliSim.EditorTools
                       && PresidentialVeto.OverrideDenominator == OverrideDenominator && !PresidentialVeto.MayVeto(PresidentialVeto.Act.BudgetAct) && !PresidentialVeto.MayVeto(PresidentialVeto.Act.ConstitutionalAmendment),
                     "§761: the live class's constants are the texts' (460, the quorum 230, 3/5), the budget act and an amendment never vetoed");
                 var against = new List<DivisionSide> { Side("PiS", 194, -1), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
-                PresidentialVeto.Outcome o = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against);
+                PresidentialVeto.Outcome o = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against);
                 Check(o != null && o.President == "Karol Nawrocki" && o.BackingParty == "PiS" && o.Vetoed && !o.Overridden && o.Yes == 248 && o.Required == 276 && !o.Stands,
                     F("§761: PiS against on 2026-01-01 - {0} vetoes; {1} for, {2} needed - the veto stands", o?.President, o?.Yes, o?.Required));
                 var abstaining = new List<DivisionSide> { Side("PiS", 194, 0), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
-                PresidentialVeto.Outcome signed = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, abstaining);
-                PresidentialVeto.Outcome budget = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2026, 1, 1), PresidentialVeto.Act.BudgetAct, against);
-                PresidentialVeto.Outcome dudaOutcome = PresidentialVeto.Decide(CountryId.Poland, new DateTime(2024, 3, 1), PresidentialVeto.Act.OrdinaryStatute, against);
+                PresidentialVeto.Outcome signed = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, abstaining);
+                PresidentialVeto.Outcome budget = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.BudgetAct, against);
+                PresidentialVeto.Outcome dudaOutcome = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2024, 3, 1), PresidentialVeto.Act.OrdinaryStatute, against);
                 Check(signed != null && !signed.Vetoed && signed.Stands && budget != null && !budget.Vetoed && dudaOutcome != null && dudaOutcome.President == "Andrzej Duda" && dudaOutcome.Vetoed
-                      && PresidentialVeto.Decide(CountryId.Germany, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against) == null,
+                      && PresidentialVeto.Decide(CountryId.Germany, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against) == null,
                     "§761: PiS abstaining - signed (the record's bloc abstentions); the budget act - signed; Duda on 2024-03-01 - vetoes; Germany - no veto the game runs");
                 var go = new GameObject("PresidentialVetoDiagnostic gate");
                 try
@@ -298,7 +298,7 @@ namespace PoliSim.EditorTools
                             if (passes) { passing++; }
                             if (pis < 0) { pisAgainst++; if (passes) { pisAgainstPassing++; } if (td == 0) { pisAgainstTdAbstains++; } } else if (pis > 0) { pisFor++; } else { pisUndecided++; }
                             // §766: the veto's encounters on the record's chamber - each statute the Sejm passes, put to the President of the day
-                            PresidentialVeto.Outcome met = passes ? PresidentialVeto.Decide(CountryId.Poland, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides) : null;
+                            PresidentialVeto.Outcome met = passes ? PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides) : null;
                             if (met != null && met.Vetoed) { if (met.Overridden) { vetoOverridden++; } else { vetoStands++; } }
                         }
                         sb.Append(F("    info      §761/§766 the catalog on {0}, the record's chamber: {1} laws offered, {2} the Sejm passes; PiS against {3} ({4} of them passing; TD abstaining on {7} of them), for {5}, undecided {6}; the President vetoes {8} the Sejm passes - {9} overridden, {10} standing\n",
@@ -313,7 +313,7 @@ namespace PoliSim.EditorTools
                             if (!PoliSim.Simulation.ParliamentSystem.WouldBillPass(pl, concern)) { continue; }
                             var sides = new List<DivisionSide>();
                             foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
-                            PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
+                            PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
                             if (projected != null && projected.Vetoed && !projected.Overridden) { chosen = law; break; }
                         }
                         Check(chosen != null, F("§761: on {0}, on the planted chamber (KO 262, PiS 194, Konf 4), the catalog holds a law the Sejm passes and PiS opposes - {1}", sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), chosen?.Id ?? "NONE"));
@@ -358,7 +358,7 @@ namespace PoliSim.EditorTools
                                 if (!PoliSim.Simulation.ParliamentSystem.WouldBillPass(pl, concern)) { continue; }
                                 var sides = new List<DivisionSide>();
                                 foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
-                                PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
+                                PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
                                 if (projected != null && projected.Vetoed && !projected.Overridden) { moved = line; newRate = line.Rate + step; break; }
                             }
                         }

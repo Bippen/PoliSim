@@ -905,6 +905,11 @@ namespace PoliSim.Data
         /// </summary>
         public List<Elections.ElectionRecord> ElectionHistory = new List<Elections.ElectionRecord>();
 
+        /// <summary>§770 (PS-5 item C4): the presidential elections the game held for this country, oldest first. Who is president on a day is read
+        /// from them (`PresidentialElection.PresidentAt`) - the record's president holds until the first seats a successor. Empty where the country
+        /// elects no president in two rounds.</summary>
+        public List<Elections.PresidentialElection.Contest> PresidentialElections = new List<Elections.PresidentialElection.Contest>();
+
         /// <summary>
         /// C-D4 (§38, R-CL3): **each party's long-term political capital — what survives an election.**
         ///

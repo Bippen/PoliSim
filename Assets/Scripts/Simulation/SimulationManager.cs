@@ -475,6 +475,8 @@ namespace PoliSim.Simulation
             AdvanceCampaign();
             // PS-2 / CL-4: the day the player's country votes, on its own calendar - the controller holds the election on it.
             PollingDayToday = TryPlayerPollingDay(out System.DateTime pollingDay) && pollingDay == CurrentDate;
+            // §770 (PS-5 item C4): a round of the player's country's presidential election, on its own day - the simulation's alone (no verdict to show)
+            HoldPresidentialRound();
 
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
@@ -1345,7 +1347,7 @@ namespace PoliSim.Simulation
         private bool PresidentialVetoGate(Country country, DivisionRecord passage, bool passed, Elections.PresidentialVeto.Act act = Elections.PresidentialVeto.Act.OrdinaryStatute)
         {
             if (!passed || passage == null || !Elections.PresidentialVeto.Applies(country.Id)) { return passed; }
-            Elections.PresidentialVeto.Outcome veto = Elections.PresidentialVeto.Decide(country.Id, CurrentDate, act, passage.Sides);
+            Elections.PresidentialVeto.Outcome veto = Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, CurrentDate, act, passage.Sides);
             if (veto == null || !veto.Vetoed) { return true; }
             passage.Motion = true;
             var sides = new List<DivisionSide>();
@@ -4048,6 +4050,24 @@ namespace PoliSim.Simulation
                 }
             }
             Elections.CampaignRun.StepDay(PlayerCampaign);
+        }
+
+        /// <summary>§770 (PS-5 item C4): a round of the player's country's presidential election where today is its day - the first vote on the live
+        /// prediction as the Sejm's vote reads it (the government's record shifting it), the run-off on the first vote it follows. The elections, as the
+        /// Sejm's, are the player's country's alone.</summary>
+        private void HoldPresidentialRound()
+        {
+            if (!PlayerCountryId.HasValue || Elections.TwoRoundElection.RuleOf(PlayerCountryId.Value) == null) { return; }
+            Country country = _world.GetCountry(PlayerCountryId.Value);
+            if (country == null || !Elections.PresidentialElection.IsRoundDay(country, CurrentDate, out bool runOff)) { return; }
+            Dictionary<string, double> predicted = null;
+            if (!runOff && !Elections.NationalElection.TryPredictShares(country.Id, out predicted, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate))
+            {
+                predicted = null;
+                Debug.LogWarning("PRESIDENTIAL: no prediction could be made on the first vote's day - nothing is held, and the office stands as it is");
+            }
+            Elections.PresidentialElection.Contest held = Elections.PresidentialElection.HoldRounds(country, CurrentDate, predicted);
+            if (held != null) { Debug.Log("PRESIDENTIAL: " + held.Line); }
         }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>

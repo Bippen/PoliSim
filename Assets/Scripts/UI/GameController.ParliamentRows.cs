@@ -46,6 +46,7 @@ namespace PoliSim.UI
             DrawCaretakerLine(book);
             DrawSpeakerRound(book);   // §646: the formateur's round
             DrawReferenceRow(book);   // §705: history as the reference where no election night carries it
+            DrawPresidentRow(book);   // §770 (PS-5 item C4): the president the veto reads, and the game's own presidential election
             DrawConfidence(book);   // PS-3i (§636)
             Rect tail = ReserveRowPx(1f);
             if (Event.current.type == EventType.Repaint) { _parliamentSlipBounds = new Rect(tail.x, 0f, tail.width, tail.yMax); }
@@ -438,6 +439,121 @@ namespace PoliSim.UI
             book.Anchors["reference"] = slip;
             DrawRowRule(row);
             GUILayout.Space(StatsUnit(10f));
+        }
+
+        /// <summary>
+        /// §770 (PS-5 item C4): THE PRESIDENT - who holds the office the veto reads (the record's until the game's own election seats a successor),
+        /// a president-elect waiting for the oath, a run-off the first vote has called, or the next first vote; the game's rounds on the slip. Drawn
+        /// where the country elects its president in two rounds.
+        /// </summary>
+        private void DrawPresidentRow(PeopleSlips.Book book)
+        {
+            if (_playerCountry == null || TwoRoundElection.RuleOf(PlayerCountryId) == null) { return; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            if (!PresidentialElection.PresidentAt(PlayerCountryId, _playerCountry.PresidentialElections, today, out PresidencyOfRecord.President president)) { return; }
+            PresidentialElection.Contest last = null;
+            foreach (PresidentialElection.Contest c in _playerCountry.PresidentialElections) { if (c.FirstVote <= today && (last == null || c.FirstVote > last.FirstVote)) { last = c; } }
+            bool elect = last != null && last.Decided() && last.TakesOffice > today;
+            bool runOffAhead = last != null && last.RunOffPending();
+            bool undecided = last != null && !last.Decided() && !last.RunOffPending() && last.TakesOffice > today;   // a tie, or a finalist with no position (the count's own line says which) - shown until the term it was for ends
+            bool next = PresidentialElection.TryNextFirstVote(_playerCountry, today, out System.DateTime firstVote, out _, out string dayBasis);
+            bool ofGame = PresidentialElection.ElectedInGame(president);
+            CountryId country = _playerCountry.Id;
+
+            GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
+            GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
+            Rect row = ReserveRow(30f);
+            float x = row.x;
+            void Words(string words, GUIStyle style)
+            {
+                float w = Mathf.Ceil(style.CalcSize(new GUIContent(words)).x) + 2f;
+                PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, w, row.height), words, style);
+                x += w + StatsUnit(10f);
+            }
+            void Mark(string key)
+            {
+                DrawPartyMarkSlot(new Rect(x, row.y, StatsUnit(16f), row.height), country, key);
+                x += StatsUnit(16f) + StatsUnit(8f);
+            }
+            void Chip(string day)
+            {
+                Rect stamp = RowChipRectFrom(x, row, day, padBoard: 6f);
+                DrawRowChip(stamp, day, ChipFace.Outline);
+                x = stamp.xMax + StatsUnit(10f);
+            }
+            Words("THE PRESIDENT", caption);
+            if (president.BackingParty != null) { Mark(president.BackingParty); }
+            Words(Surname(president.Name).ToUpperInvariant(), caption);
+            Words(ofGame ? "ELECTED IN THE GAME" : "OF RECORD", muted);
+            if (elect)
+            {
+                Words("ELECT", muted);
+                if (last.ElectedParty != null) { Mark(last.ElectedParty); }
+                Words(Surname(last.Elected).ToUpperInvariant(), caption);
+                Chip(DeskDay(last.TakesOffice));
+            }
+            else if (runOffAhead)
+            {
+                Words("RUN-OFF", muted);
+                Chip(DeskDay(last.RunOffOn));
+            }
+            else
+            {
+                if (undecided) { Words("NOTHING DECIDED", muted); }
+                if (next)
+                {
+                    Words("NEXT VOTE", muted);
+                    Chip(DeskDay(firstVote));
+                }
+            }
+            SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "president");
+
+            var slip = new SlipContent("THE PRESIDENT");
+            slip.Add(president.Name.ToUpperInvariant() + (president.BackingParty != null ? " · " + PartySystems.ShortName(country, president.BackingParty).ToUpperInvariant() : string.Empty)
+                + " · IN OFFICE SINCE " + DeskDay(president.TookOffice));
+            slip.Add(ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT");
+            // §770: whole lines - the slip's box wraps them to its own width (a pre-wrapped line is wrapped twice)
+            slip.Add("A STATUTE THE PRESIDENT'S BACKING PARTY VOTES AGAINST IS VETOED - THE SEJM OVERRIDES BY 3/5 OF THOSE VOTING");
+            if (last != null)
+            {
+                slip.Add("FIRST VOTE " + DeskDay(last.FirstVote) + " - " + DayWords(last.DayBasis));
+                foreach (PresidentialElection.Candidate c in last.Field)
+                {
+                    string who = Surname(c.Name).ToUpperInvariant();
+                    bool unnamed = c.Name != null && c.Name.Contains("'s candidate");   // the label already names the party
+                    slip.Add(who + (unnamed ? string.Empty : " (" + PartySystems.ShortName(country, c.Party).ToUpperInvariant() + ")") + " " + c.Share.ToString("0.00", CultureInfo.InvariantCulture) + " %");
+                }
+                if (last.RunOffHeld && last.Decided())
+                {
+                    slip.Add("RUN-OFF " + DeskDay(last.RunOffOn) + " · " + Surname(last.RunOffA).ToUpperInvariant() + " " + last.RunOffShareA.ToString("0.00", CultureInfo.InvariantCulture) + " % OF THE TWO");
+                }
+                else if (runOffAhead)
+                {
+                    slip.Add("RUN-OFF " + DeskDay(last.RunOffOn) + " · " + Surname(last.RunOffA).ToUpperInvariant() + " AND " + Surname(last.RunOffB).ToUpperInvariant());
+                }
+                if (undecided) { slip.Add(last.Line.ToUpperInvariant()); }
+                foreach (string n in last.NotStanding) { slip.Add("NOT STANDING: " + n.ToUpperInvariant()); }
+            }
+            if (next && !elect && !runOffAhead)
+            {
+                slip.Add("NEXT FIRST VOTE " + DeskDay(firstVote) + " - " + DayWords(dayBasis));
+            }
+            book.Anchors["president"] = slip;
+            DrawRowRule(row);
+            GUILayout.Space(StatsUnit(10f));
+        }
+
+        /// <summary>A first vote's day in the player's words - the record's, or the premise's (<see cref="PresidentialElection.FirstVoteFor"/>'s basis says which).</summary>
+        private static string DayWords(string basis) => basis != null && basis.StartsWith("PREMISE", System.StringComparison.Ordinal)
+            ? "A PREMISE: THE LAST SUNDAY OF THE WINDOW BEFORE THE TERM ENDS, AS IN 2025"
+            : "THE RECORD'S DAY";
+
+        /// <summary>A president's or candidate's surname as the row prints it - the last word of the name; an unnamed candidate ("KO's candidate (2030)") whole.</summary>
+        private static string Surname(string name)
+        {
+            if (string.IsNullOrEmpty(name) || name.Contains("'s candidate")) { return name ?? string.Empty; }
+            int space = name.LastIndexOf(' ');
+            return space < 0 ? name : name.Substring(space + 1);
         }
 
         // §698: the constructive vote projected for the player's party - a formation's worth of work, so kept for the day and the government it was drawn for

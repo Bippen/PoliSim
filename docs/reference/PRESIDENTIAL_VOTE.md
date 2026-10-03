@@ -15,7 +15,7 @@ what it measures. The record's sections are `COMPLETED.md` §720 (the rule and t
 | The first round | Each candidate inherits the standing of the party that backs it; a candidate no party backs has nothing to inherit. In the game the standing is the live prediction on polling day; the backtest inherits the previous Sejm. | §727 (measured, not fitted) |
 | The run-off transfers | Each eliminated candidate's voters split between the finalists as exp(−d²/τ), the distance in the **sovereignty space** - galtan, nationalism and the EU position, equally weighted - each candidate at its party's CHES 2024 row; an unplaced candidate splits as the finalists' first votes did. | Elias's ruling B4 (§764): the sovereignty space, as the evidence of §727 said |
 | τ | **One parameter, fitted** by least squares to the Ipsos exit poll of 1 June 2025 - the share of five first-round electorates (Mentzen, Braun, Hołownia, Zandberg, Biejat) voting each finalist. | Elias's ruling B4 - [FITTED]; **no second parameter** (ruled 2026-10-03) |
-| Abstention | An eliminated electorate stays home in proportion to its distance to the nearer finalist, the farthest at a drafted share. No source measures it: the exit poll interviews run-off voters only. | [AUTHORED-DRAFT] (`PresidentialVoteBacktest.AbstentionDraftMax`), on the play-calibration list |
+| Abstention | An eliminated electorate stays home in proportion to its distance to the nearer finalist, the farthest at a drafted share. No source measures it: the exit poll interviews run-off voters only. | [AUTHORED-DRAFT] (`PresidentialElection.AbstentionDraftMax`), on the play-calibration list |
 
 ## Known misses - ruled to stand
 
@@ -53,5 +53,9 @@ A miss is the model less the record, in percentage points.
 
 ## Where it stands in the game
 
-The fit lives in the Editor instrument until the game's own presidential election takes it (PS-5, item C). The live first round reads
-the live prediction, which for Poland carries its history by lineage - LOW CONFIDENCE (Elias's ruling D1, §767; `PartySystems.HistoryNote`).
+The game's own presidential election reads it (§770, `PresidentialElection`): the run-off at `PresidentialElection.TransferTau` with the
+draft abstention `PresidentialElection.AbstentionDraftMax`, the instrument failing the bar where the runtime's τ is no longer its fit or its arithmetic
+differs from the runtime's. In the game a candidate of record stands **where the fit placed it** - Hołownia at Polska 2050's own row, not Trzecia
+Droga's joint position (D2) - and the instrument fails where the runtime's position and its own row differ; a later candidate stands at the
+backing party's position. The live first round reads the live prediction, which for Poland carries its
+history by lineage - LOW CONFIDENCE (Elias's ruling D1, §767; `PartySystems.HistoryNote`).

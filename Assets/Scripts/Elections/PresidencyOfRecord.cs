@@ -9,7 +9,7 @@ namespace PoliSim.Elections
     /// veto is live since §761 - `PresidentialVeto`), from the day the oath was taken (Art. 128 ust. 1: the term begins on taking office) to the next's, each with the
     /// election that put them there. Sourced in `ElectionsData/poland/records_by_date.md` §2d (the National Assembly's oath protocols) and
     /// `presidential_returns.md` (the PKW's notices). A Poland run from its start (2023-02-19) sits in Duda's second term and crosses the 2025
-    /// election; the president of record holds until the game's own presidential election is simulated (part two).
+    /// election; the president of record holds until the game's own presidential election seats a successor (§770, `PresidentialElection.PresidentAt`).
     /// </summary>
     public static class PresidencyOfRecord
     {
@@ -47,6 +47,49 @@ namespace PoliSim.Elections
 
         /// <summary>The country's presidents of record in order; empty where none is directly elected in the record the game holds.</summary>
         public static IReadOnlyList<President> Of(CountryId id) => id == CountryId.Poland ? Poland : Array.Empty<President>();
+
+        /// <summary>§770 (PS-5 item C4): one candidate of a presidential election of record - the PKW's surname and the roster party whose standing
+        /// the candidate inherits in the game's own election (null: none - an independent, a splinter), with the reading. B5: a party cannot
+        /// nominate; the committee is the voters', the backing the party's. <see cref="PositionUnit"/> is where B4 placed the candidate in the sovereignty
+        /// space - the CHES unit the transfer was fitted on (§764): a roster party's key, or a joint list's member (Hołownia at Polska 2050's own row).
+        /// `PresidentialVoteBacktest` holds its own field to these readings - the committees, and the positions of the candidates who stand.</summary>
+        public readonly struct CandidateOfRecord
+        {
+            public readonly string Surname, BackingParty, PositionUnit, Why;
+            public CandidateOfRecord(string surname, string backingParty, string positionUnit, string why) { Surname = surname; BackingParty = backingParty; PositionUnit = positionUnit; Why = why; }
+        }
+
+        private static readonly CandidateOfRecord[] Poland2025 =
+        {
+            new CandidateOfRecord("NAWROCKI", "PiS", "PiS", "the candidate PiS backed (a civic committee)"),
+            new CandidateOfRecord("TRZASKOWSKI", "KO", "KO", "KO's candidate"),
+            new CandidateOfRecord("MENTZEN", "Konf", "Konf", "Konfederacja's candidate"),
+            new CandidateOfRecord("BRAUN", null, "Konf", "his party ran on Konfederacja's 2023 list and left it in 2025"),
+            new CandidateOfRecord("HOŁOWNIA", "TD", "Polska 2050", "Trzecia Droga's candidate (Polska 2050's leader; PSL backed him)"),
+            new CandidateOfRecord("ZANDBERG", null, null, "Razem ran inside Lewica's 2023 committee and left its club in 2024"),
+            new CandidateOfRecord("BIEJAT", "NL", "NL", "Lewica's candidate"),
+        };
+
+        /// <summary>The candidates of the election of record held for the term ending in <paramref name="termEndYear"/> that a roster party backed or
+        /// that §727 measured; empty where the record holds none (every election after 2025).</summary>
+        public static IReadOnlyList<CandidateOfRecord> CandidatesOf(CountryId id, int termEndYear) => id == CountryId.Poland && termEndYear == 2025 ? Poland2025 : Array.Empty<CandidateOfRecord>();
+
+        /// <summary>A candidate of record's name as the game prints it - the first given name and the surname, read from the PKW's form
+        /// ("NAWROCKI Karol Tadeusz" - "Karol Nawrocki"); the surname alone where the returns do not hold the year's first round.</summary>
+        public static string NameOfRecord(CountryId id, int year, string surname)
+        {
+            string Title(string s) => System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(s.ToLowerInvariant());
+            if (id == CountryId.Poland)
+            {
+                foreach (var v in Generated.PolishPresidentialReturns.Votes)
+                {
+                    if (v.Year != year || v.Round != 1) { continue; }
+                    string[] parts = v.Candidate.Split(' ');
+                    if (parts.Length >= 2 && parts[0] == surname) { return parts[1] + " " + Title(parts[0]); }
+                }
+            }
+            return Title(surname);
+        }
 
         /// <summary>The president of record on <paramref name="date"/>; false before the first the record holds, or where none is held.</summary>
         public static bool TryAt(CountryId id, DateTime date, out President president)

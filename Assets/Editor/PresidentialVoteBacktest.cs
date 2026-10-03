@@ -167,6 +167,25 @@ namespace PoliSim.EditorTools
                 card.Add(Row(F("{0}'s electorate voting Nawrocki (the exit poll)", Title(surname)), F("{0:0.0}", model), F("{0:0.0}", toNawrocki), F("{0:+0.0;-0.0}", model - toNawrocki)));
             }
             pins.Add(("B4: the fitted τ", tauFit, PinTauFit));
+            // §770 (PS-5 item C4): the game's own election reads the fit - the runtime's τ is this fit, and its field the readings below
+            Check(Math.Abs(tauFit - PresidentialElection.TransferTau) < 0.0005, F("§770: the runtime's τ ({0}) is this fit ({1:0.000})", PresidentialElection.TransferTau, tauFit));
+            Check(Field2025.All(c => PresidencyOfRecord.CandidatesOf(CountryId.Poland, 2025).Any(r => r.Surname == c.Surname && r.BackingParty == c.Committee)),
+                "§770: the runtime's candidates of 2025 (PresidencyOfRecord.CandidatesOf) inherit from the committees this measures");
+            // §770 (the review's defect 1): and stand where this fit placed them - each candidate a committee runs, at the runtime's position for its
+            // unit, against this CHES row (the roster's rows are typed at two decimals, so to within half a hundredth on each axis)
+            var placedApart = new List<string>();
+            foreach (Candidate c in Field2025.Where(f => f.Committee != null))
+            {
+                PresidencyOfRecord.CandidateOfRecord r = PresidencyOfRecord.CandidatesOf(CountryId.Poland, 2025).First(x => x.Surname == c.Surname);
+                Position want = ches[c.ChesParty];
+                bool held = PresidentialElection.TryPosition(CountryId.Poland, r.PositionUnit, out PresidentialElection.Point got);
+                if (!held || Math.Abs(got.Galtan - want.Galtan) > 0.0051 || Math.Abs(got.Nationalism - want.Nationalism) > 0.0051 || Math.Abs(got.Eu - want.Eu) > 0.0051)
+                {
+                    placedApart.Add(F("{0} at {1} ({2})", c.Surname, r.PositionUnit, held ? F("{0:0.00}/{1:0.00}/{2:0.00} against {3:0.00}/{4:0.00}/{5:0.00}", got.Galtan, got.Nationalism, got.Eu, want.Galtan, want.Nationalism, want.Eu) : "not held"));
+                }
+            }
+            Check(placedApart.Count == 0, placedApart.Count == 0 ? "§770: the game's candidates of 2025 stand at the CHES rows this fit placed them at"
+                : "§770: the game's candidates of 2025 stand apart from where this fit placed them - " + string.Join("; ", placedApart));
             foreach ((int year, Candidate[] field, Dictionary<string, double> sejm) in new[] { (2020, Field2020, sejm2019), (2025, Field2025, sejm2023) })
             {
                 List<(string Name, long Votes)> r1 = rounds[(year, 1)];
@@ -231,6 +250,10 @@ namespace PoliSim.EditorTools
                         100.0 * stayMax, fa, withStay, withStay - recordA));
                     if (stayMax == AbstentionDraftMax)
                     {
+                        // §770: the runtime's arithmetic (PresidentialElection.RunOffShare) on the same first round, the same positions, the same τ - one count, two homes
+                        var asGame = recordR1.Select(c => (c.Surname, c.Share, c.At == null ? (PresidentialElection.Point?)null : new PresidentialElection.Point(c.At.Galtan, c.At.Nationalism, c.At.Eu))).ToList();
+                        double runtime = PresidentialElection.RunOffShare(asGame, fa, fb, new PresidentialElection.Point(pa.Galtan, pa.Nationalism, pa.Eu), new PresidentialElection.Point(pb.Galtan, pb.Nationalism, pb.Eu), tauFit, stayMax, out _);
+                        Check(Math.Abs(runtime - withStay) < 1e-9, F("§770: {0}'s run-off - the runtime's arithmetic gives {1:0.000000}, this {2:0.000000}", year, runtime, withStay));
                         pins.Add(($"{year} run-off, the fitted τ with the draft abstention (B4)", withStay, year == 2020 ? PinStay2020 : PinStay2025));
                         card.Add(Row(F("{0} run-off, {1}'s share - the fitted τ with the draft abstention", year, Title(fa)), F("{0:0.00}", withStay), F("{0:0.00}", recordA), F("{0:+0.00;-0.00}", withStay - recordA)));
                     }
@@ -381,10 +404,8 @@ namespace PoliSim.EditorTools
             return fields.ToArray();
         }
 
-        /// <summary>§764 (B4) [AUTHORED-DRAFT]: the share of the eliminated electorate farthest from both finalists that stays home in the run-off; the
-        /// others in proportion to their distance to the nearer finalist. The exit poll interviews run-off voters only, so no source measures it - the
-        /// ruling makes it authored; on the calibration list.</summary>
-        private const double AbstentionDraftMax = 0.25;
+        /// <summary>§764 (B4) [AUTHORED-DRAFT]: the abstention's draft - §770: the runtime's, where the game's own election reads it.</summary>
+        private const double AbstentionDraftMax = PresidentialElection.AbstentionDraftMax;
 
         /// <summary>§764: the pinned readings of the fit (set from the first run's print; a change to the positions, the pairs or the rule moves them).</summary>
         private const double PinTauFit = 18.301, PinFit2020 = 54.829, PinFit2025 = 52.538, PinStay2020 = 54.832, PinStay2025 = 52.321;

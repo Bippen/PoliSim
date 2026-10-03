@@ -3539,6 +3539,18 @@ namespace PoliSim.UI
             {
                 Add(pollingDay, "Polling day", UiPalette.SystemArea.Political);
             }
+            // §770 (PS-5 item C4): the presidential rounds - the next first vote, and a run-off a first vote has called
+            if (_playerCountry != null && PresidentialElection.TryNextFirstVote(_playerCountry, _simulationManager.CurrentDate, out System.DateTime firstVote, out _, out _))
+            {
+                Add(firstVote, "Presidential election", UiPalette.SystemArea.Political);
+            }
+            if (_playerCountry != null)
+            {
+                foreach (PresidentialElection.Contest contest in _playerCountry.PresidentialElections)
+                {
+                    if (contest.RunOffPending()) { Add(contest.RunOffOn, "Presidential run-off", UiPalette.SystemArea.Political); }
+                }
+            }
 
             // Resolved divisions (every bill type, up to the 24 most recent) - real, stored dates,
             // history rather than schedule.

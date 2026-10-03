@@ -116,7 +116,7 @@ namespace PoliSim.UI
             if (concern == null || concern.IsEmpty || !PoliSim.Elections.PresidentialVeto.Applies(country.Id) || !WouldPass(country, concern)) { return null; }
             var projected = new List<DivisionSide>();
             foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, concern)) { projected.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side }); }
-            return PoliSim.Elections.PresidentialVeto.Decide(country.Id, date, act, projected);
+            return PoliSim.Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, date, act, projected);
         }
 
         /// <summary>§761: whether a statute the chamber would pass dies on the President's veto - vetoed, and the override short of its 3/5.</summary>

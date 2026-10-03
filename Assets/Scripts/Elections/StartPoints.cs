@@ -50,9 +50,10 @@ namespace PoliSim.Elections
 
         /// <summary>18b: the one reason every locked card carries today, in the player's words.</summary>
         public const string LockedPrefix = "LOCKED · ";
-        /// <summary>18b's words, kept at §720: the count is modelled (TwoRoundElection, part one of PS-5 with S7) but the system as a playable election -
-        /// the vote that feeds it, part two - is not, here or in France (S8).</summary>
-        public const string TwoRoundReason = "THE TWO-ROUND SYSTEM IS NOT YET MODELLED";
+        /// <summary>18b's one reason, its words changed at §770: Poland's two-round election is modelled and the game holds its own (PS-5 item C4,
+        /// <see cref="PresidentialElection"/>), but neither presidential START - the player as a candidate - is built, here or in France (S8, whose
+        /// two-round system is not modelled either).</summary>
+        public const string PresidentialStartReason = "THE PRESIDENTIAL START IS NOT YET BUILT";
         public const string RoundDatesNote = "ROUND DATES NOT IN THE RECORD";
 
         /// <summary>The country's start points in date order (a date the record does not hold sorts by its year).</summary>
@@ -70,10 +71,10 @@ namespace PoliSim.Elections
                 case CountryId.Poland:
                     list.Add(Ruled(id, "SEJM ELECTION", "the PKW's notice, Dz.U. 2023 poz. 2234 (poland/returns_2023.md); the run-up by the standard window (§618)"));
                     // §720 (PS-5 with S7, part one): the presidential start reads its record through the two-round rule - the first vote's day from the
-                    // PKW's returns, the verdict, the run-off and the term counted, not typed; the vote that would feed a played election is part two
+                    // PKW's returns, the verdict, the run-off and the term counted, not typed; §770: the game holds its own presidential election from a Sejm start; the player as a candidate is not yet a start
                     TwoRoundElection.RoundOfRecord(id, 2025, 1, out DateTime firstVote2025);
                     list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", firstVote2025, null, DateTime.MinValue, false,
-                        LockedPrefix + TwoRoundReason,
+                        LockedPrefix + PresidentialStartReason,
                         TwoRoundElection.RecordBrief(id, 2025) + " (the PKW's notices, poland/presidential_returns.md; the oaths, poland/records_by_date.md)"));
                     break;
                 case CountryId.Italy:
@@ -84,7 +85,7 @@ namespace PoliSim.Elections
                     break;
                 case CountryId.France:
                     list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", new DateTime(2022, 4, 10), null, DateTime.MinValue, false,
-                        LockedPrefix + TwoRoundReason,
+                        LockedPrefix + PresidentialStartReason,
                         "the rounds of 10 April 2022 [CC-195] and 24 April 2022 [CC-197], the Conseil constitutionnel's own proclamations (E-49 closed, §629); the two-round presidential model is not built (S8)",
                         year: 2022));
                     list.Add(Ruled(id, "LEGISLATIVE ELECTION (SNAP)", "the Élysée's address of 2024-06-09 [EL-DIS]; governing mode opens at the XVIIe's first sitting 2024-07-18 [AN-S18] (ruled, §618) - the 577-constituency system is not modelled (R-EL10)"));
