@@ -406,11 +406,6 @@ namespace PoliSim.Elections
         {
             switch (country)
             {
-                case CountryId.Poland:
-                    // §762: the count is the law's now (PolishSejmAllocation); what is missing is the vote it counts - the live prediction reads the
-                    // seated chamber's result and the one before it (PartySystems.TryHistory), and Poland's lists changed between them (the mapping's ruling is owed)
-                    return "Poland's Sejm is counted by its own law - 41 districts, d'Hondt in each, 5 % for a party and 8 % for a coalition. " +
-                           "The vote it would count is not modelled yet: the lists changed between Poland's elections, and how they carry over is still to be decided.";
                 case CountryId.France:
                     return "France elects 577 single-member seats in two rounds. This model holds no second round.";
                 case CountryId.Italy:

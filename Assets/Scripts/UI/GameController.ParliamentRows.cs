@@ -366,7 +366,8 @@ namespace PoliSim.UI
 
         private void DrawReferenceRow(PeopleSlips.Book book)
         {
-            if (ConfidenceProcedure.RulesOf(PlayerCountryId) != ConfidenceProcedure.Rules.Bundestag || _playerCountry.ElectionHistory == null) { return; }
+            // §767: Poland too - no election night carries its reference yet (the night needs a regional count; Poland's district map is D-PL's)
+            if ((ConfidenceProcedure.RulesOf(PlayerCountryId) != ConfidenceProcedure.Rules.Bundestag && PlayerCountryId != CountryId.Poland) || _playerCountry.ElectionHistory == null) { return; }
             System.DateTime held = System.DateTime.MinValue;
             foreach (ElectionRecord e in _playerCountry.ElectionHistory)
             {
@@ -416,6 +417,7 @@ namespace PoliSim.UI
             {
                 Words("NO GOVERNMENT OF RECORD AFTER IT", muted);
             }
+            if (!string.IsNullOrEmpty(reference.HistoryNote)) { Words("LOW CONFIDENCE", muted); }   // §767 (Elias's ruling D1): the played vote's past by lineage - the note on the slip
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "reference");
             var slip = new SlipContent(reference.Label);
             var seated = new List<(string key, int seats)>();
@@ -431,6 +433,7 @@ namespace PoliSim.UI
             }
             if (line.Length > 0) { slip.Add(line.ToString()); }
             foreach (string l in SlipWrapped(string.Empty, reference.GovernmentLine).Lines) { slip.Add(l); }
+            if (!string.IsNullOrEmpty(reference.HistoryNote)) { foreach (string l in SlipWrapped(string.Empty, reference.HistoryNote.ToUpperInvariant()).Lines) { slip.Add(l); } }   // §767 (D1)
             slip.Add("THE GAME'S ELECTION IS ITS OWN - THIS IS THE RECORD");
             book.Anchors["reference"] = slip;
             DrawRowRule(row);

@@ -603,10 +603,33 @@ namespace PoliSim.Data
                     latest   = new[] { 22.60, 20.80, 16.40, 11.60, 8.80, 6.00, 0.20, 4.98, 4.30 };
                     previous = new[] { 18.95, 10.39, 25.71, 14.72, 4.87, 5.19, 0.12, 0.00, 11.43 };
                     return true;
+                // §767 (Elias's ruling D1): POLAND'S LISTS CARRY OVER BY LINEAGE onto the 2023 roster's keys - KO <- PO, NL <- SLD (Lewica; 2015's
+                // Zjednoczona Lewica), TD <- PSL, Konf <- KORWiN, PiS <- PiS; MN its own. Shares from `priors/previous_elections.md` (2019: the PKW notice
+                // Dz.U. 2019 poz. 1955; 2015: the PKW's Wyniki_Sejm) and `poland/returns_2023.md`; the backtest's own mapping (ReBacktest). LOW CONFIDENCE,
+                // on the record and in the reference view (HistoryNote): only PiS and MN carry over clean, and Polska 2050 has no earlier Sejm result, so
+                // TD's history is PSL's alone - a known weakness, stated and not patched. The 2019 lists SLD and PSL carry nothing: their votes are NL's
+                // and TD's lineage. For(Poland) order: PiS, KO, TD, NL, Konf, SLD, PSL, MN.
+                case CountryId.Poland when vintage == ElectionVintage.Poland2019:
+                    latest   = new[] { 43.59, 27.40, 8.55, 12.56, 6.81, 0.0, 0.0, 0.17 };   // 2019
+                    previous = new[] { 37.58, 24.09, 5.13, 7.55, 4.76, 0.0, 0.0, 0.18 };    // 2015
+                    return true;
+                case CountryId.Poland:
+                    latest   = new[] { 35.38, 30.70, 14.40, 8.61, 7.16, 0.0, 0.0, 0.12 };   // 2023
+                    previous = new[] { 43.59, 27.40, 8.55, 12.56, 6.81, 0.0, 0.0, 0.17 };   // 2019
+                    return true;
                 default:
                     latest = null; previous = null; return false;
             }
         }
+
+        /// <summary>
+        /// §767 (Elias's ruling D1): the note a country's vote history carries where its lists do not carry over clean - shown on the record and in the
+        /// reference view (`WorldClock.Reference.HistoryNote`, the election night's reference). Null where the history maps clean.
+        /// </summary>
+        public static string HistoryNote(CountryId id) => id == CountryId.Poland
+            ? "LOW CONFIDENCE - Poland's lists changed between elections; the played vote reads them by lineage: KO from PO, NL from SLD, TD from PSL, "
+              + "Konfederacja from KORWiN. Only PiS and the German minority carry over clean, and Polska 2050 has no earlier result - TD's history is PSL's alone."
+            : null;
         /// <summary>
         /// W-G1: the electorate the vote model runs against, per country — mu_econ, mu_soc, sigma,
         /// tau — and its economic weight.

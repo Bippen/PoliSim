@@ -76,6 +76,8 @@ namespace PoliSim.UI
             public string HeadParty, HeadSurname, HeadQualifier;
             public DateTime HeadFrom, RecordDate;
             public bool HeadIsCaretaker;
+            /// <summary>§767 (Elias's ruling D1): the played vote's history note (`WorldClock.Reference.HistoryNote`) - drawn under the head, null where clean.</summary>
+            public string HistoryNote;
         }
 
         /// <summary>Board 21d (§685): the night's foot where the Speaker's round runs - who the Speaker asks first (a mark), whether that is the
@@ -1131,6 +1133,13 @@ namespace PoliSim.UI
             }
             else { CanvasRows.Caption(head, SymbolRegistry.Word(Symbol.Dated), 10, PoliSimTheme.TextMuted); }
             CanvasRows.Slip(head.gameObject, null, "DATED", new[] { "THE REAL RESULT, AS THE RECORD HOLDS IT", "THE RECORD AS OF " + DeskDay(reference.RecordDate) });
+            if (!string.IsNullOrEmpty(reference.HistoryNote))
+            {
+                // §767 (Elias's ruling D1): the played vote's history is carried by lineage - the flag at rest, the note on its slip
+                Transform confidence = CanvasRows.HRow(parent, "ReferenceConfidence", 16f, 8f);
+                CanvasRows.Caption(confidence, "LOW CONFIDENCE · THE PLAYED VOTE'S PAST BY LINEAGE", 10, PoliSimTheme.TextMuted);
+                CanvasRows.Slip(confidence.gameObject, null, "LOW CONFIDENCE", SlipLines(reference.HistoryNote));
+            }
 
             const float markW = 16f, figW = 50f, pitch = 18f;
             // §707's real film: Sweden's letters fit 30 px, Germany's names do not ("GRÜNE" wrapped to two lines in an 18 px row) - the column is

@@ -22,7 +22,7 @@ namespace PoliSim.Elections
     /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so.</para>
     ///
     /// <para><b>Every election on a country's calendar inside a run is simulated once that country's model exists</b>; until then its chamber
-    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); the four others offer no polling day yet.</para>
+    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); §762: Poland's 15 October 2023 the same way; the countries before their stages offer no polling day yet.</para>
     /// </summary>
     public static class WorldClock
     {
@@ -372,23 +372,57 @@ namespace PoliSim.Elections
         public static string PollingDayBasis(CountryId id) =>
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
             : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
+            : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - DECLARED)"   // §762, §767
             : null;
+
+        /// <summary>§767 (Elias's ruling D3) - Konstytucja Art. 98 ust. 2: the President orders the Sejm's election for a non-working day within the 30 days
+        /// before the fourth anniversary of the term's start, the term starting at its first sitting; the game takes the window's FIRST SUNDAY - as 2019 and
+        /// 2023 did (from the 8th and 9th terms' first sittings, 12 Nov 2015 and 12 Nov 2019); 2015 is the exception, on record (the rule gives 11 Oct, the
+        /// election was on 25 Oct).</summary>
+        public static DateTime FirstSundayOfTermWindow(DateTime termFirstSitting)
+        {
+            DateTime opens = termFirstSitting.Date.AddYears(4).AddDays(-30);
+            int toSunday = ((int)DayOfWeek.Sunday - (int)opens.DayOfWeek + 7) % 7;
+            return opens.AddDays(toSunday);
+        }
+
+        /// <summary>§767, DECLARED - the premise D3 needs and no ruling fixed: a Sejm the game elects first sits on this day after its polling day -
+        /// Konstytucja Art. 109 ust. 2's last day ("w ciągu 30 dni od dnia wyborów"); the record's 2019 Sejm sat first on the 30th day, 2023's on the 29th.</summary>
+        public const int PolandFirstSittingAfterDays = 30;
 
         /// <summary>
         /// The country's next ordinary polling day on or after <paramref name="onOrAfter"/>, false where the country's election calendar
-        /// is not modelled (the four others until their stages: their chambers hold as of record).
+        /// is not modelled (the countries before their stages: their chambers hold as of record).
         /// §697 (PS-4): <b>Germany's snap polling day</b>, 23 February 2025 (BGBl. 2024 I Nr. 435) - the day a German game opened on the snap start
         /// votes, and the one German polling day on record here; the next regular one's rule (Art. 39 GG's term) is not quoted on disk, so after the
-        /// snap a German game offers no polling day, as the other four do not.
+        /// snap a German game offers no polling day. §762, §767 (PS-5; Elias's ruling D3): <b>Poland's</b> - the start's own polling day, 15 October
+        /// 2023 (the PKW's notices), then each term's by Konstytucja Art. 98 ust. 2 (held in `raw/records/trybunal_konstytucja.html`): the window's
+        /// first Sunday before the fourth anniversary of the term's first sitting (<see cref="FirstSundayOfTermWindow"/>) - the 10th term's from its
+        /// sitting of record, 13 Nov 2023 (17 Oct 2027), every later one from the first sitting its own election gives (<see cref="PolandFirstSittingAfterDays"/>).
+        /// Premise, stated: every term runs its four years - a shortened term (Art. 98 ust. 3-5) is not modelled.
         /// </summary>
         public static bool TryNextPollingDay(CountryId id, DateTime onOrAfter, out DateTime pollingDay)
         {
             pollingDay = DateTime.MinValue;
             if (id == CountryId.Germany)
             {
-                DateTime snap = LatestElectionDay(id);
-                if (onOrAfter.Date > snap) { return false; }
-                pollingDay = snap;
+                DateTime onRecord = LatestElectionDay(id);   // the snap's own polling day, and none after it
+                if (onOrAfter.Date > onRecord) { return false; }
+                pollingDay = onRecord;
+                return true;
+            }
+            if (id == CountryId.Poland)
+            {
+                DateTime day = LatestElectionDay(id);   // 15 Oct 2023, the start's own
+                DateTime firstSitting = DateTime.MinValue;
+                foreach (ChamberOfRecord c in Chambers(id)) { if (c.ElectionDay == day) { firstSitting = c.Convened; } }   // the 10th term's, 13 Nov 2023 [API-TERM]
+                if (firstSitting == DateTime.MinValue) { return false; }
+                while (day < onOrAfter.Date)
+                {
+                    day = FirstSundayOfTermWindow(firstSitting);
+                    firstSitting = day.AddDays(PolandFirstSittingAfterDays);
+                }
+                pollingDay = day;
                 return true;
             }
             if (id != CountryId.Sweden) { return false; }
@@ -448,6 +482,9 @@ namespace PoliSim.Elections
             /// <summary>§705: the cabinet's parties of the government of record after the election, where the record names them; null otherwise.</summary>
             public string[] CabinetOfRecord;
             public bool HeadIsCaretaker;
+            /// <summary>§767 (Elias's ruling D1): how far the played vote's history can be trusted beside this reference - `PartySystems.HistoryNote`;
+            /// null where the country's lists carry over clean.</summary>
+            public string HistoryNote;
         }
 
         public static bool TryReference(CountryId id, DateTime pollingDay, out Reference reference)
@@ -462,6 +499,7 @@ namespace PoliSim.Elections
                     Label = id.ToString().ToUpperInvariant() + " " + c.ElectionDay.Year.ToString(System.Globalization.CultureInfo.InvariantCulture) + ", AS IT HAPPENED",
                     Seats = PartySystems.InitialSeats(id, c.Vintage),
                     Basis = c.Basis,
+                    HistoryNote = PartySystems.HistoryNote(id),   // §767 (D1)
                 };
                 // The government the record shows after the election: the first government of record from a day after polling day, if any.
                 GovernmentOfRecord? after = null;

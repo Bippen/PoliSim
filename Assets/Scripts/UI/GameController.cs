@@ -6588,6 +6588,7 @@ namespace PoliSim.UI
                         Label = history.Label, Seats = realSeats, GovernmentLine = history.GovernmentLine,
                         HeadParty = history.HeadParty, HeadSurname = history.HeadSurname, HeadQualifier = history.HeadQualifier, HeadFrom = history.HeadFrom,
                         HeadIsCaretaker = history.HeadIsCaretaker, RecordDate = PoliSim.Elections.WorldClock.RecordDate,   // §685: the government of record as parts (21d)
+                        HistoryNote = history.HistoryNote,   // §767 (D1): Poland's lineage, low confidence
                     };
                     Debug.Log($"ELECTION: the reference for {pollingDay:yyyy-MM-dd} is {history.Vintage} - {history.Label}; {history.GovernmentLine}");
                 }
