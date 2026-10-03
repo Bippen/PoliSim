@@ -79,112 +79,14 @@ namespace PoliSim.EditorTools
             void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
             try
             {
-                string root = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
-                Dictionary<string, Position> ches = ReadChesPoland(Path.Combine(root, "ElectionsData", "positions", "raw", "CHES_2024_final_v2.csv"));
-                Check(ches.Count == 7, F("CHES 2024 - Poland's seven rows read ({0}: {1})", ches.Count, string.Join(", ", ches.Keys)));
-                Dictionary<(int, int), List<(string Name, long Votes)>> rounds = ReadRounds(Path.Combine(root, "ElectionsData", "poland", "presidential_votes.csv"), out Dictionary<(int, int), long> valid);
-                Dictionary<string, double> sejm2019 = ReadSejm2019(Path.Combine(root, "ElectionsData", "poland", "raw", "records", "eli_DU_2019_1955_pkw_sejm2019.html"), out long valid2019);
-                Dictionary<string, double> sejm2023 = ReadSejm2023(Path.Combine(root, "ElectionsData", "poland", "returns_2023.md"), out long valid2023);
-                Check(valid2019 == 18470710L, F("Sejm 2019 - the notice's lists read, {0:N0} valid votes (Dz.U. 2019 poz. 1955, Dział I rozdz. 3)", valid2019));
-                Check(valid2023 == 21596674L, F("Sejm 2023 - the committees read, {0:N0} valid votes (returns_2023.md, Dz.U. 2023 poz. 2234)", valid2023));
-                if (!PartySystems.TryElectorate(CountryId.Poland, out VoteModel.Electorate electorate, out double wEcon)) { throw new InvalidOperationException("Poland has no electorate"); }
-                double tau = electorate.Tau;
-                sb.Append(F("    the transfer kernel's τ = {0:0.00} and economic weight {1:0.00} - Poland's own (PartySystems.TryElectorate), not chosen here\n", tau, wEcon));
-
-                var pins = new List<(string What, double Got, double Want)>();
-
-                // ---- §764 (Elias's ruling B4): THE TRANSFERS IN THE SOVEREIGNTY SPACE, τ [FITTED] TO THE IPSOS EXIT POLL OF 1 JUNE 2025 ----
-                // The share of each first-round electorate voting Nawrocki in the run-off (`runoff_transfers_2025.csv`, the commissioning broadcaster's
-                // publication), against exp(-d²/τ) between the two finalists' rows - one parameter, least squares over the five pairs the ruling names.
-                List<(string Surname, double ToNawrocki, Position At)> ipsos = ReadIpsosPairs(Path.Combine(root, "ElectionsData", "poland", "runoff_transfers_2025.csv"), ches);
-                var ruled = new Dictionary<string, double> { { "MENTZEN", 88.1 }, { "BRAUN", 92.5 }, { "HOŁOWNIA", 13.8 }, { "ZANDBERG", 16.2 }, { "BIEJAT", 9.8 } };
-                Check(ipsos.Count == ruled.Count && ipsos.All(x => ruled.TryGetValue(x.Surname, out double r) && Math.Abs(r - x.ToNawrocki) < 1e-9),
-                    F("B4: the file holds the ruling's five pairs - {0}", string.Join(", ", ipsos.Select(x => x.Surname + " " + x.ToNawrocki.ToString("0.0", CultureInfo.InvariantCulture)))));
-                Position atNawrocki = ches["PiS"], atTrzaskowski = ches["PO"];
-                double Sse(double t) => ipsos.Sum(x => Sq(100.0 * Transfer(x.At, atNawrocki, atTrzaskowski, Sovereignty, t) - x.ToNawrocki));
-                double tauFit = FitLogScale(Sse, 0.05, 200.0);
-                double rmse = Math.Sqrt(Sse(tauFit) / ipsos.Count), rmseOwn = Math.Sqrt(Sse(tau) / ipsos.Count);
-                sb.Append(F("\n  B4 - THE TRANSFER FITTED (sovereignty space; the ruling's five Ipsos pairs): τ = {0:0.000} (least squares; Poland's own τ {1:0.00} gives RMSE {2:0.00} pp, the fit {3:0.00} pp)\n", tauFit, tau, rmseOwn, rmse));
-                foreach ((string surname, double toNawrocki, Position at) in ipsos)
-                {
-                    double model = 100.0 * Transfer(at, atNawrocki, atTrzaskowski, Sovereignty, tauFit);
-                    sb.Append(F("    {0,-12} to Nawrocki: Ipsos {1,5:0.0}  fitted {2,5:0.0}  miss {3,6:+0.0;-0.0}\n", surname, toNawrocki, model, model - toNawrocki));
-                }
-                pins.Add(("B4: the fitted τ", tauFit, PinTauFit));
-                foreach ((int year, Candidate[] field, Dictionary<string, double> sejm) in new[] { (2020, Field2020, sejm2019), (2025, Field2025, sejm2023) })
-                {
-                    List<(string Name, long Votes)> r1 = rounds[(year, 1)];
-                    List<(string Name, long Votes)> r2 = rounds[(year, 2)];
-                    double Share(List<(string Name, long Votes)> r, long total, string surname) => 100.0 * r.Where(c => Surname(c.Name) == surname).Sum(c => c.Votes) / total;
-
-                    // ---- the first round: inheritance ----
-                    sb.Append(F("\n  {0} - THE FIRST ROUND, inherited from the {1} Sejm (the committee that runs the candidate; none inherits nothing)\n", year, year == 2020 ? 2019 : 2023));
-                    double inheritedSum = field.Where(c => c.Committee != null).Sum(c => sejm[c.Committee]);
-                    double absSum = 0.0;
-                    var model = new Dictionary<string, double>();
-                    foreach (Candidate c in field)
-                    {
-                        double m = c.Committee != null ? 100.0 * sejm[c.Committee] / inheritedSum : 0.0;
-                        double rec = Share(r1, valid[(year, 1)], c.Surname);
-                        model[c.Surname] = m;
-                        absSum += Math.Abs(m - rec);
-                        sb.Append(F("    {0,-16} model {1,6:0.00}  record {2,6:0.00}  miss {3,7:+0.00;-0.00}   ({4})\n", c.Surname, m, rec, m - rec, c.Why));
-                    }
-                    double others = 100.0 - field.Sum(c => Share(r1, valid[(year, 1)], c.Surname));
-                    sb.Append(F("    {0,-16} model {1,6:0.00}  record {2,6:0.00}  - the candidates no committee of the field ran\n", "(the rest)", 0.0, others));
-                    double mae = absSum / field.Length;
-                    sb.Append(F("    mean absolute miss over the field: {0:0.00} pp\n", mae));
-                    pins.Add(($"{year} first round, the field's mean absolute miss", mae, year == 2020 ? 5.68 : 5.86));
-
-                    // ---- the run-off: transfers from the record's own first round ----
-                    string fa = year == 2020 ? "DUDA" : "NAWROCKI", fb = "TRZASKOWSKI";
-                    double recordA = 100.0 * r2.Where(c => Surname(c.Name) == fa).Sum(c => c.Votes) / valid[(year, 2)];
-                    var recordR1 = new List<(string Surname, double Share, Position At)>();
-                    foreach (var g in r1.GroupBy(c => Surname(c.Name)))
-                    {
-                        Candidate known = field.FirstOrDefault(c => c.Surname == g.Key);
-                        Position at = known.Surname != null && known.ChesParty != null ? ches[known.ChesParty] : null;
-                        recordR1.Add((g.Key, 100.0 * g.Sum(c => c.Votes) / valid[(year, 1)], at));
-                    }
-                    Position pa = ches[field.First(c => c.Surname == fa).ChesParty], pb = ches[field.First(c => c.Surname == fb).ChesParty];
-                    sb.Append(F("  {0} - THE RUN-OFF, transfers from the record's first round ({1} vs {2}; record {3:0.00} for {1})\n", year, fa, fb, recordA));
-                    foreach ((string space, Func<Position, Position, double> d2) in new (string, Func<Position, Position, double>)[]
-                    {
-                        ("the vote model's plane (lrecon, galtan)", (p, q) => wEcon * Sq(p.LrEcon - q.LrEcon) + (1.0 - wEcon) * Sq(p.Galtan - q.Galtan)),
-                        ("the sovereignty space (galtan, nationalism, EU)", (p, q) => (Sq(p.Galtan - q.Galtan) + Sq(p.Nationalism - q.Nationalism) + Sq(EuTen(p.Eu) - EuTen(q.Eu))) / 3.0),
-                    })
-                    {
-                        double a = RunOff(recordR1, fa, fb, pa, pb, d2, tau);
-                        sb.Append(F("    {0,-48} {1} {2:0.00}  miss {3:+0.00;-0.00}  {4}\n", space, fa, a, a - recordA, (a > 50.0) == (recordA > 50.0) ? "the winner of record" : "THE WRONG WINNER"));
-                        pins.Add(($"{year} run-off from the record, {space}", a, Pin(year, space)));
-                    }
-                    // §764 (B4): the sovereignty space at the fitted τ, then the [AUTHORED-DRAFT] abstention beside it - printed at the draft and at twice it
-                    double fitted = RunOff(recordR1, fa, fb, pa, pb, Sovereignty, tauFit);
-                    sb.Append(F("    {0,-48} {1} {2:0.00}  miss {3:+0.00;-0.00}  {4}\n", "the sovereignty space, τ fitted to Ipsos (B4)", fa, fitted, fitted - recordA,
-                        (fitted > 50.0) == (recordA > 50.0) ? "the winner of record" : "THE WRONG WINNER"));
-                    pins.Add(($"{year} run-off from the record, the fitted τ (B4)", fitted, year == 2020 ? PinFit2020 : PinFit2025));
-                    foreach (double stayMax in new[] { AbstentionDraftMax, 2.0 * AbstentionDraftMax })
-                    {
-                        double withStay = RunOff(recordR1, fa, fb, pa, pb, Sovereignty, tauFit, stayMax);
-                        sb.Append(F("      with abstention [AUTHORED-DRAFT], the farthest electorate {0:0} % at home and the rest by distance to the nearer finalist: {1} {2:0.00}  miss {3:+0.00;-0.00}\n",
-                            100.0 * stayMax, fa, withStay, withStay - recordA));
-                        if (stayMax == AbstentionDraftMax) { pins.Add(($"{year} run-off, the fitted τ with the draft abstention (B4)", withStay, year == 2020 ? PinStay2020 : PinStay2025)); }
-                    }
-
-                    // ---- the whole chain: the modelled first round, then the sovereignty run-off ----
-                    var chainR1 = field.Select(c => (c.Surname, model[c.Surname], c.ChesParty != null ? ches[c.ChesParty] : null)).ToList();
-                    string topA = chainR1.OrderByDescending(c => c.Item2).First().Surname;
-                    string topB = chainR1.OrderByDescending(c => c.Item2).Skip(1).First().Surname;
-                    Position ca = ches[field.First(c => c.Surname == topA).ChesParty], cb = ches[field.First(c => c.Surname == topB).ChesParty];
-                    double chainA = RunOff(chainR1, topA, topB, ca, cb, (p, q) => (Sq(p.Galtan - q.Galtan) + Sq(p.Nationalism - q.Nationalism) + Sq(EuTen(p.Eu) - EuTen(q.Eu))) / 3.0, tau);
-                    bool chainRight = (chainA > 50.0 ? topA : topB) == fa;
-                    sb.Append(F("    the whole chain (modelled first round, then the sovereignty run-off): {0} vs {1} - {0} {2:0.00}  {3}\n", topA, topB, chainA,
-                        chainRight ? "the winner of record" : "THE WRONG WINNER - the first round's inheritance carries the Sejm's opinion, not the presidential year's"));
-                    pins.Add(($"{year} the whole chain, {topA}", chainA, year == 2020 ? 55.61 : 45.16));
-                }
-
-                sb.Append("\n  PINS (the reading above, held - a change to the positions, the returns or the rule moves them):\n");
-                foreach ((string what, double got, double want) in pins) { Check(Math.Abs(got - want) < 0.005, F("{0}: {1:0.000} (pinned {2:0.000})", what, got, want)); }
+                var card = new List<string>();
+                string digest = Measure(sb, Check, card);
+                // §769: the model card's readings are this reading - a card that no longer says what this measures fails here
+                string expected = CardBlock(card, digest);
+                string onDisk = CardBlockOf(File.ReadAllText(CardPath(), Encoding.UTF8));
+                Check(onDisk == expected, onDisk == null ? F("the model card ({0}) carries no readings block", CardRelative)
+                    : onDisk == expected ? F("the model card's readings ({0}) say what this measures - {1} rows", CardRelative, card.Count)
+                    : F("the model card's readings ({0}) are STALE - regenerate: -executeMethod PoliSim.EditorTools.PresidentialVoteBacktest.WriteReadings", CardRelative));
             }
             catch (Exception ex) { failures++; sb.Append("    FAIL      threw: ").Append(ex.Message).Append('\n'); }
 
@@ -192,6 +94,209 @@ namespace PoliSim.EditorTools
             if (failures == 0) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
+
+        /// <summary>§769 (Elias, 2026-10-03: <i>"Record the Hołownia/Zandberg misses and the 2020 run-off margin in the model card"</i>): writes the
+        /// card's readings block from this reading - the stamp and its END marker are placed in the card once, by hand; this fills what lies between.
+        /// Refuses while a pin fails: the card is never written over a reading the pins no longer hold.</summary>
+        public static void WriteReadings()
+        {
+            CheckExit.ArmLogFold();
+            var sb = new StringBuilder("=== PresidentialVoteBacktest.WriteReadings (§769): the model card's readings ===\n");
+            int failures = 0;
+            void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
+            try
+            {
+                var card = new List<string>();
+                string digest = Measure(sb, Check, card);
+                string path = CardPath();
+                string text = File.ReadAllText(path, Encoding.UTF8);
+                string old = CardBlockOf(text);
+                if (failures > 0) { Check(false, "a pin moved - the card is not written; re-pin, then write"); }
+                else if (old == null) { Check(false, F("the model card ({0}) carries no readings block to write into", CardRelative)); }
+                else
+                {
+                    string written = text.Replace("\r\n", "\n").Replace(old, CardBlock(card, digest));
+                    if (text.Contains("\r\n")) { written = written.Replace("\n", "\r\n"); }
+                    File.WriteAllText(path, written, new UTF8Encoding(false));
+                    Check(true, F("the model card's readings written ({0}) - {1} rows", CardRelative, card.Count));
+                }
+            }
+            catch (Exception ex) { failures++; sb.Append("    FAIL      threw: ").Append(ex.Message).Append('\n'); }
+
+            sb.Append(failures == 0 ? "=== WriteReadings: written ===" : F("=== WriteReadings: {0} FAILED ===", failures));
+            if (failures == 0) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
+            CheckExit.Finish(failures == 0 ? 0 : 1);
+        }
+
+        /// <summary>The reading <see cref="Run"/> checks and <see cref="WriteReadings"/> writes: the measurement printed to <paramref name="sb"/>, each
+        /// pin through <paramref name="Check"/>, the card's rows added to <paramref name="card"/>. Returns the digest of the files it reads.</summary>
+        private static string Measure(StringBuilder sb, Action<bool, string> Check, List<string> card)
+        {
+            string root = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+            Dictionary<string, Position> ches = ReadChesPoland(Path.Combine(root, "ElectionsData", "positions", "raw", "CHES_2024_final_v2.csv"));
+            Check(ches.Count == 7, F("CHES 2024 - Poland's seven rows read ({0}: {1})", ches.Count, string.Join(", ", ches.Keys)));
+            Dictionary<(int, int), List<(string Name, long Votes)>> rounds = ReadRounds(Path.Combine(root, "ElectionsData", "poland", "presidential_votes.csv"), out Dictionary<(int, int), long> valid);
+            Dictionary<string, double> sejm2019 = ReadSejm2019(Path.Combine(root, "ElectionsData", "poland", "raw", "records", "eli_DU_2019_1955_pkw_sejm2019.html"), out long valid2019);
+            Dictionary<string, double> sejm2023 = ReadSejm2023(Path.Combine(root, "ElectionsData", "poland", "returns_2023.md"), out long valid2023);
+            Check(valid2019 == 18470710L, F("Sejm 2019 - the notice's lists read, {0:N0} valid votes (Dz.U. 2019 poz. 1955, Dział I rozdz. 3)", valid2019));
+            Check(valid2023 == 21596674L, F("Sejm 2023 - the committees read, {0:N0} valid votes (returns_2023.md, Dz.U. 2023 poz. 2234)", valid2023));
+            if (!PartySystems.TryElectorate(CountryId.Poland, out VoteModel.Electorate electorate, out double wEcon)) { throw new InvalidOperationException("Poland has no electorate"); }
+            double tau = electorate.Tau;
+            sb.Append(F("    the transfer kernel's τ = {0:0.00} and economic weight {1:0.00} - Poland's own (PartySystems.TryElectorate), not chosen here\n", tau, wEcon));
+
+            var pins = new List<(string What, double Got, double Want)>();
+
+            // ---- §764 (Elias's ruling B4): THE TRANSFERS IN THE SOVEREIGNTY SPACE, τ [FITTED] TO THE IPSOS EXIT POLL OF 1 JUNE 2025 ----
+            // The share of each first-round electorate voting Nawrocki in the run-off (`runoff_transfers_2025.csv`, the commissioning broadcaster's
+            // publication), against exp(-d²/τ) between the two finalists' rows - one parameter, least squares over the five pairs the ruling names.
+            List<(string Surname, double ToNawrocki, Position At)> ipsos = ReadIpsosPairs(Path.Combine(root, "ElectionsData", "poland", "runoff_transfers_2025.csv"), ches);
+            var ruled = new Dictionary<string, double> { { "MENTZEN", 88.1 }, { "BRAUN", 92.5 }, { "HOŁOWNIA", 13.8 }, { "ZANDBERG", 16.2 }, { "BIEJAT", 9.8 } };
+            Check(ipsos.Count == ruled.Count && ipsos.All(x => ruled.TryGetValue(x.Surname, out double r) && Math.Abs(r - x.ToNawrocki) < 1e-9),
+                F("B4: the file holds the ruling's five pairs - {0}", string.Join(", ", ipsos.Select(x => x.Surname + " " + x.ToNawrocki.ToString("0.0", CultureInfo.InvariantCulture)))));
+            Position atNawrocki = ches["PiS"], atTrzaskowski = ches["PO"];
+            double Sse(double t) => ipsos.Sum(x => Sq(100.0 * Transfer(x.At, atNawrocki, atTrzaskowski, Sovereignty, t) - x.ToNawrocki));
+            double tauFit = FitLogScale(Sse, 0.05, 200.0);
+            double rmse = Math.Sqrt(Sse(tauFit) / ipsos.Count), rmseOwn = Math.Sqrt(Sse(tau) / ipsos.Count);
+            sb.Append(F("\n  B4 - THE TRANSFER FITTED (sovereignty space; the ruling's five Ipsos pairs): τ = {0:0.000} (least squares; Poland's own τ {1:0.00} gives RMSE {2:0.00} pp, the fit {3:0.00} pp)\n", tauFit, tau, rmseOwn, rmse));
+            card.Add(Row("τ, fitted to the five exit-poll pairs (least squares, one parameter)", F("{0:0.000}", tauFit), "-", "-"));
+            card.Add(Row("the fit's root-mean-square miss over the five pairs", "-", "-", F("{0:0.00}", rmse)));
+            foreach ((string surname, double toNawrocki, Position at) in ipsos)
+            {
+                double model = 100.0 * Transfer(at, atNawrocki, atTrzaskowski, Sovereignty, tauFit);
+                sb.Append(F("    {0,-12} to Nawrocki: Ipsos {1,5:0.0}  fitted {2,5:0.0}  miss {3,6:+0.0;-0.0}\n", surname, toNawrocki, model, model - toNawrocki));
+                card.Add(Row(F("{0}'s electorate voting Nawrocki (the exit poll)", Title(surname)), F("{0:0.0}", model), F("{0:0.0}", toNawrocki), F("{0:+0.0;-0.0}", model - toNawrocki)));
+            }
+            pins.Add(("B4: the fitted τ", tauFit, PinTauFit));
+            foreach ((int year, Candidate[] field, Dictionary<string, double> sejm) in new[] { (2020, Field2020, sejm2019), (2025, Field2025, sejm2023) })
+            {
+                List<(string Name, long Votes)> r1 = rounds[(year, 1)];
+                List<(string Name, long Votes)> r2 = rounds[(year, 2)];
+                double Share(List<(string Name, long Votes)> r, long total, string surname) => 100.0 * r.Where(c => Surname(c.Name) == surname).Sum(c => c.Votes) / total;
+
+                // ---- the first round: inheritance ----
+                sb.Append(F("\n  {0} - THE FIRST ROUND, inherited from the {1} Sejm (the committee that runs the candidate; none inherits nothing)\n", year, year == 2020 ? 2019 : 2023));
+                double inheritedSum = field.Where(c => c.Committee != null).Sum(c => sejm[c.Committee]);
+                double absSum = 0.0;
+                var model = new Dictionary<string, double>();
+                foreach (Candidate c in field)
+                {
+                    double m = c.Committee != null ? 100.0 * sejm[c.Committee] / inheritedSum : 0.0;
+                    double rec = Share(r1, valid[(year, 1)], c.Surname);
+                    model[c.Surname] = m;
+                    absSum += Math.Abs(m - rec);
+                    sb.Append(F("    {0,-16} model {1,6:0.00}  record {2,6:0.00}  miss {3,7:+0.00;-0.00}   ({4})\n", c.Surname, m, rec, m - rec, c.Why));
+                }
+                double others = 100.0 - field.Sum(c => Share(r1, valid[(year, 1)], c.Surname));
+                sb.Append(F("    {0,-16} model {1,6:0.00}  record {2,6:0.00}  - the candidates no committee of the field ran\n", "(the rest)", 0.0, others));
+                double mae = absSum / field.Length;
+                sb.Append(F("    mean absolute miss over the field: {0:0.00} pp\n", mae));
+                pins.Add(($"{year} first round, the field's mean absolute miss", mae, year == 2020 ? 5.68 : 5.86));
+
+                // ---- the run-off: transfers from the record's own first round ----
+                string fa = year == 2020 ? "DUDA" : "NAWROCKI", fb = "TRZASKOWSKI";
+                double recordA = 100.0 * r2.Where(c => Surname(c.Name) == fa).Sum(c => c.Votes) / valid[(year, 2)];
+                var recordR1 = new List<(string Surname, double Share, Position At)>();
+                foreach (var g in r1.GroupBy(c => Surname(c.Name)))
+                {
+                    Candidate known = field.FirstOrDefault(c => c.Surname == g.Key);
+                    Position at = known.Surname != null && known.ChesParty != null ? ches[known.ChesParty] : null;
+                    recordR1.Add((g.Key, 100.0 * g.Sum(c => c.Votes) / valid[(year, 1)], at));
+                }
+                Position pa = ches[field.First(c => c.Surname == fa).ChesParty], pb = ches[field.First(c => c.Surname == fb).ChesParty];
+                sb.Append(F("  {0} - THE RUN-OFF, transfers from the record's first round ({1} vs {2}; record {3:0.00} for {1})\n", year, fa, fb, recordA));
+                foreach ((string space, Func<Position, Position, double> d2) in new (string, Func<Position, Position, double>)[]
+                {
+                    ("the vote model's plane (lrecon, galtan)", (p, q) => wEcon * Sq(p.LrEcon - q.LrEcon) + (1.0 - wEcon) * Sq(p.Galtan - q.Galtan)),
+                    ("the sovereignty space (galtan, nationalism, EU)", (p, q) => (Sq(p.Galtan - q.Galtan) + Sq(p.Nationalism - q.Nationalism) + Sq(EuTen(p.Eu) - EuTen(q.Eu))) / 3.0),
+                })
+                {
+                    double a = RunOff(recordR1, fa, fb, pa, pb, d2, tau);
+                    sb.Append(F("    {0,-48} {1} {2:0.00}  miss {3:+0.00;-0.00}  {4}\n", space, fa, a, a - recordA, (a > 50.0) == (recordA > 50.0) ? "the winner of record" : "THE WRONG WINNER"));
+                    pins.Add(($"{year} run-off from the record, {space}", a, Pin(year, space)));
+                    if (!space.StartsWith("the vote model's", StringComparison.Ordinal))
+                    {
+                        card.Add(Row(F("{0} run-off, {1}'s share - the sovereignty space at Poland's own τ", year, Title(fa)), F("{0:0.00}", a), F("{0:0.00}", recordA), F("{0:+0.00;-0.00}", a - recordA)));
+                    }
+                }
+                // §764 (B4): the sovereignty space at the fitted τ, then the [AUTHORED-DRAFT] abstention beside it - printed at the draft and at twice it
+                double fitted = RunOff(recordR1, fa, fb, pa, pb, Sovereignty, tauFit);
+                sb.Append(F("    {0,-48} {1} {2:0.00}  miss {3:+0.00;-0.00}  {4}\n", "the sovereignty space, τ fitted to Ipsos (B4)", fa, fitted, fitted - recordA,
+                    (fitted > 50.0) == (recordA > 50.0) ? "the winner of record" : "THE WRONG WINNER"));
+                pins.Add(($"{year} run-off from the record, the fitted τ (B4)", fitted, year == 2020 ? PinFit2020 : PinFit2025));
+                card.Add(Row(F("{0} run-off, {1}'s share - the fitted τ (B4)", year, Title(fa)), F("{0:0.00}", fitted), F("{0:0.00}", recordA), F("{0:+0.00;-0.00}", fitted - recordA)));
+                foreach (double stayMax in new[] { AbstentionDraftMax, 2.0 * AbstentionDraftMax })
+                {
+                    double withStay = RunOff(recordR1, fa, fb, pa, pb, Sovereignty, tauFit, stayMax);
+                    sb.Append(F("      with abstention [AUTHORED-DRAFT], the farthest electorate {0:0} % at home and the rest by distance to the nearer finalist: {1} {2:0.00}  miss {3:+0.00;-0.00}\n",
+                        100.0 * stayMax, fa, withStay, withStay - recordA));
+                    if (stayMax == AbstentionDraftMax)
+                    {
+                        pins.Add(($"{year} run-off, the fitted τ with the draft abstention (B4)", withStay, year == 2020 ? PinStay2020 : PinStay2025));
+                        card.Add(Row(F("{0} run-off, {1}'s share - the fitted τ with the draft abstention", year, Title(fa)), F("{0:0.00}", withStay), F("{0:0.00}", recordA), F("{0:+0.00;-0.00}", withStay - recordA)));
+                    }
+                }
+
+                // ---- the whole chain: the modelled first round, then the sovereignty run-off ----
+                var chainR1 = field.Select(c => (c.Surname, model[c.Surname], c.ChesParty != null ? ches[c.ChesParty] : null)).ToList();
+                string topA = chainR1.OrderByDescending(c => c.Item2).First().Surname;
+                string topB = chainR1.OrderByDescending(c => c.Item2).Skip(1).First().Surname;
+                Position ca = ches[field.First(c => c.Surname == topA).ChesParty], cb = ches[field.First(c => c.Surname == topB).ChesParty];
+                double chainA = RunOff(chainR1, topA, topB, ca, cb, (p, q) => (Sq(p.Galtan - q.Galtan) + Sq(p.Nationalism - q.Nationalism) + Sq(EuTen(p.Eu) - EuTen(q.Eu))) / 3.0, tau);
+                bool chainRight = (chainA > 50.0 ? topA : topB) == fa;
+                sb.Append(F("    the whole chain (modelled first round, then the sovereignty run-off): {0} vs {1} - {0} {2:0.00}  {3}\n", topA, topB, chainA,
+                    chainRight ? "the winner of record" : "THE WRONG WINNER - the first round's inheritance carries the Sejm's opinion, not the presidential year's"));
+                pins.Add(($"{year} the whole chain, {topA}", chainA, year == 2020 ? 55.61 : 45.16));
+            }
+
+            sb.Append("\n  PINS (the reading above, held - a change to the positions, the returns or the rule moves them):\n");
+            foreach ((string what, double got, double want) in pins) { Check(Math.Abs(got - want) < 0.005, F("{0}: {1:0.000} (pinned {2:0.000})", what, got, want)); }
+            return SourcesDigest(root);
+        }
+
+        // ---- §769: THE MODEL CARD'S READINGS (docs/reference/PRESIDENTIAL_VOTE.md) - the claim convention's marked block, written by WriteReadings ----
+
+        private const string CardRelative = "docs/reference/PRESIDENTIAL_VOTE.md";
+        private const string CardStamp = "<!-- GENERATED by PoliSim.EditorTools.PresidentialVoteBacktest.WriteReadings. DO NOT EDIT BY HAND. source-digest: ";
+        private const string CardEnd = "<!-- END GENERATED -->";
+
+        /// <summary>The files <see cref="Measure"/> reads, in the order read - their digest is the block's stamp.</summary>
+        private static readonly string[] Sources =
+        {
+            "ElectionsData/positions/raw/CHES_2024_final_v2.csv", "ElectionsData/poland/presidential_votes.csv",
+            "ElectionsData/poland/raw/records/eli_DU_2019_1955_pkw_sejm2019.html", "ElectionsData/poland/returns_2023.md",
+            "ElectionsData/poland/runoff_transfers_2025.csv",
+        };
+
+        private static string CardPath() => Path.Combine(Path.GetFullPath(Path.Combine(Application.dataPath, "..")), CardRelative);
+
+        /// <summary>The sources' SHA-256, each read as text with its line endings as LF - so a checkout's line endings do not move the stamp.</summary>
+        private static string SourcesDigest(string root)
+        {
+            var all = new StringBuilder();
+            foreach (string s in Sources) { all.Append(File.ReadAllText(Path.Combine(root, s), Encoding.UTF8).Replace("\r\n", "\n")); }
+            return ElectionsDataCatalogGenerator.Sha256Of(Encoding.UTF8.GetBytes(all.ToString()));
+        }
+
+        /// <summary>The block as written: the stamp with the sources' digest, the table, the END marker - LF throughout.</summary>
+        private static string CardBlock(List<string> rows, string digest)
+        {
+            var block = new StringBuilder(CardStamp).Append(digest).Append(" -->\n");
+            block.Append("| reading | model | record | miss (pp) |\n|---|---:|---:|---:|\n");
+            foreach (string row in rows) { block.Append(row).Append('\n'); }
+            return block.Append(CardEnd).ToString();
+        }
+
+        /// <summary>The card's block as it stands, line endings as LF - null where the card has no stamp and END marker.</summary>
+        private static string CardBlockOf(string card)
+        {
+            string text = card.Replace("\r\n", "\n");
+            int start = text.IndexOf(CardStamp, StringComparison.Ordinal);
+            int end = start < 0 ? -1 : text.IndexOf(CardEnd, start, StringComparison.Ordinal);
+            return end < 0 ? null : text.Substring(start, end + CardEnd.Length - start);
+        }
+
+        private static string Row(string reading, string model, string record, string miss) => "| " + reading + " | " + model + " | " + record + " | " + miss + " |";
+        private static string Title(string surname) => CultureInfo.InvariantCulture.TextInfo.ToTitleCase(surname.ToLowerInvariant());
 
         private static double Pin(int year, string space) => space.StartsWith("the vote model's", StringComparison.Ordinal)
             ? (year == 2020 ? 50.10 : 40.13)
