@@ -1,0 +1,2 @@
+e2f4da68eb059cac0a826fa38582a1bbdc8cd131d1460b6b665c8a98bf090a40 *kandydaci_sejm_csv.zip
+96ed81044f6f5f4a0c26eebee53e36394fcb5aa8629128469e2a2cb17da073f8 *kandydaci_sejm_utf8.csv

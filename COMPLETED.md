@@ -36684,3 +36684,31 @@ The cheap bar **92 of 92** (`cheap737b`; `cheap737` the two findings above).
 **Checked** (`PresidentialElectionDiagnostic`, the cheap bar's): each figure against its phrase in the extract, the quotes joined over their wrapped lines - *"mogą być tworzone wyłącznie przez wyborców"* (art. 84 § 3), *"w liczbie co najmniej 15"* (art. 90 § 1), *"co najmniej 1000 podpisów"* and *"najpóźniej w 55 dniu przed dniem wyborów"* (art. 299), *"co najmniej 100 000 obywateli"* (art. 296) and *"w 44 dniu przed dniem wyborów"* (art. 303 § 1).
 
 **Tier SIMULATION by path** (`TwoRoundElection.cs`; data no turn reads yet - the sentinel below): named `n765` (PresidentialElection, DeadState, UnwiredSubsystem, ConstantProvenance, Mojibake, CommentClaim, MetaText) **7 of 7**; the simulation bar **57 of 57**, the sentinel on `fp755` for both seeds (`sim765`); the cheap bar **94 of 94** (`cheap765`).
+
+
+## 766. RULING D2 INSTALLED: TD TAKES THE SEAT-WEIGHTED MEAN OF PSL'S AND POLSKA 2050'S POSITIONS - 27 AND 31 SEATS OF THE 2023 LIST, READ FROM THE KBW'S CANDIDATE FILE; THE FIRST JOINT LIST SEATED BY §621'S RULE. ON 1 OCTOBER 2026 THE SEJM NOW PASSES 130 OF 139 LAWS, AND THE PRESIDENT MEETS 43 STATUTES - EVERY ONE VETOED, NONE OVERRIDDEN (2026-10-03)
+
+**The ruling** (Elias, D2, 2026-10-03): *TD gets the seat-weighted average of PSL's and Polska 2050's positions, weighted by the seats each party won on the 2023 TD list (sourced by read). This is the rule Italy's joint lists already use. Then re-run the 1 Oct 2026 count and put the new pass/fail figures and the veto's encounters in the commit.*
+
+**The source, read** (`ElectionsData/poland/td_list_2023.md`; raw `raw/td_list_2023/` - the KBW's `kandydaci_sejm_csv.zip` and its one member, with SHA-256 and the fetch log): the 2023 Sejm's candidate file, one row a candidate, its party membership and whether it won a seat. Its 460 elected sum by committee to the PKW's notice (PiS 194, KO 157, TD 65, NL 26, Konf 18). **TD's 65 by membership: Polska 2050 31** (30 written in full, 1 as "PL2050"), **PSL 27** (26 + 1 as "PSL"), 4 non-members and 3 Centrum dla Polski members - the seven carry no CHES row and no weight, stated. CHES 2024's own `seat` column (PSL 32, Polska 2050 33) is the clubs as they sat, not the seats won on the list; the ruling's are the list's.
+
+**Built** (`PartySystems.JointList`, new; the roster's TD): **§621's joint-list rule, implemented for the first time** - a joint list without its own CHES position takes the seat-weighted mean of its member parties' positions, field by field over the fourteen the roster carries (a field a member does not publish averaged over those that do); the list keeps its key, name, seats and mark. TD's members (`PartySystems.PolandTdMembers`) are CHES 2024's `PSL` and `Polska 2050` rows, typed at two decimals as every roster row is, with the sourced weights (`PolandTdPslSeats` 27, `PolandTdPolska2050Seats` 31). **TD now sits at lrecon 5.319, galtan 5.858, EU 5.877, nationalism 5.312** - between its two parties, nearer Polska 2050. The roster comment that called the committee's absence of a position the rule now names the ruling. Italy's AVS is unchanged: its members' split is still unsourced (E-48).
+
+**The 1 October 2026 count, re-run** (`PresidentialVetoDiagnostic` (i), the record's chamber - the 10th Sejm, Tusk governing, Nawrocki president, KO the player's party; §761's figures before):
+
+| | §761 (TD unplaced) | now |
+|---|---|---|
+| laws offered | 139 | 139 |
+| the Sejm passes | 87 | **130** |
+| PiS against | 52 | 52 |
+| ... of them passing | 0 | **43** |
+| ... TD abstaining on them | 52 | 9 |
+| **the President vetoes** | 0 | **43 - 0 overridden, 43 standing** |
+
+The coalition's 248 now carry what PiS and Konfederacja's 212 oppose wherever TD sides with it, and every such statute meets Nawrocki's veto - and stands, because no override reaches 276 while PiS holds 194 (§761's note).
+
+**Checked** (`PolishSejmAllocationDiagnostic`, the cheap bar's): the KBW file recounted every run - 460 elected; on the TD list Polska 2050 31, PSL 27, 7 with no CHES row - the weights `PartySystems` carries; PSL's and Polska 2050's rows equal CHES 2024's in all fourteen fields; TD sits at their seat-weighted mean in every field.
+
+**Tier SIMULATION** (`PartySystem.cs`; **the sentinel holds** - the no-policy dump's AI budgets in Poland are untouched by TD's vote, so no family and no review): named `n766` (PolishSejmAllocation, PresidentialVeto, PresidentialVoteBacktest, EntrantLayer, CampaignCast, StartBrief, WorldClock, ConstantProvenance, DeadState, UnwiredSubsystem, Mojibake, CommentClaim) **12 of 12**; the simulation bar **57 of 57**, the sentinel on `fp755` for both seeds (`sim766`); the dry film **`drys766`** (Poland 1280: 145 measured, 0 failed, 0 overflows, 0 escapes, 0 errors); the cheap bar's first run (`cheap766`) failed **`FormationSweepDiagnostic`** - the pinned sweep moved in 2 of its 250 blocks, the seated Polish chamber's two investiture rules and nothing else (diffed line for line, the text before kept as `formation_sweep_before766.txt`): **the formation's government on the 2023 chamber went from PiS with TD's and Konfederacja's support (194, supported 277) to PiS+KO+TD (416)** - re-pinned as D2's deliberate effect; the cheap bar **94 of 94** (`cheap766c`).
+
+**Owed to Elias, found here:** Poland's formation reads **derived red lines only** - the parties' dated declarations (in 2023 KO, TD and NL refused PiS) are not on disk, so the model's best answer on the record's chamber is a cabinet no party declared for, before D2 as after it (PiS alone propped by TD and Konfederacja, now PiS+KO+TD). Germany needed the same sourcing (§705); Poland's will matter as soon as the game holds a Polish election (the polling day lands next).

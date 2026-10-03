@@ -285,7 +285,7 @@ namespace PoliSim.EditorTools
                         Country pl = world.GetCountry(CountryId.Poland);
                         pl.PlayerPartyAbbrev = "KO";
                         LawDefinition chosen = null;
-                        int offered = 0, passing = 0, pisAgainst = 0, pisAgainstPassing = 0, pisFor = 0, pisUndecided = 0, pisAgainstTdAbstains = 0;
+                        int offered = 0, passing = 0, pisAgainst = 0, pisAgainstPassing = 0, pisFor = 0, pisUndecided = 0, pisAgainstTdAbstains = 0, vetoStands = 0, vetoOverridden = 0;
                         foreach (LawDefinition law in LawCatalog.All)
                         {
                             if (law.ConstitutionalAmendment || pl.EnactedLaws.Exists(e => e.LawId == law.Id) || !LawCatalog.IsWithinCompetence(world, pl, law)) { continue; }
@@ -297,10 +297,14 @@ namespace PoliSim.EditorTools
                             int pis = sides.Find(d => d.Abbrev == "PiS")?.Side ?? 0, td = sides.Find(d => d.Abbrev == "TD")?.Side ?? 0;
                             if (passes) { passing++; }
                             if (pis < 0) { pisAgainst++; if (passes) { pisAgainstPassing++; } if (td == 0) { pisAgainstTdAbstains++; } } else if (pis > 0) { pisFor++; } else { pisUndecided++; }
+                            // §766: the veto's encounters on the record's chamber - each statute the Sejm passes, put to the President of the day
+                            PresidentialVeto.Outcome met = passes ? PresidentialVeto.Decide(CountryId.Poland, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides) : null;
+                            if (met != null && met.Vetoed) { if (met.Overridden) { vetoOverridden++; } else { vetoStands++; } }
                         }
-                        sb.Append(F("    info      §761 the catalog on {0}, the record's chamber: {1} laws offered, {2} the Sejm passes; PiS against {3} ({4} of them passing; TD abstaining on {7} of them), for {5}, undecided {6}\n",
-                            sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), offered, passing, pisAgainst, pisAgainstPassing, pisFor, pisUndecided, pisAgainstTdAbstains));
-                        // the record's chamber passes nothing PiS opposes (above) - the path is proved on a PLANTED chamber where KO alone carries a bill
+                        sb.Append(F("    info      §761/§766 the catalog on {0}, the record's chamber: {1} laws offered, {2} the Sejm passes; PiS against {3} ({4} of them passing; TD abstaining on {7} of them), for {5}, undecided {6}; the President vetoes {8} the Sejm passes - {9} overridden, {10} standing\n",
+                            sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), offered, passing, pisAgainst, pisAgainstPassing, pisFor, pisUndecided, pisAgainstTdAbstains,
+                            vetoStands + vetoOverridden, vetoOverridden, vetoStands));
+                        // the path is proved on a PLANTED chamber where KO alone carries a bill (the record's chamber is measured above)
                         foreach (KeyValuePair<string, int> kv in new Dictionary<string, int> { { "PiS", 194 }, { "KO", 262 }, { "TD", 0 }, { "NL", 0 }, { "Konf", 4 } }) { pl.ParliamentSeats[kv.Key] = kv.Value; }
                         foreach (LawDefinition law in LawCatalog.All)
                         {

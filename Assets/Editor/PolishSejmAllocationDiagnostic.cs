@@ -107,6 +107,53 @@ namespace PoliSim.EditorTools
                 Dictionary<string, int> sld = PolishSejmAllocation.Allocate(withSld, out _);
                 Check(sld["SLD"] > 0 && sld.Values.Sum() == 460, F("§762: a list with no 2023 committee (SLD at 6 %) takes its national share in every okreg - {0} seat(s)", sld["SLD"]));
 
+                // ---- §766 (Elias's ruling D2): TD's POSITION, THE SEAT-WEIGHTED MEAN OF ITS TWO PARTIES' - the weights from the KBW's candidate file, the
+                // member rows from CHES, TD's row their mean; each re-derived from the files every run ----
+                int tdPolska2050 = 0, tdPsl = 0, tdOthers = 0, elected = 0;
+                string[] kbw = File.ReadAllLines(Path.Combine(root, "raw", "td_list_2023", "kandydaci_sejm_utf8.csv"), Encoding.UTF8);
+                string[] kbwHead = SplitQuoted(kbw[0].TrimStart('﻿'), ';');
+                int colCommittee = Array.IndexOf(kbwHead, "Nazwa komitetu"), colParty = Array.IndexOf(kbwHead, "Przynależność do partii"), colSeat = Array.IndexOf(kbwHead, "Czy przyznano mandat");
+                for (int i = 1; i < kbw.Length; i++)
+                {
+                    if (kbw[i].Length == 0) { continue; }
+                    string[] f = SplitQuoted(kbw[i], ';');
+                    if (f[colSeat] != "Tak") { continue; }
+                    elected++;
+                    if (f[colCommittee].IndexOf("TRZECIA DROGA", StringComparison.Ordinal) < 0) { continue; }
+                    string party = f[colParty];
+                    if (party.EndsWith("Polska 2050 Szymona Hołowni", StringComparison.Ordinal) || party.EndsWith("PL2050 Szymona Hołowni", StringComparison.Ordinal)) { tdPolska2050++; }
+                    else if (party.EndsWith("Polskie Stronnictwo Ludowe", StringComparison.Ordinal) || party.EndsWith(": PSL", StringComparison.Ordinal)) { tdPsl++; }
+                    else { tdOthers++; }
+                }
+                Check(elected == 460 && tdPolska2050 == PartySystems.PolandTdPolska2050Seats && tdPsl == PartySystems.PolandTdPslSeats && tdPolska2050 + tdPsl + tdOthers == 65,
+                    F("§766: the KBW's candidate file - {0} elected; on the TD list Polska 2050 {1}, PSL {2}, {3} with no CHES row - the weights PartySystems carries ({4}, {5})",
+                        elected, tdPolska2050, tdPsl, tdOthers, PartySystems.PolandTdPolska2050Seats, PartySystems.PolandTdPslSeats));
+                Dictionary<string, Dictionary<string, double>> ches = ReadChesRows(Path.GetFullPath(Path.Combine(root, "..", "positions", "raw", "CHES_2024_final_v2.csv")), "PSL", "Polska 2050");
+                var fields = new (string Column, Func<PoliticalParty, float> Field)[]
+                {
+                    ("lrecon", p => p.LrEcon), ("galtan", p => p.Galtan), ("eu_position", p => p.EuPosition), ("lrgen", p => p.LrGen), ("environment", p => p.Environment),
+                    ("regions", p => p.Regions), ("spendvtax", p => p.SpendVsTax), ("immigrate_policy", p => p.ImmigratePolicy), ("deregulation", p => p.Deregulation),
+                    ("redistribution", p => p.Redistribution), ("people_v_elite", p => p.PeopleVsElite), ("anti_elite_salience", p => p.AntiEliteSalience),
+                    ("civlib_laworder", p => p.CivLibLawOrder), ("nationalism", p => p.Nationalism),
+                };
+                int rowsMatch = 0;
+                foreach ((PoliticalParty member, int _) in PartySystems.PolandTdMembers)
+                {
+                    bool all = ches.TryGetValue(member.Abbrev, out Dictionary<string, double> row);
+                    foreach ((string column, Func<PoliticalParty, float> field) in fields) { all &= row != null && Math.Abs(Math.Round(row[column], 2) - field(member)) < 0.0005; }
+                    if (all) { rowsMatch++; }
+                }
+                PoliticalParty td = PartySystems.RealRoster(CountryId.Poland).First(p => p.Abbrev == "TD");
+                bool mean = td.HasPosition;
+                foreach ((string column, Func<PoliticalParty, float> field) in fields)
+                {
+                    double sum = 0.0; int w = 0;
+                    foreach ((PoliticalParty member, int listSeats) in PartySystems.PolandTdMembers) { sum += field(member) * (double)listSeats; w += listSeats; }
+                    mean &= Math.Abs(field(td) - sum / w) < 1e-4;
+                }
+                Check(rowsMatch == 2 && mean, F("§766: PSL's and Polska 2050's rows are CHES's ({0} of 2, all fourteen fields); TD sits at their seat-weighted mean - lrecon {1:0.000}, galtan {2:0.000}, EU {3:0.000}, nationalism {4:0.000}",
+                    rowsMatch, td.LrEcon, td.Galtan, td.EuPosition, td.Nationalism));
+
                 // ---- the rule's edges, planted ----
                 var edgeKinds = new Dictionary<string, Kind> { { "A", Kind.Party }, { "Coalition", Kind.Coalition }, { "Party", Kind.Party } };
                 string[] edgeNames = { "A", "Coalition", "Party" };
@@ -188,6 +235,39 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>§762: a file's SHA-256, lower-case hex - the generated table's recorded digests are checked against the files they were read from.</summary>
+        /// <summary>§766: a delimited line split on <paramref name="sep"/> outside double quotes, the quotes dropped.</summary>
+        private static string[] SplitQuoted(string line, char sep)
+        {
+            var fields = new List<string>();
+            var cur = new StringBuilder();
+            bool quoted = false;
+            foreach (char ch in line)
+            {
+                if (ch == '"') { quoted = !quoted; continue; }
+                if (ch == sep && !quoted) { fields.Add(cur.ToString()); cur.Clear(); continue; }
+                cur.Append(ch);
+            }
+            fields.Add(cur.ToString());
+            return fields.ToArray();
+        }
+
+        /// <summary>§766: Poland's named rows of CHES 2024 (country 26), every numeric column by name.</summary>
+        private static Dictionary<string, Dictionary<string, double>> ReadChesRows(string path, params string[] parties)
+        {
+            string[] lines = File.ReadAllLines(path, Encoding.UTF8);
+            string[] head = SplitQuoted(lines[0], ',');
+            var result = new Dictionary<string, Dictionary<string, double>>();
+            for (int i = 1; i < lines.Length; i++)
+            {
+                string[] f = SplitQuoted(lines[i], ',');
+                if (f.Length != head.Length || f[0] != "26" || Array.IndexOf(parties, f[2]) < 0) { continue; }
+                var row = new Dictionary<string, double>();
+                for (int c = 0; c < head.Length; c++) { if (double.TryParse(f[c], NumberStyles.Float, CultureInfo.InvariantCulture, out double v)) { row[head[c]] = v; } }
+                result[f[2]] = row;
+            }
+            return result;
+        }
+
         private static string Sha256(string path)
         {
             using (var sha = System.Security.Cryptography.SHA256.Create()) { return BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(path))).Replace("-", string.Empty).ToLowerInvariant(); }

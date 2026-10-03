@@ -397,14 +397,49 @@ namespace PoliSim.Data
         };
 
         // ---- Poland: Sejm 2023. Units are the ELECTORAL COMMITTEES the PKW reports. Sums to 460.
-        // TD is the Trzecia Droga committee (Polska 2050 + PSL); CHES scores its two components
-        // separately, so the COMMITTEE carries no single position - absence, not an average of two
-        // parties that ran together but are not one party.
+        // TD is the Trzecia Droga committee (Polska 2050 + PSL); CHES scores its two components separately. §766 (Elias's ruling D2, the
+        // joint-list rule of §621): the COMMITTEE takes the seat-weighted mean of its two parties' CHES rows, weighted by the seats each won
+        // on the 2023 list (`ElectionsData/poland/td_list_2023.md`).
+
+        /// <summary>§766, SOURCED - the KBW's 2023 candidate file (`raw/td_list_2023/`): the seats Polska 2050's members won on the TD list (30 written
+        /// in full, 1 as "PL2050"). The list's 4 non-members and 3 Centrum dla Polski members carry no CHES row and no weight.</summary>
+        public const int PolandTdPolska2050Seats = 31;
+        /// <summary>§766, SOURCED - the same file: the seats PSL's members won on the TD list (26 written in full, 1 as "PSL").</summary>
+        public const int PolandTdPslSeats = 27;
+
+        /// <summary>§766: TD's two member parties as CHES 2024 scores them (Poland's rows `PSL` and `Polska 2050`), typed as every roster row is -
+        /// members of the joint list, never seated units of their own.</summary>
+        public static readonly (PoliticalParty Member, int Seats)[] PolandTdMembers =
+        {
+            (new PoliticalParty("PSL", "Polskie Stronnictwo Ludowe", 4.17f, 6.97f, 0, euPosition: 5.38f, lrGen: 6.54f, environment: 5.50f, regions: 4.14f, spendVsTax: 5.17f, immigratePolicy: 7.30f, deregulation: 3.69f, redistribution: 3.85f, peopleVsElite: 5.50f, antiEliteSalience: 3.35f, civLibLawOrder: 5.60f, nationalism: 6.75f), PolandTdPslSeats),
+            (new PoliticalParty("Polska 2050", "Polska 2050 Szymona Hołowni", 6.32f, 4.89f, 0, euPosition: 6.31f, lrGen: 5.59f, environment: 3.64f, regions: 3.42f, spendVsTax: 5.92f, immigratePolicy: 5.67f, deregulation: 6.15f, redistribution: 5.27f, peopleVsElite: 5.20f, antiEliteSalience: 2.90f, civLibLawOrder: 3.73f, nationalism: 4.06f), PolandTdPolska2050Seats),
+        };
+
+        /// <summary>
+        /// §766 (Elias's ruling D2; the joint-list rule ruled at §621): a joint list without its own CHES position takes the SEAT-WEIGHTED MEAN of
+        /// its member parties' positions, field by field - each member weighted by the seats it won on the list; a field a member does not
+        /// publish is averaged over the members that do. The list keeps its own key, name, seats and mark.
+        /// </summary>
+        public static PoliticalParty JointList(string abbrev, string name, int seedSeats, string markName, (PoliticalParty Member, int Seats)[] members)
+        {
+            float Mean(System.Func<PoliticalParty, float> field)
+            {
+                double sum = 0.0; int weight = 0;
+                foreach ((PoliticalParty member, int seats) in members) { float v = field(member); if (float.IsNaN(v) || seats <= 0) { continue; } sum += (double)v * seats; weight += seats; }
+                return weight > 0 ? (float)(sum / weight) : float.NaN;
+            }
+            return new PoliticalParty(abbrev, name, Mean(p => p.LrEcon), Mean(p => p.Galtan), seedSeats, markName, euPosition: Mean(p => p.EuPosition),
+                lrGen: Mean(p => p.LrGen), environment: Mean(p => p.Environment), regions: Mean(p => p.Regions), spendVsTax: Mean(p => p.SpendVsTax),
+                immigratePolicy: Mean(p => p.ImmigratePolicy), deregulation: Mean(p => p.Deregulation), redistribution: Mean(p => p.Redistribution),
+                peopleVsElite: Mean(p => p.PeopleVsElite), antiEliteSalience: Mean(p => p.AntiEliteSalience), civLibLawOrder: Mean(p => p.CivLibLawOrder),
+                nationalism: Mean(p => p.Nationalism));
+        }
+
         private static readonly PoliticalParty[] PolandParties =
         {
             new PoliticalParty("PiS",  "Prawo i Sprawiedliwość",   2.52f, 8.45f, 194, "mark_party_pl_pis", euPosition: 3.10f, lrGen: 7.64f, environment: 7.71f, regions: 7.93f, spendVsTax: 3.69f, immigratePolicy: 8.75f, deregulation: 3.71f, redistribution: 2.61f, peopleVsElite: 4.57f, antiEliteSalience: 7.90f, civLibLawOrder: 8.31f, nationalism: 9.06f),
             new PoliticalParty("KO",   "Koalicja Obywatelska",     6.17f, 3.66f, 157, "mark_party_pl_ko", euPosition: 6.63f, lrGen: 4.93f, environment: 3.57f, regions: 3.57f, spendVsTax: 5.46f, immigratePolicy: 7.00f, deregulation: 6.71f, redistribution: 5.39f, peopleVsElite: 3.00f, antiEliteSalience: 2.55f, civLibLawOrder: 3.12f, nationalism: 3.56f),
-            new PoliticalParty("TD",   "Trzecia Droga",            float.NaN, float.NaN, 65, "mark_party_pl_td"),
+            JointList("TD",            "Trzecia Droga",            65, "mark_party_pl_td", PolandTdMembers),   // §766 (D2): Polska 2050 31 and PSL 27 seats of the list
             new PoliticalParty("NL",   "Nowa Lewica",              2.32f, 1.75f,  26, "mark_party_pl_nl", euPosition: 6.90f, lrGen: 2.41f, environment: 1.86f, regions: 3.00f, spendVsTax: 1.92f, immigratePolicy: 3.15f, deregulation: 3.38f, redistribution: 2.37f, peopleVsElite: 5.00f, antiEliteSalience: 2.90f, civLibLawOrder: 2.07f, nationalism: 1.56f),
             new PoliticalParty("Konf", "Konfederacja",             8.96f, 8.41f,  18, "mark_party_pl_konf", euPosition: 1.52f, lrGen: 9.39f, environment: 8.86f, regions: 7.78f, spendVsTax: 9.38f, immigratePolicy: 9.81f, deregulation: 8.46f, redistribution: 8.67f, peopleVsElite: 8.00f, antiEliteSalience: 8.20f, civLibLawOrder: 7.88f, nationalism: 9.81f),
             // PS-1 (2026-09-25, §618): the 2019 Sejm's lists that are not 2023's committees - seated as elected when the chamber of record is the 9th
