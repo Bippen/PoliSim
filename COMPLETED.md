@@ -36784,3 +36784,36 @@ The coalition's 248 now carry what PiS and Konfederacja's 212 oppose wherever TD
 **Owed to Elias, from this item:** **the game's 2025 verdict (above) - the first ruling owed**; the three premises (the later first votes on the window's last Sunday; the oath on the predecessor's term end; the gate's reading - predicted voters at the latest record's valid votes); a later election's candidates are unnamed where the roster names no leader (Polish parties carry none); a created party fields its leader - the player's chosen leader can stand and win, while the presidential START (the player as a candidate) is not built; an undecided contest (a tie, a finalist with no position) seats no one, and before the game's first decided contest the record's reading of the office stands.
 
 **Tier SIMULATION + UI** (`SimulationManager.cs` reviewed; the save version 38; a Canvas surface - the start screen's locked cards - on the real film): named `n770d` (PresidentialElectionLive, PresidentialVoteBacktest, PresidentialVeto, PresidentialElection, StartPoints, SaveMigration, ChamberVerdictCache, UnwiredSubsystem, DeadState, ConstantProvenance, CommentClaim, MetaText, Mojibake, NumberLocale, DocumentClaim, ReviewLedger) **16 of 16** on the final simulation files; the simulation bar **57 of 57**, the sentinel on `fp755` for both seeds (`sim770d`; `sim770` was cut by the wait's own limit and `sim770b`/`sim770c` stopped for the review's edits - none counted); the dry film **`drys770b`** (Poland 1280: 147 measured, 0 failed, 0 overflows, 0 escapes, 0 canvas text, 0 errors; `drys770` the same before the slip's fix); the real film **`film770pl2`** (Poland, 1280, `-shotstates`: 179 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas text violations across 10 asserts) - `07a_politics_parliament_rows` *THE PRESIDENT · NAWROCKI · ELECTED IN THE GAME · NEXT VOTE 19 MAY 2030* (the film's game held its own 2025, above), and **a frame added**, `07a_politics_parliament_president_elect`: PLANTED - the runtime's own next rounds (2030) held on the film's world, their days moved before the film's day and logged so - the row with the president-elect and the oath's day, the pinned slip both rounds and who did not stand. **Found on the first real film (`film770pl`), fixed:** the slip's lines were cut at 64 characters and cut again by the box (*IS / VETOED;*, *THE WINDOW ART. / 128 UST.*), and an unnamed candidate printed its party twice - the lines now go whole into the box, a day's basis in the player's words. The cheap bar **95 of 95** (`cheap770`).
+
+## 771. D-PL ASKED - POLAND'S ELECTION NIGHT, THE MAP OF THE 41 OKRĘGI; PS-5'S CODE CLOSED ON THE FEATURE LIST, THE NIGHT ITS ONE OPEN PIECE (2026-10-04)
+
+**The ruling** (Elias, with D1-D4, 2026-10-03): *Next: the Polish polling day, then the game's own presidential election, then continue the list.* The list is `POLISIM_FEATURE_LIST.md`, and after PS-5's code its next row is **D-PL - Poland's district map** (Design; needs PS-5; done when answered and built). Since §767 a Polish game votes on its days, and since §770 it elects its president, but no Polish election has a night: the night is Sweden's and Germany's alone (`ElectionNightFromModel.Available`). The map is Design's to draw first, as D-DE's was (§700).
+
+**Sent** (DesignSync, the standard form: `uploads/D-PL_ask/`, eight files - `ASK.md`, `MANIFEST.sha256`, one stored zip `D-PL_ask.zip` with the manifest first, and the five attachments loose; the upload listed back by `list_files`, all eight present).
+
+**What the ask names** - what a Polish night has to show and what Code holds for it:
+- **Nationally:** each committee's share; the 460 seats summed from the 41 districts' d'Hondt counts (no national tier); the 5 % and 8 % thresholds, the minority exempt; the majority line and the swing against 2023.
+- **Per okręg - here Poland differs from Germany:** each committee's share by the uniform swing from 2023's district results, and **the seats won in that okręg** (Poland's seats are counted district by district, so the game holds them where a Land holds none); the leader and its lead, the swing, the magnitude. Turnout and candidates are not held, stated.
+- **The candidacy facts:** MN in okręg 21 alone; the 2023 count returning the PKW's seats exactly (§762).
+- **The reference:** the history by lineage, LOW CONFIDENCE (D1).
+- **The table of the 41** (seat city and magnitude) is generated from `returns_2023.md` (`Tools/pl_districts_table.pl`, new - the send's tooling committed; it reproduces the sent rows exactly and dies unless the 41 sum to 460).
+
+**The attachments:** `district_votes_2023.csv` (the KBW's own per-okręg votes, as sourced) and `districts_2023.csv`. Three real frames:
+- the German night as built from 24a-24b, for its grammar (`de707f_1280_e7c_election_night_takeover`, `de707f_1280_e7e_election_night_partial_staged`);
+- Poland's Parliament tab as it stands, its reference and President rows (`film770pl2_07a_politics_parliament_rows`).
+
+**Seven questions for Design:**
+1. The map's form - 41 tiles sized by seats, arranged in the 16 województwa; shared seat cities; okręg 19 counting the abroad vote.
+2. What a tile carries at rest - the leader and lead, or the seats split by committee, or both.
+3. The coalitions' one ink and the 8 % line.
+4. The minority in one okręg.
+5. Where the 460, the majority and the thresholds sit.
+6. The reference and the LOW CONFIDENCE flag.
+7. Whether the presidential night (§770; the list's D-PR, SP-7's) folds into this ask.
+
+**`POLISIM_FEATURE_LIST.md`:**
+- PS-5: **code built** (§761-§770), its night waiting on D-PL.
+- D-PL: **asked**.
+- SP-7: the model and the veto built; the presidential START not built.
+
+Tier TOOLING + DOCUMENTS (a Perl tool, the list, the record; nothing Unity compiles): the cheap bar **95 of 95** (`cheap771`).
