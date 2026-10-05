@@ -51,4 +51,17 @@ post ids from the Internet Archive's index of their status URLs, each post's tex
 ([KO-P5], 2022-01-29, earlier and less plain) - byte for byte the sweep's copies, renamed; their digests are in
 `SHA256SUMS.txt` and the record's register.
 
-Konfederacja's own record has not been swept as KO's was; its own pages here are the §776 sweep's ([KONF-P1], [KONF-P2], [KONF-P3]).
+**Konfederacja's own record, swept 2026-10-05 (`COMPLETED.md` §784; F2's "always wins", as KO's was for §780):** konfederacja.pl - its
+sitemaps and its feed read whole (live; the listings were not kept), every graphic page fetched live (the site published no news between 2022-12-31 and 2023-07-06; its graphic
+and live sections were back-filled at the late-July 2023 relaunch with their original dates) - and the X posts of the party's own account
+@KONFEDERACJA_, of its co-chairmen @krzysztofbosak and @SlawomirMentzen, and of its member parties' accounts: post ids from the Internet
+Archive's index of their status URLs, from archive.ph's listings and from the pages that embed posts, each post's text and `created_at` from
+X's syndication endpoint (long posts re-read whole), January 2022 to 13 July 2023. Mentzen's posts are a sample (340 read; February 2023,
+much of 2022 and 7-11 July 2023 thin). The Internet Archive's playback refused (HTTP 429) the post captures the sweep asked for, so no archived copy of a
+post page is held (it served one konfederacja.pl capture, out of tree and uncited); the search engines refused or asked for a CAPTCHA. Out of tree under `PoliSim-captures/sources/poland_declarations_2023/Konf/own/`,
+listed with digests in its `SOURCES.tsv`. Brought into the tree for the facts they now date or restate (§2):
+`Konf/x_konfederacja_1638197714667053056_syndication.json` ([KONF-P4], the party's own post of 2023-03-21),
+`Konf/x_konfederacja_1640262039753969664_syndication.json` ([KONF-P5], the party's own post of 2023-03-27) and
+`Konf/x_mentzen_1673974781958340610_xcom.html` ([KONF-P6], Mentzen's own long post of 2023-06-28, as X's own status page serves it - the
+syndication endpoint stops at 280 characters, short of the words cited) - byte for byte the sweep's copies, renamed; their digests are in
+`SHA256SUMS.txt` and the record's register.

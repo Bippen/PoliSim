@@ -121,9 +121,18 @@ namespace PoliSim.EditorTools
                     bool page = f.Basis.Contains(DeclaredRedLines.PolandSpokenWords) ? f2Pages.Contains(tag) : first.Groups[3].Value == "P" && first.Groups[2].Value == f.Party.ToUpperInvariant();
                     return !page || !DatedBy(f.From, pageDate.TryGetValue(tag, out string cell) ? cell : null);
                 }).Select(Line).ToList();
-                Check(f2Pages.Count > 0 && f2Pages.All(t => Regex.IsMatch(t, @"^[A-Z]+-I\d+$")) && misdated.Count == 0,
-                    F("F2: a fact carrying F2's mark is first-tagged by a page the register marks (F2) ({0} such pages, {1} facts); every other fact by its declarer's own page; each fact's from is the first date of its first tag's register cell{2}",
-                        f2Pages.Count, facts.Count(f => f.Basis.Contains(DeclaredRedLines.PolandSpokenWords)), misdated.Count > 0 ? "; NOT: " + string.Join("; ", misdated) : string.Empty));
+                // §784: the marks and the facts held to each other both ways - a page the register marks (F2) is exactly one that first-tags a fact carrying
+                // F2's mark - so a mark left on a page that dates nothing fails, and a register with no mark and no fact carrying it holds
+                var f2Firsts = new HashSet<string>(facts.Where(f => f.Basis.Contains(DeclaredRedLines.PolandSpokenWords))
+                    .Select(f => Regex.Match(f.Basis, @"\[([A-Z]+-[A-Z]+\d+)\]").Groups[1].Value));
+                // the second review's finding: a failure names what broke it - the facts misdated, a mark on a page that first-tags no F2 fact, a mark on a non-I page
+                List<string> notF2 = misdated
+                    .Concat(f2Pages.Except(f2Firsts).OrderBy(t => t, StringComparer.Ordinal).Select(t => "[" + t + "] marked (F2) but first-tags no F2 fact"))
+                    .Concat(f2Pages.Where(t => !Regex.IsMatch(t, @"^[A-Z]+-I\d+$")).OrderBy(t => t, StringComparer.Ordinal).Select(t => "[" + t + "] marked (F2) but not a broadcaster's page"))
+                    .ToList();
+                Check(f2Pages.SetEquals(f2Firsts) && f2Pages.All(t => Regex.IsMatch(t, @"^[A-Z]+-I\d+$")) && misdated.Count == 0,
+                    F("F2: a fact carrying F2's mark is first-tagged by a page the register marks (F2), and a page so marked first-tags one ({0} such pages, {1} facts); every other fact by its declarer's own page; each fact's from is the first date of its first tag's register cell{2}",
+                        f2Pages.Count, facts.Count(f => f.Basis.Contains(DeclaredRedLines.PolandSpokenWords)), notF2.Count > 0 ? "; NOT: " + string.Join("; ", notF2) : string.Empty));
                 // F1: a fact is one-way and support-blocking exactly when its basis carries F1's mark (the review's finding: the formation checks cannot tell
                 // every support half apart - the derived PiS-NL line masks NL's on every Polish chamber)
                 var misshaped = facts.Where(f => f.Basis.StartsWith("DECLARED (F1", StringComparison.Ordinal) != (f.BlocksSupport && f.OneWay)).Select(Line).ToList();
