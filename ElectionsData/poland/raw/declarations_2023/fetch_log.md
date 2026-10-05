@@ -27,3 +27,28 @@ copied from the sweep unchanged, their digests re-checked on the copy. Since §7
   agreement PDF's SHA-1 matches the archive's own digest for it.
 
 Folders by declarer: `PiS`, `Konf`, `TD`, `NL`, `KO`. `CROSS` holds pages that bear on more than one party.
+
+**Added 2026-10-05 (Elias's ruling F1, "keep X from power" is a red line):** two of NL's own pages, held out of tree since the sweep of
+2026-10-04 and brought in for the line [NL-P31] dates and [NL-P32] restates - `NL/lewica_org_20220920_czarzasty_deklaracja_koalicji.html`
+([NL-P31], NL → PiS from 2022-09-20) and `NL/lewica_org_20230123_apelujemy_o_wspolprace.html` ([NL-P32], the National Board's resolution of
+21 January 2023). Byte for byte the sweep's copies; their digests are in `SHA256SUMS.txt` and the record's register.
+
+**Added 2026-10-05 (`COMPLETED.md` §780, the review of F1 and F2):** five more pages held out of tree since the sweep, brought in because the
+record's §4, §11 and §12 now cite them - `NL/lewica_org_20230826_wiec_czestochowa.html` ([NL-P33], NL's own page of 2023-08-26; modified
+2026-01-29), `NL/lewica_org_20220131_czarzasty_musimy_wspolrzadzic.html` ([NL-P34], NL's own page of 2022-01-31),
+`NL/tvn24_st7322187_konwencja_lodz.html` ([NL-I13], TVN24, 2023-09-02), `KO/tvn24_2023-08-09_budka_inauguracja_kampanii.html` ([KO-I13],
+TVN24, 2023-08-09) and `Konf/x_rozmowa-rmf_1671214148456251392_syndication.json` ([KONF-I26], RMF's own post of 2023-06-20, through X's
+syndication endpoint). Byte for byte the sweep's copies; their digests are in `SHA256SUMS.txt` and the record's register.
+
+**KO's own record, swept 2026-10-05 (`COMPLETED.md` §780; F2's "a date from the party's own record always wins", the review's finding that it
+had not been searched):** platforma.org (its news, live and through the Internet Archive's CDX index), koalicjaobywatelska.pl and its 2023
+campaign pages, and the X posts of Donald Tusk, of KO's own account @Obywatelska_KO (formerly @Platforma_org) and of the spokesman Jan Grabiec -
+post ids from the Internet Archive's index of their status URLs, each post's text and `created_at` from X's syndication endpoint - from January
+2022 to polling day. Out of tree under `PoliSim-captures/sources/poland_declarations_2023/KO/own/`, listed with digests in its `SOURCES.tsv`.
+2021 was not swept. Brought into the tree for KO → PiS, which they now date or weigh (§5): `KO/x_donaldtusk_1491474675771355145_syndication.json`
+([KO-P1], 2022-02-09) and `KO/x_obywatelska_ko_1494201933447544834_syndication.json`, `KO/x_obywatelska_ko_1526989992060502016_syndication.json`,
+`KO/x_obywatelska_ko_1704443105661886953_syndication.json` ([KO-P2] to [KO-P4]), and `KO/x_obywatelska_ko_1487416047955324930_syndication.json`
+([KO-P5], 2022-01-29, earlier and less plain) - byte for byte the sweep's copies, renamed; their digests are in
+`SHA256SUMS.txt` and the record's register.
+
+Konfederacja's own record has not been swept as KO's was; its own pages here are the §776 sweep's ([KONF-P1], [KONF-P2], [KONF-P3]).

@@ -1,0 +1,1669 @@
+﻿<!doctype html>
+<html lang="pl-PL" >
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preload" href="/wp-content/themes/lewica2025/style.css" as="style" onload="this.rel='stylesheet'">
+<link rel="preload" as="image" href="/wp-content/uploads/2025/12/lewica-logo.png"/>
+<script id="wpgcmcc-consent-default">
+window.dataLayer=window.dataLayer||[];
+function gtag(){window.dataLayer.push(arguments);}
+gtag('consent','default',{"ad_storage":"denied","ad_user_data":"denied","ad_personalization":"denied","analytics_storage":"denied","functionality_storage":"denied","personalization_storage":"denied","security_storage":"granted","region":["AT","BE","BG","CH","CY","CZ","DE","DK","EE","ES","FI","FR","GB","GR","HR","HU","IE","IS","IT","LI","LT","LU","LV","MT","NL","NO","PL","PT","RO","SE","SI","SK"]});
+gtag('set','ads_data_redaction',true);
+(function(){
+var n="wpgcmcc_cookie",r=1;
+function rc(n){var c=document.cookie?document.cookie.split('; '):[],i,p;for(i=0;i<c.length;i++){p=c[i].indexOf('=');if(c[i].substring(0,p)===n)return c[i].substring(p+1);}return '';}
+function pc(s){var v=[s];try{v.push(decodeURIComponent(s));}catch(e){}for(var i=0;i<v.length;i++){try{return JSON.parse(v[i]);}catch(e){}}return null;}
+var d=pc(rc(n));
+if(!d||Number(d.revision||0)!==r||!Array.isArray(d.categories))return;
+var cats=d.categories,services=d.services&&typeof d.services==='object'?d.services:{};
+function ok(c,s){var list=services[c];return Array.isArray(list)?list.indexOf(s)!==-1:cats.indexOf(c)!==-1;}
+var u={ad_storage:ok('advertisement','ad_storage')?'granted':'denied',
+ad_user_data:ok('advertisement','ad_user_data')?'granted':'denied',
+ad_personalization:ok('advertisement','ad_personalization')?'granted':'denied',
+analytics_storage:ok('analytics','analytics_storage')?'granted':'denied',
+functionality_storage:(ok('functional','functionality_storage')||ok('functionality','functionality_storage'))?'granted':'denied',
+personalization_storage:ok('personalization','personalization_storage')?'granted':'denied',
+security_storage:'granted'};
+gtag('consent','update',u);
+window.dataLayer.push({event:'wpgcmcc_consent_restored',wpgcmcc_google_consent:u});
+}());
+</script>
+		<meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+<style id="lpl-early">html.lpl-contrast,html.lpl-contrast body{background:#000;color-scheme:dark}.wcag-tabs.lpl-tabs-pending>.wcag-tab-panel:not(.lpl-tab-shown){display:none}@media (prefers-reduced-motion:no-preference){@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation-duration:.2s}}</style>
+<script id="lpl-early-js">window.LPL={"sheet":"https:\/\/lewica.org.pl\/wp-content\/plugins\/wp-accessibility\/toolbar\/css\/a11y-contrast.css","tabs":false};(function (d, w) {
+  'use strict';
+  var settings = w.LPL || {};
+  var root = d.documentElement;
+
+  function cookie(name) {
+    return new RegExp('(?:^|;\\s*)' + name + '=[^;]').test(d.cookie);
+  }
+
+  /* High contrast from the first frame. The server already adds the classes when it sees the
+     cookie; this covers a page that came without them (for example from a cache). */
+  function onBody(run) {
+    if (d.body) { run(d.body); return; }
+    var watch = new MutationObserver(function () {
+      if (d.body) { watch.disconnect(); run(d.body); }
+    });
+    watch.observe(root, { childList: true });
+  }
+  if (cookie('a11y-larger-fontsize')) root.classList.add('fontsize');
+  if (cookie('a11y-high-contrast')) {
+    root.classList.add('lpl-contrast');
+    if (settings.sheet && !d.getElementById('highContrastStylesheet')) {
+      var link = d.createElement('link');
+      link.rel = 'stylesheet';
+      link.id = 'highContrastStylesheet';
+      link.href = settings.sheet;
+      d.head.appendChild(link);
+    }
+    onBody(function (body) { body.classList.add('contrast'); });
+  }
+
+  /* The toolbar adds its own copy of the contrast stylesheet and removes only one copy when
+     switched off, so after each switch exactly one copy stays (on) or none (off). */
+  function sync() {
+    var on = !!d.body && d.body.classList.contains('contrast');
+    root.classList.toggle('lpl-contrast', on);
+    var sheets = d.querySelectorAll('link#highContrastStylesheet');
+    for (var i = on ? 1 : 0; i < sheets.length; i++) sheets[i].parentNode.removeChild(sheets[i]);
+  }
+  d.addEventListener('click', function (event) {
+    if (event.target && event.target.closest && event.target.closest('.toggle-contrast')) setTimeout(sync, 0);
+  }, true);
+  w.addEventListener('load', sync);
+
+  /* WCAG tabs: the plugin builds the tab row after the page has loaded, which pushed the content
+     down and showed every panel for a moment. Until then the same row stands in its place and only
+     the chosen panel is shown; the plugin's row replaces it without any movement. */
+  if (!settings.tabs || !w.MutationObserver) return;
+  var hash = /tab=(\d+)/.exec(w.location.hash || '');
+  var wanted = hash ? parseInt(hash[1], 10) : 0;
+  var boxes = [];
+  function prepare(box) {
+    if (box.lplTabs) return box.lplTabs;
+    var row = d.createElement('ul');
+    row.className = 'wcag-tabs__tablist lpl-tabs-placeholder';
+    row.setAttribute('aria-hidden', 'true');
+    box.insertBefore(row, box.firstChild);
+    box.classList.add('lpl-tabs-pending');
+    box.lplTabs = { row: row, count: 0, done: false };
+    boxes.push(box);
+    return box.lplTabs;
+  }
+  function finish(box) {
+    var state = box.lplTabs;
+    if (!state || state.done) return;
+    state.done = true;
+    if (state.row.parentNode) state.row.parentNode.removeChild(state.row);
+    box.classList.remove('lpl-tabs-pending');
+    var shown = box.querySelectorAll('.lpl-tab-shown');
+    for (var i = 0; i < shown.length; i++) shown[i].classList.remove('lpl-tab-shown');
+  }
+  function scan() {
+    var found = d.querySelectorAll('.wcag-tabs');
+    for (var i = 0; i < found.length; i++) {
+      var box = found[i];
+      if (box.lplTabs && box.lplTabs.done) continue;
+      var children = box.children, real = false, panels = [];
+      for (var j = 0; j < children.length; j++) {
+        var child = children[j];
+        if (child.classList.contains('wcag-tabs__tablist') && !child.classList.contains('lpl-tabs-placeholder')) real = true;
+        if (child.classList.contains('wcag-tab-panel')) panels.push(child);
+      }
+      if (real) { finish(box); continue; }
+      var state = prepare(box);
+      for (var k = state.count; k < panels.length; k++) {
+        var item = d.createElement('li');
+        var button = d.createElement('button');
+        button.type = 'button';
+        button.tabIndex = -1;
+        button.className = 'wcag-tabs__tab' + (k === wanted ? ' is-active' : '');
+        button.textContent = panels[k].getAttribute('data-title') || ('Zakładka ' + (k + 1));
+        item.appendChild(button);
+        state.row.appendChild(item);
+        if (k === wanted) panels[k].classList.add('lpl-tab-shown');
+      }
+      state.count = panels.length;
+    }
+  }
+  var watch = new MutationObserver(scan);
+  watch.observe(root, { childList: true, subtree: true });
+  // If the tabs plugin did not run, everything is shown as before.
+  w.addEventListener('load', function () {
+    scan();
+    watch.disconnect();
+    boxes.forEach(finish);
+  });
+})(document, window);
+</script>
+
+	<!-- This site is optimized with the Yoast SEO plugin v28.6 - https://yoast.com/product/yoast-seo-wordpress/ -->
+	<title>Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po wyborach - Lewica</title>
+	<meta name="description" content="Dziękuję prezydentom Aleksandrowi Kwaśniewskiemu i Bronisławowi Komorowskiemu za wkład w organizację tego spotkania. Dziękuję jego ekscelencji…" />
+	<link rel="canonical" href="https://lewica.org.pl/aktualnosci/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach/" />
+	<meta property="og:locale" content="pl_PL" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po wyborach - Lewica" />
+	<meta property="og:description" content="Dziękuję prezydentom Aleksandrowi Kwaśniewskiemu i&nbsp;Bronisławowi Komorowskiemu za&nbsp;wkład w&nbsp;organizację tego spotkania. Dziękuję jego ekscelencji ambasadorowi Stanów Zjednoczonych za&nbsp;przybycie i&nbsp;życzliwość wobec inicjatywy spotkania, które ma&nbsp;uczcić wszystkie środowiska wprowadzające Polskę do&nbsp;NATO. Serdecznie witam moich&nbsp;przyjaciół z&nbsp;opozycji, to&nbsp;ważne, że&nbsp;jesteśmy w&nbsp;jednym miejscu w&nbsp;tym samym czasie. Tak&nbsp;nawiasem, stwierdzenie „dogadać się” od&nbsp;soboty było odmieniane w&nbsp;naszym kraju przez&nbsp;wszystkie czasy i&nbsp;osoby. Należy się w&nbsp;to&nbsp;wsłuchać i&nbsp;wyciągać [&hellip;]" />
+	<meta property="og:url" content="https://lewica.org.pl/aktualnosci/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach/" />
+	<meta property="og:site_name" content="Lewica" />
+	<meta property="article:published_time" content="2022-09-20T12:03:59+00:00" />
+	<meta property="og:image" content="https://lewica.org.pl/wp-content/uploads/2026/01/a623fa01a0248f193df0080c61940c7b.webp" />
+	<meta name="author" content="Rzecznik" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:description" content="Dziękuję prezydentom Aleksandrowi Kwaśniewskiemu i Bronisławowi Komorowskiemu za wkład w organizację tego spotkania. Dziękuję jego ekscelencji…" />
+	<meta name="twitter:label1" content="Napisane przez" />
+	<meta name="twitter:data1" content="Rzecznik" />
+	<meta name="twitter:label2" content="Szacowany czas czytania" />
+	<meta name="twitter:data2" content="6 minut" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https:\/\/schema.org","@graph":[{"@type":"Article","@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#article","isPartOf":{"@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/"},"author":{"name":"Rzecznik","@id":"https:\/\/lewica.org.pl\/#\/schema\/person\/267acd9959c5dc4d8c7b783e7478557e"},"headline":"Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po&nbsp;wyborach","datePublished":"2022-09-20T12:03:59+00:00","mainEntityOfPage":{"@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/"},"wordCount":1117,"publisher":{"@id":"https:\/\/lewica.org.pl\/#organization"},"image":{"@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#primaryimage"},"thumbnailUrl":"https:\/\/lewica.org.pl\/wp-content\/uploads\/2026\/01\/a623fa01a0248f193df0080c61940c7b.webp","articleSection":["Aktualności"],"inLanguage":"pl-PL"},{"@type":"WebPage","@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/","url":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/","name":"Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po wyborach - Lewica","isPartOf":{"@id":"https:\/\/lewica.org.pl\/#website"},"primaryImageOfPage":{"@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#primaryimage"},"image":{"@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#primaryimage"},"thumbnailUrl":"https:\/\/lewica.org.pl\/wp-content\/uploads\/2026\/01\/a623fa01a0248f193df0080c61940c7b.webp","datePublished":"2022-09-20T12:03:59+00:00","breadcrumb":{"@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#breadcrumb"},"inLanguage":"pl-PL","potentialAction":[{"@type":"ReadAction","target":["https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/"]}]},{"@type":"ImageObject","inLanguage":"pl-PL","@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#primaryimage","url":"https:\/\/lewica.org.pl\/wp-content\/uploads\/2026\/01\/a623fa01a0248f193df0080c61940c7b.webp","contentUrl":"https:\/\/lewica.org.pl\/wp-content\/uploads\/2026\/01\/a623fa01a0248f193df0080c61940c7b.webp","width":2048,"height":1152,"caption":"Na zdjęciu widoczny jest mężczyzna stojący przy mównicy podczas konferencji dotyczącej NATO, z flagami Polski, UE oraz NATO w tle."},{"@type":"BreadcrumbList","@id":"https:\/\/lewica.org.pl\/aktualnosci\/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach\/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https:\/\/lewica.org.pl\/"},{"@type":"ListItem","position":2,"name":"Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po wyborach"}]},{"@type":"WebSite","@id":"https:\/\/lewica.org.pl\/#website","url":"https:\/\/lewica.org.pl\/","name":"Lewica","description":"Oficjalny serwis Nowej Lewicy: program, władze, aktualności, wideo, galerie zdjęć i kontakt.","publisher":{"@id":"https:\/\/lewica.org.pl\/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https:\/\/lewica.org.pl\/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"pl-PL","alternateName":"Nowa Lewica"},{"@type":["Organization","PoliticalParty"],"@id":"https:\/\/lewica.org.pl\/#organization","name":"Nowa Lewica","url":"https:\/\/lewica.org.pl\/","logo":{"@type":"ImageObject","inLanguage":"pl-PL","@id":"https:\/\/lewica.org.pl\/#\/schema\/logo\/image\/","url":"https:\/\/lewica.org.pl\/wp-content\/uploads\/2026\/07\/logo-lewica.png","contentUrl":"https:\/\/lewica.org.pl\/wp-content\/uploads\/2026\/07\/logo-lewica.png","width":350,"height":132,"caption":"Lewica"},"image":{"@id":"https:\/\/lewica.org.pl\/#\/schema\/logo\/image\/"},"sameAs":["https:\/\/www.facebook.com\/NowaaLewica","https:\/\/x.com\/__Lewica","https:\/\/www.instagram.com\/__lewica\/","https:\/\/www.tiktok.com\/@__lewica","https:\/\/www.flickr.com\/photos\/193098256@N08\/albums","https:\/\/www.youtube.com\/user\/TVSLD","https:\/\/www.youtube.com\/channel\/UCxtA77vg23IFD8HvZ0AeaMg","https:\/\/pl.wikipedia.org\/wiki\/Nowa_Lewica","https:\/\/www.wikidata.org\/wiki\/Q107418166"],"alternateName":"Lewica","address":{"@type":"PostalAddress","streetAddress":"ul. Złota 9, lok. 4","postalCode":"00-019","addressLocality":"Warszawa","addressCountry":"PL"},"email":"sekretariat@lewica.org.pl"},{"@type":"Person","@id":"https:\/\/lewica.org.pl\/#\/schema\/person\/267acd9959c5dc4d8c7b783e7478557e","name":"Rzecznik","image":{"@type":"ImageObject","inLanguage":"pl-PL","@id":"https:\/\/secure.gravatar.com\/avatar\/7cf0563e46ef9cac5e018dddad0aebfc3c49ecbbcc941303bc5fc7c967b0598d?s=96&d=mm&r=g","url":"https:\/\/secure.gravatar.com\/avatar\/7cf0563e46ef9cac5e018dddad0aebfc3c49ecbbcc941303bc5fc7c967b0598d?s=96&d=mm&r=g","contentUrl":"https:\/\/secure.gravatar.com\/avatar\/7cf0563e46ef9cac5e018dddad0aebfc3c49ecbbcc941303bc5fc7c967b0598d?s=96&d=mm&r=g","caption":"Rzecznik"},"sameAs":["https:\/\/lewica.org.pl"]}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<link rel="alternate" type="application/rss+xml" title="Lewica &raquo; Kanał z wpisami" href="https://lewica.org.pl/feed/" />
+<link rel='stylesheet' id='formidable-css' href='https://lewica.org.pl/wp-content/plugins/formidable/css/formidableforms.css?ver=923625' media='all' />
+<style id="wp-block-library-inline-css">
+:root{--wp-block-synced-color:#7a00df;--wp-block-synced-color--rgb:122,0,223;--wp-bound-block-color:var(--wp-block-synced-color);--wp-editor-canvas-background:#ddd;--wp-admin-theme-color:#007cba;--wp-admin-theme-color--rgb:0,124,186;--wp-admin-theme-color-darker-10:#006ba1;--wp-admin-theme-color-darker-10--rgb:0,107,160.5;--wp-admin-theme-color-darker-20:#005a87;--wp-admin-theme-color-darker-20--rgb:0,90,135;--wp-admin-border-width-focus:2px}@media (min-resolution:192dpi){:root{--wp-admin-border-width-focus:1.5px}}.wp-element-button{cursor:pointer}:root .has-very-light-gray-background-color{background-color:#eee}:root .has-very-dark-gray-background-color{background-color:#313131}:root .has-very-light-gray-color{color:#eee}:root .has-very-dark-gray-color{color:#313131}:root .has-vivid-green-cyan-to-vivid-cyan-blue-gradient-background{background:linear-gradient(135deg,#00d084,#0693e3)}:root .has-purple-crush-gradient-background{background:linear-gradient(135deg,#34e2e4,#4721fb 50%,#ab1dfe)}:root .has-hazy-dawn-gradient-background{background:linear-gradient(135deg,#faaca8,#dad0ec)}:root .has-subdued-olive-gradient-background{background:linear-gradient(135deg,#fafae1,#67a671)}:root .has-atomic-cream-gradient-background{background:linear-gradient(135deg,#fdd79a,#004a59)}:root .has-nightshade-gradient-background{background:linear-gradient(135deg,#330968,#31cdcf)}:root .has-midnight-gradient-background{background:linear-gradient(135deg,#020381,#2874fc)}:root{--wp--preset--font-size--normal:16px;--wp--preset--font-size--huge:42px}.has-regular-font-size{font-size:1em}.has-larger-font-size{font-size:2.625em}.has-normal-font-size{font-size:var(--wp--preset--font-size--normal)}.has-huge-font-size{font-size:var(--wp--preset--font-size--huge)}:root .has-text-align-center{text-align:center}:root .has-text-align-left{text-align:left}:root .has-text-align-right{text-align:right}.has-fit-text{white-space:nowrap!important}#end-resizable-editor-section{display:none}.aligncenter{clear:both}.items-justified-left{justify-content:flex-start}.items-justified-center{justify-content:center}.items-justified-right{justify-content:flex-end}.items-justified-space-between{justify-content:space-between}.screen-reader-text{word-wrap:normal!important;border:0;clip-path:inset(50%);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px;word-break:normal!important}.screen-reader-text:focus{background-color:#ddd;clip-path:none;color:#444;display:block;font-size:1em;height:auto;left:5px;line-height:normal;padding:15px 23px 14px;text-decoration:none;top:5px;width:auto;z-index:100000}html :where(.has-border-color){border-style:solid}html :where([style^=border-color],[style*=";border-color"],[style*="; border-color"]){border-style:solid}html :where([style^=border-top-color],[style*=";border-top-color"],[style*="; border-top-color"]){border-top-style:solid}html :where([style^=border-right-color],[style*=";border-right-color"],[style*="; border-right-color"]){border-right-style:solid}html :where([style^=border-bottom-color],[style*=";border-bottom-color"],[style*="; border-bottom-color"]){border-bottom-style:solid}html :where([style^=border-left-color],[style*=";border-left-color"],[style*="; border-left-color"]){border-left-style:solid}html :where([style^=border-width],[style*=";border-width"],[style*="; border-width"]){border-style:solid}html :where([style^=border-top-width],[style*=";border-top-width"],[style*="; border-top-width"]){border-top-style:solid}html :where([style^=border-right-width],[style*=";border-right-width"],[style*="; border-right-width"]){border-right-style:solid}html :where([style^=border-bottom-width],[style*=";border-bottom-width"],[style*="; border-bottom-width"]){border-bottom-style:solid}html :where([style^=border-left-width],[style*=";border-left-width"],[style*="; border-left-width"]){border-left-style:solid}html :where(img[class*=wp-image-]){height:auto;max-width:100%}:where(figure){margin:0 0 1em}html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:var(--wp-admin--admin-bar--height,0px)}@media screen and (max-width:600px){html :where(.is-position-sticky){--wp-admin--admin-bar--position-offset:0px}}
+
+/*# sourceURL=/wp-includes/css/dist/block-library/common.min.css */
+</style>
+<style id="wp-block-button-inline-css">
+.wp-block-button__link{align-content:center;box-sizing:border-box;cursor:pointer;display:inline-block;height:100%;text-align:center;word-break:break-word}.wp-block-button__link.aligncenter{text-align:center}.wp-block-button__link.alignright{text-align:right}:where(.wp-block-button__link){border-radius:9999px;box-shadow:none;padding:calc(.667em + 2px) calc(1.333em + 2px);text-decoration:none}.wp-block-button[style*=text-decoration] .wp-block-button__link{text-decoration:inherit}.wp-block-buttons>.wp-block-button.has-custom-width{max-width:none}.wp-block-buttons>.wp-block-button.has-custom-width .wp-block-button__link{width:100%}.wp-block-buttons>.wp-block-button.has-custom-font-size .wp-block-button__link{font-size:inherit}.wp-block-buttons>.wp-block-button[class*=wp-block-button__width]{width:calc(var(--wp--block-button--width)*1% - var(--wp--style--block-gap, .5em)*(1 - var(--wp--block-button--width)/100))}.wp-block-buttons>.wp-block-button.wp-block-button__width-25{width:calc(25% - var(--wp--style--block-gap, .5em)*.75)}.wp-block-buttons>.wp-block-button.wp-block-button__width-50{width:calc(50% - var(--wp--style--block-gap, .5em)*.5)}.wp-block-buttons>.wp-block-button.wp-block-button__width-75{width:calc(75% - var(--wp--style--block-gap, .5em)*.25)}.wp-block-buttons>.wp-block-button.wp-block-button__width-100{flex-basis:100%;width:100%}.wp-block-buttons.is-vertical>.wp-block-button[class*=wp-block-button__width]{width:calc(var(--wp--block-button--width)*1%)}.wp-block-buttons.is-vertical>.wp-block-button.wp-block-button__width-25{width:25%}.wp-block-buttons.is-vertical>.wp-block-button.wp-block-button__width-50{width:50%}.wp-block-buttons.is-vertical>.wp-block-button.wp-block-button__width-75{width:75%}.wp-block-button.is-style-squared,.wp-block-button__link.wp-block-button.is-style-squared{border-radius:0}.wp-block-button.no-border-radius,.wp-block-button__link.no-border-radius{border-radius:0!important}:root :where(.wp-block-button .wp-block-button__link.is-style-outline),:root :where(.wp-block-button.is-style-outline>.wp-block-button__link){border:2px solid;padding:.667em 1.333em}:root :where(.wp-block-button .wp-block-button__link.is-style-outline:not(.has-text-color)),:root :where(.wp-block-button.is-style-outline>.wp-block-button__link:not(.has-text-color)){color:currentColor}:root :where(.wp-block-button .wp-block-button__link.is-style-outline:not(.has-background)),:root :where(.wp-block-button.is-style-outline>.wp-block-button__link:not(.has-background)){background-color:transparent;background-image:none}
+/*# sourceURL=https://lewica.org.pl/wp-includes/blocks/button/style.min.css */
+</style>
+<style id="wp-block-heading-inline-css">
+h1:where(.wp-block-heading).has-background,h2:where(.wp-block-heading).has-background,h3:where(.wp-block-heading).has-background,h4:where(.wp-block-heading).has-background,h5:where(.wp-block-heading).has-background,h6:where(.wp-block-heading).has-background{padding:1.25em 2.375em}h1.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h1.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h2.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h2.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h3.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h3.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h4.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h4.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h5.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h5.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]),h6.has-text-align-left[style*=writing-mode]:where([style*=vertical-lr]),h6.has-text-align-right[style*=writing-mode]:where([style*=vertical-rl]){rotate:180deg}
+/*# sourceURL=https://lewica.org.pl/wp-includes/blocks/heading/style.min.css */
+</style>
+<style id="wp-block-buttons-inline-css">
+.wp-block-buttons{box-sizing:border-box}.wp-block-buttons.is-vertical{flex-direction:column}.wp-block-buttons.is-vertical>.wp-block-button:last-child{margin-bottom:0}.wp-block-buttons>.wp-block-button{display:inline-block;margin:0}.wp-block-buttons.is-content-justification-left{justify-content:flex-start}.wp-block-buttons.is-content-justification-left.is-vertical{align-items:flex-start}.wp-block-buttons.is-content-justification-center{justify-content:center}.wp-block-buttons.is-content-justification-center.is-vertical{align-items:center}.wp-block-buttons.is-content-justification-right{justify-content:flex-end}.wp-block-buttons.is-content-justification-right.is-vertical{align-items:flex-end}.wp-block-buttons.is-content-justification-space-between{justify-content:space-between}.wp-block-buttons.aligncenter{text-align:center}.wp-block-buttons:not(.is-content-justification-space-between,.is-content-justification-right,.is-content-justification-left,.is-content-justification-center) .wp-block-button.aligncenter{margin-left:auto;margin-right:auto;width:100%}.wp-block-buttons[style*=text-decoration] .wp-block-button,.wp-block-buttons[style*=text-decoration] .wp-block-button__link{text-decoration:inherit}.wp-block-buttons.has-custom-font-size .wp-block-button__link{font-size:inherit}.wp-block-buttons .wp-block-button__link{width:100%}.wp-block-button.aligncenter{text-align:center}
+/*# sourceURL=https://lewica.org.pl/wp-includes/blocks/buttons/style.min.css */
+</style>
+<style id="wp-block-spacer-inline-css">
+.wp-block-spacer{clear:both}
+/*# sourceURL=https://lewica.org.pl/wp-includes/blocks/spacer/style.min.css */
+</style>
+
+<style id="classic-theme-styles-inline-css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+/*# sourceURL=/wp-includes/css/classic-themes.min.css */
+</style>
+
+<link rel='stylesheet' id='twentig-blocks-css' href='https://lewica.org.pl/wp-content/plugins/twentig/dist/style-index.css?ver=b258d9434f4f881edd99' media='all' />
+<style id="twentig-blocks-inline-css">
+.tw-mt-0{margin-top:0px!important;}.tw-mb-0{margin-bottom:0px!important;}.tw-mt-1{margin-top:5px!important;}.tw-mb-1{margin-bottom:5px!important;}.tw-mt-2{margin-top:10px!important;}.tw-mb-2{margin-bottom:10px!important;}.tw-mt-3{margin-top:15px!important;}.tw-mb-3{margin-bottom:15px!important;}.tw-mt-4{margin-top:20px!important;}.tw-mb-4{margin-bottom:20px!important;}.tw-mt-5{margin-top:30px!important;}.tw-mb-5{margin-bottom:30px!important;}.tw-mt-6{margin-top:40px!important;}.tw-mb-6{margin-bottom:40px!important;}.tw-mt-7{margin-top:50px!important;}.tw-mb-7{margin-bottom:50px!important;}.tw-mt-8{margin-top:60px!important;}.tw-mb-8{margin-bottom:60px!important;}.tw-mt-9{margin-top:80px!important;}.tw-mb-9{margin-bottom:80px!important;}.tw-mt-10{margin-top:100px!important;}.tw-mb-10{margin-bottom:100px!important;}.tw-mt-auto{margin-top:auto!important;}.tw-mb-auto{margin-bottom:auto!important;}
+@media (width <= 767px) { .tw-sm-hidden { display: none !important; }}@media (767px < width <= 1023px) { .tw-md-hidden { display: none !important; }}@media (width > 1023px) { .tw-lg-hidden { display: none !important; }}
+/*# sourceURL=twentig-blocks-inline-css */
+</style>
+<link rel='stylesheet' id='twentig-blocks-compat-css' href='https://lewica.org.pl/wp-content/plugins/twentig/dist/blocks/compat.css?ver=b258d9434f4f881edd99' media='all' />
+<style id="global-styles-inline-css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgb(6,147,227) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgb(252,185,0) 0%,rgb(255,105,0) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgb(255,105,0) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgb(255, 255, 255), 6px 6px rgb(0, 0, 0);--wp--preset--shadow--crisp: 6px 6px 0px rgb(0, 0, 0);}.wp-block-button{--wp--preset--dimension--25: 25%;--wp--preset--dimension--50: 50%;--wp--preset--dimension--75: 75%;--wp--preset--dimension--100: 100%;}:where(body) { margin: 0; }:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}body{padding-top: 0px;padding-right: 0px;padding-bottom: 0px;padding-left: 0px;}:root :where(.wp-element-button, .wp-block-button__link){background-color: #32373c;border-width: 0;color: #fff;font-family: inherit;font-size: inherit;font-style: inherit;font-weight: inherit;letter-spacing: inherit;line-height: inherit;padding-top: calc(0.667em + 2px);padding-right: calc(1.333em + 2px);padding-bottom: calc(0.667em + 2px);padding-left: calc(1.333em + 2px);text-decoration: none;text-transform: inherit;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+/*# sourceURL=global-styles-inline-css */
+</style>
+
+<link rel='stylesheet' id='pb-accordion-blocks-style-css' href='https://lewica.org.pl/wp-content/plugins/Accordion-Blocks-master/build/index.css?ver=1.5.0' media='all' />
+<link rel='stylesheet' id='ui-font-css' href='https://lewica.org.pl/wp-content/plugins/wp-accessibility/toolbar/fonts/css/a11y-toolbar.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<link rel='stylesheet' id='ui-a11y-css' href='https://lewica.org.pl/wp-content/plugins/wp-accessibility/toolbar/css/a11y.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<link rel='stylesheet' id='ui-fontsize.css-css' href='https://lewica.org.pl/wp-content/plugins/wp-accessibility/toolbar/css/a11y-fontsize.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<link rel='stylesheet' id='wpa-style-css' href='https://lewica.org.pl/wp-content/plugins/wp-accessibility/css/wpa-style.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<link rel='stylesheet' id='vj-core-css' href='https://lewica.org.pl/wp-content/plugins/yoast-faq-accordion/vj-core.css?ver=1791138199' media='all' />
+<link rel='stylesheet' id='lmi-media-css' href='https://lewica.org.pl/wp-content/plugins/lewica-media-import/assets/media.css?ver=0.1.27' media='all' />
+<link rel='stylesheet' id='megamenu-css' href='https://lewica.org.pl/wp-content/uploads/maxmegamenu/style.css?ver=4cfac0' media='all' />
+<link rel='stylesheet' id='simplelightbox-css-css' href='https://lewica.org.pl/wp-content/plugins/simplelightbox/dist/simple-lightbox.min.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<link rel='stylesheet' id='wpgcmcc-cc-css' href='https://lewica.org.pl/wp-content/plugins/wp-google-consent-mode-cookieconsent/vendor/cookieconsent/cookieconsent.css?ver=3.1.0' media='all' />
+<link rel='stylesheet' id='wpgcmcc-front-css' href='https://lewica.org.pl/wp-content/plugins/wp-google-consent-mode-cookieconsent/assets/css/frontend.css?ver=0.2.1' media='all' />
+<style id="wpgcmcc-front-inline-css">
+#cc-main{--cc-font-family:&#039;Poppins&#039;, sans-serif;--cc-modal-border-radius:12px;--cc-btn-border-radius:4px;--cc-primary-color:#121212;--cc-bg:#ffffff;--cc-secondary-color:#121212;--cc-btn-primary-bg:#552f7b;--cc-btn-primary-color:#ffffff;--cc-btn-secondary-bg:#dae0e9;--cc-btn-secondary-color:#121212;--cc-overlay-bg:#00000066;--cc-link-color:#e30613;--cc-toggle-on-bg:#552f7b;font-size:15px}#cc-main .cm__btn.cm__btn--secondary{background:transparent;color:#121212}#cc-main .pm__btn.pm__btn--secondary{background:transparent;color:#121212}
+/*# sourceURL=wpgcmcc-front-inline-css */
+</style>
+<link rel='stylesheet' id='css-style-css' href='https://lewica.org.pl/wp-content/themes/lewica2025/style.css?ver=2.57' media='all' />
+<link rel='stylesheet' id='hedea-auto-popup-style-css' href='https://lewica.org.pl/wp-content/plugins/auto-popup/build/style.css?ver=1764835820' media='all' />
+<link rel='stylesheet' id='wp-block-paragraph-css' href='https://lewica.org.pl/wp-includes/blocks/paragraph/style.min.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<link rel='stylesheet' id='wp-block-list-css' href='https://lewica.org.pl/wp-includes/blocks/list/style.min.css?ver=cb5340498465296c06a73415928eb6e5' media='all' />
+<!--n2css--><!--n2js--><script id="jquery-core-js" src="https://lewica.org.pl/wp-includes/js/jquery/jquery.min.js?ver=3.7.1"></script>
+<script id="jquery-migrate-js" src="https://lewica.org.pl/wp-includes/js/jquery/jquery-migrate.min.js?ver=3.4.1"></script>
+
+
+<style >
+	
+		.wpa-hide-ltr#skiplinks a, .wpa-hide-ltr#skiplinks a:hover, .wpa-hide-ltr#skiplinks a:visited {  }
+		.wpa-hide-ltr#skiplinks a:active,  .wpa-hide-ltr#skiplinks a:focus { background-color: #f1f1f1; box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.6); clip: auto; color: #0073aa; display: block; font-weight: 600; height: auto; line-height: normal; padding: 15px 23px 14px; position: absolute; left: 6px; top: 7px; text-decoration: none; text-transform: none; width: auto; z-index: 100000;box-shadow: none !important; background:#121212 !important; color:#fff !important; z-index:300; width:100%; max-width:250px; text-align: center; outline-offset: -3px !important; top:0px; left:0px; outline:3px dotted #67b52c !important;  }
+		
+</style><script>document.documentElement.className += " js";</script>
+<style>
+.sl-overlay{background:#ffffff;opacity: 0.7;z-index: 1035;}
+.sl-wrapper .sl-navigation button,.sl-wrapper .sl-close,.sl-wrapper .sl-counter{color:#000000;z-index: 10060;}
+.sl-wrapper .sl-image{z-index:10000;}
+.sl-spinner{border-color:#333333;z-index:1007;}
+.sl-wrapper{z-index:1040;}
+.sl-wrapper .sl-image .sl-caption{background:rgba(0,0,0,0.8);color:#ffffff;}
+</style><link rel="icon" href="https://lewica.org.pl/wp-content/uploads/2025/12/lewica-favicon.jpg" sizes="32x32" />
+<link rel="icon" href="https://lewica.org.pl/wp-content/uploads/2025/12/lewica-favicon.jpg" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://lewica.org.pl/wp-content/uploads/2025/12/lewica-favicon.jpg" />
+<meta name="msapplication-TileImage" content="https://lewica.org.pl/wp-content/uploads/2025/12/lewica-favicon.jpg" />
+<style id="wp-custom-css">
+/* Układ artykułu: Radom, 23 września 2026 */
+body.postid-14552 #tresc .strona > p.wp-block-paragraph {
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: justify;
+  hyphens: auto;
+}
+body.postid-14552 #tresc .strona > figure.wp-block-image,
+body.postid-14552 #tresc .strona > figure.wp-block-video {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.postid-14552 #tresc .strona > figure.wp-block-image img,
+body.postid-14552 #tresc .strona > figure.wp-block-video video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 600px) {
+  body.postid-14552 #tresc .strona > p.wp-block-paragraph {
+    text-align: left;
+  }
+}
+
+/* Galeria zdjęć: Radom, wpis 14570 */
+body.postid-14570 #tresc .strona > p.wp-block-paragraph,
+body.postid-14570 #tresc .strona .wp > p.wp-block-paragraph {
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: justify;
+  hyphens: auto;
+}
+body.postid-14570 #tresc .strona > figure.wp-block-image,
+body.postid-14570 #tresc .strona .wp > figure.wp-block-image {
+  margin: 32px auto;
+  text-align: center;
+}
+body.postid-14570 #tresc .strona > figure.wp-block-image img,
+body.postid-14570 #tresc .strona .wp > figure.wp-block-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 600px) {
+  body.postid-14570 #tresc .strona > p.wp-block-paragraph,
+  body.postid-14570 #tresc .strona .wp > p.wp-block-paragraph {
+    text-align: left;
+  }
+}
+
+/* Jednolita linia pod nagłówkiem stron i wpisów; strona pamięci zachowuje stonowaną oprawę. */
+body.page #tresc .wp:not(:has(#nl-memory)) > h2:first-of-type::after,
+body.single #tresc .wp > h2:first-of-type::after {content:"";display:block;width:100%;height:6px;margin:18px 0 26px;background:linear-gradient(90deg,#be1e2d 0 25%,#da1c5c 25% 50%,#ef4137 50% 75%,#ec008c 75%)}
+body.contrast.page #tresc .wp:not(:has(#nl-memory)) > h2:first-of-type::after,
+body.contrast.single #tresc .wp > h2:first-of-type::after {background:linear-gradient(90deg,#ffed00 0 25%,#ffb400 25% 50%,#ff5ea8 50% 75%,#ec008c 75%)}
+body.page #tresc .wp:not(:has(#nl-memory)) :is(.lewica-linia,.nl-signature,.lu-signature,.lc-signature),
+body.page #tresc .wp:not(:has(#nl-memory)) #nl-tour > .site-signature{display:none!important}
+
+/* Oddech przy krawędziach nowych modułów w trybie ciemnym, także na telefonie. */
+body.contrast.page #tresc :is(#nl-join,#lc-contacts,#nl-program,#lu-catalog,#nl-resolutions){box-sizing:border-box!important;padding-inline:clamp(16px,2.4vw,36px)!important}
+
+/* Jeden pasek nad sekcją Dołącz do nas: ukryj dawną linię modułu. */
+body.page #tresc #nl-join .nj-signature{display:none!important}
+
+/* Wspólna płynna linia tytułów; strona pamięci pozostaje monochromatyczna. */
+body.page #tresc .wp:not(:has(#nl-memory)) > h2:first-of-type::after,
+body.single #tresc .wp > h2:first-of-type::after{background:linear-gradient(95deg,#4e2b8a 0%,#8b1a78 26%,#ac145a 53%,#c01238 76%,#d6001c 100%)!important}
+body.contrast.page #tresc .wp:not(:has(#nl-memory)) > h2:first-of-type::after,
+body.contrast.single #tresc .wp > h2:first-of-type::after{background:linear-gradient(95deg,#ffed00 0%,#ffd339 28%,#ff9d4b 55%,#ff5487 78%,#ee178f 100%)!important}
+body.page-id-14445:not(.contrast) #lr1000-report.lr1000-widget{--lr-bars:linear-gradient(95deg,#4e2b8a 0%,#8b1a78 26%,#ac145a 53%,#c01238 76%,#d6001c 100%)!important}
+body.contrast.page-id-14445 #lr1000-report.lr1000-widget{--lr-bars:linear-gradient(95deg,#ffed00 0%,#ffd339 28%,#ff9d4b 55%,#ff5487 78%,#ee178f 100%)!important}
+/* Przy schowanym nagłówku nawigacja Dołącz przylega do góry widoku. */
+@media(min-width:769px){body.page-id-1168:has(#top.hidden) #nl-join .nj-nav{top:var(--wp-admin--admin-bar--height,0px)!important}}
+/* Na telefonie belka raportu dochodzi do obu krawędzi w trybie jasnym. */
+@media(max-width:700px){body.page-id-14445:not(.contrast) #lr1000-report .lr1000-toc{width:100vw!important;max-width:100vw!important;margin-left:-15px!important;border-radius:0!important}}
+/* Układ artykułu: Radom, 23 września 2026 */
+body.postid-14552 #tresc .strona > p.wp-block-paragraph {
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: justify;
+  hyphens: auto;
+}
+body.postid-14552 #tresc .strona > figure.wp-block-image,
+body.postid-14552 #tresc .strona > figure.wp-block-video {
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+body.postid-14552 #tresc .strona > figure.wp-block-image img,
+body.postid-14552 #tresc .strona > figure.wp-block-video video {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 600px) {
+  body.postid-14552 #tresc .strona > p.wp-block-paragraph {
+    text-align: left;
+  }
+}
+
+/* Galeria zdjęć: Radom, wpis 14570 */
+body.postid-14570 #tresc .strona > p.wp-block-paragraph,
+body.postid-14570 #tresc .strona .wp > p.wp-block-paragraph {
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: justify;
+  hyphens: auto;
+}
+body.postid-14570 #tresc .strona > figure.wp-block-image,
+body.postid-14570 #tresc .strona .wp > figure.wp-block-image {
+  margin: 32px auto;
+  text-align: center;
+}
+body.postid-14570 #tresc .strona > figure.wp-block-image img,
+body.postid-14570 #tresc .strona .wp > figure.wp-block-image img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 600px) {
+  body.postid-14570 #tresc .strona > p.wp-block-paragraph,
+  body.postid-14570 #tresc .strona .wp > p.wp-block-paragraph {
+    text-align: left;
+  }
+}
+
+/* Jednolita linia pod nagłówkiem stron i wpisów; strona pamięci zachowuje stonowaną oprawę. */
+body.page #tresc .wp:not(:has(#nl-memory)) > h2:first-of-type::after,
+body.single #tresc .wp > h2:first-of-type::after {content:"";display:block;width:100%;height:6px;margin:18px 0 26px;background:linear-gradient(90deg,#be1e2d 0 25%,#da1c5c 25% 50%,#ef4137 50% 75%,#ec008c 75%)}
+body.contrast.page #tresc .wp:not(:has(#nl-memory)) > h2:first-of-type::after,
+body.contrast.single #tresc .wp > h2:first-of-type::after {background:linear-gradient(90deg,#ffed00 0 25%,#ffb400 25% 50%,#ff5ea8 50% 75%,#ec008c 75%)}
+body.page #tresc .wp:not(:has(#nl-memory)) :is(.lewica-linia,.nl-signature,.lu-signature,.lc-signature),
+body.page #tresc .wp:not(:has(#nl-memory)) #nl-tour > .site-signature{display:none!important}
+
+/* Oddech przy krawędziach nowych modułów w trybie ciemnym, także na telefonie. */
+body.contrast.page #tresc :is(#nl-join,#lc-contacts,#nl-program,#lu-catalog,#nl-resolutions){box-sizing:border-box!important;padding-inline:clamp(16px,2.4vw,36px)!important}
+
+/* Jeden pasek nad sekcją Dołącz do nas: ukryj dawną linię modułu. */
+body.page #tresc #nl-join .nj-signature{display:none!important}
+
+/* Misja i wartości: sześć mocnych tez, bez zmian treści i zdjęć. */
+body.page-id-977 #nl-mission .nl-value {
+  grid-template-columns:clamp(2.8rem,3.8vw,4rem) minmax(0,1fr);
+  gap:clamp(.75rem,1.2vw,1.3rem);
+  padding:clamp(1.35rem,1.9vw,1.9rem) 0;
+}
+body.page-id-977 #nl-mission .nl-value-index {
+  color:var(--nl-accent);
+  font-size:clamp(2.15rem,3vw,3.05rem)!important;
+  font-weight:800;
+  line-height:1;
+  letter-spacing:-.075em;
+  margin-top:.05em;
+}
+body.page-id-977 #nl-mission .nl-value p {
+  font-size:clamp(calc(1.6rem * var(--nl-read-scale,1)),calc(1.95vw * var(--nl-read-scale,1)),calc(2.1rem * var(--nl-read-scale,1)))!important;
+  font-weight:700;
+  line-height:1.3;
+  letter-spacing:-.04em;
+  max-width:27em;
+}
+@media (max-width:46rem) {
+  body.page-id-977 #nl-mission .nl-value {grid-template-columns:2.65rem minmax(0,1fr);gap:.8rem;padding:1.35rem 0}
+  body.page-id-977 #nl-mission .nl-value-index {font-size:1.9rem!important}
+  body.page-id-977 #nl-mission .nl-value p {font-size:calc(1.5rem * var(--nl-read-scale,1))!important;line-height:1.32}
+}
+
+/* Artykuły: czytelna kolumna, zdjęcia i rytm redakcyjny. */
+body.single-post #tresc > .wp > .strona {
+  box-sizing:border-box;
+  width:min(calc(100% - 2rem),75rem);
+  max-width:75rem;
+  margin-inline:auto;
+  padding-block:2.5rem 4rem;
+}
+body.single-post #tresc > .wp > .strona > p.wp-block-paragraph {
+  box-sizing:border-box;
+  width:100%;
+  max-width:66rem;
+  margin:0 auto 1.35em!important;
+  font-size:clamp(1.1875rem,1.2vw,1.3125rem)!important;
+  font-weight:400;
+  line-height:1.72!important;
+  letter-spacing:-.012em;
+  text-align:left!important;
+  hyphens:auto;
+  overflow-wrap:break-word;
+}
+body.single-post #tresc > .wp > .strona > p.wp-block-paragraph:empty {display:none}
+body.single-post #tresc > .wp > .strona > :is(h2.wp-block-heading,h3.wp-block-heading,h4.wp-block-heading) {
+  box-sizing:border-box;
+  max-width:66rem;
+  margin:2.6em auto .7em!important;
+  font-weight:700;
+  line-height:1.22;
+  letter-spacing:-.035em;
+  text-align:left;
+}
+body.single-post #tresc > .wp > .strona > h2.wp-block-heading {font-size:clamp(1.75rem,2.4vw,2.4rem)!important}
+body.single-post #tresc > .wp > .strona > h3.wp-block-heading {font-size:clamp(1.45rem,1.8vw,1.85rem)!important}
+body.single-post #tresc > .wp > .strona > :is(figure.wp-block-image,figure.wp-block-video) {
+  box-sizing:border-box;
+  width:100%;
+  max-width:66rem!important;
+  margin:2.35rem auto 2.6rem!important;
+}
+body.single-post #tresc > .wp > .strona > figure.wp-block-image img {
+  display:block;
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  margin-inline:auto;
+}
+body.single-post #tresc > .wp > .strona > figure figcaption {margin-top:.65rem;font-size:.9rem;line-height:1.45;text-align:left}
+body.single-post #tresc > .wp > .strona > :is(ul:not(.lista-tagow),ol,blockquote) {max-width:66rem;margin:1.4rem auto 2rem;font-size:1.1875rem;line-height:1.7}
+body.postid-14552 #tresc > .wp > .strona > p.wp-block-paragraph:first-child {
+  font-size:clamp(1.25rem,1.45vw,1.5rem)!important;
+  font-weight:500;
+  line-height:1.58!important;
+  border-left:.25rem solid #c41230;
+  padding-left:1.35rem;
+  margin-bottom:2.35rem!important;
+}
+body.postid-14552 #tresc > .wp > .strona > p.wp-block-paragraph:first-child em {font-style:normal}
+body.contrast.postid-14552 #tresc > .wp > .strona > p.wp-block-paragraph:first-child {border-left-color:#ffed00}
+@media(max-width:44rem) {
+  body.single-post #tresc > .wp > .strona {width:calc(100% - 2rem);padding-block:1.7rem 3rem}
+  body.single-post #tresc > .wp > .strona > p.wp-block-paragraph {font-size:1.125rem!important;line-height:1.65!important;margin-bottom:1.3em!important}
+  body.single-post #tresc > .wp > .strona > :is(figure.wp-block-image,figure.wp-block-video) {margin:1.8rem auto 2rem!important}
+  body.single-post #tresc > .wp > .strona > :is(h2.wp-block-heading,h3.wp-block-heading) {margin:2.1em auto .65em!important}
+  body.postid-14552 #tresc > .wp > .strona > p.wp-block-paragraph:first-child {font-size:1.22rem!important;padding-left:1rem}
+}
+
+@media(max-width:44rem){body.single-post #tresc > .wp > .strona{width:100%}}
+
+/* Nagłówek galerii w artykule z Radomia */
+body.postid-14552 #tresc > .wp > .strona > h2.wp-block-heading.has-text-align-center {text-align:center;}
+
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+</head>
+<body data-rsssl=1 class="wp-singular post-template-default single single-post postid-6179 single-format-standard wp-custom-logo wp-embed-responsive wp-theme-lewica2025 mega-menu-primary">
+<header>
+<h1 class="sr-only">
+Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po wyborach - Lewica</h1>
+
+
+<div id="top" class="big">
+<div class="ikt"><div class="strona"><div class="ik">
+
+<button class="wysz" aria-expanded="false" aria-haspopup="dialog" aria-controls="modalSzukaj"><span class="sr-only">Pokaż wyszukiwarkę</span>
+</button>
+
+<button class="ac" aria-expanded="false" aria-haspopup="dialog" aria-controls="ustawienia"><span class="sr-only">Pokaż narzędzia dostępności</span></button>
+
+<ul class="social-media">
+<li><a href="https://www.facebook.com/NowaaLewica" target="_blank" class="fb"><span class="sr-only">Facebook</span></a></li>
+<li><a href="https://x.com/__Lewica" target="_blank" class="tw"><span class="sr-only">Twitter (X) -</span></a></li>
+<li><a href="https://www.instagram.com/__lewica/" target="_blank" class="ins"><span class="sr-only">Instagram</span></a></li>
+<li><a href="https://www.tiktok.com/@__lewica" target="_blank" class="tiktok"><span class="sr-only">Tiktok</span></a></li>
+<li><a href="https://www.flickr.com/photos/193098256@N08/albums" target="_blank" class="fl"><span class="sr-only">Flickr</span></a></li>
+<li><a href="https://www.youtube.com/user/TVSLD" target="_blank" class="yt"><span class="sr-only">YouTube</span></a></li>
+</ul>
+</div> </div></div>
+<div class="strona">
+
+
+
+<div class="subtop">
+<div id="logo">
+<a href="/"><img width="124px" height="47" src="https://lewica.org.pl/wp-content/uploads/2026/07/logo-lewica.svg" alt="Lewica" class="custom-logo"         fetchpriority="high"
+        loading="eager"
+        decoding="async"></a></div>
+
+<div aria-hidden="true" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="wyszukiwarka"  class="wyszukiwarka" id="modalSzukaj">
+<div class="sc">
+<h2 id="wyszukiwarka">Wyszukaj</h2>
+<form action="https://lewica.org.pl" id="search-form" method="get">
+	<label for="szukaj" class="sr-only">Podaj szukane słowo</label>
+    <input type="text" name="s" id="szukaj" value=""  placeholder="Wyszukaj..."  />
+    <button type="submit" class="search-btn"><span class="sr-only">Wyszukaj na stronie</span></button>	
+</form>
+</div>
+<button class="zamknij"><span class="sr-only">Zamknij wyszukiwarkę</span></button>
+</div>
+
+<div aria-hidden="true" role="dialog" aria-modal="true" tabindex="-1" aria-labelledby="acnag" class="acmodal" style="display: none;" id="ustawienia">
+<div class="sc">
+<h2 id="acnag">Ustawienia</h2>
+<div id="pomoc">
+</div>
+</div>
+<button class="zamknijac"><span class="sr-only">Zamknij ustawienia</span></button>
+</div>
+
+<div id="menuglowne">
+<div id="menu">
+<div id="mega-menu-wrap-primary" class="mega-menu-wrap"><div class="mega-menu-toggle"><div class="mega-toggle-blocks-left"></div><div class="mega-toggle-blocks-center"></div><div class="mega-toggle-blocks-right"><div class='mega-toggle-block mega-menu-toggle-animated-block mega-toggle-block-0' id='mega-toggle-block-0'><button aria-controls="mega-menu-primary" aria-expanded="false" aria-haspopup="true" aria-label="Toggle Menu" class="mega-toggle-animated mega-toggle-animated-slider" type="button">
+                  <span class="mega-toggle-animated-box">
+                    <span class="mega-toggle-animated-inner"></span>
+                  </span>
+                </button></div></div></div><ul id="mega-menu-primary" class="mega-menu max-mega-menu mega-menu-horizontal mega-no-js" data-event="hover_intent" data-effect="fade_up" data-effect-speed="200" data-effect-mobile="slide_right" data-effect-speed-mobile="200" data-mobile-force-width="false" data-second-click="go" data-document-click="collapse" data-vertical-behaviour="standard" data-breakpoint="1080" data-unbind="true" data-mobile-state="collapse_all" data-mobile-direction="vertical"><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-has-children mega-align-bottom-left mega-menu-flyout mega-menu-item-1004" id="mega-menu-item-1004"><a class="mega-menu-link" href="https://lewica.org.pl/o-nas/" aria-expanded="false" aria-controls="mega-sub-menu-1004">O&nbsp;nas<span class="mega-indicator" aria-hidden="true"></span></a>
+<ul class="mega-sub-menu" id='mega-sub-menu-1004'>
+<li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1131" id="mega-menu-item-1131"><a class="mega-menu-link" href="https://lewica.org.pl/o-nas/misja-i-wartosci/">Misja i&nbsp;wartości</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1133" id="mega-menu-item-1133"><a class="mega-menu-link" href="https://lewica.org.pl/o-nas/wladze-i-kadra/">Władze i&nbsp;kadra</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1132" id="mega-menu-item-1132"><a class="mega-menu-link" href="https://lewica.org.pl/o-nas/oddzialy-regionalne/">Oddziały regionalne</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-13788" id="mega-menu-item-13788"><a class="mega-menu-link" href="https://lewica.org.pl/pamieci-ludzi-lewicy/">Pamięci ludzi lewicy</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1130" id="mega-menu-item-1130"><a class="mega-menu-link" href="https://lewica.org.pl/o-nas/kontakt/">Kontakt</a></li></ul>
+</li><li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-current-post-ancestor mega-current-menu-parent mega-current-post-parent mega-menu-item-has-children mega-align-bottom-left mega-menu-flyout mega-menu-item-1005" id="mega-menu-item-1005"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/aktualnosci/" aria-expanded="false" aria-controls="mega-sub-menu-1005">Aktualności<span class="mega-indicator" aria-hidden="true"></span></a>
+<ul class="mega-sub-menu" id='mega-sub-menu-1005'>
+<li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-menu-item-1142" id="mega-menu-item-1142"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/aktualnosci/news-parlament/">Parlament</a></li><li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-menu-item-14207" id="mega-menu-item-14207"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/aktualnosci/newsy-europarlement/">Parlament Europejski</a></li><li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-menu-item-1143" id="mega-menu-item-1143"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/aktualnosci/newsy-regiony/">Regiony</a></li><li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-menu-item-1144" id="mega-menu-item-1144"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/aktualnosci/w-mediach-o-nas/">W mediach</a></li></ul>
+</li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-has-children mega-align-bottom-left mega-menu-flyout mega-menu-item-1134" id="mega-menu-item-1134"><a class="mega-menu-link" href="https://lewica.org.pl/program-i-polityka/" aria-expanded="false" aria-controls="mega-sub-menu-1134">Program i&nbsp;polityka<span class="mega-indicator" aria-hidden="true"></span></a>
+<ul class="mega-sub-menu" id='mega-sub-menu-1134'>
+<li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1146" id="mega-menu-item-1146"><a class="mega-menu-link" href="https://lewica.org.pl/program-i-polityka/program-glowny/">Program główny</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1148" id="mega-menu-item-1148"><a class="mega-menu-link" href="https://lewica.org.pl/program-i-polityka/ustawy-i-projekty/">Ustawy i&nbsp;uchwały sejmowe</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1147" id="mega-menu-item-1147"><a class="mega-menu-link" href="https://lewica.org.pl/program-i-polityka/uchwaly-rezolucje-konwencje/">Uchwały Nowej Lewicy</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-14516" id="mega-menu-item-14516"><a class="mega-menu-link" href="https://lewica.org.pl/1000-dni-lewicy-w-rzadzie/">1000 dni Lewicy w&nbsp;rządzie</a></li></ul>
+</li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-has-children mega-align-bottom-left mega-menu-flyout mega-menu-item-1135" id="mega-menu-item-1135"><a class="mega-menu-link" href="https://lewica.org.pl/multimedia/" aria-expanded="false" aria-controls="mega-sub-menu-1135">Multimedia<span class="mega-indicator" aria-hidden="true"></span></a>
+<ul class="mega-sub-menu" id='mega-sub-menu-1135'>
+<li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-menu-item-1152" id="mega-menu-item-1152"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/wideo/">Wideo</a></li><li class="mega-menu-item mega-menu-item-type-taxonomy mega-menu-item-object-category mega-menu-item-1151" id="mega-menu-item-1151"><a class="mega-menu-link" href="https://lewica.org.pl/kategoria/galeria-zdjec/">Galeria zdjęć</a></li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1150" id="mega-menu-item-1150"><a class="mega-menu-link" href="https://lewica.org.pl/multimedia/zasoby-graficzne-identyfikacja-wizualna/">Zasoby graficzne / identyfikacja wizualna</a></li></ul>
+</li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-has-children mega-align-bottom-left mega-menu-flyout mega-menu-item-1136" id="mega-menu-item-1136"><a class="mega-menu-link" href="https://lewica.org.pl/wydarzenia-kampanie/" aria-expanded="false" aria-controls="mega-sub-menu-1136">Wydarzenia<span class="mega-indicator" aria-hidden="true"></span></a>
+<ul class="mega-sub-menu" id='mega-sub-menu-1136'>
+<li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-7635" id="mega-menu-item-7635"><a class="mega-menu-link" href="https://lewica.org.pl/kalendarz-wydarzen/">Kalendarz wydarzeń</a></li></ul>
+</li><li class="mega-menu-item mega-menu-item-type-post_type mega-menu-item-object-page mega-menu-item-1140" id="mega-menu-item-1140"><a class="mega-menu-link" href="https://lewica.org.pl/wsparcie-finansowe-darowizny/">Wesprzyj nas</a></li></ul><button aria-controls="mega-menu-primary" aria-label="Zamknij menu" class='mega-close'></button></div><div id="wesprzyj"><div class="wp-block-buttons is-layout-flex wp-block-buttons-is-layout-flex">
+<div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="https://lewica.org.pl/dolacz-wspolpraca/jak-zostac-czlonkiem-wolontariuszem/">Dołącz do&nbsp;nas!</a></div>
+</div></div> 
+</div>
+
+</div>
+
+</div></div></div>
+</header>
+<main id="content" class="site-content">
+		<div id="tresc">
+
+		
+			<div class="bg">
+				<img width="1920" height="800" src="https://lewica.org.pl/wp-content/uploads/2026/01/a623fa01a0248f193df0080c61940c7b-1920x800.webp" class="baner__image wp-post-image" alt="Na zdjęciu widoczny jest mężczyzna stojący przy mównicy podczas konferencji dotyczącej NATO, z flagami Polski, UE oraz NATO w tle." fetchpriority="high" loading="eager" decoding="async" />
+				<div id="sciezka">
+					<div class="strona">
+													<nav aria-label="Ścieżka nawigacyjna">
+								<span property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" title="Przejdź do Lewica." href="https://lewica.org.pl" class="home" ><span property="name">Lewica</span></a><meta property="position" content="1"></span><span property="itemListElement" typeof="ListItem"><a property="item" typeof="WebPage" title="Przejdź do archiwum Aktualności Kategoria." href="https://lewica.org.pl/kategoria/aktualnosci/" class="taxonomy category" ><span property="name">Aktualności</span></a><meta property="position" content="2"></span><span property="itemListElement" typeof="ListItem"><span property="name" class="post post-post current-item">Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po&nbsp;wyborach</span><meta property="url" content="https://lewica.org.pl/aktualnosci/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach/"><meta property="position" content="3"></span>							</nav>
+						
+						<h2>Czarzasty: Powinniśmy podpisać deklarację dotyczącą utworzenia koalicji rządowej po&nbsp;wyborach</h2>
+
+											</div>
+				</div>
+			</div>
+
+			<div class="wp">
+				<div class="strona">
+					<p class="wp-block-paragraph"><span>Dziękuję prezydentom Aleksandrowi Kwaśniewskiemu i&nbsp;Bronisławowi Komorowskiemu za&nbsp;wkład w&nbsp;organizację tego spotkania. Dziękuję jego ekscelencji ambasadorowi Stanów Zjednoczonych za&nbsp;przybycie i&nbsp;życzliwość wobec inicjatywy spotkania, które ma&nbsp;uczcić wszystkie środowiska wprowadzające Polskę do&nbsp;NATO. </span></p>
+
+<p class="wp-block-paragraph"><span>Serdecznie witam moich&nbsp;przyjaciół z&nbsp;opozycji, to&nbsp;ważne, że&nbsp;jesteśmy w&nbsp;jednym miejscu w&nbsp;tym samym czasie. Tak&nbsp;nawiasem, stwierdzenie „dogadać się” od&nbsp;soboty było odmieniane w&nbsp;naszym kraju przez&nbsp;wszystkie czasy i&nbsp;osoby. Należy się w&nbsp;to&nbsp;wsłuchać i&nbsp;wyciągać odpowiednie wnioski. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo Polski jest wielowymiarowe. Wymiar militarny zapewnia nam sojusz z&nbsp;USA i&nbsp;członkostwo w&nbsp;NATO, ale&nbsp;bezpieczeństwo ma&nbsp;również inne wymiary. Bezpieczeństwo Polski to&nbsp;również przynależność do&nbsp;Unii Europejskiej, gdzie Polska jako piąty kraj co&nbsp;do&nbsp;liczby ludności powinna przestać być problemem, a&nbsp;stać dostarczycielem rozwiązań problemów z&nbsp;jakim boryka się Unia. </span></p>
+
+<p class="wp-block-paragraph"><span>Unia Europejska to&nbsp;wspólnota przyjaznych narodów. Przyszły rząd musi skończyć z&nbsp;polityką szczucia na&nbsp;Brukselę i&nbsp;na&nbsp;jeden czy&nbsp;drugi naród, ale&nbsp;Polacy i&nbsp;partnerzy na&nbsp;Zachodzie muszą być świadomi, że&nbsp;przyszły polski rząd będzie wolny od&nbsp;PiS-owskich obsesji, ale&nbsp;będzie też ściśle realizował polską rację stanu w&nbsp;polityce wschodniej, klimatycznej i&nbsp;energetycznej. </span></p>
+
+<p class="wp-block-paragraph"><span>W&nbsp;sprawach polskiej racji stanu nie&nbsp;będziemy się cofać! </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo Polski to&nbsp;silna i&nbsp;niepodległa Ukraina. Naród, który&nbsp;walczy o&nbsp;swoją niepodległość i&nbsp;nasze bezpieczeństwo. Państwo, z&nbsp;którym&nbsp;Polska powinna nadać w&nbsp;najbliższych dekadach nowy impet Unii Europejskiej. Uważam, że&nbsp;oś&nbsp;Warszawa-Kijów powinna być obok osi Paryż-Berlin drugim napędem Unii Europejskiej. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo to&nbsp;odpowiedzialne państwo, które nie&nbsp;zostawia obywateli samych sobie w&nbsp;czasach kryzysu. To&nbsp;państwo świadczące nowoczesne usługi publiczne i&nbsp;dbające również finansowo o&nbsp;tych, którzy&nbsp;te&nbsp;usługi świadczą: o&nbsp;nauczycieli, o&nbsp;pielęgniarki, o&nbsp;urzędników. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczne państwo i&nbsp;bezpieczeństwo &#8211; to&nbsp;państwo poważne i&nbsp;odpowiedzialne. To&nbsp;państwo, w&nbsp;którym&nbsp;prezes banku centralnego nie&nbsp;występuje w&nbsp;roli gawędziarza zabawiającego naród i&nbsp;wprowadzającego w&nbsp;błąd polskie rodziny. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczne państwo to&nbsp;takie, gdzie władza nie&nbsp;szczuje jednych obywateli na&nbsp;drugich; nie&nbsp;tworzy teorii spiskowych i&nbsp;nie&nbsp;wykorzystuje zabliźnionych ran do&nbsp;zbijania kapitału politycznego. Bezpieczne państwo to&nbsp;państwo praworządne, ze&nbsp;stabilnym systemem prawnym i&nbsp;niepodważalnych wyrokach sądowych. To&nbsp;karanie osób odpowiedzialnych za&nbsp;stratę publicznych pieniędzy. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo to&nbsp;wolne media i&nbsp;niezależna kultura. Bezpieczeństwo to&nbsp;odpowiedzialna polityka klimatyczna, a&nbsp;dzisiaj Polki i&nbsp;Polacy walczą, aby przetrwać zimę. Ale&nbsp;zaniedbania obecnego rządu, nie&nbsp;zwalniają przyszłego rządu z&nbsp;prowadzenia ambitnej i&nbsp;wrażliwej polityki klimatycznej. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo to&nbsp;również bezpieczna rodzina. Dzisiaj miliony Polek i&nbsp;Polaków obawiają się o&nbsp;utrzymanie poziomu życia, na&nbsp;który&nbsp;zapracowali w&nbsp;ostatnich dekadach. Względny dobrobyt polskich rodzin jest zagrożony przez&nbsp;inflację, wysokie stopy procentowe i&nbsp;rosnące ceny energii. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo to&nbsp;również ambitna polityka mieszkaniowa. Zgodnie z&nbsp;artykułem 75. Konstytucji, mówiącym, że&nbsp;„władze publiczne prowadzą polityką sprzyjającą zaspokojeniu potrzeb mieszkaniowych obywateli”. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo to&nbsp;również bezpieczeństwo kobiet. Bezpieczne państwo to&nbsp;takie, w&nbsp;którym&nbsp;kobieta nie&nbsp;boi się iść do&nbsp;szpitala, a&nbsp;ratowanie życia matki nie&nbsp;jest dla lekarzy aktem heroizmu. Nie&nbsp;będzie zagwarantowanych praw kobiet, jeżeli nie&nbsp;będzie funkcjonowała świeckie państwo. Świeckie państwo to&nbsp;państwo wolne i&nbsp;otwarte na&nbsp;wszystkie środowiska. </span></p>
+
+<p class="wp-block-paragraph"><span>I&nbsp;wreszcie bezpieczeństwo to&nbsp;odpowiedzialna opozycja. Taka, która&nbsp;ze&nbsp;sobą rozmawia, wspiera się, spotyka. Nie&nbsp;jest najważniejsze czy&nbsp;będzie lista jedna, czy&nbsp;dwie, czy&nbsp;trzy. Ważne jest to, aby te&nbsp;listy były zwycięskie, aby odsunąć PiS od&nbsp;władzy. Polskie rodziny w&nbsp;ostatnich miesiącach ostatecznie dostrzegły, że&nbsp;PiS nie&nbsp;zapewni im&nbsp;bezpieczeństwa. Patrzę więc&nbsp;w&nbsp;stronę opozycji z&nbsp;nadzieją. Musimy współpracować, wykazywać się rozsądkiem i&nbsp;umiarem, aby nie&nbsp;zawieść tych nadziei. Każdy z&nbsp;nas, każda z&nbsp;nas bez&nbsp;względu na&nbsp;to&nbsp;jakie mamy wielkie ego i&nbsp;bez&nbsp;względu na&nbsp;to&nbsp;jak o&nbsp;sobie myślimy, że&nbsp;jesteśmy wspaniali, powinni się cofnąć dwa kroki, po&nbsp;to, żeby&nbsp;dobro wspólne było pierwsze przed&nbsp;nami. </span></p>
+
+<p class="wp-block-paragraph"><span>Bezpieczeństwo to&nbsp;współpraca. Myślę, że&nbsp;to&nbsp;jest dobry moment, żeby&nbsp;na&nbsp;koniec naszego spotkania powiedzieć o&nbsp;marzeniach o&nbsp;mapie drogowej dla opozycji. Chciałbym, prosiłbym, błagałbym i&nbsp;apelował o&nbsp;to, aby spróbować do&nbsp;końca roku zrobić kilka spraw. Proponuję to&nbsp;z&nbsp;wielką pokorą i&nbsp;wielką empatią. Uważam, że&nbsp;do&nbsp;końca roku powinniśmy zawrzeć Pakt Senacki. Z&nbsp;udziałem środowisk, które tu&nbsp;siedzą oraz&nbsp;samorządowców. Ale&nbsp;myślę, że&nbsp;Pakt Senacki to&nbsp;za&nbsp;mało. Proszę Was abyście rozważyli możliwość utworzenia jednego wspólnego komitetu wyborczego do&nbsp;Senatu. Ta&nbsp;koncepcja była już w&nbsp;Polsce raz realizowana. </span></p>
+
+<p class="wp-block-paragraph"><span>Uważam, że&nbsp;powinniśmy spróbować podpisać deklarację dotyczącą utworzenia koalicji rządowej po&nbsp;wyborach. Dlatego, żeby&nbsp;dać jasny sygnał wszystkim wyborczyniom i&nbsp;wszystkim wyborcom w&nbsp;Polsce, że&nbsp;żaden głos oddany bez&nbsp;względu na&nbsp;to, na&nbsp;kogo z&nbsp;opozycji, nie&nbsp;zostanie zmarnowany, że&nbsp;każdy głos będzie się liczył. Będzie się liczył w&nbsp;tym, żeby&nbsp;pokonać PiS, że&nbsp;każdy głos jest ważny, bo&nbsp;przecież człowiek, każda osoba jest ważna. Myślę, że&nbsp;zbliża się ten czas, przed&nbsp;którym&nbsp;uciekamy, żeby&nbsp;podjąć ostateczną decyzję w&nbsp;sprawie startu do&nbsp;Sejmu. Nie&nbsp;namawiam na&nbsp;szybkie decyzje, namawiam Was i&nbsp;siebie i&nbsp;proszę o&nbsp;decyzje mądre, rozsądne, zdystansowane. Uważam również, namawia mnie do&nbsp;tego Krzysztof Gawkowski, szef mojego&nbsp;klubu, że&nbsp;powinniśmy stworzyć w&nbsp;najbliższym czasie plan na&nbsp;pierwsze 100 dni rządzenia. Uznać, co&nbsp;jest dla nas najważniejsze i&nbsp;pokazać to&nbsp;ludziom. Aby dać ludziom nadzieję i&nbsp;spokój, żeby&nbsp;wiedzieli, że&nbsp;idzie rozsądna i&nbsp;odpowiedzialna opozycja po&nbsp;władzę. Idzie po&nbsp;to, aby rządzić mądrze. Żeby nie&nbsp;kraść i&nbsp;nie&nbsp;robić pod&nbsp;siebie, nie&nbsp;tworzyć fobii, ale&nbsp;mądrze i&nbsp;rozsądnie rządzić. </span></p>
+
+<p class="wp-block-paragraph"><span>Zróbmy to&nbsp;wszystko, aby Polki i&nbsp;Polacy wierzyli, że&nbsp;przy rządach tej&nbsp;opozycji będą bezpieczni. </span></p>
+
+<p class="wp-block-paragraph"><span><strong>Włodzimierz Czarzasty, współprzewodniczący Nowej Lewicy i&nbsp;wicemarszałek Sejmu<br></strong></span><em><span>Spotkanie liderów opozycji podczas konferencji “Bezpieczeństwo wschodniej flanki NATO – rola Polski”</span></em></p>
+
+<ul class="wp-block-list"> <li> <a href="https://www.youtube.com/watch?v=k_5AUAPSB2A" rel="nofollow" target="_blank">Oglądaj wystąpienie </a> </li> </ul>
+									</div>
+			</div>
+
+		
+		</div>
+
+		
+</main><!-- #content -->
+<footer id="colophon" class="site-footer" >
+<div class="strona">
+<div class="box25"><div style="height:30px" aria-hidden="true" class="wp-block-spacer"></div><figure class="wp-block-image size-full is-resized"><img loading="lazy" decoding="async" width="600" height="227" src="https://lewica.org.pl/wp-content/uploads/2025/12/lewica-logo.png" alt="Logo Lewica" class="wp-image-1016" style="width:100px"/></figure><ul class="social-media">
+<li><a href="https://www.facebook.com/NowaaLewica" target="_blank" class="fb"><span class="sr-only">Facebook</span></a></li>
+<li><a href="https://x.com/__Lewica" target="_blank" class="tw"><span class="sr-only">Twitter (X) -</span></a></li>
+<li><a href="https://www.instagram.com/__lewica/" target="_blank" class="ins"><span class="sr-only">Instagram</span></a></li>
+<li><a href="https://www.tiktok.com/@__lewica" target="_blank" class="tiktok"><span class="sr-only">Tiktok</span></a></li>
+<li><a href="https://www.flickr.com/photos/193098256@N08/albums" target="_blank" class="fl"><span class="sr-only">Flickr</span></a></li>
+<li><a href="https://www.youtube.com/user/TVSLD" target="_blank" class="yt"><span class="sr-only">YouTube</span></a></li>
+</ul> </div>
+<div class="box25"><h2 class="widgettitle">Menu</h2>
+<nav class="menu-menu-stopka-container" aria-label="Menu"><ul id="menu-menu-stopka" class="menu"><li id="menu-item-1119" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1119"><a href="https://lewica.org.pl/o-nas/">O&nbsp;nas</a></li>
+<li id="menu-item-1122" class="menu-item menu-item-type-taxonomy menu-item-object-category current-post-ancestor current-menu-parent current-post-parent menu-item-1122"><a href="https://lewica.org.pl/kategoria/aktualnosci/">Aktualności</a></li>
+<li id="menu-item-1120" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1120"><a href="https://lewica.org.pl/program-i-polityka/">Program i&nbsp;polityka</a></li>
+<li id="menu-item-1124" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1124"><a href="https://lewica.org.pl/multimedia/">Multimedia</a></li>
+<li id="menu-item-1121" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-1121"><a href="https://lewica.org.pl/wydarzenia-kampanie/">Wydarzenia / Konferencje</a></li>
+<li id="menu-item-14172" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-14172"><a href="https://lewica.org.pl/bip/">BIP</a></li>
+<li id="menu-item-13678" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-13678"><a href="https://lewica.org.pl/o-nas/kontakt/">Kontakt</a></li>
+<li id="menu-item-13748" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-13748"><a href="https://lewica.org.pl/polityka-prywatnosci/">Polityka prywatności</a></li>
+<li id="menu-item-13749" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-13749"><a href="https://lewica.org.pl/polityka-cookies/">Polityka cookies</a></li>
+</ul></nav> </div>
+<div class="box50"><h2 class="wp-block-heading">Newsletter</h2><div class="frm_forms  with_frm_style frm_style_styl-formidable" id="frm_form_2_container" data-token="5fa4fad7b8cb7a6db815a809cd0149a3">
+<form enctype="multipart/form-data" method="post" class="frm-show-form newsletter frm_pro_form" id="form_newsletter" data-token="5fa4fad7b8cb7a6db815a809cd0149a3">
+<div class="frm_form_fields">
+<fieldset>
+<legend class="frm_screen_reader">Newsletter</legend>
+
+<div class="frm_fields_container">
+<input type="hidden" name="frm_action" value="create" />
+<input type="hidden" name="form_id" value="2" />
+<input type="hidden" name="frm_hide_fields_2" id="frm_hide_fields_2" value="" />
+<input type="hidden" name="form_key" value="newsletter" />
+<input type="hidden" name="item_meta[0]" value="" />
+<input type="hidden" id="frm_submit_entry_2" name="frm_submit_entry_2" value="bcae37bb80" /><input type="hidden" name="_wp_http_referer" value="/aktualnosci/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach/" /><div id="frm_field_8_container" class="frm_form_field form-field  frm_required_field frm_hidden_container frm12 frm_first">
+	<label for="field_v3ik4" id="field_v3ik4_label" class="frm_primary_label">E-mail
+		<span class="frm_required" aria-hidden="true">*</span>
+	</label>
+	<input type="email" id="field_v3ik4" name="item_meta[8]" value=""  autocomplete="email"  placeholder="Twój adres e-mail..." data-reqmsg="Podaj adres e-mail." aria-required="true" data-invmsg="Podaj prawidłowy adres e-mail." aria-invalid="false"  />
+	
+	
+</div>
+<div id="frm_field_9_container" class="frm_form_field form-field  frm_required_field frm_hidden_container vertical_radio">
+	<div  id="field_quhpi_label" class="frm_primary_label">RODO
+		<span class="frm_required" aria-hidden="true">*</span>
+	</div>
+	<div class="frm_opt_container" aria-labelledby="field_quhpi_label" role="group">		<div class="frm_checkbox" id="frm_checkbox_9-0">			<label  for="field_quhpi-0">
+			<input type="checkbox" name="item_meta[9][]" id="field_quhpi-0" value="Wyrażam zgodę na przetwarzanie mojego adresu e-mail przez partię Nowa Lewica w celu otrzymywania newslettera z informacjami o działaniach, wydarzeniach i stanowiskach partii. Zgodę mogę wycofać w każdej chwili, korzystając z linku w każdej wiadomości."  data-reqmsg="Musisz wyrazić zgodę." data-invmsg="RODO jest nieprawidłowe"   aria-required="true"  /> Wyrażam zgodę na&nbsp;przetwarzanie mojego&nbsp;adresu e-mail przez&nbsp;partię Nowa Lewica w&nbsp;celu otrzymywania newslettera z&nbsp;informacjami o&nbsp;działaniach, wydarzeniach i&nbsp;stanowiskach partii. Zgodę mogę wycofać w&nbsp;każdej chwili, korzystając z&nbsp;linku w&nbsp;każdej wiadomości.</label></div>
+</div>
+	
+	
+</div>
+<div id="frm_field_6_container" class="frm_form_field form-field">
+	<div class="frm_submit frm_flex">
+<button class="frm_button_submit frm_final_submit" type="submit"   formnovalidate="formnovalidate">Zapisz się</button>
+
+
+
+</div>
+</div>
+	<input type="hidden" name="item_key" value="" />
+	<input name="frm_state" type="hidden" value="ZZD1hVlBJsYywrEe2CifqyRyA5gRm3vlIoDU5z7k00g=" /></div>
+</fieldset>
+</div>
+
+</form>
+</div> </div>
+</div>
+</footer><!-- #colophon -->
+<div id="copy"><div class="strona">
+<a style="display::inline-block; vertical-align: middle;" href="/bip">BIP</a> • <a style="display::inline-block; vertical-align: middle;" href="#cookie-preferences">Ustawienia plików cookies</a> © 2026 Nowa Lewica.
+</div></div>
+
+
+<script id="pb-accordion-blocks-frontend-script-js" src="https://lewica.org.pl/wp-content/plugins/Accordion-Blocks-master/js/accordion-blocks.min.js?ver=1.5.0"></script>
+<script id="wpa-toolbar-js-extra">
+var wpa = {"location":"#pomoc","is_rtl":"ltr","is_right":"left","responsive":"a11y-non-responsive","contrast":"Prze\u0142\u0105cz wysoki kontrast","grayscale":"Prze\u0142\u0105cz skal\u0119 szaro\u015bci","fontsize":"Zmie\u0144 rozmiar czcionek","enable_grayscale":"false","enable_fontsize":"true","enable_contrast":"true"};
+//# sourceURL=wpa-toolbar-js-extra
+</script>
+<script id="wpa-toolbar-js" src="https://lewica.org.pl/wp-content/plugins/wp-accessibility/js/wpa-toolbar.js?ver=1.1"></script>
+<script id="ui-a11y-js-extra">
+var wpa11y = {"path":"https://lewica.org.pl/wp-content/plugins/wp-accessibility/toolbar/css/a11y-contrast.css"};
+//# sourceURL=ui-a11y-js-extra
+</script>
+<script id="ui-a11y-js" src="https://lewica.org.pl/wp-content/plugins/wp-accessibility/toolbar/js/a11y.js?ver=1.0"></script>
+<script id="vj-core-js" src="https://lewica.org.pl/wp-content/plugins/yoast-faq-accordion/vj-core.js?ver=1791138199"></script>
+<script id="simplelightbox-js" src="https://lewica.org.pl/wp-content/plugins/simplelightbox/dist/simple-lightbox.min.js?ver=2.14.2"></script>
+<script id="simplelightbox-call-js-extra">
+var php_vars = {"ar_sl_sourceAttr":"href","ar_sl_overlay":"1","ar_sl_spinner":"1","ar_sl_nav":"1","ar_sl_navtextPrev":"\u2039","ar_sl_navtextNext":"\u203a","ar_sl_caption":"1","ar_sl_captionSelector":"img","ar_sl_captionType":"attr","ar_sl_captionData":"title","ar_sl_captionPosition":"bottom","ar_sl_captionDelay":"0","ar_sl_captionClass":"","ar_sl_captionHTML":"1","ar_sl_close":"1","ar_sl_closeText":"\u00d7","ar_sl_swipeClose":"1","ar_sl_showCounter":"1","ar_sl_fileExt":"png|jpg|jpeg|gif|webp","ar_sl_animationSpeed":"250","ar_sl_animationSlide":"1","ar_sl_preloading":"1","ar_sl_enableKeyboard":"1","ar_sl_loop":"1","ar_sl_rel":"false","ar_sl_docClose":"1","ar_sl_swipeTolerance":"50","ar_sl_className":"simple-lightbox","ar_sl_widthRatio":"0.8","ar_sl_heightRatio":"0.9","ar_sl_scaleImageToRatio":"0","ar_sl_disableRightClick":"0","ar_sl_disableScroll":"1","ar_sl_alertError":"1","ar_sl_alertErrorMessage":"Image not found, next image will be loaded","ar_sl_additionalHtml":"","ar_sl_history":"1","ar_sl_throttleInterval":"0","ar_sl_doubleTapZoom":"2","ar_sl_maxZoom":"10","ar_sl_htmlClass":"has-lightbox","ar_sl_rtl":"0","ar_sl_fixedClass":"sl-fixed","ar_sl_fadeSpeed":"300","ar_sl_uniqueImages":"1","ar_sl_focus":"1","ar_sl_scrollZoom":"1","ar_sl_scrollZoomFactor":"0.5","ar_sl_useLegacy":"0","ar_sl_additionalSelectors":"","ar_sl_overlayColor":"#ffffff","ar_sl_overlayOpacity":"0.7","ar_sl_btnColor":"#000000","ar_sl_loaderColor":"#333333","ar_sl_captionColor":"#000000","ar_sl_captionFontColor":"#ffffff","ar_sl_captionOpacity":"0.8","ar_sl_zindex":"1000"};
+//# sourceURL=simplelightbox-call-js-extra
+</script>
+<script id="simplelightbox-call-js" src="https://lewica.org.pl/wp-content/plugins/simplelightbox/resources/js/setup.simplelightbox.js?ver=2.14.2"></script>
+<script id="wpgcmcc-cc-js" src="https://lewica.org.pl/wp-content/plugins/wp-google-consent-mode-cookieconsent/vendor/cookieconsent/cookieconsent.umd.js?ver=3.1.0"></script>
+<script id="wpgcmcc-front-js-before">
+window.WPGCMCCSettings={"cookie":{"name":"wpgcmcc_cookie","expiresAfterDays":180},"revision":1,"privacyPolicyUrl":"","texts":{"consent_title":"U\u017cywamy plik\u00f3w cookie","consent_description":"Ta strona u\u017cywa niezb\u0119dnych plik\u00f3w cookie oraz opcjonalnych narz\u0119dzi analitycznych i reklamowych. Opcjonalne tagi zostan\u0105 u\u017cyte zgodnie z Twoj\u0105 zgod\u0105.","accept_all":"Akceptuj\u0119 wszystko","reject_all":"Odrzucam opcjonalne","show_preferences":"Dostosuj zgody","preferences_title":"Ustawienia prywatno\u015bci","save_preferences":"Zapisz wyb\u00f3r","close_label":"Zamknij","usage_title":"Zakres u\u017cycia","usage_description":"Mo\u017cesz w\u0142\u0105cza\u0107 i wy\u0142\u0105cza\u0107 kategorie zg\u00f3d. Zmiana ustawie\u0144 aktualizuje Google Consent Mode na tej stronie.","necessary_title":"Niezb\u0119dne","necessary_description":"Te elementy s\u0105 wymagane do dzia\u0142ania strony i nie mog\u0105 zosta\u0107 wy\u0142\u0105czone.","analytics_title":"Analityka","analytics_description":"Pomaga mierzy\u0107 ruch i spos\u00f3b korzystania ze strony, np. przez Google Analytics 4.","advertisement_title":"Reklama","advertisement_description":"Pozwala mierzy\u0107 reklamy, wysy\u0142a\u0107 dane reklamowe do Google i personalizowa\u0107 przekazy reklamowe.","functional_title":"Funkcjonalne","functional_description":"Pozwala zapami\u0119tywa\u0107 ustawienia i funkcje, kt\u00f3re poprawiaj\u0105 korzystanie ze strony.","personalization_title":"Personalizacja","personalization_description":"Pozwala dopasowywa\u0107 tre\u015bci i zapami\u0119tywa\u0107 preferencje personalizacji.","more_title":"Wi\u0119cej informacji","more_description":"Szczeg\u00f3\u0142y znajdziesz w polityce prywatno\u015bci.","service_counter":"Us\u0142uga|Us\u0142ugi"},"serviceLabels":{"analytics_storage":"Google Analytics: analytics_storage","ad_storage":"Google Ads: ad_storage","ad_user_data":"Google Ads: ad_user_data","ad_personalization":"Google Ads: ad_personalization","functionality_storage":"Google: functionality_storage","personalization_storage":"Google: personalization_storage","security_storage":"Google: security_storage"},"customServices":[]};
+//# sourceURL=wpgcmcc-front-js-before
+</script>
+<script id="wpgcmcc-front-js" src="https://lewica.org.pl/wp-content/plugins/wp-google-consent-mode-cookieconsent/assets/js/frontend.js?ver=0.2.1"></script>
+<script id="wpfront-scroll-top-js-extra">
+var wpfront_scroll_top_data = {"data":{"css":"#wpfront-scroll-top-container{position:fixed;cursor:pointer;z-index:9999;border:none;outline:none;background-color:rgba(0,0,0,0);box-shadow:none;outline-style:none;text-decoration:none;opacity:0;display:none;align-items:center;justify-content:center;margin:0;padding:0}#wpfront-scroll-top-container.show{display:flex;opacity:1}#wpfront-scroll-top-container .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}#wpfront-scroll-top-container .text-holder{padding:3px 10px;-webkit-border-radius:3px;border-radius:3px;-webkit-box-shadow:4px 4px 5px 0px rgba(50,50,50,.5);-moz-box-shadow:4px 4px 5px 0px rgba(50,50,50,.5);box-shadow:4px 4px 5px 0px rgba(50,50,50,.5)}#wpfront-scroll-top-container{right:20px;bottom:20px;}#wpfront-scroll-top-container img{width:auto;height:auto;}#wpfront-scroll-top-container .text-holder{color:#FFFFFF;background-color:#000000;width:auto;height:auto;;}#wpfront-scroll-top-container .text-holder:hover{background-color:#000000;}#wpfront-scroll-top-container i{color:#000000;}","html":"\u003Cbutton id=\"wpfront-scroll-top-container\" aria-label=\"Przesu\u0144 do g\u00f3ry\" title=\"\" \u003E\u003Cimg src=\"https://lewica.org.pl/wp-content/uploads/2026/07/do-gory.png\" alt=\"Strza\u0142ka do g\u00f3ry\" title=\"\"\u003E\u003C/button\u003E","data":{"hide_iframe":false,"button_fade_duration":0,"auto_hide":false,"auto_hide_after":2,"scroll_offset":100,"button_opacity":1,"button_action":"top","button_action_element_selector":"","button_action_container_selector":"html, body","button_action_element_offset":0,"scroll_duration":400}}};
+//# sourceURL=wpfront-scroll-top-js-extra
+</script>
+<script id="wpfront-scroll-top-js" src="https://lewica.org.pl/wp-content/plugins/wpfront-scroll-top/includes/assets/wpfront-scroll-top.min.js?ver=3.0.1.09211"></script>
+<script id="hedea-politycy-wojewodztwa-js-extra">
+var hedeaPolitycyWoj = {"ajaxurl":"https://lewica.org.pl/wp-admin/admin-ajax.php"};
+//# sourceURL=hedea-politycy-wojewodztwa-js-extra
+</script>
+<script id="hedea-politycy-wojewodztwa-js-after">
+(function($){
+	'use strict';
+
+	function renderLoading($wrap){
+		$wrap.attr('aria-busy', 'true');
+	}
+	function renderDone($wrap){
+		$wrap.attr('aria-busy', 'false');
+	}
+
+	function getParam(name){
+		try{
+			var u = new URL(window.location.href);
+			return (u.searchParams.get(name) || '').toString().trim();
+		}catch(e){
+			return '';
+		}
+	}
+
+	function setOnlyRadaKrajowaParam(slug){
+	try{
+		var u = new URL(window.location.href);
+
+		// czyścimy oba warianty, ale finalnie zostaje tylko "rada-krajowa"
+		u.searchParams.delete('radakrajowa');
+		u.searchParams.delete('rada-krajowa');
+
+		if(slug){
+			u.searchParams.set('rada-krajowa', slug);
+
+			// ustaw hash TAB
+			u.hash = 'tab=1';
+		}else{
+			// jak ktoś czyści filtr, nie wymuszaj taba
+			// u.hash = '';
+		}
+
+		window.history.replaceState({}, '', u.toString());
+	}catch(e){}
+	}
+
+	function setTitle($root, woj){
+		var $title = $root.find('[data-politycy-woj-title]');
+		var $select = $root.find('[data-politycy-woj-select]');
+		var label = $select.find('option:selected').text() || '';
+
+		if(woj){
+			$title.text(label);
+		} else {
+			$title.text('');
+		}
+	}
+
+	function findOptionBySlug($select, slug){
+		if(!slug) return '';
+		var foundVal = '';
+		$select.find('option').each(function(){
+			var $opt = $(this);
+			var optSlug = ($opt.attr('data-woj-slug') || '').toString();
+			if(optSlug && optSlug === slug){
+				foundVal = $opt.attr('value') || '';
+				return false;
+			}
+		});
+		return foundVal;
+	}
+
+	function fetchPolitycy($root, woj){
+		var $results = $root.find('[data-politycy-results]');
+		var nonce = $root.data('nonce') || '';
+
+		setTitle($root, woj);
+
+		renderLoading($results);
+
+		$.ajax({
+			url: window.hedeaPolitycyWoj && window.hedeaPolitycyWoj.ajaxurl ? window.hedeaPolitycyWoj.ajaxurl : (window.ajaxurl || ''),
+			type: 'POST',
+			dataType: 'json',
+			data: {
+				action: 'hedea_politycy_filter',
+				nonce: nonce,
+				wojewodztwo: woj || ''
+			}
+		})
+		.done(function(resp){
+			if(resp && resp.success && typeof resp.data === 'object'){
+				$results.html(resp.data.html || '');
+			} else {
+				$results.html('<li class="politycy__info">Wystąpił błąd ładowania.</li>');
+			}
+		})
+		.fail(function(){
+			$results.html('<li class="politycy__info">Nie udało się pobrać danych.</li>');
+		})
+		.always(function(){
+			renderDone($results);
+		});
+	}
+
+	// ZMIANA select -> URL + AJAX
+	$(document).on('change', '[data-politycy-woj-select]', function(){
+		var $select = $(this);
+		var $root = $select.closest('[data-politycy-woj-root]');
+		var val = $select.val() || '';
+
+		var slug = '';
+		if(val){
+			slug = $select.find('option:selected').attr('data-woj-slug') || '';
+		}
+
+		setOnlyRadaKrajowaParam(slug);
+		fetchPolitycy($root, val);
+	});
+
+	// START
+	$(function(){
+		$('[data-politycy-woj-root]').each(function(){
+			var $root = $(this);
+			var $select = $root.find('[data-politycy-woj-select]');
+			if(!$select.length) return;
+
+			// 1) URL -> select (obsługujemy tylko "rada-krajowa")
+			var slugFromUrl = getParam('rada-krajowa');
+			if(slugFromUrl){
+				var val = findOptionBySlug($select, slugFromUrl);
+				if(val){
+					$select.val(val);
+
+					// sprzątamy URL (wywalamy ewentualny radakrajowa, zostaje rada-krajowa)
+					setOnlyRadaKrajowaParam(slugFromUrl);
+				}
+			}
+
+			// 2) ustaw H4
+			setTitle($root, $select.val());
+
+			// 3) jeśli wybrane -> ładuj listę
+			if($select.val()){
+				fetchPolitycy($root, $select.val());
+			}
+		});
+	});
+
+})(jQuery);
+//# sourceURL=hedea-politycy-wojewodztwa-js-after
+</script>
+<script id="hedea-wladze-regionu-js-extra">
+var hedeaWR = {"ajaxurl":"https://lewica.org.pl/wp-admin/admin-ajax.php"};
+//# sourceURL=hedea-wladze-regionu-js-extra
+</script>
+<script id="hedea-wladze-regionu-js-after">
+(function($){
+'use strict';
+
+function safeUrl(){ try{return new URL(window.location.href);}catch(e){return null;} }
+
+function getSlug(){
+	var u=safeUrl(); if(!u) return '';
+	var qs=(u.search||'').replace(/^\?/,'');
+	if(qs && qs.indexOf('=')===-1){
+		try{return decodeURIComponent(qs).trim();}catch(e){return qs.trim();}
+	}
+	return (u.searchParams.get('wojewodztwo')||'').toString().trim();
+}
+
+function setSlug(slug){
+	var u=safeUrl(); if(!u) return;
+	var base=u.origin+u.pathname;
+	window.history.replaceState({},'', base + (slug ? '?' + encodeURIComponent(slug) : ''));
+}
+
+function findBySlug($s, slug){
+	var v='';
+	$s.find('option').each(function(){
+		if(String($(this).data('slug'))===slug){ v=$(this).val(); return false; }
+	});
+	return v;
+}
+
+function setTitle($root){
+	var $t=$root.find('[data-woj-title]');
+	var $s=$root.find('[data-select]');
+	if(!$t.length||!$s.length) return;
+	$t.text($s.find('option:selected').text()||'');
+}
+
+function hasServerList($root){
+	return $root.find('[data-results] li.polityk').length>0;
+}
+
+function load($root, woj){
+	var $r=$root.find('[data-results]');
+	var $rada=$root.find('[data-rada-results]');
+
+	$r.attr('aria-busy','true');
+	$rada.attr('aria-busy','true');
+
+	$.ajax({
+		url: hedeaWR.ajaxurl,
+		type:'POST',
+		dataType:'json',
+		data:{ action:'hedea_wr_filter', nonce:$root.data('nonce'), woj:woj }
+	}).done(function(res){
+		if(res.success){
+			$r.html(res.data.html || '');
+			$rada.html(res.data.rada_html || '');
+		}else{
+			$r.html('<li>Błąd</li>');
+			$rada.html('');
+		}
+	}).fail(function(){
+		$r.html('<li>Błąd</li>');
+		$rada.html('');
+	}).always(function(){
+		$r.attr('aria-busy','false');
+		$rada.attr('aria-busy','false');
+	});
+}
+
+$(document).on('change','[data-select]',function(){
+	var $s=$(this), $root=$s.closest('[data-root]');
+	var val=$s.val()||'';
+	var slug=String($s.find(':selected').data('slug')||'');
+	setSlug(slug);
+	setTitle($root);
+	if(val) load($root,val);
+});
+
+$(function(){
+	$('[data-root]').each(function(){
+		var $root=$(this), $s=$root.find('[data-select]');
+		var slug=getSlug();
+		if(slug){
+			var v=findBySlug($s,slug);
+			if(v) $s.val(v);
+		}
+		setTitle($root);
+		var cur=$s.val();
+		if(cur){
+			var s2=String($s.find(':selected').data('slug')||'');
+			if(s2) setSlug(s2);
+			if(!hasServerList($root)) load($root,cur);
+		}
+	});
+});
+})(jQuery);
+//# sourceURL=hedea-wladze-regionu-js-after
+</script>
+<script id="hedea-auto-popup-front-js" src="https://lewica.org.pl/wp-content/plugins/auto-popup/build/front.js?ver=1784096401"></script>
+<script id="wp-accessibility-js-extra">
+var wpa = {"skiplinks":{"enabled":true,"output":"\u003Cdiv class=\"wpa-hide-ltr\" id=\"skiplinks\" role=\"navigation\" aria-label=\"Na skr\u00f3ty\"\u003E\u003Ca href=\"#tresc\"\u003EPrzejd\u017a do tre\u015bci\u003C/a\u003E \u003Ca href=\"#menu\"\u003EPrzejd\u017a do menu\u003C/a\u003E \u003Ca href=\"/mapa-strony\"\u003EMapa serwisu\u003C/a\u003E \u003Ca href=\"#szukaj\"\u003EWyszukiwarka\u003C/a\u003E \u003C/div\u003E"},"target":"","tabindex":"1","underline":{"enabled":false,"target":"a"},"dir":"ltr","lang":"pl-PL"};
+//# sourceURL=wp-accessibility-js-extra
+</script>
+<script id="wp-accessibility-js" src="https://lewica.org.pl/wp-content/plugins/wp-accessibility/js/wp-accessibility.js?ver=1.0"></script>
+<script id="hoverIntent-js" src="https://lewica.org.pl/wp-includes/js/hoverIntent.min.js?ver=1.10.2"></script>
+<script id="megamenu-js" src="https://lewica.org.pl/wp-content/plugins/megamenu/js/maxmegamenu.min.js?ver=3.10.8"></script>
+<script id="formidable-js-extra">
+var frm_js = {"ajax_url":"https://lewica.org.pl/wp-admin/admin-ajax.php","images_url":"https://lewica.org.pl/wp-content/plugins/formidable/images","loading":"Wczytywanie\u2026","remove":"Usu\u0144","offset":"4","nonce":"16b0f578c3","id":"Identyfikator","no_results":"Brak pasuj\u0105cych wynik\u00f3w","file_spam":"Ten plik wygl\u0105da na spam.","calc_error":"Wyst\u0105pi\u0142 b\u0142\u0105d w obliczeniach w polu z kluczem","empty_fields":"Przed przes\u0142aniem pliku nale\u017cy wype\u0142ni\u0107 powy\u017csze pola obowi\u0105zkowe.","focus_first_error":"1","include_alert_role":"1","include_resend_email":""};
+var frm_password_checks = {"eight-char":{"label":"Eight characters minimum","regex":"/^.{8,}$/","message":"Passwords require at least 8 characters"},"lowercase":{"label":"One lowercase letter","regex":"#[a-z]+#","message":"Passwords must include at least one lowercase letter"},"uppercase":{"label":"One uppercase letter","regex":"#[A-Z]+#","message":"Passwords must include at least one uppercase letter"},"number":{"label":"One number","regex":"#[0-9]+#","message":"Passwords must include at least one number"},"special-char":{"label":"One special character","regex":"/(?=.*[^a-zA-Z0-9])/","message":"Password jest nieprawid\u0142owe"}};
+var frmCheckboxI18n = {"errorMsg":{"min_selections":"This field requires a minimum of %1$d selected options but only %2$d were submitted."}};
+//# sourceURL=formidable-js-extra
+</script>
+<script id="formidable-js" src="https://lewica.org.pl/wp-content/plugins/formidable-pro/js/frm.min.js?ver=6.35-jquery"></script>
+<script id="formidable-js-after">
+window.frm_js.repeaterRowDeleteConfirmation = "Are you sure you want to delete this row?";
+window.frm_js.datepickerLibrary = "default";
+//# sourceURL=formidable-js-after
+</script>
+<script>
+/*<![CDATA[*/
+/*]]>*/
+</script>
+<script>
+	
+jQuery(document).ready(function(){
+
+var bodyHadHideFocusClass = false;
+var g=0;
+function wyszukiwarka() {
+switch(g%2) {
+	case 0:
+	jQuery('body').css('overflow','hidden');
+	jQuery('#glowna').attr("tabindex","-1");
+	jQuery('#glowna').attr("aria-hidden","true");
+	jQuery('.wyszukiwarka').attr("tabindex","0");
+	jQuery('.wyszukiwarka').attr("aria-hidden","false");
+	jQuery('.wysz').attr('aria-expanded', 'true');
+	jQuery('.wyszukiwarka').fadeIn(500, function() {
+		    if (bodyHadHideFocusClass) {
+    jQuery('body').addClass('u-hide-focus');
+  }
+	 jQuery('#szukaj').first().focus();
+	  trapFocus(jQuery('.wyszukiwarka'));
+	});
+
+	
+	break;
+    case 1:
+	jQuery('body').css('overflow','auto');
+	jQuery('#glowna').removeAttr("tabindex");
+	jQuery('#glowna').removeAttr("aria-hidden");
+	jQuery('.wyszukiwarka').attr("tabindex","-1");
+	jQuery('.wyszukiwarka').attr("aria-hidden","true");
+	jQuery('.wysz').attr('aria-expanded', 'false');
+	jQuery('.wyszukiwarka').fadeOut(500);
+	jQuery('.wysz').first().focus();
+	bodyHadHideFocusClass = false;	
+    break;
+} 
+g=g+1;
+}
+
+jQuery(".wysz, .zamknij").on('click', function (e) {
+  bodyHadHideFocusClass = jQuery('body').hasClass('u-hide-focus');
+  wyszukiwarka();
+});
+
+jQuery(document).on('keydown', function(e) {
+    if (e.key === "Escape" || e.keyCode === 27) {
+        if (g % 2 === 1) { // menu jest otwarte
+            wyszukiwarka();
+        }
+    }
+});
+
+jQuery(".mega-current-menu-item").prepend('<span class="sr-only">Aktywna pozycja menu </span>');
+jQuery(".simplelightbox").attr("title","Otwórz podgląd pliku");
+jQuery("buttton").removeAttr("role");
+jQuery('a[href$=".docx"]').append('<span class="sr-only"> plik DOX</span>');
+jQuery('a[href$=".doc"]').append('<span class="sr-only"> plik DOC</span>');
+jQuery(".page-numbers.current").prepend('<span class="sr-only">Aktywna </span>');
+jQuery('a[href$=".pdf"]').append('<span class="sr-only"> plik PDF</span>');
+jQuery("a[target='_blank']").append('<span class="sr-only"> otwiera się w nowej karcie</span>');
+jQuery('a[href$=".pdf"]').removeAttr('title');
+jQuery("a[target='_blank']").removeAttr('aria-label');
+jQuery('a[href$=".docx"]').addClass('doc');
+jQuery('a[href$=".doc"]').addClass('doc');
+jQuery('a[href$=".pdf"]').addClass('pdf');	
+
+
+	 
+document.addEventListener('keydown', function(e) {
+  if (e.keyCode === 9) {
+    setTimeout(function(){ 	jQuery('body').addClass('u-hide-focus');},200);
+  }
+});
+
+document.addEventListener('click', function(e) {
+  jQuery('body').removeClass('u-hide-focus');
+});
+
+var g = 0;
+jQuery(document).on('keydown', function(e) {
+    if (e.key === "Escape" || e.keyCode === 27) {
+        if (g % 2 === 1) { // menu jest otwarte
+            wyszukiwarka();
+        }
+    }
+});
+
+function foto() {
+	window.prevFocus = jQuery(this);
+} 
+jQuery("a.simplelightbox").on('click',foto);
+
+
+function sprawdzwysz() {
+var links=jQuery(this).attr("href");
+if(links=="#szukaj") {
+wyszukiwarka();
+
+}
+}
+
+jQuery("#skiplinks a").on('click',sprawdzwysz);
+
+
+jQuery(document).on('focusout','.zamknij',function() {
+	var atr=jQuery('#glowna').attr("aria-hidden");
+	if (atr=='true') {
+      jQuery('#szukaj').focus();
+	}
+    });
+
+var bodyHadHideFocusClass = false;	
+var h=0;
+function ac() {
+switch(h%2) {
+	case 0:
+	jQuery('body').css('overflow','hidden');
+	jQuery('#glowna').attr("tabindex","-1");
+	jQuery('.acmodal').attr("tabindex","0");
+	jQuery('#glowna').attr("aria-hidden","true");
+	jQuery('.acmodal').attr("aria-hidden","false");
+	jQuery('.ac').attr('aria-expanded', 'true');
+	if (bodyHadHideFocusClass) {
+    jQuery('body').addClass('u-hide-focus');
+  }
+	jQuery('.acmodal').fadeIn(500, function() {
+	 jQuery('.toggle-contrast').first().focus();
+	  trapFocus(jQuery('.acmodal'));
+	});
+	
+	
+	break;
+    case 1:
+	jQuery('body').css('overflow','auto');
+	jQuery('#glowna').removeAttr("tabindex");
+	jQuery('#glowna').removeAttr("aria-hidden");
+	jQuery('.acmodal').attr("tabindex","-1");
+	jQuery('.acmodal').attr("aria-hidden","true");
+	jQuery('.ac').attr('aria-expanded', 'false');
+	jQuery('.acmodal').fadeOut(500);
+	jQuery('.ac').first().focus();
+	bodyHadHideFocusClass = false;	
+    break;
+} 
+h=h+1;
+}
+
+
+jQuery(".ac, .zamknijac").on('click', function (e) {
+  bodyHadHideFocusClass = jQuery('body').hasClass('u-hide-focus');
+  ac();
+});
+
+
+jQuery(document).on('keydown', function(e) {
+    if (e.key === "Escape" || e.keyCode === 27) {
+        if (h % 2 === 1) { // menu jest otwarte
+            ac();
+        }
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    
+    const targetElement = document.querySelector('.fixed li:nth-child(3) a'); 
+    const scrollThreshold = 150;
+    const mediaQueryThreshold = 550; 
+
+    if (!targetElement) {
+        return; 
+    }
+
+    function applyState() {
+        if (window.innerWidth <= mediaQueryThreshold) {
+            window.removeEventListener('scroll', handleScroll);
+            targetElement.classList.add("close"); 
+        } else {
+            window.addEventListener('scroll', handleScroll);
+            handleScroll();
+        }
+    }
+
+    function handleScroll() {
+        const scrollTopPosition = window.scrollY || window.pageYOffset;
+        const shouldBeClosed = scrollTopPosition > scrollThreshold;
+        targetElement.classList.toggle("close", shouldBeClosed);
+    }
+    
+    applyState();
+    window.addEventListener('resize', applyState);
+});
+
+let lastScrollY = window.scrollY;
+const topBar = document.getElementById("top");
+const topHeight = topBar.offsetHeight;
+
+window.addEventListener("scroll", () => {
+  const nearTopLimit = 1.5 * topHeight;
+
+
+  if (window.scrollY <= nearTopLimit) {
+    topBar.classList.remove("hidden");
+  } else {
+   
+    if (window.scrollY > lastScrollY) {
+    
+      topBar.classList.add("hidden");
+    } else {
+    
+      topBar.classList.remove("hidden");
+    }
+  }
+
+  lastScrollY = window.scrollY;
+});
+
+// Stan globalny
+let $currentSidebar = null;
+let $lastOpener = null;
+
+
+// Zamknij panel (z opcją zwrotu fokusa do wyzwalacza)
+function closeSidebar($sidebar, restoreFocus = true) {
+  if (!$sidebar || !$sidebar.length) return;
+
+  $sidebar
+    .data('open', false)
+    .attr({'tabindex': '-1', 'aria-hidden': 'true'})
+    .off('keydown.trapFocus')
+    .stop(true, true)
+    .fadeOut(300, function () {
+      if (restoreFocus && $lastOpener && typeof $lastOpener.focus === 'function') {
+        $lastOpener.focus();
+      }
+    });
+
+  if ($currentSidebar && $currentSidebar[0] === $sidebar[0]) {
+    $currentSidebar = null;
+  }
+  // przywróć klasę na body jeśli ją zdejmowałeś/przełączałeś
+  if (! $currentSidebar) {
+    jQuery('body').removeClass('u-hide-focus');
+  }
+}
+
+// Otwórz panel (zamyka inny jeśli otwarty)
+function openSidebar($sidebar, openerEl) {
+  if (!$sidebar || !$sidebar.length) return;
+
+  // Zamykanie innego, jeśli jest
+  if ($currentSidebar && $currentSidebar[0] !== $sidebar[0]) {
+    closeSidebar($currentSidebar, false);
+  }
+
+  bodyHadHideFocusClass = jQuery('body').hasClass('u-hide-focus');
+
+  $sidebar
+    .data('open', true)
+    .attr({'tabindex': '0', 'aria-hidden': 'false'})
+    .stop(true, true)
+    .fadeIn(300, function () {
+      if (bodyHadHideFocusClass) {
+        jQuery('body').addClass('u-hide-focus');
+      }
+      // fokus na pierwszy sensowny element
+      const $first = $sidebar.find('input, select, textarea, button, a, [tabindex]:not([tabindex="-1"])').first();
+      ($first.length ? $first : $sidebar).focus();
+      trapFocus($sidebar);
+    });
+
+  $currentSidebar = $sidebar;
+  $lastOpener = openerEl || document.activeElement;
+}
+
+// Przełącz wybrany panel
+function toggleSidebar($sidebar, openerEl) {
+  if ($sidebar.data('open')) {
+    closeSidebar($sidebar, true);
+  } else {
+    openSidebar($sidebar, openerEl);
+  }
+}
+
+// Triggery: #menu ↔ .sidebar, #menu2 ↔ .sidebar2
+jQuery('#menu').on('click', function () {
+  toggleSidebar(jQuery('.sidebar'), this);
+});
+jQuery('.zamknijmenu').on('click', function () {
+  closeSidebar(jQuery('.sidebar'), true);
+});
+
+jQuery('#menu2').on('click', function () {
+  toggleSidebar(jQuery('.sidebar2'), this);
+});
+jQuery('.zamknijmenu2').on('click', function () {
+  closeSidebar(jQuery('.sidebar2'), true);
+});
+
+// Klik w tło (overlay) zamyka odpowiedni panel
+jQuery(document).on('click', function (e) {
+  const $t = jQuery(e.target);
+  if ($t.is('.sidebar') && jQuery('.sidebar').data('open')) {
+    closeSidebar(jQuery('.sidebar'), true);
+  }
+  if ($t.is('.sidebar2') && jQuery('.sidebar2').data('open')) {
+    closeSidebar(jQuery('.sidebar2'), true);
+  }
+});
+
+// ESC zamyka aktualnie otwarty panel
+jQuery(document).on('keydown', function (e) {
+  if (e.key === 'Escape' && $currentSidebar) {
+    closeSidebar($currentSidebar, true);
+  }
+});
+
+	
+
+jQuery(document).on('blur','.zamknijac',function() {
+	var atr=jQuery('#glowna').attr("aria-hidden");
+	if (atr=='true') {
+      jQuery('.toggle-contrast').focus();
+	}
+    });
+});
+
+function trapFocus(container) {
+  const focusableSelectors = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+  const focusableEls = container.find(focusableSelectors).filter(':visible');
+  const firstEl = focusableEls.first()[0];
+  const lastEl = focusableEls.last()[0];
+
+  container.on('keydown.trapFocus', function(e) {
+    if (e.key === 'Tab') {
+      if (focusableEls.length === 0) return;
+
+      if (e.shiftKey) { // Shift + Tab
+        if (document.activeElement === firstEl) {
+          e.preventDefault();
+          lastEl.focus();
+        }
+      } else { // Tab
+        if (document.activeElement === lastEl) {
+          e.preventDefault();
+          firstEl.focus();
+        }
+      }
+    }
+  });
+}
+
+
+  
+
+document.addEventListener('DOMContentLoaded', function () {
+  const menuWraps = document.querySelectorAll('#menuglowne .mega-menu-wrap');
+
+  menuWraps.forEach(menuWrap => {
+    const toggleButton = menuWrap.querySelector('button');
+    const megaMenu = menuWrap.querySelector('ul.mega-menu');
+
+    if (toggleButton && megaMenu) {
+    
+      if (!megaMenu.id) {
+        megaMenu.id = 'mega-menu-' + Math.random().toString(36).substr(2, 9); // Unikalny ID
+      }
+
+
+      if (!toggleButton.hasAttribute('aria-controls')) {
+        toggleButton.setAttribute('aria-controls', megaMenu.id);
+      }
+
+     
+      toggleButton.setAttribute('aria-expanded', 'false');
+      toggleButton.setAttribute('aria-label', 'Otwórz menu');
+      megaMenu.hidden = true;
+
+ 
+      toggleButton.addEventListener('click', () => {
+        const isExpanded = toggleButton.getAttribute('aria-expanded') === 'true';
+
+        toggleButton.setAttribute('aria-expanded', String(!isExpanded));
+        toggleButton.setAttribute('aria-label', !isExpanded ? 'Zamknij menu' : 'Otwórz menu');
+        megaMenu.hidden = isExpanded;
+      });
+    }
+  });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    var playButton = document.querySelector('[data-play-label]');
+    if (playButton) {
+        playButton.setAttribute('data-play-label', 'Włącz odtwarzanie slajdów');
+        // Wymuszamy aktualizację aria-label jeśli już było ustawione
+        playButton.setAttribute('aria-label', 'Włącz odtwarzanie slajdów');
+    }
+});
+document.addEventListener('DOMContentLoaded', function() {  
+
+    const topElement = document.getElementById('top');
+    const scrollThreshold = 150; 
+
+    function menuwysokosc() {
+   
+        const scrollTopPosition = window.scrollY || window.pageYOffset; 
+        if (scrollTopPosition > scrollThreshold) {
+     
+            topElement.classList.remove('big');
+            topElement.classList.add('small');
+        } 
+
+        else { 
+            // Usuń 'small', dodaj 'big'
+            topElement.classList.remove('small');
+            topElement.classList.add('big');
+        }
+    }
+
+
+    menuwysokosc();
+
+  
+    window.addEventListener('scroll', menuwysokosc);
+});
+
+jQuery(function($) {
+
+    function sprawdzmenu() {
+        if ($('.mega-menu-toggle').hasClass('mega-menu-open')) {
+            $('.mega-toggle-animated').attr('aria-label', 'Zamknij menu');
+        } else {
+            $('.mega-toggle-animated').attr('aria-label', 'Otwórz menu');
+        }
+    }
+
+    // Ustaw poprawny aria-label na starcie
+    sprawdzmenu();
+
+    var $toggle = $('.mega-menu-toggle').get(0);
+
+    if ($toggle) {
+        // Obserwator zmian klasy na .mega-menu-toggle
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    sprawdzmenu();
+                }
+            });
+        });
+
+        observer.observe($toggle, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    }
+
+    // Dodatkowo: gdyby jednak klik w toggle był głównym trigerem, zostawiamy też to
+    $('.mega-menu-toggle').on('click', function() {
+        // mały timeout, żeby plugin zdążył dodać/zdjąć klasę
+        setTimeout(sprawdzmenu, 0);
+    });
+
+});
+(function ($) {
+    'use strict';
+
+    function enhanceScrollTopButton() {
+        var $button = $('#wpfront-scroll-top-container');
+
+        if (!$button.length || $button.data('wcag-enhanced')) {
+            return false;
+        }
+
+        $button.data('wcag-enhanced', true);
+
+        /*
+         * Poprawa HTML przycisku.
+         */
+        $button
+            .attr('type', 'button')
+            .attr('aria-label', 'Przewiń na początek strony')
+            .removeAttr('title');
+
+        /*
+         * Obraz jest dekoracyjny, ponieważ działanie przycisku
+         * opisuje już aria-label.
+         */
+        $button.find('img')
+            .attr('alt', '')
+            .attr('aria-hidden', 'true')
+            .removeAttr('title');
+
+        /*
+         * Wtyczka zatrzymuje automatyczne ukrywanie tylko po
+         * najechaniu myszą. Wywołujemy te same mechanizmy
+         * również podczas obsługi klawiaturą.
+         */
+        $button.on('focus.wpfrontWcag', function () {
+            $(this)
+                .addClass('show')
+                .css('opacity', 1)
+                .triggerHandler('mouseenter');
+        });
+
+        $button.on('blur.wpfrontWcag', function () {
+            $(this).triggerHandler('mouseleave');
+        });
+
+        /*
+         * Po zakończeniu przewijania przenosimy fokus
+         * na początek głównej treści.
+         */
+        $button.on('click.wpfrontWcag', function () {
+            var startTime = Date.now();
+            var pluginDuration = 0;
+
+            try {
+                pluginDuration = parseInt(
+                    window.wpfront_scroll_top_data.data.data.scroll_duration,
+                    10
+                ) || 0;
+            } catch (error) {
+                pluginDuration = 0;
+            }
+
+            var maximumWait = Math.max(pluginDuration + 700, 2500);
+
+            function focusPageBeginning() {
+                var selectors = [
+                    '#main-content',
+                    'main',
+                    '#main',
+                    '#content',
+                    'h1'
+                ];
+
+                var target = null;
+
+                for (var i = 0; i < selectors.length; i++) {
+                    target = document.querySelector(selectors[i]);
+
+                    if (target) {
+                        break;
+                    }
+                }
+
+                if (!target) {
+                    return;
+                }
+
+                /*
+                 * Elementy takie jak main czy h1 domyślnie nie
+                 * przyjmują fokusu, dlatego dodajemy tabindex="-1".
+                 */
+                if (!target.hasAttribute('tabindex')) {
+                    target.setAttribute('tabindex', '-1');
+                    target.setAttribute('data-wcag-temporary-tabindex', 'true');
+
+                    target.addEventListener('blur', function cleanupTabindex() {
+                        if (
+                            target.getAttribute(
+                                'data-wcag-temporary-tabindex'
+                            ) === 'true'
+                        ) {
+                            target.removeAttribute('tabindex');
+                            target.removeAttribute(
+                                'data-wcag-temporary-tabindex'
+                            );
+                        }
+                    }, { once: true });
+                }
+
+                try {
+                    target.focus({
+                        preventScroll: true
+                    });
+                } catch (error) {
+                    target.focus();
+                }
+
+                /*
+                 * Utrzymanie strony dokładnie na samej górze.
+                 */
+                window.scrollTo(0, 0);
+            }
+
+            function waitForScrollEnd() {
+                var currentScroll =
+                    window.pageYOffset ||
+                    document.documentElement.scrollTop ||
+                    document.body.scrollTop ||
+                    0;
+
+                if (currentScroll <= 2) {
+                    focusPageBeginning();
+                    return;
+                }
+
+                if (Date.now() - startTime < maximumWait) {
+                    window.requestAnimationFrame(waitForScrollEnd);
+                }
+            }
+
+            window.requestAnimationFrame(waitForScrollEnd);
+        });
+
+        return true;
+    }
+
+    /*
+     * Wtyczka dodaje przycisk dopiero po załadowaniu strony.
+     */
+    $(window).on('load.wpfrontWcag', function () {
+        enhanceScrollTopButton();
+    });
+
+    /*
+     * Zabezpieczenie na wypadek późniejszego dodania przycisku.
+     */
+    $(function () {
+        if (enhanceScrollTopButton()) {
+            return;
+        }
+
+        var observer = new MutationObserver(function () {
+            if (enhanceScrollTopButton()) {
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+
+})(jQuery);
+</script>
+
+</body>
+</html>

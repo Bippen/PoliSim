@@ -18,20 +18,26 @@ namespace PoliSim.EditorTools
     /// THEIR RECORD, AND WHAT THEY DO TO THE FORMATION. `DeclaredRedLines.PolandTimeline` against `ElectionsData/poland/coalition_declarations_2023.md`:
     /// <list type="bullet">
     /// <item>the record's timeline table (its §8) is the array, row for row - each declarer, other, shape, from and until, the until after the
-    /// from - and every fact's two keys are Polish roster keys;</item>
+    /// from, the row's shape words and its F2 mark - and every fact's two keys are Polish roster keys;</item>
     /// <item>every source tag a fact cites is a row of the record's register, and every file the register names is held under
     /// `raw/declarations_2023/` at its digest;</item>
     /// <item>on polling day, 15 October 2023, exactly the facts still open stand.</item>
     /// </list>
+    /// Read again under Elias's rulings F1 ("keep X from power" is a red line - the declarer neither joins nor supports a cabinet that includes X), F2
+    /// (a leader's words count quoted verbatim on the broadcaster's or news agency's own page, dated by that page; a date from the party's own record
+    /// always wins) and F7 (the smaller doubts as built, with one acceptance test: "in a world that follows history, a Polish game's own 2023 election
+    /// forms KO+TD+NL"): a fact is one-way and support-blocking exactly when its basis carries F1's mark; a fact marked
+    /// `DeclaredRedLines.PolandSpokenWords` is first-tagged by a page the register marks (F2) - the pages the record dates an F2 fact by (each the
+    /// broadcaster's own page, never a relay, a newspaper or a portal) - and every other fact by its declarer's own page; each fact's from is the first
+    /// date its first tag's register cell gives.
     /// Then THE MEASUREMENT, on two chambers - the chamber of record (the 2023 count's seed seats, which no game forms: a Polish start seats the
     /// government of record) and the played count (a Polish game's own 2023 count, by `PollingDayDiagnostic`'s path) - each formed by the
-    /// chamber's own investiture rule (`ChamberRules.UsesNegativeParliamentarism`) and the game's compatibility and groups, under six readings: the
-    /// derived lines alone; the declarations of polling day as recorded; TD's line to PiS read support-blocking; a "keep X from power" pledge read
-    /// as a PiS-KO line; both; and the party's own record alone (§621 as written - no party's own page carries a support half, so every declared
-    /// line reads cabinet-only). Measured, not asserted. Then THE WIRING: the 2023 election's lines, by its vintage and by its own dated reading,
-    /// are the recorded reading line for line; on the chamber of record that reading seats the record's majority with PiS outside (a backtest);
-    /// on the played count the game's own entry - the government the night stores (`GovernmentFormation.ViewOf`) - forms what it forms, its
-    /// cabinet and its support. Which reading the game runs is Elias's.
+    /// chamber's own investiture rule (`ChamberRules.UsesNegativeParliamentarism`) and the game's compatibility and groups, under each reading: the
+    /// derived lines alone; the declarations of polling day as recorded (what the game reads); those without the PiS-KO pair (doubt 1 read as aims,
+    /// as before F1); and every support half read cabinet-only. Then THE WIRING: the 2023 election's lines, by its vintage and by its own dated
+    /// reading, are the recorded reading line for line; on the chamber of record that reading seats the record's majority with PiS outside (a
+    /// backtest); on the played count the game's own entry - the government the night stores (`GovernmentFormation.ViewOf`) - forms R1's cabinet and
+    /// support, and F7's acceptance holds: KO+TD+NL.
     /// </summary>
     public static class PolishDeclarationsDiagnostic
     {
@@ -50,13 +56,13 @@ namespace PoliSim.EditorTools
                 IReadOnlyList<DeclaredRedLines.DatedFact> facts = DeclaredRedLines.PolandTimeline;
 
                 // (a) the record's §8 is the array, row for row - a row "A → B, C" is one fact per other party, in that order
-                var rows = new List<(string Party, string Other, bool Blocks, bool OneWay, DateTime From, DateTime Until)>();
-                foreach (Match m in Regex.Matches(record, @"^\| [0-9–-]+ \| (\S+) → ([^|]+?) \| [^|]+ \| (true|false) \| (true|false) \| (\d{4}-\d{2}-\d{2}) \| (Open|\d{4}-\d{2}-\d{2}) \|", RegexOptions.Multiline))
+                var rows = new List<(string Party, string Other, string Shape, bool Blocks, bool OneWay, DateTime From, DateTime Until, string Basis)>();
+                foreach (Match m in Regex.Matches(record, @"^\| [0-9–-]+ \| (\S+) → ([^|]+?) \| ([^|]+?) \| (true|false) \| (true|false) \| (\d{4}-\d{2}-\d{2}) \| (Open|\d{4}-\d{2}-\d{2}) \| ([^|\n]+?) \|", RegexOptions.Multiline))
                 {
                     foreach (string other in m.Groups[2].Value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries))
                     {
-                        rows.Add((m.Groups[1].Value, other.Trim(), m.Groups[3].Value == "true", m.Groups[4].Value == "true", Day(m.Groups[5].Value),
-                            m.Groups[6].Value == "Open" ? DateTime.MaxValue : Day(m.Groups[6].Value)));
+                        rows.Add((m.Groups[1].Value, other.Trim(), m.Groups[3].Value, m.Groups[4].Value == "true", m.Groups[5].Value == "true", Day(m.Groups[6].Value),
+                            m.Groups[7].Value == "Open" ? DateTime.MaxValue : Day(m.Groups[7].Value), m.Groups[8].Value));
                     }
                 }
                 bool sameTable = rows.Count == facts.Count;
@@ -64,9 +70,15 @@ namespace PoliSim.EditorTools
                 {
                     DeclaredRedLines.DatedFact f = facts[i];
                     sameTable = f.Kind == DeclaredRedLines.FactKind.PairLine && f.Party == rows[i].Party && f.Other == rows[i].Other && f.BlocksSupport == rows[i].Blocks
-                        && f.OneWay == rows[i].OneWay && f.From == rows[i].From && f.Until == rows[i].Until && f.Candidate == null && rows[i].From < rows[i].Until;
+                        && f.OneWay == rows[i].OneWay && f.From == rows[i].From && f.Until == rows[i].Until && f.Candidate == null && rows[i].From < rows[i].Until
+                        // the review's finding: the row's words held too - "one-way, support-blocking (F1 ..." exactly for the one-way support-blocking facts,
+                        // "cabinet" exactly for the cabinet ones, and "- F2" in the basis cell exactly where the fact carries F2's mark
+                        && rows[i].Shape.StartsWith("one-way, support-blocking (F1", StringComparison.Ordinal) == (f.BlocksSupport && f.OneWay)
+                        && (rows[i].Shape == "cabinet") == (!f.BlocksSupport && !f.OneWay)
+                        && rows[i].Basis.Contains("- F2") == f.Basis.Contains(DeclaredRedLines.PolandSpokenWords)
+                        && Regex.Match(rows[i].Basis, @"\[[A-Z]+-[A-Z]\d+\]").Value == Regex.Match(f.Basis, @"\[[A-Z]+-[A-Z]\d+\]").Value;   // the row names the page that dates the fact
                 }
-                Check(sameTable, F("the record's timeline table is DeclaredRedLines.PolandTimeline, row for row ({0} facts in the array, {1} read from the table)", facts.Count, rows.Count));
+                Check(sameTable, F("the record's timeline table is DeclaredRedLines.PolandTimeline, row for row, its shape words, F2 marks and first tags included ({0} facts in the array, {1} read from the table)", facts.Count, rows.Count));
 
                 // (b) every tag a fact cites is a register row; every fact declared, sourced to the record
                 var register = new HashSet<string>(Regex.Matches(record, @"^\| \[([A-Z]+-[A-Z]+\d+)\] \|", RegexOptions.Multiline).Cast<Match>().Select(m => m.Groups[1].Value));
@@ -78,6 +90,44 @@ namespace PoliSim.EditorTools
                 bool cited = facts.All(f => f.Basis.StartsWith("DECLARED", StringComparison.Ordinal) && f.Basis.EndsWith(DeclaredRedLines.PolandSource, StringComparison.Ordinal) && Regex.IsMatch(f.Basis, @"\[[A-Z]+-[A-Z]+\d+\]"));
                 Check(cited && unregistered.Count == 0, F("every fact is DECLARED, cites a source tag and the record, and every tag is a register row ({0} rows){1}",
                     register.Count, unregistered.Count > 0 ? "; NOT in the register: " + string.Join(", ", unregistered.Distinct()) : string.Empty));
+                // F2 (the review's finding: the check must see F2's distinction, not a tag's letter): the first tag a fact cites dates it. A fact carrying F2's
+                // mark is first-tagged by a page the register marks "(F2)" - the pages the record dates an F2 fact by (each the broadcaster's own page,
+                // never a relay, a newspaper or a portal); every other fact by its declarer's own page ([X-Pn], X the declarer's key); and the fact's from is
+                // the FIRST date its first tag's register cell gives (yyyy-MM-dd, dd.MM.yyyy, or the Polish day, month and year) - a dateModified or a second
+                // stamp after it dates nothing (the second review's finding: a substring match let "13 lipca" pass for the 3rd)
+                var pageDate = new Dictionary<string, string>();
+                var f2Pages = new HashSet<string>();
+                foreach (Match m in Regex.Matches(record, @"^\| \[([A-Z]+-[A-Z]+\d+)\] \|([^|\n]*)\|([^|\n]*)\|([^|\n]*)\|", RegexOptions.Multiline))
+                {
+                    pageDate[m.Groups[1].Value] = m.Groups[4].Value;
+                    if (m.Groups[3].Value.Contains("(F2)")) { f2Pages.Add(m.Groups[1].Value); }
+                }
+                string[] months = { "sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru" };
+                bool DatedBy(DateTime from, string cell)
+                {
+                    if (cell == null) { return false; }
+                    Match d = Regex.Match(cell, @"(?<!\d)(?:(\d{4})-(\d{2})-(\d{2})|(\d{2})\.(\d{2})\.(\d{4})|(\d{1,2}) (sty|lut|mar|kwi|maj|cze|lip|sie|wrz|paź|lis|gru)\p{L}*,? (\d{4}))");
+                    if (!d.Success) { return false; }
+                    int G(int g) => int.Parse(d.Groups[g].Value, CultureInfo.InvariantCulture);
+                    DateTime day = d.Groups[1].Success ? new DateTime(G(1), G(2), G(3)) : d.Groups[4].Success ? new DateTime(G(6), G(5), G(4))
+                        : new DateTime(G(9), Array.IndexOf(months, d.Groups[8].Value) + 1, G(7));
+                    return day == from;
+                }
+                var misdated = facts.Where(f =>
+                {
+                    Match first = Regex.Match(f.Basis, @"\[(([A-Z]+)-([A-Z])\d+)\]");
+                    if (!first.Success) { return true; }
+                    string tag = first.Groups[1].Value;
+                    bool page = f.Basis.Contains(DeclaredRedLines.PolandSpokenWords) ? f2Pages.Contains(tag) : first.Groups[3].Value == "P" && first.Groups[2].Value == f.Party.ToUpperInvariant();
+                    return !page || !DatedBy(f.From, pageDate.TryGetValue(tag, out string cell) ? cell : null);
+                }).Select(Line).ToList();
+                Check(f2Pages.Count > 0 && f2Pages.All(t => Regex.IsMatch(t, @"^[A-Z]+-I\d+$")) && misdated.Count == 0,
+                    F("F2: a fact carrying F2's mark is first-tagged by a page the register marks (F2) ({0} such pages, {1} facts); every other fact by its declarer's own page; each fact's from is the first date of its first tag's register cell{2}",
+                        f2Pages.Count, facts.Count(f => f.Basis.Contains(DeclaredRedLines.PolandSpokenWords)), misdated.Count > 0 ? "; NOT: " + string.Join("; ", misdated) : string.Empty));
+                // F1: a fact is one-way and support-blocking exactly when its basis carries F1's mark (the review's finding: the formation checks cannot tell
+                // every support half apart - the derived PiS-NL line masks NL's on every Polish chamber)
+                var misshaped = facts.Where(f => f.Basis.StartsWith("DECLARED (F1", StringComparison.Ordinal) != (f.BlocksSupport && f.OneWay)).Select(Line).ToList();
+                Check(misshaped.Count == 0, F("F1: a fact is one-way and support-blocking exactly when its basis carries F1's mark{0}", misshaped.Count > 0 ? "; NOT: " + string.Join("; ", misshaped) : string.Empty));
 
                 // (c) every register file held in tree at its digest
                 string raw = Path.Combine(poland, "raw", "declarations_2023");
@@ -118,37 +168,29 @@ namespace PoliSim.EditorTools
                 var lrGen = parties.Select(p => (double)p.LrGen).ToArray();
                 var galtan = parties.Select(p => (double)p.Galtan).ToArray();
                 List<RedLine> Derived() => DerivedRedLines.From(lrGen, galtan);
-                List<RedLine> WithDeclarations(bool tdPisBlocksSupport, bool cabinetOnly = false)
+                List<RedLine> WithDeclarations(bool withoutPisKo = false, bool cabinetOnly = false)
                 {
                     List<RedLine> lines = Derived();
                     foreach (DeclaredRedLines.DatedFact f in standing)
                     {
                         int a = Index(f.Party), b = Index(f.Other);
                         if (a < 0 || b < 0) { continue; }
-                        bool blocks = !cabinetOnly && (f.BlocksSupport || (tdPisBlocksSupport && f.Party == "TD" && f.Other == "PiS"));
+                        if (withoutPisKo && ((f.Party == "PiS" && f.Other == "KO") || (f.Party == "KO" && f.Other == "PiS"))) { continue; }
+                        bool blocks = !cabinetOnly && f.BlocksSupport;
                         lines.Add(new RedLine(a, b, RedLineKind.Declared, blocks, f.Basis, blocks && f.OneWay));
                     }
                     return lines;
                 }
-                RedLine PisKo() => new RedLine(Index("PiS"), Index("KO"), RedLineKind.Declared, true,
-                    "MEASURED READING, not declared: a pledge to keep the other from power read as a line - PiS's [PIS-P2], KO's [KO-I11]");
-                // R5 (the review's finding 1): §621 as written dates a declaration by the party's own record alone. No party's own page carries a support
-                // half - the support halves rest on broadcasters' and agencies' pages (the record's dating extension, `DeclaredRedLines.PolandExtension`;
-                // the check below holds every support half R5 strips to that mark) - so on polling day every declared line reads cabinet-only. What else
-                // that reading moves changes no polling-day line: the June facts fall, TD's line to PiS starts on its own record's date, facts 7 and 16
-                // stand open, and Konfederacja's line to KO starts with its own page (the second review's finding 12)
+                // F1 ruled doubt 1: a pledge to keep a party from power is a line. R2 reads the PiS-KO pair as the record read it before F1 (aims, no line),
+                // so the measurement shows what that pair changes, F1's other lines standing; R3 reads every support half cabinet-only, so it shows what the
+                // shape adds
                 var readings = new List<(string Name, List<RedLine> Lines)>
                 {
                     ("R0 the derived lines alone", Derived()),
-                    ("R1 the declarations of polling day, as recorded", WithDeclarations(false)),
-                    ("R2 R1 with TD -> PiS read support-blocking", WithDeclarations(true)),
-                    ("R3 R1 with a PiS-KO line (keep-from-power read as a line)", WithDeclarations(false).Concat(new[] { PisKo() }).ToList()),
-                    ("R4 R2 and R3", WithDeclarations(true).Concat(new[] { PisKo() }).ToList()),
-                    ("R5 the party's own record alone - every declared line cabinet-only", WithDeclarations(false, cabinetOnly: true)),
+                    ("R1 the declarations of polling day, as recorded (F1, F2) - the game's", WithDeclarations()),
+                    ("R2 R1 without the PiS-KO pair (doubt 1 read as aims, as before F1)", WithDeclarations(withoutPisKo: true)),
+                    ("R3 R1 with every support half read cabinet-only", WithDeclarations(cabinetOnly: true)),
                 };
-                List<DeclaredRedLines.DatedFact> stripped = standing.Where(f => f.BlocksSupport).ToList();
-                Check(stripped.Count > 0 && stripped.All(f => f.Basis.Contains(DeclaredRedLines.PolandExtension)),
-                    F("R5 is the own-record reading: every support half it strips is a fact the extension dates ({0})", string.Join("; ", stripped.Select(Line))));
                 foreach (RedLine l in Derived()) { sb.Append(F("    MEASURED  the derived line {0}-{1}: {2}\n", parties[l.A].Abbrev, parties[l.B].Abbrev, l.Basis)); }
                 int ofRecord = Mask("KO", "TD", "NL");
                 bool negative = ChamberRules.UsesNegativeParliamentarism(CountryId.Poland);
@@ -196,7 +238,7 @@ namespace PoliSim.EditorTools
                 // (f) THE WIRING (§776; the review's finding 14 - the 2023 election pinned by name, never the ambient epoch): the vintage reader and the
                 // election's own dated reader both give R1, line for line, the declared lines exactly the polling day's standing set, and no platform
                 string Key(RedLine l) => parties[l.A].Abbrev + ">" + parties[l.B].Abbrev + "|" + l.Kind + "|" + l.BlocksSupport + "|" + l.OneWay + "|" + l.Basis;
-                List<string> r1 = WithDeclarations(false).Select(Key).OrderBy(k => k, StringComparer.Ordinal).ToList();
+                List<string> r1 = WithDeclarations().Select(Key).OrderBy(k => k, StringComparer.Ordinal).ToList();
                 List<RedLine> byVintage = DeclaredRedLines.For(CountryId.Poland, parties, ElectionVintage.Poland2023);
                 DeclarationReading night = DeclarationReading.OfElection(CountryId.Poland, PollingDay);
                 List<RedLine> byNight = night.Lines(CountryId.Poland, parties);
@@ -224,7 +266,8 @@ namespace PoliSim.EditorTools
                 // `GameController.RunNationalElection` takes with no campaign staged (Poland's start, no policy, the live prediction counted through the 41
                 // districts on polling day; `PollingDayDiagnostic` (5) runs the same path) - formed by the game's own entry and under every reading. The
                 // entry is the government the night STORES, `GovernmentFormation.ViewOf` on the election's dated reading (the second review's finding 11):
-                // its cabinet and its support are held to R1's. Measured, not asserted: which reading the game runs is Elias's
+                // its cabinet and its support are held to R1's, and to F7's acceptance test - "in a world that follows history, a Polish game's own 2023
+                // election forms KO+TD+NL" (READ AS: the world stepped from the start with no policy - the reading the record's §12 states and puts to Elias)
                 using (SimulationManager.EpochScope())
                 {
                     WorldClock.ApplyStart(CountryId.Poland);
@@ -259,7 +302,7 @@ namespace PoliSim.EditorTools
                             Measure("the played count (a Polish game's own 2023 count)", played);
                             ParliamentSystem.SetSeatsFromElection(player, counted.Seats);
                             GovernmentFormation.View view = GovernmentFormation.ViewOf(player, DeclarationReading.OfElection(CountryId.Poland, PollingDay));
-                            CoalitionResult r1Played = CoalitionFormation.Form(played, GovernmentFormation.Compatibility(parties), WithDeclarations(false), negativeRule: negative,
+                            CoalitionResult r1Played = CoalitionFormation.Form(played, GovernmentFormation.Compatibility(parties), WithDeclarations(), negativeRule: negative,
                                 inOrAgainst: new List<InOrAgainst>(), joint: ChamberRules.JointMasks(CountryId.Poland, parties, played));
                             HashSet<string> Keys(int mask) => new HashSet<string>(Enumerable.Range(0, parties.Count).Where(p => (mask & (1 << p)) != 0).Select(p => parties[p].Abbrev));
                             var gameCabinet = new HashSet<string>(view.Cabinet.Select(c => c.Abbrev));
@@ -269,6 +312,9 @@ namespace PoliSim.EditorTools
                                 F("the game's own entry - the government the night stores - forms the played count as R1 does: {0} (R1: {1})",
                                     view.HasGovernment ? Say(view.Cabinet.Select(c => c.Abbrev), view.Support.Select(c => c.Abbrev)) : "no government - " + view.Reason,
                                     Say(Keys(r1Played.Government.Cabinet), Keys(r1Played.Government.Support))));
+                            Check(view.HasGovernment && gameCabinet.SetEquals(Keys(ofRecord)),
+                                F("F7's ACCEPTANCE: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL - the game's entry seats {0}",
+                                    view.HasGovernment ? Say(view.Cabinet.Select(c => c.Abbrev), view.Support.Select(c => c.Abbrev)) : "no government - " + view.Reason));
                         }
                     }
                     finally

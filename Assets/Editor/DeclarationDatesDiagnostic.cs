@@ -110,7 +110,16 @@ namespace PoliSim.EditorTools
                 int polandOpen = 0;
                 foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.PolandTimeline) { if (f.Until == DateTime.MaxValue) { polandOpen++; } }
                 Check(DeclaredRedLines.StandingOn(CountryId.Poland, new DateTime(2026, 1, 18)).Count == polandOpen,
-                    F("StandingOn: Poland's timeline (§776) - its {0} open facts stand on 18 Jan 2026, the ones closed in 2023 do not", polandOpen));
+                    F("StandingOn: Poland's timeline (§776) - its {0} open facts stand on 18 Jan 2026, its {1} closed ones do not", polandOpen, DeclaredRedLines.PolandTimeline.Count - polandOpen));
+                // §780 (the review's finding: no check held a Polish replacement chain together): every closed Polish line is replaced on its until, so
+                // nothing is lifted between the 2019 election and the 2023 one - F2's reading leaves the 26 June opening unlifted
+                var plLifted = new List<string>();
+                foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.LiftedSince(CountryId.Poland, WorldClock.ElectionDayOf(CountryId.Poland, ElectionVintage.Poland2019), new DateTime(2023, 10, 15)))
+                {
+                    plLifted.Add(f.Party + ">" + f.Other + " " + f.Until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+                }
+                Check(plLifted.Count == 0, F("LiftedSince(Poland's 2019 election, its 2023 polling day): nothing lifted - every closed line is replaced on its until{0}",
+                    plLifted.Count > 0 ? "; LIFTED: " + string.Join(", ", plLifted.ToArray()) : string.Empty));
                 Check(DeclaredRedLines.StandingOn(CountryId.Germany, new DateTime(2026, 1, 18)).Count == DeclaredRedLines.GermanyTimeline.Count, F("StandingOn: Germany's timeline (§705) - its {0} facts all stand on 18 Jan 2026, none closed", DeclaredRedLines.GermanyTimeline.Count));
                 Check(Lifted(new DateTime(2026, 1, 18)) == string.Empty, "LiftedSince(2022 election, start): nothing lifted yet - C's 2025 restatement replaces, it does not lift");
                 Check(Lifted(new DateTime(2026, 7, 19)) == "M>SD,L>SD", F("LiftedSince(2022 election, campaign opening): M's and L's lines on SD lifted, the candidacies restated not lifted - got {0}", Lifted(new DateTime(2026, 7, 19))));

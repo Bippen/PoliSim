@@ -10,20 +10,30 @@ two to each other, holds every register file to its digest, and measures what th
 them (§776):** Poland is dated as Sweden and Germany are (`DeclaredRedLines.HasTimeline`). An election reads every fact standing on its own
 polling day; a mid-term round reads the lines standing that day. What is NOT here stays DERIVED - and in Poland nothing marks it: there is no formation sheet (its confidence rules are
 `Unsourced`, so no round opens) and no election night; the country-wide caveat (the night's caption, the verdict's note) is keyed on
-`DeclaredRedLines.IsSourced`, which Poland meets since §776; and the eight pairs with no sourced line carry no line at all (§12, doubt 14).
+`DeclaredRedLines.IsSourced`, which Poland meets since §776; and the pairs with no sourced line carry no line at all (§10; §12, doubt 14).
 
 **Keys:** PiS, KO, TD (Polska 2050 + PSL, one key — `td_list_2023.md`), NL (the Lewica list, Razem on it), Konf, MN. **What counts:**
 words on or before 15 October 2023 by the party, its leader or an authorised spokesperson, or published by the party as its own.
 **Dates** - §621 as ruled: *"Declarations are dated by the party's own record, never by press reporting; a document is dated by the decision it
-records, not its file date; a declaration stands until a later dated one replaces it."* **THE EXTENSION, stated and put to Elias (K-1i (3)):** a leader's or an authorised spokesperson's
-own spoken words, quoted verbatim, dated by the broadcaster's or the agency's page that reports them - §652's precedent, ruled for MP
-(Helldén's words to Sveriges Radio), with §652's condition: unless the party's own record carries the same words earlier (on this record
-none does - TD's own record [TD-P8] is later, and [NL-P17] is read cabinet-only); §639's KD line, a leader's words as a broadcaster reports them, is the same question, still open.
-The facts it dates are marked **(the extension)** here and in §8: the June lines and their lift (facts 2–6), Konfederacja's support half
-(8–9, which also end 7), TD → PiS (13) and NL → Konf's support half (17, which also ends 16). `DeclaredRedLines.PolandExtension` marks
-them in the code. Where a page gives only its own date, that date is marked *(reported)*. §12 measures the reading by §621 as written.
+records, not its file date; a declaration stands until a later dated one replaces it."* **And Elias's ruling F2** (2026-10-05, answering K-1i (3)):
+*"Accepted, with §652's condition. A leader's spoken words count when they are quoted verbatim on the broadcaster's or news agency's own page,
+dated by that page. A journalist's paraphrase never counts. A date from the party's own record always wins."* So a page relaying another
+outlet's interview or an agency's wire - GazetaPrawna, Bankier, Forsal and wnp carrying PAP, RMF24 relaying Super Express - a newspaper and a
+portal date nothing here; their words stay as context. READING, stated: "always wins" as §652's condition words it - the party's own record
+dates a declaration where it carries the same declaration earlier, in whatever words. READING, stated: "the broadcaster's or news agency's own page" is the page of the
+outlet that took the words down - a broadcaster's page relaying another outlet's interview, or carrying an agency's wire, dates nothing (RMF24's
+26 June page [KONF-I11], "Źródło: RMF24/PAP", relays Super Express's interview), and a newspaper is not a broadcaster, even on its own video
+programme (Super Express's "Wieczorny Express" [KONF-I8]). Both readings are Elias's to confirm (§12). The register marks
+**(F2)** the pages a fact here is dated by under F2 ([KONF-I4], [KONF-I14]); the other broadcasters' own pages it lists count under F2 but date no
+fact here, and carry no mark. `PolishDeclarationsDiagnostic` holds every fact carrying F2's mark to a marked page. The facts F2 dates are marked **(F2)** here and in §8 - the June lines (RMF FM's
+own record of its debate) and Konfederacja → KO (TVN24's) - and `DeclaredRedLines.PolandSpokenWords` marks them in the code; every other fact
+is dated by the party's own record - KO → PiS among them, since KO's own record was swept for F2's "always wins" (§5). Konfederacja's own record
+has not been swept so: "always wins" was checked for the facts F2 dates only on the own pages and posts the §776 sweep saved ([KONF-P1],
+[KONF-P2], [KONF-P3]) - a GAP (§12). **What a line is - Elias's ruling F1:** *"'keep X from power' is a red line. A party
+that declared it neither joins nor supports a cabinet that includes X."* A pledge to remove a party from power, end its rule, block its
+return or not let it govern is a one-way, support-blocking line (§10). Where a page gives only its own date, that date is marked *(reported)*.
 
-## 1. Prawo i Sprawiedliwość — no joint government with Konfederacja
+## 1. Prawo i Sprawiedliwość — no joint government with Konfederacja; KO and Tusk kept from power
 
 **PiS → Konf** — cabinet-blocking, from **2023-07-23**:
 > "Nie wierzcie we wspólne rządy PiS i Konfederacji!"
@@ -37,37 +47,46 @@ cabinet line is symmetric in the model; the arrow is attribution). **Before it t
 będzie wynik wyborów." [PIS-I4]; 2023-07-11 *(reported)*, "Polityka jest często nieprzewidywalna." [PIS-I5]; the club chairman
 Terlecki, 2023-07-16 *(reported)*, "Będziemy o tym myśleć po wyborach." [KONF-I15]. No saved page after 23 July reopens it.
 
-**PiS toward KO, TD and NL: no line declared** — dangers, never refused partners (on KO: "Zablokujemy powrót do władzy Platformy
-Obywatelskiej i D. Tuska.", Morawiecki, 2023-09-08 [PIS-P2]). Those pairs stay DERIVED on PiS's side (§10).
+**PiS → KO** — ONE-WAY, support-blocking, from **2023-09-08** (F1):
+> "Zablokujemy powrót do władzy Platformy Obywatelskiej i D. Tuska."
+
+*gloss:* "We will block the return to power of Civic Platform and D. Tusk." — Morawiecki, then prime minister, at Tomaszów Lubelski, on
+the party's own page ("W piątek 8 września"; its WordPress record: 2023-09-08T18:24, never modified) [PIS-P2]. Under F1 PiS neither joins
+nor supports a cabinet that includes KO; one way - nothing refuses KO's support for a cabinet PiS sits in. **Earlier, aimed at the person:**
+Kaczyński on TVN24 at Stawiski, 2023-07-23: "Donald Tusk - prawdziwy wróg naszego narodu. … Ten człowiek nie może rządzić Polską." [PIS-I1]
+- it keys KO only through the premise §2 states for Konfederacja's line to KO, so it is not read as the start (§12).
+
+**PiS toward TD and NL: no line declared** — dangers, never refused partners. Those pairs stay DERIVED on PiS's side (§10).
 
 ## 2. Konfederacja — no coalition with anyone; no support for PiS or for Tusk
 
-**The game's shape: ONE-WAY and support-blocking toward PiS and KO; cabinet-blocking toward TD, NL and MN.** From 13 July Konfederacja
-refused to sit in *or keep in power* a cabinet with PiS, and to sit in *or enable* one with Tusk's KO — K-1's one-way shape (Sweden's
-C → V): no fetched source has it refuse PiS's or KO's support for a cabinet it sits in, so the symmetric shape would claim more than
-was said. Toward the rest its rule is "no coalition with anyone", a cabinet line on each pair. It wobbled once, in June.
+**The game's shape: ONE-WAY and support-blocking toward PiS (from 6 July) and KO (from 13 July); cabinet-blocking toward TD, NL and MN.**
+Under F1 its pledges to end PiS's rule and to keep Tusk from power are lines: Konfederacja neither sits in nor supports a cabinet with
+either — K-1's one-way shape (Sweden's C → V): no fetched source has it refuse PiS's or KO's support for a cabinet it sits in, so the
+symmetric shape would claim more than was said. Toward the rest its rule is "no coalition with anyone", a cabinet line on each pair,
+from 20 June. Its 26 June opening survives only on pages F2 does not count, so it lifts nothing (doubt 4).
 
-**Konf → PiS, KO, TD, NL, MN** — cabinet-blocking, **2023-06-20** until **2023-06-26**:
+**Konf → PiS, KO, TD, NL, MN** — cabinet-blocking from **2023-06-20** **(F2)**: toward PiS until 6 July and KO until 13 July, when the support-blocking lines replace it; toward TD, NL and MN open:
 > "Nie wejdę w koalicję z PiS-em. W przyszłej kadencji nie wejdę w koalicję z nikim."
 
 *gloss:* "I will not enter a coalition with PiS. In the next term I will not enter a coalition with anyone." — co-chairman Sławomir
 Mentzen, answering Petru's "żeby zostać ministrem finansów będzie musiał robić koalicję z PiS albo Platformą Obywatelską", RMF FM's own
-record of its debate, "Wtorek, 20 czerwca 2023 (20:42)" *(reported)* [KONF-I4] **(the extension)**. **Replaced 2023-06-26** (the extension), asked about a coalition with Kaczyński or
+record of its debate, "Wtorek, 20 czerwca 2023 (20:42)" *(reported)* [KONF-I4] **(F2: the station's own record of its debate, read as the words as said - §12)**. **Not lifted on 2023-06-26:** asked about a coalition with Kaczyński or
 Tusk: "Jeśli obie partie, czy to PiS, czy PO, zgodzą się realizować nasz program, to wszystko jest na stole." [KONF-I8] and "Jeśli ktoś
 będzie chciał realizować nasz program dotyczący obniżania i upraszczania podatków, to ja nie mam nic przeciwko" [KONF-I10] *(reported;
-the interview's video is dated 22 June, UTC)* — "everything is on the table" for PiS or PO, "nothing against" anyone who adopts the tax
-programme. RMF24 read it that day as a change "w stosunku do deklaracji, które składał zaledwie tydzień temu" [KONF-I11].
+the interview is Super Express's own video programme, "Wieczorny Express", its video dated 22 June, UTC)* — "everything is on the table" for PiS or PO, "nothing against" anyone who adopts the tax
+programme. RMF24 read it that day as a change "w stosunku do deklaracji, które składał zaledwie tydzień temu" [KONF-I11]. Under F2 as the record reads it (the header's second READING) none of these dates the opening: Super Express is read as a newspaper, not a broadcaster, even on its own programme, and the PAP and RMF24 pages relay its interview - no broadcaster's or agency's own page carries the words as said - so the June line stands until a later dated line replaces it. Read the other way, the opening is dated 2023-06-26 by [KONF-I8] or [KONF-I11] (§12).
 
-**Konf → PiS** — cabinet-blocking, **2023-07-06** until **2023-07-13**:
+**Konf → PiS** — ONE-WAY, support-blocking, from **2023-07-06** (F1):
 > "Koalicji z PiS nie chcą wyborcy Konfederacji, działacze Konfederacji ani władze Konfederacji.
 >
 > Cały czas mówimy, że chcemy zakończyć rządy PiS, a pisowców odciąć od koryta."
 
 *gloss:* "Neither Konfederacja's voters, nor its activists, nor its leadership want a coalition with PiS. We keep saying we want to end
-PiS's rule…" — Mentzen on X, created_at 2023-07-06T14:37:00Z, from X's syndication endpoint, isEdited false [KONF-P2]. The stated aim
-is not read as the support half (§10's standard).
+PiS's rule…" — Mentzen on X, created_at 2023-07-06T14:37:00Z, from X's syndication endpoint, isEdited false [KONF-P2] — his own post. Under F1 the stated
+aim, to end PiS's rule, is the line's support half: Konfederacja neither sits in nor supports a cabinet with PiS.
 
-**Konf → PiS and Konf → KO** — ONE-WAY, support-blocking, from **2023-07-13** **(the extension)**:
+**Konf → KO** — ONE-WAY, support-blocking, from **2023-07-13** **(F2)**; Konf → PiS restated:
 > "Nie zamierzamy przedłużać władzy PiS-u. Nie zamierzamy z PiS-em zawierać koalicji, nie zamierzamy zawierać koalicji z PO. Nie zamierzamy umożliwić powrotu Tuskowi do władzy."
 
 *gloss:* "We do not intend to prolong PiS's power … nor to form a coalition with PiS, nor with PO … nor to make Tusk's return to power
@@ -75,19 +94,19 @@ possible." — "zapewnia Krzysztof Bosak, poseł Konfederacji" (one of its two l
 17:56" *(reported)* [KONF-I14]. The KO line's premise, stated: a cabinet holding KO is Tusk's (K-1f's premise; the model has no prime
 minister). **The coalition half restated** - toward PiS: 2023-07-16 *(reported)* [KONF-I15], 2023-08-02 [KONF-P1], 2023-10-10 ("Gdybym ja
 teraz, po tych wszystkich zapowiedziach, zrobił rząd z PiS-em, straciłbym całkowicie wiarygodność" *(decoded)* [KONF-I23]; asked about a
-coalition with PiS or Tusk's party, he named PiS alone) and 2023-10-11 *(reported)* ("Nie zamierzam współtworzyć z rządu ani z Koalicją
+coalition with PiS or Tusk's party, Mentzen named PiS alone) and 2023-10-11 *(reported)* ("Nie zamierzam współtworzyć z rządu ani z Koalicją
 Obywatelską, ani z PiS-em." *(decoded; "z rządu" sic)*, keeping trades on single bills open from a "mniejszość blokującą" [KONF-I25]);
-toward KO: only 2023-08-02 [KONF-P1] and 2023-10-11 [KONF-I25]; both held after the vote (doubt 5, [KONF-P3]). 10 October's "chcemy
-zakończyć rządy PiS-u i nie dopuścić do rządów Donalda Tuska" [KONF-I23] is two aims (§10), restating neither half of either line.
-**The support half only 2023-08-24** ("Konfederacja nie zamierza ani przedłużać władzy PiS-u, ani ułatwiać Tuskowi powrotu do
-władzy" [KONF-I19]).
+toward KO, on the pages saved: only 2023-08-02 [KONF-P1] and 2023-10-11 [KONF-I25]; both held after the vote - Bosak on X, 2023-10-16, "nasza deklaracja z kampanii
+wyborczej, że nie wejdziemy w koalicję ani z PiS ani z PO, dzień po wyborach jest nadal aktualna" [KONF-P3], the coalition half only. 10 October's "chcemy
+zakończyć rządy PiS-u i nie dopuścić do rządów Donalda Tuska" [KONF-I23] restates both lines (F1). The 2023-08-24 words ("Konfederacja nie
+zamierza ani przedłużać władzy PiS-u, ani ułatwiać Tuskowi powrotu do władzy" [KONF-I19]) stand on Do Rzeczy's page, which F2 does not count.
 
-**Konf → TD, NL, MN** — cabinet-blocking, again from **2023-08-02**:
+**Konf → TD, NL, MN** — cabinet-blocking from 2023-06-20 (above), restated on the party's own page **2023-08-02**:
 > "Koalicja z PiS czy z Platformą? Z nikim!" … "Jasno i klarownie mówimy: nie będzie z nikim koalicji."
 
 *gloss:* "A coalition with PiS or with the Platform? With no one!" … "We say it plainly: there will be no coalition with anyone." —
 Konfederacja's own page, "2 sierpnia, 2023": the headline is the party's; the body quotes Przemysław Wipler on
-Onet Rano [KONF-P1]. TD, NL and MN are not named: these are the rule's "z nikim". **Before June, no line:** Bosak's "Nie
+Onet Rano [KONF-P1]. TD, NL and MN are not named: these are the rule's "z nikim". **Before June, no line on the pages saved:** Bosak's "Nie
 widzę takiej szansy." (2023-03-24) is an assessment [KONF-I1]; Mentzen on 2023-03-30 *(reported)* said *not now*, with one hedged exclusion, "Może poza
 sojuszem z Lewicą" [KONF-I3].
 **Not a refusal of the support role:** Bosak, 2023-07-16 *(reported)*, "po wyborach zawsze są dwie drogi: współrządzenie albo opozycja" [KONF-I15]
@@ -95,73 +114,106 @@ sojuszem z Lewicą" [KONF-I3].
 
 ## 3. Trzecia Droga — no government with PiS; PSL's no to Konfederacja
 
-TD is one key for two parties: TD → PiS rests on both leaders speaking for the list; TD → Konf on PSL's half alone.
+TD is one key for two parties: TD → PiS rests on the list's founding words; TD → Konf on PSL's half alone. Under F1 both are one-way, support-blocking lines.
 
-**TD → PiS** — cabinet-blocking, from **2023-05-15** **(the extension;** TD's own record first carries it 2023-10-10 [TD-P8]**)**:
-> "My bardzo jasno powiedzieliśmy, że chcemy tworzyć wspólny rząd z ugrupowaniami demokratycznymi po wyborach, a nie z PiS."
+**TD → PiS** — ONE-WAY, support-blocking, from **2023-05-15** (F1), on Polska 2050's own page:
+> "Musimy wygrać te wybory po to, żeby odsunąć PiS od władzy, ale odsuniemy PiS od władzy tylko wtedy, kiedy ludzie będą mieli wybór."
 
-*gloss:* "We have said very clearly that we want to form a joint government with the democratic groupings after the election, and not
-with PiS." — "podkreślił Szymon Hołownia" (Polska 2050's chairman) at the press conference that named the list, PAP via *GazetaPrawna*,
-"15 maja 2023"; PSL's president Kosiniak-Kamysz the same day: "a nie z tymi, którzy dzisiaj rządzą" [TD-I5]. (The 27 April agreement
-they cite names no party: "powyborczej koalicji partii demokratycznych" *(decoded from the PDF's glyph streams)* [TD-P2].) Restated
-2023-09-19 ("Z PiS-em Polska 2050 i Trzecia Droga żadnej koalicji tworzyć nie będzie." [TD-I11]), 2023-10-10 [TD-P8] and 2023-10-12
-on Polska 2050's own page ("Koalicja z PiSem? Po moim trupie." *(decoded)* [TD-P9]). A cabinet only: no TD sentence refuses PiS's
-support, or support for PiS, in words (Doubts). **Each member had refused PiS before the list existed** (recorded, not wired): PSL
+*gloss:* "We must win this election in order to remove PiS from power, but we will remove PiS from power only when people have a choice."
+— Szymon Hołownia (Polska 2050's chairman) at the press conference that named the list, on Polska 2050's own page, "pon. 15 maj 2023" *(decoded)*
+[TD-P11] - the page as saved was edited 2023-07-01, after the date it gives (its `dateModified`; §12). Under F1 TD neither joins nor supports a cabinet that includes PiS. The same day's coalition refusal - "chcemy tworzyć wspólny
+rząd z ugrupowaniami demokratycznymi po wyborach, a nie z PiS" (Hołownia), "a nie z tymi, którzy dzisiaj rządzą" (Kosiniak-Kamysz) -
+survives only on GazetaPrawna's PAP copy [TD-I5], which F2 does not count; it is context. (The 27 April agreement they cite names no
+party: "powyborczej koalicji partii demokratycznych" *(decoded from the PDF's glyph streams)* [TD-P2].) Restated on PSL's own page
+2023-08-10 ("odsunięcie PiS od władzy" [TD-P6]), in the list's paid material 2023-10-10 [TD-P8] and on Polska 2050's own page 2023-10-12
+("Koalicja z PiSem? Po moim trupie." *(decoded)* [TD-P9]); wnp's PAP copy of 2023-09-19 [TD-I11] is context. **Each member had refused PiS before the list existed** (recorded, not wired): PSL
 2022-08-09, "Ja ją wykluczam" [TD-I4]; Polska 2050 2022-07-19, "Polska 2050 nigdy nie będzie współrządzić z Prawem i
 Sprawiedliwością" [TD-I3].
 
-**TD → Konf** — cabinet-blocking, from **2023-10-10** — **PSL's half**:
-> "Z kim PSL chce budować koalicje po wyborach?" — "Z partiami demokratycznymi, nie z PiS ani nie z Konfederacją."
+**TD → Konf** — ONE-WAY, support-blocking, from **2023-08-10** (F1) — **PSL's half**:
+> "Komitet, który doprowadzi do odsunięcia PIS-u od władzy i nie dopuści do rządów populistów z Konfederacji"
 
-*gloss:* "Whom does PSL want to build coalitions with after the election?" — "With the democratic parties, not with PiS and not with
-Konfederacja." — Kosiniak-Kamysz interviewed on bochniazbliska.pl, "Dodano 10 października 2023 08:47", marked "Materiał pochodzi i jest
-finansowany przez Koalicyjny Komitet Wyborczy Trzecia Droga" — the list's own paid material *(decoded)* [TD-P8]. Earlier, PSL's page on
-registering the list's committee, 2023-08-10: "niedopuszczenie do rządów populistów z Konfederacji" [TD-P6]. **Against it:** Polska
+*gloss:* "A committee that will remove PiS from power and will not let Konfederacja's populists govern." — PSL's campaign chief Adam
+Jarubas, on PSL's own page registering the list's committee, 2023-08-10, with PSL's own post the same day: "odsunięcie PiS od władzy i
+niedopuszczenie do rządów populistów z Konfederacji" [TD-P6]. Under F1 a line: TD (PSL's half) neither joins nor supports a cabinet that
+includes Konfederacja. Restated as a coalition refusal by Kosiniak-Kamysz on bochniazbliska.pl, "Dodano 10 października 2023 08:47",
+marked "Materiał pochodzi i jest finansowany przez Koalicyjny Komitet Wyborczy Trzecia Droga" — the list's own paid material *(decoded)*
+[TD-P8]: "Z kim PSL chce budować koalicje po wyborach?" — "Z partiami demokratycznymi, nie z PiS ani nie z Konfederacją." **Against it:** Polska
 2050's vice-chairman Kobosko, 2023-09-01 *(reported)*, "Nie mogę tego wykluczyć. Jeżeli byłaby to cena za pożegnanie PiS-u, to jestem
-w stanie sobie wyobrazić taką cenę." *(decoded)* [TD-I10]; no correction found; Hołownia drew no line. The line changes no formation:
-Konfederacja's "z nikim" already refuses the pair's cabinet. **Not lines:** "Jak my zajmiemy trzecie miejsce, to macie gwarancje, że nie
+w stanie sobie wyobrazić taką cenę." *(decoded)* [TD-I10]; no correction found; Hołownia drew no line. Its cabinet half changes no formation:
+Konfederacja's "z nikim" already refuses the pair's cabinet; its support half reaches only a cabinet of Konfederacja alone (its own lines refuse
+every partner, §2) - R3 (§12) reads it cabinet-only. **Not lines toward Konfederacja:** "Jak my zajmiemy trzecie miejsce, to macie gwarancje, że nie
 ma koalicji PiS-u z Konfederacją." (2023-08-05 [TD-I9]); "Wybór jest prosty: Trzecia Droga, albo trzecia kadencja PiS" (2023-10-13
-[TD-P10]).
+[TD-P10]) - under F1 a restatement of TD → PiS.
 
-## 4. Nowa Lewica — never with Konfederacja; never with PiS (2021)
+## 4. Nowa Lewica — never with Konfederacja; never with PiS, and PiS out of power
 
-**NL → Konf** — cabinet-blocking from **2023-07-05**; **SYMMETRIC and support-blocking from 2023-08-27**:
+**NL → Konf** — cabinet-blocking from **2023-07-05**, open; its support half rests on words F2 does not count, or on words not F1's in terms (below):
 > "Dla nas Konfederacja nie mieści się w obozie demokratycznym i na pewno Lewica nie wejdzie do żadnego rządu, w którym będzie Konfederacja."
 
 and, to PO, Hołownia and Kosiniak-Kamysz: "jeżeli taką opcję rozpatrujecie, to nie liczcie na nas." *(decoded)*. *gloss:* "Lewica will
 certainly not enter any government in which Konfederacja sits … if you are considering such an option, do not count on us." —
 co-chairman Włodzimierz Czarzasty to Rzeczpospolita, on the party's own page, "Rzeczpospolita, 5 lipca 2023 r." *(decoded)* [NL-P17].
-**The support half, 2023-08-27** **(the extension)** — Czarzasty at Campus Polska Przyszłości, Olsztyn, PAP via *GazetaPrawna*, "27 sierpnia 2023":
+**The support half - words F2 does not count.** Czarzasty at Campus Polska Przyszłości, Olsztyn, PAP via *GazetaPrawna*, "27 sierpnia 2023":
 > "nie będzie takiego rządu, w którym Lewica będzie razem z Konfederacją, żeby była jasność. Wykluczam."
 
 and, asked about a 210–210 Sejm with Konfederacja at 40: "Jak oni będą mieli 40 mandatów, my kupimy 20, to za 2 miesiące kupi te 20
 ktoś inny. Polska nie jest na sprzedaż" [NL-I5]; WP: "Nie wchodzimy jako Lewica w takie deale. Nigdy z Konfederacją" *(decoded)*
 [NL-I6]. *gloss:* "no government in which Lewica sits with Konfederacja … I rule it out"; "if they have 40 seats and we buy 20, in two
 months someone else will buy them; Poland is not for sale"; "Lewica does not enter such deals". With 2023-08-31, "nie można dopuścić
-Konfederacji do współrządzenia" [NL-I7], the words refuse two things: a shared cabinet, and a Lewica cabinet resting on Konfederacja's
-negotiated votes - Konfederacja's support of a cabinet Lewica sits in, the arrangement 27 August names. Lewica's own support for a
-cabinet with Konfederacja in it is not in its words: 5 July's "nie liczcie na nas", read with its sentence ("nie wejdzie do żadnego
-rządu, w którym będzie Konfederacja"), is the cabinet refusal (fact 16), and that direction of the symmetric shape rests on the derived
-NL–Konf line (§10). The model carries the CDU's shape (Germany §1), not K-1's one-way one, which would let Konfederacja carry a cabinet
-Lewica sits in. Its cabinet half
-restated 2023-09-11, "Lewica w żadnym rządzie nie będzie stała czy siedziała przy Konfederacji." *(decoded)*, which records Zandberg's (Razem's)
-declaration as made "w naszym imieniu" *(decoded)* [NL-P25]; the support half is not restated. The derived rule already draws this pair support-blocking (§10); the declared line
-gives it its citation.
+Konfederacji do współrządzenia" [NL-I7] - under F1 a line, but it too stands only on a PAP copy. These pages - GazetaPrawna carrying PAP,
+and Wirtualna Polska - are not the broadcaster's or the agency's own page, so under F2 they date nothing: the declared line is the 5 July
+cabinet line, open, restated on NL's own page 2023-09-11, "Lewica w żadnym rządzie nie będzie stała czy siedziała przy Konfederacji."
+*(decoded)*, which records Zandberg's (Razem's) declaration as made "w naszym imieniu" *(decoded)* [NL-P25]. The derived rule draws this pair
+support-blocking both ways (§10), so the formation is as before. Restated by Dziemianowicz-Bąk on NL's own page, "Gdańsk, 15 lipca 2023 r." *(decoded)*: "Lewica nigdy nie wejdzie do rządu, w którym miałaby być skrajna
+prawica" (its title) [NL-P30] - a cabinet line.
+**Not read as F1's toward Konfederacja - READING, stated:** F1's forms name power or government (remove from power, end its rule, block its
+return, not let it govern); words to stop, defeat or shield against a party name neither. On NL's own page, Częstochowa, 2023-08-26
+[NL-P33] (titled "15 października wyborcy zdecydują czy przyszły rząd współtworzyć będzie Lewica czy Konfederacja"; the page as saved was
+modified 2026-01-29), Razem's co-chairs: Biejat, "Pokonamy ich! Zatrzymamy tę brunatną falę" *(decoded)*, and Zandberg, "Trzeba zatrzymać brunatną falę
+skrajnej prawicy … I zatrzymamy to!" *(decoded)*; NL's own page of 2023-09-11, "Jedna partia na opozycji nie pokona brunatnej siły i PiS" (its title)
+[NL-P25]; and Biedroń at NL's Łódź convention, on TVN24's own page, 2023-09-02 [NL-I13]: "My tę czarno-brunatną koalicję zatrzymamy" -
+against the PiS–Konfederacja coalition - and next, in a list of the campaign's tasks beside "w tym wyścigu musimy zająć trzecie miejsce",
+"Po pierwsze, musimy być tarczą przeciwko Konfederacji." Read as F1's, NL → Konf would be one-way and support-blocking from 2023-08-26, on
+NL's own record - Elias's (§12). No formation turns on it: the derived NL–Konf line blocks support both ways (§10).
 
-**NL → PiS** — cabinet-blocking, from **2021-05-06**:
+**NL → PiS** — cabinet-blocking from **2021-05-06**; ONE-WAY and support-blocking from **2022-09-20** (F1):
 > "Z PiS-em nigdy w życiu nie wejdę w żadną koalicję."
 
 *gloss:* "Never in my life will I enter any coalition with PiS." — Czarzasty, NL's leader, on TVN24, on the party's page published
 2021-05-06 *(decoded)* [NL-P3]; PAP via Forsal, "6 maja 2021, 08:54", "zadeklarował w czwartek lider Nowej Lewicy" [NL-I1]; restated by
-the club chairman Gawkowski 2021-11-15, votes on bills kept open [NL-P4]; for the predecessor SLD, 2019-10-17 [NL-P1]. ⚠ **No 2023 restatement by
-an NL leader was verified**; the line stands in 2023 by §621's third rule (Doubts).
+the club chairman Gawkowski 2021-11-15, votes on bills kept open [NL-P4]; for the predecessor SLD, 2019-10-17 [NL-P1]. **Earlier and less plain, not read as the start** (the READING above; §12): on the same page,
+"PiS trzeba pokonać, opozycja musi to zrobić" *(decoded)* [NL-P3], and on NL's own page of 2022-01-31, "Podstawowa sprawa to pokonanie PiS" *(decoded)* [NL-P34].
+**Under F1 from 2022-09-20:** Czarzasty on the
+party's own page, "Ważne jest to, aby te listy były zwycięskie, aby odsunąć PiS od władzy." *(decoded)* [NL-P31] (the opposition's lists, one, two or three) - NL neither joins nor supports a cabinet
+that includes PiS; restated by the National Board's resolution "w sprawie wspólnych rządów opozycji" *(decoded)* of 21 January 2023, "Ciężko pracujemy, by
+odsunąć PiS od władzy" *(decoded)* [NL-P32], and by the club chair Gawkowski on TVN24's live blog, 2023-10-12, "Startujemy w wyborach po to, żeby
+odsunąć PiS od władzy." [KO-I12] - the 2023 restatement doubt 7 asked for.
 
-## 5. Koalicja Obywatelska — no line declared; Konfederacja expressly not excluded
+## 5. Koalicja Obywatelska — PiS kept from power; Konfederacja expressly not excluded
 
-**KO → PiS:** nothing worded as a refusal — "odrodzenie Polski, które będzie możliwe bez PiS-u u władzy" (Tusk, 2023-10-12 [KO-I11])
-states a goal. **KO → Konf: not refused.** PO's spokesman Jan Grabiec, Polsat's Graffiti, 2023-09-08 *(reported)*, when "Dziennikarz
+**KO → PiS** — ONE-WAY, support-blocking, from **2022-02-09**, on KO's own record:
+> "Najwyższy czas, aby wszyscy zrozumieli, że odsunięcie PiS od władzy to nasze wspólne być albo nie być."
+
+*gloss:* "It is high time everyone understood that removing PiS from power is our common to-be-or-not-to-be." — Donald Tusk, PO's chairman
+and KO's leader, on X, his own post, created_at 2022-02-09T18:10:47Z, isEdited false [KO-P1]. Under F1 a line: KO neither joins nor supports a
+cabinet that includes PiS. **Restated on KO's own account** (@Obywatelska_KO): Tusk on TOK FM, 2022-02-17, "Chcę odsunąć PiS od władzy
+poprzez wygraną w wyborach." [KO-P2]; on TVN24's *Kropka nad i*, 2022-05-18, "Moim zadaniem jest odsunięcie PiS od władzy." [KO-P3]; and
+2023-09-20, "Mnie interesuje wyłącznie wygrana i odsunięcie PiSu od władzy" [KO-P4]; and on TVN24's *Fakty*, "12 października 2023, 20:57",
+"…mamy wspólny cel i to jest to odrodzenie Polski, które będzie możliwe bez PiS-u u władzy" [KO-I11] - the words doubt 1 named, which F2
+dated until KO's own record was swept. **Dated by KO's own record** (F2: "a date from the party's own record always wins"): the earliest
+pledge in F1's form found by a sweep of KO's own pages and posts - platforma.org, koalicjaobywatelska.pl, and the X posts of Tusk, @Obywatelska_KO and the
+spokesman Grabiec, from January 2022 to polling day, through the Internet Archive's index and X's syndication endpoint (`raw/declarations_2023/fetch_log.md`).
+Tusk returned to lead PO in July 2021, and 2021 was not swept (§12). One way: nothing refuses PiS's support for a cabinet KO sits in. **Earlier
+and less plain, not read as the start** (§4's READING; §12): on KO's own account, quoting Tusk at PO's programme congress, 2022-01-29, "Dla Was
+wszystkich i z Wami wszystkimi, którzy macie dość brudu, który zalał Polskę - obalimy te filary złej władzy." [KO-P5] - power is named, PiS is
+not, and the pledge is against its pillars; beside it, "Przyrzekam Wam: w najbliższych miesiącach dogonimy, a w wyborach przegonimy PiS." is
+defeat (out of tree: `KO/own/x_Platforma_org_2022-01-29_1487416468652367877.json`).
+
+**KO → Konf: not refused.** PO's spokesman Jan Grabiec, Polsat's Graffiti, 2023-09-08 *(reported)*, when "Dziennikarz
 dopytywał czy ewentualna koalicja z Konfederacją jest zdecydowanie wykluczona.": "Nie wiem co się stanie z Konfederacją po wyborach.",
-floating "A jeśli nie pójdą, to może uda się stworzyć chociażby rząd mniejszościowy" [KO-I4]; Tusk, asked about it 2023-09-19, drew no
+floating "A jeśli nie pójdą, to może uda się stworzyć chociażby rząd mniejszościowy, który pozwoli odsunąć PiS od tych narzędzi władzy, które
+są nadużywane" *(decoded)* [KO-I4]; Tusk, asked about it 2023-09-19, drew no
 line [KO-I7]. Konfederacja's own lines (§2) refuse the pair.
 
 ## 6. The positive intents — recorded, not wired
@@ -198,18 +250,20 @@ Polish candidacies; a later vintage that declares one is Elias's.
 | # | line | game shape | blocksSupport | oneWay | from | until | basis |
 |---|---|---|---|---|---|---|---|
 | 1 | PiS → Konf | cabinet | false | false | 2023-07-23 | Open | [PIS-P1], [PIS-I1] |
-| 2–6 | Konf → PiS, KO, TD, NL, MN | cabinet | false | false | 2023-06-20 | 2023-06-26 | [KONF-I4]; replaced by [KONF-I8] - the extension |
-| 7 | Konf → PiS | cabinet | false | false | 2023-07-06 | 2023-07-13 | [KONF-P2]; its end the extension's |
-| 8 | Konf → PiS | one-way, support-blocking | true | true | 2023-07-13 | Open | [KONF-I14] + §2 - the extension |
-| 9 | Konf → KO | one-way, support-blocking | true | true | 2023-07-13 | Open | [KONF-I14] + §2 - the extension |
-| 10–12 | Konf → TD, NL, MN | cabinet | false | false | 2023-08-02 | Open | [KONF-P1] |
-| 13 | TD → PiS | cabinet | false | false | 2023-05-15 | Open | [TD-I5] + §3 - the extension (TD's own record from 2023-10-10, [TD-P8]) |
-| 14 | TD → Konf | cabinet (PSL's half) | false | false | 2023-10-10 | Open | [TD-P8] |
-| 15 | NL → PiS | cabinet | false | false | 2021-05-06 | Open | [NL-P3], [NL-I1] |
-| 16 | NL → Konf | cabinet | false | false | 2023-07-05 | 2023-08-27 | [NL-P17]; its end the extension's |
-| 17 | NL → Konf | symmetric, support-blocking | true | false | 2023-08-27 | Open | [NL-I5], [NL-I6], [NL-I7] - the extension |
+| 2 | PiS → KO | one-way, support-blocking (F1) | true | true | 2023-09-08 | Open | [PIS-P2] |
+| 3 | Konf → PiS | cabinet | false | false | 2023-06-20 | 2023-07-06 | [KONF-I4] - F2 |
+| 4 | Konf → KO | cabinet | false | false | 2023-06-20 | 2023-07-13 | [KONF-I4] - F2 |
+| 5–7 | Konf → TD, NL, MN | cabinet | false | false | 2023-06-20 | Open | [KONF-I4] - F2; [KONF-P1] |
+| 8 | Konf → PiS | one-way, support-blocking (F1) | true | true | 2023-07-06 | Open | [KONF-P2] |
+| 9 | Konf → KO | one-way, support-blocking (F1) | true | true | 2023-07-13 | Open | [KONF-I14] - F2 |
+| 10 | TD → PiS | one-way, support-blocking (F1) | true | true | 2023-05-15 | Open | [TD-P11] |
+| 11 | TD → Konf | one-way, support-blocking (F1; PSL's half) | true | true | 2023-08-10 | Open | [TD-P6] |
+| 12 | NL → PiS | cabinet | false | false | 2021-05-06 | 2022-09-20 | [NL-P3] |
+| 13 | NL → PiS | one-way, support-blocking (F1) | true | true | 2022-09-20 | Open | [NL-P31], [NL-P32] |
+| 14 | NL → Konf | cabinet | false | false | 2023-07-05 | Open | [NL-P17] |
+| 15 | KO → PiS | one-way, support-blocking (F1) | true | true | 2022-02-09 | Open | [KO-P1], [KO-P2] |
 
-On polling day, 2023-10-15, lines 1, 8–15 and 17 stand. No candidacy, in-or-against or support-role fact.
+On polling day, 2023-10-15, lines 1, 2, 5–11 and 13–15 stand. No candidacy, in-or-against or support-role fact.
 
 ## 9. The reference — what actually formed
 
@@ -222,16 +276,15 @@ On polling day, 2023-10-15, lines 1, 8–15 and 17 stand. No candidacy, in-or-ag
 
 ## 10. Not here — DERIVED
 
-**No sourced line either way:** PiS–KO, PiS–MN, KO–TD, KO–NL, KO–MN, TD–NL, TD–MN, NL–MN. **No sourced line in this direction:** PiS →
+**No sourced line either way:** PiS–MN, KO–TD, KO–NL, KO–MN, TD–NL, TD–MN, NL–MN. **No sourced line in this direction:** PiS →
 TD, PiS → NL (adversarial words only), KO → Konf (expressly not excluded), MN → Konf. Nothing in play marks a formation that turns on them (§12, doubt 14).
 
 **What DERIVED draws here** is whatever `DerivedRedLines.From` draws on the seed positions (`PartySystems.PolandParties`, TD as its D2
 mean) at its two gaps (`DerivedRedLines.SocialGap`, support-blocking; `DerivedRedLines.IdeologicalGap`, cabinet);
 `PolishDeclarationsDiagnostic` prints each line it draws with its basis. Measured 2026-10-04 (§776): PiS–NL and NL–Konf, both
-support-blocking, and nothing else - MN has no CHES position, and PiS–KO, PiS–TD and KO–Konf fall under both gaps. ⚠ So DERIVED on
-PiS–KO means *no line at all*, and §12 measures what that does. The cabinet of record, KO + TD + NL, carries no line and is formable. **The standard applied:** an aim to remove
-a party from power, or keep it out, is not a line; words about the declarer's own conduct toward that party's government are ("Nie
-zamierzamy przedłużać władzy PiS-u").
+support-blocking, and nothing else - MN has no CHES position, and PiS–KO, PiS–TD and KO–Konf fall under both gaps. PiS–KO now carries the declared lines of F1 (§1, §5). The cabinet of record, KO + TD + NL, carries no line and is formable. **The standard -
+Elias's ruling F1 (2026-10-05), reversing §776's:** a pledge to keep a party from power - remove it, end its rule, block its return, not let
+it govern - is a line: the declarer neither joins nor supports a cabinet that includes it.
 
 ## 11. Kept but not relied on
 
@@ -246,74 +299,107 @@ Saved and read, dropped by the sweeps' verifiers — the files stay in the captu
   mamy z nimi punktów wspólnych" - a restatement of Konf → PiS and KO); out of tree only, `Konf/pch24_mentzen-mozna-zycie-stracic.html`.
 - **A newsroom's words:** rp.pl 2019-10-11; Wprost 2023-10-04; the Irish Times 2023-10-13; Notes from Poland 2023-04-02 and
   2023-10-02; PAP's lead of 2023-09-15 (Biedroń's own words on that page are re-admissible).
-- **Not a refusal or not a candidacy:** Tusk's "Polska będzie wolna od PiS-u" (2023-10-13), Budka's "prawdziwą alternatywą"
-  (2023-08-09), Tusk's tweet answering TD's invitation (2023-06-09); Budka's "najlepszym kandydatem" (2023-03-02); Kaczyński's 2022
-  forecast on Morawiecki.
+- **Restatements of KO → PiS, all later than KO's own start (§5)** - set aside by the re-dating, not by the verifiers; the tagged pages are held in
+  the tree: Budka at KO's campaign launch, on TVN24's own page credited "Źródło: TVN24, PAP" *(decoded)*, 2023-08-09 [KO-I13] - KO "jest prawdziwą
+  i jedyną alternatywą, żeby zatrzymać tę złą władzę"; Grabiec's "odsunąć PiS od tych narzędzi władzy" (2023-09-08 [KO-I4]); and Tusk's own post
+  answering TD's invitation, 2023-06-09, "Z PiS konsultować możemy warunki ich kapitulacji." (out of tree:
+  `KO/own/x_donaldtusk_2023-06-09_1667207263545638922.json`; Interia's page had quoted it in another order) - a refusal in other words.
+  **Later words toward PiS, not F1's in terms** (§4's READING): Budka's "Października 15. pogonimy Kaczyńskiego" [KO-I13], aimed at PiS's
+  chairman; Tusk's "żeby pogonić to zło" (2023-09-19 [KO-I7]); and Tusk's "Polska będzie wolna od PiS-u" (2023-10-13, OKO.press, a portal). **Not a refusal or not a candidacy:** Budka's "najlepszym kandydatem" (2023-03-02); Kaczyński's 2022 forecast on Morawiecki.
 - **Out of time or mis-dated:** Kaczyński's 2019 words on the European list (reopened by him on 2023-06-28); rp.pl's interview with
   Kosiniak-Kamysz, submitted as 2023-08-18 but published "17.08.2023 21:00" (re-dated, it only restates TD → PiS).
 
-## 12. Doubts — what the record leaves to Elias, and what was measured
+## 12. Doubts — ruled by F1, F2 and F7 (2026-10-05), what is left, and what was measured
 
-**Measured** (2026-10-04, §776; `PolishDeclarationsDiagnostic` prints each reading's government as a MEASURED line). Two chambers were formed, each by
-its own investiture rule (positive) with the game's compatibility, under six readings:
+**Elias's rulings:** F1 (doubt 1) *"Yes: 'keep X from power' is a red line. A party that declared it neither joins nor supports a cabinet
+that includes X. That rules out PiS+KO and brings back the real KO+TD+NL."* F2, the dating (the header). F7 (the smaller doubts) *"As you
+recommend, with one acceptance test: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL. Any doubt that
+blocks that result is decided in favour of the record; name which one in the commit."*
+
+**Measured** (2026-10-05, `PolishDeclarationsDiagnostic`, the run `nf1a`; each reading's government printed as a MEASURED line). Two chambers, each formed by
+its own investiture rule (positive) with the game's compatibility, under four readings:
 - R0, the derived lines alone;
-- R1, the declarations of polling day as recorded, which is what the game reads;
-- R2, R1 with TD → PiS read support-blocking (doubt 2);
-- R3, R1 with a "keep X from power" pledge read as a PiS–KO line (doubt 1);
-- R4, both;
-- R5, the party's own record alone - §621 as written, so every declared line is cabinet-only (the extension's question).
+- R1, the declarations of polling day as recorded - what the game reads;
+- R2, R1 without the PiS–KO pair (doubt 1 read as aims, as before F1);
+- R3, R1 with every support half read cabinet-only.
 
-| reading | the chamber of record (PiS 194, KO 157, TD 65, NL 26, Konf 18) | the played count (seed 777: PiS 200, KO 123, TD 78, NL 45, Konf 14) |
+| reading | the chamber of record (PiS 194 · KO 157 · TD 65 · NL 26 · Konf 18) | the played count (seed 777: PiS 200 · KO 123 · TD 78 · NL 45 · Konf 14) |
 |---|---|---|
 | R0 | PiS+KO+TD on Konf's support | PiS+KO+TD on Konf's support |
-| R1 | KO+TD on NL's support | PiS+KO on TD's support |
+| R1 | KO+TD on NL's support | KO+TD+NL |
 | R2 | KO+TD on NL's support | PiS+KO |
-| R3 | KO+TD on NL's support | **KO+TD+NL** |
-| R4 | KO+TD on NL's support | **KO+TD+NL** |
-| R5 | KO+TD on NL's support | PiS+KO on TD's and Konf's support |
+| R3 | KO+TD on NL's support | KO+TD+NL |
 
-**No game forms the chamber of record.** A Polish start seats the government of record; a Polish game forms its own count, and the game's own
-entry - the government the night stores, `GovernmentFormation.ViewOf` on the election's dated reading - forms that count as R1 does,
-cabinet and support. The Polish film's warm-up formed PiS+KO
-after the wiring, where it formed PiS+KO+TD before.
+**F7's acceptance holds:** on the played count - a Polish game's own 2023 election, on a world stepped from the start with no policy - the
+game's own entry (`GovernmentFormation.ViewOf` on the election's dated reading) forms R1's government, KO+TD+NL, and
+`PolishDeclarationsDiagnostic` asserts it. No doubt blocks it, so none is decided against its built reading. READING, stated: "a world that
+follows history" is read as a Polish game's own count on a world stepped from the start with no policy. The acceptance holds there because that
+count carries the vote model's flagged misses (KO under, NL over - §767's lineage), which give NL the weight to outscore the KO+TD minority; on
+the record's own count the same lines, with the game's reader, seat KO+TD with NL outside (the table; check (g)) - Elias's (below). R2 shows
+what F1's PiS–KO pair changes, F1's other lines standing in it (TD → PiS among them, which takes away the TD support §776's R1 measured): read
+as aims, the PiS–KO pledges leave the game's count to PiS+KO. On the chamber of record - which no game forms - the declarations seat KO and TD
+with NL supporting from outside, where in fact NL took ministries (§9): the formation's own preference for the smaller cabinet, kept as
+built (F7).
 
-On the played count:
-- **The declarations as recorded take TD out of PiS's cabinet, but still seat PiS+KO.**
-- **Doubt 1 decides the played 2023 government.** Read as a line, it seats exactly the cabinet of record, KO+TD+NL.
-- **Doubt 2 decides only TD's support.**
-- **The reading by §621 as written (R5)** adds Konfederacja's support to PiS+KO.
+**The doubts, as ruled** (the sweep's list of §776, each now decided):
+1. PiS–KO - RULED (F1): a line both ways - PiS → KO from 2023-09-08 [PIS-P2], KO → PiS from 2022-02-09 [KO-P1] (KO's own record, swept for F2's "always wins"; TVN24's page of 2023-10-12 [KO-I11] dated it before), each one way and support-blocking.
+2. TD → PiS's shape - decided by F1: Polska 2050's own page of the list's founding day [TD-P11] pledges to remove PiS from power, so the line is one-way and support-blocking from 2023-05-15. Kobosko's magazine interview of 2023-06-30 [TD-I13] is context under F2. The saved page was edited 2023-07-01 (below).
+3. Keying TD (one key, two parties) - as built (F7): the list's founding words key it; the members' earlier refusals are recorded, not carried. Under F2 the founding day's own-record words are Polska 2050's [TD-P11]; PSL's half keys TD → Konf from its own page [TD-P6].
+4. Konfederacja's June wobble - decided by F2 as read (the header's second READING): the 26 June opening survives only on Super Express's interview - a newspaper's own programme - and its relays by PAP and RMF24, none the broadcaster's or the agency's own page for those words, so it lifts nothing; the 20 June lines stand until the stronger lines replace them (PiS 6 July, KO 13 July) or run on (TD, NL, MN).
+5. Konfederacja's support half - decided by F1: "chcemy zakończyć rządy PiS" (its own post, 2023-07-06 [KONF-P2]) and "Nie zamierzamy umożliwić powrotu Tuskowi do władzy" (TVN24, 2023-07-13 [KONF-I14]) are lines; one way, as built.
+6. 'Z nikim' as cabinet pair lines - as built (F7): no party-rule kind, no NoSupportRole reading.
+7. NL → PiS's 2023 restatement - answered under F1: NL's own pages carry "odsunąć PiS od władzy" *(decoded)* from 2022-09-20 [NL-P31], its National Board's resolution of 21 January 2023 [NL-P32], and the club chair on TVN24's live blog of 2023-10-12 [KO-I12]. Żukowska's live-blog words stay unread (her role is not on the page).
+8. NL → Konf's support half - decided by F2 and by F1's reading: its plain words (2023-08-27, 2023-08-31) stand only on PAP copies and a portal, which F2 does not count; the words on NL's own record and on TVN24's own page ([NL-P33], [NL-I13]) stop, defeat or shield against Konfederacja and are not read as F1's (§4's READING) - so the declared line is the 5 July cabinet line, open; the derived line blocks support both ways (§10).
+9. Dates marked *(reported)* - as built; under F2 a page that is not the broadcaster's or the agency's own dates nothing, so those pages are context.
+10. Secondary or translated sources - as built: none is load-bearing.
+11. No Polish candidacy - as built.
+12. The 2019 chamber's keys - as built: not proposed (E2's scope is 2023). The 2019 lists' lines are recorded, not carried: PSL 2020-09-14 [TD-I14] (Rzeczpospolita reporting Polsat News - under F2 it dates nothing) and 2022-08-09 [TD-I4], SLD 2019-10-17 [NL-P1].
+13. PiS → Konf - as built: it stands open.
+14. Marking the pairs left DERIVED - as built (F7): nothing marks them; the derived rule draws no line on them.
+15. Housekeeping - as recorded.
 
-On the chamber of record every reading of the declarations seats the record's majority: KO and TD with NL supporting from outside, where in
-fact NL took ministries (§9). That is the formation's own preference for the smaller cabinet, not a declaration's.
+**Left to Elias (no formation turns on any of them but which world F7's test means - read as the record's count, it owes one):**
+- PiS → KO's start: Kaczyński's TVN24 words of 2023-07-23, "Ten człowiek nie może rządzić Polską.", of Tusk [PIS-I1], would start it then if a pledge against a party's leader keys the party, as §2's premise keys Tusk to KO for Konfederacja - and only if the page counts under F2: it is credited "Źródło: TVN24, PAP", so whether these are TVN24's own words or PAP's wire relayed (which the header's reading says dates nothing) is Elias's too. PiS's own page of the day [PIS-P1] carries "Nie wierzcie we wspólne rządy PiS i Konfederacji!", not these words.
+- KO → PiS's start: dated 2022-02-09 by Tusk's own post [KO-P1], the earliest pledge in F1's form the sweep of KO's own record found (from
+  January 2022); read as F1's, KO's own account's "obalimy te filary złej władzy" (2022-01-29 [KO-P5], §5) would start it then. Tusk returned to
+  lead PO in July 2021 and 2021 was not swept, so an earlier pledge is not excluded. No game date turns on it: Poland opens at the standard run-up
+  before its 2023 polling day (`WorldClock.StartDate`), and the line stands from the start either way.
+- NL → Konf's support half: read as F1's, Razem's co-chairs on NL's own Częstochowa page (2023-08-26 [NL-P33]) would make it one-way and
+  support-blocking from that day, on NL's own record; Biedroń's "tarczą przeciwko Konfederacji" (TVN24's own page, 2023-09-02 [NL-I13]) would
+  date it from 2023-09-02 only if the own page did not count (§4's READING).
+- NL → PiS's start: read as F1's, "PiS trzeba pokonać" (NL's own page, 2021-05-06 [NL-P3]) makes the line support-blocking from its first
+  day, and facts 12 and 13 become one; no formation turns on it (both dates fall before Poland's start, `WorldClock.StartDate`).
+- Which world F7's test means: the game's own count (as installed - it passes, and the cabinet-size preference is kept as built) or the
+  record's count. If the record's, the formation's preference for the smaller cabinet is the doubt that blocks KO+TD+NL, F7 decides it in
+  favour of the record (NL in the cabinet), and a formation change is owed. On either reading, correcting the vote model's lineage misses
+  would also fail the check.
+- F2's two readings in the header: whether a broadcaster's page relaying another outlet's interview from an agency's wire counts ([KONF-I11]),
+  and whether a newspaper's own video programme makes it the broadcaster ([KONF-I8], "Wieczorny Express"). Under either, the June opening is
+  dated 2023-06-26: facts 3–7 end that day and Konfederacja → TD, NL and MN restart on 2023-08-02 [KONF-P1] - no polling-day line changes.
+- TD → PiS's start: the saved [TD-P11] was edited 2023-07-01, after the date it gives, and no other saved 15 May source carries the pledge
+  ([TD-I5] lacks it); if the edit added it, the line starts on PSL's own page, 2023-08-10 [TD-P6] - no polling-day line changes.
+- "Always wins" read as §652's condition (the header's first READING): the own record dates a declaration only where it carries it earlier. Read
+  literally - the own record's date wins even when later - the June lines give way: facts 3 and 4 go (Konfederacja's own words come toward PiS
+  on 2023-07-06 [KONF-P2] and toward KO on 2023-08-02 [KONF-P1], neither before the fact ends), facts 5–7 start 2023-08-02 [KONF-P1], and fact 9
+  stands from 2023-07-13 (no page of its own saved before the vote carries the pledge on Tusk) - no polling-day line changes. KO → PiS holds
+  either way: [KO-P1] is KO's own pledge.
+- Konfederacja's own record (konfederacja.pl, and the posts of Mentzen, Bosak and the party) has not been swept as KO's was: an earlier own-record
+  refusal would date facts 3–7 from it, an earlier pledge to keep Tusk from power fact 9, an earlier "zakończyć rządy PiS" fact 8. Its sweep is the
+  next record's; no polling-day line turns on it.
+- Whether RMF24's write-up of its own debate quotes Mentzen verbatim on 2023-06-20 [KONF-I4]: it gives his answers first-person, in a Q&A
+  laid out by an editor ("Opracowanie: Jan Matoga" *(decoded)*), and RMF's own post of the same moment renders the answer in other words ("nie
+  zamierzam robić koalicji z PiS; w przyszłej kadencji nie będę w koalicji z nikim") [KONF-I26]. Read as verbatim here (§776's reading; the verifiers' reading is recorded in `COMPLETED.md` §780). The page's `dateModified`,
+  2023-08-04T13:00:00+02:00, is the same stamp RMF24 put on an unrelated page and every RMF24 page saved is stamped on the hour - a site
+  restamp, not an edit anyone saw. If not verbatim, the June lines go, and Konfederacja's lines start on its own record (2023-07-06, 2023-08-02) and TVN24's page
+  (2023-07-13) - no polling-day line changes.
 
-**The LOW CONFIDENCE flag.** E2 ruled it for the derived lines *until* this sourcing. The sourcing landed the day the ruling was given, so the
-flag was never shown. No surface marks the pairs left DERIVED (doubt 14's note).
-
-The sweep's own list, as its synthesis wrote it - the record's notes in square brackets; register tags added and doubt 6's attribution narrowed in place (§776's review):
-
-1. PiS–KO has no line at all. Neither side's words were read as a refusal: PiS's "Zablokujemy powrót do władzy Platformy Obywatelskiej i D. Tuska." [PIS-P2] and KO's "bez PiS-u u władzy" [KO-I11] state aims. The derived rule draws nothing either [record: under both of the derived rule's gaps, §10]. On the 2023 count a formation can therefore seat PiS + KO (351). Measure before wiring. [record: measured above - on the played count this doubt decides the government] Elias to rule whether a 'block X's return to power' pledge is a line. Konfederacja's 13 July words, which are wired as support-blocking, pair an explicit coalition refusal with "nie zamierzamy umożliwić powrotu Tuskowi do władzy"; PiS's words carry no refusal.
-2. TD → PiS is cabinet-only by its words, and PiS–TD carries no derived line [record: under both gaps, §10]. The model can therefore seat a PiS cabinet on TD's support [record: it seats none - `CoalitionFormation.SupportersOf` gives a PiS-alone cabinet no supporter, TD's best party left outside being KO; what the model seats with TD's support is PiS+KO, §12's table]. TD in fact voted against Morawiecki (DERIVED: the 266 votes against equal KO + TD + NL + Konf). Evidence for a support-blocking reading: "Wybór jest prosty: Trzecia Droga, albo trzecia kadencja PiS" (2023-10-13 [TD-P10]), the parallel of Konfederacja's "nie planujemy przedłużyć o trzecią kadencję rządów PiS-u" [record: its tagged page renders it "przedłużyć o trzecią kadencję rządów PiS-u", [KONF-I19]], which is read as support-blocking; Hołownia's "odsunąć PiS od władzy" *(decoded)* (2023-05-15 [TD-P11]); PSL's "odsunięcie PiS od władzy" (2023-08-10 [TD-P6]); Kobosko's "nie ma mowy o naszej współpracy z PiS" (a vice-chair, 2023-06-30 [TD-I13]). Measure both readings as a diagnostic row before Elias rules. [record: measured above as R1 and R2 - on the played count this doubt decides only TD's support of PiS+KO]
-3. Keying TD (one key, two parties). TD → PiS starts 2023-05-15, the first words spoken for the joint list. Both members had refused PiS earlier (PSL from 2020-09-14 [TD-I14], restated 2022-08-09 [TD-I4]; Polska 2050 from 2022-07-19 [TD-I3]), so a composite start of 2022-07-19, when both refusals stood, is the alternative; that is a ruling on whether member parties' lines key a joint list. TD → Konf rests on PSL's half alone ([TD-P8], [TD-P6]). Polska 2050's vice-chair Kobosko would not rule Konfederacja out (2023-09-01 [TD-I10]), no correction was found, and Hołownia never said either way. The line changes no formation, because Konfederacja's own lines block the pair. [record: PSL's leg of the 2022-07-19 alternative rests on [TD-I14], Rzeczpospolita's report of Kosiniak-Kamysz on Polsat News - neither the party's own record nor a broadcaster's or an agency's page; under the stated rules PSL's first dated refusal is 2022-08-09 [TD-I4], so the joint start those rules support is 2022-08-09, and 2022-07-19 would need a further extension]
-4. Konfederacja's June wobble. The 2023-06-20 pledge stood for six days. On 2023-06-26 Mentzen put "everything on the table" for PiS or PO, and said he had nothing against anyone ("ktoś") who would adopt the tax programme; in the same interview he said "Nie idziemy do tych wyborów, żeby usiąść przy stoliku z PiS, czy z PO…". The timeline reads 26 June as replacing all five lines, as RMF24 did when it reported a change. Two alternatives: omit the one-week facts and start each Konf line at its post-wobble restatement; or hold 26 June to PiS and PO (the question named Kaczyński and Tusk) and keep TD, NL and MN from 2023-06-20. The Super Express interview may date from 2023-06-22, its embedded video's date. [record: the page's createdDate, 2023-06-24T22:58+02:00, falls between the video's upload (2023-06-22T22:22Z, 23 June in Warsaw) and Super Express's Monday print date, 26 June, as PAP gives it [KONF-I10] - a bound, not a separate end]
-5. Konfederacja's support half rests on "Nie zamierzamy przedłużać władzy PiS-u" and "…umożliwić powrotu Tuskowi do władzy" (2023-07-13, as TVN24's report dates them) and on 2023-08-24's "ani przedłużać … ani ułatwiać". Neither is a confidence-vote rule in terms, and on 2023-10-11 Mentzen kept bill-by-bill trades open. The shape is one-way because nothing refuses PiS's or KO's support for a cabinet Konfederacja sits in. The line held after the vote: Bosak on X, 2023-10-16, "nasza deklaracja z kampanii wyborczej, że nie wejdziemy w koalicję ani z PiS ani z PO, dzień po wyborach jest nadal aktualna" [KONF-P3]. [record: [KONF-P3] carries the coalition half only ("nie wejdziemy w koalicję ani z PiS ani z PO"); its "Nie sprzedamy się" is not a support line in terms (§10's standard)]
-6. 'Z nikim' is carried as cabinet pair lines (Konf → TD, NL, MN). Those reach only the 2023 roster: not a created party (SP-4), and not the 2019 chamber's SLD and PSL keys. A party-rule kind ('no coalition with anyone') would reach them. MN is never named and won no seat in 2023. The 2 August words are Wipler's, counted as the party's because the party published them under its own headline. Bosak's "dwie drogi: współrządzenie albo opozycja" (2023-07-16), read together with 'z nikim', would make Konfederacja pure opposition. That NoSupportRole reading is left to Elias; it changes no 2023 formation.
-7. NL → PiS rests on 2021 statements (the leader on 2021-05-06 [NL-P3]; the club chair on 2021-11-15 [NL-P4]) and on SLD's 2019 words [NL-P1]. No 2023 restatement at leader level was verified. An unverified lead: TVN24's live blog of 2023-10-12 (KO/tvn24_2023-10-12_relacja_na_zywo.html, entry 68167, publishDate 2023-10-12T16:39:42+02:00) carries "Żukowska: Nigdy nie będziemy rządzili z PiS-em, nigdy nie będziemy rządzili z Konfederacją." The line is present in the saved bytes, but her role is not stated on the page. Verify the role and provenance before relying on it. The derived PiS–NL line is support-blocking regardless.
-8. NL → Konf is support-blocking from 2023-08-27. The basis: refusing deals and bought Konfederacja seats (its negotiated votes for a Lewica cabinet), plus "nie liczcie na nas" (2023-07-05) [record: the cabinet line's words, fact 16 - not a support refusal; Lewica's own support direction rests on the derived line, §4] and "nie można dopuścić Konfederacji do współrządzenia" (2023-08-31, an electoral appeal). Unsolicited Konfederacja votes are not addressed. The derived rule already draws NL–Konf support-blocking, so the shape changes no formation. Zandberg (Razem's co-chair) and Dziemianowicz-Bąk (an MP in July, [NL-P30]) count through NL's own pages ("w naszym imieniu" *(decoded)*; "bardzo jednoznaczną deklarację").
-9. These dates are the article's, marked (reported): Super Express 2023-07-11 (its createdDate is 2023-07-09); WP 2023-06-08; GazetaPrawna 2023-09-20; naTemat 2023-09-01; Polsat 2023-09-08; TVN24 2023-07-13; Super Express 2023-06-26. The date 2023-09-03 is derived from 'w niedzielę'. The 27 April agreement's quote was decoded from the PDF's glyph streams by the sweep's verifier and not re-decoded here; it is the only quote not found as text in the saved bytes. [record: also *(reported)* - RMF24 2023-06-20, TVN24 2023-07-16, TVN24 2023-10-11, Interia 2023-03-30; Krytyka Polityczna 2023-06-30 [TD-I13] (the interview falls after the 24 June convention it mentions); Rzeczpospolita 2020-09-14 [TD-I14] (words on Polsat News, no day given). The 2023-09-03 date belongs to the PCh24/PAP page of 2023-09-04, Mentzen in Bydgoszcz (the draft's [KONF-I21]), which the record no longer cites: §11, out of tree only]
-10. Secondary or translated sources, none of them load-bearing: Bosak in Suwałki (2023-09-27) exists only in PAP's English, via the Internet Archive. Kosiniak-Kamysz on 2023-04-27 and Biedroń on 2023-10-01 exist only in Notes from Poland's English. Wprost's 2023-09-19 rendering of Tusk is edited (Polsat's own text differs). psl.pl did not answer, so PSL's pages are Internet Archive id_ captures; the agreement PDF's SHA-1 matches the archive's digest.
-11. No party declared a candidacy, so CandidacyRefuses stays Sweden-only by absence of input. That is not a ruling on Polish candidacies. After the vote, and not relied on: Ast on 2023-10-18 (PiS would indicate Morawiecki), Grabiec on 2023-10-17 ("Nie, nie jest kandydatem") and PO's board on 2023-10-19. The President designated Morawiecki on 2023-11-13.
-12. The 2019 chamber is seated before the 2023 election under its own keys (PartySystem Poland2019: SLD 49, PSL 30, MN 1). The verified member lines (PSL → PiS 2020-09-14 [TD-I14] and 2022-08-09; SLD → PiS 2019-10-17), and Konfederacja's 'z nikim', could key SLD and PSL for a mid-term round. They are not proposed here, because E2's scope is the 2023 declarations.
-13. PiS → Konf: Rzeczpospolita's columnist doubted that PiS meant it (2023-07-24 [PIS-I2]). After the election Morawiecki reportedly said he could imagine a coalition with Konfederacja (November 2023; not fetched). A later vintage may lift the line.
-14. E2's LOW CONFIDENCE flag was ruled to hold until this sourcing. Whether the eight pairs left DERIVED keep it is Elias's call. The positive intents (KO → TD and NL, TD → KO, NL → KO and TD) cannot be wired, because no positive FactKind exists. The cabinet of record (KO + TD + NL) carries no line and stays formable. [record: on that footing - no surface marks the pairs left DERIVED: the only DERIVED caveat is keyed on `DeclaredRedLines.IsSourced`, which Poland meets, and the derived rule draws no line on the eight pairs, so no line carries a DERIVED basis for them. Whether they are marked at all, with LOW CONFIDENCE or otherwise, is the question - and until D-PL's night is built a mark reaches a Polish player only on the verdict that ends the run - the out-of-parliament sentence is the one verdict that carries the formation's caveat and is shown without a night, as the game-over reason; the in-office sentence is dropped unshown]
-15. Housekeeping: the PiS folder has no SHA256SUMS file (its digests are in the record); every other folder's checksum file matches its files. The sweeps' search budget ran out before searches on Braun, MN and Konfederacja–TD; no MN statement was found.
-
-## Source register (saved 2026-10-04; each file held under `raw/declarations_2023/`, the path below relative to it, and out of tree in `PoliSim-captures/sources/poland_declarations_2023/`)
+## Source register (saved 2026-10-04; [NL-P31] and [NL-P32] brought into the tree 2026-10-05 for F1, [NL-P33], [NL-P34], [NL-I13] and [KONF-I26] for §4 and §12, [KO-I13] (now cited in §11), and [KO-P1] to [KO-P5] saved 2026-10-05 by the sweep of KO's own record, for §5; each file held under `raw/declarations_2023/`, the path below relative to it, and out of tree in `PoliSim-captures/sources/poland_declarations_2023/`)
 
 | id | URL | publisher | page's own date | file | SHA-256 |
 |---|---|---|---|---|---|
 | [PIS-P1] | https://pis.org.pl/dobro-polski-jest-dla-nas-najwazniejsze/ | PiS (pis.org.pl) | "23.07.2023" | `PiS/pis_2023-07-23_stawiski-dobro-polski.html` + `PiS/pis_wpjson_post_11056.json` | `942aaca7fb3121016f34748e66b7a9fac0f2fbd2cb767c903bae2af66095eaf6` + `814e512f4d9080303fba2d3763533fe2a8eef1a553d47ec92dc63336c9c17da1` |
 | [PIS-P2] | https://pis.org.pl/zablokujemy-powrot-do-wladzy-po/ | PiS | "08.09.2023"; "W piątek 8 września" | `PiS/pis_2023-09-08_tomaszow-zablokujemy-powrot-po.html` + `PiS/pis_wpjson_post_11116.json` | `a784c36e8cbfe1cb92780763dc18cbb262718bc101dddb1ff62608afcaa5a998` + `7c2a7475bc90ec90fd222c71344eee5571d6fb707b8e3a6c768502297095933c` |
-| [PIS-I1] | https://tvn24.pl/wybory-parlamentarne-2023/jaroslaw-kaczynski-prawo-i-sprawiedliwosc-nie-bedzie-rzadzilo-z-konfederacja-st7255108 | TVN24 | 2023-07-23T14:19Z; "oświadczył w niedzielę" | `PiS/tvn24_2023-07-23_kaczynski-nie-bedziemy-rzadzili-z-konfederacja.html` | `72249382f30d4d70aa066b6eeeba4e96b68646486e9215d3f3b4b0c16a5e81da` |
+| [PIS-I1] | https://tvn24.pl/wybory-parlamentarne-2023/jaroslaw-kaczynski-prawo-i-sprawiedliwosc-nie-bedzie-rzadzilo-z-konfederacja-st7255108 | TVN24 (with PAP: "Źródło: TVN24, PAP") | 2023-07-23T14:19Z; "oświadczył w niedzielę" | `PiS/tvn24_2023-07-23_kaczynski-nie-bedziemy-rzadzili-z-konfederacja.html` | `72249382f30d4d70aa066b6eeeba4e96b68646486e9215d3f3b4b0c16a5e81da` |
 | [PIS-I2] | https://www.rp.pl/komentarze/art38774561-michal-plocinski-jaroslaw-kaczynski-zaatakowal-konfederacje-dlaczego-wlasnie-teraz | Rzeczpospolita (a column) | 24.07.2023 14:41 | `PiS/rp_2023-07-24_plocinski-kaczynski-zaatakowal-konfederacje.html` | `b5c6bbe6caf62730e58c23a1922d1e1109a9f871f7e21b96db0627b571b3bd8b` |
 | [PIS-I3] | https://wiadomosci.wp.pl/pis-nie-chce-konfederacji-w-koalicji-choc-nie-bedzie-jej-atakowac-6906112604461568a | Wirtualna Polska | "8 czerwca 2023, 15:00" | `PiS/wp_2023-06-08_pis-nie-chce-konfederacji-w-koalicji.html` | `01e204273e7df8f8b33cf2e979321dd5f234a8a277777a236e326b4bc1f2fd61` |
 | [PIS-I4] | https://tvn24.pl/polska/jaroslaw-kaczynski-prezes-pis-pytany-o-miejsce-przy-stole-na-posiedzeniu-rady-ministrow-7194927 | TVN24 | "28.06.2023, 20:01"; "na środowej konferencji prasowej" | `CROSS/tvn24_2023-06-28_kaczynski-konferencja-koalicja-z-konfederacja-zobaczymy.html` | `4ef445bb6ec1e17279cf0c6d18edf48ab266bd80324828f316b96f3661e1ae8d` |
@@ -323,11 +409,11 @@ The sweep's own list, as its synthesis wrote it - the record's notes in square b
 | [KONF-P2] | https://cdn.syndication.twimg.com/tweet-result?id=1676963461329465346&lang=pl&token=4c2mmul6mnh | X (@SlawomirMentzen) | created_at 2023-07-06T14:37Z | `Konf/x_mentzen_1676963461329465346_syndication.json` | `4a46733d080b088808525e74580d5dc011debc2a1a3aca2be3c9b084eec51a9c` |
 | [KONF-I1] | https://wiadomosci.dziennik.pl/polityka/artykuly/8688366,krzysztof-bosak-pis-konfederacja-koalicja-wybory.html | Dziennik.pl (PAP; said on TVN24) | "24 marca 2023, 21:21"; "w piątek" | `Konf/dziennik_bosak-nie-widze-takiej-szansy.html` | `af0540ec09e6b56bac14561072d4546fc5650a5aae5f02822387626b97cae3b8` |
 | [KONF-I3] | https://wydarzenia.interia.pl/kraj/news-slawomir-mentzen-ani-pis-ani-po-nie-sa-godne-koalicji-z-nami,nId,6685419 | Interia | publish-date 2023-03-30T08:29:05+02:00 | `Konf/interia_mentzen-ani-pis-ani-po-nie-sa-godne-koalicji.html` | `4680ef9d7cb018ba5f5919fbfa3d4095158f333c2e6b87d161172c710129ab78` |
-| [KONF-I4] | https://www.rmf24.pl/fakty/polityka/news-petru-i-mentzen-odpowiadali-na-pytania-sluchaczy-rmf-fm,nId,6853280 | RMF24 (its own debate) | "Wtorek, 20 czerwca 2023 (20:42)" | `Konf/rmf24_petru-mentzen-pytania-sluchaczy.html` | `eab7de1fab04d11a7f591c0c6a4c317e8307ef5cb77739c3f1012849ddd1c9ae` |
+| [KONF-I4] | https://www.rmf24.pl/fakty/polityka/news-petru-i-mentzen-odpowiadali-na-pytania-sluchaczy-rmf-fm,nId,6853280 | RMF24 (its own debate) (F2) | "Wtorek, 20 czerwca 2023 (20:42)"; dateModified 2023-08-04T13:00:00+02:00 (a site restamp, §12) | `Konf/rmf24_petru-mentzen-pytania-sluchaczy.html` | `eab7de1fab04d11a7f591c0c6a4c317e8307ef5cb77739c3f1012849ddd1c9ae` |
 | [KONF-I8] | https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html | Super Express | datePublished 2023-06-26T09:05:05+02:00 (createdDate 2023-06-24T22:58+02:00) | `Konf/se_mentzen-braun-ministrem-kultury.html` | `94b53e2ce15c3c54436897a20e2c96e6b56fc0de469b78a03daeec3d4cc1a204` |
 | [KONF-I10] | https://www.bankier.pl/wiadomosc/Konfederacja-w-koalicji-z-PiS-lub-PO-Mentzen-stawia-warunek-8567036.html | Bankier.pl (PAP) | "2023-06-26 07:26" | `CROSS/bankier-pap_2023-06-26_mentzen-stawia-warunek.html` | `ae27f8f4ac1aa91a2c10c1ff7f2a0a653e8ebbc0b0360d5eef9685cfe6882f60` |
-| [KONF-I11] | https://www.rmf24.pl/fakty/polityka/news-mentzen-zmienia-zdanie-w-sprawie-koalicji-z-pis,nId,6864533 | RMF24 | "Poniedziałek, 26 czerwca 2023 (08:31)" | `CROSS/rmf24_2023-06-26_mentzen-zmienia-zdanie-koalicja-z-pis.html` | `dbff146a46c779133c11b4dc10bee1ab5032fe3a661c6608321ce61af7bdb47a` |
-| [KONF-I14] | https://fakty.tvn24.pl/fakty-po-poludniu/politycy-pis-nie-wykluczaja-koalicji-z-konfederacja-za-to-czlonkowie-konfederacji-sa-bardziej-sceptyczni-st7220029 | TVN24 (Fakty po południu) | "13 lipca 2023, 17:56" | `CROSS/tvn24_2023-07-13_pis-nie-wykluczaja-koalicji-z-konfederacja.html` | `4a4e1784ff8720c11fb676fbac0c469769ea9ce6c741011d339815662a9bd06a` |
+| [KONF-I11] | https://www.rmf24.pl/fakty/polityka/news-mentzen-zmienia-zdanie-w-sprawie-koalicji-z-pis,nId,6864533 | RMF24 ("Źródło: RMF24/PAP") | "Poniedziałek, 26 czerwca 2023 (08:31)" | `CROSS/rmf24_2023-06-26_mentzen-zmienia-zdanie-koalicja-z-pis.html` | `dbff146a46c779133c11b4dc10bee1ab5032fe3a661c6608321ce61af7bdb47a` |
+| [KONF-I14] | https://fakty.tvn24.pl/fakty-po-poludniu/politycy-pis-nie-wykluczaja-koalicji-z-konfederacja-za-to-czlonkowie-konfederacji-sa-bardziej-sceptyczni-st7220029 | TVN24 (Fakty po południu) (F2) | "13 lipca 2023, 17:56" | `CROSS/tvn24_2023-07-13_pis-nie-wykluczaja-koalicji-z-konfederacja.html` | `4a4e1784ff8720c11fb676fbac0c469769ea9ce6c741011d339815662a9bd06a` |
 | [KONF-I15] | https://fakty.tvn24.pl/fakty-po-poludniu/wybory-parlamentarne-2023-krzysztof-bosak-zapewnia-ze-konfederacja-nie-wejdzie-w-koalicje-z-pis-em-st7231621 | TVN24 (Fakty po południu) | "16 lipca 2023, 17:01" | `Konf/tvn24_bosak-nie-wejdzie-w-koalicje-z-pis.html` | `29878448e104f7e74a2d6f431e01f5d2110b80a0c6e2e28e2cfbcd58435be500` |
 | [KONF-I19] | https://dorzeczy.pl/opinie/473616/bosak-to-budzi-niezadowolenie-i-w-pis-i-w-po.html | Do Rzeczy (Gość Radia ZET) | "Dodano: 24 sierpnia 2023 10:17"; "w czwartkowym programie" | `Konf/dorzeczy_bosak-niezadowolenie-pis-po.html` | `ec90b43630bfb616a94dee9b0f2b79d5e6978c080993bd5b1ddf437e2cd822d4` |
 | [KONF-I23] | https://www.polsatnews.pl/wiadomosc/2023-10-10/polska-wybiera-wybory-parlamentarne-2023-slawomir-mentzen-w-gosciu-wydarzen/ | Polsat News (Gość Wydarzeń) | "10.10.2023, 19:13" | `Konf/polsatnews_2023-10-10_mentzen-gosc-wydarzen.html` | `241e58db3ac00715711c325ad9d8c866069c51a0bef32d3feba94cd31d06678b` |
@@ -356,18 +442,30 @@ The sweep's own list, as its synthesis wrote it - the record's notes in square b
 | [NL-I6] | https://wiadomosci.wp.pl/czarzasty-zbulwersowany-ty-chcesz-bym-ja-z-nimi-gadal-6935157505330112a | Wirtualna Polska | "27 sierpnia 2023, 18:39" | `NL/wp_6935157505330112a_czarzasty_zbulwersowany.html` | `5d23ab12570cea8858d70bbe4bc3b1c901c2c652d36404d0d4f7c3f5f093f092` |
 | [NL-I7] | https://www.gazetaprawna.pl/wiadomosci/kraj/artykuly/9288207,czarzasty-nie-dopuscmy-do-tego-zeby-rzadzila-konfederacja-z-pisem.html | GazetaPrawna.pl (PAP) | "31 sierpnia 2023"; "W czwartek w Rzeszowie" | `NL/gp_9288207_czarzasty_nie_dopuscmy_konfederacja_z_pisem.html` | `f172dd0f3608a89dfad96a5cab29fc6ae9b100f0a5662f033ff30039b6d2d38f` |
 | [NL-I12] | https://tvn24.pl/wybory-parlamentarne-2023/wybory-2023-wspolprzewodniczacy-nowej-lewicy-wlodzimierz-czarzasty-w-faktach-tvn-7383443 | TVN24 (Fakty) | "9 października 2023, 22:19" | `CROSS/tvn24_2023-10-09_czarzasty-fakty-tvn-trzy-struktury-tusk.html` | `1ac3ccdedfd13d777fd6ca92054e23c4af2a6b24df13826cc8bfbecc8323be6c` |
+| [KO-P1] | https://cdn.syndication.twimg.com/tweet-result?id=1491474675771355145&token=a | X (@donaldtusk) | created_at 2022-02-09T18:10:47Z, isEdited false (§5) | `KO/x_donaldtusk_1491474675771355145_syndication.json` | `6b5e5906955e57c71aa282d5ad630e9ee371713c161a447cfea611beb9d0051b` |
+| [KO-P2] | https://cdn.syndication.twimg.com/tweet-result?id=1494201933447544834&token=a | X (@Obywatelska_KO, KO's own account) | created_at 2022-02-17T06:47:56Z, isEdited false (§5) | `KO/x_obywatelska_ko_1494201933447544834_syndication.json` | `0feb4a30da3ee8d4dd9989b9b25e1a93c77c61a5ca8cdd2e1b45380ced8f4f4a` |
+| [KO-P3] | https://cdn.syndication.twimg.com/tweet-result?id=1526989992060502016&token=a | X (@Obywatelska_KO, KO's own account) | created_at 2022-05-18T18:15:58Z, isEdited false (§5) | `KO/x_obywatelska_ko_1526989992060502016_syndication.json` | `03ce1691c25cdebbe34295f490b9d790b6cf49b8adfe389559d6da69f0edafd5` |
+| [KO-P4] | https://cdn.syndication.twimg.com/tweet-result?id=1704443105661886953&token=a | X (@Obywatelska_KO, KO's own account) | created_at 2023-09-20T10:31:18Z, isEdited false (§5) | `KO/x_obywatelska_ko_1704443105661886953_syndication.json` | `516b450914695f2bf62e149038ecebdebee33882efb99a716ae5c3495043dc2c` |
+| [KO-P5] | https://cdn.syndication.twimg.com/tweet-result?id=1487416047955324930&token=a | X (@Obywatelska_KO, KO's own account) | created_at 2022-01-29T13:23:15Z, isEdited false (§5, §12) | `KO/x_obywatelska_ko_1487416047955324930_syndication.json` | `3cf41c010b71819463b261d8fc2405a1e79c57f254c2d0a77b085a518695df34` |
 | [KO-I3] | https://tvn24.pl/wybory-parlamentarne-2023/wybory-parlamentarne-2023-opozycja-zawarla-pakt-senacki-st7295444 | TVN24 (with PAP) | "17 sierpnia 2023, 11:56"; "w czwartek" | `CROSS/tvn24_2023-08-17_pakt-senacki-zawarty.html` | `7fcc56c084acd87c581e4be6998ec1aaf8025d14032926d9a8ffcb8daf8f142a` |
 | [KO-I4] | https://www.polsatnews.pl/wiadomosc/2023-09-08/po-bedzie-wspolpracowac-z-konfederacja-j-grabiec-czasem-maja-ciekawe-pomysly/ | Polsat News (Graffiti) | "08.09.2023, 09:27" | `KO/polsatnews_2023-09-08_grabiec_konfederacja.html` | `c9e6efac9f7ce9c213dd4da0147025e09f1dd64e7f0aa965c5646ac29b47c36c` |
 | [KO-I7] | https://www.polsatnews.pl/wiadomosc/2023-09-19/donald-tusk-w-gosciu-wydarzen/ | Polsat News (Gość Wydarzeń) | "19.09.2023, 19:50" | `KO/polsatnews_2023-09-19_tusk_gosc_wydarzen.html` | `49ece0c28a6f303616f4f48b2a74204705e64fa8f07fadc33ad04166beeaf15e` |
 | [KO-I8] | https://www.wprost.pl/polityka/wybory-parlamentarne-2023/11398927/rafal-trzaskowski-premierem-enigmatyczne-slowa-donalda-tuska.html | Wprost (reporting Polsat News) | "Dodano: 19 września 2023 20:25" | `KO/wprost_2023-09-19_tusk_enigmatyczne_slowa.html` | `820b713658f62a9ebe8a1d8b86f5c642e4f4261e14e1cf3b4d4fe723610d93e6` |
 | [KO-I10] | https://www.rp.pl/polityka/art39218471-donald-tusk-w-koninie-zapowiada-rzad-z-lewica-i-trzecia-droga | Rzeczpospolita | "Publikacja: 04.10.2023 19:49"; "w środę" | `CROSS/rp_2023-10-04_tusk-konin-rzad-z-lewica-i-trzecia-droga.html` | `15615a2f31ead0667ad4295dc63d13c997ab37b6e3589670ae3f78ed0a1165fa` |
 | [KO-I11] | https://tvn24.pl/wybory-parlamentarne-2023/wybory-parlamentarne-2023-szef-po-donald-tusk-o-glosowaniu-programie-i-rzadach-pis-st7388790 | TVN24 (Fakty) | "12 października 2023, 20:57"; "był w czwartek gościem" | `KO/tvn24_2023-10-12_tusk_fakty_rzad_ko_lewica_td.html` | `e6465af2fbfbf9689441a4fa91a75d0665d0e56e09ea4b6816eda45c2fc2f931` |
-| [KO-I12] | https://tvn24.pl/wybory-parlamentarne-2023/wybory-parlamentarne-2023-relacja-na-zywo-12-pazdziernika-2023-st7387230 | TVN24 (live) | "12 października 2023, 7:05"; updated 19:47 | `KO/tvn24_2023-10-12_relacja_na_zywo.html` | `814c6815dc5e639ca6576a57ff3132c1c766c01bb8bb4a69eae61d3b079bd7b5` |
-| [KONF-P3] | https://cdn.syndication.twimg.com/tweet-result?id=1713834658134138996&lang=pl&token=4c2mmul6mnh | X (@krzysztofbosak) | created_at 2023-10-16T08:29:58Z, isEdited false (after the vote; doubt 5) | `Konf/x_bosak_1713834658134138996_syndication.json` | `a8d8a865a45815a3336c0b85c854863f2937c9b74b37f2a663c92a3dbfa1b714` |
-| [TD-P11] | https://polska2050.pl/informacja-prasowa/trzecia-droga-polski-2050-szymona-holowni-i-psl/ | Polska 2050 | datePublished 2023-05-15T11:36:42+02:00 (doubt 2) | `TD/pl2050_2023-05-15_trzecia-droga-polski-2050-i-psl.html` | `79c1ef0224abc77cee55570bcd7c4ebf25b1064a1d9db185593e8877e7738ae6` |
+| [KO-I12] | https://tvn24.pl/wybory-parlamentarne-2023/wybory-parlamentarne-2023-relacja-na-zywo-12-pazdziernika-2023-st7387230 | TVN24 (live; with PAP: "Źródło: tvn24.pl, PAP") | "12 października 2023, 7:05"; updated 19:47 | `KO/tvn24_2023-10-12_relacja_na_zywo.html` | `814c6815dc5e639ca6576a57ff3132c1c766c01bb8bb4a69eae61d3b079bd7b5` |
+| [KONF-P3] | https://cdn.syndication.twimg.com/tweet-result?id=1713834658134138996&lang=pl&token=4c2mmul6mnh | X (@krzysztofbosak) | created_at 2023-10-16T08:29:58Z, isEdited false (after the vote; §2) | `Konf/x_bosak_1713834658134138996_syndication.json` | `a8d8a865a45815a3336c0b85c854863f2937c9b74b37f2a663c92a3dbfa1b714` |
+| [TD-P11] | https://polska2050.pl/informacja-prasowa/trzecia-droga-polski-2050-szymona-holowni-i-psl/ | Polska 2050 | datePublished 2023-05-15T11:36:42+02:00; dateModified 2023-07-01T01:43:25+02:00 (doubt 2; §12) | `TD/pl2050_2023-05-15_trzecia-droga-polski-2050-i-psl.html` | `79c1ef0224abc77cee55570bcd7c4ebf25b1064a1d9db185593e8877e7738ae6` |
 | [TD-I13] | https://krytykapolityczna.pl/kraj/kobosko-holownia-kosiniak-psl/ | Krytyka Polityczna | datePublished 2023-06-30T06:00:41+02:00 (doubt 2) | `TD/krytykapolityczna_2023-06-30_kobosko-wywiad.html` | `0a446a962ace44d8f479c2a85e6ee0bbee7a5e449cad66f1d79e14abfee7e82e` |
-| [TD-I14] | https://www.rp.pl/polityka/art8822321-wladyslaw-kosiniak-kamysz-zadnej-koalicji-z-pis-em-nie-bedzie | Rzeczpospolita (reporting Polsat News) | 2020-09-14T20:01:50+02:00 (doubts 3 and 12) | `TD/rp_2020-09-14_zadnej-koalicji-z-pis.html` | `00ed993699b9dfd2dc18a5a9bdd6b0825d644a4a2ac79e949fbfa172bd772ee5` |
-| [NL-P30] | https://lewica.org.pl/aktualnosci/dziemianowicz-bak-lewica-nigdy-nie-wejdzie-do-rzadu-w-ktorym-mialaby-byc-skrajna-prawica/ | Nowa Lewica | "Gdańsk, 15 lipca 2023 r."; published 2023-07-17T09:35:21+00:00 (doubt 8) | `NL/lewica_org_20230717_dziemianowicz_bak_nigdy_skrajna_prawica.html` | `938fe599c656e4f72940bbfc057ef93c63561a27d1f5667eb713c6ea3de4541f` |
+| [TD-I14] | https://www.rp.pl/polityka/art8822321-wladyslaw-kosiniak-kamysz-zadnej-koalicji-z-pis-em-nie-bedzie | Rzeczpospolita (reporting Polsat News) | 2020-09-14T20:01:50+02:00 (doubt 12) | `TD/rp_2020-09-14_zadnej-koalicji-z-pis.html` | `00ed993699b9dfd2dc18a5a9bdd6b0825d644a4a2ac79e949fbfa172bd772ee5` |
+| [NL-P30] | https://lewica.org.pl/aktualnosci/dziemianowicz-bak-lewica-nigdy-nie-wejdzie-do-rzadu-w-ktorym-mialaby-byc-skrajna-prawica/ | Nowa Lewica | "Gdańsk, 15 lipca 2023 r."; published 2023-07-17T09:35:21+00:00 (§4) | `NL/lewica_org_20230717_dziemianowicz_bak_nigdy_skrajna_prawica.html` | `938fe599c656e4f72940bbfc057ef93c63561a27d1f5667eb713c6ea3de4541f` |
+| [NL-P31] | https://lewica.org.pl/aktualnosci/czarzasty-powinnismy-podpisac-deklaracje-dotyczaca-utworzenia-koalicji-rzadowej-po-wyborach/ | Nowa Lewica | published 2022-09-20T12:03:59+00:00 (F1: NL → PiS from this day) | `NL/lewica_org_20220920_czarzasty_deklaracja_koalicji.html` | `cc4f6da564f0498480cb116644e88fabf8d37269dbbc554d9beb9ab20fda01bb` |
+| [NL-P32] | https://lewica.org.pl/aktualnosci/apelujemy-o-wspolprace-na-opozycji-czarzasty-kandydatem-na-szefa-sztabu-wyborczego-lewicy/ | Nowa Lewica | the National Board's resolution "z dnia 21 stycznia 2023 r. w sprawie wspólnych rządów opozycji"; published 2023-01-23T06:02:24+00:00 | `NL/lewica_org_20230123_apelujemy_o_wspolprace.html` | `27fe8ae20ed80427615b37c0566ff6d2f6b1dd9bc96e6e17aee4fd3f5e3ca626` |
+| [NL-P33] | https://lewica.org.pl/aktualnosci/wiec-w-czestochowie-15-pazdziernika-wyborcy-zdecyduja-czy-przyszly-rzad-wspoltworzyc-bedzie-lewica-czy-konfederacja/ | Nowa Lewica | datePublished 2023-08-26T18:22:49+00:00; dateModified 2026-01-29T17:26:47+00:00 (§4, §12) | `NL/lewica_org_20230826_wiec_czestochowa.html` | `9f100db01d7ea1f2cfc3035a960bfcfff28c4ef0c46ce01d011645f1d28e5d9d` |
+| [NL-P34] | https://lewica.org.pl/aktualnosci/czarzasty-musimy-wspolrzadzic-zaczynamy-rozmowy/ | Nowa Lewica | published 2022-01-31T08:35:20+00:00 (§4) | `NL/lewica_org_20220131_czarzasty_musimy_wspolrzadzic.html` | `2aa2ff6b807ac5fcf5f01c157e70bad92df3971ba2616f7d1394b4377671e1a4` |
+| [NL-I13] | https://tvn24.pl/wybory-parlamentarne-2023/wybory-parlamentarne-2023-konwencja-nowej-lewicy-w-lodzi-st7322187 | TVN24 ("Źródło: TVN24") | datePublished 2023-09-02T11:18:55Z (§4, §12) | `NL/tvn24_st7322187_konwencja_lodz.html` | `789facee1f11a8194f287d9352b5997d47388632db5b63645b40e5a3a5b64777` |
+| [KO-I13] | https://tvn24.pl/polska/wybory-parlamentarne-2023-koalicja-obywatelska-zainaugurowala-swoja-kampanie-wyborcza-borys-budka-jestesmy-gotowi-do-najwazniejszego-od-1989-roku-boju-o-przyszlosc-polski-st7284534 | TVN24 (with PAP: "Źródło: TVN24, PAP") | datePublished 2023-08-09T05:53:35Z; "W środę rano" (§11) | `KO/tvn24_2023-08-09_budka_inauguracja_kampanii.html` | `84290bb234c3f4615aec1d757f7afa5565070814233f3c7ebe07ff325a9018ce` |
+| [KONF-I26] | https://cdn.syndication.twimg.com/tweet-result?id=1671214148456251392&lang=pl&token=4c2mmul6mnh | X (@Rozmowa_RMF, RMF's own account) | created_at 2023-06-20T17:51:17Z (§12) | `Konf/x_rozmowa-rmf_1671214148456251392_syndication.json` | `a14369ee8b880511175647da24d71ad4a5cd57730cf7fba8854aa72d2fd0f03b` |
 
 Second captures of cited pages (other bytes, the same text; out of tree only): `CROSS/rmf24_2023-06-20_debata-petru-mentzen-rmf-fm.html` ([KONF-I4]); `CROSS/tvn24_2023-07-16_bosak-konfederacja-nie-wejdzie-w-koalicje-z-pis.html` ([KONF-I15]); `CROSS/okopress_2023-08-05_kosiniak-kamysz-gwarancja-bez-koalicji-pis-konfederacja.html` ([TD-I9]); `CROSS/wnp-pap_2023-09-19_holownia-kalisz-zadnej-koalicji-z-pis.html` ([TD-I11]); `CROSS/gazetaprawna-pap_2023-08-27_lewica-nie-stworzymy-rzadu-z-konfederacja.html` ([NL-I5]); `CROSS/gazetaprawna_2023-08-31_czarzasty-nie-dopuscmy-konfederacja-z-pis.html` ([NL-I7]); `CROSS/tvn24_2023-10-12_tusk-fakty-oboz-demokratyczny.html` ([KO-I11]).
 
