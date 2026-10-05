@@ -28,8 +28,9 @@ namespace PoliSim.Elections
     /// reference world - the record's state on the eve, as a game started that day holds it - which therefore reproduces that first round
     /// (<see cref="PresidencyOfRecord.CandidateOfRecord.Factor"/>); a later field's candidate at <see cref="FutureFactor"/>. A candidate of record
     /// whose party has no roster row carries its own share of record as its base. The field is normalised; counted by the rule: more than half
-    /// elects; otherwise the two with most meet in the run-off. ⚠ PREMISE, DECLARED (§772's review): a game PLAYED from Poland's 2023 start reads
-    /// the history of the chamber seated at its own epoch and its own formation's government, so its 2025 first round is not the PKW's.</description></item>
+    /// elects; otherwise the two with most meet in the run-off. RULED (Elias's ruling F4): the factors stay fitted on the world that follows history,
+    /// so a game PLAYED from Poland's 2023 start - reading the history of the chamber seated at its own epoch and its own formation's government -
+    /// has a 2025 first round of its own, which moves with its play.</description></item>
     /// <item><description><b>The run-off</b> (B4): each eliminated electorate splits between the finalists as exp(−d²/τ) in the sovereignty space
     /// (galtan, nationalism and the EU position, equally weighted), τ <see cref="TransferTau"/>; an unplaced one splits as the finalists' first votes
     /// did; the [AUTHORED-DRAFT] abstention <see cref="AbstentionDraftMax"/> beside it. <b>Each candidate stands at their own party's position</b>

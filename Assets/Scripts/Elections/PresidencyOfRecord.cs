@@ -59,8 +59,9 @@ namespace PoliSim.Elections
         /// PKW's first round of 18 May 2025 against the game's poll that day on the reference world - the record's state on the eve, as a game started
         /// that day holds it (`PresidentialReferenceWorld`; `PresidentialElectionLiveDiagnostic` refits it on every bar and fails where a figure here is no
         /// longer the fit): first-round support = the party's poll × the factor. A candidate whose party has no roster row carries the record's own
-        /// first-round share as its base (<see cref="Factor"/> NaN). Per-candidate data, not a free parameter. ⚠ PREMISE, DECLARED (§772's review): a game
-        /// played from Poland's 2023 start polls otherwise that day, so its first round is not the PKW's (<see cref="PresidentialElection"/>).</para></summary>
+        /// first-round share as its base (<see cref="Factor"/> NaN). Per-candidate data, not a free parameter. RULED (Elias's ruling F4): fitted on the
+        /// world that follows history; a game played from Poland's 2023 start polls otherwise that day, so its first round moves with its play
+        /// (<see cref="PresidentialElection"/>).</para></summary>
         public readonly struct CandidateOfRecord
         {
             public readonly string Surname, BackingParty, PositionUnit, Why;

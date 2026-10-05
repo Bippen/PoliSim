@@ -467,13 +467,16 @@ namespace PoliSim.Simulation
         public static bool CanEstimateShocks(Country country, CabinetPortfolio portfolio) =>
             !country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) || m.Knowledge >= KnowledgeDisclosureFloor;
 
-        /// <summary>The government is UNDER PRESSURE when approval sits below this floor or a division was lost this turn. [AUTHORED-DRAFT]: the floor, a round figure below the seeds' approval.</summary>
+        /// <summary>The government is UNDER PRESSURE when approval sits below this floor or a bill was lost on the day. [AUTHORED-DRAFT]: the floor, a round figure below the seeds' approval.</summary>
         public const float PressureApprovalFloor = 40f;
+        /// <summary>Elias's ruling F5 ("(b): the check reads every bill lost that day"): under pressure where approval is below the floor, or ANY bill was lost on
+        /// <paramref name="today"/> - read from the country's own record of the loss (<see cref="Country.BillLostOn"/>, written by `ParliamentSystem.RecordBillLost`
+        /// where a division fails or a veto stands), so a bill or an act passed later the same day hides nothing, and the division log - a record of the
+        /// simulation, never its input - is not read. A failed motion is not the government losing a bill (PS-3i, §636) and is never written there.</summary>
         public static bool UnderPressure(Country country, System.DateTime today)
         {
             if (country.State.ApprovalRating < PressureApprovalFloor) { return true; }
-            var entries = country.Divisions.Entries;
-            return entries.Count > 0 && !entries[entries.Count - 1].Passed && !entries[entries.Count - 1].Motion && entries[entries.Count - 1].Date == today;   // PS-3i (§636): a failed motion is not the government losing a bill
+            return country.BillLostOn == today.Date;
         }
 
         /// <summary>

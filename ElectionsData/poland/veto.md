@@ -103,4 +103,5 @@ text of the Sejm's standing orders (M.P. 2026 poz. 573; the ELI metadata `raw/ve
   the vote on it are taken on the passage's day (the 21 days are not waited), and the re-pass is voted by the passage's own sides. The game's
   budget act alone is exempt (Art. 224): since §768 (D4) and §773 (E2) each statute part a Polish budget changes (`BudgetBill.StatuteParts`) is its
   own act, voted by the Sejm once the budget act is adopted and put to the President like any ordinary statute, so F3's risk and draw reach it;
-  `SimulationManager.PolishStatuteActs`'s summary says which parts are ruled and which are read.
+  `SimulationManager.PolishStatuteActs`'s summary says which parts are ruled and which are read. A veto that stands is a bill lost that day, as an
+  act the Sejm fails is (RULED, F5: *"the check reads every bill lost that day"*).

@@ -121,15 +121,13 @@ namespace PoliSim.Data
 
         // §773 (Elias's ruling E2): "General rule for Poland: only spending stays in the budget act." What a Polish statute sets travels in its own act,
         // voted and put to the President like the tax act: the rates (D4), the pension age ("set by ordinary statute, so it travels in its own act and
-        // can be vetoed, like tax rates"), and - READING, DECLARED, the general rule's - the benefit levels and the sovereign fund's rules, which are not
-        // spending lines either: the parts that leave the budget act are whatever `BudgetBill.StatuteParts` lists. The budget act keeps the spending
-        // lines alone. ⚠ The fund's act is UNCONTESTED BY CONSTRUCTION: the chamber's concern weighs none of the fund's terms
-        // (`ParliamentSystem.GetBudgetBillConcern`), so it always passes and is signed - what the fund's rules come to is the budget act's outcome alone.
-        // ⚠ But every act is a division of its own, and `CabinetSystem.UnderPressure` reads the day's newest division alone, whoever recorded it: on a
-        // turn-boundary day that is the budget's last act only where nothing is recorded after it before the boundary's cabinet roll (the order is
-        // `SimulationManager.AdvanceCountryDayTick`'s, then `SimulationManager.AdvanceTurn`'s). So an act that passes after a fallen one hides the fall
-        // from that day's pressure test - the fund's act, always passed and voted last among the acts (`BudgetBill.StatuteParts`), whenever it is
-        // voted. DECLARED, and Elias's to rule (§773's second and third reviews).
+        // can be vetoed, like tax rates"), and - RULED (Elias's ruling F6: "In Poland benefit levels and the fund's rules are set by statute, so they are
+        // statute parts. 'Spending' means the budget act's appropriations.") - the benefit levels and the sovereign fund's rules: the parts that leave the
+        // budget act are whatever `BudgetBill.StatuteParts` lists. The budget act keeps the spending lines alone. ⚠ The fund's act is UNCONTESTED BY
+        // CONSTRUCTION: the chamber's concern weighs none of the fund's terms (`ParliamentSystem.GetBudgetBillConcern`), so it always passes and is
+        // signed - what the fund's rules come to is the budget act's outcome alone. Every act is a division of its own, and the fund's act, always
+        // passed, is voted last among the acts (`BudgetBill.StatuteParts`); since Elias's ruling F5 ("the check reads every bill lost that day") the
+        // cabinet's pressure test reads every bill lost on the day (`Country.BillLostOn`), so an act passed after a fallen one hides nothing.
 
         /// <summary>§773: the parts of a bill that in Poland travel each in its own act, in the order the acts are voted.</summary>
         public enum StatutePart { Rates, PensionAge, Benefits, Fund }

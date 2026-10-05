@@ -299,7 +299,7 @@ namespace PoliSim.EditorTools
                     object expected = f.GetValue(marked), cloned = f.GetValue(copy);
                     string difference = null;
                     Type t = f.FieldType;
-                    if (t.IsPrimitive || t.IsEnum || t == typeof(string)) { if (!Equals(expected, cloned)) { difference = $"marked {expected}, the clone read {cloned}"; } }
+                    if (t.IsPrimitive || t.IsEnum || t == typeof(string) || t == typeof(DateTime)) { if (!Equals(expected, cloned)) { difference = $"marked {expected}, the clone read {cloned}"; } }
                     else if (t.IsArray && (t.GetElementType().IsPrimitive || t.GetElementType().IsEnum))
                     {
                         var ea = (Array)expected; var ca = (Array)cloned;
@@ -319,7 +319,8 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>A value no seed carries for a field of <paramref name="type"/> (the field's current value sizes an array), different in each <paramref name="pass"/>;
-        /// a flag is true in the first pass and false in the second, an enum its first value then its second; null for a reference the audit does not mark.</summary>
+        /// a flag is true in the first pass and false in the second, an enum its first value then its second, a date a day of 2000 or after, never MinValue
+        /// (§779's review: a date field escaped the audit unseen); null for a reference the audit does not mark.</summary>
         private static object Mark(Type type, object current, int index, int pass)
         {
             if (type == typeof(float)) { return 1000f + index + 0.25f + pass; }
@@ -328,6 +329,7 @@ namespace PoliSim.EditorTools
             if (type == typeof(long)) { return 1000L + index + 1000L * pass; }
             if (type == typeof(bool)) { return pass == 0; }
             if (type == typeof(string)) { return "MARK" + index + "_" + pass; }
+            if (type == typeof(DateTime)) { return new DateTime(2000, 1, 1).AddDays(index + 1000 * pass); }
             if (type.IsEnum) { Array values = Enum.GetValues(type); return values.Length > 1 ? values.GetValue(pass % values.Length) : null; }
             if (type == typeof(float[])) { var a = (float[])current; if (a == null) { return null; } var m = new float[a.Length]; for (int i = 0; i < m.Length; i++) { m[i] = 1000f + index + i + 0.5f + pass; } return m; }
             return null;
@@ -342,6 +344,8 @@ namespace PoliSim.EditorTools
             { "FinanceStanceApplied", "§755: the Finance partner's count - the preview computes the partner's step on the REAL country (previewedReal: the clone carries no government) and records never; the clone never reads it" },
             { "FinanceStanceHolder", "§755: the partner the count belongs to - read on the real country only, as FinanceStanceApplied" },
             { "FinanceStancePlayerTarget", "§755: the player partner's dial - read on the real country only, as FinanceStanceApplied" },
+            { "FinancePartnerSteppedOn", "§716: the day the partner last stepped - the preview computes the step on the REAL country (previewedReal) and records never; the clone never reads it" },
+            { "FinanceStanceGovernment", "§755: the government the count was made under - read on the real country only, as FinanceStanceApplied" },
         };
 
         private static int AssertTerm(CountryId id, string name, float real, float preview)

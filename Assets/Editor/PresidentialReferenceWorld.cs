@@ -15,11 +15,10 @@ namespace PoliSim.EditorTools
     /// the run-off). "A fresh world taken straight to 1 June 2025" (the ruling's acceptance test). The game's poll on the first vote's day is read again
     /// after the step, by the same call the hook makes, on the state the hook read (nothing the hook writes is read by the poll); the term reading it
     /// returns is kept, so a check can hold that the poll carries the government's record.
-    /// <para>⚠ PREMISE, DECLARED (§772's review): a game PLAYED from Poland's 2023 start reaches 18 May 2025 on another basis - its prediction reads the
-    /// history of the chamber seated at its own epoch (the standing history gap, §767), and its government is the one its own formation seated - so the
-    /// factors fitted on this world do not reproduce its first round. A fit on a world stepped from the start would reproduce that world's, but a played
-    /// game's poll still moves with play (its formation, its economy), so no factors fitted once reproduce every played game's. This world is the
-    /// record's state on the eve, as a game started that day would hold it; which poll E1 means is Elias's to rule.</para>
+    /// <para>RULED (Elias's ruling F4: "the factors stay fitted on the world that follows history, so a played game's first round moves with its play"):
+    /// this world - the record's state on the eve, as a game started that day would hold it - is the poll E1 means. A game PLAYED from Poland's 2023
+    /// start reaches 18 May 2025 on another basis - its prediction reads the history of the chamber seated at its own epoch (the standing history gap,
+    /// §767), and its government is the one its own formation seated - so its first round is its own, not the PKW's, by design.</para>
     /// </summary>
     public static class PresidentialReferenceWorld
     {

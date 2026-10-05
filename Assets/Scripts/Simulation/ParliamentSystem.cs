@@ -423,8 +423,9 @@ namespace PoliSim.Simulation
         ///
         /// WRITE-ONLY. Nothing in the Simulation namespace reads country.Divisions back. It is a record
         /// OF the simulation, never an input TO it - see DivisionLog's own doc comment for why that
-        /// constraint is load-bearing rather than tidiness. ⚠ Not kept since P2-5.2: `CabinetSystem.UnderPressure`
-        /// reads the newest entry back (a bill lost today) - named in DivisionLog's doc (§773's second review).
+        /// constraint is load-bearing rather than tidiness. Kept again since Elias's ruling F5: a bill the
+        /// chamber fails is ALSO written as the country's loss of the day (<see cref="RecordBillLost"/>), which
+        /// the cabinet's pressure check reads instead of the log.
         /// </summary>
         public static DivisionRecord RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
             => RecordDivision(country, title, BillConcern.FromLegacy(direction, axis), passed, date, axis);   // P3-A3: the scalar path records through the model too, reasons included
@@ -895,7 +896,7 @@ namespace PoliSim.Simulation
         /// <summary>§768 (Elias's ruling D4; the review's defect 1): THE BUDGET ACT a chamber votes - where the President holds a veto the game runs
         /// (Poland) and the bill changes what a statute sets, the bill's spending alone (§773, Elias's ruling E2: "only spending stays in the budget act" -
         /// the rates, the pension age, the benefit levels and the fund's rules are each their own act, voted apart - the benefit levels and the fund's rules
-        /// by the general rule's reading, DECLARED); otherwise the bill itself.</summary>
+        /// RULED statute parts by F6: "'Spending' means the budget act's appropriations"); otherwise the bill itself.</summary>
         public static BudgetBill BudgetActOf(Country country, BudgetBill bill)
         {
             if (bill == null || !Elections.PresidentialVeto.Applies(country.Id)) { return bill; }
@@ -1129,8 +1130,14 @@ namespace PoliSim.Simulation
                     sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, ShortName = stance.Party.ShortName, Seats = stance.Seats, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
                 }
             }
+            if (!passed) { RecordBillLost(country, date); }
             return country.Divisions.Append(title, date, alignment, passed, concern?.Direction ?? 0f, (int)axis, sides);
         }
+
+        /// <summary>Elias's ruling F5 ("(b): the check reads every bill lost that day"): a bill lost on <paramref name="date"/> - a division the chamber failed
+        /// (<see cref="RecordDivision(Country, string, BillConcern, bool, System.DateTime, BillAxis)"/>) or a veto that stood (`SimulationManager.PresidentialVetoGate`)
+        /// - written as the country's loss of the day, which `CabinetSystem.UnderPressure` reads. A motion is never a bill (PS-3i, §636) and never comes here.</summary>
+        public static void RecordBillLost(Country country, System.DateTime date) { country.BillLostOn = date.Date; }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplySwfDrawdownBillEffects).</summary>
         public static void ApplySwfDrawdownBillResult(Country country, SwfDrawdownBill bill, bool passed, System.Action<Country, SwfDrawdownBill> applyEffects)

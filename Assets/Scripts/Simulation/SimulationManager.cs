@@ -1275,19 +1275,18 @@ namespace PoliSim.Simulation
         /// §768 (Elias's ruling D4) and §773 (E2): POLAND'S BUDGET IS THE BUDGET ACT AND ITS STATUTES. The budget act the Sejm has just adopted stays
         /// veto-proof (Konstytucja Art. 224) and carries the spending alone (E2: "only spending stays in the budget act"); each statute part the bill
         /// changes travels in its own ACT (<see cref="BudgetBill.StatutePart"/>) - the rates a tax act (taxes are set by statute, Art. 217), the pension age
-        /// a pension act (E2), the benefit levels and the fund's rules their own acts (the general rule's reading, DECLARED) - each voted by the Sejm on
+        /// a pension act (E2), the benefit levels and the fund's rules their own acts (RULED, F6: "In Poland benefit levels and the fund's rules are set by
+        /// statute, so they are statute parts. 'Spending' means the budget act's appropriations.") - each voted by the Sejm on
         /// that part alone (its own division) and put to the President like every ordinary statute (B1, <see cref="PresidentialVetoGate"/>). Where an act
         /// fails, or its veto stands, what it would have set stays as it is and the rest applies: the bill applies with that part withheld, and the fall
         /// costs what every failed bill costs. RULED (E2) for the tax act - "a rejected budget takes its tax act down with it: accepted"; the other acts ride
-        /// the same way (READING, DECLARED: the pension act by E2's "like tax rates", the benefit and fund acts with the general rule's reading) - each is
-        /// voted only once the budget is adopted.
+        /// the same way (READING, DECLARED: the pension act by E2's "like tax rates", the benefit and fund acts as the statute parts F6 rules them) - each
+        /// is voted only once the budget is adopted.
         /// ⚠ The fund act is UNCONTESTED BY CONSTRUCTION: the chamber's concern weighs none of the fund's terms (<see cref="ParliamentSystem.GetBudgetBillConcern"/>,
-        /// the stated simplification), so it always passes and is signed - what the fund's rules come to is the budget act's outcome alone. ⚠ But every act
-        /// is a division of its own, and <see cref="CabinetSystem.UnderPressure"/> reads the day's newest division alone, whoever recorded it: on a
-        /// turn-boundary day that is the budget's last act only where nothing is recorded after it before the boundary's cabinet roll (the order is
-        /// <see cref="AdvanceCountryDayTick"/>'s, then <see cref="AdvanceTurn"/>'s). So an act that passes after a fallen one hides the fall from that
-        /// day's pressure test - the fund act, always passed and voted last among the acts, whenever it is voted. DECLARED, and Elias's to rule
-        /// (§773's second and third reviews).
+        /// the stated simplification), so it always passes and is signed - what the fund's rules come to is the budget act's outcome alone. Every act is a
+        /// division of its own; RULED (Elias's ruling F5, "(b): the check reads every bill lost that day"): an act that falls - failed in the Sejm, or vetoed
+        /// with the veto standing (<see cref="PresidentialVetoGate"/>) - marks the day lost (<see cref="ParliamentSystem.RecordBillLost"/>), and
+        /// <see cref="CabinetSystem.UnderPressure"/> reads that mark, not the day's newest division - so an act passed after a fallen one hides nothing.
         /// Returns the bill to apply and, in <paramref name="fell"/>, the parts withheld. <paramref name="only"/> limits the acts voted to those parts (the
         /// Finance partner's boundary act votes its rates alone - §773's review); null votes every part the bill changes. Every other country, and a bill
         /// that changes no statute part, applies whole.
@@ -1468,6 +1467,7 @@ namespace PoliSim.Simulation
             string title = $"Vetoed by the President ({veto.President}): {passage.Title} - " + (veto.Overridden ? "overridden" : "the veto stands") + $", {veto.Yes} for, {veto.Required} needed (3/5 of those voting, Art. 122 ust. 5)";
             DivisionRecord overrideVote = country.Divisions.Append(title, CurrentDate, passage.Alignment, veto.Overridden, passage.Direction, passage.Axis, sides);
             overrideVote.Required = veto.Required;
+            if (!veto.Overridden) { ParliamentSystem.RecordBillLost(country, CurrentDate); }   // Elias's ruling F5: a veto that stands is a bill lost that day
             Debug.Log($"VETO: {country.Id} - {title} (drawn at a {risk} risk, {veto.RiskBasis})");
             return veto.Overridden;
         }
@@ -5221,7 +5221,7 @@ namespace PoliSim.Simulation
             CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
             // §716 (the review's defect 4): the Finance partner's boundary step, as the boundary takes it - after the ministry's claim, which the preview
             // reads (Decide is pure) without running it. Computed on the real country (the clone carries no government; its lines are the real ones'),
-            // written into the caller's decision for the preview and withdrawn before it returns. PREMISE, DECLARED (§773's review): in the player's Poland
+            // written into the caller's decision for the preview and withdrawn before it returns. PREMISE, DECLARED (§773's review), accepted (Elias's ruling F7): in the player's Poland
             // the boundary puts the step's household rates to the Sejm as a tax act (PartnerTaxAct); the preview never votes it and counts those rates
             // whole, as D4's accepted premise counts a draft whole - the Finance-stance tile's veto clause is the warning beside it.
             Country previewedReal = _world.GetCountry(countryId);
@@ -5602,6 +5602,7 @@ namespace PoliSim.Simulation
                 // default (a phantom -0.5/turn for the USA at its 39.5 seed). The R4-1
                 // Clone-escape class, caught by the containment check BEFORE the bar this time.
                 BaselineGini = country.BaselineGini,
+                BillLostOn = country.BillLostOn,   // F5 (§779): the day's loss - nothing on the preview path reads it; a value, so a write on the clone never reaches the country
                 // Step 2: a FRESH ledger, never the real country's reference - ApplyApprovalRating
                 // records into it on the clone, and sharing the reference would corrupt the real
                 // period's attribution the moment a preview ran. LastPeriod stays null: a preview

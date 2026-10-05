@@ -869,6 +869,11 @@ namespace PoliSim.Data
         public Dictionary<CabinetPortfolio, CabinetMinister> CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>();
         /// <summary>P2-5.2 (2026-09-02): the cabinet events LOYALTY's term has produced (resignations, leaks), newest last - the Docket's minister alerts read them.</summary>
         public List<CabinetEventRecord> CabinetEvents = new List<CabinetEventRecord>();
+        /// <summary>Elias's ruling F5 ("the check reads every bill lost that day"): the day a bill was last lost - a division the chamber failed, or a veto that
+        /// stood - written where the loss happens (`ParliamentSystem.RecordBillLost`) and read by the cabinet's pressure check (`CabinetSystem.UnderPressure`),
+        /// so a bill that passes later the same day hides no loss and the division log stays unread by the simulation. MinValue = none; a save from before
+        /// loads it so.</summary>
+        public System.DateTime BillLostOn;
 
         /// <summary>
         /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own
