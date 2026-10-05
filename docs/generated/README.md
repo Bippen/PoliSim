@@ -15,6 +15,7 @@ convention's GENERATED destination (`CLAUDE.md`): a derived figure lives in a ma
 | `docs/generated/POTENTIAL_PREMISE.md` | `PoliSim.EditorTools.PotentialPremiseDump` | `-executeMethod PoliSim.EditorTools.PotentialPremiseDump.Run` |
 | `docs/generated/UI_V33_BASELINE.tsv` | `Tools/text_baseline.pl` (from a dry film's label table, §648) | `perl Tools/text_baseline.pl rank ../PoliSim-captures/labels/drys648_sweden_1280_labels.tsv > docs/generated/UI_V33_BASELINE.tsv` |
 | `docs/reference/PRESIDENTIAL_VOTE.md` - the marked block under *The readings* (§769), not a file of its own: the model card carries its figures | `PoliSim.EditorTools.PresidentialVoteBacktest.WriteReadings` | `-executeMethod PoliSim.EditorTools.PresidentialVoteBacktest.WriteReadings` - and `PresidentialVoteBacktest.Run` (the cheap bar) fails while the block differs from what it measures |
+| `docs/generated/VETO_B1_BACKTEST.md` | `Tools/veto_b1_backtest.pl` (§775, Elias's ruling E4) | `perl Tools/veto_b1_backtest.pl` - B1 on the 10th Sejm's record: the confusion matrix, the hit rate, the precision, every veto it misses and every act it names that was not vetoed |
 
 Each runs `Unity.exe -batchmode -nographics -projectPath <path> -executeMethod <above> -logFile <log>`.
 All four moved here from the repository root on 2026-09-22 (`COMPLETED.md` §579) and their tools' default

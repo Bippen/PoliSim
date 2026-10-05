@@ -37034,3 +37034,55 @@ Before the upload, the manifest's hashes were checked and every zip member was c
   - the six inks, to confirm or replace.
 
 Tier DOCUMENTS (a send and the feature list): the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
+
+## 775. RULING E4 ANSWERED: B1'S BACKTEST RESTATED WHOLE - EVERY MISS LISTED, GENERATED - AND THE GAME'S 43 VETOES OF 43 CHECKED AGAINST THE RECORD: THE SHARE OF LAWS PIS OPPOSES IS THE RECORD'S, THE VETO RATE AMONG THEM IS TWO AND A HALF TIMES IT, BUILT IN BY A BLOC VOTE (2026-10-04)
+
+**The ruling** (Elias, E4, 2026-10-04): *Put B1's backtest (hit rate and every miss) in your next report. A veto on all 43 of 43 statutes needs checking against the real record.*
+
+**Done:**
+- **The backtest, written whole and re-derivable** (`Tools/veto_b1_backtest.pl` writes `docs/generated/VETO_B1_BACKTEST.md`, listed in `docs/generated/README.md`). It holds the confusion matrix, the rates, every veto B1 misses with its full title, and every act B1 names that was not vetoed.
+  - **Its source:** the Sejm API's own record, as §757 sourced it (`third_readings_term10.csv`, `veto_record.csv`).
+  - **Its reader:** an RFC 4180 reader that dies on any anomaly.
+  - **The cross-check:** the workflow `pl-veto-record-check` had two analysts compute it independently and a reconciler recount it with a third parser. All three agree to the act, and the matrix equals §757's cell for cell.
+- **Base: 548 decided ordinary statutes**: 579 third readings, less 27 undecided and the 4 budget acts.
+
+**B1 on the record:**
+
+| | B1 names | vetoed (hit rate) | B1's precision | vetoes among all decided |
+|---|---|---|---|---|
+| the whole term | 166 | 45 of 53 (84.9 %) | 45 of 166 (27.1 %) | 53 of 548 |
+| Duda | 70 | 7 of 8 | 7 of 70 (10.0 %) | 8 of 223 |
+| Nawrocki | 96 | 38 of 45 | 38 of 96 (39.6 %) | 45 of 325 (13.8 %) |
+
+**The 8 vetoes B1 misses:**
+- **6** are PiS abstaining as a bloc.
+- **1** is a split club: animal protection, where 84 NO were a majority of those voting but not of the club's 188 members.
+- **1** is a club absent from the vote: Duda's veto of the 2024 budget-related act.
+
+**The acts B1 names that were not vetoed: 121.**
+- Duda signed 58 and sent 5 to the Tribunal.
+- Nawrocki signed 57 and sent 1 to the Tribunal.
+
+**The game's 43 of 43 against the record** (`PresidentialVetoDiagnostic` (i): 1 October 2026, the record's chamber, Tusk governing, Nawrocki president). Nawrocki's window runs from 2025-08-21, his first decision, to 2026-10-01, the last outcome on record: 325 decided acts.
+
+| | the game | the record (Nawrocki) |
+|---|---|---|
+| PiS opposes | 43 of the 130 that pass (33.1 %) | 96 of 325 (29.5 %) |
+| vetoed among those | 43 of 43 (100 %) | 38 of 96 (39.6 %) |
+| vetoed among all | 43 of 130 (33.1 %) | 45 of 325 (13.8 %) |
+| vetoes where PiS did not oppose | none, by construction | 7 of 45 |
+
+- **What matches:** the share of laws PiS opposes.
+- **What does not:** the decision. At the record's rate, the game's 43 would draw about 17 vetoes and about 26 signatures.
+- **Why 43 of 43 is built in, not earned:** a party votes as one bloc, so whenever PiS is against, its whole club is against and B1 always fires.
+- **The record's own split barely separates a veto from a signature.** Where every PiS deputy who voted said NO, Nawrocki vetoed 23 of 55 (41.8 %); where the club split, 15 of 41 (36.6 %).
+- **What the game cannot do yet:** a veto where PiS abstained or split (7 of Nawrocki's 45), or a referral to the Tribunal (3 of his 325).
+- **The alternative reading**, *PiS not a majority YES*, catches all 53 vetoes but names 272 acts at 19.5 %. In the game it could add at most 2 vetoes, which moves it further from the record, not closer.
+- **RozwojPlus**, §757's open question, changes none of the 12 decisions from sitting 63.
+
+**For Elias** - B1's precision in play is now his question:
+- keep B1 as ruled, and the game vetoes about 2.5 times as often as Nawrocki did;
+- or calibrate the decision on a PiS-opposed statute to the record (about 40 % of them), by a draw or by a second reading such as the law's salience;
+- or add the Tribunal referral as a third answer.
+
+Tier TOOLING + DOCUMENTS (a Perl tool, a generated file, the record): the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
