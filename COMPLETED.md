@@ -37381,3 +37381,25 @@ Tier DOCUMENTS (a plan, two specs' notes, the feature list): the bars over §772
 **PS-6 started:** US-1 is the next record (§782); US-2's plan is drawn from the code (the record by date: the 119th House on 3 January 2025, the president of record on 20 January 2025).
 
 **Bars** (tier DOCUMENTS, on this commit's own tree - US-1 stashed beside it): the document batch **8 of 8** (`docs781`: UpstreamCheck, DocumentClaimCheck, PreWiringPremiseCheck, D18InventoryCheck, DesignNotificationCheck, PlaySheetCheck, MojibakeCheck, ResidueCheck).
+
+## 782. PS-6 STARTED - US-1: THE US START SAYS WHAT IT HOLDS - NO ELECTION IN THIS GAME YET, THE START'S PRESIDENT AND HOUSE HOLDING AND NO SENATE MODELLED, ON THE FOLDER CARD, THE START CARD, THE BRIEF AND THE NOT-HELD REASON; NO RUN-UP PROMISED (2026-10-05)
+
+**The item** (`docs/specs/USA_STAGE_PLAN.md`, US-1; Elias's instruction with ruling F8: *"Then start PS-6."*): until the game holds a US election (US-8), the US start says that none is held and what holds instead; the card stays playable (§618).
+
+**Built:**
+- `WorldClock.NoElectionYet` - the USA's start alone (Italy's snap start, which also names a polling day the game does not hold, is PS-7's, on its row).
+- **The folder card's line** (`WorldClock.StartLine`): "OPENS 12 MAR 2024 · NO ELECTION IN THIS GAME YET".
+- **The start card's mode line** (`StartPoints.ModeLine`): "NO ELECTION YET" and the opening, in place of "RUN-UP" - the review's defect: the card the folder opens onto still promised the run-up to 5 November 2024. The card keeps the record's stamp and name.
+- **The brief** (`StartBrief`): the clause "No election is held in this game yet - the president and the House seated at the start hold, and no Senate is modelled." and the ledger's Election row "NONE IN THIS GAME YET · THE START'S PRESIDENT AND HOUSE HOLD", in place of a polling day; the class doc declares the exception (the election's slot reports the game's own calendar where `NoElectionYet` holds).
+- **`NationalElection.NotHeldReason`** for the USA in the same words.
+- **Why "seated at the start", not "as of record":** R-US1 (a) seats the record by its dates - the 119th House on 3 January 2025, the president on 20 January 2025 - and that is US-2, not built yet; until it is, a US game keeps the start's president and House for the whole run, and the words say exactly that (the review's second defect). US-2 rewrites them.
+- The plan's US-1 and US-8 lines carry these words.
+
+**Checked:** `StartBriefDiagnostic` pins every string whole - the clause, the row, the folder line, the start card's mode line, the not-held reason - and that `NoElectionYet` is the USA's alone over every country, and that every other playable start with a polling day keeps it in its brief and its ledger; `StartPointsDiagnostic` pins the US card's mode line beside Sweden's and France's. Named run `n782a`: 3 of 3 (with `WorldClockDiagnostic`). On screen (the real film): the folder line, the start card's mode line and the ledger's Election row; the brief's sentence and the not-held reason are proved by the diagnostic alone (no screen draws them before US-8).
+
+**The review** (`Reviews/2026-10-05_s782_us1_start_words.md`: the workflow `polisim-staged-review`, then a second pass on the fixes, every finding put to a refute-first skeptic, every report verbatim):
+- **First pass: two defects, fixed.** The start card the folder opens onto still promised "RUN-UP · OPENS 12 MAR 2024" to an election the game does not hold - `StartPoints.ModeLine` now says no election is held yet; and "the president and Congress hold as of record" was untrue before US-2 (a US game keeps the start's president and House for the whole run, and no Senate is modelled) - every surface now says what the build holds. Eleven lesser findings fixed: the pins whole and over every country, the folder line's tense, the film's stop frame, the docs' scope.
+- **Second pass: no defect.** Three comment-only findings - two docs worded wider than the USA-only predicate, a summary copying output strings (one stale since §631) - fixed.
+- **Not a money path**, so no ledger row.
+
+**Bars** (tier SIMULATION, on this commit's own tree): the cheap bar **97 of 97** (`cheap782`); the simulation bar **57 of 57** (`sim782`, the sentinel on fp755 unmoved); the REAL film the item owes, USA at 1280 (`real782`, cut at `01h_scenario_party_picker`): 6 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas violations across 4 asserts - read frame by frame: the folder card reads "OPENS 12 MAR 2024 · NO ELECTION IN THIS GAME YET" on one line; the start card "5 NOV 2024 · NO ELECTION YET · OPENS 12 MAR 2024", its name "Presidential election"; the ledger's Election row "NONE IN THIS GAME YET · THE START'S PRESIDENT AND HOUSE HOLD", on one line. Seen on the same frames, outside this item: Italy's folder card still promises "THE SNAP ELECTION OF 25 SEP 2022" (on the PS-7 row now), and the US start card's House bar is drawn in one flat ink, REP and DEM unmarked (for D-US).

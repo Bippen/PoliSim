@@ -51,6 +51,8 @@ namespace PoliSim.EditorTools
                 Check(StartPoints.For(CountryId.Poland)[1].Line == "LOCKED · THE PRESIDENTIAL START IS NOT YET BUILT" && StartPoints.For(CountryId.France)[0].Line == StartPoints.For(CountryId.Poland)[1].Line, "the two locked presidential cards carry the one reason in the player's words (18b)");
                 StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint fr);
                 Check(StartPoints.DateLine(fr) == "7 JUL 2024" && StartPoints.ModeLine(fr) == "WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024", "France's playable card: stamp 7 JUL 2024 · WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024");
+                StartPoints.TryPlayable(CountryId.USA, out StartPoints.StartPoint us);
+                Check(StartPoints.ModeLine(us) == "NO ELECTION YET · OPENS 12 MAR 2024" && !StartPoints.ModeLine(us).Contains("RUN-UP"), "the USA's card (PS-6 US-1): NO ELECTION YET · OPENS 12 MAR 2024 - no run-up to an election the game does not hold");
                 StartPoints.TryPlayable(CountryId.Sweden, out StartPoints.StartPoint se);
                 Check(StartPoints.DateLine(se) == "13 SEP 2026" && StartPoints.ModeLine(se) == "RUN-UP · OPENS 18 JAN 2026" && StartPoints.Name(se) == "Riksdag election", "Sweden's card: stamp 13 SEP 2026 · RUN-UP · OPENS 18 JAN 2026 · Riksdag election");
             }

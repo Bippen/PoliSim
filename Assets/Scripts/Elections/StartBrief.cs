@@ -10,7 +10,10 @@ namespace PoliSim.Elections
     /// written by hand, so it cannot go stale or invent. Its shape: <i>[Country], [start date]. [Government of record] has governed since [date],
     /// with [seats] of [chamber size] seats. Polling day is [date]. [n] parties sit in the [chamber].</i> Every clause carries the record it
     /// traces to (`WorldClock`'s chambers and governments of record, the seat tables, the calendar); a clause the record cannot fill says so
-    /// in the sentence rather than filling itself. The optional tagline is a labelled slot, empty until Elias reviews one.
+    /// in the sentence rather than filling itself. The optional tagline is a labelled slot, empty until Elias reviews one. One exception, stated: where
+    /// `WorldClock.NoElectionYet` holds (the USA's start, PS-6 US-1) - not every start whose election the game does not hold, which is
+    /// `WorldClock.TryNextPollingDay`'s answer (Italy's snap start is PS-7's) - the election's slot reports the game's own calendar, not the record's; its
+    /// basis is that ruling, not a record.
     /// </summary>
     public static class StartBrief
     {
@@ -109,7 +112,12 @@ namespace PoliSim.Elections
                 clauses.Add(new Clause("No government of record holds on this date.", "WorldClock.Governments - a gap"));
             }
 
-            if (start.PollingDay != DateTime.MinValue)
+            if (WorldClock.NoElectionYet(id))
+            {
+                // PS-6, US-1: the game holds no election here yet - the clause says what holds instead, never a polling day it does not hold
+                clauses.Add(new Clause("No election is held in this game yet - the president and the House seated at the start hold, and no Senate is modelled.", "WorldClock.NoElectionYet (PS-6, US-1; §618's ruling 4)"));
+            }
+            else if (start.PollingDay != DateTime.MinValue)
             {
                 clauses.Add(new Clause("Polling day is " + Long(start.PollingDay) + ".", start.Playable ? "StartPoints (" + start.Basis + ")" : "StartPoints - the record's date; the contest is locked"));
             }
@@ -193,7 +201,11 @@ namespace PoliSim.Elections
                 rows.Add(new Row("Government", "— NONE OF RECORD", "WorldClock.Governments - a gap"));
             }
 
-            if (start.PollingDay != DateTime.MinValue)
+            if (WorldClock.NoElectionYet(id))
+            {
+                rows.Add(new Row("Election", "NONE IN THIS GAME YET · THE START'S PRESIDENT AND HOUSE HOLD", "WorldClock.NoElectionYet (PS-6, US-1; §618's ruling 4)"));   // US-1: what holds, not a polling day
+            }
+            else if (start.PollingDay != DateTime.MinValue)
             {
                 bool past = start.PollingDay < opens;
                 rows.Add(new Row(past ? "Last polling day" : "Polling day", Stamp(start.PollingDay),

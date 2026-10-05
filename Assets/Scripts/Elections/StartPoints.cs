@@ -115,12 +115,15 @@ namespace PoliSim.Elections
         public static string DateLine(StartPoint p) =>
             p.PollingDay != DateTime.MinValue ? Stamp(p.PollingDay) : p.Year.ToString(CultureInfo.InvariantCulture);
 
-        /// <summary>18a: the playable card's mode and opening in caption mono - RUN-UP · OPENS 18 JAN 2026; GOVERNING · OPENS 18 JUL 2024; a snap start SNAP ELECTION · OPENS 6 NOV 2024. Null for a locked card (its stamp reads LOCKED there).</summary>
+        /// <summary>18a: the playable card's mode and opening in caption mono, in the words this method returns (`StartPointsDiagnostic` pins them): the run-up, a snap
+        /// start's election, France's what-if (`WorldClock.GoverningModeOnly`), or, where `WorldClock.NoElectionYet` holds (the USA's start, PS-6 US-1; Italy's snap start
+        /// is PS-7's), that no election is held yet - never a run-up. Null for a locked card (its stamp reads LOCKED there).</summary>
         public static string ModeLine(StartPoint p)
         {
             if (!p.Playable) { return null; }
             string opens = "OPENS " + Stamp(p.Opens);
             if (WorldClock.GoverningModeOnly(p.Country)) { return "WHAT-IF · YOUR PARTY GOVERNS · " + opens; }   // PS-3d (§631, ruled): the card states the what-if plainly
+            if (WorldClock.NoElectionYet(p.Country)) { return "NO ELECTION YET · " + opens; }   // PS-6 US-1 (its review): the card the folder opens onto promises no run-up
             return (WorldClock.IsSnapStart(p.Country) ? "SNAP ELECTION · " : "RUN-UP · ") + opens;
         }
 

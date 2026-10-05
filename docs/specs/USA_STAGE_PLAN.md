@@ -166,7 +166,7 @@ This document installed under `docs/specs/` (suggested `USA_STAGE_PLAN.md`); the
 *Done when:* one § carries the plan, its deferrals and its ruling list; the row carries references only — no line numbers, no counts, and no backticked `Type.Member` for a member not yet built (`DocumentClaimCheck` reads the root documents); the document batch is green; the reply to Elias puts R-US1 to R-US13.
 
 **US-1 — The US start says what it holds. Size S.**
-Until US-8, the card's line (`WorldClock.StartLine`), its brief (`StartBrief`'s presidency branch) and `NationalElection.NotHeldReason` say that no US election is modelled yet and what holds instead — the president and Congress as of record. The card stays playable (it is Ruled, §618); the words change, not its state.
+Until US-8, the folder card's line (`WorldClock.StartLine`), the start card's mode line (`StartPoints.ModeLine`), its brief (`StartBrief`'s presidency branch) and `NationalElection.NotHeldReason` say that no US election is modelled yet and what holds instead — the president and the House seated at the start, no Senate modelled, until US-2 seats the record by its dates. The card stays playable (it is Ruled, §618); the words change, not its state. **Built: `COMPLETED.md` §782.**
 *Needs:* US-0; E2's Polish declarations read.
 *Done when:* `StartBriefDiagnostic` pins the new clauses and drops the polling-day clause; the cheap and simulation bars are green (Elections tier); a REAL film of the start card at 1280 (Canvas text drawn by `CountrySelectorScreen`).
 
@@ -232,7 +232,7 @@ A contest's winner becomes president-elect and takes office at noon on 20 Januar
 - `WorldClock.TryNextPollingDay` returns the US presidential days under 3 U.S.C. §21(1) — 5 Nov 2024, then every fourth year (midterm days join at US-27) — and `WorldClock.PollingDayBasis` cites the statute read at US-3.
 - The run-up and the campaign window open with no staged campaign (`LiveCampaignSetup.TryFor`'s stated reason stands, as Poland's does).
 - On polling day the day hook holds the count: the prediction × the factors (US-6) → the states by R-US14 from the previous presidential election's state shares → the electors by `ElectoralCollege` on the catalog; with no one at 270, R-US3. The count is a pure function of the world's state, callable whether or not the USA is the player's country — R-US5's row then needs only its gate.
-- The verdict names the winner, the electors and the oath's date; the electors' meeting and the count of 6 January are dates (3 U.S.C. §§7 and 15). The president-elect takes office through US-7. Congress stays as of record by date (US-2), and `NationalElection.NotHeldReason` says so instead of its House-only line.
+- The verdict names the winner, the electors and the oath's date; the electors' meeting and the count of 6 January are dates (3 U.S.C. §§7 and 15). The president-elect takes office through US-7. Congress stays as of record by date (US-2), and `NationalElection.NotHeldReason` says so in place of US-1's line.
 - The contest is stored on the Country beside Poland's and saved (a save-format step with its migration). The Parliament page's president row serves the USA; the reference view (`WorldClock.TryReference`) shows the record's 312–226 and the government after it. §709's US pre-start record is judged for the first time.
 - No night until D-US is built: the verdict lands at once, as Poland's does until D-PL is built.
 
