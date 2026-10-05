@@ -36904,3 +36904,88 @@ It answers §770's first owed ruling: as built, the model elected Trzaskowski on
 - **The factors are fitted on the reference world's poll.** A change to the prediction moves that poll and fails the fit check; a refit is then his to rule.
 
 Tier ELECTIONS + UI (the presidential model; the President slip's day words): the review two passes; the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
+
+## 773. RULING E2 INSTALLED: THE ASSUMPTIONS RULED - THE SEJM'S FIRST SITTING, THE REJECTED BUDGET, THE PREVIEW, THE DAYS, THE OATH, THE GATE AND THE PLAYER'S LEADER ACCEPTED; THE FINANCE PARTNER'S RATES AND THE PENSION AGE OVERRULED - IN POLAND ONLY SPENDING STAYS IN THE BUDGET ACT, EVERY STATUTE PART ITS OWN VETOABLE ACT, AND A RATE MOVES ONLY THROUGH THE TAX ACT, WHOEVER PROPOSES IT (2026-10-04)
+
+**The ruling** (Elias, E2, 2026-10-04), verbatim:
+- *D3, the Sejm's first sitting: accepted. Art. 109(2) caps it at 30 days after the election.*
+- *D4, a rejected budget takes its tax act down with it: accepted.*
+- *D4, the budget preview applies the whole draft: accepted. The slip's veto warning stays beside it.*
+- *D4, the Finance partner moving rates without a vote: overruled. A rate moves only through the tax act (Sejm vote, then the veto), whoever proposes it. The partner's fiscal stance (A2) acts on the budget's totals.*
+- *D4, the pension age staying in the budget act: overruled. In Poland the pension age is set by ordinary statute, so it travels in its own act and can be vetoed, like tax rates. General rule for Poland: only spending stays in the budget act.*
+- *C4, election day on the last Sunday of the window: accepted. One principle for both votes: follow the most recent practice (2023's first Sunday for the Sejm, 2025's last Sunday for the President).*
+- *C4, the swearing-in date, the 100,000-signature check and your own party leader standing: accepted.*
+- *Poland's coalition formation: source the parties' real 2023 declarations by read, dated, before PS-6. Until then the derived red lines carry the LOW CONFIDENCE flag, as D1 does.*
+
+**The accepted - ruled where they stood:**
+- **The Sejm's first sitting.** `WorldClock.PolandFirstSittingAfterDays` is ruled, Art. 109(2), and its basis line says so (`PollingDayDiagnostic` holds the word).
+- **The rejected budget takes its tax act with it** - ruled, in the ruling's words, for the tax act. The other acts ride the same way, voted only once the budget is adopted: a READING, DECLARED (the pension act by E2's "like tax rates", the benefit and fund acts by the general rule's reading). The `PolishStatuteActs` summary says which is which.
+- **The preview.** It applies the whole draft, as before, the slip's veto line beside it.
+- **The days, one principle: the most recent practice.** The Sejm on the window's first Sunday (2023), the President on its last (2025). `PresidentialElection.FirstVoteFor` says ruled.
+- **The oath, the gate and the player's own leader.** Ruled in `PresidentialElection`'s account.
+- **These relabels landed in §772's commit**, with E1's files.
+
+**Overruled - built:**
+- **In Poland, only spending stays in the budget act** (`BudgetBill.StatutePart`; `Changes` / `PartOf` / `Without` / `SpendingOnly`; `ParliamentSystem.BudgetActOf`). §768's one tax act is now **`SimulationManager.PolishStatuteActs`**: each statute part the budget changes is its own act. It gets its own division, titled *Tax act: …*, *Pension act: …*, *Benefits act: …* or *Fund act: …*, and goes to the President as every ordinary statute does.
+  - **The parts:** the rates (D4); **the pension age** (E2: "set by ordinary statute"); and **the benefit levels and the sovereign fund's rules** - READING, DECLARED, of the general rule: the game's bill holds these two other parts, and neither is a spending line.
+  - **Where an act falls, or its veto stands:** what it would set stays as it is, and the rest applies. The fall costs what a failed bill costs, recorded as its own ledger event (*Tax act failed* and so on).
+  - **The pension act has politics.** The chamber reads the age as a move on the pension line (§590), so PiS can oppose it.
+  - **The fund act has none, by construction.** The chamber reads no axis for the fund's rules, inside the budget or out, so it is voted uncontested and never vetoed. What the fund's rules come to is the budget act's outcome alone.
+  - **What the separation does change, DECLARED:** every act is a division of its own, and `CabinetSystem.UnderPressure` reads the day's newest division alone. So on a turn-boundary day an act that passes after a fallen one hides the fall from the cabinet's pressure roll; the fund act, always passed and voted last among the acts, does so whenever it is voted.
+  - **The fund act's title** names every rule it moves. The raw weights are given as the Fund tab gives them, without a unit, and the shares of the fund they come to are given beside them. A figure is listed only where its printed "from" and "to" differ (§768's rule).
+- **A rate moves only through the tax act, whoever proposes it** (`SimulationManager.PartnerTaxAct`).
+  - **What changed.** The Finance partner's yearly step at the boundary, in the player's Poland, takes the household rates up where the lines' clamps leave it to. Those rates are now a **tax act tabled by the partner's party**, voted and put to the President, its rates alone (a fund the country holds draws no fund act).
+  - **If it falls:** the rates leave the turn's decision; only the lines' part lands and is counted (the step's points less the rates' share); and the year's step is spent all the same, as a rejected bill spends it (§716).
+  - **The government's own bill** already carried the step through its tax act (§768).
+- **The pages.**
+  - The Budget's *if passed* slip lists each act the draft carries, with its count and the President's answer.
+  - The pending cards show one card per act. An act the chamber weighs none of reads *Uncontested - the chamber weighs none of its terms; it passes, and is signed, if the budget passes*. The budget card whose every change went to its acts reads *Unopposed - the budget act changes nothing; the acts with it are voted apart*, the slip's own reading.
+  - Where the President holds a veto, the Finance-stance tile says that the rates' part is a tax act of its own, voted and then put to him.
+  - Election night's standing-budget scan passes over every act (`SimulationManager.IsStatuteActTitle`).
+
+**Checked** (`PresidentialVetoDiagnostic`, n773f, on the planted chamber - KO 262, PiS 194, Konf 4):
+- **(k) The pension act.** The Sejm passes 65 → 67 and PiS opposes it. The budget act carries the spending alone. The record reads *Annual budget bill | [motion] Pension act: the pension age 65 to 67 | Vetoed by the President (Karol Nawrocki): … - the veto stands, 266 for, 276 needed*. The age stays and the spending moves.
+- **(k2)** A bill changing every statute part: its budget act changes none of them and keeps the spending.
+- **(k3) The benefits act**, through the game's own path: means-tested welfare 2.1 → 0. Asserted: the found step, the act's divisions and the veto. The level stays and the spending moves.
+- **(k4) The fund act:** created, uncontested (no side recorded), passed and signed.
+- **(k4b) A standing fund's rules moved** (PLANTED): every rule named, the moved shares beside the weights, the unmoved shares not named.
+- **(k4c)** A step whose share moves less than a tenth: that share is not named.
+- **(l) The partner's boundary rates as a tax act**, on a PLANTED Written:
+  - voted and vetoed, the rate out of the decision, the lines' part alone counted;
+  - a fund the country holds draws no fund act;
+  - a rates-only step whose act falls lands nothing and is spent all the same.
+- **(m) and (m2) The boundary itself**, on a planted head (NL) with Finance on KO and every line pinned:
+  - the partner's tightening becomes a tax act that stands on the record's 2024 chamber;
+  - and falls on a Sejm re-planted to Konfederacja's seats alone. Rates and VAT stay, nothing is counted, the step is spent on the boundary date, and the fall is on the approval ledger.
+- **Mutation-proved** (n773m1, n773m2, source restored byte-exact). Each of these went red:
+  - `Record` moved above `PartnerTaxAct`;
+  - `PartnerTaxAct` moved below the turn's apply;
+  - `PartOf(Benefits)` emptied of its levels.
+- The cases of §761 and §768 hold.
+
+**Poland's coalition formation** (the ruling's last item) is §776: the parties' 2023 declarations sourced by read and dated, then read by the formation. E2's interim LOW CONFIDENCE flag was never shown, because the sourcing landed the day the ruling was given.
+
+**The review** (`Reviews/2026-10-04_s773_e2_statute_acts.md`: the workflow `polisim-staged-review`, three passes, every finding put to a refute-first skeptic, every report verbatim):
+- **First pass: one defect, fixed.** The partner's tax act voted every part, so a fund the country held drew a phantom *Fund act: … dissolved*. `PolishStatuteActs` now takes the parts to vote, and the partner's act votes its rates alone.
+- **First pass, the rest taken:** the move line after a fall, the boundary itself tested, the fund act's title and card, the benefit and fund acts through the game's path, the single source of the tax act's title, the stale comments.
+- **Second pass: no defect; fourteen minors and notes, all fixed.** Among them:
+  - the fund act's "changes no outcome", which was not true of the pressure roll (now declared, as above);
+  - RULED scoped to the ruling's words;
+  - the fund title's units;
+  - the budget card;
+  - (k3)'s veto asserted;
+  - (m2);
+  - (k4)'s no-side check and (k4b).
+- **Third pass: no defect; one minor (the shares' "X % to X %") and seven notes, all fixed.**
+- **Ledger rows:** `BudgetBill.cs`, `SimulationManager.cs` (s773).
+
+**Owed to Elias, from this item:**
+- **The general rule's reading.** The benefit levels and the fund's rules are taken as statute parts, and the rejected budget takes them with it as it takes the tax act. If "spending" was meant to take in the benefit levels, one line moves them back.
+- **The fund act is uncontested** (no axis), so its separation changes no outcome of the fund's own. **But voted last, it hides an earlier act's fall from the boundary's pressure roll.** Two behaviour changes are his to rule:
+  - (a) vote the fund act first, which removes only the fund's share;
+  - (b) make the pressure test read the day's lost bills rather than the newest division, which also ends `UnderPressure`'s standing breach of the log's write-only rule, named now in `DivisionLog`'s doc.
+- **PREMISE, DECLARED (the review's finding 16):** the turn preview counts the Finance partner's boundary rates whole; it never votes their tax act. This extends D4's accepted premise, and the stance tile's clause is the warning beside it. No live state reaches it today: the partner's step reaches the rates only where the lines cannot carry it (pinned, or at their clamps), and nothing in play pins a line.
+- **A Poland the player does not play** moves its rates without votes, as every AI country does (no Sejm is simulated for it).
+- **A fallen act costs the government approval** even where the Finance partner proposed it.
+
+Tier SIMULATION + UI (a money path, ledger rows s773; the Budget page, the pending cards, a signing plate's title): the review three passes; the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.

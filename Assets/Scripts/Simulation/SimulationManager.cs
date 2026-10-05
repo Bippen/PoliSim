@@ -1209,7 +1209,7 @@ namespace PoliSim.Simulation
         /// <summary>The budget's day: the country's procedure decides between the government's bill and the alternative, and what the chamber adopts is applied.</summary>
         private void ResolveGovernmentBudget(Country country, BudgetBill government)
         {
-            BillConcern concernG = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, government));   // §768: Poland's budget act without its rates
+            BillConcern concernG = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, government));   // §768/§773: Poland's budget act - the spending alone
             _pendingBudgetAlternativeByCountry.TryGetValue(country.Id, out BudgetBill alternative);
             Elections.WorldClock.BudgetProcedure procedure = Elections.WorldClock.BudgetProcedureOf(country.Id);
             float approvalBefore = country.State.ApprovalRating;
@@ -1262,41 +1262,142 @@ namespace PoliSim.Simulation
                 ? "Annual budget: the government's bill failed - the old budget stands (this country's procedure is not yet sourced)"
                 : "Annual budget: the government's bill failed with no alternative tabled - the old budget stands");
             ParliamentSystem.RecordDivision(country, title, concernG, passed, CurrentDate);
-            BudgetBill appliedG = passed ? PolishTaxAct(country, government) : government;   // §768 (D4): Poland's rates travel in their own act
-            approvalBefore = country.State.ApprovalRating;   // §768 (the second review): a fallen tax act's cost is its own ledger event - the budget's event starts after it
+            List<BudgetBill.StatutePart> fellG = new List<BudgetBill.StatutePart>();
+            BudgetBill appliedG = passed ? PolishStatuteActs(country, government, out fellG) : government;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
+            approvalBefore = country.State.ApprovalRating;   // §768 (the second review): a fallen act's cost is its own ledger event - the budget's event starts after it
             ParliamentSystem.ApplyBillResult(country, appliedG, passed, ApplyBudgetBillSpendingAndSwf);
-            if (passed) { FinancePartner.CreditAdopted(country, government, ratesLanded: ReferenceEquals(appliedG, government)); }   // §755: counted only where adopted; §768: only what landed
+            if (passed) { FinancePartner.CreditAdopted(country, government, ratesLanded: !fellG.Contains(BudgetBill.StatutePart.Rates)); }   // §755: counted only where adopted; §768: only what landed
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "The government's budget adopted" : "The government's budget failed", country.State.ApprovalRating - approvalBefore);
             Debug.Log($"BUDGET: {country.Id} - {title}");
         }
 
         /// <summary>
-        /// §768 (Elias's ruling D4): POLAND'S BUDGET IS TWO ACTS. The budget act the Sejm has just adopted stays veto-proof (Konstytucja Art. 224); any
-        /// change to a tax rate it carries travels in a separate TAX ACT - an ordinary statute (taxes are set by statute, Art. 217), voted by the Sejm on
-        /// the rates alone (its own division) and put to the President like every ordinary statute (B1, <see cref="PresidentialVetoGate"/>). Where the
-        /// tax act fails, or its veto stands, the old rates stand and the budget runs on them: the bill applies with its rates withheld. Returns the bill
-        /// to apply. Every other country, and a bill that changes no rate, applies whole.
+        /// §768 (Elias's ruling D4) and §773 (E2): POLAND'S BUDGET IS THE BUDGET ACT AND ITS STATUTES. The budget act the Sejm has just adopted stays
+        /// veto-proof (Konstytucja Art. 224) and carries the spending alone (E2: "only spending stays in the budget act"); each statute part the bill
+        /// changes travels in its own ACT (<see cref="BudgetBill.StatutePart"/>) - the rates a tax act (taxes are set by statute, Art. 217), the pension age
+        /// a pension act (E2), the benefit levels and the fund's rules their own acts (the general rule's reading, DECLARED) - each voted by the Sejm on
+        /// that part alone (its own division) and put to the President like every ordinary statute (B1, <see cref="PresidentialVetoGate"/>). Where an act
+        /// fails, or its veto stands, what it would have set stays as it is and the rest applies: the bill applies with that part withheld, and the fall
+        /// costs what every failed bill costs. RULED (E2) for the tax act - "a rejected budget takes its tax act down with it: accepted"; the other acts ride
+        /// the same way (READING, DECLARED: the pension act by E2's "like tax rates", the benefit and fund acts with the general rule's reading) - each is
+        /// voted only once the budget is adopted.
+        /// ⚠ The fund act is UNCONTESTED BY CONSTRUCTION: the chamber's concern weighs none of the fund's terms (<see cref="ParliamentSystem.GetBudgetBillConcern"/>,
+        /// the stated simplification), so it always passes and is signed - what the fund's rules come to is the budget act's outcome alone. ⚠ But every act
+        /// is a division of its own, and <see cref="CabinetSystem.UnderPressure"/> reads the day's newest division alone, whoever recorded it: on a
+        /// turn-boundary day that is the budget's last act only where nothing is recorded after it before the boundary's cabinet roll (the order is
+        /// <see cref="AdvanceCountryDayTick"/>'s, then <see cref="AdvanceTurn"/>'s). So an act that passes after a fallen one hides the fall from that
+        /// day's pressure test - the fund act, always passed and voted last among the acts, whenever it is voted. DECLARED, and Elias's to rule
+        /// (§773's second and third reviews).
+        /// Returns the bill to apply and, in <paramref name="fell"/>, the parts withheld. <paramref name="only"/> limits the acts voted to those parts (the
+        /// Finance partner's boundary act votes its rates alone - §773's review); null votes every part the bill changes. Every other country, and a bill
+        /// that changes no statute part, applies whole.
         /// </summary>
-        private BudgetBill PolishTaxAct(Country country, BudgetBill bill)
+        private BudgetBill PolishStatuteActs(Country country, BudgetBill bill, out List<BudgetBill.StatutePart> fell, IReadOnlyList<BudgetBill.StatutePart> only = null)
         {
-            if (!Elections.PresidentialVeto.Applies(country.Id) || bill == null || !bill.ChangesTaxRates(country)) { return bill; }
-            BudgetBill taxAct = bill.TaxActPart();
-            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, taxAct);
-            bool passed = ParliamentSystem.WouldBillPass(country, concern);
-            string title = TaxActTitle(country, taxAct);
-            DivisionRecord vote = ParliamentSystem.RecordDivision(country, title, concern, passed, CurrentDate);
-            passed = PresidentialVetoGate(country, vote, passed);
-            Debug.Log($"BUDGET: {country.Id} - {title}: {(passed ? "stands - the new rates apply" : "falls - the old rates stand and the budget runs on them")}");
-            if (passed) { return bill; }
-            // a statute that falls costs what every failed bill costs (ApplyXResult's FAIL branch) - the review's question (2), answered by the rule the others follow
-            float approvalBefore = country.State.ApprovalRating;
-            country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - ParliamentSystem.BillFailedApprovalCost, 0f, 100f);
-            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, "Tax act failed", country.State.ApprovalRating - approvalBefore);
-            return bill.WithoutRateChanges();
+            fell = new List<BudgetBill.StatutePart>();
+            if (bill == null || !Elections.PresidentialVeto.Applies(country.Id)) { return bill; }
+            BudgetBill applied = bill;
+            foreach (BudgetBill.StatutePart part in only ?? BudgetBill.StatuteParts)
+            {
+                if (!bill.Changes(part, country)) { continue; }
+                BudgetBill act = bill.PartOf(part);
+                BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, act);
+                bool passed = ParliamentSystem.WouldBillPass(country, concern);
+                string title = StatuteActTitle(country, part, act);
+                DivisionRecord vote = ParliamentSystem.RecordDivision(country, title, concern, passed, CurrentDate);
+                passed = PresidentialVetoGate(country, vote, passed);
+                Debug.Log($"BUDGET: {country.Id} - {title}: {(passed ? "stands - it applies" : "falls - what it would set stays as it is, and the rest applies")}");   // "the rest": the budget act's, or the partner's step less its rates (§773's second review)
+                if (passed) { continue; }
+                fell.Add(part);
+                applied = applied.Without(part, country);
+                // a statute that falls costs what every failed bill costs (ApplyXResult's FAIL branch) - §768's review, question (2)
+                float approvalBefore = country.State.ApprovalRating;
+                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - ParliamentSystem.BillFailedApprovalCost, 0f, 100f);
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, ActWords(part) + " failed", country.State.ApprovalRating - approvalBefore);
+            }
+            return applied;
         }
 
-        /// <summary>§768: how a tax act's division title begins - the night's standing-budget scan tells it from the budget act by it.</summary>
-        public const string TaxActTitlePrefix = "Tax act: ";
+        /// <summary>§773: a statute act's name as its title and ledger event read it - every act's title is this, ": ", then what it moves.</summary>
+        public static string ActWords(BudgetBill.StatutePart part) =>
+            part == BudgetBill.StatutePart.Rates ? "Tax act" : part == BudgetBill.StatutePart.PensionAge ? "Pension act" : part == BudgetBill.StatutePart.Benefits ? "Benefits act" : "Fund act";
+
+        /// <summary>§773: whether a division's title is a Polish statute act's - one a budget carried, or the Finance partner's boundary tax act
+        /// (<see cref="PartnerTaxAct"/>). The night's standing-budget scan passes over them: the budget act is the standing one.</summary>
+        public static bool IsStatuteActTitle(string title)
+        {
+            if (string.IsNullOrEmpty(title)) { return false; }
+            foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (title.StartsWith(ActWords(part) + ": ", System.StringComparison.Ordinal)) { return true; } }
+            return false;
+        }
+
+        /// <summary>§773: a statute act's title as a player reads it - what it moves, from and to.</summary>
+        private static string StatuteActTitle(Country country, BudgetBill.StatutePart part, BudgetBill act)
+        {
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            switch (part)
+            {
+                case BudgetBill.StatutePart.Rates:
+                    return TaxActTitle(country, act);
+                case BudgetBill.StatutePart.PensionAge:
+                {
+                    float inForce = PensionAgeStatute.AgeInForce(country, country.CalendarYear);
+                    string to = act.PensionAge < 0f ? "the statute's own (" + PensionAgeStatute.Format(PensionAgeStatute.AgeInForce(country.Id, country.CalendarYear)) + ")"
+                        : PensionAgeStatute.Format(Mathf.Clamp(act.PensionAge, BudgetBill.PensionAgeMin, BudgetBill.PensionAgeMax));
+                    return ActWords(part) + ": the pension age " + PensionAgeStatute.Format(inForce) + " to " + to;
+                }
+                case BudgetBill.StatutePart.Benefits:
+                {
+                    var moves = new List<string>();
+                    foreach (KeyValuePair<WelfareProgramType, float> kv in act.WelfarePrograms)
+                    {
+                        WelfareProgram standing = country.WelfarePrograms.Find(w => w.Type == kv.Key);
+                        float to = Mathf.Clamp(kv.Value, 0f, 100f);
+                        if (standing == null || !standing.IsImplemented || System.Math.Abs(to - standing.GenerosityLevel) <= 1e-4f) { continue; }
+                        moves.Add(Words(kv.Key.ToString()) + " " + standing.GenerosityLevel.ToString("0.#", inv) + " to " + to.ToString("0.#", inv));
+                    }
+                    return ActWords(part) + ": " + (moves.Count > 0 ? string.Join(", ", moves) : "the standing levels");
+                }
+                default:
+                {
+                    SovereignWealthFund fund = country.SovereignWealthFund;
+                    if (fund == null) { return ActWords(part) + ": the sovereign wealth fund created"; }
+                    if (!act.SwfShouldExist) { return ActWords(part) + ": the sovereign wealth fund dissolved"; }
+                    // §773's review: every rule the act moves, from and to (the test ChangesFund applies). The second review's finding 8: the contribution is
+                    // a share of GDP a year and the domestic allocation a share of the fund, but the asset-class weights are RAW - normalised by their live sum
+                    // (SovereignWealthFund's own doc) - so they are said as the Fund tab says them, without a unit, and the shares of the fund they come to
+                    // are said beside them (the quantity the tab's right-hand figure shows, here to a tenth). The third review's finding 1: a figure is
+                    // listed only where its printed from and to differ, so a small step never reads "X % to X %" - §768's rule for the tax act's title
+                    var rules = new List<string>();
+                    void Moved(string words, string from, string to, string tail) { if (from != to) { rules.Add(words + " " + from + " to " + to + tail); } }
+                    void Rule(string name, float from, float to, string of) => Moved(name, from.ToString("0.0#", inv) + " %", to.ToString("0.0#", inv) + " %", of);
+                    void Weight(string name, float from, float to) => Moved(name, from.ToString("0.#", inv), to.ToString("0.#", inv), string.Empty);
+                    Rule("its contribution", fund.ContributionRatePercent, act.SwfContributionRatePercent, " of GDP a year");
+                    Rule("its domestic allocation", fund.DomesticAllocationPercent, act.SwfDomesticAllocationPercent, " of the fund");
+                    int weightsFrom = rules.Count;
+                    Weight("its equities weight", fund.EquitiesWeight, act.SwfEquitiesWeight);
+                    Weight("its bonds weight", fund.BondsWeight, act.SwfBondsWeight);
+                    Weight("its infrastructure weight", fund.InfrastructureWeight, act.SwfInfrastructureWeight);
+                    Weight("its real-estate weight", fund.RealEstateWeight, act.SwfRealEstateWeight);
+                    if (rules.Count > weightsFrom)
+                    {
+                        var mix = new SovereignWealthFund { EquitiesWeight = act.SwfEquitiesWeight, BondsWeight = act.SwfBondsWeight, InfrastructureWeight = act.SwfInfrastructureWeight, RealEstateWeight = act.SwfRealEstateWeight };
+                        var shares = new List<string>();
+                        foreach (SovereignWealthAssetClass assetClass in (SovereignWealthAssetClass[])System.Enum.GetValues(typeof(SovereignWealthAssetClass)))
+                        {
+                            string from = (fund.GetNormalizedWeight(assetClass) * 100f).ToString("0.#", inv), to = (mix.GetNormalizedWeight(assetClass) * 100f).ToString("0.#", inv);
+                            if (from != to) { shares.Add(Words(assetClass.ToString()) + " " + from + " % to " + to + " %"); }
+                        }
+                        if (shares.Count > 0) { rules.Add("its shares of the fund: " + string.Join(", ", shares)); }
+                    }
+                    return ActWords(part) + ": the sovereign wealth fund's rules" + (rules.Count > 0 ? " - " + string.Join("; ", rules) : string.Empty);
+                }
+            }
+        }
+
+        /// <summary>An identifier in words: "IncomeTax" reads "income tax"; an acronym ("VAT") stays as it is.</summary>
+        private static string Words(string id) =>
+            id == id.ToUpperInvariant() ? id : System.Text.RegularExpressions.Regex.Replace(id, "(?<=[a-z])(?=[A-Z])", " ").ToLowerInvariant();
 
         /// <summary>§768: the tax act's title as a player reads it - each rate it moves, from and to (invariant numbers), and the schedule named where it moves a sub-row.</summary>
         private static string TaxActTitle(Country country, BudgetBill taxAct)
@@ -1324,7 +1425,7 @@ namespace PoliSim.Simulation
                 }
                 if (differs) { parts.Add(TaxWords(kv.Key) + "'s schedule"); }
             }
-            return TaxActTitlePrefix + (parts.Count > 0 ? string.Join(", ", parts) : "the standing rates");
+            return ActWords(BudgetBill.StatutePart.Rates) + ": " + (parts.Count > 0 ? string.Join(", ", parts) : "the standing rates");
         }
 
         /// <summary>A tax type in words: "IncomeTax" reads "income tax"; an acronym ("VAT") stays as it is.</summary>
@@ -1430,11 +1531,11 @@ namespace PoliSim.Simulation
             Country country = _world.GetCountry(countryId);
             if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); CountBudgetVoteOnAgreements(country); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
             float direction = ParliamentSystem.GetBillDirection(country, bill);
-            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, bill));   // P3-A2: the chamber votes on what the bill concerns; §768: Poland's budget act without its rates
+            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, bill));   // P3-A2: the chamber votes on what the bill concerns; §768/§773: Poland's budget act - the spending alone
             bool passed = ParliamentSystem.WouldBillPass(country, concern);
             ParliamentSystem.RecordDivision(country, "Annual budget bill", concern, passed, CurrentDate);
-            BudgetBill applied = passed ? PolishTaxAct(country, bill) : bill;   // §768 (D4): Poland's rates travel in their own act
-            float approvalBeforeBill = country.State.ApprovalRating;   // §768 (the second review): after the tax act, whose fall is its own ledger event
+            BudgetBill applied = passed ? PolishStatuteActs(country, bill, out _) : bill;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
+            float approvalBeforeBill = country.State.ApprovalRating;   // §768 (the second review): after the acts, each fall its own ledger event
             ParliamentSystem.ApplyBillResult(country, applied, passed, ApplyBudgetBillSpendingAndSwf);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
             _pendingBudgetBillByCountry.Remove(countryId);
@@ -2612,6 +2713,31 @@ namespace PoliSim.Simulation
         /// (<see cref="TableGovernmentBudget"/>). One rule, read by the boundary and by the preview.</summary>
         private bool PartnerStepsAtBoundary(Country country) =>
             FinancePartnerRuns(country) && !(AiFinanceMinistryEnabled && !PlayerGoverns(country) && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id);
+
+        /// <summary>
+        /// §773 (Elias's ruling E2, overruling §768's open question): THE FINANCE PARTNER'S RATES IN POLAND ARE A TAX ACT. "A rate moves only through the
+        /// tax act (Sejm vote, then the veto), whoever proposes it. The partner's fiscal stance (A2) acts on the budget's totals." The boundary's step, where
+        /// the lines' clamps left it to raise the household rates, puts those rates to the Sejm as a tax act the partner's party tables
+        /// (<see cref="PolishStatuteActs"/>) and to the President; where it falls the rates are taken out of the turn's decision, only the lines' part of the
+        /// step lands and is counted, and the year's step is spent all the same (a rejected bill spends it, §716).
+        /// </summary>
+        private void PartnerTaxAct(Country country, PolicyDecision decision, FinancePartner.Written written, System.DateTime boundary)
+        {
+            var act = new BudgetBill { GovernmentBill = true, TabledBy = written.Holder };
+            foreach (TaxType type in written.Taxes) { if (decision.TaxRateOverrides.TryGetValue(type, out float rate)) { act.TaxLines[type] = rate; } }
+            // the rates alone (§773's review): a bill built new names no fund, which the fund's act would read as a dissolution never asked
+            PolishStatuteActs(country, act, out List<BudgetBill.StatutePart> fell, new[] { BudgetBill.StatutePart.Rates });
+            if (!fell.Contains(BudgetBill.StatutePart.Rates)) { return; }
+            foreach (TaxType type in written.Taxes) { decision.TaxRateOverrides.Remove(type); }
+            written.Taxes.Clear();
+            written.StancePoints -= written.RatePoints;
+            written.RatePoints = 0f;
+            written.RateAmount = 0f;
+            written.Moves.Add(written.Lines.Count > 0
+                ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "the rates' part fell - its tax act failed in the Sejm or its veto stood; the lines' part stands: {0:+0.00;-0.00} pp of GDP", written.StancePoints)
+                : "the rates' part fell - its tax act failed in the Sejm or its veto stood; nothing of the step lands");
+            if (!written.Any) { country.FinancePartnerSteppedOn = boundary; }   // nothing left to record: the year's step is spent all the same
+        }
 
         /// <summary>PS-3g (§634): the portfolio a law bill belongs to by its category - crime INTERIOR; the fiscal, monetary and electricity-tax categories FINANCE; the labour categories none (the prime minister's).</summary>
         public static CabinetPortfolio? PortfolioOfLaw(LawBill bill)
@@ -4675,6 +4801,12 @@ namespace PoliSim.Simulation
                 // §755 (Elias's ruling A2): a partner holding Finance moves the FISCAL STANCE toward the one it asks, whoever leads and whoever holds it -
                 // after the ministry, whose treaty rule has first claim on a line or rate it wrote; withdrawn after the turn as the ministry's is.
                 FinancePartner.Written partnerWrote = PartnerStepsAtBoundary(country) ? FinancePartner.Apply(country, decision, ComingBoundaryDate) : null;
+                // §773 (Elias's ruling E2): "A rate moves only through the tax act (Sejm vote, then the veto), whoever proposes it." In the player's Poland
+                // the step's household rates are a tax act the partner's party tables, voted and put to the President before the turn applies them
+                if (partnerWrote != null && partnerWrote.Taxes.Count > 0 && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && Elections.PresidentialVeto.Applies(country.Id))
+                {
+                    PartnerTaxAct(country, decision, partnerWrote, ComingBoundaryDate);
+                }
                 FinancePartner.Record(country, partnerWrote, ComingBoundaryDate);
                 if (partnerWrote != null && partnerWrote.Moves.Count > 0 && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id) { Debug.Log($"LEVERS: {country.Id} - the Finance minister's party ({partnerWrote.Holder}) moves {string.Join("; ", partnerWrote.Moves)}"); }
                 // THE AI ENERGY MINISTRY (P6-F2d, §544): HELD - AiEnergyMinistry.Live is false until its family is dumped and ruled; with it on, a country the player
@@ -5082,7 +5214,9 @@ namespace PoliSim.Simulation
             CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
             // §716 (the review's defect 4): the Finance partner's boundary step, as the boundary takes it - after the ministry's claim, which the preview
             // reads (Decide is pure) without running it. Computed on the real country (the clone carries no government; its lines are the real ones'),
-            // written into the caller's decision for the preview and withdrawn before it returns.
+            // written into the caller's decision for the preview and withdrawn before it returns. PREMISE, DECLARED (§773's review): in the player's Poland
+            // the boundary puts the step's household rates to the Sejm as a tax act (PartnerTaxAct); the preview never votes it and counts those rates
+            // whole, as D4's accepted premise counts a draft whole - the Finance-stance tile's veto clause is the warning beside it.
             Country previewedReal = _world.GetCountry(countryId);
             FinancePartner.Written previewPartner = null;
             if (previewedReal != null && PartnerStepsAtBoundary(previewedReal))

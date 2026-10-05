@@ -75,8 +75,9 @@ namespace PoliSim.Data
 
         public int DaysRemaining;
 
-        // §768 (Elias's ruling D4): POLAND'S BUDGET IS TWO ACTS - the budget act stays veto-proof (Konstytucja Art. 224), and any change to a tax rate
-        // travels in a separate tax act, an ordinary statute the President may veto (taxes are set by statute, Art. 217). These three split a bill so.
+        // §768 (Elias's ruling D4), generalised by §773 below: POLAND'S BUDGET IS THE BUDGET ACT AND ITS STATUTES - the budget act stays veto-proof
+        // (Konstytucja Art. 224), and any change to a tax rate travels in a separate tax act, an ordinary statute the President may veto (taxes are set by
+        // statute, Art. 217). These split a bill's rates so; §773's parts split the rest.
 
         /// <summary>§768: whether the bill changes a tax rate in force on <paramref name="country"/> - a levied line's rate, or a sub-row's rate a schedule
         /// sets (−1 keeps the standing figure). A bill names every levied line at its requested rate, so a line at its current rate is no change.</summary>
@@ -115,6 +116,129 @@ namespace PoliSim.Data
             var act = (BudgetBill)MemberwiseClone();
             act.TaxLines = new Dictionary<TaxType, float>();
             act.BracketRates = new Dictionary<TaxType, float[]>();
+            return act;
+        }
+
+        // §773 (Elias's ruling E2): "General rule for Poland: only spending stays in the budget act." What a Polish statute sets travels in its own act,
+        // voted and put to the President like the tax act: the rates (D4), the pension age ("set by ordinary statute, so it travels in its own act and
+        // can be vetoed, like tax rates"), and - READING, DECLARED, the general rule's - the benefit levels and the sovereign fund's rules, which are not
+        // spending lines either: the parts that leave the budget act are whatever `BudgetBill.StatuteParts` lists. The budget act keeps the spending
+        // lines alone. ⚠ The fund's act is UNCONTESTED BY CONSTRUCTION: the chamber's concern weighs none of the fund's terms
+        // (`ParliamentSystem.GetBudgetBillConcern`), so it always passes and is signed - what the fund's rules come to is the budget act's outcome alone.
+        // ⚠ But every act is a division of its own, and `CabinetSystem.UnderPressure` reads the day's newest division alone, whoever recorded it: on a
+        // turn-boundary day that is the budget's last act only where nothing is recorded after it before the boundary's cabinet roll (the order is
+        // `SimulationManager.AdvanceCountryDayTick`'s, then `SimulationManager.AdvanceTurn`'s). So an act that passes after a fallen one hides the fall
+        // from that day's pressure test - the fund's act, always passed and voted last among the acts (`BudgetBill.StatuteParts`), whenever it is
+        // voted. DECLARED, and Elias's to rule (§773's second and third reviews).
+
+        /// <summary>§773: the parts of a bill that in Poland travel each in its own act, in the order the acts are voted.</summary>
+        public enum StatutePart { Rates, PensionAge, Benefits, Fund }
+
+        /// <summary>§773: every statute part, in the order the acts are voted.</summary>
+        public static readonly StatutePart[] StatuteParts = { StatutePart.Rates, StatutePart.PensionAge, StatutePart.Benefits, StatutePart.Fund };
+
+        /// <summary>§773: whether the bill changes what <paramref name="part"/> sets on <paramref name="country"/> - a part at the figure in force is no change.</summary>
+        public bool Changes(StatutePart part, Country country)
+        {
+            switch (part)
+            {
+                case StatutePart.Rates: return ChangesTaxRates(country);
+                case StatutePart.PensionAge: return ChangesPensionAge(country);
+                case StatutePart.Benefits: return ChangesBenefits(country);
+                default: return ChangesFund(country);
+            }
+        }
+
+        /// <summary>§773: whether the bill sets a pension age other than the one in force (a negative figure returns the statute's own for the year).</summary>
+        public bool ChangesPensionAge(Country country)
+        {
+            if (!PensionAgeSet || !PensionAgeStatute.Has(country.Id)) { return false; }
+            float inForce = PensionAgeStatute.AgeInForce(country, country.CalendarYear);
+            float set = PensionAge < 0f ? PensionAgeStatute.AgeInForce(country.Id, country.CalendarYear) : UnityEngine.Mathf.Clamp(PensionAge, PensionAgeMin, PensionAgeMax);
+            return System.Math.Abs(set - inForce) > 1e-6f || (PensionAge < 0f) != (country.PensionAgeOverride < 0f);
+        }
+
+        /// <summary>§773: whether the bill sets an implemented program's generosity other than its own (the bill names every implemented program).</summary>
+        public bool ChangesBenefits(Country country)
+        {
+            foreach (KeyValuePair<WelfareProgramType, float> kv in WelfarePrograms)
+            {
+                WelfareProgram standing = country.WelfarePrograms.Find(w => w.Type == kv.Key);
+                if (standing != null && standing.IsImplemented && System.Math.Abs(UnityEngine.Mathf.Clamp(kv.Value, 0f, 100f) - standing.GenerosityLevel) > 1e-4f) { return true; }
+            }
+            return false;
+        }
+
+        /// <summary>§773: whether the bill creates or dissolves the sovereign fund, or sets any of its rules other than its own (the bill names them all).</summary>
+        public bool ChangesFund(Country country)
+        {
+            SovereignWealthFund fund = country.SovereignWealthFund;
+            if (SwfShouldExist != (fund != null)) { return true; }
+            if (fund == null) { return false; }
+            bool Moved(float set, float standing) => System.Math.Abs(set - standing) > 1e-4f;
+            return Moved(SwfContributionRatePercent, fund.ContributionRatePercent) || Moved(SwfDomesticAllocationPercent, fund.DomesticAllocationPercent)
+                || Moved(SwfEquitiesWeight, fund.EquitiesWeight) || Moved(SwfBondsWeight, fund.BondsWeight)
+                || Moved(SwfInfrastructureWeight, fund.InfrastructureWeight) || Moved(SwfRealEstateWeight, fund.RealEstateWeight);
+        }
+
+        /// <summary>§773: the act <paramref name="part"/> travels in - that part of this bill alone, tabled by whoever tabled the bill, so the chamber votes
+        /// on it and reads the same author. ⚠ For the vote's concern and title only, never applied: a bill built new carries no fund
+        /// (<see cref="SwfShouldExist"/> false), and applied it would dissolve one.</summary>
+        public BudgetBill PartOf(StatutePart part)
+        {
+            switch (part)
+            {
+                case StatutePart.Rates: return TaxActPart();
+                case StatutePart.PensionAge: return new BudgetBill { GovernmentBill = GovernmentBill, TabledBy = TabledBy, PensionAgeSet = PensionAgeSet, PensionAge = PensionAge };
+                case StatutePart.Benefits: return new BudgetBill { GovernmentBill = GovernmentBill, TabledBy = TabledBy, WelfarePrograms = new Dictionary<WelfareProgramType, float>(WelfarePrograms) };
+                default:
+                    return new BudgetBill
+                    {
+                        GovernmentBill = GovernmentBill, TabledBy = TabledBy, SwfShouldExist = SwfShouldExist, SwfContributionRatePercent = SwfContributionRatePercent,
+                        SwfDomesticAllocationPercent = SwfDomesticAllocationPercent, SwfEquitiesWeight = SwfEquitiesWeight, SwfBondsWeight = SwfBondsWeight,
+                        SwfInfrastructureWeight = SwfInfrastructureWeight, SwfRealEstateWeight = SwfRealEstateWeight,
+                    };
+            }
+        }
+
+        /// <summary>§773: this bill with <paramref name="part"/> withheld - what applies where that act falls or its veto stands: what the part sets stays as
+        /// it is on <paramref name="country"/> and the rest of the bill applies. The fund's rules are written back as they stand, since the bill always
+        /// names them.</summary>
+        public BudgetBill Without(StatutePart part, Country country)
+        {
+            if (part == StatutePart.Rates) { return WithoutRateChanges(); }
+            var act = (BudgetBill)MemberwiseClone();
+            switch (part)
+            {
+                case StatutePart.PensionAge:
+                    act.PensionAgeSet = false;
+                    act.PensionAge = -1f;
+                    break;
+                case StatutePart.Benefits:
+                    act.WelfarePrograms = new Dictionary<WelfareProgramType, float>();
+                    break;
+                default:
+                    SovereignWealthFund fund = country.SovereignWealthFund;
+                    act.SwfShouldExist = fund != null;
+                    if (fund != null)
+                    {
+                        act.SwfContributionRatePercent = fund.ContributionRatePercent;
+                        act.SwfDomesticAllocationPercent = fund.DomesticAllocationPercent;
+                        act.SwfEquitiesWeight = fund.EquitiesWeight;
+                        act.SwfBondsWeight = fund.BondsWeight;
+                        act.SwfInfrastructureWeight = fund.InfrastructureWeight;
+                        act.SwfRealEstateWeight = fund.RealEstateWeight;
+                    }
+                    break;
+            }
+            return act;
+        }
+
+        /// <summary>§773: the budget act - this bill with every statute part withheld: the spending lines alone (and the Finance partner's bookkeeping).</summary>
+        public BudgetBill SpendingOnly(Country country)
+        {
+            BudgetBill act = this;
+            foreach (StatutePart part in StatuteParts) { act = act.Without(part, country); }
             return act;
         }
     }

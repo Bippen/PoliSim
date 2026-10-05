@@ -323,7 +323,11 @@ namespace PoliSim.UI
                     Figure = v => Signed(v) + " pp of GDP",
                     EndLeft = "Tighten", EndRight = "Expand",
                     Census = (mine ? "YOU HOLD FINANCE AS A PARTNER · YOU ACT THROUGH THE STANCE ONLY" : "THE FINANCE MINISTER (" + who.ToUpperInvariant() + ") ACTS THROUGH THE STANCE ONLY · THE HEAD OF GOVERNMENT KEEPS EVERY OTHER LEVER")
-                        + " · MOVED SO FAR IN THIS GOVERNMENT " + Signed(moved) + " PP · AT MOST " + UiFormat.Number(FinancePartner.StepPointsPerYear, 2) + " PP OF GDP A YEAR, THROUGH THE LINES - IN A TIGHTENING THE INCOME TAX AND VAT ONLY FOR WHAT THE LINES' LIMITS LEAVE",
+                        + " · MOVED SO FAR IN THIS GOVERNMENT " + Signed(moved) + " PP · AT MOST " + UiFormat.Number(FinancePartner.StepPointsPerYear, 2) + " PP OF GDP A YEAR, THROUGH THE LINES - IN A TIGHTENING THE INCOME TAX AND VAT ONLY FOR WHAT THE LINES' LIMITS LEAVE"
+                        // §773 (Elias's ruling E2): "A rate moves only through the tax act (Sejm vote, then the veto), whoever proposes it."
+                        + (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId)
+                            ? " · WHERE THE PRESIDENT HOLDS A VETO, THE RATES' PART IS A TAX ACT OF ITS OWN - THE SEJM VOTES IT, THEN THE PRESIDENT; WHERE IT FALLS THE OLD RATES STAND AND ONLY THE LINES' PART COUNTS"
+                            : string.Empty),
                 }, mine);
             _dialSlipBookOverride = null;
             if (mine && !Mathf.Approximately(set, asked)) { _simulationManager.SetFinanceStanceTarget(PlayerCountryId, set); }
@@ -951,6 +955,16 @@ namespace PoliSim.UI
         // If passed
         // =============================================================================================================================================
 
+        /// <summary>§773: a statute part as the if-passed slip names it - the subject of its line.</summary>
+        private static string StatutePartWords(BudgetBill.StatutePart part) =>
+            part == BudgetBill.StatutePart.Rates ? "ITS RATES ARE" : part == BudgetBill.StatutePart.PensionAge ? "ITS PENSION AGE IS"
+            : part == BudgetBill.StatutePart.Benefits ? "ITS BENEFIT LEVELS ARE" : "ITS FUND RULES ARE";
+
+        /// <summary>§773: what stays where a statute act falls - the if-passed slip's words.</summary>
+        private static string StatutePartStays(BudgetBill.StatutePart part) =>
+            part == BudgetBill.StatutePart.Rates ? "THE OLD RATES WOULD STAND" : part == BudgetBill.StatutePart.PensionAge ? "THE PENSION AGE WOULD STAY AS IT IS"
+            : part == BudgetBill.StatutePart.Benefits ? "THE BENEFIT LEVELS WOULD STAY AS THEY ARE" : "THE FUND WOULD STAY AS IT IS";
+
         /// <summary>
         /// The composition's *if passed* panel, in the right-hand four columns, drawn only while a draft stands (the columns are kept either way - the
         /// page's head). The count first: ✓ or ✗ (the count decides, FOR against AGAINST, the undecided abstaining - P3-A2's ruling), the seats FOR of the
@@ -961,7 +975,7 @@ namespace PoliSim.UI
         private void DrawBudgetIfPassed(float width, BudgetBill draft, int changes)
         {
             if (changes <= 0) { return; }
-            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, draft));   // §768: Poland's budget act without its rates
+            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, draft));   // §768/§773: Poland's budget act - the spending alone
             bool contested = concern != null && !concern.IsEmpty;
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
             int forSeats = 0, againstSeats = 0, undecided = 0;
@@ -1025,21 +1039,28 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(fx + fw + V35.Px(6f), countRow.y, Mathf.Max(1f, countRow.xMax - fx - fw - V35.Px(6f)), countH), of, V35Serif(V35.Floor, PoliSimTheme.TextMuted));
             }
             SlipAnchor(countRow, "ifpassed:count");
-            // §768 (Elias's ruling D4): where the President holds a veto, the draft's rates travel in their own tax act - its count and his answer
-            bool taxAct = PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId) && draft.ChangesTaxRates(_playerCountry);
+            // §768 (Elias's ruling D4), §773 (E2): where the President holds a veto, each statute part the draft changes travels in its own act - the
+            // rates, the pension age, the benefit levels, the fund's rules - its count and his answer
+            var acts = new List<BudgetBill.StatutePart>();
+            if (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId))
+            {
+                foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (draft.Changes(part, _playerCountry)) { acts.Add(part); } }
+            }
             var countSlip = new SlipContent(wouldPass ? "WOULD PASS" : "WOULD FAIL")
                 .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
-                    : taxAct ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED")
+                    : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED")
                 .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE");
-            if (taxAct)
+            foreach (BudgetBill.StatutePart part in acts)
             {
-                BillConcern taxConcern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft.TaxActPart());
-                bool taxPasses = _chamberVerdicts.WouldPass(_playerCountry, taxConcern);
-                PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, _simulationManager.CurrentDate);
-                countSlip.Add("IF THE BUDGET PASSES, ITS RATES ARE A SEPARATE TAX ACT - " + (!taxPasses ? "IT WOULD FAIL; THE OLD RATES WOULD STAND"
-                    : ChamberVerdicts.VetoStands(taxVeto) ? "IT WOULD BE VETOED; THE OLD RATES WOULD STAND"
-                    : taxVeto != null && taxVeto.Vetoed ? "IT WOULD BE VETOED AND THE VETO OVERRIDDEN" : "IT WOULD PASS AND BE SIGNED"));
-                if (ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { countSlip.Add(taxVetoLine); }
+                BillConcern actConcern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft.PartOf(part));
+                bool actPasses = _chamberVerdicts.WouldPass(_playerCountry, actConcern);
+                PoliSim.Elections.PresidentialVeto.Outcome actVeto = _chamberVerdicts.Veto(_playerCountry, actConcern, _simulationManager.CurrentDate);
+                string stays = StatutePartStays(part);
+                countSlip.Add("IF THE BUDGET PASSES, " + StatutePartWords(part) + " A SEPARATE " + SimulationManager.ActWords(part).ToUpperInvariant() + " - "
+                    + (!actPasses ? "IT WOULD FAIL; " + stays
+                    : ChamberVerdicts.VetoStands(actVeto) ? "IT WOULD BE VETOED; " + stays
+                    : actVeto != null && actVeto.Vetoed ? "IT WOULD BE VETOED AND THE VETO OVERRIDDEN" : "IT WOULD PASS AND BE SIGNED"));
+                if (ChamberVerdicts.VetoLine(PlayerCountryId, actVeto) is string actVetoLine) { countSlip.Add(actVetoLine); }
             }
             if (contested)
             {

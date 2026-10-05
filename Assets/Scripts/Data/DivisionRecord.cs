@@ -75,6 +75,12 @@ namespace PoliSim.Data
     /// impossible to reason about from the code that appears to compute the outcome. It is written by
     /// <c>ParliamentSystem.RecordDivision</c> and read by the UI, and by nothing else.
     ///
+    /// <para>⚠ <b>Not kept since P2-5.2.</b> <c>CabinetSystem.UnderPressure</c> reads the newest entry back - a bill lost
+    /// today puts the government under pressure, and the boundary's cabinet roll follows it. Since §773 a Polish budget
+    /// records several acts on one day, so a later one that passes can stand between a fall and the reader (DECLARED in
+    /// <c>BudgetBill</c>'s §773 note, and Elias's to rule). Named here so the breach is on the record, not hidden (§773's
+    /// second and third reviews).</para>
+    ///
     /// <para>Bounded on the same principle as <see cref="StatHistory"/>: a plain list with the oldest
     /// entry evicted past <see cref="MaxEntries"/>, rather than a true circular buffer. At this size a
     /// head index would buy nothing and would cost the natural oldest-to-newest ordering the UI

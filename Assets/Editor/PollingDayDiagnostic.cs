@@ -77,8 +77,8 @@ namespace PoliSim.EditorTools
                     F("D3's rule on the Sejm's own term dates (api_sejm_term.json): from the 8th term's first sitting {0:yyyy-MM-dd} it gives {1:yyyy-MM-dd} (2019's), from the 9th's {2:yyyy-MM-dd} {3:yyyy-MM-dd} (2023's); from the 7th's {4:yyyy-MM-dd} {5:yyyy-MM-dd} - the record's 2015 election was on 25 Oct, the exception the ruling names",
                         termsRead ? terms[8] : DateTime.MinValue, rule2019, termsRead ? terms[9] : DateTime.MinValue, rule2023, termsRead ? terms[7] : DateTime.MinValue, rule2015));
                 Check(WorldClock.PollingDayBasis(CountryId.Poland) != null && WorldClock.PollingDayBasis(CountryId.Poland).Contains("[PKW-SEN-2023]") && WorldClock.PollingDayBasis(CountryId.Poland).Contains("Art. 98 ust. 2")
-                      && WorldClock.PollingDayBasis(CountryId.Poland).Contains("[API-TERM]") && WorldClock.PollingDayBasis(CountryId.Poland).Contains("DECLARED"),
-                    "Poland's basis cites the PKW's notice [PKW-SEN-2023], Art. 98 ust. 2's window, the 10th term's sitting [API-TERM] and the declared first-sitting premise");
+                      && WorldClock.PollingDayBasis(CountryId.Poland).Contains("[API-TERM]") && WorldClock.PollingDayBasis(CountryId.Poland).Contains("ruled, E2") && !WorldClock.PollingDayBasis(CountryId.Poland).Contains("DECLARED"),
+                    "Poland's basis cites the PKW's notice [PKW-SEN-2023], Art. 98 ust. 2's window, the 10th term's sitting [API-TERM] and the first-sitting day, ruled (E2, §773)");
                 foreach (CountryId other in new[] { CountryId.Italy, CountryId.USA, CountryId.France })
                 {
                     Check(!WorldClock.TryNextPollingDay(other, new DateTime(2026, 1, 18), out _) && WorldClock.PollingDayBasis(other) == null, other + ": no polling day and no basis - its calendar is not modelled, its chamber holds as of record");

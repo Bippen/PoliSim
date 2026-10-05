@@ -6537,9 +6537,10 @@ namespace PoliSim.UI
                 List<DivisionRecord> divisions = _playerCountry.Divisions.Entries;
                 for (int d = divisions.Count - 1; d >= 0; d--)
                 {
-                    // §768 (the review's defect 4): a tax act, or the vote on a veto, is newer than the budget act it rode with on the same day - never the standing budget
+                    // §768 (the review's defect 4): a statute act (§773: the tax, pension, benefits or fund act a budget carried, or the Finance partner's
+                    // boundary tax act, which rides with none), or the vote on a veto, is never the standing budget
                     if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0 && divisions[d].Required == 0
-                        && !divisions[d].Title.StartsWith(SimulationManager.TaxActTitlePrefix, System.StringComparison.Ordinal)) { standingBudget = divisions[d]; break; }
+                        && !SimulationManager.IsStatuteActTitle(divisions[d].Title)) { standingBudget = divisions[d]; break; }
                 }
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
                 // against the seed - the seated election, Sweden 2026 since K-1, which the allocator reproduces seat for seat (§601's
@@ -9288,17 +9289,27 @@ namespace PoliSim.UI
             // was scored on, not just a pre-formatted sentence, so the lean bar below can show the
             // seat-weighted alignment Parliament actually decides on rather than only its sign.
             var pending = new List<(string Label, BillConcern Concern, UiPalette.SystemArea Area, PoliSim.Elections.PresidentialVeto.Act Act)>();
+            var uncontestedWords = new Dictionary<string, string>();   // §773: a card whose empty concern is not "no change requested", by its label
 
             BudgetBill budgetBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             if (budgetBill != null)
             {
-                pending.Add(($"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct));   // §761: the budget act is never vetoed (Art. 224); §768: without the rates a tax act takes
-                if (!ReferenceEquals(ParliamentSystem.BudgetActOf(_playerCountry, budgetBill), budgetBill))
+                string budgetLabel = $"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).";
+                pending.Add((budgetLabel,
+                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct));   // §761: the budget act is never vetoed (Art. 224); §768/§773: the spending alone, each statute part its own act
+                if (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId))
                 {
-                    // §768 (Elias's ruling D4): Poland's rates ride with the budget as their own tax act - voted with it, put to the President
-                    pending.Add(($"Tax act with the budget - voted if the budget passes, in {budgetBill.DaysRemaining} day(s).",
-                        ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill.TaxActPart()), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    // §768 (Elias's ruling D4), §773 (E2): each statute part Poland's budget changes rides with it as its own act - voted if it passes, put to the President
+                    foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts)
+                    {
+                        if (!budgetBill.Changes(part, _playerCountry)) { continue; }
+                        string actLabel = $"{SimulationManager.ActWords(part)} with the budget - voted if the budget passes, in {budgetBill.DaysRemaining} day(s).";
+                        pending.Add((actLabel, ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill.PartOf(part)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                        // §773's review: an act that changes something the chamber weighs none of (the fund's rules) is uncontested - not "no change requested"
+                        uncontestedWords[actLabel] = "Uncontested - the chamber weighs none of its terms; it passes, and is signed, if the budget passes";
+                        // §773's second review: a budget whose every change went to its acts changes nothing itself - the slip's own reading, not "no change requested"
+                        uncontestedWords[budgetLabel] = "Unopposed - the budget act changes nothing; the acts with it are voted apart";
+                    }
                 }
             }
 
@@ -9373,7 +9384,7 @@ namespace PoliSim.UI
 
             foreach ((string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act) in pending)
             {
-                DrawPendingBillCard(label, concern, area, act);
+                DrawPendingBillCard(label, concern, area, act, uncontestedWords.TryGetValue(label, out string uncontested) ? uncontested : null);
             }
         }
 
@@ -9391,7 +9402,7 @@ namespace PoliSim.UI
         /// as a bar only, with no number attached, because its display range is a presentation choice
         /// rather than anything the simulation claims precision about.
         /// </summary>
-        private void DrawPendingBillCard(string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act)
+        private void DrawPendingBillCard(string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act, string uncontested = null)
         {
             // P3-A3 (2026-09-03): the card's verdict is the vote's own - over the bill's concern (the tariff on
             // openness inside it, R-CL2's axis kept) - and the breakdown beneath the map says why, party by party.
@@ -9404,7 +9415,7 @@ namespace PoliSim.UI
             BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
             DrawColoredLabel(
-                contested ? (vetoed ? "Currently leans VETOED" : wouldPass ? "Currently leans PASS" : "Currently leans FAIL") : "Unopposed - no change requested",
+                contested ? (vetoed ? "Currently leans VETOED" : wouldPass ? "Currently leans PASS" : "Currently leans FAIL") : uncontested ?? "Unopposed - no change requested",
                 _labelStyle,
                 UiPalette.GetDeltaColor(wouldPass && !vetoed ? 1f : -1f, higherIsBetter: true));
 

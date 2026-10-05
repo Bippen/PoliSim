@@ -423,7 +423,8 @@ namespace PoliSim.Simulation
         ///
         /// WRITE-ONLY. Nothing in the Simulation namespace reads country.Divisions back. It is a record
         /// OF the simulation, never an input TO it - see DivisionLog's own doc comment for why that
-        /// constraint is load-bearing rather than tidiness.
+        /// constraint is load-bearing rather than tidiness. ⚠ Not kept since P2-5.2: `CabinetSystem.UnderPressure`
+        /// reads the newest entry back (a bill lost today) - named in DivisionLog's doc (§773's second review).
         /// </summary>
         public static DivisionRecord RecordDivision(Country country, string title, float direction, bool passed, System.DateTime date, BillAxis axis = BillAxis.Fiscal)
             => RecordDivision(country, title, BillConcern.FromLegacy(direction, axis), passed, date, axis);   // P3-A3: the scalar path records through the model too, reasons included
@@ -892,9 +893,15 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>§768 (Elias's ruling D4; the review's defect 1): THE BUDGET ACT a chamber votes - where the President holds a veto the game runs
-        /// (Poland) and the bill changes a tax rate, the bill without its rates (they are the tax act's, voted apart); otherwise the bill itself.</summary>
-        public static BudgetBill BudgetActOf(Country country, BudgetBill bill) =>
-            bill != null && Elections.PresidentialVeto.Applies(country.Id) && bill.ChangesTaxRates(country) ? bill.WithoutRateChanges() : bill;
+        /// (Poland) and the bill changes what a statute sets, the bill's spending alone (§773, Elias's ruling E2: "only spending stays in the budget act" -
+        /// the rates, the pension age, the benefit levels and the fund's rules are each their own act, voted apart - the benefit levels and the fund's rules
+        /// by the general rule's reading, DECLARED); otherwise the bill itself.</summary>
+        public static BudgetBill BudgetActOf(Country country, BudgetBill bill)
+        {
+            if (bill == null || !Elections.PresidentialVeto.Applies(country.Id)) { return bill; }
+            foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (bill.Changes(part, country)) { return bill.SpendingOnly(country); } }
+            return bill;
+        }
 
         /// <summary>
         /// P4-A2 (Playtest 4, 2026-09-04): **a budget decomposes into its lines.** Each line loads the CHES axis it

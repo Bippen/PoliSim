@@ -372,7 +372,7 @@ namespace PoliSim.Elections
         public static string PollingDayBasis(CountryId id) =>
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
             : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
-            : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - DECLARED)"   // §762, §767
+            : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - ruled, E2); the principle for both of Poland's votes, ruled with it: the most recent practice"   // §762, §767, §773
             : null;
 
         /// <summary>§767 (Elias's ruling D3) - Konstytucja Art. 98 ust. 2: the President orders the Sejm's election for a non-working day within the 30 days
@@ -386,8 +386,9 @@ namespace PoliSim.Elections
             return opens.AddDays(toSunday);
         }
 
-        /// <summary>§767, DECLARED - the premise D3 needs and no ruling fixed: a Sejm the game elects first sits on this day after its polling day -
-        /// Konstytucja Art. 109 ust. 2's last day ("w ciągu 30 dni od dnia wyborów"); the record's 2019 Sejm sat first on the 30th day, 2023's on the 29th.</summary>
+        /// <summary>§767; RULED §773 (Elias's ruling E2: "D3, the Sejm's first sitting: accepted. Art. 109(2) caps it at 30 days after the election"):
+        /// a Sejm the game elects first sits on this day after its polling day - Konstytucja Art. 109 ust. 2's last day ("w ciągu 30 dni od dnia wyborów");
+        /// the record's 2019 Sejm sat first on the 30th day, 2023's on the 29th.</summary>
         public const int PolandFirstSittingAfterDays = 30;
 
         /// <summary>
