@@ -1,14 +1,14 @@
 // §574 (2026-09-22) — THE DOCUMENT TIER'S BAR, OUT OF THE ENGINE.
 //
-// Measured: a document bar is 23 s of wall for ≈ 0 s of work, because Unity's start is the whole of it (§573). The eight
+// Measured: a document bar is 23 s of wall for ≈ 0 s of work, because Unity's start is the whole of it (§573). The
 // checks it runs read files and print. This runs the same source files in a console process - about a second - and
 // exits with the worst code any of them wanted, exactly as `CheckSuite.RunDocumentBatch` does.
 //
-// ⚠ IT RUNS FIVE OF THE TIER'S EIGHT, AND THE THREE IT LEAVES ARE NAMED. `D18InventoryCheck` reads the game's own party and
+// ⚠ IT RUNS FIVE OF THE TIER'S CHECKS, AND THE ONES IT LEAVES ARE NAMED. `D18InventoryCheck` reads the game's own party and
 // area tables (PoliSim.Data, PoliSim.UI) and would drag the engine in behind them; `PlaySheetCheck` reflects over
 // `CampaignPressure` for the same reason; `MojibakeCheck` reads every file's bytes and its verdict depends on the Editor's
-// own encoding behaviour, which a console build does not reproduce - it reported a file set the Unity bar does not. Those
-// three stay in the Editor and the document bar still runs them. **This runner is a LOOP instrument, not the bar**: it
+// own encoding behaviour, which a console build does not reproduce - it reported a file set the Unity bar does not; `UsStateSwingCheck` (§787) compiles against the elections model and the
+// generated catalog. Those stay in the Editor and the document bar still runs them. **This runner is a LOOP instrument, not the bar**: it
 // answers in about a second while a record is being written, and the bar is unchanged.
 using System;
 using System.Collections.Generic;

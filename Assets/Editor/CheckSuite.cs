@@ -273,6 +273,7 @@ namespace PoliSim.EditorTools
             // to name members that have since been deleted.
             ("DocumentClaimCheck", DocumentClaimCheck.Run),
             ("GeneratedCatalogCheck", GeneratedCatalogCheck.Run),
+            ("UsStateSwingCheck", UsStateSwingCheck.Run),   // PS-6 US-4 (§787): the states from the national vote three ways (R-US14), pinned, the US model card's readings
 
             // §419 (2026-09-09): the same idiom one document over. `GeneratedCatalogCheck` guards a
             // generated C# catalog against its CSV; this guards the ASK's inventory against the repo it
@@ -735,6 +736,7 @@ namespace PoliSim.EditorTools
             ("PlaySheetCheck", PlaySheetCheck.Run),                     // docs/play/PLAY_SHEET.md against the code and its source record
             ("MojibakeCheck", MojibakeCheck.Run),                       // text decoded once too few times
             ("ResidueCheck", ResidueCheck.Run),                         // the residue, read off the live documents
+            ("UsStateSwingCheck", UsStateSwingCheck.Run),               // §787: the US model card's readings against the measurement - a card-only commit still runs it
         };
 
         /// <summary>
