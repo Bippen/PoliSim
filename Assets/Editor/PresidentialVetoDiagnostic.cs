@@ -28,20 +28,31 @@ namespace PoliSim.EditorTools
     ///
     /// <para><b>B1 and B2 (Elias's rulings, 2026-10-02).</b> B1: <i>"The President vetoes an ordinary statute when a majority of his backing party's
     /// deputies voted against it. Two kinds of act can't be vetoed: the budget act (Constitution art. 224 ...) and constitutional amendments (art. 235(7)).
-    /// Budget-related acts are ordinary statutes and can be vetoed."</i> - <see cref="Vetoes"/>, backtested in (g) on the 10th Sejm's record
+    /// Budget-related acts are ordinary statutes and can be vetoed."</i> - widened by F3 below (<see cref="AtRisk"/>), backtested in (g) on the 10th Sejm's record
     /// (`ElectionsData/poland/veto_record.csv`, `third_readings_term10.csv`, from the Sejm API's per-MP votes, clubs summed). B2: <i>"3/5 of the deputies
     /// voting, abstentions included in the base ... Required = ceil(0.6 × (yes + no + abstain))"</i> - <see cref="Required"/>, checked in (f) against
     /// every override vote of the term. **LIVE since §761**: the helpers below read the runtime class (`PresidentialVeto`) the Sejm's statutes pass
     /// through, so the backtest and the constants test the rule the game runs; (h) drives the gate itself on planted divisions (vetoed, overridden, an
     /// amendment), and (i) drives one statute through the game's own bill path - introduced, resolved, its effect withheld where the veto stands. Then
     /// (j) (§768, ruling D4) a player's budget moving a rate and a spending line, stepped through the game's own path: the budget act adopted, the rate
-    /// in its own tax act, vetoed where PiS opposes it, the old rate standing while the spending moves, and a budget that changes no rate one division;
-    /// (k) (§773, ruling E2) a pension-age step in its own pension act, vetoed, while the budget act carries the spending alone - with (k2) a bill
-    /// changing every statute part, (k3) a benefit-level step in its own act, vetoed, (k4) a fund created by an act uncontested by construction (no
+    /// in its own tax act, at risk where PiS does not vote for it and vetoed by the draw planted to veto (F3), the old rate standing while the spending moves, and a
+    /// budget that changes no rate one division; (k) (§773, ruling E2) a pension-age step in its own pension act, at risk and vetoed so, while the budget
+    /// act carries the spending alone - with (k2) a bill changing every statute part, (k3) a benefit-level step in its own act, at risk and vetoed so,
+    /// (k4) a fund created by an act uncontested by construction (no
     /// side recorded) and (k4b) a standing fund's rules moved, its raw weights said as the Fund tab says them, through the same path; (l) the Finance
     /// partner's boundary rates put to the Sejm as a tax act, on a PLANTED Written, its rates alone (a held fund draws no fund act), and a rates-only
     /// step spent though nothing lands; (m) the turn boundary itself, on a planted head and partner, the partner's tax act standing - and (m2) falling
     /// on a re-planted Sejm, so the boundary's order is guarded on both branches.</para>
+    ///
+    /// <para><b>F3 (Elias's ruling, widening B1):</b> <i>"A statute is at risk when the backing party did not vote for it: a majority of its voting members
+    /// voted no or abstained. ... A seeded draw then decides, at each president's own rate refitted on the widened base: Duda's and Nawrocki's from the
+    /// record, and the pooled rate for a president with no record. The slip shows the veto risk as a percentage."</i> (g) now proves the widened rule on
+    /// the record - every veto at risk, B1's own misses at risk - and the runtime table the game draws at (`Generated.PolishVetoRates`) recomputed from
+    /// the same CSVs and generated from the files on disk; (h) proves the risk, the draw (keyed, reproducible, its frequency the rate) and the gate on
+    /// both of the draw's branches, PLANTED (`PresidentialVeto.PlantDraw`) so each case is decided by name, never by the bar's seed - all but the last,
+    /// which drives the gate UNPLANTED on titles the bar's own seed keys to each side of the risk, so its verdicts hold on any seed; (i) to (l) step
+    /// their statutes through the game's own paths with the draw planted to veto, and (i) once more planted to sign; (m) plants the draw to sign, its case
+    /// the boundary's order, not the draw.</para>
     /// </summary>
     public static class PresidentialVetoDiagnostic
     {
@@ -66,11 +77,11 @@ namespace PoliSim.EditorTools
             return forVotes + against + abstaining > 0 && PresidentialVeto.Overrides(forVotes, against, abstaining, present);   // §761: the live rule's
         }
 
-        /// <summary>B1 (Elias's ruling, 2026-10-02): the President vetoes an ordinary statute when a majority of his backing party's deputies - its
-        /// MEMBERS at the vote, absent ones included - voted against it; never an act exempt (the budget act, Art. 224; a constitutional amendment,
+        /// <summary>F3 (Elias's ruling, widening B1): a statute is AT RISK when the President's backing party did not vote for it - a majority of its VOTING
+        /// members voted no or abstained, the absent outside the count; never an act exempt (the budget act, Art. 224; a constitutional amendment,
         /// Art. 235 ust. 7).</summary>
-        private static bool Vetoes(bool exempt, int backingNo, int backingMembers) =>
-            PresidentialVeto.Vetoes(exempt ? PresidentialVeto.Act.BudgetAct : PresidentialVeto.Act.OrdinaryStatute, backingMembers, backingNo);   // §761: the live rule's
+        private static bool AtRisk(bool exempt, int backingYes, int backingNo, int backingAbstain) =>
+            PresidentialVeto.AtRisk(exempt ? PresidentialVeto.Act.BudgetAct : PresidentialVeto.Act.OrdinaryStatute, backingYes, backingNo, backingAbstain);   // the live rule's
 
         /// <summary>A CSV with a header row, each row by column name.</summary>
         private static List<Dictionary<string, string>> ReadCsv(string path)
@@ -178,29 +189,34 @@ namespace PoliSim.EditorTools
                 Check(overrideVotes == 7 && overrideMatches == 7, F("B2: the Sejm's own required figure equals ceil(3/5 of yes + no + abstain) in {0} of {1} override votes - abstentions in the base, the record's practice", overrideMatches, overrideVotes));
                 Check(Required(243 + 192) == 261 && Required(246 + 192) == 263 && Required(232 + 199) == 259, "B2's three quoted votes: 243+192 -> 261, 246+192 -> 263, 232+199 -> 259");
 
-                // (g) B1 (Elias's ruling, 2026-10-02): the President vetoes an ordinary statute when a majority of his backing party's deputies voted
-                // against it; the budget act (Art. 224) and a constitutional amendment (Art. 235 ust. 7) cannot be vetoed; a budget-related act is an
-                // ordinary statute. Backtested on the 10th Sejm's record: every veto, and every vetoable act the President decided on.
-                Check(veto.Contains("Prezydent Rzeczypospolitej podpisuje ustawę w ciągu 21 dni od dnia przedstawienia i zarządza jej ogłoszenie") && !Vetoes(exempt: true, 100, 100),
+                // (g) F3 (Elias's ruling, widening B1): a statute is at risk when the backing party did not vote for it - a majority of its voting members
+                // voted no or abstained - and a seeded draw decides at each president's rate on that base; the budget act (Art. 224) and a constitutional
+                // amendment (Art. 235 ust. 7) are never at risk; a budget-related act is an ordinary statute. On the 10th Sejm's record: every veto falls on a
+                // statute at risk, B1's own misses (§775) among them; and the runtime table the game draws at (Generated.PolishVetoRates, written by
+                // Tools/veto_b1_backtest.pl) is these CSVs, recomputed here president by president, generated from the files on disk.
+                Check(veto.Contains("Prezydent Rzeczypospolitej podpisuje ustawę w ciągu 21 dni od dnia przedstawienia i zarządza jej ogłoszenie") && !AtRisk(exempt: true, 0, 100, 100),
                     "Art. 235 ust. 7 - a constitutional amendment is signed within 21 days, never returned (and the budget act, Art. 224, above)");
-                int hits = 0, missesDuda = 0, missesNawrocki = 0, hitsDuda = 0, hitsNawrocki = 0;
-                var misses = new List<string>();
+                int vetoesAtRisk = 0, b1Misses = 0, b1MissesAtRisk = 0;
+                var outside = new List<string>();
                 foreach (Dictionary<string, string> v in vetoes)
                 {
-                    int pisNo = int.Parse(v["pis_no"], CultureInfo.InvariantCulture), pisMembers = int.Parse(v["pis_members"], CultureInfo.InvariantCulture);
-                    bool byDuda = v["president"] == "Andrzej Duda";
-                    if (Vetoes(exempt: false, pisNo, pisMembers)) { hits++; if (byDuda) { hitsDuda++; } else { hitsNawrocki++; } continue; }
-                    if (byDuda) { missesDuda++; } else { missesNawrocki++; }
-                    misses.Add(F("{0} {1}: {2} - PiS {3} for, {4} against, {5} abstaining, {6} absent of {7}{8}", v["president"], v["veto_date"], v["act_title"],
-                        v["pis_yes"], pisNo, v["pis_abstain"], v["pis_absent"], pisMembers,
-                        string.IsNullOrEmpty(v["rozwojplus_no"]) ? string.Empty : F(" (RozwojPlus {0} / {1} / {2} / {3} absent)", v["rozwojplus_yes"], v["rozwojplus_no"], v["rozwojplus_abstain"], v["rozwojplus_absent"])));
+                    int pisYes = int.Parse(v["pis_yes"], CultureInfo.InvariantCulture), pisNo = int.Parse(v["pis_no"], CultureInfo.InvariantCulture);
+                    int pisAbstain = int.Parse(v["pis_abstain"], CultureInfo.InvariantCulture), pisMembers = int.Parse(v["pis_members"], CultureInfo.InvariantCulture);
+                    bool risk = AtRisk(exempt: false, pisYes, pisNo, pisAbstain);
+                    if (risk) { vetoesAtRisk++; }
+                    else
+                    {
+                        outside.Add(F("{0} {1}: {2} - PiS {3} for, {4} against, {5} abstaining, {6} absent of {7}", v["president"], v["veto_date"], v["act_title"], pisYes, pisNo, pisAbstain, v["pis_absent"], pisMembers));
+                    }
+                    if (pisNo * 2 <= pisMembers) { b1Misses++; if (risk) { b1MissesAtRisk++; } }   // B1 as first ruled (§757): more than half the club's MEMBERS voting NO
                 }
-                foreach (string m in misses) { sb.Append("    miss      ").Append(m).Append('\n'); }
-                Check(vetoes.Count == 53 && hitsDuda == 7 && missesDuda == 1 && hitsNawrocki == 38 && missesNawrocki == 7,
-                    F("B1's rule against the record's {0} vetoes: {1} caught - Duda {2} of {3}, Nawrocki {4} of {5}; the {6} missed listed above", vetoes.Count, hits,
-                        hitsDuda, hitsDuda + missesDuda, hitsNawrocki, hitsNawrocki + missesNawrocki, misses.Count));
-                // the acts the rule would veto that the President signed or referred to the Tribunal - by the president on the day of the decision
-                var table = new Dictionary<string, int>();
+                foreach (string m in outside) { sb.Append("    outside   ").Append(m).Append('\n'); }
+                Check(vetoes.Count > 0 && vetoesAtRisk == vetoes.Count, F("F3: every veto on the record falls on a statute at risk - {0} of {1}", vetoesAtRisk, vetoes.Count));
+                Check(b1Misses > 0 && b1MissesAtRisk == b1Misses,
+                    F("F3: every veto B1 as first ruled missed is at risk - {0} of {1} (the bloc abstentions, the split club, the club absent)", b1MissesAtRisk, b1Misses));
+                // the widened base, by the president on the day of the decision, against the runtime table
+                var atRiskOf = new Dictionary<string, int>();
+                var vetoedOf = new Dictionary<string, int>();
                 foreach (Dictionary<string, string> r in ReadCsv(Path.Combine(root, "third_readings_term10.csv")))
                 {
                     if (!string.IsNullOrEmpty(r["veto_exempt"])) { continue; }
@@ -209,36 +225,89 @@ namespace PoliSim.EditorTools
                     if (outcome == null) { continue; }   // undecided: at the Senate, at the President, Senate amendments pending
                     DateTime on = DateTime.ParseExact(r["outcome_date"], "yyyy-MM-dd", CultureInfo.InvariantCulture);
                     if (!PresidencyOfRecord.TryAt(CountryId.Poland, on, out PresidencyOfRecord.President who)) { continue; }
-                    bool rule = Vetoes(exempt: false, int.Parse(r["pis_no"], CultureInfo.InvariantCulture), int.Parse(r["pis_members"], CultureInfo.InvariantCulture));
-                    string key = who.Name + (rule ? " yes " : " no ") + outcome;
-                    table[key] = table.TryGetValue(key, out int n) ? n + 1 : 1;
+                    if (!AtRisk(exempt: false, int.Parse(r["pis_yes"], CultureInfo.InvariantCulture), int.Parse(r["pis_no"], CultureInfo.InvariantCulture), int.Parse(r["pis_abstain"], CultureInfo.InvariantCulture))) { continue; }
+                    atRiskOf[who.Name] = (atRiskOf.TryGetValue(who.Name, out int a) ? a : 0) + 1;
+                    if (outcome == "vetoed") { vetoedOf[who.Name] = (vetoedOf.TryGetValue(who.Name, out int b) ? b : 0) + 1; }
                 }
-                int T(string k) => table.TryGetValue(k, out int n) ? n : 0;
-                foreach (string who in new[] { "Andrzej Duda", "Karol Nawrocki" })
+                int tableMatches = 0, sumRisk = 0, sumVetoed = 0;
+                foreach ((string name, int risked, int vetoedN) in PoliSim.Elections.Generated.PolishVetoRates.OfRecord)
                 {
-                    sb.Append(F("    table     {0}: the rule says veto - {1} vetoed, {2} signed, {3} to the Tribunal; says sign - {4} vetoed, {5} signed, {6} to the Tribunal\n", who,
-                        T(who + " yes vetoed"), T(who + " yes signed"), T(who + " yes Tribunal"), T(who + " no vetoed"), T(who + " no signed"), T(who + " no Tribunal")));
+                    int csvRisk = atRiskOf.TryGetValue(name, out int a) ? a : 0, csvVetoed = vetoedOf.TryGetValue(name, out int b) ? b : 0;
+                    double rate = PresidentialVeto.RateOf(name, out string basis);
+                    sb.Append(F("    rate      {0}: the record's {1} at risk, {2} vetoed - the game draws at {3:0.0} % ({4}); the table holds {5} and {6}\n", name, csvRisk, csvVetoed, rate * 100.0, basis, risked, vetoedN));
+                    if (risked > 0 && csvRisk == risked && csvVetoed == vetoedN && Math.Abs(rate - (double)vetoedN / risked) < 1e-12) { tableMatches++; }
+                    sumRisk += risked;
+                    sumVetoed += vetoedN;
                 }
-                Check(T("Andrzej Duda yes vetoed") == 7 && T("Andrzej Duda yes signed") == 58 && T("Andrzej Duda yes Tribunal") == 5 && T("Andrzej Duda no vetoed") == 1 && T("Andrzej Duda no signed") == 149 && T("Andrzej Duda no Tribunal") == 3
-                      && T("Karol Nawrocki yes vetoed") == 38 && T("Karol Nawrocki yes signed") == 57 && T("Karol Nawrocki yes Tribunal") == 1 && T("Karol Nawrocki no vetoed") == 7 && T("Karol Nawrocki no signed") == 220 && T("Karol Nawrocki no Tribunal") == 2,
-                    F("B1's precision on every vetoable act decided: of the acts the rule would veto, Duda vetoed 7, signed 58 and sent 5 to the Tribunal; Nawrocki vetoed 38, signed 57 and sent 1 - {0} of {1} the rule names were vetoed",
-                        T("Andrzej Duda yes vetoed") + T("Karol Nawrocki yes vetoed"), T("Andrzej Duda yes vetoed") + T("Andrzej Duda yes signed") + T("Andrzej Duda yes Tribunal") + T("Karol Nawrocki yes vetoed") + T("Karol Nawrocki yes signed") + T("Karol Nawrocki yes Tribunal")));
+                int tableRows = PoliSim.Elections.Generated.PolishVetoRates.OfRecord.Length;
+                Check(tableRows > 0 && tableMatches == tableRows && atRiskOf.Count == tableRows,
+                    F("F3: the runtime table (Generated.PolishVetoRates) is the record's widened base, president by president - {0} of {1} rows match the CSVs, the record names {2} president(s)", tableMatches, tableRows, atRiskOf.Count));
+                string readingsDigest = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(Path.Combine(root, "third_readings_term10.csv")));
+                string vetoesDigest = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(Path.Combine(root, "veto_record.csv")));
+                Check(string.Equals(readingsDigest, PoliSim.Elections.Generated.PolishVetoRates.SourceDigest, StringComparison.OrdinalIgnoreCase)
+                      && string.Equals(vetoesDigest, PoliSim.Elections.Generated.PolishVetoRates.VetoRecordDigest, StringComparison.OrdinalIgnoreCase),
+                    "F3: the runtime table was generated from the CSVs on disk - both digests match (a changed CSV is re-run through Tools/veto_b1_backtest.pl, its diff read first)");
+                double pooled = PresidentialVeto.RateOf("Rafał Trzaskowski", out string pooledBasis);
+                Check(sumRisk > 0 && Math.Abs(pooled - (double)sumVetoed / sumRisk) < 1e-12 && pooledBasis.StartsWith("the pooled rate", StringComparison.Ordinal),
+                    F("F3: a president with no record of their own draws at the pooled rate - {0:0.0} % ({1})", pooled * 100.0, pooledBasis));
 
                 // (h) §761 - THE RULE LIVE: the runtime class's constants are the texts'; Decide on the 2023 Sejm's seats; the gate itself on a planted chamber
                 Check(PresidentialVeto.StatutoryDeputies == StatutoryDeputies && PresidentialVeto.Quorum == Quorum && PresidentialVeto.OverrideNumerator == OverrideNumerator
                       && PresidentialVeto.OverrideDenominator == OverrideDenominator && !PresidentialVeto.MayVeto(PresidentialVeto.Act.BudgetAct) && !PresidentialVeto.MayVeto(PresidentialVeto.Act.ConstitutionalAmendment),
                     "§761: the live class's constants are the texts' (460, the quorum 230, 3/5), the budget act and an amendment never vetoed");
                 var against = new List<DivisionSide> { Side("PiS", 194, -1), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
-                PresidentialVeto.Outcome o = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against);
-                Check(o != null && o.President == "Karol Nawrocki" && o.BackingParty == "PiS" && o.Vetoed && !o.Overridden && o.Yes == 248 && o.Required == 276 && !o.Stands,
-                    F("§761: PiS against on 2026-01-01 - {0} vetoes; {1} for, {2} needed - the veto stands", o?.President, o?.Yes, o?.Required));
+                double nawrockiRate = PresidentialVeto.RateOf("Karol Nawrocki", out string nawrockiBasis), dudaRate = PresidentialVeto.RateOf("Andrzej Duda", out _);
+                DateTime day2026 = new DateTime(2026, 1, 1);
+                // the projection taken with the draw PLANTED to veto (the review's finding): a draw inside Decide would veto here on every run, and fail
+                PresidentialVeto.Outcome o;
+                using (PresidentialVeto.PlantDraw(0.0)) { o = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.OrdinaryStatute, against); }
+                Check(o != null && o.President == "Karol Nawrocki" && o.BackingParty == "PiS" && o.AtRisk && o.Risk == nawrockiRate && o.RiskBasis == nawrockiBasis
+                      && !o.OverrideCarries && o.Yes == 248 && o.Required == 276 && !o.Vetoed && o.Stands,
+                    F("F3: PiS against on 2026-01-01 - at risk with {0}, at the president's own rate ({1:0.0} %, {2}); {3} for, {4} needed - an override would fail; nothing decided before the gate draws (taken with the draw planted to veto)",
+                        o?.President, nawrockiRate * 100.0, nawrockiBasis, o?.Yes, o?.Required));
+                bool Drawn(double u, out PresidentialVeto.Outcome drawn)
+                {
+                    drawn = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.OrdinaryStatute, against);
+                    drawn.DrawOn(u);
+                    return drawn.Vetoed;
+                }
+                bool vetoedAtZero = Drawn(0.0, out PresidentialVeto.Outcome atZero), vetoedJustBelow = Drawn(nawrockiRate - 1e-9, out _), vetoedAtRate = Drawn(nawrockiRate, out _), vetoedAtOne = Drawn(1.0, out _);
+                Check(vetoedAtZero && !atZero.Overridden && !atZero.Stands && vetoedJustBelow && !vetoedAtRate && !vetoedAtOne,
+                    "F3: the gate's draw decides - a draw below the risk vetoes (here the veto stands), a draw at or above it signs");
                 var abstaining = new List<DivisionSide> { Side("PiS", 194, 0), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
-                PresidentialVeto.Outcome signed = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, abstaining);
-                PresidentialVeto.Outcome budget = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.BudgetAct, against);
+                var supporting = new List<DivisionSide> { Side("PiS", 194, 1), Side("KO", 157, 1), Side("TD", 65, 1), Side("NL", 26, 1), Side("Konf", 18, -1) };
+                PresidentialVeto.Outcome abstained = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.OrdinaryStatute, abstaining);
+                PresidentialVeto.Outcome supported = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.OrdinaryStatute, supporting);
+                PresidentialVeto.Outcome budget = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.BudgetAct, against);
                 PresidentialVeto.Outcome dudaOutcome = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2024, 3, 1), PresidentialVeto.Act.OrdinaryStatute, against);
-                Check(signed != null && !signed.Vetoed && signed.Stands && budget != null && !budget.Vetoed && dudaOutcome != null && dudaOutcome.President == "Andrzej Duda" && dudaOutcome.Vetoed
-                      && PresidentialVeto.Decide(CountryId.Germany, null, new DateTime(2026, 1, 1), PresidentialVeto.Act.OrdinaryStatute, against) == null,
-                    "§761: PiS abstaining - signed (the record's bloc abstentions); the budget act - signed; Duda on 2024-03-01 - vetoes; Germany - no veto the game runs");
+                Check(abstained != null && abstained.AtRisk && abstained.Risk == nawrockiRate && supported != null && !supported.AtRisk && supported.Risk == 0.0
+                      && budget != null && !budget.AtRisk && budget.Risk == 0.0 && dudaOutcome != null && dudaOutcome.President == "Andrzej Duda" && dudaOutcome.AtRisk && dudaOutcome.Risk == dudaRate
+                      && PresidentialVeto.Decide(CountryId.Germany, null, day2026, PresidentialVeto.Act.OrdinaryStatute, against) == null,
+                    F("F3: PiS abstaining - at risk (B1 missed the record's bloc abstentions); PiS for - no risk; the budget act - no risk; Duda on 2024-03-01 - at risk at Duda's own rate ({0:0.0} %); Germany - no veto the game runs", dudaRate * 100.0));
+                // AtRisk's edges (the review's finding): a tie among the club's voting members is no majority not voting for it; one more against, or one more
+                // abstaining, is; a club with no member voting - no seat - puts nothing at risk (the reading stated on AtRisk)
+                var tie = new List<DivisionSide> { Side("PiS", 10, 1), Side("PiS", 10, -1), Side("KO", 157, 1) };
+                var noClub = new List<DivisionSide> { Side("KO", 157, 1), Side("TD", 65, -1) };
+                PresidentialVeto.Outcome tied = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.OrdinaryStatute, tie);
+                PresidentialVeto.Outcome clubless = PresidentialVeto.Decide(CountryId.Poland, null, day2026, PresidentialVeto.Act.OrdinaryStatute, noClub);
+                Check(tied != null && !tied.AtRisk && tied.ClubVoting == 20 && clubless != null && !clubless.AtRisk && clubless.ClubVoting == 0 && clubless.Risk == 0.0
+                      && PresidentialVeto.AtRisk(PresidentialVeto.Act.OrdinaryStatute, 10, 11, 0) && PresidentialVeto.AtRisk(PresidentialVeto.Act.OrdinaryStatute, 10, 0, 11)
+                      && !PresidentialVeto.AtRisk(PresidentialVeto.Act.OrdinaryStatute, 10, 5, 5) && !PresidentialVeto.AtRisk(PresidentialVeto.Act.OrdinaryStatute, 0, 0, 0),
+                    "F3's edges: a tie among the club's voting members - no risk; one more against, or one more abstaining - at risk; a club with no member voting (no seat) - no risk");
+                // the seeded draw: reproducible, keyed on the master seed and the act, and its frequency the rate
+                double d1 = PresidentialVeto.Draw(777, CountryId.Poland, day2026, "Enact: a planted statute"), d1Again = PresidentialVeto.Draw(777, CountryId.Poland, day2026, "Enact: a planted statute");
+                double dSeed = PresidentialVeto.Draw(778, CountryId.Poland, day2026, "Enact: a planted statute"), dTitle = PresidentialVeto.Draw(777, CountryId.Poland, day2026, "Enact: another planted statute");
+                double dDay = PresidentialVeto.Draw(777, CountryId.Poland, day2026.AddDays(1), "Enact: a planted statute");
+                Check(d1 == d1Again && d1 >= 0.0 && d1 < 1.0 && d1 != dSeed && d1 != dTitle && d1 != dDay,
+                    F("F3: the draw is the key's - the same seed, act and day draw the same ({0:0.0000}); another seed, title or day draws apart", d1));
+                const int keyedDraws = 20000;
+                int below = 0;
+                for (int i = 0; i < keyedDraws; i++) { if (PresidentialVeto.Draw(777, CountryId.Poland, day2026.AddDays(i % 365), "Enact: statute " + i.ToString(CultureInfo.InvariantCulture)) < nawrockiRate) { below++; } }
+                double frequency = (double)below / keyedDraws;
+                Check(Math.Abs(frequency - nawrockiRate) < 0.01, F("F3: the draw's frequency is the rate - {0} of {1} keyed draws fall below {2:0.00} % ({3:0.00} %)", below, keyedDraws, nawrockiRate * 100.0, frequency * 100.0));
+                double inside;
+                using (PresidentialVeto.PlantDraw(0.25)) { inside = PresidentialVeto.Draw(777, CountryId.Poland, day2026, "Enact: a planted statute"); }
+                Check(inside == 0.25 && PresidentialVeto.Draw(777, CountryId.Poland, day2026, "Enact: a planted statute") == d1, "F3: a planted draw holds inside its scope and the keyed draw returns after it");
                 var go = new GameObject("PresidentialVetoDiagnostic gate");
                 try
                 {
@@ -251,36 +320,85 @@ namespace PoliSim.EditorTools
                         Country pl = world.GetCountry(CountryId.Poland);
                         System.Reflection.MethodInfo gate = typeof(PoliSim.Simulation.SimulationManager).GetMethod("PresidentialVetoGate", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                         // the gate is handed THIS vote's division (RecordDivision's return), never the log's last entry
-                        bool Gate(List<DivisionSide> sides, PresidentialVeto.Act act, out DivisionRecord passage, out DivisionRecord vote)
+                        bool Gate(List<DivisionSide> sides, PresidentialVeto.Act act, out DivisionRecord passage, out DivisionRecord vote, string title = "Enact: a planted statute")
                         {
-                            passage = pl.Divisions.Append("Enact: a planted statute", sim.CurrentDate, 0.5f, true, 1f, 0, new List<DivisionSide>(sides));
+                            passage = pl.Divisions.Append(title, sim.CurrentDate, 0.5f, true, 1f, 0, new List<DivisionSide>(sides));
                             int before = pl.Divisions.Entries.Count;
                             bool stood = (bool)gate.Invoke(sim, new object[] { pl, passage, true, act });
                             vote = pl.Divisions.Entries.Count > before ? pl.Divisions.Entries[pl.Divisions.Entries.Count - 1] : null;
                             return stood;
                         }
-                        bool stands = Gate(against, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passage1, out DivisionRecord vetoed);
+                        // F3: every gate case below but the last is decided by name - the draw PLANTED to veto (0) or to sign (1), never the bar's own seed; the
+                        // last drives the gate UNPLANTED, on titles the bar's own seed keys to each side of the risk, so its verdicts hold on any seed
+                        bool stands; DivisionRecord passage1, vetoed;
+                        using (PresidentialVeto.PlantDraw(0.0)) { stands = Gate(against, PresidentialVeto.Act.OrdinaryStatute, out passage1, out vetoed); }
                         Check(!stands && passage1.Motion && vetoed != null && !vetoed.Passed && !vetoed.Motion && vetoed.Required == 276 && vetoed.Contest == null
-                              && vetoed.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && vetoed.Title.Contains("the veto stands, 248 for, 276 needed"),
-                            F("§761: the gate on Poland's start ({0}) - the statute does not stand; the passage keeps no ceremony; the vote on the veto, its line 276 and no budget contest: \"{1}\"",
+                              && vetoed.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && vetoed.Title.Contains("the veto stands, 248 for, 276 needed")
+                              && vetoed.Sides.Exists(s => s.Abbrev == "PiS" && s.Side < 0 && s.Reason.Contains("voted against the statute") && s.ReasonShort.EndsWith("against the override", StringComparison.Ordinal)),
+                            F("§761, F3: the gate on Poland's start ({0}), the draw planted to veto - the statute does not stand; the passage keeps no ceremony; the vote on the veto, its line 276 and no budget contest: \"{1}\"",
                                 sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), vetoed?.Title));
-                        bool stands2 = Gate(abstaining, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passage2, out DivisionRecord none2);
-                        Check(stands2 && none2 == null && !passage2.Motion, "§761: PiS abstaining - the statute stands, nothing recorded beside its passage");
+                        bool signedStands; DivisionRecord passageSigned, noneSigned;
+                        using (PresidentialVeto.PlantDraw(1.0)) { signedStands = Gate(against, PresidentialVeto.Act.OrdinaryStatute, out passageSigned, out noneSigned); }
+                        Check(signedStands && noneSigned == null && !passageSigned.Motion, "F3: the same statute at risk, the draw planted to sign - it stands, nothing recorded beside its passage");
+                        bool stands2; DivisionRecord passage2, vote2;
+                        using (PresidentialVeto.PlantDraw(0.0)) { stands2 = Gate(abstaining, PresidentialVeto.Act.OrdinaryStatute, out passage2, out vote2); }
+                        Check(!stands2 && passage2.Motion && vote2 != null && !vote2.Passed
+                              && vote2.Sides.Exists(s => s.Abbrev == "PiS" && s.Side == 0 && s.Reason.Contains("abstained on the statute") && s.ReasonShort.EndsWith("abstains", StringComparison.Ordinal)),
+                            F("F3: PiS abstaining - at risk; the draw planted to veto, the veto stands and the backing party abstains on the override as on the statute: \"{0}\"", vote2?.Title));
+                        bool stands5; DivisionRecord passage5, none5;
+                        using (PresidentialVeto.PlantDraw(0.0)) { stands5 = Gate(supporting, PresidentialVeto.Act.OrdinaryStatute, out passage5, out none5); }
+                        Check(stands5 && none5 == null && !passage5.Motion, "F3: PiS for - not at risk; even a draw planted to veto is never taken, the statute stands");
                         // the review's untested path: an override that carries - PiS 150 against, 310 for of 460 voting, 276 needed
                         var overridable = new List<DivisionSide> { Side("PiS", 150, -1), Side("KO", 200, 1), Side("TD", 80, 1), Side("NL", 30, 1) };
-                        bool stands3 = Gate(overridable, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passage3, out DivisionRecord overridden);
+                        bool stands3; DivisionRecord passage3, overridden;
+                        using (PresidentialVeto.PlantDraw(0.0)) { stands3 = Gate(overridable, PresidentialVeto.Act.OrdinaryStatute, out passage3, out overridden); }
                         Check(stands3 && passage3.Motion && overridden != null && overridden.Passed && overridden.Required == 276 && overridden.Title.Contains("overridden, 310 for, 276 needed"),
                             F("§761: an override that carries - the statute stands on the vote on the veto, its ceremony that vote's: \"{0}\"", overridden?.Title));
                         // the review's defect 2: a constitutional amendment never comes back, whoever opposes it (Art. 235 ust. 7)
-                        bool stands4 = Gate(against, PresidentialVeto.Act.ConstitutionalAmendment, out DivisionRecord passage4, out DivisionRecord none4);
+                        bool stands4; DivisionRecord passage4, none4;
+                        using (PresidentialVeto.PlantDraw(0.0)) { stands4 = Gate(against, PresidentialVeto.Act.ConstitutionalAmendment, out passage4, out none4); }
                         Check(stands4 && none4 == null && !passage4.Motion && LawCatalog.GetById("constitutional_debt_brake_act")?.ConstitutionalAmendment == true,
-                            "§761: a constitutional amendment PiS opposes stands unvetoed, nothing recorded; the debt brake is the catalog's amendment");
+                            "§761: a constitutional amendment PiS opposes stands unvetoed, nothing recorded, a draw planted to veto never taken; the debt brake is the catalog's amendment");
+                        // the uncontested passage - no sides, as the fund act's: no club voting, so never at risk, even against a draw planted to veto
+                        bool standsEmpty; DivisionRecord passageEmpty, noneEmpty;
+                        using (PresidentialVeto.PlantDraw(0.0)) { standsEmpty = Gate(new List<DivisionSide>(), PresidentialVeto.Act.OrdinaryStatute, out passageEmpty, out noneEmpty); }
+                        Check(standsEmpty && noneEmpty == null && !passageEmpty.Motion, "F3: an uncontested passage (no sides) - no club voting, never at risk; a draw planted to veto never taken");
+                        // the review's finding: the gate's own draw, UNPLANTED, on whatever seed the bar runs. The clock is stepped one day off the start, and two
+                        // titles are found: one keyed below the risk on the gate's day and at or above it on the start's, one the other way round. The first is
+                        // vetoed and the second signed - a key that dropped the title could not split them, and one keyed on the start's day (the turn's
+                        // opening) would invert both - and no random stream moves (the draw is a hash of its key, never a stream's)
+                        DateTime startDay = sim.CurrentDate;
+                        sim.AdvanceDay();
+                        PresidentialVeto.Outcome expected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, against);
+                        string vetoTitle = null, signTitle = null;
+                        for (int k = 0; k < 400 && expected != null && (vetoTitle == null || signTitle == null); k++)
+                        {
+                            string t = "Enact: an unplanted statute " + k.ToString(CultureInfo.InvariantCulture);
+                            bool belowToday = PresidentialVeto.Draw(SimulationRandom.MasterSeed, CountryId.Poland, sim.CurrentDate, t) < expected.Risk;
+                            bool belowAtStart = PresidentialVeto.Draw(SimulationRandom.MasterSeed, CountryId.Poland, startDay, t) < expected.Risk;
+                            if (belowToday && !belowAtStart) { vetoTitle ??= t; } else if (!belowToday && belowAtStart) { signTitle ??= t; }
+                        }
+                        bool found = expected != null && expected.AtRisk && vetoTitle != null && signTitle != null;
+                        Check(found, F("F3: on {0} the bar's seed keys one title below the risk ({1:0.000}) and one at or above it, each on the other side on the start's day {2}: \"{3}\", \"{4}\"",
+                            sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), expected?.Risk, startDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), vetoTitle, signTitle));
+                        if (found)
+                        {
+                            Dictionary<SimulationRandom.Stream, int> drawsWas = SimulationRandom.CaptureDrawCounts();
+                            bool vetoStood = Gate(against, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passageV, out DivisionRecord voteV, vetoTitle);
+                            bool signStood = Gate(against, PresidentialVeto.Act.OrdinaryStatute, out DivisionRecord passageS, out DivisionRecord voteS, signTitle);
+                            Dictionary<SimulationRandom.Stream, int> drawsNow = SimulationRandom.CaptureDrawCounts();
+                            bool streamsStill = drawsWas.Count == drawsNow.Count && drawsWas.All(kv => drawsNow.TryGetValue(kv.Key, out int n) && n == kv.Value);
+                            Check(!vetoStood && passageV.Motion && voteV != null && voteV.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal)
+                                  && signStood && !passageS.Motion && voteS == null && streamsStill,
+                                F("F3: the gate UNPLANTED - \"{0}\" (keyed below the risk) vetoed, \"{1}\" (at or above it) signed, on one day; no random stream moved", vetoTitle, signTitle));
+                        }
                     }
                 }
                 finally { UnityEngine.Object.DestroyImmediate(go); }
 
                 // (i) §761 - THE GAME'S OWN BILL PATH: the default epoch (the 10th Sejm, Tusk's government, Nawrocki president), KO the player's party; a law
-                // the chamber passes and PiS opposes is introduced and stepped to its resolution - its effect withheld, its passage a motion, the vote on the veto recorded
+                // the chamber passes, at risk of a veto no override would carry, is introduced and stepped to its resolution - its effect withheld, its passage a
+                // motion, the vote on the veto recorded
                 var host = new GameObject("PresidentialVetoDiagnostic bill path");
                 try
                 {
@@ -293,7 +411,8 @@ namespace PoliSim.EditorTools
                         Country pl = world.GetCountry(CountryId.Poland);
                         pl.PlayerPartyAbbrev = "KO";
                         LawDefinition chosen = null;
-                        int offered = 0, passing = 0, pisAgainst = 0, pisAgainstPassing = 0, pisFor = 0, pisUndecided = 0, pisAgainstTdAbstains = 0, vetoStands = 0, vetoOverridden = 0;
+                        int offered = 0, passing = 0, pisAgainst = 0, pisAgainstPassing = 0, pisFor = 0, pisUndecided = 0, pisAgainstTdAbstains = 0, atRiskPassing = 0, overrideWouldCarry = 0;
+                        double expectedVetoes = 0.0;
                         foreach (LawDefinition law in LawCatalog.All)
                         {
                             if (law.ConstitutionalAmendment || pl.EnactedLaws.Exists(e => e.LawId == law.Id) || !LawCatalog.IsWithinCompetence(world, pl, law)) { continue; }
@@ -307,11 +426,11 @@ namespace PoliSim.EditorTools
                             if (pis < 0) { pisAgainst++; if (passes) { pisAgainstPassing++; } if (td == 0) { pisAgainstTdAbstains++; } } else if (pis > 0) { pisFor++; } else { pisUndecided++; }
                             // §766: the veto's encounters on the record's chamber - each statute the Sejm passes, put to the President of the day
                             PresidentialVeto.Outcome met = passes ? PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides) : null;
-                            if (met != null && met.Vetoed) { if (met.Overridden) { vetoOverridden++; } else { vetoStands++; } }
+                            if (met != null && met.AtRisk) { atRiskPassing++; expectedVetoes += met.Risk; if (met.OverrideCarries) { overrideWouldCarry++; } }
                         }
-                        sb.Append(F("    info      §761/§766 the catalog on {0}, the record's chamber: {1} laws offered, {2} the Sejm passes; PiS against {3} ({4} of them passing; TD abstaining on {7} of them), for {5}, undecided {6}; the President vetoes {8} the Sejm passes - {9} overridden, {10} standing\n",
+                        sb.Append(F("    info      §761/§766, F3: the catalog on {0}, the record's chamber: {1} laws offered, {2} the Sejm passes; PiS against {3} ({4} of them passing; TD abstaining on {7} of them), for {5}, undecided {6}; {8} the Sejm passes are at risk of the veto - an override would carry on {9}; at the president's rate the draw vetoes {10:0.0} of them on average\n",
                             sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), offered, passing, pisAgainst, pisAgainstPassing, pisFor, pisUndecided, pisAgainstTdAbstains,
-                            vetoStands + vetoOverridden, vetoOverridden, vetoStands));
+                            atRiskPassing, overrideWouldCarry, expectedVetoes));
                         // the path is proved on a PLANTED chamber where KO alone carries a bill (the record's chamber is measured above)
                         foreach (KeyValuePair<string, int> kv in new Dictionary<string, int> { { "PiS", 194 }, { "KO", 262 }, { "TD", 0 }, { "NL", 0 }, { "Konf", 4 } }) { pl.ParliamentSeats[kv.Key] = kv.Value; }
                         foreach (LawDefinition law in LawCatalog.All)
@@ -322,27 +441,37 @@ namespace PoliSim.EditorTools
                             var sides = new List<DivisionSide>();
                             foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
                             PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
-                            if (projected != null && projected.Vetoed && !projected.Overridden) { chosen = law; break; }
+                            if (projected != null && projected.AtRisk && !projected.OverrideCarries) { chosen = law; break; }
                         }
-                        Check(chosen != null, F("§761: on {0}, on the planted chamber (KO 262, PiS 194, Konf 4), the catalog holds a law the Sejm passes and PiS opposes - {1}", sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), chosen?.Id ?? "NONE"));
+                        Check(chosen != null, F("§761: on {0}, on the planted chamber (KO 262, PiS 194, Konf 4), the catalog holds a law the Sejm passes, at risk of a veto no override would carry - {1}", sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), chosen?.Id ?? "NONE"));
                         if (chosen != null)
                         {
                             bool introduced = sim.IntroduceLawBill(CountryId.Poland, new LawBill { LawId = chosen.Id });
                             int before = pl.Divisions.Entries.Count;
-                            for (int day = 0; day < 400 && sim.GetPendingLawBill(CountryId.Poland, chosen.Id) != null; day++) { sim.AdvanceLawBillsDay(CountryId.Poland); }
+                            using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingLawBill(CountryId.Poland, chosen.Id) != null; day++) { sim.AdvanceLawBillsDay(CountryId.Poland); } }
                             bool enacted = pl.EnactedLaws.Exists(e => e.LawId == chosen.Id);
                             List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                             Check(introduced && !enacted && added.Count == 2 && added[0].Motion && added[0].Passed && !added[1].Passed && added[1].Required > 0 && added[1].Title.StartsWith("Vetoed by the President (Karol Nawrocki)", StringComparison.Ordinal),
-                                F("§761: \"{0}\" introduced ({1}), resolved through the game's own bill path - enacted {2}; recorded: {3}", chosen.Name, introduced, enacted,
+                                F("§761, F3: \"{0}\" introduced ({1}), resolved through the game's own bill path, the draw planted to veto - enacted {2}; recorded: {3}", chosen.Name, introduced, enacted,
                                     string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                            // F3: the same statute again, the draw planted to sign - the President's answer is the draw's, so it is enacted on its one passage
+                            bool introducedAgain = sim.IntroduceLawBill(CountryId.Poland, new LawBill { LawId = chosen.Id });
+                            int beforeAgain = pl.Divisions.Entries.Count;
+                            using (PresidentialVeto.PlantDraw(1.0)) { for (int day = 0; day < 400 && sim.GetPendingLawBill(CountryId.Poland, chosen.Id) != null; day++) { sim.AdvanceLawBillsDay(CountryId.Poland); } }
+                            bool enactedAgain = pl.EnactedLaws.Exists(e => e.LawId == chosen.Id);
+                            List<DivisionRecord> addedAgain = pl.Divisions.Entries.GetRange(beforeAgain, pl.Divisions.Entries.Count - beforeAgain);
+                            Check(introducedAgain && enactedAgain && addedAgain.Count == 1 && addedAgain[0].Passed && !addedAgain[0].Motion,
+                                F("F3: \"{0}\" again, the draw planted to sign - enacted {1} on its one passage; recorded: {2}", chosen.Name, enactedAgain,
+                                    string.Join(" | ", addedAgain.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
                         }
                     }
                 }
                 finally { UnityEngine.Object.DestroyImmediate(host); }
 
                 // (j) §768 (Elias's ruling D4): POLAND'S BUDGET IS TWO ACTS - a player's budget moving one rate and one spending line, on the planted chamber
-                // (KO 262, PiS 194, Konf 4): the budget act adopted and applied; the rate in its own tax act; where PiS opposes it the President vetoes, the
-                // veto stands, and the old rate stands while the spending moves. A rate move the planted Sejm passes and PiS opposes is searched, as (i) does.
+                // (KO 262, PiS 194, Konf 4): the budget act adopted and applied; the rate in its own tax act; where PiS does not vote for it the act is at risk
+                // and the draw, planted to veto (F3), vetoes it; the veto stands, and the old rate stands while the spending moves. A rate move the planted Sejm
+                // passes, at risk of a veto no override would carry, is searched, as (i) does.
                 var budgetHost = new GameObject("PresidentialVetoDiagnostic budget");
                 try
                 {
@@ -367,10 +496,10 @@ namespace PoliSim.EditorTools
                                 var sides = new List<DivisionSide>();
                                 foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
                                 PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
-                                if (projected != null && projected.Vetoed && !projected.Overridden) { moved = line; newRate = line.Rate + step; break; }
+                                if (projected != null && projected.AtRisk && !projected.OverrideCarries) { moved = line; newRate = line.Rate + step; break; }
                             }
                         }
-                        Check(moved != null, F("§768: on the planted chamber a rate move the Sejm passes and PiS opposes - {0}", moved != null ? moved.Type + " " + moved.Rate.ToString("0.##", CultureInfo.InvariantCulture) + " -> " + newRate.ToString("0.##", CultureInfo.InvariantCulture) : "NONE"));
+                        Check(moved != null, F("§768: on the planted chamber a rate move the Sejm passes, at risk of a veto no override would carry - {0}", moved != null ? moved.Type + " " + moved.Rate.ToString("0.##", CultureInfo.InvariantCulture) + " -> " + newRate.ToString("0.##", CultureInfo.InvariantCulture) : "NONE"));
                         if (moved != null)
                         {
                             SpendingLine spend = pl.SpendingLines.First(l => l.Amount > 0f);
@@ -380,7 +509,7 @@ namespace PoliSim.EditorTools
                             bill.SpendingPercentChanges[spend.Category] = 5f;
                             bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
                             int before = pl.Divisions.Entries.Count;
-                            for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                            using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
                             List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                             bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed && !added[0].Motion
                                 && added[1].Title.StartsWith("Tax act: ", StringComparison.Ordinal) && added[1].Passed && added[1].Motion
@@ -398,7 +527,7 @@ namespace PoliSim.EditorTools
                         }
 
                         // (k) §773 (Elias's ruling E2): "the pension age ... travels in its own act and can be vetoed, like tax rates. General rule for Poland: only
-                        // spending stays in the budget act." A pension-age step the planted Sejm passes and PiS opposes is searched; a budget carrying it and a
+                        // spending stays in the budget act." A pension-age step the planted Sejm passes, at risk of a veto no override would carry, is searched; a budget carrying it and a
                         // spending line is stepped through the game's own path: the budget act carries the spending alone, the age its own pension act, vetoed.
                         float ageInForce = PensionAgeStatute.AgeInForce(pl, pl.CalendarYear);
                         float newAge = -1f;
@@ -412,9 +541,9 @@ namespace PoliSim.EditorTools
                             var sides = new List<DivisionSide>();
                             foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
                             PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
-                            if (projected != null && projected.Vetoed && !projected.Overridden) { newAge = age; break; }
+                            if (projected != null && projected.AtRisk && !projected.OverrideCarries) { newAge = age; break; }
                         }
-                        Check(newAge >= 0f, F("§773: on the planted chamber a pension-age step the Sejm passes and PiS opposes - {0} -> {1}", PensionAgeStatute.Format(ageInForce), newAge >= 0f ? PensionAgeStatute.Format(newAge) : "none found"));
+                        Check(newAge >= 0f, F("§773: on the planted chamber a pension-age step the Sejm passes, at risk of a veto no override would carry - {0} -> {1}", PensionAgeStatute.Format(ageInForce), newAge >= 0f ? PensionAgeStatute.Format(newAge) : "none found"));
                         if (newAge >= 0f)
                         {
                             SpendingLine spend = pl.SpendingLines.First(l => l.Amount > 0f);
@@ -426,7 +555,7 @@ namespace PoliSim.EditorTools
                                 "§773: the budget act carries the spending alone - no rate, no pension age, no benefit level, the fund as it stands");
                             bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
                             int before = pl.Divisions.Entries.Count;
-                            for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                            using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
                             List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                             bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed
                                 && added[1].Title.StartsWith("Pension act: the pension age ", StringComparison.Ordinal) && added[1].Passed && added[1].Motion
@@ -456,7 +585,7 @@ namespace PoliSim.EditorTools
                             SovereignWealthFund fundBefore = pl.SovereignWealthFund;
                             pl.SovereignWealthFund = new SovereignWealthFund();
                             int beforePartner = pl.Divisions.Entries.Count;
-                            partnerAct?.Invoke(sim, new object[] { pl, decision, written, sim.CurrentDate });
+                            using (PresidentialVeto.PlantDraw(0.0)) { partnerAct?.Invoke(sim, new object[] { pl, decision, written, sim.CurrentDate }); }
                             List<DivisionRecord> partnerAdded = pl.Divisions.Entries.GetRange(beforePartner, pl.Divisions.Entries.Count - beforePartner);
                             bool fundKept = pl.SovereignWealthFund != null;
                             pl.SovereignWealthFund = fundBefore;
@@ -477,7 +606,7 @@ namespace PoliSim.EditorTools
                             string holderBefore = pl.FinanceStanceHolder;
                             float appliedBefore = pl.FinanceStanceApplied;
                             DateTime steppedBefore = pl.FinancePartnerSteppedOn, boundary = sim.CurrentDate.AddDays(1);
-                            partnerAct?.Invoke(sim, new object[] { pl, decisionR, writtenR, boundary });
+                            using (PresidentialVeto.PlantDraw(0.0)) { partnerAct?.Invoke(sim, new object[] { pl, decisionR, writtenR, boundary }); }
                             PoliSim.Simulation.FinancePartner.Record(pl, writtenR, boundary);
                             Check(!writtenR.Any && !decisionR.TaxRateOverrides.ContainsKey(moved.Type) && pl.FinancePartnerSteppedOn == boundary
                                   && pl.FinanceStanceHolder == holderBefore && pl.FinanceStanceApplied == appliedBefore && writtenR.Moves[writtenR.Moves.Count - 1].Contains("nothing of the step lands"),
@@ -502,8 +631,8 @@ namespace PoliSim.EditorTools
                                 F("§773: a bill changing every statute part ({0}) - its budget act changes none of them and keeps the spending", string.Join(", ", BudgetBill.StatuteParts)));
                         }
 
-                        // (k3) a benefits act through the game's own path: a level step the planted Sejm passes and PiS opposes is searched, as (k) searches the
-                        // age; the act is vetoed, the level stays and the spending moves. The second review's finding 4: the search's success, the act's
+                        // (k3) a benefits act through the game's own path: a level step the planted Sejm passes, at risk of a veto no override would carry, is searched, as (k) searches the
+                        // age; the act is at risk and the draw, planted to veto (F3), vetoes it; the level stays and the spending moves. The second review's finding 4: the search's success, the act's
                         // divisions (the budget act, the benefits act, the veto) and the veto standing are asserted, so a benefits act that could no longer be
                         // vetoed fails here.
                         {
@@ -522,10 +651,10 @@ namespace PoliSim.EditorTools
                                     var sides = new List<DivisionSide>();
                                     foreach (PoliSim.Simulation.PartyStance s in PoliSim.Simulation.StanceModel.Stances(pl, concern)) { sides.Add(new DivisionSide { Abbrev = s.Party.Abbrev, Seats = s.Seats, Side = s.Side }); }
                                     PresidentialVeto.Outcome projected = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, sim.CurrentDate, PresidentialVeto.Act.OrdinaryStatute, sides);
-                                    if (projected != null && projected.Vetoed && !projected.Overridden) { levelAsked = asked; break; }
+                                    if (projected != null && projected.AtRisk && !projected.OverrideCarries) { levelAsked = asked; break; }
                                 }
                             }
-                            Check(levelAsked >= 0f, F("§773: on the planted chamber a benefit-level step the Sejm passes and PiS opposes - {0} {1:0.#} -> {2}",
+                            Check(levelAsked >= 0f, F("§773: on the planted chamber a benefit-level step the Sejm passes, at risk of a veto no override would carry - {0} {1:0.#} -> {2}",
                                 program != null ? program.Type.ToString() : "no implemented program", levelBefore, levelAsked >= 0f ? levelAsked.ToString("0.#", CultureInfo.InvariantCulture) : "none found"));
                             if (levelAsked >= 0f)
                             {
@@ -536,7 +665,7 @@ namespace PoliSim.EditorTools
                                 bill.SpendingPercentChanges[spend.Category] = 5f;
                                 bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
                                 int before = pl.Divisions.Entries.Count;
-                                for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                                using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
                                 List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                                 bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed
                                     && added[1].Title.StartsWith("Benefits act: ", StringComparison.Ordinal) && added[1].Title.Contains(" to " + levelAsked.ToString("0.#", CultureInfo.InvariantCulture)) && added[1].Passed && added[1].Motion
@@ -556,7 +685,7 @@ namespace PoliSim.EditorTools
                             bill.SpendingPercentChanges[pl.SpendingLines.First(l => l.Amount > 0f).Category] = 5f;
                             bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
                             int before = pl.Divisions.Entries.Count;
-                            for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                            using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
                             List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                             DivisionRecord fundAct = added.FirstOrDefault(d => d.Title.StartsWith("Fund act: ", StringComparison.Ordinal));
                             bool created = pl.SovereignWealthFund != null;
@@ -579,7 +708,7 @@ namespace PoliSim.EditorTools
                             bill.SpendingPercentChanges[pl.SpendingLines.First(l => l.Amount > 0f).Category] = 5f;
                             bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
                             int before = pl.Divisions.Entries.Count;
-                            for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
+                            using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
                             List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                             DivisionRecord fundAct = added.FirstOrDefault(d => d.Title.StartsWith("Fund act: ", StringComparison.Ordinal));
                             SovereignWealthFund now = pl.SovereignWealthFund;
@@ -671,7 +800,11 @@ namespace PoliSim.EditorTools
                             foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
                             int before = pl.Divisions.Entries.Count;
                             bool turned = false;
-                            for (int day = 0; day < PoliSim.Simulation.SimulationManager.DaysPerTurn + 1 && !turned; day++) { if (sim.AdvanceDay()) { sim.AdvanceTurn(decisions); turned = true; } }
+                            // F3: the draw PLANTED to sign - the case is the boundary's order (the act standing or falling in the Sejm), not the President's draw
+                            using (PresidentialVeto.PlantDraw(1.0))
+                            {
+                                for (int day = 0; day < PoliSim.Simulation.SimulationManager.DaysPerTurn + 1 && !turned; day++) { if (sim.AdvanceDay()) { sim.AdvanceTurn(decisions); turned = true; } }
+                            }
                             List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
                             DivisionRecord taxAct = added.FirstOrDefault(d => d.Title.StartsWith("Tax act: ", StringComparison.Ordinal));
                             bool vetoStood = added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && d.Title.Contains("Tax act: ") && !d.Passed);

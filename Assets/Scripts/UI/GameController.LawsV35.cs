@@ -1281,9 +1281,13 @@ namespace PoliSim.UI
                 // the count the draft would meet today, beside the button
                 bool contested = concern != null && !concern.IsEmpty;
                 bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
-                // §761 (PS-5): where the President holds a veto the game runs, the verdict is the statute's - passed, and not returned for good
-                PresidentialVeto.Outcome veto = _chamberVerdicts.Veto(_playerCountry, concern, _simulationManager.CurrentDate);
-                bool stands = wouldPass && !ChamberVerdicts.VetoStands(veto);
+                // §761 (PS-5), F3: where the President holds a veto the game runs, a statute that passes the Sejm may still meet a veto - its glyph is the
+                // count's, in the caution ink while the veto could kill it (no override carrying), and the slip carries the veto risk as a percentage
+                // whenever it is at risk (the answer is the vote day's draw)
+                PresidentialVeto.Outcome veto = _chamberVerdicts.Veto(_playerCountry, concern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending ? daysRemaining : (int?)null));
+                bool stands = wouldPass;
+                bool atRisk = wouldPass && ChamberVerdicts.AtRisk(veto);
+                bool atRiskOfFalling = wouldPass && ChamberVerdicts.AtRiskOfFalling(veto);
                 int forSeats = 0, againstSeats = 0, undecided = 0;
                 if (contested)
                 {
@@ -1297,14 +1301,15 @@ namespace PoliSim.UI
                 if (Event.current.type == EventType.Repaint)
                 {
                     float side = V35.Px(16f);
-                    DrawStateGlyph(new Rect(countRect.x, countRect.y + Mathf.Round((row.height - side) * 0.5f), side, side), stands ? Symbol.Good : Symbol.Bad, stands ? PoliSimTheme.Good : PoliSimTheme.Bad);
+                    DrawStateGlyph(new Rect(countRect.x, countRect.y + Mathf.Round((row.height - side) * 0.5f), side, side), stands ? Symbol.Good : Symbol.Bad,
+                        atRiskOfFalling ? PoliSimTheme.Caution : stands ? PoliSimTheme.Good : PoliSimTheme.Bad);
                     string count = contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "") : "Nothing changes · uncontested";
                     GUIStyle countFace = V35Mono(V35.Floor, PoliSimTheme.TextSecondary);
                     float cw = countRect.width - side - V35.Px(8f);
                     PoliSimWidgets.MeasuredLabel(new Rect(countRect.x + side + V35.Px(8f), countRect.y, Mathf.Max(1f, cw), countRect.height), V35Fit(count, countFace, Mathf.Max(1f, cw), out _), countFace);
                 }
                 SlipAnchor(countRect, anchor + ":count");
-                var countSlip = new SlipContent(!wouldPass ? "WOULD FAIL" : stands ? "WOULD PASS" : "WOULD BE VETOED")
+                var countSlip = new SlipContent(!wouldPass ? "WOULD FAIL" : atRisk ? "WOULD PASS · VETO RISK " + ChamberVerdicts.RiskWords(veto) : "WOULD PASS")
                     .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "") : "NOTHING CHANGES · UNCONTESTED")
                     .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING");
                 string vetoLine = ChamberVerdicts.VetoLine(PlayerCountryId, veto);

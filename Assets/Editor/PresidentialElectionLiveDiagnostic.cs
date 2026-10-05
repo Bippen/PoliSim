@@ -149,8 +149,10 @@ namespace PoliSim.EditorTools
                     sides.Add(new DivisionSide { Abbrev = kv.Key, Seats = kv.Value, Side = kv.Key == contest.ElectedParty ? -1 : 1 });
                 }
                 PresidentialVeto.Outcome veto = PresidentialVeto.Decide(CountryId.Poland, pl.PresidentialElections, new DateTime(2025, 9, 1), PresidentialVeto.Act.OrdinaryStatute, sides);
-                Check(veto != null && veto.President == contest.Elected && veto.BackingParty == contest.ElectedParty && veto.Vetoed,
-                    F("the veto on 2025-09-01: {0}'s backing party ({1}) against - vetoed", veto?.President, veto?.BackingParty));
+                double electedRate = PresidentialVeto.RateOf(contest.Elected, out string electedBasis);
+                Check(veto != null && veto.President == contest.Elected && veto.BackingParty == contest.ElectedParty && veto.AtRisk && veto.Risk == electedRate
+                      && electedBasis.StartsWith("the president's own rate", StringComparison.Ordinal),
+                    F("the veto on 2025-09-01 (F3): {0}'s backing party ({1}) against - at risk, at the record's own rate for a president the game re-elects, {2:0.0} % ({3})", veto?.President, veto?.BackingParty, electedRate * 100.0, electedBasis));
                 var planted = new List<PresidentialElection.Contest>
                 {
                     new PresidentialElection.Contest { FirstVote = new DateTime(2025, 5, 18), TakesOffice = new DateTime(2025, 8, 6), Elected = "Rafał Trzaskowski", ElectedParty = "KO", Line = "planted" },
@@ -159,9 +161,11 @@ namespace PoliSim.EditorTools
                 PresidentialVeto.Outcome plantedVeto = PresidentialVeto.Decide(CountryId.Poland, planted, new DateTime(2025, 9, 1), PresidentialVeto.Act.OrdinaryStatute, koAgainst);
                 PresidentialVeto.Outcome recordOnly = PresidentialVeto.Decide(CountryId.Poland, null, new DateTime(2025, 9, 1), PresidentialVeto.Act.OrdinaryStatute, koAgainst);
                 PresidentialElection.PresidentAt(CountryId.Poland, planted, new DateTime(2025, 8, 6), out PresidencyOfRecord.President plantedPresident);
-                Check(plantedVeto != null && plantedVeto.President == "Rafał Trzaskowski" && plantedVeto.BackingParty == "KO" && plantedVeto.Vetoed && PresidentialElection.ElectedInGame(plantedPresident)
-                      && recordOnly != null && recordOnly.President == "Karol Nawrocki" && !recordOnly.Vetoed,
-                    F("a planted game winner unlike the record's: the office and the veto read {0} ({1}) - KO against, vetoed; the record alone reads {2}, who signs it", plantedVeto?.President, plantedVeto?.BackingParty, recordOnly?.President));
+                double pooledRate = PresidentialVeto.RateOf("Rafał Trzaskowski", out string pooledBasis);
+                Check(plantedVeto != null && plantedVeto.President == "Rafał Trzaskowski" && plantedVeto.BackingParty == "KO" && plantedVeto.AtRisk && plantedVeto.Risk == pooledRate && pooledBasis.StartsWith("the pooled rate", StringComparison.Ordinal)
+                      && PresidentialElection.ElectedInGame(plantedPresident) && recordOnly != null && recordOnly.President == "Karol Nawrocki" && !recordOnly.AtRisk && recordOnly.Risk == 0.0,
+                    F("a planted game winner unlike the record's (F3): the office and the veto read {0} ({1}) - KO against, at risk at the pooled rate, {2:0.0} % ({3}); the record alone reads {4}, whose party votes for it - no risk",
+                        plantedVeto?.President, plantedVeto?.BackingParty, pooledRate * 100.0, pooledBasis, recordOnly?.President));
 
                 // ---- the next term's day, counted from the game's president ----
                 bool nextTerm = PresidentialElection.TryNextFirstVote(pl, new DateTime(2025, 8, 7), out DateTime firstNext, out DateTime endsNext, out _);

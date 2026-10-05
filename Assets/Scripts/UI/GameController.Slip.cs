@@ -227,6 +227,7 @@ namespace PoliSim.UI
             x = Mathf.Max(bounds.x, Mathf.Min(x, bounds.xMax - w));
             y = Mathf.Max(bounds.y, Mathf.Min(y, bounds.yMax - h));
             var box = new Rect(x, y, w, h);
+            UiContainmentGuard.Check("slip:" + headText, box, bounds);   // F3's review: a slip taller (or wider) than its page escapes it - the film fails on it; a slip is never cut
             head = new Rect(box.x, box.y, box.width, headHeight);
             bool paint = Event.current.type == EventType.Repaint;
             if (paint)

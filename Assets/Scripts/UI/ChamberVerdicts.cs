@@ -105,31 +105,52 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// §761 (PS-5): THE PRESIDENT'S ANSWER to a statute the chamber would pass - `PresidentialVeto.Decide` on the same cached sides the count reads,
-        /// so the page projects what the gate (`SimulationManager.PresidentialVetoGate`) will decide on the vote's own sides. Null where the chamber would
-        /// not pass it, the country's president holds no veto the game runs, or none is in office on <paramref name="date"/>. Not cached itself: it adds
-        /// integer arithmetic to the cached stances.
+        /// §761 (PS-5), F3: THE PRESIDENT'S ANSWER as the page can know it - `PresidentialVeto.Decide` on the same cached sides the count reads: whether the
+        /// statute is at risk and at what rate, and what an override would do. The answer itself is the gate's seeded draw (`SimulationManager.PresidentialVetoGate`),
+        /// taken on the vote's day and never here - so the page shows the risk, not a verdict. <paramref name="voteDay"/> is that day - today plus a pending
+        /// bill's days remaining, or a new bill's full term (<see cref="VoteDay"/>) - so the president whose rate is shown is the one the gate will meet,
+        /// across a handover; the count is today's. Null where the chamber would not pass it, the country's president holds no veto the game runs, or none
+        /// is in office on the vote's day. Not cached itself: the stances it reads are (<see cref="SeatSides"/>), and its own work is a count over them and the
+        /// lookups of the president and the rate.
         /// </summary>
-        public PoliSim.Elections.PresidentialVeto.Outcome Veto(Country country, BillConcern concern, System.DateTime date,
+        public PoliSim.Elections.PresidentialVeto.Outcome Veto(Country country, BillConcern concern, System.DateTime voteDay,
             PoliSim.Elections.PresidentialVeto.Act act = PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute)
         {
             if (concern == null || concern.IsEmpty || !PoliSim.Elections.PresidentialVeto.Applies(country.Id) || !WouldPass(country, concern)) { return null; }
             var projected = new List<DivisionSide>();
             foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, concern)) { projected.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side }); }
-            return PoliSim.Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, date, act, projected);
+            return PoliSim.Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, voteDay, act, projected);
         }
 
-        /// <summary>§761: whether a statute the chamber would pass dies on the President's veto - vetoed, and the override short of its 3/5.</summary>
-        public static bool VetoStands(PoliSim.Elections.PresidentialVeto.Outcome veto) => veto != null && veto.Vetoed && !veto.Overridden;
+        /// <summary>F3 (the review's finding: the gate draws on the vote's day): the day a bill is voted - <paramref name="today"/> plus a pending bill's
+        /// <paramref name="daysRemaining"/>, or, for a bill not yet introduced (null), a new bill's full term (`ParliamentSystem.BillDurationDays`).</summary>
+        public static System.DateTime VoteDay(System.DateTime today, int? daysRemaining) => today.AddDays(daysRemaining ?? ParliamentSystem.BillDurationDays);
 
-        /// <summary>§761: the President's answer as one slip line - the party by its short name (§575: drawn, never the key). Null where there is no answer.</summary>
+        /// <summary>F3: whether a statute the chamber would pass is at risk of the President's veto - the backing party does not vote for it.</summary>
+        public static bool AtRisk(PoliSim.Elections.PresidentialVeto.Outcome veto) => veto != null && veto.AtRisk;
+
+        /// <summary>F3: whether the veto could kill a statute the chamber would pass - at risk, and an override would not carry. The surfaces at rest (the
+        /// board, a row's cell, a card's lean) mark only this; where an override carries, the statute stands whatever the draw, and only the slip names
+        /// the veto (<see cref="VetoLine"/>).</summary>
+        public static bool AtRiskOfFalling(PoliSim.Elections.PresidentialVeto.Outcome veto) => veto != null && veto.AtRisk && !veto.OverrideCarries;
+
+        /// <summary>F3 ("the slip shows the veto risk as a percentage"): the risk in whole per cent - "n %" - and "0 %" for a statute not at risk.</summary>
+        public static string RiskWords(PoliSim.Elections.PresidentialVeto.Outcome veto) =>
+            veto == null ? null : (veto.Risk * 100.0).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " %";
+
+        /// <summary>§761, F3: the President's answer as one slip line - the veto risk as a percentage, whose rate it is, and what an override would do; the
+        /// party by its short name (§575: drawn, never the key). Null where there is no answer.</summary>
         public static string VetoLine(CountryId id, PoliSim.Elections.PresidentialVeto.Outcome veto)
         {
             if (veto == null) { return null; }
-            string president = veto.President.ToUpperInvariant(), backing = PartySystems.ShortName(id, veto.BackingParty);
-            return veto.Vetoed
-                ? $"THE PRESIDENT ({president}) WOULD VETO IT - HIS BACKING PARTY ({backing}) VOTES AGAINST · AN OVERRIDE NEEDS {veto.Required} · {veto.Yes} FOR - " + (veto.Overridden ? "IT WOULD BE OVERRIDDEN" : "THE VETO WOULD STAND")
-                : $"THE PRESIDENT ({president}) WOULD SIGN IT - HIS BACKING PARTY ({backing}) DOES NOT VOTE AGAINST";
+            string president = veto.President.ToUpperInvariant();
+            if (veto.BackingParty == null) { return $"VETO RISK 0 % - NO PARTY BACKS THE PRESIDENT ({president}), SO NO STATUTE IS AT RISK"; }
+            string backing = PartySystems.ShortName(id, veto.BackingParty);
+            if (veto.ClubVoting == 0) { return $"VETO RISK 0 % - THE PRESIDENT'S BACKING PARTY ({backing}) HOLDS NO SEAT, SO NO STATUTE IS AT RISK"; }
+            return veto.AtRisk
+                ? $"VETO RISK {RiskWords(veto)} - THE PRESIDENT'S BACKING PARTY ({backing}) DOES NOT VOTE FOR IT; THE PRESIDENT ({president}) VETOES AT "
+                    + veto.RiskBasis.ToUpperInvariant() + $" · AN OVERRIDE NEEDS {veto.Required} · {veto.Yes} FOR - " + (veto.OverrideCarries ? "A VETO WOULD BE OVERRIDDEN" : "A VETO WOULD STAND")
+                : $"VETO RISK 0 % - THE PRESIDENT ({president}) WOULD SIGN IT: THE BACKING PARTY ({backing}) VOTES FOR IT";
         }
 
         /// <summary>`ParliamentSystem.WouldBillPass(country, direction, axis)` - a program bill's scalar direction, through the concern it stands for.</summary>

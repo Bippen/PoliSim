@@ -203,3 +203,4 @@ file	Assets/Scripts/Simulation/FinancePartner.cs	22161f29346ec109ad9792c49905bf1
 file	Assets/Scripts/Simulation/SimulationManager.cs	935d9a8d5a0b9de1426566b4f0fcdbbd45ea011165190778a8b7cf44b2752b45	reviewed	2026-10-04	s770	Reviews/2026-10-04_s770_presidential_election.md	-
 file	Assets/Scripts/Data/BudgetBill.cs	69377040d336d1dac23f1cc8e9e8098979a835abee7e71167d2428e2ef11c0a6	reviewed	2026-10-04	s773	Reviews/2026-10-04_s773_e2_statute_acts.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	affaa57ab5943450babf569d81088cae499ff75930e2030008fef43505a380cd	reviewed	2026-10-04	s773	Reviews/2026-10-04_s773_e2_statute_acts.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	4d438ad80fc87f137539a41949117a0ea31b5331b54a877b300a379bcc911677	reviewed	2026-10-05	s778	Reviews/2026-10-05_s778_f3_veto_draw.md	-

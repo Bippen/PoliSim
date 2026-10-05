@@ -496,8 +496,9 @@ namespace PoliSim.UI
             var bill = pending ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !levied };
             BillConcern taxConcern = ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill);
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, taxConcern);
-            PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, _simulationManager.CurrentDate);   // §761: a tax programme's bill is an ordinary statute
-            string taxVerdict = !wouldPass ? "WOULD FAIL" : ChamberVerdicts.VetoStands(taxVeto) ? "WOULD BE VETOED" : "WOULD PASS";
+            PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending?.DaysRemaining));   // §761: a tax programme's bill is an ordinary statute; F3: the president on its vote's day
+            // F3: a statute at risk passes the Sejm and meets the President's draw - the verdict is the count's, the risk beside it as a percentage
+            string taxVerdict = !wouldPass ? "WOULD FAIL" : "WOULD PASS" + (ChamberVerdicts.AtRisk(taxVeto) ? " · VETO RISK " + ChamberVerdicts.RiskWords(taxVeto) : "");
             string switchWord = !mayIntroduce ? "Locked" : pending != null ? "Pending · " + pending.DaysRemaining + " d" : levied ? "On" : "Off";
             Rect switchHit = DrawBudgetSwitch(switchRect, switchWord, levied, mayIntroduce, pending == null);
             if (mayIntroduce && switchHit.width > 0f)
@@ -1040,7 +1041,7 @@ namespace PoliSim.UI
             }
             SlipAnchor(countRow, "ifpassed:count");
             // §768 (Elias's ruling D4), §773 (E2): where the President holds a veto, each statute part the draft changes travels in its own act - the
-            // rates, the pension age, the benefit levels, the fund's rules - its count and his answer
+            // rates, the pension age, the benefit levels, the fund's rules - its count and, F3, its veto risk as a percentage (the answer is the vote day's draw)
             var acts = new List<BudgetBill.StatutePart>();
             if (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId))
             {
@@ -1050,17 +1051,25 @@ namespace PoliSim.UI
                 .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
                     : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED")
                 .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE");
+            PoliSim.Elections.PresidentialVeto.Outcome firstAtRisk = null;   // F3 (the review's finding: the slip's height): whose rate the risk is, said once
             foreach (BudgetBill.StatutePart part in acts)
             {
                 BillConcern actConcern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft.PartOf(part));
                 bool actPasses = _chamberVerdicts.WouldPass(_playerCountry, actConcern);
-                PoliSim.Elections.PresidentialVeto.Outcome actVeto = _chamberVerdicts.Veto(_playerCountry, actConcern, _simulationManager.CurrentDate);
+                PoliSim.Elections.PresidentialVeto.Outcome actVeto = _chamberVerdicts.Veto(_playerCountry, actConcern,
+                    ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining));   // F3: the president on the budget's vote day
                 string stays = StatutePartStays(part);
                 countSlip.Add("IF THE BUDGET PASSES, " + StatutePartWords(part) + " A SEPARATE " + SimulationManager.ActWords(part).ToUpperInvariant() + " - "
                     + (!actPasses ? "IT WOULD FAIL; " + stays
-                    : ChamberVerdicts.VetoStands(actVeto) ? "IT WOULD BE VETOED; " + stays
-                    : actVeto != null && actVeto.Vetoed ? "IT WOULD BE VETOED AND THE VETO OVERRIDDEN" : "IT WOULD PASS AND BE SIGNED"));
-                if (ChamberVerdicts.VetoLine(PlayerCountryId, actVeto) is string actVetoLine) { countSlip.Add(actVetoLine); }
+                    : ChamberVerdicts.AtRisk(actVeto) ? "IT WOULD PASS - VETO RISK " + ChamberVerdicts.RiskWords(actVeto) + "; IF VETOED, "
+                        + (actVeto.OverrideCarries ? "THE VETO WOULD BE OVERRIDDEN" : stays)
+                    : "IT WOULD PASS AND BE SIGNED"));
+                if (firstAtRisk == null && ChamberVerdicts.AtRisk(actVeto)) { firstAtRisk = actVeto; }
+            }
+            if (firstAtRisk != null)
+            {
+                countSlip.Add("AN ACT IS AT RISK WHERE THE PRESIDENT'S BACKING PARTY (" + PartySystems.ShortName(PlayerCountryId, firstAtRisk.BackingParty) + ") DOES NOT VOTE FOR IT; THE PRESIDENT ("
+                    + firstAtRisk.President.ToUpperInvariant() + ") VETOES AT " + firstAtRisk.RiskBasis.ToUpperInvariant());
             }
             if (contested)
             {

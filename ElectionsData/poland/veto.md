@@ -66,7 +66,7 @@ text of the Sejm's standing orders (M.P. 2026 poz. 573; the ELI metadata `raw/ve
 >
 > *Gloss: **if the Sejm does not re-pass it, the legislative procedure is closed** - the vetoed statute is dead.*
 
-## 4. Ruled 2026-10-02 (B1, B2), and what is still not modelled
+## 4. Ruled 2026-10-02 (B1, B2) and 2026-10-05 (F3), and what is still not modelled
 
 - **How "3/5 of the votes" treats an abstention - RULED (B2):** *"3/5 of the deputies voting, abstentions included in the base. The Sejm
   computes qualified majorities from the number voting, with 230 present as the quorum. Required = ceil(0.6 × (yes + no + abstain))."*
@@ -77,7 +77,18 @@ text of the Sejm's standing orders (M.P. 2026 poz. 573; the ELI metadata `raw/ve
   it. Two kinds of act can't be vetoed: the budget act (Constitution art. 224: he signs within 7 days and can only refer it to the Tribunal)
   and constitutional amendments (art. 235(7)). Budget-related acts are ordinary statutes and can be vetoed."* Duda and Nawrocki, PiS-backed
   (Nawrocki's backing [SECONDARY], `presidential_returns.md`); "a majority of his backing party's deputies" read as more than half of the
-  club's MEMBERS at the vote, absent ones included (`veto_record.md` §2).
+  club's MEMBERS at the vote, absent ones included (`veto_record.md` §2). **Its who-vetoes-what half is SUPERSEDED by F3 below**; what may be
+  vetoed - an ordinary statute, never the budget act or a constitutional amendment - stands.
+- **At risk, then a draw - RULED (F3, widening B1, 2026-10-05):** *"Widen B1, then draw. A statute is at risk when the backing party did not
+  vote for it: a majority of its voting members voted no or abstained. On your miss list that catches all eight, including the six abstentions
+  and the 84-NO case. A seeded draw then decides, at each president's own rate refitted on the widened base: Duda's and Nawrocki's from the
+  record, and the pooled rate for a president with no record. The slip shows the veto risk as a percentage."* The rates are the record's,
+  generated, never typed: `Tools/veto_b1_backtest.pl` writes them into `docs/generated/VETO_B1_BACKTEST.md` and the runtime table
+  `Assets/Scripts/Elections/Generated/PolishVetoRates.cs`. READINGS, stated: the widened base is every decided ordinary statute at risk, so a
+  referral to the Tribunal counts in it as not vetoed; the ruling's colon is read as its test, so a backing party with no member voting -
+  one that holds no seat - puts nothing at risk; a president no party backs (a game-elected candidate who stood for none) has no club, so
+  nothing is at risk either - this reading and the seatless one are Elias's to rule (the other reading: every ordinary statute at risk at the
+  pooled rate); and a backing party with no position on a bill's axes is recorded abstaining, so it puts the statute at risk.
 - **Art. 235 ust. 7** (`raw/records/trybunal_konstytucja.html`, the Tribunal's copy of the Konstytucja): *"Po zakończeniu postępowania
   określonego w ust. 4 i 6 Marszałek Sejmu przedstawia Prezydentowi Rzeczypospolitej uchwaloną ustawę do podpisu.
   Prezydent Rzeczypospolitej podpisuje ustawę w ciągu 21 dni od dnia przedstawienia i zarządza jej ogłoszenie w Dzienniku Ustaw
@@ -87,6 +98,9 @@ text of the Sejm's standing orders (M.P. 2026 poz. 573; the ELI metadata `raw/ve
 - **The Senate** (Art. 121) and **the Tribunal referral** (Art. 122 ust. 3, Art. 224 ust. 2): not modelled; the Senate is stated absent in
   the political-system spec.
 - **LIVE since `COMPLETED.md` §761** (`PresidentialVeto`, `SimulationManager.PresidentialVetoGate`): every ordinary statute the game's Sejm
-  passes goes to the president of record on the day; the rule and the override are B1's and B2's above. Premises, stated there: the veto and
+  passes goes to the president on the day - the game's own once its election seats one (§770), else the record's; which statutes are at risk,
+  and the draw, are F3's above (B1 widened), and the override is B2's. Premises, stated there: the veto and
   the vote on it are taken on the passage's day (the 21 days are not waited), and the re-pass is voted by the passage's own sides. The game's
-  budget bill is exempt as a whole (Art. 224), though it carries rates that in Poland are budget-related ordinary statutes - owed to Elias.
+  budget act alone is exempt (Art. 224): since §768 (D4) and §773 (E2) each statute part a Polish budget changes (`BudgetBill.StatuteParts`) is its
+  own act, voted by the Sejm once the budget act is adopted and put to the President like any ordinary statute, so F3's risk and draw reach it;
+  `SimulationManager.PolishStatuteActs`'s summary says which parts are ruled and which are read.

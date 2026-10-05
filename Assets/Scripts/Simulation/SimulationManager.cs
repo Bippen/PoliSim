@@ -1437,31 +1437,38 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// §761 (PS-5; Elias's rulings B1 and B2): THE PRESIDENT'S VETO, LIVE. A statute the Sejm has just passed - <paramref name="passage"/>, the division
-        /// `RecordDivision` returned for THIS vote (the log is never read back) - goes to the President (<see cref="Elections.PresidentialVeto.Decide"/>):
-        /// vetoed where his backing party voted against it; the Sejm's re-pass, voted by the same sides, overrides it with 3/5 of those voting. The veto and
-        /// the vote on it are one division of their own - its line the 3/5 (`DivisionRecord.Required`), passed where overridden, failed where the veto stands -
-        /// and it carries the bill's ceremony; the passage keeps none (marked a motion, so no signing is shown for a statute the President returned). Returns
-        /// whether the statute stands. The budget act never comes here (Art. 224); a constitutional amendment passes through unvetoed (Art. 235 ust. 7,
-        /// <paramref name="act"/>); Poland alone.
+        /// §761 (PS-5; Elias's rulings B1 and B2), widened by F3: THE PRESIDENT'S VETO, LIVE. A statute the Sejm has just passed - <paramref name="passage"/>,
+        /// the division `RecordDivision` returned for THIS vote (the log is never read back) - goes to the President (<see cref="Elections.PresidentialVeto.Decide"/>):
+        /// at risk where the backing party did not vote for it (F3), then vetoed or signed by the seeded draw at the president's rate - drawn here and nowhere
+        /// else, keyed on the master seed and the act (<see cref="Elections.PresidentialVeto.Draw"/>), so every world that resolves the act on the same day draws
+        /// alike (a PREMISE stated there: the impact ledger's forks resolve a boundary later, and may draw apart) and no random stream moves. The Sejm's
+        /// re-pass, voted by the same sides, overrides a veto with 3/5 of those voting. The veto and the vote on it are one division of
+        /// their own - its line the 3/5 (`DivisionRecord.Required`), passed where overridden, failed where the veto stands - and it carries the bill's
+        /// ceremony; the passage keeps none (marked a motion, so no signing is shown for a statute the President returned). Returns whether the statute stands.
+        /// The budget act never comes here (Art. 224); a constitutional amendment passes through unvetoed (Art. 235 ust. 7, <paramref name="act"/>); Poland alone.
         /// </summary>
         private bool PresidentialVetoGate(Country country, DivisionRecord passage, bool passed, Elections.PresidentialVeto.Act act = Elections.PresidentialVeto.Act.OrdinaryStatute)
         {
             if (!passed || passage == null || !Elections.PresidentialVeto.Applies(country.Id)) { return passed; }
             Elections.PresidentialVeto.Outcome veto = Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, CurrentDate, act, passage.Sides);
-            if (veto == null || !veto.Vetoed) { return true; }
+            if (veto == null || !veto.AtRisk) { return true; }
+            veto.DrawOn(Elections.PresidentialVeto.Draw(SimulationRandom.MasterSeed, country.Id, CurrentDate, passage.Title));
+            string risk = (veto.Risk * 100.0).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " %";
+            if (!veto.Vetoed) { Debug.Log($"VETO: {country.Id} - signed at a {risk} risk ({veto.RiskBasis}): {passage.Title}"); return true; }
             passage.Motion = true;
             var sides = new List<DivisionSide>();
             foreach (DivisionSide s in passage.Sides)
             {
+                bool backing = s.Abbrev == veto.BackingParty;
                 sides.Add(new DivisionSide { Abbrev = s.Abbrev, ShortName = s.ShortName, Seats = s.Seats, Side = s.Side, Alignment = s.Alignment,
-                    Reason = s.Abbrev == veto.BackingParty ? "the President's backing party - voted against the statute; against overriding his veto" : s.Reason,
-                    ReasonShort = s.Abbrev == veto.BackingParty ? "the President's party - against the override" : s.ReasonShort });
+                    Reason = !backing ? s.Reason : s.Side < 0 ? "the President's backing party - voted against the statute; against overriding the veto"
+                        : "the President's backing party - abstained on the statute; abstains on the override",
+                    ReasonShort = !backing ? s.ReasonShort : s.Side < 0 ? "the President's party - against the override" : "the President's party - abstains" });
             }
             string title = $"Vetoed by the President ({veto.President}): {passage.Title} - " + (veto.Overridden ? "overridden" : "the veto stands") + $", {veto.Yes} for, {veto.Required} needed (3/5 of those voting, Art. 122 ust. 5)";
             DivisionRecord overrideVote = country.Divisions.Append(title, CurrentDate, passage.Alignment, veto.Overridden, passage.Direction, passage.Axis, sides);
             overrideVote.Required = veto.Required;
-            Debug.Log($"VETO: {country.Id} - {title}");
+            Debug.Log($"VETO: {country.Id} - {title} (drawn at a {risk} risk, {veto.RiskBasis})");
             return veto.Overridden;
         }
 

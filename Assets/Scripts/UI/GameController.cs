@@ -9288,7 +9288,7 @@ namespace PoliSim.UI
             // Master Sequence step 5e, Phase C batch 3: each pending bill now carries the DIRECTION it
             // was scored on, not just a pre-formatted sentence, so the lean bar below can show the
             // seat-weighted alignment Parliament actually decides on rather than only its sign.
-            var pending = new List<(string Label, BillConcern Concern, UiPalette.SystemArea Area, PoliSim.Elections.PresidentialVeto.Act Act)>();
+            var pending = new List<(string Label, BillConcern Concern, UiPalette.SystemArea Area, PoliSim.Elections.PresidentialVeto.Act Act, int Days)>();
             var uncontestedWords = new Dictionary<string, string>();   // §773: a card whose empty concern is not "no change requested", by its label
 
             BudgetBill budgetBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
@@ -9296,7 +9296,7 @@ namespace PoliSim.UI
             {
                 string budgetLabel = $"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).";
                 pending.Add((budgetLabel,
-                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct));   // §761: the budget act is never vetoed (Art. 224); §768/§773: the spending alone, each statute part its own act
+                    ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct, budgetBill.DaysRemaining));   // §761: the budget act is never vetoed (Art. 224); §768/§773: the spending alone, each statute part its own act
                 if (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId))
                 {
                     // §768 (Elias's ruling D4), §773 (E2): each statute part Poland's budget changes rides with it as its own act - voted if it passes, put to the President
@@ -9304,7 +9304,7 @@ namespace PoliSim.UI
                     {
                         if (!budgetBill.Changes(part, _playerCountry)) { continue; }
                         string actLabel = $"{SimulationManager.ActWords(part)} with the budget - voted if the budget passes, in {budgetBill.DaysRemaining} day(s).";
-                        pending.Add((actLabel, ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill.PartOf(part)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                        pending.Add((actLabel, ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill.PartOf(part)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, budgetBill.DaysRemaining));
                         // §773's review: an act that changes something the chamber weighs none of (the fund's rules) is uncontested - not "no change requested"
                         uncontestedWords[actLabel] = "Uncontested - the chamber weighs none of its terms; it passes, and is signed, if the budget passes";
                         // §773's second review: a budget whose every change went to its acts changes nothing itself - the slip's own reading, not "no change requested"
@@ -9316,41 +9316,41 @@ namespace PoliSim.UI
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
                 pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, bill.DaysRemaining));
             }
 
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
                 pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Welfare, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Welfare, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, bill.DaysRemaining));
             }
 
             LaborPolicyBill laborBill = _simulationManager.GetPendingLaborBill(PlayerCountryId);
             if (laborBill != null)
             {
                 pending.Add(($"Labor Market bill - resolves in {laborBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetLaborBillConcern(_playerCountry, laborBill), UiPalette.SystemArea.Labor, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetLaborBillConcern(_playerCountry, laborBill), UiPalette.SystemArea.Labor, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, laborBill.DaysRemaining));
             }
 
             CrimeJusticePolicyBill crimeJusticeBill = _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId);
             if (crimeJusticeBill != null)
             {
                 pending.Add(($"Crime & Justice bill - resolves in {crimeJusticeBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetCrimeJusticeBillConcern(_playerCountry, crimeJusticeBill), UiPalette.SystemArea.CrimeJustice, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetCrimeJusticeBillConcern(_playerCountry, crimeJusticeBill), UiPalette.SystemArea.CrimeJustice, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, crimeJusticeBill.DaysRemaining));
             }
 
             SectorPolicyBill sectorBill = _simulationManager.GetPendingSectorBill(PlayerCountryId);
             if (sectorBill != null)
             {
                 pending.Add(($"Economic Sectors bill - resolves in {sectorBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetSectorBillConcern(_playerCountry, sectorBill), UiPalette.SystemArea.Sectors, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetSectorBillConcern(_playerCountry, sectorBill), UiPalette.SystemArea.Sectors, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, sectorBill.DaysRemaining));
             }
 
             TradePolicyBill tradeBill = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             if (tradeBill != null)
             {
                 pending.Add(($"Trade bill - resolves in {tradeBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetTradeBillConcern(_playerCountry, tradeBill, _world), UiPalette.SystemArea.Trade, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetTradeBillConcern(_playerCountry, tradeBill, _world), UiPalette.SystemArea.Trade, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, tradeBill.DaysRemaining));
             }
 
             SwfDrawdownBill drawdownBill = _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId);
@@ -9359,7 +9359,7 @@ namespace PoliSim.UI
                 // Names its amount, unlike the other four. A drawdown IS its number - "an emergency
                 // drawdown bill" tells a player nothing about what they are about to be committed to.
                 pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {drawdownBill.DaysRemaining} day(s).",
-                    ParliamentSystem.GetSwfDrawdownBillConcern(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    ParliamentSystem.GetSwfDrawdownBillConcern(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, drawdownBill.DaysRemaining));
             }
 
             // Law system MVP slice: every pending law bill, named by its LawDefinition (falling back
@@ -9373,7 +9373,7 @@ namespace PoliSim.UI
                 string lawName = law != null ? law.Name : lawBill.LawId;
                 pending.Add(($"{(lawBill.IsRepeal ? "Repeal" : "Enact")} \"{lawName}\" - resolves in {lawBill.DaysRemaining} day(s).",
                     ParliamentSystem.GetLawBillConcern(_playerCountry, lawBill), UiPalette.SystemArea.CrimeJustice,
-                    law != null && law.ConstitutionalAmendment ? PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment : PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute));
+                    law != null && law.ConstitutionalAmendment ? PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment : PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, lawBill.DaysRemaining));
             }
 
             if (pending.Count == 0)
@@ -9382,9 +9382,9 @@ namespace PoliSim.UI
                 return;
             }
 
-            foreach ((string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act) in pending)
+            foreach ((string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act, int days) in pending)
             {
-                DrawPendingBillCard(label, concern, area, act, uncontestedWords.TryGetValue(label, out string uncontested) ? uncontested : null);
+                DrawPendingBillCard(label, concern, area, act, days, uncontestedWords.TryGetValue(label, out string uncontested) ? uncontested : null);
             }
         }
 
@@ -9402,22 +9402,24 @@ namespace PoliSim.UI
         /// as a bar only, with no number attached, because its display range is a presentation choice
         /// rather than anything the simulation claims precision about.
         /// </summary>
-        private void DrawPendingBillCard(string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act, string uncontested = null)
+        private void DrawPendingBillCard(string label, BillConcern concern, UiPalette.SystemArea area, PoliSim.Elections.PresidentialVeto.Act act, int daysRemaining, string uncontested = null)
         {
             // P3-A3 (2026-09-03): the card's verdict is the vote's own - over the bill's concern (the tariff on
             // openness inside it, R-CL2's axis kept) - and the breakdown beneath the map says why, party by party.
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
-            // §761 (PS-5): a statute the President would return for good leans VETOED; the budget act and an amendment never come to him (act)
-            bool vetoed = wouldPass && ChamberVerdicts.VetoStands(_chamberVerdicts.Veto(_playerCountry, concern, _simulationManager.CurrentDate, act));
+            // §761 (PS-5), F3: a statute the President's veto could kill (at risk, no override carrying) leans PASS with its veto risk as a percentage, in the
+            // caution ink - the answer is the vote day's draw; the budget act and an amendment never come to the President (act)
+            PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, concern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, daysRemaining), act) : null;
+            bool atRisk = ChamberVerdicts.AtRiskOfFalling(veto);
 
             bool contested = concern != null && !concern.IsEmpty;
 
             BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
             DrawColoredLabel(
-                contested ? (vetoed ? "Currently leans VETOED" : wouldPass ? "Currently leans PASS" : "Currently leans FAIL") : uncontested ?? "Unopposed - no change requested",
+                contested ? (wouldPass ? "Currently leans PASS" + (atRisk ? " · veto risk " + ChamberVerdicts.RiskWords(veto) : "") : "Currently leans FAIL") : uncontested ?? "Unopposed - no change requested",
                 _labelStyle,
-                UiPalette.GetDeltaColor(wouldPass && !vetoed ? 1f : -1f, higherIsBetter: true));
+                contested && atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
 
             // P2-2.2 (2026-09-02): the seat map replaces the lean bar here too (a law-support preview); an
             // unopposed bill maps every seat UNDECIDED, because SeatSides treats a zero direction as no side.
@@ -10146,16 +10148,17 @@ namespace PoliSim.UI
             float direction = ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill);
             BillConcern welfareConcern = ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill);
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, welfareConcern);   // §654: the bill's own concern (its cuts and its author), as the vote reads it
-            // §761 (PS-5): a statute the President would return for good is VETOED at rest - shorter than WOULD PASS, so it fits wherever that did
-            bool vetoedAtRest = wouldPass && ChamberVerdicts.VetoStands(_chamberVerdicts.Veto(_playerCountry, welfareConcern, _simulationManager.CurrentDate));
-            if (vetoedAtRest) { wouldPass = false; }   // the statute dies: the cell's ink is a failing bill's
+            // §761 (PS-5), F3: a statute the President's veto could kill (at risk, no override carrying) reads its veto risk at rest, in the caution ink -
+            // "VETO n %" is shorter than WOULD PASS, so it fits wherever that did; the answer itself is the vote day's draw
+            PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, welfareConcern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pendingBill?.DaysRemaining)) : null;
+            bool atRisk = ChamberVerdicts.AtRiskOfFalling(veto);
 
             // See the tax tile's switch slip (DrawBudgetTaxTile) - the "(current seat composition)" qualifier moved to the
             // screen header there for the same reason it moves here, and it is declared to Design as V1.
-            string text = pendingBill != null ? "PENDING" : vetoedAtRest ? "VETOED" : wouldPass ? "WOULD PASS" : "WOULD FAIL";
+            string text = pendingBill != null ? "PENDING" : atRisk ? "VETO " + ChamberVerdicts.RiskWords(veto) : wouldPass ? "WOULD PASS" : "WOULD FAIL";
             Color ink = pendingBill != null
                 ? PoliSimTheme.TextMuted
-                : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
+                : atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
 
             LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
         }

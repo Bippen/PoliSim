@@ -512,8 +512,14 @@ namespace PoliSim.UI
             slip.Add(president.Name.ToUpperInvariant() + (president.BackingParty != null ? " · " + PartySystems.ShortName(country, president.BackingParty).ToUpperInvariant() : string.Empty)
                 + " · IN OFFICE SINCE " + DeskDay(president.TookOffice));
             slip.Add(ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT");
-            // §770: whole lines - the slip's box wraps them to its own width (a pre-wrapped line is wrapped twice)
-            slip.Add("A STATUTE THE PRESIDENT'S BACKING PARTY VOTES AGAINST IS VETOED - THE SEJM OVERRIDES BY 3/5 OF THOSE VOTING");
+            // §770: whole lines - the slip's box wraps them to its own width (a pre-wrapped line is wrapped twice); F3: the rule at risk, the president's own
+            // rate - and where no seated party backs the president, no statute is at risk (the slips' own reading, ChamberVerdicts.VetoLine)
+            bool backedInChamber = president.BackingParty != null && _playerCountry.ParliamentSeats.TryGetValue(president.BackingParty, out int backingSeats) && backingSeats > 0;
+            double vetoRate = PoliSim.Elections.PresidentialVeto.RateOf(president.Name, out string rateBasis);
+            slip.Add(!backedInChamber
+                ? (president.BackingParty == null ? "NO PARTY BACKS THE PRESIDENT" : "THE PRESIDENT'S BACKING PARTY HOLDS NO SEAT") + ", SO NO STATUTE IS AT RISK OF A VETO - THE SEJM OVERRIDES ONE BY 3/5 OF THOSE VOTING"
+                : "A STATUTE THE PRESIDENT'S BACKING PARTY DOES NOT VOTE FOR IS AT RISK - VETOED AT " + (vetoRate * 100.0).ToString("0", CultureInfo.InvariantCulture)
+                    + " %, " + rateBasis.ToUpperInvariant() + " - THE SEJM OVERRIDES BY 3/5 OF THOSE VOTING");
             if (last != null)
             {
                 slip.Add("FIRST VOTE " + DeskDay(last.FirstVote) + " - " + DayWords(last.DayBasis));
