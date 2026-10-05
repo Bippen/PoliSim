@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using PoliSim.Elections.Generated;
 
 namespace PoliSim.Elections
 {
@@ -6,8 +8,9 @@ namespace PoliSim.Elections
     /// R-EL8 (ruled by Elias, Day-1 2026-08-29): the United States' REAL presidential elector
     /// allocation — per-state winner-take-all PLUS Maine's and Nebraska's congressional-district
     /// method — implemented from the statutes, to the standard the other five countries' rules
-    /// were held to. PURE FUNCTIONS, WIRED TO NOTHING (R-N2); the only caller is the editor
-    /// backtest harness.
+    /// were held to. PURE FUNCTIONS, WIRED TO NOTHING (R-N2); its callers are editor code only,
+    /// reaching it through <see cref="FromCatalog"/>, which hands it any election the generated
+    /// catalog holds (<see cref="UsPresidentialReturns.Years"/>; since PS-6 US-3, `COMPLETED.md` §786).
     ///
     /// The rules, each with its citation (full text and URLs in
     /// `ElectionsData/usa/district_method_2024.md`):
@@ -29,7 +32,10 @@ namespace PoliSim.Elections
     /// (Me. §805, Neb. §32-714 pledge provisions), the Twelfth-Amendment contingent election when
     /// no candidate reaches 270, NPVIC activation (Me. §723-A(7)), or any ranked-choice tabulation
     /// (Maine's presidential race is legally RCV-eligible but was decided in round one in 2024 —
-    /// see the data file; a model that assumed plurality forever would be wrong, and this one does
+    /// see the data file — and in 2020: `Tools/us_returns_prep.pl` requires every Maine leader it
+    /// reads from a district workbook to hold more than half of that workbook's total ballots cast,
+    /// the statute's outright majority on the reading that its blank ballots include those overvoted
+    /// at the first rank; a model that assumed plurality forever would be wrong, and this one does
     /// not assume it, it simply takes the winner it is handed).
     /// </summary>
     public static class ElectoralCollege
@@ -37,6 +43,48 @@ namespace PoliSim.Elections
         /// <summary>Total electors and the majority, per NARA — asserted rather than assumed by the harness.</summary>
         public const int TotalElectors = 538;
         public const int MajorityToElect = 270;
+
+        /// <summary>The candidate indices <see cref="FromCatalog"/> uses: the Republican nominee, the Democratic nominee.</summary>
+        public const int Republican = 0;
+        public const int Democrat = 1;
+
+        /// <summary>
+        /// One presidential election of record as this allocator's input, read from the generated catalog
+        /// (<see cref="UsPresidentialReturns"/>, written by `Tools/us_returns_prep.pl` from the saved pages): every
+        /// jurisdiction with its electors in force and its statewide winner; Maine's and Nebraska's districts with
+        /// theirs, the rest of the state's electors at large. A winner is the larger of the two nominees - the tool
+        /// refuses a catalog in which all other candidates together reach the larger nominee in any state or
+        /// district, so that comparison is the plurality. Candidate indices <see cref="Republican"/> and
+        /// <see cref="Democrat"/>. Throws for a year the catalog does not hold.
+        /// </summary>
+        public static Jurisdiction[] FromCatalog(int year)
+        {
+            var jurisdictions = new List<Jurisdiction>();
+            foreach (var state in UsPresidentialReturns.States)
+            {
+                if (state.Year != year) { continue; }
+                var districtWinners = new List<int>();
+                foreach (var district in UsPresidentialReturns.Districts)
+                {
+                    if (district.Year == year && district.State == state.State)
+                    {
+                        districtWinners.Add(district.VotesR > district.VotesD ? Republican : Democrat);
+                    }
+                }
+
+                int statewide = state.VotesR > state.VotesD ? Republican : Democrat;
+                jurisdictions.Add(districtWinners.Count == 0
+                    ? new Jurisdiction(state.State, state.Electors, statewide)
+                    : new Jurisdiction(state.State, state.Electors, statewide, state.Electors - districtWinners.Count, districtWinners.ToArray()));
+            }
+
+            if (jurisdictions.Count == 0)
+            {
+                throw new ArgumentException($"the catalog holds no presidential election of {year}");
+            }
+
+            return jurisdictions.ToArray();
+        }
 
         /// <summary>
         /// One jurisdiction's rule and result. <paramref name="districtWinners"/> is null or empty

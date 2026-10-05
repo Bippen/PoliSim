@@ -5,6 +5,8 @@
 #   other_EV goes to the OPPOSING candidate: ME = Harris 3 / Trump 1 (ME-2), NE = Trump 4 /
 #   Harris 1 (NE-2). Cross-check: both column sums independently computed = Trump 312,
 #   Harris 226, matching the workbook's own Total row and NARA. 51 rows (50 states + DC).
+# Since COMPLETED.md s786 Tools/us_returns_prep.pl holds every row to the saved pages (raw/returns/fec_2024presgeresults.xlsx; NARA,
+#   raw/executive/archives_electoral_college_2024.html); president_by_state.csv carries the same figures and more.
 state;winner(R/D);winner_EV;other_EV
 AL;R;9;0
 AK;R;3;0

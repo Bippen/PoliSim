@@ -1,0 +1,16 @@
+2026-10-05T16:11:39Z	200	379413	census_apportionment_data_2020.html	https://www.census.gov/data/tables/2020/dec/2020-apportionment-data.html
+2026-10-05T16:11:57Z	200	13475	census_apportionment_table01_2020.xlsx	https://www2.census.gov/programs-surveys/decennial/2020/data/apportionment/apportionment-2020-table01.xlsx
+2026-10-05T16:11:58Z	200	59074	census_apportionment_table01_2020.pdf	https://www2.census.gov/programs-surveys/decennial/2020/data/apportionment/apportionment-2020-table01.pdf
+2026-10-05T16:15:11Z	200	360953	census_apportionment_data_2010.html	https://www.census.gov/data/tables/2010/dec/2010-apportionment-data.html
+2026-10-05T16:15:26Z	200	31232	census_apportionment_table01_2010.xls	https://www2.census.gov/programs-surveys/decennial/2010/data/apportionment/apport2010-table1.xls
+2026-10-05T16:15:27Z	200	7712	census_apportionment_table01_2010.pdf	https://www2.census.gov/programs-surveys/decennial/2010/data/apportionment/apport2010-table1.pdf
+2026-10-05T16:16:37Z	200	7179	govinfo_uscode_2_2a.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title2/html/USCODE-2023-title2-chap1-sec2a.htm
+2026-10-05T16:16:38Z	200	2076	govinfo_uscode_2_2c.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title2/html/USCODE-2023-title2-chap1-sec2c.htm
+2026-10-05T16:16:38Z	200	38956	govinfo_uscode_13_141.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title13/html/USCODE-2023-title13-chap5-subchapII-sec141.htm
+2026-10-05T16:16:49Z	200	5853	govinfo_uscode_3_1.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title3/html/USCODE-2023-title3-chap1-sec1.htm
+2026-10-05T16:16:50Z	200	1696	govinfo_uscode_3_3.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title3/html/USCODE-2023-title3-chap1-sec3.htm
+2026-10-05T16:16:51Z	200	8496	govinfo_uscode_3_5.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title3/html/USCODE-2023-title3-chap1-sec5.htm
+2026-10-05T16:16:52Z	200	12110	govinfo_uscode_3_15.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title3/html/USCODE-2023-title3-chap1-sec15.htm
+2026-10-05T16:16:52Z	200	2532	govinfo_uscode_3_7.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title3/html/USCODE-2023-title3-chap1-sec7.htm
+2026-10-05T16:16:53Z	200	4131	govinfo_uscode_3_21.html	https://www.govinfo.gov/content/pkg/USCODE-2023-title3/html/USCODE-2023-title3-chap1-sec21.htm
+2026-10-05T19:45:34Z	200	335047	census_congressional_apportionment_about.html	https://www.census.gov/topics/public-sector/congressional-apportionment/about.html

@@ -122,6 +122,7 @@ namespace PoliSim.EditorTools
             failures += CheckCohortIncome(sb);
             failures += CheckGovernmentConsumption(sb);
             failures += CheckGermanLaender(sb);   // PS-4 (§688): the Länder catalogs
+            failures += CheckUsPresidentialReturns(sb);   // PS-6 US-3 (§786): the US presidential returns
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -510,6 +511,127 @@ namespace PoliSim.EditorTools
                     : $"    ⚠ {v.ClassName}: {wrong.Count} disagreement(s)\n");
             }
             return failures;
+        }
+
+        /// <summary>
+        /// PS-6 US-3 (§786): the US presidential returns - three CSVs and one catalog, all written by one run of `Tools/us_returns_prep.pl` from
+        /// saved pages. The drift questions of the blocks above, asked of each part: every page the run read is still the bytes it read
+        /// (re-hashed against <see cref="UsPresidentialReturns.RawSources"/>), and the READ transcription too; each CSV is still the bytes the
+        /// catalog was written with; every figure of every CSV row is the catalog's, row for row and in order. ⚠ Plus the one question a catalog
+        /// read by an allocator owes: <see cref="PoliSim.Elections.ElectoralCollege.FromCatalog"/> over each year, through the statute's
+        /// allocator, gives the record's split exactly - NARA's table, each nominee's electoral votes plus those the nominee's own electors cast
+        /// for other persons.
+        /// </summary>
+        private static int CheckUsPresidentialReturns(StringBuilder sb)
+        {
+            sb.Append("\n=== The US presidential returns catalog against its sources ===\n");
+            string usa = Path.Combine(Directory.GetCurrentDirectory(), "ElectionsData", "usa");
+            var wrong = new List<string>();
+            string HashOf(string relative)
+            {
+                string path = Path.Combine(usa, relative.Replace('/', Path.DirectorySeparatorChar));
+                return File.Exists(path) ? ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(path)) : null;
+            }
+
+            foreach ((string path, string sha) in UsPresidentialReturns.RawSources)
+            {
+                string onDisk = HashOf(path);
+                if (onDisk == null) { wrong.Add(path + " is not on disk"); }
+                else if (!string.Equals(onDisk, sha, StringComparison.OrdinalIgnoreCase)) { wrong.Add(path + " changed since generation (on disk " + onDisk + ")"); }
+            }
+
+            if (UsPresidentialReturns.RawSources.Length == 0) { wrong.Add("the catalog lists no pages, so no page was compared"); }
+            if (!string.Equals(HashOf("maine_districts_read_2012_2016.tsv"), UsPresidentialReturns.ReadTranscriptionDigest, StringComparison.OrdinalIgnoreCase))
+            {
+                wrong.Add("the READ transcription changed since generation");
+            }
+
+            List<string[]> years = ReadUsCsv(usa, "president_by_year.csv", UsPresidentialReturns.YearSourceDigest, 8, wrong);
+            List<string[]> states = ReadUsCsv(usa, "president_by_state.csv", UsPresidentialReturns.StateSourceDigest, 11, wrong);
+            List<string[]> districts = ReadUsCsv(usa, "president_by_district.csv", UsPresidentialReturns.DistrictSourceDigest, 6, wrong);
+
+            if (years.Count != UsPresidentialReturns.Years.Length) { wrong.Add("years: " + years.Count + " CSV rows, " + UsPresidentialReturns.Years.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(years.Count, UsPresidentialReturns.Years.Length); i++)
+            {
+                var y = UsPresidentialReturns.Years[i];
+                if (!SameRow(years[i], y.Year, y.NomineeD, y.NomineeR, y.Electors, y.CastD, y.CastR, y.OthersDSlate, y.OthersRSlate)) { wrong.Add("year row " + i + " (" + y.Year + ") differs"); }
+            }
+
+            if (states.Count != UsPresidentialReturns.States.Length) { wrong.Add("states: " + states.Count + " CSV rows, " + UsPresidentialReturns.States.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(states.Count, UsPresidentialReturns.States.Length) && wrong.Count < 12; i++)
+            {
+                var s = UsPresidentialReturns.States[i];
+                if (!SameRow(states[i], s.Year, s.State, s.Electors, s.VotesD, s.VotesR, s.VotesOther, s.VotesTotal, s.CastD, s.CastR, s.CastOther, s.CastOtherTo)) { wrong.Add("state row " + i + " (" + s.Year + " " + s.State + ") differs"); }
+            }
+
+            if (districts.Count != UsPresidentialReturns.Districts.Length) { wrong.Add("districts: " + districts.Count + " CSV rows, " + UsPresidentialReturns.Districts.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(districts.Count, UsPresidentialReturns.Districts.Length); i++)
+            {
+                var d = UsPresidentialReturns.Districts[i];
+                if (!SameRow(districts[i], d.Year, d.State, d.District, d.VotesD, d.VotesR, d.Read ? "READ" : "canvass")) { wrong.Add("district row " + i + " (" + d.Year + " " + d.State + "-" + d.District + ") differs"); }
+            }
+
+            var splits = new List<string>();
+            foreach (var y in UsPresidentialReturns.Years)
+            {
+                int[] college;
+                try { college = PoliSim.Elections.ElectoralCollege.Allocate(PoliSim.Elections.ElectoralCollege.FromCatalog(y.Year), 2); }
+                catch (ArgumentException e) { wrong.Add(y.Year + ": " + e.Message); continue; }
+                int r = y.CastR + y.OthersRSlate, d = y.CastD + y.OthersDSlate;
+                int gotR = college[PoliSim.Elections.ElectoralCollege.Republican], gotD = college[PoliSim.Elections.ElectoralCollege.Democrat];
+                if (gotR != r || gotD != d) { wrong.Add(y.Year + ": the allocator over the catalog gives R " + gotR + " D " + gotD + ", the record R " + r + " D " + d); }
+                else { splits.Add(F("{0} R {1} D {2}", y.Year, gotR, gotD)); }
+            }
+
+            if (UsPresidentialReturns.Years.Length == 0) { wrong.Add("the catalog holds no year, so the allocator was never run"); }
+
+            if (wrong.Count > 0)
+            {
+                Debug.LogError("CATALOGCHECK: UsPresidentialReturns - " + string.Join("; ", wrong.ToArray()) + ". Re-run Tools/us_returns_prep.pl after reading the diff.");
+                sb.Append(F("    ⚠ UsPresidentialReturns: {0} disagreement(s)\n", wrong.Count));
+                return 1;
+            }
+
+            sb.Append(F("    UsPresidentialReturns: {0} page(s) and the READ transcription the bytes the run read; {1} year(s), {2} jurisdiction row(s), "
+                        + "{3} district row(s), every figure the CSVs'; the allocator over the catalog gives the record's split: {4}\n",
+                UsPresidentialReturns.RawSources.Length, years.Count, states.Count, districts.Count, string.Join(", ", splits.ToArray())));
+            return 0;
+        }
+
+        /// <summary>A generated US CSV's data rows (comments and the heading skipped), its digest held to the catalog's, each row's field count
+        /// to <paramref name="fields"/>.</summary>
+        private static List<string[]> ReadUsCsv(string usa, string file, string recorded, int fields, List<string> wrong)
+        {
+            var rows = new List<string[]>();
+            string path = Path.Combine(usa, file);
+            if (!File.Exists(path)) { wrong.Add(file + " is not on disk"); return rows; }
+            byte[] bytes = File.ReadAllBytes(path);
+            string digest = ElectionsDataCatalogGenerator.Sha256Of(bytes);
+            if (!string.Equals(digest, recorded, StringComparison.OrdinalIgnoreCase)) { wrong.Add(file + " changed since generation (on disk " + digest + ", recorded " + recorded + ")"); }
+            bool heading = true;
+            foreach (string raw in Encoding.ASCII.GetString(bytes).Split('\n'))
+            {
+                string line = raw.TrimEnd('\r');
+                if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal)) { continue; }
+                if (heading) { heading = false; continue; }
+                string[] cells = line.Split(',');
+                if (cells.Length != fields) { wrong.Add(file + ": a row of " + cells.Length + " field(s), not " + fields); continue; }
+                rows.Add(cells);
+            }
+
+            if (rows.Count == 0) { wrong.Add(file + " holds no data rows, so every comparison of it is vacuous"); }
+            return rows;
+        }
+
+        private static bool SameRow(string[] cells, params object[] values)
+        {
+            if (cells.Length != values.Length) { return false; }
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (cells[i] != Convert.ToString(values[i], CultureInfo.InvariantCulture)) { return false; }
+            }
+
+            return true;
         }
     }
 }

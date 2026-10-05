@@ -67,3 +67,27 @@ Split states: ME 4 EV — Harris 3 (statewide + CD-1), Trump 1 (CD-2); NE 5 EV �
 - Nevada ballots include 19,625 "None of these candidates"; House seat figures are "immediate results of elections" (subsequent vacancies not reflected). No 2024 Georgia congressional general race went to a runoff.
 
 *(Filed verbatim from the research agent's return, 2026-08-28 night.)*
+
+## Raw pages (`COMPLETED.md` §786, PS-6 US-3)
+
+Since §786 every page this file cites is saved byte for byte — under `raw/` and registered (publisher, fetch time, basis, SHA-256) in `president_returns.md` (the 2024 NARA page in `records_by_date.md`), or, for the FEC's 2020 volume, kept out of tree by SHA-256 and bytes in `raw/out_of_tree.txt` — but for the one host that refused:
+
+| Cited above | Saved as |
+|---|---|
+| fec.gov/documents/5644/2024presgeresults.pdf, fec.gov/documents/5645/2024presgeresults.xlsx | `raw/returns/fec_2024presgeresults.pdf`, `raw/returns/fec_2024presgeresults.xlsx` — saved on 2026-10-05 by requesting the cited URLs, which answered 302 to `fec.gov/resources/cms-content/documents/`: `raw/returns/fetch_log.txt` records the URL as reached, with a NOTE line on the redirect |
+| clerk.house.gov/member_info/electionInfo/2024/statistics2024.pdf | `raw/returns/clerk_statistics2024.pdf` |
+| archives.gov/electoral-college/2024 | `raw/executive/archives_electoral_college_2024.html` |
+| archives.gov/electoral-college/allocation | `raw/returns/archives_electoral_college_allocation.html` |
+| govinfo.gov, 2 U.S.C. §2c (2022 edition) | `raw/apportionment/govinfo_uscode_2_2c.html` — the 2023 edition; the section's only source is Pub. L. 90-196 (1967), and the quoted words are on it |
+| census.gov/topics/public-sector/congressional-apportionment/about.html | `raw/apportionment/census_congressional_apportionment_about.html` |
+| georgia.gov/vote-runoff-elections | `raw/rules/georgia_vote_runoff_elections.html` |
+| sos.ca.gov/elections/primary-elections-california | `raw/rules/ca_sos_primary_elections.html` |
+| sos.wa.gov/elections/voters/helpful-information/top-two-primary-faqs-voters | `raw/rules/wa_sos_top_two_primary_faqs.html` — fetched directly on 2026-10-05, so the caveat's search-engine route is no longer this rule's source |
+| maine.gov/sos/cec/elec/upcoming/rcv.html | `raw/district/maine_sos_rcv.html` |
+| elections.alaska.gov/RCV.php | **NOT SAVED** — HTTP 405 on 2026-10-05, as in August: BILLED; the Alaska rule stays `[UNCONFIRMED-direct-fetch]` |
+| election.lab.ufl.edu/data-downloads/turnoutdata/Turnout_2024G_v0.4.csv | `raw/returns/ufl_turnout_2024G_v0.4.csv` |
+| fec.gov/resources/cms-content/documents/federalelections2020.pdf | kept out of tree (`raw/out_of_tree.txt`; fetched 2026-10-05 from this URL, HTTP 200): its tables are `raw/returns/fec_federalelections2020.xlsx`, which the FEC's 2020 page (`raw/returns/fec_federal_elections_2020.html`) links beside it. The caveat's "the 2024 path returns 403" was not re-fetched |
+
+**Read back against the saved pages on 2026-10-05 — every figure agrees:** the national presidential votes and the FEC's own percentages; Stein, Kennedy and Oliver; all twelve rows of the state table (electors and winner shares); the split states; Nevada's "None of these candidates"; the House totals and total vote (the Clerk's statistics, its "Total" line); the turnout, VEP and ballots counted (the UF file's United States row). Every quoted rule is on its saved page in the quotation's words; the typography differs in three places: NARA's allocation page prints "538\*" and "270\*", footnote marks the quotation drops; California's page closes its dash pair with a spaced hyphen ("regardless of party preference - move on") where the quotation prints a second en dash; the FEC's workbook has two spaces after "538." where the quotation has one. No tool reads this file: its figures rest on the read-back above. `president_by_state.csv`'s 2024 rows carry the same jurisdictions' votes and electors - each one's two nominees, all others together, its total, its electors and its electoral votes as cast; the national figures are their sums - and `Tools/us_returns_prep.pl` holds those rows to the saved FEC workbook and NARA's page. The winner shares, the FEC's percentages, Stein, Kennedy and Oliver are in no CSV.
+
+**Stein's label, settled from the saved PDF.** The FEC's PDF (pp. 7–9) prints each candidate's ballot labels with a key: Jill Stein ran under eleven — BP, GPF, GR, GRE, IND, KYP, MTP, OTH, PET, PG, WG — "GRE = Green" among them (with Green-Rainbow, the Green Party of Florida, Pacific Green, Independent). "Green" in the table above is one of her labels, the single label a simplification; the `[UNCONFIRMED as a label]` caveat is answered.

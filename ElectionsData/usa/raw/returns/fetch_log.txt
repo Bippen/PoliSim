@@ -1,0 +1,25 @@
+2026-10-05T16:11:07Z	200	65981	archives_electoral_college_2012.html	https://www.archives.gov/electoral-college/2012
+2026-10-05T16:11:09Z	200	64016	archives_electoral_college_2016.html	https://www.archives.gov/electoral-college/2016
+2026-10-05T16:11:10Z	200	48115	archives_electoral_college_allocation.html	https://www.archives.gov/electoral-college/allocation
+2026-10-05T16:11:11Z	200	21376	fec_2024presgeresults.xlsx	https://www.fec.gov/resources/cms-content/documents/2024presgeresults.xlsx
+2026-10-05T16:11:12Z	200	331790	fec_2024presgeresults.pdf	https://www.fec.gov/resources/cms-content/documents/2024presgeresults.pdf
+2026-10-05T16:13:04Z	NOTE	-	-	https://www.fec.gov/documents/5645/2024presgeresults.xlsx and https://www.fec.gov/documents/5644/2024presgeresults.pdf (the URLs returns_2024.md cites) answered 302 Moved Temporarily to the cms-content URLs logged at 16:11:11Z and 16:11:12Z - this column holds the URL as reached after redirects; re-requested 2026-10-05T19:54Z, the same bytes
+2026-10-05T16:14:10Z	429	620	wayback_archives_electoral_college_allocation_20201016.html	https://web.archive.org/web/20201016165352id_/https://www.archives.gov/electoral-college/allocation
+2026-10-05T16:14:43Z	200	37579	fec_election_results_and_voting_information.html	https://www.fec.gov/introduction-campaign-finance/election-results-and-voting-information/
+2026-10-05T16:15:02Z	200	24576	fec_federal_elections_2020.html	https://www.fec.gov/introduction-campaign-finance/election-results-and-voting-information/federal-elections-2020/
+2026-10-05T16:15:03Z	200	24656	fec_federal_elections_2016.html	https://www.fec.gov/introduction-campaign-finance/election-results-and-voting-information/federal-elections-2016/
+2026-10-05T16:15:04Z	200	26809	fec_federal_elections_2012.html	https://www.fec.gov/introduction-campaign-finance/election-results-and-voting-information/federal-elections-2012/
+2026-10-05T16:15:25Z	200	6251110	fec_federalelections2020.xlsx	https://www.fec.gov/resources/cms-content/documents/federalelections2020.xlsx
+2026-10-05T16:15:29Z	200	1549194	fec_federalelections2016.xlsx	https://www.fec.gov/resources/cms-content/documents/federalelections2016.xlsx
+2026-10-05T16:15:30Z	200	1827840	fec_federalelections2012.xls	https://www.fec.gov/resources/cms-content/documents/federalelections2012.xls
+2026-10-05T16:17:05Z	429	620	wayback_archives_electoral_college_allocation_20201016.html	https://web.archive.org/web/20201016165352id_/https://www.archives.gov/electoral-college/allocation
+2026-10-05T16:23:37Z	429	620	wayback_archives_electoral_college_allocation_20201016.html	https://web.archive.org/web/20201016165352id_/https://www.archives.gov/electoral-college/allocation
+2026-10-05T16:23:58Z	NOTE	-	wayback_archives_electoral_college_allocation_20201016.html	discarded: all three fetches (16:14:10Z, 16:17:05Z, 16:23:37Z) returned the Wayback Machine's 620-byte 429 rate-limit page, not the capture; file deleted, nothing cited. The live allocation page states the 2020-Census allocation only (2024 and 2028)
+2026-10-05T19:28:05Z	200	183883	archives_vote_2016_hawaii.pdf	https://www.archives.gov/files/electoral-college/2016/vote-hawaii.pdf
+2026-10-05T19:28:06Z	200	2576152	archives_vote_2016_texas.pdf	https://www.archives.gov/files/electoral-college/2016/vote-texas.pdf
+2026-10-05T19:28:06Z	200	265979	archives_vote_2016_washington.pdf	https://www.archives.gov/files/electoral-college/2016/vote-washington.pdf
+2026-10-05T19:45:32Z	200	608100	clerk_statistics2024.pdf	https://clerk.house.gov/member_info/electionInfo/2024/statistics2024.pdf
+2026-10-05T19:45:33Z	200	8378	ufl_turnout_2024G_v0.4.csv	https://election.lab.ufl.edu/data-downloads/turnoutdata/Turnout_2024G_v0.4.csv
+2026-10-05T20:46:21Z	200	193777	supremecourt_chiafalo_v_washington_19-465.pdf	https://www.supremecourt.gov/opinions/19pdf/19-465_i425.pdf
+2026-10-05T20:46:23Z	200	3623	wa_courts_in_re_guerra_953478.pdf	https://www.courts.wa.gov/opinions/pdf/953478.pdf
+2026-10-05T20:46:37Z	NOTE	-	wa_courts_in_re_guerra_953478.pdf	(discarded: the URL served the courts site's error page with HTTP 200, 3623 bytes - not the opinion; the opinion's own URL was not found)

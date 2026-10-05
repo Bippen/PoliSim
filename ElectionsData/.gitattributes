@@ -1,3 +1,7 @@
 # Sourced pages are evidence: each is stored byte for byte, as fetched, and its SHA-256 is in the SHA256SUMS file beside it.
 # Without this, core.autocrlf rewrote their line endings in the index, so a checkout could not give back the hashed bytes (§607).
 **/raw/** -text
+# The same for files a generated catalog pins by SHA-256 over their bytes (PS-6 US-3, §786): the generator's CSVs and the READ transcription
+# it reads - core.autocrlf would hand a checkout CRLF where the digest was taken over LF.
+usa/president_by_*.csv -text
+usa/maine_districts_read_2012_2016.tsv -text

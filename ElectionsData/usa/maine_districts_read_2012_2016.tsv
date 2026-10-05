@@ -1,0 +1,19 @@
+# PS-6 US-3 (COMPLETED.md §786): Maine's presidential vote by congressional district in 2012 and 2016 - READ, not parsed. The Secretary of State
+# published no district table for either year (raw/district/maine_sos_previous_election_results_2012.html, maine_sos_election_results_2016-2017.html);
+# the figures stand only on the Governor's certificates of ascertainment, whose text layer is OCR and unreliable for digits. READ from the page
+# images on 2026-10-05: 2012 by three readers (the sourcing agent, its verifier, and the session itself from the page JPEGs in the PDF); 2016 by
+# the sourcing agent and its verifier (the PDF's page images are mixed-raster layers), the OCR text layer agreeing digit for digit once its stray
+# spaces are dropped. The overseas votes "not tallied according to a Congressional district" are in the at-large totals only - 415 in 2012, 184 in
+# 2016 (the certificates' footnote) - so the two districts fall short of the state; Tools/us_returns_prep.pl holds each party's shortfall to that
+# count and to the FEC's statewide figures.
+year	state	district	party	votes	certificate	page
+2012	ME	1	D	223035	raw/district/archives_ascertainment_maine_2012.pdf	3
+2012	ME	2	D	177998	raw/district/archives_ascertainment_maine_2012.pdf	3
+2012	ME	1	R	142937	raw/district/archives_ascertainment_maine_2012.pdf	2
+2012	ME	2	R	149215	raw/district/archives_ascertainment_maine_2012.pdf	2
+2012	ME	-	unallocated	415	raw/district/archives_ascertainment_maine_2012.pdf	2
+2016	ME	1	D	212774	raw/district/archives_ascertainment_maine_2016.pdf	2
+2016	ME	2	D	144817	raw/district/archives_ascertainment_maine_2016.pdf	2
+2016	ME	1	R	154384	raw/district/archives_ascertainment_maine_2016.pdf	3
+2016	ME	2	R	181177	raw/district/archives_ascertainment_maine_2016.pdf	3
+2016	ME	-	unallocated	184	raw/district/archives_ascertainment_maine_2016.pdf	2

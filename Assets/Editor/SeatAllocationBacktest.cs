@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using PoliSim.Elections;
+using PoliSim.Elections.Generated;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -10,8 +11,11 @@ namespace PoliSim.EditorTools
     /// E-3, the measure-first anchor (overnight 2026-08-28→29): SOURCED real returns through the
     /// vote-to-seat layer, compared against the REAL chambers — campaigns OFF, no tuning, zero
     /// free parameters (every input below is a cited figure from `ElectionsData/`). A deviation
-    /// is a FINDING, not a failure: the run exits 0 whenever the harness itself ran; the tables
-    /// are the result. This run IS the "port to C# and reproduce, re-derive from scratch" that
+    /// in a COUNTRY TABLE is a FINDING, not a failure; the tables are the result. ASSERTED, and
+    /// the run exits 1 on either: the synthetic vectors, and the USA college - a statute's rule
+    /// over the generated catalog, which `Tools/us_returns_prep.pl` already held to NARA's table
+    /// state by state, so a deviation there can only come from <see cref="PoliSim.Elections.ElectoralCollege"/>'s
+    /// reading of the catalog or from its allocator (`GeneratedCatalogCheck` asserts the same split). This run IS the "port to C# and reproduce, re-derive from scratch" that
     /// `COMPLETED.md §188` Part 5 requires before the allocator claims are
     /// relied on.
     ///
@@ -28,11 +32,14 @@ namespace PoliSim.EditorTools
     ///   ~70-seat national-vs-district signature from scratch. Agreement with the recorded
     ///   figures (PiS 169, Konfederacja 34) confirms both this allocator and the branch-side
     ///   claim without inspecting the branch.
-    /// - USA 2024 ELECTORAL COLLEGE (added Day-1, R-EL8): the REAL rule — 49 winner-take-all
-    ///   jurisdictions plus Maine's and Nebraska's congressional-district method, computed from
-    ///   the statutes via <see cref="PoliSim.Elections.ElectoralCollege"/>, with the
-    ///   forced-winner-take-all counterfactual printed beside it because the two district
-    ///   effects cancel in 2024's national total.
+    /// - USA ELECTORAL COLLEGE, EVERY ELECTION OF RECORD THE GENERATED CATALOG HOLDS
+    ///   (<see cref="UsPresidentialReturns.Years"/>; 2024 added Day-1, R-EL8; the catalog since
+    ///   PS-6 US-3, `COMPLETED.md` §786): the REAL rule —
+    ///   winner-take-all jurisdictions plus Maine's and Nebraska's congressional-district method,
+    ///   computed from the statutes via <see cref="PoliSim.Elections.ElectoralCollege"/> over
+    ///   <see cref="PoliSim.Elections.ElectoralCollege.FromCatalog"/>, with the
+    ///   forced-winner-take-all counterfactual printed beside each year because district effects
+    ///   can cancel in a national total (2024's do).
     /// - ITALY: NOT run — the Rosatellum's proportional allocation FORMULA is not yet sourced
     ///   (thresholds and structure are; the formula is R-EL9's sourcing task), and this harness
     ///   does not run un-sourced arithmetic. FRANCE: NOT run — two-round SMD has no national
@@ -176,44 +183,39 @@ namespace PoliSim.EditorTools
             int[] plRealModel = SeatAllocation.PerDistrictSum(plDistricts, plMagnitudes, plEligible, SeatAllocation.DHondtDivisor);
             failures += Report("POLAND 2023 REAL - d'Hondt per okreg over the KBW absolute counts (the actual Sejm system; the definitive run)", plNames, plVotes, plValid, plRealModel, plReal);
 
-            // --- USA 2024 ELECTORAL COLLEGE, BY THE REAL RULE (R-EL8, ruled 2026-08-29).
-            // Winner-take-all is a STATE CHOICE that 48 states and DC direct; Maine and Nebraska
-            // direct the congressional-district method instead (Me. 21-A s802; Neb. s32-710 with
-            // s32-1038(1) - the statutes and the per-district results are
-            // ElectionsData/usa/district_method_2024.md). The model computes the split FROM the
-            // district winners by the statute; it does not read a pre-split answer.
-            // Candidate index 0 = Trump (R), 1 = Harris (D). Jurisdiction EVs from
-            // ElectionsData/usa/state_ev_2024.csv (FEC); ME/NE district winners from the state
-            // canvasses.
-            bool[] usIsR = { true, true, true, true, false, false, false, false, false, true, true, false, true, false, true, true, true, true, true, false, false, false, true, false, true, true, true, true, true, false, false, false, false, true, true, true, true, false, true, false, true, true, true, true, true, false, false, false, true, true, true };
-            string[] usNames = { "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY" };
-            int[] usTotalEv = { 9, 3, 11, 6, 54, 10, 7, 3, 3, 30, 16, 4, 4, 19, 11, 6, 6, 8, 8, 4, 10, 11, 15, 10, 6, 10, 4, 5, 6, 4, 14, 5, 28, 16, 3, 17, 7, 8, 19, 4, 9, 3, 11, 40, 6, 3, 13, 12, 4, 10, 3 };
-            var usJurisdictions = new ElectoralCollege.Jurisdiction[usNames.Length];
-            for (int i = 0; i < usNames.Length; i++)
+            // --- USA ELECTORAL COLLEGE, BY THE REAL RULE, ON EACH ELECTION OF RECORD THE CATALOG HOLDS (R-EL8, ruled 2026-08-29;
+            // the catalog since PS-6 US-3, COMPLETED.md s786). Winner-take-all is a STATE CHOICE that 48 states and
+            // DC direct; Maine and Nebraska direct the congressional-district method instead (Me. 21-A s802; Neb.
+            // s32-710 with s32-1038(1) - ElectionsData/usa/district_method_2024.md). The input is the generated
+            // catalog (UsPresidentialReturns, written by Tools/us_returns_prep.pl from the saved FEC, NARA, Census and
+            // canvass pages): each jurisdiction's electors in force and plurality winner, each district's winner. The
+            // model computes the split FROM the winners by the statute; it does not read a pre-split answer. The
+            // record's split is NARA's table - each nominee's electoral votes plus those the nominee's own electors cast
+            // for other persons (2016's, named in the catalog and not modelled).
+            foreach (var record in UsPresidentialReturns.Years)
             {
-                int statewide = usIsR[i] ? 0 : 1;
-                if (usNames[i] == "ME")
+                ElectoralCollege.Jurisdiction[] college = ElectoralCollege.FromCatalog(record.Year);
+                int[] usReal = ElectoralCollege.Allocate(college, 2);
+                int[] usWtaOnly = ElectoralCollege.AllocateAsIfWinnerTakeAll(college, 2);
+                int usWinner = ElectoralCollege.Winner(usReal);
+                int pledgedR = record.CastR + record.OthersRSlate, pledgedD = record.CastD + record.OthersDSlate;
+                int againstState = 0, byDistrict = 0;
+                foreach (ElectoralCollege.Jurisdiction j in college)
                 {
-                    // 2 at-large (statewide Harris) + ME-1 Harris + ME-2 Trump.
-                    usJurisdictions[i] = new ElectoralCollege.Jurisdiction("ME", 4, statewide, 2, new[] { 1, 0 });
+                    if (!j.UsesDistrictMethod) { continue; }
+                    byDistrict++;
+                    foreach (int w in j.DistrictWinners) { if (w != j.StatewideWinner) { againstState++; } }
                 }
-                else if (usNames[i] == "NE")
-                {
-                    // 2 at-large (statewide Trump) + NE-1 Trump + NE-2 Harris + NE-3 Trump.
-                    usJurisdictions[i] = new ElectoralCollege.Jurisdiction("NE", 5, statewide, 2, new[] { 0, 1, 0 });
-                }
-                else
-                {
-                    usJurisdictions[i] = new ElectoralCollege.Jurisdiction(usNames[i], usTotalEv[i], statewide);
-                }
-            }
 
-            int[] usReal = ElectoralCollege.Allocate(usJurisdictions, 2);
-            int[] usWtaOnly = ElectoralCollege.AllocateAsIfWinnerTakeAll(usJurisdictions, 2);
-            int usWinner = ElectoralCollege.Winner(usReal);
-            Debug.Log($"BACKTEST: USA 2024 ELECTORAL COLLEGE by the real rule (49 winner-take-all jurisdictions + ME and NE by congressional district): Trump {usReal[0]} / Harris {usReal[1]} vs real 312/226 - {(usReal[0] == 312 && usReal[1] == 226 ? "EXACT" : "DEVIATES, a finding")}; majority {ElectoralCollege.MajorityToElect} reached by {(usWinner < 0 ? "nobody - contingent election, not modelled" : usWinner == 0 ? "Trump" : "Harris")}.");
-            Debug.Log($"BACKTEST: USA counterfactual - every jurisdiction forced winner-take-all: Trump {usWtaOnly[0]} / Harris {usWtaOnly[1]}. The district method moved {Math.Abs(usReal[0] - usWtaOnly[0])} elector(s) in each direction this cycle, so the two effects CANCEL in the national total: a model that dropped the district rule would have matched 312/226 by luck. That cancellation is why R-EL8 required the rule to be built from the statutes rather than inferred from a matching total.");
-            failures += Expect("USA EC by the real rule", usReal, new[] { 312, 226 });
+                string others = record.OthersRSlate + record.OthersDSlate == 0 ? string.Empty
+                    : $" ({record.CastR}/{record.CastD} as cast; {record.OthersRSlate + record.OthersDSlate} cast for other persons, named in the catalog, not modelled)";
+                Debug.Log($"BACKTEST: USA {record.Year} ELECTORAL COLLEGE by the real rule ({college.Length - byDistrict} winner-take-all jurisdictions + {byDistrict} by congressional district): {record.NomineeR} (R) {usReal[ElectoralCollege.Republican]} / {record.NomineeD} (D) {usReal[ElectoralCollege.Democrat]} vs the record's {pledgedR}/{pledgedD}{others} - {(usReal[ElectoralCollege.Republican] == pledgedR && usReal[ElectoralCollege.Democrat] == pledgedD ? "EXACT" : "DEVIATES (asserted below)")}; {(usWinner < 0 ? "nobody" : usWinner == ElectoralCollege.Republican ? record.NomineeR : record.NomineeD)} reached the majority of {ElectoralCollege.MajorityToElect}{(usWinner < 0 ? " - a contingent election, not modelled" : string.Empty)}.");
+                Debug.Log($"BACKTEST: USA {record.Year} counterfactual - every jurisdiction forced winner-take-all: {usWtaOnly[ElectoralCollege.Republican]} / {usWtaOnly[ElectoralCollege.Democrat]}. "
+                    + (againstState == 0 ? "No district went against its state, so the district method moved nothing this cycle."
+                        : usWtaOnly[0] == usReal[0] ? $"{againstState} district elector(s) went against their state and the moves CANCEL in the national total: a model that dropped the district rule would have matched it by luck - why R-EL8 required the rule built from the statutes rather than inferred from a matching total."
+                        : $"{againstState} district elector(s) went against their state; the national total moves by {Math.Abs(usReal[0] - usWtaOnly[0])}."));
+                failures += Expect($"USA {record.Year} EC by the real rule", new[] { usReal[ElectoralCollege.Republican], usReal[ElectoralCollege.Democrat] }, new[] { pledgedR, pledgedD });
+            }
 
             // --- ITALY 2022, CAMERA, THE PROPORTIONAL STAGE (R-EL9, ruled 2026-08-29; the
             // allocation arithmetic sourced in ElectionsData/italy/rosatellum_allocation.md).
@@ -247,7 +249,7 @@ namespace PoliSim.EditorTools
             failures += Report("ITALY 2022 CAMERA - Rosatellum national proportional stage, 245 seats, floored Hare twice (expected EXACT vs Eligendo's proportional seat column)", itNames, itVotes, itValid, itModel, itReal);
 
             Debug.Log("BACKTEST: NOT RUN, stated: Italy's SUB-NATIONAL stages (lett. h/i into the 28 circoscrizioni, art. 83-bis into the 49 collegi, and the art. 84 incapienza cascade - they need per-circoscrizione and per-collegio cifre elettorali that exist only as HTML on Eligendo; they change WHICH deputies sit, not the per-list national totals above). FRANCE: NOT run - two-round SMD has no national model by construction. The USA House stays national-totals-only (no district model claimed).");
-            Debug.Log($"=== SeatAllocationBacktest: synthetic {(failures == 0 ? "ALL PASS" : failures + " FAILED")}; the country tables above are FINDINGS (deviations reported, not asserted) ===");
+            Debug.Log($"=== SeatAllocationBacktest: synthetic vectors and the USA college {(failures == 0 ? "ALL PASS" : failures + " FAILED")}; the country tables above are FINDINGS (deviations reported, not asserted) ===");
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
 

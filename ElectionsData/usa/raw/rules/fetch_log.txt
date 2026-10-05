@@ -1,0 +1,4 @@
+2026-10-05T19:45:35Z	200	83027	georgia_vote_runoff_elections.html	https://georgia.gov/vote-runoff-elections
+2026-10-05T19:45:37Z	200	190417	wa_sos_top_two_primary_faqs.html	https://www.sos.wa.gov/elections/voters/helpful-information/top-two-primary-faqs-voters
+2026-10-05T19:45:37Z	200	66869	ca_sos_primary_elections.html	https://www.sos.ca.gov/elections/primary-elections-california
+2026-10-05T19:45:39Z	405	2301	alaska_elections_rcv.html	https://www.elections.alaska.gov/RCV.php

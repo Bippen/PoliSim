@@ -98,9 +98,10 @@ Vote Interstate Compact governs elector appointment — not operative in 2024.)
 2 at-large + 1 per congressional district, and §32-1038's operative sentences are unchanged.
 
 **The bill's history, as far as it went:** LB3 (109th Legislature) was introduced 9 January 2025
-by Sen. Loren Lippincott at Governor Pillen's request, to amend §§32-710, 32-714 and 32-1038 so
-that all five electors follow the statewide winner. Hearing 30 January 2025 (75+ testifiers,
-majority opposed); advanced to General File; **cloture FAILED 31–18 on 8 April 2025** — two short
+by Sen. Loren Lippincott at Governor Pillen's request, to amend §§32-710, 32-714 and 32-1038 and
+§32-713 (the fourth section added at `COMPLETED.md` §786 from the bill's title on the saved BillTrack50 page) so
+that all five electors follow the statewide winner. Hearing 30 January 2025 ("over 75 people testified — the majority of them in opposition to one or both
+measures" - the saved hearing page's words, §786); advanced to General File; **cloture FAILED 31–18 on 8 April 2025** — two short
 of the 33 required, two Republicans voting against — and it was never rescheduled.
 **Indefinitely postponed 17 April 2026** at the biennium's sine die. The companion constitutional
 amendment **LR24CA** was never floor-debated and is **not** on the 2026 ballot; a citizen-initiative
@@ -109,8 +110,9 @@ Nebraska Secretary of State's 2026 elections page carries no notice of any chang
 
 **Sources** (accessed 2026-08-29): the Legislature's own Unicameral Update —
 https://update.legislature.ne.gov/?p=37216 (the hearing) and
-https://update.legislature.ne.gov/?p=39341 (session review: cloture "received only 31 votes — two
-short of the 33 needed"; LR24CA "remained in committee without advancement"); action history at
+https://update.legislature.ne.gov/?p=39341 (session review: the cloture motion "failed on a vote of 31-18. Thirty-three votes were needed"; LR24CA "was considered by
+the Government, Military and Veterans Affairs Committee but was not advanced" — both quotations corrected to the saved
+page's words at `COMPLETED.md` §786, the earlier ones having paraphrased it); action history at
 https://www.billtrack50.com/billdetail/1771479 ("Indefinitely postponed (on 04/17/2026)");
 contemporaneous press (WOWT, Nebraska Examiner) for the roll call.
 
@@ -132,3 +134,15 @@ district-method are two constructors over one type, so a date-selected variant a
 not a rewrite. **This finding has an expiry:** the 110th Legislature convenes January 2027 and the
 Governor has said he intends to keep pursuing winner-take-all before 2028. **Re-check before
 modelling any cycle after 2026.**
+
+## Raw pages (`COMPLETED.md` §786, PS-6 US-3)
+
+Since §786 the pages this file cites - all but those the bullets below name as not saved or not fetched - are saved byte for byte under `raw/` and registered — publisher, fetch time, basis, SHA-256 — in `president_returns.md` (NARA's constitution transcript in `records_by_date.md`):
+
+- **The statutes, verbatim on the saved pages:** Me. 21-A §801 and §802 (`raw/district/maine_legislature_21a_801.html`, `_802.html`); Neb. §32-710 and §32-1038(1) — the Legislature's host gave no connection on 2026-10-05 (curl status 000; it refused connections in August), so the saved copies are Internet Archive captures of 2026-02-17 (§32-710) and 2026-02-06 (§32-1038), not the 2026-02-16 and 2024-12-12 captures quoted above; the quoted words are on both. §32-1038 cites Laws 1994, LB 76 as its only source. Maine's pages are the Revisor's current text ("extracted on 10/20/2025"); §802 is unamended since 1985. The RCV sections quoted (§1(27-C)(D), §723-A) are saved too.
+- **NARA's allocation page** (`raw/returns/archives_electoral_college_allocation.html`) prints "538\*" and "270\*": the quotation above drops the two footnote marks. The constitution transcript is `raw/records/archives_constitution_transcript.html`.
+- **The 2024 results this file consumes** are `president_by_district.csv`'s 2024 rows and `president_by_state.csv`'s Maine and Nebraska rows, figure for figure — read by `Tools/us_returns_prep.pl` from the saved workbook by district (`raw/district/maine_sos_president_by_cd_2024.xlsx`) and canvass book (`raw/district/nebraska_sos_general_canvass_book_2024.pdf`), and held to the FEC's state rows. The statewide Maine workbook cited is `raw/district/maine_sos_president_by_town_2024.xlsx`.
+- **LB3:** saved - the Unicameral Update's hearing page (`raw/district/nebraska_unicameral_update_37216.html`, published 2025-01-31: the bills "heard by the Government, Military and Veterans Affairs Committee Jan. 30", "over 75 people testified — the majority of them in opposition to one or both measures") and its session review (`_39341.html`); BillTrack50's page (`raw/district/billtrack50_ne_lb3_1771479.html`: "Indefinitely postponed (on 04/17/2026)", and the bill's title "to amend sections 32-710, 32-714, and 32-1038, Reissue Revised Statutes of Nebraska, and section 32-713, Revised Statutes Cumulative Supplement, 2024" - four sections, where this file named three until §786); and the Nebraska Secretary of State's 2026 elections page (`raw/district/nebraska_sos_elections.html`), which carries no notice of a change to the electors.
+- **LR24CA's 2026 ballot status** is on two saved pages: the session review says that "If approved by the Legislature, LR24CA ... would place the question of reinstating winner-take-all on the 2026 general election ballot", and the Secretary of State's 2026 elections page lists the "Ballot Measures for 2026 General Election" as "Initiative Nos. 440-442" and, for the "Constitutional Amendment passed by the Nebraska Legislature for the 2026 General Election", "LR19CA" - LR24CA is not among them (the page names those measures without describing them).
+- **Not fetched:** the press named above - the cloture's date (8 April 2025; BillTrack50 lists a motion of Lippincott's dated 04/08/2025 without calling it cloture) and the vote's party breakdown ("two Republicans voting against"; the session review gives only 31-18 and the 33 needed), that LR24CA was never floor-debated in 2026 (the saved session review is of 2025), the 2025 initiative and its withdrawal; and FindLaw's reproduction of §32-1038, whose place the saved capture of the Legislature's own page takes. Three sentences above rest on no saved page and no named source: LB3 postponed "at the biennium's sine die" (BillTrack50 gives only "Indefinitely postponed (on 04/17/2026)"), "the 110th Legislature convenes January 2027", and the Governor's stated intent to pursue winner-take-all before 2028.
+- **Maine's ballots cast:** the 842,447 above is the sum of the two district workbooks' TBC columns (`raw/district/maine_sos_president_by_cd_2024.xlsx`); that it counts ballots overvoted at the first rank, as §723-A(2)'s denominator does, is a READING - no saved page says whether the workbooks' "Blank" holds them (`president_returns.md`, reading 8).
