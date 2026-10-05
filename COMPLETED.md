@@ -37086,3 +37086,106 @@ Tier DOCUMENTS (a send and the feature list): the bars over §772-§777's final 
 - or add the Tribunal referral as a third answer.
 
 Tier TOOLING + DOCUMENTS (a Perl tool, a generated file, the record): the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
+
+## 776. RULING E2'S LAST ITEM INSTALLED: POLAND'S 2023 COALITION DECLARATIONS SOURCED BY READ AND DATED - SEVENTEEN DATED FACTS FROM SAVED PAGES, NINE OF THEM DATED BY A STATED EXTENSION OF §621 - AND READ BY THE FORMATION, THE GERMANY WAY; ON A POLISH GAME'S OWN 2023 COUNT THEY SEAT PIS+KO, AND ONLY A PIS-KO LINE (DOUBT 1, ELIAS'S) SEATS THE CABINET OF RECORD (2026-10-04)
+
+**The ruling** (Elias, E2's last item, 2026-10-04): *Poland's coalition formation: source the parties' real 2023 declarations by read, dated, before PS-6. Until then the derived red lines carry the LOW CONFIDENCE flag, as D1 does.*
+
+**Sourced** (`ElectionsData/poland/coalition_declarations_2023.md`, SOURCED):
+- **The sweep.** The workflow `pl-declarations-2023` read every declaring party - PiS, KO, TD (both members), NL and Konfederacja - and searched for MN. A second agent verified each finding against the saved page. Findings that held were kept; those that did not were dropped (a newsroom's words, words after the vote, not a party voice, mis-dated).
+- **The rules applied.** The words count if said on or before polling day by the party, its leader or an authorised spokesperson, or published as the party's own. They are dated by §621 as ruled: *"Declarations are dated by the party's own record, never by press reporting; a document is dated by the decision it records, not its file date; a declaration stands until a later dated one replaces it."*
+  - **THE EXTENSION, stated and put to Elias (K-1i (3)):** a leader's or spokesperson's own spoken words, quoted verbatim, dated by the broadcaster's or agency's page that reports them. §652 is its precedent, ruled for MP, with its condition - unless the party's own record carries the same words earlier (none does here); §639's KD line is the same question, still open.
+  - It dates nine of the seventeen facts, each marked in the record, in §8's table and in the code (`DeclaredRedLines.PolandExtension`): the June lines and their lift, Konfederacja's support half, TD → PiS and NL → Konfederacja's support half.
+- **What the record holds:**
+  - each party's lines, quoted, glossed and dated;
+  - the positive intents (recorded, not wired: the model has no positive kind);
+  - the candidacies (none declared before the vote);
+  - the timeline table (§8) and what actually formed (§9);
+  - what stays DERIVED (§10) and what was kept but not relied on (§11);
+  - the doubts and the measurement (§12);
+  - a register of every source it cites by its own tags, with its URL, publisher, the page's own date, file and SHA-256.
+- **The pages, in tree.** Every source the record's register lists - the sources its facts and sections cite by its tags, and the pages §12's doubts lean on - is held byte for byte under `ElectionsData/poland/raw/declarations_2023/<declarer>/`, with its `SHA256SUMS.txt` and a fetch log. The three tags its §7 and §9 borrow from `records_by_date.md` are held under `raw/records/`. The rest of the sweep, the corroborations and the dropped findings' pages included, stays out of tree in `PoliSim-captures/sources/poland_declarations_2023/`.
+
+**The facts** (`DeclaredRedLines.PolandTimeline`):
+- **PiS → Konf**, cabinet, from 2023-07-23. Kaczyński at Stawiski, on the party's own page.
+- **Konfederacja:**
+  - "z nikim" on 2023-06-20: cabinet lines on every pair, lifted 2023-06-26 ("wszystko jest na stole") - both dates the extension's;
+  - a cabinet line on PiS from 2023-07-06 (Mentzen's own post);
+  - **one-way and support-blocking toward PiS and KO from 2023-07-13** (Bosak on TVN24, the extension's date; K-1's shape). Its support half is restated only on 2023-08-24; the other restatements carry the coalition half;
+  - cabinet lines toward TD, NL and MN from 2023-08-02 (the party's own page).
+- **TD → PiS**, cabinet, from 2023-05-15, by the extension; TD's own record first carries it on 2023-10-10. **TD → Konf**, cabinet, from 2023-10-10 (PSL's half, the list's own material).
+- **NL → PiS**, cabinet, from 2021-05-06 (the party's own page; no 2023 restatement by a leader verified).
+- **NL → Konf**, cabinet from 2023-07-05 (the party's own page). Then **symmetric and support-blocking** from 2023-08-27, by the extension (the CDU's shape); its cabinet half alone is restated.
+- **On polling day exactly the open facts stand.** There is no candidacy, in-or-against or support-role fact.
+
+**Measured** (`PolishDeclarationsDiagnostic`, n776c) on two chambers under six readings: R0 the derived lines alone; R1 the declarations as recorded (what the game reads); R2 TD → PiS support-blocking; R3 a PiS-KO line; R4 both; R5 the party's own record alone (§621 as written: every declared line cabinet-only).
+
+| reading | the chamber of record (PiS 194 · KO 157 · TD 65 · NL 26 · Konf 18) | the played count (seed 777: PiS 200 · KO 123 · TD 78 · NL 45 · Konf 14) |
+|---|---|---|
+| R0 | PiS+KO+TD on Konf's support | PiS+KO+TD on Konf's support |
+| R1 | KO+TD on NL's support | PiS+KO on TD's support |
+| R2 | KO+TD on NL's support | PiS+KO |
+| R3 | KO+TD on NL's support | **KO+TD+NL** |
+| R4 | KO+TD on NL's support | **KO+TD+NL** |
+| R5 | KO+TD on NL's support | PiS+KO on TD's and Konf's support |
+
+- **No game forms the chamber of record.** A Polish start seats the government of record, and a Polish game forms its own count. The game's own entry - the government the night stores (`GovernmentFormation.ViewOf` on the election's dated reading) - forms that count as R1 does: PiS+KO on TD's support.
+- **So the wiring changes a Polish game's 2023 government from PiS+KO+TD to PiS+KO.** The declarations take TD out of a cabinet with PiS. Only doubt 1 - a "keep X from power" pledge read as a PiS-KO line - seats the cabinet of record, KO+TD+NL.
+- The Polish film's warm-up shows the same: PiS+KO after the wiring (`real776`), PiS+KO+TD before (`film767pl`).
+- On the chamber of record every reading of the declarations (R1-R5) seats the record's majority, with NL outside the cabinet; R0, the derived lines alone, seats PiS+KO+TD on Konf's support. That is the formation's cabinet-size preference, not a declaration's.
+
+**Wired - the Germany way (§705):**
+- `DeclaredRedLines.IsSourced`, `HasTimeline` and `TimelineOf` include Poland, and `ForSourced` reads a Polish vintage's timeline on its polling day.
+- `CandidacyRefuses` stays Sweden's, and Poland has no in-or-against rule.
+- An election reads every fact standing on its own polling day; a mid-term round reads the lines standing that day.
+- **No page shows the timeline yet.** The run-up's declarations page sits behind a staged run-up or campaign, and `LiveCampaignSetup` stages none for Poland.
+- TRACKING, for the item that stages one: the page tags a cabinet-only line "would support". That fits Sweden's 2022 wording, but for Poland's cabinet-only facts the record says support is not addressed. Before the page opens for Poland, its tag must follow the record.
+
+**Checked:**
+- **`PolishDeclarationsDiagnostic`** (new, the cheap bar's):
+  - (a) the record's timeline table is the array, row for row, every until after its from, every fact's keys roster keys;
+  - (b) every fact DECLARED, citing a tag and the record, every tag a register row;
+  - (c) every register file held in tree at its digest;
+  - (d) on polling day exactly the open facts stand;
+  - (e) the chamber of record under the six readings (each derived line printed with its basis), the record's cabinet formable under each;
+  - (f) the 2023 election pinned by name: its lines by the vintage and by the election's own dated reading are R1, line for line, the declared lines exactly the standing set, no platform;
+  - (g) a backtest - the chamber of record, formed with the game's reader, seats the record's majority with PiS outside;
+  - (h) the played count from a Polish game's own path, formed by the game's entry and under the six readings - measured, and the game's entry held to R1's cabinet and support.
+- **`DeclarationDatesDiagnostic`:**
+  - every dated country's timeline is held to its own order and to no overlap (Sweden's alone was before);
+  - "a country with no timeline stands nothing" is generic over every such country;
+  - Poland's open facts stand.
+- **`FormationSweepDiagnostic` re-pinned:** 2 of 250 blocks moved, the seated Polish chamber's two rules only.
+  - Before, under both rules: PiS+KO+TD on Konf's support.
+  - After, under its own rule: KO+TD on NL's support. Under the negative rule: PiS alone.
+  - The text before is `formation_sweep_before776.txt`.
+
+**Stale text corrected** (since §705 for Germany, extended to Poland by §776). The `DeclaredRedLines` class summary, `GovernmentFormation`'s and `OfficeTestDiagnostic`'s "sourced for Sweden only", now point to `DeclaredRedLines.IsSourced`; Germany's record says what holds - no country-wide caveat shows (it is keyed on `IsSourced`), and the formation sheet's slip names a derived line's basis when a refusal turns on it.
+
+**E2's interim flag.** The LOW CONFIDENCE flag on the derived lines was to hold until this sourcing. The sourcing landed the day the ruling was given, so the flag was never shown. Nothing marks the pairs left DERIVED in Poland either: it has no formation sheet (its confidence rules are `Unsourced`) and no night, its country-wide caveat is keyed on `IsSourced`, which Poland now meets, and the derived rule draws no line on the eight unsourced pairs.
+
+**The review** (`Reviews/2026-10-04_s776_pl_declarations.md`: the workflow `polisim-staged-review`, two passes, every finding put to a refute-first skeptic, every report verbatim):
+- **First pass: three defects, fixed.**
+  - **The dating rule** was restated as "the day the words were said", and an extension was applied without saying so. It is now quoted as ruled, the extension stated and put to Elias, its facts marked, and R5 measured.
+  - **The measurement** was taken on a chamber no game forms. The played count is now measured, which reversed the claim that no reading changed a 2023 formation: doubt 1 decides a Polish game's government.
+  - **"Said DERIVED on every formation"** was false. It is corrected in Poland's record and Germany's.
+  - Seventeen minors and notes fixed; nine findings refuted.
+- **Second pass: no defect.** Six minors and eleven notes, all fixed:
+  - the German sheet's slip;
+  - the restated lists by pair;
+  - §621 quoted verbatim;
+  - NL's own support direction resting on the derived line;
+  - the stored government held to R1 by cabinet and support;
+  - R5 held to the extension's marks.
+- **Not a money path** (`Tools/bar_tier.ps1`'s pattern names none of its files), so no ledger row.
+
+**Owed to Elias, from this item** (the record's §12 lists all fifteen of the sweep's doubts):
+- **Doubt 1 decides a Polish game's 2023 government: is "keep X from power" a line?** PiS's "Zablokujemy powrót do władzy Platformy" and KO's "bez PiS-u u władzy" are read as aims. Measured on the played count: as aims, PiS+KO; as a line, KO+TD+NL, the cabinet of record. On the chamber of record neither reading of doubt 1 changes the government.
+- **The dating extension (K-1i (3)).** Nine facts are dated by a leader's spoken words as a broadcaster's or agency's page reports them. By §621 as written (R5), Konfederacja's and NL's support halves are undated, so every line on polling day is cabinet-only. Measured on the played count, that adds Konfederacja's support to PiS+KO. The June facts would vanish, TD → PiS would start on 2023-10-10, facts 7 and 16 would stand open, and Konf → KO would start on 2023-08-02 - none of these a polling-day change.
+- **TD → PiS: cabinet-only by its words, or support-blocking** (doubt 2). Measured: on the played count it decides only TD's support of PiS+KO.
+- **Whether the pairs left DERIVED are marked at all** (doubt 14), with LOW CONFIDENCE or otherwise. Nothing marks them now. A mark needs a reading-level state, not the country-wide `IsSourced`, and until D-PL's night is built it reaches a Polish player only on the verdict that ends the run (the out-of-parliament sentence, shown as the game-over reason).
+- **TD's keying** (doubt 3): its line to PiS from the list's first words, or from 2022-07-19, when both members' own refusals stood.
+- **Konfederacja's June wobble** (doubt 4), **"z nikim" as pair lines** (doubt 6) and **NL → PiS on 2021 words** (doubt 7).
+- **The formation's cabinet-size preference**, which puts NL outside the cabinet the record seats it in.
+
+Tier ELECTIONS + DATA (the formation reads Poland's declarations): the review two passes; the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.

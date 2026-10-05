@@ -34,8 +34,8 @@ namespace PoliSim.EditorTools
     /// gap is the worst kind of invented verdict.</description></item>
     /// </list>
     ///
-    /// <para>⚠ <b>Declared red lines are sourced for SWEDEN ONLY, and the table says so per country.</b>
-    /// Everywhere else the government is formed on derived lines alone and may not be one that country
+    /// <para>⚠ <b>Declared red lines are sourced only where `DeclaredRedLines.IsSourced` holds, and the table says so per country.</b>
+    /// Elsewhere the government is formed on derived lines alone and may not be one that country
     /// would form. That is reported in the column rather than hidden behind a green result.</para>
     /// </summary>
     public static class OfficeTestDiagnostic
@@ -546,10 +546,10 @@ namespace PoliSim.EditorTools
                 }
             }
 
-            sb.Append("\n    ⚠ DECLARED RED LINES ARE SOURCED FOR SWEDEN ONLY. Everywhere else the government is formed on\n");
-            sb.Append("    DERIVED lines alone and may not be one that country would form - reported in the column above\n");
-            sb.Append("    rather than hidden behind a green result. Inventing Germany's declarations would be inventing the\n");
-            sb.Append("    central political fact of its party system.\n");
+            sb.Append("\n    ⚠ DECLARED RED LINES ARE SOURCED ONLY WHERE THE COLUMN ABOVE SAYS SOURCED. Elsewhere the government is formed on\n");
+            sb.Append("    DERIVED lines alone and may not be one that country would form - reported in the column\n");
+            sb.Append("    rather than hidden behind a green result. A country's declared refusals can be the central political\n");
+            sb.Append("    fact of its party system.\n");
 
             if (failures.Count == 0)
             {

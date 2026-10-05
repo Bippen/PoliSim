@@ -23,7 +23,7 @@ namespace PoliSim.EditorTools
             CheckExit.ArmLogFold();
             var sb = new StringBuilder();
             int failures = 0;
-            sb.Append("=== DeclarationDatesDiagnostic (§621): Sweden's declarations by date ===\n");
+            sb.Append("=== DeclarationDatesDiagnostic (§621): the dated declarations - Sweden's by date, and every timeline's order ===\n");
             void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
             try
             {
@@ -85,26 +85,39 @@ namespace PoliSim.EditorTools
                     Check(DeclaredRedLines.CandidaciesAt(CountryId.Sweden, day).Count == 2, F("{0:yyyy-MM-dd}: the candidacy pair stands (S and M)", day));
                 }
 
-                // 3. The timeline's own order.
-                var seen = new Dictionary<string, List<(DateTime, DateTime)>>();
-                foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.SwedenTimeline)
+                // 3. Each timeline's own order - every dated country's (the review of §776, finding 16: Sweden's alone was walked), each with its own spans.
+                foreach (CountryId dated in (CountryId[])Enum.GetValues(typeof(CountryId)))
                 {
-                    Check(f.From < f.Until, F("{0} {1} {2}: from {3:yyyy-MM-dd} before until {4}", f.Kind, f.Party, f.Other ?? "-", f.From, f.Until == DateTime.MaxValue ? "open" : f.Until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
-                    string key = f.Kind + " " + f.Party + " " + (f.Other ?? "-");
-                    if (!seen.TryGetValue(key, out List<(DateTime, DateTime)> spans)) { spans = new List<(DateTime, DateTime)>(); seen[key] = spans; }
-                    foreach ((DateTime a, DateTime b) in spans) { Check(f.From >= b || f.Until <= a, F("{0}: no overlap between [{1:yyyy-MM-dd}, {2}) and an earlier span", key, f.From, f.Until == DateTime.MaxValue ? "open" : f.Until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))); }
-                    spans.Add((f.From, f.Until));
+                    if (!DeclaredRedLines.HasTimeline(dated)) { continue; }
+                    var seen = new Dictionary<string, List<(DateTime, DateTime)>>();
+                    foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.TimelineOf(dated))
+                    {
+                        Check(f.From < f.Until, F("{0}: {1} {2} {3}: from {4:yyyy-MM-dd} before until {5}", dated, f.Kind, f.Party, f.Other ?? "-", f.From, f.Until == DateTime.MaxValue ? "open" : f.Until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                        string key = f.Kind + " " + f.Party + " " + (f.Other ?? "-");
+                        if (!seen.TryGetValue(key, out List<(DateTime, DateTime)> spans)) { spans = new List<(DateTime, DateTime)>(); seen[key] = spans; }
+                        foreach ((DateTime a, DateTime b) in spans) { Check(f.From >= b || f.Until <= a, F("{0}: {1}: no overlap between [{2:yyyy-MM-dd}, {3}) and an earlier span", dated, key, f.From, f.Until == DateTime.MaxValue ? "open" : f.Until.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))); }
+                        spans.Add((f.From, f.Until));
+                    }
                 }
                 // §657: the run-up page's two readings - what stands today, and what was lifted since the sitting chamber's election.
                 int StandCount(DateTime on) { int n = 0; foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.SwedenTimeline) { if (f.StandsOn(on)) { n++; } } return n; }
                 string Lifted(DateTime on) { var s = new List<string>(); foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.LiftedSince(CountryId.Sweden, new DateTime(2022, 9, 11), on)) { s.Add(f.Party + ">" + f.Other); } return string.Join(",", s.ToArray()); }
                 Check(DeclaredRedLines.StandingOn(CountryId.Sweden, new DateTime(2026, 1, 18)).Count == StandCount(new DateTime(2026, 1, 18)), "StandingOn(start) is the timeline's facts standing on Sweden's start");
-                Check(DeclaredRedLines.StandingOn(CountryId.Poland, new DateTime(2026, 1, 18)).Count == 0, "StandingOn: a country with no timeline stands nothing (Poland; Germany has one since §705)");
+                var untimed = new List<CountryId>();
+                foreach (CountryId c in (CountryId[])Enum.GetValues(typeof(CountryId))) { if (!DeclaredRedLines.HasTimeline(c)) { untimed.Add(c); } }
+                Check(untimed.Count > 0 && untimed.TrueForAll(c => DeclaredRedLines.StandingOn(c, new DateTime(2026, 1, 18)).Count == 0),
+                    F("StandingOn: a country with no timeline stands nothing ({0}; Germany has one since §705, Poland since §776)", string.Join(", ", untimed)));
+                int polandOpen = 0;
+                foreach (DeclaredRedLines.DatedFact f in DeclaredRedLines.PolandTimeline) { if (f.Until == DateTime.MaxValue) { polandOpen++; } }
+                Check(DeclaredRedLines.StandingOn(CountryId.Poland, new DateTime(2026, 1, 18)).Count == polandOpen,
+                    F("StandingOn: Poland's timeline (§776) - its {0} open facts stand on 18 Jan 2026, the ones closed in 2023 do not", polandOpen));
                 Check(DeclaredRedLines.StandingOn(CountryId.Germany, new DateTime(2026, 1, 18)).Count == DeclaredRedLines.GermanyTimeline.Count, F("StandingOn: Germany's timeline (§705) - its {0} facts all stand on 18 Jan 2026, none closed", DeclaredRedLines.GermanyTimeline.Count));
                 Check(Lifted(new DateTime(2026, 1, 18)) == string.Empty, "LiftedSince(2022 election, start): nothing lifted yet - C's 2025 restatement replaces, it does not lift");
                 Check(Lifted(new DateTime(2026, 7, 19)) == "M>SD,L>SD", F("LiftedSince(2022 election, campaign opening): M's and L's lines on SD lifted, the candidacies restated not lifted - got {0}", Lifted(new DateTime(2026, 7, 19))));
                 Check(Lifted(new DateTime(2026, 9, 8)) == "M>SD,KD>SD,L>SD", F("LiftedSince(2022 election, 8 September): KD's lifts on its own day - got {0}", Lifted(new DateTime(2026, 9, 8))));
-                sb.Append(F("    {0} dated fact(s) on Sweden's timeline.\n", DeclaredRedLines.SwedenTimeline.Count));
+                var counts = new List<string>();
+                foreach (CountryId dated in (CountryId[])Enum.GetValues(typeof(CountryId))) { if (DeclaredRedLines.HasTimeline(dated)) { counts.Add(dated + " " + DeclaredRedLines.TimelineOf(dated).Count); } }
+                sb.Append(F("    dated facts by timeline: {0}.\n", string.Join(", ", counts)));
             }
             catch (Exception e)
             {

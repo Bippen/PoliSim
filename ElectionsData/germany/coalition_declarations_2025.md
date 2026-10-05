@@ -2,7 +2,7 @@
 
 Class: SOURCED (round 4 follow-up 4, 2026-09-30, `COMPLETED.md` §705). Every quote is the source's own words as served; every source is
 saved whole under `raw/records/` (digests below). The game reads these facts from `DeclaredRedLines.GermanyTimeline` (C# literals, the
-same form as Sweden's timeline); this file is their record. What is NOT here stays DERIVED and is said so on every formation.
+same form as Sweden's timeline); this file is their record. What is NOT here stays DERIVED. No caveat says so for the country: the night's caption and the verdict's note are keyed on `DeclaredRedLines.IsSourced`, which Germany meets since §705. A derived line's own basis ("DERIVED: CHES ... gap") shows only on the formation sheet's answer slip, when it is the line a partner's or a supporter's refusal names - the first matching line, and derived lines are listed first, so where a pair also has a declared line the slip names the derived basis. A pair with no line is marked nowhere (corrected by §776's reviews).
 
 ## 1. The Union's incompatibility resolutions
 
@@ -67,7 +67,7 @@ the party forms; it draws no line.
 ## 5. Not here — DERIVED
 
 Every other party's lines (the SPD's, the Grüne's, the FDP's, the BSW's, the Linke's own, the AfD's) are the model's derived lines; the
-CSU–Linke pair likewise. A formation that turns on them says it formed on derived lines.
+CSU–Linke pair likewise. A formation that turns on them says so only on the formation sheet's answer slip, where a refusal names a derived line's basis (the header says how; corrected by §776's second review).
 
 ## Source register (accessed 2026-09-30 unless noted; `raw/records/<file>`)
 

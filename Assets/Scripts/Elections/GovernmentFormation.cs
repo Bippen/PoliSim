@@ -23,8 +23,8 @@ namespace PoliSim.Elections
     /// <para>⚠ <b>THE COMPATIBILITY MATRIX IS DERIVED FROM SOURCED POSITIONS, AND THE RED LINES ARE
     /// NOT ALL SOURCED.</b> Compatibility comes from each party's own CHES figures through §29's existing
     /// `CoalitionCompatibility`, so any country whose parties carry positions gets a real matrix.
-    /// **Declared red lines are political FACTS and exist on disk for Sweden only** (2026's in the game, 2022's for the backtests); every other
-    /// country runs on DERIVED lines alone. That is a stated limitation, not a silent one — a government
+    /// **Declared red lines are political FACTS and exist on disk only where `DeclaredRedLines.IsSourced` says so** (Sweden's 2026 in the game,
+    /// 2022's for the backtests; each other sourced country's record named by its timeline); every other country runs on DERIVED lines alone. That is a stated limitation, not a silent one — a government
     /// formed without a country's real declarations can be one that country would never form, and
     /// `Formed.DeclarationsSourced` carries the answer to any caller that needs to say so.</para>
     /// </summary>

@@ -1,0 +1,2627 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+        <!-- Favicon -->
+<link rel="shortcut icon" href="/favicon.ico"/>
+<link rel="icon" type="image/x-icon" sizes="96x96" href="/favicon_96x96.ico" />
+<link rel="icon" type="image/x-icon" sizes="192x192" href="/favicon_192x192.ico" />
+
+<!-- Apple Touch Icon -->
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="/web-app-manifest-192x192.png" />
+<link rel="apple-touch-icon" sizes="512x512" href="/web-app-manifest-512x512.png" />
+
+        
+    <link rel="stylesheet" type="text/css" href="/media/desktop/zpr_layouts_web/css/wide_plugins.css?__25dcee3a">
+
+
+        
+
+
+  <link rel="stylesheet" type="text/css" href="/topboard.css">
+  <script src="/media/desktop/zpr_layouts_web/js/topboard.js?__25dcee3a" async></script>
+
+
+
+        
+        
+
+        <!-- hook_header_css -->
+        
+            
+<!-- RENDER_LINK -->
+
+
+    <link rel="preconnect"  href="https://smart.idmnet.pl/" >
+
+    <link rel="preconnect"  href="https://pagead2.googlesyndication.com/" >
+
+
+
+<!-- RENDER_LINK -->
+
+
+    <link rel="dns-prefetch"  href="https://smart.idmnet.pl/" >
+
+    <link rel="dns-prefetch"  href="https://cdn.galleries.smcloud.net/" >
+
+    <link rel="dns-prefetch"  href="https://cdn.files.smcloud.net/" >
+
+    <link rel="dns-prefetch"  href="https://cdn2.pollster.pl/" >
+
+    <link rel="dns-prefetch"  href="//pagead2.googlesyndication.com/" >
+
+    <link rel="dns-prefetch"  href="//idm.hit.gemius.pl/" >
+
+
+<style>
+#hook_content article .article-title:not(.font-loaded) h1 {font-family: Arial; letter-spacing: 0.0185em; word-spacing: 0.013em;}
+
+#hook_content article .lead {font-family: Arial; font-size: 23px; line-height: 35px; font-weight: 500; letter-spacing: 0.5px; word-spacing: 0px; margin-top: 0;}
+#hook_content article .lead.font-loaded {font-family: "Noto Sans", Arial, Helvetica, sans-serif; font-weight: 500; font-size: 23px; letter-spacing: normal; word-spacing: 0;}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+   document.fonts.ready.then( function() {
+       const articleTitle = document.querySelector('article div.article-title');
+       const articleLead = document.querySelector('article .lead');
+       if (!!articleTitle) articleTitle.classList.add('font-loaded');
+       if (!!articleLead) articleLead.classList.add('font-loaded');
+   });
+})
+</script>
+
+<!-- RENDER_CSS -->
+
+
+    <link rel="stylesheet" type="text/css" href="/media/polityka.se/desktop/css/styleguide_se_new.css?__25dcee3a" >
+
+
+
+<link rel="stylesheet" type="text/css" href="/media/desktop/zpr_radios_web/css/mediateka_widget.css?__25dcee3a" >
+
+        
+        <!-- /hook_header_css -->
+
+        <!--[if IE]>
+        <link rel="stylesheet" type="text/css" href="/media/css/ie.css?__25dcee3a">
+        <![endif]-->
+
+        <!-- ticket112510 do przeniesienia w ramach porzadkowania analityk -->
+        <script>
+    class ViewSourceManager {
+        constructor() {
+            this.referrerUrl = document.referrer;
+            this.currentDomain = window.location.hostname
+            this.pageUrl = window.location.href
+            this.sourceCookieName = "pageViewSource"
+        }
+
+        setCookie() {
+            const sourceCookieValue = this.getSourceCookie()
+            const mainDomain = this.getMainDomainName()
+
+            if (this.sourceCookieExist(sourceCookieValue)) {
+                this.updateCookie(sourceCookieValue, mainDomain)
+            } else {
+                const source = this.getSource()
+                this.createCookie(source, mainDomain)
+            }
+        }
+
+        getMainDomainName() {
+            return this.currentDomain.substring(this.currentDomain.lastIndexOf(".", this.currentDomain.lastIndexOf(".") - 1) + 1);
+        }
+
+        getSourceCookie() {
+            let sourceCookie = {};
+            document.cookie.split(';').forEach(function(el) {
+                let [key, value] = el.split('=');
+                sourceCookie[key.trim()] = value;
+            })
+            return sourceCookie[this.sourceCookieName];
+        }
+
+        sourceCookieExist(sourceCookieValue) {
+            return (typeof sourceCookieValue !== "undefined")
+        }
+
+        updateCookie(sourceCookieValue, mainDomain) {
+            const reInt = /\d+/;
+            let currentCount = null;
+            let lastCount = sourceCookieValue.match(reInt);
+            currentCount = parseInt(lastCount[0]) > 9 ? 10 : parseInt(lastCount[0]) + 1;
+            console.log("lastCount: "+lastCount+"; currentCount: "+currentCount)
+            let updatedSourceValue = sourceCookieValue.replace(lastCount, currentCount)
+            document.cookie = `${this.sourceCookieName}=${updatedSourceValue};domain=${mainDomain};path=/`;
+        }
+
+        // order must be maintained
+        getSource() {
+            if (this.pageUrl.includes("utm_medium=push")) {
+                return "push"
+            }
+            if (this.pageUrl.includes("utm_source=facebook") || this.pageUrl.includes("utm_medium=paidsocial")) {
+                return "paid_facebook"
+            }
+            if (this.isDirect()) {
+                return "direct"
+            }
+            if (this.referrerUrl.includes("quicksearchbox") || this.referrerUrl.includes("googleapis")) {
+                return "google_discover"
+            }
+            if (this.referrerUrl.includes("www.google.")) {
+                return "google_search"
+            }
+            if (this.referrerUrl.includes(".facebook.com")) {
+                return "facebook"
+            }
+            return "other"
+        }
+
+        isDirect() {
+            return (this.pageUrl === `https://www.${this.currentDomain}/` && (this.referrerUrl.includes("//www.google")) || this.referrerUrl === "")
+        }
+
+        createCookie(source, mainDomain) {
+            document.cookie = `${this.sourceCookieName}=${source}_1;domain=${mainDomain};path=/`;
+        }
+    }
+
+    const viewSourceManagerInstance = new ViewSourceManager()
+    viewSourceManagerInstance.setCookie()
+</script>
+
+        <script>
+var dataLayer = typeof dataLayer === "undefined" ? [] : dataLayer;
+dataLayer.forEach((element, index) => {
+    if ("objectId" in element || "objectType" in element) {
+      delete dataLayer[index];
+    }
+  });
+</script>
+        <!-- hook_header_meta -->
+        
+            <meta name="robots" content="max-image-preview:large">
+<script>
+    
+    var dataLayer = typeof dataLayer === "undefined" ? [] : dataLayer;
+    dataLayer.push(
+        {"objectId": "aa-ooC2-bv4j-5tZN", "objectType": "article", "title": "Grzegorz Braun ministrem kultury?! Szczera odpowied\u017a S\u0142awomira Mentzena", "author": "Kamil Szewczyk", "authorId": "at-C4NA-TsWa-7ZmP", "pubdate": "2023-06-26T09:05+02:00", "createdDate": "2023-06-24T22:58+02:00", "editDate": "2023-06-26T09:16+02:00", "blockVideoOn": true, "blockGalleryOn": false, "blockQuizOn": false, "customOption": "", "publish": true, "adult": false, "container": "pa-5nKj-k9ns-z6Pb", "articleTemplate": "Domy\u015blny", "articleTags": "S\u0141AWOMIR MENTZEN", "articleBlockCount": 2, "feedCount": 1, "articleSponsor": "", "sponsorType": "Brak", "openingComponent": "zdj\u0119cia", "articleOriginalObjectId": "aa-ooC2-bv4j-5tZN", "articleContainerAdd": "", "articleSpecialMark": "", "articleBlocks": "Tekst, Wideo", "hideLeadObject": false, "textStatus": "ozo"}
+    )
+    
+</script>
+
+<script type="text/javascript" src="https://cdn.questvert.pl/publishers/zpr/qpscript.js" ></script><!-- Marfeel Meta Tags -->
+
+  
+    <meta property="mrf:tags" encrypted="true" content="0KzsSV6rgGTvm1CkuN4u2JSbnjLmpnc94S2gF3iAWdQ8K71DzqL7iy5/8codGuxyaCGuHt+Nwn85vlJQCjNv14+SA+OygHkw7mB8dsTqOGmJuUY9WfpSjOdZvgM5oUk3bfHAdXdUIMjLOsQdoayprtgQzYA5EvsuUq5Rmm2RCdMvGd+7hvJTtoJq3XnJv8f2iSAsHxWlj8Wi9Bq/YQdx/KrKcou2vbCiyFOvpbEuqMMO0NEu2GLRM7gnc30GgxK69xSonNYaXEFwxod92PAsngXYkEIrsr5L5hBdhyT8Z2vBoFZj+vW6Z/66I13bFdbfZc9GCEmfg7Gc6MIeZaTitto6X/jqBj7F22kAfU3gApkIw+6DDERDpmrSP6PH/EXjsl9qWvyftQcwJM7YMYW1tjIvH8UxxjsaJcde9pzxRUyt6xGflp7MQkk53+B/JfM/BNLwuqog1Oqfd6FwCf3t+hnVMs+zuplDFlwL4B+pviE8w8bGodN+0eeAQ2ZkYhBJnDVojUpRhmrbPPKpwJApy6QX59r1pQ/zbEoQOojYyNYwv26tsT1maaWFmfVbZ32QkfAZmrQaHk+l5dABsbfvTgm++iVoahVJqLU8RzrViO1zkobHc/SgtqoZmgPRz4W8l8fIVMQbDxRVyIOGUAjr1CLoBD3MSZt6bcGn+uaFxZE=" />
+  
+
+<script>
+    
+</script>
+<script>
+var dataLayer = typeof dataLayer === "undefined" ? [] : dataLayer;
+
+dataLayer.forEach((element, index) => {
+    if ("adblockStatus" in element || "section" in element) {
+      delete dataLayer[index];
+    }
+  });
+
+dataLayer.push({
+    adblockStatus: typeof idmNetAdblockStatus === "undefined" ? "off" : "on",
+    url: window.location.href,
+})
+
+dataLayer.push(
+    {"domain": "se.pl", "adsOffStatus": false, "isPaid": false, "section": "polityka_wiadomosci,polityka", "pageType": "article"}
+)
+
+const sourceValForPrism = typeof viewSourceManagerInstance !== "undefined" ? viewSourceManagerInstance.getSourceCookie() : null;
+if (sourceValForPrism) {
+  dataLayer.push({sourcePrism:sourceValForPrism});
+}
+
+</script>
+        
+        <!-- /hook_header_meta -->
+
+        
+
+        
+<script>
+  window._taboola_notifications = window._taboola_notifications || [];
+  window._taboola_notifications.push({ swPath: '/tb_sw.js' });
+</script>
+<script async src="https://cdn.taboola.com/webpush/publishers/1972928/taboola-push-sdk.js"></script>
+
+
+        
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-53W55K9');</script>
+<!-- End Google Tag Manager -->
+<script>
+function ads_slot_responded(){
+	dataLayer.push({event: "slot_response_received_event"})
+}
+
+function ads_slot_requested(){
+	dataLayer.push({event: "slot_requested_event"})
+}
+
+function addEventListenerOnce(event, fn) {
+var func = function () {
+	googletag.pubads().removeEventListener(event, func);
+	fn();
+};
+googletag.pubads().addEventListener(event, func);
+}
+	window.googletag = window.googletag || {cmd: []};
+	googletag.cmd.push(function() {
+    dataLayer.push({event: "gam_library_loaded"})
+	addEventListenerOnce("slotRequested", ads_slot_requested)
+	addEventListenerOnce("slotResponseReceived", ads_slot_responded)
+	})
+</script>
+
+
+
+        
+        
+
+        <!-- hook_header -->
+        
+            <!-- CMP -->
+
+<script>
+/*******TCF 2.0******************/
+window.sas_idmnet = window.sas_idmnet || {};
+window.sas_idmnet.cmd = window.sas_idmnet.cmd || [];
+
+// Wywołanie okna z konsoli  window.__tcfapi("displayCmpModal", 2, () => {});   do wykorzystania  np. pod przyciski  na stronie  w polityce cookie.
+
+if (!sas_idmnet.tcf2){
+  sas_idmnet.tcf2 = 1;
+
+  window.cmpConfig = {
+    worker: {
+      cmpID: 225,
+      iabVendorUrl: "https://smart.idmnet.pl/consent/",
+      googleVendorUrl: "https://smart.idmnet.pl/consent/google-vendors.json",
+      locale: "pl",
+    },
+    ui: {
+      logoUrl: "https://www.se.pl/media/se/desktop/images/logo_se_2022.svg",
+      consentText: "https://smart.idmnet.pl/consent/consent-grupazpr.json",
+      theme: {
+        textColor: "#000",
+        secondaryTextColor: "#999",
+        primaryColor: "#41afbb",
+      },
+    },
+  };
+  /*********************/
+  "use strict";!function(){var e=function(){var e,t="__tcfapiLocator",a=[],r=window;for(;r;){try{if(r.frames[t]){e=r;break}}catch(e){}if(r===window.top)break;r=r.parent}e||(!function e(){var a=r.document,n=!!r.frames[t];if(!n)if(a.body){var s=a.createElement("iframe");s.style.cssText="display:none",s.name=t,s.id="iframe",a.body.appendChild(s)}else setTimeout(e,5);return!n}(),r.__tcfapi=function(){for(var e,t=arguments.length,r=new Array(t),n=0;n<t;n++)r[n]=arguments[n];if(!r.length)return a;if("setGdprApplies"===r[0])r.length>3&&2===parseInt(r[1],10)&&"boolean"==typeof r[3]&&(e=r[3],"function"==typeof r[2]&&r[2]("set",!0));else if("ping"===r[0]){var s={gdprApplies:e,cmpLoaded:!1,cmpStatus:"stub"};"function"==typeof r[2]&&r[2](s)}else a.push(r)},r.addEventListener("message",function(e){var t="string"==typeof e.data,a={};try{a=t?JSON.parse(e.data):e.data}catch(e){}var r=a.__tcfapiCall;r&&window.__tcfapi(r.command,r.version,function(a,n){var s={__tcfapiReturn:{returnValue:a,success:n,callId:r.callId}};t&&(s=JSON.stringify(s)),e&&e.source&&e.source.postMessage&&e.source.postMessage(s,"*")},r.parameter)},!1))};"undefined"!=typeof module?module.exports=e:e()}();
+  /*********************/
+}
+</script>
+
+<script type = "text/javascript" src="https://smart.idmnet.pl/consent/cmp-widget-latest.js?_260724b" charset="UTF-8" async fetchpriority="high"> </script>
+
+
+<!-- RENDER_CSS -->
+
+
+    <link rel="stylesheet" type="text/css" href="/media/polityka.se/desktop/css/styleguide_se_new.css?__25dcee3a" >
+
+
+<!-- ADS_HEAD -->
+
+    <!-- SmartAdServer -->
+
+
+
+
+
+<!-- SmartAdServer -->
+ <!-- Wyłączenie ładowania zewnętrznych rzeczy -->
+<script>
+  var sas_idmnet = sas_idmnet || {}; sas_idmnet.cmd = sas_idmnet.cmd || [];
+  var sas = sas || {}; sas.cmd = sas.cmd || [];
+  var NzpPyBmOTGuZ = NzpPyBmOTGuZ || false;
+</script>
+
+
+<script id="gptScript" async src="https://securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+
+
+
+
+
+  <script type="text/javascript" src="//smart.idmnet.pl/71189/smartConfig_537275.js" async fetchpriority="high"></script>
+
+
+
+<script type="text/javascript" src="//cdn2.pollster.pl/nw.js" async></script>
+
+  <script type="text/javascript" src="//smart.idmnet.pl/prebidBoilerplate.js" async fetchpriority="high"></script>
+
+<!-- /SmartAdServer -->
+  
+  <script type="text/javascript">
+    var wbtg_value = 'cat=wiadomosci;art=aa-ooC2-bv4j-5tZN;notsafety=[AlcoholDrugsTabacco, TragedyTransportationAccidents, DziecięcaParentingowaNiepełnoletni, Violence, publicis_kp, omd_mcdonalds_wojna]';
+    const sourceValForGAM = typeof viewSourceManagerInstance !== "undefined" ? viewSourceManagerInstance.getSourceCookie() : null;
+    wbtg_value = sourceValForGAM ? `${wbtg_value};source=${sourceValForGAM}` : wbtg_value;
+  </script>
+  
+
+
+
+    <!-- InVideoGam -->
+
+
+    <!-- FloorAd -->
+
+
+    <!-- InAudioStreamGam -->
+
+<link rel="stylesheet" type="text/css" href="/media/desktop/zpr_ads_web/css/videojs.ima.turbo.css?__25dcee3a">
+
+
+<!-- META_TITLE -->
+<title>Grzegorz Braun ministrem kultury?! Szczera odpowiedź Sławomira Mentzena - Super Express - wiadomości, polityka, sport</title>
+<!-- META -->
+<meta name="description" content="Najnowszy wywiad ze Sławomirem Mentzenem, gościem &quot;Wieczornego Expressu&quot;. Mentzen został zapytany o to, czy jeśli Konfederacja wygrałaby wybory, to widziałby Gr...">
+
+<!-- OPENGRAPH -->
+
+    
+        <link rel="preload" as="image" href="//cdn.galleries.smcloud.net/t/galleries/gf-JWXg-6yxg-aZaK_grzegorz-braun-994x828.webp" fetchpriority="high" />
+    
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta property="og:title" content="Grzegorz Braun ministrem kultury?! Szczera odpowiedź Sławomira Mentzena" />
+<meta property="og:url" content="https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html" />
+<meta property="og:type" content="Article" />
+
+<meta property="og:image" content="https://cdn.galleries.smcloud.net/t/galleries/gf-oXtY-SGJG-4Bxv_grzegorz-braun-1920x1080-nocrop.jpg" />
+<meta name="twitter:image" content="https://cdn.galleries.smcloud.net/t/galleries/gf-oXtY-SGJG-4Bxv_grzegorz-braun-1920x1080-nocrop.jpg" />
+
+<meta property="og:description" content="Najnowszy wywiad ze Sławomirem Mentzenem, gościem &quot;Wieczornego Expressu&quot;. Mentzen został zapytany o to, czy jeśli Konfederacja wygrałaby wybory, to widziałby Gr..." />
+
+<meta property="og:section" content="wiadomosci" />
+<meta name="articleSection" content="wiadomosci" />
+
+
+
+        
+        <!-- /hook_header -->
+        <!-- hook_header_extended -->
+        
+            
+
+<!-- CANONICAL -->
+
+<link rel="canonical" href="https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html" />
+
+<script {&#x27;container_id&#x27;: &#x27;taboola-below-article-thumbnails&#x27;, &#x27;container_type&#x27;: &#x27;article&#x27;, &#x27;placement_name&#x27;: &#x27;Below Article Thumbnails&#x27;, &#x27;publisher_id&#x27;: &#x27;timezpr-network&#x27;} type="text/javascript">
+    window._taboola = window._taboola || [];
+    _taboola.push({article:'auto'});
+    !function (e, f, u, i) {
+      if (!document.getElementById(i)){
+        e.async = 1;
+        e.src = u;
+        e.id = i;
+        f.parentNode.insertBefore(e, f);
+      }
+    }(document.createElement('script'),
+    document.getElementsByTagName('script')[0],
+    '//cdn.taboola.com/libtrc/timezpr-network/loader.js',
+    'tb_loader_script');
+    if(window.performance && typeof window.performance.mark == 'function')
+      {window.performance.mark('tbl_ic');}
+</script>
+
+<link rel="stylesheet" type="text/css" href="/media/desktop/site_header/css/desktop_site_header.css?__25dcee3a" >
+
+        
+        <!-- /hook_header_extended -->
+
+        
+
+        <!-- marfeel-static -->
+<script type="text/javascript">
+!function(){"use strict";function e(e){var t=!(arguments.length>1&&void 0!==arguments[1])||arguments[1],c=document.createElement("script");c.src=e,t?c.type="module":(c.async=!0,c.type="text/javascript",c.setAttribute("nomodule",""));var n=document.getElementsByTagName("script")[0];n.parentNode.insertBefore(c,n)}!function(t,c){!function(t,c,n){var a,o,r;n.accountId=c,null!==(a=t.marfeel)&&void 0!==a||(t.marfeel={}),null!==(o=(r=t.marfeel).cmd)&&void 0!==o||(r.cmd=[]),t.marfeel.config=n;var i="https://sdk.mrf.io/statics";e("".concat(i,"/marfeel-sdk.js?id=").concat(c),!0),e("".concat(i,"/marfeel-sdk.es5.js?id=").concat(c),!1)}(t,c,arguments.length>2&&void 0!==arguments[2]?arguments[2]:{})}(window,2716,{} /* Config */)}();
+const isMarfeelInitialized = true;
+</script>
+
+
+        <!-- no-1488 -->
+        
+
+
+
+    </head>
+
+    <body class="article-layout wide ">
+        
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-53W55K9"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+
+
+        <div class="dummy_header" style="display: none;"></div>
+
+        
+            
+        
+
+        <!-- stylebook topboard -->
+        <section>
+            <div class="zpr_box_topboard polityka-se-pl_topboard" id="hook_box_topboard">
+                <!-- hook_box_topboard -->
+                
+                    <!-- ADS top_0 -->
+
+    <!-- SmartAdServer -->
+
+
+
+
+
+
+
+
+
+
+
+<div id="top_0" class="zpr_top_0">
+    
+        <script type="text/javascript">
+        try {
+            sas_idmnet.cmd.push(function(){ sas_idmnet.release("top_0"); });
+        } catch (ReferenceError) {console.log('Reklamy są wyłączone.');}
+        </script>
+    
+</div>
+
+
+
+
+<!-- ADS m_top_0 -->
+
+
+                
+                <!-- /hook_box_topboard -->
+            </div>
+        </section>
+        <!--- / stylebook topboard -->
+
+        <!-- gl_plugin header -->
+        <header class="gl_plugin header">
+            <!-- hook_top -->
+            
+                <div id='hook_top'><!-- Site Header -->
+<div class="site-header">
+  <div class="site-header__container">
+    <div class="site-header__left">
+      <div class="site-header__logo">
+        <a class="site-header__logo-link" href="https://www.se.pl/" aria-label="Przejście do strony głównej">
+          <img class="site-header__logo-image" src="/media/se/desktop/images/logo_se_2022.svg" alt="" width="165" height="36">
+        </a>
+      </div>
+      <nav class="site-header__nav">
+        <ul class="site-header__nav-list">
+          
+          <li class="site-header__nav-item">
+            <a href="https://polityka.se.pl/" class="site-header__nav-link">
+              <img class="site-header__nav-icon" src="/media/desktop/site_header/images/politics.svg" alt="Polityka" width="24" height="24">
+              <span class="site-header__nav-label">Polityka</span>
+            </a>
+          </li>
+          
+          <li class="site-header__nav-item">
+            <a href="https://www.se.pl/wiadomosci/lekkie/" class="site-header__nav-link">
+              <img class="site-header__nav-icon" src="/media/desktop/site_header/images/dove.svg" alt="Lekkie" width="24" height="24">
+              <span class="site-header__nav-label">Lekkie</span>
+            </a>
+          </li>
+          
+          <li class="site-header__nav-item">
+            <a href="https://player.se.pl/" class="site-header__nav-link">
+              <img class="site-header__nav-icon" src="/media/desktop/site_header/images/play.svg" alt="Radio" width="24" height="24">
+              <span class="site-header__nav-label">Radio</span>
+            </a>
+          </li>
+          
+          <li class="site-header__nav-item">
+            <a href="https://www.se.pl/temat/paparazzi,tg-sjn8-NDPU-E5zM/" class="site-header__nav-link">
+              <img class="site-header__nav-icon" src="/media/desktop/site_header/images/paparazzi.svg" alt="Paparazzi" width="24" height="24">
+              <span class="site-header__nav-label">Paparazzi</span>
+            </a>
+          </li>
+          
+        </ul>
+      </nav>
+    </div>
+    <div class="site-header__right">
+      
+      <a class="site-header__highlighted" href="https://www.se.pl/umrzesz-w-kolejce-nie-jesli-jestes-politykiem-i-korzystasz-z-poczekalni-vip/" target="_blank">
+        <img class="site-header__highlighted-icon" src="/media/desktop/site_header/images/cta/cta-red-hospital.svg" alt="" width="40" height="40">
+        <span class="site-header__highlighted-label">Kolejki grozy w NFZ</span>
+      </a>
+      
+      <button class="site-header__menu-button" aria-expanded="false" aria-label="Menu">
+        <span class="site-header__menu-button-content">
+          <span class="site-header__menu-icon">
+          <svg class="site-header__menu-icon__svg" width="21" height="24" viewBox="0 0 21 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 3.75C0 3.32812 0.328125 3 0.75 3H20.25C20.6719 3 21 3.32812 21 3.75C21 4.17188 20.6719 4.5 20.25 4.5H0.75C0.328125 4.5 0 4.17188 0 3.75ZM0 12C0 11.5781 0.328125 11.25 0.75 11.25H20.25C20.6719 11.25 21 11.5781 21 12C21 12.4219 20.6719 12.75 20.25 12.75H0.75C0.328125 12.75 0 12.4219 0 12ZM21 20.25C21 20.6719 20.6719 21 20.25 21H0.75C0.328125 21 0 20.6719 0 20.25C0 19.8281 0.328125 19.5 0.75 19.5H20.25C20.6719 19.5 21 19.8281 21 20.25Z" fill="#000000" />
+          </svg>
+          <svg class="site-header__menu-icon__svg site-header__menu-icon__svg--hover" width="21" height="24" viewBox="0 0 21 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 4.5C0 3.65625 0.65625 3 1.5 3H19.5C20.3438 3 21 3.65625 21 4.5C21 5.34375 20.3438 6 19.5 6H1.5C0.65625 6 0 5.34375 0 4.5ZM0 12C0 11.1562 0.65625 10.5 1.5 10.5H19.5C20.3438 10.5 21 11.1562 21 12C21 12.8438 20.3438 13.5 19.5 13.5H1.5C0.65625 13.5 0 12.8438 0 12ZM21 19.5C21 20.3438 20.3438 21 19.5 21H1.5C0.65625 21 0 20.3438 0 19.5C0 18.6562 0.65625 18 1.5 18H19.5C20.3438 18 21 18.6562 21 19.5Z" fill="#000000"/>
+          </svg>
+        </span>
+        <span class="site-header__menu-label">Menu</span>
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Site Menu -->
+<div class="site-menu">
+  <div class="site-menu__header">
+    <div class="site-menu__logo-wrapper">
+      <img class="site-menu__logo-image" src="/media/se/desktop/images/sygnet-se.svg" alt="sygnet-se" width="36" height="36">
+      <span class="site-menu__title">Menu</span>
+    </div>
+    <button class="site-menu__close" aria-label="Close menu">
+      <svg class="site-menu__close-icon" width="19" height="24" viewBox="0 0 19 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.8594 4.26562L10.1719 12L17.8594 19.7344C18.1875 20.0156 18.1875 20.4844 17.8594 20.7656C17.5781 21.0938 17.1094 21.0938 16.8281 20.7656L9.09375 13.0781L1.35938 20.7656C1.07812 21.0938 0.609375 21.0938 0.328125 20.7656C0 20.4844 0 20.0156 0.328125 19.7344L8.01562 12L0.328125 4.26562C0 3.98438 0 3.51562 0.328125 3.23438C0.609375 2.95312 1.07812 2.95312 1.35938 3.23438L9.09375 10.9219L16.8281 3.23438C17.1094 2.95312 17.5781 2.95312 17.8594 3.23438C18.1875 3.51562 18.1875 3.98438 17.8594 4.26562Z" fill="black" />
+      </svg>
+    </button>
+  </div>
+  <div class="site-menu__body">
+    
+    <div class="site-menu__highlighted-container">
+      <a href="https://www.se.pl/umrzesz-w-kolejce-nie-jesli-jestes-politykiem-i-korzystasz-z-poczekalni-vip/" class="site-menu__highlighted" target="_blank">
+        <img class="site-menu__highlighted-icon" src="/media/desktop/site_header/images/cta/cta-red-hospital.svg" alt="" width="40" height="40">
+        <span class="site-menu__highlighted-label">Kolejki grozy w NFZ</span>
+      </a>
+    </div>
+    
+    
+    <ul class="site-menu__list">
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/wiadomosci/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Super Express lokalnie</span>
+          </div>
+          
+        </a>
+        
+        <button type="button" aria-label="Rozwiń kategorię Super Express lokalnie" class="site-menu__icon-right" aria-expanded="false">
+          <svg class="site-menu__icon-right--chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.4297 18.0547C12.1953 18.3281 11.8047 18.3281 11.5703 18.0547L3.44531 9.92969C3.17188 9.69531 3.17188 9.30469 3.44531 9.07031C3.67969 8.83594 4.07031 8.83594 4.30469 9.07031L12 16.7266L19.6953 9.07031C19.9297 8.83594 20.3203 8.83594 20.5547 9.07031C20.8281 9.30469 20.8281 9.69531 20.5547 9.92969L12.4297 18.0547Z" fill="black" fill-opacity="0.6"></path>
+          </svg>
+        </button>
+        <ul class="site-menu__sublist site-menu__sublist--hidden">
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/warszawa/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Warszawa</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/bydgoszcz/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Bydgoszcz</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/krakow/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Kraków</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/trojmiasto/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Trójmiasto</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/slask/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Śląskie</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/torun/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Toruń</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://szczecin.se.pl/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Szczecin</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://wroclaw.se.pl/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Wrocław</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/poznan/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Poznań</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/rzeszow/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Rzeszów</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://lodz.se.pl/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Łódź</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/olsztyn/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Olsztyn</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/zielona-gora/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Zielona Góra</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/opole/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Opole</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/tarnow/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Tarnów</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://lublin.se.pl/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Lublin</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/koszalin/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Koszalin</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/kielce/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Kielce</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/kalisz/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Kalisz</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/gorzow/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Gorzów</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://bialystok.se.pl/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Białystok</span>
+              </div>
+              
+            </a>
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/wiadomosci/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Wiadomości</span>
+          </div>
+          
+        </a>
+        
+        <button type="button" aria-label="Rozwiń kategorię Wiadomości" class="site-menu__icon-right" aria-expanded="false">
+          <svg class="site-menu__icon-right--chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.4297 18.0547C12.1953 18.3281 11.8047 18.3281 11.5703 18.0547L3.44531 9.92969C3.17188 9.69531 3.17188 9.30469 3.44531 9.07031C3.67969 8.83594 4.07031 8.83594 4.30469 9.07031L12 16.7266L19.6953 9.07031C19.9297 8.83594 20.3203 8.83594 20.5547 9.07031C20.8281 9.30469 20.8281 9.69531 20.5547 9.92969L12.4297 18.0547Z" fill="black" fill-opacity="0.6"></path>
+          </svg>
+        </button>
+        <ul class="site-menu__sublist site-menu__sublist--hidden">
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wiadomosci/polska/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Polska</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wiadomosci/swiat/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Świat</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wiadomosci/superopinie/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Super Opinie</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wiadomosci/exclusive/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Gwiazdy</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wiadomosci/lekkie/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Lekkie newsy</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wiadomosci/po-godzinach/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Sport po godzinach</span>
+              </div>
+              
+            </a>
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/styl-zycia/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Styl</span>
+          </div>
+          
+        </a>
+        
+        <button type="button" aria-label="Rozwiń kategorię Styl" class="site-menu__icon-right" aria-expanded="false">
+          <svg class="site-menu__icon-right--chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.4297 18.0547C12.1953 18.3281 11.8047 18.3281 11.5703 18.0547L3.44531 9.92969C3.17188 9.69531 3.17188 9.30469 3.44531 9.07031C3.67969 8.83594 4.07031 8.83594 4.30469 9.07031L12 16.7266L19.6953 9.07031C19.9297 8.83594 20.3203 8.83594 20.5547 9.07031C20.8281 9.30469 20.8281 9.69531 20.5547 9.92969L12.4297 18.0547Z" fill="black" fill-opacity="0.6"></path>
+          </svg>
+        </button>
+        <ul class="site-menu__sublist site-menu__sublist--hidden">
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/porady/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Porady</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/horoskop-i-magia/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Horoskop i magia</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/zyczenia/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Życzenia</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/moda/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Moda i Uroda</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/milosc-i-zwiazki/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Miłość i związki</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/senniki/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Sennik</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/ksiazki/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Książki</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/psychologia/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Psychologia</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/silversi/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Silversi</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/styl-zycia/podroze/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Podróże</span>
+              </div>
+              
+            </a>
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/rozrywka/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Rozrywka</span>
+          </div>
+          
+        </a>
+        
+        <button type="button" aria-label="Rozwiń kategorię Rozrywka" class="site-menu__icon-right" aria-expanded="false">
+          <svg class="site-menu__icon-right--chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.4297 18.0547C12.1953 18.3281 11.8047 18.3281 11.5703 18.0547L3.44531 9.92969C3.17188 9.69531 3.17188 9.30469 3.44531 9.07031C3.67969 8.83594 4.07031 8.83594 4.30469 9.07031L12 16.7266L19.6953 9.07031C19.9297 8.83594 20.3203 8.83594 20.5547 9.07031C20.8281 9.30469 20.8281 9.69531 20.5547 9.92969L12.4297 18.0547Z" fill="black" fill-opacity="0.6"></path>
+          </svg>
+        </button>
+        <ul class="site-menu__sublist site-menu__sublist--hidden">
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/rozrywka/quizy/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Quizy</span>
+              </div>
+              
+            </a>
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://supersport.se.pl/" class="site-menu__link" target="_blank">
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Super Sport</span>
+          </div>
+          
+          <span class="site-menu__icon-right">
+            <svg class="site-menu__icon-right--arrow-link" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20.75C16.8438 20.75 20.75 16.8438 20.75 12C20.75 7.15625 16.8438 3.25 12 3.25C7.15625 3.25 3.25 7.15625 3.25 12C3.25 16.8438 7.15625 20.75 12 20.75ZM12 2C17.5078 2 22 6.49219 22 12C22 17.5078 17.5078 22 12 22C6.49219 22 2 17.5078 2 12C2 6.49219 6.49219 2 12 2ZM14.5 13.875V10.3984L9.30469 15.5547C9.07031 15.8281 8.67969 15.8281 8.44531 15.5547C8.21094 15.3203 8.21094 14.9297 8.44531 14.6953L13.6016 9.5H10.125C9.77344 9.5 9.5 9.22656 9.5 8.875C9.5 8.52344 9.77344 8.25 10.125 8.25H15.125C15.4766 8.25 15.75 8.52344 15.75 8.875V13.875C15.75 14.2266 15.4766 14.5 15.125 14.5C14.7734 14.5 14.5 14.2266 14.5 13.875Z" fill="black" fill-opacity="0.6"></path>
+            </svg>
+          </span>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://superbiz.se.pl/" class="site-menu__link" target="_blank">
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Super Biznes</span>
+          </div>
+          
+          <span class="site-menu__icon-right">
+            <svg class="site-menu__icon-right--arrow-link" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20.75C16.8438 20.75 20.75 16.8438 20.75 12C20.75 7.15625 16.8438 3.25 12 3.25C7.15625 3.25 3.25 7.15625 3.25 12C3.25 16.8438 7.15625 20.75 12 20.75ZM12 2C17.5078 2 22 6.49219 22 12C22 17.5078 17.5078 22 12 22C6.49219 22 2 17.5078 2 12C2 6.49219 6.49219 2 12 2ZM14.5 13.875V10.3984L9.30469 15.5547C9.07031 15.8281 8.67969 15.8281 8.44531 15.5547C8.21094 15.3203 8.21094 14.9297 8.44531 14.6953L13.6016 9.5H10.125C9.77344 9.5 9.5 9.22656 9.5 8.875C9.5 8.52344 9.77344 8.25 10.125 8.25H15.125C15.4766 8.25 15.75 8.52344 15.75 8.875V13.875C15.75 14.2266 15.4766 14.5 15.125 14.5C14.7734 14.5 14.5 14.2266 14.5 13.875Z" fill="black" fill-opacity="0.6"></path>
+            </svg>
+          </span>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://polityka.se.pl/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Polityka</span>
+          </div>
+          
+        </a>
+        
+        <button type="button" aria-label="Rozwiń kategorię Polityka" class="site-menu__icon-right" aria-expanded="false">
+          <svg class="site-menu__icon-right--chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.4297 18.0547C12.1953 18.3281 11.8047 18.3281 11.5703 18.0547L3.44531 9.92969C3.17188 9.69531 3.17188 9.30469 3.44531 9.07031C3.67969 8.83594 4.07031 8.83594 4.30469 9.07031L12 16.7266L19.6953 9.07031C19.9297 8.83594 20.3203 8.83594 20.5547 9.07031C20.8281 9.30469 20.8281 9.69531 20.5547 9.92969L12.4297 18.0547Z" fill="black" fill-opacity="0.6"></path>
+          </svg>
+        </button>
+        <ul class="site-menu__sublist site-menu__sublist--hidden">
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/wybory/prezydenckie/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Wybory Prezydenckie</span>
+              </div>
+              
+            </a>
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://portalobronny.se.pl/" class="site-menu__link" target="_blank">
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Portal Obronny</span>
+          </div>
+          
+          <span class="site-menu__icon-right">
+            <svg class="site-menu__icon-right--arrow-link" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20.75C16.8438 20.75 20.75 16.8438 20.75 12C20.75 7.15625 16.8438 3.25 12 3.25C7.15625 3.25 3.25 7.15625 3.25 12C3.25 16.8438 7.15625 20.75 12 20.75ZM12 2C17.5078 2 22 6.49219 22 12C22 17.5078 17.5078 22 12 22C6.49219 22 2 17.5078 2 12C2 6.49219 6.49219 2 12 2ZM14.5 13.875V10.3984L9.30469 15.5547C9.07031 15.8281 8.67969 15.8281 8.44531 15.5547C8.21094 15.3203 8.21094 14.9297 8.44531 14.6953L13.6016 9.5H10.125C9.77344 9.5 9.5 9.22656 9.5 8.875C9.5 8.52344 9.77344 8.25 10.125 8.25H15.125C15.4766 8.25 15.75 8.52344 15.75 8.875V13.875C15.75 14.2266 15.4766 14.5 15.125 14.5C14.7734 14.5 14.5 14.2266 14.5 13.875Z" fill="black" fill-opacity="0.6"></path>
+            </svg>
+          </span>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://beszamel.se.pl/" class="site-menu__link" target="_blank">
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Gotowanie</span>
+          </div>
+          
+          <span class="site-menu__icon-right">
+            <svg class="site-menu__icon-right--arrow-link" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20.75C16.8438 20.75 20.75 16.8438 20.75 12C20.75 7.15625 16.8438 3.25 12 3.25C7.15625 3.25 3.25 7.15625 3.25 12C3.25 16.8438 7.15625 20.75 12 20.75ZM12 2C17.5078 2 22 6.49219 22 12C22 17.5078 17.5078 22 12 22C6.49219 22 2 17.5078 2 12C2 6.49219 6.49219 2 12 2ZM14.5 13.875V10.3984L9.30469 15.5547C9.07031 15.8281 8.67969 15.8281 8.44531 15.5547C8.21094 15.3203 8.21094 14.9297 8.44531 14.6953L13.6016 9.5H10.125C9.77344 9.5 9.5 9.22656 9.5 8.875C9.5 8.52344 9.77344 8.25 10.125 8.25H15.125C15.4766 8.25 15.75 8.52344 15.75 8.875V13.875C15.75 14.2266 15.4766 14.5 15.125 14.5C14.7734 14.5 14.5 14.2266 14.5 13.875Z" fill="black" fill-opacity="0.6"></path>
+            </svg>
+          </span>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://superseriale.se.pl/" class="site-menu__link" target="_blank">
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Super Seriale</span>
+          </div>
+          
+          <span class="site-menu__icon-right">
+            <svg class="site-menu__icon-right--arrow-link" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20.75C16.8438 20.75 20.75 16.8438 20.75 12C20.75 7.15625 16.8438 3.25 12 3.25C7.15625 3.25 3.25 7.15625 3.25 12C3.25 16.8438 7.15625 20.75 12 20.75ZM12 2C17.5078 2 22 6.49219 22 12C22 17.5078 17.5078 22 12 22C6.49219 22 2 17.5078 2 12C2 6.49219 6.49219 2 12 2ZM14.5 13.875V10.3984L9.30469 15.5547C9.07031 15.8281 8.67969 15.8281 8.44531 15.5547C8.21094 15.3203 8.21094 14.9297 8.44531 14.6953L13.6016 9.5H10.125C9.77344 9.5 9.5 9.22656 9.5 8.875C9.5 8.52344 9.77344 8.25 10.125 8.25H15.125C15.4766 8.25 15.75 8.52344 15.75 8.875V13.875C15.75 14.2266 15.4766 14.5 15.125 14.5C14.7734 14.5 14.5 14.2266 14.5 13.875Z" fill="black" fill-opacity="0.6"></path>
+            </svg>
+          </span>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/auto/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Auto</span>
+          </div>
+          
+        </a>
+        
+        <button type="button" aria-label="Rozwiń kategorię Auto" class="site-menu__icon-right" aria-expanded="false">
+          <svg class="site-menu__icon-right--chevron" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.4297 18.0547C12.1953 18.3281 11.8047 18.3281 11.5703 18.0547L3.44531 9.92969C3.17188 9.69531 3.17188 9.30469 3.44531 9.07031C3.67969 8.83594 4.07031 8.83594 4.30469 9.07031L12 16.7266L19.6953 9.07031C19.9297 8.83594 20.3203 8.83594 20.5547 9.07031C20.8281 9.30469 20.8281 9.69531 20.5547 9.92969L12.4297 18.0547Z" fill="black" fill-opacity="0.6"></path>
+          </svg>
+        </button>
+        <ul class="site-menu__sublist site-menu__sublist--hidden">
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/auto/nowosci/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Nowości</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/auto/porady/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Porady motoryzacyjne</span>
+              </div>
+              
+            </a>
+          </li>
+          
+          <li class="site-menu__subitem">
+            <a href="https://www.se.pl/auto/testy/" class="site-menu__sublink" >
+              <div class="site-menu__link-left">
+                
+                <span class="site-menu__subtext">Testy samochodów</span>
+              </div>
+              
+            </a>
+          </li>
+          
+        </ul>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://usa.se.pl/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">USA</span>
+          </div>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/zdrowie/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Zdrowie</span>
+          </div>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://pogoda.se.pl/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Pogoda</span>
+          </div>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://mediateka.pl/" class="site-menu__link" target="_blank">
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Mediateka</span>
+          </div>
+          
+          <span class="site-menu__icon-right">
+            <svg class="site-menu__icon-right--arrow-link" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 20.75C16.8438 20.75 20.75 16.8438 20.75 12C20.75 7.15625 16.8438 3.25 12 3.25C7.15625 3.25 3.25 7.15625 3.25 12C3.25 16.8438 7.15625 20.75 12 20.75ZM12 2C17.5078 2 22 6.49219 22 12C22 17.5078 17.5078 22 12 22C6.49219 22 2 17.5078 2 12C2 6.49219 6.49219 2 12 2ZM14.5 13.875V10.3984L9.30469 15.5547C9.07031 15.8281 8.67969 15.8281 8.44531 15.5547C8.21094 15.3203 8.21094 14.9297 8.44531 14.6953L13.6016 9.5H10.125C9.77344 9.5 9.5 9.22656 9.5 8.875C9.5 8.52344 9.77344 8.25 10.125 8.25H15.125C15.4766 8.25 15.75 8.52344 15.75 8.875V13.875C15.75 14.2266 15.4766 14.5 15.125 14.5C14.7734 14.5 14.5 14.2266 14.5 13.875Z" fill="black" fill-opacity="0.6"></path>
+            </svg>
+          </span>
+          
+        </a>
+        
+      </li>
+      
+      <li class="site-menu__item">
+        <a href="https://www.se.pl/pomocnadlon/" class="site-menu__link" >
+          <div class="site-menu__link-left">
+            
+            <span class="site-menu__text">Pomocna Dłoń</span>
+          </div>
+          
+        </a>
+        
+      </li>
+      
+    </ul>
+  </div>
+</div>
+</div>
+            
+            <!-- /hook_top -->
+        </header>
+
+        <section class="main__section">
+            <!-- zpr_screening -->
+            <div class="zpr_screening">
+                <section>
+                    <!-- zpr_combo -->
+                    <div class="zpr_combo">
+                        
+                        <!-- zpr_top1 -->
+                        <div class="zpr_box_top1" id="hook_box_top1">
+                            <!-- hook_box_top1 -->
+                            
+                               <!-- ADS top_1 -->
+
+    <!-- SmartAdServer -->
+
+
+
+
+
+
+
+
+
+
+
+<div id="top_1" class="zpr_top_1">
+    
+        <script type="text/javascript">
+        try {
+            sas_idmnet.cmd.push(function(){ sas_idmnet.release("top_1"); });
+        } catch (ReferenceError) {console.log('Reklamy są wyłączone.');}
+        </script>
+    
+</div>
+
+
+
+
+
+                            
+                            <!-- /hook_box_top1 -->
+                        </div>
+                        <!-- /zpr_top1 -->
+                        
+
+                        <!-- zpr_sky -->
+                        <div class="zpr_skyscrapper">
+                            <div class="zpr_box_sky" id="hook_box_sky">
+                                <!-- hook_box_sky -->
+                                
+                                    
+                                
+                                <!-- /hook_box_sky -->
+                            </div>
+                         </div>
+                        <!-- /zpr_sky -->
+                    </div>
+                    <!-- /zpr_combo -->
+                </section>
+
+                <section>
+                    <!-- gl_wrapper -->
+                    <div class="gl_wrapper">
+
+                        
+
+                        <!-- hook_pre_content -->
+                        
+                            
+                        
+                        <!-- /hook_pre_content -->
+
+                        
+                        <!-- row -->
+                        <div class="row">
+                            <!-- col-8 -->
+                            <div class="col col-8">
+                                <div class="main-content">
+                                    <!-- hook_content -->
+                                    
+                                        <div id='hook_content'>
+<!-- RICH_SNIPPET -->
+
+<script type="application/ld+json">
+{
+    "@context": "http://schema.org",
+    "headline": "Grzegorz Braun ministrem kultury?! Szczera odpowiedź Sławomira Mentzena",
+    "image": {
+        "@type": "ImageObject",
+        "url": "//cdn.galleries.smcloud.net/t/galleries/gf-oXtY-SGJG-4Bxv_grzegorz-braun-1920x1080-nocrop.jpg",
+        "width": 1920,
+        "height": 1486
+    },
+    "author": [
+        {"@type": "Person", "name": "Kamil Szewczyk", "url": "//polityka.se.pl/autor/kamil-szewczyk-at-C4NA-TsWa-7ZmP/"}
+    ],
+    "datePublished": "2023-06-26T09:05:05+02:00",
+    "dateModified": "2023-06-26T09:16:08+02:00",
+    "publisher": {
+        "@type": "Organization",
+        "name": "Polityka Super Express",
+        "logo": {
+            "@type": "ImageObject",
+            "url": "https://www.se.pl/media/se/desktop/images/logo_se_2022.svg",
+            "height": "60",
+            "width": "275"
+        }
+    },
+    "description": "Najnowszy wywiad ze Sławomirem Mentzenem, gościem \u0027Wieczornego Expressu\u0027. Mentzen został zapytany o to, czy jeśli Konfederacja wygrałaby wybory, to widziałby Grzegorza Brauna w roli ministra kultury: \u002D Grzegorz Braun jest człowiekiem wielkiej kultury. Gdyby Grzegorz Braun chciał zostać ministrem kultury w rządzie Konfederacji to nie miałbym nic przeciwko \u002D odparł. \u000D\u000A\u000D\u000A",
+    "mainEntityOfPage": "https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html",
+    "sameAs": [
+        
+        "https://pl.wikipedia.org/wiki/Super_Express",
+        
+        "https://www.facebook.com/wwwsepl"
+        
+    ],
+    
+    
+    
+    
+    
+    
+    
+    "about": [
+        {"@type": "Thing", "name": "SŁAWOMIR MENTZEN"}
+    ],
+    "@type": "NewsArticle"
+}
+</script><!-- BREADCRUMB_V2 -->
+<section>
+    <nav class="row">
+        <ol class="breadcrumb_v2">
+            <li class="breadcrumb_v2-item"><a href="/">Strona główna</a></li>
+            
+                
+                    <li class="breadcrumb_v2-item">Grzegorz Braun ministrem kultury?! Szczera odpowiedź Sławomira Mentzena</li>
+                
+            
+        </ol>
+    </nav>
+</section>
+<script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+        
+            {"@type": "ListItem",
+                "position": 1,
+                "name": "Strona główna",
+                "item": "https://polityka.se.pl/"
+            },
+        
+        
+            {"@type": "ListItem",
+             "position": 2,
+             "name": "Grzegorz Braun ministrem kultury?! Szczera odpowiedź Sławomira Mentzena",
+             "item": "https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html"
+            }
+        
+        ]
+    }
+</script>
+
+<!-- ARTICLE -->
+
+
+
+<!--lewa kolumna-->
+<div class="gl_plugin article">
+    <article article_uid="aa-ooC2-bv4j-5tZN" page_uid="pa-5nKj-k9ns-z6Pb" class=" article__wide" data-video-position="30">
+
+        <!--tytul-->
+        <div class="article-title">
+            <h1>Grzegorz Braun ministrem kultury?! Szczera odpowiedź Sławomira Mentzena</h1>
+        </div>
+        <!--/tytul-->
+
+        <!--social+autor-->
+        <div class="neck display-flex">
+            <!--autor-->
+            <div class="autor flex display-flex items-spaced-between">
+                <!--authors-top-->
+                
+                    
+
+
+
+<div class="article-authors">
+	
+	    
+			
+				<div class="article-author">
+					
+						<a href="https://polityka.se.pl/autor/kamil-szewczyk-at-C4NA-TsWa-7ZmP/">
+							<div class="article-author__thumb">
+								<img src="https://cdn.authors.smcloud.net/t/authors/Kamil-Szewczyk_at-C4NA-TsWa-7ZmP_148x196.jpg" alt="Kamil Szewczyk" />
+							</div>
+						</a>
+					
+					
+					<span class="article-author__name h3">
+						<a href="https://polityka.se.pl/autor/kamil-szewczyk-at-C4NA-TsWa-7ZmP/">Kamil Szewczyk</a>
+					</span>
+				</div>
+			
+	    
+	
+	
+	
+</div>
+                
+                <!--/authors-top-->
+
+                
+                <span id="timezone" title="Europe/Warsaw" class="">
+                    <span class="h3 pub_time_date" >2023-06-26</span>
+                    <span class="h3 pub_time_hours_minutes">9:05</span>
+                </span>
+                
+
+                
+            </div>
+            <!--/autor-->
+
+            <!--share buttons-->
+            
+<!-- SHARE_BUTTONS -->
+
+<div class="share-buttons-wrapper">
+    <a
+    id="google-preferences"
+    target="_blank"
+    href="https://google.com/preferences/source?q=https://polityka.se.pl"
+    class="google-preference-btn"
+    >
+        <span class="google-preference-btn__icon"></span>
+        <span class="google-preference-btn__text">Dodaj do Google</span>
+    </a>
+    <div class="share-buttons">
+        <a rel="nofollow" class="fb-button" href="https://www.facebook.com/sharer/sharer.php?u=https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html%23source%3Dfb" target="_blank"></a>
+        <a rel="nofollow" class="tt-button" href="https://www.twitter.com/share?url=https://polityka.se.pl/wiadomosci/grzegorz-braun-ministrem-kultury-szczera-odpowiedz-slawomira-mentzena-aa-ooC2-bv4j-5tZN.html%23source%3Dtt" target="_blank"></a>
+        <a rel="nofollow" class="mail-button" href="/cdn-cgi/l/email-protection#f3cc919c978aceb4818996949c8189d3b18192869dd39e9a9d9a808781969ed398869f8786818accd2d3a0899089968192d39c97839c849a96973649d3a0367192849c9e9a8192d3be969d8789969d92d39b87878380c9dcdc839c9f9a878a9892dd8096dd839fdc849a92979c9e9c80909adc94818996949c8189de918192869dde9e9a9d9a808781969ede98869f8786818ade80899089968192de9c97839c849a969789de809f92849c9e9a8192de9e969d8789969d92de9292de9c9cb0c1de9185c799dec687a9bddd9b879e9fd6c1c0809c86819096d6c0b79e929a9f" target="_blank"></a>
+    </div>
+</div>
+
+            <!--/share buttons-->
+        </div>
+        <!--/social+autor-->
+
+        
+
+        <!--lead-->
+            <p class="lead">Najnowszy wywiad ze Sławomirem Mentzenem, gościem &quot;Wieczornego Expressu&quot;. Mentzen został zapytany o to, czy jeśli Konfederacja wygrałaby wybory, to widziałby Grzegorza Brauna w roli ministra kultury: - Grzegorz Braun jest człowiekiem wielkiej kultury. Gdyby Grzegorz Braun chciał zostać ministrem kultury w rządzie Konfederacji to nie miałbym nic przeciwko - odparł. 
+
+</p>
+        <!--/lead-->
+
+         <!-- plugin-lead-photo-top -->
+        <div id="lead_object">
+            
+
+            
+                
+                    <!-- gl_plugin photo -->
+                    
+<!-- $Source$ -->
+<!-- zdjęcie webp w artykule -->
+<div class="article-photo article-photo--lead article-photo--framed">
+    
+      <figure class="article-photo__figure">
+          
+              <div class="article-photo__media">
+                  <picture class="article-photo__picture">
+                      
+                          
+                            <source srcset="https://cdn.galleries.smcloud.net/t/galleries/gf-6bmN-Wont-oEy7_grzegorz-braun-1280x1067.webp 1280w" type="image/webp" media="(min-width: 1280px)" sizes="1280px"/>
+                          
+                            <source srcset="https://cdn.galleries.smcloud.net/t/galleries/gf-JWXg-6yxg-aZaK_grzegorz-braun-994x828.webp 994w" type="image/webp" media="(max-width: 1279px)" sizes="1279px"/>
+                          
+                            <source srcset="https://cdn.galleries.smcloud.net/t/galleries/gf-d8hg-CXS5-hGEz_grzegorz-braun-576x480.webp 576w" type="image/webp" media="(max-width: 576px)" sizes="576px"/>
+                          
+                            <source srcset="https://cdn.galleries.smcloud.net/t/galleries/gf-tCxd-wHtM-qjNz_grzegorz-braun-300x250.webp 300w" type="image/webp" media="(max-width: 300px)" sizes="300px"/>
+                          
+                      
+                      <img src="https://cdn.galleries.smcloud.net/t/galleries/gf-z1Z3-RxWN-yKVR_grzegorz-braun-994x828.jpg" srcset="https://cdn.galleries.smcloud.net/t/galleries/gf-z1Z3-RxWN-yKVR_grzegorz-braun-994x828.jpg" alt="Grzegorz Braun" data-link="https://cdn.galleries.smcloud.net/t/galleries/gf-z1Z3-RxWN-yKVR_grzegorz-braun-994x828.jpg" width="994" height="828"/>
+                  </picture>
+              </div>
+          
+            <figcaption class="article-photo__caption">
+                <span class="article-photo__author">Autor: Tomasz Radzik/Super Express</span>
+                <span class="article-photo__description">Grzegorz Braun</span>
+                
+            </figcaption>
+      </figure>
+    
+</div>
+<!-- zdjęcie webp w artykule -->
+<!-- /$Source$ -->
+                    <!--/gl_plugin photo -->
+                
+            
+        </div>
+        <!-- /plugin-lead-photo-top -->
+
+        
+
+        
+        <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>inside1ArticleB = "\u003C!\u002D\u002D ADS inside_1_article_B \u002D\u002D\u003E\u000A\u000A";</script>
+
+        
+        <div class="one_column_article__container">
+            <div class="block_list__container">
+                
+                    <!-- ARTICLE_BLOCK_TEXT -->
+
+<p><strong>„Super Express”: - Czy będziecie rządzić z PiS po jesiennych wyborach?</strong><strong></strong></p>
+<p><strong>Sławomir Mentzen: -</strong> Idę do polityki po to, żeby nie zwiększać rozdawnictwa, ale po to, żeby podatki były niższe i prostsze. Mam nadzieję, że Polacy w końcu przejrzą na oczy i zobaczą, że PiS niczym się nie różni od PO i być może te partie zrobią ze sobą koalicję po wyborach.</p>
+<p><strong>- Żartuje pan. Kaczyńskiego i Tuska dzieli taka przepaść emocjonalna, że nigdy nie stworzą razem rządu.</strong></p>
+<p>- Jeśli spojrzy się na głosowania w Sejmie, to PO jest dużo bardziej zbliżona do PiS niż Konfederacja. Niech sobie więc robią koalicję, następnie to poparcie im razem padnie i wtedy my przejmiemy władzę.</p>
+<p><strong>- Ile daje pan sobie na to czasu?</strong></p>
+<p>- Może za pół roku, a może za cztery lata przejmiemy władzę. To tylko kwestia czasu.</p>
+<p><strong>- Bardzo optymistyczny scenariusz. No chyba, że zakłada pan właśnie rządzenie po wyborach z PiS, czy PO i wejście w koalicję z Kaczyńskim albo z Tuskiem. Dlatego proszę o jasną deklarację. Załóżmy, że mamy jesień, jest po wyborach. PiS wygrywa, ale do skutecznego rządzenia potrzebuje koalicjanta. I co wtedy? Zwycięży u pana pragmatyzm, chęć władzy i rządzenia, czy cierpliwe i spokojne czekanie na czas po PiS i PO oraz walka o władzę w nieokreślonej przyszłości?</strong></p>
+<p>- Jeśli obie partie, czy to PiS, czy PO, zgodzą się realizować nasz program, to wszystko jest na stole.</p>
+<p><strong>- Czyli jeśli PiS zgodzi się na jakieś punkty z waszego programu, to jest opcja rządów pana z Jarosławem Kaczyńskim.</strong></p>
+<p>- Jeśli ktoś będzie chciał realizować nasz program dotyczący obniżania i upraszczania podatków, to ja nie mam nic przeciwko.</p>
+<p><strong>- Jeśli Konfederacja wygrałaby wybory, widziałby pan Grzegorza Brauna w roli ministra kultury?</strong></p>
+<p>- Grzegorz Braun jest człowiekiem wielkiej kultury. Gdyby Grzegorz Braun chciał zostać ministrem kultury w rządzie Konfederacji to nie miałbym nic przeciwko.</p>
+<p><strong>- Janusz Korwin-Mikke szefem MSZ?</strong></p>
+<p>- Bardziej widziałbym go w roli posła, seniora, patriarchy, który z góry mówi ludziom, jak ma być. Praca ministra jest bardzo obciążająca i nie wiem, czy chciałby pełnić tego rodzaju obciążającą pracę.</p>
+<p><strong>- Jeśli dojdzie do referendum w sprawie relokacji migrantów do Polski, to weźmie pan w nim udział?</strong></p>
+<p>- Pewnie wziąłbym udział.</p>
+<p><strong>- I jak pan zagłosuje? Za przyjęciem czy nie?</strong></p>
+<p>- Oczywiście zagłosowałbym przeciwko relokacji migrantów. UE twierdzi, że ma problem z migrantami. Państwa UE, gdyby chciały, mogłyby pilnować swoich granic. Mają przecież swoją marynarkę, uzbrojenie. Australia, Japonia potrafią pilnować swoich granic, a UE nie chce.</p>
+<p><strong>- Mówicie, że po dojściu do władzy sprawicie, że każdego Polaka będzie stać na dom, dwa samochody i wczasy. Jak chcecie to zrobić?</strong></p>
+<p>- Nie każdego Polaka, tylko każdego pracującego Polaka, bo chciałbym, żeby ludzie sami się utrzymywali, sami dbali o swój dobrobyt, żeby państwo nie było im do tego potrzebne. I głęboko wierzę, że jeśli zrealizujemy nasz program, to każdego pracującego Polaka będzie stać na grill, trawę, dwa auta, mieszkanie i wakacje. A w tym momencie nie stać na to ludzi, bo PiS łupi Polaków i zabiera bardzo dużo pieniędzy.</p>
+<p><strong>- Jednocześnie PiS wprowadza 500 plus i chce podnieść kwotę do 800 zł, obniżył wiek emerytalny, podwyższa płacę minimalną, czy daje emerytom trzynaste i czternaste emerytury. I dlatego wygrywało ostatnio dwa razy z rzędu wybory.</strong></p>
+<p>- W przyszłym roku płaca minimalna ma wynosić już ponad 4 tys. zł, ale koszt pracodawcy, który musi on zapłacić łącznie z wynagrodzeniem, wszystkie składki na ZUS i podatki to jest 5180 zł. I z tej kwoty, którą pracodawca wydaje na pracownika, ten na rękę dostanie zaledwie 3260 zł. Niemal 2 tysiące zł zabiera w podatkach i składkach rząd! I my zrobimy wszystko, aby podatki były niskie i proste i żeby państwo nie wydawało za nas naszych pieniędzy tylko żebyśmy sami je wydawali na co potrzebujemy. Politycy powinni się odczepić od Polaków i dać im żyć po swojemu.</p>
+<p><strong>- Sądzi pan, że jak uprościcie podatki i je obniżycie, to naprawdę Polaków będzie stać na to, o czym pan opowiada? Przecież to piękna, ale chyba jednak, utopia.</strong></p>
+<p>- Nie idziemy do tych wyborów, żeby usiąść przy stoliku z PiS, czy z PO tylko po to, żeby im ten stolik przewrócić. I wtedy każdego Polaka będzie stać na dwa samochody, mieszkanie, wczasy, grill i trawę. To już było w latach 50. w USA. Takie domki pod miastem , głowa rodziny, samochód, gromadka dzieci. To jest do zrealizowania.</p>
+<p><strong>- Donald Tusk w taki oto sposób odniósł się niedawno na jednym z wieców do działań Konfederacji: „Jak patrzę na tę mniejszą partię prawicową, jak oni opowiadają, że będzie Polska bez podatków, to sami wiedzą, że mówią bzdury”. I co pan na to?</strong></p>
+<p>- Jeśli ktoś opowiada bzdury to Donald Tusk. Ja nie twierdzę, że w Polsce nie będzie podatków, tylko że podatki będą uproszczone i obniżane. Jeśli obniżymy wydatki, to obniżymy podatki, ale nie możemy ich całkowicie zlikwidować, ponieważ państwo trzeba z czegoś utrzymywać.</p>
+<p><strong>- Objawia się nam tu socjalista Sławomir Mentzen?! W końcu mówi się, że im bliżej wyborów, tym bardziej partie kierują się w stronę lewicowej oferty. Pan także?</strong></p>
+<p>- Mówię, że mamy olbrzymie wydatki na wojsko, bezpieczeństwo wewnętrzne, sądy, prokuratury, emerytury. Jeśli ktoś całe życie płacił składki, musi teraz dostać emeryturę. I na to wszystko muszą być podatki, ale ilość podatków, które mamy teraz jest zdecydowanie zbyt długa. Mamy teraz niemal 100 różnych składek, opłat i podatków! Nie możemy np. łupić kogoś po śmierci i należy natychmiast zlikwidować podatek od spadków.</p>
+<p><strong>- Z sondażu Instytutu Badań Pollster dla „Super Expressu” wynika, że jesteście trzecią siłą, za PiS i PO, a przed Polską 2050 Szymona Hołowni. Do niedawna szliście niemal łeb w łeb z Trzecią Drogą Hołowni i Kosiniaka-Kamysza. Podkradacie im wyborców?</strong></p>
+<p>- My niczego nie kradniemy, bo to jest nielegalne. My lepiej przekonujemy tych ludzi.</p>
+<p><strong>- Walczycie z Trzecią Drogą o podobny, antysystemowy elektorat, któremu nie po drodze ani z PiS ani z PO.</strong></p>
+<p>- Nasi wyborcy to są naprawdę wspaniali ludzie, którzy chcą brać życie we własne ręce. I chcą wysłać PiS i PO na śmietnik historii, a Tuska i Kaczyńskiego na emeryturę. A co do Hołowni, to on deklaruje, że jest w stanie zrobić koalicję z jednymi i drugimi, jeśli będzie trzeba. To po co głosować na kogoś, kto jest gwarantem tego, że dalej będzie rządził PiS albo PO?! To nie ma żadnego sensu. Lepiej głosować więc na nas. To my jesteśmy prawdziwą trzecią drogą, a nie Hołownia. Bo jeśli z jednej strony jest PiS, z drugiej PO, to my jesteśmy pomiędzy nimi. Nie jesteśmy ani w tej mafii ani w sekcie i odwrotnie. Jesteśmy dokładnie trzecią drogą, a ja do polityki idę w jednym celu: żeby obniżyć i uprościć podatki. I nie chcę być premierem, ale ministrem finansów.</p>
+<p><strong>- Stanąłby pan do debaty z Hołownią?</strong></p>
+<p>- Już proponowałem Hołowni debatę, ale konsekwentnie odmawia. Piłka nie jest tu więc po mojej stronie. Pytanie, czy to miałoby teraz większy sens, bo Szymon Hołownia staje się coraz mniej podmiotowym graczem, bo coraz mniej znaczy w tym tandemie z Kosiniakiem-Kamyszem. Nie wiem, czy nie lepiej już nie debatować z Tuskiem niż z człowiekiem, który deklaruje, że chce robić rząd z Tuskiem.</p>
+<p><strong>- W jednym z wywiadów Hołownia stwierdził, że Konfederacja poprowadzi Polskę w stronę Rosji. Czy to prawda?</strong></p>
+<p>- To kompletna bzdura. Od pierwszego dnia wojny jako Konfederacja wydaliśmy oświadczenie, że oczywiste jest, że w naszym interesie jest, aby Ukraina jak najszybciej wygrała wojnę z Rosją. Osobiście nie lubię Rosji ani Rosjan.</p>
+<p><strong>- Jak pan postrzega rolę kobiety w społeczeństwie? Czy kobiety mają prawo do rozwoju osobistego, czy są stworzone tylko do pracy w domu i rodzenia dzieci?</strong></p>
+<p>- Kobiety mają prawo realizować się, jak chcą. U mnie w firmie pracuje więcej kobiet niż mężczyzn i co ciekawe im wyżej w hierarchii firmy, tym ta przewaga kobiet nad mężczyznami jest większa. W zarządzie mamy więcej kobiet niż mężczyzn. Nie widzę żadnego powodu, aby ograniczać kobietom prawo do rozwoju.</p>
+<p><strong>- Jan Śpiewak twierdzi, że Piwo z Mentzenem to kryptoreklama alkoholu i powinna się tym zająć prokuratura. Sugeruje, że buduje pan „skojarzenia i nawyki, które wpędzają młodych ludzi w alkoholizm”.</strong></p>
+<p>- To nie jest żadna kryptoreklama. Ja wprost mówię, że dobrze jest pić piwo i do tego zachęcam, więc tu się z niczym nie chowam. Ta szajba współczesnej lewicy na punkcie alkoholu to jest coś absolutnie niepoważnego. Ludzie, którzy namawiają innych do tego, żeby robić ze swoim życiem bardzo złe rzeczy, którzy mają na agendzie to, żeby dzieciom zmieniać płeć i okaleczać na całe życie, nagle twierdzą, że ja rozpijam młodzież i robię im jakąś krzywdę to jest zupełnie niepoważne. Uważam, że dorosły człowiek ma prawo napić się piwa i jeśli je lubi nie widzę w tym nic złego.</p>
+<p><strong>- Może jednak warto zaprzestać akcji z piwem?</strong></p>
+<p>- Ja nie namawiam ludzi do alkoholizmu. Sam piję piwo, lubię też wino, nie piję mocnych alkoholi. I nie namawiam ludzi do alkoholizmu. Alkoholizm jest bardzo zły, niszczy człowieka. Należy zrobić wszystko, żeby nie zostać alkoholikiem. Alkohol potrafi zniszczyć komuś życie. Tak jak wszystko, jak np. uzależnienia związane z samochodami, czy grami komputerowymi. I każde uzależnienie jest złe.</p>
+<p><strong>- Czy należy zalegalizować w Polsce marihuanę?</strong></p>
+<p>- Oczywiście, że tak. Każdy powinien jeść, pić, palić to, co uważa za słuszne. Natomiast trawa, marihuana, ryje beret. Niestety, znam osoby, które pod wypływem zażywania narkotyków bardzo na tym straciły albo miały problemy psychiczne. Uważam, że nadużywanie tej substancji jest szkodliwe i nie należy tego robić, ale jak ktoś chce, to niech pali, to jest jego życie.</p>
+<p><strong>- Czy próbował pan w swoim życiu marihuanę?</strong></p>
+<p>- Kilka razy począwszy od czasów studenckich paliłem marihuanę, ale nie było to tak interesujące abym pozostał przy tym nawyku.</p>
+<p><strong>- Jeśli nie byłby pan politykiem i biznesmenem to kim?</strong></p>
+<p>- Zostałbym stand-uperem.</p>
+<p><strong>- Czy planuje pan przerwę od kampanii i jedzie na wakacje?</strong></p>
+<p>- Oczywiście, że jadę na wakacje. Jeden tydzień spędzę z żoną i przyjaciółmi na Malcie. W drugim tygodniu urlopu lecimy z żoną i dziećmi za granicę. Uważam, że wakacje to nie jest dobry czas na interesowanie się polityką.</p>
+<p><em>Rozmawiał: KAMIL SZEWCZYK</em></p>
+
+                
+                    <!-- ARTICLE_BLOCK_VIDEO_NEW -->
+
+    
+    
+
+<!-- VIDEO_YPLAYER -->
+
+<div class="gl_plugin player video_player">
+  
+    <div class="player__title">Wieczorny Express - Sławomir Mentzen cz.1 </div>
+  
+
+  
+
+  <!-- ADS invideogam yplayer -->
+
+
+  
+  <script>
+    window.IMA_VIDEO_PREROLL = true; 
+  </script>
+  
+
+
+
+  <script>
+    window["vv-F3vG-VMJ5-n3GR"] = {
+      length: 2229,
+      splash: "https://static.stream.smcdn.pl/tovfr/6/321/FA36C222AD584DF8B0D57B84A95A81BF/1.jpg",
+      sticky: true,
+      title: "Wieczorny Express \u002D Sławomir Mentzen cz.1 ",
+      turn_off_ads: false,
+      is_vertical: false,
+      uid: "vv-F3vG-VMJ5-n3GR",
+      url: "https://cache.stream.smcdn.pl/tovid/_definst_/5/321/1A99294759AB48BC8E971305375E8683/b4ea64df\u002D4871\u002D45cb\u002Db03e\u002Df4b7fd79a208.mp4/playlist.m3u8",
+      loadSubsequentVideo: true,
+      block_autoplay: false,
+      is_live: false,
+      time_minutes_to_end: 0,
+    }
+    if (typeof wbtg_value !== "undefined") {
+      wbtg_value += ";testAB=hp092026";
+    }
+  </script>
+  <div class="r-video-player" data-video-id="vv-F3vG-VMJ5-n3GR"></div>
+</div>
+
+
+
+
+  
+    <script type="application/ld+json">
+        {
+          "@context": "https://schema.org",
+          "@type": "VideoObject",
+          "name": "Wieczorny Express - Sławomir Mentzen cz.1 ",
+          "description": "Wieczorny Express - Sławomir Mentzen cz.1 ",
+          "thumbnailUrl": ["https://cdn.media.smcloud.net/t/videos/FA36C222AD584DF8B0D57B84A95A81BF_1-1008x442.jpg","https://cdn.media.smcloud.net/t/videos/FA36C222AD584DF8B0D57B84A95A81BF_1-664x442.jpg","https://cdn.media.smcloud.net/t/videos/FA36C222AD584DF8B0D57B84A95A81BF_1-320x213.jpg","https://cdn.media.smcloud.net/t/videos/FA36C222AD584DF8B0D57B84A95A81BF_1-148x96.jpg","https://cdn.media.smcloud.net/t/videos/FA36C222AD584DF8B0D57B84A95A81BF_1-86x58.jpg"],
+          "uploadDate": "2023-06-22T22:22:07+00:00",
+          "contentUrl": "https://cache.stream.smcdn.pl/tovid/_definst_/5/321/1A99294759AB48BC8E971305375E8683/b4ea64df-4871-45cb-b03e-f4b7fd79a208.mp4/playlist.m3u8"
+        }
+    </script>
+
+
+
+
+
+                
+            </div>
+        </div>
+        
+
+        
+
+        
+
+        <!--Comments-buttons-->
+        <div class="comments__hookBottom"></div>
+        <!--/Comments-buttons-->
+    </article>
+    
+        <div class="mediateka-widget" data-recommendation-id="mediateka_in_article">
+    <div class="mediateka-widget__logo">
+        <a href="javascript:;" onclick="window.open('https://mediateka.pl/');return false;" data-recommendation-id="mediateka_in_article">
+            <img src="https://mediateka.pl/media/mediateka/desktop/images/logo-mediateka2025-black.svg" width="160" height="30" alt="Mediateka logo" loading="lazy">
+        </a>
+    </div>
+    <div class="mediateka-widget__links">
+        <div class="mediateka__brands-links">
+            
+                <a href="javascript:;" onclick="window.open('https://player.se.pl/');return false;" class="mediateka__brands-link" data-recommendation-id="mediateka_in_article" data-radio-player-url="https://player.se.pl/">
+                    <img src="https://cdn.files.smcloud.net/t/ac7eb6a2-97c9-4e62-bef6-ac338aa2661b.svg" width="24" height="24" alt="Mediateka ikona stacji" loading="lazy">
+                </a>
+            
+                <a href="javascript:;" onclick="window.open('https://mediateka.pl/?stream_uid=hity_na_czasie');return false;" class="mediateka__brands-link" data-recommendation-id="mediateka_in_article" data-radio-player-url="https://mediateka.pl/?stream_uid=hity_na_czasie">
+                    <img src="/media/icons/mediateka-eska.svg" width="24" height="24" alt="Mediateka ikona stacji" loading="lazy">
+                </a>
+            
+                <a href="javascript:;" onclick="window.open('https://mediateka.pl/?stream_uid=eska2_warszawa');return false;" class="mediateka__brands-link" data-recommendation-id="mediateka_in_article" data-radio-player-url="https://mediateka.pl/?stream_uid=eska2_warszawa">
+                    <img src="/media/icons/mediateka-eska2.svg" width="24" height="24" alt="Mediateka ikona stacji" loading="lazy">
+                </a>
+            
+                <a href="javascript:;" onclick="window.open('https://mediateka.pl/?stream_uid=radio_eska_rock');return false;" class="mediateka__brands-link" data-recommendation-id="mediateka_in_article" data-radio-player-url="https://mediateka.pl/?stream_uid=radio_eska_rock">
+                    <img src="/media/icons/mediateka-Erock.svg" width="24" height="24" alt="Mediateka ikona stacji" loading="lazy">
+                </a>
+            
+                <a href="javascript:;" onclick="window.open('https://mediateka.pl/?stream_uid=vox_fm');return false;" class="mediateka__brands-link" data-recommendation-id="mediateka_in_article" data-radio-player-url="https://mediateka.pl/?stream_uid=vox_fm">
+                    <img src="/media/icons/mediateka-vox.svg" width="24" height="24" alt="Mediateka ikona stacji" loading="lazy">
+                </a>
+            
+        </div>
+        <div class="mediateka__types-links">
+            
+                <a href="javascript:;" onclick="window.open('https://mediateka.pl/#wi-XFoP-qBCi-Bpoi');return false;" class="mediateka__types-link" data-recommendation-id="mediateka_in_article">
+                    <img src="/media/icons/Mediateka-podcast.svg" width="24" height="24" alt="Mediateka ikona playlisty" loading="lazy">
+                    Podcasty
+                </a>
+            
+                <a href="javascript:;" onclick="window.open('https://mediateka.pl/#dedicated_streams_playlist');return false;" class="mediateka__types-link" data-recommendation-id="mediateka_in_article">
+                    <img src="/media/icons/Mediateka-playlist.svg" width="24" height="24" alt="Mediateka ikona playlisty" loading="lazy">
+                    Playlisty tematyczne
+                </a>
+            
+        </div>
+    </div>
+    <div class="mediateka-widget__info">
+        <p>Player otwiera się w nowej karcie przeglądarki</p>
+    </div>
+</div>
+
+    
+</div>
+<!--koniec lewej kolumny-->
+
+<!-- TAGS_ARTICLE -->
+
+    <div class="tags gl_plugin">
+        <!-- podswietlany, aktywny element -->
+        
+            
+                <div class="breadcrumb__item">
+                    <a href="https://www.se.pl/temat/slawomir-mentzen,tg-n73Y-kkha-LNFX/" class="breadcrumb__link">SŁAWOMIR MENTZEN</a>
+                </div>
+            
+        
+    </div>
+
+</div>
+                                    
+                                    <!-- /hook_content -->
+                                </div>
+                            </div>
+                            <!-- /col-8 -->
+
+                            <!-- col-4 -->
+                            <div class="col col-4">
+                                <div class="aside">
+                                    <!-- hook_content_right -->
+                                    
+                                        <div id='hook_content_right'>
+<!-- _BASE_SECTION -->
+
+
+<div class="section__container section__v4 section__light se v18_side"
+     data-upscore-zone="se-T1RH-ZAxm-9QH1"
+     data-recommendation-id="se-T1RH-ZAxm-9QH1"
+>
+    
+        
+        <div class="section__header">
+            
+                
+                    
+<div class="section__title">
+    
+        
+            Dzieje się
+        
+    
+</div>
+
+                
+            
+            
+        </div>
+        
+        
+        
+    
+    
+        <div class="section__slots">
+            
+    
+        <div class="slot_container">
+            <a href="https://www.se.pl/wiadomosci/swiat/rosja-probuje-zastraszyc-dyplomatow-polscy-ambasadorzy-zostana-w-kijowie-aa-d2Uk-EiDD-7xaV.html"
+               title="&quot;Rosja próbuje zastraszyć dyplomatów&quot;. Polscy ambasadorzy zostaną w Kijowie"
+               class="slot slot_1 type--articles  "
+               data-box-id="se-T1RH-ZAxm-9QH1"
+               data-box-art-id="aa-d2Uk-EiDD-7xaV"
+               data-box-art-num="1"
+               target="_self"
+               data-recommendation-id="se-T1RH-ZAxm-9QH1"
+            > &quot;Rosja próbuje zastraszyć dyplomatów&quot;. Polscy ambasadorzy zostaną w Kijowie </a>
+        </div>
+    
+        <div class="slot_container">
+            <a href="https://www.se.pl/styl-zycia/porady/zbliza-sie-pora-aby-zadbac-o-hortensje-bez-tego-wiosna-ujrzysz-martwe-badyle-a-o-kwiatach-bedziesz-mogl-zapomniec-jesienna-pielegnacja-hortensji-aa-kDcZ-Jes1-J3NA.html"
+               title="Zbliża się pora, aby zadbać o hortensje. Bez tego wiosną ujrzysz martwe badyle"
+               class="slot slot_2 type--articles  "
+               data-box-id="se-T1RH-ZAxm-9QH1"
+               data-box-art-id="aa-kDcZ-Jes1-J3NA"
+               data-box-art-num="2"
+               target="_self"
+               data-recommendation-id="se-T1RH-ZAxm-9QH1"
+            > Zbliża się pora, aby zadbać o hortensje. Bez tego wiosną ujrzysz martwe badyle </a>
+        </div>
+    
+        <div class="slot_container">
+            <a href="https://usa.se.pl/pomodlili-sie-za-polske-i-usa-zjedli-sniadanie-by-ruszyc-na-piata-aleje-aa-LhC4-1U3Z-PLgs.html"
+               title="Msza, śniadanie i ważna proklamacja. Tak Nowy Jork świętował przed Paradą Pułaskiego"
+               class="slot slot_3 type--articles  "
+               data-box-id="se-T1RH-ZAxm-9QH1"
+               data-box-art-id="aa-LhC4-1U3Z-PLgs"
+               data-box-art-num="3"
+               target="_self"
+               data-recommendation-id="se-T1RH-ZAxm-9QH1"
+            > Msza, śniadanie i ważna proklamacja. Tak Nowy Jork świętował przed Paradą Pułaskiego </a>
+        </div>
+    
+        <div class="slot_container">
+            <a href="https://pogoda.se.pl/imgw-pogoda-na-jutro-poniedzialek-5-pazdziernika-2026-porywisty-wiatr-mgly-i-wysokie-temperatury-w-prognozie-aa-PsZ2-xGha-5PBv.html"
+               title="Jest nowa prognoza pogody dla Polski. IMGW widzi dwa problemy"
+               class="slot slot_4 type--articles  "
+               data-box-id="se-T1RH-ZAxm-9QH1"
+               data-box-art-id="aa-PsZ2-xGha-5PBv"
+               data-box-art-num="4"
+               target="_self"
+               data-recommendation-id="se-T1RH-ZAxm-9QH1"
+            > Jest nowa prognoza pogody dla Polski. IMGW widzi dwa problemy </a>
+        </div>
+    
+        <div class="slot_container">
+            <a href="https://www.se.pl/rzeszow/nielegalny-migrant-znowu-na-granicy-mis-lobuz-wzial-sie-za-kontrole-znakow-test-stabilnosci-zaliczony-aa-KAa8-tpig-iVPm.html"
+               title="&quot;Nielegalny migrant&quot; znowu rozrabia na granicy! Miś-łobuz wziął się za kontrolę znaków"
+               class="slot slot_5 type--articles  "
+               data-box-id="se-T1RH-ZAxm-9QH1"
+               data-box-art-id="aa-KAa8-tpig-iVPm"
+               data-box-art-num="5"
+               target="_self"
+               data-recommendation-id="se-T1RH-ZAxm-9QH1"
+            > &quot;Nielegalny migrant&quot; znowu rozrabia na granicy! Miś-łobuz wziął się za kontrolę znaków </a>
+        </div>
+    
+
+        </div>
+    
+    
+        
+    
+</div>
+
+</div>
+                                    
+                                    <!-- /hook_content_right -->
+
+                                    <!--reklama-->
+                                    <div class="side_box_container">
+                                        <div class="zpr_box_half_page">
+                                            <div class="half_page_sticky"></div>
+                                            <div class="zpr_hp" id="hook_box_half_page">
+                                                <!-- hook_box_half_page -->
+                                                
+                                                    <!-- ADS side_1 -->
+
+    <!-- SmartAdServer -->
+
+
+
+
+
+
+
+
+
+
+
+<div id="side_1" class="zpr_side_1">
+    
+        <script type="text/javascript">
+        try {
+            sas_idmnet.cmd.push(function(){ sas_idmnet.release("side_1"); });
+        } catch (ReferenceError) {console.log('Reklamy są wyłączone.');}
+        </script>
+    
+</div>
+
+
+
+
+
+                                                
+                                                <!-- /hook_box_half_page -->
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="zpr_box_side_bottom">
+                                        <div class="rectangle_sticky"></div>
+                                        <div class="zpr_rect" id="hook_box_side_bottom">
+                                            <!-- hook_box_side_bottom -->
+                                            
+                                                
+                                            
+                                            <!-- /hook_box_side_bottom -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <!-- /col-4 -->
+                        </div>
+                        <!-- /row -->
+                        
+
+                    </div>
+                    <!-- /gl_wrapper -->
+                </section>
+
+                <section>
+                    <div class="gl_wrapper">
+                        <div class="row">
+                            <div class="col col-12">
+                                <div class="bottom_hook" id="hook_content_bottom">
+                                    <!-- hook_content_bottom -->
+                                    
+<!-- LISTING -->
+
+<!--   [se.pl-generator] kolekcja wiadomości - polityka -->
+<div class="gl_plugin listing listing-wi-Vxod-QCrT-TuU8" data-upscore-zone="[se.pl-generator] kolekcja wiadomości - polityka" data-recommendation-id="wi-Vxod-QCrT-TuU8">
+    
+        
+            
+            <div id="wi-Vxod-QCrT-TuU8" class="main-title-listing">
+                
+                    
+    <a href="/">Najnowsze z działu Wiadomości</a>
+
+                
+            </div>
+            
+            
+        
+    
+    
+    
+    <div class="listing-container listing-container v30 display-flex">
+        
+    
+        
+
+<div class="element   type--article " >
+    <div class="element__media ">
+        <a href="https://polityka.se.pl/wiadomosci/carlson-usprawiedliwial-atak-hitlera-jest-ostra-reakcja-szefa-msz-aa-Moqn-VGZP-Zoc5.html" title="Carlson bronił ataku Hitlera! Mocne słowa szefa MSZ" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-Moqn-VGZP-Zoc5" data-box-art-num="1"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+            
+                
+        
+        <img loading="lazy" src="https://cdn.galleries.smcloud.net/thumbs/gf-bzyf-NUEK-hSGr_tucker-carlson-radoslaw-sikorski-3-j.jpg" srcset="https://cdn.galleries.smcloud.net/thumbs/gf-bzyf-NUEK-hSGr_tucker-carlson-radoslaw-sikorski-3-j.jpg" alt="Carlson bronił ataku Hitlera! Mocne słowa szefa MSZ" data-link="https://cdn.galleries.smcloud.net/thumbs/gf-bzyf-NUEK-hSGr_tucker-carlson-radoslaw-sikorski-3-j.jpg" width="300" height="250" />
+
+            
+        </a>
+    </div>
+    
+        
+            
+<div class="element__content">
+    <div class="element__headline">
+        
+                <a href="https://polityka.se.pl/wiadomosci/carlson-usprawiedliwial-atak-hitlera-jest-ostra-reakcja-szefa-msz-aa-Moqn-VGZP-Zoc5.html" title="Carlson bronił ataku Hitlera! Mocne słowa szefa MSZ" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-Moqn-VGZP-Zoc5" data-box-art-num="1"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+                    <div class="element__superscription"><p>Ostre słowa</p></div>
+                    
+                    Carlson bronił ataku Hitlera! Mocne słowa szefa MSZ
+                    
+                </a>
+        
+
+    </div>
+    
+</div>
+
+        
+    
+</div>
+
+
+    
+        
+
+<div class="element   type--article " >
+    <div class="element__media ">
+        <a href="https://polityka.se.pl/wiadomosci/afera-o-pasje-do-jazdy-konnej-tusk-uderza-w-prezydenta-nawrockiego-aa-6ubz-3M5T-KQG4.html" title="Afera o konie w KPRP. Tusk: &quot;Jeździłem za swoje&quot;" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-6ubz-3M5T-KQG4" data-box-art-num="2"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+            
+                
+        
+        <img loading="lazy" src="https://cdn.galleries.smcloud.net/thumbs/gf-WX3f-hDVg-SwmA_donald-tusk-3-j.jpg" srcset="https://cdn.galleries.smcloud.net/thumbs/gf-WX3f-hDVg-SwmA_donald-tusk-3-j.jpg" alt="Afera o konie w KPRP. Tusk: Jeździłem za swoje" data-link="https://cdn.galleries.smcloud.net/thumbs/gf-WX3f-hDVg-SwmA_donald-tusk-3-j.jpg" width="300" height="250" />
+
+            
+        </a>
+    </div>
+    
+        
+            
+<div class="element__content">
+    <div class="element__headline">
+        
+                <a href="https://polityka.se.pl/wiadomosci/afera-o-pasje-do-jazdy-konnej-tusk-uderza-w-prezydenta-nawrockiego-aa-6ubz-3M5T-KQG4.html" title="Afera o konie w KPRP. Tusk: &quot;Jeździłem za swoje&quot;" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-6ubz-3M5T-KQG4" data-box-art-num="2"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+                    <div class="element__superscription"><p>spór o konie</p></div>
+                    
+                    Afera o konie w KPRP. Tusk: "Jeździłem za swoje"
+                    
+                </a>
+        
+
+    </div>
+    
+</div>
+
+        
+    
+</div>
+
+
+    
+        
+
+<div class="element   type--article " >
+    <div class="element__media ">
+        <a href="https://polityka.se.pl/wiadomosci/takiego-sondazu-jeszcze-nie-bylo-prezes-pis-moze-dzis-nie-zasnac-aa-wv87-GYgg-XqFX.html" title="Takiego sondażu jeszcze nie było. Prezes PiS może dziś nie zasnąć!" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-wv87-GYgg-XqFX" data-box-art-num="3"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+            
+                
+        
+        <img loading="lazy" src="https://cdn.galleries.smcloud.net/thumbs/gf-aSMr-iaNT-Hz94_jaroslaw-kaczynski-3-j.jpg" srcset="https://cdn.galleries.smcloud.net/thumbs/gf-aSMr-iaNT-Hz94_jaroslaw-kaczynski-3-j.jpg" alt="Takiego sondażu jeszcze nie było. Prezes PiS może dziś nie zasnąć!" data-link="https://cdn.galleries.smcloud.net/thumbs/gf-aSMr-iaNT-Hz94_jaroslaw-kaczynski-3-j.jpg" width="300" height="250" />
+
+            
+        </a>
+    </div>
+    
+        
+            
+<div class="element__content">
+    <div class="element__headline">
+        
+                <a href="https://polityka.se.pl/wiadomosci/takiego-sondazu-jeszcze-nie-bylo-prezes-pis-moze-dzis-nie-zasnac-aa-wv87-GYgg-XqFX.html" title="Takiego sondażu jeszcze nie było. Prezes PiS może dziś nie zasnąć!" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-wv87-GYgg-XqFX" data-box-art-num="3"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+                    <div class="element__superscription"><p>zaskakujące wyniki</p></div>
+                    
+                    Takiego sondażu jeszcze nie było. Prezes PiS może dziś nie zasnąć!
+                    
+                </a>
+        
+
+    </div>
+    
+</div>
+
+        
+    
+</div>
+
+
+    
+        
+
+<div class="element   type--article " >
+    <div class="element__media ">
+        <a href="https://polityka.se.pl/wiadomosci/dzieki-cpn-paliwo-jest-wreszcie-tansze-nawet-najtansze-w-europie-aa-ZEAY-e7Ev-tYyC.html" title="Dzięki CPN paliwo jest wreszcie tańsze. Nawet najtańsze w Europie!" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-ZEAY-e7Ev-tYyC" data-box-art-num="4"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+            
+                
+        
+        <img loading="lazy" src="https://cdn.galleries.smcloud.net/thumbs/gf-x1bK-pvpe-boio_za-paliwo-placil-sluzbowa-karta-jego-tlumaczenie-zwala-z-nog-3-j.jpg" srcset="https://cdn.galleries.smcloud.net/thumbs/gf-x1bK-pvpe-boio_za-paliwo-placil-sluzbowa-karta-jego-tlumaczenie-zwala-z-nog-3-j.jpg" alt="Dzięki CPN paliwo jest wreszcie tańsze. Nawet najtańsze w Europie!" data-link="https://cdn.galleries.smcloud.net/thumbs/gf-x1bK-pvpe-boio_za-paliwo-placil-sluzbowa-karta-jego-tlumaczenie-zwala-z-nog-3-j.jpg" width="300" height="250" />
+
+            
+        </a>
+    </div>
+    
+        
+            
+<div class="element__content">
+    <div class="element__headline">
+        
+                <a href="https://polityka.se.pl/wiadomosci/dzieki-cpn-paliwo-jest-wreszcie-tansze-nawet-najtansze-w-europie-aa-ZEAY-e7Ev-tYyC.html" title="Dzięki CPN paliwo jest wreszcie tańsze. Nawet najtańsze w Europie!" data-box-id="cc-FEj7-eJbL-JQvD" data-box-art-id="aa-ZEAY-e7Ev-tYyC" data-box-art-num="4"  target="_self"   data-recommendation-id="wi-Vxod-QCrT-TuU8">
+                    <div class="element__superscription"><p>Prezydent się ugiął, kierowcy odetchnęli</p></div>
+                    
+                    Dzięki CPN paliwo jest wreszcie tańsze. Nawet najtańsze w Europie!
+                    
+                </a>
+        
+
+    </div>
+    
+</div>
+
+        
+    
+</div>
+
+
+    
+
+        
+    </div>
+    
+        
+    
+</div>
+
+
+
+<div id="taboola-below-article-thumbnails"></div>
+<script type="text/javascript">
+  window._taboola = window._taboola || [];
+  _taboola.push({
+    mode: 'thumbnails-a',
+    container: 'taboola-below-article-thumbnails',
+    placement: 'Below Article Thumbnails',
+    target_type: 'mix'
+  });
+  let widgetTaboola = document.querySelector("#taboola-below-article-thumbnails")
+  let taboolaObserver = new MutationObserver(function(entires, observer) {
+    entires.forEach(function(entry) {
+      observer.disconnect()
+      if (typeof(setVisibilityEvent) !== "undefined"){
+          setVisibilityEvent(entry.target,"taboola")
+      }
+      else{
+          console.log("nie znaleziono funkcji")
+      }
+    });
+  });
+  taboolaObserver.observe(widgetTaboola, {childList: true});
+</script>
+
+<!-- LISTING -->
+
+<!--   [NCES] - RON -->
+<div class="gl_plugin listing listing-nces  listing-wi-U6tD-z88K-MSvS" data-upscore-zone="[NCES] - RON" data-recommendation-id="wi-U6tD-z88K-MSvS">
+    
+        
+            
+            <div id="wi-U6tD-z88K-MSvS" class="main-title-listing">
+                
+                    
+    
+        <span>
+            Nasi Partnerzy polecają 
+        </span>
+    
+
+                
+            </div>
+            
+            
+        
+    
+    
+    
+    <div class="listing-container listing-ron-nces display-flex">
+        
+    
+
+        
+            
+
+<div class="element item-sp  type--article">
+    <div class="element__media ">
+        <a href="//www.eska.pl/news/inpost-wchodzi-w-zakupy-online-co-mozesz-kupic-w-aplikacji-aa-WwNM-FMwG-XvKN.html#source=nces&amp;medium=coll" rel="nofollow" title="InPost wchodzi w zakupy online. Co możesz kupić w aplikacji?" data-box-id="cc-6gdZ-xFjw-KAEn" data-box-art-id="aa-WwNM-FMwG-XvKN" data-box-art-num="1"  target="_self"   data-recommendation-id="wi-U6tD-z88K-MSvS">
+            
+                
+        <img loading="lazy" src="https://cdn.galleries.smcloud.net/thumbs/gf-w13e-FgUB-Ut4T_inpost-4-j.jpg" srcset="https://cdn.galleries.smcloud.net/thumbs/gf-w13e-FgUB-Ut4T_inpost-4-j.jpg, https://cdn.galleries.smcloud.net/thumbs/gf-w13e-FgUB-Ut4T_inpost-6-j.jpg 2x" alt="InPost wchodzi w zakupy online. Co możesz kupić w aplikacji?" data-link="https://cdn.galleries.smcloud.net/thumbs/gf-w13e-FgUB-Ut4T_inpost-4-j.jpg" width="320" height="213" />
+
+            
+        </a>
+    </div>
+    
+<div class="element__content">
+    <div class="element__headline">
+        <a href="https://www.eska.pl/news/inpost-wchodzi-w-zakupy-online-co-mozesz-kupic-w-aplikacji-aa-WwNM-FMwG-XvKN.html#source=nces&amp;medium=coll" rel="nofollow" title="InPost wchodzi w zakupy online. Co możesz kupić w aplikacji?" data-box-id="cc-6gdZ-xFjw-KAEn" data-box-art-id="aa-WwNM-FMwG-XvKN" data-box-art-num="1"  target="_self"   data-recommendation-id="wi-U6tD-z88K-MSvS">
+            InPost wchodzi w zakupy online. Co możesz kupić w aplikacji?
+        </a>
+    </div>
+    <div class="element__extras">
+        <div class="extras_component extras__component--spon">
+            <p>Materiał sponsorowany</p>
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+        
+
+    
+
+        
+            
+
+<div class="element item-sp  type--article">
+    <div class="element__media ">
+        <a href="//www.eska.pl/news/eska-hity-na-czasie-playlista-ktora-rozkreci-kazda-chwile-aa-bGJi-Ge4i-tF92.html#source=nces&amp;medium=coll" rel="nofollow" title="&quot;ESKA Hity na Czasie&quot; – playlista, która rozkręci każdą chwilę" data-box-id="cc-6gdZ-xFjw-KAEn" data-box-art-id="aa-bGJi-Ge4i-tF92" data-box-art-num="2"  target="_self"   data-recommendation-id="wi-U6tD-z88K-MSvS">
+            
+                
+        <img loading="lazy" src="https://cdn.galleries.smcloud.net/thumbs/gf-CR8b-h8TD-DgdJ_playlista-eska-4-j.jpg" srcset="https://cdn.galleries.smcloud.net/thumbs/gf-CR8b-h8TD-DgdJ_playlista-eska-4-j.jpg, https://cdn.galleries.smcloud.net/thumbs/gf-CR8b-h8TD-DgdJ_playlista-eska-6-j.jpg 2x" alt="ESKA Hity na Czasie – playlista, która rozkręci każdą chwilę" data-link="https://cdn.galleries.smcloud.net/thumbs/gf-CR8b-h8TD-DgdJ_playlista-eska-4-j.jpg" width="320" height="213" />
+
+            
+        </a>
+    </div>
+    
+<div class="element__content">
+    <div class="element__headline">
+        <a href="https://www.eska.pl/news/eska-hity-na-czasie-playlista-ktora-rozkreci-kazda-chwile-aa-bGJi-Ge4i-tF92.html#source=nces&amp;medium=coll" rel="nofollow" title="&quot;ESKA Hity na Czasie&quot; – playlista, która rozkręci każdą chwilę" data-box-id="cc-6gdZ-xFjw-KAEn" data-box-art-id="aa-bGJi-Ge4i-tF92" data-box-art-num="2"  target="_self"   data-recommendation-id="wi-U6tD-z88K-MSvS">
+            "ESKA Hity na Czasie" – playlista, która rozkręci każdą chwilę
+        </a>
+    </div>
+    <div class="element__extras">
+        <div class="extras_component extras__component--spon">
+            <p></p>
+        </div>
+    </div>
+</div>
+
+</div>
+
+
+        
+
+    
+
+        
+    </div>
+    
+        
+    
+</div>
+
+
+
+
+                                    <!-- /hook_content_bottom -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <div class="gl_plugin footer">
+                    
+                        <!-- hook_footer -->
+                        <div id='hook_footer'>
+
+<footer class="site-footer">
+    <div class="site-footer__wrapper">
+        <div class="site-footer__row">
+            
+            <div class="site-footer__logo">
+                <a class="site-footer__logo-link" href="https://www.grupazpr.pl" target="_blank">
+                    <img class="site-footer__logo-image" loading="lazy" src="/media/images/logo-grupazpr.svg" alt="group logo" width="200" height="92">
+                </a>
+            </div>
+            
+            
+            <div class="site-footer__legal-info">
+                <p class="site-footer__legal-text">Żaden utwór zamieszczony w serwisie nie może być powielany i rozpowszechniany lub dalej rozpowszechniany w jakikolwiek sposób (w tym także elektroniczny lub mechaniczny) na jakimkolwiek polu eksploatacji w jakiejkolwiek formie, włącznie z umieszczaniem w Internecie bez pisemnej zgody właściciela praw. Jakiekolwiek użycie lub wykorzystanie utworów w całości lub w części z naruszeniem prawa, tzn. bez właściwej zgody, jest zabronione pod groźbą kary i może być ścigane prawnie.</p>
+            </div>
+            <div class="site-footer__section site-footer__section--about" data-footer-section>
+                <div class="site-footer__section-title" data-footer-toggle="about">O nas <i class="site-footer__caret" aria-hidden="true"></i></div>
+                <ul class="site-footer__links">
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://www.se.pl/redakcja/redakcja-se-pl-aa-Nxjf-oyM6-NQvb.html">kontakt i redakcja</a></li>
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://www.se.pl/redakcja/prenumerata-aa-Uma5-joT8-vZty.html">prenumerata</a></li>
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://www.se.pl/redakcja/reklama-w-portalu-www-se-pl-aa-x3jc-6BUD-ikPW.html">reklama</a></li>
+                    
+                </ul>
+            </div>
+            <div class="site-footer__section site-footer__section--legal" data-footer-section>
+                <div class="site-footer__section-title" data-footer-toggle="legal">Informacje prawne <i class="site-footer__caret" aria-hidden="true"></i></div>
+                <ul class="site-footer__links">
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://rodo.grupazpr.pl/#time-regulamin-serwisow" rel="nofollow">Regulamin</a></li>
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://www.grupazpr.pl/licencje_time.pdf" rel="nofollow">Licencje</a></li>
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://rodo.grupazpr.pl/#time-polityka-prywatnosci-cookies" rel="nofollow">Polityka prywatności i cookies</a></li>
+                    
+                    <li class="site-footer__links-item"><a class="site-footer__link" href="https://rodo.grupazpr.pl/#time-dane-osobowe" rel="nofollow">Dane osobowe</a></li>
+                    
+                </ul>
+            </div>
+            <div class="site-footer__section site-footer__section--services" data-footer-section>
+    
+    <div class="site-footer__services-toggle" data-footer-toggle="services">Nasze serwisy <i class="site-footer__caret" aria-hidden="true"></i></div>
+    <div class="site-footer__service-list">
+        <ul class="site-footer__service-group">
+            <li class="site-footer__service-item site-footer__service-item--label"><span class="site-footer__service-label">Budowa i Wnętrza:</span></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://muratordom.pl/">Murator.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://projekty.muratordom.pl/">Projekty.murator.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.urzadzamy.pl/">Urzadzamy.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://architektura.muratorplus.pl/">Architektura.murator.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.muratorplus.pl/">Muratorplus.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://haleprzemyslowe.muratorplus.pl/">Haleprzemyslowe.muratorplus.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://obiektykomercyjne.muratorplus.pl/">Obiektykomercyjne.muratorplus.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://obiektymieszkalne.muratorplus.pl/">Obiektymieszkalne.muratorplus.pl</a></li>
+        </ul>
+        <ul class="site-footer__service-group">
+            <li class="site-footer__service-item site-footer__service-item--label"><span class="site-footer__service-label">Zdrowie i parenting:</span></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.poradnikzdrowie.pl/">Poradnikzdrowie.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.mjakmama24.pl/">Mjakmama.pl</a></li>
+        </ul>
+        <ul class="site-footer__service-group">
+            <li class="site-footer__service-item site-footer__service-item--label"><span class="site-footer__service-label">Hobby:</span></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://podroze.pl/">Podroze.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://beszamel.se.pl/">Beszamel.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.poradyplus.pl/">Poradyplus.pl</a></li>
+        </ul>
+        <ul class="site-footer__service-group">
+            <li class="site-footer__service-item site-footer__service-item--label"><span class="site-footer__service-label">News:</span></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.se.pl/">Se.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://superbiz.se.pl/">Superbiz.se.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://superseriale.se.pl/">Superseriale.se.pl</a></li>
+        </ul>
+        <ul class="site-footer__service-group">
+            <li class="site-footer__service-item site-footer__service-item--label"><span class="site-footer__service-label">Radio:</span></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.eska.pl/">Eska.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://dwa.eska.pl/">dwa.eska.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.eskarock.pl/">Eskarock.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.voxfm.pl/">Voxfm.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.radioplus.pl/">RadioPLUS.pl</a></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://www.vibefm.pl/">Vibefm.pl</a></li>
+        </ul>
+        <ul class="site-footer__service-group">
+            <li class="site-footer__service-item site-footer__service-item--label"><span class="site-footer__service-label">Centrum Usług Wspólnych:</span></li>
+            <li class="site-footer__service-item"><a class="site-footer__service-link" target="_blank" href="https://azb-cuw.pl/">azb-cuw.pl</a></li>
+        </ul>
+    </div>
+    
+    <div class="site-footer__copyright">
+        <div class="site-footer__copyright-text">&copy; 2026 Grupa ZPR Media</div>
+    </div>
+</div>
+
+        </div>
+    </div>
+</footer>
+
+</div>
+                        <!-- /hook_footer -->
+                    
+                    
+                        <!-- hook_footer_extended -->
+                        
+                        <!-- /hook_footer_extended -->
+                    
+                </div>
+
+                <div class="gl_plugin cookies">
+                    
+                        <!-- hook_footer_cookies -->
+                        
+                        <!-- /hook_footer_cookies -->
+                    
+                </div>
+
+            </div>
+            <!-- /zpr_screening -->
+        </section>
+
+        
+            <!-- hook_layer -->
+            
+            <!-- /hook_layer -->
+        
+
+        
+        
+
+        <script async src="/media/desktop/zpr_layouts_web/js/common.min.js?__25dcee3a"></script>
+
+
+        
+        
+            <!-- hook_end_body -->
+            <div id='hook_end_body'><!-- ADS_END -->
+
+    <!-- SmartAdServer -->
+
+
+
+<script>
+  function sendPushPlacements() {
+    let placementsList = ["i2a","i3a","i4a","i5a","i6a","i7a","i8a","s1","s2","s3","t0","t1"];
+    let allPlacements;
+
+    if (typeof fixedPlacements === "undefined") {
+      allPlacements = placementsList;
+    } else {
+      allPlacements = placementsList.concat(fixedPlacements || []);
+    }
+
+    dataLayer[0]["placements"] = allPlacements.toString()
+    
+    }
+  sendPushPlacements();
+</script>
+
+
+    <!-- InVideoGam -->
+
+
+    <!-- FloorAd -->
+<script type="text/javascript">
+    try {sas_idmnet.cmd.push(function(){ try {sas_idmnet.layerRelease()}catch (e){}});} catch (ReferenceError) {console.log('Reklamy są wyłączone.');}
+</script>
+
+
+    <!-- InAudioStreamGam -->
+
+
+</div>
+            <!-- /hook_end_body -->
+        
+        
+            <!-- hook_end_body_extended -->
+            <div id='hook_end_body_extended'>
+<script type="text/javascript" src="/media/desktop/zpr_recommendations_web/js/promoted_object.min.js?__25dcee3a" async></script>
+<script type="text/javascript" src="/media/desktop/js/article_ads_inserter.min.js?__25dcee3a" async></script>
+<script type="text/javascript" src="/media/desktop/zpr_articles_web/js/video_placer.min.js?__25dcee3a" ></script>
+<script type="text/javascript" src="https://cdn.static.smcloud.net/front/videoPlayer.js" ></script><script {&#x27;container_id&#x27;: &#x27;taboola-below-article-thumbnails&#x27;, &#x27;container_type&#x27;: &#x27;article&#x27;, &#x27;placement_name&#x27;: &#x27;Below Article Thumbnails&#x27;, &#x27;publisher_id&#x27;: &#x27;timezpr-network&#x27;} type="text/javascript">
+    window._taboola = window._taboola || [];
+    _taboola.push({flush: true});
+</script>
+<script>
+(function () {
+  const CONTAINER_SELECTOR = ".block_list__container";
+  const ANCHOR_ID = "placement2";
+
+  // Polling: jak często sprawdzamy i jak długo maksymalnie
+  const POLL_INTERVAL_MS = 100;
+  const POLL_MAX_MS = 2000;
+
+  const TABOOLA_AT_END = {
+    id: "taboola-article-for-you-1x4",
+    mode: "thumbnails-1x4-stream",
+    placement: "Article For You SE Polityka 1x4",
+    target_type: "mix"
+  };
+
+  const TABOOLA_AFTER_PLACEMENT = {
+    id: "taboola-article-for-you-1x2",
+    mode: "organic-1x2-stream",
+    placement: "Article For You SE Polityka 1x2",
+    target_type: "mix"
+  };
+
+  function ensureTaboolaQueue() {
+    window._taboola = window._taboola || [];
+    return window._taboola;
+  }
+
+  function pushTaboola(widget) {
+    ensureTaboolaQueue().push({
+      mode: widget.mode,
+      container: widget.id,
+      placement: widget.placement,
+      target_type: widget.target_type
+    });
+  }
+
+  function injectAtEnd(containerEl, widget) {
+    if (!containerEl) return false;
+    if (document.getElementById(widget.id)) return true;
+
+    const div = document.createElement("div");
+    div.id = widget.id;
+    containerEl.appendChild(div);
+    pushTaboola(widget);
+    return true;
+  }
+
+  function injectAfter(anchorEl, widget) {
+    if (!anchorEl) return false;
+    if (document.getElementById(widget.id)) return true;
+
+    const div = document.createElement("div");
+    div.id = widget.id;
+    anchorEl.insertAdjacentElement("afterend", div);
+    pushTaboola(widget);
+    return true;
+  }
+
+  /* =========================
+     1) TABOOLA NA KOŃCU (DOM ready)
+     ========================= */
+  function injectEndWhenReady() {
+    const container = document.querySelector(CONTAINER_SELECTOR);
+    if (!container) return false;
+    return injectAtEnd(container, TABOOLA_AT_END);
+  }
+
+  if (document.readyState !== "loading") {
+    injectEndWhenReady();
+  } else {
+    document.addEventListener("DOMContentLoaded", injectEndWhenReady);
+  }
+
+  /* =========================
+     2) TABOOLA PO #placement2 (polling max 2s)
+     ========================= */
+  const start = Date.now();
+
+  const timer = setInterval(() => {
+    const elapsed = Date.now() - start;
+    if (elapsed > POLL_MAX_MS) {
+      clearInterval(timer);
+      return;
+    }
+
+    const container = document.querySelector(CONTAINER_SELECTOR);
+    if (!container) return;
+
+    // jeśli placement2 istnieje, wstrzyknij widget po nim
+    const anchor = container.querySelector("#" + ANCHOR_ID);
+    if (anchor) {
+      const ok = injectAfter(anchor, TABOOLA_AFTER_PLACEMENT);
+      if (ok) clearInterval(timer); // sukces → kończymy
+    }
+  }, POLL_INTERVAL_MS);
+
+  // twardy kill-switch (na wypadek gdyby clearInterval nie zadziałał z jakiegoś powodu)
+  setTimeout(() => clearInterval(timer), POLL_MAX_MS + 50);
+})();
+</script>
+
+<script type="text/javascript" src="/media/desktop/site_header/js/desktop_site_header.min.js?__25dcee3a" ></script></div>
+            <!-- /hook_end_body_extended -->
+        
+    
+    <a href="/cdn-cgi/l/email-protection#43262537222f2a226d202b2c202b2f220330363326312e26272a226d332f" class="link__hide" style="display: none;">email</a>
+    <!-- SENTRY-->
+    
+    <!-- /SENTRY-->
+
+    <!-- LAYOUT -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script></body>
+</html>

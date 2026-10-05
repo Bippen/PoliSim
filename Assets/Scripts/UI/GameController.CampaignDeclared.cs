@@ -29,7 +29,8 @@ namespace PoliSim.UI
         private bool _liveDeclaredOpen;
         private Rect _campaignDeclaredInnerRect;
 
-        /// <summary>The HQ's DECLARED chip: only where the country's declarations are dated (Sweden's timeline, §621).</summary>
+        /// <summary>The HQ's DECLARED chip: only where the country's declarations are dated (`DeclaredRedLines.HasTimeline`, §621) and a run-up or
+        /// campaign is staged - `LiveCampaignSetup` stages none for Poland, so its timeline shows on no page yet (§776's review).</summary>
         private bool DeclaredPageAvailable() =>
             _liveCampaignOpen && _playerCountry != null && DeclaredRedLines.HasTimeline(_playerCountry.Id);
 

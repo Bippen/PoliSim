@@ -9,17 +9,18 @@ namespace PoliSim.Elections
     /// <para><b>Why they are separated from the derived ones.</b> A derived red line is the model's own
     /// inference from two parties' positions: it says *"these two are far enough apart that we infer they
     /// would not sit together"*. A declared line is something a party actually said. Mixing them would
-    /// let an inference wear a citation's authority — and, worse, would hide the fact that **only one of
-    /// the six countries has its declarations on disk.**</para>
+    /// let an inference wear a citation's authority — and, worse, would hide which countries have their
+    /// declarations on disk (`DeclaredRedLines.IsSourced`).</para>
     ///
-    /// <para>⚠ <b>SOURCED FOR SWEDEN, in two vintages, and for GERMANY since §705</b> (its timeline, `ElectionsData/germany/coalition_declarations_2025.md`:
-    /// the Union's incompatibility resolutions and the 2025 chancellor candidacies; every other German line derived). K-1 (2026-09-23): the live game reads the
-    /// declarations as of the 2026 election, `ElectionsData/sweden/2026/coalition_declarations_2026.md`; the
+    /// <para>⚠ <b>SOURCED where `DeclaredRedLines.IsSourced` says so, and dated where `DeclaredRedLines.HasTimeline` does</b> - Germany's and Poland's
+    /// timeline summaries name their record files (`GermanySource`, `PolandSource`; since §705 and §776; the lines a record does not carry stay
+    /// derived), and Sweden's two are named below. K-1 (2026-09-23): the
+    /// live game reads Sweden's declarations as of the 2026 election, `ElectionsData/sweden/2026/coalition_declarations_2026.md`; the
     /// backtests that assert 2022's government pin <see cref="ElectionVintage.Sweden2022"/>,
-    /// `ElectionsData/sweden/coalition_declarations_2022.md`. For every other country `For` returns the DERIVED
-    /// lines alone and `IsSourced` returns false, so a caller can say plainly that the government it formed was
-    /// formed without that country's real declarations. **Inventing Germany's would be inventing the central
-    /// political fact of its party system**, and a formation run without them can produce a cabinet that
+    /// `ElectionsData/sweden/coalition_declarations_2022.md`. Where `IsSourced` is false, `For` returns the DERIVED
+    /// lines alone, so a caller can say plainly that the government it formed was
+    /// formed without that country's real declarations. A country's declared refusals can be the central
+    /// political fact of its party system (Germany's were, before §705), and a formation run without them can produce a cabinet that
     /// country would never form — which is a limitation to state, not to paper over.</para>
     ///
     /// <para>⚠ This is the ONE definition of Sweden's declared lines. `CoalitionFilm` reads it rather than
@@ -33,7 +34,7 @@ namespace PoliSim.Elections
 
         /// <summary>Whether this country's DECLARED lines are sourced. False means `For` returns derived
         /// lines alone.</summary>
-        public static bool IsSourced(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany;   // §705: Germany's declarations, dated
+        public static bool IsSourced(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany || country == CountryId.Poland;   // §705: Germany's declarations, dated; §776: Poland's (ruling E2)
 
         /// <summary>
         /// §705: whether an own-leader candidacy REFUSES another candidate's cabinet - Sweden's ruled pairing rule (K-1f). Not Germany's: a
@@ -50,7 +51,7 @@ namespace PoliSim.Elections
         private static List<RedLine> ForSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, ElectionVintage vintage)
         {
             vintage = WorldClock.Resolve(country, vintage);   // PS-1 (§618): the seated chamber's election - every election reads its own date's declarations
-            if (country == CountryId.Germany) { return ForDateSourced(country, parties, WorldClock.ElectionDayOf(country, vintage)); }   // §705: a German vintage reads its timeline on its polling day
+            if (country == CountryId.Germany || country == CountryId.Poland) { return ForDateSourced(country, parties, WorldClock.ElectionDayOf(country, vintage)); }   // §705: a German vintage reads its timeline on its polling day; §776: a Polish one too
             var lrGen = new double[parties.Count];
             var galtan = new double[parties.Count];
             for (int p = 0; p < parties.Count; p++)
@@ -274,8 +275,10 @@ namespace PoliSim.Elections
         // (C's own publication [C-P1]). The vintage API above stays for the backtests, pinned by name; `ForDate` is the timeline, and
         // `DeclarationDatesDiagnostic` proves the timeline's 2022-09-11 equals `For(Sweden2022)` and its 2026-09-13 `For(Sweden2026)`. K-1g (§639)
         // adds three: SD's refusal of the support role 2025-10-10, MP's in-or-against rule 2026-08-10 (Helldén's own words, ruled §652), KD → S 2026-09-02.
-        // No runtime surface reads the timeline yet - the run-up's declarations are D-PS's (§620/§621); the election reads its own day's. §644 measures a
-        // mid-term round on it (`GovernmentFormation.ViewOfSitting` with a date, read by `AiMotionReachDiagnostic`) for Elias's ruling PS-3i-2c.
+        // Its readers: an election's formation reads its own polling day's facts (`DeclarationReading.OfElection`, through `ForSourced` for a vintage), a
+        // mid-term round the lines standing that day (`DeclarationReading.MidTerm`), and the run-up's declarations page what stands today
+        // (`DeclaredRedLines.StandingOn`, D-PS's, §657). §644 measures a mid-term round on it (`GovernmentFormation.ViewOfSitting` with a date, read by
+        // `AiMotionReachDiagnostic`) for Elias's ruling PS-3i-2c.
         // -----------------------------------------------------------------------------------------------------------------------------
 
         /// <summary>One dated declaration: a pair line, a candidacy, an in-or-against rule or SD's refusal of the support role, standing from <see cref="From"/> until <see cref="Until"/> (exclusive; MaxValue while it stands).</summary>
@@ -306,7 +309,8 @@ namespace PoliSim.Elections
         private static readonly System.DateTime Open = System.DateTime.MaxValue;
         private static System.DateTime D(int y, int m, int d) => new System.DateTime(y, m, d);
 
-        /// <summary>Sweden's declarations as dated facts - every date the party's own record's (the rules of §621), each fact standing until the dated one that replaced it.</summary>
+        /// <summary>Sweden's declarations as dated facts (records: `SwedenSource2022`, `SwedenSource`) - dated by §621's rules, or, where a fact's comment
+        /// says so, by §652's ruling or by the extension K-1i (3) puts to Elias; each fact standing until the dated one that replaced it.</summary>
         public static IReadOnlyList<DatedFact> SwedenTimeline { get; } = new[]
         {
             // C ↔ SD, support-blocking: Lööf's statement, then Thand Ringqvist's installation speech restates it - the same shape, a new basis.
@@ -383,12 +387,71 @@ namespace PoliSim.Elections
                 "the Greens' candidate, Robert Habeck - their congress of 17 November 2024, \"Der entsprechende Antrag wurde mit 96,48 Prozent der Stimmen angenommen\" [GR-BDK24]. " + GermanySource),
         };
 
+        public const string PolandSource = "See ElectionsData/poland/coalition_declarations_2023.md";
+
+        /// <summary>§776's review (finding 1): the mark on a Polish fact dated by the EXTENSION, not by §621 as written - a leader's or spokesperson's
+        /// spoken words, quoted verbatim, dated by the broadcaster's or the agency's page (§652's precedent, ruled for MP), unless the party's own record
+        /// carries the same words earlier (§652's condition; on this record none does - TD's own record is later, and NL's 5 July page is read
+        /// cabinet-only); put to Elias with K-1i (3).</summary>
+        public const string PolandExtension = "DATED BY THE EXTENSION (K-1i (3), Elias's): the words as a broadcaster's or an agency's page dates them, not the party's own record. ";
+
+        /// <summary>
+        /// §776 (Elias's ruling E2: "source the parties' real 2023 declarations by read, dated, before PS-6"): POLAND'S DECLARATIONS AS DATED FACTS -
+        /// the lines the record carries for the 2023 lists, declared on or before the Sejm election of 15 October 2023, each quoted from a saved
+        /// page (`ElectionsData/poland/coalition_declarations_2023.md`, whose timeline table is this array). Dated by §621's rules - the party's own
+        /// record, never press reporting - and, where a fact carries `PolandExtension`, by the EXTENSION the record states and puts to Elias (K-1i (3)):
+        /// a leader's or spokesperson's spoken words, quoted verbatim, dated by the broadcaster's or agency's page (§652's precedent, ruled for MP),
+        /// unless the party's own record carries the same words earlier (§652's condition; none does here).
+        /// The member parties' earlier refusals of PiS and the 2019 lists' lines are recorded there, not carried (its doubts 3 and 12). What is not
+        /// here stays DERIVED. Poland
+        /// carries no candidacy (none was declared before the vote), no in-or-against rule and no refusal of the support role. TD is one key for
+        /// two parties (`ElectionsData/poland/td_list_2023.md`): its line to PiS rests on both leaders speaking for the list, its line to
+        /// Konfederacja on PSL's half alone. A line's arrow is attribution; a cabinet-only line is symmetric in the model.
+        /// </summary>
+        public static IReadOnlyList<DatedFact> PolandTimeline { get; } = new[]
+        {
+            new DatedFact("PiS", "Konf", FactKind.PairLine, false, false, null, D(2023, 7, 23), Open,
+                "DECLARED: PiS will not govern together with Konfederacja - Kaczyński at Stawiski, 2023-07-23, on the party's own page [PIS-P1] (\"Nie wierzcie we wspólne rządy PiS i Konfederacji!\") and on TVN24 the same day [PIS-I1] (\"Nie będziemy\"). A shared cabinet only; support is not addressed. Before it the door was open (2023-06-08 [PIS-I3], 2023-06-28 [PIS-I4], 2023-07-11 [PIS-I5]). " + PolandSource),
+            new DatedFact("Konf", "PiS", FactKind.PairLine, false, false, null, D(2023, 6, 20), D(2023, 6, 26),
+                "DECLARED: Konfederacja's co-chairman Mentzen will enter no coalition with PiS, nor with anyone in the next term - RMF FM's debate, 2023-06-20 [KONF-I4] (\"Nie wejdę w koalicję z PiS-em. W przyszłej kadencji nie wejdę w koalicję z nikim.\"). Replaced on 2023-06-26 by his opening to PiS or PO, and to anyone who adopts Konfederacja's tax programme [KONF-I8], [KONF-I10]; RMF24 reported it that day as a change [KONF-I11]. A cabinet only. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "KO", FactKind.PairLine, false, false, null, D(2023, 6, 20), D(2023, 6, 26),
+                "DECLARED: Konfederacja's co-chairman Mentzen will enter no coalition with anyone in the next term, answering that a finance ministry would need a coalition with PiS or PO - RMF FM's debate, 2023-06-20 [KONF-I4] (\"W przyszłej kadencji nie wejdę w koalicję z nikim.\"). Replaced on 2023-06-26 by \"czy to PiS, czy PO … wszystko jest na stole\" [KONF-I8], reported that day as a change [KONF-I11]. A cabinet only. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "TD", FactKind.PairLine, false, false, null, D(2023, 6, 20), D(2023, 6, 26),
+                "DECLARED: Konfederacja's co-chairman Mentzen will enter no coalition with anyone in the next term - RMF FM's debate, 2023-06-20 [KONF-I4] (\"W przyszłej kadencji nie wejdę w koalicję z nikim.\"). TD is not named; this is the rule's \"z nikim\". Replaced on 2023-06-26 by his opening to anyone (\"ktoś\") who adopts Konfederacja's tax programme [KONF-I10]. A cabinet only. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "NL", FactKind.PairLine, false, false, null, D(2023, 6, 20), D(2023, 6, 26),
+                "DECLARED: Konfederacja's co-chairman Mentzen will enter no coalition with anyone in the next term - RMF FM's debate, 2023-06-20 [KONF-I4] (\"W przyszłej kadencji nie wejdę w koalicję z nikim.\"). NL is not named; this is the rule's \"z nikim\". Replaced on 2023-06-26 by his opening to anyone (\"ktoś\") who adopts Konfederacja's tax programme [KONF-I10]. A cabinet only. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "MN", FactKind.PairLine, false, false, null, D(2023, 6, 20), D(2023, 6, 26),
+                "DECLARED: Konfederacja's co-chairman Mentzen will enter no coalition with anyone in the next term - RMF FM's debate, 2023-06-20 [KONF-I4] (\"W przyszłej kadencji nie wejdę w koalicję z nikim.\"). MN is not named; this is the rule's \"z nikim\". Replaced on 2023-06-26 by his opening to anyone (\"ktoś\") who adopts Konfederacja's tax programme [KONF-I10]. A cabinet only. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "PiS", FactKind.PairLine, false, false, null, D(2023, 7, 6), D(2023, 7, 13),
+                "DECLARED: Konfederacja's voters, activists and authorities do not want a coalition with PiS - Mentzen on X, 2023-07-06 [KONF-P2] (\"Koalicji z PiS nie chcą wyborcy Konfederacji, działacze Konfederacji ani władze Konfederacji.\"). A cabinet refusal; its stated aim to end PiS's rule is not read as support-blocking. Replaced on 2023-07-13 by the one-way support-blocking line (dated by the extension). " + PolandSource),
+            new DatedFact("Konf", "PiS", FactKind.PairLine, true, true, null, D(2023, 7, 13), Open,
+                "DECLARED: Konfederacja will neither sit in nor keep in power a cabinet with PiS - Bosak, TVN24 Fakty po południu, 2023-07-13 [KONF-I14] (\"Nie zamierzamy przedłużać władzy PiS-u. Nie zamierzamy z PiS-em zawierać koalicji\"). Its cabinet half restated 2023-07-16 [KONF-I15], 2023-08-02 [KONF-P1], 2023-10-10 [KONF-I23] and 2023-10-11 [KONF-I25]; its support half only 2023-08-24 [KONF-I19] (\"ani przedłużać władzy PiS-u\"); 16 July's \"chcemy PiS odsunąć od władzy\" and 10 October's \"chcemy zakończyć rządy PiS-u\" are aims, not read as the support half. One way: no source has Konfederacja refuse PiS's support for a cabinet it sits in. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "KO", FactKind.PairLine, true, true, null, D(2023, 7, 13), Open,
+                "DECLARED: Konfederacja will neither sit in nor enable a cabinet with KO - Bosak, TVN24 2023-07-13 [KONF-I14] (\"nie zamierzamy zawierać koalicji z PO. Nie zamierzamy umożliwić powrotu Tuskowi do władzy.\"). Its cabinet half restated 2023-08-02 [KONF-P1] and 2023-10-11 [KONF-I25]; its enable half only 2023-08-24 [KONF-I19] (\"ani ułatwiać Tuskowi powrotu do władzy\"); 10 October's \"nie dopuścić do rządów Donalda Tuska\" [KONF-I23] is read as an aim, restating neither half. This rests on the premise that a cabinet holding KO is Tusk's. One way. " + PolandExtension + PolandSource),
+            new DatedFact("Konf", "TD", FactKind.PairLine, false, false, null, D(2023, 8, 2), Open,
+                "DECLARED: Konfederacja will enter no coalition with anyone - the party's own page, 2023-08-02 [KONF-P1] (\"Koalicja z PiS czy z Platformą? Z nikim!\"; \"Jasno i klarownie mówimy: nie będzie z nikim koalicji.\"). The second quote is Przemysław Wipler's words on Onet Rano, published under the party's headline. TD is not named; this is the rule's \"z nikim\". A cabinet only. " + PolandSource),
+            new DatedFact("Konf", "NL", FactKind.PairLine, false, false, null, D(2023, 8, 2), Open,
+                "DECLARED: Konfederacja will enter no coalition with anyone - the party's own page, 2023-08-02 [KONF-P1] (\"Koalicja z PiS czy z Platformą? Z nikim!\"; \"Jasno i klarownie mówimy: nie będzie z nikim koalicji.\"). Earlier and hedged: \"Może poza sojuszem z Lewicą\" (Mentzen, 2023-03-30 [KONF-I3]). A cabinet only. " + PolandSource),
+            new DatedFact("Konf", "MN", FactKind.PairLine, false, false, null, D(2023, 8, 2), Open,
+                "DECLARED: Konfederacja will enter no coalition with anyone - the party's own page, 2023-08-02 [KONF-P1] (\"Koalicja z PiS czy z Platformą? Z nikim!\"; \"Jasno i klarownie mówimy: nie będzie z nikim koalicji.\"). MN is never named; this is the rule's \"z nikim\". MN won no seat in 2023. A cabinet only. " + PolandSource),
+            new DatedFact("TD", "PiS", FactKind.PairLine, false, false, null, D(2023, 5, 15), Open,
+                "DECLARED: Trzecia Droga will form no government with PiS - Hołownia at the press conference that named the list, 2023-05-15 [TD-I5] (\"chcemy tworzyć wspólny rząd z ugrupowaniami demokratycznymi po wyborach, a nie z PiS\"; Kosiniak-Kamysz: \"a nie z tymi, którzy dzisiaj rządzą\"). Restated 2023-09-19 [TD-I11], 2023-10-10 [TD-P8] and 2023-10-12 [TD-P9] (\"Koalicja z PiSem? Po moim trupie.\"). Both members had refused PiS before the list existed [TD-I3], [TD-I4]. A cabinet only; support is not addressed in words. TD's own record first carries it 2023-10-10 [TD-P8]. " + PolandExtension + PolandSource),
+            new DatedFact("TD", "Konf", FactKind.PairLine, false, false, null, D(2023, 10, 10), Open,
+                "DECLARED (PSL's half of TD): Kosiniak-Kamysz in the list's own paid campaign material, 2023-10-10 [TD-P8], answering whom PSL would build coalitions with (\"Z partiami demokratycznymi, nie z PiS ani nie z Konfederacją.\"). Earlier, PSL's own page, 2023-08-10 [TD-P6]. Against it: Polska 2050's vice-chair Kobosko would not rule Konfederacja out, 2023-09-01 [TD-I10]. A cabinet only. " + PolandSource),
+            new DatedFact("NL", "PiS", FactKind.PairLine, false, false, null, D(2021, 5, 6), Open,
+                "DECLARED: Nowa Lewica will enter no coalition with PiS - Czarzasty, its leader, 2021-05-06, on the party's own page [NL-P3] and via PAP in Forsal [NL-I1] (\"Z PiS-em nigdy w życiu nie wejdę w żadną koalicję\"). Restated by the club chair 2021-11-15 [NL-P4], who kept votes on bills open; the predecessor SLD 2019-10-17 [NL-P1]. No 2023 restatement by a leader was verified. A cabinet only. " + PolandSource),
+            new DatedFact("NL", "Konf", FactKind.PairLine, false, false, null, D(2023, 7, 5), D(2023, 8, 27),
+                "DECLARED: Lewica will not enter any government in which Konfederacja sits - Czarzasty to Rzeczpospolita, on the party's own page, 2023-07-05 [NL-P17] (\"na pewno Lewica nie wejdzie do żadnego rządu, w którym będzie Konfederacja\"; to PO and TD: \"nie liczcie na nas\"). Replaced on 2023-08-27 by the support-blocking line (dated by the extension). " + PolandSource),
+            new DatedFact("NL", "Konf", FactKind.PairLine, true, false, null, D(2023, 8, 27), Open,
+                "DECLARED: Lewica will not govern with Konfederacja, or rest a cabinet on its bought votes - Czarzasty at Olsztyn, 2023-08-27 [NL-I5] (\"nie będzie takiego rządu, w którym Lewica będzie razem z Konfederacją … Wykluczam\"; \"Polska nie jest na sprzedaż\") and [NL-I6] (\"Nie wchodzimy jako Lewica w takie deale. Nigdy z Konfederacją\"); 2023-08-31 [NL-I7] (\"nie można dopuścić Konfederacji do współrządzenia\"). It replaces 2023-07-05's cabinet line [NL-P17]. The symmetric shape's other direction - Lewica's support of a cabinet with Konfederacja in it - is not in these words and rests on the derived NL-Konf line. Its cabinet half restated 2023-09-11 [NL-P25] (\"Lewica w żadnym rządzie nie będzie stała czy siedziała przy Konfederacji\"); the support half is not restated. Symmetric and support-blocking, the CDU's shape. " + PolandExtension + PolandSource),
+        };
+
         /// <summary>The dated facts of a country with a timeline; none for the rest.</summary>
         public static IReadOnlyList<DatedFact> TimelineOf(CountryId country) =>
-            country == CountryId.Sweden ? SwedenTimeline : country == CountryId.Germany ? GermanyTimeline : System.Array.Empty<DatedFact>();
+            country == CountryId.Sweden ? SwedenTimeline : country == CountryId.Germany ? GermanyTimeline : country == CountryId.Poland ? PolandTimeline : System.Array.Empty<DatedFact>();
 
-        /// <summary>Whether a country's declarations are dated on a timeline (§621) - Sweden's, and Germany's since §705; every other country reads its vintage.</summary>
-        public static bool HasTimeline(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany;
+        /// <summary>Whether a country's declarations are dated on a timeline (§621) - Sweden's, Germany's since §705 and Poland's since §776; every other country reads its vintage.</summary>
+        public static bool HasTimeline(CountryId country) => country == CountryId.Sweden || country == CountryId.Germany || country == CountryId.Poland;
 
         /// <summary>§657: the dated facts standing on <paramref name="asOf"/>, in the timeline's order - the run-up's declarations page (D-PS, the DECLARED block only). Empty without a timeline.</summary>
         public static List<DatedFact> StandingOn(CountryId country, System.DateTime asOf)
@@ -415,7 +478,7 @@ namespace PoliSim.Elections
             return lifted;
         }
 
-        /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden and Germany (§705); the other countries return derived lines alone.</summary>
+        /// <summary>The derived lines plus the declared ones standing on <paramref name="asOf"/> - the timeline's reading (§621). Sweden, Germany (§705) and Poland (§776); the other countries return derived lines alone.</summary>
         private static List<RedLine> ForDateSourced(CountryId country, IReadOnlyList<PoliticalParty> parties, System.DateTime asOf)
         {
             var lrGen = new double[parties.Count];
