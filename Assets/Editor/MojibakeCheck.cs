@@ -36,9 +36,10 @@ namespace PoliSim.EditorTools
     /// trusted this rule would have damaged that line, which is the argument for reporting rather than
     /// fixing.</para>
     ///
-    /// <para><b>What it enumerates</b> (rule 14): every `*.md` at the project root, every `*.cs` under
-    /// `Assets/`, and every file under `Tools/`. Not `Logs/` or `Library/` - generated and imported
-    /// content is not authored text and would report on somebody else's encoding.</para>
+    /// <para><b>What it enumerates</b> (rule 14): every `*.md` at the project root and under `docs/` (§772's second review: §579 moved the
+    /// documents there, and a double-encoded symbol in a model card passed a green bar), every `*.cs` under `Assets/`, and every file under
+    /// `Tools/`. Not `Logs/` or `Library/` - generated and imported content is not authored text and would report on somebody else's encoding -
+    /// nor `docs/`'s binary sources (PDFs and the like: only its `*.md` are read), nor `Reviews/`, whose verbatim reports quote mojibake to name it.</para>
     /// </summary>
     public static class MojibakeCheck
     {
@@ -53,6 +54,8 @@ namespace PoliSim.EditorTools
             string root = Directory.GetCurrentDirectory();
             var files = new List<string>();
             files.AddRange(Directory.GetFiles(root, "*.md", SearchOption.TopDirectoryOnly));
+            string docs = Path.Combine(root, "docs");
+            if (Directory.Exists(docs)) { files.AddRange(Directory.GetFiles(docs, "*.md", SearchOption.AllDirectories)); }   // §772's second review
 
             string assets = Path.Combine(root, "Assets");
             if (Directory.Exists(assets)) { files.AddRange(Directory.GetFiles(assets, "*.cs", SearchOption.AllDirectories)); }

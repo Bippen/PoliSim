@@ -415,6 +415,14 @@ namespace PoliSim.Data
             (new PoliticalParty("Polska 2050", "Polska 2050 Szymona Hołowni", 6.32f, 4.89f, 0, euPosition: 6.31f, lrGen: 5.59f, environment: 3.64f, regions: 3.42f, spendVsTax: 5.92f, immigratePolicy: 5.67f, deregulation: 6.15f, redistribution: 5.27f, peopleVsElite: 5.20f, antiEliteSalience: 2.90f, civLibLawOrder: 3.73f, nationalism: 4.06f), PolandTdPolska2050Seats),
         };
 
+        /// <summary>§772 (Elias's ruling E1: "each candidate sits at their own party's position"): the CHES 2024 units a presidential candidate of record
+        /// stands at that the Sejm roster does not seat - Razem (Zandberg's party; it ran inside Lewica's 2023 committee and left its club in 2024). Typed
+        /// as every roster row is, from CHES 2024's row - `PolishSejmAllocationDiagnostic` holds each to its row on every field, `PresidentialVoteBacktest` on the run-off's axes.</summary>
+        public static readonly PoliticalParty[] PolandUnseatedUnits =
+        {
+            new PoliticalParty("Razem", "Partia Razem", 0.85f, 1.00f, 0, euPosition: 6.44f, lrGen: 1.04f, environment: 1.43f, regions: 2.92f, spendVsTax: 0.50f, immigratePolicy: 1.81f, deregulation: 2.08f, redistribution: 0.96f, peopleVsElite: 5.40f, antiEliteSalience: 6.25f, civLibLawOrder: 1.07f, nationalism: 0.88f),
+        };
+
         /// <summary>
         /// §766 (Elias's ruling D2; the joint-list rule ruled at §621): a joint list without its own CHES position takes the SEAT-WEIGHTED MEAN of
         /// its member parties' positions, field by field - each member weighted by the seats it won on the list; a field a member does not

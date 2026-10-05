@@ -153,6 +153,20 @@ namespace PoliSim.EditorTools
                 }
                 Check(rowsMatch == 2 && mean, F("§766: PSL's and Polska 2050's rows are CHES's ({0} of 2, all fourteen fields); TD sits at their seat-weighted mean - lrecon {1:0.000}, galtan {2:0.000}, EU {3:0.000}, nationalism {4:0.000}",
                     rowsMatch, td.LrEcon, td.Galtan, td.EuPosition, td.Nationalism));
+                // §772 (Elias's ruling E1; its review, finding 8): the units a presidential candidate of record stands at that the roster does not seat
+                // (Razem, Zandberg's) are typed as every roster row is - held to CHES's row on every field, as TD's members are
+                Dictionary<string, Dictionary<string, double>> unseatedRows = ReadChesRows(Path.GetFullPath(Path.Combine(root, "..", "positions", "raw", "CHES_2024_final_v2.csv")),
+                    PartySystems.PolandUnseatedUnits.Select(u => u.Abbrev).ToArray());
+                var unseatedApart = new List<string>();
+                foreach (PoliticalParty unit in PartySystems.PolandUnseatedUnits)
+                {
+                    bool all = unseatedRows.TryGetValue(unit.Abbrev, out Dictionary<string, double> row);
+                    foreach ((string column, Func<PoliticalParty, float> field) in fields) { all &= row != null && Math.Abs(Math.Round(row[column], 2) - field(unit)) < 0.0005; }
+                    if (!all) { unseatedApart.Add(unit.Abbrev); }
+                }
+                Check(PartySystems.PolandUnseatedUnits.Length > 0 && unseatedApart.Count == 0, unseatedApart.Count == 0
+                    ? F("§772: the unseated units' rows are CHES's ({0}, all fourteen fields)", string.Join(", ", PartySystems.PolandUnseatedUnits.Select(u => u.Abbrev)))
+                    : "§772: an unseated unit's row is NOT CHES's - " + string.Join(", ", unseatedApart));
 
                 // ---- the rule's edges, planted ----
                 var edgeKinds = new Dictionary<string, Kind> { { "A", Kind.Party }, { "Coalition", Kind.Coalition }, { "Party", Kind.Party } };

@@ -51,27 +51,47 @@ namespace PoliSim.Elections
         /// <summary>§770 (PS-5 item C4): one candidate of a presidential election of record - the PKW's surname and the roster party whose standing
         /// the candidate inherits in the game's own election (null: none - an independent, a splinter), with the reading. B5: a party cannot
         /// nominate; the committee is the voters', the backing the party's. <see cref="PositionUnit"/> is where B4 placed the candidate in the sovereignty
-        /// space - the CHES unit the transfer was fitted on (§764): a roster party's key, or a joint list's member (Hołownia at Polska 2050's own row).
-        /// `PresidentialVoteBacktest` holds its own field to these readings - the committees, and the positions of the candidates who stand.</summary>
+        /// space - the CHES unit the transfer was fitted on (§764): a roster party's key, a joint list's member (Hołownia at Polska 2050's own row), or a
+        /// unit the roster does not seat (Zandberg at Razem's, <see cref="PartySystems.PolandUnseatedUnits"/>) - the units
+        /// <see cref="PresidentialElection.TryPosition"/> reads; null where no CHES unit places the candidate.
+        /// `PresidentialVoteBacktest` holds its own field to these readings - the committees, and the positions of the candidates who stand.
+        /// <para>§772 (Elias's ruling E1): the candidate's own pull. A candidate a roster party backs carries <see cref="Factor"/> - [FITTED] once, to the
+        /// PKW's first round of 18 May 2025 against the game's poll that day on the reference world - the record's state on the eve, as a game started
+        /// that day holds it (`PresidentialReferenceWorld`; `PresidentialElectionLiveDiagnostic` refits it on every bar and fails where a figure here is no
+        /// longer the fit): first-round support = the party's poll × the factor. A candidate whose party has no roster row carries the record's own
+        /// first-round share as its base (<see cref="Factor"/> NaN). Per-candidate data, not a free parameter. ⚠ PREMISE, DECLARED (§772's review): a game
+        /// played from Poland's 2023 start polls otherwise that day, so its first round is not the PKW's (<see cref="PresidentialElection"/>).</para></summary>
         public readonly struct CandidateOfRecord
         {
             public readonly string Surname, BackingParty, PositionUnit, Why;
-            public CandidateOfRecord(string surname, string backingParty, string positionUnit, string why) { Surname = surname; BackingParty = backingParty; PositionUnit = positionUnit; Why = why; }
+            /// <summary>[FITTED] (E1) the candidate factor - support = the backing party's poll × this; NaN where no roster party backs the candidate.</summary>
+            public readonly double Factor;
+            public CandidateOfRecord(string surname, string backingParty, string positionUnit, double factor, string why)
+            {
+                Surname = surname; BackingParty = backingParty; PositionUnit = positionUnit; Factor = factor; Why = why;
+            }
         }
 
+        // §772 (E1): the whole field of record - every candidate the PKW's first round of 2025 returned. The factors are the fit's (see the struct).
         private static readonly CandidateOfRecord[] Poland2025 =
         {
-            new CandidateOfRecord("NAWROCKI", "PiS", "PiS", "the candidate PiS backed (a civic committee)"),
-            new CandidateOfRecord("TRZASKOWSKI", "KO", "KO", "KO's candidate"),
-            new CandidateOfRecord("MENTZEN", "Konf", "Konf", "Konfederacja's candidate"),
-            new CandidateOfRecord("BRAUN", null, "Konf", "his party ran on Konfederacja's 2023 list and left it in 2025"),
-            new CandidateOfRecord("HOŁOWNIA", "TD", "Polska 2050", "Trzecia Droga's candidate (Polska 2050's leader; PSL backed him)"),
-            new CandidateOfRecord("ZANDBERG", null, null, "Razem ran inside Lewica's 2023 committee and left its club in 2024"),
-            new CandidateOfRecord("BIEJAT", "NL", "NL", "Lewica's candidate"),
+            new CandidateOfRecord("NAWROCKI", "PiS", "PiS", 0.879942594, "the candidate PiS backed (a civic committee)"),
+            new CandidateOfRecord("TRZASKOWSKI", "KO", "KO", 1.04365446, "KO's candidate"),
+            new CandidateOfRecord("MENTZEN", "Konf", "Konf", 2.17814027, "Konfederacja's candidate"),
+            new CandidateOfRecord("BRAUN", null, "Konf", double.NaN, "his party ran on Konfederacja's 2023 list and left it in 2025 - no roster row; at Konfederacja's, where B4 placed him"),
+            new CandidateOfRecord("HOŁOWNIA", "TD", "Polska 2050", 0.243875544, "Trzecia Droga's candidate (Polska 2050's leader; PSL backed him)"),
+            new CandidateOfRecord("ZANDBERG", null, "Razem", double.NaN, "Razem ran inside Lewica's 2023 committee and left its club in 2024 - no roster row; at Razem's own"),
+            new CandidateOfRecord("BIEJAT", "NL", "NL", 0.470311426, "Lewica's candidate"),
+            new CandidateOfRecord("STANOWSKI", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
+            new CandidateOfRecord("SENYSZYN", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places her - unplaced"),
+            new CandidateOfRecord("JAKUBIAK", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
+            new CandidateOfRecord("BARTOSZEWICZ", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
+            new CandidateOfRecord("MACIAK", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
+            new CandidateOfRecord("WOCH", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
         };
 
-        /// <summary>The candidates of the election of record held for the term ending in <paramref name="termEndYear"/> that a roster party backed or
-        /// that §727 measured; empty where the record holds none (every election after 2025).</summary>
+        /// <summary>The candidates of the election of record held for the term ending in <paramref name="termEndYear"/> - §772: its whole field; empty
+        /// where the record holds none (every election after 2025).</summary>
         public static IReadOnlyList<CandidateOfRecord> CandidatesOf(CountryId id, int termEndYear) => id == CountryId.Poland && termEndYear == 2025 ? Poland2025 : Array.Empty<CandidateOfRecord>();
 
         /// <summary>A candidate of record's name as the game prints it - the first given name and the surname, read from the PKW's form
@@ -89,6 +109,20 @@ namespace PoliSim.Elections
                 }
             }
             return Title(surname);
+        }
+
+        /// <summary>§772 (E1): a candidate of record's share of the first round's valid votes (a fraction), read from the PKW's returns as generated -
+        /// the base a candidate with no roster party carries; NaN where the returns do not hold the candidate.</summary>
+        public static double ShareOfRecord(CountryId id, int year, string surname)
+        {
+            if (id != CountryId.Poland) { return double.NaN; }
+            long valid = 0;
+            foreach (var r in Generated.PolishPresidentialReturns.Rounds) { if (r.Year == year && r.Round == 1) { valid = r.Valid; } }
+            foreach (var v in Generated.PolishPresidentialReturns.Votes)
+            {
+                if (v.Year == year && v.Round == 1 && valid > 0 && v.Candidate.Split(' ')[0] == surname) { return (double)v.Votes / valid; }
+            }
+            return double.NaN;
         }
 
         /// <summary>The president of record on <paramref name="date"/>; false before the first the record holds, or where none is held.</summary>

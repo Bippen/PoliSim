@@ -521,7 +521,9 @@ namespace PoliSim.UI
                 {
                     string who = Surname(c.Name).ToUpperInvariant();
                     bool unnamed = c.Name != null && c.Name.Contains("'s candidate");   // the label already names the party
-                    slip.Add(who + (unnamed ? string.Empty : " (" + PartySystems.ShortName(country, c.Party).ToUpperInvariant() + ")") + " " + c.Share.ToString("0.00", CultureInfo.InvariantCulture) + " %");
+                    // §772 (E1): a candidate of record no roster party backs (Braun, Zandberg, Stanowski ...) has no party to name
+                    string party = unnamed || c.Party == null ? string.Empty : " (" + PartySystems.ShortName(country, c.Party).ToUpperInvariant() + ")";
+                    slip.Add(who + party + " " + c.Share.ToString("0.00", CultureInfo.InvariantCulture) + " %");
                 }
                 if (last.RunOffHeld && last.Decided())
                 {
@@ -543,9 +545,9 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(10f));
         }
 
-        /// <summary>A first vote's day in the player's words - the record's, or the premise's (<see cref="PresidentialElection.FirstVoteFor"/>'s basis says which).</summary>
-        private static string DayWords(string basis) => basis != null && basis.StartsWith("PREMISE", System.StringComparison.Ordinal)
-            ? "A PREMISE: THE LAST SUNDAY OF THE WINDOW BEFORE THE TERM ENDS, AS IN 2025"
+        /// <summary>A first vote's day in the player's words - the record's, or the ruled practice's (<see cref="PresidentialElection.FirstVoteFor"/>'s basis says which).</summary>
+        private static string DayWords(string basis) => basis == null || !basis.StartsWith("the record's day", System.StringComparison.Ordinal)
+            ? "THE LAST SUNDAY OF THE WINDOW BEFORE THE TERM ENDS - THE MOST RECENT PRACTICE"
             : "THE RECORD'S DAY";
 
         /// <summary>A president's or candidate's surname as the row prints it - the last word of the name; an unnamed candidate ("KO's candidate (2030)") whole.</summary>

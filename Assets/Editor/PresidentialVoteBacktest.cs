@@ -171,10 +171,11 @@ namespace PoliSim.EditorTools
             Check(Math.Abs(tauFit - PresidentialElection.TransferTau) < 0.0005, F("§770: the runtime's τ ({0}) is this fit ({1:0.000})", PresidentialElection.TransferTau, tauFit));
             Check(Field2025.All(c => PresidencyOfRecord.CandidatesOf(CountryId.Poland, 2025).Any(r => r.Surname == c.Surname && r.BackingParty == c.Committee)),
                 "§770: the runtime's candidates of 2025 (PresidencyOfRecord.CandidatesOf) inherit from the committees this measures");
-            // §770 (the review's defect 1): and stand where this fit placed them - each candidate a committee runs, at the runtime's position for its
-            // unit, against this CHES row (the roster's rows are typed at two decimals, so to within half a hundredth on each axis)
+            // §770 (the review's defect 1): and stand where this fit placed them - each candidate, at the runtime's position for its unit, against
+            // this CHES row (the roster's rows are typed at two decimals, so to within half a hundredth on each axis). §772 (E1): every candidate of
+            // this field now stands in the game - Braun and Zandberg too, on their bases - so every one this fit places is held to its row
             var placedApart = new List<string>();
-            foreach (Candidate c in Field2025.Where(f => f.Committee != null))
+            foreach (Candidate c in Field2025.Where(f => f.ChesParty != null))
             {
                 PresidencyOfRecord.CandidateOfRecord r = PresidencyOfRecord.CandidatesOf(CountryId.Poland, 2025).First(x => x.Surname == c.Surname);
                 Position want = ches[c.ChesParty];
@@ -273,6 +274,34 @@ namespace PoliSim.EditorTools
 
             sb.Append("\n  PINS (the reading above, held - a change to the positions, the returns or the rule moves them):\n");
             foreach ((string what, double got, double want) in pins) { Check(Math.Abs(got - want) < 0.005, F("{0}: {1:0.000} (pinned {2:0.000})", what, got, want)); }
+
+            // ---- §772 (Elias's ruling E1): THE GAME'S OWN 2025, BOTH ROUNDS, ON THE FRESH WORLD - "write both rounds' misses into the model card" ----
+            var host = new GameObject("PresidentialVoteBacktest reference world");
+            try
+            {
+                PresidentialReferenceWorld.Result world = PresidentialReferenceWorld.Hold(host);
+                PresidentialElection.Contest held = world.Contest;
+                if (held == null || !held.Decided()) { Check(false, "§772: the reference world held no decided contest - the card's game rows cannot be written"); }
+                else
+                {
+                    sb.Append("\n  §772 (E1) - THE GAME'S OWN 2025 ON THE FRESH WORLD (the fitted candidate factors; the run-off by B4):\n");
+                    foreach (PresidencyOfRecord.CandidateOfRecord c in PresidencyOfRecord.CandidatesOf(CountryId.Poland, 2025))
+                    {
+                        string name = PresidencyOfRecord.NameOfRecord(CountryId.Poland, 2025, c.Surname);
+                        PresidentialElection.Candidate f = held.Field.FirstOrDefault(x => x.Name == name);
+                        double game = f == null ? 0.0 : f.Share, record = 100.0 * PresidencyOfRecord.ShareOfRecord(CountryId.Poland, 2025, c.Surname);
+                        sb.Append(F("    {0,-24} game {1,6:0.00}  record {2,6:0.00}  miss {3:+0.00;-0.00}\n", name, game, record, game - record));
+                        card.Add(Row(F("2025 first round, the game's (fresh world): {0}", name), F("{0:0.00}", game), F("{0:0.00}", record), F("{0:+0.00;-0.00}", game - record)));
+                    }
+                    IReadOnlyList<(string Candidate, long Votes)> second = TwoRoundElection.RoundOfRecord(CountryId.Poland, 2025, 2, out _);
+                    string recordWinner = second.OrderByDescending(v => v.Votes).First().Candidate;
+                    double nawrockiRecord = 100.0 * second.Where(v => Surname(v.Candidate) == "NAWROCKI").Sum(v => v.Votes) / second.Sum(v => v.Votes);
+                    double nawrockiGame = held.RunOffA == "Karol Nawrocki" ? held.RunOffShareA : held.RunOffB == "Karol Nawrocki" ? 100.0 - held.RunOffShareA : double.NaN;
+                    sb.Append(F("    the run-off: {0} elected - Nawrocki {1:0.00} % of the two against the record's {2:0.00} ({3})\n", held.Elected, nawrockiGame, nawrockiRecord, recordWinner));
+                    card.Add(Row(F("2025 run-off, the game's (fresh world): Nawrocki's share of the two - {0} elected", held.Elected), F("{0:0.00}", nawrockiGame), F("{0:0.00}", nawrockiRecord), F("{0:+0.00;-0.00}", nawrockiGame - nawrockiRecord)));
+                }
+            }
+            finally { UnityEngine.Object.DestroyImmediate(host); }
             return SourcesDigest(root);
         }
 

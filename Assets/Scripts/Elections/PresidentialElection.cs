@@ -12,24 +12,30 @@ namespace PoliSim.Elections
     /// veto reads (<see cref="PresidentAt"/>, <see cref="PresidentialVeto.Decide"/>).
     /// <list type="bullet">
     /// <item><description><b>The days.</b> A first vote falls in the window the Marshal orders it for - 100 to 75 days before the term ends (Art. 128
-    /// ust. 2). The record's day where the record holds one in the window; otherwise the window's last Sunday - PREMISE, DECLARED: 2025's precedent
-    /// (2015 and 2020 were ordered for the window's second Sunday). The run-off is the 14th day after (Art. 127 ust. 4). The president-elect takes
-    /// office on the day the predecessor's term ends - PREMISE, DECLARED: the oath on that day, as in 2015, 2020 and 2025 (records_by_date.md §2d).</description></item>
-    /// <item><description><b>Who stands</b> (B5). A candidate stands for a roster party - the record's candidate where the election is of record,
-    /// otherwise the incumbent where his party fields him and the term limit allows (Art. 127 ust. 2), the party's leader where the roster holds one,
-    /// else the party's candidate unnamed (the game names no one a party has not put forward). The gate is the signatures: READING, DECLARED - a
-    /// party's candidate clears it where the party's predicted voters, at the valid votes of the latest presidential first round of record on or
-    /// before the day, number at least the signatures that nominate. A candidate no roster party backs (an independent, a splinter) has no standing
-    /// to inherit and does not stand.</description></item>
-    /// <item><description><b>The first round</b> inherits the live prediction - the Sejm's shares on the day, the government's record shifting them,
-    /// as the game's Sejm vote reads them - normalised over the field (§727). Counted by the rule: more than half elects; otherwise the two with most
-    /// meet in the run-off.</description></item>
+    /// ust. 2). The record's day where the record holds one in the window; otherwise the window's last Sunday - RULED (Elias's ruling E2, §773: "one
+    /// principle for both votes: follow the most recent practice" - 2025's last Sunday; 2015 and 2020 were ordered for the window's second). The
+    /// run-off is the 14th day after (Art. 127 ust. 4). The president-elect takes office on the day the predecessor's term ends - RULED (E2): the
+    /// oath on that day, as in 2015, 2020 and 2025 (records_by_date.md §2d).</description></item>
+    /// <item><description><b>Who stands</b> (B5). Where the election is of record, <b>the field of record</b> - every candidate the PKW's first round
+    /// returned (§772, Elias's ruling E1), each of whom cleared the gate in fact. Otherwise a candidate for each roster party: the incumbent where his
+    /// party fields him and the term limit allows (Art. 127 ust. 2), the party's leader where the roster holds one - a created party's, the player's
+    /// own included (RULED, E2) - else the party's candidate unnamed (the game names no one a party has not put forward, so a later field holds no
+    /// independents). The gate is the signatures - RULED (E2): a party's candidate clears it where the party's predicted voters, at the valid votes
+    /// of the latest presidential first round of record on or before the day, number at least the signatures that nominate.</description></item>
+    /// <item><description><b>The first round</b> (§772, E1): a candidate a roster party backs carries <b>the party's support in the game's poll × the
+    /// candidate's factor</b> - the poll the live prediction, the Sejm's shares on the day with the government's record shifting them, as the game's
+    /// Sejm vote reads them; the factors of record [FITTED] once to the PKW's first round of 18 May 2025 against the game's poll that day on the
+    /// reference world - the record's state on the eve, as a game started that day holds it - which therefore reproduces that first round
+    /// (<see cref="PresidencyOfRecord.CandidateOfRecord.Factor"/>); a later field's candidate at <see cref="FutureFactor"/>. A candidate of record
+    /// whose party has no roster row carries its own share of record as its base. The field is normalised; counted by the rule: more than half
+    /// elects; otherwise the two with most meet in the run-off. ⚠ PREMISE, DECLARED (§772's review): a game PLAYED from Poland's 2023 start reads
+    /// the history of the chamber seated at its own epoch and its own formation's government, so its 2025 first round is not the PKW's.</description></item>
     /// <item><description><b>The run-off</b> (B4): each eliminated electorate splits between the finalists as exp(−d²/τ) in the sovereignty space
     /// (galtan, nationalism and the EU position, equally weighted), τ <see cref="TransferTau"/>; an unplaced one splits as the finalists' first votes
-    /// did; the [AUTHORED-DRAFT] abstention <see cref="AbstentionDraftMax"/> beside it. <b>Where each candidate stands is where B4 was fitted</b>: a
-    /// candidate of record at the CHES row the fit placed it at (<see cref="PresidencyOfRecord.CandidateOfRecord.PositionUnit"/> - Hołownia at
-    /// Polska 2050's own row, not Trzecia Droga's joint position), any other at the backing party's position. The positions are taken at the first
-    /// vote and kept with the contest.</description></item>
+    /// did; the [AUTHORED-DRAFT] abstention <see cref="AbstentionDraftMax"/> beside it. <b>Each candidate stands at their own party's position</b>
+    /// (E1), as B4 was fitted: a candidate of record at its CHES unit (<see cref="PresidencyOfRecord.CandidateOfRecord.PositionUnit"/> - Hołownia at
+    /// Polska 2050's own row, Zandberg at Razem's, Braun at Konfederacja's, the list his party ran on), any other at the backing party's position.
+    /// The positions are taken at the first vote and kept with the contest.</description></item>
     /// </list>
     /// The model predicts shares, not turnout: the rounds are counted in parts per million of the valid vote and printed as shares, never as votes.
     /// </summary>
@@ -43,6 +49,10 @@ namespace PoliSim.Elections
         /// the others in proportion to their distance to the nearer finalist. No source measures it (the exit poll interviews run-off voters only);
         /// on the calibration list.</summary>
         public const double AbstentionDraftMax = 0.25;
+
+        /// <summary>RULED (Elias's ruling E1, §772): "Future fields start at factor 1.0" - a candidate outside the field of record carries the party's
+        /// poll unchanged until play calibrates otherwise.</summary>
+        public const double FutureFactor = 1.0;
 
         /// <summary>How <see cref="PresidentAt"/>'s basis begins for a president the game elected - the one test the pages read ("ELECTED IN THE GAME").</summary>
         public const string GameBasis = "the game's own election";
@@ -71,7 +81,7 @@ namespace PoliSim.Elections
             /// <summary>The day the president it elects takes office - the predecessor's term's end.</summary>
             public DateTime TakesOffice;
             public List<Candidate> Field = new List<Candidate>();
-            /// <summary>Who did not stand, with why - a roster party short of the gate, a candidate of record no roster party backs.</summary>
+            /// <summary>Who did not stand, with why - the reasons <see cref="PresidentialElection.FirstVote"/> writes: a roster party short of the gate, a candidate of record whose backing party has no share in the poll.</summary>
             public List<string> NotStanding = new List<string>();
             public string RunOffA, RunOffB;
             public DateTime RunOffOn;
@@ -157,7 +167,7 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// The first vote's day for the term ending <paramref name="termEnds"/>: the record's where it holds one in the window, else the window's last
-        /// Sunday (PREMISE, DECLARED - see the class).
+        /// Sunday (RULED, E2 - see the class).
         /// </summary>
         public static DateTime FirstVoteFor(TwoRoundElection.Rule rule, CountryId id, DateTime termEnds, out string basis)
         {
@@ -170,7 +180,7 @@ namespace PoliSim.Elections
             }
             DateTime day = closes;
             while (day.DayOfWeek != DayOfWeek.Sunday) { day = day.AddDays(-1); }
-            basis = "PREMISE, DECLARED - the last Sunday of the window Art. 128 ust. 2 sets, 100 to 75 days before the term ends, as in 2025 (2015 and 2020 were ordered for its second)";
+            basis = "RULED (E2) - the most recent practice: the last Sunday of the window Art. 128 ust. 2 sets, 100 to 75 days before the term ends, as in 2025 (2015 and 2020 were ordered for its second)";
             return day;
         }
 
@@ -226,32 +236,46 @@ namespace PoliSim.Elections
             var contest = new Contest { FirstVote = date, DayBasis = basis, TakesOffice = termEnds };
             long gate = GateTotal(country.Id, date, out int gateYear);
             PresidentAt(country.Id, country.PresidentialElections, date, out PresidencyOfRecord.President incumbent);
-            IReadOnlyList<PresidencyOfRecord.CandidateOfRecord> ofRecord = PresidencyOfRecord.CandidatesOf(country.Id, termEnds.Year);
-            foreach (PresidencyOfRecord.CandidateOfRecord c in ofRecord)
+            // §772 (E1): each candidate's support before the field is normalised - a candidate a roster party backs carries the party's poll × the
+            // candidate's factor (the fitted one of record, FutureFactor otherwise); a candidate of record with no roster party carries its own share
+            // of record as its base
+            var support = new List<(Candidate Candidate, double Support)>();
+            var fielded = new HashSet<string>();
+            foreach (PresidencyOfRecord.CandidateOfRecord c in PresidencyOfRecord.CandidatesOf(country.Id, termEnds.Year))
             {
-                if (c.BackingParty == null) { contest.NotStanding.Add(PresidencyOfRecord.NameOfRecord(country.Id, termEnds.Year, c.Surname) + " - no roster party backs the candidate: no standing to inherit (" + c.Why + ")"); }
+                // the field of record stood - the PKW registered every candidate it returned - so the gate's reading is not put to it
+                string name = PresidencyOfRecord.NameOfRecord(country.Id, termEnds.Year, c.Surname);
+                double s;
+                if (c.BackingParty != null)
+                {
+                    fielded.Add(c.BackingParty);
+                    s = predicted.TryGetValue(c.BackingParty, out double poll) && !double.IsNaN(poll) && poll > 0.0 ? poll * c.Factor : 0.0;
+                }
+                else
+                {
+                    s = PresidencyOfRecord.ShareOfRecord(country.Id, termEnds.Year, c.Surname);
+                }
+                if (double.IsNaN(s) || s <= 0.0) { contest.NotStanding.Add(name + " - no support to count: the backing party has no share in the poll (" + c.Why + ")"); continue; }
+                support.Add((new Candidate { Name = name, Party = c.BackingParty, PositionUnit = c.PositionUnit }, s));
             }
-            var standing = new List<(PoliticalParty Party, double Share)>();
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {
-                if (!predicted.TryGetValue(party.Abbrev, out double share) || double.IsNaN(share) || share <= 0.0) { continue; }
+                if (fielded.Contains(party.Abbrev) || !predicted.TryGetValue(party.Abbrev, out double share) || double.IsNaN(share) || share <= 0.0) { continue; }
                 if (share * gate < rule.NominationSignatures)
                 {
                     contest.NotStanding.Add(string.Format(CultureInfo.InvariantCulture, "{0} - its predicted voters, {1:0.00} % of {2}'s {3:N0} valid votes, fall short of the {4:N0} signatures that nominate",
                         PartySystems.ShortName(country.Id, party.Abbrev), 100.0 * share, gateYear, gate, rule.NominationSignatures));
                     continue;
                 }
-                standing.Add((party, share));
+                support.Add((new Candidate { Name = CandidateFor(country, rule, party, date, incumbent), Party = party.Abbrev, PositionUnit = party.Abbrev }, share * FutureFactor));
             }
             double sum = 0.0;
-            foreach ((PoliticalParty _, double share) in standing) { sum += share; }
+            foreach ((Candidate _, double s) in support) { sum += s; }
             var votes = new List<(string Candidate, long Votes)>();
-            foreach ((PoliticalParty party, double share) in standing)
+            foreach ((Candidate candidate, double s) in support)
             {
-                var candidate = new Candidate { Party = party.Abbrev, Share = 100.0 * share / sum, PositionUnit = party.Abbrev };
-                candidate.Name = CandidateFor(country, rule, party, date, termEnds, incumbent, ofRecord, out string recordUnit);
-                if (recordUnit != null) { candidate.PositionUnit = recordUnit; }
-                if (TryPosition(country.Id, candidate.PositionUnit, out Point at))
+                candidate.Share = 100.0 * s / sum;
+                if (candidate.PositionUnit != null && TryPosition(country.Id, candidate.PositionUnit, out Point at))
                 {
                     candidate.Placed = true;
                     candidate.Galtan = at.Galtan;
@@ -259,7 +283,7 @@ namespace PoliSim.Elections
                     candidate.Eu = at.Eu;
                 }
                 contest.Field.Add(candidate);
-                votes.Add((candidate.Name, (long)Math.Round(PartsPerMillion * share / sum)));
+                votes.Add((candidate.Name, (long)Math.Round(PartsPerMillion * s / sum)));
             }
             contest.Field.Sort((x, y) => y.Share.CompareTo(x.Share));
             TwoRoundElection.FirstVote counted = TwoRoundElection.CountFirstVote(rule, date, votes);
@@ -307,19 +331,11 @@ namespace PoliSim.Elections
                 elected, contest.RunOffOn, winner, contest.TakesOffice);
         }
 
-        /// <summary>The candidate a party fields for the term ending <paramref name="termEnds"/> (see the class) - and, for a candidate of record,
-        /// the CHES unit B4 placed it at (<paramref name="recordUnit"/>; null for any other). An unnamed candidate carries the election's year, so two
-        /// of a party's are never read as one person (the term limit counts by name).</summary>
-        private static string CandidateFor(Country country, TwoRoundElection.Rule rule, PoliticalParty party, DateTime firstVote, DateTime termEnds, PresidencyOfRecord.President incumbent,
-            IReadOnlyList<PresidencyOfRecord.CandidateOfRecord> ofRecord, out string recordUnit)
+        /// <summary>The candidate a party outside the field of record fields (see the class): the incumbent within the term limit, the party's leader
+        /// where the roster holds one, else the party's candidate unnamed - with the election's year, so two of a party's are never read as one person
+        /// (the term limit counts by name).</summary>
+        private static string CandidateFor(Country country, TwoRoundElection.Rule rule, PoliticalParty party, DateTime firstVote, PresidencyOfRecord.President incumbent)
         {
-            recordUnit = null;
-            foreach (PresidencyOfRecord.CandidateOfRecord c in ofRecord)
-            {
-                if (c.BackingParty != party.Abbrev) { continue; }
-                recordUnit = c.PositionUnit;
-                return PresidencyOfRecord.NameOfRecord(country.Id, termEnds.Year, c.Surname);
-            }
             if (incumbent.Name != null && incumbent.BackingParty == party.Abbrev && TermsServed(country, incumbent.Name) < rule.MaxTerms) { return incumbent.Name; }
             if (party.Leaders != null && party.Leaders.Length > 0) { return party.Leaders[0].Name; }
             return PartySystems.ShortName(country.Id, party.Abbrev) + "'s candidate (" + firstVote.Year.ToString(CultureInfo.InvariantCulture) + ")";
@@ -358,9 +374,9 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// The position of a CHES unit in the sovereignty space: a roster party by its key, or - for a candidate of record placed at a member of a
-        /// joint list - that member's own row (<see cref="PartySystems.PolandTdMembers"/>), read where the roster holds no positioned party by that key.
-        /// False where neither holds the unit with a position on all three axes.
+        /// The position of a CHES unit in the sovereignty space: a roster party by its key, or - for a candidate of record standing at a unit the roster
+        /// does not seat - a joint list's member (<see cref="PartySystems.PolandTdMembers"/>) or an unseated unit (<see cref="PartySystems.PolandUnseatedUnits"/>),
+        /// read where the roster holds no positioned party by that key. False where none holds the unit with a position on all three axes.
         /// </summary>
         public static bool TryPosition(CountryId id, string unit, out Point at)
         {
@@ -369,6 +385,7 @@ namespace PoliSim.Elections
             if (id == CountryId.Poland)
             {
                 foreach ((PoliticalParty member, int _) in PartySystems.PolandTdMembers) { if (member.Abbrev == unit) { return TryPoint(member, out at); } }
+                foreach (PoliticalParty unseated in PartySystems.PolandUnseatedUnits) { if (unseated.Abbrev == unit) { return TryPoint(unseated, out at); } }
             }
             return false;
         }

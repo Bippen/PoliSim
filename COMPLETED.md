@@ -36817,3 +36817,90 @@ The coalition's 248 now carry what PiS and Konfederacja's 212 oppose wherever TD
 - SP-7: the model and the veto built; the presidential START not built.
 
 Tier TOOLING + DOCUMENTS (a Perl tool, the list, the record; nothing Unity compiles): the cheap bar **95 of 95** (`cheap771`).
+
+## 772. RULING E1 INSTALLED: THE GAME'S 2025 PRESIDENTIAL FIRST ROUND PER CANDIDATE - THE PARTY'S POLL × A CANDIDATE FACTOR [FITTED] ONCE TO THE PKW'S FIRST ROUND OF 18 MAY 2025, ON A WORLD BUILT AS A NEW GAME BUILDS ONE, ON THE EVE; THE FIELD OF RECORD WHOLE; EACH CANDIDATE AT THEIR OWN PARTY'S POSITION; A FRESH WORLD TAKEN STRAIGHT TO 1 JUNE 2025 ELECTS NAWROCKI (2026-10-04)
+
+**The ruling** (Elias, E1, 2026-10-04): *The game's 2025 presidential result: option 3, per candidate. First-round support = the candidate's party support in the game's own poll × a candidate factor. For the real 2025 field, the factors are [FITTED] once, to the PKW first round of 18 May 2025 against the game's poll on that date, so a world that follows history reproduces that first round. Candidates whose party has no row of its own (Braun, Zandberg, Stanowski and the minor ones) carry their fitted share as their base. Future fields start at factor 1.0. These factors are per-candidate data, not a second free parameter. Each candidate sits at their own party's position, as you placed Hołownia (Polska 2050). Acceptance test: a fresh world taken straight to 1 June 2025 elects Nawrocki; write both rounds' misses into the model card. Option 2 is rejected because seating the real winner would take the 2025 race away from the player.*
+
+It answers §770's first owed ruling: as built, the model elected Trzaskowski on the start's world, because the first round inherited the Sejm's standing (§727's known miss).
+
+**Built:**
+- **The field of record, whole** (`PresidencyOfRecord.CandidatesOf`): every candidate the PKW's first round of 2025 returned.
+  - **Five backed by a roster party:** Nawrocki (PiS), Trzaskowski (KO), Mentzen (Konf), Hołownia (TD), Biejat (NL).
+  - **Eight backed by none:** Braun, Zandberg, Stanowski, Senyszyn, Jakubiak, Bartoszewicz, Maciak, Woch.
+  - **The gate.** The field of record stood in fact (the PKW registered it), so the gate's reading is not put to it. A roster party outside it is gated as before (MN falls short).
+- **The first round** (`PresidentialElection.FirstVote`):
+  - A candidate a roster party backs carries **the party's poll × its factor** (`CandidateOfRecord.Factor`, [FITTED]).
+  - A candidate with no roster row carries **its own share of record as its base** (`PresidencyOfRecord.ShareOfRecord`, read from the PKW's returns as generated, never typed).
+  - The field is normalised.
+  - A later field's candidate carries `PresidentialElection.FutureFactor`, 1.0, ruled.
+- **The fit, once** (`PresidentialReferenceWorld`):
+  - **One definition** of "a fresh world taken straight to" the day, so the factors are fitted on the world they are tested on.
+  - **That world is built as a new game builds a world, on the eve of the first vote:** the epoch set first and the world created on it. It seats what the record holds that day: Tusk's KO+TD+NL government, the 2023 Sejm, and the published economy since October 2023. It steps by the game's own `AdvanceDay` into the first vote and on to the run-off.
+  - **The factor** = the candidate's share of record ÷ the party's poll on that world's first vote.
+  - **The fitted figures**, patched in from the log (never retyped) - the candidates' own pull against their parties' Sejm standing, the gap §727 measured:
+
+    | candidate | factor | party's poll | share of record |
+    |---|---:|---:|---:|
+    | Nawrocki | 0.880 | 33.57 % | 29.54 % |
+    | Trzaskowski | 1.044 | 30.05 % | 31.36 % |
+    | Mentzen | 2.178 | 6.80 % | 14.81 % |
+    | Hołownia | 0.244 | 20.48 % | 4.99 % |
+    | Biejat | 0.470 | 9.00 % | 4.23 % |
+
+  - `PresidentialElectionLiveDiagnostic` refits them every bar and fails where a stored figure is no longer the fit; the refit is printed as FIT lines.
+- **Each candidate at their own party's position:**
+  - Hołownia at Polska 2050's row (§770's review).
+  - **Zandberg at Razem's** (`PartySystems.PolandUnseatedUnits` - CHES 2024's Razem row, generated to two decimals by the same generator that reproduces PSL's typed row).
+  - **Braun at Konfederacja's.** His party, KKP, has no CHES row; it ran on Konfederacja's 2023 list, which is where B4 was fitted.
+  - The rest unplaced: their voters split as the finalists' first votes did.
+  - `PresidentialVoteBacktest` holds every placed candidate to its CHES row on the run-off's axes; `PolishSejmAllocationDiagnostic` holds Razem's typed row on all fourteen fields.
+
+**Checked - the acceptance** (`PresidentialElectionLiveDiagnostic`, on the reference world):
+- The world seats the government of record (KO's prime minister; KO+TD+NL).
+- **The poll carries that government's record** (the second review's finding 2). The term reading the poll is built on spans Tusk's term from 13 December 2023 to the eve, with unemployment and inflation read at both ends (n772d: term index 65.8; unemployment 3.1 % → 3.0 %, inflation 6.2 % → 4.4 %). So a later change that left the fit with no record fails here, before any refit could be pasted over it.
+- The stored factors are the fit.
+- **The first round reproduces the PKW's** - in-sample, the fit's own world - with a largest miss of 0.0000 pp.
+- **The run-off elects Nawrocki, 52.32 % of the two** (the record 50.89, a miss of +1.43). This is the backtest's own pin for 2025 (`PinStay2025`), so the runtime and the instrument agree.
+- The gate, the office, the veto, the planted winner, the next term's day and the save round-trip hold, as in §770. Both gate checks are floored: the parties short of the gate must be non-empty, and the 2030 check reads the gate's own reason.
+- **A later field** - the 2030 first vote, held on the same world and then taken away:
+  - one candidate for each roster party clearing the gate;
+  - Nawrocki again, within the term limit;
+  - the rest unnamed (*KO's candidate (2030)* ...);
+  - every share the party's poll at the future factor;
+  - MN short of the gate.
+
+**The model card** (`docs/reference/PRESIDENTIAL_VOTE.md`):
+- **The first round's row rewritten.** The backtest inherits; the game multiplies by the factor ([FITTED], E1) on the reference world.
+- **Its known miss bounded:** a later field carries no pull until play calibrates it.
+- **Both rounds' misses** are written into the card's generated block by `PresidentialVoteBacktest.WriteReadings`: every candidate's first round (all +0.00, the fit's own) and the run-off's (+1.43). The readings' intro says these first-round rows are in-sample, and that the run-off row is B4's reached through the game's day loop.
+- **No save bump.** The contest's shape is unchanged (E1 adds no field to `Contest` or `Candidate`). A v38 save cut by the §770/§771 build on or after 18 May 2025 keeps §770's field and finishes its run-off on it.
+
+**The review** (`Reviews/2026-10-04_s772_e1_factors.md`: the workflow `polisim-staged-review`, two passes, every finding put to a refute-first skeptic, every report verbatim):
+- **The first pass found one defect, fixed** (three lenses saw it). The reference world was the 2023 start world with its clock moved, which `SetEpoch`'s contract forbids, so its poll carried no government's record.
+  - It is now built on the eve as a new game is (`PresidentialReferenceWorld.Hold`), and the factors were refit on it.
+  - With the old factors the rebuilt world missed Trzaskowski by +1.57 pp (the reviewer computed +1.6). Refit, the first round reproduces and Nawrocki is still elected at 52.32 %.
+- **The first pass's other findings were taken:**
+  - the card's in-sample note;
+  - the save's field (no bump, stated);
+  - the stale `NotStanding` doc;
+  - the later field's check (the 2030 first vote);
+  - Razem's typed row held to CHES on all fourteen fields.
+- **The second pass found no defect.** Its minors and notes were all fixed:
+  - a τ double-encoded in the card, repaired at byte level; `MojibakeCheck` now reads `docs/**/*.md`, which §579 moved out of the root;
+  - the record check above;
+  - the gate checks floored;
+  - the docs narrowed to the reference world, the premise, the positions and the method `NotStanding` names.
+- **Declined, recorded:** finding 3's played-basis fit and played-path rows. A start world stepped in the Editor holds no Sejm election (the controller holds it), so it is not a played game's either. They wait on Elias's answer to which poll E1 means.
+
+**Also in this commit - E2's relabels** (§773 records them):
+- `PresidentialElection`'s account rules the days (the most recent practice), the oath, the gate and the player's own leader standing.
+- The President slip's day words key on the record's basis.
+
+**Owed to Elias, from this item:**
+- **PREMISE, DECLARED (the review's finding):** a game *played* from Poland's 2023 start reaches 18 May 2025 on another basis than the reference world. Its prediction reads the history of the chamber seated at its own epoch (the standing history gap, §767), and its government is its own formation's. So the factors fitted on the reference world do not reproduce its first round, and since a played game's poll moves with play, no factors fitted once reproduce every played game's (narrowed by the second pass). **Which poll E1 means, and whether the standing gap should close, is his to rule.**
+- **A later field carries factor 1.0.** Its first round inherits the Sejm's standing again (the §727 miss) until play calibrates it.
+- **A president no roster party backs** (Braun, Stanowski, ...) would veto nothing, because B1 reads a backing party's club.
+- **The factors are fitted on the reference world's poll.** A change to the prediction moves that poll and fails the fit check; a refit is then his to rule.
+
+Tier ELECTIONS + UI (the presidential model; the President slip's day words): the review two passes; the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
