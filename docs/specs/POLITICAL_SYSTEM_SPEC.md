@@ -188,6 +188,10 @@ support party shares part of the government's record in the voters' eyes — the
 
 ## 6. The United States — playing the president
 
+> ⚠ **Planned, not built** (PS-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). The first bullet's third-party
+> clause and decision 6 conflict with `START_POINTS_AND_PARTY_CREATION_SPEC.md` §2.6 and its decision 10 (a third-party run)
+> until Elias rules R-US4.
+
 - **The player is a party's presidential nominee** — Democratic or Republican. Third parties are not
   playable: there is no Electoral College path to show them.
 - **The campaign is fought state by state** on the Electoral College allocator that already reproduces
@@ -274,7 +278,8 @@ country, and it is the smallest.
 4. **Losing office never ends a run in a parliamentary country** — OP-1 resolved.
 5. **AI party casts are derived from each party's CHES position** (the people-versus-elite item, left–
    right, GAL–TAN) by a stated rule — never a hand-written characterisation of a real party.
-6. **The US player is the party's nominee of record; third parties are not playable.**
+6. **The US player is the party's nominee of record; third parties are not playable.** ⚠ In conflict with the start-points
+   spec's decision 10 until R-US4 is ruled (`docs/specs/USA_STAGE_PLAN.md`).
 7. **France is selectable in governing mode, labelled, with no election.**
 8. **The Senate is required for the USA and Italy to be playable**; Poland's Senate is stated absent.
 9. **Portfolios follow seat contribution (Gamson's law), sourced.**

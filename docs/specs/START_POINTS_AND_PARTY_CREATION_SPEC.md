@@ -128,6 +128,9 @@ Republican ticket, with positions inside that party's range; or **a third-party 
 origin in the hardest form, where the Electoral College shows honestly how far a third party is from a
 single electoral vote.
 
+> ⚠ **Planned, not built** (PS-6 + SP-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). The third-party run conflicts
+> with `POLITICAL_SYSTEM_SPEC.md` decision 6 ("third parties are not playable") until Elias rules R-US4.
+
 ### 2.7 How the model treats a new party — using its own logic
 
 - **Votes:** a new party has no electoral history, so it has **no loyal base**; the vote model's loyalty
@@ -280,7 +283,8 @@ start points and created parties (S5, S6) → the two-round presidential model (
 7. **Created parties exist only in the player's country.**
 8. **Marks come from the unspent sheet cells; inks pass the live fence.**
 9. **Funding and ballot access follow each country's real rules**, sourced.
-10. **The USA offers your own nominee or a third-party run.**
+10. **The USA offers your own nominee or a third-party run.** ⚠ In conflict with the political-system spec's decision 6
+    until R-US4 is ruled (`docs/specs/USA_STAGE_PLAN.md`).
 11. **The two-round presidential model unlocks Poland's and France's presidential starts; France's
     legislative start stays locked.**
 

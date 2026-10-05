@@ -37189,3 +37189,52 @@ Tier TOOLING + DOCUMENTS (a Perl tool, a generated file, the record): the bars o
 - **The formation's cabinet-size preference**, which puts NL outside the cabinet the record seats it in.
 
 Tier ELECTIONS + DATA (the formation reads Poland's declarations): the review two passes; the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
+
+## 777. PS-6 PLANNED, NOTHING BUILT: THE USA AS A PLAN IN THE REPO - ITEMS US-0 TO US-36 IN EIGHT PHASES, EACH WITH ITS NEEDS AND ITS DONE-WHEN; RULINGS R-US1 TO R-US13 ASKED NOW, THE REST WITH THEIR MEASUREMENTS; THE SPECS' THIRD-PARTY CONFLICT MARKED (US-0) (2026-10-04)
+
+**The instruction** (Elias, 2026-10-04): *Next: PS-6 (the USA), planned before any code, as you propose.*
+
+**Planned** (`docs/specs/USA_STAGE_PLAN.md`). The workflow `ps6-usa-plan` mapped the repo's USA, wrote three independent plans, judged them, and synthesized one. The plan covers:
+- **What PS-6 delivers.** The PS-6 + SP-6 and D-US rows, the two specs' words, and the standing rulings, E1 to E4 among them, applied to the USA. Two conflicts it does not settle itself: third parties (R-US4) and every country's calendar (R-US5). "Playable" is set out in four checkpoints.
+- **What the repo has for the USA:**
+  - built and wired: the roster, the House by Congress, the executive of record, the start card, the Fed, the economic vote;
+  - built and wired to nothing: the Electoral College allocator, and Poland's presidential and Germany's regional machinery, reusable;
+  - sourced on disk: the Congress records, the debt limit (B7) and the 2024 returns;
+  - missing: no polling day, no vote model, no Senate, no veto, no budget procedure;
+  - wrong or misleading today: the US card promises an election it never holds, and Biden and the 118th House govern for the whole run.
+- **The items in order:** US-0 to US-36 in phases A to H, each with its needs, size and done-when, in PS-5's grain - source, prove on the record, rule, then wire. The checkpoints: the 2024 presidential election held state by state and the winner sworn in; Congress elected the same day; the row's done-when (bills through both chambers, the veto and its override, the budget through Congress, the debt limit binding on its date); the close.
+- **The rulings:** R-US1 to R-US13 asked now; R-US14 to R-US21 asked later, each with the measurement that informs it.
+- **The rest:** the Design asks (D-US in two parts), the primary sources to read, the risks, and what is out of scope.
+
+**US-0, done here:**
+- The plan is in the repo.
+- The PS-6 + SP-6 row points to it.
+- `POLITICAL_SYSTEM_SPEC.md` §6 and decision 6, and `START_POINTS_AND_PARTY_CREATION_SPEC.md` §2.6 and decision 10, point to it, their third-party clauses marked in conflict until R-US4.
+- The plan's precondition is restated as met (§772 to §776 commit with it).
+- **One deviation, stated:** each item's needs live in the plan, not in the row, so the row carries references only.
+
+**Spot-checked against the code before installing:**
+- the Electoral College allocator's own "wired to nothing";
+- the House's three vintages;
+- the start brief's polling-day clause;
+- the US sequester constant;
+- the files in `ElectionsData/usa/`.
+
+The plan states that its code facts are a reading of 5edca04 (TRACKING): they go stale as PS-6 lands.
+
+**Asked of Elias - R-US1 to R-US13** (the plan's §4.1; Code's recommendation first):
+1. **R-US1:** Congress and the president as of record, by date - the 119th Congress on 3 Jan 2025, the president of record on 20 Jan 2025, until the game elects them (a).
+2. **R-US2:** who the player is in 2024 - the November nominee of record, with that candidate's fitted factor (a).
+3. **R-US3:** no candidate at 270 - the 12th Amendment's contingent election in the House (a).
+4. **R-US4:** third parties - reconcile the specs: the major-party nominee and later your own nominee in PS-6, the third-party run its own later row (a).
+5. **R-US5:** the USA's elections in other countries' games - a pure count now, and one later cross-country row for every country (a).
+6. **R-US6:** the two-term limit ends the run (the specs' standing words), with its consequence for a REP player named (a).
+7. **R-US7:** who introduces bills - the president's party, and a Congress held by the other party sends its own (a).
+8. **R-US8:** the president's levers - the veto and appointments, and the tariff under its delegating statutes if they are read by date (b).
+9. **R-US9:** the budget's path - an appropriation at cloture, the rates by reconciliation, the pension age its own act, and a continuing resolution on a lapse (a).
+10. **R-US10:** the Senate's independents, counted with the conference they caucus with (a).
+11. **R-US11:** the history after the game's own election rolled forward, for every country (a).
+12. **R-US12:** the Fed chair on the statutory four-year term, built late (a).
+13. **R-US13:** the electors from 2032 - the 2020 census allocation carried forward until 2030's is sourced (a).
+
+Tier DOCUMENTS (a plan, two specs' notes, the feature list): the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
