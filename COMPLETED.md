@@ -36989,3 +36989,48 @@ Tier ELECTIONS + UI (the presidential model; the President slip's day words): th
 - **A fallen act costs the government approval** even where the Finance partner proposed it.
 
 Tier SIMULATION + UI (a money path, ledger rows s773; the Budget page, the pending cards, a signing plate's title): the review three passes; the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
+
+## 774. RULING E3 SENT: D-PL'S SEVENTH QUESTION DECIDED - THE PRESIDENTIAL NIGHT FOLDS INTO D-PL; DESIGN'S RETURN, WHICH KEPT IT APART, TOLD SO BY NAME; FOR POLAND, D-PR IS D-PL'S (2026-10-04)
+
+**The ruling** (Elias, E3, 2026-10-04): *D-PL's seventh question: yes, fold the presidential night into D-PL. Tell Design it's decided.*
+
+**Found first: Design's return had arrived** (`send/D-PL_return/`, read as data and not pulled):
+- **What it holds.** `RETURN.md`; boards 28a (the night at 1280, live) and 28b (the answers) in `Election Night PL v3.5.dc.html`; the okręgi cartogram (`assets/dpl/night.json`); the Polish marks and flag; six inks proposed; five items for Code.
+- **Its answer 7 kept the presidential night apart.** With no regional presidential count there is no map, so, "by the build's rule", no night. It also took C4 as open.
+- **How each is answered.** The ruling overrules the first. §770 and E1/E2 have closed the second.
+
+**Sent** (DesignSync, the standard form). The folder `uploads/D-PL_q7_decided/` holds five files:
+- `DECIDED.md`;
+- `MANIFEST.sha256`;
+- one stored zip, `D-PL_q7.zip`, with the manifest first;
+- two attachments, loose.
+
+Before the upload, the manifest's hashes were checked and every zip member was confirmed stored and byte-identical to its loose copy. After it, `list_files` listed all five, and the manifest read back byte-identical.
+- **`DECIDED.md`:**
+  - the ruling, verbatim;
+  - the return's answer 7 overruled by name;
+  - its open-C4 premise answered: C4 built (§770), the 2025 field and first round ruled (E1, §772), the days, the oath, the gate and the player's own leader ruled (E2, §773);
+  - D-PL is Poland's election nights, the Sejm's and the President's;
+  - for Poland, D-PR is folded in; France's run-off night stays D-PR;
+  - the return's five items for Code are Code's, answered when D-PL is built;
+  - what a Polish presidential night has to show, from the data Code holds: the days, the first round on the record's field and on a later field, the run-off, who did not stand, and the record by województwo;
+  - what is not held: no regional count of the game's own vote, no turnout, no campaign;
+  - **four questions added:** (8) one night or two, in 28a's grammar; (9) the map - national, or the record's województwa as a labelled reference; (10) the fourteen days between the rounds; (11) the president-elect.
+- **Attached:**
+  - the President row on Politics › Parliament and its pinned slip, as built (`film770pl2`, frame `07a_politics_parliament_president_elect`, staged and said so);
+  - the record's rounds by województwo (`presidential_votes_by_voivodeship.csv`, the KBW's own files).
+
+**The feature list** (`POLISIM_FEATURE_LIST.md`):
+- D-PL's row: returned, question 7 decided, not yet built.
+- D-PR's row: Poland's night is D-PL's.
+
+**Owed, from the return (not built here):**
+- **D-PL itself.** Code reads 28a and 28b, builds the night in v3.5's grammar, films it at 1280 and 2560, and reports the reading back.
+- **The return's five items for Code:**
+  - the night's state per okręg under the open threshold calls;
+  - the call as drawn;
+  - whether the Polish count carries the other lists;
+  - MN in the night's keys, and a threshold per committee;
+  - the six inks, to confirm or replace.
+
+Tier DOCUMENTS (a send and the feature list): the bars over §772-§777's final tree - the cheap bar **96 of 96** (`cheap776c`); the simulation bar **57 of 57** (`sim776c`, the sentinel on fp755 unmoved); the dry film Poland@1280x720 (`drys776`, its scope row s773): 147 measured, 0 failed, 0 overflows, 0 escapes, 0 errors; the real film Poland 1280 (`real776`): 179 captured, 0 failed, 0 overflows, 0 escapes - read frame by frame: the Budget's if-passed slip (one line per act), the President slip's day words, the veto's signing plate.
