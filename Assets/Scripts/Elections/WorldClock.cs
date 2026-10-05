@@ -101,11 +101,123 @@ namespace PoliSim.Elections
         public static bool GoverningModeOnly(CountryId id) => id == CountryId.France;
 
         /// <summary>PS-6, US-1 (`docs/specs/USA_STAGE_PLAN.md`): the USA's start, whose elections the game does not hold yet - until its presidential count (US-8)
-        /// and the House's (US-16) are built. Meanwhile the president and the House seated at the start hold (§618's ruling 4; seating the record by its dates is
-        /// R-US1 (a), built in US-2), and no Senate is modelled (US-15). The folder card's line (<see cref="StartLine"/>), the start card's mode line
+        /// and the House's (US-16) are built. Meanwhile the record's House and president are seated on the record's dates (R-US1 (a), built in US-2:
+        /// <see cref="RecordSeatsChamber"/>, <see cref="RecordSeatsExecutive"/>), and no Senate is modelled (US-15). The folder card's line (<see cref="StartLine"/>), the start card's mode line
         /// (`StartPoints.ModeLine`), the brief and the not-held reason say so instead of promising a polling day; the card stays playable (§618). Not a general
         /// test of whether a start's election is held: that is <see cref="TryNextPollingDay"/>'s answer, and Italy's snap start (PS-7) is outside it.</summary>
         public static bool NoElectionYet(CountryId id) => id == CountryId.USA;
+
+        /// <summary>PS-6 US-2 (Elias's ruling F8, R-US1 (a): "whatever the game does not elect is seated on its record's dates"): the chamber the game does not
+        /// elect is the record's, seated on the day the record seats it - the USA's House, until the game elects it (US-16); US-15 adds the Senate.</summary>
+        public static bool RecordSeatsChamber(CountryId id) => id == CountryId.USA;
+
+        /// <summary>PS-6 US-2 (R-US1 (a)): the head of the executive the game does not elect is the record's, taking office on the record's day - the USA's
+        /// president, until the game holds the presidential election (US-8 turns this off; the House stays seated by record after it).</summary>
+        public static bool RecordSeatsExecutive(CountryId id) => id == CountryId.USA;
+
+        /// <summary>PS-6 US-2: the first chamber of record convened after <paramref name="after"/> whose table is on record - the one the record will seat next.</summary>
+        public static bool TryNextChamberOfRecord(CountryId id, DateTime after, out ChamberOfRecord next)
+        {
+            foreach (ChamberOfRecord c in Chambers(id)) { if (c.Convened > after.Date && PartySystems.SeatsSourced(c.Vintage)) { next = c; return true; } }
+            next = default;
+            return false;
+        }
+
+        /// <summary>PS-6 US-2: the first government of record that takes office after <paramref name="after"/>.</summary>
+        public static bool TryNextGovernmentOfRecord(CountryId id, DateTime after, out GovernmentOfRecord next)
+        {
+            foreach (GovernmentOfRecord g in Governments(id)) { if (g.From > after.Date) { next = g; return true; } }
+            next = default;
+            return false;
+        }
+
+        /// <summary>PS-6 US-2: the chamber of record whose table is seated on a date (<see cref="SeatedVintage"/>) - the chamber of record's own where its table is
+        /// sourced, else the latest sourced chamber: past the record (a chamber elected after the record's date), the one that stands; for a chamber whose per-list
+        /// table is not sourced (E-47, `PartySystems.SeatsSourced`), a LATER chamber, which may not have convened by the date (<see cref="SeatingDeviation"/> says so).</summary>
+        public static ChamberOfRecord ChamberSeatedOn(CountryId id, DateTime date) => ChamberOfVintage(id, SeatedVintage(id, date));
+
+        /// <summary>PS-6 US-2: what the record seats next while a change of record is still ahead, in the view's words - the next House of record and, where the
+        /// record seats the executive, the next president of record, each with its day, read from the rows; empty once the record holds no later one. The record
+        /// row's slip carries them, so the House's day and the oath are named before they come.</summary>
+        public static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date)
+        {
+            var lines = new List<string>();
+            if (RecordSeatsChamber(id) && TryNextChamberOfRecord(id, date, out ChamberOfRecord house))
+            {
+                lines.Add("NEXT OF RECORD: THE HOUSE ELECTED " + ViewDay(house.ElectionDay) + " · SEATED " + ViewDay(house.Convened));
+            }
+            if (RecordSeatsExecutive(id) && TryNextGovernmentOfRecord(id, date, out GovernmentOfRecord head) && TryPresidentOfRecord(id, head.From, out string name, out _))
+            {
+                string party = head.Cabinet != null && head.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(id, head.Cabinet[0]).ToUpperInvariant() : string.Empty;
+                lines.Add("NEXT OF RECORD: " + name.ToUpperInvariant() + party + " · TAKES OFFICE " + ViewDay(head.From));
+            }
+            return lines;
+        }
+
+        /// <summary>PS-6 US-2: the chamber the record seats on a date, in the view's words, for a country whose chamber the record seats
+        /// (<see cref="RecordSeatsChamber"/>) - the one elected and seated, or, past the record (a chamber of record elected after the record's date), the one
+        /// that stands, the day its term ended, and that none elected after it is on record (R-US1 (a): "the 119th stands, said on screen"). The words name
+        /// no later election, so they stay true for every later term.</summary>
+        public static string RecordStanding(CountryId id, DateTime date)
+        {
+            if (!RecordSeatsChamber(id)) { throw new ArgumentException($"{id}'s chamber is not seated by the record's dates"); }
+            ChamberOfRecord c = ChamberAt(id, date);
+            if (PartySystems.SeatsSourced(c.Vintage)) { return "ELECTED " + ViewDay(c.ElectionDay) + " · SEATED " + ViewDay(c.Convened); }
+            ChamberOfRecord stands = ChamberSeatedOn(id, date);
+            return "ELECTED " + ViewDay(stands.ElectionDay) + " · SEATED " + ViewDay(stands.Convened) + " · ITS TERM ENDED " + ViewDay(stands.Until)
+                   + " · NONE ELECTED AFTER IT IS ON RECORD, SO IT STANDS";
+        }
+
+        /// <summary>PS-6 US-2: the day a president's term of record ends - four years from the oath, at noon on 20 January (the record's own DERIVED reading
+        /// of the Twentieth Amendment §1, usa records §5, [EX-AM]); MaxValue for a cabinet, whose term the record does not fix.</summary>
+        public static DateTime TermOfRecordEnds(GovernmentOfRecord g) => g.Kind == ExecutiveKind.Presidency ? g.From.AddYears(4) : DateTime.MaxValue;
+
+        /// <summary>PS-6 US-2: the president of record on a date as the view prints them - the name without the party's tag, and the surname
+        /// (<see cref="SurnameOf"/>); false where no presidency of record holds.</summary>
+        public static bool TryPresidentOfRecord(CountryId id, DateTime date, out string name, out string surname)
+        {
+            name = null; surname = null;
+            if (!TryGovernmentAt(id, date, out GovernmentOfRecord g) || g.Kind != ExecutiveKind.Presidency) { return false; }
+            string tagged = g.President ?? g.Head;
+            int tag = tagged.IndexOf(" (", StringComparison.Ordinal);
+            name = tag > 0 ? tagged.Substring(0, tag) : tagged;
+            surname = SurnameOf(name);
+            return true;
+        }
+
+        /// <summary>PS-6 US-2: the president of record on a date, in the view's words - in office from the oath, or, past the term of record, the day it ended
+        /// and that the last of record stands, no successor being on record (R-US1 (a): the president of record "until the game holds the presidential
+        /// election (US-8)"); null where no presidency of record holds.</summary>
+        public static string ExecutiveStanding(CountryId id, DateTime date)
+        {
+            if (!TryGovernmentAt(id, date, out GovernmentOfRecord g) || g.Kind != ExecutiveKind.Presidency) { return null; }
+            DateTime ends = TermOfRecordEnds(g);
+            return date < ends
+                ? "IN OFFICE FROM " + ViewDay(g.From)
+                : "IN OFFICE FROM " + ViewDay(g.From) + " · THE TERM OF RECORD ENDED " + ViewDay(ends) + " · NO SUCCESSOR IS ON RECORD, SO THE LAST OF RECORD STANDS";
+        }
+
+        /// <summary>A person's surname as a row prints it - the last word of the name that is not a generational suffix ("Joseph R. Biden Jr." is Biden);
+        /// an unnamed candidate ("KO's candidate (2030)") whole.</summary>
+        public static string SurnameOf(string name)
+        {
+            if (string.IsNullOrEmpty(name) || name.Contains("'s candidate")) { return name ?? string.Empty; }
+            string[] words = name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            if (words.Length == 0) { return string.Empty; }
+            int last = words.Length - 1;
+            if (last > 0 && IsGenerationalSuffix(words[last].TrimEnd(','))) { last--; }
+            return words[last].TrimEnd(',');
+        }
+
+        private static bool IsGenerationalSuffix(string word) => word == "Jr." || word == "Jr" || word == "Sr." || word == "Sr" || word == "II" || word == "III" || word == "IV";
+
+        private static string ViewDay(DateTime d) => d.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+
+        private static ChamberOfRecord ChamberOfVintage(CountryId id, ElectionVintage vintage)
+        {
+            foreach (ChamberOfRecord c in Chambers(id)) { if (c.Vintage == vintage) { return c; } }
+            throw new InvalidOperationException($"{id} has no chamber of record for {vintage}");
+        }
 
         /// <summary>The date the world opens on when this country is chosen, by the start rule above.</summary>
         public static DateTime StartDate(CountryId id)
@@ -168,7 +280,12 @@ namespace PoliSim.Elections
                     {
                         new ChamberOfRecord(ElectionVintage.Usa2020, D(2020, 11, 3), D(2021, 1, 3), D(2023, 1, 3), "[HH-DIV] [HH-117] [SEN-DATES]"),
                         new ChamberOfRecord(ElectionVintage.Usa2022, D(2022, 11, 8), D(2023, 1, 3), D(2025, 1, 3), "[HH-DIV] [HH-118] [SEN-DATES]"),
-                        new ChamberOfRecord(ElectionVintage.Usa2024, D(2024, 11, 5), D(2025, 1, 3), Open, "[HH-DIV] [CLK-R1] [SEN-DATES]"),
+                        new ChamberOfRecord(ElectionVintage.Usa2024, D(2024, 11, 5), D(2025, 1, 3), D(2027, 1, 3), "[HH-DIV] [CLK-R1] [SEN-DATES]; its term ends 3 Jan 2027 [SEN-C2]"),
+                        // PS-6 US-2 (R-US1 (a): "A chamber not yet sourced (the 120th) is not seated: the 119th stands"): elected after the record's date, so not
+                        // on record - its table is unsourced (`PartySystems.SeatsSourced`) and the latest sourced one stands in its place. Left OPEN (DECLARED): the
+                        // row stands for every House elected after the record's date - its own term ends with the 120th Congress [SEN-C3], and a row closed with no
+                        // successor would leave `ChamberAt` no chamber to return; the words (`RecordStanding`, `SeatingDeviation`) name no later election
+                        new ChamberOfRecord(ElectionVintage.Usa2026, D(2026, 11, 3), D(2027, 1, 3), Open, "[USC-7] DERIVED; convenes [SEN-C2]; elected after the record's date - not on record"),
                     };
                 case CountryId.France:
                     return new[]
@@ -210,6 +327,11 @@ namespace PoliSim.Elections
         {
             ChamberOfRecord c = ChamberAt(id, date);
             if (PartySystems.SeatsSourced(c.Vintage)) { return null; }
+            if (c.ElectionDay > RecordDate)
+            {
+                // PS-6 US-2: no later election day named - the row stands for every chamber elected after the record's date
+                return $"the chamber of record on {date:yyyy-MM-dd} was elected after the record's date ({RecordDate:yyyy-MM-dd}) - not on record; the {LatestSourced(id)} table stands in its place";
+            }
             string elected = c.ElectionDay == DateTime.MinValue ? "elected in June 2022 (its polling days billed, G1)" : $"elected {c.ElectionDay:yyyy-MM-dd}";
             return $"the chamber of record on {date:yyyy-MM-dd} is the one {elected}, whose seats per list are not yet sourced (E-47); the {LatestSourced(id)} table is seated in its place";
         }
@@ -539,7 +661,7 @@ namespace PoliSim.Elections
                     // "Ulf Kristersson (M), caretaker" - the name, the party in brackets, the qualifier after the comma.
                     System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(after.Value.Head, @"^(?<name>[^(,]+?)\s*(\((?<party>[^)]+)\))?\s*(,\s*(?<q>.+))?$");
                     string name = m.Success ? m.Groups["name"].Value.Trim() : after.Value.Head;
-                    r.HeadSurname = name.Contains(" ") ? name.Substring(name.LastIndexOf(' ') + 1) : name;
+                    r.HeadSurname = SurnameOf(name);   // PS-6 US-2: one surname rule (a generational suffix is not the surname)
                     r.HeadParty = m.Success && m.Groups["party"].Success ? m.Groups["party"].Value.Trim() : after.Value.Cabinet != null && after.Value.Cabinet.Length > 0 ? after.Value.Cabinet[0] : null;
                     r.HeadQualifier = m.Success && m.Groups["q"].Success ? m.Groups["q"].Value.Trim() : null;
                     r.HeadFrom = after.Value.From;

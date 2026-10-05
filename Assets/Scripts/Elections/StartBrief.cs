@@ -115,7 +115,14 @@ namespace PoliSim.Elections
             if (WorldClock.NoElectionYet(id))
             {
                 // PS-6, US-1: the game holds no election here yet - the clause says what holds instead, never a polling day it does not hold
-                clauses.Add(new Clause("No election is held in this game yet - the president and the House seated at the start hold, and no Senate is modelled.", "WorldClock.NoElectionYet (PS-6, US-1; §618's ruling 4)"));
+                // PS-6 US-2 (R-US1 (a)): the record's next House and president, named and dated from the record's own rows - never the start's, already named above
+                string house = WorldClock.RecordSeatsChamber(id) && WorldClock.TryNextChamberOfRecord(id, opens, out WorldClock.ChamberOfRecord nextHouse)
+                    ? (nextHouse.ElectionDay == DateTime.MinValue ? "the next House of record" : "the House elected on " + Long(nextHouse.ElectionDay)) + " is seated on " + Long(nextHouse.Convened) : null;
+                string head = WorldClock.RecordSeatsExecutive(id) && WorldClock.TryNextGovernmentOfRecord(id, opens, out WorldClock.GovernmentOfRecord nextHead)
+                    ? (nextHead.President ?? nextHead.Head) + " takes office on " + Long(nextHead.From) : null;
+                string dated = house != null && head != null ? house + " and " + head : house ?? head;
+                clauses.Add(new Clause("No election is held in this game yet - " + (dated != null ? dated + ", as the record dates them" : "the record's House and president hold")
+                    + "; no Senate is modelled.", "WorldClock.NoElectionYet, RecordSeatsChamber, RecordSeatsExecutive (PS-6, US-1 and US-2; R-US1 (a))"));
             }
             else if (start.PollingDay != DateTime.MinValue)
             {
@@ -203,7 +210,7 @@ namespace PoliSim.Elections
 
             if (WorldClock.NoElectionYet(id))
             {
-                rows.Add(new Row("Election", "NONE IN THIS GAME YET · THE START'S PRESIDENT AND HOUSE HOLD", "WorldClock.NoElectionYet (PS-6, US-1; §618's ruling 4)"));   // US-1: what holds, not a polling day
+                rows.Add(new Row("Election", "NONE IN THIS GAME YET · THE RECORD SEATED ON ITS DATES", "WorldClock.NoElectionYet (PS-6, US-1 and US-2; R-US1 (a))"));   // US-2: what holds, not a polling day
             }
             else if (start.PollingDay != DateTime.MinValue)
             {

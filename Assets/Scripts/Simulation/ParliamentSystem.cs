@@ -23,7 +23,7 @@ namespace PoliSim.Simulation
     /// <summary>
     /// Political Systems Overhaul Part B, full rollout. Two independent pieces: seat composition
     /// (W-G1: seeded from each country's own most recent real election and changed ONLY by an
-    /// election - it was recomputed every turn from ApprovalRating while parties were fictional) and the gated-legislation flow, now covering all three bill tiers - the omnibus Annual
+    /// election - the game's, or, where the game does not elect the chamber, the record's seated on its date (PS-6 US-2); it was recomputed every turn from ApprovalRating while parties were fictional) and the gated-legislation flow, now covering all three bill tiers - the omnibus Annual
     /// Budget bill (BudgetBill), standalone program add/remove bills (TaxProgramBill/
     /// WelfareProgramBill), and standalone non-budget policy bills (LaborPolicyBill/
     /// CrimeJusticePolicyBill/SectorPolicyBill/TradePolicyBill) - each introduce -&gt; wait
@@ -52,7 +52,8 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// W-G1: seats are seeded from the country's OWN most recent real election
-        /// (`PartySystems.InitialSeats`) and then **do not move between elections**.
+        /// (`PartySystems.InitialSeats`) and then **do not move between elections** - they change at the game's election, or, where the game does not
+        /// elect the chamber (`WorldClock.RecordSeatsChamber`), when the record seats an elected one on its date (<see cref="SeatChamberOfRecord"/>, PS-6 US-2).
         ///
         /// **What this replaced, and why.** Until W-G1 this method recomputed every country's seat
         /// shares EVERY TURN from `ApprovalRating`, using a per-archetype `ApprovalSensitivity`
@@ -78,10 +79,19 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>PS-6 US-2 (R-US1 (a)): seats the chamber of record a vintage's lists elected - the table the start seats a chamber from
+        /// (`PartySystems.InitialSeats`), each roster party held, zero where the election seated none; still an election's result, the record's, seated
+        /// on its date where the game does not elect the chamber. Never `Seated`, which resolves against the epoch.</summary>
+        public static void SeatChamberOfRecord(Country country, ElectionVintage vintage)
+        {
+            if (vintage == ElectionVintage.Seated) { throw new System.ArgumentException("a chamber of record is seated by its own election, never by the epoch's (Seated)"); }
+            country.ParliamentSeats = PartySystems.InitialSeats(country.Id, vintage);
+        }
+
         /// <summary>
-        /// W-G1: the ONLY thing that changes a chamber — an election result, keyed by the same
-        /// abbreviations `PartySystems` uses. Seats not named by the result are set to zero rather
-        /// than left at their old value, because a party that won nothing holds nothing.
+        /// W-G1: the ONLY thing that changes a chamber — an election result: the game's own, here, keyed by the same
+        /// abbreviations `PartySystems` uses, or, where the game does not elect the chamber, the record's (<see cref="SeatChamberOfRecord"/>,
+        /// PS-6 US-2). Seats not named by the result are set to zero rather than left at their old value, because a party that won nothing holds nothing.
         /// </summary>
         public static void SetSeatsFromElection(Country country, IReadOnlyDictionary<string, int> wonSeats)
         {

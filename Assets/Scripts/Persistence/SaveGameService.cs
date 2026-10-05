@@ -242,6 +242,9 @@ namespace PoliSim.Persistence
             // counts (the replay rewinds three of them to the campaign's start and re-steps to here).
             sim.PlayerCountryId = save.PlayerCountryId;
             sim.RestoreCampaign(save.PlayerCampaign, save.MasterSeed, save.RngDrawCounts);
+            // PS-6 US-2: what the game does not elect is the record's on the save's date - a save cut before US-2 is put right as it loads, before any
+            // screen or fork reads it; a save from a build with US-2 already holds it, and nothing moves
+            sim.SeatTheRecordOnItsDate();
         }
 
         /// <summary>Atomic: serialize beside the target, then swap - a crash mid-save must never

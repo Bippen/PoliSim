@@ -61,20 +61,21 @@ namespace PoliSim.EditorTools
                 Check(presidentRow, "the USA's ledger carries a President row");
                 // PS-6, US-1: the US start says what it holds - the game holds no US election yet, so no polling day is promised. The folder card's line
                 // and the start card's mode line say only that no election is held; the brief, its Election row and the not-held reason say what holds -
-                // the president and the House seated at the start, no Senate (until US-2 seats the record by its dates). Each pinned whole.
+                // since US-2 the record's House and president, seated on the record's dates (the brief reads those dates from the record), no Senate. Each
+                // pinned whole.
                 bool electionRow = false, pollingRow = false;
                 foreach (StartBrief.Row row in StartBrief.Rows(usa))
                 {
-                    if (row.Name == "Election" && row.Figure == "NONE IN THIS GAME YET · THE START'S PRESIDENT AND HOUSE HOLD") { electionRow = true; }
+                    if (row.Name == "Election" && row.Figure == "NONE IN THIS GAME YET · THE RECORD SEATED ON ITS DATES") { electionRow = true; }
                     if (row.Name.EndsWith("olling day", StringComparison.Ordinal)) { pollingRow = true; }
                 }
                 string usaLine = WorldClock.StartLine(CountryId.USA), usaReason = NationalElection.NotHeldReason(CountryId.USA);
                 string usaMode = StartPoints.ModeLine(usa);
-                Check(!usaText.Contains("Polling day") && usaText.Contains("No election is held in this game yet - the president and the House seated at the start hold, and no Senate is modelled.")
+                Check(!usaText.Contains("Polling day") && usaText.Contains("No election is held in this game yet - the House elected on 5 November 2024 is seated on 3 January 2025 and Donald J. Trump (REP) takes office on 20 January 2025, as the record dates them; no Senate is modelled.")
                       && usaLine == "OPENS 12 MAR 2024 · NO ELECTION IN THIS GAME YET" && usaMode == "NO ELECTION YET · OPENS 12 MAR 2024"
-                      && usaReason == "No US election is held in this game yet: the president and the House seated at the start hold until the Electoral College count and the House races are built, and no Senate is modelled.",
+                      && usaReason == "No US election is held in this game yet: the House and the president are seated as the record seats them, on its dates, until the Electoral College count and the House races are built; no Senate is modelled.",
                     F("US-1: the USA's start says what it holds - no polling-day clause; the folder card \"{0}\"; the start card \"{1}\"; the not-held reason \"{2}\"", usaLine, usaMode, usaReason));
-                Check(electionRow && !pollingRow, "US-1: the USA's ledger carries an Election row - none in this game yet, the start's president and House holding - and no polling-day row");
+                Check(electionRow && !pollingRow, "US-1, US-2: the USA's ledger carries an Election row - none in this game yet, the record seated on its dates - and no polling-day row");
                 // the predicate is the USA's alone, and every other playable start with a polling day keeps it, in the brief and the ledger
                 var heldElsewhere = new List<string>();
                 bool usaOnly = true;

@@ -471,6 +471,8 @@ namespace PoliSim.Simulation
                 }
             }
 
+            // PS-6 US-2 (R-US1 (a)): what the game does not elect is the record's, seated on its record's day - before the campaign and the day's votes read it
+            SeatTheRecordOnItsDate();
             // C-R4b step 3: the player's campaign steps after every country's day, on the same date.
             AdvanceCampaign();
             // PS-2 / CL-4: the day the player's country votes, on its own calendar - the controller holds the election on it.
@@ -3148,7 +3150,8 @@ namespace PoliSim.Simulation
         /// <summary>
         /// §698 (the review's defect 2): a government change that leaves the player out of the chancellery closes the player's open budget window - the
         /// window is the governing party's to use; left open, it held the clock for good (the budget-window hold) or, the hold off, barred the new
-        /// government's own budget (<see cref="TryOpenBudgetProcess"/> returns while one is open). Called where a government is installed.
+        /// government's own budget (<see cref="TryOpenBudgetProcess"/> returns while one is open). Called where this manager installs a government; the
+        /// controller's election-night install resets the arrival window without it (PF-19).
         /// </summary>
         private void CloseBudgetWindowIfNotGoverning(Country country)
         {
@@ -3970,6 +3973,64 @@ namespace PoliSim.Simulation
 
         /// <summary>§705: a party's seats with its parliamentary group's - what a candidacy stands on in the Bundestag (the Union's candidate is the Fraktion's).</summary>
         private static int GroupSeats(Country country, string party) => SeatsOf(country, party) + (SeatedGroupPartner(country, party) is string partner ? SeatsOf(country, partner) : 0);
+
+        /// <summary>
+        /// PS-6 US-2 (Elias's ruling F8, R-US1 (a): "whatever the game does not elect is seated on its record's dates - the 119th Congress at noon on 3 Jan
+        /// 2025, and the president of record at noon on 20 Jan 2025 until the game holds the presidential election (US-8) ... A chamber not yet sourced (the
+        /// 120th) is not seated: the 119th stands"): in the player's country, where the game elects neither (`WorldClock.RecordSeatsChamber`,
+        /// `RecordSeatsExecutive` - the USA's), the House and the president of record are seated on their record's day. Held as STATE, not as a transition:
+        /// the seated House and the president are compared with the record's for the day and seated where they differ - each day, and once as a save loads
+        /// (`SaveGameService.RestoreInto`) - so a save from a build before US-2, holding the start's House past its day, is put right as it loads and no
+        /// save-format step is owed (DECLARED); a budget bill pending in such a save is decided as every install leaves one (§630: a pending bill outlives the
+        /// role that introduced it; §632: no window opens while it stands). The record's day is the day the world arrives on it ("noon" is a date - DECLARED). Past the record the last of
+        /// record stands: a House elected after the record's date is not on record, so the latest sourced one stays seated (`WorldClock.SeatedVintage`), and a
+        /// president whose term of record has ended stays in office until the game holds the presidential election (R-US1 (a); the words are
+        /// `WorldClock.RecordStanding` and `ExecutiveStanding`). The record's seating carries each party's capital as the game's own elections do - the House
+        /// changed by an election, the record's (DECLARED; else the game's first House election would divide by the start's seats). The president takes office
+        /// through <see cref="TakeOffice"/> (the arrival budget window reset - DECLARED). Forks reach it as the game does; a world with no player country (the
+        /// seeded shadow, the trajectory dump) never does - so the no-policy shadow a new game seeds keeps the start's House and president, while one forked
+        /// from a loaded game seats the record with it (DECLARED; which of the two a shadow should be is not US-2's to decide).
+        /// </summary>
+        internal void SeatTheRecordOnItsDate()
+        {
+            if (!PlayerCountryId.HasValue) { return; }
+            CountryId id = PlayerCountryId.Value;
+            Country country = _world?.GetCountry(id);
+            if (country == null) { return; }
+            if (Elections.WorldClock.RecordSeatsChamber(id))
+            {
+                ElectionVintage seated = Elections.WorldClock.SeatedVintage(id, CurrentDate);
+                Dictionary<string, int> ofRecord = PartySystems.InitialSeats(id, seated);
+                if (!SameSeats(country.ParliamentSeats, ofRecord))
+                {
+                    ParliamentSystem.SeatChamberOfRecord(country, seated);
+                    Elections.PartyCapital.CarryOver(country.PartyCapital, country.ParliamentSeats);
+                    Debug.Log($"RECORD: {id} - the chamber of record seated on {CurrentDate:yyyy-MM-dd}: {Elections.WorldClock.RecordStanding(id, CurrentDate)}");
+                }
+            }
+            if (Elections.WorldClock.RecordSeatsExecutive(id) && Elections.WorldClock.TryGovernmentAt(id, CurrentDate, out Elections.WorldClock.GovernmentOfRecord g)
+                && country.Government?.Executive != g.President)
+            {
+                TakeOffice(country, Elections.GovernmentRecord.AtStart(country, CurrentDate, _world));
+            }
+        }
+
+        private static bool SameSeats(IReadOnlyDictionary<string, int> a, IReadOnlyDictionary<string, int> b)
+        {
+            if (a == null || b == null || a.Count != b.Count) { return false; }
+            foreach (KeyValuePair<string, int> kv in a) { if (!b.TryGetValue(kv.Key, out int n) || n != kv.Value) { return false; } }
+            return true;
+        }
+
+        /// <summary>PS-6 US-2: a government of record takes office, with the arrival budget window reset and a budget window the player no longer governs
+        /// closed (<see cref="CloseBudgetWindowIfNotGoverning"/>, §698). US-7 is to call it with the president the game elects.</summary>
+        private void TakeOffice(Country country, Elections.GovernmentRecord formed)
+        {
+            country.Government = formed;
+            ResetArrivalBudgetWindow(country.Id);
+            CloseBudgetWindowIfNotGoverning(country);
+            Debug.Log($"RECORD: {country.Id} - {formed.Executive} takes office on {CurrentDate:yyyy-MM-dd}, of record");
+        }
 
         private void Install(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round, Elections.ProposalVerdict verdict, string basis = null)
         {

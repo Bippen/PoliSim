@@ -70,6 +70,37 @@ namespace PoliSim.EditorTools
                         if (sum != size) { failures++; sb.Append(F("    FAIL {0} {1}: the table sums to {2}, the record accounts for {3}\n", id, c.Vintage, sum, size)); }
                     }
 
+                    // PS-6 US-2: the USA's 120th, elected after the record's date, is not on record - the 119th's own row holds to the eve of its day and the 120th's
+                    // from it and past the 121st's day; the 119th's table is seated on both, and the deviation and the standing words say so, naming no later
+                    // election: the deviation's only dates are the day asked and the record's, and it names the table that stands (the standing words whole are
+                    // CongressOfRecordDiagnostic's (c))
+                    if (id == CountryId.USA)
+                    {
+                        DateTime opens120 = new DateTime(2027, 1, 3), late = new DateTime(2029, 6, 1);
+                        WorldClock.ChamberOfRecord eve120 = WorldClock.ChamberAt(id, opens120.AddDays(-1)), on120 = WorldClock.ChamberAt(id, opens120), onLate = WorldClock.ChamberAt(id, late);
+                        string dev = WorldClock.SeatingDeviation(id, opens120) ?? string.Empty, devLate = WorldClock.SeatingDeviation(id, late) ?? string.Empty;
+                        string standing = WorldClock.RecordStanding(id, opens120);
+                        // the deviation's own dates: only the day asked and the record's - no later election named - and the table that stands named
+                        bool DatesOnly(string text, DateTime asked)
+                        {
+                            foreach (System.Text.RegularExpressions.Match m in System.Text.RegularExpressions.Regex.Matches(text, @"\d{4}-\d{2}-\d{2}"))
+                            {
+                                if (m.Value != asked.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) && m.Value != WorldClock.RecordDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)) { return false; }
+                            }
+                            return true;
+                        }
+                        string standsTable = "the " + ElectionVintage.Usa2024 + " table";
+                        if (eve120.Vintage != ElectionVintage.Usa2024 || on120.Vintage != ElectionVintage.Usa2026 || onLate.Vintage != ElectionVintage.Usa2026 || WorldClock.SeatingDeviation(id, opens120.AddDays(-1)) != null
+                            || !DatesOnly(dev, opens120) || !DatesOnly(devLate, late) || !dev.Contains(standsTable) || !devLate.Contains(standsTable)
+                            || WorldClock.SeatedVintage(id, opens120) != ElectionVintage.Usa2024 || WorldClock.SeatedVintage(id, late) != ElectionVintage.Usa2024
+                            || !dev.Contains("after the record's date") || !devLate.Contains("after the record's date")
+                            || !standing.EndsWith("NONE ELECTED AFTER IT IS ON RECORD, SO IT STANDS", StringComparison.Ordinal) || WorldClock.RecordStanding(id, late) != standing)
+                        {
+                            failures++; sb.Append(F("    FAIL USA: the 120th not on record from {0:yyyy-MM-dd}, the 119th standing to {1:yyyy-MM-dd} - the eve's row {2}, the day's {3}, seated {4} and {5}, deviation \"{6}\", standing \"{7}\"\n",
+                                opens120, late, eve120.Vintage, on120.Vintage, WorldClock.SeatedVintage(id, opens120), WorldClock.SeatedVintage(id, late), dev, standing));
+                        }
+                    }
+
                     // a world on this start
                     WorldClock.ApplyStart(id);
                     World world = WorldFactory.CreateDefault();

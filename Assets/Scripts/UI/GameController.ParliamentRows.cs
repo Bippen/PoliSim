@@ -46,6 +46,7 @@ namespace PoliSim.UI
             DrawCaretakerLine(book);
             DrawSpeakerRound(book);   // §646: the formateur's round
             DrawReferenceRow(book);   // §705: history as the reference where no election night carries it
+            DrawRecordRow(book);   // PS-6 US-2: the record by date, where the game does not elect the chamber - the president with it while the record seats the executive
             DrawPresidentRow(book);   // §770 (PS-5 item C4): the president the veto reads, and the game's own presidential election
             DrawConfidence(book);   // PS-3i (§636)
             Rect tail = ReserveRowPx(1f);
@@ -442,6 +443,90 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// PS-6 US-2 (Elias's ruling F8, R-US1 (a)): THE RECORD, BY DATE - where the game does not elect the chamber (`WorldClock.RecordSeatsChamber`; the
+        /// USA's, until US-16), the row says which House of record sits today and from when, and the president of record with it while the record seats the
+        /// executive (`WorldClock.RecordSeatsExecutive`; until US-8);
+        /// past the record - a House elected after the record's date, a president whose term of record has ended - that the last of record stands and the
+        /// day its term ended (R-US1 (a): "the 119th stands, said on screen"; the president "until the game holds the presidential election"). The words
+        /// are `WorldClock`'s (`RecordStanding`, `ExecutiveStanding`, `TryPresidentOfRecord`); the slip whole.
+        /// </summary>
+        private void DrawRecordRow(PeopleSlips.Book book)
+        {
+            if (_playerCountry == null || !WorldClock.RecordSeatsChamber(PlayerCountryId)) { return; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            CountryId country = _playerCountry.Id;
+            WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(country, today);
+            bool onRecord = PartySystems.SeatsSourced(chamber.Vintage);
+            WorldClock.GovernmentOfRecord ofRecord = default;
+            string president = null, surname = null;
+            bool head = WorldClock.RecordSeatsExecutive(country) && WorldClock.TryGovernmentAt(country, today, out ofRecord)
+                        && WorldClock.TryPresidentOfRecord(country, today, out president, out surname);
+            System.DateTime termEnds = head ? WorldClock.TermOfRecordEnds(ofRecord) : System.DateTime.MaxValue;
+
+            GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
+            GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
+            Rect row = ReserveRow(30f);
+            float x = row.x;
+            void Words(string words, GUIStyle style)
+            {
+                float w = Mathf.Ceil(style.CalcSize(new GUIContent(words)).x) + 2f;
+                PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, w, row.height), words, style);
+                x += w + StatsUnit(10f);
+            }
+            void Mark(string key)
+            {
+                DrawPartyMarkSlot(new Rect(x, row.y, StatsUnit(16f), row.height), country, key);
+                x += StatsUnit(16f) + StatsUnit(8f);
+            }
+            void Chip(string day)
+            {
+                Rect stamp = RowChipRectFrom(x, row, day, padBoard: 6f);
+                DrawRowChip(stamp, day, ChipFace.Outline);
+                x = stamp.xMax + StatsUnit(10f);
+            }
+            string largest = null;
+            int most = -1;
+            foreach (KeyValuePair<string, int> kv in _playerCountry.ParliamentSeats) { if (kv.Value > most || (kv.Value == most && string.CompareOrdinal(kv.Key, largest) < 0)) { largest = kv.Key; most = kv.Value; } }
+
+            Words("OF RECORD, BY DATE", caption);
+            Words("THE HOUSE", muted);
+            if (largest != null && most > 0) { Mark(largest); }   // the majority of the House seated - past the record, of the one that stands
+            if (onRecord) { Words("SEATED", muted); Chip(DeskDay(chamber.Convened)); }
+            else { Words("STANDS · TERM ENDED", muted); Chip(DeskDay(WorldClock.ChamberSeatedOn(country, today).Until)); }
+            if (head)
+            {
+                Words("THE PRESIDENT", muted);
+                if (ofRecord.Cabinet != null && ofRecord.Cabinet.Length > 0) { Mark(ofRecord.Cabinet[0]); }
+                Words(surname.ToUpperInvariant(), caption);
+                if (today < termEnds) { Chip(DeskDay(ofRecord.From)); }
+                else { Words("STANDS · TERM ENDED", muted); Chip(DeskDay(termEnds)); }
+            }
+            SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "record");
+
+            var slip = new SlipContent("OF RECORD, BY DATE");
+            slip.Add((WorldClock.NoElectionYet(country) ? "NO US ELECTION IS HELD IN THIS GAME YET: " : "THE GAME DOES NOT ELECT THE HOUSE YET: ")
+                     + (head ? "THE RECORD'S HOUSE AND PRESIDENT ARE SEATED ON THE RECORD'S DATES" : "THE RECORD'S HOUSE IS SEATED ON THE RECORD'S DATES")
+                     + "; PAST THE RECORD, THE LAST OF RECORD STANDS");
+            var seated = new List<(string key, int seats)>();
+            foreach (KeyValuePair<string, int> kv in _playerCountry.ParliamentSeats) { if (kv.Value > 0) { seated.Add((kv.Key, kv.Value)); } }
+            seated.Sort((a, b) => b.seats != a.seats ? b.seats.CompareTo(a.seats) : string.CompareOrdinal(a.key, b.key));
+            var seats = new System.Text.StringBuilder();
+            foreach ((string key, int n) in seated) { if (seats.Length > 0) { seats.Append(" · "); } seats.Append(PartySystems.ShortName(country, key).ToUpperInvariant()).Append(' ').Append(n.ToString(CultureInfo.InvariantCulture)); }
+            slip.Add("THE HOUSE: " + WorldClock.RecordStanding(country, today) + (seats.Length > 0 ? " · " + seats : string.Empty));
+            if (head)
+            {
+                // §770's order - the name, the party in words (the row shows it as a mark only), the office
+                string party = ofRecord.Cabinet != null && ofRecord.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(country, ofRecord.Cabinet[0]).ToUpperInvariant() : string.Empty;
+                slip.Add("THE PRESIDENT: " + president.ToUpperInvariant() + party + " · " + WorldClock.ExecutiveStanding(country, today));
+            }
+            foreach (string next in WorldClock.NextOfRecord(country, today)) { slip.Add(next); }   // the House's day and the oath named before they come
+            slip.Add("NO SENATE IS MODELLED");
+            book.Anchors["record"] = slip;
+            DrawRowRule(row);
+            GUILayout.Space(StatsUnit(10f));
+        }
+
+        /// <summary>
         /// §770 (PS-5 item C4): THE PRESIDENT - who holds the office the veto reads (the record's until the game's own election seats a successor),
         /// a president-elect waiting for the oath, a run-off the first vote has called, or the next first vote; the game's rounds on the slip. Drawn
         /// where the country elects its president in two rounds.
@@ -556,13 +641,8 @@ namespace PoliSim.UI
             ? "THE LAST SUNDAY OF THE WINDOW BEFORE THE TERM ENDS - THE MOST RECENT PRACTICE"
             : "THE RECORD'S DAY";
 
-        /// <summary>A president's or candidate's surname as the row prints it - the last word of the name; an unnamed candidate ("KO's candidate (2030)") whole.</summary>
-        private static string Surname(string name)
-        {
-            if (string.IsNullOrEmpty(name) || name.Contains("'s candidate")) { return name ?? string.Empty; }
-            int space = name.LastIndexOf(' ');
-            return space < 0 ? name : name.Substring(space + 1);
-        }
+        /// <summary>A president's or candidate's surname as the row prints it - `WorldClock.SurnameOf`'s one rule (PS-6 US-2: a generational suffix is not the surname).</summary>
+        private static string Surname(string name) => WorldClock.SurnameOf(name);
 
         // §698: the constructive vote projected for the player's party - a formation's worth of work, so kept for the day and the government it was drawn for
         private ConfidenceProcedure.MotionVote _constructiveProjection;

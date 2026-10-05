@@ -289,6 +289,8 @@ namespace PoliSim.Data
         Usa2024 = 12,
         France2022 = 13,
         France2024 = 14,
+        /// <summary>PS-6 US-2: the 120th Congress's House, elected 2026-11-03 - after the record's date, so not on record (its table unsourced).</summary>
+        Usa2026 = 15,
     }
 
     /// <summary>
@@ -735,6 +737,8 @@ namespace PoliSim.Data
                 case ElectionVintage.Italy2018:
                 case ElectionVintage.France2022:
                     return false;
+                case ElectionVintage.Usa2026:
+                    return false;   // PS-6 US-2: elected after the record's date - not on record; the latest sourced table stands (`WorldClock.SeatedVintage`)
                 case ElectionVintage.Seated:
                     return false;   // not a table: resolve it first
                 default:

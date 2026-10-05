@@ -412,9 +412,9 @@ namespace PoliSim.Elections
                     return "Italy is a mixed system - 147 uninominal colleges, 245 proportional seats, 8 overseas - " +
                            "and the per-party seat totals on disk are unconfirmed.";
                 case CountryId.USA:
-                    // PS-6, US-1: what holds instead, until the presidential count (US-8) and the House's (US-16) are built; no Senate is modelled (US-15)
-                    return "No US election is held in this game yet: the president and the House seated at the start hold " +
-                           "until the Electoral College count and the House races are built, and no Senate is modelled.";
+                    // PS-6, US-1 and US-2: what holds instead, until the presidential count (US-8) and the House's (US-16) are built; no Senate is modelled (US-15)
+                    return "No US election is held in this game yet: the House and the president are seated as the record seats them, on its dates, " +
+                           "until the Electoral College count and the House races are built; no Senate is modelled.";
                 default:
                     return "This model does not implement this country's electoral system.";
             }
