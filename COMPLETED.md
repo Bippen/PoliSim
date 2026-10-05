@@ -37450,3 +37450,15 @@ Tier DOCUMENTS (a plan, two specs' notes, the feature list): the bars over §772
 - **Not a money path**, so no ledger row.
 
 **Bars** (tier SIMULATION, on this commit's own tree - the §785 film flag stashed beside it): the cheap bar **98 of 98** (`cheap784`); the simulation bar **57 of 57** (`sim784`, the sentinel on fp755 unmoved). No film owed by the tier: nothing in play reads these dates before polling day, polling day stands the same twelve open facts, and the played count forms KO+TD+NL as before (`PolishDeclarationsDiagnostic`).
+
+## 785. THE VETO'S AT-RISK FACE ON FILM: A FILM CAN SEAT THE PARTY IT PLAYS (`-shotparty=`), AND A POLISH FILM PLAYED BY KO SHOWS THE LAWS BOARD'S "CARRIES · VETO 26 %" (2026-10-05)
+
+**What was owed** (`COMPLETED.md` §778, §780): the veto's at-risk faces were on no film - every Polish film seated the largest party of the chamber at the start, PiS, the President's own party, so its drafts were never at risk; §780's own film formed KO+TD+NL at the warm-up's count and still showed none. *"Staging a law PiS opposes (or filming a KO player) is owed as a film item of its own."*
+
+**Built:** the film harness takes `-shotparty=<key>` - the film's player is seated through the picker's own commit (`GameController.SelectPlayerCountryAndParty`, CL-2) instead of the largest party; empty, as before. The driver logs the seating; an unknown key is the picker's own error, and the largest party is seated in its place. Nothing in play changes.
+
+**On film, played by KO** (`-shotparty=KO`): KO opens in opposition (the government of record is PiS's), and the warm-up's count of 15 October 2023 forms **KO+TD+NL led by KO**, the player's KO prime minister's party. On the Laws board, the selected law's verdict reads **"CARRIES · VETO 26 % · 246 ⁄ 214"** - the President's backing party votes against it, so the act is at risk at the President's own rate on the record (§778) - on `06f_policylaws_laws`, its rows and deep frames, `06g_laws_expected_effects` and `06g_laws_repealable`. **Still not on film:** the Budget's at-risk faces - in this game PiS votes for the drafted tax act ("IT WOULD PASS AND BE SIGNED") and the welfare rows either pass unrisked or fail, so no Budget draft is at risk; a draft PiS opposes would be staged to show them.
+
+**Not reviewed by the workflow:** a film-harness flag, the UI tier (`Tools/bar_tier.ps1`: review skipped for UI) - no money, no sentinel.
+
+**Bars** (tier UI, on this commit's own tree): the cheap bar **98 of 98** (`cheap785`, the new scope row held to its film); the dry film the item declared, `drys785` Poland@1280x720 with `-shotparty=KO` - 147 measured, 0 failed, 0 overflows, 0 escapes; the REAL film, Poland at 1280 played by KO (`real785`, cut at `06i_laws_monetary_row`) - 98 captured, 0 failed, 0 overflows, 0 escapes, 0 canvas violations across 5 asserts, 0 clipped at the edges - read on `06f_policylaws_laws`: the selected law, "Abolish cash bail", its count plate "CARRIES · VETO 26 % · 246 / 214" on one line, FOR 246, MAJORITY 231, AGAINST 214, beside INTRODUCE AS A BILL.

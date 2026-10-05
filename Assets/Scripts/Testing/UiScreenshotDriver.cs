@@ -90,6 +90,10 @@ namespace PoliSim.Testing
         /// exists to prevent. The sweep's warm-up then plays the LOADED game forward; the modes that drive the campaign's own day path (`-shotinterrupts`) or stage a
         /// dated reading over the game (`-shotcampaign`, `-shotelectionnight`) skip it, so the run-up they open on is the one the save was cut in.</summary>
         public string LoadSave = "";
+        /// <summary>§785: -shotparty=&lt;key&gt; - the film's player seated through the picker's own commit (`SelectPlayerCountryAndParty`, CL-2) instead of
+        /// the largest party, so a film can play a party the largest is not: Poland's KO, in government after the warm-up's count of 2023, whose drafts
+        /// the President's backing party votes against - the veto's at-risk faces, owed on film since §778. Empty: the largest party, as before.</summary>
+        public string Party = "";
         private DateTime _loadedDate = DateTime.MinValue;
 
         /// <summary>Set by `-shotlocale=` (e.g. "en-US"): overrides the thread culture before anything draws, so number/date formatting can be captured in a locale other than the OS's. Empty = OS culture, which is what every set before 2026-08-12 rendered in (sv-SE on this machine — the decimal-comma set).</summary>
@@ -452,7 +456,12 @@ namespace PoliSim.Testing
                 }
             }
 
-            Invoke(controller, "SelectPlayerCountry", _countryId);
+            if (string.IsNullOrEmpty(Party)) { Invoke(controller, "SelectPlayerCountry", _countryId); }
+            else
+            {
+                Invoke(controller, "SelectPlayerCountryAndParty", _countryId, Party);   // §785: the picker's own commit - an unknown key is the picker's error, and the largest party
+                Debug.Log($"SHOT: -shotparty={Party} - seated through the picker's own commit, not the largest party.");
+            }
             // §510 (2026-09-15): PLAY'S CLOCK IS HELD FROM HERE THROUGH THE WARM-UP, invisibly - its accumulator is primed an hour short
             // of a day, so the speed, the lamp and the running captures stay what they are and no real-time day can pass before the
             // warm-up (a slow frame used to pass one - see ReportClockBeforeWarmup). Released, to zero, the moment the warm-up ends.

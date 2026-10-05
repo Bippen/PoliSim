@@ -459,6 +459,8 @@ namespace PoliSim.EditorTools
             driver.StopAfter = Arg("-shotstop=", "");
             // §560 (2026-09-21): open on a named save, loaded through the game's own load path - the sitting package films a real game, not the harness's fresh world.
             driver.LoadSave = Arg("-shotload=", "");
+            // §785: seat a party through the picker's own commit instead of the largest - a film of a party the largest is not (Poland's KO in government).
+            driver.Party = Arg("-shotparty=", "");
             // TL-1 (§645): -shotcanvasrace makes the Canvas seam's wait give up at once - the race a fast batch run used to lose, made certain - so
             // the proof can show a frame skipped that way fails the film.
             if (Environment.GetCommandLineArgs().Contains("-shotcanvasrace")) { driver.CanvasSettleSeconds = 0f; driver.CanvasSettleFrames = 1; }
