@@ -1,6 +1,6 @@
 # PoliSim — PS-6, the USA: the plan (spec + work plan for Code and Design)
 
-**Status: PLAN, put to Elias 2026-10-04; nothing built.** Elias's instruction: *"Next: PS-6 (the USA), planned before any code, as you propose."* The rulings in §4.1 are asked now; those in §4.2 are asked later, each with the measurement that informs it. Every date, rule and figure is sourced by Code before use: where this plan names a fact it names what to look up, and a fact marked *from memory* is unverified and is read before anything depends on it. A bare § number is a `COMPLETED.md` record; a spec's own section is named with its document. The code facts in §2 are a reading of HEAD `5edca04` on 2026-10-04 (TRACKING: they go stale as PS-6 lands); this plan carries pointers, never line numbers or counts of code.
+**Status: PLAN, put to Elias 2026-10-04; R-US1 to R-US13 RULED 2026-10-05 (Elias's ruling F8: as recommended, R-US6 and R-US9 as he amended them).** Elias's instruction: *"Next: PS-6 (the USA), planned before any code, as you propose."* The rulings in §4.1 are ruled; those in §4.2 are asked later, each with the measurement that informs it. Every date, rule and figure is sourced by Code before use: where this plan names a fact it names what to look up, and a fact marked *from memory* is unverified and is read before anything depends on it. A bare § number is a `COMPLETED.md` record; a spec's own section is named with its document. The code facts in §2 are a reading of HEAD `5edca04` on 2026-10-04 (TRACKING: they go stale as PS-6 lands); this plan carries pointers, never line numbers or counts of code.
 
 **Built on:** `POLITICAL_SYSTEM_SPEC.md` (§1, §4, §6, §7, §9 stage 6, §10, §11, §12); `START_POINTS_AND_PARTY_CREATION_SPEC.md` (§1.1, §2.6, §4 S6, §7 decision 10, §8); the PS-6 + SP-6 and D-US rows of `POLISIM_FEATURE_LIST.md`; ruling B7 (§759); §618's ruling 4; and Elias's rulings E1–E4 of 2026-10-04, applied to the USA here — E1's per-candidate factor, E2's "only spending stays in the budget act" and "follow the most recent practice", E3's nights asked together, E4's backtest of a veto rule against the real record.
 
@@ -30,8 +30,8 @@
   - *"**The Senate is new and required.** US legislation lives or dies in it, and a House-only Congress would misrepresent the country. 100 seats in three classes, sourced by state; the cloture threshold on legislation and the budget-reconciliation exception, sourced from the Senate's own rules."*
   - *"**Winning makes the player president.** Presidential powers are those the model can honestly hold: proposing the budget (Congress passes it, through both chambers); signing or vetoing bills, with the two-thirds override in both chambers; appointments (the Fed-chair machinery exists). Divided government is the mechanic: a hostile House or Senate is what makes the presidency hard."*
   - *"**Midterms every two years** — the whole House and a Senate class; the player's party fights them."*
-  - *"**Losing does not end the run.** A defeated president may run again four years later; the constitutional two-term limit ends the run when it binds."*
-- §7: *"A run ends when the player's party falls out of parliament, when the player ends it, or — in the USA — when the term limit binds or the player declines to run again."* After the first election night the game shows *"the real result and the government that actually formed"* beside the player's.
+  - *"**Losing does not end the run.** A defeated president may run again four years later; the two-term limit binds the person, not the run: the player picks the party's next nominee - the Vice President by default - who campaigns on the outgoing record."* (amended by F8, R-US6 (b); until then: *"the constitutional two-term limit ends the run when it binds"*)
+- §7: *"A run ends when the player's party falls out of parliament, when the player ends it, or — in the USA — when the player declines to run again; the term limit binds the person, not the run."* (amended by F8, R-US6 (b)) After the first election night the game shows *"the real result and the government that actually formed"* beside the player's.
 - §9: *"**Stage 6 — the USA.** §6 whole: the state-by-state campaign, the presidency, the Senate, midterms, term limits."* — *"Elias may move the USA forward."*
 - §10: decision 3 (*"The five other countries hold their real calendars and are simulated from the start date"*), decision 5 (AI casts derived from CHES by a stated rule), decision 6 (*"The US player is the party's nominee of record; third parties are not playable."*), decision 8 (*"The Senate is required for the USA and Italy to be playable"*).
 - §11: *"the US Senate's composition by class and its cloture and reconciliation rules; the US veto override and term limit … every item fetched, verified and dated, or billed."*
@@ -53,11 +53,14 @@
 - **E2:** *"only spending stays in the budget act"*; *"follow the most recent practice"*; a rate moves only through its own act, *"whoever proposes it"*.
 - **E3:** Poland's presidential night folded into D-PL's ask (D-PL's seventh question, §771) — a country's nights asked together.
 - **E4:** *"A veto on all 43 of 43 statutes needs checking against the real record."* E4's form — the confusion matrix, the hit rate, the precision, every miss — is `docs/generated/VETO_B1_BACKTEST.md` (§775).
+- **F3:** a statute is at risk where the president's backing party did not vote for it, and a seeded draw at the president's own rate on the record decides; *"The slip shows the veto risk as a percentage."* - the form US-10 measures the US veto against before anything goes live.
+- **F4:** a fit is held on *"the world that follows history"*; a played game's count moves with its play (risk 17).
+- **F8** (2026-10-05): R-US1 to R-US13 as recommended, with R-US6 (b) and R-US9's shutdown as Elias amended them (§4.1).
 
-### 1.4 Two conflicts this plan does not settle by itself
+### 1.4 Two conflicts, settled by F8
 
-1. **Third parties.** Decision 6 (*"third parties are not playable"*) against §2.6, decision 10 and the row (*"your own nominee or a third-party run"*); the row's done-when names neither form. → **R-US4**.
-2. **Every country's calendar.** Decision 3 and §618's ruling 4 owe every modelled country's elections in every run; the build holds only the player's country's — Germany's and Poland's included. → **R-US5**.
+1. **Third parties.** Decision 6 (*"third parties are not playable"*) against §2.6, decision 10 and the row (*"your own nominee or a third-party run"*); the row's done-when names neither form. → **R-US4, RULED (a)**: PS-6 builds the major-party nominee and, late, your own nominee (US-33); the third-party run is its own later row, **SP-6b**. Both specs say so.
+2. **Every country's calendar.** Decision 3 and §618's ruling 4 owe every modelled country's elections in every run; the build holds only the player's country's — Germany's and Poland's included. → **R-US5, RULED (a)**: the US count is a pure function of a world's state here (US-8); every country on its own calendar is one later cross-country row, **PS-8**.
 
 ### 1.5 What "playable" means in this plan
 
@@ -262,7 +265,7 @@ Read, raw out of tree with extracts in the repo:
 - the final passage of every public law of the 118th Congress (the divided one, for the precision), others as read;
 - an interpretive source for the override's base — two thirds of those present and voting, a quorum present — such as a CRS report through congress.gov's crs_external_products path.
 
-A committed `Tools/us_veto_backtest.pl` writes `docs/generated/US_VETO_BACKTEST.md` in `VETO_B1_BACKTEST.md`'s form: per president, the confusion matrix, the hit rate, the precision, every miss and every named act that was signed, for each candidate rule (B1 transposed; either chamber; both chambers). It also counts how many vetoed measures of record a party-bloc Congress under Rule XXII could have sent to the president at all.
+A committed `Tools/us_veto_backtest.pl` writes `docs/generated/US_VETO_BACKTEST.md` in `VETO_B1_BACKTEST.md`'s form: per president, each candidate rule's base (F3's at-risk set transposed; either chamber; both chambers), the vetoes inside and outside it and the rate a draw would take - and B1's confusion matrix, hit rate and precision beside it. It also counts how many vetoed measures of record a party-bloc Congress under Rule XXII could have sent to the president at all.
 *Needs:* US-0.
 *Done when:* the document is current, and a check fails the cheap bar when it goes stale; the tool's own check passes (party sums from member votes equal each roll call's totals; each override's requirement reproduces two thirds of those present and voting); the rates go into the reply to Elias before anything goes live (E4); a rule that names far more bills than the record vetoed — or a bloc Congress that sends none — is STOPPED and re-asked.
 
@@ -291,7 +294,7 @@ A committed `Tools/us_midterm_record.pl` reads the saved `[HH-DIV]` divisions an
 - **The bridge first** (PN-4: same year, same perimeter): Treasury's MSPD tables at the seed's vintage (table 2 on disk; tables 1 and 3 from api.fiscaldata.treasury.gov) set against the seed's gross federal debt, whose perimeter is unstated (`WorldFactory`); the residual stated.
 - **The statute as dated data:** suspended to 1 Jan 2025; reinstated on 2 Jan 2025 by P.L. 118-5 §401(b)'s formula — the record's $36,103,995,660,231 reproduced from the record's own debt; +$5,000,000,000,000 on 4 Jul 2025 (P.L. 119-21 §72001).
 - **The dates:** an Editor diagnostic reads the model's debt through the bridge on each start's no-policy path (`NoPolicyCentury.For`) and prints the day the limit is reached and the day it binds under each option of R-US21, beside CRS IF10292's *"early to mid 2027"*. It measures the AI ministry's ratio-trend "debt-limit logic", and its borrowed sequester, against the dollar limit.
-- **Also read for US-22:** 31 U.S.C. 1102, 1105(a) and 1341–1342; 2 U.S.C. 631, 632 and 681 ff.; the Budget Act §904(c)–(d), the note to 2 U.S.C. 621 — the Byrd rule's three-fifths waiver, correcting G10's "§644(e)" pointer; and Treasury's letters on the 2025 extraordinary-measures episode, for R-US21's span.
+- **Also read for US-22:** 31 U.S.C. 1102, 1105(a) and 1341–1342; 2 U.S.C. 631, 632 and 681 ff.; the Budget Act §904(c)–(d), the note to 2 U.S.C. 621 — the Byrd rule's three-fifths waiver, correcting G10's "§644(e)" pointer; and Treasury's letters on the 2025 extraordinary-measures episode, for R-US21's span. **For R-US9 as ruled (F8):** 31 U.S.C. 1341–1342 (the Antideficiency Act); the lapse of record - P.L. 119-4 (the full-year continuing appropriations for the fiscal year ending 30 September 2025) and H.R. 5371's actions to P.L. 119-37 (12 November 2025), both captured 2026-10-05 from govinfo's own pages and held out of tree until this item brings them in with their digests; and the excepted share of discretionary spending in a lapse (OMB's and the agencies' lapse plans), BILLED until read.
 
 *Needs:* US-0.
 *Done when:* the dates are printed per option and per start in the cheap bar, nothing live; `debt_limit.md` carries the bridge; R-US21 asked with the dates.
@@ -339,7 +342,7 @@ The main session sends D-US part one in the standard form (§5) against the buil
 *Done when:* `PlayerRoleDiagnostic`'s US rows re-pinned — on 12 Mar 2024 a DEM player governs as the president's party, and a REP player holds the House majority, may introduce an ordinary bill, and sees it die in the Senate; review row (SimulationManager); bars; the USA dry film; one filmed width of the Desk.
 
 **US-20 — Poland's statute acts keyed on Poland's own rule. Size M.**
-Poland's statute-act split (D4 and E2: §768, §773) keys today on `PresidentialVeto.Applies` — in the simulation (the budget act, the statute acts, the veto gate, the Finance partner's rates), on the Budget page (its slip and lines), in the controller, in `ChamberVerdicts.Veto` and in the film driver's staging. Switching it on for the USA would route US budgets through Poland's acts. The readers move onto `WorldClock.BudgetProcedureOf`, which gains Poland's statute-act procedure (and, at US-22, the US Congress's); `PresidentialVeto` holds its rule per country, Poland's B1, B2 and Sejm constants unchanged. Every reader is found by grep at the item, not from this list — E2 is still adding them. May land any time after E2's commit; nothing before US-21 needs it.
+Poland's statute-act split (D4 and E2: §768, §773) keys today on `PresidentialVeto.Applies` — in the simulation (the budget act, the statute acts, the veto gate, the Finance partner's rates), on the Budget page (its slip and lines), in the controller, in `ChamberVerdicts.Veto` and in the film driver's staging. Switching it on for the USA would route US budgets through Poland's acts. The readers move onto `WorldClock.BudgetProcedureOf`, which gains Poland's statute-act procedure (and, at US-22, the US Congress's); `PresidentialVeto` holds its rule per country, Poland's unchanged: F3's at-risk test (B1 widened), the keyed draw at the generated rates (`Generated.PolishVetoRates`), B2 and the Sejm constants. Every reader is found by grep at the item, not from this list — E2 is still adding them. May land any time after E2's commit; nothing before US-21 needs it.
 *Needs:* E2 committed.
 *Done when:* Poland unchanged, proved by its own instruments — `PresidentialVetoDiagnostic`'s cases and the D4 and E2 cases (the no-policy dump meets no budget bill, §768, so the dump diff alone proves nothing here) — and by the dump diff; `GovernmentBudgetBillDiagnostic` re-pinned; Poland's Budget slip unchanged on Poland's dry film; review rows (SimulationManager, BudgetBill if touched); bars.
 
@@ -352,18 +355,18 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 `WorldClock.BudgetProcedureOf` gains the US Congress procedure, sourced at US-14:
 - the president's budget request is the government's bill (31 U.S.C. 1105(a), its date read), and the fiscal year opens on 1 October (31 U.S.C. 1102, now behind `FiscalYearData`);
 - per R-US9 (a): the appropriation (the spending lines) needs cloture; the rates — and direct spending and the debt limit where they move — ride reconciliation at simple majorities (2 U.S.C. 641(a), (e)); the pension age is its own statute at cloture (641(g); 644(b)(1)(F)); E2's statute-act parts are the machinery;
-- a failed appropriation continues the standing figures as a full-year continuing resolution — the game's premise, said on screen; no shutdown is modelled. Both acts may be vetoed. The Byrd rule is otherwise not modelled, stated;
+- per R-US9 as ruled (F8: *"if funding lapses with no continuing resolution, the government shuts down ... The game must be able to produce a shutdown."*): a failed appropriation is followed by a continuing resolution - a bill of its own, at cloture, as H.R. 5371 was on the record; where none passes, funding lapses and the government SHUTS DOWN (the Antideficiency Act, read at US-14): non-excepted discretionary spending stops until an appropriation or a continuing resolution passes, the excepted share sourced at US-14, and the shutdown's days are said on screen. Both acts may be vetoed. The Byrd rule is otherwise not modelled, stated;
 - where the AI governs (the player is not the president's party), its budget is tabled as the government's bill (§632) and goes through the same procedure.
 
 *Needs:* US-14, US-18, US-20, US-21; R-US9.
 *Done when:*
-- a US budget diagnostic under the 119th of record: a rates change passes by reconciliation; a contested appropriation dies at cloture and the standing figures continue; a pension-age change is its own act at cloture;
+- a US budget diagnostic under the 119th of record: a rates change passes by reconciliation; a contested appropriation dies at cloture and a continuing resolution carries the standing figures; where the continuing resolution dies too, a shutdown opens on 1 October and ends the day a bill passes - the game produces one; a pension-age change is its own act at cloture;
 - the US film's budget frame (93b), skipped today as *"THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED"* (§694), is filmed;
 - Sweden's frame decision and Poland's acts unchanged; `GovernmentBudgetBillDiagnostic` re-pinned for Germany, Poland and the USA;
 - `Reviews/` report and rows for every money path touched (BudgetBill, SimulationManager, `FiscalYearData`); bars; the dry film; one filmed width of the US budget slip.
 
 **US-23 — The president's pen. Size L.** *(R-US7, R-US9)*
-Where both chambers' majorities belong to the party out of the White House, that majority passes its own budget reconciliation once a fiscal year, before 1 October, and it lands on the president's desk. Its content is DECLARED as the AI finance ministry's book for that party (how the ministry takes a party's stance is read at the item). A player-president signs or vetoes it on the Docket, where it waits until decided; a veto goes to the override; a failed appropriation continues the standing figures. This gives spec §6's *"signing or vetoing bills"* a use against a hostile Congress — without it, the introduction rule leaves a player-president nothing from an AI Congress to sign.
+Where both chambers' majorities belong to the party out of the White House, that majority passes its own budget reconciliation once a fiscal year, before 1 October, and it lands on the president's desk. Its content is DECLARED as the AI finance ministry's book for that party (how the ministry takes a party's stance is read at the item). A player-president signs or vetoes it on the Docket, where it waits until decided; a veto goes to the override; a lapse with no continuing resolution shuts the government down (R-US9 as ruled; US-22). This gives spec §6's *"signing or vetoing bills"* a use against a hostile Congress — without it, the introduction rule leaves a player-president nothing from an AI Congress to sign.
 *Needs:* US-21, US-22; R-US7; R-US9.
 *Done when:* a desk-bill diagnostic — a DEM player-president facing a REP Congress (the game's or the record's) receives the REP reconciliation once before 1 October; signed, it takes effect; vetoed, the override fails and the standing rates hold; a president whose party holds Congress receives none; review row; bars; REAL films of the bill on the desk and of its veto at 1280 and 2560.
 
@@ -392,10 +395,10 @@ Per R-US11 (a): after the game's own election, its last two counts become the ne
 *Needs:* US-16, US-26; R-US20.
 *Done when:* a midterm diagnostic — a US world from 12 Mar 2024 holds 3 Nov 2026 and seats the game's 120th on 3 Jan 2027, its swing printed against US-13's record; `PollingDayDiagnostic` carries the even years; bars; the dry film.
 
-**US-28 — The two-term limit. Size S.** *(R-US6; R-US2 sets who the player is)*
-The 22nd Amendment as data: each person's elections — NARA's 2016 page read at US-3, 2020's and 2024's on disk — and the game's own. A person elected twice cannot stand. The 2028 field holds the incumbent where eligible, else the party's nominee, unnamed, at factor 1.0. The run ends or continues per R-US6, said in the verdict line.
+**US-28 — The two-term limit and the next nominee. Size M.** *(R-US6 as ruled (b); R-US2 sets who the player is)*
+The 22nd Amendment as data: each person's elections — NARA's 2016 page read at US-3, 2020's and 2024's on disk — and the game's own. A person elected twice cannot stand. Per R-US6 as ruled (F8): "the term limit doesn't end the run. The player picks the party's next nominee (the Vice President by default) and campaigns on the outgoing record." The Vice President of record is read by date from `records_by_date.md` (the record's VP is the record ticket's running mate; a game-elected ticket's running mate is the party's own, DECLARED until a ticket is modelled). The term-limited president's party fields the Vice President by default, the player free to pick another of the party's eligible people (an AI party takes the default); the nominee stands at factor 1.0 (E1's rule for a later field); the outgoing term's record is the party's in the economic vote, as built. The pick is asked of Design (§5, D-US part two).
 *Needs:* US-8; R-US6.
-*Done when:* a term-limit diagnostic — a REP win in 2024 bars that nominee (Trump, elected 2016 and 2024) in 2028, and the run does what R-US6 rules; if R-US2 makes the DEM player Biden (elected 2020), a DEM win bars him in 2028 too; a Harris win leaves her eligible; bars.
+*Done when:* a term-limit diagnostic — a REP win in 2024 bars that nominee (Trump, elected 2016 and 2024) in 2028; the REP player's 2028 nominee defaults to the Vice President of record (Vance) and can be changed; the run continues; the 2028 campaign reads the outgoing term's record; a Harris win leaves her eligible; bars.
 
 **US-29 — The Fed chair by statute — its own BASELINE family. Size M.** *(R-US12)*
 Per R-US12 (a): for the USA the chair's term comes from 12 U.S.C. 242 (read), not the turn cadence (CL-4's stated exception retires for the USA). The president nominates and the Senate confirms by majority (G9's 2013 and 2017 precedents, read). The pool of fictional chairs is kept, and the chair's turn label goes.
@@ -450,7 +453,7 @@ Every Canvas surface filmed REAL at 1280 and 2560: the start card, the signing a
 
 ## 4. The rulings
 
-### 4.1 Asked now — no measurement needed
+### 4.1 Asked 2026-10-04 — RULED 2026-10-05 (Elias's ruling F8)
 
 **R-US1 — Congress and the president as of record, by date.** *(blocks US-2; shapes US-8, US-15, US-16)*
 §618's ruling 4: *"until then its chamber and head of state hold as of record"*. Today a US game keeps the start's: Biden and the 118th House govern for the whole run.
@@ -459,6 +462,8 @@ Every Canvas surface filmed REAL at 1280 and 2560: the start card, the signing a
 
 *Code recommends (a):* it is the record's own reading of "as of record", and it makes a US game true from its first year.
 
+**RULED** (Elias's ruling F8, 2026-10-05): (a), as recommended.
+
 **R-US2 — Who the player is in 2024.** *(blocks US-6; decides US-28's consequences)*
 The start, 12 Mar 2024, falls before the Democratic ticket changed: from memory, Biden was the presumptive nominee, withdrew in July 2024, and Harris was nominated in August. The dates are read from the parties' own records — the RNC's site refuses this machine (G1).
 - **(a) The November nominee of record:** Trump (REP) or Harris (DEM), carrying that candidate's fitted factor from the start. Named on screen from the nomination's date of record, *"the Democratic/Republican nominee"* before it. Biden governs as president until noon on 20 Jan 2025; the withdrawal is not replayed.
@@ -466,7 +471,9 @@ The start, 12 Mar 2024, falls before the Democratic ticket changed: from memory,
 - **(c) The nominee of record by date in every world:** Biden until the record's change, Harris after it — the withdrawal replayed on its date, for a DEM player too.
 - **(d) Move the US start** to the day both nominations are of record (August 2024). The question disappears, the run-up shrinks from 34 weeks to about 13, and spec §4's standard run-up is amended.
 
-*Code recommends (a):* decision 6 already names *"the party's nominee of record"*, E1's factors are fitted on the November field, and no model can decide a withdrawal. The consequences for R-US6: under (a), a REP win seats Trump, elected 2016 and 2024, so the two-term limit binds in 2028; a DEM win seats Harris, eligible in 2028. Under (b), a DEM win seats Biden, elected 2020 and 2024 — barred in 2028 too.
+*Code recommends (a):* decision 6 already names *"the party's nominee of record"*, E1's factors are fitted on the November field, and no model can decide a withdrawal. The consequences for R-US6: under (a), a REP win seats Trump, elected 2016 and 2024, so the two-term limit binds in 2028; a DEM win seats Harris, eligible in 2028. Under (b), a DEM win seats Biden, elected 2020 and 2024 — barred in 2028 too. (Under R-US6 as ruled (b) the limit binds the person, never the run: the term-limited party's next nominee is the player's pick, the Vice President by default.)
+
+**RULED** (F8): (a), as recommended - the November nominee of record, Trump (REP) or Harris (DEM), with that candidate's fitted factor from the start; the withdrawal is not replayed.
 
 **R-US3 — No candidate at 270.** *(blocks US-8)*
 A 269–269 split is reachable with two parties.
@@ -476,12 +483,16 @@ A 269–269 split is reachable with two parties.
 
 *Code recommends (a).*
 
+**RULED** (F8): (a), as recommended.
+
 **R-US4 — Third parties and SP-6's two forms.** *(needed for US-0's spec note; blocks US-33)*
 - **(a) Reconcile:** PS-6 builds the major-party nominee (R-US2) and, late, your own nominee at the head of a major ticket (SP-6a, US-33). The third-party run becomes its own later row, once ballot access in 51 jurisdictions, public funding (26 U.S.C. 9001–9013, including §9004's rule) and a vote-share home on a two-party roster are sourced. Decision 6's *"not playable"* is amended to say so, and decision 10 points to the row.
 - **(b) Decision 6 stands:** the nominee of record only; decision 10 struck.
 - **(c) Decision 10 as written:** both forms inside PS-6.
 
 *Code recommends (a).*
+
+**RULED** (F8): (a), as recommended - decisions 6 and 10 reconciled in both specs; the third-party run is its own later row, SP-6b.
 
 **R-US5 — The USA's elections in other countries' games.** *(scope)*
 §618's ruling 4 and decision 3 owe every modelled country's elections in every run. Today only the player's country votes — Germany and Poland included — and no record transition applies to an AI country.
@@ -490,11 +501,15 @@ A 269–269 split is reachable with two parties.
 
 *Code recommends (a).*
 
+**RULED** (F8): (a), as recommended - the cross-country row is PS-8.
+
 **R-US6 — The two-term limit and the end of a run.** *(blocks US-28)*
 - **(a) The standing words** (spec §6 and §7): the run ends when the limit binds the player's nominee. Code reads that as the end of the last term the person may hold — noon on 20 January 2029 for a 2024 winner elected once before — the 2028 contest not being the player's. Under R-US2 (a), a REP player who wins in 2024 ends there: the most successful REP run from 2024 is the shortest.
 - **(b) Amend §6 and §7:** the limit binds the person, not the run. The party's next nominee is the player's — an unnamed nominee at factor 1.0, or SP-6a's own — and the run ends only when the player ends it or declines.
 
 *Code recommends (a)* because it is the standing decision and only Elias amends it; the consequence is named so that he can strike it.
+
+**RULED** (F8): (b), as Elias amended it - "the term limit doesn't end the run. The player picks the party's next nominee (the Vice President by default) and campaigns on the outgoing record." `POLITICAL_SYSTEM_SPEC.md` §6 and §7 amended to say so; US-28 builds it.
 
 **R-US7 — Who introduces bills, and what reaches the president's desk.** *(blocks US-19, US-23)*
 - **(a) Divided government both ways:**
@@ -507,11 +522,15 @@ A 269–269 split is reachable with two parties.
 
 *Code recommends (a):* divided government is the spec's mechanic (§6), and (a) gives the veto a use from both sides.
 
+**RULED** (F8): (a), as recommended.
+
 **R-US8 — The president's levers.** *(blocks US-19)*
 - **(a) Only the veto and appointments** (with the Senate's consent) are the president's alone. Every dial — the tariff included — is a bill through Congress, and the president's delegated tariff powers are named as not modelled.
 - **(b) The tariff dial is the president's** under the delegating statutes (19 U.S.C. 1862 and 2411; the IEEPA use, whose litigation is read by date), each read and dated; everything else as (a).
 
 *Code recommends (b)* if those statutes and the litigation's state are read by date when US-19 is built, otherwise (a), stated. From memory, the US tariff moved by presidential action through 2025, so (a) misstates the period a US game plays.
+
+**RULED** (F8): as recommended - (b) where the delegating statutes and the litigation's state are read by date when US-19 is built, otherwise (a), stated.
 
 **R-US9 — The US budget's path through Congress.** *(blocks US-18, US-22, US-23)*
 - **(a) Two paths, on E2's statute-act machinery and by E2's principle:**
@@ -526,11 +545,15 @@ A 269–269 split is reachable with two parties.
 
 *Code recommends (a).*
 
+**RULED** (F8): (a), with Elias's change - "if funding lapses with no continuing resolution, the government shuts down, as it did from 1 Oct to 12 Nov 2025 (43 days). The game must be able to produce a shutdown." So the continuing resolution is a bill of its own (on the record it needed cloture: H.R. 5371 failed the Senate's cloture from 19 September and passed only after cloture was invoked on 9 November 2025), and a lapse with none shuts the government down under the Antideficiency Act until an appropriation or a continuing resolution passes. The lapse of record, read 2026-10-05 from govinfo: P.L. 119-4 funded the fiscal year *"ending September 30, 2025"*; H.R. 5371 became P.L. 119-37, the House agreeing and the President signing on 12 November 2025. US-14 brings the pages in and sources the excepted share; US-22 builds it.
+
 **R-US10 — The Senate's independents.** *(blocks US-12's seating, US-15)*
 - **(a) With their caucus:** each counted with the conference it caucuses with, sourced and dated (the 118th's caucus is read at US-12); the chamber card says *"including N independents"*.
 - **(b) Their own unit with no position:** they abstain on contested bills and never supply a cloture vote, misstating the 118th.
 
 *Code recommends (a).*
+
+**RULED** (F8): (a), as recommended.
 
 **R-US11 — The history after the game's own election.** *(blocks US-26, US-27)*
 W-G1's standing gap: every election in a game reads the epoch's history, so a US game would predict 2026 and 2028 from the history it predicted 2024 with.
@@ -539,11 +562,15 @@ W-G1's standing gap: every election in a game reads the epoch's history, so a US
 
 *Code recommends (a).*
 
+**RULED** (F8): (a), as recommended - US-26 rolls history forward for every modelled country, Poland's standing history gap (§767) included.
+
 **R-US12 — The Fed chair in a US game.** *(blocks US-29)*
 - **(a) The statute:** the four-year chair term (12 U.S.C. 242, read), the president nominating and the Senate confirming by majority (G9's precedents read); it replaces the turn cadence for the USA, as its own BASELINE family.
 - **(b) The cadence:** keep the turn cadence, stated (CL-4), the appointment the governing party's as built; statutory appointments a later row.
 
 *Code recommends (a):* spec §6 makes appointments a presidential power, and the Senate's consent is half of it. It is built late, once the Senate exists.
+
+**RULED** (F8): (a), as recommended - built late, once the Senate exists.
 
 **R-US13 — The electors from 2032.** *(needed before a run reaches 2032)*
 The 2030 apportionment is due by 31 Dec 2030 and goes to Congress in January 2031 (13 U.S.C. 141(b); 2 U.S.C. 2a(a) — probed, saved at US-3).
@@ -551,6 +578,8 @@ The 2030 apportionment is due by 31 Dec 2030 and goes to Congress in January 203
 - **(b) Project** by equal proportions on a stated population projection — an estimate, labelled.
 
 *Code recommends (a).*
+
+**RULED** (F8): (a), as recommended.
 
 ### 4.2 Asked with their measurements
 
@@ -676,7 +705,7 @@ Host status is the 2026-10-04 probe's (by status code); *not probed* means unkno
 
 **BILLED with dates — cannot be read yet:** the 2026 midterm results (certified after 3 Nov 2026; the Clerk's 2026 statistics expected in 2027) and the 2026 specials (G6); the 2030 apportionment (by 31 Dec 2030, to Congress in January 2031); Nebraska's LB3, re-checked from January 2027 (R-EL12's expiry: the 110th Legislature); each post-2024 redistricting, as a dated variant once its enacted map is read; R-K9's re-verification of every US SOURCED file (G12); a live senate.gov re-fetch (G2) from a network it serves.
 
-**Only if ruled in:** ballot access and deadlines in 51 jurisdictions and 26 U.S.C. 9001–9013 (R-US4 (c)); the excepted share of discretionary spending in a lapse (R-US9 (b)).
+**Ruled in by F8 (R-US9's shutdown):** the excepted share of discretionary spending in a lapse, at US-14. **For the later row SP-6b (R-US4 (a)):** ballot access and deadlines in 51 jurisdictions and 26 U.S.C. 9001–9013.
 
 ---
 
@@ -688,7 +717,7 @@ Host status is the 2026-10-04 probe's (by status code); *not probed* means unkno
 4. **Gridlock by construction, and a veto that may never fire.** With each party voting as one, no Senate of record in the window (the 117th to the 119th) gives a party three fifths: contested ordinary bills die at cloture, and only reconciliation and the uncontested pass. From memory, most recent vetoes fell on Congressional Review Act disapprovals passed with defectors, which a bloc model cannot produce. The US risk is zero vetoes — the mirror of E4's 43 of 43 — so US-10 measures it on the record before anything is wired. The sweep is reported, not tuned.
 5. **Poland's coupling.** `PresidentialVeto.Applies` keys Poland's statute-act split at simulation, UI and film-driver sites, and E2 is adding readers now. US-20 cuts them loose before the US veto exists, proved by Poland's own instruments.
 6. **The midterm loss may not be in the model.** The US congressional economic vote is the weakest in Duch & Stevenson's sample, so a midterm may replay the presidential year. US-13 measures it against the record since 1946.
-7. **The term limit and the nominee.** A REP run from 2024 plays a nominee elected in 2016, so under R-US6 (a) a REP win ends the run at the end of that term — a DEM win too if R-US2 makes the player Biden.
+7. **The term limit and the nominee.** A REP run from 2024 plays a nominee elected in 2016. Under R-US6 as ruled (b) a REP win does not end the run: the player picks the 2028 nominee, the Vice President by default, who campaigns on the outgoing record - so a successor carries a term the player played, which is the ruling's own design.
 8. **The specs conflict,** on third parties (R-US4) and on calendars (R-US5); and the standard run-up copied from Sweden opens during the primaries, before the DEM nominee of record exists (R-US2).
 9. **Boundaries move.** From memory, House lines changed between 2022 and 2024 in several states and again for 2026 (read at US-11): a district swing misses where the map moved. The 2032 electors cannot be read before 2031 (R-US13).
 10. **World coherence.** No AI country votes in any run, so a Swedish, German, Polish, Italian or French game holds no US election even after PS-6 (R-US5). Two elections in one game read the same history (W-G1; R-US11).
@@ -701,13 +730,13 @@ Host status is the 2026-10-04 probe's (by status code); *not probed* means unkno
     - The Senate's roll calls and dated roster may only be partly readable, so some rows will be BILLED, and the plan survives that.
 15. **Data that cannot exist yet:** the 2026 results until certified; the 2026 specials; the 2032 allocation; LB3 after January 2027. Each is billed with its date, and no item waits on one.
 16. **First uses.** §709's US pre-start record has never been judged; the Electoral College allocator has never run in play; W-D1's regional noise is untried live; the stance model's party-bloc premise, written for parliaments, is now read on Congress.
-17. **A played game is not the record.** A game from 12 Mar 2024 reaches 5 Nov on its own economy and its own seed vintage, so its count is not the record's. This is DECLARED, as E1's premise is for Poland; which poll E1 means for a played game remains Elias's to rule.
+17. **A played game is not the record.** A game from 12 Mar 2024 reaches 5 Nov on its own economy and its own seed vintage, so its count is not the record's. RULED for Poland by F4 and applied here: a fit is held on the world that follows history, and a played game's count moves with its play.
 18. **Thin branches.** A player out of the White House holding neither chamber introduces nothing until the next election. That is stated, not padded.
 19. **The asymmetry, corrected.** AI-governed foreign countries write their book without a bill. The player's own country's AI government tables its budget as the government's bill (§632), so a US game's AI president's budget meets Congress (US-22); an AI USA in another country's game does not.
 20. **Save churn.** The record transitions, the contest, the Senate and the nominee each step the save format. `SaveMigrationCheck` and `PreviewParityDiagnostic` catch a field only when it is added to both the save and the clone's hand-list, and the play saves must be re-staged.
 21. **Films and the machine.** Three Canvas surfaces owe REAL films at both widths; only one Unity job runs at a time; the 2560 out-of-memory hit once after another Editor job.
 22. **Scale and contention.** 37 records, at least ten of them reviewed — PS-5's reviews found five defects at §761 and five over two readings at §768. Each owes a simulation bar of about ten minutes. D-PL's night and SP-7 run beside this stage and share its files.
-23. **Not modelled, each stated where it would show:** faithless electors, Maine's ranked-choice count for electors, NPVIC, the Senate's contingent choice of the Vice President, the pocket veto and the ten days, shutdowns (unless R-US9 (b)), the Byrd rule beyond the pension age, impoundment, impeachment, and delegated tariff powers (unless R-US8 (b)).
+23. **Not modelled, each stated where it would show:** faithless electors, Maine's ranked-choice count for electors, NPVIC, the Senate's contingent choice of the Vice President, the pocket veto and the ten days, the Byrd rule beyond the pension age, impoundment, impeachment, and delegated tariff powers (unless R-US8 (b)).
 24. **The claim convention.** The repo copy carries references, never transcribed line numbers or code counts. The feature-list rows name no member that does not exist yet, or `DocumentClaimCheck` fails them.
 
 ---
@@ -720,7 +749,7 @@ Host status is the 2026-10-04 probe's (by status code); *not probed* means unkno
 - **Primaries and conventions as play,** and the 2024 nominee change replayed (unless R-US2 (c)).
 - **State politics:** governors, state legislatures, state budgets, and state minimum wages (29 U.S.C. 218(a) preserves them; not modelled, §756).
 - **Electoral edge cases:** faithless electors, NPVIC, Maine's ranked-choice count for electors, and the Senate's contingent election of the Vice President.
-- **Budget mechanics beyond R-US9:** the pocket veto and the ten days; shutdowns (unless R-US9 (b)); the Byrd rule beyond the pension age; impoundment and rescissions.
+- **Budget mechanics beyond R-US9:** the pocket veto and the ten days; the Byrd rule beyond the pension age; impoundment and rescissions. (Shutdowns are in: R-US9 as ruled.)
 - **Removal and succession:** impeachment and the 25th Amendment.
 - **Other branches and appointments:** the judiciary, and every Senate confirmation but the Fed chair's (US-29).
 - **Executive orders and regulation;** the Congressional Review Act appears only in US-10's backtest.

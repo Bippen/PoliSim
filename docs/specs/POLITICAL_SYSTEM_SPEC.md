@@ -188,9 +188,9 @@ support party shares part of the government's record in the voters' eyes — the
 
 ## 6. The United States — playing the president
 
-> ⚠ **Planned, not built** (PS-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). The first bullet's third-party
-> clause and decision 6 conflict with `START_POINTS_AND_PARTY_CREATION_SPEC.md` §2.6 and its decision 10 (a third-party run)
-> until Elias rules R-US4.
+> ⚠ **Planned, being built** (PS-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). R-US4 RULED (a) (Elias's ruling F8,
+> 2026-10-05): the major-party nominee and, late, your own nominee are PS-6's; the third-party run of
+> `START_POINTS_AND_PARTY_CREATION_SPEC.md` §2.6 is its own later row (SP-6b), so the first bullet's "not playable" holds until it lands.
 
 - **The player is a party's presidential nominee** — Democratic or Republican. Third parties are not
   playable: there is no Electoral College path to show them.
@@ -205,15 +205,16 @@ support party shares part of the government's record in the voters' eyes — the
   two-thirds override in both chambers; appointments (the Fed-chair machinery exists). Divided
   government is the mechanic: a hostile House or Senate is what makes the presidency hard.
 - **Midterms every two years** — the whole House and a Senate class; the player's party fights them.
-- **Losing does not end the run.** A defeated president may run again four years later; the
-  constitutional two-term limit ends the run when it binds.
+- **Losing does not end the run.** A defeated president may run again four years later. **The two-term limit binds
+  the person, not the run** (Elias's ruling F8, R-US6 (b)): the player picks the party's next nominee - the Vice
+  President by default - who campaigns on the outgoing record.
 
 ## 7. Winning, losing, and history as the reference
 
 **There is no single win.** A run is a career, measured by elections won, seats, years in each role,
 agreement items delivered, and the country's outcomes. **A run ends** when the player's party falls
-out of parliament, when the player ends it, or — in the USA — when the term limit binds or the player
-declines to run again.
+out of parliament, when the player ends it, or — in the USA — when the player declines to run again (the term limit
+binds the person, not the run: F8, R-US6 (b)).
 
 **After the player's first election night, the game shows what actually happened** — the real result
 and the government that actually formed — beside the player's. For Sweden that is the 2026 Riksdag
@@ -278,8 +279,9 @@ country, and it is the smallest.
 4. **Losing office never ends a run in a parliamentary country** — OP-1 resolved.
 5. **AI party casts are derived from each party's CHES position** (the people-versus-elite item, left–
    right, GAL–TAN) by a stated rule — never a hand-written characterisation of a real party.
-6. **The US player is the party's nominee of record; third parties are not playable.** ⚠ In conflict with the start-points
-   spec's decision 10 until R-US4 is ruled (`docs/specs/USA_STAGE_PLAN.md`).
+6. **The US player is the party's nominee of record; third parties are not playable in PS-6.** R-US4 RULED (a) (F8): your
+   own nominee comes late in PS-6 (US-33), and the third-party run of the start-points spec's decision 10 is its own later row
+   (SP-6b) (`docs/specs/USA_STAGE_PLAN.md`).
 7. **France is selectable in governing mode, labelled, with no election.**
 8. **The Senate is required for the USA and Italy to be playable**; Poland's Senate is stated absent.
 9. **Portfolios follow seat contribution (Gamson's law), sourced.**

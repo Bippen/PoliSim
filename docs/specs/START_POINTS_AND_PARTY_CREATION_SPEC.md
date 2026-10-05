@@ -128,8 +128,9 @@ Republican ticket, with positions inside that party's range; or **a third-party 
 origin in the hardest form, where the Electoral College shows honestly how far a third party is from a
 single electoral vote.
 
-> ⚠ **Planned, not built** (PS-6 + SP-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). The third-party run conflicts
-> with `POLITICAL_SYSTEM_SPEC.md` decision 6 ("third parties are not playable") until Elias rules R-US4.
+> ⚠ **Planned, being built** (PS-6 + SP-6: `docs/specs/USA_STAGE_PLAN.md`, `COMPLETED.md` §777). R-US4 RULED (a) (Elias's ruling F8,
+> 2026-10-05): your own nominee is PS-6's (US-33); the third-party run is its own later row, SP-6b - so
+> `POLITICAL_SYSTEM_SPEC.md` decision 6's "not playable" holds until SP-6b lands.
 
 ### 2.7 How the model treats a new party — using its own logic
 
@@ -283,8 +284,8 @@ start points and created parties (S5, S6) → the two-round presidential model (
 7. **Created parties exist only in the player's country.**
 8. **Marks come from the unspent sheet cells; inks pass the live fence.**
 9. **Funding and ballot access follow each country's real rules**, sourced.
-10. **The USA offers your own nominee or a third-party run.** ⚠ In conflict with the political-system spec's decision 6
-    until R-US4 is ruled (`docs/specs/USA_STAGE_PLAN.md`).
+10. **The USA offers your own nominee or a third-party run** - your own nominee in PS-6 (US-33), the third-party run its own
+    later row, SP-6b (R-US4 RULED (a), Elias's ruling F8; `docs/specs/USA_STAGE_PLAN.md`).
 11. **The two-round presidential model unlocks Poland's and France's presidential starts; France's
     legislative start stays locked.**
 
