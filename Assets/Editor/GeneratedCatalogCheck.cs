@@ -514,13 +514,15 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>
-        /// PS-6 US-3 (§786): the US presidential returns - three CSVs and one catalog, all written by one run of `Tools/us_returns_prep.pl` from
-        /// saved pages. The drift questions of the blocks above, asked of each part: every page the run read is still the bytes it read
-        /// (re-hashed against <see cref="UsPresidentialReturns.RawSources"/>), and the READ transcription too; each CSV is still the bytes the
-        /// catalog was written with; every figure of every CSV row is the catalog's, row for row and in order. ⚠ Plus the one question a catalog
-        /// read by an allocator owes: <see cref="PoliSim.Elections.ElectoralCollege.FromCatalog"/> over each year, through the statute's
-        /// allocator, gives the record's split exactly - NARA's table, each nominee's electoral votes plus those the nominee's own electors cast
-        /// for other persons.
+        /// PS-6 US-3 (§786): the US presidential returns - its CSVs and one catalog (US-5, §788, added 2024's candidates and the House by
+        /// state), all written by one run of `Tools/us_returns_prep.pl` from saved pages. The drift questions of the blocks above, asked of each
+        /// part: every page the run read is still the bytes it read (re-hashed against <see cref="UsPresidentialReturns.RawSources"/>), and the
+        /// READ transcription too; each CSV is still the bytes the catalog was written with, under the heading the comparison reads; every figure
+        /// of every CSV row is the catalog's, row for row and in order. ⚠ Plus the one question a catalog read by an allocator owes:
+        /// <see cref="PoliSim.Elections.ElectoralCollege.FromCatalog"/> over each year, through the statute's allocator, gives the record's split
+        /// exactly - NARA's table, each nominee's electoral votes plus those the nominee's own electors cast for other persons. And what US-5's
+        /// instrument leans on: a year's candidates sum to its jurisdictions' votes, each nominee's row to its ticket's; each House year holds the
+        /// 50 states once, and no House election is missing between the first and the last.
         /// </summary>
         private static int CheckUsPresidentialReturns(StringBuilder sb)
         {
@@ -546,9 +548,9 @@ namespace PoliSim.EditorTools
                 wrong.Add("the READ transcription changed since generation");
             }
 
-            List<string[]> years = ReadUsCsv(usa, "president_by_year.csv", UsPresidentialReturns.YearSourceDigest, 8, wrong);
-            List<string[]> states = ReadUsCsv(usa, "president_by_state.csv", UsPresidentialReturns.StateSourceDigest, 11, wrong);
-            List<string[]> districts = ReadUsCsv(usa, "president_by_district.csv", UsPresidentialReturns.DistrictSourceDigest, 6, wrong);
+            List<string[]> years = ReadUsCsv(usa, "president_by_year.csv", UsPresidentialReturns.YearSourceDigest, "year,nominee_d,nominee_r,electors,cast_d,cast_r,others_d_slate,others_r_slate", wrong);
+            List<string[]> states = ReadUsCsv(usa, "president_by_state.csv", UsPresidentialReturns.StateSourceDigest, "year,state,electors,votes_d,votes_r,votes_other,votes_total,cast_d,cast_r,cast_other,cast_other_to", wrong);
+            List<string[]> districts = ReadUsCsv(usa, "president_by_district.csv", UsPresidentialReturns.DistrictSourceDigest, "year,state,district,votes_d,votes_r,basis", wrong);
 
             if (years.Count != UsPresidentialReturns.Years.Length) { wrong.Add("years: " + years.Count + " CSV rows, " + UsPresidentialReturns.Years.Length + " in the catalog"); }
             for (int i = 0; i < Math.Min(years.Count, UsPresidentialReturns.Years.Length); i++)
@@ -569,6 +571,68 @@ namespace PoliSim.EditorTools
             {
                 var d = UsPresidentialReturns.Districts[i];
                 if (!SameRow(districts[i], d.Year, d.State, d.District, d.VotesD, d.VotesR, d.Read ? "READ" : "canvass")) { wrong.Add("district row " + i + " (" + d.Year + " " + d.State + "-" + d.District + ") differs"); }
+            }
+
+            // US-5 (§788): 2024's candidates and the House by state - row for row, and the sums a reader of them leans on
+            List<string[]> candidates = ReadUsCsv(usa, "president_by_candidate.csv", UsPresidentialReturns.CandidateSourceDigest, "year,candidate,ticket,votes", wrong);
+            List<string[]> house = ReadUsCsv(usa, "house_by_state.csv", UsPresidentialReturns.HouseSourceDigest, "year,state,votes_r,votes_d,votes_other,votes_total", wrong);
+            if (candidates.Count != UsPresidentialReturns.Candidates.Length) { wrong.Add("candidates: " + candidates.Count + " CSV rows, " + UsPresidentialReturns.Candidates.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(candidates.Count, UsPresidentialReturns.Candidates.Length); i++)
+            {
+                var c = UsPresidentialReturns.Candidates[i];
+                if (!SameRow(candidates[i], c.Year, c.Candidate, c.Ticket, c.Votes)) { wrong.Add("candidate row " + i + " (" + c.Year + " " + c.Candidate + ") differs"); }
+            }
+
+            if (house.Count != UsPresidentialReturns.House.Length) { wrong.Add("House: " + house.Count + " CSV rows, " + UsPresidentialReturns.House.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(house.Count, UsPresidentialReturns.House.Length) && wrong.Count < 12; i++)
+            {
+                var h = UsPresidentialReturns.House[i];
+                if (!SameRow(house[i], h.Year, h.State, h.VotesR, h.VotesD, h.VotesOther, h.VotesTotal)) { wrong.Add("House row " + i + " (" + h.Year + " " + h.State + ") differs"); }
+                // the generator writes the other columns as the total's rest, so this holds on every row it writes - a guard on a hand edit only
+                if (h.VotesR + h.VotesD + h.VotesOther != h.VotesTotal) { wrong.Add("House " + h.Year + " " + h.State + ": its parts do not sum to its total"); }
+            }
+
+            // each House year the 50 states once - the presidential catalog's jurisdictions less the District - and the years every House election,
+            // no gap between the first and the last
+            var fifty = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (var s in UsPresidentialReturns.States) { if (s.State != "DC") { fifty.Add(s.State); } }
+            var houseYears = new SortedDictionary<int, SortedSet<string>>();
+            foreach (var h in UsPresidentialReturns.House)
+            {
+                if (!houseYears.TryGetValue(h.Year, out SortedSet<string> seen)) { houseYears[h.Year] = seen = new SortedSet<string>(StringComparer.Ordinal); }
+                if (!seen.Add(h.State)) { wrong.Add("House " + h.Year + ": " + h.State + " twice"); }
+            }
+
+            int previous = 0;
+            foreach (KeyValuePair<int, SortedSet<string>> kv in houseYears)
+            {
+                if (fifty.Count != 50 || !kv.Value.SetEquals(fifty)) { wrong.Add("House " + kv.Key + ": " + kv.Value.Count + " states, not the 50 of the presidential catalog"); }
+                if (previous != 0 && kv.Key != previous + 2) { wrong.Add("House " + previous + " then " + kv.Key + ": a House election missing between them"); }
+                previous = kv.Key;
+            }
+
+            if (houseYears.Count == 0) { wrong.Add("the catalog holds no House year"); }
+
+            var candidateYears = new SortedSet<int>();
+            foreach (var c in UsPresidentialReturns.Candidates) { candidateYears.Add(c.Year); }
+            foreach (int year in candidateYears)
+            {
+                long field = 0, ticketR = 0, ticketD = 0, total = 0, votesR = 0, votesD = 0;
+                int nomineesR = 0, nomineesD = 0;
+                foreach (var c in UsPresidentialReturns.Candidates)
+                {
+                    if (c.Year != year) { continue; }
+                    field += c.Votes;
+                    if (c.Ticket == "R") { ticketR += c.Votes; nomineesR++; }
+                    if (c.Ticket == "D") { ticketD += c.Votes; nomineesD++; }
+                }
+
+                foreach (var s in UsPresidentialReturns.States) { if (s.Year == year) { total += s.VotesTotal; votesR += s.VotesR; votesD += s.VotesD; } }
+                if (nomineesR != 1 || nomineesD != 1) { wrong.Add(year + ": " + nomineesR + " R and " + nomineesD + " D nominee row(s) among the candidates, not one each"); }
+                if (field != total || ticketR != votesR || ticketD != votesD)
+                {
+                    wrong.Add(F("{0}: the candidates sum to {1} (R {2}, D {3}); the jurisdictions to {4} (R {5}, D {6})", year, field, ticketR, ticketD, total, votesR, votesD));
+                }
             }
 
             var splits = new List<string>();
@@ -593,27 +657,35 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append(F("    UsPresidentialReturns: {0} page(s) and the READ transcription the bytes the run read; {1} year(s), {2} jurisdiction row(s), "
-                        + "{3} district row(s), every figure the CSVs'; the allocator over the catalog gives the record's split: {4}\n",
-                UsPresidentialReturns.RawSources.Length, years.Count, states.Count, districts.Count, string.Join(", ", splits.ToArray())));
+                        + "{3} district row(s), {4} candidate row(s) (their sum the jurisdictions'), {5} House row(s) (50 a year, {6} years), every figure the CSVs'; "
+                        + "the allocator over the catalog gives the record's split: {7}\n",
+                UsPresidentialReturns.RawSources.Length, years.Count, states.Count, districts.Count, candidates.Count, house.Count, houseYears.Count, string.Join(", ", splits.ToArray())));
             return 0;
         }
 
-        /// <summary>A generated US CSV's data rows (comments and the heading skipped), its digest held to the catalog's, each row's field count
-        /// to <paramref name="fields"/>.</summary>
-        private static List<string[]> ReadUsCsv(string usa, string file, string recorded, int fields, List<string> wrong)
+        /// <summary>A generated US CSV's data rows (comments skipped), its digest held to the catalog's, its heading to <paramref name="heading"/> -
+        /// the columns in the order the catalog's tuple and the comparison read them (the House CSV lists R before D, the presidential ones D
+        /// before R) - and each row's field count to the heading's.</summary>
+        private static List<string[]> ReadUsCsv(string usa, string file, string recorded, string heading, List<string> wrong)
         {
             var rows = new List<string[]>();
+            int fields = heading.Split(',').Length;
             string path = Path.Combine(usa, file);
             if (!File.Exists(path)) { wrong.Add(file + " is not on disk"); return rows; }
             byte[] bytes = File.ReadAllBytes(path);
             string digest = ElectionsDataCatalogGenerator.Sha256Of(bytes);
             if (!string.Equals(digest, recorded, StringComparison.OrdinalIgnoreCase)) { wrong.Add(file + " changed since generation (on disk " + digest + ", recorded " + recorded + ")"); }
-            bool heading = true;
+            bool atHeading = true;
             foreach (string raw in Encoding.ASCII.GetString(bytes).Split('\n'))
             {
                 string line = raw.TrimEnd('\r');
                 if (line.Length == 0 || line.StartsWith("#", StringComparison.Ordinal)) { continue; }
-                if (heading) { heading = false; continue; }
+                if (atHeading)
+                {
+                    atHeading = false;
+                    if (line != heading) { wrong.Add(file + ": its heading '" + line + "', the comparison reads '" + heading + "'"); }
+                    continue;
+                }
                 string[] cells = line.Split(',');
                 if (cells.Length != fields) { wrong.Add(file + ": a row of " + cells.Length + " field(s), not " + fields); continue; }
                 rows.Add(cells);

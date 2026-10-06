@@ -1,6 +1,7 @@
 #!/bin/bash
-# THE US RETURNS GENERATOR'S FAILURE PATHS, PROVED (PS-6 US-3; COMPLETED.md s786). Each case mutates a fresh copy of Tools/us_returns_prep.pl's
-# inputs - or, where it says TOOL, the copy's own tool - in a temporary directory, runs the tool there, and requires it to exit non-zero, write
+# THE US RETURNS GENERATOR'S FAILURE PATHS, PROVED (PS-6 US-3, COMPLETED.md s786; the House and 2024's candidates, US-5, s788). Each case mutates a fresh copy of Tools/us_returns_prep.pl's
+# inputs - or, where it says TOOL, the copy's own tool; a case reaching a PDF's text rewrites the copy's extractor output instead (wrap), the
+# input-cases' way to a page's text, said in their section - in a temporary directory, runs the tool there, and requires it to exit non-zero, write
 # nothing, and print the exact mismatch the case means (a mutation that lands anywhere else prints something else and is MISSED, never
 # CAUGHT). The control, no mutation, must pass and reproduce the repository's own bytes. Nothing under the repository is written.
 # Run it after any change to the tool or to the pages it reads.
@@ -17,7 +18,7 @@ caught=0; bad=0
 
 fresh() {
   rm -rf "$T"; mkdir -p "$T/ElectionsData" "$T/Tools" "$T/Assets/Scripts/Elections/Generated"
-  cp -r "$ROOT/ElectionsData/usa" "$T/ElectionsData/"; rm -f "$T"/ElectionsData/usa/president_by_*.csv; cp "$ROOT/Tools/us_returns_prep.pl" "$T/Tools/"
+  cp -r "$ROOT/ElectionsData/usa" "$T/ElectionsData/"; rm -f "$T"/ElectionsData/usa/president_by_*.csv "$T"/ElectionsData/usa/house_by_*.csv; cp "$ROOT/Tools/us_returns_prep.pl" "$T/Tools/"
 }
 resum() {   # re-pin a mutated page in its group's sums, so the mutation reaches the parser and not the digest check
   local f=$1 g b h; g=$(dirname "$f"); b=$(basename "$f"); h=$(sha256sum "$f" | cut -d' ' -f1)
@@ -32,7 +33,7 @@ case_() {   # $1 label, $2 the text(s) the run must print (several joined by @@)
   ( cd "$T" && $3 ) >/dev/null 2>&1
   local out rc wrote ok=1 w
   out=$(cd "$T" && perl Tools/us_returns_prep.pl 2>&1); rc=$?
-  wrote=$(ls "$T"/ElectionsData/usa/president_by_*.csv "$T"/Assets/Scripts/Elections/Generated/*.cs 2>/dev/null | wc -l)
+  wrote=$(ls "$T"/ElectionsData/usa/president_by_*.csv "$T"/ElectionsData/usa/house_by_*.csv "$T"/Assets/Scripts/Elections/Generated/*.cs 2>/dev/null | wc -l)
   while IFS= read -r w; do grep -qF -- "$w" <<<"$out" || ok=0; done <<< "${2//@@/$'\n'}"
   if [ $rc -ne 0 ] && [ "$wrote" = 0 ] && [ $ok = 1 ]; then echo "CAUGHT  $1"; caught=$((caught+1))
   else echo "MISSED  $1 (exit $rc, $wrote file(s) written)"; tail -4 <<<"$out"; bad=$((bad+1)); fi
@@ -41,8 +42,8 @@ case_() {   # $1 label, $2 the text(s) the run must print (several joined by @@)
 # --- the control
 fresh
 out=$(cd "$T" && perl Tools/us_returns_prep.pl 2>&1); rc=$?
-same=$(cd "$T" && sha256sum ElectionsData/usa/president_by_*.csv Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs | sed 's/ \*/  /' | sort)
-mine=$(cd "$ROOT" && sha256sum ElectionsData/usa/president_by_*.csv Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs | sed 's/ \*/  /' | sort)
+same=$(cd "$T" && sha256sum ElectionsData/usa/president_by_*.csv ElectionsData/usa/house_by_*.csv Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs | sed 's/ \*/  /' | sort)
+mine=$(cd "$ROOT" && sha256sum ElectionsData/usa/president_by_*.csv ElectionsData/usa/house_by_*.csv Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs | sed 's/ \*/  /' | sort)
 if [ $rc -eq 0 ] && [ "$same" = "$mine" ]; then echo "PASSES  the control: no mutation - exit 0, the repository's bytes"
 else echo "BROKEN  the control (exit $rc)"; tail -4 <<<"$out"; bad=$((bad+1)); fi
 
@@ -97,6 +98,65 @@ case_ "a Maine 2020 TBC raised past twice its leader's votes" "not more than hal
 case_ "a Maine 2020 TBC emptied" "the 'CG2 Total' row's TBC cell is empty" r17
 case_ "a Maine 2020 TBC understated" "the TBC 1000 is not the sum 380324" r18
 case_ "a mismatch found before an input stops the run is still named" "2016 TX: the FEC's notes give@@not that year's certificate" r19
+
+# --- the House and 2024's candidates (US-5, s788); a Clerk's page is reached through its text, the extractor's output rewritten (wrap)
+h01() { wrap 'BEGIN { undef $/ } s{^(Alabama \.+ 678,687 975,737 .*?) 5,471 1,659,895(\r?)$}{$1 5,472 1,659,895$2}m'; }   # the extractor's lines may end CRLF
+h02() { wrap 'BEGIN { undef $/ } s{(United States Representatives, Election of November 8,) 2022}{$1 2021}'; }
+h03() { wrap 'BEGIN { undef $/ } s{^Wyoming \.+ 132,206 47,250 [^\n]*\n}{}m'; }
+h04() { wrap 'BEGIN { undef $/ } s{\fState Democratic Republican (Libertarian[^\n]*\n[^\f]*?Representatives, Election of November 3, 2020)}{\fState Republican Democratic $1}'; }   # a page's first line follows its form feed
+h05() { wrap 'BEGIN { undef $/ } s{\fState Republican Democratic (Independent[^\n]*\n[^\f]*?Representatives, Election of November 5, 2024)}{\fState Democratic Republican $1}'; }
+h06() { local f=ElectionsData/usa/raw/returns/fec_federalelections2022.xlsx; perl "$POKE" $f '<v>942393</v>' '<v>942394</v>'; resum $f; }
+h07() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<v>862049</v>' '<v>862050</v>'; resum $f; }
+h08() { sed -i 's/^| Republican | 49.75 (74,390,864) | 220 |/| Republican | 49.75 (74,390,865) | 220 |/' ElectionsData/usa/returns_2024.md; }
+h09() { wrap 'BEGIN { undef $/ } s{(Recapitulation of Votes Cast for United States Representatives, Election of November 8, 2022)}{$1\n\f$1}'; }
+case_ "a Clerk row's cell changed, its Total kept (2018, Alabama)" "clerk_statistics2018.pdf AL: its columns sum to 1659896, its Total is 1659895" h01
+case_ "the Clerk's 2022 House page titled for another year" "not an election of 2022" h02
+case_ "a state's row gone from the Clerk's 2022 House page" "clerk_statistics2022.pdf: no row for WY" h03
+case_ "the Clerk's 2020 header naming Republican and Democratic in each other's place" "House 2020: the Clerk's and the FEC's tables agree exactly on 0 of 50 states" h04
+case_ "the Clerk's 2024 header crossed (no FEC volume to answer to)" "returns_2024.md: the House's Republican typed 74390864, the Clerk's Total row 70571330" h05
+case_ "an FEC House figure changed, its Total kept (2022, Alabama's Republicans)" "'6. Table 5 House by Party': the rows' column 6 sums to 54298206, the Total row holds 54298205" h06
+case_ "a 2024 candidate's national figure changed (Stein)" "candidate column 'STEIN' sums to 862049 over the states, its Total-row figure is 862050@@the candidate columns' national figures sum to 155238303" h07
+case_ "the typed 2024 House line off by one vote" "returns_2024.md: the House's Republican typed 74390865, the Clerk's Total row 74390864" h08
+case_ "the Clerk's 2022 House title on two pages" "clerk_statistics2022.pdf: the House recapitulation's title on 2 page(s), not one" h09
+# the review's first pass (s788): every refusal the readers added, proved - the Clerk's page through its text, the workbooks by poke, the md by edit
+h10() { wrap 'BEGIN { undef $/ } s{^(Alabama \.+ )1,508,754( .*? )2,048,663(\r?)$}{${1}1,508,755${2}2,048,664$3}m'; }
+h11() { wrap 'BEGIN { undef $/ } s{^(Total \.+ 54,227,992 [^\n]*\n)}{$1$1}m'; }
+h12() { wrap 'BEGIN { undef $/ } s{^Total \.+ 54,227,992 [^\n]*\n}{}m'; }
+h13() { wrap 'BEGIN { undef $/ } s{^(Wyoming \.+ 132,206 47,250 [^\n]*\n)}{$1$1}m'; }
+h14() { wrap 'BEGIN { undef $/ } s{^Wyoming (\.+ 132,206 47,250 )}{Guam $1}m'; }
+h15() { wrap 'BEGIN { undef $/ } s{\f(State Republican Democratic Independent Libertarian Green Constitution Other Parties1) Write-in (Total[^\n]*\n[^\f]*?Representatives, Election of November 5, 2024)}{\f$1 $2}'; }
+h16() { wrap 'BEGIN { undef $/ } s{(\f(State Republican Democratic Libertarian[^\n]*\n))([^\f]*?Representatives, Election of November 8, 2022)}{$1$2$3}'; }
+h17() { local f=ElectionsData/usa/raw/returns/fec_federalelections2022.xlsx; perl "$POKE" $f '<c r="A1" s="47" t="s"><v>11114</v>' '<c r="A1" s="47" t="s"><v>11113</v>'; resum $f; }
+h18() { local f=ElectionsData/usa/raw/returns/fec_federalelections2022.xlsx; perl "$POKE" $f '<c r="E3" s="50" t="s"><v>3166</v></c><c r="F3"' '<c r="E3" s="50" t="s"><v>2811</v></c><c r="F3"'; resum $f; }
+h19() { local f=ElectionsData/usa/raw/returns/fec_federalelections2022.xlsx; perl "$POKE" $f '<c r="F60" s="52"><v>54298205</v></c>' '<c r="F60" s="52"><f>SUM(F5:F59)</f><v>54298205</v></c>'; resum $f; }
+h20() { local f=ElectionsData/usa/raw/returns/fec_federalelections2022.xlsx; perl "$POKE" $f '<c r="A6" s="49" t="s"><v>1184</v></c><c r="B6" s="35"><v>70295</v>' '<c r="A6" s="49" t="s"><v>1164</v></c><c r="B6" s="35"><v>70295</v>'; resum $f; }
+h21() { local f=ElectionsData/usa/raw/returns/fec_federalelections2022.xlsx; perl "$POKE" $f '<c r="A60" s="49" t="s"><v>2796</v></c><c r="B60"' '<c r="A60" s="49" t="s"><v>552</v></c><c r="B60"'; resum $f; }
+h22() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="G53" s="49"><v>166175</v></c>' '<c r="G53" s="49"><f>SUM(G2:G52)</f><v>166175</v></c>'; resum $f; }
+h23() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="G1" s="2" t="s"><v>68</v></c>' '<c r="G1" s="2" t="inlineStr"><is><t>DE LA, CRUZ</t></is></c>'; resum $f; }
+h24() { sed -i 's/^| Jill Stein (Green) | 0.56 (862,049) | 0 |/| Jill Stein (Green) | 0.56 (862,050) | 0 |/' ElectionsData/usa/returns_2024.md; }
+h25() { sed -i '/^| Jill Stein (Green) |/d' ElectionsData/usa/returns_2024.md; }
+h26() { perl -i -pe 's/^### National result \S+ House/### The House, nationally/' ElectionsData/usa/returns_2024.md; }
+h27() { perl -i -pe 's/^### National result \S+ President/### The President, nationally/' ElectionsData/usa/returns_2024.md; }
+h28() { wrap 'BEGIN { undef $/ } s{^(Delaware \.+ 209,606 287,830 [^\n]*\n)}{$1District of Columbia ...... 1,000 2,000 ..... ..... ..... ..... ..... ..... 3,000\n}m'; }
+case_ "a state's Republicans and its Total raised together (2024, Alabama)" "clerk_statistics2024.pdf: the states' Republican sums to 74390865, the Total row holds 74390864" h10
+case_ "the Clerk's 2022 Total row twice" "clerk_statistics2022.pdf: a second Total row" h11
+case_ "the Clerk's 2022 Total row gone" "clerk_statistics2022.pdf: no Total row" h12
+case_ "a state's row twice on the Clerk's 2022 House page" "clerk_statistics2022.pdf WY: a second row" h13
+case_ "a row naming no state on the Clerk's 2022 House page" "clerk_statistics2022.pdf: a row 'Guam', no state" h14
+case_ "the Clerk's 2024 header short of a column" "clerk_statistics2024.pdf: the header 'State Republican Democratic Independent Libertarian Green Constitution Other Parties1 Total' - not nine columns" h15
+case_ "the Clerk's 2022 header line twice" "clerk_statistics2022.pdf: 2 header line(s) on the recapitulation's page, not one" h16
+case_ "the FEC's 2022 House table titled as the Senate's" "'6. Table 5 House by Party': titled '2022 VOTES CAST FOR THE U.S. SENATE BY PARTY', not 2022's House vote by party" h17
+case_ "the FEC's 2022 heading not GENERAL ELECTION over the columns read" "'6. Table 5 House by Party': no heading of GENERAL ELECTION over Democratic, Republican and Other in columns E-G" h18
+case_ "a formula in the FEC's 2022 House Total row" "'6. Table 5 House by Party': the Total row's column 6 is a formula" h19
+case_ "a state twice in the FEC's 2022 House table (Alaska read as Alabama)" "fec_federalelections2022.xlsx AL: a second row@@fec_federalelections2022.xlsx: no row for AK" h20
+case_ "the FEC's 2022 House Total row unlabelled" "'6. Table 5 House by Party': no Total row" h21
+case_ "a formula in a 2024 candidate's Total cell (De la Cruz)" "fec_2024presgeresults.xlsx: the Total row's column 7 is a formula" h22
+case_ "a 2024 candidate's label with a comma" "the candidate column 'DE LA, CRUZ' holds a comma" h23
+case_ "returns_2024.md's Stein off by one vote" "returns_2024.md: STEIN typed 862050, the FEC workbook's Total row 862049" h24
+case_ "returns_2024.md's Stein row gone" "returns_2024.md: 2 presidential row(s) held, not the three it types" h25
+case_ "returns_2024.md's House section renamed" "returns_2024.md: no 'National result - House' section" h26
+case_ "returns_2024.md's President section renamed" "returns_2024.md: no 'National result - President' section" h27
+case_ "a District of Columbia row on the Clerk's 2024 House page" "clerk_statistics2024.pdf: a row 'District of Columbia', no state" h28
 
 # --- the tool's own copy
 t07() { sed -i "s/my %typo = ('2020 R' => 'Trunp');/my %typo = ();/" Tools/us_returns_prep.pl; }

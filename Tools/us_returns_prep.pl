@@ -1,19 +1,26 @@
 #!/usr/bin/perl
-# THE UNITED STATES' PRESIDENTIAL RETURNS BY JURISDICTION, 2012-2024, FOR THE RUNTIME (PS-6 US-3; COMPLETED.md s786). Reads only pages saved byte
-# for byte under ElectionsData/usa/raw/ - each held to its group's SHA256SUMS.txt line before a byte of it is used - and one READ transcription:
+# THE UNITED STATES' PRESIDENTIAL RETURNS BY JURISDICTION, 2012-2024, FOR THE RUNTIME (PS-6 US-3; COMPLETED.md s786), AND THE HOUSE VOTE BY STATE,
+# 2016-2024, BESIDE THEM (US-5, s788). Reads only pages saved byte for byte under ElectionsData/usa/raw/ - each held to its group's SHA256SUMS.txt
+# line before a byte of it is used - one READ transcription and two typed tables:
 #   raw/returns/        the FEC's "Table 2. Electoral & Pop Vote" of Federal Elections 2012 (.xls), 2016 and 2020 (.xlsx), and its Official 2024
 #                       Presidential General Election Results workbook: the popular vote by state and the electoral votes as cast; NARA's results
 #                       pages for 2012 and 2016 (raw/executive/ holds 2020's and 2024's): the nominees, each state's electors and votes as cast,
 #                       the national split, 2016's votes for other persons
+#                       (US-5, s788) the Clerk of the House's election statistics, 2016-2024 (of the Presidential and Congressional Election, or of the Congressional Election in a midterm): its
+#                       "Recapitulation of Votes Cast for United States Representatives" (text by pdftotext -raw), the House series; the FEC's
+#                       House-by-party tables of Federal Elections 2016-2022 read beside it as the cross-check
 #   raw/apportionment/  the Census Bureau's Table 1 of 2010 and 2020: the Representatives per state, so the electors in force each year
 #   raw/district/       Nebraska's canvass books 2012-2024 (their text by pdftotext -raw), Maine's workbooks by congressional district, 2020
 #                       and 2024, and the Governor's certificates of 2012 and 2016 (their OCR text layer, by pdftotext -raw)
 #   ElectionsData/usa/maine_districts_read_2012_2016.tsv   Maine's districts in 2012 and 2016, READ by eye from those certificates (no
 #                       district table of either year exists)
+#   ElectionsData/usa/state_ev_2024.csv and returns_2024.md   2024's tables typed before these pages were saved (returns_2024.md read back against them on 2026-10-05), held to them
 # and writes
 #   ElectionsData/usa/president_by_year.csv       a row a year: the nominees and the electoral vote as NARA prints it
 #   ElectionsData/usa/president_by_state.csv      a row a jurisdiction a year: its electors, its popular vote, its electoral votes as cast
 #   ElectionsData/usa/president_by_district.csv   a row a congressional district of Maine and Nebraska a year: the two nominees' votes
+#   ElectionsData/usa/president_by_candidate.csv  (US-5) a row a candidate column of the 2024 workbook: the national vote
+#   ElectionsData/usa/house_by_state.csv          (US-5) a row a state a year, 2016-2024: the House vote by the Clerk's recapitulation
 #   Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs   the CSVs as C# literals, each CSV's SHA-256 and the SHA-256 of every page
 #                                                                 the run read or relied on (RawSources)
 # GeneratedCatalogCheck re-reads the CSVs against the catalog and re-hashes every page RawSources lists. Tools/us_returns_mutations.sh proves the
@@ -52,9 +59,20 @@
 #     table exactly, state by state and in total: each nominee's electoral votes plus those the nominee's own electors cast for other persons;
 #   - ElectionsData/usa/state_ev_2024.csv (the 2024 table typed before these pages were saved) not holding each jurisdiction once, each row as
 #     the 2024 rows give it;
+#   - (US-5) a candidate column of the 2024 workbook whose typed Total-row figure is not its state rows' sum, or the columns' national figures
+#     not summing to TOTAL VOTES; a column's label holding a comma, a quote, a backslash or a control character;
+#   - (US-5) the Clerk's House recapitulation not on exactly one page, titled for another election, or headed by anything but nine columns
+#     ending Total with Republican and Democratic among them (read by their names - the order differs from year to year); a state row whose
+#     columns do not sum to its own Total, a row naming no state, a state missing or twice, a column of the states not summing to the Total row;
+#   - (US-5) an FEC House table not titled for its year, without GENERAL ELECTION over Democratic, Republican and Other in columns E-G, its
+#     rows not summing to its typed Total row (a formula there refused), a state missing or twice; the two publications agreeing exactly on
+#     fewer than 35 of the 50 states - every year read differs in a few, the run prints which (among them the FEC adds a district's vote for an
+#     unexpired term to its full-term vote, Louisiana's December runoff to November, and prints Maine's first ranked-choice round, where the Clerk
+#     prints the final count - president_returns.md reading 13); a column misread makes almost every state differ;
+#   - (US-5) 2024's House line (Republican, Democratic, the total) or the three presidential rows of returns_2024.md not the pages' figures;
 #   - a perl warning during the checks (an undefined value reaching one), or a name bound for a C# literal holding a quote or backslash;
 #   - a certificate's text layer without page breaks (the cited pages cannot then be checked - the extractor is named, not the transcription).
-# All four outputs are built and tested before the first is written; a write that fails dies.
+# All six outputs are built and tested before the first is written; a write that fails dies.
 # Usage: perl Tools/us_returns_prep.pl   (from the project root, Git for Windows' perl; pdftotext at /mingw64/bin or on PATH)
 # ASCII only.
 use strict;
@@ -445,6 +463,7 @@ for my $spec ([2012, 'returns/fec_federalelections2012.xls', 'Table 2. Electoral
         push @{$y{$year}{notes}{$st}}, [$2, $1 + 0] while $rest =~ /(\d+) (?:was|were) cast for (.+?)(?=\s+and\s+\d|\.\s|\.$|$)/g;
     }
 }
+my @candidates;   # US-5: [year, the column's label, the ticket (R, D, or - for neither nominee), the national vote] - 2024's workbook, a column a candidate
 {   # 2024: one wide sheet - the electors (B), the electoral vote by party (C, D), a column a candidate by surname, the total (last)
     my $file = 'returns/fec_2024presgeresults.xlsx';
     my $c = xlsx_sheet(page($file), 'OFFICIAL 2024 PRES GE RESULTS', $file);
@@ -454,12 +473,13 @@ for my $spec ([2012, 'returns/fec_federalelections2012.xls', 'Table 2. Electoral
     my ($cE, $evR, $evD, $vR, $vD, $vT) = ($col{'ELECTORAL VOTES'}, $col{"ELECTORAL VOTE: $sR (R)"}, $col{"ELECTORAL VOTE: $sD (D)"}, $col{$sR}, $col{$sD}, $col{'TOTAL VOTES'});
     die "$file: the electors, NARA's nominees' columns ($sR, $sD) or the total not found\n" unless $cE && $evR && $evD && $vR && $vD && $vT;
     my @cand = grep { $_ > $evD && $_ < $vT } sort { $a <=> $b } values %col;   # every candidate column, None of These Candidates and the write-ins among them
-    my %tot;
+    my (%tot, %ctot, %csum);
     for my $r (sort { $a <=> $b } keys %$c) {
         my $a = trim($c->{$r}{1});
         if ($a =~ /^Total:/) {
             %tot = (evR => count($c->{$r}{$evR}, "$file Total"), evD => count($c->{$r}{$evD}, "$file Total"), vR => count($c->{$r}{$vR}, "$file Total"), vD => count($c->{$r}{$vD}, "$file Total"), total => count($c->{$r}{$vT}, "$file Total"));
-            for my $k ($evR, $evD, $vR, $vD, $vT) { problem("$file: the Total row's column $k is a formula, with no typed national figure to hold the state rows to") if $formula_at{"$file|OFFICIAL 2024 PRES GE RESULTS"}{"$r,$k"}; }
+            $ctot{$_} = count($c->{$r}{$_}, "$file Total col $_") for @cand;
+            for my $k ($evR, $evD, $vT, @cand) { problem("$file: the Total row's column $k is a formula, with no typed national figure to hold the state rows to") if $formula_at{"$file|OFFICIAL 2024 PRES GE RESULTS"}{"$r,$k"}; }
             next;
         }
         next unless $a =~ /^([A-Z]{2})$/ && $name_of{$1};
@@ -467,7 +487,7 @@ for my $spec ([2012, 'returns/fec_federalelections2012.xls', 'Table 2. Electoral
         problem("$file: $st twice") if $y{2024}{st}{$st};
         my ($d, $re, $t) = (count($c->{$r}{$vD}, "$file $st"), count($c->{$r}{$vR}, "$file $st"), count($c->{$r}{$vT}, "$file $st"));
         my $all = 0;
-        $all += count($c->{$r}{$_}, "$file $st col $_") for @cand;
+        for my $k (@cand) { my $v = count($c->{$r}{$k}, "$file $st col $k"); $all += $v; $csum{$k} += $v; }
         problem("$file $st: its candidate columns sum to $all, its total is $t") unless $all == $t;
         problem("$file $st: the workbook's electors " . count($c->{$r}{$cE}, "$file $st") . ", the apportionment's " . electors(2024, $st)) unless count($c->{$r}{$cE}, "$file $st") == electors(2024, $st);
         $y{2024}{st}{$st} = { evR => count($c->{$r}{$evR}, "$file $st"), evD => count($c->{$r}{$evD}, "$file $st"), vD => $d, vR => $re, other => $t - $d - $re, total => $t };
@@ -477,6 +497,16 @@ for my $spec ([2012, 'returns/fec_federalelections2012.xls', 'Table 2. Electoral
     my %sum;
     for my $s (@st) { $sum{$_} += $y{2024}{st}{$s}{$_} for qw(evD evR vD vR total); }
     problem("$file: the state rows against the Total row") unless %tot && $sum{evR} == $tot{evR} && $sum{evD} == $tot{evD} && $sum{vR} == $tot{vR} && $sum{vD} == $tot{vD} && $sum{total} == $tot{total};
+    # US-5: each candidate's national vote - the Total row's typed figure, held to its column's state rows; the columns together to the total
+    my $call = 0;
+    for my $k (@cand) {
+        my $label = trim($c->{1}{$k});
+        problem("$file: candidate column '$label' sums to " . ($csum{$k} // 0) . " over the states, its Total-row figure is " . ($ctot{$k} // 'missing')) unless defined $ctot{$k} && ($csum{$k} // 0) == $ctot{$k};
+        problem("$file: the candidate column '$label' holds a comma, a quote, a backslash or a control character") if $label =~ /[,"\\\x00-\x1f]/;   # a CSV cell and a C# literal
+        $call += $ctot{$k} // 0;
+        push @candidates, [2024, $label, $k == $vR ? 'R' : $k == $vD ? 'D' : '-', $ctot{$k} // 0];
+    }
+    problem("$file: the candidate columns' national figures sum to $call, its TOTAL VOTES to $tot{total}") unless %tot && $call == $tot{total};
 }
 
 # ---------------------------------------------------------------- the electors in force, the votes as cast and for other persons: three sources held together
@@ -762,6 +792,117 @@ for my $year (@years) {
     problem("$old: $rows rows, not 51") unless $rows == 51;
 }
 
+# ---------------------------------------------------------------- the House (US-5): the Clerk's recapitulation by state, the series; the FEC's table beside it
+# The Clerk of the House's election statistics (of the Presidential and Congressional Election; in a midterm of the Congressional Election) print on one page the "Recapitulation of Votes Cast for
+# United States Representatives": a row a state, a column a ballot line as its own header names them (the order differs from year to year), and
+# the Total row. It is the House series (DECLARED, docs/specs/USA_STAGE_PLAN.md US-5): one publication, 50 states, every year. The FEC's House
+# table by party is read beside it, 2016-2022 (no FEC volume of 2024 is served); its general-election columns hold the same ballot lines.
+my @house_years = (2016, 2018, 2020, 2022, 2024);
+my @house_states = grep { $_ ne 'DC' } @order;
+my (%house, %house_fec, %house_tot);   # {year}{XX} = { R, D, other, total }: the Clerk; {year}{XX} = { D, R, O }: the FEC; {year} = the Clerk's Total row
+for my $year (@house_years) {
+    my $file = "returns/clerk_statistics$year.pdf";
+    page($file);
+    open my $p, '-|', $pdftotext, '-raw', "$raw/$file", '-' or die "$pdftotext: $!\n";
+    my $text = do { local $/; <$p> };
+    close $p or die "$pdftotext $file: exit " . ($? >> 8) . "\n";
+    my @pages = split /\f/, $text;
+    my @hit = grep { $pages[$_] =~ /^Recapitulation of Votes Cast for United States Representatives, Election of /m } 0 .. $#pages;
+    if (@hit != 1) { problem("$file: the House recapitulation's title on " . scalar(@hit) . " page(s), not one"); next; }
+    my @lines = split /\n/, $pages[$hit[0]];
+    my ($title) = grep { /^Recapitulation of Votes Cast for United States Representatives, Election of / } @lines;
+    problem("$file: the recapitulation is titled '" . trim($title) . "', not an election of $year") unless $title =~ /, Election of [A-Z][a-z]+ \d{1,2}, $year\s*$/;
+    my @hdr = grep { /^State / } @lines;
+    if (@hdr != 1) { problem("$file: " . scalar(@hdr) . " header line(s) on the recapitulation's page, not one"); next; }
+    (my $h = trim($hdr[0])) =~ s/^State //;
+    $h =~ s/\bOther Parties\d\b/Other Parties/;   # the footnote mark the header carries ("See each State's recapitulation table")
+    my @cols = $h =~ /(Other Parties|\S+)/g;
+    my %ix;
+    @ix{@cols} = 0 .. $#cols;
+    unless (@cols == 9 && $cols[-1] eq 'Total' && keys(%ix) == 9 && defined $ix{Republican} && defined $ix{Democratic}) { problem("$file: the header '" . trim($hdr[0]) . "' - not nine columns ending Total, with Republican and Democratic"); next; }
+    my (%sum, $total);
+    for my $l (@lines) {
+        # a name (words of capitals, dotted or with "of" between, so "District of Columbia" is named and refused, not skipped), perhaps a footnote
+        # mark, then its figures with their dot leaders
+        next unless $l =~ /^([A-Z][A-Za-z.]*(?: (?:of|[A-Z][A-Za-z.]*))*)\d* (.*)$/;
+        my ($name, @tok) = ($1, split ' ', $2);
+        next if $name eq 'State' || $name eq 'Recapitulation';
+        shift @tok if @tok == 10 && $tok[0] =~ /^\.+$/;   # the leader after the name, apart from an empty first column's dots
+        next unless @tok == 9 && !grep { !/^(?:\.+|[\d,]+)$/ } @tok;   # a row of figures, an empty cell its dots
+        my @v = map { /^\.+$/ ? 0 : count($_, "$file $name") } @tok;
+        if ($name eq 'Total') { problem("$file: a second Total row") if $total; $total = \@v; next; }
+        my $st = $code{$name};
+        if (!$st || $st eq 'DC') { problem("$file: a row '$name', no state"); next; }
+        problem("$file $st: a second row") if $house{$year}{$st};
+        my $parts = 0;
+        $parts += $v[$_] for grep { $_ != $ix{Total} } 0 .. 8;
+        problem("$file $st: its columns sum to $parts, its Total is $v[$ix{Total}]") unless $parts == $v[$ix{Total}];
+        $sum{$_} += $v[$_] for 0 .. 8;
+        my ($r, $d, $t) = ($v[$ix{Republican}], $v[$ix{Democratic}], $v[$ix{Total}]);
+        $house{$year}{$st} = { R => $r, D => $d, other => $t - $r - $d, total => $t };
+    }
+    problem("$file: no row for $_") for grep { !$house{$year}{$_} } @house_states;
+    if (!$total) { problem("$file: no Total row"); next; }
+    for my $k (0 .. 8) { problem("$file: the states' $cols[$k] sums to " . ($sum{$k} // 0) . ", the Total row holds $total->[$k]") unless ($sum{$k} // 0) == $total->[$k]; }
+    $house_tot{$year} = { R => $total->[$ix{Republican}], D => $total->[$ix{Democratic}], total => $total->[$ix{Total}] };
+}
+for my $spec ([2016, 'returns/fec_federalelections2016.xlsx', 'Table 7. House by Party'], [2018, 'returns/fec_federalelections2018.xlsx', 'Table 5. House by Party'],
+              [2020, 'returns/fec_federalelections2020.xlsx', '8. Table 7 House by Party'], [2022, 'returns/fec_federalelections2022.xlsx', '6. Table 5 House by Party']) {
+    my ($year, $file, $sheet) = @$spec;
+    my $c = xlsx_sheet(page($file), $sheet, $file);
+    problem("$file '$sheet': titled '" . trim($c->{1}{1}) . "', not ${year}'s House vote by party") unless trim($c->{1}{1}) =~ /^\Q$year VOTES CAST FOR THE U.S. HOUSE OF REPRESENTATIVES BY PARTY\E\b/;
+    my ($hr) = grep { trim($c->{$_}{1}) eq 'State' } sort { $a <=> $b } keys %$c;
+    unless ($hr && trim($c->{$hr}{5}) eq 'Democratic' && trim($c->{$hr}{6}) eq 'Republican' && trim($c->{$hr}{7}) eq 'Other' && !grep { trim($c->{$hr - 1}{$_}) !~ /^GENERAL ELECTION\b/ } 5 .. 7) {
+        problem("$file '$sheet': no heading of GENERAL ELECTION over Democratic, Republican and Other in columns E-G"); next;
+    }
+    my (%sum, $tr);
+    for my $r (grep { $_ > $hr } sort { $a <=> $b } keys %$c) {
+        my $a = trim($c->{$r}{1});
+        if ($a =~ /^Total:?$/) { $tr = $r; last; }
+        next if $a eq '';
+        problem("$file '$sheet' row $r: '$a', no state or territory") unless $a =~ /^[A-Z]{2}$/;
+        my @v = map { count($c->{$r}{$_}, "$file $a") } 5 .. 7;
+        $sum{$_} += $v[$_ - 5] for 5 .. 7;
+        next unless $name_of{$a} && $a ne 'DC';
+        problem("$file $a: a second row") if $house_fec{$year}{$a};
+        $house_fec{$year}{$a} = { D => $v[0], R => $v[1], O => $v[2] };
+    }
+    if (!$tr) { problem("$file '$sheet': no Total row"); next; }
+    for my $k (5 .. 7) {
+        problem("$file '$sheet': the Total row's column $k is a formula, with no typed national figure to hold the rows to") if $formula_at{"$file|$sheet"}{"$tr,$k"};
+        problem("$file '$sheet': the rows' column $k sums to " . ($sum{$k} // 0) . ", the Total row holds " . count($c->{$tr}{$k}, "$file Total")) unless ($sum{$k} // 0) == count($c->{$tr}{$k}, "$file Total");
+    }
+    problem("$file: no row for $_") for grep { !$house_fec{$year}{$_} } @house_states;
+    # the two publications agree on most states exactly (every year read differs in a few, each printed below and read in president_returns.md's
+    # reading 13); a header the reading mislabels makes almost every state differ
+    my $same = grep { $house{$year}{$_} && $house_fec{$year}{$_} && $house{$year}{$_}{R} == $house_fec{$year}{$_}{R} && $house{$year}{$_}{D} == $house_fec{$year}{$_}{D} } @house_states;
+    problem("House $year: the Clerk's and the FEC's tables agree exactly on $same of 50 states, under the 35 a column read right gives") unless $same >= 35;
+}
+{   # 2024's House line and the three presidential rows of ElectionsData/usa/returns_2024.md - typed before these pages were saved, read back against them on 2026-10-05 - held to them
+    my $md = "$usa/returns_2024.md";
+    open my $h, '<', $md or die "$md: $!\n";
+    my $text = do { local $/; <$h> };
+    close $h;
+    my ($pres) = $text =~ /^### National result \S{1,3} President\r?\n(.*?)^### /ms;   # the dash between is the file's own (UTF-8, read as bytes)
+    my ($hse) = $text =~ /^### National result \S{1,3} House\r?\n(.*?)^### /ms;
+    problem("$md: no 'National result - House' section") unless $hse;
+    problem("$md: no 'National result - President' section") unless $pres;
+    my %typed;
+    $typed{House}{$1} = count($2, "$md House $1") while ($hse // '') =~ /^\| (Republican|Democratic) \| [\d.]+ \(([\d,]+)\) \|/mg;
+    $typed{House}{total} = count($1, "$md House total") if ($hse // '') =~ /^Total House votes ([\d,]+)/m;
+    my $k = $house_tot{2024} // {};
+    for my $p (['Republican', 'R'], ['Democratic', 'D'], ['total', 'total']) {
+        problem("$md: the House's $p->[0] typed " . ($typed{House}{$p->[0]} // 'nowhere') . ", the Clerk's Total row " . ($k->{$p->[1]} // 'unread')) unless defined $typed{House}{$p->[0]} && defined $k->{$p->[1]} && $typed{House}{$p->[0]} == $k->{$p->[1]};
+    }
+    my %vote = map { $_->[1] => $_->[3] } @candidates;
+    while (($pres // '') =~ /^\| [^|]*? ([A-Z][a-z]+) \((?:R|D|Green)\) \| [\d.]+ \(([\d,]+)\) \|/mg) {
+        my ($who, $v) = (uc $1, count($2, "$md $1"));
+        problem("$md: $who typed $v, the FEC workbook's Total row " . ($vote{$who} // 'nothing')) unless defined $vote{$who} && $vote{$who} == $v;
+        $typed{President}{$who} = 1;
+    }
+    problem("$md: " . scalar(keys %{$typed{President} // {}}) . " presidential row(s) held, not the three it types") unless keys(%{$typed{President} // {}}) == 3;
+}
+
 # a name bound for a C# string literal holds no quote or backslash (a comma cannot reach it: the notes are split on commas, and a comma in a
 # nominee's name fails the surname checks above)
 for my $year (@years) {
@@ -770,7 +911,7 @@ for my $year (@years) {
 $SIG{__WARN__} = 'DEFAULT';   # the checks are done: from here a warning is printed as warnings are, never counted as a mismatch
 if (@problems) { my $n = @problems; print STDERR "MISMATCH: $_\n" for splice @problems; die "$n mismatch(es) - nothing written\n"; }
 
-# ---------------------------------------------------------------- the CSVs and the catalog: all four texts built, and tested, before the first file opens
+# ---------------------------------------------------------------- the CSVs and the catalog: all six texts built, and tested, before the first file opens
 sub write_all {
     my @out = @_;
     for (my $i = 0; $i < @out; $i += 2) {
@@ -799,17 +940,30 @@ my $csv_d = $gen . "# A row a congressional district of Maine and Nebraska a yea
     . "year,state,district,votes_d,votes_r,basis\n";
 my @drows;
 for my $year (@years) { for my $s ('ME', 'NE') { for my $cd (sort { $a <=> $b } keys %{$dist{$year}{$s}}) { my $d = $dist{$year}{$s}{$cd}; push @drows, [$year, $s, $cd, $d->{D}, $d->{R}, $d->{read}]; $csv_d .= join(',', $year, $s, $cd, $d->{D}, $d->{R}, $d->{read} ? 'READ' : 'canvass') . "\n"; } } }
-my ($dy, $ds, $dd) = map { sha256_hex($_) } ($csv_y, $csv_s, $csv_d);
+my $csv_h = $gen . "# US-5: a row a state a year - the House of Representatives, by the Clerk of the House's \"Recapitulation of Votes Cast for United States\n"
+    . "# Representatives\" (its election statistics): each party's own ballot line, each race's final count. votes_other: every other column - among them\n"
+    . "# the non-votes some states report (blank, over and under votes) and Maine's ranked-choice lines, which count some ballots again. votes_total: the Clerk's.\n"
+    . "year,state,votes_r,votes_d,votes_other,votes_total\n";
+for my $year (@house_years) { for my $s (@house_states) { my $e = $house{$year}{$s}; $csv_h .= join(',', $year, $s, $e->{R}, $e->{D}, $e->{other}, $e->{total}) . "\n"; } }
+my $csv_c = $gen . "# US-5: a row a candidate column of the FEC's Official 2024 Presidential General Election Results workbook - its Total row's national vote, held\n"
+    . "# to the column's state rows. ticket: R or D for the nominee NARA names; - for every other column, None of These Candidates and the write-ins among them.\n"
+    . "year,candidate,ticket,votes\n";
+$csv_c .= join(',', @$_) . "\n" for @candidates;
+my ($dy, $ds, $dd, $dh, $dc) = map { sha256_hex($_) } ($csv_y, $csv_s, $csv_d, $csv_h, $csv_c);
 my $years_said = join(', ', @years[0 .. $#years - 1]) . " and $years[-1]";
+my $house_said = join(', ', @house_years[0 .. $#house_years - 1]) . " and $house_years[-1]";
 
 my $cs = "// GENERATED by Tools/us_returns_prep.pl. DO NOT EDIT BY HAND.\n//\n"
-    . "// Sources: ElectionsData/usa/president_by_year.csv, president_by_state.csv and president_by_district.csv (their SHA-256 below), written by the\n"
-    . "// same run from the saved pages listed in RawSources. GeneratedCatalogCheck re-reads the CSVs and compares every figure, and re-hashes\n"
-    . "// every page RawSources lists.\n\nnamespace PoliSim.Elections.Generated\n{\n"
+    . "// Sources: ElectionsData/usa/president_by_year.csv, president_by_state.csv, president_by_district.csv, president_by_candidate.csv and\n"
+    . "// house_by_state.csv (their SHA-256 below), written by the same run from the saved pages listed in RawSources. GeneratedCatalogCheck re-reads\n"
+    . "// the CSVs and compares every figure, and re-hashes every page RawSources lists.\n\nnamespace PoliSim.Elections.Generated\n{\n"
     . "    /// <summary>PS-6 US-3 (COMPLETED.md s786): the United States' presidential elections of $years_said by jurisdiction - SOURCED (the FEC,\n"
-    . "    /// NARA, the Census Bureau's apportionment, Maine's and Nebraska's canvasses; `ElectionsData/usa/president_returns.md`). Generated, never hand-edited.</summary>\n"
+    . "    /// NARA, the Census Bureau's apportionment, Maine's and Nebraska's canvasses; `ElectionsData/usa/president_returns.md`). Beside them (US-5,\n"
+    . "    /// s788): 2024's candidates by the FEC's workbook; the House vote by state, $house_said, by the Clerk of the House's\n"
+    . "    /// statistics. Generated, never hand-edited.</summary>\n"
     . "    public static class UsPresidentialReturns\n    {\n"
     . "        public const string YearSourceDigest = \"$dy\";\n        public const string StateSourceDigest = \"$ds\";\n        public const string DistrictSourceDigest = \"$dd\";\n"
+    . "        public const string CandidateSourceDigest = \"$dc\";\n        public const string HouseSourceDigest = \"$dh\";\n"
     . "        public const string ReadTranscriptionDigest = \"$read_digest\";\n\n"
     . "        /// <summary>Every saved page the run read or relied on, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>\n"
     . "        public static readonly (string Path, string Sha256)[] RawSources =\n        {\n"
@@ -826,10 +980,21 @@ $cs .= "        };\n\n"
     . "        /// <summary>Maine's and Nebraska's congressional districts: the two nominees' votes. Read: the figures were READ from the Governor's certificate (no\n"
     . "        /// district table exists), not parsed from a canvass.</summary>\n"
     . "        public static readonly (int Year, string State, int District, long VotesD, long VotesR, bool Read)[] Districts =\n        {\n"
-    . join('', map { "            ($_->[0], \"$_->[1]\", $_->[2], $_->[3]L, $_->[4]L, " . ($_->[5] ? 'true' : 'false') . "),\n" } @drows) . "        };\n    }\n}\n";
+    . join('', map { "            ($_->[0], \"$_->[1]\", $_->[2], $_->[3]L, $_->[4]L, " . ($_->[5] ? 'true' : 'false') . "),\n" } @drows) . "        };\n\n"
+    . "        /// <summary>US-5: 2024's candidates, a row a column of the FEC's workbook - its national vote (the Total row, held to the column's states).\n"
+    . "        /// Ticket: R or D for the nominee NARA names, a hyphen for every other column (Nevada's none-of-these line and the scattered write-ins among\n"
+    . "        /// them). No quote in this comment: a source reader keeps a commented line that holds one.</summary>\n"
+    . "        public static readonly (int Year, string Candidate, string Ticket, long Votes)[] Candidates =\n        {\n"
+    . join('', map { "            ($_->[0], \"$_->[1]\", \"$_->[2]\", $_->[3]L),\n" } @candidates) . "        };\n\n"
+    . "        /// <summary>US-5: the House of Representatives, a row a state a year, by the Clerk of the House's recapitulation - each party's own ballot\n"
+    . "        /// line, each race's final count; VotesOther every other column - the non-votes some states report and Maine's ranked-choice lines, which count\n"
+    . "        /// some ballots again, among them; VotesTotal the Clerk's.</summary>\n"
+    . "        public static readonly (int Year, string State, long VotesR, long VotesD, long VotesOther, long VotesTotal)[] House =\n        {\n";
+for my $year (@house_years) { for my $s (@house_states) { my $e = $house{$year}{$s}; $cs .= "            ($year, \"$s\", $e->{R}L, $e->{D}L, $e->{other}L, $e->{total}L),\n"; } }
+$cs .= "        };\n    }\n}\n";
 $cs =~ s/\n/\r\n/g;
 write_all("$usa/president_by_year.csv" => $csv_y, "$usa/president_by_state.csv" => $csv_s, "$usa/president_by_district.csv" => $csv_d,
-          'Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs' => $cs);
+          "$usa/president_by_candidate.csv" => $csv_c, "$usa/house_by_state.csv" => $csv_h, 'Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs' => $cs);
 
 for my $year (@years) {
     my $n = $nara{$year};
@@ -840,6 +1005,19 @@ for my $year (@years) {
     printf "%d: %s (%s) %d - %s (%s) %d as cast, %d - %d by the record's winners = NARA's table EXACT%s; votes D %d R %d others %d total %d\n", $year,
         $n->{name}{$w}, $w, $n->{wn}, $n->{name}{$o}, $o, $n->{on}, $pledged{$year}{$w}, $pledged{$year}{$o}, (@to ? ' (for other persons: ' . join('; ', @to) . ')' : ''), $v{D}, $v{R}, $v{O}, $v{T};
 }
+printf "2024's candidates: %s\n", join('; ', map { "$_->[1]" . ($_->[2] ne '-' ? " ($_->[2])" : '') . " $_->[3]" } @candidates);
+for my $year (@house_years) {
+    my $k = $house_tot{$year};
+    my $line = sprintf "House %d by the Clerk: R %d D %d others %d total %d, two-party R %.4f%%", $year, $k->{R}, $k->{D}, $k->{total} - $k->{R} - $k->{D}, $k->{total}, 100 * $k->{R} / ($k->{R} + $k->{D});
+    if (my $f = $house_fec{$year}) {
+        my ($fr, $fd, $fo) = (0, 0, 0);
+        for my $s (@house_states) { $fr += $f->{$s}{R}; $fd += $f->{$s}{D}; $fo += $f->{$s}{O}; }
+        my @diff = map { sprintf '%s D %+d R %+d', $_, $f->{$_}{D} - $house{$year}{$_}{D}, $f->{$_}{R} - $house{$year}{$_}{R} } grep { $f->{$_}{D} != $house{$year}{$_}{D} || $f->{$_}{R} != $house{$year}{$_}{R} } @house_states;
+        $line .= sprintf "; the FEC's table, 50 states: R %d D %d others %d, two-party R %.4f%% - %d of 50 states identical; the FEC less the Clerk: %s", $fr, $fd, $fo, 100 * $fr / ($fr + $fd), 50 - @diff, join('; ', @diff);
+    }
+    else { $line .= "; no FEC volume of $year is served" }
+    print "$line\n";
+}
 my ($extractor) = qx("$pdftotext" -v 2>&1) =~ /^(pdftotext version \S+)/m;
-printf "%d pages read and held to their sums (text by %s); %d state rows, %d district rows; wrote president_by_year.csv, president_by_state.csv, president_by_district.csv, UsPresidentialReturns.cs\n",
-    scalar(keys %read), $extractor // "$pdftotext, version unread", 51 * @years, scalar(@drows);
+printf "%d pages read and held to their sums (text by %s); %d state rows, %d district rows, %d candidate rows, %d House rows; wrote president_by_year.csv, president_by_state.csv, president_by_district.csv, president_by_candidate.csv, house_by_state.csv, UsPresidentialReturns.cs\n",
+    scalar(keys %read), $extractor // "$pdftotext, version unread", 51 * @years, scalar(@drows), scalar(@candidates), 50 * @house_years;

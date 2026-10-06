@@ -23,3 +23,14 @@
 2026-10-05T20:46:21Z	200	193777	supremecourt_chiafalo_v_washington_19-465.pdf	https://www.supremecourt.gov/opinions/19pdf/19-465_i425.pdf
 2026-10-05T20:46:23Z	200	3623	wa_courts_in_re_guerra_953478.pdf	https://www.courts.wa.gov/opinions/pdf/953478.pdf
 2026-10-05T20:46:37Z	NOTE	-	wa_courts_in_re_guerra_953478.pdf	(discarded: the URL served the courts site's error page with HTTP 200, 3623 bytes - not the opinion; the opinion's own URL was not found)
+2026-10-05T23:51:11Z	200	24623	fec_federal_elections_2018.html	https://www.fec.gov/introduction-campaign-finance/election-results-and-voting-information/federal-elections-2018/
+2026-10-05T23:51:12Z	200	24607	fec_federal_elections_2022.html	https://www.fec.gov/introduction-campaign-finance/election-results-and-voting-information/federal-elections-2022/
+2026-10-05T23:51:23Z	200	602712	fec_federalelections2018.xlsx	https://www.fec.gov/resources/cms-content/documents/federalelections2018.xlsx
+2026-10-05T23:51:24Z	200	3179722	fec_federalelections2022.xlsx	https://www.fec.gov/resources/cms-content/documents/federalelections2022.xlsx
+2026-10-05T23:51:29Z	NOTE	-	-	https://www.fec.gov/documents/2706/federalelections2018.xlsx and https://www.fec.gov/documents/5676/federalelections2022.xlsx (the links on the year pages saved at 23:51:11Z and 23:51:12Z) answered with one redirect each to the cms-content URLs logged at 23:51:23Z and 23:51:24Z - this column holds the URL as reached; the same volumes as PDF (/documents/2705/ and /documents/5675/) are kept OUT OF TREE (raw/out_of_tree.txt)
+2026-10-05T23:51:29Z	403	263	-	https://www.fec.gov/resources/cms-content/documents/federalelections2024.xlsx (a probe on the pattern of the four volumes: no 2024 volume served; the 263-byte refusal kept out of tree only)
+2026-10-05T23:51:27Z	200	457678	clerk_statistics2022.pdf	https://clerk.house.gov/member_info/electionInfo/2022/statistics2022.pdf
+2026-10-05T23:51:28Z	200	602172	clerk_statistics2020.pdf	https://clerk.house.gov/member_info/electionInfo/2020/statistics2020.pdf
+2026-10-05T23:51:28Z	200	460175	clerk_statistics2018.pdf	https://clerk.house.gov/member_info/electionInfo/2018/statistics2018.pdf
+2026-10-05T23:55Z	404	1245	-	https://clerk.house.gov/member_info/electionInfo/2016election.pdf (a guessed name, tried first; the error page discarded; logged to the minute)
+2026-10-05T23:55:23Z	200	663410	clerk_statistics2016.pdf	https://clerk.house.gov/member_info/electionInfo/2016/statistics2016.pdf

@@ -1,4 +1,4 @@
-# PS-6 US-3: the sourced files kept OUT OF TREE (PoliSim-captures/sources/), by SHA-256 and bytes - see ElectionsData/usa/president_returns.md
+# PS-6 US-3 and US-5: the sourced files kept OUT OF TREE (PoliSim-captures/sources/), by SHA-256 and bytes - see ElectionsData/usa/president_returns.md
 659a2ce643e76f99c65a561bfa1378bb0b4b8606d5cb5ccbb386afa35483004b	25069177	usa_us3/fec/fec_federalelections2012.pdf
 d5b10acb1c34ca0c5d4a88a7c0f6943b3bf4118db87dd05d7a1b7b790a2e4841	11855912	usa_us3/fec/fec_federalelections2016.pdf
 e4e6d5efd911ff02bffffb47180d05278f98a07655bd390d078904f545d12836	12531393	usa_us3/fec/fec_federalelections2020.pdf
@@ -12,3 +12,5 @@ d32d1d9d7d4ef7a4a4cdf9aa5c1b4eb17b12af991583d7b3260dd37072eb2a6b	1505113	usa_us3
 54ca947cb0d766d91d9de3b4f48e0455cd83cd4d34c0b9738ed94b8ef70ce191	64016	usa_us3/district/archives_electoral_college_2016.html
 f53b2134d07d763065037aad6d17107fee34f63662a5f13fdc15da00455a6cc7	57517	usa_us3/district/archives_electoral_college_2020.html
 6950bce8ce2545be44f739c00a9da82c332a7bcff6f2a8ff0b865f8ee82c6537	57762	usa_us3/district/archives_electoral_college_2024.html
+6d7b65418458f40cb4d301f04034e79a6938344097c6d28ec418d676af757ab2	5713334	usa_us5/fec/fec_federalelections2018.pdf
+b1f92b288634814870e6c0e564f3ffa6592ed06a1390947078d799427d4332b5	8047121	usa_us5/fec/fec_federalelections2022.pdf
