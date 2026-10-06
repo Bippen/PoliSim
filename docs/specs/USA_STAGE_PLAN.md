@@ -292,8 +292,58 @@ A committed `Tools/us_veto_backtest.pl` writes `docs/generated/US_VETO_BACKTEST.
 The Clerk's *Statistics* PDFs for 2016–2024 (all five saved, §786 and §788; their text is `pdftotext -raw`'s - the fonts are Type1, so the CID trap first feared here does not arise), the FEC's *Federal Elections* xlsx (2016–2022) as the cross-check of the winners, the ranked-choice counts and Alaska's 2022 rounds. A committed `Tools/us_house_prep.pl` generates the 435 districts per cycle with the exceptions as data: same-party generals (California's and Washington's top two, Louisiana's open primary), the ranked-choice races as the Clerk prints them (Maine's finalists at their last round, Alaska's first choices - its 2022 last round, the FEC's, the deciding count), Louisiana's December runoffs, fusion lines summed, the unopposed seats printed without votes flagged, North Carolina's uncertified 9th of 2018, Georgia's majority rule (no House runoff is printed in 2016–2024), the races one major party left uncontested readable from the candidates printed, and the maps in force each cycle dated, redraws named. **Built, the data half: `COMPLETED.md` §790** - the catalog (`ElectionsData/usa/house_districts.csv`, `house_maps.csv`, `house_years.csv`; `UsPresidentialReturns`' other part, `UsHouseDistricts.cs`), its record (`house_districts.md`), its mutation suite, and its re-read in `GeneratedCatalogCheck`; the districts give `[HH-DIV]` in every year but its two footnoted vacancies.
 
 Plurality is then counted per district on the record's own votes, and three seat methods are measured at the true national House vote: (a) district uniform swing on the map in force; (b) state delegations by a state swing; (c) a national seats-votes rule with one fitted parameter. The cycles are 2018→2020, 2020→2022 (the redraw: (b) and (c) only) and 2022→2024, the redrawn states named. Delegations are printed by state, which the 12th Amendment needs.
-*Needs:* US-0.
+*Needs:* US-0; for its instrument, R-US18's seven choices answered blind, or Elias's word to run on the defaults, which rules none of them (§791).
 *Done when:* the record's own district votes give the 2022 and 2024 House exactly against `[HH-DIV]` (REP 222 / DEM 213; REP 220 / DEM 215), every exception named; each method's seat error per cycle in the card's GENERATED block; `GeneratedCatalogCheck` re-reads; R-US18 asked.
+
+*Design, DECLARED before the instrument's first run (§791).* A design panel specified it blind to rough scratch estimates of the three methods that the session had made first; the session, which had seen them, condensed the specification into this list and R-US18's block and corrected both where its review found them wrong (R-US18's entry says what the panel's brief held; `COMPLETED.md` §791 says what the panel saw and lists each correction). The arithmetic the rule runs on, the scoring and the decision are R-US18's preregistered block; this list holds everything else.
+- *What the game needs from a count.* Control (bills pass by party blocs, so it matters most), all 50 delegations (R-US3's contingent election; the night's board) and 435 seats. (a) and (b) give all three; (c) gives control only, so it stands as the national benchmark and is never recommended alone. The game feeds the count one number, its poll: every method moves by the poll's own change and is never re-solved - the district and state methods plain additive on shares read by candidate, (c) through the change in the poll's logit (a re-solve, as §689's does, would carry the gap between the two vote bases into every unit). (a) with F-old, (b), (b') and (c) are anchored on the previous House - in play the game's own (R-US11 (a)) - so their level never jumps at the first game election, and step 2 compares responses, not proportionality's level. F-prop is not anchored: a redrawn state it counts moves to proportionality's level and stays there (S5's option); step 1 measures that level.
+- *Inputs* - generated, re-read by `GeneratedCatalogCheck`, never typed. By `Tools/us_house_prep.pl`: `house_districts.csv`, each race's deciding count `final_r`/`final_d` - Louisiana's runoff finalists alone, Alaska 2022 at the FEC's last round, Maine at its last round, otherwise the general as printed; Alaska 2024 stands at first choices, its rounds BILLED - a base in no cycle of D and in no election of play; C5, once measured, reads it at first choices unless its rounds are read first (a correction of the catalog, re-pinned or asked again as R-US18's block says). Each candidate's party is the first R or D label in the record's closed label table (`house_districts.md` reading 3: Washington's 2018 "GOP" Republican, Vermont 2024's joint line Republican, the write-ins other). `house_maps.csv` for held and redrawn. By `Tools/us_returns_prep.pl`: `house_by_state.csv`, US-5's catalog, whose own-line columns give V(E), the districts' own lines asserted to sum to them. The House tool gains two generated columns: `in_force` - `lines_changed`, but where a saved page says a new plan was not used (Missouri 2026, by the 120th tab's note that its plan "cannot be used") - which the rule's held and redrawn read and which sets play's redrawn states; and `instrument`, printed only - the redraw's instrument as `house_districts.md` reading 8 names it (a court-ordered plan, an act; Minnesota's 2016 and 2018 changes "cosmetic", as the 115th and 116th tabs call both), "-" where no saved page says.
+- *(a), asserted.* No row other than the no-winner and unopposed ones without a deciding count; North Carolina 2018's base without NC-9; WA-8 2018 and Vermont 2024 contested on the deciding count; the identity - every base share above one half exactly where its winner is REP and below where DEM (`GeneratedCatalogCheck` already holds every winner leading its deciding count, with no tie for first), a failure being a reading defect, nothing substituted; with M = n and no element at exactly one half, F-old's quantile form returning the plain count; M never zero. The clamp to [0, 1] is for printing only - it cannot change a call. In play a held state whose prior is an F-old set is counted as the set, each element's half going to its stored call. The output: the national seats, the 50 delegations with their classes, every held district's swung share and call, and each redrawn state with the fallback that counted it and its instrument.
+- *(b), asserted.* c_T never negative - REP at least U_R and DEM at least U_D in every state. It reads no map, so a redraw changes nothing in it; its anchor is the base delegation, whatever lines it was won on, and U seats stay their party's as (a)'s ones and zeros do. At zero swing with c_T = c_B every state returns its base delegation, as (a) returns its base and (c) its base's seats - the three differ only in their response; at one seat it is identical to (a) in a held state, checked. Beside it, never deciding: (b0) - also F-prop - which at zero swing against the base delegations prints proportionality's level error; (b U-blind), a sensitivity line; (b'), which can only stop the rule. The plan reserves its one fitted parameter for (c): (b') has two, so adopting it is an amendment, which says whether they are refit on the game's previous House at each election or held from the record.
+- *(c), printed beside its verdict-line comparison:* rho with its window; every (x, y); the in-sample fit; the leave-one-out fits and errors for every cycle, labelled "fitted on later elections" where they are; the fit with every transition (C3 too); the fit on held states only - the states held across each transition, their own-line votes and decided seats - showing how far the redraws inside its window move rho, the reason that leaves C3 out applied to them; a rho at or below zero marked unplayable. Checked: at V(T) = V(B), (c) returns its base - REP the nearest integer to 435 × S(B), a half to B's majority - and Shat lies within 1e-12 of S(B). In play, if ever ruled, its window is C1, C2 and C4 and its anchor the game's previous House. If Elias rules its total in, the step-2 method's delegations are reconciled to it: the difference moved, a seat at a time, toward the party it favours, nearest to flipping first among the other party's calls by vote share (a held district by its swung share's distance from one half; an F-old element likewise; a (b) or F-prop state by its distance from the next rounding threshold in the favoured direction, a state at its clamp excluded), ties by postal code and then district; the result asserted to every state's seats, to every bound (a state's REP within [0, n], a (b) or F-prop state's within [U_R, n_T − U_D]) and to 435.
+- *The truth* is the record's own district plurality on the Clerk's counts in every cycle - the quantity every method predicts, from the publication the base comes from. It is a data gate, not a ruling: it must give `[HH-DIV]` every year but NY-22 2020, which goes to the winner on the Clerk's count (certified on 8 February 2021, as the FEC's 2020 sheet notes; the game counts all 435 seats by plurality and models no certification - `[HH-DIV]`'s 2020 is S4's reading (i)), and NC-9 2018, undecided (no votes printed; the 2019 special is another election). The game's 117th of record (`PartySystems.SeatsAt` and `PartySystems.ChamberSizeAt` at `Usa2020` - `[HH-DIV]`'s election-day figures, NY-22 unassigned) is untouched. Alaska 2022's truth is its winner; as a base it is read at the FEC's last round. The delegations of record and the contingent call of record (26 delegations to elect; a tied delegation casts no vote, R-US3) are derived by the instrument and pinned per year - the class counts and the call, their figures in the code and `COMPLETED.md` §791, never in this plan.
+- *The cycles.* C1 to C4 (C1 2016→2018, C2 2018→2020, C3 2020→2022, C4 2022→2024) are measured; D = {C1, C2, C4}. C4's swing is near zero (§791), so every anchored method returns its base except where that swing carries a district across a tie ((a)) or a seat count across a rounding ((b), (b'), (c)). C4 tests structure and step 1 - its redrawn states, at near-zero swing, show whether a new map looked like the old one or like proportional - and its own conditions can only veto a switch; while S4's reading (vii) stands, where its figures in step 2's and step 5's sums decide, (vii) asks (a blind answer to choice 7, either way, makes (vii) printed only). C3, the census redistricting, is printed in R-US14's stress-case form, (a) running through F-old in every multi-seat state - the item's "(b) and (c) only" honoured for deciding, since C3 never decides: play meets no census redistricting before the 2030 apportionment is sourced (R-US13 (a)), and its first redraws are mid-decade ones, the kind C1, C2 and C4 hold. Step 1 is also printed over every redrawn state-cycle, C3's included, never deciding. This departs from the item's text, which lists 2018→2020, 2020→2022 and 2022→2024: C1 joins D as the record's largest swing and its only midterm on mostly held lines - the kind of election a 2024-start game meets on 3 Nov 2026 - and while S4's reading (ii) stands, C1 can turn a verdict into an ask but never decide against the item's list (a blind answer to choice 1, either way, makes (ii) printed only). Asked blind (R-US18's entry). C5 (2024→2026) is pre-declared: BILLED until the Clerk's 2026 statistics are saved (due 2027), never estimated, its truth gate then generated the same way, against `[HH-DIV]`'s 120th row and its footnoted vacancies (read into `house_years.csv`'s `vacant`, as NC-9's and NY-22's are).
+- *The measures,* per cycle, for (a) with F-old, (a) with F-prop, (b), (b0), (b U-blind), (b'), (c) and no change:
+  - REP seats against the truth, N and |N|, and each row's zero-swing count beside it - for an anchored method its base, so that N is its response error;
+  - control - the majority (218 of 435) called right or wrong, with its margin predicted and of record;
+  - W per state, G, H and G − H ((c) has none); G counts each misplaced seat once, bounds |N| and gives no credit for cancellations;
+  - every delegation beside the record's ((c) has none); K, the wrong ones named; the tied delegations against the record's; the class counts; the contingent outcome against the record's - REP, DEM or "no state majority" (neither party at 26, R-US3's unmodelled branch);
+  - for (a) in held states, the districts called wrong, named with their margins and split into "the swing flipped it, the record did not" and the reverse - NC-9 2018 never among them: (a)'s call on it (C1) is printed, not listed as wrong, since it has no winner of record, and counts in (a)'s North Carolina total, which W, N and K score by interval; the mean absolute two-party miss over districts contested at both elections; the base's one-party seats that changed party, named;
+  - the per-state table: seats in force, held or redrawn with its source and instrument, the record's REP−DEM, each row's, a mark where a class is wrong;
+  - the identities, asserted; (c)'s fits;
+  - the exceptions, named: fusion, same-party, one-party, unopposed, Louisiana's runoffs, Maine's and Alaska's ranked-choice counts, NC-9, NY-22, the labels of WA-8 2018 and Vermont 2024, every state counted by F-old with M ≠ n, and every tie-break that fired - a share or q(k) at exactly one half (to its base winner, or by the half rule), a rounding half (the half rule), (c)'s half (to B's majority), and equal sums in steps 1 and 2 (the TIE-BREAKS);
+  - the decision table over D: step 1's W by redrawn state-cycle under each fallback, with each map's instrument and each fallback's delegation class against the record's, and step 1's sums; H, G, |N|, N and K per method and cycle and summed; (c)'s and (b')'s comparisons; each figure marked better, equal or worse; the outcome under the declared readings and under each of S4's seven; the verdict line;
+  - adequacy, per cycle: the kept fallback's misplaced seats per 100 redrawn seats against (a)'s per 100 held seats, printed with the sourcing question;
+  - tilt: a deciding method whose signed N has one sign in every cycle of D is flagged - a partisan tilt the player would feel - never a stop;
+  - the game's range, where no truth exists - 5 Nov 2024 and 3 Nov 2026, the 2026 base the chain a world that follows history runs (the method's own 2024 count at 2024's V, on the 2026 lines in force, Missouri under both readings): REP seats at V from 40 to 60 % in one-point steps; the control point, the smallest V on a 0.01-point grid that gives REP 218; the districts the fallback counts and, for F-prop, the states it would hold for good;
+  - pins: every measured cycle and row - REP seats, N, G, H, K and the contingent outcome; for (c) REP seats and N; for the record each year, its delegation class counts and contingent call. A moved pin or an unpinned measured row fails by name. A moved pin is re-pinned in the commit that moves it, naming its cause - but a pin whose figure is in the decisive digest only as R-US18's block allows, and a record pin only by the commit that corrects the catalog, naming the correction.
+
+  Only the figures the rule names decide; everything else informs Elias.
+- *Where it prints.* `UsHouseCountCheck`, `Run` and `WriteReadings` on `UsStateSwingCheck`'s pattern, in the cheap bar and the documents bar; the card's third GENERATED block, stamped with the catalog's digest, the rule's, the decisive table's and the ruling record's state. A stale block fails both bars, and so does a ruling-record line after R-US18's block that differs from the instrument's record. An ask is registered, not failed (R-US18's block): the grain's "asks the ruling it informs, with its table" and "nothing measured goes live unruled" meet CLAUDE.md's one green bar per commit, and an unregistered stop still fails, so the ask cannot be skipped. `UsStateSwingCheck` and `UsNationalVoteCheck` keep their own form unless Elias extends this to them.
+- *Data failures are defects, not asks* - each fails the instrument until fixed: the truth gate; the record's delegation class counts or contingent call against their pins; districts or seats against the apportionment, or a total not 435; a state-cycle with no held or redrawn class; `in_force` differing from `lines_changed` in 2016-2024; the own-line V(E) read from `house_by_state.csv` not US-5's catalog; any row's output, no change included, outside its bounds or not summing to its states' seats and to 435; c_T below zero; a winner outside REP and DEM in 2016-2024 (the truth gate); an Alaska 2022 row without its last round, or a Louisiana runoff row without its finalists; a row other than the no-winner and unopposed ones without a deciding count; North Carolina 2018's base not its decided seats; WA-8 2018 or Vermont 2024 not contested on the deciding count; a zero-swing identity failing; M = 0; sum x² = 0 in a (c) window; a rule digest not on the instrument's list; a pin moved, a measured row unpinned, or a stale block; `GeneratedCatalogCheck`'s re-read failing.
+- *In play* (US-16 on the presidential day; US-27 every even year). V(T) is the game's poll on polling day, REP/(REP+DEM), before E1's factors (R-US15 (a), asked). B is the previous House election - the record's 2022 for 5 Nov 2024, then the game's own (US-26, R-US11 (a)) - and V(B) the V that count used. Stored per state in the save, unclamped (a format step at US-16): the labelled district shares where the state was held; the F-old set with each element's call where F-old counted, the state's next prior; and always the state's share u, the delegation the count gave and its unopposed seats by party, which (b) and F-prop read after the game's own election, since no district votes are drawn (the board shows seats and delegations, no House vote breakdown). Every share is its base plus the summed swings, so rolling forward is exact. A state counted by F-prop - only under a ruling - stays on F-prop at every later election, its footprint printed in the game's range. The redrawn states are `house_maps.csv`'s `in_force` reading - Missouri held on 3 Nov 2026 by its saved note, `in_force` equal to `lines_changed` again if a later read restores the plan - and past the rows read the last map read stays in force. The chamber is set by `ParliamentSystem.SetSeatsFromElection` with REP the count and DEM 435 less it; the delegations are stored with the contest and saved, for R-US3 on 6 January and for the night's board. The count is a pure function with no draw: 435 seats in 50 states at the apportionment in force (2 U.S.C. 2a; R-US13 (a) carries 2020's forward), asserted on every call. Not modelled, stated: third-party winners; runoffs, ranked-choice transfers and Georgia's majority rule (with two parties the plurality is a majority); specials; party switches; incumbency.
+- *What the record cannot decide, flagged:*
+  - (b)'s seat rule - the plan names none (asked blind, choice 5);
+  - a prior on new lines - published results by new district for each enacted plan would retire the blind fallback (asked with R-US18, S5's third option);
+  - the kind of the record's redraws against play's - mixed (a court-ordered plan, enacted acts, some named only, a change the Bureau calls cosmetic) and partly unread (`house_districts.md` reading 8), Colorado 2018's undescribed, Pennsylvania 2018's taken as a redraw on the Bureau's list (DECLARED; its instrument BILLED), 2026's not read; which is why S5 asks rather than switches;
+  - whose geography rolls forward - US-26 as ruled, the game's own count (the alternative, the record's newest returns on the lines in force, would shorten the fallback's reach; Elias's reading of R-US11);
+  - whether C1 belongs in D (asked blind, choice 1);
+  - the noise floor - two swing cycles and a level cycle cannot separate methods a few seats apart, so the rule asks for consistency and asks wherever a declared reading decides; a one-seat difference can still move the outcome between (a) and S1, or S1 and (b) - no integer rule is free of an edge, but no declared one-seat convention decides silently, since S4 runs each;
+  - NY-22 2020 (asked blind, choice 2; S4 (i) guards it) and NC-9 2018 as conventions argued from the game's model;
+  - unopposed seats against an imputed share - the record cannot choose; they part only at swings far beyond the record's;
+  - Minnesota's and Colorado's 2018 changes (asked blind, choice 3);
+  - the swing's basis (asked blind, choice 4; S4 (vi));
+  - C4's place in step 2's and step 5's sums - the panel's arithmetic counts it, its account of C4 says it only vetoes (asked blind, choice 7; S4 (vii));
+  - (c)'s rho on one or two transitions - S3 cannot fire on the record on disk; the Clerk's statistics before 2016 would make it live (asked blind, choice 6);
+  - R-US15 asked, not ruled - V in play assumes the poll is the own-line House vote;
+  - US-5's House basis (§788, asked) - a ruling that moves `house_by_state.csv` moves V(E) and the decisive digest, re-pinned or asked again as R-US18's block says;
+  - contestation moving V - the districts a party leaves uncontested change from one election to the next; every method reads the same swing, and the effect cannot be measured without modelling uncontested votes;
+  - Missouri's 2026 plan - read as held by the saved note; the referendum's result and the record's 2026 returns BILLED;
+  - Alaska's sources - the FEC's 2022 round departs, for one district, from "the Clerk throughout"; 2024's rounds BILLED;
+  - a census redistricting in play after 2030 - C3's case, printed;
+  - swings beyond the record - one-party seats keep their one or zero until half the vote has swung;
+  - R-US3's unmodelled branch - R-US3 is ruled, so "no state majority" (neither party at 26) prints as its own outcome in every cycle and method, flagged before US-16 (§791 says how near 2018 and 2022 came);
+  - C5's role - whether 2026 joins D is an amendment, once it is read.
 
 **US-12 — The Senate by state and by date, and the race proof. Size M.** *(asks R-US19; R-US10 seats the independents)*
 - Extract the per-state, per-class table from the three saved class pages (G7; no fetch) with a committed `Tools/us_senate_prep.pl`.
@@ -646,6 +696,231 @@ The override is two thirds of those present and voting, a quorum present, as the
 - (c) a national seats-votes rule fitted on the record (one parameter).
 
 The measurement decides; Code expects (a) where maps held.
+
+**The rule, declared before the instrument's first run (§791).** A design panel specified it blind to rough scratch estimates of the three methods, which the session had made first while mapping the item: the panel was told not to open them and not to count any method's seats, and its brief held the plan's question, the rulings it answers, the game's constraints and facts of the record - no estimate. The session, which had seen the estimates, condensed the specification into the block below and US-11's *Design*, and corrected them where its review found the condensation or the specification wrong. `COMPLETED.md` §791 says what the brief held (the statements in it that no saved page bears out among it), what the panel saw and did, each correction, and holds the preregistered digest. The rule is the fenced block between the two markers below; everything outside the markers - the ruling record's mirror, the asks, the ruling lines - is not part of it. The arithmetic the rule runs on, the scoring and the decision are the block's; US-11's *Design* holds the methods' inputs, assertions, outputs and use in play, and a ruled option's build (the reconciliation of (c)). The instrument holds the list of the block's SHA-256 digests - over the UTF-8 bytes, no BOM, of the lines strictly between the two marker lines (the opening and closing fence lines included), each ending LF, no CR: the preregistered one, then one per amendment, each naming Elias's ruling ("AMENDED (Fn): old -> new"). The block must match the list's last digest, and a change without a ruling fails. After an amendment the instrument runs again and the ruling record is checked against each run's new outcome.
+
+<!-- R-US18 RULE BEGIN -->
+```text
+R-US18'S RULE - US-11's measurement decides the House's seat method. Preregistered in
+COMPLETED.md section 791.
+
+THE TERMS
+- The record's House elections are 2016, 2018, 2020, 2022 and 2024, and 2026 once C5 is
+  measured; its first transition is 2016->2018.
+- The cycles B->T: C1 2016->2018, C2 2018->2020, C3 2020->2022, C4 2022->2024, and C5
+  2024->2026 once measured. Each keeps its role in every reading and run: C1, C2 and C5
+  are swing cycles, C4 is the level cycle, and C3 is printed, never deciding.
+  D = {C1, C2, C4}.
+- V(E) is REP's share of REP+DEM in US-5's own-line House series, as house_by_state.csv
+  holds it, never recomputed. Delta = V(T) - V(B). (a)'s and (b)'s shares are swung plain
+  additive and never re-solved.
+- A district's deciding count is its final_r and final_d (house_districts.csv).
+- n_B and n_T are a state's seats at B and at T (house_maps.csv). Every row gives each state
+  its n_T seats: DEMhat_s = n_T - REPhat_s.
+- A state is held for B->T if its lines in force changed at no election after B up to T
+  (house_maps.csv's in_force: lines_changed, except where a saved page says a new plan was
+  not used) and its seats did not change; otherwise it is redrawn. A district number is
+  never matched across a redraw.
+- The half rule: a half goes to the party that held more of the state's base seats, then to
+  the national base majority.
+- (a) is district uniform swing with F-old:
+  - A base district's share d: none if it has no winner and no votes (N); 1 or 0 by its
+    winner's party if unopposed and printed without votes (U); where exactly one of final_r
+    and final_d is zero, 1 if final_d = 0 and 0 if final_r = 0; otherwise
+    final_r / (final_r + final_d). dhat = d + Delta.
+  - A held state: each district is REP if dhat > 0.5, DEM if dhat < 0.5, and its base winner's
+    party at exactly 0.5. A held state with a base district that has no share is counted as
+    a redrawn state is, by F-old over the shares it has.
+  - A redrawn state, F-old: the state's base shares as an unlabelled set, swung and sorted
+    x(1) <= ... <= x(M); n = n_T. If M = n, REP = #{x(j) > 0.5} plus
+    #{x(j) = 0.5 whose base winner is REP}. If M != n, q(k) = Q((k - 0.5)/n) for k = 1..n, Q
+    linear through the points ((j - 0.5)/M, x(j)) and flat beyond the end points;
+    REP = #{q(k) > 0.5}, a q(k) of exactly 0.5 going by the half rule.
+  - F-prop, the alternative fallback: a redrawn state counted as (b0) counts it.
+- (b) is anchored, per state:
+  - u = sum final_r / sum (final_r + final_d) over the state's base districts with votes;
+    U_R and U_D are the base's U seats by party; m_B the base's decided seats; R_B REP's
+    decided base seats, U seats included; c_B = m_B - U_R - U_D; c_T = n_T - U_R - U_D;
+    uhat = u + Delta. A state with c_B = 0 takes u = R_B / m_B.
+  - P(c, x) = the nearest integer to c * min(1, max(0, x)), a half going by the half rule.
+  - n_T = 1: REP if uhat > 0.5, DEM if uhat < 0.5, the base winner's party at exactly 0.5.
+  - n_T >= 2: REP = min(n_T - U_D, max(U_R, R_B + P(c_T, uhat) - P(c_B, u))).
+- (b0), unanchored: REP = U_R + P(c_T, uhat) where n_T >= 2, as (b) at one seat.
+  (b U-blind): (b) with c_B = m_B and c_T = n_T.
+- (b'), the strawman: (b) with each P(c, x) replaced by the nearest integer to c * p(x), a
+  half going by the half rule, where p(x) = 1 / (1 + exp(-(alpha + k * ln(x / (1 - x))))) with
+  x clamped to [1e-9, 1 - 1e-9]. It is fitted each cycle on its base alone, by binomial
+  maximum likelihood over the base's states with n_B >= 2, c_B >= 1 and 0 < u < 1, each
+  contributing R_B - U_R successes in c_B trials; Newton from (alpha, k) = (0, 1), converged
+  when the step's largest component is below 1e-12, at most 100 iterations. Not converged
+  (separation included), or k <= 0: not fitted.
+- (c) is the anchored bilogit: logit Shat(T) = logit S(B) + rho * [logit V(T) - logit V(B)],
+  logit x = ln(x / (1 - x)), V clamped to [1e-9, 1 - 1e-9], S = REP seats / decided seats.
+  REP = the nearest integer to 435 * Shat, a half going to B's majority.
+  rho = sum(x * y) / sum(x^2) over the window's transitions, x = logit V(t) - logit V(t-1),
+  y = logit S(t) - logit S(t-1). The window is every transition of the record whose later
+  election precedes T, less any transition in which more than half of the 435 seats were
+  redrawn or re-apportioned (the seats of the states whose lines in force or seats changed,
+  house_maps.csv). A cycle with an empty window has no (c). A forward swing cycle is a
+  swing cycle of D whose window is not empty.
+- No change: in every state, B's REP share of its decided seats carried onto n_T by P - B's
+  own seats wherever n_T equals B's decided seats - and the delegations those seats give.
+- The truth is the record's own district plurality (house_districts.csv's winner). Z_s is a
+  state's undecided seats (NC-9 2018); O_s its seats won outside REP and DEM (none in
+  2016-2024, by the truth gate). R_s and D_s are the record's decided seats by party,
+  REPhat_s and DEMhat_s a row's.
+  - W_s, the state's seats misplaced:
+    W_s = (|REPhat_s - R_s| + |DEMhat_s - D_s| + O_s - Z_s) / 2 - the distance of REPhat_s
+    from [R_s, R_s + Z_s] where O_s = 0; with O_s > 0 it is S7's first scoring, and S7's
+    second moves O_s into Z_s.
+  - G = the sum of W_s over the 50 states. H = the same sum over the held states.
+  - N = the signed distance of REP's national seats from [R, R + Z + O], positive = REP
+    over; under S7's first scoring |N| is that distance plus O, under its second O is in Z.
+  - K = the delegations, of 50, whose class (REP majority, DEM majority, tied) equals the
+    record's under some resolution of the state's undecided seats. With O_s > 0 a class
+    compares REP's seats with DEM's alone under S7's first scoring; its second resolves
+    O_s's seats as undecided ones.
+- Every comparison of W, H, G, N and K in steps 1-5 is made exactly as its operator is
+  written, on integer counts, with no noise band; every other test exactly as written.
+  Equal is never better.
+
+STEP 1 - (a)'s fallback. Over D's redrawn state-cycles, sum W under F-old and under F-prop.
+- F-old is kept if its sum is not above F-prop's, ties included.
+- If F-prop's sum is strictly lower, the rule STOPS (S5) - unless step 2 picks (b) and S2 does
+  not fire, (b) having no fallback; the comparison is then printed. The rule never switches
+  the fallback by itself.
+
+STEP 2 - (a) against (b), on held-state seats misplaced.
+- Code recommends (a) if the sum over D of H(a) is not above the sum over D of H(b).
+- Code recommends (b) only if all of these hold:
+  - H(b) < H(a) in every swing cycle of D;
+  - H(b) <= H(a) in the level cycle;
+  - the sum over D of G(b) < the sum over D of G(a);
+  - K(b) >= K(a) in every cycle of D.
+- Otherwise the rule STOPS (S1), naming each condition that failed.
+
+STEP 3 - control. If step 2 picked a method, the rule STOPS (S2) if that method's |N| is
+strictly larger than the other's in every swing cycle of D. After S1 both directions are
+evaluated and listed under S1, not as a stop of their own.
+
+STEP 4 - (c). The rule STOPS (S3) only if all of these hold:
+- D has at least two forward swing cycles;
+- in every one, (c)'s |N| is strictly below the step-2 method's (after S1, below both (a)'s
+  and (b)'s);
+- in every one, (c)'s |N| is strictly below no change's.
+(c) is never recommended alone. Its comparisons print in the verdict line.
+
+STEP 5 - the strawman guard. If (b') is fitted in every cycle of D, the rule STOPS (S6) if
+(b') beats the step-2 method by step 2's own switch conditions: H strictly lower in every
+swing cycle of D, H not higher in the level cycle, the sum over D of G strictly lower, and K
+not lower in any cycle of D. After S1, (b') is compared with both (a) and (b) by those
+conditions and the results are listed under S1, not as a stop of their own.
+
+STEP 6 - the declared readings. Steps 1-5 are run again under each alternative, one at a
+time:
+- (i) 2020's truth as published: [HH-DIV]'s division, REP 212 of 434 decided, NY-22
+  undecided and scored by interval; (c)'s S(2020) = 212/434;
+- (ii) the item's own cycles, D less C1 - {C2, C4}, and {C2, C4, C5} in the run over D plus
+  C5: the step-2 verdict and S5 are compared; S2, S3 and S6 are compared only where this D
+  has at least two swing cycles, and otherwise printed, since each would rest on one - a
+  printed S2 counting as not firing in step 1's exception;
+- (iii) Minnesota 2018 held; (iv) Colorado 2018 held; (v) both held;
+- (vi) the swing on the deciding count: V_dc(E) = sum final_r / sum (final_r + final_d)
+  over the 435 races replaces V(E) in every method;
+- (vii) the level cycle out of the sums: every sum over D in steps 2 and 5 taken over D's
+  swing cycles alone.
+The rule STOPS (S4) if any reading changes the outcome, naming the reading.
+
+STEP 7 - two parties. The rule STOPS (S7) if a measured cycle whose later election is after
+2024 has a winner outside REP and DEM, printing that measurement under each of S7's first
+two scorings. (In 2016-2024 such a winner fails the truth gate, a data defect.)
+
+TIE-BREAKS: in step 2, equal sums over D of H go to (a), and equal sums over D of G fail
+(b)'s condition; in step 1, equal sums go to F-old.
+
+THE OUTCOME of a run is the step-2 verdict - (a), (b) or S1 - with the set of the other stops
+that fire: S2, S3, S5, S6, S4 with the readings that fire it, and S7. Its figures are not
+part of it. S4 compares outcomes less S4 and S7. A run is decided - "code recommends (a)"
+(with F-old) or "code recommends (b)" - when step 2 picks a method and no stop fires;
+otherwise the rule does not decide, and every stop is listed with its figures. The rule
+reaches (a) with F-old, (b), or an ask - never F-prop, (b') or (c) by itself. While
+reading (vii) stands, C4 carries no switch without an ask: its own conditions only veto,
+and where its figures in step 2's or step 5's sums decide, reading (vii) stops the rule.
+The verdict line is generated, never typed:
+- decided: "By R-US18's rule, code recommends (a): ..." (or (b)), with H, G, K and N per
+  cycle and summed, (c)'s comparison, and "the same under every declared reading";
+- otherwise: "R-US18's rule does not decide: <each stop with its figures> - asked."
+R-US18 is asked with the full table whatever the outcome.
+
+THE STOPS' OPTIONS, each with "amend the rule as ruled" besides:
+- S1: (a) as measured, or (b) as measured.
+- S2: the picked method, or the other.
+- S3: the step-2 method as measured (after S1, (a) or (b) as measured); (c)'s total with
+  that method's delegations reconciled (after S1, either's); or another delegation rule for
+  (c), not yet specified, which leaves R-US18 asked.
+- S4: the declared reading, with its reason from the game's model, or the alternative - put
+  as conventions, never as "X with its verdict".
+- S5: F-old; F-prop, persisting in every state it counts; or sourcing published results by
+  new district for each enacted plan before US-16 and US-27.
+- S6: the step-2 method as measured, or (b) declared again by amendment as (b')'s curve.
+- S7: the seat scored as misplaced for every method alike; scored as undecided by interval;
+  or the two-party premise amended (SP-6b's third party).
+
+THE ASK AND THE BARS
+- The ruling record is held by the instrument: NONE; ASKED, with the ask's section, the
+  outcome of each run asked and the decisive digest; or RULED, with the ruling, its option,
+  the outcome of each run it was made on (the run over D and, once C5 is measured, the run
+  over D plus C5, with step 1's result over C5's redrawn states where the ruled option
+  counts them by (a)'s fallback) and the decisive digest it was made on. The line after
+  this block mirrors its state, section and ruling, never a digest, and the instrument
+  fails while the two differ.
+- The decisive digest is SHA-256 over a fixed list of figures, each computed whatever an
+  earlier condition of its step gives, under every reading not made printed only: W per
+  redrawn state-cycle of D under F-old and under F-prop; H, G, N and K of (a) with F-old,
+  of (b) and of (b') in every cycle of D, and whether (b') is fitted; where D has at least
+  two forward swing cycles, N of (c) and of no change in each; once C5 is measured, the
+  same over D plus C5. Nothing else is in it.
+- NONE: every run fails the bars until its ask is registered. R-US18 is asked whatever the
+  outcome, decided or stopped, so the commit that first runs the rule registers the ask;
+  NONE holds only before it.
+- ASKED: the bars pass while the decisive digest and each run's outcome equal the registered
+  ones. A moved digest or a changed outcome fails until the ask is registered again with
+  the new table, and Elias is told.
+- RULED: the bars pass while each run's generated outcome equals that run's outcome in the
+  ruling. A moved digest with the same outcomes fails until a commit re-pins it, naming the
+  old digest, the new one and "outcome unchanged". A changed outcome fails until R-US18 is
+  asked again; it is never re-pinned. A run the ruling was not made on - the run over D
+  plus C5, under a ruling made before C5 was measured - has no outcome in it: it fails the
+  bars until R-US18 is asked again with the new table, and the new ruling records every
+  run. A ruling binds a decided verdict as it binds a stop.
+- A ruling must name an option that can be built: (a) with F-old or with F-prop; (b),
+  including (b) declared again by amendment as (b')'s curve - saying what it gives where
+  the curve is not fitted, and whether its two parameters are refit on the game's previous
+  House or held from the record; or (c) reconciled to (a) with F-old, to (a) with F-prop or
+  to (b). Otherwise the record stays ASKED.
+- US-16's Congress-election diagnostic asserts R-US18 RULED, with an option that can be
+  built and a current digest. While not, it fails.
+
+C5 (2024->2026) is BILLED until the Clerk's 2026 statistics are saved. Then it is measured,
+a swing cycle; the rule is run again over D plus C5 - in that run every D of this block
+reads D plus C5 - and step 1 over C5's redrawn states where the ruled option counts them by
+(a)'s fallback. Either run giving an outcome other than its own in the ruling - for step 1
+over C5's redrawn states, a result other than the one recorded in the ruling - or a run the
+ruling was not made on (THE ASK AND THE BARS) asks R-US18 again, and the bars fail until the
+ask is registered. D itself changes only by amendment.
+```
+<!-- R-US18 RULE END -->
+
+**Ruling record:** NONE.
+
+**Asked blind, before the first run (§791).** The rule runs under seven choices, each with a default. The instrument is built once Elias has answered them or given his word to run on the defaults (US-11's *Needs*): the figures, once on the card, would be in sight of any later answer. A choice he answers - for its default or for its alternative - is ruled: it is written into the block by amendment, and its S4 reading becomes printed only (choices 1-4 and 7: readings (ii), (i), (iii)-(v), (vi) and (vii)). Word to run on the defaults rules none of them: each keeps its default and its S4 reading. Choice 5 has no S4 reading: an answer for (b')'s curve declares (b) again by amendment - saying what (b) gives in a cycle where the curve is not fitted, and whether its two parameters are refit in play - and S6 then has nothing to compare; an answer for the default leaves S6 as written. Choice 6 rewrites THE TERMS' first year of the record.
+1. *The deciding cycles.* D with C1 (2016→2018) - the record's largest swing and its only midterm on mostly held lines, the kind of election a 2024-start game meets on 3 Nov 2026, its first midterm (its first House count, 5 Nov 2024, is a presidential year's) - by default; or the item's own cycles less C3, {C2, C4}.
+2. *2020's truth.* The district plurality on the Clerk's counts, NY-22 to the winner that count names - the game counts all 435 seats by plurality and models no certification - by default; or the division as published, NY-22 undecided: `[HH-DIV]`'s 212 of 434, which the Clerk's own table of political divisions in the 2020 volume prints too.
+3. *Minnesota's and Colorado's 2018 lines.* Redrawn, as the Census Bureau's list reads them - the binary rule takes no view of a change's size - by default; or either or both held (Minnesota's change "cosmetic" on the Bureau's pages, Colorado's undescribed). Pennsylvania 2018 is not asked: its change is taken as a redraw on the Bureau's list, DECLARED - the "court-ordered" plan the brief named is on no saved page, BILLED.
+4. *The swing's basis.* US-5's own-line series, the poll's own measure under R-US15 (a), by default; or the deciding count the shares are read on.
+5. *(b)'s seat rule.* Anchored proportional, with no parameter, by default; or (b')'s two-parameter curve.
+6. *The record before 2016.* Not sourced, by default; or the Clerk's statistics before 2016 sourced, which would give (c) a forward fit for C1 and make S3 live.
+7. *C4 in the sums.* Counted in step 2's and step 5's sums over D, as the panel's arithmetic has it, by default; or left out of them, as the panel's own account of C4 ("C4 can only veto") reads - the two part only where C4's near-zero swing moves a seat (§791).
 
 **R-US19 — The Senate races** *(US-12's table; blocks US-16)*.
 - (a) The state's presidential-level derived share that day (a straight ticket);
