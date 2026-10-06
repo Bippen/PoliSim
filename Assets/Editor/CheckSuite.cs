@@ -275,6 +275,7 @@ namespace PoliSim.EditorTools
             ("GeneratedCatalogCheck", GeneratedCatalogCheck.Run),
             ("UsStateSwingCheck", UsStateSwingCheck.Run),   // PS-6 US-4 (§787): the states from the national vote three ways (R-US14), pinned, the US model card's readings
             ("UsNationalVoteCheck", UsNationalVoteCheck.Run),   // PS-6 US-5 (§789): the national vote by two histories, the two-party fit, E1's factors (R-US15), the card's second block
+            ("UsHouseCountCheck", UsHouseCountCheck.Run),   // PS-6 US-11 (§800): R-US18's rule on the House of record - the methods, the steps, the readings, the ruling record, the card's third block
 
             // §419 (2026-09-09): the same idiom one document over. `GeneratedCatalogCheck` guards a
             // generated C# catalog against its CSV; this guards the ASK's inventory against the repo it
@@ -739,6 +740,7 @@ namespace PoliSim.EditorTools
             ("ResidueCheck", ResidueCheck.Run),                         // the residue, read off the live documents
             ("UsStateSwingCheck", UsStateSwingCheck.Run),               // §787: the US model card's readings against the measurement - a card-only commit still runs it
             ("UsNationalVoteCheck", UsNationalVoteCheck.Run),           // §789: the card's US-5 readings against the measurement - two eve worlds, so a card-only commit pays for them
+            ("UsHouseCountCheck", UsHouseCountCheck.Run),             // §800: the card's House block against R-US18's run
         };
 
         /// <summary>

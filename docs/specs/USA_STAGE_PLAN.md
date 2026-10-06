@@ -943,7 +943,7 @@ ask is registered. D itself changes only by amendment.
 ```
 <!-- R-US18 RULE END -->
 
-**Ruling record:** NONE.
+**Ruling record:** ASKED (§800): (a) + S2, S5, S4 [(ii)].
 
 **The block's digests** (the instrument's list): preregistered `b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c` (§791); AMENDED (G1, §797): `b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c` -> `5c89b0cf400e50c0e64e687f3f05b8cb74f13f76384bca184773f3724673307a`.
 
