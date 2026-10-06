@@ -11,15 +11,16 @@ namespace PoliSim.Elections.Generated
     // by methods: the partial class has one static initializer, which Mono's JIT overflowed once already (UsHouseDistricts.cs).
     public static partial class UsPresidentialReturns
     {
-        public const string SenateSeatSourceDigest = "c9164f40911df4f439672bb5151aaf291a1c67f6183d526b8e0924c0a4fe9d78";
+        public const string SenateSeatSourceDigest = "5f340964390797298b32e1db8b18eca3124593b5f161919643dbca8c474f3261";
         public const string SenateChangeSourceDigest = "e57f762dc67f1fe0ea57edfc899ea9f20d8cf500e0c04b42824e187fd00d9419";
-        public const string SenateOnSourceDigest = "9561c96e62bce7868c51c6c16c31803707b61fda20293dada6662d66b040b6fa";
-        public const string SenateDivisionSourceDigest = "47588d39345609aaa0be61576b2505fde4a8af47ce7fb09469bcc56ce2919469";
+        public const string SenateOnSourceDigest = "608e5ba9a022561d059e2ea551252dde04a4a83413d1633f98c0d8cd00b66f5f";
+        public const string SenateDivisionSourceDigest = "82ec606b6d991f932c7f0a70e4cfa4f053ed9b300763ce0f61a3a799801c07ba";
 
         /// <summary>Every saved page the Senate run read, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>
         public static readonly (string Path, string Sha256)[] SenateRawSources = BuildSenateRawSources();
 
-        /// <summary>A row a senator who held a seat on or after 3 Jan 2023: state, class (1-3), name, party (D, R, I; D/I a Democrat who became an
+        /// <summary>A row a senator who held a seat on or after 3 Jan 2023, or whose service ended from 4 Jan 2017 to that day (s795, on his
+        /// state page's days): state, class (1-3), name, party (D, R, I; D/I a Democrat who became an
         /// independent on IndependentFrom), the day he took the seat (Took: his oath for a senator new in the 118th or 119th
         /// Congress, else his state page's day, which may be an appointment's), the day his service ended (Left, a hyphen while he serves),
         /// how he came and went, and an independent's caucus with its source (senate_seats.csv's header says each).</summary>
@@ -105,17 +106,27 @@ namespace PoliSim.Elections.Generated
         {
             ("AK", 2, "Dan Sullivan", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("AK", 3, "Lisa Murkowski", "R", "-", "2002-12-20", "-", "before the window", "-", "-", "-"),
+            ("AL", 2, "Jeff Sessions", "R", "-", "1997-01-03", "2017-02-08", "before the window", "term ended", "-", "-"),
+            ("AL", 2, "Luther J. Strange III", "R", "-", "2017-02-09", "2018-01-03", "before the window", "term ended", "-", "-"),
+            ("AL", 2, "Doug Jones", "D", "-", "2018-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("AL", 2, "Tommy Tuberville", "R", "-", "2021-01-03", "-", "before the window", "-", "-", "-"),
+            ("AL", 3, "Richard C. Shelby", "R", "-", "1987-01-03", "2023-01-03", "before the window", "term ended", "-", "-"),
             ("AL", 3, "Katie Boyd Britt", "R", "-", "2023-01-03", "-", "general election", "-", "-", "-"),
             ("AR", 2, "Tom Cotton", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("AR", 3, "John Boozman", "R", "-", "2011-01-03", "-", "before the window", "-", "-", "-"),
+            ("AZ", 1, "Jeff Flake", "R", "-", "2013-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("AZ", 1, "Kyrsten Sinema", "D/I", "2023-01-03", "2019-01-03", "2025-01-03", "before the window", "term ended", "D", "the Senate Democrats' list of 2024-03-18 - a reading put to Elias (R-US10): the Senate's page says she \"would not participate in either party caucus\""),
             ("AZ", 1, "Ruben Gallego", "D", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
+            ("AZ", 3, "John S. McCain III", "R", "-", "1987-01-03", "2018-08-25", "before the window", "died", "-", "-"),
+            ("AZ", 3, "Jon L. Kyl", "R", "-", "2018-09-04", "2018-12-31", "before the window", "term ended", "-", "-"),
+            ("AZ", 3, "Martha McSally", "R", "-", "2019-01-03", "2020-12-02", "before the window", "term ended", "-", "-"),
             ("AZ", 3, "Mark Edward Kelly", "D", "-", "2020-12-02", "-", "before the window", "-", "-", "-"),
             ("CA", 1, "Dianne Feinstein", "D", "-", "1992-11-04", "2023-09-29", "before the window", "died", "-", "-"),
             ("CA", 1, "Laphonza R. Butler", "D", "-", "2023-10-03", "2024-12-08", "appointed", "resigned", "-", "-"),
             ("CA", 1, "Adam B. Schiff", "D", "-", "2024-12-09", "-", "appointed", "-", "-", "-"),
+            ("CA", 3, "Kamala D. Harris", "D", "-", "2017-01-03", "2021-01-18", "before the window", "resigned", "-", "-"),
             ("CA", 3, "Alex Padilla", "D", "-", "2021-01-18", "-", "before the window", "-", "-", "-"),
+            ("CO", 2, "Cory Gardner", "R", "-", "2015-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("CO", 2, "John Wright Hickenlooper", "D", "-", "2021-01-03", "-", "before the window", "-", "-", "-"),
             ("CO", 3, "Michael F. Bennet", "D", "-", "2009-01-21", "-", "before the window", "-", "-", "-"),
             ("CT", 1, "Christopher Murphy", "D", "-", "2013-01-03", "-", "before the window", "-", "-", "-"),
@@ -123,10 +134,14 @@ namespace PoliSim.Elections.Generated
             ("DE", 1, "Thomas R. Carper", "D", "-", "2001-01-03", "2025-01-03", "before the window", "term ended", "-", "-"),
             ("DE", 1, "Lisa Blunt Rochester", "D", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
             ("DE", 2, "Christopher A. Coons", "D", "-", "2010-11-15", "-", "before the window", "-", "-", "-"),
+            ("FL", 1, "Bill Nelson", "D", "-", "2001-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("FL", 1, "Rick Scott", "R", "-", "2019-01-08", "-", "before the window", "-", "-", "-"),
             ("FL", 3, "Marco Rubio", "R", "-", "2011-01-03", "2025-01-20", "before the window", "resigned", "-", "-"),
             ("FL", 3, "Ashley Moody", "R", "-", "2025-01-21", "-", "appointed", "-", "-", "-"),
+            ("GA", 2, "David Perdue", "R", "-", "2015-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("GA", 2, "Jon Ossoff", "D", "-", "2021-01-20", "-", "before the window", "-", "-", "-"),
+            ("GA", 3, "Johnny Isakson", "R", "-", "2005-01-03", "2019-12-31", "before the window", "resigned", "-", "-"),
+            ("GA", 3, "Kelly Loeffler", "R", "-", "2020-01-06", "2021-01-19", "before the window", "term ended", "-", "-"),
             ("GA", 3, "Raphael G. Warnock", "D", "-", "2021-01-20", "-", "before the window", "-", "-", "-"),
             ("HI", 1, "Mazie Hirono", "D", "-", "2013-01-03", "-", "before the window", "-", "-", "-"),
             ("HI", 3, "Brian E. Schatz", "D", "-", "2012-12-26", "-", "before the window", "-", "-", "-"),
@@ -136,9 +151,11 @@ namespace PoliSim.Elections.Generated
             ("ID", 3, "Mike Crapo", "R", "-", "1999-01-03", "-", "before the window", "-", "-", "-"),
             ("IL", 2, "Richard J. Durbin", "D", "-", "1997-01-03", "-", "before the window", "-", "-", "-"),
             ("IL", 3, "Tammy Duckworth", "D", "-", "2017-01-03", "-", "before the window", "-", "-", "-"),
+            ("IN", 1, "Joe Donnelly", "D", "-", "2013-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("IN", 1, "Michael Braun", "R", "-", "2019-01-03", "2025-01-03", "before the window", "term ended", "-", "-"),
             ("IN", 1, "Jim E. Banks", "R", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
             ("IN", 3, "Todd Young", "R", "-", "2017-01-03", "-", "before the window", "-", "-", "-"),
+            ("KS", 2, "Pat Roberts", "R", "-", "1997-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("KS", 2, "Roger Marshall", "R", "-", "2021-01-03", "-", "before the window", "-", "-", "-"),
             ("KS", 3, "Jerry Moran", "R", "-", "2011-01-03", "-", "before the window", "-", "-", "-"),
             ("KY", 2, "Mitch McConnell", "R", "-", "1985-01-03", "-", "before the window", "-", "-", "-"),
@@ -156,16 +173,22 @@ namespace PoliSim.Elections.Generated
             ("MI", 1, "Elissa Slotkin", "D", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
             ("MI", 2, "Gary C. Peters", "D", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("MN", 1, "Amy Klobuchar", "D", "-", "2007-01-03", "-", "before the window", "-", "-", "-"),
+            ("MN", 2, "Al Franken", "D", "-", "2009-07-07", "2018-01-02", "before the window", "resigned", "-", "-"),
             ("MN", 2, "Tina Smith", "D", "-", "2018-01-03", "-", "before the window", "-", "-", "-"),
+            ("MO", 1, "Claire McCaskill", "D", "-", "2007-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("MO", 1, "Josh Hawley", "R", "-", "2019-01-03", "-", "before the window", "-", "-", "-"),
+            ("MO", 3, "Roy Blunt", "R", "-", "2011-01-03", "2023-01-03", "before the window", "term ended", "-", "-"),
             ("MO", 3, "Eric Schmitt", "R", "-", "2023-01-03", "-", "general election", "-", "-", "-"),
             ("MS", 1, "Roger F. Wicker", "R", "-", "2007-12-31", "-", "before the window", "-", "-", "-"),
+            ("MS", 2, "William (Thad) T. Cochran", "R", "-", "1978-12-27", "2018-04-01", "before the window", "term ended", "-", "-"),
             ("MS", 2, "Cindy Hyde-Smith", "R", "-", "2018-04-09", "-", "before the window", "-", "-", "-"),
             ("MT", 1, "Jon Tester", "D", "-", "2007-01-03", "2025-01-03", "before the window", "term ended", "-", "-"),
             ("MT", 1, "Tim Sheehy", "R", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
             ("MT", 2, "Steve Daines", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("NC", 2, "Thom Tillis", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
+            ("NC", 3, "Richard M. Burr", "R", "-", "2005-01-03", "2023-01-03", "before the window", "term ended", "-", "-"),
             ("NC", 3, "Ted Budd", "R", "-", "2023-01-03", "-", "general election", "-", "-", "-"),
+            ("ND", 1, "Mary Kathryn (Heidi) Heitkamp", "D", "-", "2013-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("ND", 1, "Kevin Cramer", "R", "-", "2019-01-03", "-", "before the window", "-", "-", "-"),
             ("ND", 3, "John Hoeven", "R", "-", "2011-01-03", "-", "before the window", "-", "-", "-"),
             ("NE", 1, "Debra Fischer", "R", "-", "2013-01-03", "-", "before the window", "-", "-", "-"),
@@ -178,15 +201,19 @@ namespace PoliSim.Elections.Generated
             ("NJ", 1, "Andy Kim", "D", "-", "2024-12-09", "-", "appointed", "-", "-", "-"),
             ("NJ", 2, "Cory A. Booker", "D", "-", "2013-10-31", "-", "before the window", "-", "-", "-"),
             ("NM", 1, "Martin Heinrich", "D", "-", "2013-01-03", "-", "before the window", "-", "-", "-"),
+            ("NM", 2, "Thomas Udall", "D", "-", "2009-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("NM", 2, "Ben Ray Lujan", "D", "-", "2021-01-03", "-", "before the window", "-", "-", "-"),
+            ("NV", 1, "Dean Heller", "R", "-", "2011-05-09", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("NV", 1, "Jacklyn Sheryl Rosen", "D", "-", "2019-01-03", "-", "before the window", "-", "-", "-"),
             ("NV", 3, "Catherine Cortez Masto", "D", "-", "2017-01-03", "-", "before the window", "-", "-", "-"),
             ("NY", 1, "Kirsten E. Gillibrand", "D", "-", "2009-01-26", "-", "before the window", "-", "-", "-"),
             ("NY", 3, "Charles E. Schumer", "D", "-", "1999-01-03", "-", "before the window", "-", "-", "-"),
             ("OH", 1, "Sherrod Brown", "D", "-", "2007-01-03", "2025-01-03", "before the window", "term ended", "-", "-"),
             ("OH", 1, "Bernie Moreno", "R", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
+            ("OH", 3, "Rob Portman", "R", "-", "2011-01-03", "2023-01-03", "before the window", "term ended", "-", "-"),
             ("OH", 3, "J. D. Vance", "R", "-", "2023-01-03", "2025-01-10", "general election", "resigned", "-", "-"),
             ("OH", 3, "Jon Husted", "R", "-", "2025-01-21", "-", "appointed", "-", "-", "-"),
+            ("OK", 2, "James M. Inhofe", "R", "-", "1994-11-16", "2023-01-03", "before the window", "resigned", "-", "-"),
             ("OK", 2, "Markwayne Mullin", "R", "-", "2023-01-03", "2026-03-23", "special election", "resigned", "-", "-"),
             ("OK", 2, "Alan Armstrong", "R", "-", "2026-03-24", "-", "appointed", "-", "-", "-"),
             ("OK", 3, "James Lankford", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
@@ -194,6 +221,7 @@ namespace PoliSim.Elections.Generated
             ("OR", 3, "Ron Wyden", "D", "-", "1996-02-06", "-", "before the window", "-", "-", "-"),
             ("PA", 1, "Robert P. Casey Jr. (Bob)", "D", "-", "2007-01-03", "2025-01-03", "before the window", "term ended", "-", "-"),
             ("PA", 1, "David McCormick", "R", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
+            ("PA", 3, "Patrick J. Toomey", "R", "-", "2011-01-03", "2023-01-03", "before the window", "term ended", "-", "-"),
             ("PA", 3, "John Fetterman", "D", "-", "2023-01-03", "-", "general election", "-", "-", "-"),
             ("RI", 1, "Sheldon Whitehouse", "D", "-", "2007-01-03", "-", "before the window", "-", "-", "-"),
             ("RI", 2, "Jack Reed", "D", "-", "1997-01-03", "-", "before the window", "-", "-", "-"),
@@ -202,16 +230,20 @@ namespace PoliSim.Elections.Generated
             ("SC", 3, "Tim Scott", "R", "-", "2013-01-02", "-", "before the window", "-", "-", "-"),
             ("SD", 2, "Mike Rounds", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("SD", 3, "John Thune", "R", "-", "2005-01-03", "-", "before the window", "-", "-", "-"),
+            ("TN", 1, "Bob Corker", "R", "-", "2007-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("TN", 1, "Marsha Blackburn", "R", "-", "2019-01-03", "-", "before the window", "-", "-", "-"),
+            ("TN", 2, "Lamar Alexander", "R", "-", "2003-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("TN", 2, "Bill Hagerty", "R", "-", "2021-01-03", "-", "before the window", "-", "-", "-"),
             ("TX", 1, "Ted Cruz", "R", "-", "2013-01-03", "-", "before the window", "-", "-", "-"),
             ("TX", 2, "John Cornyn", "R", "-", "2002-12-02", "-", "before the window", "-", "-", "-"),
+            ("UT", 1, "Orrin G. Hatch", "R", "-", "1977-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
             ("UT", 1, "Mitt Romney", "R", "-", "2019-01-03", "2025-01-03", "before the window", "term ended", "-", "-"),
             ("UT", 1, "John Curtis", "R", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
             ("UT", 3, "Mike Lee", "R", "-", "2011-01-03", "-", "before the window", "-", "-", "-"),
             ("VA", 1, "Tim Kaine", "D", "-", "2013-01-03", "-", "before the window", "-", "-", "-"),
             ("VA", 2, "Mark R. Warner", "D", "-", "2009-01-03", "-", "before the window", "-", "-", "-"),
             ("VT", 1, "Bernard Sanders", "I", "-", "2007-01-03", "-", "before the window", "-", "D", "the Senate Democrats' list of 2024-03-18 and 2026-09-05"),
+            ("VT", 3, "Patrick J. Leahy", "D", "-", "1975-01-03", "2023-01-03", "before the window", "term ended", "-", "-"),
             ("VT", 3, "Peter Welch", "D", "-", "2023-01-03", "-", "general election", "-", "-", "-"),
             ("WA", 1, "Maria E. Cantwell", "D", "-", "2001-01-03", "-", "before the window", "-", "-", "-"),
             ("WA", 3, "Patty Murray", "D", "-", "1993-01-03", "-", "before the window", "-", "-", "-"),
@@ -221,6 +253,7 @@ namespace PoliSim.Elections.Generated
             ("WV", 1, "James C. Justice", "R", "-", "2025-01-14", "-", "general election", "-", "-", "-"),
             ("WV", 2, "Shelley Moore Capito", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("WY", 1, "John Barrasso", "R", "-", "2007-06-22", "-", "before the window", "-", "-", "-"),
+            ("WY", 2, "Michael B. Enzi", "R", "-", "1997-01-03", "2021-01-03", "before the window", "term ended", "-", "-"),
             ("WY", 2, "Cynthia M. Lummis", "R", "-", "2021-01-03", "-", "before the window", "-", "-", "-"),
         };
 
@@ -250,6 +283,12 @@ namespace PoliSim.Elections.Generated
 
         private static (string Day, string What, int C1D, int C1R, int C1I, int C1Vacant, int C2D, int C2R, int C2I, int C2Vacant, int C3D, int C3R, int C3I, int C3Vacant, int D, int R, int I, int Vacant, int DemCaucus, int RepCaucus)[] BuildSenateOn() => new (string, string, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int, int)[]
         {
+            ("2017-01-03", "the 115th Congress opens", 23, 8, 2, 0, 11, 22, 0, 0, 12, 22, 0, 0, 46, 52, 2, 0, 48, 52),
+            ("2018-11-06", "the general election of 2018", 23, 8, 2, 0, 12, 21, 0, 0, 12, 22, 0, 0, 47, 51, 2, 0, 49, 51),
+            ("2019-01-03", "the 116th Congress opens", 21, 9, 2, 1, 12, 21, 0, 0, 12, 22, 0, 0, 45, 52, 2, 1, 47, 52),
+            ("2020-11-03", "the general election of 2020", 21, 10, 2, 0, 12, 21, 0, 0, 12, 22, 0, 0, 45, 53, 2, 0, 47, 53),
+            ("2021-01-03", "the 117th Congress opens", 21, 10, 2, 0, 12, 20, 0, 1, 13, 21, 0, 0, 46, 51, 2, 1, 48, 51),
+            ("2022-11-08", "the general election of 2022", 21, 10, 2, 0, 13, 20, 0, 0, 14, 20, 0, 0, 48, 50, 2, 0, 50, 50),
             ("2023-01-03", "the 118th Congress opens", 20, 10, 3, 0, 13, 20, 0, 0, 15, 19, 0, 0, 48, 49, 3, 0, 51, 49),
             ("2024-03-12", "the US start (WorldClock.StartDate)", 20, 10, 3, 0, 13, 20, 0, 0, 15, 19, 0, 0, 48, 49, 3, 0, 51, 49),
             ("2024-03-18", "the Senate Democrats' list captured", 20, 10, 3, 0, 13, 20, 0, 0, 15, 19, 0, 0, 48, 49, 3, 0, 51, 49),
@@ -266,6 +305,7 @@ namespace PoliSim.Elections.Generated
 
         private static (int Congress, int D, int R, int I, string HoldsFrom, string HoldsTo)[] BuildSenateDivision() => new (int, int, int, int, string, string)[]
         {
+            (117, 48, 50, 2, "2021-01-20", "2023-01-02"),
             (118, 47, 49, 4, "2024-06-05", "2024-08-19"),
             (118, 47, 49, 4, "2024-09-09", "2024-12-07"),
             (118, 47, 49, 4, "2024-12-09", "2025-01-02"),

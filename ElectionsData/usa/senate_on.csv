@@ -2,6 +2,12 @@
 # US-12: the Senate at the end of named days - by class and party (D, R, I, - vacant), then the whole, and with the independents
 # folded into the conference they caucus with (R-US10 (a)): dem_caucus, rep_caucus. The record reaches 2026-09-06.
 day,what,c1_d,c1_r,c1_i,c1_vacant,c2_d,c2_r,c2_i,c2_vacant,c3_d,c3_r,c3_i,c3_vacant,d,r,i,vacant,dem_caucus,rep_caucus
+2017-01-03,the 115th Congress opens,23,8,2,0,11,22,0,0,12,22,0,0,46,52,2,0,48,52
+2018-11-06,the general election of 2018,23,8,2,0,12,21,0,0,12,22,0,0,47,51,2,0,49,51
+2019-01-03,the 116th Congress opens,21,9,2,1,12,21,0,0,12,22,0,0,45,52,2,1,47,52
+2020-11-03,the general election of 2020,21,10,2,0,12,21,0,0,12,22,0,0,45,53,2,0,47,53
+2021-01-03,the 117th Congress opens,21,10,2,0,12,20,0,1,13,21,0,0,46,51,2,1,48,51
+2022-11-08,the general election of 2022,21,10,2,0,13,20,0,0,14,20,0,0,48,50,2,0,50,50
 2023-01-03,the 118th Congress opens,20,10,3,0,13,20,0,0,15,19,0,0,48,49,3,0,51,49
 2024-03-12,the US start (WorldClock.StartDate),20,10,3,0,13,20,0,0,15,19,0,0,48,49,3,0,51,49
 2024-03-18,the Senate Democrats' list captured,20,10,3,0,13,20,0,0,15,19,0,0,48,49,3,0,51,49

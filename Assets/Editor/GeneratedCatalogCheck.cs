@@ -820,7 +820,7 @@ namespace PoliSim.EditorTools
             return 0;
         }
 
-        /// <summary>The Senate by state and by date (PS-6 US-12, §792) against its CSVs and its pages - and, as US-12's roster diagnostic, the roster
+        /// <summary>The Senate by state and by date (PS-6 US-12, §792; its holders back to 3 Jan 2017 at §795) against its CSVs and its pages - and, as US-12's roster diagnostic, the roster
         /// derived again here from the seat rows alone on every named day: 100 seats, each state in two classes, the classes 33, 33 and 34 states,
         /// the counts by class and party and with the independents in their caucus (R-US10 (a)) the generated row's; the US start among the
         /// days, the day <c>WorldClock.StartDate</c> gives; and the stretches on which [SEN-DIV]'s line holds, derived again over every day of each Congress to the record's
@@ -969,12 +969,12 @@ namespace PoliSim.EditorTools
             int reaches = 0;
             foreach (var o in UsPresidentialReturns.SenateOn) { if (o.What.StartsWith("the record's reach", StringComparison.Ordinal)) { reach = o.Day; reaches++; } }
             if (reaches != 1) { wrong.Add(reaches + " named day(s) are the record's reach, not one"); }
-            var span = new SortedDictionary<int, (string From, string To)> { [118] = ("2023-01-03", "2025-01-02"), [119] = ("2025-01-03", reach ?? "2025-01-03") };
+            var span = new SortedDictionary<int, (string From, string To)> { [117] = ("2021-01-03", "2023-01-02"), [118] = ("2023-01-03", "2025-01-02"), [119] = ("2025-01-03", reach ?? "2025-01-03") };
             var lineOf = new Dictionary<int, (int D, int R, int I)>();
             var rowsOf = new Dictionary<int, List<string>>();
             foreach (var v in UsPresidentialReturns.SenateDivision)
             {
-                if (!span.ContainsKey(v.Congress)) { wrong.Add("[SEN-DIV] a row for the " + v.Congress + "th Congress, not the 118th or 119th"); continue; }
+                if (!span.ContainsKey(v.Congress)) { wrong.Add("[SEN-DIV] a row for the " + v.Congress + "th Congress, not the 117th, 118th or 119th"); continue; }
                 if (lineOf.TryGetValue(v.Congress, out (int D, int R, int I) l) && (l.D != v.D || l.R != v.R || l.I != v.I)) { wrong.Add("[SEN-DIV] " + v.Congress + ": two lines"); }
                 lineOf[v.Congress] = (v.D, v.R, v.I);
                 if (!rowsOf.TryGetValue(v.Congress, out List<string> rs)) { rowsOf[v.Congress] = rs = new List<string>(); }

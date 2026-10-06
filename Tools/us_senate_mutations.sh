@@ -94,6 +94,22 @@ case_ "a death the Died page does not list (Lindsey Graham)" "SC Lindsey Graham:
 a03() { local f; f=$(pg 'wayback_senate_AppointedSenators_*.html'); perl -0777 -i -pe 's{<tr>\s*<td><span style="display:none">Helmy</span>.*?</tr>}{}s' "$f"; resum "$f"; }
 case_ "an appointee by the New Senators page off the Appointed Senators page (Helmy)" "NJ George S. Helmy: appointed on the New Senators page, not on the Appointed Senators page" a03
 
+# --- the early rows (s795): the state pages' days back to 3 Jan 2017
+e01() { local f; f=$(pg 'wayback_senate_state_AZ_*.html'); perl -0777 -i -pe 's{(McSally</a>&nbsp;\(R\)</td><td data-label="TERM BEGAN">)Jan\. 3, 2019}{${1}Dec. 30, 2018}' "$f"; resum "$f"; }
+e02() { local f; f=$(pg 'wayback_senate_AppointedSenators_*.html'); sed -i 's|<span style="display:none">20200101</span>Jan 1, 2020|<span style="display:none">20200107</span>Jan 7, 2020|' "$f"; resum "$f"; }
+e03() { local f; f=$(pg 'wayback_senate_SenatorsDiedinOffice_*.html'); sed -i 's|<td>08/25/2018</td>|<td>08/24/2018</td>|' "$f"; resum "$f"; }
+e04() { sed -i "s/^my %appointed_mark = .*/my %appointed_mark = ();/" Tools/us_senate_prep.pl; }   # TOOL: Smith's mark undeclared
+e05() { sed -i "s/^        my %slip = .*/        my %slip = ();/" Tools/us_senate_prep.pl; }   # TOOL: the 117th note's slip undeclared
+e06() { local f; f=$(pg 'wayback_senate_state_CA_*.html'); perl -0777 -i -pe 's{(Kamala D\. Harris(?:</a>)?(?:&nbsp;| ))\(D\)}{$1(I)}' "$f"; resum "$f"; }
+e07() { local f=$R/wayback_senate_party_division_20260919.html; perl -0777 -i -pe 's{(117th Congress.*?Democrats )\((48) seats\)}{$1(49 seats)}s' $f; resum $f; }
+case_ "an early holder beginning before his predecessor ended (McSally 30 Dec 2018)" "AZ class 3: Jon L. Kyl ended 2018-12-31, after Martha McSally began 2018-12-30" e01
+case_ "an early appointee's row day outside his appointment and oath (Loeffler)" "Appointed Senators: Kelly Loeffler appointed 2020-01-07, sworn 2020-01-06; GA's page has him from 2020-01-06" e02
+case_ "an early death a day off the state page's (McCain)" "Died in Office: McCain, John S., III 2018-08-24, AZ's page ended 2018-08-25" e03
+case_ "TOOL: Smith's footnote mark undeclared" "Appointed Senators: Tina Smith (MN) appointed 'Jan 3, 2018 1', a footnote mark not declared" e04
+case_ "TOOL: the 117th note's slip undeclared (Loeffler)" "[SEN-DIV] 117th note: R 51 D 46 I 2 vacant 1 on 2021-01-19" e05
+case_ "an early row an independent (Harris I)" "CA Kamala D. Harris: an early row labelled I - the early rows are read for D and R alone" e06
+case_ "[SEN-DIV]'s 117th line holding on no day (D 49)" "[SEN-DIV] 117: D 49 R 50 I 2 holds on no day from 2021-01-03 to 2023-01-02" e07
+
 # --- the party changes and the independents
 c01() { local f; f=$(pg 'wayback_senate_SenatorsWhoChangedPartiesDuringSenateService_*.html'); sed -i 's/On June 5, 2024, he switched/On June 6, 2024, he switched/' "$f"; resum "$f"; }
 c02() { sed -i "/^    'AZ sinema'  => /d" Tools/us_senate_prep.pl; }   # TOOL: Sinema's change undeclared

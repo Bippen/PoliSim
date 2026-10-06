@@ -21,7 +21,7 @@ namespace PoliSim.Elections.Generated
 
         private static (string Path, string Sha256)[] BuildSenateRaceRawSources() => new (string, string)[]
         {
-            ("senate_seats.csv", "c9164f40911df4f439672bb5151aaf291a1c67f6183d526b8e0924c0a4fe9d78"),
+            ("senate_seats.csv", "5f340964390797298b32e1db8b18eca3124593b5f161919643dbca8c474f3261"),
             ("raw/returns/clerk_statistics2018.pdf", "35ef9bc223d89cbd3ce4c544a88e93523394060d400001d365612c97f9348c53"),
             ("raw/returns/clerk_statistics2020.pdf", "666b2a1f673f263087c141c4d44b0dce47cbddc8f4df27fbc8b415cf05842b76"),
             ("raw/returns/clerk_statistics2024.pdf", "d4ba800fc17135b616ae556c92861080ab962d95916ace34b546c5aac824aec4"),

@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 # THE SENATE BY STATE AND BY DATE (PS-6 US-12, COMPLETED.md s792): every Senate seat of the 118th and 119th Congresses, its holders and the dates
-# they held it, read from the Senate's own pages; the record is ElectionsData/usa/senate_record.md.
+# they held it, read from the Senate's own pages; and (s795, R-US19's catalog step) every holder back to 3 Jan 2017, the 115th Congress's
+# opening - the early rows, on the state pages' own days, no oath read (the saved New Senators page lists the 118th and 119th alone). The record
+# is ElectionsData/usa/senate_record.md.
 # It reads ONLY saved pages, each held to its SHA256SUMS.txt line first:
 #   - raw/senate/wayback_senate_state_<XX>_<capture>.html, the 50 "States in the Senate" pages: each seat's holders by class, their party,
 #     the day each began and ended and how (the base);
@@ -16,14 +18,17 @@
 # It writes ElectionsData/usa/senate_seats.csv, senate_changes.csv, senate_on.csv, senate_division.csv and
 # Assets/Scripts/Elections/Generated/UsSenateRecord.cs (a part of the partial class UsPresidentialReturns). It dies, writing nothing, on:
 #   - a page off its digest, or in no SHA256SUMS.txt; a page sought by its pattern missing, or two (a state's, a list's, an edition's);
-#   - (the state pages) a row of the window (holding a seat on or after 3 Jan 2023) without a class, a name, a party or a day; a state not
-#     holding exactly two classes, the classes not 33, 33 and 34 states; a class's holders overlapping, or its last holder ended; a party
-#     label not declared; a footnote mark without its note;
+#   - (the state pages) a row read (holding a seat on or after 3 Jan 2017) without a class, a name, a party or a day; a state not holding
+#     exactly two classes, the classes not 33, 33 and 34 states; a class's holders overlapping, or its last holder ended; a party label not
+#     declared; a footnote mark without its note; an early row (one whose service ended before the window's first day's end) neither a
+#     Democrat nor a Republican - the Third or Minor Parties page is read for the window alone;
 #   - (the oaths) a New Senators entry of the 118th or 119th Congress not read, matching no row of its state's page or two, of another
 #     party, or sworn twice; a row of the window that began inside it with no oath on that page;
-#   - (the appointments) an appointment of 2023 or later matching no holder, whose oath is not the New Senators page's, or which follows its
-#     oath; an appointee by the New Senators page whom the Appointed Senators page does not list, but the two DECLARED (Schiff, Kim);
-#   - (the deaths) a death in the 118th or 119th Congress whose day is not the state page's, or a row ended "Died" the page does not list;
+#   - (the appointments) an appointment sworn in the window matching no holder, whose oath is not the New Senators page's, or which follows
+#     its oath; one sworn from 4 Jan 2017 to the window matching no row, or whose row's first day is not from its appointment to its oath; an
+#     appointee by the New Senators page whom the Appointed Senators page does not list, but the two DECLARED (Schiff, Kim); a footnote mark
+#     after an appointment's day not declared, or its note not naming him (Smith's DECLARED);
+#   - (the deaths) a death in the 115th-119th Congresses whose day is not the state page's, or a row ended "Died" the page does not list;
 #   - (the party changes) the Changed Parties page's summaries not one for each chapter of its contents; a senator of the window whose party
 #     changed there other than the two declared, or a declared change's day not the page's own words; a senator the Third or Minor Parties
 #     page names an independent in the window who is not one here on the first and last day of its span, or whose service does not end in
@@ -33,8 +38,9 @@
 #     whole, a reason other than a resignation or a death, or a successor's oath not the New Senators page's;
 #   - (the caucus) the Senate Democrats' list on its capture day not exactly the roster's Democrats and the independents it lists; an
 #     independent of the window on neither list nor named by the Senate's own words;
-#   - [SEN-DIV] without its 117th-119th lines, a line holding on no day of its Congress the record reaches, or its 119th notes (a delayed
-#     oath, a resignation) not found or not the roster's days;
+#   - [SEN-DIV] without its 117th-119th lines, a line holding on no day of its Congress the record reaches, its 119th notes (a delayed
+#     oath, a resignation) not found or not the roster's days, or its 117th note (the division before the January 2021 oaths) not the
+#     roster's on every day it names but its last - the one slip DECLARED (Georgia's page ends Loeffler's service on 19 Jan 2021);
 #   - a day's roster not 100 seats; the record's reach not the New Senators page's capture;
 #   - a perl warning during the checks; a non-ASCII byte in an output, or a CSV row whose fields are not its heading's.
 # The record's reach is the New Senators page's capture: a row that began after it is not read, and a service ending after it is written as
@@ -124,7 +130,10 @@ sub day {   # "Sept. 29, 2023", "January 3, 2025", "09/29/2023", "1-23-23" -> 20
 sub next_day { my ($y, $m, $d) = split /-/, shift; my @t = gmtime(timegm(0, 0, 12, $d, $m - 1, $y) + 86400); return sprintf('%04d-%02d-%02d', $t[5] + 1900, $t[4] + 1, $t[3]); }
 sub prev_day { my ($y, $m, $d) = split /-/, shift; my @t = gmtime(timegm(0, 0, 12, $d, $m - 1, $y) - 86400); return sprintf('%04d-%02d-%02d', $t[5] + 1900, $t[4] + 1, $t[3]); }
 my $window = '2023-01-03';   # the 118th Congress opens
+my $early = '2017-01-03';    # the 115th Congress opens: the holder rows reach back to it (s795), on the state pages' own days - the saved New
+                             # Senators page lists the 118th and 119th Congresses alone, so no oath before the window is read
 my @beyond;   # what the record's reach clips, printed
+my @early_appointed;   # the appointees sworn before the window: the Appointed Senators page's days beside the state page's, printed
 my $reach = '2026-09-06';   # the record's reach, the New Senators page's capture (held to it below): a row that began after it is not read,
                              # a service ending after it is written as serving
 
@@ -168,16 +177,17 @@ for my $st (@order) {
         next unless defined $c{SENATOR};
         my @marks = map { /note(\d+)/ ? $1 : () } ($c{SENATOR} . $c{'TERM BEGAN'} . $c{'TERM ENDED'}) =~ /(<a href="#note\d+">)/g;
         my ($b, $e) = map { my $x = $_; $x =~ s/<sup>.*?<\/sup>//gs; words($x) } ($c{'TERM BEGAN'}, $c{'TERM ENDED'});
-        next if $e =~ /(\d{4})\s*$/ && $1 < 2023;   # ended before the window's year: not read (some old rows give a month alone)
+        next if $e =~ /(\d{4})\s*$/ && $1 < 2017;   # ended before the early rows' year: not read (some old rows give a month alone)
         my $ended = $e =~ /^Present$/ ? '-' : day($e, "$st $c{SENATOR} ended");
-        next if $ended ne '-' && $ended le $window;   # held no seat on or after the window's first day's end
+        next if $ended ne '-' && $ended le $early;   # held no seat on or after the 115th Congress's first day's end
         defined $class or problem("$st: a row of the window outside any class");
         my $who = $c{SENATOR}; $who =~ s/<sup>.*?<\/sup>//gs; $who = words($who);
         my ($name, $label) = $who =~ /^(.*?) \(([^)]*)\)$/ or do { problem("$st: '$who' has no party in parentheses"); next; };
         my $party = $party_declared{$label} // do { problem("$st $name: party label '$label' not declared"); 'X' };
         for my $m (@marks) { problem("$st $name: footnote $m has no note") unless defined $note{$m}; }
         push @{$seat{$st}{$class // 0}}, { st => $st, class => $class // 0, name => $name =~ s/,//gr, label => $label, party => $party, began => day($b, "$st $name began"),
-            ended => $ended, comments => words($c{COMMENTS} // ''), notes => [ map { $note{$_} // '' } @marks ] };
+            ended => $ended, comments => words($c{COMMENTS} // ''), notes => [ map { $note{$_} // '' } @marks ],
+            early => ($ended ne '-' && $ended le $window ? 1 : 0) };   # an early row: his service ended before the window's first day's end
     }
     my @cl = sort keys %{$seat{$st}};
     problem("$st: holds classes @cl in the window, not two") unless @cl == 2 && !grep { $_ !~ /^[123]$/ } @cl;
@@ -191,15 +201,21 @@ for my $st (@order) {
 my %by_class; for my $st (@order) { $by_class{$_}++ for keys %{$seat{$st}}; }
 problem("the classes hold $by_class{1}, $by_class{2} and $by_class{3} states, not 33, 33 and 34")
     unless ($by_class{1} // 0) == 33 && ($by_class{2} // 0) == 33 && ($by_class{3} // 0) == 34;
-my @holders = map { my $st = $_; map { @{$seat{$st}{$_}} } sort keys %{$seat{$st}} } @order;
-sub find_holder {   # a senator of the window by state and name, or undef; dies on two
-    my ($st, $name, $what) = @_;
+my @all = map { my $st = $_; map { @{$seat{$st}{$_}} } sort keys %{$seat{$st}} } @order;   # every row read, early rows among them
+my @holders = grep { !$_->{early} } @all;   # the window's: every check of the 118th and 119th Congresses reads these alone
+my @early = grep { $_->{early} } @all;
+# an early row is a Democrat or a Republican: the Third or Minor Parties page is read for the window alone, so an early independent stops the run
+for my $x (@early) { problem("$x->{st} $x->{name}: an early row labelled $x->{label} - the early rows are read for D and R alone") unless $x->{party} eq 'D' || $x->{party} eq 'R'; }
+sub find_in {   # a senator by state and name among the rows given, or undef; dies on two
+    my ($st, $name, $what, $rows, $of) = @_;
     my ($k, $fi) = (surname_key($name), first_initial($name));
-    my @m = grep { $_->{st} eq $st && surname_key($_->{name}) eq $k } @holders;
+    my @m = grep { $_->{st} eq $st && surname_key($_->{name}) eq $k } @$rows;
     @m = grep { first_initial($_->{name}) eq $fi } @m if @m > 1;
-    problem("$what: '$name' ($st) matches " . scalar(@m) . " holders of the window") if @m > 1;
+    problem("$what: '$name' ($st) matches " . scalar(@m) . " holders of $of") if @m > 1;
     return $m[0];
 }
+sub find_holder { my ($st, $name, $what) = @_; return find_in($st, $name, $what, \@holders, 'the window'); }   # a senator of the window
+sub find_any { my ($st, $name, $what) = @_; return find_in($st, $name, $what, \@all, 'the rows read'); }        # of the window or early
 
 # ---------------------------------------------------------------- the oaths: the New Senators page, its 118th and 119th Congresses
 {
@@ -227,20 +243,41 @@ sub find_holder {   # a senator of the window by state and name, or undef; dies 
         $x->{took} = $x->{sworn} // $x->{began};
         $x->{how_in} //= 'before the window';
     }
+    for my $x (@early) { $x->{took} = $x->{began}; $x->{how_in} = 'before the window'; }   # the state page's day: no oath before the window is read
     @holders = grep { !$_->{beyond} } @holders;
+    @all = grep { !$_->{beyond} } @all;
     for my $st (@order) { for my $cl (keys %{$seat{$st}}) { @{$seat{$st}{$cl}} = grep { !$_->{beyond} } @{$seat{$st}{$cl}}; } }
 }
 # ---------------------------------------------------------------- the appointments, the deaths
+my %appointed_mark = ('MN smith' => 1);   # the Appointed Senators page's footnote marks after an appointment's day, by senator
 {
     my $h = page('senate/' . one('senate', 'wayback_senate_AppointedSenators_\d{14}\.html'));
+    my $words = words($h);
     while ($h =~ m{<tr>(.*?)</tr>}gs) {
         my $r = $1;
         my @td = map { my $x = $_; $x =~ s{<span style="display:none">.*?</span>}{}gs; words($x) } $r =~ m{<td>(.*?)</td>}gs;
         next unless @td >= 3 && $td[0] =~ /^(.+) \(([DRI])-([A-Z]{2})\)$/;
         my ($name, $p, $st) = ($1, $2, $3);
-        next unless $td[1] =~ /(\d{4})/ && $1 >= 2023;   # appointed before the window's year: not read (old rows print "--" or footnoted days)
+        next unless $td[1] =~ /(\d{4})/ && $1 >= 2016;   # appointed before the early rows' years: not read (old rows print "--" or footnoted days)
+        # a footnote mark after the appointment's day: declared senator by senator, its note naming him (Smith's: appointed on 2 Jan 2018,
+        # her lieutenant governorship resigned at 11:59 p.m. that night - the table's day, 3 Jan, is the one read)
+        if ($td[1] =~ /^(.*\d{4}) (\d)$/) {
+            my ($d, $m) = ($1, $2);
+            my $k = "$st " . surname_key($name);
+            problem("Appointed Senators: $name ($st) appointed '$td[1]', a footnote mark not declared") unless ($appointed_mark{$k} // '') eq $m;
+            problem("Appointed Senators: footnote $m does not name $name") unless $words =~ /(?:^|\s)$m\. \Q$name\E was appointed on /;
+            $appointed_mark{$k} = 'read' if exists $appointed_mark{$k};
+            $td[1] = $d;
+        }
         my ($appointed, $sworn) = (day($td[1], "Appointed $name"), day($td[2], "Appointed $name sworn"));
-        next if $sworn lt $window;
+        next if $sworn le $early;
+        if ($sworn lt $window) {   # sworn before the window: no oath page to hold him to; his row's day must lie from his appointment to his oath
+            my $x = find_any($st, $name, 'Appointed Senators') or do { problem("Appointed Senators: $name ($st), sworn $sworn, matches no row"); next; };
+            problem("Appointed Senators: $name appointed $appointed, sworn $sworn; ${st}'s page has him from $x->{took}") unless $x->{took} ge $appointed && $x->{took} le $sworn;
+            $x->{appointed} = $appointed;
+            push @early_appointed, "$st $name: appointed $appointed, sworn $sworn by the Appointed Senators page; ${st}'s page from $x->{took}";
+            next;
+        }
         my $x = find_holder($st, $name, 'Appointed Senators') or do { problem("Appointed Senators: $name ($st) of the window matches no holder"); next; };
         problem("Appointed Senators: $name sworn $sworn, the New Senators page " . ($x->{sworn} // 'none')) unless ($x->{sworn} // '') eq $sworn;
         problem("Appointed Senators: $name appointed $appointed after his oath $sworn") if $appointed gt $sworn;
@@ -259,21 +296,22 @@ sub find_holder {   # a senator of the window by state and name, or undef; dies 
         } elsif (!$x->{appointed}) { problem("$x->{st} $x->{name}: appointed on the New Senators page, not on the Appointed Senators page"); }
     }
     for my $k (sort keys %elected_then_appointed) { problem("$k: DECLARED elected then appointed, no such appointee") unless $elected_then_appointed{$k} == 2; }
+    for my $k (sort keys %appointed_mark) { problem("Appointed Senators: ${k}'s footnote mark declared and not found") unless $appointed_mark{$k} eq 'read'; }
     $h = page('senate/' . one('senate', 'wayback_senate_SenatorsDiedinOffice_\d{14}\.html'));
     my %died;
     while ($h =~ m{<tr valign="top">(.*?)</tr>}gs) {
         my @td = map { words($_) } $1 =~ m{<td>(.*?)</td>}gs;
-        next unless @td >= 3 && $td[1] =~ /^(\d+)\/\d$/ && $1 >= 118;
+        next unless @td >= 3 && $td[1] =~ /^(\d+)\/\d$/ && $1 >= 115;
         my ($name, $st) = $td[0] =~ /^(.+?) \(([A-Z]{2})\)$/ or do { problem("Died in Office: '$td[0]' not read"); next; };
-        my $x = find_holder($st, $name =~ s/^(.+?), (.+)$/$2 $1/r, 'Died in Office') or do { problem("Died in Office: $name ($st) matches no holder"); next; };
+        my $x = find_any($st, $name =~ s/^(.+?), (.+)$/$2 $1/r, 'Died in Office') or do { problem("Died in Office: $name ($st) matches no holder"); next; };
         my $d = day($td[2], "Died $name");
         problem("Died in Office: $name $d, ${st}'s page ended $x->{ended}") unless $x->{ended} eq $d && $x->{comments} =~ /Died/;
         $died{$x} = 1;
     }
-    for my $x (@holders) { problem("$x->{st} $x->{name}: ended 'Died', not on the Died in Office page") if $x->{comments} =~ /Died/ && !$died{$x}; }
+    for my $x (@all) { problem("$x->{st} $x->{name}: ended 'Died', not on the Died in Office page") if $x->{comments} =~ /Died/ && !$died{$x}; }
 }
 
-for my $x (@holders) {
+for my $x (@all) {
     $x->{left} = $x->{ended};
     $x->{how_out} = $x->{ended} eq '-' ? '-' : $x->{comments} =~ /Died/ ? 'died' : $x->{comments} =~ /[Rr]esigned/ ? 'resigned' : 'term ended';
     if ($x->{left} ne '-' && $x->{left} gt $reach) { push @beyond, "$x->{st} $x->{name}: ended $x->{left}, after the reach - written as serving"; ($x->{left}, $x->{how_out}) = ('-', '-'); }
@@ -311,7 +349,7 @@ my %change = (   # a senator of the window whose party changed: the page's words
     }
     for my $k (sort keys %change) { problem("Changed Parties: $k is no chapter of the page's contents") unless $change{$k}{seen}; }
 }
-for my $x (@holders) {
+for my $x (@all) {
     my $k = "$x->{st} " . surname_key($x->{name});
     if ($x->{party} eq 'D/I') {
         my $c = $change{$k} or do { problem("$x->{st} $x->{name}: labelled D, I with no declared change"); $x->{i_from} = $window; next; };
@@ -471,6 +509,7 @@ for my $ed (['2024-04-25', '2024-04-25'], ['2026-02-20', '2025-10-01']) {
 
 # ---------------------------------------------------------------- [SEN-DIV]: each Congress's line, and the days of its Congress it holds on
 my %div;
+my $note117;   # [SEN-DIV]'s 117th note as the roster holds it, printed
 {
     my $t = words(page('records/' . one('records', 'wayback_senate_party_division_\d{8}\.html')));
     while ($t =~ /(11[789])th Congress \(\d{4}-\d{4}\) Majority Party: (\w+) \((\d+) seats\) Minority Party: (\w+) \((\d+) seats\) Other Parties: (.*?) Total Seats: (\d+)/g) {
@@ -490,10 +529,34 @@ my %div;
         my $x = $code{$state} ? find_holder($code{$state}, $nm, '[SEN-DIV] note') : undef;
         problem("[SEN-DIV] note: $nm resigned $d from class $cl, the roster " . ($x ? "$x->{left}, class $x->{class}" : 'no such senator')) unless $x && $x->{left} eq $d && $x->{class} == $cl;
     } else { problem("[SEN-DIV]: its 119th note on a resignation not found"); }
+    # its 117th note: the division from the 117th's opening to the January 2021 oaths - held on every day it names but its last (whose end
+    # already holds the new senators), the early rows on their state pages' days
+    if ($t =~ /Note: From ([A-Z][a-z]+ \d+, \d{4}), to ([A-Z][a-z]+ \d+, \d{4}), party division stood at (\d+) Republicans, (\d+) Democrats, (\d+) Independents \(who caucused with the Democrats\), and (\d+) vacancy\./) {
+        my ($from, $to, $r, $d, $i, $v) = (day($1, '[SEN-DIV] 117th note'), day($2, '[SEN-DIV] 117th note'), $3, $4, $5, $6);
+        # the named slip, DECLARED: Georgia's page ends Loeffler's service on 19 Jan 2021, the day before Warnock's oath, so at that day's end
+        # her seat reads vacant; the note counts her to 20 Jan. On the slip's day the roster must be the note's less her seat, and hers its last
+        my %slip = ('2021-01-19' => 'GA loeffler');
+        my @slips;
+        for (my $day = $from; $day lt $to; $day = next_day($day)) {
+            my $k = count(roster($day));
+            my ($wr, $wv) = ($r, $v);
+            if (my $who = $slip{$day}) {
+                my ($sst, $sk) = split / /, $who;
+                my ($x) = grep { $_->{st} eq $sst && surname_key($_->{name}) eq $sk } @all;
+                problem("[SEN-DIV] 117th note: the slip $who on $day, the row " . ($x ? "left $x->{left}, party $x->{party}" : 'not found')) unless $x && $x->{left} eq $day && $x->{party} eq 'R';
+                ($wr, $wv) = ($r - 1, $v + 1);
+                $slip{$day} = '';
+                push @slips, "$day: ${who}'s last day by ${sst}'s page, R $wr vacant $wv";
+            }
+            if ($k->{R} != $wr || $k->{D} != $d || $k->{I} != $i || $k->{'-'} != $wv) { problem("[SEN-DIV] 117th note: R $wr D $d I $i vacant $wv on $day (the note's R $r vacant $v from $from to $to); the roster R $k->{R} D $k->{D} I $k->{I} vacant $k->{'-'}"); last; }
+        }
+        for my $s (sort keys %slip) { problem("[SEN-DIV] 117th note: the slip on $s declared and not met") if $slip{$s} ne ''; }
+        $note117 = "R $r D $d I $i vacant $v on every day from $from to " . prev_day($to) . (@slips ? ' but the slip DECLARED - ' . join('; ', @slips) : '');
+    } else { problem("[SEN-DIV]: its 117th note on the division before the January 2021 oaths not found"); }
 }
-my %congress = (118 => ['2023-01-03', '2025-01-02'], 119 => ['2025-01-03', $reach]);
+my %congress =(117 => ['2021-01-03', '2023-01-02'], 118 => ['2023-01-03', '2025-01-02'], 119 => ['2025-01-03', $reach]);
 my %holds;   # congress => [ [from, to] ... ] the stretches of days its line holds on
-for my $c (118, 119) {
+for my $c (117, 118, 119) {
     my ($from, $to) = @{$congress{$c}};
     my $want = $div{$c} or next;
     my $run;
@@ -507,7 +570,9 @@ for my $c (118, 119) {
 }
 
 # ---------------------------------------------------------------- the named days, the seats and the changes
-my @named = (['2023-01-03', 'the 118th Congress opens'], ['2024-03-12', 'the US start (WorldClock.StartDate)'], ['2024-03-18', "the Senate Democrats' list captured"],
+my @named = (['2017-01-03', 'the 115th Congress opens'], ['2018-11-06', 'the general election of 2018'], ['2019-01-03', 'the 116th Congress opens'],
+    ['2020-11-03', 'the general election of 2020'], ['2021-01-03', 'the 117th Congress opens'], ['2022-11-08', 'the general election of 2022'],
+    ['2023-01-03', 'the 118th Congress opens'],['2024-03-12', 'the US start (WorldClock.StartDate)'], ['2024-03-18', "the Senate Democrats' list captured"],
     ['2024-04-25', 'the Congressional Directory of 2024 closes'], ['2025-01-02', "the 118th Congress's last day"], ['2025-01-03', 'the 119th Congress opens'],
     ['2025-01-14', "the Class I page's date"], ['2025-01-21', "the Class III page's date"], ['2025-10-01', 'the Congressional Directory of 2026 closes'],
     ['2026-07-14', "the Class II page's date"], ['2026-09-05', "the Senate Democrats' list captured"], [$reach, "the record's reach (the New Senators page captured)"]);
@@ -555,7 +620,8 @@ sub write_all {
     }
 }
 my $gen = "# GENERATED by Tools/us_senate_prep.pl from the pages under ElectionsData/usa/raw/ - DO NOT EDIT; the record is ElectionsData/usa/senate_record.md.\n";
-my $csv_s = $gen . "# US-12: a row a senator who held a seat on or after 3 Jan 2023 (the 118th Congress's opening), by his state's \"States in the Senate\" page.\n"
+my $csv_s = $gen . "# US-12: a row a senator who held a seat on or after 3 Jan 2023 (the 118th Congress's opening, the window), by his state's \"States in\n"
+    . "# the Senate\" page - and (s795) every senator whose service ended from 4 Jan 2017 to that day, the early rows, on his state page's own days.\n"
     . "# party: D, R or I as that page prints it, D/I for a Democrat who became an independent (independent_from: the day, by the Changed Parties\n"
     . "# page). took: the day of his oath by the New Senators page for a senator new in the 118th or 119th Congress, else the day his state's page\n"
     . "# gives (before the window - which may be an appointment's day, not an oath's). left: the day his service ended, by his state's page (-\n"
@@ -565,7 +631,7 @@ my $csv_s = $gen . "# US-12: a row a senator who held a seat on or after 3 Jan 2
     . "# day is the state at its end: a senator counts from his oath's day and not on his last.\n"
     . "state,class,senator,party,independent_from,took,left,how_in,how_out,caucus,caucus_by\n";
 my @srows;
-for my $x (@holders) { my @row = ($x->{st}, $x->{class}, $x->{name} =~ s/,//gr, $x->{party}, $x->{i_from} // '-', $x->{took}, $x->{left}, $x->{how_in}, $x->{how_out}, $x->{caucus} // '-', $x->{caucus_by} // '-'); push @srows, \@row; $csv_s .= join(',', @row) . "\n"; }
+for my $x (@all) { my @row = ($x->{st}, $x->{class}, $x->{name} =~ s/,//gr, $x->{party}, $x->{i_from} // '-', $x->{took}, $x->{left}, $x->{how_in}, $x->{how_out}, $x->{caucus} // '-', $x->{caucus_by} // '-'); push @srows, \@row; $csv_s .= join(',', @row) . "\n"; }
 my $csv_c = $gen . "# US-12: a row a seat change of the 118th and 119th Congresses to the record's reach, a Congress's opening apart (its retiring senators'\n"
     . "# term ends and its new senators' oaths on 3 Jan): kind resigned, died, sworn (an oath on another day - an appointee's, or a late one) or\n"
     . "# independent (a party change); detail: how and by which page, and the state page's own day where the oath differs from it.\n"
@@ -578,7 +644,7 @@ my $csv_v = $gen . "# US-12: the party division of each Congress as the Senate's
     . "# and each stretch of the Congress's days, to the record's reach, on which the roster gives that line exactly with no seat vacant.\n"
     . "congress,d,r,i,holds_from,holds_to\n";
 my @vrows;
-for my $c (118, 119) { for my $h (@{$holds{$c}}) { my @row = ($c, $div{$c}{D}, $div{$c}{R}, $div{$c}{I}, @$h); push @vrows, \@row; $csv_v .= join(',', @row) . "\n"; } }
+for my $c (117, 118, 119) { for my $h (@{$holds{$c}}) { my @row = ($c, $div{$c}{D}, $div{$c}{R}, $div{$c}{I}, @$h); push @vrows, \@row; $csv_v .= join(',', @row) . "\n"; } }
 my ($ds, $dc, $do, $dv) = map { sha256_hex($_) } ($csv_s, $csv_c, $csv_o, $csv_v);
 sub cq { my $s = shift; $s =~ s/\\/\\\\/g; $s =~ s/"/\\"/g; return "\"$s\""; }
 my $cs = "// GENERATED by Tools/us_senate_prep.pl. DO NOT EDIT BY HAND.\n//\n"
@@ -594,7 +660,8 @@ my $cs = "// GENERATED by Tools/us_senate_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "        public const string SenateOnSourceDigest = \"$do\";\n        public const string SenateDivisionSourceDigest = \"$dv\";\n\n"
     . "        /// <summary>Every saved page the Senate run read, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>\n"
     . "        public static readonly (string Path, string Sha256)[] SenateRawSources = BuildSenateRawSources();\n\n"
-    . "        /// <summary>A row a senator who held a seat on or after 3 Jan 2023: state, class (1-3), name, party (D, R, I; D/I a Democrat who became an\n"
+    . "        /// <summary>A row a senator who held a seat on or after 3 Jan 2023, or whose service ended from 4 Jan 2017 to that day (s795, on his
+        /// state page's days): state, class (1-3), name, party (D, R, I; D/I a Democrat who became an\n"
     . "        /// independent on IndependentFrom), the day he took the seat (Took: his oath for a senator new in the 118th or 119th\n"
     . "        /// Congress, else his state page's day, which may be an appointment's), the day his service ended (Left, a hyphen while he serves),\n"
     . "        /// how he came and went, and an independent's caucus with its source (senate_seats.csv's header says each).</summary>\n"
@@ -621,10 +688,14 @@ write_all("$usa/senate_seats.csv" => $csv_s, "$usa/senate_changes.csv" => $csv_c
 
 # ---------------------------------------------------------------- the run's report (the record pastes it)
 for my $o (@onrows) { printf "%s %-55s D %2d R %2d I %d vacant %d - with the caucus DEM %d REP %d\n", $o->[0], $o->[1], @$o[14 .. 19]; }
-for my $c (118, 119) { printf "[SEN-DIV] %dth: D %d R %d I %d - holds %s\n", $c, $div{$c}{D}, $div{$c}{R}, $div{$c}{I}, join(', ', map { "$_->[0] to $_->[1]" } @{$holds{$c}}); }
+for my $c (117, 118, 119) { printf "[SEN-DIV] %dth: D %d R %d I %d - holds %s\n", $c, $div{$c}{D}, $div{$c}{R}, $div{$c}{I}, join(', ', map { "$_->[0] to $_->[1]" } @{$holds{$c}}); }
 print "change: " . join(' ', @$_) . "\n" for @changes;
 print "the Directory's table: $_\n" for @{$cdir_said{changes} // []};
 print "the Directory's slip: $_\n" for @{$cdir_said{slips} // []};
+print "[SEN-DIV] 117th note: $note117
+";
+print "early appointee: $_
+" for @early_appointed;
 print "the record's reach $reach: " . (@beyond ? join('; ', @beyond) : 'nothing beyond it on the pages read') . "\n";
 print "caucus: $_->{st} $_->{name} ($_->{party}) with the Democrats, by $_->{caucus_by}\n" for grep { $_->{caucus} } @holders;
 print "wrote $usa/senate_seats.csv (" . scalar(@srows) . " senators), senate_changes.csv (" . scalar(@changes) . "), senate_on.csv (" . scalar(@onrows) . " days), senate_division.csv, Assets/Scripts/Elections/Generated/UsSenateRecord.cs\n";
