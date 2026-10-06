@@ -335,8 +335,8 @@ Plurality is then counted per district on the record's own votes, and three seat
   - the swing's basis (asked blind, choice 4; S4 (vi));
   - C4's place in step 2's and step 5's sums - the panel's arithmetic counts it, its account of C4 says it only vetoes (asked blind, choice 7; S4 (vii));
   - (c)'s rho on one or two transitions - S3 cannot fire on the record on disk; the Clerk's statistics before 2016 would make it live (asked blind, choice 6);
-  - R-US15 asked, not ruled - V in play assumes the poll is the own-line House vote;
-  - US-5's House basis (§788, asked) - a ruling that moves `house_by_state.csv` moves V(E) and the decisive digest, re-pinned or asked again as R-US18's block says;
+  - R-US15 - RULED (a) (G2, §797): V in play is the own-line House vote;
+  - US-5's House basis (§788) - RULED (a), the Clerk's figures throughout (G4, §797): `house_by_state.csv` stands as built;
   - contestation moving V - the districts a party leaves uncontested change from one election to the next; every method reads the same swing, and the effect cannot be measured without modelling uncontested votes;
   - Missouri's 2026 plan - read as held by the saved note; the referendum's result and the record's 2026 returns BILLED;
   - Alaska's sources - the FEC's 2022 round departs, for one district, from "the Clerk throughout"; 2024's rounds BILLED;
@@ -648,6 +648,8 @@ A 269–269 split is reachable with two parties.
 
 **Read at US-12 (§792):** King and Sanders caucus with the Democrats by the Senate Democrats' own lists of 2024 and 2026, Sinema by the 2024 list, Manchin as an independent by the Senate's Changed Parties page ("he continued to caucus with the Democrats"). **Sinema is a reading put to Elias:** the Senate's page says she organized through the Democratic Conference "but would not participate in either party caucus"; the catalog counts her with the Democrats, the conference she organized through and the list that names her (`ElectionsData/usa/senate_record.md`, reading 5) - the alternative, an independent in no caucus, is a third unit in a two-unit chamber, US-15's question.
 
+**Sinema, RULED (Elias's ruling G3, 2026-10-06; installed §797):** counted with the Democrats from the day she left the party, because the Democrats' own list shows her - a READING, DECLARED in the data note (`senate_seats.csv`'s `caucus_by`, `senate_record.md` reading 5). US-15's independent in no caucus stays an open question, not a build item.
+
 **R-US11 — The history after the game's own election.** *(blocks US-26, US-27)*
 W-G1's standing gap: every election in a game reads the epoch's history, so a US game would predict 2026 and 2028 from the history it predicted 2024 with.
 - **(a) Roll forward:** the game's own last two counts become the next election's prior and loyalty pair, as one cross-country item (US-26) for every modelled country. No family is expected, since the dump holds no election; the diff proves it.
@@ -683,6 +685,8 @@ The 2030 apportionment is due by 31 Dec 2030 and goes to Congress in January 203
 
 Code will recommend the method calling the most states right on 2016→2020 and 2020→2024 at the true national shares, (a) on a tie, for one rule across countries. 2012→2016 is reported as the stress case. No demographic layer is added unasked; the misses go into the card.
 
+**RULED** (Elias's ruling G2, 2026-10-06; installed §797): (a), as recommended - §689's normalised uniform swing.
+
 **R-US15 — Which vote the US poll is** *(US-5's table; blocks US-6)*.
 - (a) The House national vote — the party's own vote, held on every federal polling day, midterms included: the history is the last two House elections, and the presidential candidates carry it by E1's factors;
 - (b) the presidential popular vote as the history (2020 against 2016 at the start), midterms then reading the last two presidential votes;
@@ -699,6 +703,8 @@ The electorate is fitted free where it is identifiable, and otherwise with its s
 
   **Code recommends (iii), holding (ii).** No country's pair has a claim on the US: each is its own election's fit, and each sits on a bound of `VoteModel.Calibrate`'s grid in at least one parameter (`PartySystems.TryElectorate`'s values against the grid). The instrument places the mean on the DEM-REP segment where the history's last election falls; US-6 can hold it there.
 - **Noted, not asked:** 2024's economic vote moves both histories' 2024 polls toward DEM by the same amount (the card's term line). The term reading compares its two ends (§752), so 2022's inflation peak is not in it. It is the economic vote as built, printed in its own column; the House history reads the presidential row, the congressional one being US-13's.
+
+**RULED** (Elias's ruling G2, 2026-10-06; installed §797): (a), the House national vote, **with the spread held at the four countries' median** - Elias's words, read as (ii) held; the later items' own measurement of their responses ((iii)) is not ruled and stays theirs to print. The 2024 economic-vote note is accepted as filed (G8).
 
 **R-US16 — What "fought state by state" means** *(US-9's measurements; blocks US-31)*.
 - (a) National in effect, as Germany's Länder are today, with the HQ saying so;
@@ -726,7 +732,7 @@ The measurement decides; Code expects (a) where maps held.
 <!-- R-US18 RULE BEGIN -->
 ```text
 R-US18'S RULE - US-11's measurement decides the House's seat method. Preregistered in
-COMPLETED.md section 791.
+COMPLETED.md section 791; amended at section 797 (Elias's ruling G1).
 
 THE TERMS
 - The record's House elections are 2016, 2018, 2020, 2022 and 2024, and 2026 once C5 is
@@ -850,10 +856,12 @@ time:
   printed S2 counting as not firing in step 1's exception;
 - (iii) Minnesota 2018 held; (iv) Colorado 2018 held; (v) both held;
 - (vi) the swing on the deciding count: V_dc(E) = sum final_r / sum (final_r + final_d)
-  over the 435 races replaces V(E) in every method;
+  over the 435 races replaces V(E) in every method - PRINTED ONLY: choice 4 answered,
+  the swing on US-5's own-line series (G1, section 797);
 - (vii) the level cycle out of the sums: every sum over D in steps 2 and 5 taken over D's
   swing cycles alone.
-The rule STOPS (S4) if any reading changes the outcome, naming the reading.
+A reading made printed only by an answered choice is run and printed, and compared with
+nothing. The rule STOPS (S4) if any other reading changes the outcome, naming the reading.
 
 STEP 7 - two parties. The rule STOPS (S7) if a measured cycle whose later election is after
 2024 has a winner outside REP and DEM, printing that measurement under each of S7's first
@@ -937,6 +945,8 @@ ask is registered. D itself changes only by amendment.
 
 **Ruling record:** NONE.
 
+**The block's digests** (the instrument's list): preregistered `b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c` (§791); AMENDED (G1, §797): `b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c` -> `5c89b0cf400e50c0e64e687f3f05b8cb74f13f76384bca184773f3724673307a`.
+
 **Asked blind, before the first run (§791).** The rule runs under seven choices, each with a default. The instrument is built once Elias has answered them or given his word to run on the defaults (US-11's *Needs*): the figures, once on the card, would be in sight of any later answer. A choice he answers - for its default or for its alternative - is ruled: it is written into the block by amendment, and its S4 reading becomes printed only (choices 1-4 and 7: readings (ii), (i), (iii)-(v), (vi) and (vii)). Word to run on the defaults rules none of them: each keeps its default and its S4 reading. Choice 5 has no S4 reading: an answer for (b')'s curve declares (b) again by amendment - saying what (b) gives in a cycle where the curve is not fitted, and whether its two parameters are refit in play - and S6 then has nothing to compare; an answer for the default leaves S6 as written. Choice 6 rewrites THE TERMS' first year of the record.
 1. *The deciding cycles.* D with C1 (2016→2018) - the record's largest swing and its only midterm on mostly held lines, the kind of election a 2024-start game meets on 3 Nov 2026, its first midterm (its first House count, 5 Nov 2024, is a presidential year's) - by default; or the item's own cycles less C3, {C2, C4}.
 2. *2020's truth.* The district plurality on the Clerk's counts, NY-22 to the winner that count names - the game counts all 435 seats by plurality and models no certification - by default; or the division as published, NY-22 undecided: `[HH-DIV]`'s 212 of 434, which the Clerk's own table of political divisions in the 2020 volume prints too.
@@ -945,6 +955,8 @@ ask is registered. D itself changes only by amendment.
 5. *(b)'s seat rule.* Anchored proportional, with no parameter, by default; or (b')'s two-parameter curve.
 6. *The record before 2016.* Not sourced, by default; or the Clerk's statistics before 2016 sourced, which would give (c) a forward fit for C1 and make S3 live.
 7. *C4 in the sums.* Counted in step 2's and step 5's sums over D, as the panel's arithmetic has it, by default; or left out of them, as the panel's own account of C4 ("C4 can only veto") reads - the two part only where C4's near-zero swing moves a seat (§791).
+
+**Answered (Elias's ruling G1, 2026-10-06; installed §797):** run on the defaults as printed - the word that rules none of them - but for the choices he answered: **the swing's basis is US-5's own-line House vote** (R-US18's choice 4 and R-US19's B7, one answer; their readings (vi) and (vii) made printed only), and **a full tie (B2) comes to Elias with the figures**. Both instruments run as preregistered; a result never changes a choice - a choice changed after a result is in sight needs a new digest and a report to Elias.
 
 **R-US19 — The Senate races** *(US-12's table; blocks US-16)*.
 - (a) The state's presidential-level derived share that day (a straight ticket);
@@ -958,7 +970,7 @@ Code will recommend whichever misses fewer 2024 Class I seats. From memory, Demo
 <!-- R-US19 RULE BEGIN -->
 ```text
 R-US19'S RULE - US-12's measurement decides how the game elects the Senate's seats.
-Preregistered in COMPLETED.md section 794.
+Preregistered in COMPLETED.md section 794; amended at section 797 (Elias's rulings G1-G3).
 
 THE TERMS
 - A side is REP or DEM. A candidate's side: R gives REP and D gives DEM, by the Clerk's
@@ -1042,7 +1054,7 @@ STEP 1 - (a) against (b), cycle by cycle.
   each cycle with its M, whatever the sums.
 - If M(a) = M(b) in every cycle of D: code recommends X if |N(X)| <= |N(Y)| in every cycle
   of D and |N(X)| < |N(Y)| in at least one (by |N|); otherwise TIE - the rule does not
-  decide.
+  decide, and the tie is put to Elias with the figures (B2 answered, G1, section 797).
 - Asserted: the rule never recommends a method with more misses in K1 than the other.
 
 STEP 2 - control. Where D has at least two cycles and step 1 picked a method by M, the rule
@@ -1073,17 +1085,22 @@ STEP 4 - the declared readings. Steps 1-2 are run again under each, one at a tim
 - (vi) each side's strongest candidate alone in every base count (final_r_top,
   final_dc_top in place of final_r, final_dc);
 - (vii) V_dc(E) = sum final_r / sum (final_r + final_d) over house_districts.csv's 435
-  races of E replaces V(E) in (a) and (b);
-- (viii) (a) by R-US14 (b), proportional; (ix) (a) by R-US14 (c), plain additive;
+  races of E replaces V(E) in (a) and (b) - PRINTED ONLY: B7 answered, US-5's own-line
+  series (G1, section 797);
+- (viii) (a) by R-US14 (b), proportional; (ix) (a) by R-US14 (c), plain additive - both
+  PRINTED ONLY: R-US14 ruled (a) (G2, section 797);
 - (x) (a) at a midterm re-derived: pi(P) = P's true national REP share of REP+DEM, o =
   P's national others' share, pi* = pi(P) + V(T) - V(P), asserted in (0, 1), N(T) =
   ((1 - o)(1 - pi*), (1 - o) pi*, o); the state shares by R-US14 (a)'s method from (a)'s
   own derived three-way shares at P, weighted as they were derived; asserted to return
   a_s(P) within 1e-9 at V(T) = V(P);
 - (xi) a truth or base side resting on a caucus put to Elias (R-US10's reading of Sinema)
-  at its alternative, an independent of no side.
-The rule STOPS (S4) if any reading changes the outcome, naming the reading. S4 compares
-outcomes less S4, S7, S8 and S9, and, where a reading's D has one cycle, less S2.
+  at its alternative, an independent of no side - PRINTED ONLY: the reading ruled (G3,
+  section 797).
+A reading made printed only by an answered choice or a ruling is run and printed, and
+compared with nothing. The rule STOPS (S4) if any other reading changes the outcome, naming
+the reading. S4 compares outcomes less S4, S7, S8 and S9, and, where a reading's D has one
+cycle, less S2.
 
 STEP 5 - two sides. The rule STOPS (S7) if a cycle of D has O > 0, printing its measurement
 under two scorings: a miss for every method alike; and O moved into Z.
@@ -1172,8 +1189,8 @@ THE ASK AND THE BARS
   stores. Otherwise the record stays ASKED.
 - The ruling holds only while the poll is R-US15 (a)'s own-line House vote; a different
   R-US15 ruling asks R-US19 again, and the block is amended so V is the ruled measure.
-- While R-US14 is asked, (a) runs R-US14 (a) and readings (viii)-(ix) stand; when R-US14 is
-  ruled, the block is amended to the ruled method and the two become printed only.
+- R-US14 is ruled (a) (G2, section 797): (a) runs R-US14 (a), and readings (viii)-(ix) are
+  printed only.
 - US-16's Congress-election diagnostic asserts R-US19 RULED, with an option that can be
   built, a current digest and a V basis equal to R-US15's ruling. While not, it fails.
 
@@ -1191,6 +1208,8 @@ amendment. D itself changes only by amendment.
 
 **Ruling record:** NONE.
 
+**The block's digests** (the instrument's list): preregistered `03382d0c0dd22975dea191650f74962bd852477a86ad177944bd93455f425f9c` (§794); AMENDED (G1-G3, §797): `03382d0c0dd22975dea191650f74962bd852477a86ad177944bd93455f425f9c` -> `1caec656193a6d2d2c9c235af0cefe4d591134a24a3f7d338be0dac0108e3957`.
+
 **Asked blind, before the first run (§794).** The rule runs under eight choices, each with a default. The instrument is built once Elias has answered them or given his word to run on the defaults, as for R-US18's seven: one word can cover both lists. A choice he answers - for its default or for its alternative - is ruled: it is written into the block by amendment, and its S4 reading becomes printed only (B1 (i), B3 (ii), B4 (iii), B5 (iv)-(v), B6 (vi), B7 (vii), B8 (x)). Word to run on the defaults rules none of them. B2 has no reading: an answer for (a) or (b) is written into step 1. Readings (viii)-(ix) become printed only when R-US14 is ruled, and (xi) when Elias rules R-US10's reading of Sinema.
 1. *B1 - the deciding cycles.* 2016→2022 Class III (a midterm, from the Clerk's statistics already saved) joins 2018→2024 Class I, D = {K1, K3}, by default: a game's second Senate election is a midterm, (a) at a midterm runs a declared form only a midterm cycle tests, and one cycle of 33 mostly safe seats cannot separate methods a seat or two apart; under step 1, K3 decides alone only where K1 is tied on misses, and where the cycles part the rule stops; with two cycles step 2's control stop (S2) is live, a K1 tie on misses broken by |N| in K1 alone becomes TIE where K3's |N| points the other way, and K3's own seats and bases can fire S7, S8 or S9. Or K1 alone, the rule's text, K3 printed.
 2. *B2 - a full tie* (equal misses in every cycle, |N| not separating): asked with the table, by default - the plan's text names no ground; or (b), native at every election and R-US18 (a)'s form; or (a), one state geography for both contests and no Senate base to store.
@@ -1201,7 +1220,40 @@ amendment. D itself changes only by amendment.
 7. *B7 - the swing's basis* for (b) and for (a)'s midterm form: US-5's own-line series, by default; or the House deciding count. It is R-US18's choice 4: one poll's change moves both chambers, so an answer to either answers both, whichever comes first, making both readings printed only (R-US19's (vii), R-US18's (vi)); a word to run on the defaults for either leaves both live.
 8. *B8 - (a) at a midterm* (US-27): anchored - the share (a) held on the last presidential day moved by the poll's change, never re-solved, telescoping like (b) and R-US18's form - by default; or re-derived - the presidential share P's derivation was solved to, moved by the poll's change, then R-US14's method from the state shares the game held at P.
 
+**Answered (Elias's ruling G1, 2026-10-06; installed §797):** run on the defaults as printed - the word that rules none of them - but for the choices he answered: **the swing's basis is US-5's own-line House vote** (R-US18's choice 4 and R-US19's B7, one answer; their readings (vi) and (vii) made printed only), and **a full tie (B2) comes to Elias with the figures**. Both instruments run as preregistered; a result never changes a choice - a choice changed after a result is in sight needs a new digest and a report to Elias. R-US14 ruled (a) makes readings (viii)-(ix) printed only (G2), and Sinema's reading ruled makes (xi) printed only (G3).
+
 Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot steer a verdict): *should a 2024-start game's 5 Nov 2024 Senate class reproduce 2024's races where its vote follows history?* No; yes on (a); yes on (b) storing the factored share; yes on (b) storing the parent's.
+
+**Elias's rulings of 2026-10-06, G1-G9 (installed §797).** G1-G4 are written where each question stands (R-US18's and R-US19's blocks and asks, R-US10, R-US14, R-US15, US-11's *Design*). The rest:
+- **G5, the open readings - PROVISIONAL on the recommendation where reversible, stopped where not.** Each line: the reading | the recommendation | if it is wrong. Every one is already built on its recommendation; none is changed by G5. Their records: `ElectionsData/usa/president_returns.md` reading 3; `ElectionsData/poland/coalition_declarations_2023.md` §12; `COMPLETED.md` §778-§780, §783, §784.
+  1. *US-3 reading 3:* NARA names 2016's seven faithless votes' recipients, but only *Chiafalo* names electors (three of seven) | accept as built - the three named, the four recorded as unnamed | four names absent from a record; no game value moves (the electors are not modelled). PROVISIONAL.
+  2. *§784 (1):* a line starts only on words naming the party (a leader's name keys it) | as built | facts 8-9 start later (late June or July 2023); no polling-day line moves. PROVISIONAL.
+  3. *§784 (2):* 27 March's "interest in ministries" is no opening (it names no partner) | as built | facts 5-7 end 27 March and restart in June or August; no polling-day change. PROVISIONAL.
+  4. *§784 (3):* the 1 March quiz answer is no line | as built | fact 9 starts 1 March, fact 4 goes. PROVISIONAL.
+  5. *§784 (4):* a Rada Liderów member before 14 Feb 2023 is not "its leader" | as built | Bosak's post of 20 Jul 2022 starts fact 8 and the line stands from Poland's opening day. PROVISIONAL.
+  6. *§784 (5):* a member party's account is not the party's own | as built | facts 3-9 start in 2022; read as keying PSL and Lewica, the lines toward TD and NL turn one-way and support-blocking **on polling day** - the one reading that would move a polling-day line, unmeasured: measured before any change. PROVISIONAL.
+  7. *§784 (6):* Winnicki's line of 5 Sep 2022 is no refusal | as built | fact 3 starts then. PROVISIONAL.
+  8. *§784 (7):* refusing Solidarna Polska does not key PiS's list | as built | fact 3 starts 19 Jan 2023. PROVISIONAL.
+  9. *PiS→KO (a):* the "TVN24, PAP" credit on Kaczyński's words of 23 Jul 2023 is a relayed wire, not TVN24's own page | as built | PiS→KO starts 23 Jul instead of 8 Sep; no polling-day change. PROVISIONAL.
+  10. *PiS→KO (b):* [PIS-P1]'s Tusk passage names no power, so it is not F1's | as built | as (9), on PiS's own record. PROVISIONAL.
+  11. *US-2's shadow asymmetry:* a new game's no-policy shadow (no player) never seats the record; a shadow forked from a load does | as built, routed to §618's R5 (is the shadow seeded or forked) | a US game's "without your policies" line differs between unbroken and loaded play after the oath. PROVISIONAL (the shadow is never saved).
+  12. *§778, the base share:* the bloc vote carries no abstentions | as built | vetoes rarer than the record's. **STOPPED - not reversible**: carrying abstentions changes how every chamber votes and moves every baseline; nothing is changed.
+  13. *§778, the Tribunal:* a referral counts as not vetoed | as built | the generated veto rates change (regenerated table). PROVISIONAL.
+  14. *§778:* a backing party with no member voting puts nothing at risk | as built | every ordinary statute at risk at the pooled rate. PROVISIONAL.
+  15. *§778:* a president no party backs puts nothing at risk | as built | as (14). PROVISIONAL.
+  16. *§778, DECLARED:* a party with no position on a bill's axes counts as abstaining | as built | fewer statutes at risk. PROVISIONAL.
+  17. *§779 (F5):* losing the frame decision to the alternative is a budget adopted, not a bill lost | as built | that day's government is not put under cabinet pressure. PROVISIONAL.
+  18. *§780 (F7's world):* the acceptance world is the game's own count (KO+TD+NL forms), not the record's seats | as installed | a formation change owed. The recommendation is the status quo; **adopting the other reading is STOPPED** (a formation change across countries, pins, saves and history).
+  19. *§780 (F2):* a broadcaster's page relaying another outlet's interview dates nothing | as built | the June opening dated 26 June; no polling-day change. PROVISIONAL.
+  20. *§780 (F2):* a newspaper's own video programme is no broadcaster | as built | as (19). PROVISIONAL.
+  21. *§780:* "always wins" read as §652's condition | as built | nothing changes since §784. PROVISIONAL.
+  22. *§780:* the starts not read as F1's (NL→PiS 2021, NL→Konf's support half, KO→PiS 2022) | as built | earlier or support-blocking starts; no polling-day change. PROVISIONAL.
+  23. *§780:* [TD-P11], edited on 1 Jul 2023, dated 15 May | as built | the line starts 10 Aug 2023. PROVISIONAL.
+  24. *§780:* [KONF-I4] read as Mentzen's words verbatim | as §776 read it | matters only under (3). PROVISIONAL.
+- **G6, the order:** US-20 next - a money path: the full instrument and film proof, Poland shown unchanged on the simulation bar and on film before the per-country procedure lands, a single-agent review; then US-10, US-14 and US-32. R-US18's and R-US19's instruments (G1) are built after US-20.
+- **G7, US-32:** the GPS file fetched, its digest kept and not the raw file; a move of any party's cast reported, each move's size, before it is installed.
+- **G8, accepted as filed:** PF-18, PF-19, Smith's footnote mark, Florida's oath of 8 Jan 2019, the 2024 economic-vote note. PresidentialVoteBacktest's card and the stale texts land with US-6.
+- **G9:** no page; this register stays in the plan.
 
 **R-US20 — Midterms** *(US-13; blocks US-27)*.
 - (a) The model as it stands, with the congressional economic vote wired (Table 9.1's US legislative row, the weakest in the sample);

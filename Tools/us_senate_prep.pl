@@ -427,8 +427,9 @@ for my $x (@holders) {
     if ($caucus_seen{$x}) { $x->{caucus_by} = "the Senate Democrats' list of " . join(' and ', @{$caucus_seen{$x}}); }
     elsif ($said) { $x->{caucus_by} = $said; }
     else { problem("$x->{st} $x->{name}: an independent of the window on no Democrats' list, his caucus unsourced"); next; }
-    # applied over his whole service in the window (R-US10 (a) as read here); Sinema's is a reading put to Elias, and says so where it travels
-    $x->{caucus_by} .= ' - a reading put to Elias (R-US10): the Senate\'s page says she "would not participate in either party caucus"' if $k eq 'AZ sinema';
+    # applied over his whole service in the window (R-US10 (a) as read here); Sinema's is a READING, DECLARED by Elias's ruling G3 (s797),
+    # and says so where it travels
+    $x->{caucus_by} .= ' - a READING (Elias\'s ruling G3): with the Democrats from the day she left the party because their own list shows her; the Senate\'s page says she "would not participate in either party caucus"' if $k eq 'AZ sinema';
     $x->{caucus} = 'D';
 }
 

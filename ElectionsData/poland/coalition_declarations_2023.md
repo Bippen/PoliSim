@@ -381,6 +381,8 @@ Saved and read, dropped by the sweeps' verifiers — the files stay in the captu
 
 ## 12. Doubts — ruled by F1, F2 and F7 (2026-10-05), what is left, and what was measured
 
+*Every reading of this section stands PROVISIONAL under Elias's ruling G5 (`COMPLETED.md` §797; the plan's register of 2026-10-06): built on its recommendation, reversible; one - (5), read as keying PSL and Lewica - would move a polling-day line and is measured before any change.*
+
 **Elias's rulings:** F1 (doubt 1) *"Yes: 'keep X from power' is a red line. A party that declared it neither joins nor supports a cabinet
 that includes X. That rules out PiS+KO and brings back the real KO+TD+NL."* F2, the dating (the header). F7 (the smaller doubts) *"As you
 recommend, with one acceptance test: in a world that follows history, a Polish game's own 2023 election forms KO+TD+NL. Any doubt that

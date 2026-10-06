@@ -11,7 +11,7 @@ namespace PoliSim.Elections.Generated
     // by methods: the partial class has one static initializer, which Mono's JIT overflowed once already (UsHouseDistricts.cs).
     public static partial class UsPresidentialReturns
     {
-        public const string SenateSeatSourceDigest = "5f340964390797298b32e1db8b18eca3124593b5f161919643dbca8c474f3261";
+        public const string SenateSeatSourceDigest = "c6f8b6a247025383f1994d9cc18cce153e61c0c0b5a3b7baf44c0d1b8ad2db5e";
         public const string SenateChangeSourceDigest = "e57f762dc67f1fe0ea57edfc899ea9f20d8cf500e0c04b42824e187fd00d9419";
         public const string SenateOnSourceDigest = "608e5ba9a022561d059e2ea551252dde04a4a83413d1633f98c0d8cd00b66f5f";
         public const string SenateDivisionSourceDigest = "82ec606b6d991f932c7f0a70e4cfa4f053ed9b300763ce0f61a3a799801c07ba";
@@ -115,7 +115,7 @@ namespace PoliSim.Elections.Generated
             ("AR", 2, "Tom Cotton", "R", "-", "2015-01-03", "-", "before the window", "-", "-", "-"),
             ("AR", 3, "John Boozman", "R", "-", "2011-01-03", "-", "before the window", "-", "-", "-"),
             ("AZ", 1, "Jeff Flake", "R", "-", "2013-01-03", "2019-01-03", "before the window", "term ended", "-", "-"),
-            ("AZ", 1, "Kyrsten Sinema", "D/I", "2023-01-03", "2019-01-03", "2025-01-03", "before the window", "term ended", "D", "the Senate Democrats' list of 2024-03-18 - a reading put to Elias (R-US10): the Senate's page says she \"would not participate in either party caucus\""),
+            ("AZ", 1, "Kyrsten Sinema", "D/I", "2023-01-03", "2019-01-03", "2025-01-03", "before the window", "term ended", "D", "the Senate Democrats' list of 2024-03-18 - a READING (Elias's ruling G3): with the Democrats from the day she left the party because their own list shows her; the Senate's page says she \"would not participate in either party caucus\""),
             ("AZ", 1, "Ruben Gallego", "D", "-", "2025-01-03", "-", "general election", "-", "-", "-"),
             ("AZ", 3, "John S. McCain III", "R", "-", "1987-01-03", "2018-08-25", "before the window", "died", "-", "-"),
             ("AZ", 3, "Jon L. Kyl", "R", "-", "2018-09-04", "2018-12-31", "before the window", "term ended", "-", "-"),
