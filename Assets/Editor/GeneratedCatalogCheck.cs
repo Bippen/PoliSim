@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using PoliSim.Data;
+using PoliSim.Elections;
 using PoliSim.Elections.Generated;
 using PoliSim.Data.Generated;
 using UnityEngine;
@@ -124,6 +125,7 @@ namespace PoliSim.EditorTools
             failures += CheckGermanLaender(sb);   // PS-4 (§688): the Länder catalogs
             failures += CheckUsPresidentialReturns(sb);   // PS-6 US-3 (§786): the US presidential returns
             failures += CheckUsHouseDistricts(sb);   // PS-6 US-11 (§790): the House by district, its maps, its record
+            failures += CheckUsSenate(sb);   // PS-6 US-12 (§792): the Senate by state and by date - the roster diagnostic
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -814,6 +816,202 @@ namespace PoliSim.EditorTools
                         + "the CSVs'; each election 435 races, each state numbered to its seats; the winners count to the House Historian's division: {4}; the "
                         + "districts sum to the House rows by state\n",
                 UsPresidentialReturns.HouseRawSources.Length, races.Count, maps.Count, record.Count, string.Join(", ", lines.ToArray())));
+            return 0;
+        }
+
+        /// <summary>The Senate by state and by date (PS-6 US-12, §792) against its CSVs and its pages - and, as US-12's roster diagnostic, the roster
+        /// derived again here from the seat rows alone on every named day: 100 seats, each state in two classes, the classes 33, 33 and 34 states,
+        /// the counts by class and party and with the independents in their caucus (R-US10 (a)) the generated row's; the US start among the
+        /// days, the day <c>WorldClock.StartDate</c> gives; and the stretches on which [SEN-DIV]'s line holds, derived again over every day of each Congress to the record's
+        /// reach, the rows those stretches one for one.</summary>
+        private static int CheckUsSenate(StringBuilder sb)
+        {
+            sb.Append("\n=== The US Senate by state and by date against its sources (US-12's roster diagnostic) ===\n");
+            string usa = Path.Combine(Directory.GetCurrentDirectory(), "ElectionsData", "usa");
+            var wrong = new List<string>();
+            foreach ((string path, string sha) in UsPresidentialReturns.SenateRawSources)
+            {
+                string full = Path.Combine(usa, path.Replace('/', Path.DirectorySeparatorChar));
+                string onDisk = File.Exists(full) ? ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(full)) : null;
+                if (onDisk == null) { wrong.Add(path + " is not on disk"); }
+                else if (!string.Equals(onDisk, sha, StringComparison.OrdinalIgnoreCase)) { wrong.Add(path + " changed since generation (on disk " + onDisk + ")"); }
+            }
+
+            if (UsPresidentialReturns.SenateRawSources.Length == 0) { wrong.Add("the Senate part lists no pages, so no page was compared"); }
+
+            List<string[]> seats = ReadUsCsv(usa, "senate_seats.csv", UsPresidentialReturns.SenateSeatSourceDigest, "state,class,senator,party,independent_from,took,left,how_in,how_out,caucus,caucus_by", wrong);
+            List<string[]> changes = ReadUsCsv(usa, "senate_changes.csv", UsPresidentialReturns.SenateChangeSourceDigest, "day,state,class,kind,senator,detail", wrong);
+            List<string[]> on = ReadUsCsv(usa, "senate_on.csv", UsPresidentialReturns.SenateOnSourceDigest, "day,what,c1_d,c1_r,c1_i,c1_vacant,c2_d,c2_r,c2_i,c2_vacant,c3_d,c3_r,c3_i,c3_vacant,d,r,i,vacant,dem_caucus,rep_caucus", wrong);
+            List<string[]> division = ReadUsCsv(usa, "senate_division.csv", UsPresidentialReturns.SenateDivisionSourceDigest, "congress,d,r,i,holds_from,holds_to", wrong);
+            if (seats.Count != UsPresidentialReturns.SenateSeats.Length) { wrong.Add("seats: " + seats.Count + " CSV rows, " + UsPresidentialReturns.SenateSeats.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(seats.Count, UsPresidentialReturns.SenateSeats.Length) && wrong.Count < 12; i++)
+            {
+                var s = UsPresidentialReturns.SenateSeats[i];
+                if (!SameRow(seats[i], s.State, s.Class, s.Senator, s.Party, s.IndependentFrom, s.Took, s.Left, s.HowIn, s.HowOut, s.Caucus, s.CaucusBy)) { wrong.Add("seat row " + i + " (" + s.State + " " + s.Senator + ") differs"); }
+            }
+
+            if (changes.Count != UsPresidentialReturns.SenateChanges.Length) { wrong.Add("changes: " + changes.Count + " CSV rows, " + UsPresidentialReturns.SenateChanges.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(changes.Count, UsPresidentialReturns.SenateChanges.Length) && wrong.Count < 12; i++)
+            {
+                var c = UsPresidentialReturns.SenateChanges[i];
+                if (!SameRow(changes[i], c.Day, c.State, c.Class, c.Kind, c.Senator, c.Detail)) { wrong.Add("change row " + i + " (" + c.Day + " " + c.State + ") differs"); }
+            }
+
+            if (on.Count != UsPresidentialReturns.SenateOn.Length) { wrong.Add("named days: " + on.Count + " CSV rows, " + UsPresidentialReturns.SenateOn.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(on.Count, UsPresidentialReturns.SenateOn.Length) && wrong.Count < 12; i++)
+            {
+                var o = UsPresidentialReturns.SenateOn[i];
+                if (!SameRow(on[i], o.Day, o.What, o.C1D, o.C1R, o.C1I, o.C1Vacant, o.C2D, o.C2R, o.C2I, o.C2Vacant, o.C3D, o.C3R, o.C3I, o.C3Vacant, o.D, o.R, o.I, o.Vacant, o.DemCaucus, o.RepCaucus)) { wrong.Add("named day row " + i + " (" + o.Day + ") differs"); }
+            }
+
+            if (division.Count != UsPresidentialReturns.SenateDivision.Length) { wrong.Add("division: " + division.Count + " CSV rows, " + UsPresidentialReturns.SenateDivision.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(division.Count, UsPresidentialReturns.SenateDivision.Length); i++)
+            {
+                var v = UsPresidentialReturns.SenateDivision[i];
+                if (!SameRow(division[i], v.Congress, v.D, v.R, v.I, v.HoldsFrom, v.HoldsTo)) { wrong.Add("division row " + i + " (" + v.Congress + " " + v.HoldsFrom + ") differs"); }
+            }
+
+            // the roster again, from the seat rows alone: each (state, class) its holder at the day's end - from his oath's day, not on his last.
+            // Each seat's holders in order: each took before he left, each left on or before the next one took, only the last still serving.
+            var bySeat = new SortedDictionary<string, List<int>>(StringComparer.Ordinal);
+            for (int i = 0; i < UsPresidentialReturns.SenateSeats.Length; i++)
+            {
+                var s = UsPresidentialReturns.SenateSeats[i];
+                string key = s.State + "|" + s.Class.ToString(CultureInfo.InvariantCulture);
+                if (!bySeat.TryGetValue(key, out List<int> list)) { bySeat[key] = list = new List<int>(); }
+                list.Add(i);
+            }
+
+            var seatKeys = new SortedSet<string>(bySeat.Keys, StringComparer.Ordinal);
+            foreach (KeyValuePair<string, List<int>> kv in bySeat)
+            {
+                kv.Value.Sort((a, b) => string.CompareOrdinal(UsPresidentialReturns.SenateSeats[a].Took, UsPresidentialReturns.SenateSeats[b].Took));
+                for (int j = 0; j < kv.Value.Count; j++)
+                {
+                    var s = UsPresidentialReturns.SenateSeats[kv.Value[j]];
+                    bool last = j == kv.Value.Count - 1;
+                    if (s.Left != "-" && string.CompareOrdinal(s.Took, s.Left) >= 0) { wrong.Add(kv.Key + ": " + s.Senator + " took " + s.Took + ", not before he left " + s.Left); }
+                    if (!last && (s.Left == "-" || string.CompareOrdinal(s.Left, UsPresidentialReturns.SenateSeats[kv.Value[j + 1]].Took) > 0)) { wrong.Add(kv.Key + ": " + s.Senator + " left " + s.Left + ", after " + UsPresidentialReturns.SenateSeats[kv.Value[j + 1]].Senator + " took " + UsPresidentialReturns.SenateSeats[kv.Value[j + 1]].Took); }
+                    if (last && s.Left != "-") { wrong.Add(kv.Key + ": its last holder " + s.Senator + " left " + s.Left); }
+                }
+            }
+
+            int[] Count(string day)   // D, R, I, vacant by class 1-3 (12 numbers), then the independents in the Democrats' caucus
+            {
+                var n = new int[13];
+                foreach (KeyValuePair<string, List<int>> kv in bySeat)
+                {
+                    int cl = int.Parse(kv.Key.Substring(kv.Key.IndexOf('|') + 1), CultureInfo.InvariantCulture);
+                    string party = "-";
+                    bool demCaucus = false;
+                    int holders = 0;
+                    foreach (int i in kv.Value)
+                    {
+                        var s = UsPresidentialReturns.SenateSeats[i];
+                        if (string.CompareOrdinal(s.Took, day) > 0 || (s.Left != "-" && string.CompareOrdinal(s.Left, day) <= 0)) { continue; }
+                        holders++;
+                        party = s.Party == "D/I" ? (string.CompareOrdinal(day, s.IndependentFrom) >= 0 ? "I" : "D") : s.Party;
+                        demCaucus = s.Caucus == "D";
+                    }
+
+                    if (holders > 1 && wrong.Count < 12) { wrong.Add(day + ": " + kv.Key + " has " + holders + " holders"); }
+                    int col = party == "D" ? 0 : party == "R" ? 1 : party == "I" ? 2 : 3;
+                    if (cl >= 1 && cl <= 3) { n[(cl - 1) * 4 + col]++; }
+                    if (party == "I" && demCaucus) { n[12]++; }
+                }
+
+                return n;
+            }
+
+            var statesOf = new Dictionary<string, SortedSet<int>>(StringComparer.Ordinal);
+            var classStates = new int[4];
+            foreach (string key in seatKeys)
+            {
+                string[] k = key.Split('|');
+                int cl = int.Parse(k[1], CultureInfo.InvariantCulture);
+                if (!statesOf.TryGetValue(k[0], out SortedSet<int> set)) { statesOf[k[0]] = set = new SortedSet<int>(); }
+                set.Add(cl);
+                if (cl >= 1 && cl <= 3) { classStates[cl]++; }
+            }
+
+            if (statesOf.Count != 50) { wrong.Add(statesOf.Count + " states hold seats, not 50"); }
+            foreach (KeyValuePair<string, SortedSet<int>> kv in statesOf) { if (kv.Value.Count != 2) { wrong.Add(kv.Key + " holds classes " + string.Join(",", kv.Value) + ", not two"); } }
+            if (classStates[1] != 33 || classStates[2] != 33 || classStates[3] != 34) { wrong.Add(F("the classes hold {0}, {1} and {2} states, not 33, 33 and 34", classStates[1], classStates[2], classStates[3])); }
+
+            var lines = new List<string>();
+            foreach (var o in UsPresidentialReturns.SenateOn)
+            {
+                int[] n = Count(o.Day);
+                int seatsThatDay = 0;
+                for (int j = 0; j < 12; j++) { seatsThatDay += n[j]; }
+                int[] want = { o.C1D, o.C1R, o.C1I, o.C1Vacant, o.C2D, o.C2R, o.C2I, o.C2Vacant, o.C3D, o.C3R, o.C3I, o.C3Vacant };
+                for (int j = 0; j < 12; j++) { if (n[j] != want[j]) { wrong.Add(o.Day + ": derived again, class " + (j / 4 + 1) + " " + "DRI-"[j % 4] + " " + n[j] + ", the row's " + want[j]); break; } }
+                int d = n[0] + n[4] + n[8], r = n[1] + n[5] + n[9], ind = n[2] + n[6] + n[10], vac = n[3] + n[7] + n[11];
+                if (seatsThatDay != 100) { wrong.Add(o.Day + ": " + seatsThatDay + " seats, not 100"); }
+                if (d != o.D || r != o.R || ind != o.I || vac != o.Vacant || d + n[12] != o.DemCaucus || r != o.RepCaucus) { wrong.Add(F("{0}: D {1} R {2} I {3} vacant {4}, caucus DEM {5}; the row's D {6} R {7} I {8} vacant {9}, DEM {10} REP {11}", o.Day, d, r, ind, vac, d + n[12], o.D, o.R, o.I, o.Vacant, o.DemCaucus, o.RepCaucus)); }
+                if (o.Day == "2024-03-12" || o.Day == "2025-01-03") { lines.Add(F("{0} D {1} R {2} I {3}{4} (with their caucus DEM {5} REP {6})", o.Day, d, r, ind, vac > 0 ? " vacant " + vac : "", o.DemCaucus, o.RepCaucus)); }
+            }
+
+            string start = WorldClock.StartDate(CountryId.USA).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            bool hasStart = false, hasOpening = false;
+            foreach (var o in UsPresidentialReturns.SenateOn)
+            {
+                if (o.Day == start && o.What.StartsWith("the US start", StringComparison.Ordinal)) { hasStart = true; }
+                if (o.Day == "2025-01-03") { hasOpening = true; }
+            }
+
+            if (!hasStart) { wrong.Add("no named day is the US start " + start + " (WorldClock.StartDate) - the tool's day and the clock's have parted"); }
+            if (!hasOpening) { wrong.Add("no named day is 2025-01-03, the 119th Congress's opening"); }
+
+            // [SEN-DIV]: the stretches derived again, every day of each Congress to the record's reach, and held to the rows one for one
+            string reach = null;
+            int reaches = 0;
+            foreach (var o in UsPresidentialReturns.SenateOn) { if (o.What.StartsWith("the record's reach", StringComparison.Ordinal)) { reach = o.Day; reaches++; } }
+            if (reaches != 1) { wrong.Add(reaches + " named day(s) are the record's reach, not one"); }
+            var span = new SortedDictionary<int, (string From, string To)> { [118] = ("2023-01-03", "2025-01-02"), [119] = ("2025-01-03", reach ?? "2025-01-03") };
+            var lineOf = new Dictionary<int, (int D, int R, int I)>();
+            var rowsOf = new Dictionary<int, List<string>>();
+            foreach (var v in UsPresidentialReturns.SenateDivision)
+            {
+                if (!span.ContainsKey(v.Congress)) { wrong.Add("[SEN-DIV] a row for the " + v.Congress + "th Congress, not the 118th or 119th"); continue; }
+                if (lineOf.TryGetValue(v.Congress, out (int D, int R, int I) l) && (l.D != v.D || l.R != v.R || l.I != v.I)) { wrong.Add("[SEN-DIV] " + v.Congress + ": two lines"); }
+                lineOf[v.Congress] = (v.D, v.R, v.I);
+                if (!rowsOf.TryGetValue(v.Congress, out List<string> rs)) { rowsOf[v.Congress] = rs = new List<string>(); }
+                rs.Add(v.HoldsFrom + ".." + v.HoldsTo);
+            }
+
+            foreach (KeyValuePair<int, (string From, string To)> c in span)
+            {
+                if (!lineOf.TryGetValue(c.Key, out (int D, int R, int I) line)) { wrong.Add("[SEN-DIV] no row for the " + c.Key + "th Congress"); continue; }
+                var runs = new List<string>();
+                string runFrom = null, prev = null;
+                for (DateTime d = DateTime.ParseExact(c.Value.From, "yyyy-MM-dd", CultureInfo.InvariantCulture), end = DateTime.ParseExact(c.Value.To, "yyyy-MM-dd", CultureInfo.InvariantCulture); d <= end; d = d.AddDays(1))
+                {
+                    string day = d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    int[] n = Count(day);
+                    bool holds = n[0] + n[4] + n[8] == line.D && n[1] + n[5] + n[9] == line.R && n[2] + n[6] + n[10] == line.I && n[3] + n[7] + n[11] == 0;
+                    if (holds && runFrom == null) { runFrom = day; }
+                    if (!holds && runFrom != null) { runs.Add(runFrom + ".." + prev); runFrom = null; }
+                    prev = day;
+                }
+
+                if (runFrom != null) { runs.Add(runFrom + ".." + prev); }
+                string got = string.Join(", ", runs), rows = rowsOf.TryGetValue(c.Key, out List<string> rr) ? string.Join(", ", rr) : "";
+                if (got != rows) { wrong.Add(F("[SEN-DIV] {0}: D {1} R {2} I {3} holds {4} derived again, the rows say {5}", c.Key, line.D, line.R, line.I, got.Length == 0 ? "on no day" : got, rows)); }
+            }
+
+            if (UsPresidentialReturns.SenateOn.Length == 0) { wrong.Add("the Senate part names no day, so nothing was counted"); }
+            if (wrong.Count > 0)
+            {
+                Debug.LogError("CATALOGCHECK: UsPresidentialReturns (the Senate by state and by date) - " + string.Join("; ", wrong.ToArray()) + ". Re-run Tools/us_senate_prep.pl after reading the diff.");
+                sb.Append(F("    ⚠ UsPresidentialReturns, the Senate by state and by date: {0} disagreement(s)\n", wrong.Count));
+                return 1;
+            }
+
+            sb.Append(F("    UsPresidentialReturns, the Senate by state and by date: {0} page(s) the bytes the run read; {1} senator(s), {2} change(s), {3} named day(s), "
+                        + "{4} [SEN-DIV] stretch(es), every figure the CSVs'; the roster derived again from the seats - each seat its holders in order, never two at once: 100 seats on every named day, each state in two "
+                        + "classes, the classes 33, 33 and 34 states; {5}; the US start the clock's ({6})\n",
+                UsPresidentialReturns.SenateRawSources.Length, seats.Count, changes.Count, on.Count, division.Count, string.Join("; ", lines.ToArray()), start));
             return 0;
         }
 
