@@ -1132,9 +1132,9 @@ namespace PoliSim.Testing
                             yield return Capture(stem + "_dragged");
                             Debug.Log("SHOT: P4-1 - the Income Tax draft moved +5 for the mid-drag frame; the readout cell shows the draft in the draft cue, the track unmoved.");
                             AssertLedgerGeometryStable(restGeometry, stem);
-                            // §768 (Elias's ruling D4): where the President holds a veto the drafted rate is the budget's separate tax act - the
+                            // §768 (Elias's ruling D4): where the procedure is the Sejm's budget act and statutes (Poland, US-20) the drafted rate is the budget's separate tax act - the
                             // If passed count's slip pinned on the same draft, so its tax act line (and his answer) is on film, then let go.
-                            if (PresidentialVeto.Applies(_countryId))
+                            if (WorldClock.StatutePartsAreActs(_countryId))   // US-20: Poland's procedure, not its veto
                             {
                                 MethodInfo pinTaxAct = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
                                 FieldInfo taxActPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);

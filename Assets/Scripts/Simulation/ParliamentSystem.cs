@@ -903,13 +903,13 @@ namespace PoliSim.Simulation
             return concern;
         }
 
-        /// <summary>§768 (Elias's ruling D4; the review's defect 1): THE BUDGET ACT a chamber votes - where the President holds a veto the game runs
-        /// (Poland) and the bill changes what a statute sets, the bill's spending alone (§773, Elias's ruling E2: "only spending stays in the budget act" -
+        /// <summary>§768 (Elias's ruling D4; the review's defect 1): THE BUDGET ACT a chamber votes - where the country's procedure is the Sejm's budget act
+        /// and its statutes (Poland; <see cref="Elections.WorldClock.StatutePartsAreActs"/>, US-20) and the bill changes what a statute sets, the bill's spending alone (§773, Elias's ruling E2: "only spending stays in the budget act" -
         /// the rates, the pension age, the benefit levels and the fund's rules are each their own act, voted apart - the benefit levels and the fund's rules
         /// RULED statute parts by F6: "'Spending' means the budget act's appropriations"); otherwise the bill itself.</summary>
         public static BudgetBill BudgetActOf(Country country, BudgetBill bill)
         {
-            if (bill == null || !Elections.PresidentialVeto.Applies(country.Id)) { return bill; }
+            if (bill == null || !Elections.WorldClock.StatutePartsAreActs(country.Id)) { return bill; }   // US-20: Poland's procedure, not its veto
             foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (bill.Changes(part, country)) { return bill.SpendingOnly(country); } }
             return bill;
         }

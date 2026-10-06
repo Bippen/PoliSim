@@ -9297,7 +9297,7 @@ namespace PoliSim.UI
                 string budgetLabel = $"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).";
                 pending.Add((budgetLabel,
                     ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct, budgetBill.DaysRemaining));   // §761: the budget act is never vetoed (Art. 224); §768/§773: the spending alone, each statute part its own act
-                if (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId))
+                if (PoliSim.Elections.WorldClock.StatutePartsAreActs(PlayerCountryId))   // US-20: Poland's procedure, not its veto
                 {
                     // §768 (Elias's ruling D4), §773 (E2): each statute part Poland's budget changes rides with it as its own act - voted if it passes, put to the President
                     foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts)
@@ -9608,7 +9608,7 @@ namespace PoliSim.UI
             BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
             if (pending == null || !pending.GovernmentBill) { DrawLeverLock(); }
             else if (tabled != null) { GUILayout.Label($"YOUR ALTERNATIVE IS TABLED · THE CHAMBER DECIDES IN {pending.DaysRemaining} DAY(S)", caption); }
-            else if (PoliSim.Elections.WorldClock.BudgetProcedureOf(PlayerCountryId) == PoliSim.Elections.WorldClock.BudgetProcedure.Unsourced) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
+            else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
             else if (PoliSimWidgets.Button("Table an Alternative Budget", _implementButtonStyle, GUILayout.Width(CtaWidth())))
             {
                 if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }

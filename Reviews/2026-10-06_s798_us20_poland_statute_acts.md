@@ -1,0 +1,26 @@
+# Review - §798, PS-6 US-20: Poland's statute acts keyed on Poland's own rule (2026-10-06)
+
+One adversarial reviewer (a single agent, as Elias's ruling G6 asks for this money path) read the change before its comment fixes: `Assets/Scripts/Elections/WorldClock.cs`, `Assets/Scripts/Simulation/SimulationManager.cs`, `Assets/Scripts/Simulation/ParliamentSystem.cs`, `Assets/Scripts/UI/GameController.cs`, `Assets/Scripts/UI/GameController.BudgetV35.cs`, `Assets/Scripts/UI/GameController.Desk.cs`, `Assets/Scripts/Testing/UiScreenshotDriver.cs`, `Assets/Editor/GovernmentBudgetBillDiagnostic.cs`, and the plan's US-20 entry. Its report - its wording kept, its layout lightly reformatted - then what was done.
+
+## The report
+
+**No defects. Poland's behaviour is byte-equivalent, and so is every other country's.** Each re-keyed predicate selects exactly the countries its predecessor did, for all six `CountryId` values: `PresidentialVeto.Applies(c)` is `c == Poland` and the new `StatutePartsAreActs(c)` is true only for Poland - the same set at all seven re-keyed split sites; the old `BudgetProcedureOf(c) == Unsourced` was true for every country but Sweden, Poland included, and the new `!WeighsAlternative(c)` is too - the same set at the five sites (Desk's `!= Unsourced` matches `WeighsAlternative`). The only other reader, `SimulationManager` 1216/1218 (`== RiksdagFrameDecision && alternative != null`), never saw Poland as the frame decision. The USA stays `Unsourced`: no US budget reaches `BudgetActOf`, `PolishStatuteActs` or `PartnerTaxAct`. The veto stays on `Applies` at the gate (SimulationManager 1453) and `ChamberVerdicts.Veto` (119) - veto readers, not split readers.
+
+1. **Note - a log line changes for Poland** (SimulationManager 1184): "... decides in N day(s) by Unsourced" now ends "by SejmBudgetActAndStatutes"; printed only where the AI governs the player's Poland; nothing parses it (greps of Tools/, Assets/Editor, Assets/Scripts/Testing for "BUDGET:", "by Unsourced", "decides in"); not saved, not on screen. Mention it in the record.
+2. **Minor - comments still saying the split keys on the veto:** ParliamentSystem 906-907 (`BudgetActOf`'s summary), GameController.BudgetV35 1043, UiScreenshotDriver 1135.
+3. **Minor - comments still equating "procedure not sourced" with "voted alone":** SimulationManager 1168-1169 (`TableGovernmentBudget`'s summary), 1261, GameController.Desk 1065.
+4. **Note for Elias (G6 keeps them):** three player strings now sit on predicates that no longer mean what they say - "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE" (SimulationManager 1194, GameController 9611, BudgetV35 881); the saved division title "the old budget stands (this country's procedure is not yet sourced)" (SimulationManager 1264); the census clause "WHERE THE PRESIDENT HOLDS A VETO, THE RATES' PART IS A TAX ACT" (BudgetV35 329), now keyed on the procedure - the same countries today.
+5. **Note - a pre-existing wrong sentence outside the diff:** GameController 9717 (`BuildBudgetBillStatusText`) tells every country's player "Your draft below can be tabled as the alternative" - false in Poland, Germany and the USA, where `TableShadowBudget` refuses. Not a regression; for Elias's list.
+6. **Minor - the plan's reader inventory is stale:** USA_STAGE_PLAN.md line 98 says Poland's split "keys on" `PresidentialVeto.Applies` (with `ChamberVerdicts.Veto` and the veto gate among the sites); the change rightly leaves those two on `Applies` - state it in the record and mark line 98 superseded.
+7. **Minor - the diagnostic's additions are correct and non-vacuous** (six real `CountryId` values, no sentinel; the join check fails if Poland lost the split or any country gained the split or the alternative), but test only the predicates: no check exercises Poland's behaviour itself, e.g. its `TableShadowBudget` refusal string. Line 101's US check repeats the loop's. The file's header summary does not mention US-20.
+8. **Note:** `ProjectSettings/ProjectAuditorSettings.asset` shows modified with an empty content diff - do not stage it.
+
+**Checked and fine:** every `BudgetProcedure` reader in Assets (no `switch`, no field of the type, so no serialization or save field; nothing hashes it); the new enum value appended (`Unsourced` 0, `RiksdagFrameDecision` 1 unchanged); no RNG stream, draw key or save version touched; every country-gated split reader re-keyed (ParliamentSystem 912, SimulationManager 1299 and 4874, BudgetV35 328 and 1046, GameController 9300, UiScreenshotDriver 1137), the rest ungated or downstream of a gated call or veto-only; the preview votes no act; the compile; CRLF throughout.
+
+## What was done
+
+- **2, 3:** the six comments reworded - the split "where the procedure is the Sejm's budget act and statutes (Poland, US-20)", the bill alone "where the chamber weighs no alternative (`WeighsAlternative`)".
+- **6:** the plan's line 98 says the split keyed on `Applies` until US-20 (§798) and the gate and `ChamberVerdicts.Veto` stay on it; the record states the departure from the entry's list.
+- **7:** the diagnostic now tables Poland's government budget and asserts its alternative refused in the exact words it always had; its header summary names US-20.
+- **1, 4, 5:** carried to the record and to Elias, unchanged by G6.
+- **8:** not staged.

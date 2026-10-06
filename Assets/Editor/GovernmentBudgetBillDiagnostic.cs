@@ -15,7 +15,9 @@ namespace PoliSim.EditorTools
     /// on the bill's day the frame decision (Riksdagsordningen 11 kap. 18 § and 10 §, sweden/budget_procedure.md) adopts the one the chamber
     /// prefers and records the division with every party's side and reason; the alternative is cleared. Both ways: with M seated (governing) the
     /// player's own process opens and no government bill is tabled; with NO player nothing is tabled (player path only - the dumps stay
-    /// byte-identical); Germany's procedure is unsourced, so an alternative is refused with the reason and the government's bill is voted alone.
+    /// byte-identical); Germany's procedure is unsourced, so an alternative is refused with the reason and the government's bill is voted alone. US-20:
+    /// Poland's procedure is the Sejm's budget act and its statute acts, the split keyed on it and not on the veto; only Sweden weighs an alternative,
+    /// and Poland's government budget refuses one with the same words as before.
     /// </summary>
     public static class GovernmentBudgetBillDiagnostic
     {
@@ -94,6 +96,24 @@ namespace PoliSim.EditorTools
 
                 // 3. Germany: the procedure is unsourced - an alternative is refused with the reason; the government's bill is voted alone.
                 Check(WorldClock.BudgetProcedureOf(CountryId.Germany) == WorldClock.BudgetProcedure.Unsourced, "Germany's procedure is not yet sourced");
+
+                // US-20: Poland's statute-act procedure keyed on its own rule - the split is the procedure's, the veto PresidentialVeto's; the USA routes no
+                // budget through Poland's acts; a country's acts go to a President only where his veto is run; only Sweden weighs an alternative.
+                Check(WorldClock.BudgetProcedureOf(CountryId.Poland) == WorldClock.BudgetProcedure.SejmBudgetActAndStatutes, "Poland's procedure is the Sejm's budget act and its statute acts");
+                Check(WorldClock.BudgetProcedureOf(CountryId.USA) == WorldClock.BudgetProcedure.Unsourced && !WorldClock.StatutePartsAreActs(CountryId.USA), "the USA's procedure is not yet sourced (US-22) - its budget travels in no Polish act");
+                var actsWhere = new System.Collections.Generic.List<string>(); var weighsWhere = new System.Collections.Generic.List<string>();
+                foreach (CountryId c in (CountryId[])Enum.GetValues(typeof(CountryId)))
+                {
+                    if (WorldClock.StatutePartsAreActs(c)) { actsWhere.Add(c.ToString()); Check(PresidentialVeto.Applies(c), F("{0}: its statute acts go to a President whose veto the game runs", c)); }
+                    if (WorldClock.WeighsAlternative(c)) { weighsWhere.Add(c.ToString()); }
+                }
+                Check(string.Join(",", actsWhere) == "Poland" && string.Join(",", weighsWhere) == "Sweden", F("statute acts in {0}; an alternative weighed in {1}", string.Join(",", actsWhere), string.Join(",", weighsWhere)));
+                // Poland's own behaviour, unchanged: its government's budget before the chamber, an alternative refused in the words it always had
+                Country poland = world.GetCountry(CountryId.Poland);
+                sim.TableGovernmentBudget(poland);
+                Check(sim.GetPendingBudgetBill(CountryId.Poland) != null && sim.GetPendingBudgetBill(CountryId.Poland).GovernmentBill, "Poland's government tables its budget");
+                Check(!sim.TableShadowBudget(CountryId.Poland, new BudgetBill(), out string plRefused) && plRefused == "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE",
+                    F("Poland refuses an alternative in its old words: {0}", plRefused ?? "NONE"));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { UnityEngine.Object.DestroyImmediate(go); EnergyMarket.ResetTurnState(); }

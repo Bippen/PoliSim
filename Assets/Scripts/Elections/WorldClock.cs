@@ -347,12 +347,25 @@ namespace PoliSim.Elections
         /// PS-3e (§632, ruled): HOW A CHAMBER DECIDES ITS BUDGET - data per country. Sweden's is the Riksdag's frame decision (Riksdagsordningen 11 kap. 18 §
         /// [RO-11-18], the vote by 11 kap. 10 § [RO-11-10], quoted in `sweden/budget_procedure.md`): the government's budget proposition and the parties'
         /// alternative budget motions go to one decision on the frames, the alternatives eliminated in prior votes and the one the chamber prefers adopted -
-        /// the government then governs on those frames. Every other country's procedure is data when its stage lands; until it is sourced the government's
-        /// bill is voted alone and a failed budget leaves the old one standing, stated.
+        /// the government then governs on those frames. Poland's (US-20; §768, Elias's ruling D4, and §773, E2): the Sejm's budget act carries the spending
+        /// alone and each statute part the bill changes - the rates, the pension age, the benefit levels, the fund's rules - travels as an act of its own,
+        /// voted apart and put to the President (`SimulationManager.PolishStatuteActs`); its chamber's choice between the government's bill and an
+        /// alternative is not sourced, so the government's bill is voted alone. Every other country's procedure is data when its stage lands (the US
+        /// Congress's at US-22); until it is sourced the government's bill is voted alone and a failed budget leaves the old one standing, stated.
         /// </summary>
-        public enum BudgetProcedure { Unsourced, RiksdagFrameDecision }
+        public enum BudgetProcedure { Unsourced, RiksdagFrameDecision, SejmBudgetActAndStatutes }
 
-        public static BudgetProcedure BudgetProcedureOf(CountryId id) => id == CountryId.Sweden ? BudgetProcedure.RiksdagFrameDecision : BudgetProcedure.Unsourced;
+        public static BudgetProcedure BudgetProcedureOf(CountryId id) => id == CountryId.Sweden ? BudgetProcedure.RiksdagFrameDecision
+            : id == CountryId.Poland ? BudgetProcedure.SejmBudgetActAndStatutes : BudgetProcedure.Unsourced;
+
+        /// <summary>US-20: a budget's statute parts travel as acts of their own (Poland's procedure). Every reader of the split keys on this - the budget act,
+        /// the statute acts, the Finance partner's tax act, the Budget page, the pending cards, the film's staging - never on the President's veto, which is
+        /// <see cref="PresidentialVeto.Applies"/>'s alone.</summary>
+        public static bool StatutePartsAreActs(CountryId id) => BudgetProcedureOf(id) == BudgetProcedure.SejmBudgetActAndStatutes;
+
+        /// <summary>US-20: the chamber weighs a tabled alternative against the government's budget (Sweden's frame decision); everywhere else an alternative
+        /// is refused and the government's bill is voted alone - the readers that asked "is the procedure unsourced" ask this.</summary>
+        public static bool WeighsAlternative(CountryId id) => BudgetProcedureOf(id) == BudgetProcedure.RiksdagFrameDecision;
 
         /// <summary>The governments of record per country, oldest first. Keys are the roster's; a cabinet the record cannot name is unsourced (the formation stands in).</summary>
         public static IReadOnlyList<GovernmentOfRecord> Governments(CountryId id)

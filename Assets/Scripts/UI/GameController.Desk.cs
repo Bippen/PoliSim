@@ -1062,7 +1062,7 @@ namespace PoliSim.UI
         /// §694 (ruled): the effects card's subject by the player's role (<see cref="DeskEffectsNote.SubjectOf"/>), with what its note may name: the
         /// rate lever the role holds (<paramref name="rateLever"/> - the dial where the country sets its own rate, the push in the eurozone, none where
         /// a chair sets it or the player does not govern: the rate is the prime minister's lever, `DrawLeverLock`'s), whether the role may table an
-        /// alternative budget (not a junior partner - its voice is the coalition agreement - and the country's procedure sourced, `TableShadowBudget`'s
+        /// alternative budget (not a junior partner - its voice is the coalition agreement - and a chamber that weighs an alternative, `WeighsAlternative` (US-20), `TableShadowBudget`'s
         /// own refusals), and the days until the chamber decides the budget before it. Replaces the test that read the rate input alone, which a
         /// budget draft never reached although it moves the estimate (P3-C1).
         /// </summary>
@@ -1073,7 +1073,7 @@ namespace PoliSim.UI
                 ? (CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world) ? DeskEffectsNote.RatePush : DeskEffectsNote.RateDial)
                 : null;
             bool junior = _playerCountry.Government != null && _playerCountry.Government.RoleOf(_playerCountry.PlayerPartyAbbrev) == PoliSim.Elections.PlayerRole.JuniorPartner;
-            mayTable = !governs && !junior && PoliSim.Elections.WorldClock.BudgetProcedureOf(PlayerCountryId) != PoliSim.Elections.WorldClock.BudgetProcedure.Unsourced;
+            mayTable = !governs && !junior && PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId);   // US-20: the chamber weighs an alternative
             BudgetBill pending = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
             chamberDays = pending != null ? pending.DaysRemaining : 0;

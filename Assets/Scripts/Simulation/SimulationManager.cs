@@ -1165,8 +1165,9 @@ namespace PoliSim.Simulation
         /// (AiFinanceMinistry, the EU rule / the US caps) is laid before the chamber as the government's budget bill instead of written into the
         /// book at the turn boundary; the player's party may table an alternative while it stands (<see cref="TableShadowBudget"/>), and on the
         /// bill's day the chamber decides by the country's own procedure (<see cref="Elections.WorldClock.BudgetProcedureOf"/>): Sweden's frame decision sets
-        /// the government's frames against the alternative and adopts the one the chamber prefers; a country whose procedure is not yet sourced
-        /// votes the government's bill alone, and a failed budget leaves the old one standing, stated in the division's own title.
+        /// the government's frames against the alternative and adopts the one the chamber prefers; a country whose chamber weighs no alternative
+        /// (<see cref="Elections.WorldClock.WeighsAlternative"/> - Poland's procedure included, US-20) votes the government's bill alone, and a failed
+        /// budget leaves the old one standing, stated in the division's own title.
         /// </summary>
         public void TableGovernmentBudget(Country country)
         {
@@ -1191,7 +1192,7 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (country == null || bill == null) { refusedBecause = "no country"; return false; }
             if (!_pendingBudgetBillByCountry.TryGetValue(countryId, out BudgetBill pending) || !pending.GovernmentBill) { refusedBecause = "NO GOVERNMENT BUDGET IS BEFORE THE CHAMBER"; return false; }
-            if (Elections.WorldClock.BudgetProcedureOf(countryId) == Elections.WorldClock.BudgetProcedure.Unsourced) { refusedBecause = "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE"; return false; }
+            if (!Elections.WorldClock.WeighsAlternative(countryId)) { refusedBecause = "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE"; return false; }   // US-20: the chamber weighs no alternative
             if (_pendingBudgetAlternativeByCountry.ContainsKey(countryId)) { refusedBecause = "YOUR ALTERNATIVE IS ALREADY TABLED"; return false; }
             if (country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.JuniorPartner) { refusedBecause = "JUNIOR PARTNER · YOUR BUDGET VOICE IS THE COALITION AGREEMENT"; return false; }   // PS-3f (§633, ruled)
             bill.TabledBy = country.PlayerPartyAbbrev;
@@ -1258,9 +1259,9 @@ namespace PoliSim.Simulation
                 Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
                 return;
             }
-            // The government's bill alone (no alternative tabled, or a procedure not yet sourced): for or against; a failed budget leaves the old one standing, stated.
+            // The government's bill alone (no alternative tabled, or a chamber that weighs none - WeighsAlternative, US-20): for or against; a failed budget leaves the old one standing, stated.
             bool passed = ParliamentSystem.WouldBillPass(country, concernG);
-            string title = passed ? "Annual budget: the government's bill adopted" : (procedure == Elections.WorldClock.BudgetProcedure.Unsourced
+            string title = passed ? "Annual budget: the government's bill adopted" : (!Elections.WorldClock.WeighsAlternative(country.Id)   // US-20: no alternative procedure sourced
                 ? "Annual budget: the government's bill failed - the old budget stands (this country's procedure is not yet sourced)"
                 : "Annual budget: the government's bill failed with no alternative tabled - the old budget stands");
             ParliamentSystem.RecordDivision(country, title, concernG, passed, CurrentDate);
@@ -1296,7 +1297,7 @@ namespace PoliSim.Simulation
         private BudgetBill PolishStatuteActs(Country country, BudgetBill bill, out List<BudgetBill.StatutePart> fell, IReadOnlyList<BudgetBill.StatutePart> only = null)
         {
             fell = new List<BudgetBill.StatutePart>();
-            if (bill == null || !Elections.PresidentialVeto.Applies(country.Id)) { return bill; }
+            if (bill == null || !Elections.WorldClock.StatutePartsAreActs(country.Id)) { return bill; }   // US-20: the split keys on the procedure, not the veto
             BudgetBill applied = bill;
             foreach (BudgetBill.StatutePart part in only ?? BudgetBill.StatuteParts)
             {
@@ -4871,7 +4872,7 @@ namespace PoliSim.Simulation
                 FinancePartner.Written partnerWrote = PartnerStepsAtBoundary(country) ? FinancePartner.Apply(country, decision, ComingBoundaryDate) : null;
                 // §773 (Elias's ruling E2): "A rate moves only through the tax act (Sejm vote, then the veto), whoever proposes it." In the player's Poland
                 // the step's household rates are a tax act the partner's party tables, voted and put to the President before the turn applies them
-                if (partnerWrote != null && partnerWrote.Taxes.Count > 0 && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && Elections.PresidentialVeto.Applies(country.Id))
+                if (partnerWrote != null && partnerWrote.Taxes.Count > 0 && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && Elections.WorldClock.StatutePartsAreActs(country.Id))
                 {
                     PartnerTaxAct(country, decision, partnerWrote, ComingBoundaryDate);
                 }

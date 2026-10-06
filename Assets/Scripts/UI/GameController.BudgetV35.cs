@@ -325,7 +325,7 @@ namespace PoliSim.UI
                     Census = (mine ? "YOU HOLD FINANCE AS A PARTNER · YOU ACT THROUGH THE STANCE ONLY" : "THE FINANCE MINISTER (" + who.ToUpperInvariant() + ") ACTS THROUGH THE STANCE ONLY · THE HEAD OF GOVERNMENT KEEPS EVERY OTHER LEVER")
                         + " · MOVED SO FAR IN THIS GOVERNMENT " + Signed(moved) + " PP · AT MOST " + UiFormat.Number(FinancePartner.StepPointsPerYear, 2) + " PP OF GDP A YEAR, THROUGH THE LINES - IN A TIGHTENING THE INCOME TAX AND VAT ONLY FOR WHAT THE LINES' LIMITS LEAVE"
                         // §773 (Elias's ruling E2): "A rate moves only through the tax act (Sejm vote, then the veto), whoever proposes it."
-                        + (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId)
+                        + (PoliSim.Elections.WorldClock.StatutePartsAreActs(PlayerCountryId)   // US-20: Poland's procedure, not its veto
                             ? " · WHERE THE PRESIDENT HOLDS A VETO, THE RATES' PART IS A TAX ACT OF ITS OWN - THE SEJM VOTES IT, THEN THE PRESIDENT; WHERE IT FALLS THE OLD RATES STAND AND ONLY THE LINES' PART COUNTS"
                             : string.Empty),
                 }, mine);
@@ -878,7 +878,7 @@ namespace PoliSim.UI
                 string line = null;
                 if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, out line); }
                 else if (tabled != null) { line = "Your alternative is tabled · the chamber decides in " + pendingBill.DaysRemaining + " day(s)"; }
-                else if (PoliSim.Elections.WorldClock.BudgetProcedureOf(PlayerCountryId) == PoliSim.Elections.WorldClock.BudgetProcedure.Unsourced) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; }
+                else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; }
                 if (line != null)
                 {
                     if (Event.current.type == EventType.Repaint)
@@ -1040,10 +1040,10 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(fx + fw + V35.Px(6f), countRow.y, Mathf.Max(1f, countRow.xMax - fx - fw - V35.Px(6f)), countH), of, V35Serif(V35.Floor, PoliSimTheme.TextMuted));
             }
             SlipAnchor(countRow, "ifpassed:count");
-            // §768 (Elias's ruling D4), §773 (E2): where the President holds a veto, each statute part the draft changes travels in its own act - the
+            // §768 (Elias's ruling D4), §773 (E2): where the procedure is the Sejm's budget act and statutes (Poland, US-20), each statute part the draft changes travels in its own act - the
             // rates, the pension age, the benefit levels, the fund's rules - its count and, F3, its veto risk as a percentage (the answer is the vote day's draw)
             var acts = new List<BudgetBill.StatutePart>();
-            if (PoliSim.Elections.PresidentialVeto.Applies(PlayerCountryId))
+            if (PoliSim.Elections.WorldClock.StatutePartsAreActs(PlayerCountryId))   // US-20: Poland's procedure, not its veto
             {
                 foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (draft.Changes(part, _playerCountry)) { acts.Add(part); } }
             }
