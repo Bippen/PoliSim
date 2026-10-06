@@ -5,4 +5,4 @@
 # it reads - core.autocrlf would hand a checkout CRLF where the digest was taken over LF.
 usa/president_by_*.csv -text
 usa/maine_districts_read_2012_2016.tsv -text
-usa/house_by_*.csv -text
+usa/house_*.csv -text

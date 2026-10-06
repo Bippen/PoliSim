@@ -9,14 +9,15 @@ namespace PoliSim.Elections.Generated
     /// <summary>PS-6 US-3 (COMPLETED.md s786): the United States' presidential elections of 2012, 2016, 2020 and 2024 by jurisdiction - SOURCED (the FEC,
     /// NARA, the Census Bureau's apportionment, Maine's and Nebraska's canvasses; `ElectionsData/usa/president_returns.md`). Beside them (US-5,
     /// s788): 2024's candidates by the FEC's workbook; the House vote by state, 2016, 2018, 2020, 2022 and 2024, by the Clerk of the House's
-    /// statistics. Generated, never hand-edited.</summary>
-    public static class UsPresidentialReturns
+    /// statistics. Generated, never hand-edited. The class is partial: US-11's House districts are its other part, UsHouseDistricts.cs, written
+    /// by Tools/us_house_prep.pl.</summary>
+    public static partial class UsPresidentialReturns
     {
         public const string YearSourceDigest = "a9f2a47b0b44e7c54d44e1c6444c79280e2d6bc6bc4664d7b5a6c9a520da1ad3";
         public const string StateSourceDigest = "8e528467db9a114470c65b5bfebdc2ef18a663095808e804a0446f9ce66238d3";
         public const string DistrictSourceDigest = "d2a5038b47b75371ff46ac070ecebfa084459f477cad3a32da5360a21fa8de5f";
         public const string CandidateSourceDigest = "7ab4864723be3cd4f28d526ef4c4b65885c8171a7e34459c778ed4a7cb979f57";
-        public const string HouseSourceDigest = "7086d4b5f944904ff2ee7cf6ed632bf79fac874ea33ff7e9ed3bc54ca1b57ff7";
+        public const string HouseSourceDigest = "6325119616a72f08065af98e1444a519155522568e2224a68df46634bb211787";
         public const string ReadTranscriptionDigest = "8cab374f770a34f72adfcd5e445b422d3cbfb69dc677b0cd559d1760727c407e";
 
         /// <summary>Every saved page the run read or relied on, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>
@@ -329,8 +330,10 @@ namespace PoliSim.Elections.Generated
         };
 
         /// <summary>US-5: the House of Representatives, a row a state a year, by the Clerk of the House's recapitulation - each party's own ballot
-        /// line, each race's final count; VotesOther every other column - the non-votes some states report and Maine's ranked-choice lines, which count
-        /// some ballots again, among them; VotesTotal the Clerk's.</summary>
+        /// line, each race as the Clerk prints it (Louisiana's runoff districts the finalists' December vote beside the others' November vote,
+        /// Maine's finalists at their last ranked-choice round - in 2022 an eliminated candidate's first-round vote beside them - Alaska's first
+        /// choices); VotesOther every other column - the non-votes some states report and Maine's ranked-choice lines, which count some ballots
+        /// again, among them; VotesTotal the Clerk's.</summary>
         public static readonly (int Year, string State, long VotesR, long VotesD, long VotesOther, long VotesTotal)[] House =
         {
             (2016, "AL", 1222018L, 621911L, 45756L, 1889685L),

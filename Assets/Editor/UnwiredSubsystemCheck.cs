@@ -289,6 +289,9 @@ namespace PoliSim.EditorTools
                     {
                         if (string.Equals(other.Key, file.Key, StringComparison.OrdinalIgnoreCase)) { continue; }
                         if (IsHarness(other.Key, scripts)) { continue; }
+                        // ⚠ A file that declares the same type is not a mention of it (§790): the parts of a partial type each name the type
+                        // in their declarations, and counting those would let the parts reach each other while nothing else reached either.
+                        if (declaredTypes.TryGetValue(other.Key, out List<string> theirs) && theirs.Contains(name)) { continue; }
                         if (CountWord(other.Value, name) == 0) { continue; }
 
                         reached = true;

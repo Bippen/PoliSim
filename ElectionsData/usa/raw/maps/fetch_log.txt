@@ -1,0 +1,18 @@
+2026-10-06T03:26:27Z	200	356926	census_rdo_congressional_districts_116th.html	https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.116th_Congress.html
+2026-10-06T03:26:30Z	200	348301	census_rdo_congressional_districts_117th.html	https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.117th_Congress.html
+2026-10-06T03:26:33Z	200	366787	census_rdo_congressional_districts_118th.html	https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.118th_Congress.html
+2026-10-06T03:26:37Z	200	376210	census_rdo_congressional_districts_119th.html	https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.119th_Congress.html
+2026-10-06T03:26:40Z	200	366684	census_rdo_congressional_districts_120th.html	https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.120th_Congress.html
+2026-10-06T03:26:43Z	200	336478	census_geography_congressional_districts.html	https://www.census.gov/programs-surveys/geography/guidance/geo-areas/congressional-dist.html
+2026-10-06T03:26:46Z	200	48263	wayback_ncleg_SL2019-249_20200430.pdf	https://web.archive.org/web/20200430044536id_/https://ncleg.gov/EnactedLegislation/SessionLaws/PDF/2019-2020/SL2019-249.pdf
+2026-10-06T03:26:51Z	200	88386	legis_la_SB8_2024_1ES.html	https://legis.la.gov/legis/BillInfo.aspx?s=241ES&b=SB8&sbi=y
+2026-10-06T03:26:55Z	200	16023	nyassembly_A09310_2023.html	https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=A09310&term=2023&Summary=Y&Actions=Y
+2026-10-06T03:26:58Z	200	77861	alison_reapportionment_block_tract.html	https://alison.legislature.state.al.us/reapportionment-block-tract
+2026-10-06T03:27:01Z	200	2279	ncsbe_uscongress_shapefiles_list.xml	https://s3.amazonaws.com/dl.ncsbe.gov?prefix=ShapeFiles/USCongress/
+2026-10-06T03:27:04Z	200	78313	supremecourt_docket_23a231.html	https://www.supremecourt.gov/search.aspx?filename=/docket/docketfiles/html/public/23a231.html
+2026-10-06T03:27:07Z	200	69264	supremecourt_docket_23a1002.html	https://www.supremecourt.gov/search.aspx?filename=/docket/docketfiles/html/public/23a1002.html
+2026-10-06T03:27:47Z	429	620	wayback_ncleg_SL2023-145_20231130.pdf	https://web.archive.org/web/20231130004402id_/https://ncleg.gov/EnactedLegislation/SessionLaws/PDF/2023-2024/SL2023-145.pdf
+2026-10-06T03:45:13Z	200	356666	census_rdo_congressional_districts_115th.html	https://www.census.gov/programs-surveys/decennial-census/about/rdo/congressional-districts.115th_Congress.html
+2026-10-06T03:49:45Z	403	4546	-	https://www.ncleg.gov/EnactedLegislation/SessionLaws/PDF/2023-2024/SL2023-145.pdf (NC S.L. 2023-145 (the law's text and ratification date); not saved)
+2026-10-06T03:49:47Z	401	0	-	https://www.legis.ga.gov/api/legislation/search?sessionId=1031&keyword=congressional (Georgia's 2023 enacting act (the legislature's search API); not saved)
+2026-10-06T03:49:50Z	403	5572	-	https://sos.ga.gov/ (Georgia's Secretary of State; not saved)

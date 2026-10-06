@@ -123,6 +123,7 @@ namespace PoliSim.EditorTools
             failures += CheckGovernmentConsumption(sb);
             failures += CheckGermanLaender(sb);   // PS-4 (§688): the Länder catalogs
             failures += CheckUsPresidentialReturns(sb);   // PS-6 US-3 (§786): the US presidential returns
+            failures += CheckUsHouseDistricts(sb);   // PS-6 US-11 (§790): the House by district, its maps, its record
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -660,6 +661,159 @@ namespace PoliSim.EditorTools
                         + "{3} district row(s), {4} candidate row(s) (their sum the jurisdictions'), {5} House row(s) (50 a year, {6} years), every figure the CSVs'; "
                         + "the allocator over the catalog gives the record's split: {7}\n",
                 UsPresidentialReturns.RawSources.Length, years.Count, states.Count, districts.Count, candidates.Count, house.Count, houseYears.Count, string.Join(", ", splits.ToArray())));
+            return 0;
+        }
+
+        /// <summary>
+        /// PS-6 US-11 (§790): the House by district - the catalog's other part (<c>UsHouseDistricts.cs</c>, written by
+        /// <c>Tools/us_house_prep.pl</c>), its own pages and three CSVs. Every page <c>HouseRawSources</c> lists is the bytes the run read; each
+        /// CSV the bytes the catalog was written with, under the heading the comparison reads, every figure the catalog's, row for row. ⚠ And what
+        /// a reader of the districts leans on: the races' years are the record's, and each maps year holds the 50 states once with 435 seats;
+        /// each election's races are 435, each state's numbered 1 to its seats that year (0 for one seat at large) by the maps' rows; no race's
+        /// parts exceed its total, nor its own lines its party's votes; every winner leads its race's deciding count (the vacant seat's
+        /// included), and a race without votes has none; the winners count to the House Historian's division, the seat its footnote leaves
+        /// vacant being the one race without a winner or the one winner it does not count; and the districts' own lines and totals sum, state
+        /// by state, to the 50 House rows of each election (US-5).
+        /// </summary>
+        private static int CheckUsHouseDistricts(StringBuilder sb)
+        {
+            sb.Append("\n=== The US House by district against its sources ===\n");
+            string usa = Path.Combine(Directory.GetCurrentDirectory(), "ElectionsData", "usa");
+            var wrong = new List<string>();
+            foreach ((string path, string sha) in UsPresidentialReturns.HouseRawSources)
+            {
+                string full = Path.Combine(usa, path.Replace('/', Path.DirectorySeparatorChar));
+                string onDisk = File.Exists(full) ? ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(full)) : null;
+                if (onDisk == null) { wrong.Add(path + " is not on disk"); }
+                else if (!string.Equals(onDisk, sha, StringComparison.OrdinalIgnoreCase)) { wrong.Add(path + " changed since generation (on disk " + onDisk + ")"); }
+            }
+
+            if (UsPresidentialReturns.HouseRawSources.Length == 0) { wrong.Add("the House part lists no pages, so no page was compared"); }
+
+            List<string[]> races = ReadUsCsv(usa, "house_districts.csv", UsPresidentialReturns.HouseDistrictSourceDigest, "year,state,district,votes_r,votes_d,votes_other,votes_total,own_r,own_d,cands_r,cands_d,final_r,final_d,winner,flags", wrong);
+            List<string[]> maps = ReadUsCsv(usa, "house_maps.csv", UsPresidentialReturns.HouseMapSourceDigest, "year,state,seats,lines_changed,source", wrong);
+            List<string[]> record = ReadUsCsv(usa, "house_years.csv", UsPresidentialReturns.HouseYearSourceDigest, "year,congress,seats_r,seats_d,seats_other,vacant", wrong);
+            if (races.Count != UsPresidentialReturns.HouseDistricts.Length) { wrong.Add("races: " + races.Count + " CSV rows, " + UsPresidentialReturns.HouseDistricts.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(races.Count, UsPresidentialReturns.HouseDistricts.Length) && wrong.Count < 12; i++)
+            {
+                var r = UsPresidentialReturns.HouseDistricts[i];
+                if (!SameRow(races[i], r.Year, r.State, r.District, r.VotesR, r.VotesD, r.VotesOther, r.VotesTotal, r.OwnR, r.OwnD, r.CandsR, r.CandsD, r.FinalR, r.FinalD, r.Winner, r.Flags)) { wrong.Add("race row " + i + " (" + r.Year + " " + r.State + "-" + r.District + ") differs"); }
+            }
+
+            if (maps.Count != UsPresidentialReturns.HouseMaps.Length) { wrong.Add("maps: " + maps.Count + " CSV rows, " + UsPresidentialReturns.HouseMaps.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(maps.Count, UsPresidentialReturns.HouseMaps.Length) && wrong.Count < 12; i++)
+            {
+                var m = UsPresidentialReturns.HouseMaps[i];
+                if (!SameRow(maps[i], m.Year, m.State, m.Seats, m.LinesChanged ? 1 : 0, m.Source)) { wrong.Add("map row " + i + " (" + m.Year + " " + m.State + ") differs"); }
+            }
+
+            if (record.Count != UsPresidentialReturns.HouseRecord.Length) { wrong.Add("record: " + record.Count + " CSV rows, " + UsPresidentialReturns.HouseRecord.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(record.Count, UsPresidentialReturns.HouseRecord.Length); i++)
+            {
+                var y = UsPresidentialReturns.HouseRecord[i];
+                if (!SameRow(record[i], y.Year, y.Congress, y.SeatsR, y.SeatsD, y.SeatsOther, y.Vacant)) { wrong.Add("record row " + i + " (" + y.Year + ") differs"); }
+            }
+
+            // the seats each state holds each year, by the maps' rows - each maps year the 50 states once, 435 seats
+            var seats = new Dictionary<(int, string), int>();
+            var mapYears = new SortedDictionary<int, (int States, int Seats)>();
+            foreach (var m in UsPresidentialReturns.HouseMaps)
+            {
+                if (seats.ContainsKey((m.Year, m.State))) { wrong.Add("maps " + m.Year + ": " + m.State + " twice"); }
+                seats[(m.Year, m.State)] = m.Seats;
+                mapYears.TryGetValue(m.Year, out (int States, int Seats) t);
+                mapYears[m.Year] = (t.States + 1, t.Seats + m.Seats);
+            }
+
+            foreach (KeyValuePair<int, (int States, int Seats)> kv in mapYears)
+            {
+                if (kv.Value.States != 50 || kv.Value.Seats != 435) { wrong.Add(F("maps {0}: {1} states, {2} seats - not 50 and 435", kv.Key, kv.Value.States, kv.Value.Seats)); }
+            }
+
+            // the races' years are the record's: no election counted without its division, no division without its races
+            var raceYears = new SortedSet<int>();
+            var recordYears = new SortedSet<int>();
+            foreach (var r in UsPresidentialReturns.HouseDistricts) { raceYears.Add(r.Year); }
+            foreach (var y in UsPresidentialReturns.HouseRecord) { recordYears.Add(y.Year); }
+            if (!raceYears.SetEquals(recordYears)) { wrong.Add("the races' years " + string.Join(",", raceYears) + ", the record's " + string.Join(",", recordYears)); }
+
+            var lines = new List<string>();
+            foreach (var y in UsPresidentialReturns.HouseRecord)
+            {
+                int count = 0, winnersR = 0, winnersD = 0, winnersO = 0, none = 0;
+                string unwon = null, vacantWinner = null;
+                var numbers = new Dictionary<string, List<int>>(StringComparer.Ordinal);
+                var ownR = new Dictionary<string, long>(StringComparer.Ordinal);
+                var ownD = new Dictionary<string, long>(StringComparer.Ordinal);
+                var totals = new Dictionary<string, long>(StringComparer.Ordinal);
+                foreach (var r in UsPresidentialReturns.HouseDistricts)
+                {
+                    if (r.Year != y.Year) { continue; }
+                    count++;
+                    string name = r.State + "-" + (r.District == 0 ? "AL" : r.District.ToString(CultureInfo.InvariantCulture));
+                    if (!numbers.TryGetValue(r.State, out List<int> list)) { numbers[r.State] = list = new List<int>(); }
+                    list.Add(r.District);
+                    ownR[r.State] = (ownR.TryGetValue(r.State, out long a) ? a : 0) + r.OwnR;
+                    ownD[r.State] = (ownD.TryGetValue(r.State, out long b) ? b : 0) + r.OwnD;
+                    totals[r.State] = (totals.TryGetValue(r.State, out long c) ? c : 0) + r.VotesTotal;
+                    if (r.VotesR + r.VotesD + r.VotesOther > r.VotesTotal || r.OwnR > r.VotesR || r.OwnD > r.VotesD) { wrong.Add(r.Year + " " + name + ": its parts exceed its total, or its own lines its party's votes"); }
+                    // the winner leads the deciding count (Louisiana's runoff finalists, Alaska 2022's last round); a race printed without votes
+                    // (unopposed, or uncertified) carries none, its winner the unopposed name's or none
+                    string lead = r.FinalR > r.FinalD ? "R" : r.FinalD > r.FinalR ? "D" : "-";
+                    bool unopposed = r.Flags.IndexOf('U') >= 0;
+                    if (unopposed ? r.FinalR + r.FinalD != 0 || r.VotesTotal != 0 : lead != r.Winner)
+                    {
+                        wrong.Add(F("{0} {1}: the deciding count R {2} D {3}, the winner {4}", r.Year, name, r.FinalR, r.FinalD, r.Winner));
+                    }
+
+                    if (r.Winner == "R") { winnersR++; } else if (r.Winner == "D") { winnersD++; } else if (r.Winner == "O") { winnersO++; } else { none++; unwon = name; }
+                    if (name == y.Vacant) { vacantWinner = r.Winner; }
+                }
+
+                if (count != 435) { wrong.Add(y.Year + ": " + count + " races, not 435"); }
+                foreach (KeyValuePair<string, List<int>> kv in numbers)
+                {
+                    int n = seats.TryGetValue((y.Year, kv.Key), out int s) ? s : -1;
+                    kv.Value.Sort();
+                    var want = new List<int>();
+                    if (n == 1) { want.Add(0); } else { for (int k = 1; k <= n; k++) { want.Add(k); } }
+                    if (string.Join(",", kv.Value) != string.Join(",", want)) { wrong.Add(y.Year + " " + kv.Key + ": districts " + string.Join(",", kv.Value) + ", the maps give " + n + " seat(s)"); }
+                }
+
+                // the division the House Historian prints: the winners, less the seat its footnote leaves vacant where the Clerk names a winner there
+                int r2 = winnersR - (vacantWinner == "R" ? 1 : 0), d2 = winnersD - (vacantWinner == "D" ? 1 : 0), o2 = winnersO - (vacantWinner == "O" ? 1 : 0);
+                bool vacancyRight = y.Vacant == "-" ? none == 0 : (vacantWinner != null && (none == 0 || (none == 1 && unwon == y.Vacant)));
+                if (r2 != y.SeatsR || d2 != y.SeatsD || o2 != y.SeatsOther || !vacancyRight)
+                {
+                    wrong.Add(F("{0}: the winners R {1} D {2} other {3} (none {4}), the House Historian R {5} D {6} other {7}, vacant {8}", y.Year, winnersR, winnersD, winnersO, none, y.SeatsR, y.SeatsD, y.SeatsOther, y.Vacant));
+                }
+
+                int houseRows = 0;
+                foreach (var h in UsPresidentialReturns.House)
+                {
+                    if (h.Year != y.Year) { continue; }
+                    houseRows++;
+                    long gotR = ownR.TryGetValue(h.State, out long a) ? a : -1, gotD = ownD.TryGetValue(h.State, out long b) ? b : -1, gotT = totals.TryGetValue(h.State, out long c) ? c : -1;
+                    if (gotR != h.VotesR || gotD != h.VotesD || gotT != h.VotesTotal) { wrong.Add(F("{0} {1}: the districts' own lines R {2} D {3}, total {4}; the House row R {5} D {6}, total {7}", y.Year, h.State, gotR, gotD, gotT, h.VotesR, h.VotesD, h.VotesTotal)); }
+                }
+
+                if (houseRows != 50) { wrong.Add(F("{0}: {1} House rows by state to sum the districts to, not 50", y.Year, houseRows)); }
+
+                lines.Add(F("{0} R {1} D {2}{3}", y.Year, y.SeatsR, y.SeatsD, y.Vacant == "-" ? "" : " (" + y.Vacant + " vacant)"));
+            }
+
+            if (UsPresidentialReturns.HouseRecord.Length == 0) { wrong.Add("the House part holds no election, so nothing was counted"); }
+            if (wrong.Count > 0)
+            {
+                Debug.LogError("CATALOGCHECK: UsPresidentialReturns (the House by district) - " + string.Join("; ", wrong.ToArray()) + ". Re-run Tools/us_house_prep.pl after reading the diff.");
+                sb.Append(F("    ⚠ UsPresidentialReturns, the House by district: {0} disagreement(s)\n", wrong.Count));
+                return 1;
+            }
+
+            sb.Append(F("    UsPresidentialReturns, the House by district: {0} page(s) the bytes the run read; {1} race row(s), {2} map row(s), {3} election(s), every figure "
+                        + "the CSVs'; each election 435 races, each state numbered to its seats; the winners count to the House Historian's division: {4}; the "
+                        + "districts sum to the House rows by state\n",
+                UsPresidentialReturns.HouseRawSources.Length, races.Count, maps.Count, record.Count, string.Join(", ", lines.ToArray())));
             return 0;
         }
 
