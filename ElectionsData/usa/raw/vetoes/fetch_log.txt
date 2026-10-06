@@ -1,0 +1,11 @@
+2026-10-06T18:13:01Z	200	141440	history_house_presidential_vetoes.html	https://history.house.gov/Institution/Presidential-Vetoes/Presidential-Vetoes/
+2026-10-06T18:13:03Z	200	43176	senate_vetoes_counts_20260818013709.htm	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/vetoes/vetoCounts.htm (capture 20260818013709)
+2026-10-06T18:13:04Z	200	31229	senate_vetoes_TrumpDJ_20260928205435.htm	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/vetoes/TrumpDJ.htm (capture 20260928205435)
+2026-10-06T18:13:06Z	200	46891	senate_vetoes_BidenJR_20260914060103.htm	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/vetoes/BidenJR.htm (capture 20260914060103)
+2026-10-06T18:13:26Z	200	30389	senate_vetoes_TrumpDJ2_20260914060147.htm	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/vetoes/TrumpDJ2.htm (capture 20260914060147)
+2026-10-06T18:13:26Z	200	7554	govinfo_USCODE-2023-title5-sec802.htm	https://www.govinfo.gov/content/pkg/USCODE-2023-title5/html/USCODE-2023-title5-partI-chap8-sec802.htm
+2026-10-06T18:13:27Z	200	3071	govinfo_USCODE-2023-title50-sec1546a.htm	https://www.govinfo.gov/content/pkg/USCODE-2023-title50/html/USCODE-2023-title50-chap33-sec1546a.htm
+2026-10-06T18:13:27Z	200	8112	govinfo_USCODE-2023-title50-sec1622.htm	https://www.govinfo.gov/content/pkg/USCODE-2023-title50/html/USCODE-2023-title50-chap34-subchapII-sec1622.htm
+2026-10-06T18:13:27Z	200	77332	govinfo_USCODE-2023-title22-sec2776.htm	https://www.govinfo.gov/content/pkg/USCODE-2023-title22/html/USCODE-2023-title22-chap39-subchapIII-sec2776.htm
+2026-10-06T18:13:28Z	200	17229	dccode_1-206.04.html	https://code.dccouncil.gov/us/dc/council/code/sections/1-206.04
+2026-10-06T18:13:28Z	200	457847	crs_RS22654.11.pdf	https://www.congress.gov/crs_external_products/RS/PDF/RS22654/RS22654.11.pdf

@@ -1,0 +1,783 @@
+# PS-6 US-10: the sources kept OUT OF TREE under PoliSim-captures/sources/usa_us10/ - sha256, bytes, path, url (capture), fetched (UTC). Written by Tools/us_veto_fetch.pl; Tools/us_veto_prep.pl holds every file it reads to its line.
+493b4a6974af962abde28ce49ce0a2f084e4cce8d63fac7acb241fe91c6a45f3	28697203	billstatus/BILLSTATUS-115-hr.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/115/hr/BILLSTATUS-115-hr.zip	2026-10-06T18:13:09Z
+e7fc54a07ddf6d796ffba8f83a98e6c33fa0dfeea3c521c6721d5ed98dd27e9a	10613629	billstatus/BILLSTATUS-115-s.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/115/s/BILLSTATUS-115-s.zip	2026-10-06T18:13:09Z
+9403bf92c16c5c6f6c40163839c828c4f5d8573797bca295d99fda0bb709d135	529052	billstatus/BILLSTATUS-115-hjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/115/hjres/BILLSTATUS-115-hjres.zip	2026-10-06T18:13:09Z
+1e048fd7508a8dd597d35dac323c1e5ff4c36d4fa0bbebbdc0d82b135c129f42	204810	billstatus/BILLSTATUS-115-sjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/115/sjres/BILLSTATUS-115-sjres.zip	2026-10-06T18:13:09Z
+b3775e79914a9db29b3a8d55ae13638020c44822dcecb9e4517371e093d01dde	33194205	billstatus/BILLSTATUS-116-hr.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/116/hr/BILLSTATUS-116-hr.zip	2026-10-06T18:13:09Z
+e876253f4e3c8b58b28278c8e6e3b901eff0c336b74dfc6e90834d9d3af98132	13941002	billstatus/BILLSTATUS-116-s.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/116/s/BILLSTATUS-116-s.zip	2026-10-06T18:13:10Z
+9939bc21d8d8d40718d67e233b94d1075951314d673ffe02c5ba26788e1fdfc3	536609	billstatus/BILLSTATUS-116-hjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/116/hjres/BILLSTATUS-116-hjres.zip	2026-10-06T18:13:10Z
+f039d684b21421613bf4c980525e9a7c5759ab80db8083473da19b20ffdeea54	236199	billstatus/BILLSTATUS-116-sjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/116/sjres/BILLSTATUS-116-sjres.zip	2026-10-06T18:13:10Z
+658b2d280e4e7972c86bfd810ebff0c9bb61c115b242de8c8774034dea08de03	33733417	billstatus/BILLSTATUS-117-hr.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/117/hr/BILLSTATUS-117-hr.zip	2026-10-06T18:13:10Z
+69561f19333de31afd2e288700757f3794ecffa35287b9fb86bb2d5d313a1294	14088276	billstatus/BILLSTATUS-117-s.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/117/s/BILLSTATUS-117-s.zip	2026-10-06T18:13:10Z
+55855f0441d0e691691e5cd8f12b46375314ab4994e9744575f5e4eb343810f4	393085	billstatus/BILLSTATUS-117-hjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/117/hjres/BILLSTATUS-117-hjres.zip	2026-10-06T18:13:10Z
+857969d43fb4fa63f608bafbe43c297be05b65ffbb5f2c4d7180e7d2cb2f72a9	188699	billstatus/BILLSTATUS-117-sjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/117/sjres/BILLSTATUS-117-sjres.zip	2026-10-06T18:13:10Z
+8e7ca7dab50a7b9b977f021ec1b3231f8fedf82c33494553857b892fadfdba98	35522726	billstatus/BILLSTATUS-118-hr.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/118/hr/BILLSTATUS-118-hr.zip	2026-10-06T18:13:11Z
+269261c0989db3ced789680ee2202747df9a7298f1ac8d2b074d3356b06e399c	14410894	billstatus/BILLSTATUS-118-s.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/118/s/BILLSTATUS-118-s.zip	2026-10-06T18:13:11Z
+010db05723a7ae43db92455f0415d9ce5c4be3a89feac56bbbd2a78da4a2af83	819266	billstatus/BILLSTATUS-118-hjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/118/hjres/BILLSTATUS-118-hjres.zip	2026-10-06T18:13:11Z
+da94d59404d5eba1e35939ecc276d012fc56c2b1171a3467fc89456cf9c28569	344680	billstatus/BILLSTATUS-118-sjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/118/sjres/BILLSTATUS-118-sjres.zip	2026-10-06T18:13:11Z
+bdc7427af1057f93dc4ff3b282a9eef20b49f443fc14d340001145ece70ef462	32416330	billstatus/BILLSTATUS-119-hr.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/119/hr/BILLSTATUS-119-hr.zip	2026-10-06T18:13:11Z
+482eb430927c805028113607c52a3dbab62736c7284b8ca78759047e9b62198c	13362416	billstatus/BILLSTATUS-119-s.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/119/s/BILLSTATUS-119-s.zip	2026-10-06T18:13:11Z
+ebe09a8487639b8551ae7c357de2c038461b12188aa64926373665420c1386fe	673806	billstatus/BILLSTATUS-119-hjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/119/hjres/BILLSTATUS-119-hjres.zip	2026-10-06T18:13:11Z
+ea2302ae7d4b42d96d40e0d7c6b6eec88ab0801393a2b17877f303de9e128bec	538733	billstatus/BILLSTATUS-119-sjres.zip	https://www.govinfo.gov/bulkdata/BILLSTATUS/119/sjres/BILLSTATUS-119-sjres.zip	2026-10-06T18:13:11Z
+87753d84a4028a58a6b9f6c389ca81f56de09dcabbf4d362026566b2bd0c66e7	7074326	statutes/STATUTE-90-Pg729.pdf	https://www.govinfo.gov/content/pkg/STATUTE-90/pdf/STATUTE-90-Pg729.pdf	2026-10-06T18:15:06Z
+e50943dedbd87b53b2611519b9268d89c6a37593e6549dc9bc061c18eed88528	94886	rolls/house/2017/roll024.xml	https://clerk.house.gov/evs/2017/roll024.xml	2026-10-06T18:20:26Z
+a7870b0ef1092187c76a56be9c295d4be995c0791bfc19446290b273f0e53961	95142	rolls/house/2017/roll034.xml	https://clerk.house.gov/evs/2017/roll034.xml	2026-10-06T18:20:26Z
+6d5ce043f1eba58582f769effe7ed6544eea538e50764ec427bf9103df643f58	94983	rolls/house/2017/roll059.xml	https://clerk.house.gov/evs/2017/roll059.xml	2026-10-06T18:20:27Z
+39adbcfb9b136de574b9987b9a3ca586e7e2852cc7559ef0d63bb992ab4a35fe	94870	rolls/house/2017/roll066.xml	https://clerk.house.gov/evs/2017/roll066.xml	2026-10-06T18:20:27Z
+2c39667fc751f181e3a2293028fdfa53f6d55471cc548c9cf14f5c5ab35d37f9	94732	rolls/house/2017/roll072.xml	https://clerk.house.gov/evs/2017/roll072.xml	2026-10-06T18:20:28Z
+2dc81dd76cdf6be67ea15d46a7520728c14b32dd34b993198340cc82d6b96d4f	94612	rolls/house/2017/roll073.xml	https://clerk.house.gov/evs/2017/roll073.xml	2026-10-06T18:20:28Z
+0e2e396adc36f78cc5bad78707255bc62e9e6fee8aadaa2e0a4f2cef803c2dc4	94517	rolls/house/2017/roll076.xml	https://clerk.house.gov/evs/2017/roll076.xml	2026-10-06T18:20:29Z
+589a29343cd0f2281927fffe07ad625b2dce224cd55ac99660059ff262d7b9b7	94603	rolls/house/2017/roll077.xml	https://clerk.house.gov/evs/2017/roll077.xml	2026-10-06T18:20:29Z
+8528b1cda7981a4bfd88bbc989acd814309d334bd915b5da2dbc1fadb4131142	94782	rolls/house/2017/roll083.xml	https://clerk.house.gov/evs/2017/roll083.xml	2026-10-06T18:20:30Z
+fa3cac5a342ef82ae6da833c1895beb0f584860a749d8ab0ad4623e4d430b13d	94736	rolls/house/2017/roll084.xml	https://clerk.house.gov/evs/2017/roll084.xml	2026-10-06T18:20:30Z
+7d0db4ad5931f93afca316474fa2f38eae19af6a877dabf4d828deb58fb88a59	94697	rolls/house/2017/roll085.xml	https://clerk.house.gov/evs/2017/roll085.xml	2026-10-06T18:20:30Z
+5f6117ea24da34b78b2ebd323d647f70fc3c4befbef1a6aa8c65e0a6317adb83	94425	rolls/house/2017/roll095.xml	https://clerk.house.gov/evs/2017/roll095.xml	2026-10-06T18:20:31Z
+4095fa62115fb6adf3fc0e46ec463f7a3b4b429646606de2e03f06af75728b7b	94400	rolls/house/2017/roll096.xml	https://clerk.house.gov/evs/2017/roll096.xml	2026-10-06T18:20:31Z
+1f74f8913d49c027b2e4e72260ba6e8f2a948f9d78ddde1c7c3b2cd886b3a428	94371	rolls/house/2017/roll097.xml	https://clerk.house.gov/evs/2017/roll097.xml	2026-10-06T18:20:32Z
+d1ed656211a467cb9fbde622b9a12022c37b33a652c96a4978dca8c5822a51a7	94357	rolls/house/2017/roll098.xml	https://clerk.house.gov/evs/2017/roll098.xml	2026-10-06T18:20:32Z
+c8a5a59684ecb73dcd3d1f971444e8e1a0e3cb2f99e8fb3598f8ad2c16857ddc	94146	rolls/house/2017/roll099.xml	https://clerk.house.gov/evs/2017/roll099.xml	2026-10-06T18:20:32Z
+3210a9027c627992d905ba51a4c8237543632862c4c005d44c813b5f8636c9dc	94174	rolls/house/2017/roll100.xml	https://clerk.house.gov/evs/2017/roll100.xml	2026-10-06T18:20:33Z
+60061cc537a54476695167acaa15821e4796cf34b072c1d2c8e399e1544cebe9	94274	rolls/house/2017/roll102.xml	https://clerk.house.gov/evs/2017/roll102.xml	2026-10-06T18:20:33Z
+00364f1cd1c0107bddaca61e3aa3980e60e2cca4f051b70b09d508eb9bd8e7a1	93853	rolls/house/2017/roll121.xml	https://clerk.house.gov/evs/2017/roll121.xml	2026-10-06T18:20:34Z
+d33f25357ed3f4e99d0cafcfdf11103bc00d384bbfd327a6d2c5bcb0744bdce4	94086	rolls/house/2017/roll127.xml	https://clerk.house.gov/evs/2017/roll127.xml	2026-10-06T18:20:34Z
+2b0d7986999ce9f2f7e29eb33b4b6028a4204163439ef8e62b70e79159b75932	94189	rolls/house/2017/roll195.xml	https://clerk.house.gov/evs/2017/roll195.xml	2026-10-06T18:20:34Z
+2366c3a93aa3562310ac7341ef39c0f90a71baa5353aba5df0d54ea1eb9ea15f	94107	rolls/house/2017/roll202.xml	https://clerk.house.gov/evs/2017/roll202.xml	2026-10-06T18:20:35Z
+87d0c0fe8cec2e5faad868ef5cc0fc88b84deabaa39593b4b55084fcfe7c87ba	94310	rolls/house/2017/roll231.xml	https://clerk.house.gov/evs/2017/roll231.xml	2026-10-06T18:20:35Z
+a061036065bee3a4805bab96d42c0f5d69ba00f1d16d3218748af7df41e9447b	94238	rolls/house/2017/roll236.xml	https://clerk.house.gov/evs/2017/roll236.xml	2026-10-06T18:20:35Z
+05b6bfea22039bc0fb2b8d63606697482b8680033e54fcd2ad349ae61e3ca23a	94245	rolls/house/2017/roll239.xml	https://clerk.house.gov/evs/2017/roll239.xml	2026-10-06T18:20:36Z
+f75ca40c93ef2f4e51ea7aae508a4f076ccd4393c88fb1fc31cab7414f566fc8	94192	rolls/house/2017/roll242.xml	https://clerk.house.gov/evs/2017/roll242.xml	2026-10-06T18:20:36Z
+86e813bb4464d35838cba684eeb7914bbf21ccc4adebaa771ab34fa66b8aa4f6	94349	rolls/house/2017/roll249.xml	https://clerk.house.gov/evs/2017/roll249.xml	2026-10-06T18:20:37Z
+cca492b88518d18f5922b8f837c11a30d8dca2fb177dec4bcd88f9a74a64d808	94188	rolls/house/2017/roll262.xml	https://clerk.house.gov/evs/2017/roll262.xml	2026-10-06T18:20:37Z
+16cee42d9978564b3d0503820d2a5455d0f14906b201b0472661eb1a37e43d16	94352	rolls/house/2017/roll300.xml	https://clerk.house.gov/evs/2017/roll300.xml	2026-10-06T18:20:37Z
+0cd43c790a056c6d0f5f91d870c76baff94f474907993b3429e48a53e439fd5f	94146	rolls/house/2017/roll307.xml	https://clerk.house.gov/evs/2017/roll307.xml	2026-10-06T18:20:38Z
+2ed280aad27e9a8880e58a32205e0ec56b1fd6ba4c57431329bcdb3f7bba89ca	94839	rolls/house/2017/roll330.xml	https://clerk.house.gov/evs/2017/roll330.xml	2026-10-06T18:20:38Z
+3cf8f84f4e56099acb65819b7f9adb27b90ef2ba900ea08997dfcbcdacc3b449	94794	rolls/house/2017/roll345.xml	https://clerk.house.gov/evs/2017/roll345.xml	2026-10-06T18:20:39Z
+95f4629eb45263b075b5a55459b645eb02103565181393d45745ec2f7c10bb8b	94942	rolls/house/2017/roll346.xml	https://clerk.house.gov/evs/2017/roll346.xml	2026-10-06T18:20:39Z
+aca4284b4d5988833cfb43c9abbbe06095a35ea77db7af5c5eba949028023396	94959	rolls/house/2017/roll379.xml	https://clerk.house.gov/evs/2017/roll379.xml	2026-10-06T18:20:39Z
+85405f917555f8b18f51b6726e66394d09bbd6a58698926a9f1422823e0c3ecc	95129	rolls/house/2017/roll381.xml	https://clerk.house.gov/evs/2017/roll381.xml	2026-10-06T18:20:40Z
+1a1e59e5ffb6cb6e9bc9b17bafbcd2074073546b1f5dd6bee9c9f30b177e3060	94939	rolls/house/2017/roll409.xml	https://clerk.house.gov/evs/2017/roll409.xml	2026-10-06T18:20:40Z
+c2ec9afb9411d66c0ba5a8aeb8a307609ba029515db97d531620d0d755d17ac9	94738	rolls/house/2017/roll412.xml	https://clerk.house.gov/evs/2017/roll412.xml	2026-10-06T18:20:41Z
+e04dcdb9ec67e4a79b3c3d38ddecba13a89ef7f42ed4e6082bee979e95667a44	94810	rolls/house/2017/roll413.xml	https://clerk.house.gov/evs/2017/roll413.xml	2026-10-06T18:20:41Z
+97929fa595a9df57b554147f5db814ce2658b3a168f62f47eaccf737b05895f7	94829	rolls/house/2017/roll438.xml	https://clerk.house.gov/evs/2017/roll438.xml	2026-10-06T18:20:42Z
+ad9eeaa5bfe3de4199e10b12073ad658aea6be3f7ef83affef602388f61b2614	94922	rolls/house/2017/roll439.xml	https://clerk.house.gov/evs/2017/roll439.xml	2026-10-06T18:20:42Z
+15a91f87367a516b8a2f05a07db9802130b096e1baf661cc3056778329d6120c	94953	rolls/house/2017/roll480.xml	https://clerk.house.gov/evs/2017/roll480.xml	2026-10-06T18:20:42Z
+4a3d48f44b31efcec4d8313ecbdb3882ac51c7fa6ebba594139a0010c16e9483	95060	rolls/house/2017/roll485.xml	https://clerk.house.gov/evs/2017/roll485.xml	2026-10-06T18:20:43Z
+4946893cc88a2989b84f86a115e981e1211b6201e7d1c9886f9d3f2279c8bb8b	94879	rolls/house/2017/roll550.xml	https://clerk.house.gov/evs/2017/roll550.xml	2026-10-06T18:20:43Z
+aefeabd15a3a6b89123cbefa82f92f3ed6380814cabe321051cc0bede8981373	95109	rolls/house/2017/roll558.xml	https://clerk.house.gov/evs/2017/roll558.xml	2026-10-06T18:20:44Z
+ce9d0960a4f46c1f22606e773f90b2efb8ca7d083822181073da14bdda67804c	95120	rolls/house/2017/roll559.xml	https://clerk.house.gov/evs/2017/roll559.xml	2026-10-06T18:20:44Z
+fa31ec368562c059330ccedfc4683c0bb85b9e4da456da23f65657c618a972b8	94962	rolls/house/2017/roll562.xml	https://clerk.house.gov/evs/2017/roll562.xml	2026-10-06T18:20:44Z
+82d9dadf6be9f132e0e7008bdfc8abf58cdf4a4ff9a99814dee031fdd0d2b896	94813	rolls/house/2017/roll563.xml	https://clerk.house.gov/evs/2017/roll563.xml	2026-10-06T18:20:45Z
+a574b2c9625b9b6c5eb7e67aabcfe66724a56ed731dc548c82bb5097df7b9b5a	94792	rolls/house/2017/roll568.xml	https://clerk.house.gov/evs/2017/roll568.xml	2026-10-06T18:20:45Z
+9ff7c23a4b647f05a5a47693419a58535a6103fce3185ce01868c20512f09a77	94715	rolls/house/2017/roll570.xml	https://clerk.house.gov/evs/2017/roll570.xml	2026-10-06T18:20:46Z
+74a8c563282c0b29038beb23a5380a5e53dbb777fe8070c5e3ae4d0093010611	94693	rolls/house/2017/roll574.xml	https://clerk.house.gov/evs/2017/roll574.xml	2026-10-06T18:20:46Z
+97e996424e94490d5253006e32de9e1ed455206c238023c288a453e8e8aeb77e	94910	rolls/house/2017/roll607.xml	https://clerk.house.gov/evs/2017/roll607.xml	2026-10-06T18:20:46Z
+7aeb69bb0d2db1f97b877aa80c35e937e216861fbfcfe297990479a7c695ee5e	94760	rolls/house/2017/roll631.xml	https://clerk.house.gov/evs/2017/roll631.xml	2026-10-06T18:20:47Z
+17722dfc66d2087724fc887a559e73e1a21ee44114d48d28f6ab5fb3bd674256	94768	rolls/house/2017/roll634.xml	https://clerk.house.gov/evs/2017/roll634.xml	2026-10-06T18:20:47Z
+ced827ee63e3bd9f6c6f4f89be497c99d7af1b80a93f16ec4099fdc7df0fc45a	94918	rolls/house/2017/roll635.xml	https://clerk.house.gov/evs/2017/roll635.xml	2026-10-06T18:20:47Z
+d38a6111ab73af31134f480c7064611cd9694db0c51d9b1c604d7412b8f40c33	94892	rolls/house/2017/roll636.xml	https://clerk.house.gov/evs/2017/roll636.xml	2026-10-06T18:20:48Z
+c9975c8988766f65486d4ef87eaf582924082e11f0105cf5eb9ae2c8166a4d3f	94536	rolls/house/2017/roll661.xml	https://clerk.house.gov/evs/2017/roll661.xml	2026-10-06T18:20:48Z
+32ffadf9c0ff4a9dcccb4631153448a8921f6cf368432befac1b0bd63ded8186	94757	rolls/house/2017/roll670.xml	https://clerk.house.gov/evs/2017/roll670.xml	2026-10-06T18:20:48Z
+f23b06932c7b323cae62fd4680cbaf8c9b4a19b934a58fb29df0c3bc491d9baa	94606	rolls/house/2017/roll687.xml	https://clerk.house.gov/evs/2017/roll687.xml	2026-10-06T18:20:49Z
+6e36bcd0716608cf863327a53e6b4b62b3e73dfaecdd13332f2d475cff3bdfcf	94364	rolls/house/2017/roll695.xml	https://clerk.house.gov/evs/2017/roll695.xml	2026-10-06T18:20:49Z
+2c4597475d1e4598f84abadb0bb00fa59d715e14ff4b43a40aa8cd3f89cc10cd	94512	rolls/house/2017/roll699.xml	https://clerk.house.gov/evs/2017/roll699.xml	2026-10-06T18:20:50Z
+b2c11273ccd0f202854fcf78e000790e09bee6cec022ee9cb4846ba3093c6756	94340	rolls/house/2017/roll706.xml	https://clerk.house.gov/evs/2017/roll706.xml	2026-10-06T18:20:50Z
+8f13bda3011cb2589cd47a2d54860d27cb9fa7a7ab9faff2a1e8eb6d47039851	94626	rolls/house/2017/roll708.xml	https://clerk.house.gov/evs/2017/roll708.xml	2026-10-06T18:20:50Z
+1afe49a8db49fbb6bad1cc38bc7d7e096b4d4b175f61c92bbbe8a0652ec24a33	94531	rolls/house/2017/roll710.xml	https://clerk.house.gov/evs/2017/roll710.xml	2026-10-06T18:20:51Z
+d2057466631666494131b0ef84d47a39030e415b9e0482056ccd203a5e23d163	94515	rolls/house/2018/roll016.xml	https://clerk.house.gov/evs/2018/roll016.xml	2026-10-06T18:20:51Z
+cd0dcbcc8d6cf2760caeea5ae33581bcaf42296dd22fce1f406e0b7c8b0aa33d	94249	rolls/house/2018/roll019.xml	https://clerk.house.gov/evs/2018/roll019.xml	2026-10-06T18:20:51Z
+b89bd44fdf11df0951f5f6573ca73f3d66cc73e1ec8de4aff9212d48369bf8fa	94082	rolls/house/2018/roll034.xml	https://clerk.house.gov/evs/2018/roll034.xml	2026-10-06T18:20:52Z
+bd03a93e5d3864674cc5c71eb6a9239be3575affb85c882807bf9c0a173c0488	94186	rolls/house/2018/roll044.xml	https://clerk.house.gov/evs/2018/roll044.xml	2026-10-06T18:20:52Z
+15cbfbc1fbce6b302957de2b7248c64fdaa91fa41939082ac7fb72912976c444	94251	rolls/house/2018/roll045.xml	https://clerk.house.gov/evs/2018/roll045.xml	2026-10-06T18:20:53Z
+8f7c0f095881457900cb51cc7715883a727e98a42481fb4f2535f2eb748f9b3c	94341	rolls/house/2018/roll051.xml	https://clerk.house.gov/evs/2018/roll051.xml	2026-10-06T18:20:53Z
+cf4659365997cc17d604a5a5844830cedb2fa15776539a3d8e861cf4a663efc7	94151	rolls/house/2018/roll069.xml	https://clerk.house.gov/evs/2018/roll069.xml	2026-10-06T18:20:54Z
+d6f16b0b5cc2f0544a94906d990e5bdc3bbc4de90015ab4af062f4e6d6addc20	94260	rolls/house/2018/roll070.xml	https://clerk.house.gov/evs/2018/roll070.xml	2026-10-06T18:20:54Z
+705b1e5f3c2c3352f86e68b22e51bb02f6f52b395a93b31a88b91874c3710876	94145	rolls/house/2018/roll091.xml	https://clerk.house.gov/evs/2018/roll091.xml	2026-10-06T18:20:54Z
+ca36ed867914586cd6ae79eb185b7c5f9450c150064dee10b91ed04f471e54d3	94490	rolls/house/2018/roll092.xml	https://clerk.house.gov/evs/2018/roll092.xml	2026-10-06T18:20:55Z
+3d3d254284cfdbf7176dad8d8b6ce22eef0eac4d398dac04a133b2c1a8e05c16	94495	rolls/house/2018/roll093.xml	https://clerk.house.gov/evs/2018/roll093.xml	2026-10-06T18:20:55Z
+3e32ac43aeb59b55f8b20e75c4d449ed8bbd2654e1ab7a71a1605fa67e14e65b	94098	rolls/house/2018/roll127.xml	https://clerk.house.gov/evs/2018/roll127.xml	2026-10-06T18:20:55Z
+d1485a5aa5593e212f92842c802cb397c8999aef67302bf011a26d1527a0dede	94201	rolls/house/2018/roll141.xml	https://clerk.house.gov/evs/2018/roll141.xml	2026-10-06T18:20:56Z
+c86b0f28dac5cc9579633a1151a1af0e81dd413dae4d103944cfbbea1c43502b	93680	rolls/house/2018/roll167.xml	https://clerk.house.gov/evs/2018/roll167.xml	2026-10-06T18:20:56Z
+ec83a0c83d4b6025eaab7129c7ae066debd967b3f121644ba094f25cf772f14c	93906	rolls/house/2018/roll171.xml	https://clerk.house.gov/evs/2018/roll171.xml	2026-10-06T18:20:56Z
+6d1ce4308a31006b3e4c10f2e95f6f38783ab4a81ba022d18f0b6bcfe47d76f0	93846	rolls/house/2018/roll182.xml	https://clerk.house.gov/evs/2018/roll182.xml	2026-10-06T18:20:57Z
+3905c6a4de83b3eee8cd2e39e4bf9ef0a17341c2016db4545a0295534891bbe4	93546	rolls/house/2018/roll187.xml	https://clerk.house.gov/evs/2018/roll187.xml	2026-10-06T18:20:57Z
+4633b5045ba1d1feb456c96f7fb326b84222007f86b796b1d87c29fc1eb1f3c1	93366	rolls/house/2018/roll189.xml	https://clerk.house.gov/evs/2018/roll189.xml	2026-10-06T18:20:58Z
+c8879651de6101a892fae928a6190b803273bc125f629afa37c30a49b4bdf08d	93298	rolls/house/2018/roll214.xml	https://clerk.house.gov/evs/2018/roll214.xml	2026-10-06T18:20:58Z
+fdee432a35856b66d39079f6108ebd35e73e8445d65cb256c67589fcc2383fd1	93458	rolls/house/2018/roll216.xml	https://clerk.house.gov/evs/2018/roll216.xml	2026-10-06T18:20:58Z
+24fb53c670ffc80e4cf74b12c5ebd5a81c4a435aa3567785b2ffe37436371996	93559	rolls/house/2018/roll239.xml	https://clerk.house.gov/evs/2018/roll239.xml	2026-10-06T18:20:59Z
+f1f3b51db709b3259048b0a8fe78c0f1c96d2b85bc3b96ab05fff6895147a735	93554	rolls/house/2018/roll288.xml	https://clerk.house.gov/evs/2018/roll288.xml	2026-10-06T18:20:59Z
+12b489abeb2b1409c216da86ee14d4a9da5c9c8cef506828e94990b8c4605243	94155	rolls/house/2018/roll329.xml	https://clerk.house.gov/evs/2018/roll329.xml	2026-10-06T18:20:59Z
+6584fba445a47f219cb451cd2406d9058f4fe8d40792231ab808db81567c4ec5	94165	rolls/house/2018/roll330.xml	https://clerk.house.gov/evs/2018/roll330.xml	2026-10-06T18:21:00Z
+5289d8a276808ddecdfde7aba30098915853c1d40184ca9b99ec59e112770761	93847	rolls/house/2018/roll338.xml	https://clerk.house.gov/evs/2018/roll338.xml	2026-10-06T18:21:00Z
+cc71fc971e5696ec281bf8a3d3c19738356c46ec0ebce802446e930a056bafba	93952	rolls/house/2018/roll366.xml	https://clerk.house.gov/evs/2018/roll366.xml	2026-10-06T18:21:01Z
+f4c023834eae5c7fae7f6536d1e0382299dbbb102084cbfe456d75871da54579	93704	rolls/house/2018/roll373.xml	https://clerk.house.gov/evs/2018/roll373.xml	2026-10-06T18:21:01Z
+5fbb3d2f42cfbae48542b4c7d73c24e626e42bc55fb44ad87085eaddc4d82a63	93706	rolls/house/2018/roll379.xml	https://clerk.house.gov/evs/2018/roll379.xml	2026-10-06T18:21:01Z
+064691538259a06a3773c84ea18ff5422469e8809b47ff93157fdb7d671ddddd	93931	rolls/house/2018/roll394.xml	https://clerk.house.gov/evs/2018/roll394.xml	2026-10-06T18:21:02Z
+5aa7adbcc194609079e92dcc20949cd382a2da107b540830e52c524c68dc1cb2	94048	rolls/house/2018/roll396.xml	https://clerk.house.gov/evs/2018/roll396.xml	2026-10-06T18:21:02Z
+3d6255cf292348d655cfc72381dbe762a9e25594386638f7ab1f0cd8c389191b	93924	rolls/house/2018/roll399.xml	https://clerk.house.gov/evs/2018/roll399.xml	2026-10-06T18:21:02Z
+ca2608670881c975b1af8b2285256bf9f18a067c62cd228bc3b9373cd8fe3ab6	93722	rolls/house/2018/roll405.xml	https://clerk.house.gov/evs/2018/roll405.xml	2026-10-06T18:21:03Z
+787c519398d39c97f9d45f3506c8a304b028bba3dd15fe08a76e31ac0db5f23f	94417	rolls/house/2018/roll417.xml	https://clerk.house.gov/evs/2018/roll417.xml	2026-10-06T18:21:03Z
+e56dd614b862034667003afe1f1ffdc593f2c3b3eb62c3289aa0ad9f22f9faf1	94393	rolls/house/2018/roll419.xml	https://clerk.house.gov/evs/2018/roll419.xml	2026-10-06T18:21:04Z
+7fe61526c99c4307c0dc726b12747a4d58067fe642e746ecb40127f0ece1928d	94710	rolls/house/2018/roll424.xml	https://clerk.house.gov/evs/2018/roll424.xml	2026-10-06T18:21:04Z
+a4a784c306459d608b350cd974f5f095e02172132c1c0dc22cb18a24927b3f08	94587	rolls/house/2018/roll429.xml	https://clerk.house.gov/evs/2018/roll429.xml	2026-10-06T18:21:04Z
+0885c5a6192447da23de66e9c34ff02c0f8cb68130818f9e12cda79a2ba2a59c	94650	rolls/house/2018/roll430.xml	https://clerk.house.gov/evs/2018/roll430.xml	2026-10-06T18:21:05Z
+db82cef63dfdf3702a4ea485a6db13ab21436d883b11ddcfd2f800570f86a71e	94541	rolls/house/2018/roll434.xml	https://clerk.house.gov/evs/2018/roll434.xml	2026-10-06T18:21:05Z
+6b58538448aa9c84b0e19cd84298fcee0aa23d61493a06f4f479bf2890e3d699	94970	rolls/house/2018/roll436.xml	https://clerk.house.gov/evs/2018/roll436.xml	2026-10-06T18:21:05Z
+3f4e1f832351b90d284b3ff0121e9e7dfb49ef772700f119ae3ffa7c79d88b2e	94996	rolls/house/2018/roll437.xml	https://clerk.house.gov/evs/2018/roll437.xml	2026-10-06T18:21:06Z
+968e9aa83de08618cbaea03aea6fcb35f8c3a87e441b12f6f81e30ba8ae1243f	94917	rolls/house/2018/roll438.xml	https://clerk.house.gov/evs/2018/roll438.xml	2026-10-06T18:21:06Z
+1d55c48f6f2ce0656be8199634b4f649b86eb67f79fdb1d819136f71db74ef1e	94946	rolls/house/2018/roll439.xml	https://clerk.house.gov/evs/2018/roll439.xml	2026-10-06T18:21:07Z
+d6eedf7e777731b076ca9df03012523c13bf266b07ee6a45ac0bab3ed2c898fb	94907	rolls/house/2018/roll440.xml	https://clerk.house.gov/evs/2018/roll440.xml	2026-10-06T18:21:07Z
+6184255bead20fce75dcca7ab0149ecaae5d519aa5a9ad2d80f74af7393c85a4	94929	rolls/house/2018/roll441.xml	https://clerk.house.gov/evs/2018/roll441.xml	2026-10-06T18:21:07Z
+ceb36d7d22add59960889ca7a41b1ef8bd2fb5f4214df7a199619fc4d758e8f9	94963	rolls/house/2018/roll442.xml	https://clerk.house.gov/evs/2018/roll442.xml	2026-10-06T18:21:08Z
+b246bf973b95b31ae320363fc817c5e9c6f5e38d7e0cc8ac0c9c8a37463915a4	94939	rolls/house/2018/roll444.xml	https://clerk.house.gov/evs/2018/roll444.xml	2026-10-06T18:21:08Z
+9afe4d35d88075336f0befcf116a455360ef462e10a13106fa6bef4c910f8a31	94918	rolls/house/2018/roll445.xml	https://clerk.house.gov/evs/2018/roll445.xml	2026-10-06T18:21:09Z
+e78fd9094fee47e9c3707b40cd98a31c73db37784501bfb31cbf8a22d7891aa1	94734	rolls/house/2018/roll448.xml	https://clerk.house.gov/evs/2018/roll448.xml	2026-10-06T18:21:09Z
+91dbbdde9be313691ca4072cb42bf5dc7d8961a77af181e4d10deb609ffbff04	94761	rolls/house/2018/roll450.xml	https://clerk.house.gov/evs/2018/roll450.xml	2026-10-06T18:21:09Z
+061d8a42c2b2f3d7a90e7ff1db4e047fc45f9cc954f4ad1cf7255aed7f6c57ec	94729	rolls/house/2018/roll452.xml	https://clerk.house.gov/evs/2018/roll452.xml	2026-10-06T18:21:10Z
+6d362bb8a6bf1894a05e05df9757d8a15018fe42153f11ca979a3b184a00ccdd	94740	rolls/house/2018/roll453.xml	https://clerk.house.gov/evs/2018/roll453.xml	2026-10-06T18:21:10Z
+45ad67576d0c29f337ef9cc036e282ddb10c26cedda9b0c1d9ed103bfbef524c	94733	rolls/house/2018/roll454.xml	https://clerk.house.gov/evs/2018/roll454.xml	2026-10-06T18:21:11Z
+86dd52097e8456a37eaec155bac31f8b124ca4160c0f8f25475bf46a4d96b303	94765	rolls/house/2018/roll456.xml	https://clerk.house.gov/evs/2018/roll456.xml	2026-10-06T18:21:11Z
+ffb609927dbb8bc29519625d8ed4e1b4c7be298266fcade0e0054884256200a4	94732	rolls/house/2018/roll457.xml	https://clerk.house.gov/evs/2018/roll457.xml	2026-10-06T18:21:12Z
+8a65c0d31ef1fa7cb048f822253c40a0753c6f5c22193aa6e70c3dfa8d4d6c9e	94725	rolls/house/2018/roll458.xml	https://clerk.house.gov/evs/2018/roll458.xml	2026-10-06T18:21:12Z
+962d8a80d3d61b146c0925832d06ecb66695c4365d36057e1155dbeb6fe8c37a	94772	rolls/house/2018/roll459.xml	https://clerk.house.gov/evs/2018/roll459.xml	2026-10-06T18:21:12Z
+3d8564e3c9198f54607307390060f139dcb2e994eba3c8c2d5ac5d459c90de1d	94730	rolls/house/2018/roll460.xml	https://clerk.house.gov/evs/2018/roll460.xml	2026-10-06T18:21:13Z
+fe3959ec8b132c3c53cad1e378f825ea29dbfb8ee54fcb80598dfd22c231435b	94774	rolls/house/2018/roll461.xml	https://clerk.house.gov/evs/2018/roll461.xml	2026-10-06T18:21:13Z
+75e282d6fb6df71957be98f38bf18e6d86452077123a0afd7cabfbdb279ef19b	94765	rolls/house/2018/roll462.xml	https://clerk.house.gov/evs/2018/roll462.xml	2026-10-06T18:21:14Z
+ddb45b0ebb055ca0cc26e15f6e95c3c338cafeb3716a87d7f76e56a548089117	94846	rolls/house/2018/roll465.xml	https://clerk.house.gov/evs/2018/roll465.xml	2026-10-06T18:21:14Z
+5f451be3e22eb57695bd151ea3334dcddb13aa5a2b9356c22d8a242f0b584a68	94748	rolls/house/2018/roll466.xml	https://clerk.house.gov/evs/2018/roll466.xml	2026-10-06T18:21:14Z
+edd788b78e80e9bbc57f106f4ffe734442bdfb107055fed2f015789bd8f4cbc0	94684	rolls/house/2018/roll471.xml	https://clerk.house.gov/evs/2018/roll471.xml	2026-10-06T18:21:15Z
+ab0f558f6d3826d56f522d70308582a06a77b13cd059835e2e2733c349746bab	94764	rolls/house/2018/roll473.xml	https://clerk.house.gov/evs/2018/roll473.xml	2026-10-06T18:21:15Z
+14fccd3997311204d91c5bd16c6fd6bd79ca0a46d80923ca210954124657d7e9	95004	rolls/house/2018/roll475.xml	https://clerk.house.gov/evs/2018/roll475.xml	2026-10-06T18:21:16Z
+840aaad8bf0fafd3ffd65ba06369bd40c2613dedb5fc4dabb4a4408baf527456	94983	rolls/house/2018/roll476.xml	https://clerk.house.gov/evs/2018/roll476.xml	2026-10-06T18:21:16Z
+5f8fae96ca2f307e3743f6b6b00a2d47b4f7cab3992547c22fe350cf28d7aa83	94798	rolls/house/2018/roll478.xml	https://clerk.house.gov/evs/2018/roll478.xml	2026-10-06T18:21:16Z
+cd58757b39fdcc63f15dfcec5c3f1651ba4a608aa962ef06bb7a362b71dbc3c0	94747	rolls/house/2018/roll480.xml	https://clerk.house.gov/evs/2018/roll480.xml	2026-10-06T18:21:17Z
+8321cb28dedab85b88758569e9c41f5d2c56c0235a65cbd19a1cabb58a78a763	94777	rolls/house/2018/roll481.xml	https://clerk.house.gov/evs/2018/roll481.xml	2026-10-06T18:21:17Z
+06c3181dcb2306b04d808d2b567663a2ad0e5c2ed8f7388046ae71e56e5d828e	94796	rolls/house/2018/roll482.xml	https://clerk.house.gov/evs/2018/roll482.xml	2026-10-06T18:21:18Z
+a5fe94d02845291d43e53b9b5319f334f9bf89b0acd000c4f3df31cb9d0deec2	94890	rolls/house/2018/roll484.xml	https://clerk.house.gov/evs/2018/roll484.xml	2026-10-06T18:21:18Z
+95904f20c99e451e6934591699b0f015425d9cbece621154ba0eb6eb59742e7b	94896	rolls/house/2018/roll486.xml	https://clerk.house.gov/evs/2018/roll486.xml	2026-10-06T18:21:18Z
+5bee099f080ca05da2c62e36f1e8643b7256190fb66cbf45a432c05a7db6dd4a	94911	rolls/house/2018/roll487.xml	https://clerk.house.gov/evs/2018/roll487.xml	2026-10-06T18:21:19Z
+34eedb50face5beb58a3ee2b4a7fbd7b15c7fd5659d9ca0d3ab688a37359976c	94849	rolls/house/2018/roll488.xml	https://clerk.house.gov/evs/2018/roll488.xml	2026-10-06T18:21:19Z
+6e5f5bbf8900141be17561742916979db4c64f55d0aa4816c345c85b270634c0	94877	rolls/house/2018/roll489.xml	https://clerk.house.gov/evs/2018/roll489.xml	2026-10-06T18:21:20Z
+f59e375dc85a3dacf4a11e5c0e460aa689bb4e5685e398d6b19e7f06cebcd137	94921	rolls/house/2018/roll490.xml	https://clerk.house.gov/evs/2018/roll490.xml	2026-10-06T18:21:20Z
+f21082c345f8ca472e7e10538243c61d8338645d6776b69f3bbc935b902217bc	94884	rolls/house/2018/roll491.xml	https://clerk.house.gov/evs/2018/roll491.xml	2026-10-06T18:21:20Z
+9040c183970142bed404adca90db723524ff3021d1844bf7e6c18c358ca8ed8f	94895	rolls/house/2018/roll492.xml	https://clerk.house.gov/evs/2018/roll492.xml	2026-10-06T18:21:21Z
+4c85e439e6a282bbb795581b34443901f9f4d9ec757020da19c7281d6848c311	94874	rolls/house/2018/roll493.xml	https://clerk.house.gov/evs/2018/roll493.xml	2026-10-06T18:21:21Z
+0a12f03d47998b388eb2859940d9c1af1005872bfe8befe20197b7e268b9b1a6	94851	rolls/house/2018/roll495.xml	https://clerk.house.gov/evs/2018/roll495.xml	2026-10-06T18:21:22Z
+72b9892aebaca6987868d2eddeb3ed98716914a76bab16272ab515246318342b	94963	rolls/house/2018/roll496.xml	https://clerk.house.gov/evs/2018/roll496.xml	2026-10-06T18:21:22Z
+0677bf96fa1bb2facec8719025c7976303ed82cea8ecc5050e62c8e84c8de4a5	94931	rolls/house/2018/roll500.xml	https://clerk.house.gov/evs/2018/roll500.xml	2026-10-06T18:21:22Z
+9e9d2815746957fda21c69516cae5c540504966042d665a5e80ecf1115c2b696	94849	rolls/house/2019/roll028.xml	https://clerk.house.gov/evs/2019/roll028.xml	2026-10-06T18:21:23Z
+b9bfca33252f682e76d61cb8b12a9cbc4de7cdfa834dbe2df8da09b4616d49ff	94388	rolls/house/2019/roll066.xml	https://clerk.house.gov/evs/2019/roll066.xml	2026-10-06T18:21:23Z
+da76735ff08b7f55d338ff651a93c6e9ab395e2414609463ce7b7fb9fb6a1094	94531	rolls/house/2019/roll077.xml	https://clerk.house.gov/evs/2019/roll077.xml	2026-10-06T18:21:24Z
+4ef50a92297ee806b7a21c9fef190e58570ca728daed4ce240027ed974b69413	94439	rolls/house/2019/roll087.xml	https://clerk.house.gov/evs/2019/roll087.xml	2026-10-06T18:21:24Z
+1f00cb65b6b76407be0897e832b1f4803116306ddf0b9ed77537c68d8ea83bc3	94318	rolls/house/2019/roll089.xml	https://clerk.house.gov/evs/2019/roll089.xml	2026-10-06T18:21:24Z
+374251ba551e9b002ef9bb67153f1ac0dbdd4d0b2ea199146dfcf0d034e962b9	94373	rolls/house/2019/roll094.xml	https://clerk.house.gov/evs/2019/roll094.xml	2026-10-06T18:21:25Z
+439bef86a371875ad4354bccc75457b222f9c949533cb247a270f6a3febc3427	94154	rolls/house/2019/roll095.xml	https://clerk.house.gov/evs/2019/roll095.xml	2026-10-06T18:21:25Z
+fe4b650db94b124c6b5d880709582de68c0f73775bc3f9b0db4229bc1259fa74	94312	rolls/house/2019/roll105.xml	https://clerk.house.gov/evs/2019/roll105.xml	2026-10-06T18:21:26Z
+c60c74965a9341497bb49d41a0ec2988591b121e15f5b9dc04d017086c51b65c	94425	rolls/house/2019/roll127.xml	https://clerk.house.gov/evs/2019/roll127.xml	2026-10-06T18:21:26Z
+03cbf129c676b1c54a5f1c3c6db318152160a4abc31d0961090580d945a2234e	94356	rolls/house/2019/roll138.xml	https://clerk.house.gov/evs/2019/roll138.xml	2026-10-06T18:21:26Z
+47cddf8ae0f24c3d9f7033ffbf7ac71560471c30df89985293443165adb25fa8	94526	rolls/house/2019/roll142.xml	https://clerk.house.gov/evs/2019/roll142.xml	2026-10-06T18:21:27Z
+653b924353faf0f8e63dd204c86ae7cb9b7f4f4fa70645222a0c6986e33c414a	94321	rolls/house/2019/roll151.xml	https://clerk.house.gov/evs/2019/roll151.xml	2026-10-06T18:21:27Z
+b0aa5491cebeb713825e8839ac4275b27264e8133ded5b5eb2d70798ed14ca27	94292	rolls/house/2019/roll153.xml	https://clerk.house.gov/evs/2019/roll153.xml	2026-10-06T18:21:28Z
+e2697ba11ae074c1a6db9a29dceb6e57c63fefc18523bba51729c5a63dd439db	94193	rolls/house/2019/roll188.xml	https://clerk.house.gov/evs/2019/roll188.xml	2026-10-06T18:21:28Z
+1f33147efee75b92f8bb3ae19ab32343d9695c05d910c96c600a3f2c86163a0b	94279	rolls/house/2019/roll203.xml	https://clerk.house.gov/evs/2019/roll203.xml	2026-10-06T18:21:28Z
+317e21447106f1aadd9f4178307262ead3444222bdcf25e429b5c25b9a1d26c7	94313	rolls/house/2019/roll204.xml	https://clerk.house.gov/evs/2019/roll204.xml	2026-10-06T18:21:29Z
+394fc3d1cd490c32f77fcfcbcad583d0ffe0f687da068f18d5f404be99dad704	94373	rolls/house/2019/roll218.xml	https://clerk.house.gov/evs/2019/roll218.xml	2026-10-06T18:21:29Z
+d44d1056d24d8a6fde768b48eec5c83a6db2a567d0e6ff938d199ddc8eee243f	94349	rolls/house/2019/roll232.xml	https://clerk.house.gov/evs/2019/roll232.xml	2026-10-06T18:21:30Z
+f75239f0f18e16514075b425fa9658b57c85dd5c678e60eb0ec2e3a31f57f772	94358	rolls/house/2019/roll233.xml	https://clerk.house.gov/evs/2019/roll233.xml	2026-10-06T18:21:30Z
+9f621eec79de4b04875360b8f5ba16627eedc43783ea8260aa8f9a1ced8900d6	94647	rolls/house/2019/roll414.xml	https://clerk.house.gov/evs/2019/roll414.xml	2026-10-06T18:21:31Z
+99b335b208f29566bc633cde1961370b8f0667a5d7b1bac8f5a3a5a19e9e4d76	94801	rolls/house/2019/roll474.xml	https://clerk.house.gov/evs/2019/roll474.xml	2026-10-06T18:21:31Z
+a40ca187402bc8883e380a6b1e0be39afbec090fe3a5740afcac8c0ae07e84b2	94545	rolls/house/2019/roll486.xml	https://clerk.house.gov/evs/2019/roll486.xml	2026-10-06T18:21:31Z
+ddf6e5861a40714046c8245e7715d9fae34478d0e3b1da3c05e32ca8840f023c	94519	rolls/house/2019/roll487.xml	https://clerk.house.gov/evs/2019/roll487.xml	2026-10-06T18:21:32Z
+19c6b9901e67c66c2d1c522ec2f9f9bba5c7847125479fda345f7f941ae05754	94504	rolls/house/2019/roll488.xml	https://clerk.house.gov/evs/2019/roll488.xml	2026-10-06T18:21:32Z
+01c6a38e539f5e089fcd939a6839f3a4b6ff570773cb35c8c60ded8607e4f89b	94727	rolls/house/2019/roll499.xml	https://clerk.house.gov/evs/2019/roll499.xml	2026-10-06T18:21:32Z
+d4d6d16f381af81057d0c7defe938f75b043628f8306c24657284a3fec2f4356	94500	rolls/house/2019/roll511.xml	https://clerk.house.gov/evs/2019/roll511.xml	2026-10-06T18:21:33Z
+5f0e4554ba81845edc49d62f6723708be79c6ab7e242215d27d4c71d193c5627	94932	rolls/house/2019/roll535.xml	https://clerk.house.gov/evs/2019/roll535.xml	2026-10-06T18:21:33Z
+a779a5fe85a84ec3b258347bcd29b78460498cee5458d6f856eb56e8c55542ed	94882	rolls/house/2019/roll538.xml	https://clerk.house.gov/evs/2019/roll538.xml	2026-10-06T18:21:34Z
+8411e23084aa60f925bf9768898474269d5e07f018d91c15826d9a7f9d7036d4	94775	rolls/house/2019/roll553.xml	https://clerk.house.gov/evs/2019/roll553.xml	2026-10-06T18:21:34Z
+f531cf730ba778de53050e8a7c56d7bbbb568b4f4fb68c42abcbdb890b29aeef	94668	rolls/house/2019/roll556.xml	https://clerk.house.gov/evs/2019/roll556.xml	2026-10-06T18:21:34Z
+766e976db4acef2bf4bfb8fe474a19a8a218c1693060c784a4e6e77faf1b1311	94368	rolls/house/2019/roll584.xml	https://clerk.house.gov/evs/2019/roll584.xml	2026-10-06T18:21:35Z
+09ac3dfb807a7fcae11e95b2e654a5003ade79ab9b7d9dc6efb16b3e27c6d5c3	94139	rolls/house/2019/roll631.xml	https://clerk.house.gov/evs/2019/roll631.xml	2026-10-06T18:21:35Z
+d8fc4e3790e15ba389d89a90041f642188463fa0bb7488031d800c4293c30c3e	94237	rolls/house/2019/roll635.xml	https://clerk.house.gov/evs/2019/roll635.xml	2026-10-06T18:21:36Z
+98963c6c31a5822d2190f94729874bedb3b7bb26da88e2ffcfdb179931d9ae20	94294	rolls/house/2019/roll636.xml	https://clerk.house.gov/evs/2019/roll636.xml	2026-10-06T18:21:36Z
+60f2aca0c99bfc826a626f33f999b221f3f83d7528481ba5dd93c96b06d07de6	94059	rolls/house/2019/roll647.xml	https://clerk.house.gov/evs/2019/roll647.xml	2026-10-06T18:21:36Z
+7809f83e9010d485ffe3e49037c4fe954b147479569687e87b267ae2931f4301	94191	rolls/house/2019/roll655.xml	https://clerk.house.gov/evs/2019/roll655.xml	2026-10-06T18:21:37Z
+a41ba9abd454e6d5ddf240df4e02a89060c06aea6ba5b9847b1ce9637fa9abae	94031	rolls/house/2019/roll659.xml	https://clerk.house.gov/evs/2019/roll659.xml	2026-10-06T18:21:37Z
+00475364a9959112f9272586dbf1ae68178cbb190039c09d933acc2044c9226e	93985	rolls/house/2019/roll672.xml	https://clerk.house.gov/evs/2019/roll672.xml	2026-10-06T18:21:38Z
+d23626c9aa3d4001108da952b96ff33dff0c8e90d17aba2168d04efc6d725ee0	94113	rolls/house/2019/roll685.xml	https://clerk.house.gov/evs/2019/roll685.xml	2026-10-06T18:21:38Z
+f53cae18af2e4ed4bfe22e6f59f6cb9f22e215cde7d45696468ad849d5b78802	94069	rolls/house/2019/roll689.xml	https://clerk.house.gov/evs/2019/roll689.xml	2026-10-06T18:21:39Z
+ae3ce673d9d6da19b3b36bbf7210efa907431245f63230d25573b8bfa6e76714	94055	rolls/house/2019/roll690.xml	https://clerk.house.gov/evs/2019/roll690.xml	2026-10-06T18:21:39Z
+2bcead37b7c897aa5593bcaa68e139ddb44789556ef2e1f38826ccc0cba48a1b	94167	rolls/house/2019/roll701.xml	https://clerk.house.gov/evs/2019/roll701.xml	2026-10-06T18:21:39Z
+830ca6bfb99df72ed2af1662a32cd5bf562075958e1eab2616b781873ceead12	93997	rolls/house/2020/roll022.xml	https://clerk.house.gov/evs/2020/roll022.xml	2026-10-06T18:21:40Z
+61d1d22c945851b11413327358c61e9623b39d936bf4f30c6f0e38371caf41bd	94161	rolls/house/2020/roll023.xml	https://clerk.house.gov/evs/2020/roll023.xml	2026-10-06T18:21:40Z
+7026ff5baba95fa8d3f81f049d5073de7b3a287276d1aa6880bc171453e6e8a4	93931	rolls/house/2020/roll032.xml	https://clerk.house.gov/evs/2020/roll032.xml	2026-10-06T18:21:41Z
+f691ab6746ec3f216e38841de321964a612d563435205bc314bd00e25d71ac92	93836	rolls/house/2020/roll035.xml	https://clerk.house.gov/evs/2020/roll035.xml	2026-10-06T18:21:41Z
+e441cae0aca509687b7390310bffe50a2a0056c41c0cf73484ce4fd38173cd0c	93780	rolls/house/2020/roll036.xml	https://clerk.house.gov/evs/2020/roll036.xml	2026-10-06T18:21:41Z
+9c6923dbc957df52d55c1b448a191cca605e66c1ab005c52d8437a2ba749dc42	94014	rolls/house/2020/roll082.xml	https://clerk.house.gov/evs/2020/roll082.xml	2026-10-06T18:21:42Z
+67c77b6af1cef5d7e3c0041629e0afed25d97acfc8ac105c89beb83eaa21479e	93812	rolls/house/2020/roll085.xml	https://clerk.house.gov/evs/2020/roll085.xml	2026-10-06T18:21:42Z
+ecd0faf29fea822920586dcfce8da88bd1c4211e1cf1d2cc4db797c1107ef6b2	94065	rolls/house/2020/roll086.xml	https://clerk.house.gov/evs/2020/roll086.xml	2026-10-06T18:21:43Z
+c5fb7274353cfad2798462349e93270833b862113fa8350b4a23a9664390c691	93872	rolls/house/2020/roll097.xml	https://clerk.house.gov/evs/2020/roll097.xml	2026-10-06T18:21:43Z
+f7838a46bd802df86a08724a6d960760991f7a586f00fe4e82056b8719c8e561	93742	rolls/house/2020/roll101.xml	https://clerk.house.gov/evs/2020/roll101.xml	2026-10-06T18:21:43Z
+be4a076627bcdb297c036c4830b172560b735e808c3bfc954d0d069a74763504	94141	rolls/house/2020/roll102.xml	https://clerk.house.gov/evs/2020/roll102.xml	2026-10-06T18:21:44Z
+08555ea319a19aa94972e7156655c21b0741336daa409d57b40e5e8e55116bd3	94126	rolls/house/2020/roll104.xml	https://clerk.house.gov/evs/2020/roll104.xml	2026-10-06T18:21:44Z
+cdc888d64798169110f3c205a4038095146685dcfc9ffe8b5ff527b28b7bdb7a	94259	rolls/house/2020/roll110.xml	https://clerk.house.gov/evs/2020/roll110.xml	2026-10-06T18:21:45Z
+053ed4f6b65dce77b0e3c1139e45a695d80e146458f6509b2c4dc8cc0de821fb	94258	rolls/house/2020/roll114.xml	https://clerk.house.gov/evs/2020/roll114.xml	2026-10-06T18:21:45Z
+eaa36518558a7905f4484dab06038aaf35ce7820665e4269976ca947d22512b7	94262	rolls/house/2020/roll120.xml	https://clerk.house.gov/evs/2020/roll120.xml	2026-10-06T18:21:45Z
+89eea21402d30aaadf9d6631a8f259e8ca817295552d4d18d01fff41e5efecd4	94032	rolls/house/2020/roll155.xml	https://clerk.house.gov/evs/2020/roll155.xml	2026-10-06T18:21:46Z
+55b44fc6b8fb441636294875e660fd5c4099da26f02331e4495514ed6a7ca077	94393	rolls/house/2020/roll167.xml	https://clerk.house.gov/evs/2020/roll167.xml	2026-10-06T18:21:46Z
+9bfb5b19bc8f0e41b7ef0534726c5b9d4d47153bdfd0a54b091d3ea09cb79bd8	94093	rolls/house/2020/roll184.xml	https://clerk.house.gov/evs/2020/roll184.xml	2026-10-06T18:21:46Z
+184909a2bac2fd44497bd733b18d9401063ee72a44d132c398cca28c0074136e	94254	rolls/house/2020/roll198.xml	https://clerk.house.gov/evs/2020/roll198.xml	2026-10-06T18:21:47Z
+ba07ecbfcddc98d11706af02a0c16ef6379f4e5de1580fe64a9991e3ac70c3b4	93911	rolls/house/2020/roll219.xml	https://clerk.house.gov/evs/2020/roll219.xml	2026-10-06T18:21:47Z
+731def2e3053001cf3229ec7e0241b441394fb2349f3852bffa467bc2e387f19	93976	rolls/house/2020/roll220.xml	https://clerk.house.gov/evs/2020/roll220.xml	2026-10-06T18:21:48Z
+c3321715c554e28af2ae4e6a6182847e7a3b144e2d87241cf7f4c3d9d01b565e	94266	rolls/house/2020/roll233.xml	https://clerk.house.gov/evs/2020/roll233.xml	2026-10-06T18:21:48Z
+21c356d76feef8eba2ed7991f5d7e41d8f9b0bab6d9cfd04cd0288006d2d0dc7	93957	rolls/house/2020/roll237.xml	https://clerk.house.gov/evs/2020/roll237.xml	2026-10-06T18:21:48Z
+85ef941d721faba9487ab478d210699f0dbebe687a0df766a6684c86acb3e5cc	94065	rolls/house/2020/roll238.xml	https://clerk.house.gov/evs/2020/roll238.xml	2026-10-06T18:21:49Z
+dec3877945cded47607b0d136e259eb028fdb27eb2ec7be5d286cfb35e4b743e	93936	rolls/house/2020/roll239.xml	https://clerk.house.gov/evs/2020/roll239.xml	2026-10-06T18:21:49Z
+da0227506a25644e7d35f34f8d6ade848f3932b246167a9882f551021397932d	93886	rolls/house/2020/roll240.xml	https://clerk.house.gov/evs/2020/roll240.xml	2026-10-06T18:21:50Z
+8a66104835c93ea7894105f9a97f782e1f5b3a241ec2fe9b37eae187503c8c81	94023	rolls/house/2020/roll242.xml	https://clerk.house.gov/evs/2020/roll242.xml	2026-10-06T18:21:50Z
+5c160eb76f6ab7a95b640a1080aac3a6a831393c44326f57cf7d3080ed9a8f5c	94055	rolls/house/2020/roll244.xml	https://clerk.house.gov/evs/2020/roll244.xml	2026-10-06T18:21:50Z
+1f8b20d67f72d7f555067e54494e1df3b8986c61cf01334dcc64a30a5e3f8541	94004	rolls/house/2020/roll245.xml	https://clerk.house.gov/evs/2020/roll245.xml	2026-10-06T18:21:51Z
+8f6d163ccaf849d38bfa420965c9088edb763ef6eb3b4557383b220b57c4e2af	93986	rolls/house/2020/roll246.xml	https://clerk.house.gov/evs/2020/roll246.xml	2026-10-06T18:21:51Z
+d2def19b44e28471dfec714605910596038fb3daacc898d951af49329df78b72	94118	rolls/house/2020/roll247.xml	https://clerk.house.gov/evs/2020/roll247.xml	2026-10-06T18:21:52Z
+6261200f3ab2cc97dae0acb0b4a2edcc7457d19b989938624a97fcdc4572b0f9	93984	rolls/house/2020/roll248.xml	https://clerk.house.gov/evs/2020/roll248.xml	2026-10-06T18:21:52Z
+28cd7c429e9cde7972b5ed9eb9e8cc0447cfa59e77283bf2e0f65b8bdcf0d1b4	94316	rolls/house/2021/roll018.xml	https://clerk.house.gov/evs/2021/roll018.xml	2026-10-06T18:21:52Z
+5e9d446b2c1f0ec66ca6e16fc644e5ce6077592fc044d1a93f3eaae6ed030343	94219	rolls/house/2021/roll032.xml	https://clerk.house.gov/evs/2021/roll032.xml	2026-10-06T18:21:53Z
+04f23bae3de51f106a20cedb1c42e6ab8b300b85063626bd955069a00cf0ad83	94196	rolls/house/2021/roll072.xml	https://clerk.house.gov/evs/2021/roll072.xml	2026-10-06T18:21:53Z
+2f6e392284429659592933612e25c24804e91408fa4eaa5d948f86f919c9533a	93649	rolls/house/2021/roll080.xml	https://clerk.house.gov/evs/2021/roll080.xml	2026-10-06T18:21:54Z
+051549ae82ba5a90b2d1ee687247907b4f70c51459eca254a5ee798c39bf8efa	93647	rolls/house/2021/roll089.xml	https://clerk.house.gov/evs/2021/roll089.xml	2026-10-06T18:21:54Z
+2e5b8a4eb2e46e9ebdca16f700f9d59ea2856024119d3d4d1ae70539d9349cf9	93470	rolls/house/2021/roll098.xml	https://clerk.house.gov/evs/2021/roll098.xml	2026-10-06T18:21:55Z
+4437bc23e3f7849110b8f3843f68e6a27cab51b3e0b826b73031f34b545b79c7	93616	rolls/house/2021/roll100.xml	https://clerk.house.gov/evs/2021/roll100.xml	2026-10-06T18:21:55Z
+f8a7992a34e2bb7a83f816f227730a9f6b6babd68c9af4148282cb9ebebb4ce6	93635	rolls/house/2021/roll101.xml	https://clerk.house.gov/evs/2021/roll101.xml	2026-10-06T18:21:55Z
+060a790f48535c7f1b448864a87b2374092e1da81baf5363172edfe6e923312c	93636	rolls/house/2021/roll109.xml	https://clerk.house.gov/evs/2021/roll109.xml	2026-10-06T18:21:56Z
+93cc9a56fb06a4b0fa2c56134768178e1f7221a0c8d94cfdfef62df3f8f528be	93691	rolls/house/2021/roll112.xml	https://clerk.house.gov/evs/2021/roll112.xml	2026-10-06T18:21:56Z
+7bb16f754cf97d2023e190562a634120cc2d68f1cfb4532b12d7a5470c0e6140	93668	rolls/house/2021/roll113.xml	https://clerk.house.gov/evs/2021/roll113.xml	2026-10-06T18:21:57Z
+9a126aeb80cd36ccd55b3c0d5343c9ae806dc92150f571e7cb4018b966ba4d92	93675	rolls/house/2021/roll144.xml	https://clerk.house.gov/evs/2021/roll144.xml	2026-10-06T18:21:57Z
+6ac7b594ce845fd0c6ab9d0bf159cb07d747f95c3d5b5ce41bc57abc1ea0d3d3	93593	rolls/house/2021/roll145.xml	https://clerk.house.gov/evs/2021/roll145.xml	2026-10-06T18:21:57Z
+d2bb45cda6e00143cb98cadb56d535a49efbd11255cf3cbf97d83a4189e72f6b	94148	rolls/house/2021/roll161.xml	https://clerk.house.gov/evs/2021/roll161.xml	2026-10-06T18:21:58Z
+9a52f6c4edc46f147aabcfa817e026f84e9eada5253280744a010e4f9aa048e7	93991	rolls/house/2021/roll170.xml	https://clerk.house.gov/evs/2021/roll170.xml	2026-10-06T18:21:58Z
+b26b21b0a5d1134d820bde245ccf467b5d8f3567c971b49706a276e9f9922e62	93996	rolls/house/2021/roll181.xml	https://clerk.house.gov/evs/2021/roll181.xml	2026-10-06T18:21:59Z
+3d238c706879f2cdc208c234abbc2e91a72f6467b9f8237f327863e24db744a2	93967	rolls/house/2021/roll183.xml	https://clerk.house.gov/evs/2021/roll183.xml	2026-10-06T18:21:59Z
+4c7ccf99637cd327536a6ec5e7c49774294c80f854affdc4dbcd82c23a4f7aa7	94075	rolls/house/2021/roll185.xml	https://clerk.house.gov/evs/2021/roll185.xml	2026-10-06T18:22:00Z
+9bee700173edae7849c3070d24f9994c313af2c4e997571e3ec6d99b14c7d0bc	94039	rolls/house/2021/roll220.xml	https://clerk.house.gov/evs/2021/roll220.xml	2026-10-06T18:22:00Z
+e5d18a0c09b08a83b14a0debd9c9a00b7f738bc603cf1336386d91026c46392c	94006	rolls/house/2021/roll224.xml	https://clerk.house.gov/evs/2021/roll224.xml	2026-10-06T18:22:00Z
+7f6728307c2fb150e07b41c5c328a53c829e6a7905d90d010eb816d6b09df7ed	93875	rolls/house/2021/roll225.xml	https://clerk.house.gov/evs/2021/roll225.xml	2026-10-06T18:22:01Z
+574ef76703cbc2e90100b6015d75c3d64906bee46dca3da1e40a4228fe65d9c2	94115	rolls/house/2021/roll243.xml	https://clerk.house.gov/evs/2021/roll243.xml	2026-10-06T18:22:01Z
+5e87e0971e7843e46428e6dbda2317397d500213fe129388479b1a8a38551a95	94140	rolls/house/2021/roll250.xml	https://clerk.house.gov/evs/2021/roll250.xml	2026-10-06T18:22:02Z
+d9624d4a81ef7aa8f998e729264bfe08fff490d584714d3810050dbf3e2143ad	93949	rolls/house/2021/roll251.xml	https://clerk.house.gov/evs/2021/roll251.xml	2026-10-06T18:22:02Z
+312825ff125b49120dfda047088276a91fee27139fee9a555dd0a5d16fe2e92d	94234	rolls/house/2021/roll255.xml	https://clerk.house.gov/evs/2021/roll255.xml	2026-10-06T18:22:02Z
+0f501bda004a1ec6d4f500a0eb5c05f91082bee941d43765bdb19591ed09ab92	94071	rolls/house/2021/roll256.xml	https://clerk.house.gov/evs/2021/roll256.xml	2026-10-06T18:22:03Z
+e7cce9eae85b2af4df40b9c4b568d212d39c3acde1449952dc2b57b56b555f8f	94085	rolls/house/2021/roll261.xml	https://clerk.house.gov/evs/2021/roll261.xml	2026-10-06T18:22:03Z
+5fd750a9e6121750b067124c7a5c2937e40a83c246b730ac8f3d0d9afc545415	94081	rolls/house/2021/roll262.xml	https://clerk.house.gov/evs/2021/roll262.xml	2026-10-06T18:22:04Z
+88922e7e9b700a1858fa873e297c6d58293922018e65f52709d6eb958dbb4bf1	94010	rolls/house/2021/roll265.xml	https://clerk.house.gov/evs/2021/roll265.xml	2026-10-06T18:22:04Z
+f87ef7212475901b38870148924db78bc3ca7181db4e0c79c0413da2cef7039a	94158	rolls/house/2021/roll298.xml	https://clerk.house.gov/evs/2021/roll298.xml	2026-10-06T18:22:05Z
+76b04987159b01a3f022427dc77dc5d1010911d9072c3b2f41c9c4f937b203c4	94077	rolls/house/2021/roll299.xml	https://clerk.house.gov/evs/2021/roll299.xml	2026-10-06T18:22:05Z
+88b5a52399f92f311a523887ddeda6d5e81dec6c90ea977ee82f9e4659d1cd8d	94057	rolls/house/2021/roll302.xml	https://clerk.house.gov/evs/2021/roll302.xml	2026-10-06T18:22:05Z
+0fc25d0aa2004f0174792a7a380b2f2f63fe083eb9effd5802be7ed5142d5aec	94049	rolls/house/2021/roll303.xml	https://clerk.house.gov/evs/2021/roll303.xml	2026-10-06T18:22:06Z
+9333b14593cc5b53a8451c70dca3fe75930599e6fa7f447b3d38962aec247e4e	94198	rolls/house/2021/roll310.xml	https://clerk.house.gov/evs/2021/roll310.xml	2026-10-06T18:22:06Z
+4317b2426f72885c7ecd91a22610927a35ca5a082a068b0ecf7402e0700a979d	94271	rolls/house/2021/roll311.xml	https://clerk.house.gov/evs/2021/roll311.xml	2026-10-06T18:22:07Z
+b87d09ef1f7b136c6c3bfc3e47e10f8903b58818c2823cf3d5a269f2455f3677	94118	rolls/house/2021/roll313.xml	https://clerk.house.gov/evs/2021/roll313.xml	2026-10-06T18:22:07Z
+4fb8a37c32d6229e3f0353b59a0c3c49df5d21f8a940a3e97dfc9409bc7b306c	94055	rolls/house/2021/roll323.xml	https://clerk.house.gov/evs/2021/roll323.xml	2026-10-06T18:22:08Z
+62689855d4a13471dd84b09f8e919330c49f0963e6a1e04a0982ce389322cebf	94061	rolls/house/2021/roll337.xml	https://clerk.house.gov/evs/2021/roll337.xml	2026-10-06T18:22:08Z
+178ae97e18a6be18a10a6270b42df34323979f8a18fdbdf4ccd8a7d9cba00300	94083	rolls/house/2021/roll338.xml	https://clerk.house.gov/evs/2021/roll338.xml	2026-10-06T18:22:08Z
+793a27ee062a678dcc6bc6e617a9322648d03ba0e5b114f4e991826d60719c91	94128	rolls/house/2021/roll339.xml	https://clerk.house.gov/evs/2021/roll339.xml	2026-10-06T18:22:09Z
+9e26d13c56d874dd153db5a0fdef698b1285796835ee04d8d26d2af840e18f57	94098	rolls/house/2021/roll345.xml	https://clerk.house.gov/evs/2021/roll345.xml	2026-10-06T18:22:09Z
+7d268441d7c4bf234bf07b5ab635c15a327f21046d2d8b5db3846408a62c52f5	94091	rolls/house/2021/roll346.xml	https://clerk.house.gov/evs/2021/roll346.xml	2026-10-06T18:22:10Z
+c1b5e995db4950e2980196873c18f661ca1b86919304b233bca2fc2b9b265e69	94035	rolls/house/2021/roll354.xml	https://clerk.house.gov/evs/2021/roll354.xml	2026-10-06T18:22:10Z
+23ad8f94c3f0925675956552e2167f2d530f1947d2e74a5ab8518a2d397249f7	94073	rolls/house/2021/roll359.xml	https://clerk.house.gov/evs/2021/roll359.xml	2026-10-06T18:22:11Z
+487a51089c5bfe12b5806db433da41285354dcfefa3b965a757f97a4997e37d1	94667	rolls/house/2021/roll363.xml	https://clerk.house.gov/evs/2021/roll363.xml	2026-10-06T18:22:11Z
+3833c41e5fd04062d180c5d63b2d6a6d792d5b7492e569daf8a1e95db0dbf664	94605	rolls/house/2021/roll364.xml	https://clerk.house.gov/evs/2021/roll364.xml	2026-10-06T18:22:11Z
+d1f7fea38cd6b46c21b008f111d924a5140c58f957f901a1de0f2db0660715a3	94707	rolls/house/2021/roll366.xml	https://clerk.house.gov/evs/2021/roll366.xml	2026-10-06T18:22:12Z
+1675aaed92f89764dd3cd76c79ff49d7028e5365bba83e169d668217eafdb728	94643	rolls/house/2021/roll369.xml	https://clerk.house.gov/evs/2021/roll369.xml	2026-10-06T18:22:12Z
+135b36135dac591510f82511573cca63ddda3a258c8c2567460ff0469ccb5f6c	94532	rolls/house/2021/roll373.xml	https://clerk.house.gov/evs/2021/roll373.xml	2026-10-06T18:22:13Z
+5462bd5558d4dae848280e3021beb2e957d58bc6a983456a28885305f605dcee	94512	rolls/house/2021/roll374.xml	https://clerk.house.gov/evs/2021/roll374.xml	2026-10-06T18:22:13Z
+0c6abc24a1adae97024b1f28a2bb7fa98979722b6176ab461a2c4478066a86f8	94422	rolls/house/2021/roll399.xml	https://clerk.house.gov/evs/2021/roll399.xml	2026-10-06T18:22:14Z
+0fbba01fd528aa727cac27d63d3d9f54f65abbe4d46ab1cc855abb6149d7886a	94561	rolls/house/2021/roll401.xml	https://clerk.house.gov/evs/2021/roll401.xml	2026-10-06T18:22:14Z
+9e92c79cc2c124355fca37db03e28218093a162cb7182332fb997503a79e8a69	94635	rolls/house/2021/roll404.xml	https://clerk.house.gov/evs/2021/roll404.xml	2026-10-06T18:22:14Z
+72474f4129ef21b89e4930bd210dbac73e0d19933d4797881976f94a5dbf5b4e	94501	rolls/house/2021/roll405.xml	https://clerk.house.gov/evs/2021/roll405.xml	2026-10-06T18:22:15Z
+65d476fa57987c6a1bb3142073db4d2b4c159a85e1c7442308eaf89d3eb9a323	94527	rolls/house/2021/roll415.xml	https://clerk.house.gov/evs/2021/roll415.xml	2026-10-06T18:22:15Z
+deb18ad341fbef6cfa21b904c80d7bab0c51a560e52fc403f1f9ad99e9cd79d8	94513	rolls/house/2021/roll419.xml	https://clerk.house.gov/evs/2021/roll419.xml	2026-10-06T18:22:16Z
+ded758edaad7653dcb4e3689b1fc5d8c963ff1d8abeb97926261f5444885ce69	94539	rolls/house/2021/roll426.xml	https://clerk.house.gov/evs/2021/roll426.xml	2026-10-06T18:22:16Z
+54f91dfaf4dffadd547e0dcd9e34b1c36a3f913cadbe13fde49cea35f8234585	94690	rolls/house/2021/roll434.xml	https://clerk.house.gov/evs/2021/roll434.xml	2026-10-06T18:22:16Z
+302251b19fad07c84030afeca78fa7a70e6acd745894f8f99a542ea1955ae61c	94673	rolls/house/2021/roll449.xml	https://clerk.house.gov/evs/2021/roll449.xml	2026-10-06T18:22:17Z
+2562ca099b4dee3c17103b9d17195255571879f2910729944920b210a632ca36	94585	rolls/house/2022/roll010.xml	https://clerk.house.gov/evs/2022/roll010.xml	2026-10-06T18:22:17Z
+24381df044409a49334eccc595767b8f72f6e6bdd00504e4bb97abccd76ca5b4	94544	rolls/house/2022/roll011.xml	https://clerk.house.gov/evs/2022/roll011.xml	2026-10-06T18:22:18Z
+3e5f61f36e1a3ef0848c84dfd6b26f4da34dd46475adcab3538fcfeeddc953a1	94915	rolls/house/2022/roll015.xml	https://clerk.house.gov/evs/2022/roll015.xml	2026-10-06T18:22:18Z
+bec728827dfad55a606212c364966bf85d7277de7f223e8611e0e8d4367ae142	94711	rolls/house/2022/roll033.xml	https://clerk.house.gov/evs/2022/roll033.xml	2026-10-06T18:22:18Z
+ffa8faf7d847f21fd9f992873059a5f7581a57ef9cad7c66de2046496f28e924	94474	rolls/house/2022/roll034.xml	https://clerk.house.gov/evs/2022/roll034.xml	2026-10-06T18:22:19Z
+6472c5f80deea205129de2a9f891f2ac0a25b095e1d7d0fb86aae63644689f4a	94629	rolls/house/2022/roll037.xml	https://clerk.house.gov/evs/2022/roll037.xml	2026-10-06T18:22:19Z
+f8b2c988cc67f44c75d6d5cddc8cd7380096448e57bbc7b94fe18327e064e1b4	94653	rolls/house/2022/roll038.xml	https://clerk.house.gov/evs/2022/roll038.xml	2026-10-06T18:22:20Z
+4df60455d3d652168713aa5b6cc80eda9e76ff4477533d9d7f4a9119603e3343	94677	rolls/house/2022/roll039.xml	https://clerk.house.gov/evs/2022/roll039.xml	2026-10-06T18:22:20Z
+63721f5acc177aaeafdf46b158f52c45bffe678fad5f02a98fd54a01b739c109	94644	rolls/house/2022/roll040.xml	https://clerk.house.gov/evs/2022/roll040.xml	2026-10-06T18:22:21Z
+2981d2135e5d0cbe7b431c13bf0427b11c22dc96a13d35d45c024dd38420bb0b	94682	rolls/house/2022/roll041.xml	https://clerk.house.gov/evs/2022/roll041.xml	2026-10-06T18:22:21Z
+def904d2c3e712aa6511564c014501224013127a812254c6fef2391a6ceca732	94612	rolls/house/2022/roll044.xml	https://clerk.house.gov/evs/2022/roll044.xml	2026-10-06T18:22:21Z
+92b84238b26881ba7e5c6697e7a353396c293907e2af3330698ba923d89466d1	94566	rolls/house/2022/roll046.xml	https://clerk.house.gov/evs/2022/roll046.xml	2026-10-06T18:22:22Z
+5872c7912ba4438e16e710491c7cfce48eb244a36935d65a1fac3bf2be23ceb2	94540	rolls/house/2022/roll047.xml	https://clerk.house.gov/evs/2022/roll047.xml	2026-10-06T18:22:22Z
+ac9a0d3b6f1896feaaf9778c3d74295e19b088dbd1f0963ef9ead6636f705198	94372	rolls/house/2022/roll059.xml	https://clerk.house.gov/evs/2022/roll059.xml	2026-10-06T18:22:23Z
+de124a388a5fb92607f14daea0f53bed825033692b3e68db94798e327c73ab1a	94357	rolls/house/2022/roll060.xml	https://clerk.house.gov/evs/2022/roll060.xml	2026-10-06T18:22:23Z
+821dbd64e3c6da0d53cbf54357be79a6444032df435ff42210d47c6734cde6f7	94357	rolls/house/2022/roll071.xml	https://clerk.house.gov/evs/2022/roll071.xml	2026-10-06T18:22:23Z
+d4d63949cff14ec296eb76448a7274b38611016beea8c89a3a32d7d029750b70	94311	rolls/house/2022/roll075.xml	https://clerk.house.gov/evs/2022/roll075.xml	2026-10-06T18:22:24Z
+dabb69df9ab3ec3ae13a2a2065f4ae9b52f6ce719e44c0171551e1e8f61cebdb	94451	rolls/house/2022/roll084.xml	https://clerk.house.gov/evs/2022/roll084.xml	2026-10-06T18:22:24Z
+51ead7176a74b831f4f5e9c875407e9a41b534ec7cbed160045b8847b30c3a64	94107	rolls/house/2022/roll087.xml	https://clerk.house.gov/evs/2022/roll087.xml	2026-10-06T18:22:25Z
+0fe2e44788da8428a1610293e54a4af23a23a654bcb76e030f68d780cab379ad	94127	rolls/house/2022/roll088.xml	https://clerk.house.gov/evs/2022/roll088.xml	2026-10-06T18:22:25Z
+04a3838d69cde9f6be2150fe3da70b79b42a1d1e01429c9e15562aa69bebfdcd	94202	rolls/house/2022/roll091.xml	https://clerk.house.gov/evs/2022/roll091.xml	2026-10-06T18:22:26Z
+564d4f0a9afe0d9c32f4583a0bd5e1fc01b6580211c6f9caa9e5c0673bfc73b9	94229	rolls/house/2022/roll096.xml	https://clerk.house.gov/evs/2022/roll096.xml	2026-10-06T18:22:26Z
+b67c83f9c0db93543cbd63da351a671efbbf491b957b04d3f04633a69e898705	94301	rolls/house/2022/roll097.xml	https://clerk.house.gov/evs/2022/roll097.xml	2026-10-06T18:22:26Z
+1db35d3a757d02fac1f406e26fc949df49e2862347a8e81d0038c17da4e5e13f	93953	rolls/house/2022/roll124.xml	https://clerk.house.gov/evs/2022/roll124.xml	2026-10-06T18:22:27Z
+b4605f7e6952da2c0ae375ad975148b768c9bc20d00fd98f05ca24f0436ba1c3	93939	rolls/house/2022/roll125.xml	https://clerk.house.gov/evs/2022/roll125.xml	2026-10-06T18:22:27Z
+daa3b77d4c2c3f013aaa07c59112ead4b169302fba93459d442821aef9da053b	93751	rolls/house/2022/roll126.xml	https://clerk.house.gov/evs/2022/roll126.xml	2026-10-06T18:22:28Z
+505b23c6853c0c3b000a25b71beaca8e170f11778396a34efd6f08e00aa76e58	93669	rolls/house/2022/roll137.xml	https://clerk.house.gov/evs/2022/roll137.xml	2026-10-06T18:22:28Z
+1ef4244c107a99bac6d00b4d1940f4db435a798a3de265ab2b333cae3b3e2fd7	93785	rolls/house/2022/roll138.xml	https://clerk.house.gov/evs/2022/roll138.xml	2026-10-06T18:22:28Z
+480671248d22ee9439491191c1c42e5073fc8c81bbd5bab197f7f7b091ae488b	93845	rolls/house/2022/roll141.xml	https://clerk.house.gov/evs/2022/roll141.xml	2026-10-06T18:22:29Z
+e0f4e32b1c1f4ed89fd8b1833cbda291f23d1d3c5f2db050692794ce96e84bec	93878	rolls/house/2022/roll145.xml	https://clerk.house.gov/evs/2022/roll145.xml	2026-10-06T18:22:29Z
+44d8ec825e032f0fe0845184b15934f77391d2696ce514e107e29f752acd085a	93507	rolls/house/2022/roll152.xml	https://clerk.house.gov/evs/2022/roll152.xml	2026-10-06T18:22:30Z
+53c373d39330479cf7d3e184f67c7092902eeaace667076795243983f9601c84	93559	rolls/house/2022/roll155.xml	https://clerk.house.gov/evs/2022/roll155.xml	2026-10-06T18:22:30Z
+552bd510b70a66306a55df7c008c0a6c70fb89708b0085da97fed7e503b44c70	93532	rolls/house/2022/roll162.xml	https://clerk.house.gov/evs/2022/roll162.xml	2026-10-06T18:22:30Z
+3ea939f57f6a208fbb605102a05db9138bde4545a7cbf3c528f5d3ce0e169817	93610	rolls/house/2022/roll165.xml	https://clerk.house.gov/evs/2022/roll165.xml	2026-10-06T18:22:31Z
+c6fb26c3858a9ea42bcf0cbc61c5f1580ff002f01604c86dda46ae9b34b7f2a2	93639	rolls/house/2022/roll166.xml	https://clerk.house.gov/evs/2022/roll166.xml	2026-10-06T18:22:31Z
+4a3a09fab464ea18294a4f8553c0329c7835d1e8028b0dc4cb8dda7d11c5d84e	93640	rolls/house/2022/roll167.xml	https://clerk.house.gov/evs/2022/roll167.xml	2026-10-06T18:22:32Z
+559bc87b593d4dd69a46ded2e005169212090c4c429ede66884a2e249581f362	93554	rolls/house/2022/roll173.xml	https://clerk.house.gov/evs/2022/roll173.xml	2026-10-06T18:22:32Z
+7b23fb098727bf4175ae429e497b04d243ae539579126bc24a71719639b422dd	93587	rolls/house/2022/roll174.xml	https://clerk.house.gov/evs/2022/roll174.xml	2026-10-06T18:22:33Z
+6544e944f037f935fc01f47b54f046b7e68fc9f1feee2a7c92b6013a25c77599	93567	rolls/house/2022/roll177.xml	https://clerk.house.gov/evs/2022/roll177.xml	2026-10-06T18:22:33Z
+04ea8274d77c3f7c642bb5e458d3043e5aa500a312e0d24b67df42cf86b3a362	93533	rolls/house/2022/roll194.xml	https://clerk.house.gov/evs/2022/roll194.xml	2026-10-06T18:22:33Z
+a6bb8d1ab249c0d550188d4884c38d9c3c2952d199fe45d1de66720839e1f957	93718	rolls/house/2022/roll198.xml	https://clerk.house.gov/evs/2022/roll198.xml	2026-10-06T18:22:34Z
+f99e38b45f5f3eb6bbc5ad50ff65be3f790fd33950802084cbc9455134775c52	93779	rolls/house/2022/roll199.xml	https://clerk.house.gov/evs/2022/roll199.xml	2026-10-06T18:22:34Z
+10db440e214407b6836e61781864318d7f2e3eff433a63dca7598c233d7f393d	93644	rolls/house/2022/roll200.xml	https://clerk.house.gov/evs/2022/roll200.xml	2026-10-06T18:22:35Z
+6339a866c7337e161e14b4dd0db7486f743d7a79ef60fec91b250016391919d0	93654	rolls/house/2022/roll201.xml	https://clerk.house.gov/evs/2022/roll201.xml	2026-10-06T18:22:35Z
+dc5745fe7acc83d2127f2057a545de627a52d6fafef49f7d9a4bbb3943e3e6a7	93552	rolls/house/2022/roll202.xml	https://clerk.house.gov/evs/2022/roll202.xml	2026-10-06T18:22:35Z
+97f8ccf80d7a3dc0ec220592f0ecb9e22e768d7f55db3a361295941dd443f3e4	93582	rolls/house/2022/roll203.xml	https://clerk.house.gov/evs/2022/roll203.xml	2026-10-06T18:22:36Z
+d874f96b7c108f8039f7973bcd32f3d0ccc469d03e781178af57eccfb1b296f3	93584	rolls/house/2022/roll204.xml	https://clerk.house.gov/evs/2022/roll204.xml	2026-10-06T18:22:36Z
+a6a69194170e55fc76fdb8cc109885be5c2be8459c35e47c0e202bda7c092710	93515	rolls/house/2022/roll215.xml	https://clerk.house.gov/evs/2022/roll215.xml	2026-10-06T18:22:37Z
+844c114b2ca8f1308bfb46380cdd5bba1d237e129f00b858417e366d5ad7d261	93650	rolls/house/2022/roll216.xml	https://clerk.house.gov/evs/2022/roll216.xml	2026-10-06T18:22:37Z
+4b8edc587882513cf79fa4c855a9ffbb08ed7f23b8eabfa6a40b84506a51da7e	93795	rolls/house/2022/roll217.xml	https://clerk.house.gov/evs/2022/roll217.xml	2026-10-06T18:22:37Z
+c18e36c3db700fa9a456bd44e5170e688d5f80ee3ae41aab9c2490332e981d01	93683	rolls/house/2022/roll218.xml	https://clerk.house.gov/evs/2022/roll218.xml	2026-10-06T18:22:38Z
+7b26308947bd07288f00700573c30a5cb34a199f3bc49bf907a6b9e4ae362a84	93514	rolls/house/2022/roll222.xml	https://clerk.house.gov/evs/2022/roll222.xml	2026-10-06T18:22:38Z
+b54cbb410bed021f47cfeda0f9538dab9a30b85476b922984b87dc6d9d4e1083	93521	rolls/house/2022/roll223.xml	https://clerk.house.gov/evs/2022/roll223.xml	2026-10-06T18:22:39Z
+288f9c5bcb2cddc47286eeb9a8df3938a4dc352d67142ebf861afdcd10302f0f	93683	rolls/house/2022/roll224.xml	https://clerk.house.gov/evs/2022/roll224.xml	2026-10-06T18:22:39Z
+0478b1ae4d0189c7f1bcd68ab566b75d19f8ea618fc49e5c03aa6923ff9ce788	93555	rolls/house/2022/roll225.xml	https://clerk.house.gov/evs/2022/roll225.xml	2026-10-06T18:22:40Z
+04e956a7642497b975018b4f6a69663fa40644dc62c7476902ac35b2405f0dc3	93539	rolls/house/2022/roll227.xml	https://clerk.house.gov/evs/2022/roll227.xml	2026-10-06T18:22:40Z
+4acc0555118d359e9667ba1078b94f8e83abc689e479c3310c49f4ae85cea8df	93572	rolls/house/2022/roll228.xml	https://clerk.house.gov/evs/2022/roll228.xml	2026-10-06T18:22:40Z
+126f8ad96911728d811870436cf7351d5ef10da3f04b3ed5624ad404cc523999	93359	rolls/house/2022/roll234.xml	https://clerk.house.gov/evs/2022/roll234.xml	2026-10-06T18:22:41Z
+950a47f103e0781e4a2d1f75a066bbfe2b43989afbc50098ea5a6c181c0327e0	93288	rolls/house/2022/roll246.xml	https://clerk.house.gov/evs/2022/roll246.xml	2026-10-06T18:22:41Z
+7e68561cd563052e6170a8946e9e424fe97c914e97db9b6627b23a41a67d078c	93300	rolls/house/2022/roll247.xml	https://clerk.house.gov/evs/2022/roll247.xml	2026-10-06T18:22:42Z
+2c6986a19c675e341538c2379b28fe679cbc4398047262feb79eb20c700abfb2	93285	rolls/house/2022/roll253.xml	https://clerk.house.gov/evs/2022/roll253.xml	2026-10-06T18:22:42Z
+a383dbbdcd99d49b7b293dd8a0135c7ca0fe2f0cfdae83396ffb864f66ddfa1c	93338	rolls/house/2022/roll256.xml	https://clerk.house.gov/evs/2022/roll256.xml	2026-10-06T18:22:42Z
+629b1fdfde626919d41fa91e7ffa498021e55a18318be64b775c97a20fe4b41d	93258	rolls/house/2022/roll261.xml	https://clerk.house.gov/evs/2022/roll261.xml	2026-10-06T18:22:43Z
+9b4a41bbf26cb54e8d30f86823d66d36972cd58ad4e9b462e0ab3936e07363dc	93384	rolls/house/2022/roll268.xml	https://clerk.house.gov/evs/2022/roll268.xml	2026-10-06T18:22:43Z
+1edfb5ec765546e37048bdc8530ef6fbf220ad51b6ffc9dc96c4249ec0a0141f	94064	rolls/house/2022/roll299.xml	https://clerk.house.gov/evs/2022/roll299.xml	2026-10-06T18:22:44Z
+50cfcab5d0b0448567ee341d16d96e436a2909c95303dcd06af6eb5eca0789c0	93954	rolls/house/2022/roll301.xml	https://clerk.house.gov/evs/2022/roll301.xml	2026-10-06T18:22:44Z
+fe106ca18cd6cdc11e4495d5796f12780d8418ca0f3005215fec5809fdbe7a4d	94120	rolls/house/2022/roll302.xml	https://clerk.house.gov/evs/2022/roll302.xml	2026-10-06T18:22:44Z
+8e2e410151aba7aea2706a7cbad6b7a39cc04ffb48e35b100944d242e8dd2964	94046	rolls/house/2022/roll309.xml	https://clerk.house.gov/evs/2022/roll309.xml	2026-10-06T18:22:45Z
+bd9700c08dc86fd31287097518fc4fe85396b011c22510578a3e264b5cc4adc8	94036	rolls/house/2022/roll357.xml	https://clerk.house.gov/evs/2022/roll357.xml	2026-10-06T18:22:45Z
+2b64a0915cd43f0c935631c77cece70faad9dddc7dac9d4f3cbff02b017baee4	94110	rolls/house/2022/roll358.xml	https://clerk.house.gov/evs/2022/roll358.xml	2026-10-06T18:22:46Z
+4db5578bace64a224f0402890662a089159fe64058ab22b601b5f5987e8372da	93880	rolls/house/2022/roll363.xml	https://clerk.house.gov/evs/2022/roll363.xml	2026-10-06T18:22:46Z
+5792fed232d18df8851c21f5f094e0aec5b47c050c09f0852a0e2c26888247d3	93946	rolls/house/2022/roll375.xml	https://clerk.house.gov/evs/2022/roll375.xml	2026-10-06T18:22:46Z
+7ef31c45e73d3f7d8de216b6d40ce6b46e198aafdc4b9fb508e370d5d22f2ab4	93961	rolls/house/2022/roll392.xml	https://clerk.house.gov/evs/2022/roll392.xml	2026-10-06T18:22:47Z
+7f9b26af723ca22c6a748ee9e9e01fb86bff40eb4be1d703cff7b362a59a41a9	94175	rolls/house/2022/roll404.xml	https://clerk.house.gov/evs/2022/roll404.xml	2026-10-06T18:22:47Z
+f324c674bd91cf68d8b1ba93c018fd7010567f4a3aeed905b2c7f4a3df7e53f4	93942	rolls/house/2022/roll415.xml	https://clerk.house.gov/evs/2022/roll415.xml	2026-10-06T18:22:48Z
+de516cb9c3146ad05480a48e8bdd7d2b6fae3e69fbfad56981b02a230a9bedc8	94222	rolls/house/2022/roll417.xml	https://clerk.house.gov/evs/2022/roll417.xml	2026-10-06T18:22:48Z
+673be4db66379f1073af8e25151e70ba6f9c302500f720359c34b061e29a31ec	94121	rolls/house/2022/roll420.xml	https://clerk.house.gov/evs/2022/roll420.xml	2026-10-06T18:22:49Z
+c4b57697838bb3205c0c0d9bbe5bd5d007023742f1c4a7138c237de2527d1232	94506	rolls/house/2022/roll421.xml	https://clerk.house.gov/evs/2022/roll421.xml	2026-10-06T18:22:49Z
+4f5b8a5a0dcc813cee8c2f485f49e624eb7935b631c11ed338e6dacaa67080a2	94335	rolls/house/2022/roll429.xml	https://clerk.house.gov/evs/2022/roll429.xml	2026-10-06T18:22:49Z
+e03b75e6cfd49f2c75d0631114b8f1c461433fb150ce3a7a7fad2a77a58213b7	94336	rolls/house/2022/roll430.xml	https://clerk.house.gov/evs/2022/roll430.xml	2026-10-06T18:22:50Z
+817d8275a819a10ce6502fa69b93100c1b9815599bdbb0bd342379f7175200bc	94540	rolls/house/2022/roll438.xml	https://clerk.house.gov/evs/2022/roll438.xml	2026-10-06T18:22:50Z
+284306861bea4347722e124c63345693f3448fb296c33023451723faea33ac8b	94437	rolls/house/2022/roll439.xml	https://clerk.house.gov/evs/2022/roll439.xml	2026-10-06T18:22:51Z
+034d78032385c36f788ac49bc3062343d3e2d5b6eaa70b5ccf00399ebeeadccc	94363	rolls/house/2022/roll444.xml	https://clerk.house.gov/evs/2022/roll444.xml	2026-10-06T18:22:51Z
+4ca8948a5c1ddbaa9e81d97b7e56a8fc9407d2a95485a34b72c4097b111b7870	94334	rolls/house/2022/roll448.xml	https://clerk.house.gov/evs/2022/roll448.xml	2026-10-06T18:22:51Z
+2cb73eece98f877cb8274322a5666ed7a82b12af71ebae67da79765fbf4d6247	94359	rolls/house/2022/roll461.xml	https://clerk.house.gov/evs/2022/roll461.xml	2026-10-06T18:22:52Z
+29c1f4e939af191e8fcd3638bc1c84eb6ad6c392aacc9f9ea085365102f11fb8	94388	rolls/house/2022/roll463.xml	https://clerk.house.gov/evs/2022/roll463.xml	2026-10-06T18:22:52Z
+8ec14d7bd6e78844281e884455a94bd5ff1a8d013cdb4e4f8a3c686295da2037	94364	rolls/house/2022/roll464.xml	https://clerk.house.gov/evs/2022/roll464.xml	2026-10-06T18:22:53Z
+9cc9290dd9ecba1d463a63f9b926098f208279e560405b5797d3692c32049d8e	94452	rolls/house/2022/roll465.xml	https://clerk.house.gov/evs/2022/roll465.xml	2026-10-06T18:22:53Z
+71eb0f2e1cc3c587fba873aa6922af0915cd65e83175ccb8e357fe4536713693	94391	rolls/house/2022/roll468.xml	https://clerk.house.gov/evs/2022/roll468.xml	2026-10-06T18:22:53Z
+64e2fe063ff75b7e6864d79d4398add1f47857a4843f70d77b02e936cd9bfcc7	94362	rolls/house/2022/roll470.xml	https://clerk.house.gov/evs/2022/roll470.xml	2026-10-06T18:22:54Z
+82b891cf23da365d59c511b8038b4d06b9d975c10e07f963573244dd44219e25	94526	rolls/house/2022/roll476.xml	https://clerk.house.gov/evs/2022/roll476.xml	2026-10-06T18:22:54Z
+fa20b28c2f7b186d4c1d5df46e360fa23bc194129ab0a1c7c9a517805182f830	94313	rolls/house/2022/roll480.xml	https://clerk.house.gov/evs/2022/roll480.xml	2026-10-06T18:22:55Z
+dd2fc78d65c609aea548578a8036538bb15be1a1057c024c267472ef10d0a0d7	94539	rolls/house/2022/roll482.xml	https://clerk.house.gov/evs/2022/roll482.xml	2026-10-06T18:22:55Z
+b9570a2060304b4f16d27ea9a70ec23d11a7d9adf7308ef91cb917519ea9bdda	94397	rolls/house/2022/roll483.xml	https://clerk.house.gov/evs/2022/roll483.xml	2026-10-06T18:22:56Z
+ca9501e2b54d0895f9eefb056fbb7e611d50ac1d79fe7f28b2595ee77e977ab9	94282	rolls/house/2022/roll487.xml	https://clerk.house.gov/evs/2022/roll487.xml	2026-10-06T18:22:56Z
+2d051bc827a92d1d8018ac4b870a86e6f070d5d863fde9e8459df44a4d56e60f	94500	rolls/house/2022/roll490.xml	https://clerk.house.gov/evs/2022/roll490.xml	2026-10-06T18:22:56Z
+aee7d8d5720d25af9d46dea0be99b1484728e0b42805ce8504c74d98c75cf3f0	94173	rolls/house/2022/roll498.xml	https://clerk.house.gov/evs/2022/roll498.xml	2026-10-06T18:22:57Z
+ceafd913c0fa316b39e45cc3b0e507434e1eb31a5ae7c55db5fed0191ab28bcc	94225	rolls/house/2022/roll499.xml	https://clerk.house.gov/evs/2022/roll499.xml	2026-10-06T18:22:57Z
+973c1decae71e313a47865c71807c539eb4cf6d0c10426305bdfe56d979fe887	94146	rolls/house/2022/roll505.xml	https://clerk.house.gov/evs/2022/roll505.xml	2026-10-06T18:22:58Z
+f75612298202e107ff1019f9b709960ce3a88a5c6aadb206e037a4b10f65453a	94212	rolls/house/2022/roll506.xml	https://clerk.house.gov/evs/2022/roll506.xml	2026-10-06T18:22:58Z
+baee5b0be1815b99ab847ead1bfa98449181c3c1c4d9548d3763d328d7f58aa5	94141	rolls/house/2022/roll507.xml	https://clerk.house.gov/evs/2022/roll507.xml	2026-10-06T18:22:58Z
+9ec8f1f7ed047016ad196a972f4cb80051551003baa72502bce3983e6dc61003	94229	rolls/house/2022/roll508.xml	https://clerk.house.gov/evs/2022/roll508.xml	2026-10-06T18:22:59Z
+f52019b566b80288e281b8af1db2fce436ac51cf3449e2691c7b60d87d6a0e25	94178	rolls/house/2022/roll509.xml	https://clerk.house.gov/evs/2022/roll509.xml	2026-10-06T18:22:59Z
+60e0dc9dfc383c60f0d72cdd81e7d4c64147c3f31370fe576a3229a0d1c9e632	94145	rolls/house/2022/roll510.xml	https://clerk.house.gov/evs/2022/roll510.xml	2026-10-06T18:23:00Z
+51aed64daca850ad0b8403c2a67f70b963bd4f2fcf566caa4316222eb702da30	94194	rolls/house/2022/roll511.xml	https://clerk.house.gov/evs/2022/roll511.xml	2026-10-06T18:23:00Z
+34f18a8de4a3e92798f034fe4dba8abf1a6e0f9d9a4620cf256afcf31a95424f	94325	rolls/house/2022/roll513.xml	https://clerk.house.gov/evs/2022/roll513.xml	2026-10-06T18:23:01Z
+76b6b5c4a5f4c2e3347e08d28564bdb20220700abca0fa21e0e7fe5321183cf4	94223	rolls/house/2022/roll517.xml	https://clerk.house.gov/evs/2022/roll517.xml	2026-10-06T18:23:01Z
+6d6afd153f82e7a07cca559543f24bcb16760a3fcf0e5bba8b1728b148da5dd4	94059	rolls/house/2022/roll518.xml	https://clerk.house.gov/evs/2022/roll518.xml	2026-10-06T18:23:01Z
+f9eff4bb762aca4d942d6cbf174374b59048119bc46ae18f9753f98f206fed2d	93982	rolls/house/2022/roll519.xml	https://clerk.house.gov/evs/2022/roll519.xml	2026-10-06T18:23:02Z
+26c3efa67eab9f602f65dc16dcd05cc5e4586f48c2960c3584cfbf38d21ea0d0	93924	rolls/house/2022/roll523.xml	https://clerk.house.gov/evs/2022/roll523.xml	2026-10-06T18:23:02Z
+3ee5ccbaf934fb443a82e009970886cf559b2373369d5444ea74b7817660e220	93942	rolls/house/2022/roll524.xml	https://clerk.house.gov/evs/2022/roll524.xml	2026-10-06T18:23:03Z
+f7444cbebbd4983798f812b34b105afca0d1ef2ccaed6c1fac758a88e9f1abcc	93905	rolls/house/2022/roll525.xml	https://clerk.house.gov/evs/2022/roll525.xml	2026-10-06T18:23:03Z
+f743c119c31a9cbfa86b575419e20dfb8d1a6078fff58a17248deaf40f203bf0	93898	rolls/house/2022/roll526.xml	https://clerk.house.gov/evs/2022/roll526.xml	2026-10-06T18:23:04Z
+7374ccceb18944d1cdac06e672d861d0bacd241532fc61d3e081ac541049cb7f	94034	rolls/house/2022/roll532.xml	https://clerk.house.gov/evs/2022/roll532.xml	2026-10-06T18:23:04Z
+8bdf19b840205c3901ba6c737303910723209e3e68c93705c650e7deea303def	94027	rolls/house/2022/roll533.xml	https://clerk.house.gov/evs/2022/roll533.xml	2026-10-06T18:23:04Z
+ce468b48767f09914a828b02173c36152db6aeb6cb217712220e447b2e65dec0	94012	rolls/house/2022/roll534.xml	https://clerk.house.gov/evs/2022/roll534.xml	2026-10-06T18:23:05Z
+a70fb6bca4f899feb89f5ff0294880553eee383656465d48bde7caaab585d838	94051	rolls/house/2022/roll535.xml	https://clerk.house.gov/evs/2022/roll535.xml	2026-10-06T18:23:05Z
+ebea54a9dd36bbf62068f9283cb4cab457942f40bdf53f058ab16dc489e3cab9	94156	rolls/house/2022/roll537.xml	https://clerk.house.gov/evs/2022/roll537.xml	2026-10-06T18:23:06Z
+bc6edf5307e19b44d5f66b3ba8b29d9d875786fa637e2ef571ff8c1a1f45021f	94058	rolls/house/2022/roll538.xml	https://clerk.house.gov/evs/2022/roll538.xml	2026-10-06T18:23:06Z
+cf9b307650312135cf31410f77325f74092797e7c99c7fc06f5acb1556d4f2a3	93915	rolls/house/2022/roll540.xml	https://clerk.house.gov/evs/2022/roll540.xml	2026-10-06T18:23:07Z
+eebde548a90f7aaf0c2f47354f10fd9a1f6b2ae1cd968f5c0cb9d8fb7f64d8cd	94054	rolls/house/2022/roll541.xml	https://clerk.house.gov/evs/2022/roll541.xml	2026-10-06T18:23:07Z
+8ca6a53f6ffde6b4ef1e60b2cb18d3e0876400b4575e3a7dd7623c82b7a9e553	94008	rolls/house/2022/roll542.xml	https://clerk.house.gov/evs/2022/roll542.xml	2026-10-06T18:23:07Z
+5bb3176b4a32bff7253fdedbdb4cdfc29f599219bfb3dc29f2a949a3fc7f979d	94193	rolls/house/2022/roll543.xml	https://clerk.house.gov/evs/2022/roll543.xml	2026-10-06T18:23:08Z
+ec1855e9eee6893b4e513939014b8fe82f0160ed7adda12d5f2b60935b56c057	94031	rolls/house/2022/roll544.xml	https://clerk.house.gov/evs/2022/roll544.xml	2026-10-06T18:23:08Z
+bcbbd141c17fde64d307d401a5d27b62727e66d060f80286fe757b87eff3072b	94011	rolls/house/2022/roll545.xml	https://clerk.house.gov/evs/2022/roll545.xml	2026-10-06T18:23:09Z
+081b5e87660683aee182dcf155df32e07ab80c954621e7b25f6bccb08a4d58c9	94030	rolls/house/2022/roll546.xml	https://clerk.house.gov/evs/2022/roll546.xml	2026-10-06T18:23:09Z
+0399565d68014a253603840221aeefdef881c4fbeeb0a6e6f3dd2c25ce1c916a	94268	rolls/house/2022/roll549.xml	https://clerk.house.gov/evs/2022/roll549.xml	2026-10-06T18:23:09Z
+e0f03eeb85a31bd88d90c04d87d2ccae4eebdadfa127faddaab33fe9283e0f6c	94428	rolls/house/2023/roll104.xml	https://clerk.house.gov/evs/2023/roll104.xml	2026-10-06T18:23:10Z
+421eef49d001347175dadc8b7c5d03c0639a9627ea3e55e1cfe0948bef796236	94696	rolls/house/2023/roll119.xml	https://clerk.house.gov/evs/2023/roll119.xml	2026-10-06T18:23:10Z
+dd8ab60c9b6c2232fc950affca209a133da2b2c6a6f173d973f3bc3862bab405	94635	rolls/house/2023/roll124.xml	https://clerk.house.gov/evs/2023/roll124.xml	2026-10-06T18:23:11Z
+c6084c3288f29b8b97d9ac216b92aae16b3a6f44cf80f6b8fed1dabb802ce108	94666	rolls/house/2023/roll132.xml	https://clerk.house.gov/evs/2023/roll132.xml	2026-10-06T18:23:11Z
+c3156c11455d22d75205626d8f37b24b5df3eb5a1d94c78e8a51ccd94b6c5e74	94880	rolls/house/2023/roll142.xml	https://clerk.house.gov/evs/2023/roll142.xml	2026-10-06T18:23:11Z
+400713528fddc6b2eddd6997b6438533af0cf55177703376c3f88abdb5a90051	94858	rolls/house/2023/roll143.xml	https://clerk.house.gov/evs/2023/roll143.xml	2026-10-06T18:23:12Z
+9647ff4ec7ea6603bc52ba2d2a96880a46923f07e13b23a6f8a2b0464e9470b1	94929	rolls/house/2023/roll149.xml	https://clerk.house.gov/evs/2023/roll149.xml	2026-10-06T18:23:12Z
+a99ab8d7e4cd9c0ace3f6b355dea21a60d8c0f09120db1348a02b7fa98dd5c0b	94959	rolls/house/2023/roll187.xml	https://clerk.house.gov/evs/2023/roll187.xml	2026-10-06T18:23:13Z
+b3b9b58894a0aaaa7f83455061e24869113153c46808a2563a0e448065d45dc3	94986	rolls/house/2023/roll188.xml	https://clerk.house.gov/evs/2023/roll188.xml	2026-10-06T18:23:13Z
+96a24a724b484c0911e960fce929cd103391303ff53dec58a5f1ac31b04e08af	95020	rolls/house/2023/roll202.xml	https://clerk.house.gov/evs/2023/roll202.xml	2026-10-06T18:23:13Z
+14c9c9af662496151fb29c27e11cdb4552d605ae5daae0d05f456b24a1d304e2	94830	rolls/house/2023/roll228.xml	https://clerk.house.gov/evs/2023/roll228.xml	2026-10-06T18:23:14Z
+07948352ce2b692187a59f3718802c96e466ef077b36640b6e5899c8a66493e1	94848	rolls/house/2023/roll232.xml	https://clerk.house.gov/evs/2023/roll232.xml	2026-10-06T18:23:14Z
+093df523a4ca75d19010235413076f6f51fcad66ac415303e2cf786775a750b3	95108	rolls/house/2023/roll233.xml	https://clerk.house.gov/evs/2023/roll233.xml	2026-10-06T18:23:15Z
+cc450ffda8d70f2664d8cc5ef1e642c12849afce48c425f99018b6a8e3e2d6d6	95040	rolls/house/2023/roll234.xml	https://clerk.house.gov/evs/2023/roll234.xml	2026-10-06T18:23:15Z
+05b0a6a387330162b81e5902a19f80b670193bb09bf4b23916a764832c8f40ed	94670	rolls/house/2023/roll243.xml	https://clerk.house.gov/evs/2023/roll243.xml	2026-10-06T18:23:15Z
+68798af348fe625fcfe818b369ba9f4542c08315c694818501cc0c41ac900ca4	94738	rolls/house/2023/roll253.xml	https://clerk.house.gov/evs/2023/roll253.xml	2026-10-06T18:23:16Z
+2dd28244bf1075e670dbbea468259072c6924645b7556eb197bb651af220599e	94661	rolls/house/2023/roll273.xml	https://clerk.house.gov/evs/2023/roll273.xml	2026-10-06T18:23:16Z
+7a2e627a5ad35b2aac86a6e2266bbfb24ebb21e3cba52fd32539b8ee5c3759a5	94835	rolls/house/2023/roll277.xml	https://clerk.house.gov/evs/2023/roll277.xml	2026-10-06T18:23:17Z
+40317b80ff6254922ea8f1006d70effcbd3f862771259a5bd212d6c079bcc9ec	94571	rolls/house/2023/roll291.xml	https://clerk.house.gov/evs/2023/roll291.xml	2026-10-06T18:23:17Z
+8e3253988512b6f403244c7355cda43bcdbdd3d1be27ad3848de38d7c49e6ea0	94613	rolls/house/2023/roll329.xml	https://clerk.house.gov/evs/2023/roll329.xml	2026-10-06T18:23:18Z
+bae6b850a08f94a4a2f9130f62b1c78a612d853e605d562fb2b9698837db0db5	94716	rolls/house/2023/roll380.xml	https://clerk.house.gov/evs/2023/roll380.xml	2026-10-06T18:23:18Z
+ad3a34e20f8d4ae77f8c89b5d3ce620c981a16b3a61309f371d7b52bfab08cee	94880	rolls/house/2023/roll381.xml	https://clerk.house.gov/evs/2023/roll381.xml	2026-10-06T18:23:18Z
+0036420a50cd15e53cbc8040933a9023a1e36aac104f1ab934606f7ec5f9c0f8	94608	rolls/house/2023/roll382.xml	https://clerk.house.gov/evs/2023/roll382.xml	2026-10-06T18:23:19Z
+fd8bd45f58cb750e1cd6aefa82b033b00f1175fad756c825d727c75b3b51cab1	94547	rolls/house/2023/roll387.xml	https://clerk.house.gov/evs/2023/roll387.xml	2026-10-06T18:23:19Z
+887445895bd332c39f3733e3f6bed3ef4af9a3015d2df9278ca880a00213977f	94412	rolls/house/2023/roll393.xml	https://clerk.house.gov/evs/2023/roll393.xml	2026-10-06T18:23:20Z
+4179ad2a04aead7229573f5303279c40f3ffa66fa7f5d4a80f19d23eb18a30a3	94328	rolls/house/2023/roll394.xml	https://clerk.house.gov/evs/2023/roll394.xml	2026-10-06T18:23:20Z
+8a32c76d85adc494c535e22284c25155a658d3cafe581432e2da03913f5d9e71	94549	rolls/house/2023/roll399.xml	https://clerk.house.gov/evs/2023/roll399.xml	2026-10-06T18:23:20Z
+efd601b4b5c1a936ffcce1f6e75563b31852ad2fc1f256107c26d67e37a274c6	94446	rolls/house/2023/roll407.xml	https://clerk.house.gov/evs/2023/roll407.xml	2026-10-06T18:23:21Z
+d3e497681aefb90e859a1efb918969f476d877d06dec03efb724ebc57abc1a62	94456	rolls/house/2023/roll513.xml	https://clerk.house.gov/evs/2023/roll513.xml	2026-10-06T18:23:21Z
+de9d84035cec5c1bb3265f2d68e56c67833aafaa5244a144cbb1651b033c8bde	94815	rolls/house/2023/roll514.xml	https://clerk.house.gov/evs/2023/roll514.xml	2026-10-06T18:23:22Z
+ff199fbcf630fec8eb6a03744b22abd233a797e1d90b6182a7e015cadbeb22d1	94564	rolls/house/2023/roll599.xml	https://clerk.house.gov/evs/2023/roll599.xml	2026-10-06T18:23:22Z
+b727a815cf9f51001d25070a66402c8cfe2419ab4655c423da05f24a490ac141	94321	rolls/house/2023/roll643.xml	https://clerk.house.gov/evs/2023/roll643.xml	2026-10-06T18:23:23Z
+5659f84798880f8da13272b457ca63dd779960fc268b7337ccb68f100f9614e6	94649	rolls/house/2023/roll644.xml	https://clerk.house.gov/evs/2023/roll644.xml	2026-10-06T18:23:23Z
+58d67e993e02f388e09293a3a1474f6fdcd08852cb13b0a249087dc3b52169e6	94622	rolls/house/2023/roll658.xml	https://clerk.house.gov/evs/2023/roll658.xml	2026-10-06T18:23:24Z
+bb306837cd3b64ce68265cca49cfde4d034432ff9792b04efc8f1acc47c5ff60	94802	rolls/house/2023/roll690.xml	https://clerk.house.gov/evs/2023/roll690.xml	2026-10-06T18:23:24Z
+b1e375285578dcaff30103d4aa5d6bc99af9439808d876029632b5d787b2c6ef	94645	rolls/house/2023/roll709.xml	https://clerk.house.gov/evs/2023/roll709.xml	2026-10-06T18:23:25Z
+1aae240e43f6dfb0f8f6e09dffe74e83aef43c729f0f8f506cf5afbea2af5c49	94395	rolls/house/2023/roll712.xml	https://clerk.house.gov/evs/2023/roll712.xml	2026-10-06T18:23:25Z
+547baed7c807aaf1ec409ce0639794c8c21f1dc1364f27af475952be4ca7e19c	94627	rolls/house/2023/roll723.xml	https://clerk.house.gov/evs/2023/roll723.xml	2026-10-06T18:23:26Z
+3110e9bd65ad81269cf89917216aee79927917a33a6533853eb35471a3bb276a	94752	rolls/house/2023/roll724.xml	https://clerk.house.gov/evs/2023/roll724.xml	2026-10-06T18:23:26Z
+c99b53866a00a5104d9702d5dd8aa3da102ebbdfa565935a1fa88376e5c1b3d7	94690	rolls/house/2024/roll008.xml	https://clerk.house.gov/evs/2024/roll008.xml	2026-10-06T18:23:27Z
+06cfa542caf4a7194a383a1068de534a11bb1b1d4b5a6035ad0a32419c9aa39a	94842	rolls/house/2024/roll010.xml	https://clerk.house.gov/evs/2024/roll010.xml	2026-10-06T18:23:27Z
+2f92aabd013b7d145a127fd7e725c790cd635c73c2b6b952ca10a3cfbbbff107	94518	rolls/house/2024/roll014.xml	https://clerk.house.gov/evs/2024/roll014.xml	2026-10-06T18:23:27Z
+82b9b2207df4a8593eb08bf7da038d884ec2ffb2f7b79f2a89544b0c076390ed	94574	rolls/house/2024/roll015.xml	https://clerk.house.gov/evs/2024/roll015.xml	2026-10-06T18:23:28Z
+610d40994f25d89f70c148c67731e05e57ee1e575e108d118952060145a79bbf	94123	rolls/house/2024/roll021.xml	https://clerk.house.gov/evs/2024/roll021.xml	2026-10-06T18:23:28Z
+4cda2a850389a2db716e56d1e9a905dc0f3c2e0124b8d2d0da1c169c6f2dbdd8	94187	rolls/house/2024/roll029.xml	https://clerk.house.gov/evs/2024/roll029.xml	2026-10-06T18:23:29Z
+905ab7add6d024dcfba6ee70dd5800091faaace71e9a65c2d5ff646cf826f414	93836	rolls/house/2024/roll032.xml	https://clerk.house.gov/evs/2024/roll032.xml	2026-10-06T18:23:29Z
+c187ced421f1026047e9bb9ffa4594e252daf14240f4712bbed2f88270033bf3	93953	rolls/house/2024/roll036.xml	https://clerk.house.gov/evs/2024/roll036.xml	2026-10-06T18:23:30Z
+185d47059db5bfddae828df483e30039afb612b3bbed6144a96d5a066cb375ff	94116	rolls/house/2024/roll056.xml	https://clerk.house.gov/evs/2024/roll056.xml	2026-10-06T18:23:30Z
+4c0a0b90de4aea8a1715675ff1a70dd8387cd937a14784b369f8002cbbad4e72	94215	rolls/house/2024/roll058.xml	https://clerk.house.gov/evs/2024/roll058.xml	2026-10-06T18:23:31Z
+6564cd8632bd29bdee135207c49ac9c671b1554aa471817e6e6465e4b85918a3	94180	rolls/house/2024/roll059.xml	https://clerk.house.gov/evs/2024/roll059.xml	2026-10-06T18:23:31Z
+7bf7524afe24807318964dbad97800c27f33155dfe3f28668d9a84d37ee1bdd7	94427	rolls/house/2024/roll060.xml	https://clerk.house.gov/evs/2024/roll060.xml	2026-10-06T18:23:31Z
+1ffb5b31f65cee93dbef2bc28564899a5c8a2f69756263020cb32f1905495b59	94192	rolls/house/2024/roll065.xml	https://clerk.house.gov/evs/2024/roll065.xml	2026-10-06T18:23:32Z
+fd34decfafe57489da2d7fdf083aa7fc91671fd30e2ea1cf4e6cdc25869d5b03	93867	rolls/house/2024/roll106.xml	https://clerk.house.gov/evs/2024/roll106.xml	2026-10-06T18:23:33Z
+ae70ceb84237eea229bd4988b8693279d1a8e9b6c886f1787dc00f5e087ffc9b	93793	rolls/house/2024/roll110.xml	https://clerk.house.gov/evs/2024/roll110.xml	2026-10-06T18:23:33Z
+c2c47caa42b7840b55a8e22f92179406bdbb6b5f0f5aaa88f783134484a09e84	93812	rolls/house/2024/roll119.xml	https://clerk.house.gov/evs/2024/roll119.xml	2026-10-06T18:23:34Z
+616870e1f7e3e92899083d291e38cbb5b10d8bf6c14b6aed2a552e49ab794509	93827	rolls/house/2024/roll179.xml	https://clerk.house.gov/evs/2024/roll179.xml	2026-10-06T18:23:35Z
+54796c1e9b971a39165da81278a84eb69692ec23c4a83eef2768f73a85667369	93841	rolls/house/2024/roll185.xml	https://clerk.house.gov/evs/2024/roll185.xml	2026-10-06T18:23:35Z
+77c1e95450a779c05e72de4351a8c437126f115567cfabb9330e5e17912ce069	94011	rolls/house/2024/roll186.xml	https://clerk.house.gov/evs/2024/roll186.xml	2026-10-06T18:23:36Z
+96980801f53aba775f58a1556799322bafa2e63c58fc24e19ee72a7f336836f2	93846	rolls/house/2024/roll187.xml	https://clerk.house.gov/evs/2024/roll187.xml	2026-10-06T18:23:36Z
+1ad972c43203564617e3cddc1e1b651af885f011b9e1676ea884c799333d50ad	93736	rolls/house/2024/roll189.xml	https://clerk.house.gov/evs/2024/roll189.xml	2026-10-06T18:23:37Z
+0d16b1486984d7afeec9648f06a4f99e2c9ef3411c201bfc32fbc35a8dd39439	93853	rolls/house/2024/roll194.xml	https://clerk.house.gov/evs/2024/roll194.xml	2026-10-06T18:23:37Z
+69cfdf20144a7f358ae0e39d0d4012b8b75943c3584951cef7f49646c986d8fc	93967	rolls/house/2024/roll196.xml	https://clerk.house.gov/evs/2024/roll196.xml	2026-10-06T18:23:37Z
+fc2d976ad2d61c0d98751bb93d064c33dd2af80bd932e3c33564ab8fedef9814	93860	rolls/house/2024/roll200.xml	https://clerk.house.gov/evs/2024/roll200.xml	2026-10-06T18:23:38Z
+393f1be2f6a33166690ad31d8d9690c34de5a15b59ab2b99c4fa04f380d7fedf	93617	rolls/house/2024/roll207.xml	https://clerk.house.gov/evs/2024/roll207.xml	2026-10-06T18:23:38Z
+760f58ad6797d52f4112ea2650e521004dc69d802dcaa604a65291d7ca56a6c1	93838	rolls/house/2024/roll208.xml	https://clerk.house.gov/evs/2024/roll208.xml	2026-10-06T18:23:39Z
+e9f1808086a92f7857cab96581f4f258ec936a6fd1b080439a62b968a6db1303	93752	rolls/house/2024/roll219.xml	https://clerk.house.gov/evs/2024/roll219.xml	2026-10-06T18:23:39Z
+d62523d44c2f412c8ac4945f6cfe384326fa34a0c1d3601e4e104688b172c1c9	93714	rolls/house/2024/roll220.xml	https://clerk.house.gov/evs/2024/roll220.xml	2026-10-06T18:23:40Z
+657db4b175469ccc1b1a1fd6c421a119056156b2a9a7cd2c59e1bb1fea2df41b	94431	rolls/house/2024/roll234.xml	https://clerk.house.gov/evs/2024/roll234.xml	2026-10-06T18:23:40Z
+bc8b865858e854d980d090b80dc55a907f32d3a0d20835d65fd3b3b3582740a4	94003	rolls/house/2024/roll252.xml	https://clerk.house.gov/evs/2024/roll252.xml	2026-10-06T18:23:41Z
+db6223fa37b753006c379a7cf7a692f8b90f7e60e9d63bf764e157241c20a429	94649	rolls/house/2024/roll355.xml	https://clerk.house.gov/evs/2024/roll355.xml	2026-10-06T18:23:41Z
+e8ad11bb3babc1893ae0ddcb32d94055800976398e99106cd7890fcab225a770	94680	rolls/house/2024/roll356.xml	https://clerk.house.gov/evs/2024/roll356.xml	2026-10-06T18:23:41Z
+7fe02db2f335bbb2e0494360a37de2194fd78e30990cf16f2de174acd7999b05	93984	rolls/house/2024/roll361.xml	https://clerk.house.gov/evs/2024/roll361.xml	2026-10-06T18:23:42Z
+fc6cfe5f7a8e45737cb980d2139a83a2256b0c19131030e728a75dffe719f68e	94018	rolls/house/2024/roll362.xml	https://clerk.house.gov/evs/2024/roll362.xml	2026-10-06T18:23:42Z
+fd15739928cf1125180a0074716bc2808607e6c2f8b4889dbb7bb33ecda09d19	93879	rolls/house/2024/roll419.xml	https://clerk.house.gov/evs/2024/roll419.xml	2026-10-06T18:23:43Z
+5fed28e9ac9c8eb33923ed4a084c48015445713ca78c22ecc73cdefde317bae9	93754	rolls/house/2024/roll423.xml	https://clerk.house.gov/evs/2024/roll423.xml	2026-10-06T18:23:43Z
+7b3ea45d6d49d9a0a9a2380fb6fecd5f844612b4b7cd4f1f425d04f0c73d4830	94041	rolls/house/2024/roll439.xml	https://clerk.house.gov/evs/2024/roll439.xml	2026-10-06T18:23:43Z
+efe112dc066909540159cc8487d0991acdf75bcf9afa9658b4861e07e89add68	94186	rolls/house/2024/roll440.xml	https://clerk.house.gov/evs/2024/roll440.xml	2026-10-06T18:23:44Z
+475fcde053ab82de5deada679919e67add1526b795df901d9137c720fbff4ec4	94198	rolls/house/2024/roll442.xml	https://clerk.house.gov/evs/2024/roll442.xml	2026-10-06T18:23:44Z
+73ac2741c3c4bbccdd6085e5e21d58e2997809f5ef1c0b2201c7e9d8c12006b4	94318	rolls/house/2024/roll446.xml	https://clerk.house.gov/evs/2024/roll446.xml	2026-10-06T18:23:45Z
+c1c3e0d017bd7cf5b66699f896088841c90bd7c70c30e28f501fa63b318bd93b	94180	rolls/house/2024/roll449.xml	https://clerk.house.gov/evs/2024/roll449.xml	2026-10-06T18:23:45Z
+40c383c532ba796fb1a3699e437f1b2c6a5308203ca2961441ce70848da926f9	94132	rolls/house/2024/roll450.xml	https://clerk.house.gov/evs/2024/roll450.xml	2026-10-06T18:23:46Z
+8a1cf647130855c3c7cd645b41f03bae19d822349130b9a2ccb583d6f9783afa	94255	rolls/house/2024/roll456.xml	https://clerk.house.gov/evs/2024/roll456.xml	2026-10-06T18:23:46Z
+a7da132594038b17f9edb00111962c3d7c406fdaa45e006a910fc9b22b7ca25c	94350	rolls/house/2024/roll465.xml	https://clerk.house.gov/evs/2024/roll465.xml	2026-10-06T18:23:47Z
+fbe72a98b74de4fbe12c5de5baea5bf231e58682213285c4c72fa6f205517720	94396	rolls/house/2024/roll479.xml	https://clerk.house.gov/evs/2024/roll479.xml	2026-10-06T18:23:47Z
+216cccee726d198bb2199673c8eeaada344c171135518f6fe38fe52b05e3f414	94270	rolls/house/2024/roll481.xml	https://clerk.house.gov/evs/2024/roll481.xml	2026-10-06T18:23:47Z
+4d6abefc4c2b3a91e51e2931c7723866d4275732e54605b8fddf44524b8123b8	94311	rolls/house/2024/roll484.xml	https://clerk.house.gov/evs/2024/roll484.xml	2026-10-06T18:23:48Z
+37662bf453c655ba3a5613bcf86c9b9acb5396f54a0601a3be917678b9f334f7	94420	rolls/house/2024/roll486.xml	https://clerk.house.gov/evs/2024/roll486.xml	2026-10-06T18:23:48Z
+80e79fdd976a9254b81b5f64fe193f05588508b8b0b67c2f687ad2c00efcd866	93741	rolls/house/2024/roll493.xml	https://clerk.house.gov/evs/2024/roll493.xml	2026-10-06T18:23:48Z
+727402d03ff80ae3a7e8dba259fb313a00229b2a308cc6d3d505cf6f5fd038ad	93955	rolls/house/2024/roll496.xml	https://clerk.house.gov/evs/2024/roll496.xml	2026-10-06T18:23:49Z
+d1bbc2a04c418686b91464bde0dbb03abff03f247d3f92098763c5ff7dda9861	93913	rolls/house/2024/roll500.xml	https://clerk.house.gov/evs/2024/roll500.xml	2026-10-06T18:23:49Z
+7e8261046e861ad487d19068482f3b98ab5a399507d0d136ee2a4fcc772c1336	93948	rolls/house/2024/roll501.xml	https://clerk.house.gov/evs/2024/roll501.xml	2026-10-06T18:23:50Z
+e1b37bbeb78c1bab8173b76d2efeecbea50129bb14d715087af6c6d20b3369c0	93699	rolls/house/2024/roll502.xml	https://clerk.house.gov/evs/2024/roll502.xml	2026-10-06T18:23:50Z
+fe3166f2d9cb689ada43304008185646442f0398b64ca09a42a2f983e891fe9b	93681	rolls/house/2024/roll503.xml	https://clerk.house.gov/evs/2024/roll503.xml	2026-10-06T18:23:50Z
+0cdc25185a62750f9a5535286657df12541d8f4c5883e3f99e280ea9cb1c345f	93703	rolls/house/2024/roll504.xml	https://clerk.house.gov/evs/2024/roll504.xml	2026-10-06T18:23:51Z
+322dbd77e8e4c8bd78a0fbc72bf5139822d5637f1b55e6d8847e18b5e261be76	93817	rolls/house/2024/roll505.xml	https://clerk.house.gov/evs/2024/roll505.xml	2026-10-06T18:23:51Z
+6b398c8e8c9cafe64540780cb63d87229bfe68f8bfd1760a468dca8bc9d48e47	93749	rolls/house/2024/roll510.xml	https://clerk.house.gov/evs/2024/roll510.xml	2026-10-06T18:23:51Z
+be6d2180400f15af5313c07d935f6665e4e97ea71089c5d8b7c44cf3139c0c37	93569	rolls/house/2024/roll512.xml	https://clerk.house.gov/evs/2024/roll512.xml	2026-10-06T18:23:52Z
+d6479bbd237481cde45135146f2cda467895a6e16d16e2eab010fccfa91e5590	93573	rolls/house/2024/roll513.xml	https://clerk.house.gov/evs/2024/roll513.xml	2026-10-06T18:23:52Z
+51b6ee1ad730363b4aa37493397bd9cd5280fe8297f154698313baa6b7f9f86d	93601	rolls/house/2024/roll514.xml	https://clerk.house.gov/evs/2024/roll514.xml	2026-10-06T18:23:53Z
+f95be17d604745e865117bf73a13eeec7f4def7d30fe7e12a5f0b024bd8aab82	93588	rolls/house/2024/roll515.xml	https://clerk.house.gov/evs/2024/roll515.xml	2026-10-06T18:23:53Z
+3dadbe99d9bdf2edb55c71f3610475bd7bd62d7e72e90b95b34f7c815ba3aad7	93833	rolls/house/2024/roll517.xml	https://clerk.house.gov/evs/2024/roll517.xml	2026-10-06T18:23:53Z
+f03a76d87c9a94844641a4e5f31b238b605d42f986ede48bd1d3170dd4f874af	94246	rolls/house/2025/roll019.xml	https://clerk.house.gov/evs/2025/roll019.xml	2026-10-06T18:23:54Z
+387920bf4fe35bae79af6d78704004897da65ec3049cfaad9f7605e1fb284061	94480	rolls/house/2025/roll022.xml	https://clerk.house.gov/evs/2025/roll022.xml	2026-10-06T18:23:54Z
+7d44ca7cded3649d57ee1048fd5431306127c1da9a118847dd709e45390a4186	94390	rolls/house/2025/roll023.xml	https://clerk.house.gov/evs/2025/roll023.xml	2026-10-06T18:23:54Z
+a763877ba0825401dd3307755736a5d514e49d03838bcb5c4fd9c6842b55854b	94503	rolls/house/2025/roll028.xml	https://clerk.house.gov/evs/2025/roll028.xml	2026-10-06T18:23:55Z
+0297da0dabd2d5bc4641baa4a397201951804ded771d452cfc09aa7d1545a7ea	94402	rolls/house/2025/roll051.xml	https://clerk.house.gov/evs/2025/roll051.xml	2026-10-06T18:23:55Z
+49bdc1ce237ce1ecffd5e9315b92ca0246075ad8dedf12c6c6a653be186a90d3	94628	rolls/house/2025/roll052.xml	https://clerk.house.gov/evs/2025/roll052.xml	2026-10-06T18:23:56Z
+1a8a6c32771e97d434e0ae8ac1deafed04b1774f90f7533573be76474ede5265	94641	rolls/house/2025/roll053.xml	https://clerk.house.gov/evs/2025/roll053.xml	2026-10-06T18:23:56Z
+779a4be25fc130d0750a3e5f89ab2c8df5654f4bec342c609538807e038e8b59	94406	rolls/house/2025/roll058.xml	https://clerk.house.gov/evs/2025/roll058.xml	2026-10-06T18:23:56Z
+04fc7f81497e450dae819401391df5dc9a1ac90861b0645578416ab0fa14b167	94399	rolls/house/2025/roll059.xml	https://clerk.house.gov/evs/2025/roll059.xml	2026-10-06T18:23:57Z
+af2ffaed2dd823ce332ba562495f9bd7c6434fc61fdbaffee72db406acbcd3aa	94332	rolls/house/2025/roll061.xml	https://clerk.house.gov/evs/2025/roll061.xml	2026-10-06T18:23:57Z
+571891266d531e26ede08c00a5ae950c71e61fcf17ecae2a4d82735b1398f17d	94130	rolls/house/2025/roll070.xml	https://clerk.house.gov/evs/2025/roll070.xml	2026-10-06T18:23:57Z
+705275cb2545f319f2e82e3409012b6da1e34a94f3bd6ca4496c731619602d29	94372	rolls/house/2025/roll071.xml	https://clerk.house.gov/evs/2025/roll071.xml	2026-10-06T18:23:58Z
+27847bcdcd33c0517268c3d16acd26b9ce884df2d92f511447695beb2e58bae9	94195	rolls/house/2025/roll077.xml	https://clerk.house.gov/evs/2025/roll077.xml	2026-10-06T18:23:59Z
+892a623e1155c15e686323fdedce67808456812683b4657251a4206f236cba7a	94067	rolls/house/2025/roll078.xml	https://clerk.house.gov/evs/2025/roll078.xml	2026-10-06T18:23:59Z
+59a0684eb3a96206643fda4b0a2930fec342f23822c8f26d31c48c2985bd604a	93997	rolls/house/2025/roll084.xml	https://clerk.house.gov/evs/2025/roll084.xml	2026-10-06T18:23:59Z
+b67d42ddc2b590bd7a93375c2133922549c1de207720b3650942ff64acf8f960	93983	rolls/house/2025/roll088.xml	https://clerk.house.gov/evs/2025/roll088.xml	2026-10-06T18:24:00Z
+4d63f60e488009f2fa30d63ba0b12294f980bdafbcad96495bc50a51601ec15e	94470	rolls/house/2025/roll095.xml	https://clerk.house.gov/evs/2025/roll095.xml	2026-10-06T18:24:00Z
+88116ad3b2e4016f8e89ad9f9bc6b9c500924860874a3f6c7f39d65eeb7fdc0c	94443	rolls/house/2025/roll096.xml	https://clerk.house.gov/evs/2025/roll096.xml	2026-10-06T18:24:00Z
+7e3474ac0c18abefed41bdae758f7ef99d59cfde98d26a52ad169023cdf4da27	94460	rolls/house/2025/roll104.xml	https://clerk.house.gov/evs/2025/roll104.xml	2026-10-06T18:24:01Z
+6c6c95e2a6537359bce17fd3b6a360f191fbc6863e1f0e8dd4e142f38cb8fb25	94533	rolls/house/2025/roll110.xml	https://clerk.house.gov/evs/2025/roll110.xml	2026-10-06T18:24:01Z
+a5521e093a7c9914f822eb30365c8f0eacd69137282f147e8eeadc4a5fc1379c	94661	rolls/house/2025/roll111.xml	https://clerk.house.gov/evs/2025/roll111.xml	2026-10-06T18:24:01Z
+c83674a690eb005ef8f3a2cc67dca745113e95d818b7f0ba9b27476a1a883143	94593	rolls/house/2025/roll112.xml	https://clerk.house.gov/evs/2025/roll112.xml	2026-10-06T18:24:02Z
+d9ce685a2b6671330ed3edb2714a1434c5da0ebd596ae133828985db9b9c64f3	94408	rolls/house/2025/roll114.xml	https://clerk.house.gov/evs/2025/roll114.xml	2026-10-06T18:24:02Z
+3c9fec77d00272ff590e6099616eb744914dcdcb500010a05221f05d10453026	94280	rolls/house/2025/roll125.xml	https://clerk.house.gov/evs/2025/roll125.xml	2026-10-06T18:24:03Z
+e57585b0a63a24aae0f9f9cf1213ccd352007846794aef92be095f080cf2ee56	94512	rolls/house/2025/roll137.xml	https://clerk.house.gov/evs/2025/roll137.xml	2026-10-06T18:24:03Z
+d4c740660a039dfaf0cb883375639cd3c5b1957b488d6e6856b7d754ec51fc63	94303	rolls/house/2025/roll143.xml	https://clerk.house.gov/evs/2025/roll143.xml	2026-10-06T18:24:03Z
+0a3fdf86b3c997dca3efc1a5c9f80a27ec15728abb8a58346bbb1924366c09c7	94164	rolls/house/2025/roll151.xml	https://clerk.house.gov/evs/2025/roll151.xml	2026-10-06T18:24:04Z
+063b2945c4bbe296a055eddbb0b1283b1d7a5d6c951c691e0c947bd785421e54	94110	rolls/house/2025/roll166.xml	https://clerk.house.gov/evs/2025/roll166.xml	2026-10-06T18:24:04Z
+f3eff7796611b74112e4111a4e573ffe3f80657aa986c13575500e871fd6e02b	94099	rolls/house/2025/roll168.xml	https://clerk.house.gov/evs/2025/roll168.xml	2026-10-06T18:24:04Z
+6222452a344969c3d565e60d7d9b492584b9a9d403d56798a7b4901427a28e90	93888	rolls/house/2025/roll190.xml	https://clerk.house.gov/evs/2025/roll190.xml	2026-10-06T18:24:05Z
+e4ee8222afee6db59a90aafa27911c8d485a15843b119aa17cd2b2d6a3a70df9	94312	rolls/house/2025/roll193.xml	https://clerk.house.gov/evs/2025/roll193.xml	2026-10-06T18:24:05Z
+7523f98c70ad86c60737b67e8daf00035b94d135e88c8384e0e68aa8473e9acc	94070	rolls/house/2025/roll200.xml	https://clerk.house.gov/evs/2025/roll200.xml	2026-10-06T18:24:06Z
+ca81b6c1537e42cdd499b12534049afb3cc1fa1304d486110dd1770e607ef0e5	94163	rolls/house/2025/roll224.xml	https://clerk.house.gov/evs/2025/roll224.xml	2026-10-06T18:24:06Z
+a5ab40b7de91f68bb2e604a08ea456a5f45769328c6ee9ee7a26d155771ad5c3	94100	rolls/house/2025/roll225.xml	https://clerk.house.gov/evs/2025/roll225.xml	2026-10-06T18:24:06Z
+0dcbe78e751a146bcfc83595a64beb79eb38712b2052c8a3be468019987328b1	94105	rolls/house/2025/roll226.xml	https://clerk.house.gov/evs/2025/roll226.xml	2026-10-06T18:24:07Z
+dfbc7b2e76b87b86c64aa5cc4c35f0512b8369900f08ed8b1c0b704d0dd2b35e	94356	rolls/house/2025/roll285.xml	https://clerk.house.gov/evs/2025/roll285.xml	2026-10-06T18:24:07Z
+7d330596d2bfe26470bc500b75a249603e7147244b4dd7cf71f274b33f94a585	94356	rolls/house/2025/roll289.xml	https://clerk.house.gov/evs/2025/roll289.xml	2026-10-06T18:24:08Z
+f015bc588c1e16039af5efdd291fb4da27b19993f277319e4c4e69994030ca19	94559	rolls/house/2025/roll294.xml	https://clerk.house.gov/evs/2025/roll294.xml	2026-10-06T18:24:08Z
+c4ee549bb88b7ce9806dcd4c64b213d51a33cca8c914d4e11dccdad1485129c2	94532	rolls/house/2025/roll295.xml	https://clerk.house.gov/evs/2025/roll295.xml	2026-10-06T18:24:09Z
+e680e3d48cdd68ddf73f301066c90be3e390cbb106d9d8653d5d13a8bace4c30	94555	rolls/house/2025/roll296.xml	https://clerk.house.gov/evs/2025/roll296.xml	2026-10-06T18:24:09Z
+cd23696e071c5f76210e70ee16e1329379e1fb38460470702a20d245a521891b	94302	rolls/house/2025/roll315.xml	https://clerk.house.gov/evs/2025/roll315.xml	2026-10-06T18:24:09Z
+899d6da1204573bd6c924a898841ec0baa316642f6e459013a3543ddba501d08	94481	rolls/house/2025/roll320.xml	https://clerk.house.gov/evs/2025/roll320.xml	2026-10-06T18:24:10Z
+33fc7b1d5ffe9d4b3aa7ebf6ba9f9744dc64315f8f0635d0ad433066c8be5ee2	94626	rolls/house/2025/roll335.xml	https://clerk.house.gov/evs/2025/roll335.xml	2026-10-06T18:24:10Z
+52712da84a6c79d81366c5c448bbbd8d32ccf4969920a65f7f56867432e07940	93975	rolls/house/2026/roll007.xml	https://clerk.house.gov/evs/2026/roll007.xml	2026-10-06T18:24:10Z
+87041b8ed63b4bbbbb355c3c2f234ca74fb30f5116745db49b4097c715108519	93972	rolls/house/2026/roll008.xml	https://clerk.house.gov/evs/2026/roll008.xml	2026-10-06T18:24:11Z
+2580c2580335c97031e9e527f0cba43d534840ece671b1ebd1e7b71e0e4baf0e	93961	rolls/house/2026/roll009.xml	https://clerk.house.gov/evs/2026/roll009.xml	2026-10-06T18:24:11Z
+1317551fd70dab849e380f5120f73f5a0c88e18ab8273dda7c576e22cc67c4e4	94145	rolls/house/2026/roll038.xml	https://clerk.house.gov/evs/2026/roll038.xml	2026-10-06T18:24:11Z
+b6d23102628e791928a3911d1f1d9fad27807d439cda3bf03d02f15ba49d1f83	93964	rolls/house/2026/roll042.xml	https://clerk.house.gov/evs/2026/roll042.xml	2026-10-06T18:24:12Z
+4b12e201d51a44dcd865637153e0e61c6ba568d332e8df7337120fc040673259	94114	rolls/house/2026/roll053.xml	https://clerk.house.gov/evs/2026/roll053.xml	2026-10-06T18:24:12Z
+ca0b04a27061411887b41e1d20e858b75b0fe14ef8bc788550d857d9b28cf821	94248	rolls/house/2026/roll056.xml	https://clerk.house.gov/evs/2026/roll056.xml	2026-10-06T18:24:13Z
+c1de9bc1d358e4a7b8552bbc426bf2581cd5fca0b61da3ad3d6952370d01cf87	94155	rolls/house/2026/roll081.xml	https://clerk.house.gov/evs/2026/roll081.xml	2026-10-06T18:24:13Z
+82c9d716f7e317437c3f024067c4e6637b7cc8e41c98bbcbbb2b977141307d47	94212	rolls/house/2026/roll089.xml	https://clerk.house.gov/evs/2026/roll089.xml	2026-10-06T18:24:13Z
+e70f79358608c7ac624d31490aae82845247b920c532577c571fdcc984cd4cf9	93889	rolls/house/2026/roll129.xml	https://clerk.house.gov/evs/2026/roll129.xml	2026-10-06T18:24:14Z
+2b025b6c6ebca8f881e36fe1506a1ef70d7f5fc32dd771c09a49d60df1197c60	94127	rolls/house/2026/roll155.xml	https://clerk.house.gov/evs/2026/roll155.xml	2026-10-06T18:24:14Z
+cdcf9b4380ba0f7daae98c341396bea2407bf587f4b8994b28a77f45c897895b	93775	rolls/house/2026/roll180.xml	https://clerk.house.gov/evs/2026/roll180.xml	2026-10-06T18:24:15Z
+6dc0e2ea6ab317227c1f58e86260c9d1a316754eaedc985ed7510f6987436c66	93734	rolls/house/2026/roll181.xml	https://clerk.house.gov/evs/2026/roll181.xml	2026-10-06T18:24:15Z
+803adab8147ffec2fd443206e21c3c2b597fa717bf2a3cac5a35b6c4681a336f	93654	rolls/house/2026/roll193.xml	https://clerk.house.gov/evs/2026/roll193.xml	2026-10-06T18:24:15Z
+5ce3c1e7a737bb07b0ff1e8a031453159c14517c9d75440cff3e6d5b07e50b3a	93360	rolls/house/2026/roll214.xml	https://clerk.house.gov/evs/2026/roll214.xml	2026-10-06T18:24:16Z
+a74c9df8923ddd7631e5196df6a49cec1fb34457c10053204e02d0fd3ec653e8	94134	rolls/house/2026/roll223.xml	https://clerk.house.gov/evs/2026/roll223.xml	2026-10-06T18:24:16Z
+91f2fbd3220bc997b37600b56595aea7950468b8e6817f41dde89cb0824e2aa7	94145	rolls/house/2026/roll224.xml	https://clerk.house.gov/evs/2026/roll224.xml	2026-10-06T18:24:17Z
+ba3e1e7b046eb223e5f263bc73dd7fcbedae8282b510400d2cf1c1c2f8605787	93912	rolls/house/2026/roll284.xml	https://clerk.house.gov/evs/2026/roll284.xml	2026-10-06T18:24:17Z
+42721feb5356b7a793a0802fca7bbd78223c56bd10da88b78b76c78700591407	93876	rolls/house/2026/roll285.xml	https://clerk.house.gov/evs/2026/roll285.xml	2026-10-06T18:24:17Z
+c081681f26c78d4520b0ea9d9b4431930bac0c3db593ab2a76f99fad28624beb	94129	rolls/house/2026/roll286.xml	https://clerk.house.gov/evs/2026/roll286.xml	2026-10-06T18:24:18Z
+0af7d8395809c5f3ac0558b8d7fcc91f82d6009f0609f8fa2bd30fd9f3df9335	94424	rolls/house/2026/roll308.xml	https://clerk.house.gov/evs/2026/roll308.xml	2026-10-06T18:24:18Z
+aca815390c8ebe56f0ec46f7b1c3ea18096ef8b1fa2bd48cb1b943d33dcff75b	28840	rolls/senate/vote1151/vote_115_1_00027.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00027.xml (capture 20260719000440)	2026-10-06T18:24:24Z
+6123b200b67effdde5c2557d1699e508ef45bce3d8a47066515c94b10e0ed28d	28640	rolls/senate/vote1151/vote_115_1_00028.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00028.xml (capture 20260719001134)	2026-10-06T18:24:28Z
+544301aa3971d00c545c9744e28ef0b2291c44e6034a434f150625d2decbbe67	28833	rolls/senate/vote1151/vote_115_1_00043.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00043.xml (capture 20260718232822)	2026-10-06T18:24:31Z
+e8f99e2cd35e810ccbbabe73ea4fca249740e5d72107ee9805e115bcd78e21fa	29185	rolls/senate/vote1151/vote_115_1_00051.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00051.xml (capture 20260718232826)	2026-10-06T18:24:35Z
+7bc34f6dddf26638cb78c996d89e017500838dbf1f144b5d9f6735915cafeffb	29178	rolls/senate/vote1151/vote_115_1_00066.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00066.xml (capture 20260718232821)	2026-10-06T18:24:39Z
+a59c3e3bc6e7b53e810c4506cacb6ebbd500a237323ee59bed32b7357b9b5185	29136	rolls/senate/vote1151/vote_115_1_00081.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00081.xml (capture 20260718232823)	2026-10-06T18:24:44Z
+bddf3474f3c527d16d7bcfe08b6e7c29ed0c0d808295d8efcdea347964d84220	29295	rolls/senate/vote1151/vote_115_1_00082.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00082.xml (capture 20260718232820)	2026-10-06T18:24:49Z
+2a41531457dc3e4a195bd18ae4ec88a46adf868d00256c97a75a30356d99eafa	29062	rolls/senate/vote1151/vote_115_1_00083.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00083.xml (capture 20260718232829)	2026-10-06T18:24:52Z
+c1a3a90a75867652640bf5a2f8c5ab5f4887492dc5041650e217ab616476d14d	29244	rolls/senate/vote1151/vote_115_1_00084.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00084.xml (capture 20260718232827)	2026-10-06T18:24:56Z
+9c9b884bd83f5fe6d3b4e0bb34cd6023b20ba8fb843d88cbff5adeb06be7e983	28896	rolls/senate/vote1151/vote_115_1_00087.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00087.xml (capture 20260718232824)	2026-10-06T18:25:00Z
+07212ae9dc3028e5e9958108d54bd16613af554e5a39fc2912f3dd1770ae0b32	29351	rolls/senate/vote1151/vote_115_1_00092.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00092.xml (capture 20260718232827)	2026-10-06T18:25:03Z
+869e8a8fb5e83bd976bf644e447527fa4ef8e1144166b8b593ed40ee7ab86138	29132	rolls/senate/vote1151/vote_115_1_00093.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00093.xml (capture 20260718232825)	2026-10-06T18:25:07Z
+a4276f7cebcceb8c1993195fe6d88f55f388ccbdc6de3caab52de196d638d5af	28993	rolls/senate/vote1151/vote_115_1_00094.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00094.xml (capture 20260718235528)	2026-10-06T18:25:11Z
+8ef6580de5349a3ac8e28eacba710e8c36796df42c648c12b7d337a39ce190d0	29054	rolls/senate/vote1151/vote_115_1_00099.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00099.xml (capture 20260718232829)	2026-10-06T18:25:14Z
+766a48d490a346fb305e96fb9e1bce6e0dbb747b41f1a19111d5077a90cc60eb	29346	rolls/senate/vote1151/vote_115_1_00101.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00101.xml (capture 20260718232821)	2026-10-06T18:25:18Z
+ef7086a1e010b18c1aea815e4e03a2f25ea0f41bb0c09781a31a22f29d16d1b8	28954	rolls/senate/vote1151/vote_115_1_00120.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00120.xml (capture 20260718232826)	2026-10-06T18:25:21Z
+7a735aa4a50096d2379975c13a222105ac7bf7d99a1926b3f08c868d4dd34e31	29059	rolls/senate/vote1151/vote_115_1_00121.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00121.xml (capture 20260719001230)	2026-10-06T18:25:26Z
+fbaf31ff68d227e67f385775b28a4932b8bb28d3637ac4af5c6be607673c31cb	28780	rolls/senate/vote1151/vote_115_1_00175.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00175.xml (capture 20260719001531)	2026-10-06T18:25:35Z
+a6edb2e2766786e02a2942f007ae3ffa128281a9c712c6897490a9e96b0bcacf	28919	rolls/senate/vote1151/vote_115_1_00187.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00187.xml (capture 20260719001304)	2026-10-06T18:25:39Z
+05517a0484ce3ad321671d76f05b26054c5a2676936d8be956bad872d2682205	29385	rolls/senate/vote1151/vote_115_1_00192.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00192.xml (capture 20260719001850)	2026-10-06T18:25:44Z
+8552992c414e18e25804099e8e3e8a5453ec01bb4e2a6e1da4d2360accb14600	28868	rolls/senate/vote1151/vote_115_1_00248.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00248.xml (capture 20260719001212)	2026-10-06T18:25:47Z
+ab8e0f031f39d9d3f1975b901edd7d9a6c0450814741ac9ac94103730d60ba7b	29157	rolls/senate/vote1151/vote_115_1_00249.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00249.xml (capture 20260718232820)	2026-10-06T18:25:51Z
+d106122034c90c4b11da1d5641f19c9d16756af71fa1464692089d53e5292697	28684	rolls/senate/vote1151/vote_115_1_00303.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00303.xml (capture 20260726133133)	2026-10-06T18:25:55Z
+f36613dd802d5ef3cc6e035ce98170e3a52dd8a0cc36e3f469caa4770ac2dfc1	28818	rolls/senate/vote1151/vote_115_1_00311.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00311.xml (capture 20260718232823)	2026-10-06T18:26:26Z
+c00adb5539c97948a366753c26847ae42fc7ab7ef9cf2032aed18061efbaaf13	29199	rolls/senate/vote1151/vote_115_1_00325.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00325.xml (capture 20260719001835)	2026-10-06T18:26:29Z
+e6a50f8466f0b566428b994abf3b4e165d9f422f2dbd3e742edee143afb0c103	29076	rolls/senate/vote1152/vote_115_2_00012.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00012.xml (capture 20260719000433)	2026-10-06T18:26:34Z
+d8e8078951ef743d7b1ce3c7fa2693fae82f325eff77bf7b89326b2f7a4abae3	29066	rolls/senate/vote1152/vote_115_2_00017.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00017.xml (capture 20260719001510)	2026-10-06T18:27:03Z
+af7a1e5e6e5bae79652420dcca9babf03a10ab4287abc823db84fef8bcc059af	28967	rolls/senate/vote1152/vote_115_2_00031.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00031.xml (capture 20260719001441)	2026-10-06T18:27:07Z
+843840084658285e5445b91c921b925347670d210ce6f58ade9c295e59e1aaba	28750	rolls/senate/vote1152/vote_115_2_00054.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00054.xml (capture 20260719000522)	2026-10-06T18:27:10Z
+73a1cdac6338ee0e956fbbecca7d26b75446dcf0df9374ebd48a68c97ead709d	29115	rolls/senate/vote1152/vote_115_2_00060.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00060.xml (capture 20260719001311)	2026-10-06T18:27:14Z
+49953dbd1f43ffbb05793a34a8a6f2afb0607f288de3f92c2120ba344e8b6018	29093	rolls/senate/vote1152/vote_115_2_00063.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00063.xml (capture 20260719001859)	2026-10-06T18:27:17Z
+1855fac7d7efbb9cadb4b58247b622dcb42faa4ea740bcda1485f78a51a61ea6	28973	rolls/senate/vote1152/vote_115_2_00076.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00076.xml (capture 20260718235528)	2026-10-06T18:27:21Z
+72758040eb5d0660cf597695f9a74487110fc3b28c37451dbfd785720db83b66	28823	rolls/senate/vote1152/vote_115_2_00106.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00106.xml (capture 20260719000448)	2026-10-06T18:27:24Z
+bd0920f798e7412f8fb91e356e8ba4a320ae7c5a049ebec465f9a5a48c758cf4	28726	rolls/senate/vote1152/vote_115_2_00173.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00173.xml (capture 20260719000505)	2026-10-06T18:27:27Z
+380b4b0ef0664e9d3c1db6cc23fba313801f5021a176791ed78ebcb0cb80ab0e	29128	rolls/senate/vote1152/vote_115_2_00181.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00181.xml (capture 20260719001436)	2026-10-06T18:27:31Z
+eed17b95b14b682adc4122d65367dea42f5228a6eaa05fde0673e2d8fe469051	28926	rolls/senate/vote1152/vote_115_2_00207.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00207.xml (capture 20260719001504)	2026-10-06T18:27:35Z
+02e5dfa5880059cd146757a161556eb6c9aaa21adb89774450f90b0ff4c79347	28760	rolls/senate/vote1152/vote_115_2_00209.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00209.xml (capture 20260719000619)	2026-10-06T18:27:38Z
+93984f1da3b957a65208d269e470361f468ecfc1f823885a6dbffd71690e8279	28837	rolls/senate/vote1152/vote_115_2_00212.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00212.xml (capture 20260719001910)	2026-10-06T18:27:42Z
+8c30c1a15589ea30360be5c13d03729a173086af51c44759e7fec7a5d9b938db	28853	rolls/senate/vote1152/vote_115_2_00220.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00220.xml (capture 20260719001547)	2026-10-06T18:27:46Z
+7f32eb6a095c63cf2ad1a07d5f61193e9e7174890549f1ae4d74a78256cff51d	28784	rolls/senate/vote1152/vote_115_2_00221.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00221.xml (capture 20260719001320)	2026-10-06T18:27:50Z
+7583b3c2e807e675e9740aa3a37f35a6d3fef3ec71c595d5ea7a102200f8081c	29000	rolls/senate/vote1152/vote_115_2_00225.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00225.xml (capture 20260719000444)	2026-10-06T18:27:53Z
+bb51684d0196fb4eafbf0fb4c562d4a5b4bc3c0122a1fc336a3a33a628b6dd42	28806	rolls/senate/vote1152/vote_115_2_00241.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00241.xml (capture 20260719000426)	2026-10-06T18:27:57Z
+f70918641108dc9244a528f94a1ec6191cdd14ec4636d4638939590f23e651e1	28838	rolls/senate/vote1152/vote_115_2_00259.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00259.xml (capture 20260719001832)	2026-10-06T18:28:01Z
+5f4ee9b3a338dbf7ec7b15f9de384c9bf62a50826e132112d4b96805d9df856d	28823	rolls/senate/vote1152/vote_115_2_00271.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00271.xml (capture 20260719000437)	2026-10-06T18:28:05Z
+21615fba8c8060cd776fcab85da0ee66ee06dc16b31967bc7e390fd014762b18	28665	rolls/senate/vote1161/vote_116_1_00022.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00022.xml (capture 20260718235243)	2026-10-06T18:28:09Z
+1733fa9c4664683022e5491aac998f97ada4388dac70fbb83bb1cdb540fd7576	28952	rolls/senate/vote1161/vote_116_1_00026.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00026.xml (capture 20260719001127)	2026-10-06T18:28:12Z
+8f5b8fde2d2e40e04567f9333f557a349fa213a7155f23f0150f1fc0e170fd7f	28748	rolls/senate/vote1161/vote_116_1_00048.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00048.xml (capture 20260718235455)	2026-10-06T18:28:17Z
+03ae410a4513dec9af0170c73d54a192440ced2019b71b112a4dcd11d38808dd	28751	rolls/senate/vote1161/vote_116_1_00049.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00049.xml (capture 20260719001131)	2026-10-06T18:28:22Z
+66cdd87f2f487d60b2d986c08eab51775dc486ec00bdc8f230cca4db1cd0a0d8	28860	rolls/senate/vote1161/vote_116_1_00094.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00094.xml (capture 20260718235454)	2026-10-06T18:28:25Z
+9cfaeec120fb571a482c5763cdfcf8f6935ba0b2b3f894cc13977c841f39e5eb	28745	rolls/senate/vote1161/vote_116_1_00129.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00129.xml (capture 20260718233607)	2026-10-06T18:28:30Z
+1920be977cce3ae39f1b779171d408c970cd360ec1dee69489686269656ae5c7	28977	rolls/senate/vote1161/vote_116_1_00177.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00177.xml (capture 20260718235455)	2026-10-06T18:28:34Z
+52faec4942816b391d6cbb2c284c2c9f1bab053152aa0c9080118aaa4b0382f1	28883	rolls/senate/vote1161/vote_116_1_00178.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00178.xml (capture 20260718235456)	2026-10-06T18:28:37Z
+05f2703d6e6f331143d8b9729a02084fad2dc62e3f8c2240dc901f629a508065	46909	rolls/senate/vote1161/vote_116_1_00179.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00179.xml (capture 20260718235456)	2026-10-06T18:28:41Z
+c8b6d6db815cd1f3328aa208f7be52e1b9f5df972cb06d66ffd6d34e5f447187	28870	rolls/senate/vote1161/vote_116_1_00185.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00185.xml (capture 20260718233408)	2026-10-06T18:28:44Z
+38aa7b8d5338c5a2124c1aac0ff80517f6c5c81eaa66cbbd918497ca552e33ce	28834	rolls/senate/vote1161/vote_116_1_00224.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00224.xml (capture 20260718233225)	2026-10-06T18:28:48Z
+f04d024ce4d2b4927c9ad13185dc9a50baa50ec1375935b1ceb913bd6bb1d4d7	29191	rolls/senate/vote1161/vote_116_1_00231.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00231.xml (capture 20260718235455)	2026-10-06T18:28:53Z
+3f55cdf393f7eb835de3d3667f7103e85727524f7090a52cfadffcac5d26ebed	29148	rolls/senate/vote1161/vote_116_1_00232.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00232.xml (capture 20260718235455)	2026-10-06T18:28:58Z
+f6e5e4b9f017921b7b3767520746d74aac8568b2ef145614ef58b64935b11f97	29084	rolls/senate/vote1161/vote_116_1_00233.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00233.xml (capture 20260718235456)	2026-10-06T18:29:03Z
+9e07d59d52a1f76b4271cfc8a428035ba7233bf8a7a251f1a1f0bee9449cfa63	28911	rolls/senate/vote1161/vote_116_1_00262.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00262.xml (capture 20260718233216)	2026-10-06T18:29:29Z
+56939c43e3e2b40159ef7a1213c42e02c6c5d18c229daf32da532846a2d7f2d9	28683	rolls/senate/vote1161/vote_116_1_00302.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00302.xml (capture 20260718235500)	2026-10-06T18:29:33Z
+3ad088141e93a618e08802f4eb976ea51cd490335b0de24502762a8260276f72	28718	rolls/senate/vote1161/vote_116_1_00311.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00311.xml (capture 20260718233315)	2026-10-06T18:29:37Z
+b7f2f820c02182ecd7a9967407c0fb71f0f355911c57d8b61ca773c893631575	28844	rolls/senate/vote1161/vote_116_1_00325.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00325.xml (capture 20260718235501)	2026-10-06T18:29:40Z
+e79f4e0e4ca549668f2b18664af0422a21c8c30fbd38734a937c7ad3fcbe13cc	29140	rolls/senate/vote1161/vote_116_1_00365.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00365.xml (capture 20260718233548)	2026-10-06T18:29:44Z
+6ccaa72c78fcba88fa88ce106b14458dc72913795c7963da4fec33f4962cd45b	28975	rolls/senate/vote1161/vote_116_1_00390.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00390.xml (capture 20260718233221)	2026-10-06T18:29:48Z
+643ec45e33c2edff946429cbb023fb96601f6adf42763c1976856a4a6b514a29	29169	rolls/senate/vote1161/vote_116_1_00400.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00400.xml (capture 20260718235307)	2026-10-06T18:29:51Z
+1610368a3b7ec30302e715b048b75812ed415e49b51f7f91615da6c703d46c0e	29031	rolls/senate/vote1161/vote_116_1_00415.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00415.xml (capture 20260718233436)	2026-10-06T18:29:55Z
+b6ca4c3a68bf0b4b7b998fa21929fb0f95d1efdce23c72d7f3431124feb80876	28899	rolls/senate/vote1161/vote_116_1_00428.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1161/vote_116_1_00428.xml (capture 20260718233629)	2026-10-06T18:29:59Z
+9794e50bcc337a3a76fba3530541d4dec8021b725f9548c5f1acfcc3fe8b90e3	28893	rolls/senate/vote1162/vote_116_2_00014.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00014.xml (capture 20260718233314)	2026-10-06T18:30:24Z
+eb100969426b84d88f5014e41bc244b33032281dfc752472385fb00fcb2cfb67	28787	rolls/senate/vote1162/vote_116_2_00052.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00052.xml (capture 20260718235458)	2026-10-06T18:30:28Z
+3ac6126262543c1f72784ed576026549c1df39667b4ecd4914b62c7bc6326a90	28694	rolls/senate/vote1162/vote_116_2_00066.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00066.xml (capture 20260718233118)	2026-10-06T18:30:32Z
+6a34931c0c8d667bec4ac9e4f15560e074846b7da53903a2b93ed0899a50d49b	29162	rolls/senate/vote1162/vote_116_2_00070.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00070.xml (capture 20260719001130)	2026-10-06T18:30:37Z
+1603d4f32f24d18274da09068ebbd4126e3a75001967e4f8956f36bdb0f01042	28750	rolls/senate/vote1162/vote_116_2_00076.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00076.xml (capture 20260718233456)	2026-10-06T18:30:40Z
+402c9737bc5ca18ace8fdce15a8049792b1d109186d5288eec17c7076d59a096	28785	rolls/senate/vote1162/vote_116_2_00080.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00080.xml (capture 20260718233117)	2026-10-06T18:30:44Z
+983f30cb85340b58c08834f734d701aff1f08272312e957cb463c614d4119188	28944	rolls/senate/vote1162/vote_116_2_00084.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00084.xml (capture 20260718235458)	2026-10-06T18:30:47Z
+057eadf45e5dd425fea03b937500f2dcd05d023a74f01a5aa63577e3a7a62505	29416	rolls/senate/vote1162/vote_116_2_00121.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00121.xml (capture 20260718233325)	2026-10-06T18:30:51Z
+ab5c4a262d8f9079f586639942085c9240daafac334d8f3c9dcabb9b4d4991e1	28713	rolls/senate/vote1162/vote_116_2_00197.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00197.xml (capture 20260718233538)	2026-10-06T18:30:55Z
+49ef4ce6833c71ae1560075ea9784661d666199369b8acb7c9958efbaa06344b	28898	rolls/senate/vote1162/vote_116_2_00250.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00250.xml (capture 20260718235247)	2026-10-06T18:31:21Z
+f0bac248358344d567aa87acc8c08428e85fcc925f0d6d9e4e86443e14386171	29122	rolls/senate/vote1162/vote_116_2_00264.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00264.xml (capture 20260718233512)	2026-10-06T18:31:25Z
+5153f3aab00b1ef781e7e988fa83f93ec415b311513a95f3d9315f4e16b906ff	28821	rolls/senate/vote1162/vote_116_2_00289.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00289.xml (capture 20260718233458)	2026-10-06T18:31:29Z
+fd32249087741c6745669bc1e4d40eb548a2fffe38e5f69c6a80ad012f356069	29210	rolls/senate/vote1162/vote_116_2_00292.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1162/vote_116_2_00292.xml (capture 20260718233511)	2026-10-06T18:31:32Z
+a46715af85426d7123c5a4c66c94ee0752e284199e122b61289864ca820c34da	29119	rolls/senate/vote1171/vote_117_1_00004.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00004.xml (capture 20260719002513)	2026-10-06T18:31:36Z
+8c1c5b81af068a75b07a7c93240cbf0cced21c1e3910318537b257c2de569e97	28652	rolls/senate/vote1171/vote_117_1_00110.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00110.xml (capture 20260719002935)	2026-10-06T18:31:40Z
+5dc580dc4f3d6b4d82c2273cd61e3a6a34b1a285a7b72b214795c88fde532709	28796	rolls/senate/vote1171/vote_117_1_00140.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00140.xml (capture 20260719002506)	2026-10-06T18:31:45Z
+896fe0134e0899927e913110a7d8f73ca659b6ab4a4b93e3b1dc9dca82a440e9	28780	rolls/senate/vote1171/vote_117_1_00142.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00142.xml (capture 20260719002912)	2026-10-06T18:31:49Z
+9372cb6ef7b291bcb4ccf6b1d1dc086f829c6c83709c05a85398b8fbdb90c504	28711	rolls/senate/vote1171/vote_117_1_00165.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00165.xml (capture 20260718232803)	2026-10-06T18:31:53Z
+e07d5b37b21199750472c02a539cc1d4f333d20ed273d34b3f7cee3e95a0bfd2	29068	rolls/senate/vote1171/vote_117_1_00175.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00175.xml (capture 20260719004339)	2026-10-06T18:31:56Z
+b6b4738e571d1ad67cc20fa4a3abde12bc5152fd8c5386d52d79bdc65cd12285	28962	rolls/senate/vote1171/vote_117_1_00183.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00183.xml (capture 20260719004338)	2026-10-06T18:32:00Z
+94b098bb46f253f74255dfa577892bb1df7fb53bd2d58f1dec1451c2830df731	28948	rolls/senate/vote1171/vote_117_1_00195.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00195.xml (capture 20260719004340)	2026-10-06T18:32:03Z
+b37cfbe0c0fbcc5f4340bac76aa54679f60c4832ee62ed3abdeea20e32239767	28748	rolls/senate/vote1171/vote_117_1_00272.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00272.xml (capture 20260719002830)	2026-10-06T18:32:07Z
+253a31485e6db71c9fb2a0486fcc2cfed44d76479919b45a3fd609d3b3eb5268	28821	rolls/senate/vote1171/vote_117_1_00287.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00287.xml (capture 20260719002509)	2026-10-06T18:32:11Z
+d43077054c79d82a66cd508d0c2f8c799880dfecd3af616b136862bddef3f167	28736	rolls/senate/vote1171/vote_117_1_00314.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00314.xml (capture 20260915201709)	2026-10-06T18:32:17Z
+c1a885733c26394f471864edcc6edbaa874a6950e28bc38cbfe041c55e08d3fe	28852	rolls/senate/vote1171/vote_117_1_00397.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00397.xml (capture 20260719002810)	2026-10-06T18:32:22Z
+65c148f9d27a2cbb1363424cf47b2967f2201c5cace6af48f18b409740232167	28923	rolls/senate/vote1171/vote_117_1_00412.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00412.xml (capture 20260718232733)	2026-10-06T18:32:49Z
+77ffe23313a74cab516cbee67b468db9822f24e98ef8f1af84d86f1688e01147	28440	rolls/senate/vote1171/vote_117_1_00477.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00477.xml (capture 20260719002525)	2026-10-06T18:32:54Z
+04e0f4cf7ee088de208519939321e4ebe156492df6e2db701e4c147f74cbd5dc	28781	rolls/senate/vote1171/vote_117_1_00491.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00491.xml (capture 20260718233110)	2026-10-06T18:32:58Z
+365619cebdb9bdf594ddf49aacc4394673a36cb7602bf24713c902d2369320c8	28623	rolls/senate/vote1171/vote_117_1_00498.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00498.xml (capture 20260719004336)	2026-10-06T18:33:02Z
+95ea86a4a0e9ab663a61dd88e0fe36a016db2e6d1a1ed47f475a9059831009bf	28769	rolls/senate/vote1171/vote_117_1_00499.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1171/vote_117_1_00499.xml (capture 20260718232744)	2026-10-06T18:33:06Z
+b079a1b2038b10f3c58b96d95682fb4b22ae4b6a47a18312770a45fe0dc85e2f	28821	rolls/senate/vote1172/vote_117_2_00064.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00064.xml (capture 20260719002504)	2026-10-06T18:33:10Z
+9690bd179963d4e119e9e2ff8f57d300c2d68968e0d0e2f2d249997b5e315f43	28726	rolls/senate/vote1172/vote_117_2_00071.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00071.xml (capture 20260719002612)	2026-10-06T18:33:17Z
+3f5279cb7bc04d9d5c4ce631125139d39993a90548dee4a8d4e499d82dac7778	28973	rolls/senate/vote1172/vote_117_2_00078.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00078.xml (capture 20260719002629)	2026-10-06T18:33:24Z
+8401797c273704ba580812270981e5266bb953f4c7622a823ae2913e88c5f476	28772	rolls/senate/vote1172/vote_117_2_00131.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00131.xml (capture 20260719002553)	2026-10-06T18:33:29Z
+3af07df4af15196813ea64d0925cbf2a3012d685b94d7ffb339001192a104c54	28700	rolls/senate/vote1172/vote_117_2_00132.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00132.xml (capture 20260719002657)	2026-10-06T18:33:34Z
+6d547253572b1af081d413a26a7f7b04ef5102ef2082a7b23cc8a42c50de8174	28855	rolls/senate/vote1172/vote_117_2_00191.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00191.xml (capture 20260719002702)	2026-10-06T18:34:42Z
+472dd2f671c23ecfbe2a4c366007706e6e7cc312d2c84b34af7f72ddc434a8f9	28656	rolls/senate/vote1172/vote_117_2_00242.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00242.xml (capture 20260718232818)	2026-10-06T18:34:48Z
+1072a3210abc56abfa6cdba2c8643a79ffa3b09633185d48ad579e334e4a92d4	28933	rolls/senate/vote1172/vote_117_2_00271.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00271.xml (capture 20260719002801)	2026-10-06T18:34:53Z
+13463657f6687a51b6815d3e892326f47e468c0b65941d31ab6c6976082e0ba0	29081	rolls/senate/vote1172/vote_117_2_00273.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00273.xml (capture 20260719002558)	2026-10-06T18:34:57Z
+8e54692bf3c9222bb0a24ba8510da35a38e6f2717069ba1ec695da1b15949ea2	28787	rolls/senate/vote1172/vote_117_2_00280.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00280.xml (capture 20260718232808)	2026-10-06T18:35:00Z
+44dee3f3e151b51cee91bf03c66214126dcc5bda819a12e54c9d03da754d0fa1	28797	rolls/senate/vote1172/vote_117_2_00325.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00325.xml (capture 20260727045512)	2026-10-06T18:35:05Z
+9cfe40a794e6474eda839b94d8755b20b20c0d70ffce7efc260cd5c985ee7e61	29297	rolls/senate/vote1172/vote_117_2_00351.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00351.xml (capture 20260719002625)	2026-10-06T18:36:19Z
+2d4a7a9b613533432d404bbae2f0ebc5f4c963cab78a96c03231f9ccf4680b0b	28875	rolls/senate/vote1172/vote_117_2_00362.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00362.xml (capture 20260719002536)	2026-10-06T18:36:45Z
+c1788a9e87fae82a738dea963fe685ad04ff15726031d831d306d422b679313e	29271	rolls/senate/vote1172/vote_117_2_00372.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00372.xml (capture 20260719000829)	2026-10-06T18:36:50Z
+5241e84943058743ebde229466e76b875045b08a96ac1afea0121fb89b3a55b7	28992	rolls/senate/vote1172/vote_117_2_00421.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00421.xml (capture 20260719002743)	2026-10-06T18:36:53Z
+84b2e9d682c8f34b9f402c05324bff6070cafc7064fb5dbcc8e88ec115237aea	29280	rolls/senate/vote1181/vote_118_1_00035.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00035.xml (capture 20260928043725)	2026-10-06T18:36:57Z
+b26b04e58007d1f1860ea21682d45b2c31ca15e283e7b03f0e549d64bf843ee7	28919	rolls/senate/vote1181/vote_118_1_00049.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00049.xml (capture 20260926214054)	2026-10-06T18:37:01Z
+d10730f5ff34c3a166fa6d4b15cd9714197f4b98968afc4e457db030dc9dae1f	29441	rolls/senate/vote1181/vote_118_1_00079.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00079.xml (capture 20260926214127)	2026-10-06T18:37:05Z
+62ca541c7490c022b83613848899316fcc72c71e50991afe7dca4211f6cd8dd3	28836	rolls/senate/vote1181/vote_118_1_00080.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00080.xml (capture 20260719000541)	2026-10-06T18:37:09Z
+e21e88f6217de0e685f96c3655b39dc8eda286b4f59633e76e401d1e4b7b3ec8	29019	rolls/senate/vote1181/vote_118_1_00098.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00098.xml (capture 20260926214223)	2026-10-06T18:37:12Z
+8acfc068824813912a978d656d2a0c68edfc2b57472fd232c33da266afe4b59e	29155	rolls/senate/vote1181/vote_118_1_00109.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00109.xml (capture 20261001182657)	2026-10-06T18:37:16Z
+e00d9b9445c9e11f1776ff98bf163d38842d242c30da09d2616089710cacc41c	29299	rolls/senate/vote1181/vote_118_1_00110.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00110.xml (capture 20260926214304)	2026-10-06T18:37:20Z
+651636654eb0c58f696b775ebbcde09c281ca504790a0ac6c25acebac6fef813	29038	rolls/senate/vote1181/vote_118_1_00123.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00123.xml (capture 20260926214337)	2026-10-06T18:37:24Z
+fef2ba2ca4e75b52ec6ffff78f170e1b26554ab08304dfe660a78059b6dd3c9e	28974	rolls/senate/vote1181/vote_118_1_00126.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00126.xml (capture 20260928043836)	2026-10-06T18:37:29Z
+401fa4b7583d767e02d80e8837075ec2ff3eef957c7e5523bdcb513aeea83382	29174	rolls/senate/vote1181/vote_118_1_00135.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00135.xml (capture 20260926214426)	2026-10-06T18:37:33Z
+0ad44a70f900fc93a8242eeb566379041d930481ef91e8a4f886f564676484d7	28676	rolls/senate/vote1181/vote_118_1_00146.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00146.xml (capture 20260926214442)	2026-10-06T18:37:37Z
+a60238ce4124f6ca64e99e9287201341ae353003ee59842cf0a0570943d4ce4d	29110	rolls/senate/vote1181/vote_118_1_00167.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00167.xml (capture 20260928043853)	2026-10-06T18:37:40Z
+25fc0b2fe8086d9460c01625a518e90f174fe08e6a702fc1e19e71dd27d426a2	29468	rolls/senate/vote1181/vote_118_1_00242.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00242.xml (capture 20260719010550)	2026-10-06T18:37:45Z
+b5f65afa92d09d5921fe3b5e646dc3aa2eb2b73cea26eec9c346157f74bd25cd	29233	rolls/senate/vote1181/vote_118_1_00243.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00243.xml (capture 20260926214611)	2026-10-06T18:37:49Z
+d4f82e5db952f9518f97772b6781c639e0dd5f19281cca25e88ca0e8f946e67a	28450	rolls/senate/vote1181/vote_118_1_00247.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00247.xml (capture 20260926214628)	2026-10-06T18:37:52Z
+96ec029b01e5438feb0287fcc988f97e6815432c2205c4e461ba5b7996d05fa8	29022	rolls/senate/vote1181/vote_118_1_00260.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00260.xml (capture 20260926214650)	2026-10-06T18:37:55Z
+9d6165d83fe478db336aff4cab26aa4e3770ac38b29cb25615ce0a9ccac4d1fa	28973	rolls/senate/vote1181/vote_118_1_00303.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00303.xml (capture 20260926220240)	2026-10-06T18:37:59Z
+50b356ff533156db656d9cd526b8743bc72292d0e8cc76ccbc7bd67acb0afe3d	28773	rolls/senate/vote1181/vote_118_1_00312.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00312.xml (capture 20260926220322)	2026-10-06T18:38:03Z
+0889e2db8832a8467c1678a61a860d73a972aaa400f54bab13aa45d4340c332c	29136	rolls/senate/vote1181/vote_118_1_00343.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1181/vote_118_1_00343.xml (capture 20260926220336)	2026-10-06T18:38:07Z
+d000119e2d4d720a26b0811cfd9e51cfa5eab718b138393e07ae94fb839c73c8	29132	rolls/senate/vote1182/vote_118_2_00005.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00005.xml (capture 20260928043910)	2026-10-06T18:38:11Z
+140741a7cda03b2f71673e7d537f4f3e8debff34affe7163e4b9649837e274f6	28994	rolls/senate/vote1182/vote_118_2_00012.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00012.xml (capture 20260718234008)	2026-10-06T18:38:15Z
+b022a65dae6de79107a03e67d5d30bbbe77dfea614f4cbe2b9d01cf860f7973c	29103	rolls/senate/vote1182/vote_118_2_00061.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00061.xml (capture 20260926220455)	2026-10-06T18:38:19Z
+6e570bae52e00945425c2a7e6d88b240cf0569667a9985e409c2c78311e8b197	28829	rolls/senate/vote1182/vote_118_2_00067.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00067.xml (capture 20260928044025)	2026-10-06T18:38:23Z
+acab05e683e39dd2e08cebb102d65694dd2aa745a97e6805d06842e0e5ce43b0	29016	rolls/senate/vote1182/vote_118_2_00084.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00084.xml (capture 20260926220602)	2026-10-06T18:38:26Z
+0534b9eb1db94ac1c1509a7c39155437d9354486a709f4f89f933c8eefcd3035	29183	rolls/senate/vote1182/vote_118_2_00122.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00122.xml (capture 20260926220732)	2026-10-06T18:38:30Z
+7876c7a1e99f0bb00d45bcde1b5fe4fd10018308113fcdc2b7a3834ceb1b32be	28717	rolls/senate/vote1182/vote_118_2_00150.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00150.xml (capture 20260928044118)	2026-10-06T18:38:34Z
+f163e8442335162f2592e03bae1d6c1440b4ea865c6877626842295743312c99	29322	rolls/senate/vote1182/vote_118_2_00154.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00154.xml (capture 20260926220832)	2026-10-06T18:38:37Z
+56469da6311a2379edc2c4f9b7e2210d2bb083d3200a1c8bded289816a9728ff	29035	rolls/senate/vote1182/vote_118_2_00162.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00162.xml (capture 20260926220849)	2026-10-06T18:38:40Z
+f4cb4a241d1450890c7a406ed087087a59471263d10c43a2644434525cba3dad	29156	rolls/senate/vote1182/vote_118_2_00169.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00169.xml (capture 20260926220943)	2026-10-06T18:38:44Z
+63b38f1c7e8561ec34d478e8c334c466a48c3636a9f0094147dd6b10159df431	28940	rolls/senate/vote1182/vote_118_2_00200.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00200.xml (capture 20260926221051)	2026-10-06T18:38:47Z
+8989476f5c39fc931ff14a2f97a1b9e8d10de9126c79bac26e84f259efd080de	28804	rolls/senate/vote1182/vote_118_2_00255.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00255.xml (capture 20260926221107)	2026-10-06T18:38:51Z
+428965fe7719b435af493b58370d7348e5ad17e3616e181b0362713935effa88	28843	rolls/senate/vote1182/vote_118_2_00325.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00325.xml (capture 20260926221128)	2026-10-06T18:38:57Z
+ef3509c7f49040345f45d58d2e8b85e9d60a2d876284d00261b54a81d335444f	28868	rolls/senate/vote1182/vote_118_2_00338.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00338.xml (capture 20260928044203)	2026-10-06T18:39:04Z
+b7155f6188d3d03d159000aa9b598715f19e28ed28864a0db5074995cd979103	28710	rolls/senate/vote1182/vote_118_2_00339.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00339.xml (capture 20260928044219)	2026-10-06T18:39:11Z
+75569bb8cc84e5f08771697375f15cd4b0e7f930f6face533ae46f22e76e29cc	28483	rolls/senate/vote1191/vote_119_1_00007.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00007.xml (capture 20261002023822)	2026-10-06T18:39:16Z
+0ad8ff97727b66827c788718f072b5c14d7bd07b93cfe59112f39c0fb4cfe162	28963	rolls/senate/vote1191/vote_119_1_00092.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00092.xml (capture 20260928044306)	2026-10-06T18:39:23Z
+dd7709dfac91b8459f75580e18deb600ec1705cc5f3fcaa35b6a5faeea87d67e	29469	rolls/senate/vote1191/vote_119_1_00097.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00097.xml (capture 20261002023816)	2026-10-06T18:39:28Z
+210a58efc35ee10dc121ce1a9d6ec08414f5798e76c0fb227423763575b658b2	28909	rolls/senate/vote1191/vote_119_1_00106.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00106.xml (capture 20260928044323)	2026-10-06T18:39:34Z
+db946beb802b973fec60926250c66fe9130c240a86eefac0739d4a454a1bbd40	28703	rolls/senate/vote1191/vote_119_1_00127.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00127.xml (capture 20261002023811)	2026-10-06T18:39:39Z
+b7cacf27a97a168a5c98148dcc1251c5d785b2a840aa00ed689d55a34a9a5d8d	28878	rolls/senate/vote1191/vote_119_1_00133.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00133.xml (capture 20260928044340)	2026-10-06T18:39:46Z
+f41950cdae5de3c4412be7b437a9683dd52941c62d94c51c10355a6de5c60130	29346	rolls/senate/vote1191/vote_119_1_00151.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00151.xml (capture 20260930111247)	2026-10-06T18:39:52Z
+7ec30d167ea22232fd77c7daf798243fc4edd05e12aa13a60784046a90b84827	28803	rolls/senate/vote1191/vote_119_1_00153.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00153.xml (capture 20260926223700)	2026-10-06T18:39:57Z
+b23ad8099b92ac745d7844603aa45bc788f33b34eb82c8b0d3f0f52bb7ca21a9	29351	rolls/senate/vote1191/vote_119_1_00162.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00162.xml (capture 20260719004342)	2026-10-06T18:40:04Z
+65247d3a3407ce44c498cbdbf57c48675eb6cde28e3502517005771aeb28ae8f	29368	rolls/senate/vote1191/vote_119_1_00207.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00207.xml (capture 20260926223820)	2026-10-06T18:40:09Z
+7b8e805f70b3cfcb3352c2dc9f0ee421b05d5b3a86daae9ce5a6e5b3704aa77a	29589	rolls/senate/vote1191/vote_119_1_00223.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00223.xml (capture 20260926223836)	2026-10-06T18:40:15Z
+ebff7b04ed27aa526d5f2966755b3db1df1ccf0f02ccb5147e053524c726e12c	29557	rolls/senate/vote1191/vote_119_1_00228.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00228.xml (capture 20260926223916)	2026-10-06T18:40:21Z
+f80a54faa4b247fbbd0d65f2bef001e6f60af3f9e5924060fdd53934103693fb	29074	rolls/senate/vote1191/vote_119_1_00229.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00229.xml (capture 20260926223933)	2026-10-06T18:40:27Z
+512b15c75ae0328af24e47ac067f72eb25562485926d6e3dc6e66a28c547ab97	29287	rolls/senate/vote1191/vote_119_1_00232.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00232.xml (capture 20260928044457)	2026-10-06T18:40:33Z
+be07159e026a0e4e100b2d197d3dd619c986cd21a44a9d944496c0e44985acc4	29038	rolls/senate/vote1191/vote_119_1_00237.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00237.xml (capture 20260926224008)	2026-10-06T18:40:41Z
+a40fe82d426c7b2aa6c774cd3718388ed247806233d742e04cfcceaa07b26ffb	29223	rolls/senate/vote1191/vote_119_1_00239.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00239.xml (capture 20260926224138)	2026-10-06T18:40:46Z
+3dc952e609a100ee448fe83835848a78d3be85871eec5c862321434e837f4827	29479	rolls/senate/vote1191/vote_119_1_00277.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00277.xml (capture 20261002023816)	2026-10-06T18:40:52Z
+940e181e8a365bc5e2d90633c6f614e7a9b0fa30fb97e5fdd76de68ff3f2c35b	29913	rolls/senate/vote1191/vote_119_1_00279.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00279.xml (capture 20260926224229)	2026-10-06T18:42:09Z
+4a843852c0d1d5d11d91e66c0928ff2248ecbabdd7c7e9ba6c5975978e4ecad0	29566	rolls/senate/vote1191/vote_119_1_00281.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00281.xml (capture 20260926224246)	2026-10-06T18:42:15Z
+379f39e4d1c0c48d0e158dc9725a408536d2fe347d2c4d9443218d42b2c5e217	28632	rolls/senate/vote1191/vote_119_1_00318.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00318.xml (capture 20260926224303)	2026-10-06T18:42:21Z
+b7c0944df3ffefd23575b12c92d405bac12e594b5b002417ff9ee1354ebacc13	28801	rolls/senate/vote1191/vote_119_1_00372.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00372.xml (capture 20260928044530)	2026-10-06T18:42:27Z
+5988b8fb3da987b8d0b30f355598f34af9efbde023150b3f9ffb44cbf9518fe2	29222	rolls/senate/vote1191/vote_119_1_00411.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00411.xml (capture 20261002023806)	2026-10-06T18:42:33Z
+d2bd7913b0d764e25635407a75d8392ce2c57af8de0adca35d84ea5ad729c527	29320	rolls/senate/vote1191/vote_119_1_00549.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00549.xml (capture 20260926230357)	2026-10-06T18:42:39Z
+963114935bc2fc6738f2be0ce4b27a830b7bdb8771ac74babcdad213bb6c76ee	29324	rolls/senate/vote1191/vote_119_1_00556.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00556.xml (capture 20260926230432)	2026-10-06T18:42:44Z
+d8d16defcff75ccc9ea3b7cd1837a5c7c503d4cefe9a2b7e601ff8e422a295b2	29281	rolls/senate/vote1191/vote_119_1_00560.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00560.xml (capture 20260926230449)	2026-10-06T18:42:50Z
+f08b6da4ad532c44d322c23776893acfe77898ecb1d9e855f0f1c1fbffb81318	29022	rolls/senate/vote1191/vote_119_1_00599.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00599.xml (capture 20260926230654)	2026-10-06T18:42:57Z
+ab81bac6e53d98c8cc170882c53231ee2cc9fd0a4b4addbbdd264879d17e0129	28779	rolls/senate/vote1191/vote_119_1_00618.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00618.xml (capture 20260926230727)	2026-10-06T18:43:03Z
+90a6c2c985c2c27fd9287542fb70c743ad06bf6b6581e8ce7ba382ae7ee56719	29347	rolls/senate/vote1191/vote_119_1_00623.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00623.xml (capture 20260926230744)	2026-10-06T18:43:09Z
+4a17db3e379f8831f74e02f72782f57e95348796671ac586fd44ba9b5ced3540	29267	rolls/senate/vote1191/vote_119_1_00632.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00632.xml (capture 20260926230801)	2026-10-06T18:43:15Z
+af1fcd3aacbe0ff1070b1e19de8753851823b20db498bb8727387d020fb81856	28881	rolls/senate/vote1191/vote_119_1_00648.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00648.xml (capture 20260926230833)	2026-10-06T18:43:20Z
+b26ec9898899f33a23b55d3906a6d48d0a6e9d183a15ea574c77257fc3f38126	28830	rolls/senate/vote1192/vote_119_2_00011.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00011.xml (capture 20260926230910)	2026-10-06T18:43:26Z
+46610848870b2036c5a52225a8faef45b5d45c71afdd5973fe44d0b0f16a5a04	28859	rolls/senate/vote1192/vote_119_2_00020.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00020.xml (capture 20260926230926)	2026-10-06T18:43:32Z
+d6bce6b1aca41efe418c0b8a44f6d7c85af495220df2e26f66ff51847f12dfa0	29089	rolls/senate/vote1192/vote_119_2_00037.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00037.xml (capture 20260719004349)	2026-10-06T18:43:38Z
+ba4e9f9a641d3574730b0df5b2fbc7b736a126e818750baac9bb3c987ce70994	29341	rolls/senate/vote1192/vote_119_2_00084.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00084.xml (capture 20260926231022)	2026-10-06T18:43:44Z
+44e9c6a8bde4a388c68965e2f03c25366d3a82c51a50d8b28871a852910f16e7	28619	rolls/senate/vote1192/vote_119_2_00163.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00163.xml (capture 20261002023822)	2026-10-06T18:43:50Z
+4d5d5e1d3aaa8df6c9f0a70dee0d892d5ea6da45a9c53de594d37c61cdca1975	28971	rolls/senate/vote1192/vote_119_2_00182.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00182.xml (capture 20260729133210)	2026-10-06T18:43:57Z
+476688b518081e46b27098b9b9459a293930b1bd516dc4152d32b4ef598b700d	28999	rolls/senate/vote1192/vote_119_2_00224.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00224.xml (capture 20260926233028)	2026-10-06T18:44:02Z
+908e78a7a1077aadc6b0b024fad86de805dccd8667c4d9eaf6cac233c01cc24c	28940	rolls/senate/vote1192/vote_119_2_00228.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00228.xml (capture 20260926233045)	2026-10-06T18:44:08Z
+17ef4f6efa282b77b4ca82950763086a62e4fd2175d64c6b168b8cd379a009da	94136	rolls/house/2020/roll253.xml	https://clerk.house.gov/evs/2020/roll253.xml	2026-10-06T18:51:10Z
+f098915238794e7c8dbb3993351610a7f686004c2fe12f38c28709138c0c103d	94498	rolls/house/2019/roll429.xml	https://clerk.house.gov/evs/2019/roll429.xml	2026-10-06T19:30:02Z
+fe98219ef493ccddf90d774e300a2cbabed7c59492dcff87788e6f8dbacc9f35	94057	rolls/house/2022/roll536.xml	https://clerk.house.gov/evs/2022/roll536.xml	2026-10-06T19:30:03Z
+42efb9e7d161d258b5f97ee71bf5d2d1bb151a23ee33f64a6b2edc38bed536f6	28845	rolls/senate/vote1151/vote_115_1_00323.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1151/vote_115_1_00323.xml (capture 20260719001157)	2026-10-06T19:30:06Z
+2e863bb652d16942ebfaf71e66862929fb30fe82a6bf505d7504d394ec02432c	29060	rolls/senate/vote1172/vote_117_2_00396.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00396.xml (capture 20260719002557)	2026-10-06T19:30:12Z
+a1d7e8bd741f5b656ce88b67f642399efe54f5b4bce5df65975e7a348ed8e8ca	29174	rolls/senate/vote1172/vote_117_2_00399.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00399.xml (capture 20260719003451)	2026-10-06T19:30:16Z
+ba64e8552770fbababd4851ed4fd7cbc8adcb58a8bd0c11ae7ef411e084edf2d	28910	rolls/senate/vote1182/vote_118_2_00114.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00114.xml (capture 20260926220635)	2026-10-06T19:30:20Z
+c4c9dbf87ec7a97d1dac4bb22945e9d4c37c2892fab368d4f6e9bb1e31887433	28898	rolls/senate/vote1182/vote_118_2_00327.xml	https://web.archive.org/web/20261006000000id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1182/vote_118_2_00327.xml (capture 20260926221144)	2026-10-06T19:30:24Z

@@ -7,3 +7,4 @@ usa/president_by_*.csv -text
 usa/maine_districts_read_2012_2016.tsv -text
 usa/house_*.csv -text
 usa/senate_*.csv -text
+usa/us_veto_measures.csv -text

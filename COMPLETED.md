@@ -37886,3 +37886,74 @@ Nothing here builds on an answer.
 **Review** (`Reviews/2026-10-06_s801_r_us19_senate_count.md`): one adversarial reviewer re-traced the run against the CSVs and the whole block - **no defect changes the outcome or the decisive digest**; acted on: the polling day by 2 U.S.C. 7 (a 0.5 cascade would have thrown on 2016/2024), signed and summed N in the decided verdict, S9 on each count's saved page with steps 1-5 over the cycles fully read, control against [SEN-DIV], the play bases' substitutions printed (four, all agreeing), Mississippi's marks named, the 2026 Class III specials called in the game's range (PROVISIONAL), dead code removed; kept and declared: the Vice President's vote (not in a catalog), the broader S8 play-base set, the vacuous same-seat assertion the block demands. Reruns `senate801c`/`senate801d`: the same outcome and digest.
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **102 of 102** (`cheap801`; `UsSenateRaceCheck` its 102nd, after the review's fixes); both instruments by name `senate801d` 2 of 2, the card written by `senate801w`. R-US18's block digest 5c89b0cf and R-US19's 1caec656 unchanged. No film owed.
+
+## 802. PS-6 US-10: THE VETO AND THE FILIBUSTER ON THE RECORD - 1,564 MEASURES OF THE 115TH-119TH CONGRESSES, EACH CHAMBER'S FINAL AGREEMENT FROM ITS ROLL CALL, THE 25 VETOES TO THE SENATE'S LISTS; R-US17 STOPPED AND RE-ASKED - UNDER THE PLAN'S ONE-STANCE PREMISE A BLOC CONGRESS NEVER SENDS A VETOABLE MEASURE ((a) AT 66.7 % AGAINST B1'S 27.1 % ON THE MATRIX ALONE) (2026-10-06)
+
+**What was owed** (G6: "then US-10, US-14, US-32"; the plan's US-10, in E4's form, before any wiring): the veto record read; each candidate rule for which bills the president vetoes measured per president; how many measures a party-bloc Congress under Rule XXII could send at all; R-US17 asked with the rates.
+
+**Built:**
+- **`Tools/us_veto_fetch.pl`**, which keeps the sources two ways:
+  - **in tree** (`ElectionsData/usa/raw/vetoes/`, `fetch_log.txt`, `SHA256SUMS.txt`):
+    - the Senate's veto lists for each president (senate.gov answers 403, so they come from the Internet Archive);
+    - the House Historian's counts;
+    - the statutes behind every expedited Senate path a veto fell on (5 U.S.C. 802, 50 U.S.C. 1546a and 1622, 22 U.S.C. 2776, D.C. Code §1-206.04);
+    - CRS RS22654 on the override's base.
+  - **out of tree**, digest-listed in `out_of_tree.txt`:
+    - the GPO's BILLSTATUS records for the 115th-119th Congresses (20 zips);
+    - 761 roll calls (the Clerk's XML; the Senate's LIS XML through the Archive);
+    - P.L. 94-329 as enacted, for its §601(b).
+
+  The Archive's rate limit is met by a pause and retries.
+- **`Tools/us_veto_prep.pl`** writes the extract `ElectionsData/usa/us_veto_measures.csv` (`-text` in `.gitattributes`): every public law and every vetoed measure decided from noon on 20 January 2017, each chamber's final agreement with its party split, and every override.
+  - It refuses on any mismatch:
+    - digests;
+    - party sums against each roll call's totals;
+    - a roll call on another measure, except an en bloc Senate vote whose question text names it;
+    - a final question that is not an agreement's;
+    - a last agreement made "with an amendment" (the structural guard);
+    - an override outcome other than two thirds of those voting;
+    - a vetoed set other than the Senate's lists, override vote by override vote;
+    - counts other than the House Historian's.
+  - The record `veto_record.md` carries its nine readings. The mutation suite `Tools/us_veto_mutations.sh` runs twelve cases, every one caught, its control reproducing the extract byte for byte.
+- **`Tools/us_veto_backtest.pl`** writes `docs/generated/US_VETO_BACKTEST.md` in E4's form:
+  - the record per president;
+  - each rule's base, the vetoes inside and outside it, the rate a draw would take, the hit rate and the precision. The rules are (a) B1 transposed, F3 transposed, (b) either chamber, and both chambers;
+  - (c) as a threshold family, printed, never picked;
+  - every veto, with the rules naming it and whether a bloc Congress sends it;
+  - the bloc Congress under the plan's premise (each party one stance in both chambers, with each Congress's seats) and chamber by chamber;
+  - the verdict.
+- **`Assets/Editor/UsVetoBacktestCheck.cs`** (cheap and docs groups) holds the document to the CSV's digest. It recomputes from the CSV the record table, every rule's counts per president, and both bloc readings, and chooses the verdict again, with B1's yardstick read from the Sejm's CSV.
+- **The plan**: US-10's Built line, and R-US17 marked STOPPED AND RE-ASKED.
+
+**What it measures:**
+
+| | Trump, first term | Biden | Trump, second term | Total |
+|---|---|---|---|---|
+| Measures decided | 795 | 649 | 120 | 1,564 |
+| Vetoes | 10 (1 overridden) | 13 | 2 | 25 |
+
+- **(a)** pooled: named 33, vetoed among them 22 (66.7 %), hit rate 22 of 25.
+- **Both chambers**: 20 of 21 (95.2 %).
+- **B1's yardstick**: 45 of 166 (27.1 %). No rule falls below it.
+- **Under the plan's premise** (each party voting as one, spec-risk 4), a bloc Congress sends none of the 34 measures the president's party opposed. The other party never held both chambers in the window. **That is R-US17's STOP. R-US17 is re-asked**, with (a)'s matrix result beside it.
+- **Chamber by chamber** (the reading declared before the first run), it sends 13 vetoable measures (Trump's first term 9, Biden 4) and 5 of the 25 vetoed measures. Every disapproval vetoed passed the Senate on defectors.
+- **Trump's two second-term vetoes** passed both chambers without a roll call, so no rule names them.
+
+**The ask** (R-US17, re-asked): the US veto rule is measured, but under the plan's own bloc premise it can never fire. The options, as R-US17's STOP implies:
+- keep the premise, so that no vetoable bill ever reaches a president (a rule is still chosen, (a) recommended by the matrix, for a Congress the player's party splits);
+- let a party's members split by chamber as recorded (the chamber-by-chamber reading);
+- or amend the bloc premise (defections), which belongs with the party model.
+
+Nothing here builds on an answer. US-21 waits on R-US17.
+
+**Departures, declared:**
+- **The verdict changed after a result was seen.** The bloc model declared before the first run read the blocs chamber by chamber; the review showed the plan's premise is one stance per party. The document now decides by the plan's premise, prints the declared reading beside it, and Elias is told (G1: a choice changed after a result is reported).
+- **The window.** All five Congresses are read, not the 118th alone.
+- **The Senate paths.** The expedited procedures are read for every kind a veto fell on, not the CRA's alone.
+- **"Far more"** is a pooled precision below B1's (PROVISIONAL, G5).
+- **The same-day cases.** In H.R. 133 (116th) and H.R. 2471 (117th) the House's closing agreement is taken over its division roll calls (reading 4).
+- **Agreements by a rule's adoption.** 46 House final agreements made by a special rule's adoption are "no recorded vote" (reading 9).
+
+**Review** (`Reviews/2026-10-06_s802_us10_veto_record.md`): one adversarial reviewer, who re-ran both tools and traced measures to the BILLSTATUS XML and the roll calls - **two high findings, both acted on**: about twenty measures had taken a superseded earlier agreement where the matchers missed the record's wording (every wording now read, a structural guard installed; (a) 22 of 33, 13 vetoable), and "No STOP" rested on blocs voting differently by chamber where the plan's premise is one stance per party - under it the bloc Congress sends 0, **R-US17's STOP; the verdict changed after a result was seen and Elias is told**; also the CSV's `.gitattributes` line, the check's uncovered sections and its self-comparing override test, the CRA pattern (1,512 sent), the D.C. wording; the backtest's quadratic reader fixed (120 s to 0.6 s).
+
+**Bars** (tier SIMULATION - the extract is under ElectionsData; on this commit's own tree): the cheap bar **103 of 103** (`cheap802b`; `UsVetoBacktestCheck` its 103rd, re-run after the last tool change); the simulation bar **57 of 57** (`sim802`, the trajectory sentinel holding against `fp755` on both seeds). Beside them: `us_veto_mutations.sh` **12 of 12**, its control reproducing the extract byte for byte; the check by name `veto802b`. R-US18's and R-US19's block digests unchanged. No film owed.
