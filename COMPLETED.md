@@ -37804,3 +37804,85 @@ Tier DOCUMENTS (a plan, two specs' notes, the feature list): the bars over §772
 **Review** (`Reviews/2026-10-06_s800_r_us18_house_count.md`): one adversarial reviewer read the instrument against the whole block - **nothing changes the registered outcome or the decisive digest**; two latent vacuous passes fixed (RULED now held: a buildable option, the outcome, the digest, the mirror; C5 guarded - House returns past 2024 fail until the run over D plus C5 and S7 are built), S4's figures name what moved, (c) printed in the not-decided verdict, the decided wording and its four sums, the card digest gains `HouseYearSourceDigest`; one ambiguity carried to Elias - what an unfitted (b') counts (fitted in every cycle today). Rerun `house800d`: the same outcome and digest.
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **101 of 101** (`cheap800b`; `UsHouseCountCheck` its 101st, after the review's fixes); the instrument by name `house800d` holding, the card written by `house800w2`. R-US18's block digest 5c89b0cf and R-US19's 1caec656 unchanged. No film owed.
+
+## 801. PS-6 G1, R-US19 RUN ON THE DEFAULTS AS PRINTED: `UsSenateRaceCheck` MEASURES THE SENATE OF RECORD AND THE RULE DOES NOT DECIDE - S1 + S4 [(i)] - ASKED, THE DECISIVE DIGEST REGISTERED (2026-10-06)
+
+**What was owed** (Elias's G1: "Run R-US18 (§791) and R-US19 (§794) on the defaults as printed"; B7 = R-US18's choice 4, the House own-line vote; a full TIE comes to Elias with the numbers): R-US19's instrument, run once on its block as amended in §797, its ask registered by the commit that first runs it (the block's THE ASK AND THE BARS).
+
+**Built:**
+- **`Assets/Editor/UsSenateRaceCheck.cs`** (new; cheap and docs groups):
+  - The block's two methods, called seat by seat against the winner of each target race's deciding count:
+    - (a): the state's REP share by R-US14 (a)'s derivation. At a presidential T, T-4 derived at T's true national shares. At a midterm, a_s(P) + V(T) - V(P).
+    - (b): the seat's base share x(base) plus V(T) - V(base year), with F-H substitutions flagged and their side agreement printed.
+  - The 0.5 cascade.
+  - The cycles: K1 2018 -> 2024 Class I (33 seats) and K3 2016 -> 2022 Class III (34 seats).
+  - The steps: M and N; step 1 by M, then by |N|, S1 or TIE, with the K1 assertion; step 2's control; (c) printed per parent.
+  - The eleven readings, with (vii), (viii), (ix) and (xi) printed only (G1-G3).
+  - S7, S8 (the identity over 137 bases, D's and the play bases) and S9.
+  - The outcome, the generated verdict and the decisive digest, over exactly the block's list.
+  - The block's printed rows:
+    - control on the next 3 January against the record;
+    - the mean absolute two-party miss;
+    - the per-seat table;
+    - no change and (a-record);
+    - (a) at the House V;
+    - (a) at a midterm on 2018's Class I;
+    - (x)'s variant;
+    - (b) proportional;
+    - the hybrid-midterm row;
+    - the game's range;
+    - the exceptions;
+    - the holder on 3 Jan 2025.
+  - Asserted:
+    - the block's digest is the list's last (1caec656, §797);
+    - K2 is BILLED (no 2026 race in the catalog);
+    - the 33/34 counts;
+    - (a)'s residuals below 1e-9;
+    - (x) returns a_s(2020) at V(2022) = V(2020);
+    - California's same-seat contests are never counted and are called as their full terms;
+    - the ruling record (ASKED, §801; RULED held to a buildable option) is mirrored by the plan's line.
+- **The card**: `docs/reference/US_ELECTIONS.md` gains its fourth GENERATED block, "The Senate count - R-US19" (`UsSenateRaceCheck.WriteReadings`).
+- **The plan**: the line after R-US19's block reads `**Ruling record:** ASKED (§801): S1 + S4 [(i)].`
+
+**The run over D = {K1, K3}:**
+
+| Cycle | M (a) | M (b) | N (a) | N (b) | (a) misses | (b) misses |
+|---|---|---|---|---|---|---|
+| K1 | 4 | 5 | +4 | +3 | AZ, MI, NV, WI | AZ, MI, NV, PA, WI |
+| K3 | 5 | 4 | +5 | +4 | AZ, GA, NH, NV, PA | AZ, GA, NH, PA |
+
+- Step 1: the cycles part, **S1**. Listed under it, (a)'s |N| is above (b)'s in both cycles.
+- O = 0, so S7 does not fire. The identity holds over 137 bases, so S8 does not fire. Every race rests on a saved page, so S9 does not fire. Not read: the previous races of Minnesota's and Mississippi's 2018 specials, which fall before the catalog's window.
+- Readings: **(i) D = {K1} picks (a) by M, so S4 [(i)] fires.** Readings (ii)-(vi) and (x) give the same outcome. Readings (vii), (viii), (ix) and (xi) are printed only.
+- (c) printed, in-sample:
+  - over (a): M 0, mean |c_j| 0.136, largest 0.532 (Maine);
+  - over (b): mean 0.167, largest 0.745 (West Virginia).
+- Printed: no change M K1 4, K3 1. The holder on 3 Jan 2025 differs from the truth only at West Virginia (vacant), as the block says.
+- **THE VERDICT:** "R-US19's rule does not decide: S1 (...); S4 (...) - asked." The decisive digest is 1ede3f625179cddfd3e1d4ea500588c774e5c046033032131db4c55cccc466ed.
+
+**The ask** (G1: a result never changes a choice). R-US19 is asked with the card's full table, with (c) beside it as a design preference. The block prints these options:
+- **S1:**
+  - (a);
+  - (b);
+  - (a) on presidential days and (b) at midterms;
+  - (b) on presidential days and (a) at midterms (each hybrid "in-sample by construction", with the hybrid-midterm row beside it);
+  - or source K0 (2012 -> 2018 Class I).
+- **S4:** reading (i)'s D = {K1}, or the run over D's {K1, K3}, put as conventions.
+- Every stop also carries "amend the rule as ruled".
+
+Nothing here builds on an answer.
+
+**Departures and PROVISIONAL readings, declared (G5):**
+- **The 0.5 cascade's last step:** the Vice President's side is not in a generated catalog (`records_by_date.md`'s table is prose). A caucus tie on a polling day fails the instrument as a defect and names the seat. No share in this run is exactly 0.5. The polling day is the statutory Tuesday (2 U.S.C. 7).
+- **S8's play bases:** taken broadly, as the previous race of every special in the catalog. The narrower reading would take play's specials only. The broader set holds today.
+- **"(a) at the House V" (PROVISIONAL):** 2024's national REP two-party share is set to V(2024), with the others' share as recorded.
+- **The game's range (PROVISIONAL):**
+  - (a) at 2024 by the same construct.
+  - 2026's Class II is called on its latest bases.
+  - Each seat held by an appointee sworn after the 2024 election is called as a 2026 special on its latest race (Ohio's and Florida's Class III).
+  - Holdovers come from each other seat's latest roster row.
+- **The DEM side's make-up:** printed as one candidate, or several summed, plus the winner where he is an independent.
+
+**Review** (`Reviews/2026-10-06_s801_r_us19_senate_count.md`): one adversarial reviewer re-traced the run against the CSVs and the whole block - **no defect changes the outcome or the decisive digest**; acted on: the polling day by 2 U.S.C. 7 (a 0.5 cascade would have thrown on 2016/2024), signed and summed N in the decided verdict, S9 on each count's saved page with steps 1-5 over the cycles fully read, control against [SEN-DIV], the play bases' substitutions printed (four, all agreeing), Mississippi's marks named, the 2026 Class III specials called in the game's range (PROVISIONAL), dead code removed; kept and declared: the Vice President's vote (not in a catalog), the broader S8 play-base set, the vacuous same-seat assertion the block demands. Reruns `senate801c`/`senate801d`: the same outcome and digest.
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **102 of 102** (`cheap801`; `UsSenateRaceCheck` its 102nd, after the review's fixes); both instruments by name `senate801d` 2 of 2, the card written by `senate801w`. R-US18's block digest 5c89b0cf and R-US19's 1caec656 unchanged. No film owed.

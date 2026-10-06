@@ -1206,7 +1206,7 @@ amendment. D itself changes only by amendment.
 ```
 <!-- R-US19 RULE END -->
 
-**Ruling record:** NONE.
+**Ruling record:** ASKED (§801): S1 + S4 [(i)].
 
 **The block's digests** (the instrument's list): preregistered `03382d0c0dd22975dea191650f74962bd852477a86ad177944bd93455f425f9c` (§794); AMENDED (G1-G3, §797): `03382d0c0dd22975dea191650f74962bd852477a86ad177944bd93455f425f9c` -> `1caec656193a6d2d2c9c235af0cefe4d591134a24a3f7d338be0dac0108e3957`.
 
