@@ -351,7 +351,7 @@ Plurality is then counted per district on the record's own votes, and three seat
 - Read each independent's caucus from the Senate's own record (the saved page states it for the 117th only), and name the Senate on 12 Mar 2024 and on 3 Jan 2025.
 - Read the Class I returns of 2018 and 2024 and the 2024 specials (FEC; the Clerk's statistics2024.pdf), and measure 2024's Class I at the true national vote two ways: (a) the state's presidential-level derived share that day; (b) the seat's 2018 result swung nationally — each counted against the 119th of record.
 
-*Needs:* US-0 (the race half: US-3, US-4).
+*Needs:* US-0 (the race half: US-3, US-4). The measurement - `UsSenateRaceCheck`, R-US19's instrument - waits on Elias's answers to R-US19's eight choices asked blind (§794) or his word to run on the defaults; the catalog step before it does not.
 *Done when:* a roster diagnostic finds 100 seats in three classes by state on both dates, reproducing `[SEN-DIV]`'s division per Congress or naming each dated difference; the caucus sourced or BILLED; the race table in the record; R-US19 asked.
 
 **Built, the roster half: `COMPLETED.md` §792** - `Tools/us_senate_prep.pl`, the catalog (`ElectionsData/usa/senate_seats.csv`, `senate_changes.csv`, `senate_on.csv`, `senate_division.csv`; `UsPresidentialReturns`' part `UsSenateRecord.cs`), its record (`ElectionsData/usa/senate_record.md`), its mutation suite (`Tools/us_senate_mutations.sh`), and `GeneratedCatalogCheck.CheckUsSenate`, the roster diagnostic: 100 seats in three classes by state on every named day, the US start (`WorldClock.StartDate`) and the 119th's opening among them, the roster derived again from the seat rows; `[SEN-DIV]`'s undated lines dated by the stretches of days each holds; the caucus sourced. It departs from the first line above: the base is the Senate's 50 "States in the Senate" pages (saved at §792, `raw/senate/`), each seat's holders with their days, and the three class pages are anchors - each must equal the roster on its own page date - since a class page is one day's Senate and names no change. The from-memory line was right: the re-registration was Manchin's, on 5 Jun 2024, by the Senate's own page. The race half (the Class I returns, R-US19) is part two. **Its catalog: §793** - `Tools/us_senate_races_prep.pl` reads every Senate race of 2018 and 2024 (the Class I seats and the specials beside them) and Nebraska's Class II race of 2020 from the Clerk's statistics, twice, held to each state's recapitulation, to the FEC's 2018 sheet and every winner to the roster above (`senate_races.csv`, `UsSenateRaces.cs`; `senate_record.md`'s race half; `Tools/us_senate_races_mutations.sh`; `GeneratedCatalogCheck.CheckUsSenateRaces`). It measures nothing: R-US19's details are declared before any measurement, as R-US18's were (§791).
@@ -363,6 +363,18 @@ Plurality is then counted per district on the record's own votes, and three seat
 - *Party* by the state's page; *a change* by the Senate's Changed Parties page, held to its words; *an independent's caucus* by the Senate Democrats' own list on its capture day, or by the Senate's own words where the list is silent, applied over his whole service in the window - Sinema's a reading put to Elias (R-US10).
 - *Which source decides a day*: the Senate's own pages; the Congressional Directory's change days printed where they differ, its oaths and counts held equal.
 - *The record's reach*: the New Senators page's capture - a row beginning after it is set aside and a service ending after it written as serving, both printed; the named days and `[SEN-DIV]`'s stretches end at it.
+
+*Design of the race half, DECLARED before the instrument's first run (§794; R-US19's block holds the rule, and the panel's specification, verbatim in `Reviews/2026-10-06_s794_us12_blind_panel.md`, the rest - where the two differ, this plan governs):*
+- *The catalog step*, after the preregistering commit and before the first run, measuring nothing: `Tools/us_senate_races_prep.pl` reads the Senate listings of the saved Clerk statistics of 2016, 2020 (whole: Class II and every special) and 2022, held to their recapitulations, the FEC's 2016-2022 sheets and the roster as §793 reads 2018 and 2024; `senate_seats.csv`'s holder rows are extended back to 3 Jan 2017 from the saved state pages, a gap where a page does not reach declared and printed; the caucus column gains a sourced "neither" (N, its `caucus_by` citing the Senate's words), an independent with a blank source still refused; and the race catalog gains the generated columns the block names (`gen_r`, `gen_dc`, `final_r`, `final_dc`, `final_r_top`, `final_dc_top`, `final_none_top`, `base_count` with its page), each with mutation cases and a re-read in `GeneratedCatalogCheck.CheckUsSenateRaces`. Per read year the check asserts completeness: every seat of the year's class has its regular race, every special the roster names has a row.
+- *The truth's data gate* (the instrument fails - a defect for code or sourcing, never a ruling): a target winner who is not his seat's next holder (K3's held to the roster of 3 Jan 2023); an independent winner with a blank caucus source (a sourced N is not a failure: it puts the seat in O and fires S7); a tie.
+- *The instrument fails the cheap bar also on:* a catalog re-read failing or a page off its digest; the generated columns absent or not re-read; an independent's votes unseparable; K1's default count not 33 one per Class I state, K3's not 34; a seat of D without a base, or a base other than its latest race of record; a base without a share (a missing `house_by_state.csv` row for a fallback included), other than one registered under S9; a base winner not the seat's next holder where the extended roster reaches; the identity failing on a base not registered under S8; a zero two-party total; an R-US14 residual at or above 1e-9; (a) at a midterm not returning P's calls at V(T) = V(P), or reading (x) not returning a_s(P) there, or pi* outside (0, 1); California's two contests called differently, or two same-day races of one seat with different sides or winners; holdovers plus the class not 100; a pin moved without its re-pin, a measured row unpinned, a stale card block; the ruling-record line differing from the instrument's; V(E) read other than through the one reader R-US18's instrument shares; the block's digest not the last on the instrument's list.
+- *(a) in play:* on a presidential day each seat's share is its state's share from the presidential count that night, after E1's factors (US-8) - the night's map, so (a) cannot split a ticket on that day, and the card says so; at a midterm (US-27) it is the share US-16 stored on the last presidential day, unclamped, with that day's V, moved by V's change (B8's default).
+- *(b) in play:* record bases until the game elects each seat - 2018 Class I for 5 Nov 2024, 2020 Class II for 3 Nov 2026, 2022 Class III for 7 Nov 2028, each special's seat's previous race of record, the reads scheduled by the ruling and an unread base BILLED (G6) - a play base whose runoff is on no saved page among them, printed, outside the identity until read; then each seat's share is stored unclamped with its V and the next election starts from it (R-US11 (a), US-26), telescoping exactly. Game results are two-sided, so F-H fires only at a seat's first game election. After every election the instrument asserts 100 seats in classes of 33, 33 and 34.
+- *(c), if ruled:* fitted at E1's point - US-6's reference world on the eve of 5 Nov 2024 - against its poll V for parent (b) or the presidential count's state shares for parent (a); a cheap-bar instrument refits each run and fails on a stale factor or a factor other than 1.0 on a later field. Under parent (a) it equals its parent on every later race (asserted); under parent (b) the ruling names which share US-26 stores - the factored 2024 share or the parent's - and that is asserted.
+- *Premises, each DECLARED:* two sides, an independent with his conference and a winner of no side never assigned (R-US10 (a)); one poll, V before E1's factors, plus the presidential count's state shares on its day - no Senate or state poll (R-US15 (a), asked); (a)'s state shares by R-US14's method, its (a) while R-US14 is asked; anchored, plain additive, never re-solved, every share stored unclamped with its day's V; plurality decides in play (runoffs and ranked rounds not modelled - the record's deciding count names the winner, its last two-sided count the share); a caucus read in 2023-2026 carried back to the same person's earlier races (no saved page dates an earlier one); no candidate effect outside (c) - (b) carries a seat's previous candidate forward, (a) carries none; every winner seated at noon on 3 January, no delayed oath (R-US18's NY-22 convention); both methods scored on the same seats, truth and cascade, neither given the target's state-level result ((a-record) printed only); the count a pure function of the world's state; the ruling holding only under R-US15 (a).
+- *The departures from US-12's item text:* the truth is each target race's winner by side, which equals "the 119th of record" on every published figure (West Virginia's late oath the one named difference, printed); and the 2016→2022 Class III cycle joins under B1's default.
+- *The card:* `UsSenateRaceCheck` writes its own GENERATED block on `docs/reference/US_ELECTIONS.md`, stamped with the catalog, rule and decisive digests and the ruling state. The ask prints what each option costs to build, never deciding: (a) one stored share per state per presidential day and no Senate base; (b) every seat's previous result read and stored, with the 2020 and 2022 reads (Georgia's runoffs and Alaska's rounds among them); each hybrid both; (c) a refit instrument and, under (b), the roll-forward choice.
+- *Printed beside the block's printed list:* the labels-only, the non-Republican-summed and the deciding-count bases; (a) at a midterm from P's record rows ("(a-mid, record P)"); a tilt flag where N has one sign in every cycle; (c)'s f_R, f_D, s and p per race; both Vice Presidents for K1's control; the seats where a side is absent from the deciding count; the game's range at a 0.01 grid around 51 and 50 and the cloture point.
 
 **US-13 — The midterm record, and the model's midterm. Size M.** *(asks R-US20)*
 A committed `Tools/us_midterm_record.pl` reads the saved `[HH-DIV]` divisions and NARA's results pages for each president's party, writing `docs/generated/US_MIDTERM_RECORD.md`: the president's party's House seat change at every midterm since 1946, and in presidential years. An Editor instrument runs the model from the eve of 5 Nov 2024 to 3 Nov 2026 on US-5's staging, with the congressional economic-vote figures (`docs/reference/ECONOMIC_VOTE.md`, Table 9.1's US legislative row — sourced, not in code), and prints the swing the model produces.
@@ -929,7 +941,7 @@ ask is registered. D itself changes only by amendment.
 1. *The deciding cycles.* D with C1 (2016→2018) - the record's largest swing and its only midterm on mostly held lines, the kind of election a 2024-start game meets on 3 Nov 2026, its first midterm (its first House count, 5 Nov 2024, is a presidential year's) - by default; or the item's own cycles less C3, {C2, C4}.
 2. *2020's truth.* The district plurality on the Clerk's counts, NY-22 to the winner that count names - the game counts all 435 seats by plurality and models no certification - by default; or the division as published, NY-22 undecided: `[HH-DIV]`'s 212 of 434, which the Clerk's own table of political divisions in the 2020 volume prints too.
 3. *Minnesota's and Colorado's 2018 lines.* Redrawn, as the Census Bureau's list reads them - the binary rule takes no view of a change's size - by default; or either or both held (Minnesota's change "cosmetic" on the Bureau's pages, Colorado's undescribed). Pennsylvania 2018 is not asked: its change is taken as a redraw on the Bureau's list, DECLARED - the "court-ordered" plan the brief named is on no saved page, BILLED.
-4. *The swing's basis.* US-5's own-line series, the poll's own measure under R-US15 (a), by default; or the deciding count the shares are read on.
+4. *The swing's basis.* US-5's own-line series, the poll's own measure under R-US15 (a), by default; or the deciding count the shares are read on. It is also R-US19's B7 (§794): an answer to either answers both.
 5. *(b)'s seat rule.* Anchored proportional, with no parameter, by default; or (b')'s two-parameter curve.
 6. *The record before 2016.* Not sourced, by default; or the Clerk's statistics before 2016 sourced, which would give (c) a forward fit for C1 and make S3 live.
 7. *C4 in the sums.* Counted in step 2's and step 5's sums over D, as the panel's arithmetic has it, by default; or left out of them, as the panel's own account of C4 ("C4 can only veto") reads - the two part only where C4's near-zero swing moves a seat (§791).
@@ -940,6 +952,256 @@ ask is registered. D itself changes only by amendment.
 - (c) either, with per-race factors fitted once on 2024's Class I and its specials (E1's principle; later fields at 1.0).
 
 Code will recommend whichever misses fewer 2024 Class I seats. From memory, Democrats won Senate races in several states Trump carried in 2024, which counts against (a); it is measured, not assumed.
+
+**The rule, declared before the instrument's first run (§794).** As R-US18's was (§791), it was specified by a design panel blind to any computed result of either method on the 2024 seats: the panel was told not to open the session's two scratch maps of US-11 and US-12 and not to compute, estimate or reason from any method's result on the 2024 seats, from the catalogs, by hand or from memory. Its brief held the plan's question, the rulings it answers, the game's constraints and the catalogs' structure, with the irregular seats described (Maine's winner among them, an independent with a majority) - no vote figure and no method's result. Its tool calls are audited in §794: no map opened, no method's result computed, the 2024 race rows it printed carrying candidate counts and flags only; but it saw the 2024 outcome as other records hold it. The precedent designer printed `senate_on.csv` (the Senate by class and party on named days, Class I's split on 3 Jan 2025 among them) and read the session's memory note (US-4's presidential results and the 119th's opening division) and `UsStateSwingCheck`'s pins, under which R-US14 (a) from 2020 calls 2024's presidential states exactly. The game-use designer's grep of the US card printed US-4's 2016→2020 and 2020→2024 rows (every method calling 2024's presidential states right) and R-US15's table with US-5's national own-line House shares, 2024's among them - the levels from which (b)'s national change follows. Those two designers read `senate_record.md`'s race half, which names the 2024 specials' winners and holds every winner to the roster. The methods critic and the reviser printed independents' and some holders' rows of `senate_seats.csv`, and the reviser's grep of `senate_record.md` for "reach" displayed its roster count at the record's reach (2026-09-06), as the specification itself records. Six of the seven agents read R-US19's entry above, with its from-memory remark against (a); the methods critic did not open the plan, and its brief quoted the entry's three options and its recommendation sentence without the remark. The specification says no choice uses any of these. The session, which had read the maps (one of them reasons from memory about seats a straight ticket would miss), condensed the panel's final specification into the block below, the eight choices asked blind after it, and US-12's *Needs* and *Design*; the specification is kept verbatim in `Reviews/2026-10-06_s794_us12_blind_panel.md`, and §794 lists each departure of the plan from it and holds the preregistered digest. The rule is the fenced block between the two markers below; everything outside the markers - the ruling record's mirror, the asks - is not part of it. The instrument (`UsSenateRaceCheck`, on `UsStateSwingCheck`'s pattern, in the cheap and documents bars, writing its own GENERATED block on the US card) holds the list of the block's SHA-256 digests, computed and enforced as R-US18's are: the preregistered one, then one per amendment naming Elias's ruling; the block must match the list's last digest, and a change without a ruling fails. The catalog step the block reads (US-12's *Design*) follows this preregistering commit and measures nothing.
+
+<!-- R-US19 RULE BEGIN -->
+```text
+R-US19'S RULE - US-12's measurement decides how the game elects the Senate's seats.
+Preregistered in COMPLETED.md section 794.
+
+THE TERMS
+- A side is REP or DEM. A candidate's side: R gives REP and D gives DEM, by the Clerk's
+  printed label; I gives the conference named by the caucus of his senate_seats.csv holder
+  row (R-US10 (a), matched by state, class and surname), and no side if he holds no seat in
+  the catalog's window or his caucus is N (a sourced "neither"); any other party and every
+  write-in has none. A caucus read in 2023-2026 is carried back to the same person's
+  earlier races, declared (no saved page dates an earlier caucus). A nomination the Clerk
+  does not print is not read. A holder's side: REP for party R, DEM for party D, and for
+  I or D/I the conference named by his caucus, none if it is N.
+- A race's deciding count: the runoff wherever one was held under state law (the Clerk's
+  marks or a saved certified state page; a runoff on neither is BILLED, never replaced by
+  the November count); a ranked count's last round (the FEC's footnote rounds or a saved
+  state page; else the Clerk's first choices, declared); otherwise the general, a
+  candidate's fusion lines summed. Its base count: the last count of that sequence in
+  which both sides have a candidate; where no count of it has both, the deciding count,
+  flagged. In a count, each side's votes are summed over its candidates. gen_r and gen_dc
+  (the general's ballot), final_r and final_dc (the base count), final_r_top, final_dc_top
+  and final_none_top (each side's strongest candidate,
+  and the strongest with no side, in the base count) and base_count (which count, on which
+  page) are generated by Tools/us_senate_races_prep.pl and re-read by the cheap bar, never
+  typed; an independent's votes that cannot be separated from another's are a data defect.
+- The cycles, base year -> target year: K1 2018->2024 Class I (a presidential year); K3
+  2016->2022 Class III (a midterm), read from the saved Clerk statistics and FEC sheets
+  before the first run; K2 2020->2026 Class II, BILLED. D = {K1, K3}.
+- A cycle's count: its target year's regular full-term races of its class - 33 in K1, 34 in
+  K3, one per state of the class, asserted for the default seat set (a reading that removes
+  seats prints its own count). A special to another class is printed only. A same-seat,
+  same-day special (California's Class I contest of 2024) is never counted, and each
+  method's call on it is asserted equal to its call on the full term.
+- A seat's base: its latest race of record to its state and class in a year before the
+  target year, regular or special; where one seat had two races that year, the full-term
+  race. A race of record missing from the catalog is BILLED, never served by an older row.
+- V(E) = sum votes_r / sum (votes_r + votes_d) over house_by_state.csv's 50 rows of year E,
+  as US-5 holds it, never recomputed. A January runoff takes its general's year.
+- x(base) = final_r / (final_r + final_dc) where both are positive. Otherwise - a base
+  with no count in which both sides stand (California 2018's top two, an unopposed race,
+  an independent of no side against one party) - x(base) is F-H: votes_r / (votes_r +
+  votes_d) of house_by_state.csv's row for the base's state and year; where that row also
+  lacks a side, the state's two-party presidential share of record at the latest
+  presidential year at or before the base (president_by_state.csv). Every substitution
+  is flagged and printed with whether its side agrees with the base winner's.
+- (b) = x(base) + V(T) - V(base year), unclamped (clamped for printing only).
+- (a), the state's REP share of REP+DEM by R-US14 (a)'s derivation (RegionalVoteModel.
+  RegionalSharesByUniformSwing, unchanged, its residual asserted below 1e-9), from the
+  previous presidential election's statewide rows (others pooled; weights that election's
+  votes_total, declared (US-4); DC a jurisdiction, never a seat; the Maine and Nebraska
+  district rows not read):
+  - at a presidential T: derived from T-4 at T's true national presidential shares
+    (sum votes_d, votes_r, votes_other over sum votes_total over T's 51 rows);
+  - at a midterm T: a_s(P) + V(T) - V(P), P = T-2, a_s(P) being P's derivation from P-4
+    at P's true national shares.
+  Every seat of one state on one day takes one share.
+- A call is REP above 0.5 and DEM below. At exactly 0.5: the side of the seat's holder at
+  the end of the polling day; where the seat is vacant or its holder has no side, the side
+  holding the Senate majority that day, the Vice President's vote counted; where no side
+  holds one so counted, the instrument fails (a defect) and prints the seat. A call by
+  this cascade is printed.
+- No change: each seat to its base winner's side.
+- The identity: every base of D, and every play base the catalog step reads with them
+  (the 2020 Class II and 2022 Class III races, each special's previous race), whose winner
+  has a side has x > 0.5 exactly where that side is REP and x < 0.5 exactly where it is
+  DEM, substituted shares included. A base that fails it is S8's.
+- The truth: the side of the winner of the target race's deciding count (senate_races.
+  csv's winner). Z: the count's seats with no truth (none by default). O: its seats whose
+  winner has no side.
+- M = the seats of the count whose call differs from the truth's side; a Z seat never; an O
+  seat a miss for every method alike under S7's first scoring - the default for steps 1-4,
+  the printed figures and the digest - and moved into Z under its second.
+- N = the signed distance of the called REP seats from [R, R + Z + O], R the truth's REP
+  seats; positive = REP over; the same under both of S7's scorings. Under the first, |N| + O
+  is printed as that scoring's count; it adds the same O to every method and changes no
+  comparison.
+- Every comparison of M and N is made exactly as written, on integers, with no noise band.
+  Equal is never better.
+
+STEP 1 - (a) against (b), cycle by cycle.
+- If M(X) <= M(Y) in every cycle of D and M(X) < M(Y) in at least one, code recommends X
+  (by M).
+- If M(X) < M(Y) in one cycle of D and M(Y) < M(X) in another, the rule STOPS (S1), naming
+  each cycle with its M, whatever the sums.
+- If M(a) = M(b) in every cycle of D: code recommends X if |N(X)| <= |N(Y)| in every cycle
+  of D and |N(X)| < |N(Y)| in at least one (by |N|); otherwise TIE - the rule does not
+  decide.
+- Asserted: the rule never recommends a method with more misses in K1 than the other.
+
+STEP 2 - control. Where D has at least two cycles and step 1 picked a method by M, the rule
+STOPS (S2) if the pick's |N| is strictly above the other's in every cycle of D. Where D has
+one cycle, S2 is printed and counts as not firing. After S1 or TIE both directions are
+listed there, not as a stop of their own.
+
+STEP 3 - (c), a parent ((a) or (b)) with per-race factors fitted on 2024's 33 regular Class
+I races, California's Class I contest and Nebraska's Class II special: p the parent's REP
+share and s = final_r / (final_r + final_dc) (where no count has a candidate of one side,
+final_none_top stands for the missing side, declared; where that is zero too, not fitted
+and at the parent's call), both clamped to [1e-9, 1 - 1e-9]; c_j = logit s - logit p;
+applied as logistic(logit p + c_j), the parent's call rule and cascade. On every field
+after 5 Nov 2024 its factors are 1.0. Printed per parent: (c)'s M and N on K1 as computed,
+labelled "in-sample; zero by construction except O seats, races not fitted, and races
+whose base-count share and deciding-count winner disagree"; per race c_j; mean, largest
+and RMS of |c_j| over the fitted races, the others named; the races whose call c_j
+reverses. (c) is in no step, never in the digest, never recommended and never a stop.
+
+STEP 4 - the declared readings. Steps 1-2 are run again under each, one at a time:
+- (i) D = {K1};
+- (ii) the specials in the count: Nebraska's 2024 Class II special on its 2020 base, and
+  K3's specials to other classes on theirs;
+- (iii) target races with a side absent from the general's ballot (gen_r = 0 or gen_dc =
+  0) out, for both methods;
+- (iv) a base with no count in which both sides stand at 1 or 0 by its winner's side;
+- (v) the seats whose base has no such count out, for both methods;
+- (vi) each side's strongest candidate alone in every base count (final_r_top,
+  final_dc_top in place of final_r, final_dc);
+- (vii) V_dc(E) = sum final_r / sum (final_r + final_d) over house_districts.csv's 435
+  races of E replaces V(E) in (a) and (b);
+- (viii) (a) by R-US14 (b), proportional; (ix) (a) by R-US14 (c), plain additive;
+- (x) (a) at a midterm re-derived: pi(P) = P's true national REP share of REP+DEM, o =
+  P's national others' share, pi* = pi(P) + V(T) - V(P), asserted in (0, 1), N(T) =
+  ((1 - o)(1 - pi*), (1 - o) pi*, o); the state shares by R-US14 (a)'s method from (a)'s
+  own derived three-way shares at P, weighted as they were derived; asserted to return
+  a_s(P) within 1e-9 at V(T) = V(P);
+- (xi) a truth or base side resting on a caucus put to Elias (R-US10's reading of Sinema)
+  at its alternative, an independent of no side.
+The rule STOPS (S4) if any reading changes the outcome, naming the reading. S4 compares
+outcomes less S4, S7, S8 and S9, and, where a reading's D has one cycle, less S2.
+
+STEP 5 - two sides. The rule STOPS (S7) if a cycle of D has O > 0, printing its measurement
+under two scorings: a miss for every method alike; and O moved into Z.
+
+STEP 6 - premises waiting on a ruling (registered, never a red bar):
+- S8: a base of D, or a play base read with them, whose share fails the identity,
+  two-sided or substituted. Steps 1-5 run with the share as computed, the base flagged.
+- S9: a target or base race of D whose deciding count rests on no saved page. Steps 1-5
+  run over the cycles fully read, printed.
+
+THE OUTCOME of a run is step 1's verdict - (a), (b), TIE or S1 - with the set of the stops
+that fire: S2, S4 with the readings that fire it, S7, S8 with its bases, S9 with its races.
+Its figures are not part of it. A run is decided - "code recommends (a)" or "code
+recommends (b)" - when step 1 picks a method and no stop fires; otherwise the rule does not
+decide, and every stop is listed with its figures. The rule reaches (a), (b) or an ask,
+never (c). The verdict line is generated, never typed:
+- decided: "By R-US19's rule, code recommends (a)|(b): ..." with M and N per cycle and
+  summed, the discordant seats d_ab:d_ba with the exact two-sided sign-test p per cycle and
+  pooled ("within the record's noise" where p > 0.05), "the same under every declared
+  reading", and "(c) is in-sample by construction";
+- otherwise: "R-US19's rule does not decide: <each stop with its figures> - asked."
+R-US19 is asked with the full table whatever the outcome, (c) beside it as a design
+preference.
+
+PRINTED, never deciding: control per method (the class's calls with the holdovers on the
+next 3 January, vacancies named; 51, the Vice President at 50, cloture's 60; against
+[SEN-DIV]); the mean absolute two-party miss, labelled not neutral; the per-seat table
+(base race, its counts and their sources, the DEM side's make-up, each fallback and its
+side agreement, x, the change, each method's share and call, the truth, misses split "a
+only", "b only", "both", and every cascade); no change; (a-record), the state's own
+presidential share of record at T; (a) at the House V; (a) at a midterm on 2018 Class I
+from 2016's derivation; (x)'s variant from P's record rows; (b) proportional (= logit); the
+hybrid-midterm row on K3 (each seat's (a) share at its base year plus V(2022) - V(base
+year), labelled "an illustration; not measured as play runs it"); the game's range per
+method - the REP-caucus Senate at V from 40 to 60 percent, 5 Nov 2024 and 3 Nov 2026; the
+exceptions named (fusion, Arizona 2018's unnamed entry, Ohio 2018's FEC difference,
+Mississippi's marks, California's top two and two contests, Vermont, Nebraska, Maine, West
+Virginia's oath, every fallback, Alaska 2022's one-sided last round, Georgia's runoffs,
+K3's other runoffs and ranked counts). The holder on 3 Jan 2025 is printed beside the
+truth, not a reading: it differs only in West Virginia's seat, the same person sworn late,
+and no published division disagrees.
+
+THE STOPS' OPTIONS, each with "amend the rule as ruled" besides:
+- TIE: (a); (b); or source 2012->2018 Class I (K0) before ruling.
+- S1: (a); (b); (a) on presidential days and (b) at midterms; (b) on presidential days and
+  (a) at midterms - each hybrid labelled "in-sample by construction (each cycle's
+  winner)", the hybrid-midterm row beside it; or source K0.
+- S2: the picked method, or the other.
+- S4: the declared reading, with its reason from the game's model, or the alternative - put
+  as conventions, never as "X with its verdict".
+- S7: the seat a miss for every method alike; undecided by interval; or the two-side
+  premise amended (R-US10's third unit, US-15).
+- S8: that base by F-H (accepting the crossing), at 1 or 0 by its winner's side, or - for a
+  base of D only - out of the count (play still needs one of the others, named in the
+  answer); or the base count's definition amended.
+- S9: source the race; K3 with that seat out; or D = {K1}.
+
+THE ASK AND THE BARS
+- The first run waits on Elias's answers to the eight choices asked blind below the block,
+  or his word to run on the defaults; the word rules none of them, each keeping its
+  default and its reading. An answer after the first run is an amendment in sight of the
+  figures and is printed as one.
+- The ruling record is held by the instrument: NONE; ASKED, with the ask's section, each
+  run's outcome and the decisive digest; or RULED, with the ruling, its option, each run's
+  outcome and the decisive digest it was made on. The line after this block mirrors its
+  state, section and ruling, never a digest, and the instrument fails while the two differ.
+- The decisive digest is SHA-256 over: M and N of (a) and (b) in every cycle of D under
+  the default and under every reading not made printed only; the (state, class) of each
+  miss per method per cycle under the default; the (state, class) of each O seat and each
+  Z seat per cycle of D; the bases firing S8 and the races firing S9; whether K3 was read;
+  once K2 is measured, the same over D plus K2. Nothing else.
+- NONE: every run fails the bars until its ask is registered; R-US19 is asked whatever the
+  outcome, so the commit that first runs the rule registers the ask.
+- ASKED: the bars pass while the decisive digest and each run's outcome equal the
+  registered ones; otherwise they fail until the ask is registered again and Elias is told.
+- RULED: the bars pass while each run's outcome equals the ruling's. A moved digest with
+  the same outcomes fails until a commit re-pins it, naming the old digest, the new one and
+  "outcome unchanged". A changed outcome, or a run the ruling was not made on, asks R-US19
+  again. A ruling binds a decided verdict as it binds a stop.
+- A ruling must name an option that can be built: (a), with R-US14's ruled method and its
+  midterm form as ruled; (b), with its rule for a base without both sides as ruled and its
+  record bases scheduled (2020 Class II before 3 Nov 2026, 2022 Class III before 7 Nov
+  2028, each special's base before its election); (a) on presidential days and (b) at
+  midterms, or the reverse, each seat storing its share and V whichever method set it; or
+  (c) over one of these, naming its parent and, under (b), which share the roll-forward
+  stores. Otherwise the record stays ASKED.
+- The ruling holds only while the poll is R-US15 (a)'s own-line House vote; a different
+  R-US15 ruling asks R-US19 again, and the block is amended so V is the ruled measure.
+- While R-US14 is asked, (a) runs R-US14 (a) and readings (viii)-(ix) stand; when R-US14 is
+  ruled, the block is amended to the ruled method and the two become printed only.
+- US-16's Congress-election diagnostic asserts R-US19 RULED, with an option that can be
+  built, a current digest and a V basis equal to R-US15's ruling. While not, it fails.
+
+K2 (2020->2026 Class II) is BILLED until the Clerk's 2026 statistics, the 2020 Class II
+races and the 3 Jan 2027 roster with each independent's caucus are saved and read. Then it is
+measured and the rule run again over D plus K2; a different outcome, or a run the ruling was
+not made on, asks R-US19 again, and the bars fail until the ask is registered. K0
+(2012->2018 Class I), named in the options of TIE and S1, is not built: it needs the 2012
+Class I races, the Clerk's 2012 House statistics (V(2012) in house_by_state.csv, and 2012
+in house_districts.csv for reading (vii)) - which extends US-5's series and R-US18's
+record, R-US18's digest re-pinned or R-US18 asked again - and D = {K0, K1, K3} by
+amendment. D itself changes only by amendment.
+```
+<!-- R-US19 RULE END -->
+
+**Ruling record:** NONE.
+
+**Asked blind, before the first run (§794).** The rule runs under eight choices, each with a default. The instrument is built once Elias has answered them or given his word to run on the defaults, as for R-US18's seven: one word can cover both lists. A choice he answers - for its default or for its alternative - is ruled: it is written into the block by amendment, and its S4 reading becomes printed only (B1 (i), B3 (ii), B4 (iii), B5 (iv)-(v), B6 (vi), B7 (vii), B8 (x)). Word to run on the defaults rules none of them. B2 has no reading: an answer for (a) or (b) is written into step 1. Readings (viii)-(ix) become printed only when R-US14 is ruled, and (xi) when Elias rules R-US10's reading of Sinema.
+1. *B1 - the deciding cycles.* 2016→2022 Class III (a midterm, from the Clerk's statistics already saved) joins 2018→2024 Class I, D = {K1, K3}, by default: a game's second Senate election is a midterm, (a) at a midterm runs a declared form only a midterm cycle tests, and one cycle of 33 mostly safe seats cannot separate methods a seat or two apart; under step 1, K3 decides alone only where K1 is tied on misses, and where the cycles part the rule stops; with two cycles step 2's control stop (S2) is live, a K1 tie on misses broken by |N| in K1 alone becomes TIE where K3's |N| points the other way, and K3's own seats and bases can fire S7, S8 or S9. Or K1 alone, the rule's text, K3 printed.
+2. *B2 - a full tie* (equal misses in every cycle, |N| not separating): asked with the table, by default - the plan's text names no ground; or (b), native at every election and R-US18 (a)'s form; or (a), one state geography for both contests and no Senate base to store.
+3. *B3 - the specials.* Nebraska's 2024 Class II special (and K3's specials to other classes) printed only, by default - R-US19 names Class I; or in the count on its own base.
+4. *B4 - a target race with no candidate of one side on the general's ballot* (Nebraska's 2024 Class I race; sides read by caucus, so Vermont has both): scored against its winner's side, by default - neither method reads the target ballot and play cannot know it; or out for both methods.
+5. *B5 - a base with no count in which both sides stand* (California 2018; in K3 and in play any such base): F-H - the state's own-line House share in the base's year, then the presidential share of record, a share on the wrong side of its winner firing S8 - by default, since under US-26's roll-forward 1 or 0 would freeze a statewide seat, one of 100, for the whole game; or 1 or 0 by the base winner's side (R-US18's district rule); or out of the decisive count (play still needs one of the others, named in the answer); or F-H where its side agrees with the winner's, else 1 or 0.
+6. *B6 - several candidates on one side* (Maine's caucusing independent beside a Democrat; a top-two or ranked count's several of one party): their votes summed, by default - R-US10 (a) seats a caucusing independent with the Democrats and the game holds one unit per side; or each side's strongest candidate alone.
+7. *B7 - the swing's basis* for (b) and for (a)'s midterm form: US-5's own-line series, by default; or the House deciding count. It is R-US18's choice 4: one poll's change moves both chambers, so an answer to either answers both, whichever comes first, making both readings printed only (R-US19's (vii), R-US18's (vi)); a word to run on the defaults for either leaves both live.
+8. *B8 - (a) at a midterm* (US-27): anchored - the share (a) held on the last presidential day moved by the poll's change, never re-solved, telescoping like (b) and R-US18's form - by default; or re-derived - the presidential share P's derivation was solved to, moved by the poll's change, then R-US14's method from the state shares the game held at P.
+
+Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot steer a verdict): *should a 2024-start game's 5 Nov 2024 Senate class reproduce 2024's races where its vote follows history?* No; yes on (a); yes on (b) storing the factored share; yes on (b) storing the parent's.
 
 **R-US20 — Midterms** *(US-13; blocks US-27)*.
 - (a) The model as it stands, with the congressional economic vote wired (Table 9.1's US legislative row, the weakest in the sample);
