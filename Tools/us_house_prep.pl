@@ -22,6 +22,7 @@
 #   - a Census page without its sentence naming the states whose lines changed, a count word not the list's length, a state named twice or
 #     unknown; the 2022 exceptions not exactly the states the 2020 census gives one seat; the geography page's state for the 117th not the
 #     117th tab's; no note on Missouri's 2026 plan;
+#   - (s799) an instrument's words not on its saved page, or an instrument or a plan declared not used for lines that did not change;
 #   - (the Clerk) a page number out of sequence; a state not listed once FOR UNITED STATES REPRESENTATIVE; a state's districts not 1..n of its
 #     apportionment (or AT LARGE for one seat); a district twice; an entry without a figure, a figure without an entry; a recapitulation row
 #     whose cells do not sum to its Total, a district without a row, a row without a district; a district's listing not summing to its row's
@@ -270,6 +271,29 @@ my %missouri_note;   # the 120th tab's note on Missouri's plan, kept verbatim fo
 page($_) for qw(maps/wayback_ncleg_SL2019-249_20200430.pdf maps/legis_la_SB8_2024_1ES.html maps/nyassembly_A09310_2023.html
                 maps/alison_reapportionment_block_tract.html maps/ncsbe_uscongress_shapefiles_list.xml maps/supremecourt_docket_23a231.html
                 maps/supremecourt_docket_23a1002.html);
+# s799 (US-11's Design, R-US18): the instrument a redraw was made by, as reading 8 names it - printed only, never read by the rule - each held to
+# words on its saved page; a change no saved page describes is '-'. Minnesota's 2016 and 2018 changes are the Census tabs' "cosmetic in nature".
+my %instrument = (
+    '2016 MN' => ['cosmetic (the 115th tab)', 'maps/census_rdo_congressional_districts_115th.html', 'cosmetic in nature'],
+    '2018 MN' => ['cosmetic (the 116th tab)', 'maps/census_rdo_congressional_districts_116th.html', 'cosmetic in nature'],
+    '2020 NC' => ['an act: Session Law 2019-249', 'maps/wayback_ncleg_SL2019-249_20200430.pdf', 'AN ACT TO REALIGN THE CONGRESSIONAL DISTRICTS'],
+    '2024 AL' => ['a court-ordered plan (2023)', 'maps/alison_reapportionment_block_tract.html', '2023 Court Ordered Congressional Plan'],
+    '2024 LA' => ['an act: Act No. 2 of the 2024 First Extraordinary Session', 'maps/legis_la_SB8_2024_1ES.html', 'Becomes Act No. 2'],
+    '2024 NY' => ['an act: Chapter 92 of 2024', 'maps/nyassembly_A09310_2023.html', 'SIGNED CHAP.92'],
+    '2024 NC' => ['an act: Session Law 2023-145 (its text BILLED)', 'maps/ncsbe_uscongress_shapefiles_list.xml', 'SL 2023-145'],
+);
+for my $k (sort keys %instrument) {
+    my ($what, $rel, $words) = @{$instrument{$k}};
+    my $t = $rel =~ /\.pdf$/ ? pdf_text($rel) : do { my $b = page($rel); $b };
+    problem("the instrument of $k: '$words' not on $rel") unless index($t, $words) >= 0;
+}
+# s799: the lines IN FORCE - lines_changed, but where a saved page says a new plan was not used: Missouri 2026, by the 120th tab's note (the plan
+# "cannot be used"; a referendum on the November ballot). The rule's held and redrawn read this column, and play's redrawn states with it.
+my %not_used = ('2026 MO' => 1);
+problem("2026 MO: declared not used, but the 120th tab carries no note on Missouri's plan") if $not_used{'2026 MO'} && !$missouri_note{text};
+# both held here, before the mismatches are counted: an instrument or a plan declared not used names lines that changed
+for my $k (sort keys %instrument) { my ($y, $s) = split / /, $k; problem("$k: an instrument declared for lines that did not change") unless $changed{$y}{$s}; }
+for my $k (sort keys %not_used) { my ($y, $s) = split / /, $k; problem("$k: declared not used, but its lines did not change") unless $changed{$y}{$s}; }
 
 # ---------------------------------------------------------------- the Clerk: each state's House listing and its recapitulation
 # A candidate's party is the first of his labels that is Republican or Democratic. Every label naming a major party is declared here - a new
@@ -821,10 +845,19 @@ my @map_years = (2016, 2018, 2020, 2022, 2024, 2026);
 my $csv_m = $gen . "# US-11: a row a state an election, 2016-2026 - the Representatives the apportionment in force gives it (the Census Bureau's Table 1), and\n"
     . "# whether its district lines changed since the previous House election (1) or not (0), as the Census Bureau's pages say - its Redistricting\n"
     . "# Data Program tabs, and for 2022 its geography page; source: that saved page, its path under ElectionsData/usa/. 2026: the plans as the\n"
-    . "# Bureau collected them - Missouri's in doubt (the 120th tab's note, the record's reading 8).\n"
-    . "year,state,seats,lines_changed,source\n";
+    . "# Bureau collected them - Missouri's in doubt (the 120th tab's note, the record's reading 8). in_force (s799): lines_changed, but 0 where a\n"
+    . "# saved page says the new plan was not used (Missouri 2026, the 120th tab's note) - the column R-US18's held and redrawn read. instrument\n"
+    . "# (s799, printed only): what made the change, as reading 8 names it and held to words on its saved page; - where no saved page says.\n"
+    . "year,state,seats,lines_changed,in_force,instrument,source\n";
 my @mrows;
-for my $year (@map_years) { for my $st (@order) { my @row = ($year, $st, seats($year, $st), $changed{$year}{$st} ? 1 : 0, "raw/$map_page{$year}"); push @mrows, \@row; $csv_m .= join(',', @row) . "\n"; } }
+for my $year (@map_years) {
+    for my $st (@order) {
+        my $chg = $changed{$year}{$st} ? 1 : 0;
+        my $ins = $instrument{"$year $st"};
+        my @row = ($year, $st, seats($year, $st), $chg, ($chg && !$not_used{"$year $st"}) ? 1 : 0, $ins ? $ins->[0] : '-', "raw/$map_page{$year}");
+        push @mrows, \@row; $csv_m .= join(',', @row) . "\n";
+    }
+}
 my $csv_y = $gen . "# US-11: a row a House election - the Congress it elected and its party division as the House Historian's party-divisions page gives it\n"
     . "# ([HH-DIV]), its seats out of 435; vacant: the seat its footnote leaves unassigned (no certificate before the opening day), or -.\n"
     . "year,congress,seats_r,seats_d,seats_other,vacant\n";
@@ -858,9 +891,10 @@ my $cs = "// GENERATED by Tools/us_house_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "            int at = 0;\n            foreach (var p in parts) { for (int i = 0; i < p.Length; i++) { all[at++] = p[i]; } }\n            return all;\n        }\n\n"
     . "        /// <summary>A row a state an election, 2016-2026: the seats the apportionment in force gives it, and whether its lines changed since the\n"
     . "        /// previous House election, as the Census Bureau's pages say (Source the saved page, under `ElectionsData/usa/`). 2026 is the plans as\n"
-    . "        /// the Bureau collected them - Missouri's in doubt after a court ruling (house_districts.md, reading 8).</summary>\n"
-    . "        public static readonly (int Year, string State, int Seats, bool LinesChanged, string Source)[] HouseMaps =\n        {\n"
-    . join('', map { "            ($_->[0], \"$_->[1]\", $_->[2], " . ($_->[3] ? 'true' : 'false') . ", \"$_->[4]\"),\n" } @mrows) . "        };\n\n"
+    . "        /// the Bureau collected them - Missouri's in doubt after a court ruling (house_districts.md, reading 8). InForce (s799): the lines in force,\n"
+    . "        /// LinesChanged but where a saved page says the plan was not used (Missouri 2026); Instrument: what made the change, printed only.</summary>\n"
+    . "        public static readonly (int Year, string State, int Seats, bool LinesChanged, bool InForce, string Instrument, string Source)[] HouseMaps =\n        {\n"
+    . join('', map { "            ($_->[0], \"$_->[1]\", $_->[2], " . ($_->[3] ? 'true' : 'false') . ', ' . ($_->[4] ? 'true' : 'false') . ", \"$_->[5]\", \"$_->[6]\"),\n" } @mrows) . "        };\n\n"
     . "        /// <summary>A row a House election: the Congress it elected and its party division by the House Historian (its seats of 435), and the\n"
     . "        /// seat its footnote leaves unassigned - no certificate before the opening day (a hyphen for none).</summary>\n"
     . "        public static readonly (int Year, int Congress, int SeatsR, int SeatsD, int SeatsOther, string Vacant)[] HouseRecord =\n        {\n"

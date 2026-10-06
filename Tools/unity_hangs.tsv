@@ -7,3 +7,4 @@ ended	pid	label	method	started	minutes_alive	phase	working_set_mb	last_log_line	
 2026-09-30T20:06:05	10764	sim699	PoliSim.EditorTools.CheckSuite.RunSimulationBatch	2026-09-30T19:43:23	22.7	teardown	2108	CodeReloadManager destroyed
 2026-09-30T21:53:10	8496	planted702	PoliSim.EditorTools.ExitDiagnostics.PlantedHang	2026-09-30T21:51:10	2	teardown (the log: startup)	2165	TrimDiskCacheJob: Current cache size 0mb	code 0 - CHECKS: the watchdog's planted hang - it printed this result and will not exit - exiting 0.
 2026-10-02T14:26:20	13528	sim761b	PoliSim.EditorTools.CheckSuite.RunSimulationBatch	2026-10-02T14:11:20	15	teardown	2143	CodeReloadManager destroyed	code 0 - CHECKS: simulation group exiting 0.
+2026-10-06T17:15:28	19668	sim798	PoliSim.EditorTools.CheckSuite.RunSimulationBatch	2026-10-06T17:01:27	14	teardown	2160	CodeReloadManager destroyed	code 0 - CHECKS: simulation group exiting 0.

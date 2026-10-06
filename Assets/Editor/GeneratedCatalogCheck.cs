@@ -694,7 +694,7 @@ namespace PoliSim.EditorTools
             if (UsPresidentialReturns.HouseRawSources.Length == 0) { wrong.Add("the House part lists no pages, so no page was compared"); }
 
             List<string[]> races = ReadUsCsv(usa, "house_districts.csv", UsPresidentialReturns.HouseDistrictSourceDigest, "year,state,district,votes_r,votes_d,votes_other,votes_total,own_r,own_d,cands_r,cands_d,final_r,final_d,winner,flags", wrong);
-            List<string[]> maps = ReadUsCsv(usa, "house_maps.csv", UsPresidentialReturns.HouseMapSourceDigest, "year,state,seats,lines_changed,source", wrong);
+            List<string[]> maps = ReadUsCsv(usa, "house_maps.csv", UsPresidentialReturns.HouseMapSourceDigest, "year,state,seats,lines_changed,in_force,instrument,source", wrong);
             List<string[]> record = ReadUsCsv(usa, "house_years.csv", UsPresidentialReturns.HouseYearSourceDigest, "year,congress,seats_r,seats_d,seats_other,vacant", wrong);
             if (races.Count != UsPresidentialReturns.HouseDistricts.Length) { wrong.Add("races: " + races.Count + " CSV rows, " + UsPresidentialReturns.HouseDistricts.Length + " in the catalog"); }
             for (int i = 0; i < Math.Min(races.Count, UsPresidentialReturns.HouseDistricts.Length) && wrong.Count < 12; i++)
@@ -707,7 +707,7 @@ namespace PoliSim.EditorTools
             for (int i = 0; i < Math.Min(maps.Count, UsPresidentialReturns.HouseMaps.Length) && wrong.Count < 12; i++)
             {
                 var m = UsPresidentialReturns.HouseMaps[i];
-                if (!SameRow(maps[i], m.Year, m.State, m.Seats, m.LinesChanged ? 1 : 0, m.Source)) { wrong.Add("map row " + i + " (" + m.Year + " " + m.State + ") differs"); }
+                if (!SameRow(maps[i], m.Year, m.State, m.Seats, m.LinesChanged ? 1 : 0, m.InForce ? 1 : 0, m.Instrument, m.Source)) { wrong.Add("map row " + i + " (" + m.Year + " " + m.State + ") differs"); }
             }
 
             if (record.Count != UsPresidentialReturns.HouseRecord.Length) { wrong.Add("record: " + record.Count + " CSV rows, " + UsPresidentialReturns.HouseRecord.Length + " in the catalog"); }
@@ -722,6 +722,11 @@ namespace PoliSim.EditorTools
             var mapYears = new SortedDictionary<int, (int States, int Seats)>();
             foreach (var m in UsPresidentialReturns.HouseMaps)
             {
+                // §799 (US-11's Design): the lines in force are the lines changed in every year the record measures (2016-2024) - a difference there is a
+                // data failure, never an ask; a plan in force needs lines changed, and an instrument is named only for lines that changed
+                if (m.Year <= 2024 && m.InForce != m.LinesChanged) { wrong.Add("maps " + m.Year + " " + m.State + ": in force " + m.InForce + ", lines changed " + m.LinesChanged); }
+                if (m.InForce && !m.LinesChanged) { wrong.Add("maps " + m.Year + " " + m.State + ": in force with no lines changed"); }
+                if (m.Instrument != "-" && !m.LinesChanged) { wrong.Add("maps " + m.Year + " " + m.State + ": an instrument for lines that did not change"); }
                 if (seats.ContainsKey((m.Year, m.State))) { wrong.Add("maps " + m.Year + ": " + m.State + " twice"); }
                 seats[(m.Year, m.State)] = m.Seats;
                 mapYears.TryGetValue(m.Year, out (int States, int Seats) t);

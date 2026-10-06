@@ -82,6 +82,10 @@ case_ "the 2022 exceptions not the one-seat states" "the exceptions AK DE ND SD 
 case_ "a state named twice for 2026" "OH named twice" m04
 case_ "the 2020 sentence gone" "no sentence naming the only state that changed between the 116th and 117th Congresses" m05
 case_ "Missouri's note gone" "no note on Missouri's plan beside its asterisk" m06
+w01() { local f=$M/nyassembly_A09310_2023.html; sed -i 's/SIGNED CHAP\.92/SIGNED CHAP.93/' $f; resum $f; }
+w02() { sed -i "s/^    '2016 MN' => \['cosmetic (the 115th tab)'/    '2016 WY' => ['cosmetic (the 115th tab)'/" Tools/us_house_prep.pl; }   # TOOL: an instrument for lines that did not change
+case_ "s799: an instrument's words not on its page (New York's chapter)" "the instrument of 2024 NY: 'SIGNED CHAP.92' not on maps/nyassembly_A09310_2023.html" w01
+case_ "TOOL s799: an instrument declared for lines that did not change" "2016 WY: an instrument declared for lines that did not change" w02
 
 # --- the Clerk's listings (through the extractor's text; a case naming 'raw' rewrites the -raw reading alone, so the -table reading must catch it)
 c01() { wrap 'BEGIN { undef $/ } s{(\n2\. Barry Moore, Republican [^\n]*\n(?:[^\n]*\n){3})137,460(\r?\n)}{${1}137,461$2}'; }
