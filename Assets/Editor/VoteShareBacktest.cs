@@ -31,6 +31,11 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class VoteShareBacktest
     {
+        /// <summary>The USA's economic weight - DECLARED from Gallup's most-important-problem table of July 2026 (economy and cost of living against
+        /// immigration; the case's note below), after every US election the model is held to. One copy: US-5's instrument
+        /// (<see cref="UsNationalVoteCheck"/>) reads it here.</summary>
+        internal const double UsEconomicWeight = 0.65;
+
         private readonly struct Case
         {
             public readonly string Country;
@@ -174,7 +179,7 @@ namespace PoliSim.EditorTools
                 {
                     new VoteModel.PartyPoint("Dem", 3.73, 2.41),
                     new VoteModel.PartyPoint("Rep", 8.23, 8.30),
-                }, new[] { 48.32, 49.80 }, 0.65,
+                }, new[] { 48.32, 49.80 }, UsEconomicWeight,
                    "Gallup Jul 2026: economy 11 + cost of living 11 vs immigration 12; GPS-2019 positions, pre-2020 vintage; TWO parties - a degenerate test, included for completeness"),
             };
         }

@@ -191,6 +191,11 @@ namespace PoliSim.EditorTools
             }
 
             Debug.Log(sb.ToString());
+
+            // PS-6 US-5 (§789): the USA's cases, after the verdict and outside it, in their own message - the gate's report is logged before them
+            // whatever they do, and a section that cannot be built is an error, named
+            try { Debug.Log(UsNationalVoteCheck.GateSection()); }
+            catch (Exception ex) { Debug.LogError("GATE: the USA section (PS-6 US-5) could not be built - " + ex.Message); }
             CheckExit.Finish(0);
         }
 

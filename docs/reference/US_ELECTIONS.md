@@ -1,10 +1,11 @@
-# The US presidential count - model card (the states from the national vote)
+# The US presidential count - model card (the states from the national vote; the national vote)
 
-What the game's US presidential count will rest on, measured before any of it goes live. The figures the measurement produces are not typed
-here: they are written by the instrument that pins them, into the marked block under *The readings*
-(`PoliSim.EditorTools.UsStateSwingCheck.WriteReadings`), and the instrument fails the cheap bar and the documents bar when the block no longer
-says what it measures. The records are `COMPLETED.md` §786 (the returns by state, `ElectionsData/usa/president_returns.md`) and §787 (this
-measurement).
+What the game's US presidential count will rest on, measured before any of it goes live. The figures the measurements produce are not typed
+here: each is written by the instrument that pins it, into its own marked block - under *The readings* the states from the national vote
+(`PoliSim.EditorTools.UsStateSwingCheck.WriteReadings`), under *The readings (US-5)* the national vote itself
+(`PoliSim.EditorTools.UsNationalVoteCheck.WriteReadings`) - and each instrument fails the cheap bar and the documents bar when its block no
+longer says what it measures. The records are `COMPLETED.md` §786 (the returns by state, `ElectionsData/usa/president_returns.md`), §787
+(the states), §788 (the House vote) and §789 (the national vote).
 
 ## The question - R-US14
 
@@ -247,4 +248,113 @@ Where (a) and (c) part - the largest difference between their margins in any jur
 | NE-1 (two-party) | +13.23 | +8.23 | +7.98 | +8.23 |
 | NE-2 (two-party) | -4.68 | +4.10 | +4.04 | +4.10 |
 | NE-3 (two-party) | +54.43 | +5.94 | +3.97 | +5.94 |
+<!-- END GENERATED -->
+
+## The national vote - R-US15
+
+Which vote the US poll is (`docs/specs/USA_STAGE_PLAN.md`, R-US15): **(a)** the House national vote - the history is the last two House
+elections, and the presidential candidates carry it by E1's factors; **(b)** the presidential popular vote as the history; **(c)** two
+histories, one per contest. Code expects to recommend (a), unless its national miss is well above (b)'s. The instrument is
+`PoliSim.EditorTools.UsNationalVoteCheck`; the records are `COMPLETED.md` §788 (the House vote, `ElectionsData/usa/president_returns.md`)
+and §789 (this measurement).
+
+| part | what it does | basis |
+|---|---|---|
+| The histories | (a) the House vote by the Clerk of the House's recapitulation - each party's own ballot line, 50 states; (b) the presidential vote, US-3's catalog - 51 jurisdictions | SOURCED (§786, §788) |
+| The positions | the roster's: REP's and DEM's points on GPS 2019's economic and social scales | SOURCED, PROVISIONAL (`ElectionsData/positions/party_positions.md`) |
+| The economic weight | the USA's declared weight (`VoteShareBacktest.UsEconomicWeight`), from Gallup's table of July 2026 - after every election used. Inert for the two-party split at the fitted points; it sets where a held fit's mean sits and what happens away from those points | DECLARED |
+| The fit | to each history's T-1 - the last election before the predicted one, which a game started on the eve holds as its prior - never to the predicted election. Free: `VoteModel.Calibrate` as it stands. Held: the σ and τ of each country `PartySystems.TryElectorate` holds (Sweden, Germany, Poland, Italy - the list checked against it), read there at run time, and - added with the measurement - the four's median (σ and τ each the median of the four); the mean on the segment from DEM's point to REP's, at the place that gives T-1's split, solved continuously | DECLARED |
+| The loyalty | T-1 against T-2 (`LoyaltyModel.PartyLoyalties`), each party's share of all votes cast - the four countries' basis as near as the sources allow: the presidential history's share of the FEC's total, the House history's of the Clerk's Total, which carries the non-votes some states report and Maine's re-counted ballots. With two parties the loyalty cannot move the split (below), so the denominator moves no miss; the prior is normalised over the roster by `PreferenceModel.Preference` itself | DECLARED |
+| The prediction | the live chain's order - `VoteModel.PredictShares`, the compatibility scale, `PreferenceModel.Preference`, `EconomicVote.ApplyRecordShift` - composed in the instrument, since none of it is live for the USA (US-6's change) | as built |
+| The economic vote | read on a world built on the eve as a new game builds one - the epoch set before the world is created - and stepped to the election day: the record over the term (§752) at Table 9.1's presidential row on the president's party (`EconomicVote.Magnitudes`), for both histories, the House's too. Printed in its own column, never folded into the history's miss; the congressional row stays out of code (US-13's) | as built |
+| The cases | 2024 by each history on its eve world. Out of sample: 2022's House on its eve world, by (a) and by (b)'s presidential 2020; 2020 with no world - (b) the case US-6 cites as "2020 from 2016", and (a) - since no world can be built before the USA's first government of record (`WorldClock.Governments`; none to seat). Each scored on its own contest, where it was held, and on the other | DECLARED |
+| E1's factors | on the 2024 eve world's poll, per history: Trump's factor his share of the FEC's total ÷ REP's poll, Harris's likewise; Stein, Kennedy, Oliver and the rest at their shares of record as base | E1; in-sample by construction |
+
+**The identity.** With two parties the spatial model pins one number, the two-party split, and the compatibility scale hands the spatial
+shares back unchanged - so an electorate fitted to T-1 gives T-1's split back through the preference layer, whatever the loyalty. The
+instrument checks it on every fit before it prints anything else - exactly for a held fit, which is solved, and within its grid's residual for
+the free one. A history's national miss is therefore its no-change miss - T-1's split against the predicted election's - plus the economic
+vote. The fits give the same split at the fitted points and differ in their spread and in where their means sit; away from those points the
+spread decides two things the card prints, spatially, before the loyalty draws the poll back toward the prior: how far the split moves when a
+party's point moves (US-33's own nominee off the party's point - the moved point), and what a third placed unit takes (SP-6b's third party, a
+created party - the midway unit). **R-US15's rule** is run by the instrument over the 2024 cases and its verdict printed; a verdict the rule
+leaves to Elias fails the instrument, to be asked. **The factors** close 2024 by construction on the world they are fitted on, so they cannot
+decide R-US15: the miss table does.
+
+### The readings (US-5)
+
+<!-- GENERATED by PoliSim.EditorTools.UsNationalVoteCheck.WriteReadings. DO NOT EDIT BY HAND. source-digest: de9325b4f4293296356e549767019c94769dfbacb351864ef6cc50115f10cb97 -->
+### The national vote by each history
+
+Two-party, signed: REP's predicted share of the two parties less the record's, in points. "Before" is the poll the vote model gives (every fit gives the same - the identity holds on each); "after" adds the economic vote of the eve world, printed in its own column. The loyalty is each party's, T-1 against T-2. "(own)" marks the history's own contest; 2022 held no presidential vote, so the presidential history is scored there on the House alone.
+
+| predicted | history | T-1 split (R) | loyalty R / D | economic vote (DEM, pp) | poll R before → after | scored on | record (R) | miss before | miss after |
+|---|---|---:|---:|---:|---:|---|---:|---:|---:|
+| 2024 | (a) House 2022 against 2020 | 51.40 % | 94.5 / 94.1 | +2.50 | 51.40 % → 48.90 % | House 2024 (own) | 51.32 % | +0.08 | -2.42 |
+|  |  |  |  |  |  | president 2024 | 50.75 % | +0.65 | -1.85 |
+| 2024 | (b) presidential 2020 against 2016 | 47.73 % | 98.4 / 93.9 | +2.50 | 47.73 % → 45.23 % | president 2024 (own) | 50.75 % | -3.02 | -5.52 |
+|  |  |  |  |  |  | House 2024 | 51.32 % | -3.59 | -6.09 |
+| 2022 | (a) House 2020 against 2018 | 48.44 % | 93.7 / 95.0 | -0.33 | 48.44 % → 48.78 % | House 2022 (own) | 51.40 % | -2.95 | -2.62 |
+| 2022 | (b) presidential 2020 against 2016 | 47.73 % | 98.4 / 93.9 | -0.33 | 47.73 % → 48.06 % | House 2022 | 51.40 % | -3.67 | -3.33 |
+| 2020 | (a) House 2018 against 2016 | 45.55 % | 91.6 / 89.4 | no world | 45.55 % | House 2020 (own) | 48.44 % | -2.89 | - |
+|  |  |  |  |  |  | president 2020 | 47.73 % | -2.18 | - |
+| 2020 | (b) presidential 2016 against 2012 | 48.89 % | 97.6 / 94.4 | no world | 48.89 % | president 2020 (own) | 47.73 % | +1.16 | - |
+|  |  |  |  |  |  | House 2020 | 48.44 % | +0.44 | - |
+
+**By R-US15's rule, code recommends (a)**: (a)'s 2024 miss on its own contest is not above (b)'s, before the economic vote (+0.08 against -3.02) and after it (-2.42 against -5.52). On the presidential vote, (a) is the closer as well (+0.65 and -1.85).
+
+Out of sample, (a) against (b): 2022's House vote - (a) the closer before the economic vote (-2.95 against -3.67), (a) after it (-2.62 against -3.33); 2020's House vote - (b) the closer before the economic vote (-2.89 against +0.44) (no world); 2020's presidential vote - (b) the closer before the economic vote (-2.18 against +1.16) (no world).
+
+The economic vote on each eve world, as the record over the term reads it:
+
+- 2024: term index 70.8 - took office 2021-01-20, judged 2024-11-05: unemployment 6.4 % (2021-01) -> 4.1 % (2024-10); inflation 1.4 % (2021-01) -> 2.4 % (2024-09). The House's largest party REP; DEM's economic vote 0.06; DEM +2.50 pp.
+- 2022: term index 48.3 - took office 2021-01-20, judged 2022-11-08: unemployment 6.4 % (2021-01) -> 3.6 % (2022-10); inflation 1.4 % (2021-01) -> 8.2 % (2022-09). The House's largest party DEM; DEM's economic vote 0.10; DEM -0.33 pp.
+
+### The fits and what they leave undecided
+
+Each history's electorate fitted to its T-1 (wEcon 0.65); the positions are the roster's. Free: `VoteModel.Calibrate`'s grid. Held: each country's σ and τ as `PartySystems.TryElectorate` holds them, and the four's median (σ and τ each the median of the four) - the mean on the segment from DEM's point to REP's at the place (0 at DEM, 1 at REP) that gives T-1's split. "Slide": the largest change in the split, in points, when the mean moves one or two units either way along the line dividing the two parties. "Moved point": the change in the split, in points, when DEM's point moves one unit toward REP's - a nominee off the party's point. "Midway unit": the spatial share the fit gives a third unit placed at the parties' midpoint. Both last columns are spatial, before the loyalty draws the poll back toward the prior.
+
+| T-1 | fit | μ econ, μ soc | σ | τ | place | split (R) | residual (pp) | slide ±1 / ±2 (pp) | moved point (pp) | midway unit |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| House 2022 (R 51.40 %) | free | 6.000, 6.500 | 3.00 | 8.00 | - | 51.40 % | 0.0004 | 0.51 / 1.46 | -5.91 | 42.6 % |
+|  | Sweden's spread | 6.346, 5.834 | 3.00 | 0.50 | 0.5813 | 51.40 % | 0.0000 | 0.40 / 1.38 | -7.63 | 52.2 % |
+|  | Germany's spread | 6.063, 5.464 | 1.00 | 16.00 | 0.5185 | 51.40 % | 0.0000 | 0.01 / 0.05 | -4.62 | 42.0 % |
+|  | Poland's spread | 6.041, 5.435 | 1.50 | 8.00 | 0.5135 | 51.40 % | 0.0000 | 0.23 / 0.75 | -7.38 | 47.8 % |
+|  | Italy's spread | 6.011, 5.395 | 1.00 | 4.00 | 0.5068 | 51.40 % | 0.0000 | 0.01 / 0.08 | -12.78 | 63.7 % |
+|  | the four's median | 6.023, 5.411 | 1.25 | 6.00 | 0.5096 | 51.40 % | 0.0000 | 0.09 / 0.38 | -9.35 | 53.3 % |
+| House 2020 (R 48.44 %) | free | 6.750, 5.250 | 3.50 | 4.00 | - | 48.44 % | 0.0001 | 0.18 / 0.54 | -6.69 | 44.5 % |
+|  | Sweden's spread | 6.169, 5.602 | 3.00 | 0.50 | 0.5420 | 48.44 % | 0.0000 | 0.37 / 1.27 | -7.57 | 52.1 % |
+|  | Germany's spread | 5.887, 5.234 | 1.00 | 16.00 | 0.4794 | 48.44 % | 0.0000 | 0.00 / 0.03 | -4.23 | 42.0 % |
+|  | Poland's spread | 5.926, 5.285 | 1.50 | 8.00 | 0.4881 | 48.44 % | 0.0000 | 0.19 / 0.61 | -7.08 | 47.8 % |
+|  | Italy's spread | 5.946, 5.310 | 1.00 | 4.00 | 0.4924 | 48.44 % | 0.0000 | 0.01 / 0.07 | -12.43 | 63.7 % |
+|  | the four's median | 5.934, 5.295 | 1.25 | 6.00 | 0.4898 | 48.44 % | 0.0000 | 0.08 / 0.32 | -9.04 | 53.3 % |
+| House 2018 (R 45.55 %) | free | 5.750, 5.250 | 2.00 | 8.00 | - | 45.55 % | 0.0021 | 0.24 / 0.81 | -6.15 | 45.3 % |
+|  | Sweden's spread | 5.996, 5.376 | 3.00 | 0.50 | 0.5035 | 45.55 % | 0.0000 | 0.34 / 1.16 | -7.47 | 51.7 % |
+|  | Germany's spread | 5.714, 5.007 | 1.00 | 16.00 | 0.4409 | 45.55 % | 0.0000 | 0.00 / 0.01 | -3.83 | 41.9 % |
+|  | Poland's spread | 5.814, 5.138 | 1.50 | 8.00 | 0.4631 | 45.55 % | 0.0000 | 0.15 / 0.46 | -6.75 | 47.7 % |
+|  | Italy's spread | 5.882, 5.227 | 1.00 | 4.00 | 0.4782 | 45.55 % | 0.0000 | 0.01 / 0.06 | -12.03 | 63.6 % |
+|  | the four's median | 5.846, 5.180 | 1.25 | 6.00 | 0.4703 | 45.55 % | 0.0000 | 0.06 / 0.25 | -8.69 | 53.2 % |
+| presidential 2020 (R 47.73 %) | free | 6.000, 6.000 | 3.50 | 16.00 | - | 47.73 % | 0.0029 | 0.11 / 0.38 | -3.63 | 39.3 % |
+|  | Sweden's spread | 6.126, 5.546 | 3.00 | 0.50 | 0.5325 | 47.73 % | 0.0000 | 0.36 / 1.24 | -7.55 | 52.0 % |
+|  | Germany's spread | 5.845, 5.178 | 1.00 | 16.00 | 0.4699 | 47.73 % | 0.0000 | 0.00 / 0.03 | -4.14 | 42.0 % |
+|  | Poland's spread | 5.899, 5.249 | 1.50 | 8.00 | 0.4819 | 47.73 % | 0.0000 | 0.18 / 0.57 | -7.00 | 47.8 % |
+|  | Italy's spread | 5.930, 5.290 | 1.00 | 4.00 | 0.4889 | 47.73 % | 0.0000 | 0.01 / 0.07 | -12.34 | 63.7 % |
+|  | the four's median | 5.912, 5.266 | 1.25 | 6.00 | 0.4850 | 47.73 % | 0.0000 | 0.07 / 0.30 | -8.96 | 53.3 % |
+| presidential 2016 (R 48.89 %) | free | 5.750, 5.500 | 1.00 | 16.00 | - | 48.88 % | 0.0018 | 0.00 / 0.03 | -4.29 | 42.0 % |
+|  | Sweden's spread | 6.195, 5.637 | 3.00 | 0.50 | 0.5479 | 48.89 % | 0.0000 | 0.37 / 1.28 | -7.58 | 52.1 % |
+|  | Germany's spread | 5.914, 5.268 | 1.00 | 16.00 | 0.4853 | 48.89 % | 0.0000 | 0.00 / 0.03 | -4.29 | 42.0 % |
+|  | Poland's spread | 5.944, 5.307 | 1.50 | 8.00 | 0.4919 | 48.89 % | 0.0000 | 0.20 / 0.63 | -7.13 | 47.8 % |
+|  | Italy's spread | 5.955, 5.323 | 1.00 | 4.00 | 0.4946 | 48.89 % | 0.0000 | 0.01 / 0.07 | -12.49 | 63.7 % |
+|  | the four's median | 5.947, 5.312 | 1.25 | 6.00 | 0.4927 | 48.89 % | 0.0000 | 0.08 / 0.33 | -9.09 | 53.3 % |
+
+Every fit holds its T-1 split (free: within Calibrate's grid; held: solved). Away from the fitted points the spread decides: a nominee one unit off DEM's point moves the split by between -3.63 and -12.78 points, by the fit, and the midway unit's share runs from 39.3 % to 63.7 % - what the choice of spread decides, and the two-party split at the fitted points does not.
+
+### E1's factors on the 2024 eve world's poll (in-sample by construction)
+
+The field: Trump (REP) 49.80 %, Harris (DEM) 48.32 %; at their shares of record as base: Stein 0.56 %, Kennedy 0.49 %, Oliver 0.42 %, the rest 0.42 % (every other column of the FEC's workbook, None of These Candidates and the scattered write-ins among them). The nominees together hold 98.12 % of the vote, so a poll exact on the two-party split gives both factors that figure - the column of factors ÷ the nominees' share divides it out. The field's sum is one by construction (E1's normalisation), printed as the design asks.
+
+| history | poll R / D | Trump's factor | Harris's factor | the field's sum | factors ÷ the nominees' share (R / D) | the poll's two-party miss on the presidential 2024 (pp) |
+|---|---:|---:|---:|---:|---:|---:|
+| (a) House 2022 against 2020 | 48.90 % / 51.10 % | 1.018390 | 0.945620 | 1.000000 | 1.0379 / 0.9637 | -1.85 |
+| (b) presidential 2020 against 2016 | 45.23 % / 54.77 % | 1.100946 | 0.882315 | 1.000000 | 1.1220 / 0.8992 | -5.52 |
 <!-- END GENERATED -->

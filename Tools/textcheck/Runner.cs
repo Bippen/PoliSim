@@ -8,7 +8,7 @@
 // area tables (PoliSim.Data, PoliSim.UI) and would drag the engine in behind them; `PlaySheetCheck` reflects over
 // `CampaignPressure` for the same reason; `MojibakeCheck` reads every file's bytes and its verdict depends on the Editor's
 // own encoding behaviour, which a console build does not reproduce - it reported a file set the Unity bar does not; `UsStateSwingCheck` (§787) compiles against the elections model and the
-// generated catalog. Those stay in the Editor and the document bar still runs them. **This runner is a LOOP instrument, not the bar**: it
+// generated catalog; `UsNationalVoteCheck` (§789) does too, and builds two worlds. Those stay in the Editor and the document bar still runs them. **This runner is a LOOP instrument, not the bar**: it
 // answers in about a second while a record is being written, and the bar is unchanged.
 using System;
 using System.Collections.Generic;
