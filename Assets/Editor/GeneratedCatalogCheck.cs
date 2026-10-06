@@ -126,6 +126,7 @@ namespace PoliSim.EditorTools
             failures += CheckUsPresidentialReturns(sb);   // PS-6 US-3 (§786): the US presidential returns
             failures += CheckUsHouseDistricts(sb);   // PS-6 US-11 (§790): the House by district, its maps, its record
             failures += CheckUsSenate(sb);   // PS-6 US-12 (§792): the Senate by state and by date - the roster diagnostic
+            failures += CheckUsSenateRaces(sb);   // PS-6 US-12 (§793): the Senate races of 2018 and 2024, and Nebraska's of 2020
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -1012,6 +1013,82 @@ namespace PoliSim.EditorTools
                         + "{4} [SEN-DIV] stretch(es), every figure the CSVs'; the roster derived again from the seats - each seat its holders in order, never two at once: 100 seats on every named day, each state in two "
                         + "classes, the classes 33, 33 and 34 states; {5}; the US start the clock's ({6})\n",
                 UsPresidentialReturns.SenateRawSources.Length, seats.Count, changes.Count, on.Count, division.Count, string.Join("; ", lines.ToArray()), start));
+            return 0;
+        }
+
+        /// <summary>The Senate races (PS-6 US-12, §793) against their CSV and their pages: 35 races in 2018 and in 2024 - a full-term Class I race in
+        /// each state holding a Class I seat by the Senate's seat rows, and the specials beside them - and Nebraska's Class II race of 2020 alone;
+        /// every winner's class leading his race's classes, and the winner the holder of his seat, by the seat rows, on the day each race is held to
+        /// (for 2018's two Class II specials, whose terms ended on 3 Jan 2021, that day tests the person, not the 2018 term).</summary>
+        private static int CheckUsSenateRaces(StringBuilder sb)
+        {
+            sb.Append("\n=== The US Senate races against their sources ===\n");
+            string usa = Path.Combine(Directory.GetCurrentDirectory(), "ElectionsData", "usa");
+            var wrong = new List<string>();
+            foreach ((string path, string sha) in UsPresidentialReturns.SenateRaceRawSources)
+            {
+                string full = Path.Combine(usa, path.Replace('/', Path.DirectorySeparatorChar));
+                string onDisk = File.Exists(full) ? ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(full)) : null;
+                if (onDisk == null) { wrong.Add(path + " is not on disk"); }
+                else if (!string.Equals(onDisk, sha, StringComparison.OrdinalIgnoreCase)) { wrong.Add(path + " changed since generation (on disk " + onDisk + ")"); }
+            }
+
+            if (UsPresidentialReturns.SenateRaceRawSources.Length == 0) { wrong.Add("the races part lists no pages, so no page was compared"); }
+            List<string[]> rows = ReadUsCsv(usa, "senate_races.csv", UsPresidentialReturns.SenateRaceSourceDigest, "year,state,class,term,votes_r,votes_d,votes_i,votes_other,votes_non,cands_r,cands_d,cands_i,winner,winner_class,flags", wrong);
+            if (rows.Count != UsPresidentialReturns.SenateRaces.Length) { wrong.Add("races: " + rows.Count + " CSV rows, " + UsPresidentialReturns.SenateRaces.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(rows.Count, UsPresidentialReturns.SenateRaces.Length) && wrong.Count < 12; i++)
+            {
+                var r = UsPresidentialReturns.SenateRaces[i];
+                if (!SameRow(rows[i], r.Year, r.State, r.Class, r.Term, r.VotesR, r.VotesD, r.VotesI, r.VotesOther, r.VotesNon, r.CandsR, r.CandsD, r.CandsI, r.Winner, r.WinnerClass, r.Flags)) { wrong.Add("race row " + i + " (" + r.Year + " " + r.State + ") differs"); }
+            }
+
+            var classI = new SortedSet<string>(StringComparer.Ordinal);
+            foreach (var s in UsPresidentialReturns.SenateSeats) { if (s.Class == 1) { classI.Add(s.State); } }
+            var perYear = new SortedDictionary<int, int>();
+            var fullI = new Dictionary<int, SortedSet<string>> { [2018] = new SortedSet<string>(StringComparer.Ordinal), [2024] = new SortedSet<string>(StringComparer.Ordinal) };
+            string Last(string n) { string t = Regex.Replace(n, @"\([^)]*\)", "").Replace(",", "").Replace(".", "").Trim(); t = Regex.Replace(t, @" (Jr|Sr|II|III|IV)$", ""); string[] w = t.Split(' '); return w[w.Length - 1].ToLowerInvariant(); }
+            // the races beside the full Class I terms, as the plan declares them: the specials and Nebraska's 2020 base
+            var others = new SortedSet<string>(StringComparer.Ordinal) { "2018 MN 2 unexpired", "2018 MS 2 unexpired", "2020 NE 2 full", "2024 CA 1 unexpired", "2024 NE 2 unexpired" };
+            var otherSeen = new SortedSet<string>(StringComparer.Ordinal);
+            var keys = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var r in UsPresidentialReturns.SenateRaces)
+            {
+                string key = r.Year + " " + r.State + " " + r.Class + " " + r.Term;
+                if (!keys.Add(key)) { wrong.Add(key + ": two rows"); }
+                perYear[r.Year] = (perYear.TryGetValue(r.Year, out int n) ? n : 0) + 1;
+                if (r.Term == "full" && r.Class == 1 && fullI.ContainsKey(r.Year)) { fullI[r.Year].Add(r.State); }
+                else { otherSeen.Add(key); }
+                if (r.WinnerClass != "R" && r.WinnerClass != "D" && r.WinnerClass != "I" && r.WinnerClass != "O") { wrong.Add(key + ": the winner's class '" + r.WinnerClass + "'"); }
+                long lead = r.WinnerClass == "R" ? r.VotesR : r.WinnerClass == "D" ? r.VotesD : r.WinnerClass == "I" ? r.VotesI : r.VotesOther;
+                if (lead <= 0 || lead < Math.Max(Math.Max(r.VotesR, r.VotesD), Math.Max(r.VotesI, r.VotesOther))) { wrong.Add(key + ": the winner's class " + r.WinnerClass + " not the leading class"); }
+                // the winner holds his seat on the day the race is held to, by the seat rows
+                string day = r.Year < 2024 ? "2023-01-03" : r.Class == 2 ? "2025-01-03" : r.Term == "unexpired" ? "2024-12-09" : "2025-01-21";
+                string holder = null;
+                int holders = 0;
+                foreach (var s in UsPresidentialReturns.SenateSeats)
+                {
+                    if (s.State != r.State || s.Class != r.Class || string.CompareOrdinal(s.Took, day) > 0 || (s.Left != "-" && string.CompareOrdinal(s.Left, day) <= 0)) { continue; }
+                    holder = s.Senator; holders++;
+                }
+
+                if (holders != 1 || Last(holder) != Last(r.Winner)) { wrong.Add(r.Year + " " + r.State + " class " + r.Class + " (" + r.Term + "): the winner " + r.Winner + ", the seat's holder on " + day + " " + (holder ?? "no one")); }
+            }
+
+            if (!perYear.TryGetValue(2018, out int y18) || y18 != 35 || !perYear.TryGetValue(2024, out int y24) || y24 != 35 || !perYear.TryGetValue(2020, out int y20) || y20 != 1) { wrong.Add("races a year " + string.Join(", ", perYear) + ", not 35, 1 and 35"); }
+            foreach (int y in new[] { 2018, 2024 }) { if (fullI[y].Count != 33 || !fullI[y].SetEquals(classI)) { wrong.Add(y + ": the full-term Class I races are not the 33 Class I states'"); } }
+            if (!otherSeen.SetEquals(others)) { wrong.Add("the races beside the full Class I terms " + string.Join(", ", otherSeen) + ", not the declared " + string.Join(", ", others)); }
+            if (classI.Count != 33) { wrong.Add("the seat rows hold " + classI.Count + " Class I states, not 33"); }
+
+            if (wrong.Count > 0)
+            {
+                Debug.LogError("CATALOGCHECK: UsPresidentialReturns (the Senate races) - " + string.Join("; ", wrong.ToArray()) + ". Re-run Tools/us_senate_races_prep.pl after reading the diff.");
+                sb.Append(F("    ⚠ UsPresidentialReturns, the Senate races: {0} disagreement(s)\n", wrong.Count));
+                return 1;
+            }
+
+            sb.Append(F("    UsPresidentialReturns, the Senate races: {0} page(s) the bytes the run read; {1} race(s), every figure the CSV's; 2018 and 2024 a full-term "
+                        + "Class I race in each of the 33 Class I states and the specials, 2020 Nebraska alone; every winner his seat's holder by the seat rows\n",
+                UsPresidentialReturns.SenateRaceRawSources.Length, rows.Count));
             return 0;
         }
 
