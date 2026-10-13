@@ -174,9 +174,45 @@ namespace PoliSim.EditorTools
             return appointed.Count;
         }
 
+        private readonly HashSet<int> _motionsDone = new HashSet<int>();
+        private bool _withdrawDone, _leaveDone;
+
+        /// <summary>The Parliament tab's rows, on the days the plan names: MOVE NO CONFIDENCE / ELECT A SUCCESSOR (`MoveNoConfidence`), WITHDRAW
+        /// SUPPORT (`WithdrawSupport`), LEAVE THE GOVERNMENT (`LeaveGovernment`) - each the row's own call, refused by the manager where the role or
+        /// the procedure does not allow it, as a row a player cannot press.</summary>
+        private void ParliamentActions(Country c)
+        {
+            foreach (int day in _spec.Motion)
+            {
+                if (day > _day || _motionsDone.Contains(day)) { continue; }
+                _motionsDone.Add(day);
+                bool ok = _sm.MoveNoConfidence(c.Id, out string refused, out ConfidenceProcedure.MotionVote vote);
+                Count("act motion");
+                Event($"ACT motion day {_day}: MoveNoConfidence {(ok ? "moved" : "REFUSED - " + refused)}{(ok ? " (" + vote + ")" : string.Empty)}");
+            }
+
+            if (!_withdrawDone && _spec.Withdraw >= 0 && _day >= _spec.Withdraw)
+            {
+                _withdrawDone = true;
+                bool ok = _sm.WithdrawSupport(c.Id, out string refused);
+                Count("act withdraw");
+                Event($"ACT withdraw day {_day}: WithdrawSupport {(ok ? "done" : "REFUSED - " + refused)}");
+            }
+
+            if (!_leaveDone && _spec.Leave >= 0 && _day >= _spec.Leave)
+            {
+                _leaveDone = true;
+                bool ok = _sm.LeaveGovernment(c.Id, out string refused);
+                Count("act leave");
+                Event($"ACT leave day {_day}: LeaveGovernment {(ok ? "done" : "REFUSED - " + refused)}");
+            }
+        }
+
         private void Act(Country c)
         {
-            if (!_cabinetDone && (_day >= _spec.Cabinet && _spec.Cabinet >= 0 || _day >= _spec.SearchSave && _spec.SearchSave >= 0) && AtSafePoint())
+            if (AtSafePoint()) { ParliamentActions(c); }
+
+            if (!_cabinetDone &&(_day >= _spec.Cabinet && _spec.Cabinet >= 0 || _day >= _spec.SearchSave && _spec.SearchSave >= 0) && AtSafePoint())
             {
                 _cabinetDone = true;
                 int searched = SearchCabinet(c);
@@ -247,12 +283,14 @@ namespace PoliSim.EditorTools
 
         // ------------------------------------------------------------------ a hold's answer, as the style chooses it
 
-        /// <summary>The chair's candidate: idle and historical the first drawn; fuzz any; extreme the hawk or the dove by pole; the exploit X-16 the dove.</summary>
+        /// <summary>The chair's candidate: idle and historical the first drawn; fuzz any; extreme the hawk or the dove by pole; the exploit X-16 the dove;
+        /// a plan's `chair=` over all of them.</summary>
         private int PickChair(IList candidates)
         {
-            if (_spec.Style == "fuzz") { return Rng("chair").Next(candidates.Count); }
-            bool dove = (_spec.Style == "exploit" && _spec.Exploit == "X-16") || (_spec.Style == "extreme" && (_spec.Pole == "deficit" || _spec.Pole == "big"));
-            bool hawk = _spec.Style == "extreme" && !dove;
+            if (_spec.Chair == "first") { return 0; }
+            if (_spec.Chair == null && _spec.Style == "fuzz") { return Rng("chair").Next(candidates.Count); }
+            bool dove = _spec.Chair == "dove" || (_spec.Chair == null && ((_spec.Style == "exploit" && _spec.Exploit == "X-16") || (_spec.Style == "extreme" && (_spec.Pole == "deficit" || _spec.Pole == "big"))));
+            bool hawk = _spec.Chair == "hawk" || (_spec.Chair == null && _spec.Style == "extreme" && !dove);
             if (!dove && !hawk) { return 0; }
             int best = 0;
             for (int i = 1; i < candidates.Count; i++)

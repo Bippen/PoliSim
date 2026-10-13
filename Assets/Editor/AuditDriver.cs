@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Elections;
+using PoliSim.Persistence;
 using PoliSim.Simulation;
 using PoliSim.Testing;
 using PoliSim.UI;
@@ -78,6 +79,27 @@ namespace PoliSim.EditorTools
         internal int Cabinet = -1;
         /// <summary>A day on which Search is pressed, the game saved, and only then the candidates appointed - the shortlist is not in the save (inventory A S-24).</summary>
         internal int SearchSave = -1;
+        /// <summary>The autosave setting, in days (0 off - the default; 7, 30 or 90 as the settings screen offers). Autosave writes the PLAYER'S saves
+        /// folder, so a plan that sets it is refused unless that folder is empty or absent (moved aside first, and restored after).</summary>
+        internal int Autosave;
+        /// <summary>The autosave slots (1-5, the setting's range; default 3).</summary>
+        internal int Slots = 3;
+        /// <summary>Days on which the Parliament tab's motion is moved - MOVE NO CONFIDENCE in the Riksdag, ELECT A SUCCESSOR in the Bundestag (one
+        /// verb, `MoveNoConfidence`, the rows' own call).</summary>
+        internal readonly List<int> Motion = new List<int>();
+        /// <summary>A day on which WITHDRAW SUPPORT is pressed (a support party's agreement block).</summary>
+        internal int Withdraw = -1;
+        /// <summary>A day on which LEAVE THE GOVERNMENT is pressed (a junior partner's row).</summary>
+        internal int Leave = -1;
+        /// <summary>The central bank's head the chair hold appoints, in place of the style's own pick: dove (the lowest RateBias), hawk (the
+        /// highest) or first (the card the list opens on) - a controlled pair is one game with only the head changed.</summary>
+        internal string Chair;
+        /// <summary>Pages to capture, `day:Page` (Desk, Statistics, Decisions, Demographics, Budget, PolicyLaws, Politics, Energy): on that day the
+        /// page is opened through the rail's own body, one frame of OnGUI is recorded by the dry film's label table, and the desk returns.</summary>
+        internal readonly List<(int Day, string Page)> Captures = new List<(int, string)>();
+
+        /// <summary>True when the run writes or reads the player's real saves folder (an autosave, or a resume from it - `resume=@file`).</summary>
+        internal bool UsesRealSaves => Autosave > 0 || (Resume != null && Resume.StartsWith("@", StringComparison.Ordinal));
 
         private static readonly string[] Styles = { "idle", "historical", "fuzz", "exploit", "extreme" };
         private static readonly string[] Poles = { "deficit", "surplus", "big", "small" };
@@ -138,6 +160,20 @@ namespace PoliSim.EditorTools
                         case "startday": s.StartDay = int.Parse(value, CultureInfo.InvariantCulture); break;
                         case "cabinet": s.Cabinet = int.Parse(value, CultureInfo.InvariantCulture); break;
                         case "searchsave": s.SearchSave = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "autosave": s.Autosave = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "slots": s.Slots = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "motion": s.Motion.AddRange(value.Split(',').Where(v => v.Length > 0).Select(v => int.Parse(v, CultureInfo.InvariantCulture))); break;
+                        case "withdraw": s.Withdraw = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "leave": s.Leave = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "chair": s.Chair = value.ToLowerInvariant(); break;
+                        case "capture":
+                            foreach (string pair in value.Split(',').Where(v => v.Length > 0))
+                            {
+                                string[] dp = pair.Split(':');
+                                if (dp.Length != 2) { error = $"capture '{pair}' is not day:Page"; return null; }
+                                s.Captures.Add((int.Parse(dp[0], CultureInfo.InvariantCulture), dp[1]));
+                            }
+                            break;
                         default: error = $"unknown key '{key}'"; return null;
                     }
                 }
@@ -153,6 +189,9 @@ namespace PoliSim.EditorTools
             if (s.Speed < 1 || s.Speed > 3) { error = "speed= is 1, 2 or 3"; return null; }
             if (s.Delta <= 0f || s.Delta > 0.333f) { error = "delta= is in (0, 0.333] - Unity caps a frame's delta at the project's maximum timestep"; return null; }
             if (s.Days < 0) { error = "days= is not negative"; return null; }
+            if (!GameSettings.AutosaveDayChoices.Contains(s.Autosave)) { error = $"autosave= is one of the settings screen's choices ({string.Join(", ", GameSettings.AutosaveDayChoices)})"; return null; }
+            if (s.Slots < GameSettings.MinSlots || s.Slots > GameSettings.MaxSlots) { error = $"slots= is {GameSettings.MinSlots}..{GameSettings.MaxSlots}"; return null; }
+            if (s.Chair != null && s.Chair != "dove" && s.Chair != "hawk" && s.Chair != "first") { error = "chair= is dove, hawk or first"; return null; }
             return s;
         }
     }
@@ -289,9 +328,10 @@ namespace PoliSim.EditorTools
             GameSettings.DefaultSpeed = _spec.Speed - 1;
             GameSettings.HoldOnCampaignOpening = _spec.HoldCampaign;
             GameSettings.HoldOnBudgetWindow = _spec.HoldBudget;
-            GameSettings.AutosaveDays = 0;
+            GameSettings.AutosaveDays = _spec.Autosave;
+            GameSettings.AutosaveSlots = _spec.Slots;
             Time.captureDeltaTime = _spec.Delta;
-            Event($"boot: seed {_spec.Seed}; preferences pinned (speed {GameSettings.DefaultSpeed + 1}x, holds campaign {GameSettings.HoldOnCampaignOpening} budget {GameSettings.HoldOnBudgetWindow}, autosave off); captureDeltaTime {Time.captureDeltaTime.ToString("R", CultureInfo.InvariantCulture)} s; OnGUI at {UiScreen.Width}x{UiScreen.Height}");
+            Event($"boot: seed {_spec.Seed}; preferences pinned (speed {GameSettings.DefaultSpeed + 1}x, holds campaign {GameSettings.HoldOnCampaignOpening} budget {GameSettings.HoldOnBudgetWindow}, autosave {(GameSettings.AutosaveDays == 0 ? "off" : GameSettings.AutosaveDays + " days, " + GameSettings.AutosaveSlots + " slots - the player's saves folder")}); captureDeltaTime {Time.captureDeltaTime.ToString("R", CultureInfo.InvariantCulture)} s; OnGUI at {UiScreen.Width}x{UiScreen.Height}");
             Go(Phase.Menu);
         }
 
@@ -302,7 +342,7 @@ namespace PoliSim.EditorTools
                 // A resumed run: the saves screen's confirmed Load writes _pendingLoadPath, and Update's safe point loads it - in this run's fresh
                 // session, as a player who quit and came back does. The menu waits until it is the live surface, as a player's click would.
                 if (FindButton("MainMenu", "NewGame") == null) { if (PhaseStuck(600)) { End(1, "SOFTLOCK at the main menu - it never came up to load from"); } return; }
-                string path = Path.Combine(_dir, _spec.Resume);
+                string path = _spec.Resume.StartsWith("@", StringComparison.Ordinal) ? Path.Combine(SaveGameService.DefaultSaveDirectory, _spec.Resume.Substring(1)) : Path.Combine(_dir, _spec.Resume);
                 if (!File.Exists(path)) { End(1, $"resume= names {path}, which no earlier run wrote"); return; }
                 Set("_pendingLoadPath", path);
                 Count("load from the menu");
@@ -479,6 +519,7 @@ namespace PoliSim.EditorTools
             if (_day >= _spec.Days) { End(0, $"{_day} day(s) played"); return; }
 
             if (Interrupt(c)) { return; }
+            if (CapturePages()) { return; }
             bool answered = AnswerHolds(c);
             Act(c);
             if (_framesSinceDay > _spec.Stall && !answered && _pauseLeft == 0)
@@ -623,6 +664,7 @@ namespace PoliSim.EditorTools
         }
 
         private object _clickedNight;
+        private int _nights;
         private object _clickedSigning;
         private DateTime _playWall;
 
@@ -644,8 +686,30 @@ namespace PoliSim.EditorTools
             object night = Get("_electionNight");
             if (night != null)
             {
-                // CONTINUE once per night, when the board offers it; the night then covers out over frames.
-                if (!ReferenceEquals(night, _clickedNight) && Click(null, "ContinueButton")) { _clickedNight = night; }
+                // CONTINUE once per night, when the board offers it; the night then covers out over frames. Before the click, the board's own Canvas
+                // text is kept (<id>.night<n>.txt): what the player is shown, to be read against the record the count wrote (the elections inventory's
+                // lead D-01: Sweden's night allocates its seats apart from the chamber's).
+                if (!ReferenceEquals(night, _clickedNight))
+                {
+                    Button cont = FindButton(null, "ContinueButton");
+                    if (cont != null && cont.interactable && night is ElectionNightScreen screen && screen.Root != null)
+                    {
+                        _nights++;
+                        string file = Path.Combine(_dir, _spec.Id + ".night" + _nights.ToString(CultureInfo.InvariantCulture) + ".txt");
+                        var texts = new StringBuilder();
+                        foreach (Text t in screen.Root.GetComponentsInChildren<Text>(true))
+                        {
+                            if (string.IsNullOrEmpty(t.text)) { continue; }
+                            texts.Append(t.gameObject.name).Append('\t').Append(t.text.Replace('\n', ' ').Replace('\t', ' ')).Append('\n');
+                        }
+
+                        File.WriteAllText(file, texts.ToString(), new UTF8Encoding(false));
+                        Event($"NIGHT {_nights} on {_lastDate:yyyy-MM-dd}: the board's text kept in {Path.GetFileName(file)}");
+                    }
+
+                    if (Click(null, "ContinueButton")) { _clickedNight = night; }
+                }
+
                 return true;
             }
 
@@ -836,6 +900,11 @@ namespace PoliSim.EditorTools
             _events.Flush();
             _events.Dispose();
             _trajectory?.Dispose();
+            if (_captureCount > 0)
+            {
+                string table = DryGuiPass.WriteTable(_dir, _spec.Id);
+                Debug.Log($"AUDIT: RUN {_spec.Id} - {_captureCount} page capture(s) written to {table ?? "(no rows recorded)"}");
+            }
             int restored = PreferencePins.Restore();
             AuditPrefs.Done(_dir);
             Debug.Log($"AUDIT: RUN {_spec.Id} - {summary} (preferences restored: {restored})");
@@ -844,6 +913,13 @@ namespace PoliSim.EditorTools
 
         private void OnLog(string message, string stackTrace, LogType type)
         {
+            // The game's own save and load lines are kept as events (an autosave's day is the evidence of its cadence); nothing else at Log level is.
+            if (type == LogType.Log && message != null && (message.StartsWith("SAVE: ", StringComparison.Ordinal) || message.StartsWith("LOAD: ", StringComparison.Ordinal)))
+            {
+                Event($"GAME at day {_day} ({_lastDate:yyyy-MM-dd}), frame {_frame}: {message.Split('\n')[0]}");
+                return;
+            }
+
             if (type != LogType.Error && type != LogType.Exception && type != LogType.Assert) { return; }
             if (message != null && message.StartsWith("AUDIT:", StringComparison.Ordinal)) { return; }
             _errors++;
@@ -853,6 +929,54 @@ namespace PoliSim.EditorTools
         }
 
         // ------------------------------------------------------------------ helpers
+
+        private readonly HashSet<string> _capturesDone = new HashSet<string>(StringComparer.Ordinal);
+        private int _captureCount;
+
+        /// <summary>A page's drawn text on a day: the rail cell's own body opens it (`_onDesk`, `_consolidatedTab`, the live HQ closed), one OnGUI
+        /// frame runs under the dry film's label table, and the rail's body returns to the desk. The page `HQ` is the live campaign HQ, opened by
+        /// the rail cell's own `OpenLiveCampaign` (the run-up's screen before the campaign opens) and left as it was found. The table goes to
+        /// `&lt;id&gt;_labels.tsv` at the end of the run. True while a capture takes this frame.</summary>
+        private bool CapturePages()
+        {
+            foreach ((int day, string page) in _spec.Captures)
+            {
+                string key = day.ToString(CultureInfo.InvariantCulture) + ":" + page;
+                if (day > _day || _capturesDone.Contains(key) || !AtSafePoint()) { continue; }
+                _capturesDone.Add(key);
+                string name = _spec.Id + "_day" + _day.ToString(CultureInfo.InvariantCulture) + "_" + page;
+                DryGuiPass.InstallHook();
+                bool hq = page == "HQ", hqWasOpen = (bool)Get("_liveCampaignOpen");
+                if (hq)
+                {
+                    if (!hqWasOpen) { Call("OpenLiveCampaign"); }
+                    if (!(bool)Get("_liveCampaignOpen")) { Event($"CAPTURE {name}: no campaign and no run-up to open on {_lastDate:yyyy-MM-dd} - nothing drawn"); continue; }
+                }
+                else
+                {
+                    Call("CloseLiveCampaign");
+                    if (page == "Desk") { Set("_onDesk", true); }
+                    else
+                    {
+                        Type tabs = typeof(GameController).GetNestedType("ConsolidatedTab", Any);
+                        Set("_onDesk", false);
+                        Set("_consolidatedTab", Enum.Parse(tabs, page));
+                    }
+                }
+
+                PumpGui();   // a Layout and Repaint to settle the page
+                DryGuiPass.BeginCapture(name);
+                PumpGui();
+                DryGuiPass.EndCapture();
+                _captureCount++;
+                if (hq && !hqWasOpen) { Call("CloseLiveCampaign"); }
+                if (!hq || !hqWasOpen) { Set("_onDesk", true); }
+                Event($"CAPTURE {name}: the {page} page drawn on {_lastDate:yyyy-MM-dd} ({(hq ? (hqWasOpen ? "the HQ was open; left open" : "the rail's OpenLiveCampaign opened it; closed to the desk") : "the rail's body opened it; the desk restored")})");
+                return true;
+            }
+
+            return false;
+        }
 
         private void PumpGui()
         {

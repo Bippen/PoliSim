@@ -1,0 +1,5 @@
+# The gameplay audit's area 2, the closed year's book reproduced from its seed (the ledger's rule for an S2): area2b's Germany and Poland runs
+# again, with only the Budget page taken after the first close - a capture leaves the game as it was (area2b: e1_se_nocap IDENTICAL to e1_se),
+# so each trajectory's digest is read against `area2b/summary.txt`, and the Balance tile against the year's running budget and the debt.
+id=r1_de country=Germany party=SPD style=idle seed=602 days=370 capture=366:Budget
+id=r1_pl country=Poland party=PiS style=idle seed=603 days=370 capture=366:Budget

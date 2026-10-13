@@ -29,9 +29,9 @@ Each country holds one playable start; the two presidential starts are LOCKED (`
 | USA | presidential election 5 Nov 2024 (2024-03-12) | **startable as the governing party**, not as president: DEM; the record seats REP on 20 Jan 2025 | — | — | **startable**: REP | not built | none; House and president seated by record |
 | France | presidential election 2022 | LOCKED (not built) | | | | | |
 | France | legislative snap election 2024 (2024-07-18, governing mode) | **startable for every party** (a what-if, one-party cabinet) | not built | not built | not built | not built | none |
-| scenarios | "Inherit the Fund" (Sweden, 12 turns), "Italy Debt Crisis" (Italy, 30 turns) | any playable party (the pick offers every one) | | | | none | as the country's |
+| scenarios | "Inherit the Fund" (Sweden, 12 turns), "Italy Debt Crisis" (Italy, 30 turns) - **RETIRED** (Elias, 2026-10-13): out of the matrix | any playable party (the pick offers every one) | | | | none | as the country's |
 
-**The brief names three challenge scenarios; the game holds two** (`ScenarioLibrary.All`), and no spec or feature row names any - only `COMPLETED.md` (§21, §30, §36, §492). Row GA-0-14.
+**The brief names three challenge scenarios; the game holds two** (`ScenarioLibrary.All`), and no spec or feature row names any - only `COMPLETED.md` (§21, §30, §36, §492). Row GA-0-14. **Elias's answer (2026-10-13): "Scenarios aren't part of the game's plan. Drop them from the matrix and file a row to retire them"** - the audit runs no scenario from area 2 on, and GA-0-14 (with GA-0-40) is the row that retires them in Phase 4; GA-0-26 and GA-0-44 are closed by it.
 
 **Length cells.** To the first election: Sweden (day 238), Germany (day 109), Poland (day 238). Two cycles: Sweden and Poland only. Thirty years: anywhere, with elections in Sweden and Poland only.
 

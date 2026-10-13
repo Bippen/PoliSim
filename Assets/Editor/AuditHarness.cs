@@ -129,6 +129,21 @@ namespace PoliSim.EditorTools
                 return;
             }
 
+            // The player's own saves are never written over: a plan that autosaves, or resumes from that folder, runs only once the folder has
+            // been moved aside (empty or absent) - and is put back afterwards, digest by digest (Tools/audit/real_saves.ps1).
+            if (lines.Select(l => AuditSpec.Parse(l, out _)).Any(s => s != null && s.UsesRealSaves))
+            {
+                string real = PoliSim.Persistence.SaveGameService.DefaultSaveDirectory;
+                if (Directory.Exists(real) && Directory.EnumerateFileSystemEntries(real).Any() && lines.Any(l => AuditSpec.Parse(l, out _).Autosave > 0))
+                {
+                    Debug.LogError($"AUDIT: REFUSED - the player's saves folder ({real}) holds files and the plan autosaves into it. Move it aside first (Tools/audit/real_saves.ps1 -Aside).");
+                    EditorApplication.Exit(2);
+                    return;
+                }
+
+                Debug.Log($"AUDIT: the plan uses the player's saves folder ({real}) - {(Directory.Exists(real) ? Directory.EnumerateFileSystemEntries(real).Count() + " entr(ies) in it at the start" : "absent at the start")}.");
+            }
+
             string dir = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), DefaultOutputRoot, label));
             Directory.CreateDirectory(dir);
             AuditPrefs.RestoreIfStale(dir);

@@ -4,10 +4,15 @@ At most 100 lines (`docs/audit/AUDIT_PROTOCOL.md`, QUESTIONS AS YOU GO): the S1/
 
 ## S1 and S2 findings
 
-None confirmed yet - an S1 or S2 is filed only once a run has reproduced it from its seed twice. Read as S2-class leads, to be run down in their areas:
+Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); all three are clear bugs, put to Elias as fixes:
+- **GA-2-1** (S2, area 2) - money from an empty fund (D-02): a contribution below zero goes on paying the budget after the fund is floored at 0. Germany and Poland create a fund at nothing and draw it; Sweden's empties under the draw; an ordinary French budget at -6 % reaches it.
+- **GA-2-2** (S2, area 2) - France's income tax at a lever of 0 keeps the seed's whole revenue: `TaxSchedule.YieldRatio` answers 1.0 for a yield at or below zero (D-04). Four other countries lose 5-11 % of GDP a year on the same bill.
+- **GA-2-9** (S2, area 2) - the closed year's book leaves out the one-time settlements the debt takes (cabinet and interrupt decisions, drawdowns): the balance, the deficit rule's ink and the annual series read a deficit 0.1-0.6 % of GDP smaller than the debt's own change, in five countries.
+
+S2-class leads still to run down in their areas:
 - GA-0-21 (area 3): Sweden's live count skips the 12 % valkrets route the built procedure carries.
 - GA-0-28 (areas 2, 8): the carbon statute overrides a passed German rate; statutes read the turn, not the calendar.
-- GA-0-47 (area 2): the fund's phantom drawdown, a dissolved fund's assets, the UI-only budget gates.
+- GA-0-47 (areas 2, 12): a dissolved fund's assets, the UI-only budget gates (its phantom drawdown is GA-2-1).
 
 ## Questions marked ARCHITECT
 
@@ -23,3 +28,7 @@ None confirmed yet - an S1 or S2 is filed only once a run has reproduced it from
 10. **GA-0-53** - the central bank: retire the dead own-currency dial; give AI-run banks a head; damp the preview as the projection does?
 11. **GA-0-55** - levers the UI writes with no manager verb (a trade override, fleet orders, the central bank's head): give them verbs (and the impact ledger a view of them), or state the rule?
 12. **Slice B's two** - since the roles of §628, which counterfactual is "without your policies" meant to be: the shadow world in which the AI governs the player's country, or one in which the player's party governs with no changes? And after a load, a fork of the loaded game (as built) or the seed's?
+13. **GA-2-3** (X-07, X-04) - debt, deficits and the rating reach no approval or vote term: Sweden borrows from 35 % to 95 % of GDP in two years while its approval rises to 65, and full welfare buys +23 points as the debt doubles. Should they reach approval or the vote, and by what sourced coefficient?
+14. **GA-2-4** - demand has no capacity ceiling: two years of deficits leave real GDP 24 % above potential with unemployment held at the 0.00 % clamp and inflation at 5 %, and prices never fall (0 % with 13 % unemployment). A floor at frictional unemployment, a ceiling on the output gap, deflation?
+15. **GA-2-5** (GA-0-24, measured) - approval does not reach the vote: a government at 1.5 % approval on polling day takes 9 seats fewer than one at 50.5 % and keeps its majority; months at 0 % bring no motion, fall or vote. Should approval feed the vote, motions or game over?
+16. **GA-2-6** (with PS-6) - the US House adopts the Democrats' budget at every tax ceiling and every spending floor, and refuses the one at every tax floor: what does a bloc's budget vote read?

@@ -1,0 +1,19 @@
+# The gameplay audit's area 2, the recheck: every S2 candidate reproduced from its seed a second time before it is filed (the ledger's rule),
+# with a second seed and a no-exploit baseline beside it (docs/audit/AUDIT_PROTOCOL.md, evidence rules). The first run of each pair repeats the
+# area 2 run's spec exactly, so its digest is read against `area2/summary.txt` (a plan's compare= reaches only its own runs).
+#
+# D-02, money from an empty fund: Germany's fund created at nothing and drawn at -10 % (a2_de_x01 again, then another seed), against the start idle
+id=k1_de_x01 country=Germany party=SPD style=exploit exploit=X-01 seed=462 days=500
+id=k1_de_x01_b country=Germany party=SPD style=exploit exploit=X-01 seed=464 days=120
+id=k1_de_idle country=Germany party=SPD style=idle seed=464 days=120
+#
+# D-04, the income tax at its floor keeps the seed's revenue in France (a2_fr_x02 again, then another seed), against the start idle
+id=k2_fr_x02 country=France party=RN style=exploit exploit=X-02 seed=475 days=730
+id=k2_fr_x02_b country=France party=RN style=exploit exploit=X-02 seed=477 days=120
+id=k2_fr_idle country=France party=RN style=idle seed=477 days=120
+#
+# X-16, controlled: one Swedish game to a year past the chair's term (day 1096, 2029-01-18 - the only appointment area 2 reached: Poland's and the
+# USA's heads never came round, GA-0-29), the dove against the hawk (chair=, the harness's pick). The pair is the same game until day 1096, so
+# its COMPARE reads DIFFERENT by design - the first difference must fall on or after that day.
+id=k3_se_dove country=Sweden party=M style=idle seed=491 days=1460 chair=dove
+id=k3_se_hawk country=Sweden party=M style=idle seed=491 days=1460 chair=hawk compare=k3_se_dove
