@@ -68,6 +68,17 @@ namespace PoliSim.EditorTools
             }
         }
 
+        /// <summary>
+        /// THE GAMEPLAY AUDIT'S ENTRY (`docs/audit/AUDIT_PROTOCOL.md`, Phase 1: "Run through BatchSimulationRunner, using the same entry points
+        /// the UI calls"): plays a plan of runs, each in its own play-mode session beside the scene's real GameController - see
+        /// <see cref="AuditHarness"/> for the route, the plan's keys and the launch line. `-batchmode` with a graphics device,
+        /// `-skipsimulationtestrunner`, `-auditplan=&lt;file&gt;` and `-auditlabel=&lt;label&gt;`.
+        /// </summary>
+        public static void RunAudit()
+        {
+            AuditHarness.Run();
+        }
+
         public static void Run()
         {
             EditorSceneManager.OpenScene("Assets/Scenes/SampleScene.unity");

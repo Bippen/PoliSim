@@ -37969,3 +37969,24 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 - **`docs/audit/AUDIT_PROTOCOL.md`**: the brief as given, under a header naming the ledger and the architect's list it writes. **`POLISIM_FEATURE_LIST.md`**: the head track's row GA; PS-6 PARKED. **`CLAUDE.md`**: `audit/` in the table of `docs/`.
 
 **Bars** (tier DOCUMENTS, on this commit's own tree): the document batch **13 of 13** (`docbar803`). Nothing built, so no other bar is owed.
+
+## 804. THE GAMEPLAY AUDIT, PHASES 0 AND 1: THE INVENTORY IN BOTH DIRECTIONS, AND THE HARNESS - THE REAL GAMECONTROLLER PLAYED THROUGH ITS OWN CONTROLS FROM `BatchSimulationRunner`; THE SAME SEED TWICE, 1x AGAINST 3x, AND SAVE-LOAD-CONTINUE ALL GIVE ONE TRAJECTORY (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, §803): Phase 0, the inventory in both directions with the variant matrix and a run-time estimate, posted and carried on from; Phase 1, the harness through `BatchSimulationRunner` on the UI's own entry points, every run seeded and logged, the same seed twice one trajectory; only harness and ledger files committed.
+
+**Phase 0 - the inventory** (six read-only slices, `docs/audit/inventory/`; the synthesis `docs/audit/AUDIT_INVENTORY.md`): the variant matrix (each country one playable start, the two presidential starts LOCKED; Sweden the only country with all four roles and a created party; elections inside a run in Sweden, Germany once, Poland; Italy, the USA and France none), the outcome cells, and the run-time estimate measured below. The specified-but-missing and present-but-unspecified items are the ledger's 52 rows `GA-0-1`..`GA-0-56` (`docs/audit/AUDIT_LEDGER.md`); the ARCHITECT questions are collected in `docs/audit/AUDIT_FOR_ARCHITECT.md`. **The brief names three challenge scenarios; the game holds two** (GA-0-14, for Elias).
+
+**Phase 1 - the harness** (`Assets/Editor/AuditHarness.cs`, `AuditDriver.cs`, `AuditInvariants.cs`, `AuditTrajectory.cs`; the entry `BatchSimulationRunner.RunAudit`):
+- One play-mode session per run, beside the scene's real `GameController`; the controller's `Update` advances the days; the harness ticks after it (a player-loop system) and delivers `OnGUI` through the dry film's `DryGuiPass`, so the Canvas seam runs as under a Game View.
+- The start as a player makes it: NEW GAME, the country's folder, SELECT, the party's row - Canvas buttons clicked through their own `onClick`. Holds answered through the method each control calls (SIGN, election night's CONTINUE, the budget window's "Introduce budget bill", the formation sheet's TABLE IT or PASS, an offer, a declaration, a meeting, a cabinet decision, a scandal chip, the chair's Appoint body, the campaign opening).
+- `Time.captureDeltaTime` fixes each frame's delta, so the days a frame advances are the run's own; save and load through `SaveToPath` and the menu's `_pendingLoadPath`; the speed chips' write; preferences pinned, with a file copy restored if a run dies.
+- Invariants every day: no NaN or Inf in any country's state; the model's own clamps; debt + running budget constant but on a clamp day; an empty fund with a negative contribution; seats against the chamber; at each election its shares, seats and legal date; a government holding a majority or a declared minority (recomputed from seats); energy supply against demand per block at each boundary; any logged error (the game's own `ATTRIB:` audits among them).
+- A trajectory per run (every `EconomyState` field and the political state, daily for the player's country, yearly for all six), its SHA-256 the run's digest; `compare=` names the run it must match.
+
+**The first measurements** (plans `cal1` and `cal2`, separate launches; `PoliSim-captures/logs/audit/`):
+- Sweden as M and as S, 300 days through the 2026 election, its night and its formation: no breach, no logged error; 26.9 and 27.4 ms a day of play.
+- The same seed twice: identical (`smoke2`); and each run identical across the two launches, byte for byte.
+- Save at day 60, load, continue against the uninterrupted 120 days: **identical** (`a7e901f5...`).
+- 1x (twenty frames a day) against 3x (five): **identical** (`637ebdd5...`).
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap804b`; `cheap804` before it failed `DeadStateCheck` on one field the new driver declared and never read, removed). The harness runs are the plans above.
