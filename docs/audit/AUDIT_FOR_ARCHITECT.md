@@ -4,10 +4,9 @@ At most 100 lines (`docs/audit/AUDIT_PROTOCOL.md`, QUESTIONS AS YOU GO): the S1/
 
 ## S1 and S2 findings
 
-Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); all three are clear bugs, put to Elias as fixes:
+Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); both are clear bugs, put to Elias as fixes:
 - **GA-2-1** (S2, area 2) - money from an empty fund (D-02): a contribution below zero goes on paying the budget after the fund is floored at 0. Germany and Poland create a fund at nothing and draw it; Sweden's empties under the draw; an ordinary French budget at -6 % reaches it.
 - **GA-2-2** (S2, area 2) - France's income tax at a lever of 0 keeps the seed's whole revenue: `TaxSchedule.YieldRatio` answers 1.0 for a yield at or below zero (D-04). Four other countries lose 5-11 % of GDP a year on the same bill.
-- **GA-2-9** (S2, area 2) - the closed year's book leaves out the one-time settlements the debt takes (cabinet and interrupt decisions, drawdowns): the balance, the deficit rule's ink and the annual series read a deficit 0.1-0.6 % of GDP smaller than the debt's own change, in five countries.
 
 S2-class leads still to run down in their areas:
 - GA-0-21 (area 3): Sweden's live count skips the 12 % valkrets route the built procedure carries.
@@ -32,3 +31,4 @@ S2-class leads still to run down in their areas:
 14. **GA-2-4** - demand has no capacity ceiling: two years of deficits leave real GDP 24 % above potential with unemployment held at the 0.00 % clamp and inflation at 5 %, and prices never fall (0 % with 13 % unemployment). A floor at frictional unemployment, a ceiling on the output gap, deflation?
 15. **GA-2-5** (GA-0-24, measured) - approval does not reach the vote: a government at 1.5 % approval on polling day takes 9 seats fewer than one at 50.5 % and keeps its majority; months at 0 % bring no motion, fall or vote. Should approval feed the vote, motions or game over?
 16. **GA-2-6** (with PS-6) - the US House adopts the Democrats' budget at every tax ceiling and every spending floor, and refuses the one at every tax floor: what does a bloc's budget vote read?
+17. **GA-2-9** (§220) - the closed year's balance is the year's flow by §220's design, the one-time settlements (cabinet and interrupt decisions, drawdowns) named beside it only in `DomesticMoneyBasisDiagnostic`: the balance, the deficit rule's ink and the annual series read a deficit 0.1-0.6 % of GDP smaller than the debt's own change, in five countries. Count the one-offs in the year the player reads (the protocol's "debt change = deficit"), or name them beside it?
