@@ -62,11 +62,29 @@ namespace PoliSim.EditorTools
         internal string Compare;
         internal int Stall = 2000;
         internal int Wall = 3600;
+        /// <summary>extreme: deficit (default), surplus, big or small - see the styles' file.</summary>
+        internal string Pole = "deficit";
+        /// <summary>exploit: the inventory's lead the run plays (X-01, X-02, X-04, X-16).</summary>
+        internal string Exploit;
+        /// <summary>fuzz: days between its own actions (default 21, a bill's passage).</summary>
+        internal int Every = 21;
+        /// <summary>Days at which to save through the saves screen's write and play on, loading nothing - a later run resumes the file.</summary>
+        internal readonly List<int> Save = new List<int>();
+        /// <summary>A save file in the plan's output folder to resume in this run's fresh session, through the saves screen's load, in place of NEW GAME.</summary>
+        internal string Resume;
+        /// <summary>The day count a resumed run starts at (the day the resumed file was saved on).</summary>
+        internal int StartDay;
+        /// <summary>A day on which the cabinet's Search is pressed and the first candidate of each searched portfolio appointed (the cards' own bodies).</summary>
+        internal int Cabinet = -1;
+        /// <summary>A day on which Search is pressed, the game saved, and only then the candidates appointed - the shortlist is not in the save (inventory A S-24).</summary>
+        internal int SearchSave = -1;
 
         private static readonly string[] Styles = { "idle", "historical", "fuzz", "exploit", "extreme" };
+        private static readonly string[] Poles = { "deficit", "surplus", "big", "small" };
+        private static readonly string[] Exploits = { "X-01", "X-02", "X-04", "X-16" };
 
         internal string Describe() =>
-            $"{Id}: {Country}{(string.IsNullOrEmpty(Scenario) ? string.Empty : " scenario " + Scenario)} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
+            $"{Id}: {Country}{(string.IsNullOrEmpty(Scenario) ? string.Empty : " scenario " + Scenario)} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}{(Style == "extreme" ? " " + Pole : Style == "exploit" ? " " + Exploit : Style == "fuzz" ? " every " + Every + " d" : string.Empty)}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
             + (SaveLoad.Count > 0 ? ", save/load at day(s) " + string.Join(",", SaveLoad) : string.Empty)
             + (Speeds.Count > 0 ? ", speeds " + string.Join(",", Speeds.Select(s => s.Day + ":" + s.Speed)) : string.Empty)
             + $", holds campaign {(HoldCampaign ? 1 : 0)} budget {(HoldBudget ? 1 : 0)}, OnGUI every {GuiEvery} frame(s)"
@@ -112,6 +130,14 @@ namespace PoliSim.EditorTools
                         case "compare": s.Compare = value; break;
                         case "stall": s.Stall = int.Parse(value, CultureInfo.InvariantCulture); break;
                         case "wall": s.Wall = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "pole": s.Pole = value.ToLowerInvariant(); break;
+                        case "exploit": s.Exploit = value.ToUpperInvariant(); break;
+                        case "every": s.Every = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "save": s.Save.AddRange(value.Split(',').Where(v => v.Length > 0).Select(v => int.Parse(v, CultureInfo.InvariantCulture))); break;
+                        case "resume": s.Resume = value; break;
+                        case "startday": s.StartDay = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "cabinet": s.Cabinet = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "searchsave": s.SearchSave = int.Parse(value, CultureInfo.InvariantCulture); break;
                         default: error = $"unknown key '{key}'"; return null;
                     }
                 }
@@ -122,6 +148,8 @@ namespace PoliSim.EditorTools
             if (string.IsNullOrEmpty(s.Country) || !Enum.TryParse(s.Country, false, out CountryId _)) { error = $"country= '{s.Country}' is not a CountryId"; return null; }
             if (string.IsNullOrEmpty(s.Party) && string.IsNullOrEmpty(s.Create)) { error = "party= (or create=) is required"; return null; }
             if (!Styles.Contains(s.Style)) { error = $"style= '{s.Style}' is not one of {string.Join(", ", Styles)}"; return null; }
+            if (!Poles.Contains(s.Pole)) { error = $"pole= '{s.Pole}' is not one of {string.Join(", ", Poles)}"; return null; }
+            if (s.Style == "exploit" && !Exploits.Contains(s.Exploit ?? string.Empty)) { error = $"style=exploit needs exploit= one of {string.Join(", ", Exploits)}"; return null; }
             if (s.Speed < 1 || s.Speed > 3) { error = "speed= is 1, 2 or 3"; return null; }
             if (s.Delta <= 0f || s.Delta > 0.333f) { error = "delta= is in (0, 0.333] - Unity caps a frame's delta at the project's maximum timestep"; return null; }
             if (s.Days < 0) { error = "days= is not negative"; return null; }
@@ -135,7 +163,7 @@ namespace PoliSim.EditorTools
     /// every hold through the method its control calls, acts for the play style, interrupts as the plan asks, checks the invariants every day,
     /// and writes the trajectory. See `AuditHarness` for the route and its reasons.
     /// </summary>
-    internal sealed class AuditDriver
+    internal sealed partial class AuditDriver
     {
         private const BindingFlags Any = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -144,7 +172,6 @@ namespace PoliSim.EditorTools
         private readonly AuditSpec _spec;
         private readonly string _dir;
         private readonly Action<int, string, string> _onEnd;
-        private readonly System.Random _choices;
         private readonly StreamWriter _events;
         private readonly AuditInvariants _invariants;
         private AuditTrajectory _trajectory;
@@ -178,7 +205,6 @@ namespace PoliSim.EditorTools
             _spec = spec;
             _dir = dir;
             _onEnd = onEnd;
-            _choices = new System.Random(spec.Seed * 31 + 7);
             _events = new StreamWriter(Path.Combine(dir, spec.Id + ".events.log"), false, new UTF8Encoding(false)) { NewLine = "\n" };
             _invariants = new AuditInvariants(Event);
             Application.logMessageReceived += OnLog;
@@ -271,6 +297,20 @@ namespace PoliSim.EditorTools
 
         private void Menu()
         {
+            if (!string.IsNullOrEmpty(_spec.Resume))
+            {
+                // A resumed run: the saves screen's confirmed Load writes _pendingLoadPath, and Update's safe point loads it - in this run's fresh
+                // session, as a player who quit and came back does. The menu waits until it is the live surface, as a player's click would.
+                if (FindButton("MainMenu", "NewGame") == null) { if (PhaseStuck(600)) { End(1, "SOFTLOCK at the main menu - it never came up to load from"); } return; }
+                string path = Path.Combine(_dir, _spec.Resume);
+                if (!File.Exists(path)) { End(1, $"resume= names {path}, which no earlier run wrote"); return; }
+                Set("_pendingLoadPath", path);
+                Count("load from the menu");
+                Event($"LOAD from the menu: {_spec.Resume} through _pendingLoadPath (the saves screen's Load), in a fresh session");
+                Go(Phase.Opening);
+                return;
+            }
+
             if (Click("MainMenu", "NewGame")) { Go(Phase.Selector); return; }
             // The menu is the first takeover; where it failed to build the controller goes to the selector itself.
             if (FindButton("CountrySelector", FolderName()) != null || FindButton("CountrySelector", ScenarioName()) != null) { Event("the main menu never came up - the selector is live"); Go(Phase.Selector); return; }
@@ -319,7 +359,7 @@ namespace PoliSim.EditorTools
             {
                 if (Click("PartyPanel", "CreateParty")) { Go(Phase.CreateFlow); return; }
             }
-            else if (Click("PartyPanel", "Party_" + _spec.Party)) { Go(Phase.Opening); return; }
+            else if (Click("PartyPanel", "Party_" + _spec.Party)) { RecordOpening(); Go(Phase.Opening); return; }
 
             if (PhaseStuck(600))
             {
@@ -358,7 +398,27 @@ namespace PoliSim.EditorTools
             Call("CommitPartyCreation");
             Count("call CommitPartyCreation");
             Event($"created party {draft.Key} ({origin}) committed through CommitPartyCreation - the flow's START; its steps' controls are IMGUI and were filled through their own writes");
+            if ((CountryId?)Get("_selectedPlayerCountryId") != null) { RecordOpening(); }
             Go(Phase.Opening);
+        }
+
+        /// <summary>The game's first state, recorded the moment the world opens (the party's click and the creation's commit open it in the same call),
+        /// before the controller's Update can run a day - so day 0 is the start's own date whatever a frame's delta.</summary>
+        private void RecordOpening()
+        {
+            Country c = PlayerCountry();
+            _day = _spec.StartDay;
+            _lastDate = _sm.CurrentDate;
+            _lastTurn = _sm.CurrentTurn;
+            _lastElectionCount = c.ElectionHistory.Count;
+            _lastPresidentialCount = c.PresidentialElections.Count;
+            _lastDivision = c.Divisions.Entries.Count > 0 ? c.Divisions.Entries[c.Divisions.Entries.Count - 1].Number : 0;
+            _playWall = DateTime.UtcNow;
+            _trajectory = new AuditTrajectory(_dir, _spec.Id);
+            _trajectory.Day(_day, _lastDate, _lastTurn, c, false);
+            _trajectory.Turn(_day, _lastDate, _lastTurn, World());
+            Event($"the game {(string.IsNullOrEmpty(_spec.Resume) ? "opened" : "resumed")} on {_lastDate:yyyy-MM-dd} (day {_day}): {c.Id}, the player's {c.PlayerPartyAbbrev} is {(c.Government?.RoleOf(c.PlayerPartyAbbrev) ?? PlayerRole.None)} (government {c.Government?.PmParty} [{(c.Government == null ? string.Empty : string.Join("+", c.Government.Cabinet))}] '{c.Government?.Outcome}'), speed {Get("_gameSpeed")}");
+            CheckDay(c);
         }
 
         private void Opening()
@@ -366,17 +426,14 @@ namespace PoliSim.EditorTools
             CountryId? selected = (CountryId?)Get("_selectedPlayerCountryId");
             if (selected.HasValue && !(bool)Get("_canvasLive") && Get("_canvasPhase").ToString() == "None")
             {
-                Country c = PlayerCountry();
-                _lastDate = _sm.CurrentDate;
-                _lastTurn = _sm.CurrentTurn;
-                _lastElectionCount = c.ElectionHistory.Count;
-                _lastPresidentialCount = c.PresidentialElections.Count;
-                _playWall = DateTime.UtcNow;
-                _trajectory = new AuditTrajectory(_dir, _spec.Id);
-                _trajectory.Day(0, _lastDate, _lastTurn, c, false);
-                _trajectory.Turn(0, _lastDate, _lastTurn, World());
-                Event($"the game opened on {_lastDate:yyyy-MM-dd}: {c.Id}, the player's {c.PlayerPartyAbbrev} is {(c.Government?.RoleOf(c.PlayerPartyAbbrev) ?? PlayerRole.None)} (government {c.Government?.PmParty} [{(c.Government == null ? string.Empty : string.Join("+", c.Government.Cabinet))}] '{c.Government?.Outcome}'), speed {Get("_gameSpeed")}");
-                CheckDay(c);
+                if (_trajectory == null)
+                {
+                    // A resumed game: the load landed under the menu; the game resumes PAUSED, and the speed is set again as the chips set it.
+                    RecordOpening();
+                    SetSpeed(_spec.Speed == 1 ? "Normal" : _spec.Speed == 2 ? "Fast" : "VeryFast");
+                    _invariants.RestartDebt();
+                }
+
                 Go(Phase.Playing);
                 return;
             }
@@ -450,7 +507,18 @@ namespace PoliSim.EditorTools
                 Event($"PRESIDENTIAL contests now {c.PresidentialElections.Count}");
                 _lastPresidentialCount = c.PresidentialElections.Count;
             }
+
+            // Every vote the chamber takes in the player's country, with its result - a bill's fate is what most of a style's levers turn on.
+            foreach (DivisionRecord d in c.Divisions.Entries)
+            {
+                if (d.Number <= _lastDivision) { continue; }
+                _lastDivision = d.Number;
+                string contest = d.Contest == null ? string.Empty : $" ({d.Contest.VotesFor} for, {d.Contest.VotesAgainst} against, {d.Contest.Abstentions} abstaining{(d.Contest.AlternativeAdopted ? ", the alternative adopted" : string.Empty)})";
+                Event($"DIVISION #{d.Number} {d.Date:yyyy-MM-dd}{(d.Motion ? " motion" : string.Empty)}: '{d.Title}' {(d.Passed ? "PASSED" : "FAILED")}{contest}");
+            }
         }
+
+        private int _lastDivision = int.MaxValue;
 
         /// <summary>The protocol's interruptions: save then load at a day (the saves screen's own write, the menu's own load route), and the speed
         /// chips. Returns true when this frame was spent interrupting.</summary>
@@ -499,6 +567,15 @@ namespace PoliSim.EditorTools
                 return true;
             }
 
+            foreach (int day in _spec.Save)
+            {
+                if (day > _day || _saveDone.Contains(day)) { continue; }
+                if (!AtSafePoint()) { return false; }
+                _saveDone.Add(day);
+                SaveFile(day);
+                return true;
+            }
+
             if (_pendingResume && Get("_pendingLoadPath") == null)
             {
                 _pendingResume = false;
@@ -513,6 +590,38 @@ namespace PoliSim.EditorTools
         }
 
         private bool _pendingResume;
+        private readonly HashSet<int> _saveDone = new HashSet<int>();
+
+        private int _rngDay = int.MinValue;
+        private readonly Dictionary<string, System.Random> _rngs = new Dictionary<string, System.Random>(StringComparer.Ordinal);
+
+        /// <summary>A style's choices are the run's own, never the game's streams - and keyed by the seed, the DAY and the kind of choice, so the choices
+        /// made on a day are the same whatever the history before it: a run resumed from a file (resume=) chooses on its days exactly as the run that
+        /// wrote the file did, and a difference between the two is the game's, not the harness's.</summary>
+        private System.Random Rng(string kind)
+        {
+            if (_rngDay != _day) { _rngs.Clear(); _rngDay = _day; }
+            if (_rngs.TryGetValue(kind, out System.Random r)) { return r; }
+            uint hash = 2166136261;
+            foreach (char ch in kind) { hash = (hash ^ ch) * 16777619; }
+            r = new System.Random(unchecked(_spec.Seed * 7919 + _day * 104729 + (int)hash));
+            _rngs[kind] = r;
+            return r;
+        }
+
+        /// <summary>The saves screen's Save, to this run's own folder (never the player's): `SaveToPath`, the method the screen's row calls. A later
+        /// run resumes the file in a fresh session (`resume=`).</summary>
+        private string SaveFile(int day)
+        {
+            string name = _spec.Id + ".day" + day.ToString(CultureInfo.InvariantCulture) + ".save.json";
+            string path = Path.Combine(_dir, name);
+            bool saved = (bool)Call("SaveToPath", path);
+            Event($"SAVE at day {_day} ({_lastDate:yyyy-MM-dd}) to {name} via SaveToPath - played on, nothing loaded{(saved ? string.Empty : " - THE SAVE FAILED")}");
+            _trajectory.Mark(_day, _lastDate, "save " + name);
+            if (!saved) { End(1, $"SAVE FAILED at day {_day} through SaveToPath({path})"); }
+            return path;
+        }
+
         private object _clickedNight;
         private object _clickedSigning;
         private DateTime _playWall;
@@ -558,7 +667,7 @@ namespace PoliSim.EditorTools
                 IList candidates = (IList)Get("_fedChairCandidates");
                 if (candidates != null && candidates.Count > 0)
                 {
-                    int pick = Pick(candidates.Count, "chair");
+                    int pick = PickChair(candidates);
                     object chair = candidates[pick];
                     // The Appoint button's own body (GameController.cs, the chair's candidates): the model written inline, as the control writes it.
                     c.CurrentFedChair = (FedChair)chair;
@@ -610,26 +719,12 @@ namespace PoliSim.EditorTools
 
             if (_sm.GetPendingBudgetProcess(id) && GameSettings.HoldOnBudgetWindow)
             {
-                if (_sm.PlayerMayIntroduce(id, out string why))
-                {
-                    if (_sm.GetPendingBudgetBill(id) == null)
-                    {
-                        BudgetBill bill = (BudgetBill)Call("BuildBudgetBillFromDrafts");
-                        bool ok = _sm.IntroduceBudgetBill(id, bill);
-                        Count("answer budget window");
-                        Event($"HOLD budget window: Introduce budget bill {(ok ? "tabled" : "REFUSED")} (IntroduceBudgetBill(BuildBudgetBillFromDrafts()), the button's body; drafts as the style left them)");
-                        return true;
-                    }
-                }
-                else
-                {
-                    Event($"HOLD budget window up for a player who may not introduce ({why}) - nothing the desk offers answers it");
-                }
+                if (TableBudget(c, "HOLD")) { return true; }
             }
 
             if ((bool)Call("DeclarationHolds"))
             {
-                bool extra = _spec.Style == "fuzz" ? _choices.Next(2) == 0 : false;
+                bool extra = _spec.Style == "fuzz" ? Rng("hold").Next(2) == 0 : false;
                 string refused;
                 bool ok = extra ? _sm.OrderExtraElection(id, out refused) : _sm.AskToBeDischarged(id, out refused);
                 Count("answer declaration");
@@ -640,19 +735,26 @@ namespace PoliSim.EditorTools
             if ((bool)Call("FormationHolds"))
             {
                 SpeakerRound round = _sm.RoundOf(id);
+                bool? record = _spec.Style == "historical" ? RecordSeats(c) : null;
                 if (round.Stage == RoundStage.PlayerAsked)
                 {
                     FormationProposal draft = (FormationProposal)Call("FormationDraft");
                     ProposalVerdict preview = _sm.PreviewFormation(id, draft);
-                    if (preview != null && preview.AllAccept && !(_spec.Style == "fuzz" && _choices.Next(3) == 0))
+                    bool table = preview != null && preview.AllAccept && !(_spec.Style == "fuzz" && Rng("hold").Next(3) == 0) && record != false;
+                    if (record.HasValue) { Event($"HOLD formation (historical): the record's government a season on {(record.Value ? "seats" : "does not seat")} {c.PlayerPartyAbbrev}"); }
+                    if (table)
                     {
+                        // TABLE IT's whole body (GameController.FormationSheet.cs): the sheet closes on success, the refusal is shown on failure.
                         bool ok = _sm.SubmitFormation(id, draft, out _, out string refused);
+                        if (ok) { Set("_formationSheetOpen", false); } else { Set("_formationRefusal", refused); }
                         Count("answer formation table");
                         Event($"HOLD formation: TABLE IT {(ok ? "tabled" : "REFUSED - " + refused)} (SubmitFormation with the sheet's draft)");
                     }
                     else
                     {
+                        // PASS's whole body, as TABLE IT's.
                         bool ok = _sm.PassFormation(id, out string refused);
+                        if (ok) { Set("_formationSheetOpen", false); } else { Set("_formationRefusal", refused); }
                         Count("answer formation pass");
                         Event($"HOLD formation: PASS {(ok ? "passed" : "REFUSED - " + refused)} (PassFormation){(preview != null && !preview.AllAccept ? " - the draft does not carry every invited party" : string.Empty)}");
                     }
@@ -662,7 +764,7 @@ namespace PoliSim.EditorTools
 
                 if (round.Stage == RoundStage.OfferToPlayer)
                 {
-                    bool accept = _spec.Style == "fuzz" ? _choices.Next(2) == 0 : true;
+                    bool accept = _spec.Style == "fuzz" ? Rng("hold").Next(2) == 0 : record ?? true;
                     bool ok = _sm.AnswerOffer(id, accept, out string refused);
                     Count("answer offer");
                     Event($"HOLD offer: {(accept ? "ACCEPT" : "DECLINE")} {(ok ? "answered" : "REFUSED - " + refused)} (AnswerOffer)");
@@ -677,7 +779,7 @@ namespace PoliSim.EditorTools
         private int Pick(int options, string what)
         {
             if (options <= 1) { return 0; }
-            return _spec.Style == "fuzz" ? _choices.Next(options) : 0;
+            return _spec.Style == "fuzz" ? Rng("hold").Next(options) : 0;
         }
 
         /// <summary>The scandal chip: idle and historical IGNORE (the no-input answer), fuzz draws among the chips the desk draws open (never Resign, and
@@ -686,16 +788,30 @@ namespace PoliSim.EditorTools
         {
             if (_spec.Style != "fuzz") { return ScandalResponse.Ignore; }
             ScandalResponse[] open = { ScandalResponse.Deny, ScandalResponse.Apologize, ScandalResponse.Explain, ScandalResponse.AttackSource, ScandalResponse.Ignore };
-            return open[_choices.Next(open.Length)];
+            return open[Rng("hold").Next(open.Length)];
         }
 
-        // ------------------------------------------------------------------ the play styles
-
-        /// <summary>The style's own actions, on the days it chooses. Idle acts on nothing; the other styles' levers are added area by area as the
-        /// inventory maps them (the protocol's Phase 1 builds the harness, Phase 2 its matrix).</summary>
-        private void Act(Country c)
+        /// <summary>The budget window's bill: the style drafts its dials, then "Introduce budget bill" runs its body. False when the player may not
+        /// introduce or a bill is already before the chamber.</summary>
+        private bool TableBudget(Country c, string why)
         {
+            CountryId id = c.Id;
+            if (!_sm.PlayerMayIntroduce(id, out string locked))
+            {
+                if (_lockedWindowLogged != _sm.CurrentDate) { Event($"{why} budget window up for a player who may not introduce ({locked}) - nothing the desk offers answers it"); _lockedWindowLogged = _sm.CurrentDate; }
+                return false;
+            }
+
+            if (_sm.GetPendingBudgetBill(id) != null) { return false; }
+            DraftBudget(c);
+            BudgetBill bill = (BudgetBill)Call("BuildBudgetBillFromDrafts");
+            bool ok = _sm.IntroduceBudgetBill(id, bill);
+            Count("answer budget window");
+            Event($"{why} budget window: Introduce budget bill {(ok ? "tabled" : "REFUSED")} (IntroduceBudgetBill(BuildBudgetBillFromDrafts()), the button's body; {bill.TaxLines.Count} tax line(s), {bill.SpendingNominalTargets.Count} spending target(s), {bill.WelfarePrograms.Count} programme(s){(bill.PensionAgeSet ? ", pension age " + bill.PensionAge.ToString("R", CultureInfo.InvariantCulture) : string.Empty)})");
+            return true;
         }
+
+        private DateTime _lockedWindowLogged;
 
         // ------------------------------------------------------------------ the end
 

@@ -118,7 +118,9 @@ namespace PoliSim.EditorTools
             if (c.ParliamentSeats == null || c.ParliamentSeats.Count == 0) { return; }
             _exercised.Add("SEATS");
             int sum = c.ParliamentSeats.Values.Sum();
-            bool counted = c.ElectionHistory.Count > _electionsAtStart;
+            // Counted when the game has held an election of its own - dated on or after the world's start - so a run resumed after the count
+            // (whose own start sees the count already in the history) is held to the statutory chamber as the run that counted was.
+            bool counted = c.ElectionHistory.Count > _electionsAtStart || c.ElectionHistory.Any(r => r.Date >= SimulationManager.EpochDate);
             int expected = counted ? PartySystems.ChamberSeats(c.Id) : PartySystems.ChamberSizeAt(c.Id, WorldClock.SeatedVintage(c.Id, date));
             if (sum != expected)
             {
@@ -214,14 +216,18 @@ namespace PoliSim.EditorTools
 
             bool majorityHeld = cabinet >= majority;
             bool supported = g.Support.Count > 0 && cabinet + support >= majority;
-            if (g.Outcome == "MajorityCoalition" && !majorityHeld)
-            {
-                Breach("GOVERNMENT", key + "|label", day, date, $"{c.Id} labelled MajorityCoalition below a majority: {state}");
-            }
-
             if (majorityHeld || supported) { return; }
+
+            // The declared exceptions, which neither the label nor the majority is held to: a caretaker, France's what-if, a round in progress, and the
+            // count's own day - the new chamber is seated at the count and the outgoing government awaits the formation, whose round opens the next day
+            // (Sweden's and Germany's) or which installs that night (Poland's). From the next day an outgoing government below a majority with no round
+            // open is a breach - which is how a Polish chamber that forms nothing would show (the elections inventory's lead D-03).
+            bool countDay = c.ElectionHistory.Count > 0 && c.ElectionHistory[c.ElectionHistory.Count - 1].Date.Date == date.Date && g.FormedOn.Date < date.Date;
+            if (g.Caretaker || g.Outcome == "what-if" || (round != null && round.Open) || countDay) { return; }
+
+            // Outside those, a label saying majority below one is the inventory's lead D-14 (a partner's exit does not recompute it).
+            if (g.Outcome == "MajorityCoalition") { Breach("GOVERNMENT", key + "|label", day, date, $"{c.Id} labelled MajorityCoalition below a majority: {state}"); return; }
             if (g.Outcome == "MinorityGovernment") { return; }   // declared
-            if (g.Caretaker || g.Outcome == "what-if" || (round != null && round.Open)) { return; }   // declared exceptions: a caretaker, France's what-if, a round in progress
             Breach("GOVERNMENT", key, day, date, $"{c.Id} neither a majority, a supported minority nor a declared minority: {state}");
         }
 

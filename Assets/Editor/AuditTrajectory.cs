@@ -36,7 +36,7 @@ namespace PoliSim.EditorTools
             _fields = TrajectoryBaselineDump.StateFields();
             var head = new StringBuilder("kind,day,date,turn,country");
             foreach (FieldInfo f in _fields) { head.Append(',').Append(f.Name); }
-            head.Append(",party,partyApproval,pm,cabinet,support,outcome,caretaker,seats,elections,lastElection,presidentialContests,chair,gameOver");
+            head.Append(",party,partyApproval,pm,cabinet,support,outcome,caretaker,seats,elections,lastElection,presidentialContests,chair,gameOver,fundAssets,fundContribution");
             Write(head.ToString());
         }
 
@@ -60,7 +60,9 @@ namespace PoliSim.EditorTools
               .Append(',').Append(c.ElectionHistory.Count > 0 ? Date(c.ElectionHistory[c.ElectionHistory.Count - 1].Date) : string.Empty)
               .Append(',').Append(c.PresidentialElections.Count.ToString(CultureInfo.InvariantCulture))
               .Append(',').Append(Cell(c.CurrentFedChair?.Name))
-              .Append(',').Append(gameOver ? "1" : "0");
+              .Append(',').Append(gameOver ? "1" : "0")
+              .Append(',').Append(c.SovereignWealthFund == null ? string.Empty : c.SovereignWealthFund.TotalAssets.ToString("R", CultureInfo.InvariantCulture))
+              .Append(',').Append(c.SovereignWealthFund == null ? string.Empty : c.SovereignWealthFund.ContributionRatePercent.ToString("R", CultureInfo.InvariantCulture));
             Write(sb.ToString());
         }
 
@@ -75,7 +77,9 @@ namespace PoliSim.EditorTools
                 AppendState(sb, c);
                 sb.Append(',').Append(Cell(c.PlayerPartyAbbrev)).Append(',').Append(c.PartyApprovalRating.ToString("R", CultureInfo.InvariantCulture))
                   .Append(',').Append(Cell(c.Government?.PmParty)).Append(',').Append(Cell(c.Government == null ? null : string.Join("+", c.Government.Cabinet)))
-                  .Append(",,,,").Append(Cell(Seats(c.ParliamentSeats))).Append(',').Append(c.ElectionHistory.Count.ToString(CultureInfo.InvariantCulture)).Append(",,,,");
+                  .Append(",,,,").Append(Cell(Seats(c.ParliamentSeats))).Append(',').Append(c.ElectionHistory.Count.ToString(CultureInfo.InvariantCulture)).Append(",,,,,")
+                  .Append(c.SovereignWealthFund == null ? string.Empty : c.SovereignWealthFund.TotalAssets.ToString("R", CultureInfo.InvariantCulture)).Append(',')
+                  .Append(c.SovereignWealthFund == null ? string.Empty : c.SovereignWealthFund.ContributionRatePercent.ToString("R", CultureInfo.InvariantCulture));
                 Write(sb.ToString());
             }
         }
@@ -175,6 +179,55 @@ namespace PoliSim.EditorTools
                     }
                 }
             }
+        }
+
+        /// <summary>Two runs compared by DATE rather than line: a frame that covers several days writes only its last, and a resumed run starts at its
+        /// file's day, so their lines do not pair up although the states may. Day rows pair on their date, turn rows on date and country; the day-count
+        /// column is not compared. Common dates that differ are a difference; dates only one run holds are reported, never a difference by themselves.</summary>
+        internal static (bool CommonIdentical, string Detail) CompareByDate(string dir, string idA, string idB)
+        {
+            string a = System.IO.Path.Combine(dir, idA + ".traj.csv");
+            string b = System.IO.Path.Combine(dir, idB + ".traj.csv");
+            if (!File.Exists(a) || !File.Exists(b)) { return (false, "a trajectory file is missing - nothing compared"); }
+            (string[] header, Dictionary<string, string[]> rowsA) = ReadKeyed(a);
+            (_, Dictionary<string, string[]> rowsB) = ReadKeyed(b);
+            var common = rowsA.Keys.Where(rowsB.ContainsKey).OrderBy(k => k, StringComparer.Ordinal).ToList();
+            int onlyA = rowsA.Keys.Count(k => !rowsB.ContainsKey(k)), onlyB = rowsB.Keys.Count(k => !rowsA.ContainsKey(k));
+            foreach (string key in common)
+            {
+                string[] ca = rowsA[key], cb = rowsB[key];
+                for (int i = 0; i < Math.Max(ca.Length, cb.Length); i++)
+                {
+                    if (i == 1) { continue; }   // the day count: a resumed run and a run of coarser frames count from where they started
+                    string va = i < ca.Length ? ca[i] : "(none)", vb = i < cb.Length ? cb[i] : "(none)";
+                    if (va == vb) { continue; }
+                    return (false, $"on {key.Replace('|', ' ')}, {(i < header.Length ? header[i] : "column " + (i + 1))}: {va} against {vb} ({common.Count} row(s) in common, {onlyA} only in {idA}, {onlyB} only in {idB})");
+                }
+            }
+
+            string range(Dictionary<string, string[]> rows, Dictionary<string, string[]> other)
+            {
+                List<string> dates = rows.Keys.Where(k => !other.ContainsKey(k)).Select(k => k.Split('|')[1]).Distinct().OrderBy(d => d, StringComparer.Ordinal).ToList();
+                return dates.Count == 0 ? "none" : dates.Count == 1 ? dates[0] : dates[0] + " .. " + dates[dates.Count - 1];
+            }
+
+            return (true, $"identical on the {common.Count} row(s) both hold; only in {idA}: {onlyA} ({range(rowsA, rowsB)}), only in {idB}: {onlyB} ({range(rowsB, rowsA)})");
+        }
+
+        private static (string[] Header, Dictionary<string, string[]> Rows) ReadKeyed(string path)
+        {
+            var rows = new Dictionary<string, string[]>(StringComparer.Ordinal);
+            string[] header = Array.Empty<string>();
+            foreach (string line in File.ReadLines(path))
+            {
+                string[] cells = line.Split(',');
+                if (cells.Length == 0) { continue; }
+                if (cells[0] == "kind") { header = cells; continue; }
+                if (cells[0] == "D" && cells.Length > 2) { rows["D|" + cells[2]] = cells; }
+                else if (cells[0] == "T" && cells.Length > 4) { rows["T|" + cells[2] + "|" + cells[4]] = cells; }
+            }
+
+            return (header, rows);
         }
 
         /// <summary>The next line the digest covers - marker lines are skipped, as the digest skips them.</summary>

@@ -269,8 +269,18 @@ namespace PoliSim.EditorTools
                 else if (other == digest) { verdict = $"COMPARE {id} with {spec.Compare}: IDENTICAL (digest {Short(digest)})"; }
                 else
                 {
-                    verdict = $"COMPARE {id} with {spec.Compare}: DIFFERENT ({Short(digest)} against {Short(other)}) - " + AuditTrajectory.FirstDifference(SessionState.GetString(DirKey, string.Empty), id, spec.Compare);
-                    code = Math.Max(code, 1);
+                    // The digests part; the dates decide whether the STATES did (a coarser frame writes fewer days, a resumed run starts at its file's day).
+                    string dir = SessionState.GetString(DirKey, string.Empty);
+                    (bool commonIdentical, string detail) = AuditTrajectory.CompareByDate(dir, spec.Compare, id);
+                    if (commonIdentical)
+                    {
+                        verdict = $"COMPARE {id} with {spec.Compare}: IDENTICAL BY DATE ({Short(digest)} against {Short(other)}: the lines differ, the states do not) - {detail}";
+                    }
+                    else
+                    {
+                        verdict = $"COMPARE {id} with {spec.Compare}: DIFFERENT ({Short(digest)} against {Short(other)}) - {detail}; by line: {AuditTrajectory.FirstDifference(dir, id, spec.Compare)}";
+                        code = Math.Max(code, 1);
+                    }
                 }
 
                 Debug.Log("AUDIT: " + verdict);

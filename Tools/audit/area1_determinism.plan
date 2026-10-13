@@ -1,0 +1,57 @@
+# The gameplay audit's area 1: save/load and determinism (docs/audit/AUDIT_PROTOCOL.md, PHASE 2 area 1).
+# "Report any difference between 1x and 3x on the same seed, and any difference between save->load->continue and an uninterrupted run."
+# Each pair names the run it must match (compare=); a marker row (save, load, pause, speed) is kept out of the digest.
+#
+# --- the same seed twice, per country (the baseline every pair below stands on) ---
+id=a1_se_base country=Sweden party=M style=idle seed=301 days=300
+id=a1_se_twice country=Sweden party=M style=idle seed=301 days=300 compare=a1_se_base
+id=a1_de_base country=Germany party=SPD style=idle seed=302 days=200
+id=a1_de_twice country=Germany party=SPD style=idle seed=302 days=200 compare=a1_de_base
+id=a1_pl_base country=Poland party=PiS style=idle seed=303 days=280
+id=a1_pl_twice country=Poland party=PiS style=idle seed=303 days=280 compare=a1_pl_base
+id=a1_it_base country=Italy party=FdI style=idle seed=304 days=120
+id=a1_it_twice country=Italy party=FdI style=idle seed=304 days=120 compare=a1_it_base
+id=a1_us_base country=USA party=DEM style=idle seed=305 days=340
+id=a1_us_twice country=USA party=DEM style=idle seed=305 days=340 compare=a1_us_base
+id=a1_fr_base country=France party=RN style=idle seed=306 days=120
+id=a1_fr_twice country=France party=RN style=idle seed=306 days=120 compare=a1_fr_base
+#
+# --- save -> load -> continue at the moments the inventory flagged (A S-06..S-08, S-24, S-25, D-10): the run-up, the campaign, the night, the round, a boundary ---
+id=a1_se_sl_runup country=Sweden party=M style=idle seed=301 days=300 saveload=100 compare=a1_se_base
+id=a1_se_sl_campaign country=Sweden party=M style=idle seed=301 days=300 saveload=215 compare=a1_se_base
+id=a1_se_sl_night country=Sweden party=M style=idle seed=301 days=300 saveload=239 compare=a1_se_base
+id=a1_se_sl_round country=Sweden party=M style=idle seed=301 days=300 saveload=255,270 compare=a1_se_base
+id=a1_se_s_base country=Sweden party=S style=idle seed=311 days=300
+id=a1_se_s_sl country=Sweden party=S style=idle seed=311 days=300 saveload=200,240,260 compare=a1_se_s_base
+id=a1_se_bound_base country=Sweden party=M style=idle seed=312 days=380
+id=a1_se_sl_boundary country=Sweden party=M style=idle seed=312 days=380 saveload=364,365,366 compare=a1_se_bound_base
+id=a1_de_sl country=Germany party=SPD style=idle seed=302 days=200 saveload=80,110,150 compare=a1_de_base
+id=a1_pl_sl country=Poland party=PiS style=idle seed=303 days=280 saveload=200,239 compare=a1_pl_base
+id=a1_it_sl country=Italy party=FdI style=idle seed=304 days=120 saveload=60 compare=a1_it_base
+id=a1_us_sl country=USA party=DEM style=idle seed=305 days=340 saveload=297,315 compare=a1_us_base
+id=a1_fr_sl country=France party=RN style=idle seed=306 days=120 saveload=60 compare=a1_fr_base
+#
+# --- the same with a style that acts: drafts, bills and answers in flight across the save ---
+id=a1_se_fuzz_base country=Sweden party=M style=fuzz seed=321 days=300
+id=a1_se_fuzz_sl country=Sweden party=M style=fuzz seed=321 days=300 saveload=50,150,250 compare=a1_se_fuzz_base
+id=a1_se_ext_base country=Sweden party=M style=extreme pole=deficit seed=322 days=300
+id=a1_se_ext_sl country=Sweden party=M style=extreme pole=deficit seed=322 days=300 saveload=30,240 compare=a1_se_ext_base
+#
+# --- 1x against 3x (sub-day frames: delta 0.05 is 20 frames a day at 1x, 5 at 3x) and a pause, per country ---
+id=a1_se_1x country=Sweden party=M style=idle seed=331 days=90 speed=1 delta=0.05
+id=a1_se_3x country=Sweden party=M style=idle seed=331 days=90 speed=3 delta=0.05 compare=a1_se_1x
+id=a1_se_pause country=Sweden party=M style=idle seed=331 days=90 speed=3 delta=0.05 speeds=20:P,40:1,60:2,70:3 compare=a1_se_1x
+id=a1_de_1x country=Germany party=SPD style=idle seed=332 days=60 speed=1 delta=0.05
+id=a1_de_3x country=Germany party=SPD style=idle seed=332 days=60 speed=3 delta=0.05 compare=a1_de_1x
+id=a1_pl_1x country=Poland party=PiS style=idle seed=333 days=60 speed=1 delta=0.05
+id=a1_pl_3x country=Poland party=PiS style=idle seed=333 days=60 speed=3 delta=0.05 compare=a1_pl_1x
+id=a1_us_1x country=USA party=DEM style=idle seed=334 days=60 speed=1 delta=0.05
+id=a1_us_3x country=USA party=DEM style=idle seed=334 days=60 speed=3 delta=0.05 compare=a1_us_1x
+#
+# --- the frame itself: a multi-day frame (delta 0.333 at 3x is 1.33 days a frame) against one day a frame, and the observer's own pace ---
+id=a1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=a1_se_base
+id=a1_se_gui4 country=Sweden party=M style=idle seed=301 days=300 gui=4 compare=a1_se_base
+#
+# --- a scenario to its verdict at two frame sizes (inventory A S-05: the verdict is missing from the after-day gate, so a multi-day frame may run a day past it) ---
+id=a1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
+id=a1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=a1_fund_fine

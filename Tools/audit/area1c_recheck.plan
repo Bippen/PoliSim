@@ -1,0 +1,11 @@
+# The gameplay audit's area 1, third plan: the two harness fixes re-checked (style choices keyed by day; "counted" read from the history's dates),
+# and the two findings reproduced from their seeds - the cabinet shortlist across a quit (twice) and the HQ's Layout/Repaint exception.
+id=c1_se_fuzz country=Sweden party=M style=fuzz seed=376 days=300 save=150
+id=c1_se_fuzz_r150 country=Sweden party=M style=fuzz seed=376 days=300 resume=c1_se_fuzz.day150.save.json startday=150 compare=c1_se_fuzz
+id=c1_de country=Germany party=SPD style=idle seed=373 days=200 save=120
+id=c1_de_r120 country=Germany party=SPD style=idle seed=373 days=200 resume=c1_de.day120.save.json startday=120 compare=c1_de
+id=c2_se_cab country=Sweden party=M style=idle seed=381 days=120 searchsave=40
+id=c2_se_cab_r40 country=Sweden party=M style=idle seed=381 days=120 resume=c2_se_cab.day40.save.json startday=40 cabinet=40 compare=c2_se_cab
+id=c2_se_cab_r40b country=Sweden party=M style=idle seed=381 days=120 resume=c2_se_cab.day40.save.json startday=40 cabinet=40 compare=c2_se_cab_r40
+id=c3_de_hq country=Germany party=SPD style=idle seed=302 days=115
+id=c3_de_hq_b country=Germany party=SPD style=idle seed=302 days=115 compare=c3_de_hq

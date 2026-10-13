@@ -37990,3 +37990,15 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 - 1x (twenty frames a day) against 3x (five): **identical** (`637ebdd5...`).
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap804b`; `cheap804` before it failed `DeadStateCheck` on one field the new driver declared and never read, removed). The harness runs are the plans above.
+
+## 805. THE GAMEPLAY AUDIT, AREA 1 (SAVE/LOAD AND DETERMINISM): ONE TRAJECTORY ACROSS SEEDS, SPEEDS, FRAMES, IN-SESSION SAVES AND RESUMES IN A FRESH SESSION; THREE ROWS - THE HQ'S LAYOUT/REPAINT EXCEPTION, THE CABINET SHORTLIST LOST ACROSS A QUIT, THE CAMPAIGN REPLAY'S FALSE ALARM (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 2 area 1): "Report any difference between 1x and 3x on the same seed, and any difference between save->load->continue and an uninterrupted run."
+
+**The harness, extended** (`Assets/Editor/AuditDriver.cs`, `AuditDriver.Styles.cs`, `AuditHarness.cs`, `AuditInvariants.cs`, `AuditTrajectory.cs`): the five play styles (idle; historical, the formation steered to the government of record; fuzz; exploit X-01, X-02, X-04, X-16; extreme by pole), each moving the dials' own drafts and running the controls' bodies; a resumed run (`resume=`) that loads an earlier run's file through the saves screen's route in a fresh session; the cabinet's Search and Appoint; every division logged; the fund in the trajectory; pairs compared by date where their lines cannot pair; day 0 taken at the party's click; style choices keyed by seed, day and kind, so a resumed run chooses as its original did. Plans under `Tools/audit/`.
+
+**Measured** (plans `area1`, `area1b`, `area1c`; 85 runs): one trajectory for every pair of the same seed (six countries), 1x against 3x (four), pauses and speed changes, coarse against fine frames, OnGUI's pace, in-session saves at every stage of a Swedish year and in all six countries, two and three loads inside a campaign, and resumes in a fresh session in Sweden, Germany, Poland and the USA, for a created party and under fuzz. The ledger's GA-1 section names every pair.
+
+**Rows filed** (`docs/audit/AUDIT_LEDGER.md`, GA-1): GA-1-1 (S3) - the first frame after election night throws IMGUI's "Getting control 0's position" and lands on Statistics, because the self-closing campaign HQ closes inside the Layout pass (reproduced from seed 302 twice, and in Sweden's fuzz runs); GA-1-2 (S3) - the cabinet's shortlist is not saved and its Search draws the simulation's stream, so search, quit and resume parts the game from the next day (reproduced three times); GA-1-3 (S4) - the campaign replay logs a stream-count failure on a second load in a session while the game it rebuilds is identical (seven runs).
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap805`). The harness runs are the plans above.
