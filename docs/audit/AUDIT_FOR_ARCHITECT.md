@@ -12,6 +12,9 @@ Filed as ARCHITECT (S2: an election or office result, reproduced in every run - 
 - **GA-3-1** (area 3) - an idle German game's 2025 count: SPD first (150-156 seats against the record's 120), AfD 59-64 against 152, FDP and BSW about 70 each against 0, and Scholz re-elected where the record has Merz.
 - **GA-3-2** (area 3) - an idle Swedish game's 2026 count gives the right bloc 183-190 seats where the record's gave it 173 (SD +7 to +10, V -6 to -7), and installs SD+M+KD+L in every run, again in 2030.
 
+- **GA-6-1** (area 6) - the player retires a country's whole fossil (or nuclear) fleet in weeks, with no reliability veto; the blocks go unserved at the 4 000 EUR/MWh ceiling, industry's power bill reaches 31-63 % of GDP and inflation its 30 % clamp - and real GDP is unchanged after a year (question 26).
+- **GA-6-2** (area 6, a bug whose fix needs a ruling) - Sweden's zone chain stops balancing when the fleet moves: its 7 GW of nuclear retired leaves a national gap of 4.7-6.1 GW that no price, unserved load or import answers, against `ChainUnbalanceMw`'s own "a few tens of MW from zero; printed, never priced" (question 27).
+
 S2-class leads still to run down in their areas:
 - GA-0-21 (area 3): Sweden's live count skips the 12 % valkrets route the built procedure carries.
 - GA-0-28 (areas 2, 8): the carbon statute overrides a passed German rate; statutes read the turn, not the calendar.
@@ -44,3 +47,5 @@ S2-class leads still to run down in their areas:
 23. **GA-4-4** - the campaign's attribution ledger gives every created party a baseline of 20.8 % (its night's WHY: "20.8 → 13.x") while the HQ's tracker and the count have it at 0.6-10 %: one standing for a created party in the campaign and the count?
 24. **GA-5-1** - the player's campaign does not move the player's vote: every mix, paced or not (71 acts and 2.6 times the persuasion), leaves the campaign's own share within 0.1 point of an idle player's, and the run-up's chips spend 1.08 of the 2.4 million chest for nothing measured. What should a campaign be able to move, and what should the run-up's purchases buy?
 25. **GA-5-2** (§23, §346 entry 13) - the tactical layer believes one published tracker (n = 600), so its sampling noise decides whether S lends V a point (three seats) - and the player's own draws move it. One tracker, or the polls' mean?
+26. **GA-6-1** (SD-04) - the player's fleet orders carry no reliability veto (the AI ministry's has one), and unserved energy costs the economy nothing but its price: a reliability veto for the player, and what an unserved block costs output?
+27. **GA-6-2** - Sweden's national gap when its fleet moves (the exchange exogenous, the unbalance printed and never priced): clear it by imports at a neighbour's price, or by unserved load at the ceiling, as every other country's does?

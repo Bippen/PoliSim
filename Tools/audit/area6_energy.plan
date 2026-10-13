@@ -1,0 +1,28 @@
+# The gameplay audit's area 6: energy - the fleet, load blocks, zones and area prices, ETS, both ledgers, carbon-rate indexation
+# (docs/audit/AUDIT_PROTOCOL.md). The invariant "supply = demand + losses" runs at every boundary (block by block, curtailment and unserved
+# load named). The style `energy=` presses the Energy page's plant buttons as their bodies do (`FleetActs`): retirefossil (coal and gas to
+# nothing), retirenuclear, buildgreen (wind and solar to the queue's room). Each runs against an idle run on its seed; the Energy page is
+# captured once the retirements have landed (a retirement lands a year on). Leads: inventory E §6 SD-01..SD-04, SD-09; GA-0-28 (carbon).
+#
+# --- every fossil MW retired (SD-04: no reliability veto; unserved load at the price ceiling) ---
+id=p1_de_spd_idle country=Germany party=SPD style=idle seed=1001 days=1100
+id=p1_de_spd_retire country=Germany party=SPD style=idle energy=retirefossil seed=1001 days=1100 capture=400:Energy,800:Energy
+id=p2_pl_pis_idle country=Poland party=PiS style=idle seed=1002 days=1100
+id=p2_pl_pis_retire country=Poland party=PiS style=idle energy=retirefossil seed=1002 days=1100 capture=400:Energy
+id=p3_it_fdi_idle country=Italy party=FdI style=idle seed=1003 days=1100
+id=p3_it_fdi_retire country=Italy party=FdI style=idle energy=retirefossil seed=1003 days=1100 capture=400:Energy
+id=p4_us_dem_idle country=USA party=DEM style=idle seed=1004 days=700
+id=p4_us_dem_retire country=USA party=DEM style=idle energy=retirefossil seed=1004 days=700 capture=400:Energy
+# --- nuclear retired ---
+id=p5_fr_rn_idle country=France party=RN style=idle seed=1005 days=1100
+id=p5_fr_rn_retirenuc country=France party=RN style=idle energy=retirenuclear seed=1005 days=1100 capture=400:Energy
+id=p5_se_m_retirenuc country=Sweden party=M style=idle energy=retirenuclear seed=1006 days=1100 capture=400:Energy
+#
+# --- wind and solar built to the queue's room (lead times 3 and 2 years; SD-01, SD-02: curtailment and the price) ---
+id=p6_se_m_build country=Sweden party=M style=idle energy=buildgreen seed=1007 days=1460 capture=1100:Energy
+id=p6_de_spd_build country=Germany party=SPD style=idle energy=buildgreen seed=1001 days=1460 capture=1100:Energy
+id=p6_pl_pis_build country=Poland party=PiS style=idle energy=buildgreen seed=1002 days=1460 capture=1100:Energy
+#
+# --- the carbon statute against a passed rate (GA-0-28: the statute overwrites a passed German rate, re-indexes Sweden's) ---
+id=p7_de_spd_carbon country=Germany party=SPD style=extreme pole=big seed=1011 days=400 capture=30:Budget,366:Budget
+id=p7_se_m_carbon country=Sweden party=M style=extreme pole=big seed=1012 days=400 capture=30:Budget,366:Budget

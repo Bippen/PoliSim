@@ -1,0 +1,7 @@
+# The gameplay audit's area 6, Sweden's zone chain reproduced (the ledger's rule for an S2): area6's nuclear retirement again on its seed
+# (its digest read against area6/summary.txt) and on another, the green build on another seed, and a control - Sweden's fossil retired
+# (86 MW, the chain's flows barely moved) - which must leave the chain balanced.
+id=q1_se_m_retirenuc country=Sweden party=M style=idle energy=retirenuclear seed=1006 days=1100 capture=400:Energy
+id=q1_se_m_retirenuc_b country=Sweden party=M style=idle energy=retirenuclear seed=1016 days=400
+id=q2_se_m_build_b country=Sweden party=M style=idle energy=buildgreen seed=1017 days=1100
+id=q3_se_m_retirefossil country=Sweden party=M style=idle energy=retirefossil seed=1006 days=400

@@ -5,6 +5,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using PoliSim.Data;
+using PoliSim.Data.Generated;
 using PoliSim.Elections;
 using PoliSim.Simulation;
 using PoliSim.UI;
@@ -290,9 +291,54 @@ namespace PoliSim.EditorTools
             }
         }
 
+        // ------------------------------------------------------------------ the fleet (area 6)
+
+        private DateTime _fleetActDate = DateTime.MinValue;
+        private readonly HashSet<int> _fleetDone = new HashSet<int>();
+
+        /// <summary>The Energy page's plant buttons as their bodies press them (`GameController.EnergyV35.cs` DrawEnergyPlantTile): − places a
+        /// retirement of one step (`EnergyFleet.Place` with minus the step), + a build of one step or the queue's room (`EnergyConnectionQueue.StepUpMw`),
+        /// each only where the tile draws its button enabled (`EnergyFleet.CanOrder`, the government's `PlayerMayIntroduce`, the queue's `FullText`),
+        /// the page's cached preview dropped as the body drops it. The plan's `energy=` names the presses, once a technology a day: retirefossil (coal
+        /// and gas until nothing is left to retire), retirenuclear, buildgreen (wind and solar while the queue has room).</summary>
+        private void FleetActs(Country c)
+        {
+            if (string.IsNullOrEmpty(_spec.Energy) || _lastDate == _fleetActDate) { return; }
+            _fleetActDate = _lastDate;
+            if (!_sm.PlayerMayIntroduce(c.Id, out string _)) { return; }   // the tiles' buttons are drawn disabled
+            int year = c.CalendarYear;
+            double step = EnergyFleet.StepMw(c.Id);
+            int[] retire = _spec.Energy == "retirefossil" ? new[] { 0, 1 } : _spec.Energy == "retirenuclear" ? new[] { 2 } : Array.Empty<int>();
+            int[] build = _spec.Energy == "buildgreen" ? new[] { 4, 5 } : Array.Empty<int>();
+            foreach (int k in retire)
+            {
+                if (_fleetDone.Contains(k) || !EnergyFleet.CanOrder(c.Id, k)) { continue; }
+                EnergyFleet.Order o = EnergyFleet.Place(c, k, -step, year, _sm.CurrentTurn);
+                Set("_hasCachedPreview", false);
+                Count("act fleet retire " + EnergyLayerData.Labels[k]);
+                if (o == null) { _fleetDone.Add(k); Event($"ACT fleet day {_day}: {EnergyLayerData.Labels[k]} - nothing left to retire (capacity {EnergyFleet.CapacityMw(c, k):F0} MW, retirements queued {EnergyFleet.QueuedMw(c, k, retirementsOnly: true):F0} MW)"); }
+            }
+
+            foreach (int k in build)
+            {
+                if (!EnergyFleet.CanOrder(c.Id, k)) { continue; }
+                string full = EnergyConnectionQueue.FullText(c, k, year);
+                if (full != null) { if (_fleetDone.Add(k)) { Event($"ACT fleet day {_day}: {EnergyLayerData.Labels[k]} - the queue is full ({full})"); } continue; }
+                EnergyFleet.Order o = EnergyFleet.Place(c, k, EnergyConnectionQueue.StepUpMw(c, k, step, year), year, _sm.CurrentTurn);
+                Set("_hasCachedPreview", false);
+                Count("act fleet build " + EnergyLayerData.Labels[k]);
+                if (o == null && _fleetDone.Add(k)) { Event($"ACT fleet day {_day}: {EnergyLayerData.Labels[k]} - the build was refused"); }
+            }
+
+            if (_day % 90 == 0)
+            {
+                Event($"ACT fleet day {_day}: capacity {string.Join(" ", EnergyLayerData.Labels.Select((label, k) => label + " " + EnergyFleet.CapacityMw(c, k).ToString("F0", CultureInfo.InvariantCulture)))} MW; queued {string.Join(" ", EnergyLayerData.Labels.Select((label, k) => label + " " + EnergyFleet.QueuedMw(c, k).ToString("F0", CultureInfo.InvariantCulture)))} MW");
+            }
+        }
+
         private void Act(Country c)
         {
-            if (AtSafePoint()) { ParliamentActions(c); CampaignActs(); }
+            if (AtSafePoint()) { ParliamentActions(c); CampaignActs(); FleetActs(c); }
 
             if (!_cabinetDone &&(_day >= _spec.Cabinet && _spec.Cabinet >= 0 || _day >= _spec.SearchSave && _spec.SearchSave >= 0) && AtSafePoint())
             {

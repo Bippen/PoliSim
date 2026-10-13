@@ -95,8 +95,11 @@ namespace PoliSim.EditorTools
         /// highest) or first (the card the list opens on) - a controlled pair is one game with only the head changed.</summary>
         internal string Chair;
         /// <summary>The live campaign's chips the run presses (`CampaignActs`): runup (the run-up's priced verbs and the five hires, once), ground (rally,
-        /// town hall, doors), air (TV, digital, post) or all (the eight) - the campaign's mixes after the run-up, each legal act once a day.</summary>
+        /// town hall, doors), air (TV, digital, post), all (the eight) or paced (the eight within what is left over the days left and the day's hours) -
+        /// the campaign's mixes after the run-up, each legal act once a day.</summary>
         internal string Campaign;
+        /// <summary>The Energy page's plant buttons the run presses (`FleetActs`): retirefossil, retirenuclear or buildgreen.</summary>
+        internal string Energy;
         /// <summary>Pages to capture, `day:Page` (Desk, Statistics, Decisions, Demographics, Budget, PolicyLaws, Politics, Energy): on that day the
         /// page is opened through the rail's own body, one frame of OnGUI is recorded by the dry film's label table, and the desk returns.</summary>
         internal readonly List<(int Day, string Page)> Captures = new List<(int, string)>();
@@ -170,6 +173,7 @@ namespace PoliSim.EditorTools
                         case "leave": s.Leave = int.Parse(value, CultureInfo.InvariantCulture); break;
                         case "chair": s.Chair = value.ToLowerInvariant(); break;
                         case "campaign": s.Campaign = value.ToLowerInvariant(); break;
+                        case "energy": s.Energy = value.ToLowerInvariant(); break;
                         case "capture":
                             foreach (string pair in value.Split(',').Where(v => v.Length > 0))
                             {
@@ -197,6 +201,7 @@ namespace PoliSim.EditorTools
             if (s.Slots < GameSettings.MinSlots || s.Slots > GameSettings.MaxSlots) { error = $"slots= is {GameSettings.MinSlots}..{GameSettings.MaxSlots}"; return null; }
             if (s.Chair != null && s.Chair != "dove" && s.Chair != "hawk" && s.Chair != "first") { error = "chair= is dove, hawk or first"; return null; }
             if (s.Campaign != null && s.Campaign != "runup" && s.Campaign != "ground" && s.Campaign != "air" && s.Campaign != "all" && s.Campaign != "paced") { error = "campaign= is runup, ground, air, all or paced"; return null; }
+            if (s.Energy != null && s.Energy != "retirefossil" && s.Energy != "retirenuclear" && s.Energy != "buildgreen") { error = "energy= is retirefossil, retirenuclear or buildgreen"; return null; }
             return s;
         }
     }
