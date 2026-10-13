@@ -100,6 +100,10 @@ namespace PoliSim.EditorTools
         internal string Campaign;
         /// <summary>The Energy page's plant buttons the run presses (`FleetActs`): retirefossil, retirenuclear or buildgreen.</summary>
         internal string Energy;
+        /// <summary>events=off: the random economic events switched off for the run (`EventSystem.Enabled`, a harness switch), restored at its end.</summary>
+        internal bool EventsOff;
+        /// <summary>The foreign-policy meeting's option the hold answers with (`MeetingPick`): first, last or approval.</summary>
+        internal string Meeting;
         /// <summary>Pages to capture, `day:Page` (Desk, Statistics, Decisions, Demographics, Budget, PolicyLaws, Politics, Energy): on that day the
         /// page is opened through the rail's own body, one frame of OnGUI is recorded by the dry film's label table, and the desk returns.</summary>
         internal readonly List<(int Day, string Page)> Captures = new List<(int, string)>();
@@ -174,6 +178,8 @@ namespace PoliSim.EditorTools
                         case "chair": s.Chair = value.ToLowerInvariant(); break;
                         case "campaign": s.Campaign = value.ToLowerInvariant(); break;
                         case "energy": s.Energy = value.ToLowerInvariant(); break;
+                        case "events": s.EventsOff = value.ToLowerInvariant() == "off"; break;
+                        case "meeting": s.Meeting = value.ToLowerInvariant(); break;
                         case "capture":
                             foreach (string pair in value.Split(',').Where(v => v.Length > 0))
                             {
@@ -202,6 +208,7 @@ namespace PoliSim.EditorTools
             if (s.Chair != null && s.Chair != "dove" && s.Chair != "hawk" && s.Chair != "first") { error = "chair= is dove, hawk or first"; return null; }
             if (s.Campaign != null && s.Campaign != "runup" && s.Campaign != "ground" && s.Campaign != "air" && s.Campaign != "all" && s.Campaign != "paced") { error = "campaign= is runup, ground, air, all or paced"; return null; }
             if (s.Energy != null && s.Energy != "retirefossil" && s.Energy != "retirenuclear" && s.Energy != "buildgreen") { error = "energy= is retirefossil, retirenuclear or buildgreen"; return null; }
+            if (s.Meeting != null && s.Meeting != "first" && s.Meeting != "last" && s.Meeting != "approval") { error = "meeting= is first, last or approval"; return null; }
             return s;
         }
     }
@@ -335,6 +342,8 @@ namespace PoliSim.EditorTools
             SimulationRandom.Seed(_spec.Seed);
             AuditPrefs.Save(_dir);
             PreferencePins.Pin();
+            _eventsWere = EventSystem.Enabled;
+            if (_spec.EventsOff) { EventSystem.Enabled = false; }   // the harness switch (inventory D D-43), restored at the run's end
             GameSettings.DefaultSpeed = _spec.Speed - 1;
             GameSettings.HoldOnCampaignOpening = _spec.HoldCampaign;
             GameSettings.HoldOnBudgetWindow = _spec.HoldBudget;
@@ -513,6 +522,7 @@ namespace PoliSim.EditorTools
                     _invariants.Energy(c, _day, now);
                 }
 
+                TaxReadout(c);
                 CheckDay(c);
             }
             else
@@ -561,6 +571,18 @@ namespace PoliSim.EditorTools
                 Event(string.Format(CultureInfo.InvariantCulture, "REGIONAL {0}: {1:F2} % of the nation's votes, best {2:F2} % in {3}{4}", keys[k], national * 100.0, best * 100.0, names[at],
                     route ? $" - UNDER 4 % WITH 12 % IN A VALKRETS (vallagen 14 kap. 3 §), seated {seated}" : string.Empty));
             }
+        }
+
+        private string _taxSignature;
+
+        /// <summary>The player's tax lines as they stand (`TaxLine.Rate`, the rate in force - not the Budget page's draft), logged whenever one moves: a
+        /// passed bill on its day, a statute's indexation at a boundary (inventory D GA-0-28: the carbon statute against a passed rate).</summary>
+        private void TaxReadout(Country c)
+        {
+            string signature = string.Join(" ", c.TaxLines.Where(t => t.IsImplemented).Select(t => t.Type + " " + t.Rate.ToString("0.###", CultureInfo.InvariantCulture)));
+            if (signature == _taxSignature) { return; }
+            _taxSignature = signature;
+            Event($"TAXES day {_day} ({_lastDate:yyyy-MM-dd}, turn {_sm.CurrentTurn}): {signature}");
         }
 
         private void CheckDay(Country c)
@@ -810,7 +832,7 @@ namespace PoliSim.EditorTools
             ForeignPolicyMeeting meeting = _sm.GetPendingForeignPolicyMeeting(id);
             if (meeting != null)
             {
-                int pick = Pick(meeting.Options.Count, "meeting");
+                int pick = MeetingPick(meeting);
                 _sm.ResolveForeignPolicyMeeting(id, meeting.Options[pick]);
                 Count("answer meeting");
                 Event($"HOLD meeting '{meeting.Name}': '{meeting.Options[pick].Label}' (ResolveForeignPolicyMeeting, the option's call)");
@@ -876,6 +898,21 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The style's pick among a hold's options: idle and historical take the first (the control drawn first), fuzz draws from the run's own generator.</summary>
+        private bool _eventsWere = true;
+
+        /// <summary>The meeting card's option, as the plan's `meeting=` chooses it: first (the card's first, the default for every style but fuzz), last
+        /// (the card's last - the decline or the arm's length), approval (the option with the most approval, the first of equals); else the style's pick.</summary>
+        private int MeetingPick(ForeignPolicyMeeting meeting)
+        {
+            int n = meeting.Options.Count;
+            if (n <= 1 || _spec.Meeting == null) { return Pick(n, "meeting"); }
+            if (_spec.Meeting == "last") { return n - 1; }
+            if (_spec.Meeting != "approval") { return 0; }
+            int best = 0;
+            for (int i = 1; i < n; i++) { if (meeting.Options[i].ApprovalEffect > meeting.Options[best].ApprovalEffect) { best = i; } }
+            return best;
+        }
+
         private int Pick(int options, string what)
         {
             if (options <= 1) { return 0; }
@@ -943,6 +980,7 @@ namespace PoliSim.EditorTools
             }
             int restored = PreferencePins.Restore();
             AuditPrefs.Done(_dir);
+            EventSystem.Enabled = _eventsWere;
             Debug.Log($"AUDIT: RUN {_spec.Id} - {summary} (preferences restored: {restored})");
             _onEnd(code, summary, digest);
         }

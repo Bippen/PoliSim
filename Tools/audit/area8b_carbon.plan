@@ -1,0 +1,6 @@
+# The gameplay audit's area 8, the carbon statute reproduced (the ledger's rule for an S2): area8's German run at the carbon ceiling again on
+# its seed (its digest read against area8/summary.txt), and on another seed beside that seed's idle run - the TAXES lines at passage and at
+# each boundary (GA-0-28: the statute reads the turn and overwrites a passed rate).
+id=t1_de_spd_big country=Germany party=SPD style=extreme pole=big seed=1203 days=800
+id=t1_de_spd_big_b country=Germany party=SPD style=extreme pole=big seed=1213 days=800
+id=t1_de_spd_idle_b country=Germany party=SPD style=idle seed=1213 days=800

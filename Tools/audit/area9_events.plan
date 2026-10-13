@@ -1,0 +1,10 @@
+# The gameplay audit's area 9: events (the challenge scenarios retired by Elias, 2026-10-13; docs/audit/AUDIT_PROTOCOL.md). The random economic
+# events against none (events=off, the harness switch `EventSystem.Enabled`, inventory D D-43) on one seed for five years, so what the events
+# move is read beside them; and the foreign-policy meetings answered three ways (meeting=first, the default; last, the decline or the arm's
+# length; approval, the most approval) - inventory D's "meeting drip": Stand firm is +0.5 approval and a better trade balance for nothing.
+id=u1_se_m_events country=Sweden party=M style=idle seed=1301 days=1825
+id=u1_se_m_noevents country=Sweden party=M style=idle seed=1301 days=1825 events=off
+id=u1_de_spd_events country=Germany party=SPD style=idle seed=1302 days=1825
+id=u1_de_spd_noevents country=Germany party=SPD style=idle seed=1302 days=1825 events=off
+id=u2_se_m_last country=Sweden party=M style=idle seed=1301 days=1825 meeting=last
+id=u2_se_m_approval country=Sweden party=M style=idle seed=1301 days=1825 meeting=approval

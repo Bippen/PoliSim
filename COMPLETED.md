@@ -38070,3 +38070,17 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **Rows filed** (`docs/audit/AUDIT_LEDGER.md`, all ARCHITECT, questions 28-29 in `docs/audit/AUDIT_FOR_ARCHITECT.md`): GA-7-1 (S3) - the hospital waits never move (they read only the health ministry's effectiveness, 1 while the chair is vacant); GA-7-2 (S3) - life expectancy drifts down in every country over a decade while treatable mortality falls 13-19 %; GA-7-3 (S3) - the USA ends a decade 9.5 % below potential with unemployment under its start, Italy shrinks for ten years, and Italy's population is frozen for its first two.
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap810`). The harness runs are the plan above.
+
+## 811. THE GAMEPLAY AUDIT, AREAS 8 (CABINET, GATING, STATUTES) AND 9 (EVENTS): GERMANY'S CARBON STATUTE CHARGES BY THE TURN AND OVERWRITES A PASSED RATE; SWEDEN'S JANUARY BUDGET UNDOES THE INDEXATION; A SEATED HEALTH MINISTER IS WORSE THAN AN EMPTY CHAIR; THE MEETING DRIP; ELIAS MARKS GA-8-1 AND GA-8-2 (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 2 areas 8 and 9): "Cabinet ministers, parliamentary gating, statutes" and "Events and the challenge scenarios" (the scenarios retired by Elias, §806).
+
+**Elias's answer to area 8** (2026-10-13, the ledger's status cells): fix GA-8-1 and GA-8-2.
+
+**The harness, extended** (`Assets/Editor/AuditDriver.cs`): the tax rates in force logged whenever one moves (TAXES: a passed bill on its day, a statute at a boundary - not the Budget page's draft); `events=off` (the harness switch `EventSystem.Enabled`, restored at the run's end); `meeting=first|last|approval` (the meeting card's option).
+
+**Measured** (plans `area8_cabinet`, `area8b_carbon`, `area9_events`; 19 runs): a full cabinet seated against the vacant chairs; the carbon rate in force at passage and at each boundary in Germany and Sweden; a junior partner's every lever refused; Poland's KO government through Duda and Nawrocki without a veto drawn; the events at their stated rate and their cost against none; the meeting cards answered three ways.
+
+**Rows filed** (`docs/audit/AUDIT_LEDGER.md`): GA-8-1 (S2) - Germany's carbon statute charges by the turn (30 EUR/t from November 2024, the 2023 rate) and sets a passed rate back at the next boundary (280 → 45), against §471 - reproduced from its seed and on a second, a clear bug; GA-8-2 (S3) - Sweden's January budget, tabled before the boundary, undoes the carbon tax's indexation every year (D-23), a clear bug; GA-8-3 (S3) - a seated Health minister makes waits and mortality worse than an empty chair (SD-31), ARCHITECT; GA-9-1 (S3) - the meeting cards' options that win on every count, worth +8 approval in five years, ARCHITECT. Questions 30-31 in `docs/audit/AUDIT_FOR_ARCHITECT.md`.
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap811`). The harness runs are the plans above.

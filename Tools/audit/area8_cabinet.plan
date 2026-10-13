@@ -1,0 +1,20 @@
+# The gameplay audit's area 8: cabinet ministers, parliamentary gating, statutes (docs/audit/AUDIT_PROTOCOL.md). The harness logs the tax
+# rates in force whenever one moves (the TAXES line: a passed bill on its day, a statute at a boundary - not the Budget page's draft).
+# Leads: inventory E SD-30, SD-31 (a vacant chair is efficiency 1, every candidate 55-90 %), D §1e-§1g, GA-0-27 (SD-09), GA-0-28 (the carbon
+# statute against a passed rate; statutes reading the turn), D-27 (a junior partner's controls), Poland's veto under Nawrocki (from 2025-08-06).
+#
+# --- a seated cabinet against the vacant chairs, on one seed (cabinet=30: Search, then each portfolio's first candidate appointed) ---
+id=s1_se_m_idle country=Sweden party=M style=idle seed=1201 days=1095
+id=s1_se_m_cabinet country=Sweden party=M style=idle seed=1201 days=1095 cabinet=30
+id=s2_pl_pis_idle country=Poland party=PiS style=idle seed=1202 days=1095
+id=s2_pl_pis_cabinet country=Poland party=PiS style=idle seed=1202 days=1095 cabinet=30
+#
+# --- the carbon statute against a passed rate, and the statutes' clock (the TAXES lines at passage and at each boundary) ---
+id=s3_de_spd_idle country=Germany party=SPD style=idle seed=1203 days=800
+id=s3_de_spd_big country=Germany party=SPD style=extreme pole=big seed=1203 days=800
+id=s4_se_m_idle country=Sweden party=M style=idle seed=1204 days=800
+id=s4_se_m_big country=Sweden party=M style=extreme pole=big seed=1204 days=800
+#
+# --- gating: a junior partner pressing every lever (D-27), and Poland's KO under Duda and then Nawrocki ---
+id=s5_se_kd_fuzz country=Sweden party=KD style=fuzz seed=1205 days=400
+id=s6_pl_ko_fuzz country=Poland party=KO style=fuzz seed=1206 days=1500

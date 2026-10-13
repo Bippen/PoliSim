@@ -4,9 +4,10 @@ At most 100 lines (`docs/audit/AUDIT_PROTOCOL.md`, QUESTIONS AS YOU GO): the S1/
 
 ## S1 and S2 findings
 
-Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); both are clear bugs, put to Elias as fixes:
+Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); each a clear bug, put to Elias as a fix:
 - **GA-2-1** (S2, area 2) - money from an empty fund (D-02): a contribution below zero goes on paying the budget after the fund is floored at 0. Germany and Poland create a fund at nothing and draw it; Sweden's empties under the draw; an ordinary French budget at -6 % reaches it.
 - **GA-2-2** (S2, area 2) - France's income tax at a lever of 0 keeps the seed's whole revenue: `TaxSchedule.YieldRatio` answers 1.0 for a yield at or below zero (D-04). Four other countries lose 5-11 % of GDP a year on the same bill.
+- **GA-8-1** (S2, area 8) - Germany's carbon statute charges by the turn (30 EUR/t from November 2024, the 2023 rate) and sets a rate the player passed back to the statute's at the next boundary (280 → 45), against §471.
 
 Filed as ARCHITECT (S2: an election or office result, reproduced in every run - the model's, not a code defect; questions 18-19):
 - **GA-3-1** (area 3) - an idle German game's 2025 count: SPD first (150-156 seats against the record's 120), AfD 59-64 against 152, FDP and BSW about 70 each against 0, and Scholz re-elected where the record has Merz.
@@ -17,7 +18,6 @@ Filed as ARCHITECT (S2: an election or office result, reproduced in every run - 
 
 S2-class leads still to run down in their areas:
 - GA-0-21 (area 3): Sweden's live count skips the 12 % valkrets route the built procedure carries.
-- GA-0-28 (areas 2, 8): the carbon statute overrides a passed German rate; statutes read the turn, not the calendar.
 - GA-0-47 (areas 2, 12): a dissolved fund's assets, the UI-only budget gates (its phantom drawdown is GA-2-1).
 
 ## Questions marked ARCHITECT
@@ -51,3 +51,5 @@ S2-class leads still to run down in their areas:
 27. **GA-6-2** - Sweden's national gap when its fleet moves (the exchange exogenous, the unbalance printed and never priced): clear it by imports at a neighbour's price, or by unserved load at the ceiling, as every other country's does?
 28. **GA-7-1** (SD-30, SD-31) - the hospital waits read only the health ministry's effectiveness, which stays 1 while the chair is vacant: they never move in play, whatever the player spends. Should they read spending as coverage and mortality do?
 29. **GA-7-2, GA-7-3** - no-policy paths over a decade: life expectancy drifts down while treatable mortality falls 13-19 % (SD-35); the USA ends 9.5 % below potential with unemployment below its start; Italy shrinks for ten years. The trend form, and the output gap's persistence?
+30. **GA-8-3** (SD-31) - a vacant chair counts as efficiency 1 and every candidate 55-90 %, so seating a Health minister makes waits and mortality worse than leaving the chair empty: the scale for a vacant chair against a seated minister?
+31. **GA-9-1** - the foreign-policy meeting cards carry options that win on every count (Stand firm: +0.5 approval and a better trade balance), worth +8 approval over five years: cards whose options trade off, or the drip as designed?
