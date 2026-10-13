@@ -107,6 +107,56 @@ namespace PoliSim.EditorTools
                     foreach (WelfareProgram w in c.WelfarePrograms.Where(w => w.IsImplemented)) { DraftWelfare(w, 100f); }
                     Event("STYLE exploit X-04: every levied programme at full generosity");
                     break;
+                case "X-15":
+                    if (c.SovereignWealthFund == null) { Event("STYLE exploit X-15: no fund to dissolve"); break; }
+                    Set("_swfExistsDraft", (bool?)false);
+                    Event($"STYLE exploit X-15: the fund dissolved in the bill (assets {c.SovereignWealthFund.TotalAssets.ToString("R", CultureInfo.InvariantCulture)})");
+                    break;
+            }
+        }
+
+        private int _exploitLastDay = -1000;
+        private bool _exploitDone;
+
+        /// <summary>The sweep's levers outside the budget, each through its control's own body, retried every 30 days until the bill is introduced:
+        /// X-05 levies every tax the country does not (the tax's switch, `IntroduceTaxProgramBill`, one at a time); X-17 paid family leave to 104
+        /// weeks (the labour tab's draft and its Introduce, `BuildLaborBillFromDrafts`); X-07S every sector at regulation 0 and deregulation 100
+        /// (the sector tab's drafts and its Introduce, `BuildSectorBillFromDrafts`).</summary>
+        private void ExploitActs(Country c)
+        {
+            if (_spec.Style != "exploit" || _exploitDone || _day - _exploitLastDay < 30) { return; }
+            _exploitLastDay = _day;
+            switch (_spec.Exploit)
+            {
+                case "X-05":
+                {
+                    TaxLine t = c.TaxLines.FirstOrDefault(l => !l.IsImplemented && !_sm.GetPendingTaxProgramBills(c.Id).Any());
+                    if (t == null) { if (c.TaxLines.All(l => l.IsImplemented)) { _exploitDone = true; Event($"ACT exploit X-05 day {_day}: every tax levied"); } return; }
+                    bool ok = _sm.IntroduceTaxProgramBill(c.Id, t.Type, true);
+                    Count("act exploit levy");
+                    Event($"ACT exploit X-05 day {_day}: levy {t.Type} - {(ok ? "a bill introduced" : "refused")} (IntroduceTaxProgramBill, the tax's switch)");
+                    break;
+                }
+                case "X-17":
+                {
+                    Set("_paidFamilyLeaveWeeksInput", (float?)104f);
+                    bool ok = _sm.IntroduceLaborBill(c.Id, (LaborPolicyBill)Call("BuildLaborBillFromDrafts"));
+                    Count("act exploit leave");
+                    if (ok) { _exploitDone = true; }
+                    Event($"ACT exploit X-17 day {_day}: paid family leave to 104 weeks - {(ok ? "a bill introduced" : "refused")} (IntroduceLaborBill(BuildLaborBillFromDrafts()), the labour tab's Introduce)");
+                    break;
+                }
+                case "X-07S":
+                {
+                    var regulation = (Dictionary<SectorType, float>)Get("_sectorRegulationInputs");
+                    var deregulation = (Dictionary<SectorType, float>)Get("_sectorDeregulationInputs");
+                    foreach (Sector s in c.Sectors) { regulation[s.Type] = 0f; deregulation[s.Type] = 100f; }
+                    bool ok = _sm.IntroduceSectorBill(c.Id, (SectorPolicyBill)Call("BuildSectorBillFromDrafts"));
+                    Count("act exploit sectors");
+                    if (ok) { _exploitDone = true; }
+                    Event($"ACT exploit X-07S day {_day}: every sector at regulation 0 and deregulation 100 - {(ok ? "a bill introduced" : "refused")} (IntroduceSectorBill(BuildSectorBillFromDrafts()))");
+                    break;
+                }
             }
         }
 
@@ -346,7 +396,7 @@ namespace PoliSim.EditorTools
 
         private void Act(Country c)
         {
-            if (AtSafePoint()) { ParliamentActions(c); CampaignActs(); FleetActs(c); }
+            if (AtSafePoint()) { ParliamentActions(c); CampaignActs(); FleetActs(c); ExploitActs(c); }
 
             if (!_cabinetDone &&(_day >= _spec.Cabinet && _spec.Cabinet >= 0 || _day >= _spec.SearchSave && _spec.SearchSave >= 0) && AtSafePoint())
             {

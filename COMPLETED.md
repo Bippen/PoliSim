@@ -38096,3 +38096,17 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **Rows filed** (`docs/audit/AUDIT_LEDGER.md`): GA-10-1 (S4) - the USA's Politics page and labour tab call the legislature "Parliament", a clear bug.
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap812`). The harness runs are the plan above.
+
+## 813. THE GAMEPLAY AUDIT, AREAS 11 (THIRTY YEARS) AND 12 (THE EXPLOIT SWEEP) - PHASE 2 COMPLETE: THIRTY YEARS IN SIX COUNTRIES WITHOUT A NEW BREACH AND A TICK THAT DOES NOT GROW; THE GINI ANCHOR LEFT STALE; THE NO-POLICY DEBT PATHS; DEFICITS ABSORBED AT THE CEILING; A DISSOLVED FUND'S ASSETS DESTROYED; NEW TAXES FREE; ELIAS MARKS GA-10-1 (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 2 areas 11 and 12): "30-year stability and tick time" and "Exploit sweep" - the last two of the twelve.
+
+**Elias's answer to area 10** (2026-10-13, the ledger's status cell): fix GA-10-1.
+
+**The harness, extended** (`Assets/Editor/AuditDriver.cs`, `AuditDriver.Styles.cs`): the TICK line (each year's wall clock per day of play); the exploit levers outside the budget through their controls' bodies - X-05 every unlevied tax by its switch, X-17 paid family leave to 104 weeks (the labour tab's Introduce), X-07S every sector deregulated (the sector tab's Introduce) - and X-15, the fund dissolved in the budget.
+
+**Measured** (plans `area11_thirty`, `area12_exploits`; 17 runs): eight thirty-year runs (every country idle; Sweden and Germany under fuzz) without a new breach or a NaN, the tick flat (Sweden 22.7 ms a day in its first five years, 24.0 in its last five); the exploit levers against the idle runs on their seeds.
+
+**Rows filed** (`docs/audit/AUDIT_LEDGER.md`): GA-11-1 (S3) - the Gini's anchor is not re-taken when F4-5 re-seeds the income-tax lever, so inequality rises with no policy (France 30.00 → 32.03, the USA 39.50 → 40.87, Germany and Poland a point; Italy and Sweden at their seeds), against `WorldFactory`'s own "cannot drift" - a clear bug; GA-11-2 (S3) - the no-policy debt paths toward the ceiling (Italy 292 %, the USA 233 %), ARCHITECT; GA-12-1 (S2) - past the 300 % ceiling the clamp absorbs every deficit (Germany: 37 700 billion in four years), ARCHITECT; GA-12-2 (S2) - dissolving a fund destroys its assets (195 billion, 31 % of Sweden's GDP), ARCHITECT (question 9); GA-12-3 (S3) - a new tax levied by its switch costs no approval and no burden, ARCHITECT. Questions 32-34 in `docs/audit/AUDIT_FOR_ARCHITECT.md`. With this record Phase 2's twelve areas are run; Phase 4 takes the rows Elias marked "fix".
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap813`). The harness runs are the plans above.

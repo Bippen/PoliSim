@@ -15,6 +15,8 @@ Filed as ARCHITECT (S2: an election or office result, reproduced in every run - 
 
 - **GA-6-1** (area 6) - the player retires a country's whole fossil (or nuclear) fleet in weeks, with no reliability veto; the blocks go unserved at the 4 000 EUR/MWh ceiling, industry's power bill reaches 31-63 % of GDP and inflation its 30 % clamp - and real GDP is unchanged after a year (question 26).
 - **GA-6-2** (area 6, a bug whose fix needs a ruling) - Sweden's zone chain stops balancing when the fleet moves: its 7 GW of nuclear retired leaves a national gap of 4.7-6.1 GW that no price, unserved load or import answers, against `ChainUnbalanceMw`'s own "a few tens of MW from zero; printed, never priced" (question 27).
+- **GA-12-1** (area 12) - past the 300 % ceiling the clamp absorbs every deficit (Germany: 37 700 billion in four years, the premium capped) (question 33).
+- **GA-12-2** (area 12) - dissolving a fund destroys its assets (Sweden: 195 billion, 31 % of GDP, to nothing) (question 9, GA-0-47).
 
 S2-class leads still to run down in their areas:
 - GA-0-21 (area 3): Sweden's live count skips the 12 % valkrets route the built procedure carries.
@@ -53,3 +55,6 @@ S2-class leads still to run down in their areas:
 29. **GA-7-2, GA-7-3** - no-policy paths over a decade: life expectancy drifts down while treatable mortality falls 13-19 % (SD-35); the USA ends 9.5 % below potential with unemployment below its start; Italy shrinks for ten years. The trend form, and the output gap's persistence?
 30. **GA-8-3** (SD-31) - a vacant chair counts as efficiency 1 and every candidate 55-90 %, so seating a Health minister makes waits and mortality worse than leaving the chair empty: the scale for a vacant chair against a seated minister?
 31. **GA-9-1** - the foreign-policy meeting cards carry options that win on every count (Stand firm: +0.5 approval and a better trade balance), worth +8 approval over five years: cards whose options trade off, or the drip as designed?
+32. **GA-11-2** (with GA-7-3) - thirty years of no policy run the debt toward the 300 % ceiling everywhere but Sweden (Italy 292 % with its real GDP 8.5 % lower, the USA 233 % at 12 % below potential): the no-policy path and the risk premium's cap?
+33. **GA-12-1** (X-09, FT-17) - past the 300 % ceiling the clamp absorbs every deficit (Germany: 37 700 billion in four years) and the premium is capped: what should a deficit past the ceiling cost?
+34. **GA-12-3** (X-05, D-32) - levying a new tax by its switch carries no hike penalty and no household burden (Sweden's five unlevied taxes: debt 14 billion lower, approval unchanged): should a levy count as a rate rise?

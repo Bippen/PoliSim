@@ -1,0 +1,12 @@
+# The gameplay audit's area 11: thirty-year stability and tick time (docs/audit/AUDIT_PROTOCOL.md). Every country idle for thirty years, and
+# Sweden and Germany under fuzz (random budgets, laws, switches and drawdowns) for thirty: the invariants every day, the families and the money
+# read at each decade, and the TICK line - each year's wall clock per day of play - so a cost that grows with the game's age shows as growth,
+# not as one mean (inventory E §5: what a 30-year no-policy run is known to do; the runaways and their state).
+id=w_se_idle30 country=Sweden party=M style=idle seed=1501 days=10950
+id=w_de_idle30 country=Germany party=SPD style=idle seed=1502 days=10950
+id=w_pl_idle30 country=Poland party=PiS style=idle seed=1503 days=10950
+id=w_it_idle30 country=Italy party=FdI style=idle seed=1504 days=10950
+id=w_us_idle30 country=USA party=DEM style=idle seed=1505 days=10950
+id=w_fr_idle30 country=France party=RN style=idle seed=1506 days=10950
+id=w_se_fuzz30 country=Sweden party=M style=fuzz seed=1507 days=10950
+id=w_de_fuzz30 country=Germany party=SPD style=fuzz seed=1508 days=10950

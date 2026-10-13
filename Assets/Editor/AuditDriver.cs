@@ -115,7 +115,7 @@ namespace PoliSim.EditorTools
 
         private static readonly string[] Styles = { "idle", "historical", "fuzz", "exploit", "extreme" };
         private static readonly string[] Poles = { "deficit", "surplus", "big", "small", "spendup", "spenddown" };
-        private static readonly string[] Exploits = { "X-01", "X-02", "X-04", "X-16" };
+        private static readonly string[] Exploits = { "X-01", "X-02", "X-04", "X-16", "X-05", "X-15", "X-17", "X-07S" };
 
         internal string Describe() =>
             $"{Id}: {Country}{(string.IsNullOrEmpty(Scenario) ? string.Empty : " scenario " + Scenario)} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}{(Style == "extreme" ? " " + Pole : Style == "exploit" ? " " + Exploit : Style == "fuzz" ? " every " + Every + " d" : string.Empty)}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
@@ -533,6 +533,7 @@ namespace PoliSim.EditorTools
                 }
 
                 TaxReadout(c);
+                TickReadout();
                 CheckDay(c);
             }
             else
@@ -584,6 +585,19 @@ namespace PoliSim.EditorTools
         }
 
         private string _taxSignature;
+        private DateTime _tickMark;
+        private int _tickDay;
+
+        /// <summary>Area 11: each year's wall clock per day of play (a night's takeover included), so a thirty-year run shows whether the tick grows
+        /// with the game's age - a list that never shrinks, a cache that never clears - where one mean over the run would hide it.</summary>
+        private void TickReadout()
+        {
+            if (_tickMark == default) { _tickMark = DateTime.UtcNow; _tickDay = _day; return; }
+            if (_day - _tickDay < 365) { return; }
+            Event(string.Format(CultureInfo.InvariantCulture, "TICK days {0}-{1}: {2:F1} ms a day", _tickDay, _day, (DateTime.UtcNow - _tickMark).TotalMilliseconds / (_day - _tickDay)));
+            _tickMark = DateTime.UtcNow;
+            _tickDay = _day;
+        }
 
         /// <summary>The player's tax lines as they stand (`TaxLine.Rate`, the rate in force - not the Budget page's draft), logged whenever one moves: a
         /// passed bill on its day, a statute's indexation at a boundary (inventory D GA-0-28: the carbon statute against a passed rate).</summary>
