@@ -1,0 +1,8 @@
+# The gameplay audit's area 4, the created parties again: the Regional origin's count read valkrets by valkrets (the harness's REGIONAL line,
+# from NationalElection.LastRegional* on the frame the count lands - inventory C D-11, GA-0-21: a party under 4 % with 12 % in a valkrets),
+# on area 4's seed and another; and the HQ a created party's player reads in the run-up and the campaign (the night's WHY line printed
+# "BASELINE 20.8 -> CLOSE 13.x" for every origin, against counts of 0.64-10 %).
+id=m1_se_regional country=Sweden create=Regional party=REG style=idle seed=816 days=240
+id=m1_se_regional_b country=Sweden create=Regional party=REG style=idle seed=817 days=240
+id=m2_se_grassroots_hq country=Sweden create=Grassroots party=GRA style=idle seed=811 days=240 capture=10:HQ,200:HQ
+id=m2_se_issue_hq country=Sweden create=SingleIssue party=ISS style=idle seed=815 days=240 capture=200:HQ

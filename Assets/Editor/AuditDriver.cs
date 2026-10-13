@@ -94,6 +94,9 @@ namespace PoliSim.EditorTools
         /// <summary>The central bank's head the chair hold appoints, in place of the style's own pick: dove (the lowest RateBias), hawk (the
         /// highest) or first (the card the list opens on) - a controlled pair is one game with only the head changed.</summary>
         internal string Chair;
+        /// <summary>The live campaign's chips the run presses (`CampaignActs`): runup (the run-up's priced verbs and the five hires, once), ground (rally,
+        /// town hall, doors), air (TV, digital, post) or all (the eight) - the campaign's mixes after the run-up, each legal act once a day.</summary>
+        internal string Campaign;
         /// <summary>Pages to capture, `day:Page` (Desk, Statistics, Decisions, Demographics, Budget, PolicyLaws, Politics, Energy): on that day the
         /// page is opened through the rail's own body, one frame of OnGUI is recorded by the dry film's label table, and the desk returns.</summary>
         internal readonly List<(int Day, string Page)> Captures = new List<(int, string)>();
@@ -166,6 +169,7 @@ namespace PoliSim.EditorTools
                         case "withdraw": s.Withdraw = int.Parse(value, CultureInfo.InvariantCulture); break;
                         case "leave": s.Leave = int.Parse(value, CultureInfo.InvariantCulture); break;
                         case "chair": s.Chair = value.ToLowerInvariant(); break;
+                        case "campaign": s.Campaign = value.ToLowerInvariant(); break;
                         case "capture":
                             foreach (string pair in value.Split(',').Where(v => v.Length > 0))
                             {
@@ -192,6 +196,7 @@ namespace PoliSim.EditorTools
             if (!GameSettings.AutosaveDayChoices.Contains(s.Autosave)) { error = $"autosave= is one of the settings screen's choices ({string.Join(", ", GameSettings.AutosaveDayChoices)})"; return null; }
             if (s.Slots < GameSettings.MinSlots || s.Slots > GameSettings.MaxSlots) { error = $"slots= is {GameSettings.MinSlots}..{GameSettings.MaxSlots}"; return null; }
             if (s.Chair != null && s.Chair != "dove" && s.Chair != "hawk" && s.Chair != "first") { error = "chair= is dove, hawk or first"; return null; }
+            if (s.Campaign != null && s.Campaign != "runup" && s.Campaign != "ground" && s.Campaign != "air" && s.Campaign != "all" && s.Campaign != "paced") { error = "campaign= is runup, ground, air, all or paced"; return null; }
             return s;
         }
     }
@@ -528,6 +533,31 @@ namespace PoliSim.EditorTools
             }
         }
 
+        /// <summary>The count's per-valkrets shares as it left them (`NationalElection.LastRegional*`, read on the frame its record lands): every party
+        /// under 4 % of the nation's votes that reaches 12 % in a valkrets - vallagen 14 kap. 3 § seats such a party there (inventory C D-11, GA-0-21) -
+        /// and the player's party's best valkrets. Sweden alone (the 12 % route is Sweden's); a reading, not an invariant - GA-0-21 holds the ruling.</summary>
+        private void RegionalReadout(Country c, ElectionRecord r)
+        {
+            if (c.Id != CountryId.Sweden) { return; }
+            double[][] shares = NationalElection.LastRegionalShares;
+            IReadOnlyList<string> keys = NationalElection.LastRegionalKeys;
+            string[] names = NationalElection.LastRegionalNames;
+            if (shares == null || keys == null || names == null || shares.Length != names.Length) { Event("REGIONAL: no per-valkrets shares on record for this count"); return; }
+            for (int k = 0; k < keys.Count; k++)
+            {
+                double best = -1.0;
+                int at = -1;
+                for (int v = 0; v < shares.Length; v++) { if (k < shares[v].Length && shares[v][k] > best) { best = shares[v][k]; at = v; } }
+                if (at < 0) { continue; }
+                double national = r.Shares.TryGetValue(keys[k], out double n) ? n : double.NaN;
+                bool route = national < 0.04 && best >= 0.12;
+                if (!route && keys[k] != c.PlayerPartyAbbrev) { continue; }
+                int seated = r.Seats.TryGetValue(keys[k], out int s) ? s : 0;
+                Event(string.Format(CultureInfo.InvariantCulture, "REGIONAL {0}: {1:F2} % of the nation's votes, best {2:F2} % in {3}{4}", keys[k], national * 100.0, best * 100.0, names[at],
+                    route ? $" - UNDER 4 % WITH 12 % IN A VALKRETS (vallagen 14 kap. 3 §), seated {seated}" : string.Empty));
+            }
+        }
+
         private void CheckDay(Country c)
         {
             _invariants.NoteDay(_sm);
@@ -541,6 +571,7 @@ namespace PoliSim.EditorTools
                 ElectionRecord r = c.ElectionHistory[_lastElectionCount++];
                 Event($"ELECTION {r.Date:yyyy-MM-dd} ({r.Method}): seats {string.Join(" ", r.Seats.OrderByDescending(p => p.Value).Select(p => p.Key + " " + p.Value))}");
                 _invariants.Election(c, r, _day, _lastDate);
+                RegionalReadout(c, r);
             }
 
             if (_lastPresidentialCount != c.PresidentialElections.Count)

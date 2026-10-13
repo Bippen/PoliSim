@@ -1,0 +1,13 @@
+# The gameplay audit's area 5, the campaign paced: area5's every-act mix queued about a million kronor of acts a day against a chest of 1.3
+# million - the money gone in a day or two, the rest of the queue unpayable. `campaign=paced` spends what is left over the days left, within
+# the day's hours, the eight in a turn that rotates by day; each run logs the player's ledger weekly (acts done, money on acts, the chest,
+# the persuasion delivered), so what the count moves is read beside what the campaign did.
+id=n1_se_s_idle country=Sweden party=S style=idle seed=901 days=245
+id=n1_se_s_all country=Sweden party=S style=idle campaign=all seed=901 days=245
+id=n1_se_s_paced country=Sweden party=S style=idle campaign=paced seed=901 days=245
+id=n2_se_s_idle country=Sweden party=S style=idle seed=931 days=245
+id=n2_se_s_paced country=Sweden party=S style=idle campaign=paced seed=931 days=245
+id=n3_se_l_idle country=Sweden party=L style=idle seed=902 days=245
+id=n3_se_l_paced country=Sweden party=L style=idle campaign=paced seed=902 days=245
+id=n4_se_m_paced country=Sweden party=M style=idle campaign=paced seed=903 days=245
+id=n5_de_spd_paced country=Germany party=SPD style=idle campaign=paced seed=911 days=115

@@ -208,9 +208,91 @@ namespace PoliSim.EditorTools
             }
         }
 
+        // ------------------------------------------------------------------ the campaign (area 5)
+
+        private static readonly CampaignActionKind[] RunUpVerbs = { CampaignActionKind.EstablishOffice, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising };
+        private static readonly CampaignActionKind[] GroundActs = { CampaignActionKind.Rally, CampaignActionKind.TownHall, CampaignActionKind.DoorToDoor };
+        private static readonly CampaignActionKind[] AirActs = { CampaignActionKind.TelevisionAd, CampaignActionKind.DigitalAd, CampaignActionKind.SocialPost };
+        private static readonly CampaignActionKind[] AllActs =
+        {
+            CampaignActionKind.Rally, CampaignActionKind.TownHall, CampaignActionKind.DoorToDoor, CampaignActionKind.TelevisionAd,
+            CampaignActionKind.DigitalAd, CampaignActionKind.SocialPost, CampaignActionKind.PolicyAnnouncement, CampaignActionKind.Interview,
+        };
+        private DateTime _campaignActDate = DateTime.MinValue;
+        private bool _runUpDone;
+        private int _campaignLogDay = -1;
+
+        /// <summary>The HQ's chips, pressed as their bodies press them (`GameController.Campaign.cs`): in the run-up the three priced verbs at
+        /// `PreCampaignRun.Price` and the five hires at the salary with their role, once; in the campaign the plan's mix - ground (rally, town hall,
+        /// doors), air (TV, digital, post) or all (the eight) - each legal act once a day at its `ActionSpec.MoneyCost`, a local one aimed by the HQ's own
+        /// `LocalActRegion` (the map's pick, else the one-region rule). A refusal is logged as the chip logs it.</summary>
+        private void CampaignActs()
+        {
+            if (string.IsNullOrEmpty(_spec.Campaign) || _lastDate == _campaignActDate) { return; }
+            PreCampaignRun.State pre = _sm.PlayerPreCampaign;
+            CampaignRun.State live = _sm.PlayerCampaign;
+            if (live == null && pre == null) { return; }
+            _campaignActDate = _lastDate;
+            if (live == null)
+            {
+                if (_runUpDone) { return; }
+                _runUpDone = true;
+                foreach (CampaignActionKind verb in RunUpVerbs)
+                {
+                    if (PreCampaignRun.Refusal(verb) != null) { continue; }   // the chip is drawn disabled
+                    bool ok = _sm.QueueCampaignDecision(verb, -1, null, PreCampaignRun.Price(pre, verb), out string refusal);
+                    Count("act run-up verb");
+                    Event($"ACT campaign day {_day}: run-up {verb} {(ok ? "queued" : "REFUSED - " + refusal)}");
+                }
+                foreach (StaffRole role in CampaignStaff.TheFive)
+                {
+                    if (pre.HasRole(role)) { continue; }   // the chip is dimmed once the role is on the roster
+                    bool ok = _sm.QueueCampaignDecision(CampaignActionKind.RecruitStaff, -1, null, CampaignStaff.SalaryPerDay, out string refusal, role: (int)role);
+                    Count("act run-up hire");
+                    Event($"ACT campaign day {_day}: hire {role} {(ok ? "queued" : "REFUSED - " + refusal)}");
+                }
+                return;
+            }
+
+            int me = _sm.PlayerPartyIndexForCampaign();
+            if (live.Finished || me < 0 || live.Ledgers == null || me >= live.Ledgers.Length) { return; }
+            CampaignPhase phase = live.Setup.Calendar.PhaseOn(_sm.CurrentDate);
+            CampaignActionKind[] mix = _spec.Campaign == "ground" ? GroundActs : _spec.Campaign == "air" ? AirActs : _spec.Campaign == "all" || _spec.Campaign == "paced" ? AllActs : Array.Empty<CampaignActionKind>();
+            // paced: what is left spread over the days left, within the day's hours - the acts taken in a turn that rotates by day
+            double budget = double.MaxValue, hours = double.MaxValue;
+            if (_spec.Campaign == "paced" && live.Pools != null && me < live.Pools.Length)
+            {
+                budget = live.Pools[me].Money / Math.Max(1, live.TotalDays - live.Day);
+                hours = live.Pools[me].Hours;
+            }
+            int queued = 0, refused = 0;
+            string firstRefusal = null;
+            for (int i = 0; i < mix.Length; i++)
+            {
+                CampaignActionKind kind = mix[_spec.Campaign == "paced" ? (i + _day) % mix.Length : i];
+                if (!CampaignLegality.IsLegal(kind, phase)) { continue; }   // the chip is drawn disabled
+                CampaignActions.ActionSpec spec = CampaignActions.Spec(kind);
+                if (spec.MoneyCost > budget || spec.Hours > hours) { continue; }
+                int region = spec.IsLocal ? (int)Call("LocalActRegion") : -1;
+                if (_sm.QueueCampaignDecision(kind, region, null, spec.MoneyCost, out string refusal)) { queued++; budget -= spec.MoneyCost; hours -= spec.Hours; }
+                else { refused++; firstRefusal = firstRefusal ?? kind + ": " + refusal; }
+                Count("act campaign " + kind);
+            }
+
+            if (_day % 7 == 0 || refused > 0 && _campaignLogDay < 0)
+            {
+                if (refused > 0) { _campaignLogDay = _day; }
+                CampaignRun.PartyLedger l = live.Ledgers[me];
+                Event(string.Format(CultureInfo.InvariantCulture, "ACT campaign day {0} ({1}, campaign day {2} of {3}): {4} queued, {5} refused{6}; done so far {7} act(s) [{8}], {9:N0} spent on acts, chest {10:N0}, persuasion {11:F4}",
+                    _day, phase, live.Day, live.TotalDays, queued, refused, firstRefusal == null ? string.Empty : " - first: " + firstRefusal, l.TotalActions,
+                    string.Join(" ", CampaignActions.TheEight.Select((k, j) => k + " " + l.ActionCount[j])), l.MoneySpentOnActions,
+                    live.Pools != null && me < live.Pools.Length ? live.Pools[me].Money : double.NaN, l.PersuasionDelivered));
+            }
+        }
+
         private void Act(Country c)
         {
-            if (AtSafePoint()) { ParliamentActions(c); }
+            if (AtSafePoint()) { ParliamentActions(c); CampaignActs(); }
 
             if (!_cabinetDone &&(_day >= _spec.Cabinet && _spec.Cabinet >= 0 || _day >= _spec.SearchSave && _spec.SearchSave >= 0) && AtSafePoint())
             {

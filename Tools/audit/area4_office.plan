@@ -1,0 +1,44 @@
+# The gameplay audit's area 4: office - cabinet formation, confidence votes, early elections, caretaker government, term limits, opposition play,
+# losing and regaining power, game over (docs/audit/AUDIT_PROTOCOL.md). With area 3's runs this covers the full cross country x role x outcome
+# (win, loss, hung or coalition, no confidence or early election, term limit, game over) where the inventory finds the cell reachable; the rest
+# are named unreachable with their reason (docs/audit/AUDIT_INVENTORY.md, the outcome cells). Leads: inventory C §6-§7, A Annex C.
+#
+# --- Sweden: every role, and the moves that end a government ---
+id=g1_se_kd_leave country=Sweden party=KD style=idle seed=801 days=1760 leave=60
+id=g1_se_l_leave country=Sweden party=L style=idle seed=802 days=1760 leave=300
+id=g1_se_sd_withdraw country=Sweden party=SD style=idle seed=803 days=1760 withdraw=30
+id=g1_se_m_fuzz country=Sweden party=M style=fuzz seed=804 days=1760
+id=g1_se_m_surplus country=Sweden party=M style=extreme pole=surplus seed=805 days=1760
+id=g1_se_v country=Sweden party=V style=idle seed=806 days=1760
+id=g1_se_s_motion_late country=Sweden party=S style=idle seed=807 days=1760 motion=400,800
+id=g1_se_kd_hist country=Sweden party=KD style=historical seed=808 days=1760
+# D-12: an opposition motion on polling night, between the count and the round (the Riksdag has no RF 13:4 bar in MoveNoConfidence; §636 states it unmodelled)
+id=g1_se_s_motion_night country=Sweden party=S style=idle seed=809 days=400 motion=238
+# a created party of each origin (Sweden only); a Splinter takes the largest party as its parent
+id=g2_se_grassroots country=Sweden create=Grassroots party=GRA style=idle seed=811 days=400
+id=g2_se_splinter country=Sweden create=Splinter party=SPL style=idle seed=812 days=400
+id=g2_se_protest country=Sweden create=Protest party=PRO style=fuzz seed=813 days=400
+id=g2_se_business country=Sweden create=BusinessTechnocrats party=BUS style=idle seed=814 days=400
+id=g2_se_issue country=Sweden create=SingleIssue party=ISS style=idle seed=815 days=400
+id=g2_se_regional country=Sweden create=Regional party=REG style=idle seed=816 days=400
+#
+# --- Germany: the partners, the opposition, a partner leaving before the count ---
+id=g3_de_grune_leave country=Germany party=Grune style=idle seed=821 days=260 leave=10
+id=g3_de_fdp country=Germany party=FDP style=idle seed=822 days=260 capture=1:Politics,60:Politics,120:Politics
+id=g3_de_spd_fuzz country=Germany party=SPD style=fuzz seed=823 days=260
+id=g3_de_bsw country=Germany party=BSW style=idle seed=824 days=260
+id=g3_de_csu country=Germany party=CSU style=idle seed=825 days=260
+#
+# --- Poland: the lists that stood in 2023 (TD, NL from no seats), the lineages (SLD, PSL), the opposition's road to office ---
+id=g4_pl_td country=Poland party=TD style=idle seed=831 days=1750
+id=g4_pl_nl country=Poland party=NL style=idle seed=832 days=1750
+id=g4_pl_ko_fuzz country=Poland party=KO style=fuzz seed=833 days=1750
+id=g4_pl_pis_surplus country=Poland party=PiS style=extreme pole=surplus seed=834 days=1750
+#
+# --- Italy, the USA and France: the roles a start offers, a year each (no election, no motion: the outcomes there are named unreachable) ---
+id=g5_it_fdi country=Italy party=FdI style=fuzz seed=841 days=400
+id=g5_it_lega country=Italy party=Lega style=idle seed=842 days=400
+id=g5_it_m5s country=Italy party=M5S style=idle seed=843 days=400
+id=g5_us_dem country=USA party=DEM style=fuzz seed=844 days=400
+id=g5_fr_ens country=France party=ENS style=fuzz seed=845 days=400
+id=g5_fr_lr country=France party=LR style=idle seed=846 days=400

@@ -1,0 +1,27 @@
+# The gameplay audit's area 5: campaigning - actions, funds, polls, events, approval (docs/audit/AUDIT_PROTOCOL.md). The campaign is Sweden's
+# and Germany's (inventory D §6a). The style `campaign=` presses the HQ's chips as their bodies do (`GameController.Campaign.cs`): the run-up's
+# priced verbs and the five hires once, then in the campaign each legal act of the mix once a day at its own price - ground (rally, town hall,
+# doors), air (TV, digital, post), all (the eight), runup (the run-up alone). Each mix runs on the seed of an idle run, so what the count moves
+# is the player's campaign (the night's "WHY - <party> · BASELINE -> CLOSE" line and the count). Leads: inventory D §5b, §6a (SD-23, SD-24).
+#
+# --- Sweden: the largest opposition party, each mix on one seed ---
+id=h1_se_s_idle country=Sweden party=S style=idle seed=901 days=300
+id=h1_se_s_runup country=Sweden party=S style=idle campaign=runup seed=901 days=300
+id=h1_se_s_ground country=Sweden party=S style=idle campaign=ground seed=901 days=300
+id=h1_se_s_air country=Sweden party=S style=idle campaign=air seed=901 days=300
+id=h1_se_s_all country=Sweden party=S style=idle campaign=all seed=901 days=300
+# --- Sweden: a party near the 4 % line, and the governing party ---
+id=h2_se_l_idle country=Sweden party=L style=idle seed=902 days=300
+id=h2_se_l_all country=Sweden party=L style=idle campaign=all seed=902 days=300
+id=h2_se_m_idle country=Sweden party=M style=idle seed=903 days=300
+id=h2_se_m_all country=Sweden party=M style=idle campaign=all seed=903 days=300
+#
+# --- Germany: the chancellor's party and a small partner, each against its idle run ---
+id=h3_de_spd_idle country=Germany party=SPD style=idle seed=911 days=120
+id=h3_de_spd_all country=Germany party=SPD style=idle campaign=all seed=911 days=120
+id=h3_de_fdp_idle country=Germany party=FDP style=idle seed=912 days=120
+id=h3_de_fdp_all country=Germany party=FDP style=idle campaign=all seed=912 days=120
+#
+# --- save, load and continue inside the campaign with the player's acts queued every day (GA-1-3's replay, under real input) ---
+id=h4_se_s_all_base country=Sweden party=S style=idle campaign=all seed=921 days=260
+id=h4_se_s_all_sl country=Sweden party=S style=idle campaign=all seed=921 days=260 saveload=200 compare=h4_se_s_all_base
