@@ -38018,3 +38018,15 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap806`). The harness runs are the plans above.
 
 **Corrected the same day, before the report.** GA-2-9 is not a clear bug: §220 built the closed year's balance as the year's flow and named the one-time settlements as a separate stock mover beside the series (`DomesticMoneyBasisDiagnostic`), and the "two books" sentence the row cited is `ApplyOneTimeBudgetImpact`'s about the running budget against the debt, not the year's report. The row is S3 and ARCHITECT (question 17 - count the one-offs in the year the player reads, or name them beside it); area 2 files two S2, both clear bugs.
+
+## 807. THE GAMEPLAY AUDIT, AREA 3 (ELECTIONS): EVERY COUNT LAWFUL AND EVERY NIGHT EQUAL TO ITS CHAMBER; SIX ROWS - AN IDLE GAME'S COUNTS AGAINST THE RECORD (GERMANY 2025 RE-ELECTS SCHOLZ, SWEDEN 2026 HANDS THE RIGHT BLOC A MAJORITY), THE STALE GOVERNMENT LABEL, THE NIGHT'S GOVERNMENT AGAINST THE ROUND'S, "VALKRETS" ON GERMANY'S NIGHT; ELIAS MARKS AREA 2'S FIVE CLEAR BUGS (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 2 area 3): "Elections: every system, thresholds, seat allocation, presidential rounds, election night".
+
+**Elias's answer to area 2** (2026-10-13, the ledger's status cells): fix all five clear bugs - GA-2-1, GA-2-2, GA-2-7, GA-2-8 and GA-1-4.
+
+**Measured** (plan `area3_elections`, 25 runs: Sweden's 2026 and 2030 counts in six player parties, the Riksdag's motion, support withdrawn and an extra election; Germany's 2025 count in seven runs, the constructive vote before and after it and a partner leaving; Poland's Sejm of 2023 and 2027 and its 2025 presidency; Italy, the USA and France for 800 days): every count lawful, its shares summing to one and its seats to the chamber; each of the 23 nights equal to its chamber party by party; the motion, the constructive vote and the extra election as their procedures say; a party out of the Sejm ends the run at the count.
+
+**Rows filed** (`docs/audit/AUDIT_LEDGER.md`, GA-3): GA-3-1 (S2) and GA-3-2 (S2) - an idle game's counts against the record (Germany 2025: SPD first, AfD 63 against 152, Scholz re-elected; Sweden 2026: the right bloc 183-190 seats against 173, SD+M+KD+L in every run, again in 2030) - ARCHITECT; GA-3-3 (S3) - Poland's 2023 count and 2025 rounds against the record - ARCHITECT; GA-3-4 (S3) - withdrawing support or leaving the cabinet leaves the government's label stale (inventory C D-14), a clear bug; GA-3-5 (S3) - the night's government against the round's (D-21) - ARCHITECT; GA-3-6 (S4) - "valkrets" on Germany's night, a clear bug. Questions 18-20 in `docs/audit/AUDIT_FOR_ARCHITECT.md`; question 8 carries Poland's government installed on polling day.
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap807`). The harness runs are the plan above.

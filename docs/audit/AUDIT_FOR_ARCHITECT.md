@@ -8,6 +8,10 @@ Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); bo
 - **GA-2-1** (S2, area 2) - money from an empty fund (D-02): a contribution below zero goes on paying the budget after the fund is floored at 0. Germany and Poland create a fund at nothing and draw it; Sweden's empties under the draw; an ordinary French budget at -6 % reaches it.
 - **GA-2-2** (S2, area 2) - France's income tax at a lever of 0 keeps the seed's whole revenue: `TaxSchedule.YieldRatio` answers 1.0 for a yield at or below zero (D-04). Four other countries lose 5-11 % of GDP a year on the same bill.
 
+Filed as ARCHITECT (S2: an election or office result, reproduced in every run - the model's, not a code defect; questions 18-19):
+- **GA-3-1** (area 3) - an idle German game's 2025 count: SPD first (150-156 seats against the record's 120), AfD 59-64 against 152, FDP and BSW about 70 each against 0, and Scholz re-elected where the record has Merz.
+- **GA-3-2** (area 3) - an idle Swedish game's 2026 count gives the right bloc 183-190 seats where the record's gave it 173 (SD +7 to +10, V -6 to -7), and installs SD+M+KD+L in every run, again in 2030.
+
 S2-class leads still to run down in their areas:
 - GA-0-21 (area 3): Sweden's live count skips the 12 % valkrets route the built procedure carries.
 - GA-0-28 (areas 2, 8): the carbon statute overrides a passed German rate; statutes read the turn, not the calendar.
@@ -22,7 +26,7 @@ S2-class leads still to run down in their areas:
 5. **GA-0-25** - should events move salience and elections beyond the economy?
 6. **GA-0-27** - cabinet: an economy portfolio; Gamson's small-party bonus; which families read a portfolio's effectiveness ("eight departments" against six portfolios)?
 7. **GA-0-29** - the central bank's head: each bank's own term, sourced, in place of one four-turn cycle?
-8. **GA-0-45** - the stated premises no spec row holds (the constructive vote's Monday timing, "any party may move it", Art. 63(4)'s appointment, the Sunday rules, Poland's first sitting at +30, 2022's blocs for every later Swedish election): record them as rulings, or revisit?
+8. **GA-0-45** - the stated premises no spec row holds (the constructive vote's Monday timing, "any party may move it", Art. 63(4)'s appointment, the Sunday rules, Poland's first sitting at +30, 2022's blocs for every later Swedish election): record them as rulings, or revisit? Measured in area 3: Poland's government changes on polling day itself (KO+TD+NL from 2023-10-15; the record's Tusk cabinet from 13 December).
 9. **GA-0-47** - the money behaviours no spec names: should fund terms stay outside the vote now that a -10 % fund can be created and drawn while empty; should dissolving a fund credit its assets; should the yearly spending range and the budget window be the model's gates rather than the UI's?
 10. **GA-0-53** - the central bank: retire the dead own-currency dial; give AI-run banks a head; damp the preview as the projection does?
 11. **GA-0-55** - levers the UI writes with no manager verb (a trade override, fleet orders, the central bank's head): give them verbs (and the impact ledger a view of them), or state the rule?
@@ -32,3 +36,6 @@ S2-class leads still to run down in their areas:
 15. **GA-2-5** (GA-0-24, measured) - approval does not reach the vote: a government at 1.5 % approval on polling day takes 9 seats fewer than one at 50.5 % and keeps its majority; months at 0 % bring no motion, fall or vote. Should approval feed the vote, motions or game over?
 16. **GA-2-6** (with PS-6) - the US House adopts the Democrats' budget at every tax ceiling and every spending floor, and refuses the one at every tax floor: what does a bloc's budget vote read?
 17. **GA-2-9** (§220) - the closed year's balance is the year's flow by §220's design, the one-time settlements (cabinet and interrupt decisions, drawdowns) named beside it only in `DomesticMoneyBasisDiagnostic`: the balance, the deficit rule's ink and the annual series read a deficit 0.1-0.6 % of GDP smaller than the debt's own change, in five countries. Count the one-offs in the year the player reads (the protocol's "debt change = deficit"), or name them beside it?
+18. **GA-3-1, GA-3-2, GA-3-3** - an idle game's count against the record, which each night prints beside it: Germany 2025 seats SPD first and re-elects Scholz, Sweden 2026 hands the right bloc a majority the record did not give it, Poland 2023 has KO 34 seats short and the 2025 run-off at 57 % against 51 %. Should the vote model reproduce the record's counts for a player who does nothing (§346 bills the 2026 count as an out-of-sample test), and within what tolerance?
+19. **GA-3-2** (D-22) - the 2022 blocs carry into every later Swedish election, and SD+M+KD+L is installed in 2026 and 2030 in every run: re-form the blocs after each count, or record 2022's as the rule?
+20. **GA-3-5** (D-21) - the night's formation ("WHO GOVERNS - FORMED ON THE NEW CHAMBER") and the round's (the talman's proposals) disagree once the player has broken the bloc - the night told SD "IN OFFICE" before four rejections and an extra election: one formation for both, or the night's named a projection?
