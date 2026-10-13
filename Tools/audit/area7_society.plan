@@ -1,0 +1,24 @@
+# The gameplay audit's area 7: macro and the six society-stat families (docs/audit/AUDIT_PROTOCOL.md). Two questions. Does the player's
+# spending reach the families (inventory E SD-30: effectiveness cannot see the player's own budget; B D-05: the player's spending never reaches
+# the category effects)? - every spending line at its track's top or floor, taxes as they stand (`pole=spendup|spenddown`), against the idle
+# run on its seed, where the government passes its budget. And what does a decade of no policy do to each family (SD-33: the player's
+# driverless lines fall per head; SD-20: the epochs before 2024 freeze the pyramid; SD-35: the trend form's small permanent drag)?
+#
+# --- the player's spending, alone ---
+id=r1_se_m_idle country=Sweden party=M style=idle seed=1101 days=1095
+id=r1_se_m_spendup country=Sweden party=M style=extreme pole=spendup seed=1101 days=1095
+id=r1_se_m_spenddown country=Sweden party=M style=extreme pole=spenddown seed=1101 days=1095
+id=r2_pl_pis_idle country=Poland party=PiS style=idle seed=1102 days=1095
+id=r2_pl_pis_spendup country=Poland party=PiS style=extreme pole=spendup seed=1102 days=1095
+id=r2_pl_pis_spenddown country=Poland party=PiS style=extreme pole=spenddown seed=1102 days=1095
+id=r3_it_fdi_idle country=Italy party=FdI style=idle seed=1103 days=1095
+id=r3_it_fdi_spendup country=Italy party=FdI style=extreme pole=spendup seed=1103 days=1095
+id=r3_it_fdi_spenddown country=Italy party=FdI style=extreme pole=spenddown seed=1103 days=1095
+#
+# --- a decade of no policy in every country ---
+id=r4_se_idle10 country=Sweden party=M style=idle seed=1111 days=3650
+id=r4_de_idle10 country=Germany party=SPD style=idle seed=1112 days=3650
+id=r4_pl_idle10 country=Poland party=PiS style=idle seed=1113 days=3650
+id=r4_it_idle10 country=Italy party=FdI style=idle seed=1114 days=3650
+id=r4_us_idle10 country=USA party=DEM style=idle seed=1115 days=3650
+id=r4_fr_idle10 country=France party=RN style=idle seed=1116 days=3650

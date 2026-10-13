@@ -108,7 +108,7 @@ namespace PoliSim.EditorTools
         internal bool UsesRealSaves => Autosave > 0 || (Resume != null && Resume.StartsWith("@", StringComparison.Ordinal));
 
         private static readonly string[] Styles = { "idle", "historical", "fuzz", "exploit", "extreme" };
-        private static readonly string[] Poles = { "deficit", "surplus", "big", "small" };
+        private static readonly string[] Poles = { "deficit", "surplus", "big", "small", "spendup", "spenddown" };
         private static readonly string[] Exploits = { "X-01", "X-02", "X-04", "X-16" };
 
         internal string Describe() =>

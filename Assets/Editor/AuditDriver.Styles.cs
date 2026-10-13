@@ -51,6 +51,14 @@ namespace PoliSim.EditorTools
 
         private void DraftPole(Country c, string pole)
         {
+            if (pole == "spendup" || pole == "spenddown")   // the spending lines alone - what the families and the category effects should read (inventory E SD-30, B D-05)
+            {
+                bool up = pole == "spendup";
+                foreach (SpendingLine line in c.SpendingLines) { (float min, float max) = SpendingTrack(c, line); DraftSpending(line, up ? max : min); }
+                Event($"STYLE extreme ({pole}): every spending line at its track's {(up ? "top" : "floor")}; taxes, welfare, the fund and the pension age as they stand");
+                return;
+            }
+
             bool taxesUp = pole == "surplus" || pole == "big";
             bool spendUp = pole == "deficit" || pole == "big";
             foreach (TaxLine t in c.TaxLines.Where(t => t.IsImplemented)) { DraftTax(t, taxesUp ? t.MaxRate : t.MinRate); }

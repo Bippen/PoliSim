@@ -38056,3 +38056,17 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **Rows filed** (`docs/audit/AUDIT_LEDGER.md`, GA-6): GA-6-1 (S2) - a whole fleet retired in 16-43 days with no reliability veto; the blocks unserved at 4 000 EUR/MWh, industry's bill at 31-63 % of GDP, inflation at its 30 % clamp, and real GDP unchanged after a year - ARCHITECT; GA-6-2 (S2) - Sweden's zone chain stops balancing when the fleet moves (a 4.7-6.1 GW gap with nuclear retired, which no price, unserved load or import answers, against `ChainUnbalanceMw`'s own "a few tens of MW from zero"), reproduced from its seed and on a second - a bug whose fix needs a ruling, ARCHITECT; GA-6-3 (S4) - the industry bill and the wholesale drawn past their scales' ends (dry-film observed) - Elias's. Questions 26-27 in `docs/audit/AUDIT_FOR_ARCHITECT.md`.
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap809`). The harness runs are the plans above.
+
+## 810. THE GAMEPLAY AUDIT, AREA 7 (MACRO AND THE SOCIETY FAMILIES): THE PLAYER'S SPENDING REACHES THE FAMILIES; THREE ROWS - THE HOSPITAL WAITS NEVER MOVE, LIFE EXPECTANCY DRIFTS DOWN AS MORTALITY FALLS, A DECADE'S OUTPUT GAP THE LABOUR MARKET DOES NOT SEE; ELIAS MARKS GA-6-3 (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 2 area 7): "Macro and the six society-stat families".
+
+**Elias's answer to area 6** (2026-10-13, the ledger's status cell): fix GA-6-3 (the Energy page's two scales).
+
+**The harness, extended** (`Assets/Editor/AuditDriver.Styles.cs`, `AuditDriver.cs`): the spending-only poles (`pole=spendup|spenddown`: every spending line at its track's top or floor, taxes, welfare, the fund and the pension age as they stand).
+
+**Measured** (plan `area7_society`, 15 runs): the player's spending alone, against the idle run on its seed, in Sweden, Poland and Italy for three years - it reaches the families (Sweden's treatable mortality 37.8 against 43.9, pupils a teacher 8.8 against 12.4, road quality 87.1 against 83.9; inventory E SD-30 and B D-05 not seen in the outcomes); a decade of no policy in all six countries without a breach.
+
+**Rows filed** (`docs/audit/AUDIT_LEDGER.md`, all ARCHITECT, questions 28-29 in `docs/audit/AUDIT_FOR_ARCHITECT.md`): GA-7-1 (S3) - the hospital waits never move (they read only the health ministry's effectiveness, 1 while the chair is vacant); GA-7-2 (S3) - life expectancy drifts down in every country over a decade while treatable mortality falls 13-19 %; GA-7-3 (S3) - the USA ends a decade 9.5 % below potential with unemployment under its start, Italy shrinks for ten years, and Italy's population is frozen for its first two.
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap810`). The harness runs are the plan above.
