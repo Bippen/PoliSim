@@ -722,6 +722,11 @@ The override is two thirds of those present and voting, a quorum present, as the
 
 **STOPPED AND RE-ASKED** (`COMPLETED.md` §802, with `docs/generated/US_VETO_BACKTEST.md`). The STOP is R-US17's own: under this plan's premise - each party voting as one, so one stance in both chambers (spec-risk 4) - a party-bloc Congress never sends a vetoable measure. Of the 34 measures the president's party opposed in a chamber, none reaches him: the other party never held both chambers in the 115th-119th Congresses (the seats are in the document). On the matrix alone code would recommend (a): its pooled precision is 22 of 33 (66.7 %) against B1's 45 of 166 (27.1 %) on Poland, its hit rate 22 of 25, and no rule falls below B1's precision. Read chamber by chamber instead, as the members voted there (the reading declared before the first run; the s802 review showed it departs from the plan's premise), a bloc Congress sends 13 vetoable measures (Trump's first term 9, Biden 4) and 5 of the 25 vetoed measures of record. Every CRA, War Powers, arms-sale, national-emergency and D.C. disapproval vetoed passed the Senate on defectors, which a bloc model cannot produce. Trump's two second-term vetoes passed both chambers without a roll call, so no rule names them.
 
+**RULED** (Elias's rulings H1-H3, 2026-10-13; recorded §803; built after the gameplay audit, `docs/audit/AUDIT_PROTOCOL.md`):
+- **H1 - the third option, (c), on the USA's veto path only.** Parties stay blocs by default. A seeded draw of defectors per party per chamber is added, fitted on the recorded chamber-by-chamber votes since 2017; the draw matters only where the chamber's margin is within the drawn count. Rule (a) then decides the veto on a bill that reaches the president against his party. Budget votes, the other five countries and Poland's B1 stay as they are, and Poland is proved unchanged on the simulation bar.
+- **H2 - the fit is thin** (13 vetoable measures, 25 vetoes): every fitted figure prints its n and an interval beside it, labelled `FITTED n=…`. Trump's two 2025 vetoes, with no recorded vote, stay declared unpredictable and are never counted for or against.
+- **H3 - preregistered:** the new rule is preregistered and its digest taken before its first run; the veto tool's mutation suite is re-run, plus one case for the superseded-vote guard.
+
 **R-US18 — The House's seat method** *(US-11's errors; blocks US-16)*.
 - (a) 435 districts by uniform swing on the latest House election's district results, uncontested seats by a DECLARED rule, and mid-decade redraws entering as dated variants once each enacted map is read;
 - (b) state delegations by a state swing;
@@ -959,6 +964,8 @@ ask is registered. D itself changes only by amendment.
 7. *C4 in the sums.* Counted in step 2's and step 5's sums over D, as the panel's arithmetic has it, by default; or left out of them, as the panel's own account of C4 ("C4 can only veto") reads - the two part only where C4's near-zero swing moves a seat (§791).
 
 **Answered (Elias's ruling G1, 2026-10-06; installed §797):** run on the defaults as printed - the word that rules none of them - but for the choices he answered: **the swing's basis is US-5's own-line House vote** (R-US18's choice 4 and R-US19's B7, one answer; their readings (vi) and (vii) made printed only), and **a full tie (B2) comes to Elias with the figures**. Both instruments run as preregistered; a result never changes a choice - a choice changed after a result is in sight needs a new digest and a report to Elias.
+
+**Confirmed (Elias's ruling H4, 2026-10-13; recorded §803):** the outcome asked at §800 is confirmed as listed - (a) + S2, S5, S4 [(ii)]. **An unfitted (b') prints as UNFITTED and never counts in the decision**; where the block says otherwise, the block's text wins and Elias is told. Read against the block: step 5 runs only where (b') is fitted in every cycle of D, and the rule never reaches (b') by itself, so the decision agrees; the block's decisive digest does carry whether (b') is fitted and its figures, so a change there moves the digest and asks R-US18 again - the text stands there. The ruling record stays ASKED: the block's THE ASK AND THE BARS has a ruling name an option that can be built, and a confirmation names none. The UNFITTED label is built after the audit.
 
 **R-US19 — The Senate races** *(US-12's table; blocks US-16)*.
 - (a) The state's presidential-level derived share that day (a straight ticket);
@@ -1224,6 +1231,8 @@ amendment. D itself changes only by amendment.
 
 **Answered (Elias's ruling G1, 2026-10-06; installed §797):** run on the defaults as printed - the word that rules none of them - but for the choices he answered: **the swing's basis is US-5's own-line House vote** (R-US18's choice 4 and R-US19's B7, one answer; their readings (vi) and (vii) made printed only), and **a full tie (B2) comes to Elias with the figures**. Both instruments run as preregistered; a result never changes a choice - a choice changed after a result is in sight needs a new digest and a report to Elias. R-US14 ruled (a) makes readings (viii)-(ix) printed only (G2), and Sinema's reading ruled makes (xi) printed only (G3).
 
+**Confirmed (Elias's ruling H4, 2026-10-13; recorded §803):** the outcome asked at §801 is confirmed as listed - S1 + S4 [(i)]. The ruling record stays ASKED, as R-US18's does: a confirmation names no option the block's THE ASK AND THE BARS can build.
+
 Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot steer a verdict): *should a 2024-start game's 5 Nov 2024 Senate class reproduce 2024's races where its vote follows history?* No; yes on (a); yes on (b) storing the factored share; yes on (b) storing the parent's.
 
 **Elias's rulings of 2026-10-06, G1-G9 (installed §797).** G1-G4 are written where each question stands (R-US18's and R-US19's blocks and asks, R-US10, R-US14, R-US15, US-11's *Design*). The rest:
@@ -1256,6 +1265,9 @@ Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot 
 - **G7, US-32:** the GPS file fetched, its digest kept and not the raw file; a move of any party's cast reported, each move's size, before it is installed.
 - **G8, accepted as filed:** PF-18, PF-19, Smith's footnote mark, Florida's oath of 8 Jan 2019, the 2024 economic-vote note. PresidentialVoteBacktest's card and the stale texts land with US-6.
 - **G9:** no page; this register stays in the plan.
+
+**Elias's rulings of 2026-10-13, H1-H5 (sent 6 Oct, received 13 Oct; recorded §803, built after the gameplay audit).** H1-H3 are written at R-US17, H4 at R-US18's and R-US19's asks. The rest:
+- **H5, the order:** PS-6 is PARKED until the gameplay audit (`docs/audit/AUDIT_PROTOCOL.md`) is done; after it, US-14, then US-32. Read with "build them after the audit": H1-H3's preregistration, fit and mutation suite are US-10's follow-on and come first, R-US18's UNFITTED label (H4) with them; the rule reaches play with US-21, whose needs are unchanged.
 
 **R-US20 — Midterms** *(US-13; blocks US-27)*.
 - (a) The model as it stands, with the congressional economic vote wired (Table 9.1's US legislative row, the weakest in the sample);
