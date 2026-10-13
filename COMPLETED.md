@@ -38084,3 +38084,15 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **Rows filed** (`docs/audit/AUDIT_LEDGER.md`): GA-8-1 (S2) - Germany's carbon statute charges by the turn (30 EUR/t from November 2024, the 2023 rate) and sets a passed rate back at the next boundary (280 → 45), against §471 - reproduced from its seed and on a second, a clear bug; GA-8-2 (S3) - Sweden's January budget, tabled before the boundary, undoes the carbon tax's indexation every year (D-23), a clear bug; GA-8-3 (S3) - a seated Health minister makes waits and mortality worse than an empty chair (SD-31), ARCHITECT; GA-9-1 (S3) - the meeting cards' options that win on every count, worth +8 approval in five years, ARCHITECT. Questions 30-31 in `docs/audit/AUDIT_FOR_ARCHITECT.md`.
 
 **Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap811`). The harness runs are the plans above.
+
+## 812. THE GAMEPLAY AUDIT, AREA 10 (THE UI STATES): EVERY PAGE IN SIX COUNTRIES AT THE FILM'S FOUR GEOMETRIES WITHOUT AN OVERFLOW OR A DECIMAL COMMA; ONE ROW - "PARLIAMENT" ON THE USA'S PAGES (2026-10-13)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 2 area 10): "Every UI state on dry film against its LOOKED AT board: clipping, number format, colour neutrality, stale or wrong-country text".
+
+**The harness, extended** (`Assets/Editor/AuditDriver.cs`): `geometry=WxH` (the film's four, the Game View's chrome taken off the height as the film takes it). The page captures stand in for the dry film (whose sessions DryFilmScopeCheck holds to a declared scope); colour neutrality and the Canvas surfaces are not claimed.
+
+**Measured** (plan `area10_ui`, 24 runs, about 400 captures): every page the rail opens and the live HQ, six countries, four geometries, day 1 and after the first close - no text past its rect, no decimal comma; Germany's HQ "kr" at every geometry (GA-2-8).
+
+**Rows filed** (`docs/audit/AUDIT_LEDGER.md`): GA-10-1 (S4) - the USA's Politics page and labour tab call the legislature "Parliament", a clear bug.
+
+**Bars** (tier TOOLING, on this commit's own tree): the cheap bar **103 of 103** (`cheap812`). The harness runs are the plan above.

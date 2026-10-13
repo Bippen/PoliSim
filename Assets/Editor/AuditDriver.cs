@@ -104,6 +104,8 @@ namespace PoliSim.EditorTools
         internal bool EventsOff;
         /// <summary>The foreign-policy meeting's option the hold answers with (`MeetingPick`): first, last or approval.</summary>
         internal string Meeting;
+        /// <summary>The screen the IMGUI pass lays out for (`geometry=WxH`, one of the four the film takes: 1280x720, 1600x950, 1920x1080, 2560x1440).</summary>
+        internal int GeometryWidth = 1280, GeometryHeight = 720;
         /// <summary>Pages to capture, `day:Page` (Desk, Statistics, Decisions, Demographics, Budget, PolicyLaws, Politics, Energy): on that day the
         /// page is opened through the rail's own body, one frame of OnGUI is recorded by the dry film's label table, and the desk returns.</summary>
         internal readonly List<(int Day, string Page)> Captures = new List<(int, string)>();
@@ -180,6 +182,13 @@ namespace PoliSim.EditorTools
                         case "energy": s.Energy = value.ToLowerInvariant(); break;
                         case "events": s.EventsOff = value.ToLowerInvariant() == "off"; break;
                         case "meeting": s.Meeting = value.ToLowerInvariant(); break;
+                        case "geometry":
+                            {
+                                string[] wh = value.ToLowerInvariant().Split('x');
+                                if (wh.Length != 2) { error = $"geometry= '{value}' is not WxH"; return null; }
+                                s.GeometryWidth = int.Parse(wh[0], CultureInfo.InvariantCulture); s.GeometryHeight = int.Parse(wh[1], CultureInfo.InvariantCulture);
+                                break;
+                            }
                         case "capture":
                             foreach (string pair in value.Split(',').Where(v => v.Length > 0))
                             {
@@ -209,6 +218,7 @@ namespace PoliSim.EditorTools
             if (s.Campaign != null && s.Campaign != "runup" && s.Campaign != "ground" && s.Campaign != "air" && s.Campaign != "all" && s.Campaign != "paced") { error = "campaign= is runup, ground, air, all or paced"; return null; }
             if (s.Energy != null && s.Energy != "retirefossil" && s.Energy != "retirenuclear" && s.Energy != "buildgreen") { error = "energy= is retirefossil, retirenuclear or buildgreen"; return null; }
             if (s.Meeting != null && s.Meeting != "first" && s.Meeting != "last" && s.Meeting != "approval") { error = "meeting= is first, last or approval"; return null; }
+            if (!(s.GeometryWidth == 1280 && s.GeometryHeight == 720 || s.GeometryWidth == 1600 && s.GeometryHeight == 950 || s.GeometryWidth == 1920 && s.GeometryHeight == 1080 || s.GeometryWidth == 2560 && s.GeometryHeight == 1440)) { error = "geometry= is one of the film's four: 1280x720, 1600x950, 1920x1080, 2560x1440"; return null; }
             return s;
         }
     }
@@ -335,8 +345,8 @@ namespace PoliSim.EditorTools
             _sm = _gc.GetComponent<SimulationManager>();
             _onGui = typeof(GameController).GetMethod("OnGUI", Any);
             if (!DryGuiPass.Prepare() || _onGui == null) { End(1, $"the IMGUI pass cannot be driven ({DryGuiPass.Failure ?? "GameController.OnGUI"})"); return; }
-            UiScreen.OverrideWidth = 1280;
-            UiScreen.OverrideHeight = 699;
+            UiScreen.OverrideWidth = _spec.GeometryWidth;
+            UiScreen.OverrideHeight = _spec.GeometryHeight - 21;   // the Game View's chrome, as the film takes it (UiScreenshotCapture's GameViewChromeHeight)
 
             // The seed first: the game's world is built when the party row is clicked, from this seed.
             SimulationRandom.Seed(_spec.Seed);
