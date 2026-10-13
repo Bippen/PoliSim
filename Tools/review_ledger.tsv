@@ -25,7 +25,6 @@ file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfba
 file	Assets/Scripts/Data/FiscalYearData.cs	2ba5b2d984b84b5afd776a1137e5bf3840e6d0c168970b8bb9a01b3baa9f0015	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/PortfolioEffectiveness.cs	117f10a07b2269d9f5e9ef2150efccb4caf89b50a7df1ca83ca6900c7f03f911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/ProgramBill.cs	476f48d616dbd343b1056d935c79aafa7285328492732c9678bbc12e2fca1f6d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/SovereignWealthFund.cs	912beeb8330e91b26f47db86181df52494e9321314067d927ba1d7813345950e	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -207,3 +206,5 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	4d438ad80fc87f137539a4194911
 file	Assets/Scripts/Simulation/SimulationManager.cs	e653cd558a813e9b26999b2c8630b059d161ae865ee243a6ad54403d2239da6e	reviewed	2026-10-05	s779	Reviews/2026-10-05_s779_f5_bill_lost.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	564fc1a40b3f99ae2558c66e21848adfc57018ab38b21e553a8e803563571fba	reviewed	2026-10-05	s783	Reviews/2026-10-05_s783_us2_record_by_date.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	784de1d2f86834b2abd15391bfcda64bdd389e9f738a20562d1300558a8ad3b9	reviewed	2026-10-06	s798	Reviews/2026-10-06_s798_us20_poland_statute_acts.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	af3fbdd677d3d26cb7d47410b7256ee3d2571a196b750656303b1d647641d00a	reviewed	2026-10-14	s814	Reviews/2026-10-14_s814_ga2_1_fund_draw.md	-
+file	Assets/Scripts/Data/SovereignWealthFund.cs	8b8740e4b93629ff5076d5741448291701c5c5cc17e00f48eb91f520be3c459e	reviewed	2026-10-14	s814	Reviews/2026-10-14_s814_ga2_1_fund_draw.md	-

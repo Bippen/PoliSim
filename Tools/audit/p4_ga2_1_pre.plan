@@ -1,0 +1,7 @@
+# Phase 4, GA-2-1's control (2026-10-14): runs of `p4_ga2_1.plan` on the PRE-FIX engine (HEAD's SimulationManager.cs put back for the run only)
+# with TODAY's harness, so the engine is the one difference. k1_de_x01_b: the tightened FUND invariant must breach on the old engine (an empty fund
+# at -10 %, overdrawn every day). b3_se_fuzz and its resume: their area-1b twins were run with an older harness (the fuzz parts from them on day 22,
+# a contribution rate of -6 against +6, before any fund could drain), so the engine's own difference is read against these.
+id=k1_de_x01_b country=Germany party=SPD style=exploit exploit=X-01 seed=464 days=120
+id=b3_se_fuzz country=Sweden party=M style=fuzz seed=376 days=300 save=150
+id=b3_se_fuzz_r150 country=Sweden party=M style=fuzz seed=376 days=300 resume=b3_se_fuzz.day150.save.json startday=150 compare=b3_se_fuzz

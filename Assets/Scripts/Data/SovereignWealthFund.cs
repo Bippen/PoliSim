@@ -23,7 +23,8 @@ namespace PoliSim.Data
         /// Percent of GDP contributed to the fund each turn - a new budget expense when positive.
         /// Can also go negative (Round 3 item 1, the SWF drawdown mechanic) - a real, player-chosen
         /// withdrawal during a recession/emergency, not an automatic response, which shrinks
-        /// TotalAssets by that same amount instead of growing it (see SimulationManager.
+        /// TotalAssets by that same amount, up to what the fund holds, instead of growing it - the
+        /// budget is paid only what the fund pays (GA-2-1; see SimulationManager.
         /// GetSwfContribution). Player-adjustable via PolicyDecision.SwfContributionRateOverride.
         /// </summary>
         public float ContributionRatePercent = 1f;

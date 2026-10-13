@@ -5340,9 +5340,11 @@ namespace PoliSim.Simulation
             float swfContribution = GetSwfContribution(previewCountry);
             float swfReturns = 0f;
             float swfDraw = 0f;
+            float swfUnpaid = 0f;   // GA-2-1: as the day's - a draw delivers what the fund holds, summed in at each use
             if (previewCountry.SovereignWealthFund != null)
             {
-                previewCountry.SovereignWealthFund.TotalAssets += swfContribution;
+                swfUnpaid = Mathf.Max(0f, -(previewCountry.SovereignWealthFund.TotalAssets + swfContribution));
+                previewCountry.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
                 swfReturns = SovereignWealthFundSystem.GetAverageReturnEstimate(previewCountry.SovereignWealthFund);
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
                 previewCountry.SovereignWealthFund.TotalAssets = Mathf.Clamp(previewCountry.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
@@ -5360,7 +5362,7 @@ namespace PoliSim.Simulation
             // Capturing them adds no arithmetic and no second estimate: the figures a draft's
             // fiscal impact is built from are the boundary's own, which is pass 5's lesson on the
             // Budget "Net" line (never a hand sum beside the model).
-            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, previewTariffRevenue, previewElectricityTaxRevenue, out float previewSpending, out _);
+            float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, previewTariffRevenue, previewElectricityTaxRevenue, out float previewSpending, out _);
 
             float previewedInterestRate;
             if (previewCountry.CurrentFedChair != null)
@@ -5421,7 +5423,7 @@ namespace PoliSim.Simulation
                 PovertyRateChange = state.PovertyRate - povertyBefore,
                 LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
-                SwfContributionEstimate = swfContribution,
+                SwfContributionEstimate = swfContribution + swfUnpaid,   // GA-2-1: the period's draw capped once, at the fund's assets today - the days cap it day by day, so the two agree unless the fund drains within the period
                 SwfReturnsEstimate = swfReturns,
                 SectorDeltas = SectorDeltasSince(previewCountry, sectorsBefore),   // P4-B3
                 PreviewInflation = state.Inflation,
@@ -6040,10 +6042,12 @@ namespace PoliSim.Simulation
         /// original mechanic); when the player has set it negative (a drawdown - see
         /// MinSwfContributionRate), this same figure is negative, which ApplyRevenueAndSpending's
         /// plain sum already treats as a revenue offset rather than an expense - no separate
-        /// withdrawal code path was needed. Whichever sign it has, TotalAssets is adjusted by exactly
-        /// this amount (see AccrueDailyFiscalFlows/PreviewTurn), so a drawdown correctly shrinks the fund by the
-        /// withdrawn amount, clamped at 0 (see MaxSwfToGdpPercent's own clamp) - the fund can't be
-        /// drawn down past empty.
+        /// withdrawal code path was needed. Whichever sign it has, TotalAssets and the budget move by
+        /// this amount (see AccrueDailyFiscalFlows/PreviewTurn) - except that a drawdown delivers only
+        /// what the fund holds: the fund can't be drawn down past empty, and the budget books the part
+        /// the fund paid. ⚠ CORRECTED, GA-2-1 (2026-10-14): this doc used to say the clamp at 0 made
+        /// the drawdown correct, while the budget booked the whole figure - an empty fund at a negative
+        /// rate paid the budget from nothing every day.
         /// </summary>
         private float GetSwfContribution(Country country)
         {
@@ -6935,9 +6939,15 @@ namespace PoliSim.Simulation
 
             float swfReturns = 0f;
             float swfDraw = 0f;
+            // GA-2-1 (2026-10-14): the part of a negative standing contribution the fund does not hold. The budget used to book the whole draw while
+            // the fund floored at 0 - money from nothing once it was empty. Now a draw delivers what is there, to the fund and the budget alike (the
+            // drawdown bill's own rule). SUMMED IN at each use, never written back into swfContribution: 0 for every fund that can pay, and §501's
+            // lesson is that a second write to a local moves the no-policy trajectory by a float's last digit.
+            float swfUnpaid = 0f;
             if (country.SovereignWealthFund != null)
             {
-                country.SovereignWealthFund.TotalAssets += swfContribution;
+                swfUnpaid = Mathf.Max(0f, -(country.SovereignWealthFund.TotalAssets + swfContribution));
+                country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
 
                 swfReturns = period.PlannedSwfReturn * FiscalFlowPerDayFraction;
                 country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfReturns);
@@ -6962,7 +6972,7 @@ namespace PoliSim.Simulation
             float interestAtIssuanceToday = debtBeforeWrite > 0f ? debtBeforeWrite * (issuanceRateToday / 100f) * FiscalFlowPerDayFraction : 0f;
             DebtLedgerRecorder.EnsureAccruing(country, CurrentDate, debtBeforeWrite);
 
-            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, electricityTaxRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
+            float revenue = ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, tariffRevenue, electricityTaxRevenue, out float totalSpending, out float budgetBalance, FiscalFlowPerDayFraction, period.PlannedFiscalReactionMultiplier);
 
             period.AccruedRevenue += revenue;
             period.AccruedTariffRevenue += tariffRevenue;
@@ -6971,7 +6981,7 @@ namespace PoliSim.Simulation
             period.AccruedUnemploymentBenefitCost += unemploymentBenefitCost;
             period.AccruedInterestOnDebt += interestOnDebt;
             period.AccruedWelfareCost += welfareCost;
-            period.AccruedSwfContribution += swfContribution;
+            period.AccruedSwfContribution += swfContribution + swfUnpaid;   // GA-2-1: what was booked
             period.AccruedSwfReturns += swfReturns;
             period.AccruedTotalSpending += totalSpending;
             period.AccruedBudgetBalance += budgetBalance;
@@ -7010,9 +7020,11 @@ namespace PoliSim.Simulation
             float swfContribution = GetSwfContribution(country);
 
             float swfDraw = 0f;
+            float swfUnpaid = 0f;   // GA-2-1: as the day's
             if (country.SovereignWealthFund != null)
             {
-                country.SovereignWealthFund.TotalAssets += swfContribution;
+                swfUnpaid = Mathf.Max(0f, -(country.SovereignWealthFund.TotalAssets + swfContribution));
+                country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
                 country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfPeriodReturn);
 
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
@@ -7023,7 +7035,7 @@ namespace PoliSim.Simulation
                 country.SovereignWealthFund.TotalAssets -= swfDraw;
             }
 
-            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution, swfDraw, tariffRevenue, 0f, out _, out _);   // EN-7b: the equivalence bar runs no law - no electricity-tax flow on either side
+            ApplyRevenueAndSpending(country, governmentSpending, mandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, tariffRevenue, 0f, out _, out _);   // EN-7b: the equivalence bar runs no law - no electricity-tax flow on either side
         }
 
         /// <summary>

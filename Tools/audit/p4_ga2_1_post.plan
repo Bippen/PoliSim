@@ -1,0 +1,12 @@
+# Phase 4, GA-2-1's final harness (2026-10-14): the nine runs of `p4_ga2_1.plan` whose fund ran dry, on the FIXED engine with the FUND invariant as
+# the review tightened it (the day's draw against the evening's assets, the budget's booking against the period's accrual, the fund's debit against
+# what the budget took). Expected: no breach, and each trajectory byte-identical to its `p4_ga21` run (the harness observes, it never drives).
+id=k1_de_x01 country=Germany party=SPD style=exploit exploit=X-01 seed=462 days=500
+id=k1_de_x01_b country=Germany party=SPD style=exploit exploit=X-01 seed=464 days=120
+id=g1_se_m_fuzz country=Sweden party=M style=fuzz seed=804 days=1760
+id=w_se_fuzz30 country=Sweden party=M style=fuzz seed=1507 days=10950
+id=a2_se_x01 country=Sweden party=M style=exploit exploit=X-01 seed=461 days=1500
+id=a2_de_x01 country=Germany party=SPD style=exploit exploit=X-01 seed=462 days=500
+id=a2_pl_x01 country=Poland party=PiS style=exploit exploit=X-01 seed=463 days=500
+id=a2_se_fuzz country=Sweden party=M style=fuzz seed=501 days=730
+id=a2_fr_fuzz country=France party=RN style=fuzz seed=507 days=730

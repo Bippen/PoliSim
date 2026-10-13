@@ -233,15 +233,36 @@ namespace PoliSim.EditorTools
 
         private readonly Dictionary<CountryId, double> _twoBooks = new Dictionary<CountryId, double>();
 
-        /// <summary>A load or a scenario's start re-writes the debt: the two books' sum is taken afresh from the next day.</summary>
-        internal void RestartDebt() => _twoBooks.Clear();
+        /// <summary>A fund's evening: the day, the period, what the period had accrued - the fund's contribution, the total spending and the spending
+        /// beside the fund's - and the assets the fund held.</summary>
+        private struct FundEvening
+        {
+            public DateTime Date;
+            public int Turn;
+            public double Contribution, TotalSpending, OtherSpending, Assets;
+        }
+
+        private readonly Dictionary<CountryId, FundEvening> _fundEvening = new Dictionary<CountryId, FundEvening>();
+
+        private static readonly FieldInfo FiscalPeriods = typeof(SimulationManager).GetField("_fiscalPeriods", BindingFlags.Instance | BindingFlags.NonPublic);
+
+        /// <summary>A load or a scenario's start re-writes the debt and the fund: the two books' sum and the fund's evening are taken afresh from the next day.</summary>
+        internal void RestartDebt()
+        {
+            _twoBooks.Clear();
+            _fundEvening.Clear();
+        }
 
         /// <summary>Debt change = deficit, daily, in the money inventory's form (1e): the debt falls by the day's balance and the running budget rises by
         /// it, so `GovernmentDebt + Budget` stays where it was - except on a day the debt's clamp binds (at -10x or +3x nominal GDP), which is named,
-        /// not failed. The yearly ledger audit is the game's own (`ATTRIB:` in the log, counted as a logged error). And the fund: a negative standing
-        /// contribution drawn from an empty fund books money the fund never had (the inventory's lead D-02).</summary>
-        internal void Debt(World world, int day, DateTime date)
+        /// not failed. The yearly ledger audit is the game's own (`ATTRIB:` in the log, counted as a logged error). And the fund (GA-2-1), on consecutive
+        /// days of one period, from the changes in the period's accruals: the day's draw is never larger than the fund held the evening before; the
+        /// budget books the figure the period accrues (the day's total spending less the spending beside the fund's - the plan changes only at a
+        /// boundary); and the fund is debited what the budget took (its assets at most the evening's plus the day's booking and planned return - the
+        /// floor, the ceiling and the structural draw only lower them). The accrual is the only writer that can add to a fund within a day.</summary>
+        internal void Debt(World world, SimulationManager sm, int day, DateTime date)
         {
+            var periods = FiscalPeriods?.GetValue(sm) as Dictionary<CountryId, SimulationManager.FiscalPeriod>;
             _exercised.Add("DEBT");
             foreach (Country c in world.Countries)
             {
@@ -260,10 +281,50 @@ namespace PoliSim.EditorTools
 
                 _twoBooks[c.Id] = sum;
                 SovereignWealthFund fund = c.SovereignWealthFund;
-                if (fund != null && fund.TotalAssets <= 0f && fund.ContributionRatePercent < 0f)
+                if (fund == null || periods == null || !periods.TryGetValue(c.Id, out SimulationManager.FiscalPeriod period))
                 {
-                    Breach("FUND", c.Id + "|empty-draw", day, date, $"{c.Id} the fund is empty (assets {fund.TotalAssets.ToString("R", CultureInfo.InvariantCulture)}) while its standing contribution is {fund.ContributionRatePercent.ToString("R", CultureInfo.InvariantCulture)} % of GDP - the budget books a draw the fund cannot pay");
+                    _fundEvening.Remove(c.Id);
+                    continue;
                 }
+
+                var now = new FundEvening
+                {
+                    Date = date,
+                    Turn = sm.CurrentTurn,
+                    Contribution = period.AccruedSwfContribution,
+                    TotalSpending = period.AccruedTotalSpending,
+                    OtherSpending = (double)period.AccruedMandatorySpending + period.AccruedUnemploymentBenefitCost + period.AccruedInterestOnDebt + period.AccruedWelfareCost,
+                    Assets = fund.TotalAssets,
+                };
+                if (_fundEvening.TryGetValue(c.Id, out FundEvening evening) && evening.Turn == now.Turn && date == evening.Date.AddDays(1))
+                {
+                    _exercised.Add("FUND");
+                    double perDay = 1.0 / SimulationManager.DaysPerTurn;
+                    double today = now.Contribution - evening.Contribution;
+                    double government = period.PlannedGovernmentSpending * perDay;   // the plan's slice, the same every day of the period
+                    double booked = (now.TotalSpending - evening.TotalSpending) - (now.OtherSpending - evening.OtherSpending) - government;
+                    double returned = period.PlannedSwfReturn * perDay;
+                    double standing = (double)s.NominalGdp * fund.ContributionRatePercent / 100.0 * perDay;   // the scale of the cap's float residue
+                    double tolerance = 1e-6 + 1e-5 * (Math.Abs(now.Contribution) + Math.Abs(evening.Contribution) + evening.Assets + Math.Abs(standing) + Math.Abs(returned));
+                    double spendingTolerance = tolerance + 3e-7 * (Math.Abs(now.TotalSpending) + Math.Abs(evening.TotalSpending) + Math.Abs(now.OtherSpending) + Math.Abs(evening.OtherSpending) + Math.Abs(government));
+                    string R(double v) => v.ToString("R", CultureInfo.InvariantCulture);
+                    if (today < -evening.Assets - tolerance)
+                    {
+                        Breach("FUND", c.Id + "|overdraw", day, date, $"{c.Id} the period accrued a draw of {R(-today)} from the fund in a day while it held {R(evening.Assets)} (standing contribution {R(fund.ContributionRatePercent)} % of GDP) - money the fund never had");
+                    }
+
+                    if (Math.Abs(booked - today) > spendingTolerance)
+                    {
+                        Breach("FUND", c.Id + "|two-figures", day, date, $"{c.Id} the budget booked {R(booked)} for the fund in a day where the period accrued {R(today)} - one draw, two figures");
+                    }
+
+                    if (now.Assets > Math.Max(0.0, evening.Assets + today + returned) + tolerance)
+                    {
+                        Breach("FUND", c.Id + "|undebited", day, date, $"{c.Id} the fund holds {R(now.Assets)} after a day that booked {R(today)} on {R(evening.Assets)} with a planned return of {R(returned)} - a draw the fund was not debited for");
+                    }
+                }
+
+                _fundEvening[c.Id] = now;
             }
         }
 

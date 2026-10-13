@@ -614,7 +614,7 @@ namespace PoliSim.EditorTools
             _invariants.NoteDay(_sm);
             _invariants.Finite(World(), _day, _lastDate);
             _invariants.Bounds(World(), _day, _lastDate);
-            _invariants.Debt(World(), _day, _lastDate);
+            _invariants.Debt(World(), _sm, _day, _lastDate);
             _invariants.Seats(c, _day, _lastDate);
             _invariants.Government(c, _sm, _day, _lastDate);
             while (_lastElectionCount < c.ElectionHistory.Count)
