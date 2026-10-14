@@ -255,6 +255,9 @@ namespace PoliSim.EditorTools
 
         private readonly Dictionary<CountryId, double> _twoBooks = new Dictionary<CountryId, double>();
 
+        /// <summary>The nominal GDP each country closed the last evening on - the figure the next day's clamp reads (below).</summary>
+        private readonly Dictionary<CountryId, double> _nominalEvening = new Dictionary<CountryId, double>();
+
         /// <summary>A fund's evening: the day, the period, what the period had accrued - the fund's contribution, the total spending and the spending
         /// beside the fund's - and the assets the fund held.</summary>
         private struct FundEvening
@@ -272,6 +275,7 @@ namespace PoliSim.EditorTools
         internal void RestartDebt()
         {
             _twoBooks.Clear();
+            _nominalEvening.Clear();
             _fundEvening.Clear();
         }
 
@@ -291,7 +295,13 @@ namespace PoliSim.EditorTools
                 EconomyState s = c.State;
                 double sum = (double)s.GovernmentDebt + s.Budget;
                 double nominal = Math.Max(1e-9, (double)s.NominalGdp);
-                bool clamped = Math.Abs(s.GovernmentDebt - 3.0 * nominal) <= 1e-4 * nominal || Math.Abs(s.GovernmentDebt + 10.0 * nominal) <= 1e-4 * nominal;
+                // The engine's clamp bounds the debt on the nominal GDP its day's step reads (`ApplyRevenueAndSpending`), and the day's output and
+                // prices move after it: so the clamp binds against the last evening's figure as well as tonight's. Read on tonight's alone it bound
+                // "a hair under 300 %" - area 12's x_de_x09, 1,426 false breaches at 299.94-299.98 % (§820, the harness's own).
+                double morning = _nominalEvening.TryGetValue(c.Id, out double lastEvening) ? Math.Max(1e-9, lastEvening) : nominal;
+                bool Binds(double gdp) => Math.Abs(s.GovernmentDebt - 3.0 * gdp) <= 1e-4 * gdp || Math.Abs(s.GovernmentDebt + 10.0 * gdp) <= 1e-4 * gdp;
+                bool clamped = Binds(nominal) || Binds(morning);
+                _nominalEvening[c.Id] = nominal;
                 if (_twoBooks.TryGetValue(c.Id, out double previous) && !clamped)
                 {
                     double tolerance = 1e-3 + 1e-6 * (Math.Abs(s.GovernmentDebt) + Math.Abs(s.Budget));

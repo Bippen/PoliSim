@@ -687,7 +687,8 @@ namespace PoliSim.UI
         /// selection or Cabinet decision) - the same set of gates OnGUI's own
         /// hasPendingFedChairSelection/hasPendingCabinetDecisions checks already enforced for the old
         /// Advance Turn button, generalized here to "time itself doesn't pass" rather than "one button
-        /// is disabled".
+        /// is disabled". The frame's screen is settled after this, in `LateUpdate` (GameController.Campaign.cs, GA-1-1): the live HQ
+        /// and its map, before any OnGUI event draws.
         /// </summary>
         private void Update()
         {
@@ -2758,8 +2759,8 @@ namespace PoliSim.UI
             else if (_campaignMapScreen.HasValue)
             {
                 // W-E2, same contract as its three siblings below. Two ways in since CL-2: the capture driver stages a snapshot
-                // (a film), and the HQ's masthead opens the LIVE map - re-read from the running state before every draw, as the HQ is.
-                if (_liveCampaignMapOpen) { OpenLiveCampaignMap(); }
+                // (a film), and the HQ's masthead opens the LIVE map - re-read from the running state once a frame in LateUpdate, with
+                // the HQ (GA-1-1: never inside the draw, where a map whose run had dropped closed itself in the Layout pass).
                 if (_campaignMapScreen.HasValue) { DrawCampaignMapStage(tabContentHeight, rightColumnWidth, _campaignMapScreen.Value); }
             }
             else if (_campaignCoalitionScreen.HasValue)
@@ -2792,8 +2793,8 @@ namespace PoliSim.UI
                 // W-E1: Campaign HQ replaces the content sheet - the rail stays real, so the screen is
                 // composed in the frame it ships in. Two ways in: the capture driver stages a snapshot
                 // (a film, never refreshed), and since C-R4b step 4a the rail's CAMPAIGN cell opens the
-                // LIVE campaign, re-read from the running state before every draw.
-                RefreshLiveCampaignScreen();
+                // LIVE campaign, re-read from the running state once a frame in LateUpdate (GA-1-1: never inside
+                // the draw, where a campaign whose run had dropped closed the HQ in the Layout pass).
                 if (_campaignScreen.HasValue && _liveDeclaredOpen && DeclaredPageAvailable()) { DrawCampaignDeclaredStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value); }   // §657
                 else if (_campaignScreen.HasValue) { DrawCampaignHqStage(tabContentHeight, rightColumnWidth, _campaignScreen.Value); }
             }

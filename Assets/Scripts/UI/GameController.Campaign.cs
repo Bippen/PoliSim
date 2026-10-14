@@ -17,7 +17,7 @@ namespace PoliSim.UI
     /// **Two ways in.** The screen draws when `_campaignScreen` has a value. The screenshot driver
     /// stages one (`-shotcampaign`, a film that is never refreshed), and since C-R4b step 4a
     /// (2026-09-02) the rail's CAMPAIGN cell opens the LIVE campaign `SimulationManager` runs for the
-    /// player's party - re-read from the running state before every draw (`LiveCampaignSnapshot`).
+    /// player's party - re-read from the running state once a frame, in LateUpdate before OnGUI (`LiveCampaignSnapshot`; GA-1-1).
     /// That cell is the wiring W-G1 foresaw: "an ordinary screen by adding the rail cell and nothing
     /// else". ⚠ It is a screen the player can WATCH, not yet one they can act from: until the HQ has an
     /// input path (step 4b) the party is AI-played and the queue shown is the day's decisions.
@@ -72,13 +72,13 @@ namespace PoliSim.UI
 
         // ---- C-R4b step 4a (2026-09-02): the HQ over the LIVE campaign ------------------------------
         // The rail carries a CAMPAIGN cell while SimulationManager runs the player's campaign. Opening it
-        // sets _campaignScreen from the live state and marks it live, so every draw refreshes the snapshot
+        // sets _campaignScreen from the live state and marks it live, so LateUpdate refreshes the snapshot once a frame (GA-1-1)
         // (the day advances under it); DESK and the area cells close it. The driver's staged snapshots
         // still arrive through SetCampaignScreen and are never refreshed - _liveCampaignOpen tells the two
         // apart. Until the HQ has an input path (step 4b) the party is AI-played and the "queue" is the day's
         // decisions off its ledger; LiveCampaignSnapshot says so.
 
-        /// <summary>True while the HQ on screen is the live campaign's (refreshed each draw), not a staged film.</summary>
+        /// <summary>True while the HQ on screen is the live campaign's (refreshed once a frame, in LateUpdate), not a staged film.</summary>
         private bool _liveCampaignOpen;
 
         /// <summary>The live campaign's snapshot for the player's party, or null when none runs / the player's party is not in it.</summary>
@@ -102,7 +102,7 @@ namespace PoliSim.UI
             if (s == null || _campaignPickedRegion < 0 || _campaignPickedRegion >= s.Setup.Regions.Length) { return -1; }
             return s.Setup.Calendar.ElectionDate == _campaignPickedElection ? _campaignPickedRegion : -1;
         }
-        /// <summary>CL-2: the map is open over the live campaign (the HQ's masthead opens it; BACK TO HQ closes it); refreshed from the run before every draw, as the HQ is.</summary>
+        /// <summary>CL-2: the map is open over the live campaign (the HQ's masthead opens it; BACK TO HQ closes it); refreshed from the run once a frame in LateUpdate, with the HQ (GA-1-1).</summary>
         private bool _liveCampaignMapOpen;
 
         /// <summary>CL-2 (DS-10): a story broke for the player's party and no answer is queued - the clock holds, as it does for the opening, until one of the seven chips is pressed. State-derived and idempotent, like the opening's hold.</summary>
@@ -165,7 +165,7 @@ namespace PoliSim.UI
         /// <summary>
         /// CL-2: the map over the live campaign - board 4a's cartogram as the REGION PICKER (a tile sets where the next local
         /// act goes; the party's offices framed; every valkrets honestly unknown, regional detail not being on sale in the
-        /// live run). Opened from the HQ's masthead, closed from its own; rebuilt from the run before every draw like the HQ.
+        /// live run). Opened from the HQ's masthead, closed from its own; rebuilt from the run once a frame in LateUpdate, with the HQ (GA-1-1).
         /// </summary>
         private void OpenLiveCampaignMap()
         {
@@ -202,13 +202,31 @@ namespace PoliSim.UI
             return pick >= 0 ? pick : StrongestCampaignRegion();
         }
 
-        /// <summary>Re-reads the live state into the HQ snapshot before a draw; closes the screen if the campaign is gone.</summary>
+        /// <summary>
+        /// GA-1-1 (2026-10-14): THE LIVE HQ AND ITS MAP ARE SETTLED ONCE A FRAME, IN LateUpdate - after the day's ticks and before OnGUI, which Unity
+        /// calls after it (the audit harness calls it before its own GUI pump) - so a campaign whose run drops (the day after polling day, or an extra
+        /// election ordered over a run-up) closes its HQ before the frame is drawn. It used to re-read inside the draw: the dropped run closed the HQ in
+        /// the Layout pass, Layout drew no sheet, Repaint fell through to Statistics, and the frame threw "Getting control 0's position in a group with
+        /// only 0 controls when doing repaint" - the player landing on Statistics, not the desk. An HQ that closes itself now returns the player to the
+        /// desk. The map, opened over the HQ, re-read the same way inside the draw and closes the same way here.
+        /// </summary>
+        private void LateUpdate()
+        {
+            RefreshLiveCampaignScreen();
+            if (_liveCampaignMapOpen) { OpenLiveCampaignMap(); }
+        }
+
+        /// <summary>Re-reads the live state into the HQ snapshot, once a frame from <see cref="LateUpdate"/>; closes the screen if the campaign is gone.</summary>
         private void RefreshLiveCampaignScreen()
         {
             if (!_liveCampaignOpen) { return; }
             CampaignSnapshot? live = BuildLiveCampaignSnapshot();
             if (live.HasValue) { _campaignScreen = live; }
-            else { CloseLiveCampaign(); }
+            else
+            {
+                CloseLiveCampaign();
+                _onDesk = true;   // GA-1-1: the HQ closed itself (its run dropped) - back to the desk, not whatever tab lay under it
+            }
         }
 
         private void CloseLiveCampaign()

@@ -279,6 +279,24 @@ namespace PoliSim.EditorTools
 
         // ------------------------------------------------------------------ the frame
 
+        /// <summary>§820 (GA-1-1): the live HQ as the harness last saw it, so an HQ the game closed itself - its run dropped, settled in the controller's
+        /// LateUpdate (before a pump, or Unity's after the tick) - is logged with where the player then stands; the fix returns them to the desk (the
+        /// finding: they landed on Statistics), and a self-close anywhere else ends the run. The harness's own closes (a page capture) re-read it, so
+        /// they are not counted as the game's.</summary>
+        private bool _hqOpenLastTick;
+
+        private void WatchHq()
+        {
+            bool open = (bool)Get("_liveCampaignOpen");
+            if (_hqOpenLastTick && !open)
+            {
+                bool desk = (bool)Get("_onDesk");
+                Event($"SCREEN day {_day} ({_lastDate:yyyy-MM-dd}): the live HQ closed itself - the player on {(desk ? "the desk" : "the " + Get("_consolidatedTab") + " tab")}");
+                if (!desk) { End(1, $"the live HQ closed itself on day {_day} and left the player off the desk (GA-1-1)"); }
+            }
+            _hqOpenLastTick = open;
+        }
+
         internal void Tick()
         {
             if (_ended) { return; }
@@ -286,6 +304,7 @@ namespace PoliSim.EditorTools
             _phaseFrames++;
             try
             {
+                if (_phase == Phase.Playing && _gc != null) { WatchHq(); }
                 Step();
                 if (!_ended && _gc != null && _onGui != null && _frame % _spec.GuiEvery == 0) { PumpGui(); }
             }
@@ -1044,6 +1063,9 @@ namespace PoliSim.EditorTools
                 _capturesDone.Add(key);
                 string name = _spec.Id + "_day" + _day.ToString(CultureInfo.InvariantCulture) + "_" + page;
                 DryGuiPass.InstallHook();
+                Call("LateUpdate");   // §820: the frame settled before the page is opened or read (an HQ whose run dropped closes here, as in play)
+                WatchHq();            // ...and a close it made is the game's, logged before the harness's own opens and closes below
+                if (_ended) { return true; }
                 bool hq = page == "HQ", hqWasOpen = (bool)Get("_liveCampaignOpen");
                 if (hq)
                 {
@@ -1069,6 +1091,7 @@ namespace PoliSim.EditorTools
                 _captureCount++;
                 if (hq && !hqWasOpen) { Call("CloseLiveCampaign"); }
                 if (!hq || !hqWasOpen) { Set("_onDesk", true); }
+                _hqOpenLastTick = (bool)Get("_liveCampaignOpen");   // §820: the harness's own close is not the game's
                 Event($"CAPTURE {name}: the {page} page drawn on {_lastDate:yyyy-MM-dd} ({(hq ? (hqWasOpen ? "the HQ was open; left open" : "the rail's OpenLiveCampaign opened it; closed to the desk") : "the rail's body opened it; the desk restored")})");
                 return true;
             }
@@ -1079,6 +1102,10 @@ namespace PoliSim.EditorTools
         private void PumpGui()
         {
             var clock = System.Diagnostics.Stopwatch.StartNew();
+            // §820 (GA-1-1's review): the game's frame runs LateUpdate before OnGUI, and the live HQ is settled there now - the harness's tick
+            // runs in the Update phase, before Unity's LateUpdate, so it settles the frame through the controller's own LateUpdate first (it is
+            // idempotent): a pump draws the frame the player would see, never the snapshot of the day before
+            Call("LateUpdate");
             if (!DryGuiPass.Pump(_gc, _onGui)) { End(1, $"the IMGUI pass failed ({DryGuiPass.Failure})"); return; }
             _guiMs += clock.Elapsed.TotalMilliseconds;
             _guiPasses++;

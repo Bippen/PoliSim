@@ -1,0 +1,12 @@
+# Phase 4, GA-1-1's landing (2026-10-14): one of each of the finding's three routes - area 1's German base, Sweden's fuzz base, area 1c's
+# German HQ run - with the harness's §820 watch in (AuditDriver.WatchHq: an HQ the game closed itself is logged at the next tick with where the
+# player stands). Expected: each campaign's end logs "the live HQ closed itself - the player on the desk" (the player landed on Statistics
+# before); no logged error; no breach.
+id=a1_de_base country=Germany party=SPD style=idle seed=302 days=200
+id=a1_se_fuzz_base country=Sweden party=M style=fuzz seed=321 days=300
+id=c3_de_hq country=Germany party=SPD style=idle seed=302 days=115
+#
+# And the DEBT invariant's clamp (the harness's own, §820): area 12's deficit pole, which logged 1,426 false breaches with the debt riding the
+# ceiling at 299.94-299.98 % of the evening's nominal GDP - the clamp reads the figure the day's step saw. Expected: DEBT exercised, no breach;
+# GA-12-1's substance, the ceiling absorbing the deficits, is the row's and unchanged.
+id=x_de_x09 country=Germany party=SPD style=extreme pole=deficit seed=1603 days=3650
