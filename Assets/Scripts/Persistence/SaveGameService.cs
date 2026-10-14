@@ -67,6 +67,10 @@ namespace PoliSim.Persistence
         // record still says "of record", which the economic vote reads as before. What such a save keeps, not migrated: one cut after a supporter
         // withdrew or a partner left carries the label the exit left standing ("of record", a majority the seats no longer give), and nothing
         // relabels on load - it stands until the next exit or the next government.
+        // Nor for GA-0-14 / GA-0-40 (§825, 2026-10-14) under ruling A: the challenge scenarios are retired and `UiDraftState` drops its two
+        // scenario keys (`Scenario`, `ScenarioVerdictPending`), which an older save's reader reads past. What such a save keeps, not migrated:
+        // the scenario's start, baked into its world (Sweden's debt and the fund it was handed; Italy's debt at 165 % of GDP); a pending
+        // verdict is dropped, the run going on as free play; a verdict already closed keeps its game over. `RestoreFromSave` names the scenario.
         // Nor for GA-1-2 (§821, 2026-10-14) under ruling A: `UiDraftState.CabinetShortlists` is additive - an older save carries none. What such
         // a save keeps, not migrated: one cut between a cabinet Search and its appointment loads with no shortlist, and its next Search draws the
         // cabinet stream again (GA-1-2's divergence). GA-1-4 changes no saved field.
@@ -169,10 +173,14 @@ namespace PoliSim.Persistence
         public static SaveGame Deserialize(string json)
         {
             int version;
+            string retiredScenario;
             try
             {
                 JObject root = JObject.Parse(json);
                 version = root.Value<int?>("SaveVersion") ?? -1;
+                // GA-0-14 / GA-0-40 (§825): the challenge scenarios are retired and the save's UI layer no longer has their keys - a save that
+                // carried one's progress loads as free play, and its id rides out here so the load can say so
+                retiredScenario = root["Ui"] is JObject ui && ui["Scenario"] is JObject scenario ? (scenario["ScenarioId"] as JValue)?.Value as string : null;
             }
             catch (JsonException)
             {
@@ -193,6 +201,7 @@ namespace PoliSim.Persistence
             }
 
             AssertZoneIdentity(save);
+            save.RetiredScenarioId = retiredScenario;
             return save;
         }
 

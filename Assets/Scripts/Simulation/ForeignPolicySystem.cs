@@ -66,10 +66,9 @@ namespace PoliSim.Simulation
         /// Rolls whether a meeting fires today - see MeetingChancePerDay. Caller (SimulationManager)
         /// is responsible for only calling this when no meeting is already pending.
         ///
-        /// <paramref name="cadenceMultiplier"/> is R-S3e's per-scenario pacing lever: the authored
-        /// scenario scales this roll rather than anyone retuning the global constant, so pacing is a
-        /// design value per scenario (a diplomatic start legitimately wants more interrupts; a
-        /// disinflation run wants the player watching the Phillips curve). **1 by default, and the
+        /// <paramref name="cadenceMultiplier"/> was R-S3e's per-scenario pacing lever - an authored
+        /// scenario would scale this roll rather than anyone retuning the global constant; the challenge
+        /// scenarios set it to 1 and were retired (§825), so it is 1 everywhere now. **1 by default, and the
         /// draw is taken either way** - the RandomSource call happens before the comparison, so a
         /// multiplier can never shift the ForeignPolicy stream's position and desync a seeded run
         /// against its baseline.

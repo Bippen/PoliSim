@@ -337,7 +337,6 @@ namespace PoliSim.Testing
             Claim("selector");
             yield return Capture("01_country_selector");
             RecordCanvasTextAssert("01_country_selector", controller);
-            AssertSelectorClearance();
 
             try
             {
@@ -374,7 +373,7 @@ namespace PoliSim.Testing
             // CL-2 (2026-09-13, DS-6): the party picker over the selector - the country's seeded chamber, largest first, the cabinet the
             // chamber forms marked - filmed on the Canvas selector, then hidden; the run then seats the party the one-argument shape
             // seats (the largest), as every film before the picker did, so no frame after this one moves.
-            Expect("01g_party_picker", "01h_scenario_party_picker");   // TL-1 (§645)
+            Expect("01g_party_picker");   // TL-1 (§645) - 01h, the scenario's party pick, left with the scenarios (§825)
             if (controller.CanvasSelectorActive)
             {
                 object selector = controller.GetType().GetField("_countrySelector", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
@@ -391,16 +390,6 @@ namespace PoliSim.Testing
                     yield return Settle();
                     Debug.Log($"SHOT: CL-2 - the party picker filmed for {_countryId}: {CountrySelectorScreen.PartiesBySeats(_countryId).Count} parties, largest first.");
 
-                    // CL-2: a scenario line opens its country's chamber too - the stand-in no longer seats a scenario's party
-                    ScenarioDefinition firstScenario = ScenarioLibrary.All[0];
-                    controller.GetType().GetMethod("OpenScenarioPartyPick", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, new object[] { firstScenario });
-                    yield return Settle();
-                    Claim("selector");
-                    yield return Capture("01h_scenario_party_picker");
-                    RecordCanvasTextAssert("01h_scenario_party_picker", controller);
-                    canvasSelector.HidePartyPanel();
-                    yield return Settle();
-                    Debug.Log($"SHOT: CL-2 - the scenario '{firstScenario.Name}' opened {firstScenario.Country}'s chamber for its party pick.");
                 }
                 else
                 {
@@ -2179,31 +2168,6 @@ namespace PoliSim.Testing
         private readonly HashSet<string> _capturedFrames = new HashSet<string>();
         private void Expect(params string[] frames) { foreach (string f in frames) { _expectedFrames.Add(f); } }
 
-        /// <summary>§718 (Elias's ruling of 2026-10-01, item 9: the scenario buttons' spacing): on the built selector, the scenario strip's bottom
-        /// stands at least <see cref="CountrySelectorScreen.MinScenarioClearance"/> canvas units above the highest thing drawn in the folder grid (a
-        /// folder's tab included) - the gap the fixed 172-unit block had closed to nothing on the 1280x699 window. An error, counted, when it does not.</summary>
-        private static void AssertSelectorClearance()
-        {
-            GameObject strip = GameObject.Find("ScenarioStrip"), grid = GameObject.Find("Folders");
-            if (strip == null || grid == null) { Debug.LogError($"SHOT: 01_country_selector - no {(strip == null ? "ScenarioStrip" : "Folders")} live on the selector; the scenarios' clearance is NOT measured."); return; }
-            Canvas canvas = strip.GetComponentInParent<Canvas>();
-            float scale = canvas != null && canvas.scaleFactor > 0f ? canvas.scaleFactor : 1f;
-            var corners = new Vector3[4];
-            ((RectTransform)strip.transform).GetWorldCorners(corners);
-            float stripBottom = corners[0].y;
-            float gridTop = float.MinValue;
-            foreach (RectTransform drawn in grid.GetComponentsInChildren<RectTransform>())
-            {
-                if (drawn.gameObject == grid) { continue; }
-                drawn.GetWorldCorners(corners);
-                gridTop = Mathf.Max(gridTop, corners[1].y);
-            }
-            float clearance = (stripBottom - gridTop) / scale;
-            string line = string.Format(CultureInfo.InvariantCulture, "SHOT: 01_country_selector - the scenario strip clears the folder grid by {0:0.0} canvas units at {1}x{2} (scale {3:0.000}; the floor {4:0})",
-                clearance, Screen.width, Screen.height, scale, CountrySelectorScreen.MinScenarioClearance);
-            if (clearance < CountrySelectorScreen.MinScenarioClearance) { Debug.LogError(line + " - TOO CLOSE."); } else { Debug.Log(line + "."); }
-        }
-
         /// <summary>
         /// Waits until the takeover seam is settled in the REQUESTED state: <paramref name="wantActive"/>
         /// true = the Canvas surface live and its envelope finished; false = handed back to IMGUI.
@@ -3811,282 +3775,24 @@ namespace PoliSim.Testing
             StatTracePanel.RequestSelection(null);
             yield return Settle();
 
-            // --- E1c (Step 3): THE SCENARIO SLICE — entry, an objective in progress, and the
-            // verdict. All three through the controller's OWN methods (StartScenario /
-            // CheckScenarioObjectives / the verdict screen's own gate), so the driver exercises the
-            // real path minus only the click — the election-reveal idiom exactly. The verdict needs a
-            // REACHED end state, which is why it is pinned by DOING: the scenario's own end turn is
-            // forced, then the real evaluator decides the outcome.
-            {
-                ScenarioDefinition slice = ScenarioLibrary.All.Count > 0 ? ScenarioLibrary.All[0] : null;
-                if (slice == null)
-                {
-                    Debug.LogWarning("SHOT: no scenario in the library - the Step 3 captures stay unpinned.");
-                }
-                else
-                {
-                    // Entry: the scenario's own start, applied to THIS run's world. The player country
-                    // is already selected, so this is the deltas-plus-progress half of StartScenario,
-                    // reached through the controller rather than reimplemented.
-                    InvokeOneArg(controller, "StartScenario", slice);
-                    SetEnumField(controller, "_consolidatedTab", "Statistics");
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    yield return Capture("94_scenario_entry");
+            // --- E1c / E1d (94*, 95*): the two challenge scenarios' frames left with the scenarios (GA-0-14 / GA-0-40, §825).
 
-                    // An objective in progress, filmed AT ENTRY. PF-12 (§598): the pin used to advance three real turns so the evaluator had run at
-                    // real boundaries; on the harness's state (the pins start the scenario mid-film) approval breaks "never below 30" at the FIRST boundary
-                    // (measured: three turns, then one - lost at turn 5 of 12 either way), the verdict screen stood exclusive over the page, and the trace
-                    // panel this pin opens could not draw - the assert-own-name error every dry film printed. At entry the verdict is undecided (asserted
-                    // below) and the panel opens; the verdict capture after it still runs to the scenario's end.
-                    for (int t = 0; t < 0; t++)
-                    {
-                        for (int d = 0; d < SimulationManager.DaysPerTurn; d++)
-                        {
-                            if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                            sim.AdvanceCountryDayTick(_countryId);
-                        }
-                        InvokeNoArg(controller, "CheckScenarioObjectives");
-                    }
-
-                    SetPrivateField(controller, "_onDesk", false);   // PF-12 (§598): StartScenario seats the country and returns the game to the desk - the page this pin opens needs the desk left, as the sweep leaves it
-                    SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
-                    SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
-                    ResetScrolls(controller);
-                    StatTracePanel.RequestSelection(StatNodeId.Approval);
-                    yield return Settle();
-                    if (controller.GetType().GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is bool sliceVerdictUp && sliceVerdictUp)
-                    {
-                        Debug.LogError($"SHOT: 94b_scenario_in_progress - the scenario verdict is already pending at turn {sim.CurrentTurn} (EndTurn {slice.EndTurn}) after one boundary; this capture shows the verdict, not the scenario in progress.");
-                    }
-                    if (StatTracePanel.SelectedStat != StatNodeId.Approval)
-                    {
-                        Debug.LogError("SHOT: 94b_scenario_in_progress - the trace panel is NOT open on Approval; this capture would be misnamed.");
-                    }
-                    yield return Capture("94b_scenario_in_progress");
-                    StatTracePanel.RequestSelection(null);
-
-                    // The verdict: run to the scenario's own end turn so the REAL evaluator resolves
-                    // it. ⚠ BOUNDED BY THE TURNS ACTUALLY NEEDED, not by MaxStateSearchDays - the
-                    // shared 4-year bound is sized for a state SEARCH, and this loop is a known
-                    // distance: the scenario starts mid-run here, so the flat bound expired at turn 11
-                    // of 12 and the first capture pass pinned the DASHBOARD under a name that promised
-                    // a verdict. A capture whose name asserts a state it does not show is the failure
-                    // this project's capture discipline exists to catch; the bound is still finite.
-                    int turnsNeeded = Mathf.Max(0, slice.EndTurn - sim.CurrentTurn) + 2;
-                    int guard = 0;
-                    int dayBound = turnsNeeded * SimulationManager.DaysPerTurn;
-                    while (sim.CurrentTurn < slice.EndTurn && guard < dayBound)
-                    {
-                        if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                        sim.AdvanceCountryDayTick(_countryId);
-                        guard++;
-                    }
-
-                    InvokeNoArg(controller, "CheckScenarioObjectives");
-                    yield return Settle();
-                    yield return Capture("94c_scenario_verdict");
-
-                    bool verdictOnScreen = (bool)controller.GetType()
-                        .GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic)
-                        .GetValue(controller);
-                    if (verdictOnScreen)
-                    {
-                        Debug.Log($"SHOT: scenario verdict pinned at turn {sim.CurrentTurn} (end turn {slice.EndTurn}).");
-                    }
-                    else
-                    {
-                        Debug.LogError($"SHOT: 94c shows NO verdict - reached turn {sim.CurrentTurn} of {slice.EndTurn}. " +
-                                       "The capture is named for a state it does not show; fix the bound, do not accept the image.");
-                    }
-                }
-            }
-
-            // --- E1d (Italy Debt Crisis): the SECOND shipped scenario's own captures -
-            // ScenarioLibrary.All[1], since [0] is "Inherit the Fund" above and StartScenario
-            // takes an explicit definition rather than an index, so both get their own real
-            // entry through the controller. The in-progress capture is deliberately NOT pinned
-            // near turn 1: a Sustained objective (keep_the_room, RequiredTurns=10) shows nothing
-            // meaningful that early - the streak needs real turns to build, so this advances into
-            // it before capturing, the same "a boring ledger validates nothing" reasoning the
-            // trace-panel captures already established.
-            {
-                ScenarioDefinition italySlice = ScenarioLibrary.All.Count > 1 ? ScenarioLibrary.All[1] : null;
-                if (italySlice == null)
-                {
-                    Debug.LogWarning("SHOT: no second scenario in the library - the Italy Debt Crisis captures stay unpinned.");
-                }
-                else
-                {
-                    InvokeOneArg(controller, "StartScenario", italySlice);
-                    SetEnumField(controller, "_consolidatedTab", "Statistics");
-                    ResetScrolls(controller);
-                    yield return Settle();
-                    yield return Capture("95_italydebt_entry");
-
-                    // A REAL consolidation line (the measured -20% package, per the pre-authoring
-                    // report) so the in-progress and verdict captures show the scenario actually
-                    // being played, not a no-policy line drifting - the "post-decision,
-                    // post-parliament-cost" pinned-capture pattern applied to fiscal policy.
-                    // Applied on the FIRST turn boundary only (matching ItalyDebtCrisisSliceDiagnostic's
-                    // own line), then every later boundary reverts to noDecisions - the SpendingLine
-                    // change is persistent once applied (ApplySpendingLineChanges mutates the line's
-                    // Amount directly), so it needs no re-application.
-                    var italyConsolidation = new PolicyDecision();
-                    italyConsolidation.SpendingLineChanges[SpendingCategory.InfrastructureAndDevelopment] = -20f;
-                    italyConsolidation.SpendingLineChanges[SpendingCategory.PublicServices] = -20f;
-                    italyConsolidation.SpendingLineChanges[SpendingCategory.Administration] = -20f;
-                    var italyDecisions = new Dictionary<CountryId, PolicyDecision> { [_countryId] = italyConsolidation };
-                    bool italyConsolidationApplied = false;
-
-                    // BOUNDED (2026-08-25), not the fixed eleven turns this block shipped with: the
-                    // recorded EndTurn-as-absolute-turn artifact (ScenarioEvaluator compares EndTurn
-                    // to the shared session clock, and this block starts wherever the blocks before
-                    // it left that clock) had drifted far enough that eleven turns ran PAST Italy's
-                    // EndTurn - the verdict screen was up, exclusive, for both "in-progress" captures,
-                    // and the debt trace's own assert-own-name is what caught it (the panel could not
-                    // open under an exclusive screen). Stopping two turns short of EndTurn wherever
-                    // the clock stands keeps the in-progress state genuinely in progress without
-                    // reordering any block. The verdict capture below still runs to EndTurn itself.
-                    // PF-12 (§598): NO boundary now, for the same reason as 94b - on the harness's dense state Italy's approval breaks
-                    // "never below 30" within the turns this used to run (the scenario failed at turn 28 of 30, the verdict screen stood over both
-                    // in-progress pins, and three of the four errors every dry film printed were this block's). The Sustained streak this comment's
-                    // first form waited for never started on that state (approval under 40 throughout), so the entry turn shows as much of it.
-                    int italyInProgressTurns = 0;   // PF-12 (§598): filmed at entry - one boundary was already too many (lost at turn 13 of 30 after one)
-                    if (sim.CurrentTurn >= italySlice.EndTurn - 2)
-                    {
-                        Debug.LogWarning($"SHOT: the session clock (turn {sim.CurrentTurn}) is already within two turns of Italy's EndTurn ({italySlice.EndTurn}) - the in-progress state is unreachable from here; 95b/95d will not show it.");
-                    }
-                    for (int t = 0; t < italyInProgressTurns; t++)
-                    {
-                        for (int d = 0; d < SimulationManager.DaysPerTurn; d++)
-                        {
-                            if (sim.AdvanceDay())
-                            {
-                                sim.AdvanceTurn(italyConsolidationApplied ? noDecisions : italyDecisions);
-                                italyConsolidationApplied = true;
-                            }
-                            sim.AdvanceCountryDayTick(_countryId);
-                        }
-                        InvokeNoArg(controller, "CheckScenarioObjectives");
-                    }
-
-                    SetPrivateField(controller, "_onDesk", false);   // PF-12 (§598): StartScenario seats the country and returns the game to the desk - the page this pin opens needs the desk left, as the sweep leaves it
-                    SetEnumField(controller, "_consolidatedTab", "PolicyLaws");
-                    SetEnumField(controller, "_policyLawsCategory", "LaborMarket");
-                    ResetScrolls(controller);
-                    StatTracePanel.RequestSelection(StatNodeId.Approval);
-                    yield return Settle();
-                    // Assert-own-name for the in-progress capture, added with the bound above: the
-                    // verdict must NOT be pending, or "in progress" is a lie under its own filename
-                    // - and the approval trace it clicks for must actually be OPEN (the toggle
-                    // collapse this block carried since Step 3; see StatTracePanel.RequestSelection).
-                    FieldInfo verdictPendingProbe = controller.GetType().GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic);
-                    if (verdictPendingProbe?.GetValue(controller) is bool verdictUp && verdictUp)
-                    {
-                        Debug.LogError($"SHOT: 95b_italydebt_in_progress - the scenario verdict is already pending at turn {sim.CurrentTurn} (EndTurn {italySlice.EndTurn}); this capture shows the verdict, not the scenario in progress.");
-                    }
-                    if (StatTracePanel.SelectedStat != StatNodeId.Approval)
-                    {
-                        Debug.LogError("SHOT: 95b_italydebt_in_progress - the trace panel is NOT open on Approval; this capture would be misnamed.");
-                    }
-                    yield return Capture("95b_italydebt_in_progress");
-                    StatTracePanel.RequestSelection(null);
-
-                    // Step 2's third section (2026-08-25): the debt trace pinned on the state that
-                    // FIRED its trigger - Italy mid-scenario, eleven periods in, the −20% package
-                    // applied, the stock still well past the comfort anchor: erosion, the lag, the
-                    // reaction's give-back and the primary balance all live at once. On the Budget
-                    // tab's chip row, where Debt-to-GDP ranks first. Assert-own-name on the panel
-                    // AND on the ledger: a closed period with 365 observed days, or the capture is
-                    // not showing what its name says.
-                    SetPrivateField(controller, "_onDesk", false);   // PF-12 (§598): StartScenario seats the country and returns the game to the desk - the page this pin opens needs the desk left, as the sweep leaves it
-                    SetEnumField(controller, "_consolidatedTab", "Budget");
-                    SetEnumField(controller, "_budgetProcessCategory", "Tax");
-                    ResetScrolls(controller);
-                    StatTracePanel.RequestSelection(StatNodeId.DebtToGdp);
-                    yield return Settle();
-                    if (StatTracePanel.SelectedStat != StatNodeId.DebtToGdp)
-                    {
-                        Debug.LogError("SHOT: 95d_italydebt_trace_debt - the trace panel is NOT open on Debt-to-GDP; this capture would be misnamed.");
-                    }
-                    DebtAttribution italyDebtLedger = sim.World?.GetCountry(italySlice.Country)?.FiscalLedgerLastPeriod;
-                    if (italyDebtLedger == null || !italyDebtLedger.Closed || italyDebtLedger.DaysRecorded != SimulationManager.DaysPerTurn)
-                    {
-                        Debug.LogError($"SHOT: 95d_italydebt_trace_debt - Italy's closed debt ledger is not a full period (closed={(italyDebtLedger?.Closed ?? false)}, days={italyDebtLedger?.DaysRecorded ?? -1}); the capture would not show the state it claims.");
-                    }
-                    else
-                    {
-                        Debug.Log($"SHOT: 95d Italy debt trace pinned - {italyDebtLedger.DebtAtPeriodOpen:F1}->{italyDebtLedger.DebtAtClose:F1} (ratio {italyDebtLedger.RatioAtPeriodOpen:F1}->{italyDebtLedger.RatioAtClose:F1}%), " +
-                                  $"primary={italyDebtLedger.PrimaryBalanceEffect:F1} frf={italyDebtLedger.FiscalReactionEffect:F1} intIss={italyDebtLedger.InterestAtIssuance:F1} lag={italyDebtLedger.RateLagEffect:F1} erosion={italyDebtLedger.Erosion:F1} clamp={italyDebtLedger.ClampLoss:F4} events={italyDebtLedger.Events.Count}, stance x{italyDebtLedger.FiscalReactionMultiplier:F3}.");
-                    }
-                    yield return Capture("95d_italydebt_trace_debt");
-                    StatTracePanel.RequestSelection(null);
-                    yield return Settle();
-
-                    int turnsNeeded = Mathf.Max(0, italySlice.EndTurn - sim.CurrentTurn) + 2;
-                    int guard = 0;
-                    int dayBound = turnsNeeded * SimulationManager.DaysPerTurn;
-                    while (sim.CurrentTurn < italySlice.EndTurn && guard < dayBound)
-                    {
-                        if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
-                        sim.AdvanceCountryDayTick(_countryId);
-                        guard++;
-                    }
-
-                    InvokeNoArg(controller, "CheckScenarioObjectives");
-                    yield return Settle();
-                    yield return Capture("95c_italydebt_verdict");
-
-                    FieldInfo verdictPendingField = controller.GetType()
-                        .GetField("_scenarioVerdictPending", BindingFlags.Instance | BindingFlags.NonPublic);
-                    bool italyVerdictOnScreen = (bool)verdictPendingField.GetValue(controller);
-                    if (italyVerdictOnScreen)
-                    {
-                        Debug.Log($"SHOT: Italy Debt Crisis verdict pinned at turn {sim.CurrentTurn} (end turn {italySlice.EndTurn}).");
-                    }
-                    else
-                    {
-                        Debug.LogError($"SHOT: 95c shows NO verdict - reached turn {sim.CurrentTurn} of {italySlice.EndTurn}. " +
-                                       "The capture is named for a state it does not show; fix the bound, do not accept the image.");
-                    }
-
-                    // ⚠ PLAYTEST FIX (2026-08-18): Italy is the LAST scenario in ScenarioLibrary.All, so
-                    // unlike "Inherit the Fund" - whose own dangling verdict gets silently cleared by
-                    // StartScenario's `_scenarioVerdictPending = false` the moment Italy's block starts -
-                    // nothing clears Italy's. Left set, it pinned every later section under the WRONG
-                    // name: found by actually looking at 89_signing_document post-fix and seeing the
-                    // Italy verdict screen again, not a signing ceremony. Not GameController.
-                    // DismissScenarioVerdict() - that method sets _isGameOver = true permanently (the
-                    // real player's only dismissal path, correctly, since a real ceremony ending a
-                    // scenario ends the run) - which would corrupt every capture after it (bills would
-                    // stop resolving, the election/game-over sections would run against an
-                    // already-game-over state). Cleared directly instead, the same "reach into private
-                    // state by reflection rather than widen production's public surface" idiom this
-                    // whole file already uses - this is driver cleanup, not a dismissal a player took.
-                    verdictPendingField.SetValue(controller, false);
-                }
-            }
-
-            // PF-12 (§598): THE FILM'S OWN COUNTRY, BACK. The Italy scenario above seats Italy (StartScenario → SelectPlayerCountry), and Italy has no regional
-            // count, so the night's pin looked for Sweden's night in Italy's game and logged "Sweden showed no election night" - the name was the film's, the country
-            // was not. The pin puts the film's country back the way the scenario took it away, and clears the finished scenarios so no verdict screen
-            // stands over what follows. §718 (Elias's ruling of 2026-10-01, item 9: the signing screen's seam lines): it stood AFTER the signing ceremony, so
+            // PF-12 (§598): THE FILM'S OWN COUNTRY, BACK. The Italy scenario that stood above seated Italy (until the scenarios were retired, §825), and Italy
+            // has no regional count, so the night's pin looked for Sweden's night in Italy's game and logged "Sweden showed no election night" - the name was the
+            // film's, the country was not. The pin puts the film's country back if anything has seated another (it cleared the finished scenarios too, so no
+            // verdict screen stood over what follows). §718 (Elias's ruling of 2026-10-01, item 9: the signing screen's seam lines): it stood AFTER the signing ceremony, so
             // since §598 the ceremony was asked of Italy's game - whose division log held nothing to sign - and every real film logged two "canvas seam never
             // settled" lines at 89_signing_document and 89c_signing_rejected and captured the budget page under the ceremony's name. It now stands before it.
             var seatedField = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic);
             if (seatedField?.GetValue(controller) is Country seated && seated.Id != _countryId)
             {
-                Debug.Log($"SHOT: PF-12 - the scenarios left {seated.Id} seated; the signing and election pins seat {_countryId} again, the scenario's own way.");
+                Debug.Log($"SHOT: PF-12 - {seated.Id} is seated; the signing and election pins seat {_countryId} again, the selection's own way.");
                 InvokeOneArg(controller, "SelectPlayerCountry", _countryId);
             }
-            // SetPrivateField type-checks the VALUE, so it refuses a null; the three fields are written directly
-            foreach ((string name, object value) in new (string, object)[] { ("_scenario", null), ("_scenarioProgress", null), ("_scenarioVerdictPending", false) })
-            {
-                FieldInfo scenarioField = controller.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
-                if (scenarioField != null) { scenarioField.SetValue(controller, value); }
-                else { Debug.LogError($"SHOT: PF-12 - the controller has no {name}; the finished scenarios are NOT cleared before the signing and election pins."); }
-            }
+            // (§825: the scenarios that seated another country and left a verdict standing are retired - the re-seat above stays as a guard.)
+            // The signing and election pins stand on the desk, as they did when the re-seat put it back (SelectPlayerCountry seats the desk);
+            // with nothing to re-seat, the sweep's last page (93b's Budget) would stand under them instead (§825's review, finding 1).
+            SetPrivateField(controller, "_onDesk", true);
             // §718: the country seated again, read again - a seat re-taken may open its own book, and `player` above is the one the film began with
             Country filmed = seatedField?.GetValue(controller) as Country ?? player;
 

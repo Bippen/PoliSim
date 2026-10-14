@@ -52,8 +52,7 @@ namespace PoliSim.EditorTools
     /// <c>not implemented</c> / <c>implemented</c> as a LAW's enactment state on the laws tab and
     /// the ledger rows (a state of the world, not of the build); the Policy Web's
     /// <c>DERIVED</c> / <c>DECLARED</c> edge idiom (R-C6 — the player's own reading of where an
-    /// edge comes from); <c>SCENARIO COMPLETE</c> on the scenario verdict screen (the player
-    /// completed it); <c>PROVISIONAL</c> on the day-one government while the real one is not on record
+    /// edge comes from); <c>PROVISIONAL</c> on the day-one government while the real one is not on record
     /// (K-1, 2026-09-24 - a standing of the world, like PRELIMINARY of a figure). Anything else with these words is a hit.</para>
     /// </summary>
     public static class MetaTextCheck
@@ -141,8 +140,6 @@ namespace PoliSim.EditorTools
         /// <summary>(file suffix, literal substring) pairs that are player-facing despite the word — enumerated in the class doc.</summary>
         private static readonly (string File, string Contains)[] Allow =
         {
-            ("GameController.cs", "SCENARIO COMPLETE"),
-            ("GameController.cs", "Scenario complete"),
             // K-1 part (4) (2026-09-24, Elias's order: the day-one government "marked provisional"): PROVISIONAL here is the standing of
             // the WORLD's government - the Riksdag has not yet chosen a prime minister, so the formation's result stands in - addressed
             // to the player, the same class as PRELIMINARY on a published figure; not the data-class tag this check hunts. Exactly these

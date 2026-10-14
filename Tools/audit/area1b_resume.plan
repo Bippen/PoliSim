@@ -2,11 +2,11 @@
 # A resumed run (resume=) loads an earlier run's file (save=, which plays on and loads nothing) through the saves screen's own load route, in its own
 # play-mode session - as a player who quits and comes back. Pairs are compared by date where their lines cannot pair (coarser frames, a resume).
 #
-# --- re-runs: the multi-day frame and the scenario verdict, now that day 0 is the start's own date and pairs compare by date ---
+# --- re-runs: the multi-day frame and the scenario verdict (its pair retired with the scenarios, §825), now that day 0 is the start's own date and pairs compare by date ---
 id=b1_se_base country=Sweden party=M style=idle seed=301 days=300
 id=b1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=b1_se_base
-id=b1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
-id=b1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=b1_fund_fine
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=b1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=b1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=b1_fund_fine
 #
 # --- two loads inside one campaign (the CAMPAIGN REPLAY errors of area1's a1_se_s_sl and a1_de_sl came from a second load in a session) ---
 id=b2_se_m_base country=Sweden party=M style=idle seed=361 days=300

@@ -744,6 +744,22 @@ namespace PoliSim.EditorTools
                     Debug.Log($"RT: version gate refused as ruled: \"{e.Message}\"");
                 }
 
+                // §825 (GA-0-14 / GA-0-40): a save that carried a retired challenge scenario's progress names it on the way in, and only such a
+                // save - the id planted under the UI layer, then a free-play save's null scenario and a batch save's absent UI layer, which name nothing
+                Newtonsoft.Json.Linq.JObject planted = Newtonsoft.Json.Linq.JObject.Parse(json);
+                planted["Ui"] = new Newtonsoft.Json.Linq.JObject { ["Scenario"] = new Newtonsoft.Json.Linq.JObject { ["ScenarioId"] = "inherit_the_fund" } };
+                string named = SaveGameService.Deserialize(planted.ToString()).RetiredScenarioId;
+                planted["Ui"] = new Newtonsoft.Json.Linq.JObject { ["Scenario"] = Newtonsoft.Json.Linq.JValue.CreateNull() };
+                string freePlay = SaveGameService.Deserialize(planted.ToString()).RetiredScenarioId;
+                planted["Ui"] = Newtonsoft.Json.Linq.JValue.CreateNull();
+                string noLayer = SaveGameService.Deserialize(planted.ToString()).RetiredScenarioId;
+                if (named != "inherit_the_fund" || freePlay != null || noLayer != null)
+                {
+                    Debug.LogError($"RT: a retired scenario read as '{named ?? "null"}' (planted), '{freePlay ?? "null"}' (a null scenario) and '{noLayer ?? "null"}' (no UI layer) - the planted id and two nulls were owed.");
+                    return false;
+                }
+
+                Debug.Log("RT: a retired scenario's progress is named on load, and nothing else is.");
                 Debug.Log("RT: file IO (atomic write, .bak, load-back) and version gate OK.");
                 return true;
             }

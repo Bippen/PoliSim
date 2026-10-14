@@ -1,4 +1,4 @@
-# The gameplay audit's Phase 1 smoke (docs/audit/AUDIT_PROTOCOL.md): every style, both scenarios, a created party, all six countries.
+# The gameplay audit's Phase 1 smoke (docs/audit/AUDIT_PROTOCOL.md): every style, both scenarios (retired §825 - their two runs below are commented out), a created party, all six countries.
 # One run per line, key=value; the keys are AuditSpec's (Assets/Editor/AuditDriver.cs). Run through BatchSimulationRunner.RunAudit.
 id=p1_se_m_extreme_deficit country=Sweden party=M style=extreme pole=deficit seed=201 days=400
 id=p1_se_m_extreme_surplus country=Sweden party=M style=extreme pole=surplus seed=202 days=400
@@ -7,8 +7,8 @@ id=p1_se_m_x01 country=Sweden party=M style=exploit exploit=X-01 seed=204 days=4
 id=p1_se_m_x04 country=Sweden party=M style=exploit exploit=X-04 seed=205 days=400
 id=p1_se_m_hist country=Sweden party=M style=historical seed=206 days=400
 id=p1_se_created country=Sweden create=Grassroots party=NYA style=idle seed=207 days=300
-id=p1_se_fund country=Sweden scenario=inherit_the_fund party=M style=idle seed=208 days=400
-id=p1_it_crisis country=Italy scenario=italy_debt_crisis party=FdI style=idle seed=209 days=60
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=p1_se_fund country=Sweden scenario=inherit_the_fund party=M style=idle seed=208 days=400
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=p1_it_crisis country=Italy scenario=italy_debt_crisis party=FdI style=idle seed=209 days=60
 id=p1_de_spd country=Germany party=SPD style=idle seed=210 days=220
 id=p1_de_cdu country=Germany party=CDU style=historical seed=211 days=220
 id=p1_pl_pis country=Poland party=PiS style=idle seed=212 days=280

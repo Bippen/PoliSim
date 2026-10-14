@@ -1048,9 +1048,9 @@ namespace PoliSim.Simulation
             new Dictionary<CountryId, SwfDrawdownBill>();
 
         /// <summary>
-        /// R-S3e: the active scenario's foreign-policy pacing multiplier, or 1 in free play - set by
-        /// GameController when a scenario starts and re-derived from the scenario id on load, so it
-        /// needs no save field of its own. **1 leaves the standing cadence exactly as it was.**
+        /// R-S3e: the foreign-policy pacing multiplier - a challenge scenario's start set it, and a load
+        /// re-derived it from the scenario's id, until the scenarios were retired (§825); nothing writes
+        /// it now, so it is 1 in every game. **1 leaves the standing cadence exactly as it was.**
         /// </summary>
         public float ForeignPolicyCadenceMultiplier { get; set; } = 1f;
 

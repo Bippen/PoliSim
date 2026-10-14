@@ -48,13 +48,13 @@ id=a1_us_1x country=USA party=DEM style=idle seed=334 days=60 speed=1 delta=0.05
 id=a1_us_3x country=USA party=DEM style=idle seed=334 days=60 speed=3 delta=0.05 compare=a1_us_1x
 id=a1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=a1_se_base
 id=a1_se_gui4 country=Sweden party=M style=idle seed=301 days=300 gui=4 compare=a1_se_base
-id=a1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
-id=a1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=a1_fund_fine
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=a1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=a1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=a1_fund_fine
 # --- Tools/audit/area1b_resume.plan, unchanged ---
 id=b1_se_base country=Sweden party=M style=idle seed=301 days=300
 id=b1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=b1_se_base
-id=b1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
-id=b1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=b1_fund_fine
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=b1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=b1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=b1_fund_fine
 id=b2_se_m_base country=Sweden party=M style=idle seed=361 days=300
 id=b2_se_m_two country=Sweden party=M style=idle seed=361 days=300 saveload=190,220 compare=b2_se_m_base
 id=b2_se_s_base country=Sweden party=S style=idle seed=362 days=300

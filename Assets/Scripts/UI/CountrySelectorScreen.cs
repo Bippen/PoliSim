@@ -49,8 +49,7 @@ namespace PoliSim.UI
         /// called with the country and the party's abbreviation. The largest-party stand-in that selection seated since C-R2 is retired
         /// from this path (the harness's one-argument shape keeps it).
         /// </summary>
-        public static CountrySelectorScreen Build(World world, Action<CountryId, string> onSelect,
-            IReadOnlyList<ScenarioDefinition> scenarios = null, Action<ScenarioDefinition> onScenario = null)
+        public static CountrySelectorScreen Build(World world, Action<CountryId, string> onSelect)
         {
             Sprite folder = CanvasChrome.Sliced("ui_folder_country", 48f, 48f, 72f, 40f);
             if (folder == null || world == null)
@@ -95,26 +94,19 @@ namespace PoliSim.UI
             titleRect.anchorMin = new Vector2(0f, 1f);
             titleRect.anchorMax = new Vector2(1f, 1f);
             titleRect.pivot = new Vector2(0.5f, 1f);
-            // P6-A2: the scenario controls are faces now, not lines, so the block is taller by the face's
-            // padding and starts correspondingly higher. ⚠ The grid below is anchored to the centre and did
-            // not move; the block grows into the gap above it, not into it.
-            // §718 (Elias's ruling of 2026-10-01, item 9: the scenario buttons' spacing): the block was a fixed 172 units from 40 down while its
-            // content - the wordmark, the rules, the subtitle and one faced line PER scenario - came to 181 with two scenarios, so it ran into the
-            // grid, which is anchored to the CENTRE (its top 192 units down on the 1064-unit canvas of the 1280x699 window). The scenarios now share
-            // ONE row (up to ScenarioStripColumns), the block is exactly its content's height and starts 28 down: one row ends 167 down, 25 clear of
-            // the grid at 1064 and 33 at the reference 1080. The film measures the clearance (UiScreenshotDriver, 01_country_selector).
-            int scenarioRows = scenarios != null && onScenario != null && scenarios.Count > 0 ? (scenarios.Count + ScenarioStripColumns - 1) / ScenarioStripColumns : 0;
+            // §718: the block is exactly its content's height - the wordmark, the rules, the subtitle - and starts TitleTop down; the grid below is
+            // anchored to the centre. The challenge scenarios' strip under the subtitle, and the clearance the film measured between it and the
+            // grid, left with the scenarios (§825).
             titleRect.anchoredPosition = new Vector2(0f, -TitleTop);
-            titleRect.sizeDelta = new Vector2(0f, WordmarkMinHeight + TitleSpacing + 1f + TitleSpacing + SubtitleMinHeight
-                + (scenarioRows > 0 ? TitleSpacing + scenarioRows * ScenarioButtonHeight + (scenarioRows - 1) * TitleSpacing : 0f));
+            titleRect.sizeDelta = new Vector2(0f, WordmarkMinHeight + TitleSpacing + 1f + TitleSpacing + SubtitleMinHeight);
             VerticalLayoutGroup titleLayout = title.AddComponent<VerticalLayoutGroup>();
             titleLayout.childAlignment = TextAnchor.UpperCenter;
             titleLayout.spacing = TitleSpacing;
             titleLayout.childControlHeight = true;
             titleLayout.childControlWidth = true;
             titleLayout.childForceExpandHeight = false;
-            // P6-A2: the scenario controls carry a face, and a face stretched across the whole screen is a
-            // bar, not a button; each child keeps its own preferred width and the column centres it.
+            // P6-A2: each child keeps its own preferred width and the column centres it (set for the scenario faces, which left with the
+            // scenarios, §825 - the wordmark and the subtitle read the same either way).
             titleLayout.childForceExpandWidth = false;
 
             // ⚠ THE MINIMUMS ARE LOAD-BEARING (P6-A2). A `VerticalLayoutGroup` that cannot fit its children
@@ -128,32 +120,6 @@ namespace PoliSim.UI
             Text subtitle = CanvasChrome.MakeText(title.transform, "Subtitle", "Choose your country", PoliSimTheme.Body, 14,
                 PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
             subtitle.gameObject.AddComponent<LayoutElement>().minHeight = SubtitleMinHeight;
-
-            // STEP 3: the scenario strip — one text line per authored scenario, under the subtitle.
-            // Deliberately NOT a seventh folder: the grid is a 3×2 that exactly fits six countries,
-            // and a scenario is a different KIND of start (it brings its own country), so it reads as
-            // its own line rather than as a seventh peer. The strip is built from the library, so the
-            // slate growing from one to six adds lines here with no layout edit.
-            if (scenarioRows > 0)
-            {
-                // §718: one strip, the scenarios side by side and centred, a new row only past ScenarioStripColumns
-                var strip = new GameObject("ScenarioStrip");
-                strip.transform.SetParent(title.transform, false);
-                strip.AddComponent<RectTransform>();
-                GridLayoutGroup stripLayout = strip.AddComponent<GridLayoutGroup>();
-                stripLayout.cellSize = new Vector2(ScenarioButtonWidth, ScenarioButtonHeight);
-                stripLayout.spacing = new Vector2(ScenarioStripGap, TitleSpacing);
-                stripLayout.childAlignment = TextAnchor.UpperCenter;
-                stripLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                stripLayout.constraintCount = Mathf.Min(ScenarioStripColumns, scenarios.Count);
-                LayoutElement stripSize = strip.AddComponent<LayoutElement>();
-                stripSize.preferredWidth = stripSize.minWidth = stripLayout.constraintCount * ScenarioButtonWidth + (stripLayout.constraintCount - 1) * ScenarioStripGap;
-                stripSize.preferredHeight = stripSize.minHeight = scenarioRows * ScenarioButtonHeight + (scenarioRows - 1) * TitleSpacing;
-                foreach (ScenarioDefinition definition in scenarios)
-                {
-                    BuildScenarioLine(strip.transform, definition, onScenario);
-                }
-            }
 
             // The 3×2 folder grid, §A.14's own measures at the 1920 reference the scaler establishes.
             var grid = new GameObject("Folders");
@@ -239,7 +205,7 @@ namespace PoliSim.UI
         /// formation seats it in the cabinet; a party seats the player and starts the game, BACK returns to the folders. Public so the
         /// capture driver can film it; <paramref name="onSelect"/> null draws the panel and seats nobody.
         /// </summary>
-        public void ShowPartyPanel(Country country, Action<CountryId, string> onSelect, bool offerCreate = true)
+        public void ShowPartyPanel(Country country, Action<CountryId, string> onSelect)
         {
             ClosePartyPanel();   // 18a: the party panel opens OVER the sheet; the sheet closes with it through HidePartyPanel
             if (Root == null || country == null) { return; }
@@ -329,8 +295,8 @@ namespace PoliSim.UI
                 button.onClick.AddListener(() => { if (onSelect != null) { onSelect(id, abbrev); } });
             }
 
-            // §676 (SP-4): a party of the player's own - the creation flow, where the country offers it (a scenario's pick does not: it starts the scenario's party)
-            if (offerCreate && OnCreateParty != null && PartyCreationFlow.Offered(country.Id))
+            // §676 (SP-4): a party of the player's own - the creation flow, where the country offers it
+            if (OnCreateParty != null && PartyCreationFlow.Offered(country.Id))
             {
                 Button createButton = CanvasChrome.FacedButton(column.transform, "CreateParty", "CREATE A PARTY",
                     PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight), CanvasChrome.Face.Paper);
@@ -866,50 +832,11 @@ namespace PoliSim.UI
         /// paper face carries the navigation.</summary>
         private const float BackButtonWidth = 340f;
 
-        /// <summary>The scenario control's face, in canvas units at the board basis: wide enough for the
-        /// longest authored scenario name at 18 units, one line tall plus the face's own padding.</summary>
-        private const float ScenarioButtonWidth = 460f;
-
-        /// <summary>See <see cref="ScenarioButtonWidth"/>.</summary>
-        private const float ScenarioButtonHeight = 34f;
-
-        /// <summary>§718: the scenarios on one row, up to this many; the slate is two today, three fit the grid's 1680 width.</summary>
-        private const int ScenarioStripColumns = 3;
-
-        /// <summary>§718: the gap between two scenario faces on the strip, in canvas units.</summary>
-        private const float ScenarioStripGap = 24f;
-
         /// <summary>§718: the title block's top, in canvas units below the canvas's top.</summary>
         private const float TitleTop = 28f;
 
         /// <summary>§718: the title block's children's spacing, in canvas units (P6-A2's 8).</summary>
         private const float TitleSpacing = 8f;
-
-        /// <summary>§718: the least clearance between the scenario strip and the folder grid the film accepts, in canvas units.</summary>
-        public const float MinScenarioClearance = 16f;
-
-        /// <summary>
-        /// One scenario line, on the chrome's own brass face (P6-A2, 2026-09-17).
-        ///
-        /// <para>⚠ <b>It used to be a bare sentence.</b> The first form was a `Text` with a `Button` bolted
-        /// on and nothing behind it - *"the lightest control this screen can host"*, which is exactly what
-        /// playtest 6's finding 2 reports: prose the player cannot tell is a control. The face is the
-        /// delivered per-state brass strip the signing plate and election night already wear; no new art is
-        /// drawn here.</para>
-        /// </summary>
-        private static void BuildScenarioLine(Transform parent, ScenarioDefinition definition, Action<ScenarioDefinition> onScenario)
-        {
-            Button button = CanvasChrome.FacedButton(parent, $"Scenario_{definition.Id}",
-                $"Scenario:  {definition.Name}", PoliSimTheme.Display, 18,
-                PoliSimTheme.TextPrimary, new Vector2(ScenarioButtonWidth, ScenarioButtonHeight));
-            LayoutElement layout = button.gameObject.AddComponent<LayoutElement>();
-            layout.preferredWidth = ScenarioButtonWidth;
-            layout.preferredHeight = ScenarioButtonHeight;
-            layout.minHeight = ScenarioButtonHeight;
-
-            ScenarioDefinition captured = definition;
-            button.onClick.AddListener(() => onScenario(captured));
-        }
 
         private static void BuildFolderCard(Transform parent, Country country, Sprite folder, Action<Country> onOpen)
         {

@@ -52,6 +52,6 @@ id=a1_us_3x country=USA party=DEM style=idle seed=334 days=60 speed=3 delta=0.05
 id=a1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=a1_se_base
 id=a1_se_gui4 country=Sweden party=M style=idle seed=301 days=300 gui=4 compare=a1_se_base
 #
-# --- a scenario to its verdict at two frame sizes (inventory A S-05: the verdict is missing from the after-day gate, so a multi-day frame may run a day past it) ---
-id=a1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
-id=a1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=a1_fund_fine
+# --- a scenario to its verdict at two frame sizes (inventory A S-05: the verdict is missing from the after-day gate, so a multi-day frame may run a day past it) - retired with the scenarios, §825 ---
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=a1_fund_fine country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.05
+# retired §825 with the challenge scenarios (GA-0-14, GA-0-40): id=a1_fund_coarse country=Sweden scenario=inherit_the_fund party=M style=idle seed=341 days=4500 delta=0.333 compare=a1_fund_fine

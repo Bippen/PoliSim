@@ -32,7 +32,7 @@ Goal: play every gameplay feature in every variant, find bugs and discrepancies,
 
 Variants, with pairwise coverage across:
 - country: every startable one;
-- start: every start point and the three challenge scenarios;
+- start: every start point and the three challenge scenarios; [the scenarios were retired by Elias's ruling - GA-0-14, GA-0-40, §825]
 - role: head of government, coalition partner, opposition, created party;
 - outcome: win, loss, hung or coalition, no-confidence or early election, term limit, game over;
 - play style: the five above;
@@ -50,7 +50,7 @@ Areas, foundations first:
 6. Energy: fleet, load blocks, zones and area prices, ETS, both ledgers, carbon-rate indexation.
 7. Macro and the six society-stat families.
 8. Cabinet ministers, parliamentary gating, statutes.
-9. Events and the challenge scenarios.
+9. Events and the challenge scenarios. [The scenarios were retired - GA-0-14, GA-0-40, §825.]
 10. Every UI state on dry film against its LOOKED AT board: clipping, number format, colour neutrality, stale or wrong-country text.
 11. 30-year stability and tick time.
 12. Exploit sweep.

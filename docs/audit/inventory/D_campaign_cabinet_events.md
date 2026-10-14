@@ -600,7 +600,7 @@ These are what a harness can assert on every run.
 | INV-S1 | A scenario verdict resolves once; EvaluateAtBoundary is a no-op afterwards | ScenarioEvaluator.cs:53 | guard | enforced |
 | INV-S2 | Evaluated once per AdvanceTurn, never per day | GC:6137 | — | structural |
 | INV-S3 | Terminal objectives are judged at the first boundary with currentTurn ≥ EndTurn; NeverBreach is lost at the breaching boundary; Sustained is sticky once met | ScenarioEvaluator.cs:80-86, 94-109, 131-170 | — | structural |
-| INV-S4 | Save → load keeps the progress shape; an unknown id is refused | GC:1045-1061; `Assets/Editor/ScenarioSliceDiagnostic.cs`:194-246 (not on any bar) | refusal | enforced |
+| INV-S4 | Save → load keeps the progress shape; an unknown id is refused *(history: the scenarios retired, §825 - an older save's scenario is read past and named in the log)* | GC:1045-1061; `Assets/Editor/ScenarioSliceDiagnostic.cs`:194-246 (not on any bar) | refusal | enforced |
 | INV-K1 | One minister per portfolio; `CabinetMinisters[p].Portfolio == p` | `Country.CabinetMinisters` (Country.cs:869) | the dictionary key; the second half is NOT enforced (holds because of GC.PoliticsV35:456) | partly |
 | INV-K2 | A cabinet decision resolves once and is removed | SM:1114-1117 | removal only. **No check** that it was pending or that the option belongs to it (SM:1102-1118) | NOT enforced at the API |
 | INV-K3 | A decision or meeting is pending only for a portfolio the gate allowed at roll time | SM:5157; SM:298 | roll gate; **not re-checked at resolve** (by design, §630) | partly |
@@ -719,7 +719,7 @@ Every entry is SUSPECTED: a lead for a run, not a finding. "API" means reachable
 | SD-46 | The scenario party pick offers **every playable party**, PM or not. For a non-PM party the AI governs and the player's decision is dropped. In Italy no election and no record-seating ever changes the government (USA-only seating), so an Italy Debt Crisis run as a non-PM party has no lever for 30 turns (INFERRED from the gate lines) | GC:2365-2373; GC:6105; SM:2632-2642; WorldClock.cs:112-116, 398 |
 | SD-47 | The "approval below 30" and Sustained objectives are judged only at yearly boundaries, so mid-year dips are invisible. Sustained is sticky (hold 40 for ten turns once and it is met for good) | ScenarioEvaluator.cs:9-15, 94-109; ScenarioLibrary.cs:158, 301 |
 | SD-48 | `ThresholdAtDate` is judged at EndTurn from LastValue, not at ByTurn (dormant: no shipped scenario uses it). `StartTurn` is never read, so a mid-run start is miscounted (harness only) | ScenarioEvaluator.cs:34, 153-157; ScenarioDefinition.cs:75 |
-| SD-49 | The scenarios' measured claims predate PS-1 starts, PS-3 role gating and the AI finance ministry. Their diagnostics build a world with no `PlayerCountryId` (so the AI ministry governs) and are on no bar | ScenarioLibrary.cs:71-89, 178-202, 255-265, 293-297; Assets/Editor/ItalyDebtCrisisSliceDiagnostic.cs:111-121 |
+| SD-49 | *(The scenarios retired, §825.)* The scenarios' measured claims predate PS-1 starts, PS-3 role gating and the AI finance ministry. Their diagnostics build a world with no `PlayerCountryId` (so the AI ministry governs) and are on no bar | ScenarioLibrary.cs:71-89, 178-202, 255-265, 293-297; Assets/Editor/ItalyDebtCrisisSliceDiagnostic.cs:111-121 |
 | SD-50 | Inherit the Fund's `still_creditor` (debt ≤ 0) can be met by draining the fund through an SWF drawdown bill, which feeds the treasury (INFERRED) | ScenarioLibrary.cs:133-165; SM:2313-2317 |
 
 ### 5e. Cabinet, central bank and foreign policy, beyond 5b

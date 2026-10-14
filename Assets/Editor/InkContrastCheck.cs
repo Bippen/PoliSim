@@ -91,7 +91,7 @@ namespace PoliSim.EditorTools
             // 4.5 body floor - and this census never enumerated a button face. The Canvas faced button (`CanvasChrome.FacedButton`) draws
             // its label over the delivered brass / paper strips, whose fills are the face colours the method falls back to when a strip is
             // missing (0x8A6B2F brass, 0xD9CBAC paper); the inks are the ones every caller passes - 0xF0E7D8 on brass (the main menu, the
-            // party rows, the start cards, the scenario lines, SIGN / FILE, CONTINUE) and 0x4A3A22 on paper (the menu's paper items, the
+            // party rows, the start cards, SIGN / FILE, CONTINUE; the scenario lines until §825) and 0x4A3A22 on paper (the menu's paper items, the
             // Back buttons, the unplayable start cards). Listed at the body floor: a button's label is set in Display 14-22, not a caption.
             // §626: THE FACE IS THE SPRITE'S, NOT THE FALLBACK LITERAL. The first cut of this pair measured the missing-strip fallback fill
             // (0x8A6B2F) and read TextPrimary on it at 3.02 - a face no player sees, since the delivered strip is on disk. Design read the

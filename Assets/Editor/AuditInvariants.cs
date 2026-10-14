@@ -271,7 +271,7 @@ namespace PoliSim.EditorTools
 
         private static readonly FieldInfo FiscalPeriods = typeof(SimulationManager).GetField("_fiscalPeriods", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        /// <summary>A load or a scenario's start re-writes the debt and the fund: the two books' sum and the fund's evening are taken afresh from the next day.</summary>
+        /// <summary>A load re-writes the debt and the fund (a scenario's start did too, until the scenarios were retired, §825): the two books' sum and the fund's evening are taken afresh from the next day.</summary>
         internal void RestartDebt()
         {
             _twoBooks.Clear();

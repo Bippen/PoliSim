@@ -736,12 +736,6 @@ namespace PoliSim.UI
                 return;
             }
 
-            // The verdict holds the clock for the same reason the reveal does: the run is over and
-            // the player has not read why yet.
-            if (_scenarioVerdictPending)
-            {
-                return;
-            }
             // A Canvas takeover stops the clock — the signing-screen pattern addition to the seam's
             // discipline statement. The selector never exposed this (the no-selection gate above
             // already froze time); a mid-game ceremony with days ticking behind it would resolve
@@ -906,6 +900,14 @@ namespace PoliSim.UI
             foreach (Country loaded in _world.Countries) { EnergyFleet.Sanitise(loaded); }
             EnergyMarket.BeginTurn(_world);
             _simulationManager.PlayerCountryId = save.PlayerCountryId;   // C-R4b step 3 (RestoreInto set it too, before the replay; this keeps the two paths one)
+            if (!string.IsNullOrEmpty(save.RetiredScenarioId))
+            {
+                // GA-0-14 / GA-0-40 (§825): stated, never silent - the scenario's objectives went with it, the world is the save's; a run whose
+                // verdict was already closed stays over (it was saved as a game over), and says so
+                Debug.LogWarning(save.Ui != null && save.Ui.IsGameOver
+                    ? $"SCENARIO: this save carried the progress of '{save.RetiredScenarioId}', a challenge scenario the game no longer has - its run had ended, and stays over."
+                    : $"SCENARIO: this save carried the progress of '{save.RetiredScenarioId}', a challenge scenario the game no longer has - the world loads as free play.");
+            }
             RestoreUiDrafts(save.Ui);
             // PS-1 (§618, the review's R5): the shadow baseline and the impact ledger are forked from the LOADED game (C-C10's fork), never left as the
             // world just left - a load moves the epoch under them, and the old shadow's clock would count its turns against a foreign start.
@@ -973,8 +975,6 @@ namespace PoliSim.UI
                 PendingElectionVerdictEndsGame = _pendingElectionVerdictEndsGame,
                 PendingElectionDate = _pendingElectionDate == default ? null : _pendingElectionDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                 CampaignOpeningAcknowledgedElection = _campaignOpeningAcknowledgedElection,
-                Scenario = _scenarioProgress,
-                ScenarioVerdictPending = _scenarioVerdictPending,
                 GameSpeedValue = (int)_gameSpeed,
                 FedChairCandidates = _fedChairCandidates == null ? null : new List<FedChair>(_fedChairCandidates),
                 FedChairCandidatesForTurn = _fedChairCandidatesForTurn,
@@ -1049,23 +1049,8 @@ namespace PoliSim.UI
             // showed is in-process state), so the verdict lands on the desk at once - stated, never lost.
             if (!string.IsNullOrEmpty(_pendingElectionVerdict)) { ApplyElectionVerdict(); }
 
-            // STEP 3: progress is restored from the save; the DEFINITION is looked up by id, and the
-            // cadence multiplier re-derived from it rather than persisted (one source of truth for an
-            // authored value). A save naming a scenario this build no longer has is REFUSED loudly -
-            // silently resuming it as free play would drop the player's objectives mid-run, which is
-            // the silent-gap class the ledger's own persistence ruling exists to prevent.
-            _scenarioProgress = ui?.Scenario;
-            _scenarioVerdictPending = ui?.ScenarioVerdictPending ?? false;
-            _scenario = _scenarioProgress != null ? ScenarioLibrary.ById(_scenarioProgress.ScenarioId) : null;
-            if (_scenarioProgress != null && _scenario == null)
-            {
-                Debug.LogError($"SCENARIO: this save names '{_scenarioProgress.ScenarioId}', which this build does not have - " +
-                               "its objectives cannot be judged. The world loaded; the scenario did not.");
-                _scenarioProgress = null;
-                _scenarioVerdictPending = false;
-            }
-
-            _simulationManager.ForeignPolicyCadenceMultiplier = _scenario?.ForeignPolicyCadenceMultiplier ?? 1f;
+            // GA-0-14 / GA-0-40 (§825): the challenge scenarios are retired - a save that carried one's progress loads as the free play it now
+            // is, and `RestoreFromSave` names the scenario it carried.
             _fedChairCandidates = ui?.FedChairCandidates == null ? null : new List<FedChair>(ui.FedChairCandidates);
             _fedChairCandidatesForTurn = ui?.FedChairCandidatesForTurn ?? -1;
             // GA-1-2: the shortlists the save drew - and never the last game's, which a load in the same session used to keep.
@@ -1811,8 +1796,7 @@ namespace PoliSim.UI
                     // failure of ANY kind must fail INTO the degradation path exactly once.
                     try
                     {
-                        _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountryAndParty,
-                            ScenarioLibrary.All, OpenScenarioPartyPick);
+                        _countrySelector = CountrySelectorScreen.Build(_world, SelectPlayerCountryAndParty);
                     }
                     catch (System.Exception e)
                     {
@@ -2045,92 +2029,6 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>
-        /// STEP 3: the active scenario and its progress, both null in free play. The definition is
-        /// authored data (`ScenarioLibrary`); the progress is what persists.
-        /// </summary>
-        private ScenarioDefinition _scenario;
-        private ScenarioProgress _scenarioProgress;
-
-        /// <summary>True while the verdict screen is the live takeover - the screen-swap idiom the
-        /// saves menu and the election reveal already use, because an IMGUI overlay cannot stop
-        /// events reaching controls drawn under it.</summary>
-        private bool _scenarioVerdictPending;
-
-        /// <summary>
-        /// STEP 3's ENTRY SEAM (R-S3f): apply the scenario's deltas to the freshly-built world, then
-        /// commit its country through the ONE existing selection path - so the Canvas selector's exit
-        /// envelope, the signing high-water mark and the persistence stamp all behave exactly as they
-        /// do for free play. Deltas run BEFORE selection commits: no turn has advanced, nothing has
-        /// been observed, and the player's first day sees the scenario's world as its starting state.
-        /// </summary>
-        private void StartScenario(ScenarioDefinition definition)
-        {
-            if (definition == null)
-            {
-                return;
-            }
-
-            // PS-1 (§618, the review's D1): THE COUNTRY IS SELECTED FIRST, so the world is built on its start before the scenario's deltas land on
-            // it - applied to the selector's world first, they were thrown away with it. A fresh game only; mid-run (the driver's scenario blocks) the
-            // running world stays and the deltas land on it as before.
-            SelectPlayerCountry(definition.Country);
-            Country country = _world.GetCountry(definition.Country);
-            // Step 2's third section (2026-08-25): a scenario's seed delta is the one debt writer
-            // outside the daily path and the interrupt layer (Italy writes 165% of GDP straight
-            // onto the stock). Observed here as a dated Class B event on the debt ledger - at a
-            // fresh game's turn 0 this is the ledger's first touch and it opens at the PRE-seed
-            // stock, so the first period's panel shows the seed as the event it is; mid-session
-            // (the capture driver's Italy block) the accruing period's audit stays exact instead
-            // of failing on an unrecorded writer.
-            float debtBeforeDeltas = country.State.GovernmentDebt;
-            definition.ApplyDeltas?.Invoke(_world, country);
-            DebtLedgerRecorder.RecordEvent(country, _simulationManager.CurrentDate, $"Scenario start: {definition.Name}", debtBeforeDeltas, country.State.GovernmentDebt);
-
-            _scenario = definition;
-            _scenarioProgress = ScenarioEvaluator.Begin(definition, _simulationManager.CurrentTurn);
-            _scenarioVerdictPending = false;
-            _simulationManager.ForeignPolicyCadenceMultiplier = definition.ForeignPolicyCadenceMultiplier;
-
-            Debug.Log($"SCENARIO: '{definition.Name}' started - {definition.Country}, {definition.Objectives.Count} objectives, " +
-                      $"ends turn {definition.EndTurn}, FA cadence x{definition.ForeignPolicyCadenceMultiplier:0.##}.");
-        }
-
-        /// <summary>
-        /// STEP 3's EVALUATION HOOK (R-S3c): boundary-resident, called from the same post-turn site
-        /// `CheckElection` occupied until PS-2 (§619) moved the election to polling day. A resolved verdict raises the verdict screen; the run does not
-        /// end until the player dismisses it, exactly as an election loss does not end until the
-        /// reveal is dismissed.
-        /// </summary>
-        private void CheckScenarioObjectives()
-        {
-            if (_scenario == null || _scenarioProgress == null || _scenarioProgress.Verdict != ScenarioVerdict.Undecided)
-            {
-                return;
-            }
-
-            ScenarioEvaluator.EvaluateAtBoundary(_scenario, _scenarioProgress, _playerCountry, _simulationManager.CurrentTurn);
-            if (_scenarioProgress.Verdict != ScenarioVerdict.Undecided)
-            {
-                _scenarioVerdictPending = true;
-                Debug.Log($"SCENARIO: '{_scenario.Name}' resolved {_scenarioProgress.Verdict} at turn {_simulationManager.CurrentTurn} - {_scenarioProgress.VerdictReason}");
-            }
-        }
-
-        /// <summary>Dismissing the verdict ends the run through the EXISTING game-over path - the
-        /// scenario's outcome becomes the reason string, so every downstream gate (Update's day loop,
-        /// every `GUI.enabled = !_isGameOver` panel) behaves as it always has.</summary>
-        private void DismissScenarioVerdict()
-        {
-            _scenarioVerdictPending = false;
-            if (_scenarioProgress != null && _scenario != null)
-            {
-                _isGameOver = true;
-                _gameOverReason = _scenarioProgress.Verdict == ScenarioVerdict.Won
-                    ? $"Scenario complete - {_scenario.Name}: {_scenarioProgress.VerdictReason}"
-                    : $"Scenario failed - {_scenario.Name}: {_scenarioProgress.VerdictReason}";
-            }
-        }
 
         /// <summary>
         /// CL-2 (2026-09-13; DS-6 ruled *"the player is a party leader with a seated party (R-CL1); the picker ships"*): the
@@ -2154,25 +2052,6 @@ namespace PoliSim.UI
             else { Debug.LogError($"PARTY PICKER: '{partyAbbrev}' is not in {countryId}'s seeded chamber - the largest party is seated instead."); }
         }
 
-        /// <summary>
-        /// CL-2 (DS-6): a scenario is started as a party too - its country's chamber opens on the selector and the pick seats the party
-        /// before the scenario's deltas run. The one-argument <see cref="StartScenario"/> stays the harness's (its country already
-        /// selected, the deltas-plus-progress half).
-        /// </summary>
-        private void OpenScenarioPartyPick(ScenarioDefinition definition)
-        {
-            Country country = definition != null ? _world.GetCountry(definition.Country) : null;
-            if (country == null || _countrySelector == null) { return; }
-            _countrySelector.ShowPartyPanel(country, (id, abbrev) => StartScenarioAsParty(definition, abbrev), offerCreate: false);
-        }
-
-        /// <summary>CL-2: the scenario's party pick committed - the party seated, then the scenario as it always started.</summary>
-        private void StartScenarioAsParty(ScenarioDefinition definition, string partyAbbrev)
-        {
-            if (definition == null) { return; }
-            SeatPlayerParty(definition.Country, partyAbbrev);
-            StartScenario(definition);
-        }
 
         /// <summary>Commits the player's country choice from DrawCountrySelector - together with <see cref="ResetPlayerCountrySelection"/>, the only two places _selectedPlayerCountryId is ever set.</summary>
         /// <summary>
@@ -2184,8 +2063,8 @@ namespace PoliSim.UI
         /// </summary>
         private void OpenWorldAt(CountryId countryId)
         {
-            // A RUNNING GAME NEVER RE-OPENS (the review's D2): the driver re-seats a country mid-film and starts scenarios mid-run through the same
-            // entry; the world that is playing stays, and the clock is never reset under it.
+            // A RUNNING GAME NEVER RE-OPENS (the review's D2): the driver re-seats a country mid-film through the same entry (it started the
+            // scenarios mid-run too, until they were retired, §825); the world that is playing stays, and the clock is never reset under it.
             if (_selectedPlayerCountryId.HasValue || _simulationManager.CurrentTurn != 0)
             {
                 Debug.Log($"WORLD CLOCK: {countryId} chosen in a running game (turn {_simulationManager.CurrentTurn}) - the world stays as it is.");
@@ -2357,8 +2236,6 @@ namespace PoliSim.UI
         /// </summary>
         /// <summary>CL-2: the country whose chamber the IMGUI selector (the degradation path) has opened for the party pick.</summary>
         private CountryId? _partyPickCountry;
-        /// <summary>CL-2: the scenario whose country's chamber the IMGUI selector has opened for the party pick.</summary>
-        private ScenarioDefinition _partyPickScenario;
 
         private void DrawCountrySelector()
         {
@@ -2373,38 +2250,6 @@ namespace PoliSim.UI
             GUILayout.Label(PoliSimTheme.Wordmark, _headerStyle);
             GUILayout.Label("Choose your country", _labelStyle);
             GUILayout.Space(20f);
-
-            // STEP 3: the scenario strip on the degradation path too - a broken sprite import must
-            // not be what decides whether scenarios are reachable.
-            foreach (ScenarioDefinition definition in ScenarioLibrary.All)
-            {
-                if (PoliSimWidgets.Button($"Scenario: {definition.Name}", UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
-                {
-                    // CL-2: the scenario opens its country's chamber; a party starts it (the Canvas selector's own second step)
-                    _partyPickScenario = _partyPickScenario == definition ? null : definition;
-                }
-
-                if (_partyPickScenario == definition)
-                {
-                    System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(_world.GetCountry(definition.Country));
-                    bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(_world.GetCountry(definition.Country));
-                    // K-1f (§607): with no cabinet no row carries the PROVISIONAL mark, so the picker says the standing itself.
-                    if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(cabinet), _labelStyle); }
-                    PoliSim.Elections.WorldClock.PickerView scenarioStart = PoliSim.Elections.WorldClock.PickerViewOf(definition.Country);   // PS-1 (§618): the chamber at the start, not the selector's world
-                    cabinet = scenarioStart.Cabinet; provisional = scenarioStart.Provisional;
-                    foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(definition.Country, scenarioStart.Seats))
-                    {
-                        if (!PartySystems.IsPlayable(scenarioStart.Seats, party)) { continue; }
-                        int seatedNow = scenarioStart.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
-                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, seatedNow, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
-                        {
-                            StartScenarioAsParty(definition, party.Abbrev);
-                        }
-                    }
-                }
-            }
-
-            GUILayout.Space(12f);
 
             foreach (Country country in _world.Countries)
             {
@@ -2563,7 +2408,7 @@ namespace PoliSim.UI
         }
 
         // S-20: the capture-identity token must be stamped by whichever surface actually PRESENTED the
-        // frame, and `DrawImguiFrame` has six early returns (the election reveal, the scenario verdict,
+        // frame, and `DrawImguiFrame` had six early returns (the election reveal, the scenario verdict - retired with the scenarios, §825 -
         // the saves menu, the instrument ladder, and two seam branches). Stamping at the end of the body
         // missed every one of them - the first run of the trap caught `92_saves_menu` unmarked. So the
         // body is wrapped and the token is stamped HERE, on every path out of it.
@@ -2655,16 +2500,6 @@ namespace PoliSim.UI
                     DrawCanvasRestoreScrim();
                 }
 
-                return;
-            }
-
-            // STEP 3: the verdict is exclusive for the same reason the reveal is - a screen swap, not
-            // an overlay. IMGUI on the bare desk by ruling R-S3c: Canvas 3-of-3 (election night)
-            // defines the ceremony grammar at Step 4, and a verdict is information-dense anyway
-            // (objectives, margins, epilogue) - the ledger idiom, not the ceremony idiom.
-            if (_scenarioVerdictPending && _scenario != null && _scenarioProgress != null)
-            {
-                DrawScenarioVerdictScreen();
                 return;
             }
 
@@ -6172,9 +6007,7 @@ namespace PoliSim.UI
             RecordMapEventMarkers();
             ResetPolicyInputs();
             // PS-2 / CL-4 (§619): the election left the boundary - it is held on the player's country's polling day from Update, the same
-            // day the manager flags it. The scenario evaluator keeps this post-turn site (STEP 3's ruling: one boundary, one place
-            // run-ending conditions are judged); an election's own verdict lands on its polling day and keeps its precedence there.
-            CheckScenarioObjectives();
+            // day the manager flags it. (The scenario evaluator held this post-turn site until the scenarios were retired, §825.)
         }
 
         /// <summary>
@@ -6765,228 +6598,6 @@ namespace PoliSim.UI
             _pendingElectionFirstAsked = null;
         }
 
-        /// <summary>
-        /// STEP 3's VERDICT SCREEN (R-S3c/R-S3d): pass/fail per objective with its MEASURED MARGIN,
-        /// then a legibility-powered epilogue. No score and no leaderboard, by ruling - a composite
-        /// would need a weighting across incommensurate objectives (debt points against approval
-        /// points), which is the invented-number-that-looks-researched this project's rule 5 forbids,
-        /// and a cross-version score is a comparability promise five baseline discontinuities in one
-        /// fortnight say the codebase cannot keep.
-        ///
-        /// ⚠ Bare-desk grammar, and its recorded lesson: this screen draws on the ONE ground with no
-        /// paper under it, so every label takes `PoliSimTheme.TextOnDesk` - the paper-ink ramp is
-        /// near-invisible here, the defect the election reveal's own first capture found.
-        ///
-        /// ⚠ **The epilogue's v1 limitation, stated rather than implied**: the attribution ledger
-        /// persists exactly ONE period (R-S2e), so the "why" half reads the FINAL period's terms plus
-        /// `StatHistory`'s run-long series for the "what". Per-scenario term accumulation is the named
-        /// upgrade, and its trigger is an epilogue that needs to explain the whole run rather than
-        /// its last year.
-        /// </summary>
-        /// <summary>
-        /// The verdict screen's per-objective figure line - Italy Debt Crisis's own contribution
-        /// (the `Sustained` form's first REAL content), fixing the gap
-        /// `SustainedObjectiveDiagnostic` found and recorded rather than fixed: a MARGIN
-        /// (measured value vs. target) is the obvious, sufficient story for
-        /// <see cref="ObjectiveKind.Terminal"/>/<see cref="ObjectiveKind.ThresholdAtDate"/>/
-        /// <see cref="ObjectiveKind.NeverBreach"/> - it is exactly what decided the outcome. For
-        /// <see cref="ObjectiveKind.Sustained"/> it is NOT: what decided the outcome is the STREAK
-        /// (<see cref="ObjectiveProgress.ConsecutiveTurns"/> against
-        /// <see cref="ScenarioObjective.RequiredTurns"/>), and the diagnostic's own finding was
-        /// that showing only the final turn's margin (e.g. "+1.14") says nothing about the 20-turn
-        /// streak that actually decided `Met`. So Sustained gets its own line: the streak first,
-        /// the latest measured value second, as context rather than as the headline.
-        /// </summary>
-        private static string BuildObjectiveFigure(ScenarioObjective objective, ObjectiveProgress state)
-        {
-            if (state == null || !state.HasValue)
-            {
-                return "not measured";
-            }
-
-            string comparisonGlyph = objective.Comparison == ObjectiveComparison.AtMost ? "≤" : "≥";
-            string margin = $"{state.LastValue:F1}{objective.Unit} vs {comparisonGlyph} {objective.Target:F1}{objective.Unit} " +
-                             $"({ScenarioEvaluator.MarginOf(objective, state.LastValue):+0.0;-0.0})";
-
-            if (objective.Kind != ObjectiveKind.Sustained)
-            {
-                return margin;
-            }
-
-            // Met is STICKY (ScenarioEvaluator's own fix, same pass): once the streak first
-            // reaches RequiredTurns it stays achieved even if a later turn breaks it, so
-            // ConsecutiveTurns (the CURRENT streak) and Met (the achievement) can legitimately
-            // disagree at verdict time - a player who held it and then had one bad turn near the
-            // end sees Met=true with a lower final ConsecutiveTurns, and the line has to stay
-            // honest about which of the two it is reporting.
-            string streak = state.Met
-                ? (state.ConsecutiveTurns >= objective.RequiredTurns
-                    ? $"held for {state.ConsecutiveTurns} of {objective.RequiredTurns} required turns"
-                    : $"reached the {objective.RequiredTurns}-turn streak earlier (currently at {state.ConsecutiveTurns})")
-                : $"never reached the {objective.RequiredTurns}-turn streak (currently at {state.ConsecutiveTurns})";
-            return $"{streak} - latest: {margin}";
-        }
-
-        private void DrawScenarioVerdictScreen()
-        {
-            bool won = _scenarioProgress.Verdict == ScenarioVerdict.Won;
-
-            GUILayout.BeginArea(new Rect(0f, 0f, UiScreen.Width, UiScreen.Height));
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginVertical(GUILayout.Width(UiScreen.Width * 0.52f));
-
-            // §565 (2026-09-22, Design's sitting part A item 7, D9 row 7): the verdict is a STAMP in the chrome's own face on PAPER - it stood as a coloured banner over
-            // bare desk, the one page in the game that spoke to the player without a sheet under it.
-            GUILayout.BeginVertical(_boxStyle);
-            Color verdictInk = won ? PoliSimTheme.Good : PoliSimTheme.Bad;
-            string verdictText = won ? "SCENARIO COMPLETE" : "SCENARIO FAILED";
-            GUIStyle verdictStamp = DeskCaption(9f, verdictInk, bold: true, anchor: TextAnchor.MiddleCenter);
-            Vector2 stampSize = PoliSimWidgets.StampSize(verdictText, verdictStamp);
-            Rect stampRow = GUILayoutUtility.GetRect(10f, stampSize.y + _labelStyle.fontSize * 0.4f, GUILayout.ExpandWidth(true));
-            if (Event.current.type == EventType.Repaint)
-            {
-                PoliSimWidgets.Stamp(new Rect(stampRow.x, stampRow.y, stampSize.x, stampSize.y), verdictText, verdictStamp, verdictInk);
-            }
-
-            var deskLabel = new GUIStyle(_labelStyle);
-            var deskWrap = new GUIStyle(deskLabel) { wordWrap = true };
-
-            GUILayout.Label($"{_scenario.Name} - {_playerCountry.Name}, turn {_simulationManager.CurrentTurn}", deskLabel);
-            GUILayout.Space(10f);
-            GUILayout.Label(_scenarioProgress.VerdictReason ?? "", deskWrap);
-            GUILayout.Space(16f);
-
-            // Per-objective: met/missed, the measured value, and the SIGNED margin - positive is
-            // slack, negative is the shortfall, whichever direction the comparison runs.
-            //
-            // ⚠ ONE STYLE OBJECT PER ROLE, TINTED THROUGH DrawColoredLabel - not a set of copied
-            // styles. Two lessons stacked here, both learned on this screen family:
-            // (1) DESK INK: the paper palette's change colours are mixed for cream paper, and on the
-            //     bare desk the negative one reads as near-black.
-            // (2) COPIED STYLES SHARE THEIR GUIStyleState: building metStyle/missedStyle/figureStyle
-            //     as copies and assigning each a colour left exactly one line - the MISSED row's
-            //     figure - rendering in another row's ink across two capture passes. DrawColoredLabel
-            //     is this file's existing answer (set, draw, restore, one object), and it is why that
-            //     helper exists at all.
-            Color metInk = PoliSimTheme.Good;
-            Color missedInk = PoliSimTheme.Bad;
-
-            foreach (ScenarioObjective objective in _scenario.Objectives)
-            {
-                ObjectiveProgress state = ScenarioEvaluator.FindProgress(_scenarioProgress, objective.Id);
-                bool met = state != null && state.Met && !state.Failed;
-                string mark = met ? "MET" : "MISSED";
-                string figure = BuildObjectiveFigure(objective, state);
-
-                DrawColoredLabel($"{mark}  -  {objective.Description}", deskWrap, met ? metInk : missedInk);
-                DrawColoredLabel($"        {figure}", deskWrap, PoliSimTheme.TextPrimary);
-            }
-
-            GUILayout.Space(16f);
-            GUILayout.Label("What happened", deskLabel);
-            foreach (string line in BuildScenarioEpilogue())
-            {
-                GUILayout.Label($"  {line}", deskWrap);
-            }
-
-            GUILayout.Space(24f);
-            // §568: Close NAVIGATES, so it wears paper at the class's one width - it was the brass Primary, the loudest face in the game, on a page whose work is done.
-            if (PoliSimWidgets.Button("Close", _neutralActionButtonStyle, GUILayout.Width(CtaWidth())))
-            {
-                DismissScenarioVerdict();
-            }
-
-            GUILayout.EndVertical();   // the sheet
-            GUILayout.EndVertical();
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-            GUILayout.FlexibleSpace();
-            GUILayout.EndArea();
-        }
-
-        /// <summary>
-        /// The epilogue: the run's arc from `StatHistory`'s own series (the WHAT), plus the final
-        /// period's largest approval terms from the attribution ledger (the WHY, as far as one period
-        /// can say). Reads recorded values only - it never recomputes a model quantity, so the
-        /// epilogue and the trace panel cannot disagree.
-        /// </summary>
-        private List<string> BuildScenarioEpilogue()
-        {
-            var lines = new List<string>();
-            StatHistory history = _playerCountry.History;
-
-            AppendArc(lines, "GDP", history.Gdp.Quarterly, "B", 0);
-            AppendArc(lines, "Unemployment", history.Unemployment.Quarterly, "%", 1);
-            AppendArc(lines, "Poverty", history.PovertyRate.Quarterly, "%", 1);
-            AppendArc(lines, "Debt-to-GDP", history.DebtToGdpRatio.Quarterly, "%", 1);
-            AppendArc(lines, "Approval", history.ApprovalRating.Quarterly, "", 1);
-
-            ApprovalAttribution ledger = _playerCountry.ApprovalLedgerLastPeriod;
-            if (ledger != null && ledger.Closed)
-            {
-                string biggest = LargestApprovalTerm(ledger);
-                if (biggest != null)
-                {
-                    lines.Add($"Final year, approval moved {ledger.ApprovalAtClose - ledger.ApprovalAtPeriodOpen:+0.0;-0.0}; largest single term: {biggest}.");
-                }
-            }
-
-            if (lines.Count == 0)
-            {
-                lines.Add("No history recorded - the run ended before its first period closed.");
-            }
-
-            return lines;
-        }
-
-        private static void AppendArc(List<string> lines, string name, List<float> series, string unit, int decimals)
-        {
-            if (series == null || series.Count < 2)
-            {
-                return;
-            }
-
-            float first = series[0];
-            float last = series[series.Count - 1];
-            string format = "F" + decimals;
-            lines.Add($"{name}: {first.ToString(format)}{unit} → {last.ToString(format)}{unit} ({(last - first).ToString("+0." + new string('0', decimals) + ";-0." + new string('0', decimals))}{unit})");
-        }
-
-        /// <summary>The final period's single largest-magnitude approval term, named - the one-line
-        /// version of the trace panel, for a player who has just finished and wants the headline.</summary>
-        private static string LargestApprovalTerm(ApprovalAttribution ledger)
-        {
-            (string Name, float Value)[] terms =
-            {
-                ("reversion toward 50", ledger.Reversion),
-                ("growth vs potential", ledger.GrowthEffect),
-                ("unemployment above NAIRU", ledger.MiseryUnemployment),
-                ("inflation off target", ledger.MiseryInflation),
-                ("crime above baseline", ledger.MiseryCrime),
-                ("corruption above baseline", ledger.MiseryCorruption),
-                ("tax hikes", ledger.TaxHikePenalty),
-                ("spending changes", ledger.SpendingEffect),
-                ("welfare vs baseline", ledger.WelfareEffect),
-                ("paid family leave", ledger.PaidLeaveEffect),
-                ("drug policy stance", ledger.DrugPolicyEffect),
-                ("inequality vs own norm", ledger.GiniEffect)
-            };
-
-            string bestName = null;
-            float best = 0f;
-            foreach ((string name, float value) in terms)
-            {
-                if (Mathf.Abs(value) > Mathf.Abs(best))
-                {
-                    best = value;
-                    bestName = name;
-                }
-            }
-
-            return bestName == null ? null : $"{bestName} ({best:+0.00;-0.00})";
-        }
 
         /// <summary>
         /// Master Sequence step 5e, Phase A: the 6 consolidated top-level tabs (7 before the Tax/Spending merge), all fitting in ONE row

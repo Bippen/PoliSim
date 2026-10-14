@@ -25,7 +25,6 @@ namespace PoliSim.EditorTools
     /// <item>`id` - the run's name (letters, digits, `_ . -`); required, unique in the plan.</item>
     /// <item>`country` - a `CountryId` (Sweden, Germany, Poland, Italy, USA, France); required.</item>
     /// <item>`party` - the party row the player clicks (its key, `PoliticalParty.Abbrev`); required unless `create=` is given.</item>
-    /// <item>`scenario` - a `ScenarioLibrary` id: the selector's scenario strip is clicked instead of the country's folder.</item>
     /// <item>`create` - a created party's origin (Sweden): CREATE A PARTY is clicked; the draft is filled and committed through the flow's own commit.</item>
     /// <item>`style` - idle (default), historical, fuzz, exploit, extreme.</item>
     /// <item>`seed` - the master seed (default 777); the style's own choices draw from a generator seeded with it, never from the game's streams.</item>
@@ -47,7 +46,6 @@ namespace PoliSim.EditorTools
         internal string Id;
         internal string Country;
         internal string Party;
-        internal string Scenario;
         internal string Create;
         internal string Style = "idle";
         internal int Seed = 777;
@@ -118,7 +116,7 @@ namespace PoliSim.EditorTools
         private static readonly string[] Exploits = { "X-01", "X-02", "X-04", "X-16", "X-05", "X-15", "X-17", "X-07S" };
 
         internal string Describe() =>
-            $"{Id}: {Country}{(string.IsNullOrEmpty(Scenario) ? string.Empty : " scenario " + Scenario)} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}{(Style == "extreme" ? " " + Pole : Style == "exploit" ? " " + Exploit : Style == "fuzz" ? " every " + Every + " d" : string.Empty)}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
+            $"{Id}: {Country} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}{(Style == "extreme" ? " " + Pole : Style == "exploit" ? " " + Exploit : Style == "fuzz" ? " every " + Every + " d" : string.Empty)}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
             + (SaveLoad.Count > 0 ? ", save/load at day(s) " + string.Join(",", SaveLoad) : string.Empty)
             + (Speeds.Count > 0 ? ", speeds " + string.Join(",", Speeds.Select(s => s.Day + ":" + s.Speed)) : string.Empty)
             + $", holds campaign {(HoldCampaign ? 1 : 0)} budget {(HoldBudget ? 1 : 0)}, OnGUI every {GuiEvery} frame(s)"
@@ -141,7 +139,6 @@ namespace PoliSim.EditorTools
                         case "id": s.Id = value; break;
                         case "country": s.Country = value; break;
                         case "party": s.Party = value; break;
-                        case "scenario": s.Scenario = value; break;
                         case "create": s.Create = value; break;
                         case "style": s.Style = value.ToLowerInvariant(); break;
                         case "seed": s.Seed = int.Parse(value, CultureInfo.InvariantCulture); break;
@@ -402,23 +399,20 @@ namespace PoliSim.EditorTools
 
             if (Click("MainMenu", "NewGame")) { Go(Phase.Selector); return; }
             // The menu is the first takeover; where it failed to build the controller goes to the selector itself.
-            if (FindButton("CountrySelector", FolderName()) != null || FindButton("CountrySelector", ScenarioName()) != null) { Event("the main menu never came up - the selector is live"); Go(Phase.Selector); return; }
+            if (FindButton("CountrySelector", FolderName()) != null) { Event("the main menu never came up - the selector is live"); Go(Phase.Selector); return; }
             if (PhaseStuck(600)) { End(1, "SOFTLOCK at the main menu - NEW GAME never became clickable"); }
         }
 
         private string FolderName() => "Folder_" + _spec.Country;
-        private string ScenarioName() => "Scenario_" + _spec.Scenario;
 
+        /// <summary>The country's folder on the selector. (A `scenario=` key clicked the scenario strip instead, until the challenge scenarios were
+        /// retired, §825 - a plan that still names one is refused at parse, as any unknown key is.)</summary>
         private void Selector()
         {
-            if (!string.IsNullOrEmpty(_spec.Scenario))
-            {
-                if (Click("CountrySelector", ScenarioName())) { Go(Phase.PartyPanel); return; }
-            }
-            else if (Click("CountrySelector", FolderName())) { Go(Phase.StartSheet); return; }
+            if (Click("CountrySelector", FolderName())) { Go(Phase.StartSheet); return; }
 
             if (_phaseFrames % 120 == 1) { Event("waiting for the selector: " + SeamState()); }
-            if (PhaseStuck(600)) { End(1, $"SOFTLOCK at the selector - {(string.IsNullOrEmpty(_spec.Scenario) ? FolderName() : ScenarioName())} never became clickable"); }
+            if (PhaseStuck(600)) { End(1, $"SOFTLOCK at the selector - {FolderName()} never became clickable"); }
         }
 
         private void StartSheet()
@@ -834,8 +828,6 @@ namespace PoliSim.EditorTools
                 return true;
             }
 
-            if ((bool)Get("_scenarioVerdictPending")) { Call("DismissScenarioVerdict"); Count("call DismissScenarioVerdict"); Event($"scenario verdict dismissed at day {_day}"); return true; }
-
             if ((bool)Get("_canvasLive") || Get("_canvasPhase").ToString() != "None" || ((ICollection)Get("_signingQueue")).Count > 0)
             {
                 // SIGN once per ceremony; the seal settles and the seam covers out on its own clock.
@@ -1135,7 +1127,7 @@ namespace PoliSim.EditorTools
         private Country PlayerCountry() => (Country)Get("_playerCountry");
 
         private string HoldState(Country c) =>
-            $"night {(Get("_electionNight") != null ? 1 : 0)}, canvasLive {Get("_canvasLive")}, phase {Get("_canvasPhase")}, signing {((ICollection)Get("_signingQueue")).Count}, speed {Get("_gameSpeed")}, verdict {Get("_scenarioVerdictPending")}, "
+            $"night {(Get("_electionNight") != null ? 1 : 0)}, canvasLive {Get("_canvasLive")}, phase {Get("_canvasPhase")}, signing {((ICollection)Get("_signingQueue")).Count}, speed {Get("_gameSpeed")}, "
             + $"budget process {_sm.GetPendingBudgetProcess(c.Id)} (bill {(_sm.GetPendingBudgetBill(c.Id) != null ? 1 : 0)}, player may introduce {_sm.PlayerMayIntroduce(c.Id, out _)}), round {_sm.RoundOf(c.Id)?.Stage.ToString() ?? "none"}, "
             + $"cabinet decisions {_sm.GetPendingCabinetDecisions(c.Id).Count}, meeting {(_sm.GetPendingForeignPolicyMeeting(c.Id) != null ? 1 : 0)}, declaration {Call("DeclarationHolds")}, campaign opening {Call("HasPendingCampaignOpening")}, scandal {Call("HasPendingScandalAnswer")}";
 

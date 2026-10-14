@@ -148,3 +148,4 @@ scope	dry821	Sweden@1280x720	2026-10-14	s821	GA-1-2 and GA-1-4: the save's UI la
 scope	dry822	Sweden@1280x720,USA@1280x720	2026-10-14	s822	GA-2-7: the Budget page's Balance tile draws a dash until a year closes, and the policy web's yield readout - one code path for all six; Sweden and the USA, whose fiscal year closes in October
 scope	dry823	Sweden@1280x720,Germany@1280x720,USA@1280x720	2026-10-14	s823	GA-2-8, GA-3-6, GA-10-1: each country's own word - Germany's HQ purse (EUR) and its night's Land, the USA's Congress, and Sweden's kr and valkrets kept
 scope	dry824	Germany@1280x720	2026-10-14	s824	GA-6-3: the Energy page's two tracks reach their readings - one code path; Germany, the finding's country
+scope	dry825	Sweden@1280x720	2026-10-14	s825	GA-0-14 and GA-0-40: the scenarios retired - the selector without its strip, and the -shotstates pass without the 94 and 95 frames (run with -shotstates)
