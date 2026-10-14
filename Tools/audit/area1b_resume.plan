@@ -40,6 +40,6 @@ id=b3_se_fuzz_r150 country=Sweden party=M style=fuzz seed=376 days=300 resume=b3
 id=b3_se_created country=Sweden create=Grassroots party=NYA style=idle seed=377 days=230 save=100
 id=b3_se_created_r100 country=Sweden create=Grassroots party=NYA style=idle seed=377 days=230 resume=b3_se_created.day100.save.json startday=100 compare=b3_se_created
 #
-# --- the cabinet's shortlist across a quit (inventory A S-24: it is not in the save, and Search draws the cabinet stream) ---
+# --- the cabinet's shortlist across a quit (inventory A S-24 found it not in the save - Search draws the cabinet stream; GA-1-2, §821, carries it) ---
 id=b4_se_cab country=Sweden party=M style=idle seed=381 days=300 searchsave=40
 id=b4_se_cab_r40 country=Sweden party=M style=idle seed=381 days=300 resume=b4_se_cab.day40.save.json startday=40 cabinet=40 compare=b4_se_cab

@@ -504,7 +504,8 @@ namespace PoliSim.UI
         // candidates awaiting an appointment pick for a currently-vacant (or just-reshuffled)
         // portfolio - absent entry means "no search underway," present-but-not-yet-picked means
         // "candidates are shown, waiting for a click," mirroring _fedChairCandidates' own null-vs-set
-        // idiom just keyed per portfolio instead of a single global slot.
+        // idiom just keyed per portfolio instead of a single global slot. Saved with the game (GA-1-2,
+        // UiDraftState.CabinetShortlists): the Search draws the simulation's cabinet stream, so a list once drawn is the game's.
         private Vector2 _cabinetScrollPosition;
         private readonly Dictionary<CabinetPortfolio, List<CabinetMinister>> _cabinetCandidatesByPortfolio = new Dictionary<CabinetPortfolio, List<CabinetMinister>>();
         private Vector2 _federalReserveScrollPosition;
@@ -919,6 +920,10 @@ namespace PoliSim.UI
             _cachedPreviewTurn = -1;
             _signingQueue.Clear();
             _daySpeedTimer = 0f;
+            // GA-1-4: the autosave cadence starts afresh on a load, as the counters' summary says - they were reset only on a new game's path,
+            // so a load in the same session kept the cadence and the slot rotation of the game the player left.
+            _daysSinceAutosave = 0;
+            _autosaveCount = 0;
 
             // CL-2: the map's pick is the session's and names a region of the campaign it was made in - a load starts without one,
             // and a map left open over the previous game closes.
@@ -973,6 +978,7 @@ namespace PoliSim.UI
                 GameSpeedValue = (int)_gameSpeed,
                 FedChairCandidates = _fedChairCandidates == null ? null : new List<FedChair>(_fedChairCandidates),
                 FedChairCandidatesForTurn = _fedChairCandidatesForTurn,
+                CabinetShortlists = _cabinetCandidatesByPortfolio.Count == 0 ? null : CopyShortlists(_cabinetCandidatesByPortfolio, new Dictionary<CabinetPortfolio, List<CabinetMinister>>()),   // GA-1-2
                 SeenDivisionNumber = _seenDivisionNumber
             };
         }
@@ -1062,6 +1068,9 @@ namespace PoliSim.UI
             _simulationManager.ForeignPolicyCadenceMultiplier = _scenario?.ForeignPolicyCadenceMultiplier ?? 1f;
             _fedChairCandidates = ui?.FedChairCandidates == null ? null : new List<FedChair>(ui.FedChairCandidates);
             _fedChairCandidatesForTurn = ui?.FedChairCandidatesForTurn ?? -1;
+            // GA-1-2: the shortlists the save drew - and never the last game's, which a load in the same session used to keep.
+            _cabinetCandidatesByPortfolio.Clear();
+            CopyShortlists(ui?.CabinetShortlists, _cabinetCandidatesByPortfolio);
             // A save with no UI layer (batch-written) carries no high-water mark; defaulting to 0
             // would replay a ceremony for every division still in the 24-entry log. Everything
             // already in the log counts as seen; only divisions resolved AFTER the load ceremonial.
@@ -1091,6 +1100,25 @@ namespace PoliSim.UI
             {
                 target[pair.Key] = pair.Value;
             }
+        }
+
+        /// <summary>GA-1-2 (2026-10-14): the cabinet's shortlists copied list by list, so a saved list is never the live one; a null source copies nothing.</summary>
+        private static Dictionary<CabinetPortfolio, List<CabinetMinister>> CopyShortlists(Dictionary<CabinetPortfolio, List<CabinetMinister>> source, Dictionary<CabinetPortfolio, List<CabinetMinister>> target)
+        {
+            if (source == null)
+            {
+                return target;
+            }
+
+            foreach (KeyValuePair<CabinetPortfolio, List<CabinetMinister>> pair in source)
+            {
+                if (pair.Value != null)
+                {
+                    target[pair.Key] = new List<CabinetMinister>(pair.Value);
+                }
+            }
+
+            return target;
         }
 
         /// <summary>Opens the saves screen: list refreshed once (the menu never polls the disk per

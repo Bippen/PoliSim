@@ -1,0 +1,9 @@
+# Phase 4, GA-1-2's control (2026-10-14): the cabinet pairs of area 1b and 1c on HEAD's code (GameController.cs and SaveGame.cs put back for
+# the run only, restored by digest - the shortlist not in the save) with today's harness, whose resumes act on their start day before the clock
+# runs (§821). Expected: each resumed run's Search draws its shortlists again and appoints other ministers than the run that wrote the file -
+# the shortlist's own effect, now that the harness's one-day lag is gone; the trajectory parts wherever those ministers move a figure.
+id=b4_se_cab country=Sweden party=M style=idle seed=381 days=300 searchsave=40
+id=b4_se_cab_r40 country=Sweden party=M style=idle seed=381 days=300 resume=b4_se_cab.day40.save.json startday=40 cabinet=40 compare=b4_se_cab
+id=c2_se_cab country=Sweden party=M style=idle seed=381 days=120 searchsave=40
+id=c2_se_cab_r40 country=Sweden party=M style=idle seed=381 days=120 resume=c2_se_cab.day40.save.json startday=40 cabinet=40 compare=c2_se_cab
+id=c2_se_cab_r40b country=Sweden party=M style=idle seed=381 days=120 resume=c2_se_cab.day40.save.json startday=40 cabinet=40 compare=c2_se_cab_r40

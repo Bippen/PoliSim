@@ -403,7 +403,7 @@ namespace PoliSim.EditorTools
                 _cabinetDone = true;
                 int searched = SearchCabinet(c);
                 Event($"ACT cabinet day {_day}: Search drew shortlists for {searched} portfolio(s)");
-                if (_spec.SearchSave >= 0) { SaveFile(_day); }   // the shortlist is not in the save (inventory A S-24): a resumed game draws it again
+                if (_spec.SearchSave >= 0) { SaveFile(_day); }   // GA-1-2: the shortlist is in the save - a resumed game's Search finds it drawn and appoints from it (inventory A S-24 found it dropped)
                 AppointCabinet(c);
             }
 

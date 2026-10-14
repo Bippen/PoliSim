@@ -109,7 +109,7 @@ namespace PoliSim.Persistence
     /// <summary>
     /// GameController's draft layer (layer 3) - the unintroduced slider values whose loss WAS the
     /// original 5c incident, plus the interrupt state that happens to live controller-side (the Fed
-    /// Chair candidate set, the pending election result, game over) and the signing ceremony's
+    /// Chair candidate set, the cabinet's shortlists, the pending election result, game over) and the signing ceremony's
     /// division high-water mark. Deliberately NOT here: scroll positions and selected tab/category
     /// (navigation), the preview cache (recomputes), and the live GameSpeed - the speed VALUE is
     /// recorded, but a load always resumes PAUSED (see GameController.RestoreUiDrafts for why).
@@ -187,6 +187,11 @@ namespace PoliSim.Persistence
 
         public List<FedChair> FedChairCandidates;
         public int FedChairCandidatesForTurn = -1;
+
+        /// <summary>GA-1-2 (2026-10-14): the cabinet's shortlists by portfolio, as its Search drew them (GameController._cabinetCandidatesByPortfolio).
+        /// The Search draws the simulation's cabinet stream, so a load that dropped them had the next Search draw another list, and the game part
+        /// from the one the player left. Null when none is drawn - and in an older save, which loads with none, as it did.</summary>
+        public Dictionary<CabinetPortfolio, List<CabinetMinister>> CabinetShortlists;
 
         /// <summary>The signing ceremony's high-water mark by DivisionRecord.Number - omitted, a load
         /// replays every ceremony still inside the 24-entry log.</summary>

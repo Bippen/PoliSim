@@ -1,0 +1,8 @@
+# Phase 4, GA-1-2's and GA-1-4's recheck (2026-10-14), part two: the autosave route - Tools/audit/area1d_autosave.plan, unchanged - run ONLY
+# with the player's saves folder moved aside (Tools/audit/real_saves.ps1 -Aside, then this plan, then -Back -Label p4_ga12auto; Elias's answer
+# of 2026-10-13, "move it aside", for the autosave plan). Expected: d2_se_auto_sl's first autosave after its day-100 load falls seven days
+# after the LOAD (2026-05-05, into autosave_1 - the rotation afresh), not seven after the last one before it (2026-05-03, autosave_3).
+id=d1_se_base country=Sweden party=M style=idle seed=391 days=300
+id=d1_se_auto country=Sweden party=M style=idle seed=391 days=250 autosave=7 compare=d1_se_base
+id=d1_se_auto_r238 country=Sweden party=M style=idle seed=391 days=300 resume=@autosave_1.json startday=238 compare=d1_se_base
+id=d2_se_auto_sl country=Sweden party=M style=idle seed=392 days=130 autosave=7 saveload=100

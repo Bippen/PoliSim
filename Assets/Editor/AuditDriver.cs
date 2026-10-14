@@ -75,9 +75,9 @@ namespace PoliSim.EditorTools
         internal string Resume;
         /// <summary>The day count a resumed run starts at (the day the resumed file was saved on).</summary>
         internal int StartDay;
-        /// <summary>A day on which the cabinet's Search is pressed and the first candidate of each searched portfolio appointed (the cards' own bodies).</summary>
+        /// <summary>A day on which the cabinet's Search is pressed and the first candidate of each shortlisted portfolio appointed (the cards' own bodies) - a resumed game's Search finds the shortlists its save carries and draws none (GA-1-2).</summary>
         internal int Cabinet = -1;
-        /// <summary>A day on which Search is pressed, the game saved, and only then the candidates appointed - the shortlist is not in the save (inventory A S-24).</summary>
+        /// <summary>A day on which Search is pressed, the game saved, and only then the candidates appointed - the save carries the shortlist since GA-1-2 (inventory A S-24 found it dropped).</summary>
         internal int SearchSave = -1;
         /// <summary>The autosave setting, in days (0 off - the default; 7, 30 or 90 as the settings screen offers). Autosave writes the PLAYER'S saves
         /// folder, so a plan that sets it is refused unless that folder is empty or absent (moved aside first, and restored after).</summary>
@@ -516,9 +516,10 @@ namespace PoliSim.EditorTools
             {
                 if (_trajectory == null)
                 {
-                    // A resumed game: the load landed under the menu; the game resumes PAUSED, and the speed is set again as the chips set it.
+                    // A resumed game: the load landed under the menu; the game resumes PAUSED, and the speed is set again as the chips set it -
+                    // once the start day has had its acts (§821: `_speedAfterAct`).
                     RecordOpening();
-                    SetSpeed(_spec.Speed == 1 ? "Normal" : _spec.Speed == 2 ? "Fast" : "VeryFast");
+                    _speedAfterAct = _spec.Speed == 1 ? "Normal" : _spec.Speed == 2 ? "Fast" : "VeryFast";
                     _invariants.RestartDebt();
                 }
 
@@ -572,6 +573,13 @@ namespace PoliSim.EditorTools
             if (CapturePages()) { return; }
             bool answered = AnswerHolds(c);
             Act(c);
+            if (_speedAfterAct != null)
+            {
+                // §821: the day an interruption stopped on has had its acts - only now does the clock run again
+                SetSpeed(_speedAfterAct);
+                Event($"SPEED {_speedAfterAct} restored at day {_day}, after the day's acts");
+                _speedAfterAct = null;
+            }
             if (_framesSinceDay > _spec.Stall && !answered && _pauseLeft == 0)
             {
                 End(1, $"SOFTLOCK - no day passed in {_framesSinceDay} frames at day {_day} ({now:yyyy-MM-dd}) and nothing the harness answers holds the clock: {HoldState(c)}");
@@ -663,12 +671,22 @@ namespace PoliSim.EditorTools
         private int _lastDivision = int.MaxValue;
 
         /// <summary>The protocol's interruptions: save then load at a day (the saves screen's own write, the menu's own load route), and the speed
-        /// chips. Returns true when this frame was spent interrupting.</summary>
+        /// chips. Returns true when this frame was spent interrupting. §821 (GA-1-2's review): AN INTERRUPTION NEVER COSTS ITS DAY THE DAY'S ACTS - the
+        /// speed a pause's end, a load or a resume restores waits in `_speedAfterAct` until the day has had them, and a save does not take the frame.
+        /// Before, the clock ran on at once and the next frame's Update played the day after first: a resumed cabinet run appointed on day 41 where
+        /// the run that wrote its file had on day 40 - the whole of GA-1-2's measured Budget gap.</summary>
         private bool Interrupt(Country c)
         {
             if (_pauseLeft > 0)
             {
-                if (--_pauseLeft == 0) { SetSpeed(_resumeSpeed); Event($"PAUSE ends at day {_day}: speed {_resumeSpeed}"); _trajectory.Mark(_day, _lastDate, "resume " + _resumeSpeed); }
+                if (--_pauseLeft == 0)
+                {
+                    _speedAfterAct = _resumeSpeed;
+                    Event($"PAUSE ends at day {_day}: speed {_resumeSpeed}, after the day's acts");
+                    _trajectory.Mark(_day, _lastDate, "resume " + _resumeSpeed);
+                    return false;
+                }
+
                 return true;
             }
 
@@ -714,24 +732,25 @@ namespace PoliSim.EditorTools
                 if (day > _day || _saveDone.Contains(day)) { continue; }
                 if (!AtSafePoint()) { return false; }
                 _saveDone.Add(day);
-                SaveFile(day);
-                return true;
+                SaveFile(day);   // §821: synchronous, and the day's acts follow in this frame as in the run without the save
             }
 
             if (_pendingResume && Get("_pendingLoadPath") == null)
             {
                 _pendingResume = false;
-                SetSpeed(_resumeSpeed);
+                _speedAfterAct = _resumeSpeed;   // §821: the chips' write, once the day the load landed on has had its acts
                 _sm = _gc.GetComponent<SimulationManager>();
                 _invariants.RestartDebt();
-                Event($"LOADED - the game resumed at {_sm.CurrentDate:yyyy-MM-dd}; speed {_resumeSpeed} restored (the chips' write)");
-                return true;
+                Event($"LOADED - the game resumed at {_sm.CurrentDate:yyyy-MM-dd}; speed {_resumeSpeed} to be restored after the day's acts (the chips' write)");
+                return false;
             }
 
             return false;
         }
 
         private bool _pendingResume;
+        /// <summary>§821: the speed an interruption restores, held until the day it stopped on has had its acts (`Playing`, after `Act`); null when none waits.</summary>
+        private string _speedAfterAct;
         private readonly HashSet<int> _saveDone = new HashSet<int>();
 
         private int _rngDay = int.MinValue;
