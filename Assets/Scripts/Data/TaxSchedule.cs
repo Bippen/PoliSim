@@ -521,22 +521,41 @@ namespace PoliSim.Data
         /// <summary>A country's memo of yields by lever position, valid for one boundary and one set of the line's own rates: the daily terms read the yield
         /// every day, and the integration behind it is a boundary figure, not a daily one. Two per country since GA-2-11 (2026-10-14): the live line's
         /// (`Country.ScheduleMemo`) and the statute's as seeded (`Country.ScheduleMemoStatute`), so the two readings never reset each other. ⚠ CORRECTED
-        /// by its review: this summary said the AI ministry's search reads it at many lever positions - the ministry and the Finance partner read the base alone.</summary>
+        /// by its review: this summary said the AI ministry's search reads it at many lever positions - the ministry and the Finance partner read the base alone.
+        /// GA-2-13 (2026-10-14): THE KEY IS EVERYTHING THE YIELD READS that can move - the boundary's price level and real wage, the line's own rates in full,
+        /// the committed pyramid by its CONTENTS (a copy taken at each reset and compared exactly, so whatever writes the counts - `CohortDemographics.CommitYear`
+        /// swaps in a new array at each boundary - the key sees it) and the lever's rate in full; the statute, the seed's rate and the cohorts' income
+        /// profiles are fixed at the seed. The key used to stop at the level, the wage and the rates printed to two decimals, with the lever's rate in
+        /// hundredths too: a commit left the key standing, so a read after it was served last year's pyramid until something moved the key. The real turn
+        /// never read in that gap (its first read is the next day's, after the index has moved the key), but the Budget page's preview of a sub-row draft at
+        /// a boundary-fresh state did: the draft's hike cached the clone's yield before its commit, and the clone's index moved nothing because no day had
+        /// passed. And two rates that rounded to the same hundredth shared one entry.</summary>
         public sealed class Memo
         {
             public float Level = float.NaN, Wage = float.NaN;
             public string Overrides = "";
-            public readonly Dictionary<int, double> ByRate = new Dictionary<int, double>();
-            public bool Holds(float level, float wage, string overrides) => Level == level && Wage == wage && Overrides == overrides;
-            public void Reset(float level, float wage, string overrides) { Level = level; Wage = wage; Overrides = overrides; ByRate.Clear(); }
+            public float[] Pyramid;
+            public readonly Dictionary<float, double> ByRate = new Dictionary<float, double>();
+            public bool Holds(float level, float wage, string overrides, float[] pyramid) => Level == level && Wage == wage && Overrides == overrides && SamePyramid(pyramid);
+            public void Reset(float level, float wage, string overrides, float[] pyramid) { Level = level; Wage = wage; Overrides = overrides; Pyramid = (float[])pyramid?.Clone(); ByRate.Clear(); }
+
+            private bool SamePyramid(float[] pyramid)
+            {
+                if (Pyramid == null || pyramid == null) { return Pyramid == null && pyramid == null; }
+                if (Pyramid.Length != pyramid.Length) { return false; }
+                for (int i = 0; i < pyramid.Length; i++) { if (Pyramid[i] != pyramid[i]) { return false; } }   // exact, and a count that is not a number never holds
+                return true;
+            }
         }
 
-        /// <summary>A line's own rates as one string - the memo's key and the record's print; empty where the line carries none.</summary>
+        /// <summary>A line's own rates as one string, every figure in full (round-trip) - the memo's key; empty where the line has no array or an empty one
+        /// (an array of −1s keys as its −1s). GA-2-13 (2026-10-14): it printed them to two decimals, so two sub-row rates that rounded to the same hundredth
+        /// keyed one yield.</summary>
         public static string OverridesKey(TaxLine line)
         {
             if (line == null || line.BracketRates == null || line.BracketRates.Length == 0) { return ""; }
             var sb = new System.Text.StringBuilder();
-            foreach (float r in line.BracketRates) { sb.Append(r.ToString("0.##", CultureInfo.InvariantCulture)).Append(';'); }
+            foreach (float r in line.BracketRates) { sb.Append(r.ToString("R", CultureInfo.InvariantCulture)).Append(';'); }
             return sb.ToString();
         }
 
@@ -559,8 +578,9 @@ namespace PoliSim.Data
         /// GA-2-11 (2026-10-14): the yield at a lever position under the STATUTE AS SEEDED - none of the line's own sub-row rates - the household
         /// burden's seed side. Both sides used to read the live line's rates, so a bill that reached only the sub-rows moved the two alike: a Swedish
         /// bill zeroing the flat layer and the state band took the income tax's revenue to nothing and gave consumption no relief. Memoised apart
-        /// (`Country.ScheduleMemoStatute`). Where the line carries no rates of its own - no array, an empty one, or every entry −1, the form a bill
-        /// leaves - it is <see cref="YieldNow"/>'s figure to the bit: the same reading of the same statute. One residue where a sub-row carries a
+        /// (`Country.ScheduleMemoStatute`). Where the line carries no rates of its own - no array, an empty one, or every entry −1 - it is
+        /// <see cref="YieldNow"/>'s figure to the bit: the same reading of the same statute (a bill that puts every sub-row back leaves no array since
+        /// GA-2-12, §828; one that puts some back leaves −1 there). One residue where a sub-row carries a
         /// figure, even the statute's own: Germany's live side then reads the ramps where this reads § 32a's formula - a euro or so on an income,
         /// about a millionth of GDP in the burden's gap.
         /// </summary>
@@ -576,8 +596,9 @@ namespace PoliSim.Data
                 country.IncomeTaxSeedAer = (float)captured;
             }
             float level = BoundaryLevel(country), wage = BoundaryWage(country);
-            if (!memo.Holds(level, wage, overridesKey)) { memo.Reset(level, wage, overridesKey); }
-            int key = (int)Math.Round(rate * 100f);
+            float[] pyramid = country.Cohorts?.Counts;
+            if (!memo.Holds(level, wage, overridesKey, pyramid)) { memo.Reset(level, wage, overridesKey, pyramid); }
+            float key = rate == 0f ? 0f : rate;   // the rate in full, minus zero folded onto zero
             if (memo.ByRate.TryGetValue(key, out double cached)) { return cached; }
             double shift = rate - RateSeedOf(line);
             double now = (double)(float)AverageEffectiveRate(country, shift, IncomeScale(country), ThresholdScale(country), overrides);

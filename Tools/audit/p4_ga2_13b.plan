@@ -1,0 +1,35 @@
+# Phase 4, GA-2-13's recheck, part two (2026-10-14): the review's remedy on the code p4_ga2_13 measured - the pyramid keyed by its CONTENTS (a
+# copy at each reset, compared exactly) where it was keyed by reference, and two comments. Every real path resets where it did (each commit installs
+# new contents; a load, a fork or a preview clone starts with null memos). Expected: every run byte-identical to its p4_ga213 twin.
+#
+# --- the sub-row runs ---
+id=g211_se_x02s country=Sweden party=M style=exploit exploit=X-02S seed=2111 days=730
+id=g211_de_x02s country=Germany party=SPD style=exploit exploit=X-02S seed=2112 days=730
+id=g211_pl_x02s country=Poland party=PiS style=exploit exploit=X-02S seed=2113 days=730
+id=g211_us_x02s country=USA party=DEM style=exploit exploit=X-02S seed=2114 days=500
+id=g211_fr_x02s country=France party=RN style=exploit exploit=X-02S seed=2115 days=730
+id=g212_se_x02r_s05 country=Sweden party=M style=exploit exploit=X-02R snap=0.5 seed=2121 days=730
+id=g212_de_x02r_s05 country=Germany party=SPD style=exploit exploit=X-02R snap=0.5 seed=2122 days=730
+id=g212_pl_x02r_s05 country=Poland party=PiS style=exploit exploit=X-02R snap=0.5 seed=2123 days=730
+id=g212_us_x02r_s05 country=USA party=DEM style=exploit exploit=X-02R snap=0.5 seed=2124 days=500
+id=g212_fr_x02r_s05 country=France party=RN style=exploit exploit=X-02R snap=0.5 seed=2125 days=730
+id=g212_se_x02r_s01 country=Sweden party=M style=exploit exploit=X-02R snap=0.1 seed=2121 days=730
+id=g212_de_x02r_s01 country=Germany party=SPD style=exploit exploit=X-02R snap=0.1 seed=2122 days=730
+id=g212_pl_x02r_s01 country=Poland party=PiS style=exploit exploit=X-02R snap=0.1 seed=2123 days=730
+id=g212_us_x02r_s01 country=USA party=DEM style=exploit exploit=X-02R snap=0.1 seed=2124 days=500
+id=g212_fr_x02r_s01 country=France party=RN style=exploit exploit=X-02R snap=0.1 seed=2125 days=730
+id=g212_de_x02r_s05_up6 country=Germany party=SPD style=exploit exploit=X-02R snap=0.5 leverdelta=6 seed=2122 days=730
+id=g212_fr_x02r_s05_up6 country=France party=RN style=exploit exploit=X-02R snap=0.5 leverdelta=6 seed=2125 days=730
+id=g212_de_x02r_s01_up6 country=Germany party=SPD style=exploit exploit=X-02R snap=0.1 leverdelta=6 seed=2122 days=730
+id=g212_fr_x02r_s01_up6 country=France party=RN style=exploit exploit=X-02R snap=0.1 leverdelta=6 seed=2125 days=730
+id=g212_de_x02r_s05_up637 country=Germany party=SPD style=exploit exploit=X-02R snap=0.5 leverdelta=6.37 seed=2122 days=730
+id=g212_fr_x02r_s05_up637 country=France party=RN style=exploit exploit=X-02R snap=0.5 leverdelta=6.37 seed=2125 days=730
+#
+# --- area 2's fuzz runs (a bill at every window) ---
+id=a2_se_fuzz country=Sweden party=M style=fuzz seed=501 days=730
+id=a2_de_fuzz country=Germany party=SPD style=fuzz seed=502 days=730
+id=a2_pl_fuzz country=Poland party=PiS style=fuzz seed=503 days=730
+id=a2_pl_ko_fuzz country=Poland party=KO style=fuzz seed=504 days=900
+id=a2_it_fuzz country=Italy party=FdI style=fuzz seed=505 days=730
+id=a2_us_fuzz country=USA party=DEM style=fuzz seed=506 days=320
+id=a2_fr_fuzz country=France party=RN style=fuzz seed=507 days=730
