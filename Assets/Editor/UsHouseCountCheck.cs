@@ -276,8 +276,9 @@ namespace PoliSim.EditorTools
             double alpha = 0, k = 1;
             if (kind == "bp")
             {
-                (alpha, k, rc.Fitted) = FitBPrime(c, cfg);
-                rc.Note = rc.Fitted ? F("alpha {0:0.0000}, k {1:0.0000}", alpha, k) : "not fitted";
+                string why;
+                (alpha, k, rc.Fitted, why) = FitBPrime(c, cfg);
+                rc.Note = rc.Fitted ? F("alpha {0:0.0000}, k {1:0.0000}", alpha, k) : "UNFITTED - " + why;
             }
             foreach (string st in _states) { rc.Rep[st] = CountBState(c, st, cfg, kind, alpha, k); }
             rc.National = rc.Rep.Values.Sum();
@@ -286,8 +287,11 @@ namespace PoliSim.EditorTools
 
         /// <summary>(b')'s two parameters, fitted on the base alone by binomial maximum likelihood over its states with n_B >= 2, c_B >= 1 and
         /// 0 &lt; u &lt; 1 (R_B - U_R successes in c_B trials, logit u the predictor); Newton from (0, 1), converged when the step's largest component
-        /// is below 1e-12, at most 100 iterations; not converged, or k &lt;= 0: not fitted.</summary>
-        private static (double, double, bool) FitBPrime(Cycle c, Config cfg)
+        /// is below 1e-12, at most 100 iterations; not converged, or k &lt;= 0: not fitted, the fourth value naming the exit. H4 (Elias,
+        /// 2026-10-13): an unfitted (b') prints as UNFITTED - its row carries no figures - and never counts in the decision: step 5 runs only
+        /// where (b') is fitted in every cycle of D. The figures counted from the last iterate stay in the decisive digest, which the block
+        /// lists as (b')'s H, G, N and K in every cycle of D and whether it is fitted: there the text stands, and an unfit moves the digest.</summary>
+        private static (double, double, bool, string) FitBPrime(Cycle c, Config cfg)
         {
             var pts = new List<(double X, int Y, int N)>();
             foreach (string st in _states)
@@ -307,13 +311,13 @@ namespace PoliSim.EditorTools
                     g0 += r; g1 += r * t.X; h00 += w; h01 += w * t.X; h11 += w * t.X * t.X;
                 }
                 double det = h00 * h11 - h01 * h01;
-                if (det <= 0 || double.IsNaN(det)) { return (a, k, false); }
+                if (det <= 0 || double.IsNaN(det)) { return (a, k, false, "the likelihood's curvature is singular (no usable state, one predictor value, or separation)"); }
                 double da = (h11 * g0 - h01 * g1) / det, dk = (-h01 * g0 + h00 * g1) / det;
                 a += da; k += dk;
-                if (double.IsNaN(a) || double.IsNaN(k) || double.IsInfinity(a) || double.IsInfinity(k)) { return (a, k, false); }
-                if (Math.Max(Math.Abs(da), Math.Abs(dk)) < 1e-12) { return (a, k, k > 0); }
+                if (double.IsNaN(a) || double.IsNaN(k) || double.IsInfinity(a) || double.IsInfinity(k)) { return (a, k, false, "a Newton step left the finite numbers"); }
+                if (Math.Max(Math.Abs(da), Math.Abs(dk)) < 1e-12) { return (a, k, k > 0, k > 0 ? "" : F("converged at k {0:0.0000}, not above 0", k)); }
             }
-            return (a, k, false);
+            return (a, k, false, "not converged in 100 iterations");
         }
 
         // ------------------------------------------------------------------ (c): the anchored bilogit; no change
@@ -542,7 +546,7 @@ namespace PoliSim.EditorTools
                     run.UnderS1.Add(under); run.Lines.Add("step 5 - after S1, " + under);
                 }
             }
-            else { run.Lines.Add("step 5 - (b') not fitted in every cycle of D - S6 cannot fire"); }
+            else { run.Lines.Add(F("step 5 - (b') UNFITTED in {0} - S6 cannot fire", string.Join(", ", d.Where(c => !run.Counts[c.Name][B_PRIME].Fitted).Select(c => c.Name)))); }
 
             // S5, with step 1's exception: (b) picked and S2 not firing - a printed S2 (one swing cycle) counting as not firing
             run.S5 = s5 && !(step2 == "(b)" && !(run.S2 && twoSwing));
@@ -620,7 +624,7 @@ namespace PoliSim.EditorTools
                 {
                     Score s = main.Scores[c.Name][row];
                     RowCount rc = main.Counts[c.Name][row];
-                    if (!rc.Fitted && row == C_BILOGIT) { Both(F("  {0,-12} {1}", RowNames[row], rc.Note)); continue; }
+                    if (!rc.Fitted && (row == C_BILOGIT || row == B_PRIME)) { Both(F("  {0,-12} {1}", RowNames[row], rc.Note)); continue; }   // (c) with no window; (b') UNFITTED, no figures (H4)
                     Both(s.HasStates
                         ? F("  {0,-12} REP {1,3}  N {2,3:+0;-0;0}  control {3,-3}  G {4,3}  H {5,3}  K {6,2}/50  contingent {7}{8}", RowNames[row], s.Rep, s.N, s.Control ? "REP" : "DEM", s.G, s.H, s.K, s.Contingent, rc.Note.Length > 0 ? "  - " + rc.Note : "")
                         : F("  {0,-12} REP {1,3}  N {2,3:+0;-0;0}  control {3,-3}  - {4}", RowNames[row], s.Rep, s.N, s.Control ? "REP" : "DEM", rc.Note));

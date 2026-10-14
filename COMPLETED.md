@@ -38404,3 +38404,21 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **The ledger** (`docs/audit/AUDIT_LEDGER.md`): GA-2-12 closed with §828's hash (`b1458b49`). GA-2-13's row is closed with this commit's hash in the next record. It was the last row marked fix: Phase 4's list is done, and H1-H5 come next (H5: after the audit).
 
 **Bars** (tier SIMULATION, on this commit's own tree): the simulation bar **57 of 57** (`sim829b`, on the final code, the trajectory sentinel holding against `ga111` on both seeds, as `sim829` did on the first form - no dump reads a preview at a boundary-fresh state); the cheap bar **103 of 103** (`cheap829`, the record in). All ran detached from the session.
+
+## 830. ELIAS'S RULING H4 BUILT - AN UNFITTED (b') PRINTS AS UNFITTED AND NEVER COUNTS IN R-US18'S DECISION; WHERE THE PREREGISTERED TEXT SAYS OTHERWISE IT STANDS, AND ELIAS IS TOLD (2026-10-15)
+
+**What was owed** (Elias's ruling H4, 2026-10-13, recorded §803, built after the gameplay audit, which closed at §829; H5's order puts the label with H1-H3): "An unfitted (b') prints as UNFITTED and never counts in the decision. If the preregistered text says otherwise, the text wins and you tell me."
+
+**Read against the block first** (R-US18's preregistered block, `docs/specs/USA_STAGE_PLAN.md`, its digest 5c89b0cf - the list's last - unchanged): the decision already never reads an unfitted (b'). Step 5 runs "If (b') is fitted in every cycle of D", and the rule "reaches (a) with F-old, (b), or an ask - never F-prop, (b') or (c) by itself". The block says nothing of how an unfitted (b') prints (the s800 review's finding 6), so the label is the build and the block is not amended. The text says otherwise in two places, and stands there:
+- **the decisive digest** lists (b')'s H, G, N and K in every cycle of D "and whether (b') is fitted", each "computed whatever an earlier condition of its step gives": an unfitted (b')'s figures, counted from the fit's last iterate, stay in it, so an unfit moves the digest and asks R-US18 again (as §803 read);
+- **the run over D plus C5** (BILLED, not built): reading (ii)'s D there - C2, C4, C5 - has two swing cycles and compares S6, so a (b') unfitted in C1 alone would skip the main run's step 5 while reading (ii)'s ran, and S4 could fire on that difference. Latent until C5 is measured.
+
+Elias is told both, in this record and in the session's report.
+
+**Built** (`Assets/Editor/UsHouseCountCheck.cs`): `FitBPrime` names the exit that failed - the likelihood's curvature singular (no usable state, one predictor value, or separation), a Newton step leaving the finite numbers, convergence at k not above 0, or no convergence in 100 iterations. An unfitted (b')'s row prints `UNFITTED - <the exit>` with no figures, as (c) without a window prints its note alone, and step 5 names the cycles (`(b') UNFITTED in ... - S6 cannot fire`). The digest's code is unchanged. The plan's H4 paragraph and H5's order say the label is built.
+
+**Measured**: (b') is fitted in all four cycles of the record, so nothing printed moves. The named run `h4real`: `UsHouseCountCheck` clean, the model card current, the decisive digest 2df09e4c the registered one. **The planted run** (`h4plant`: the fit's loop cut to no step, in a copy put in place for that one run, the file restored by digest before the next): every cycle's (b') row prints `UNFITTED - not converged in 100 iterations`, step 5 prints `(b') UNFITTED in C1, C2, C4 - S6 cannot fire`, and **THE OUTCOME is the registered one, `(a) + S2, S5, S4 [(ii)]`** - the unfit reaches no decision - while the decisive digest moves (5f50ac74 against 2df09e4c) and the check fails on it ("a moved digest is registered again and Elias told"): the text standing, as above. No check is added (R-N5): the planted run is the proof, and this record holds it.
+
+**The ledger** (`docs/audit/AUDIT_LEDGER.md`): GA-2-13 closed with §829's hash (`915bae4d`).
+
+**Bars** (tier TOOLING + DOCUMENTS, on this commit's own tree): the cheap bar **103 of 103** (`cheap830`, the record in), after the named runs `h4real` (clean) and `h4plant` (the planted unfit, failing on the moved digest as the block says). The R-US18 block digest 5c89b0cf read again after the plan edits, unchanged. All ran detached from the session.
