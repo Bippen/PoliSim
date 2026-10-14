@@ -208,3 +208,5 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	564fc1a40b3f99ae2558c66e2184
 file	Assets/Scripts/Simulation/SimulationManager.cs	784de1d2f86834b2abd15391bfcda64bdd389e9f738a20562d1300558a8ad3b9	reviewed	2026-10-06	s798	Reviews/2026-10-06_s798_us20_poland_statute_acts.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	af3fbdd677d3d26cb7d47410b7256ee3d2571a196b750656303b1d647641d00a	reviewed	2026-10-14	s814	Reviews/2026-10-14_s814_ga2_1_fund_draw.md	-
 file	Assets/Scripts/Data/SovereignWealthFund.cs	8b8740e4b93629ff5076d5741448291701c5c5cc17e00f48eb91f520be3c459e	reviewed	2026-10-14	s814	Reviews/2026-10-14_s814_ga2_1_fund_draw.md	-
+file	Assets/Scripts/Data/TaxSchedule.cs	3722fe6e9b5da49e19bd27e5c6b1a2d0446154230d546720726185cb653de315	reviewed	2026-10-14	s815	Reviews/2026-10-14_s815_ga2_2_yield_floor.md	-
+file	Assets/Scripts/Data/TaxBases.cs	301cdb83939d15a0eed9d321590cfd238c2058c46a8e4cd763c13781ca0cb5a8	reviewed	2026-10-14	s815	Reviews/2026-10-14_s815_ga2_2_yield_floor.md	-

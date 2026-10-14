@@ -573,31 +573,40 @@ namespace PoliSim.Data
 
         /// <summary>
         /// Requirement (3): the schedule's response as a RATIO - the yield at this lever position over the yield at the seed (`Country.IncomeTaxSeedAer`,
-        /// captured with the structural bases). Exactly one at the seed, one for a shape that does not respond, one where no seed yield is on record.
+        /// captured with the structural bases). Exactly one at the seed, one for a shape that does not respond, one where no seed yield is on record;
+        /// ZERO where the statute yields nothing - at or below zero. ⚠ GA-2-2 (2026-10-14): a yield at or below zero used to answer one, the seed's
+        /// whole revenue. At the seed's scales a lever of 0 yields zero (F4-5 seeded the lever at the seed's yield over the yield of one point, and the
+        /// shift is linear; the boundary's income and threshold scales move it off zero, and Sweden's credit is not linear in the shift), so the sign
+        /// of a float residue chose the branch: France's landed at or below zero and kept its revenue, where Germany's, Poland's and the USA's landed
+        /// a hair above it and lost theirs. Every band zeroed through the sub-rows yields exactly zero as well.
         /// The revenue engine multiplies its anchored figure by it: a five-point rise of Poland's two bracket rates yields some forty per cent more,
         /// as the real PIT would, because the statute's yield is small against its rates - the schedule's own elasticity, not the flat line's.
         /// </summary>
         public static double YieldRatio(Country country, TaxLine line, float rate)
         {
             if (!Responds(country.Id)) { return 1.0; }
-            double now = YieldNow(country, line, rate);
-            return now > 0 && country.IncomeTaxSeedAer > 0f ? now / country.IncomeTaxSeedAer : 1.0;
+            double now = YieldNow(country, line, rate);   // first: it takes the seed yield where a save from before the capture has none
+            if (!(country.IncomeTaxSeedAer > 0f)) { return 1.0; }   // written so a seed yield that is not a number takes the fallback too
+            return now > 0 ? now / country.IncomeTaxSeedAer : 0.0;
         }
 
         /// <summary>
-        /// The flat-equivalent rate a line stands at for the terms that read "the income tax rate" as a share of income - the household burden,
-        /// the Gini term, the labour-supply term: the seeded rate moved by the POINTS the statute's yield moved, seed + (yield now − yield at the seed).
+        /// The flat-equivalent rate a line stands at for the terms that read "the income tax rate" as a share of income - the Gini term, the
+        /// labour-supply term, a bill's hike in points (the household burden reads the revenue, `TaxBases.RevenueAtRate`, not this): the seeded rate
+        /// moved by the POINTS the statute's yield moved, seed + (yield now − yield at the seed).
         /// A five-point rise of every taxed band moves this by the taxed share of income times five - two and a half points where half the
         /// income sits above the first threshold - which is what a household's share of income taxed actually does; the seeded rate itself is
         /// the anchored figure on the sourced base, not a yield, so it is moved in points, never scaled. The lever's own rate for a shape that
-        /// does not respond.
+        /// does not respond, or where no seed yield is on record. A yield at or below zero reads as zero - the seed's whole yield removed in points,
+        /// continuous with the hair above zero Germany's, Poland's and the USA's landed on. ⚠ GA-2-2 (2026-10-14): it used to answer the bare lever
+        /// there, so at a lever of 0 France's terms read a rate of 0 where Germany's, Poland's and the USA's read the seed's rate less its yield.
         /// </summary>
         public static float EffectiveRate(Country country, TaxLine line, float rate)
         {
             if (!Responds(country.Id)) { return rate; }
             double now = YieldNow(country, line, rate);
-            if (now <= 0 || country.IncomeTaxSeedAer <= 0f) { return rate; }
-            return (float)(RateSeedOf(line) + (now - country.IncomeTaxSeedAer));
+            if (!(country.IncomeTaxSeedAer > 0f)) { return rate; }   // as YieldRatio's
+            return (float)(RateSeedOf(line) + (Math.Max(0.0, now) - country.IncomeTaxSeedAer));
         }
 
         /// <summary>The average effective rate at the headcount-weighted mean income - 15b's one figure - %, at this turn's scales, the lever's shift and the line's own rates.</summary>

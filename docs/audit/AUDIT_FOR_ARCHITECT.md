@@ -6,7 +6,7 @@ At most 100 lines (`docs/audit/AUDIT_PROTOCOL.md`, QUESTIONS AS YOU GO): the S1/
 
 Filed - each reproduced from its seed twice (an S1 or S2 is filed only then); each a clear bug, put to Elias as a fix:
 - **GA-2-1** (S2, area 2) - money from an empty fund (D-02): a contribution below zero goes on paying the budget after the fund is floored at 0. Germany and Poland create a fund at nothing and draw it; Sweden's empties under the draw; an ordinary French budget at -6 % reaches it. **Fixed in §814** (2026-10-14): a draw delivers what the fund holds, to the fund and the budget alike.
-- **GA-2-2** (S2, area 2) - France's income tax at a lever of 0 keeps the seed's whole revenue: `TaxSchedule.YieldRatio` answers 1.0 for a yield at or below zero (D-04). Four other countries lose 5-11 % of GDP a year on the same bill.
+- **GA-2-2** (S2, area 2) - France's income tax at a lever of 0 keeps the seed's whole revenue: `TaxSchedule.YieldRatio` answers 1.0 for a yield at or below zero (D-04). Four other countries lose 5-11 % of GDP a year on the same bill. **Fixed in §815** (2026-10-14): a yield at or below zero raises nothing, and the flat-equivalent rate is continuous to it.
 - **GA-8-1** (S2, area 8) - Germany's carbon statute charges by the turn (30 EUR/t from November 2024, the 2023 rate) and sets a rate the player passed back to the statute's at the next boundary (280 → 45), against §471.
 
 Filed as ARCHITECT (S2: an election or office result, reproduced in every run - the model's, not a code defect; questions 18-19):

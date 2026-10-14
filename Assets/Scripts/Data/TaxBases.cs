@@ -117,8 +117,10 @@ namespace PoliSim.Data
         public static float Revenue(Country country, TaxLine line) => RevenueAtRate(country, line.Type, line.Rate);
 
         /// <summary>F4-2 (2026-09-13): the flat-equivalent rate a line stands at - for the income tax under a statute that responds, the seeded rate
-        /// times the schedule's yield ratio at this lever position (`TaxSchedule.EffectiveRate`); every other line its own rate. The burden and
-        /// labour-supply terms read this, never the lever, so a shift that leaves an exempt band exempt is felt as the statute yields it.</summary>
+        /// moved by the points the schedule's yield moved at this lever position, never scaled by it (`TaxSchedule.EffectiveRate`); every other line
+        /// its own rate. The Gini, labour-supply and bill-hike terms read this, never the lever, so a shift that leaves an exempt band exempt is felt
+        /// as the statute yields it; the household burden reads the revenue (`TaxBases.RevenueAtRate`). ⚠ CORRECTED, GA-2-2's review (2026-10-14):
+        /// this summary said "times the yield ratio" and named the burden among its readers.</summary>
         public static float EffectiveRate(Country country, TaxLine line)
         {
             if (line == null) { return 0f; }
