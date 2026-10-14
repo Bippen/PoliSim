@@ -134,7 +134,9 @@ namespace PoliSim.Data
         /// taxed tonnes are TRANSPORT's since EN-4d (2026-09-11, §467): the power fleet is ETS-covered and exempt of the tax by statute, applied at sector
         /// level (TaxBaseDriver.Emissions states the sources and the deviation); heating fuels the model does not carry stay outside.
         /// </summary>
-        public static float RevenueAtRate(Country country, TaxType type, float rate)
+        /// <param name="atStatute">GA-2-11 (2026-10-14): the income tax under the statute as seeded - none of the line's own sub-row rates
+        /// (`TaxSchedule.YieldRatioAtStatute`) - the household burden's seed side; every other line and shape reads the same either way.</param>
+        public static float RevenueAtRate(Country country, TaxType type, float rate, bool atStatute = false)
         {
             if (type == TaxType.CarbonTax)
             {
@@ -148,7 +150,7 @@ namespace PoliSim.Data
                 // base) is kept and the schedule scales it; one at the seed by construction, so a seeded budget cannot move by an integration error
                 TaxLine line = null;
                 foreach (TaxLine l in country.TaxLines) { if (l.Type == TaxType.IncomeTax) { line = l; break; } }
-                if (line != null) { return TaxSchedule.RateSeedOf(line) / 100f * Base(country, type) * (float)TaxSchedule.YieldRatio(country, line, rate); }
+                if (line != null) { return TaxSchedule.RateSeedOf(line) / 100f * Base(country, type) * (float)(atStatute ? TaxSchedule.YieldRatioAtStatute(country, line, rate) : TaxSchedule.YieldRatio(country, line, rate)); }
             }
             return rate / 100f * Base(country, type);
         }

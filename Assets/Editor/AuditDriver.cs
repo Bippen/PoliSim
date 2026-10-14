@@ -63,7 +63,7 @@ namespace PoliSim.EditorTools
         internal int Wall = 3600;
         /// <summary>extreme: deficit (default), surplus, big or small - see the styles' file.</summary>
         internal string Pole = "deficit";
-        /// <summary>exploit: the inventory's lead the run plays (X-01, X-02, X-04, X-16).</summary>
+        /// <summary>exploit: the inventory's lead the run plays (X-01, X-02, X-02S, X-04, X-16, and the sweep's X-05, X-15, X-17, X-07S).</summary>
         internal string Exploit;
         /// <summary>fuzz: days between its own actions (default 21, a bill's passage).</summary>
         internal int Every = 21;
@@ -113,7 +113,7 @@ namespace PoliSim.EditorTools
 
         private static readonly string[] Styles = { "idle", "historical", "fuzz", "exploit", "extreme" };
         private static readonly string[] Poles = { "deficit", "surplus", "big", "small", "spendup", "spenddown" };
-        private static readonly string[] Exploits = { "X-01", "X-02", "X-04", "X-16", "X-05", "X-15", "X-17", "X-07S" };
+        private static readonly string[] Exploits = { "X-01", "X-02", "X-02S", "X-04", "X-16", "X-05", "X-15", "X-17", "X-07S" };
 
         internal string Describe() =>
             $"{Id}: {Country} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}{(Style == "extreme" ? " " + Pole : Style == "exploit" ? " " + Exploit : Style == "fuzz" ? " every " + Every + " d" : string.Empty)}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
@@ -621,14 +621,22 @@ namespace PoliSim.EditorTools
             _tickDay = _day;
         }
 
-        /// <summary>The player's tax lines as they stand (`TaxLine.Rate`, the rate in force - not the Budget page's draft), logged whenever one moves: a
-        /// passed bill on its day, a statute's indexation at a boundary (inventory D GA-0-28: the carbon statute against a passed rate).</summary>
+        /// <summary>The player's tax lines as they stand (`TaxLine.Rate`, the rate in force - not the Budget page's draft) and the income tax's own
+        /// sub-row rates where a bill has set them (`TaxLine.BracketRates` in brackets, -1 where the statute's figure stands), logged whenever one
+        /// moves: a passed bill on its day, a statute's indexation at a boundary (inventory D GA-0-28: the carbon statute against a passed rate). With
+        /// them the household burden as a share of GDP (`MacroSystem.HouseholdTaxesCollectedShare`) and its gap from the seed's statute
+        /// (`MacroSystem.HouseholdBurdenGap`, the figure the consumption term multiplies) - GA-2-11: a bill that reached only the sub-rows moved the
+        /// revenue and never the gap. Both are read the way the turn reads them; their one lazy step (a driver's reference taken on its first read
+        /// above zero) is the turn's own by then.</summary>
         private void TaxReadout(Country c)
         {
-            string signature = string.Join(" ", c.TaxLines.Where(t => t.IsImplemented).Select(t => t.Type + " " + t.Rate.ToString("0.###", CultureInfo.InvariantCulture)));
+            string signature = string.Join(" ", c.TaxLines.Where(t => t.IsImplemented).Select(t => t.Type + " " + t.Rate.ToString("0.###", CultureInfo.InvariantCulture)
+                + (t.BracketRates == null || t.BracketRates.Length == 0 ? string.Empty : " [" + string.Join(";", t.BracketRates.Select(r => r.ToString("0.###", CultureInfo.InvariantCulture))) + "]")));
             if (signature == _taxSignature) { return; }
             _taxSignature = signature;
             Event($"TAXES day {_day} ({_lastDate:yyyy-MM-dd}, turn {_sm.CurrentTurn}): {signature}");
+            Event(string.Format(CultureInfo.InvariantCulture, "BURDEN day {0}: households hand over {1:0.0000} % of GDP, {2:+0.0000;-0.0000;0.0000} points from the seed's statute",
+                _day, MacroSystem.HouseholdTaxesCollectedShare(c) * 100f, MacroSystem.HouseholdBurdenGap(c) * 100f));
         }
 
         private void CheckDay(Country c)

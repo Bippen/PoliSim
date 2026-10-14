@@ -25,8 +25,9 @@ namespace PoliSim.EditorTools
     /// <item><b>fuzz</b> - random legal actions from the run's own generator: every dial anywhere on its track at each window, every hold's answer
     /// drawn, and every `every=` days one of a law, a tax's or a programme's switch, a fund drawdown.</item>
     /// <item><b>exploit</b> - maximises approval or money through a named lead of the inventory (`exploit=`): X-01 a fund at -10 % of GDP
-    /// (money from an empty fund), X-02 the income tax at its floor, X-04 every programme at full generosity (approval through welfare), X-16 the
-    /// most dovish central-bank head.</item>
+    /// (money from an empty fund), X-02 the income tax at its floor, X-02S its adjustable sub-rows at their floor with the lever left standing (the
+    /// household burden against the sub-rows, GA-2-11), X-04 every programme at full generosity (approval through welfare), X-16 the most dovish
+    /// central-bank head.</item>
     /// <item><b>extreme</b> - every dial at an end, by `pole=`: deficit (taxes at their floor, spending and welfare at their top, the fund drawing,
     /// the pension age at 60), surplus (the reverse), big (taxes and spending at their top), small (both at their floor).</item>
     /// </list>
@@ -103,6 +104,9 @@ namespace PoliSim.EditorTools
                     if (income != null) { DraftTax(income, income.MinRate); }
                     Event($"STYLE exploit X-02: the income tax at its floor ({(income == null ? "not levied" : income.MinRate.ToString("R", CultureInfo.InvariantCulture))})");
                     break;
+                case "X-02S":
+                    DraftSubRowsAtFloor(c);
+                    break;
                 case "X-04":
                     foreach (WelfareProgram w in c.WelfarePrograms.Where(w => w.IsImplemented)) { DraftWelfare(w, 100f); }
                     Event("STYLE exploit X-04: every levied programme at full generosity");
@@ -161,6 +165,28 @@ namespace PoliSim.EditorTools
         }
 
         private void DraftTax(TaxLine t, float rate) => ((IDictionary)Get("_taxRateInputs"))[t.Type] = rate;
+
+        /// <summary>X-02S (GA-2-11's repro): every adjustable sub-row of the income tax at its dial's floor, the lever where it stands - the Budget
+        /// page's schedule rows as a drag to each track's left end leaves them (`_bracketRateInputs`: the rate without the lever's shift, clamped to
+        /// 0-100, dropped where it lands on the statute's own figure); the window's bill carries them (`BuildBudgetBillFromDrafts`).</summary>
+        private void DraftSubRowsAtFloor(Country c)
+        {
+            TaxLine line = c.TaxLines.FirstOrDefault(t => t.IsImplemented && t.Type == TaxType.IncomeTax);
+            if (line == null || !TaxSchedule.Responds(c.Id)) { Event("STYLE exploit X-02S: no income schedule with sub-rows to draft"); return; }
+            List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(TaxSchedule.Of(c.Id));
+            var levers = (IDictionary)Get("_taxRateInputs");
+            float lever = levers.Contains(TaxType.IncomeTax) ? (float)levers[TaxType.IncomeTax] : line.Rate;
+            float shift = lever - TaxSchedule.RateSeedOf(line);   // the dial reads the rate with the lever's shift; the draft is the rate without it
+            var drafts = (IDictionary)Get("_bracketRateInputs");
+            int drafted = 0;
+            for (int i = 0; i < rows.Count; i++)
+            {
+                if (!rows[i].Adjustable) { continue; }
+                float wanted = Mathf.Clamp(0f - shift, 0f, 100f);
+                if (Mathf.Abs(wanted - (float)rows[i].StatuteRate) < 0.005f) { drafts.Remove(i); } else { drafts[i] = wanted; drafted++; }
+            }
+            Event($"STYLE exploit X-02S: the income tax's adjustable sub-rows at their dials' floor ({drafted} of {rows.Count} rows drafted), the lever where it stands");
+        }
 
         private void DraftWelfare(WelfareProgram w, float generosity) => ((IDictionary)Get("_welfareGenerosityInputs"))[w.Type] = Mathf.Clamp(generosity, 0f, 100f);
 

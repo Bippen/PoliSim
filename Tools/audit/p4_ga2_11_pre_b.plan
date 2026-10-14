@@ -1,0 +1,7 @@
+# Phase 4, GA-2-11's CONTROL, part two (2026-10-14): the four runs p4_ga2_11_pre did not reach - Claude Code stopped its launcher for low system
+# memory as a2_us_fuzz began (50 of its 54 runs had ended, no breach, no error). The same engine (6492c537) and the same harness; label p4_ga211preb.
+#
+id=a2_us_fuzz country=USA party=DEM style=fuzz seed=506 days=320
+id=a2_fr_fuzz country=France party=RN style=fuzz seed=507 days=730
+id=a2_se_s_nohold country=Sweden party=S style=fuzz seed=511 days=500 holdbudget=0
+id=a2_se_m_nohold country=Sweden party=M style=idle seed=512 days=500 holdbudget=0

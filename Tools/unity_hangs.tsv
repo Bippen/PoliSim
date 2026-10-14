@@ -9,3 +9,4 @@ ended	pid	label	method	started	minutes_alive	phase	working_set_mb	last_log_line	
 2026-10-02T14:26:20	13528	sim761b	PoliSim.EditorTools.CheckSuite.RunSimulationBatch	2026-10-02T14:11:20	15	teardown	2143	CodeReloadManager destroyed	code 0 - CHECKS: simulation group exiting 0.
 2026-10-06T17:15:28	19668	sim798	PoliSim.EditorTools.CheckSuite.RunSimulationBatch	2026-10-06T17:01:27	14	teardown	2160	CodeReloadManager destroyed	code 0 - CHECKS: simulation group exiting 0.
 2026-10-06T18:55:29	27880	cheap799	PoliSim.EditorTools.CheckSuite.RunAllBatch	2026-10-06T18:49:16	6.2	teardown	2596	CodeReloadManager destroyed	code 0 - CHECKS: suite exiting 0.
+2026-10-14T14:19:06	24052	p4_ga211	PoliSim.EditorTools.BatchSimulationRunner.RunAudit	2026-10-14T13:35:02	44	teardown	3774	CodeReloadManager destroyed	code unknown - EXITDIAG: quitting - pid 24052, 118 OS thread(s) alive (Mono exposes no managed Thread list; managed threads run on these)

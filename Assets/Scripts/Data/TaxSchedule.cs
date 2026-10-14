@@ -518,8 +518,10 @@ namespace PoliSim.Data
         private static float BoundaryLevel(Country country) => country.PriceLevelAtLastIndex > 0f ? country.PriceLevelAtLastIndex : country.State.PriceLevel;
         private static float BoundaryWage(Country country) => country.RealWageIndexAtLastIndex > 0f ? country.RealWageIndexAtLastIndex : country.State.RealWageIndex;
 
-        /// <summary>The per-country memo of yields by lever position, valid for one boundary and one set of the line's own rates: the daily terms read the
-        /// yield every day and the AI ministry's search reads it at many lever positions, and the integration behind it is a boundary figure, not a daily one.</summary>
+        /// <summary>A country's memo of yields by lever position, valid for one boundary and one set of the line's own rates: the daily terms read the yield
+        /// every day, and the integration behind it is a boundary figure, not a daily one. Two per country since GA-2-11 (2026-10-14): the live line's
+        /// (`Country.ScheduleMemo`) and the statute's as seeded (`Country.ScheduleMemoStatute`), so the two readings never reset each other. ⚠ CORRECTED
+        /// by its review: this summary said the AI ministry's search reads it at many lever positions - the ministry and the Finance partner read the base alone.</summary>
         public sealed class Memo
         {
             public float Level = float.NaN, Wage = float.NaN;
@@ -551,8 +553,22 @@ namespace PoliSim.Data
         /// the seed's own reading is the seed's figure exactly. Zero for a shape that does not respond.
         /// </summary>
         public static double YieldNow(Country country, TaxLine line, float rate)
+            => Responds(country.Id) ? Yield(country, line, rate, line.BracketRates, OverridesKey(line), country.ScheduleMemo ?? (country.ScheduleMemo = new Memo())) : 0.0;
+
+        /// <summary>
+        /// GA-2-11 (2026-10-14): the yield at a lever position under the STATUTE AS SEEDED - none of the line's own sub-row rates - the household
+        /// burden's seed side. Both sides used to read the live line's rates, so a bill that reached only the sub-rows moved the two alike: a Swedish
+        /// bill zeroing the flat layer and the state band took the income tax's revenue to nothing and gave consumption no relief. Memoised apart
+        /// (`Country.ScheduleMemoStatute`). Where the line carries no rates of its own - no array, an empty one, or every entry −1, the form a bill
+        /// leaves - it is <see cref="YieldNow"/>'s figure to the bit: the same reading of the same statute. One residue where a sub-row carries a
+        /// figure, even the statute's own: Germany's live side then reads the ramps where this reads § 32a's formula - a euro or so on an income,
+        /// about a millionth of GDP in the burden's gap.
+        /// </summary>
+        public static double YieldNowAtStatute(Country country, TaxLine line, float rate)
+            => Responds(country.Id) ? Yield(country, line, rate, null, "", country.ScheduleMemoStatute ?? (country.ScheduleMemoStatute = new Memo())) : 0.0;
+
+        private static double Yield(Country country, TaxLine line, float rate, IReadOnlyList<float> overrides, string overridesKey, Memo memo)
         {
-            if (!Responds(country.Id)) { return 0.0; }
             if (country.IncomeTaxSeedAer <= 0f)
             {
                 double captured = AverageEffectiveRate(country, 0, 1.0, 1.0);   // a save from before the capture: the reference is taken now, and the ratio is one now
@@ -560,13 +576,11 @@ namespace PoliSim.Data
                 country.IncomeTaxSeedAer = (float)captured;
             }
             float level = BoundaryLevel(country), wage = BoundaryWage(country);
-            string overrides = OverridesKey(line);
-            Memo memo = country.ScheduleMemo ?? (country.ScheduleMemo = new Memo());
-            if (!memo.Holds(level, wage, overrides)) { memo.Reset(level, wage, overrides); }
+            if (!memo.Holds(level, wage, overridesKey)) { memo.Reset(level, wage, overridesKey); }
             int key = (int)Math.Round(rate * 100f);
             if (memo.ByRate.TryGetValue(key, out double cached)) { return cached; }
             double shift = rate - RateSeedOf(line);
-            double now = (double)(float)AverageEffectiveRate(country, shift, IncomeScale(country), ThresholdScale(country), line.BracketRates);
+            double now = (double)(float)AverageEffectiveRate(country, shift, IncomeScale(country), ThresholdScale(country), overrides);
             if (memo.ByRate.Count < 512) { memo.ByRate[key] = now; }
             return now;
         }
@@ -585,7 +599,18 @@ namespace PoliSim.Data
         public static double YieldRatio(Country country, TaxLine line, float rate)
         {
             if (!Responds(country.Id)) { return 1.0; }
-            double now = YieldNow(country, line, rate);   // first: it takes the seed yield where a save from before the capture has none
+            return RatioOf(country, YieldNow(country, line, rate));   // the yield first: it takes the seed yield where a save from before the capture has none
+        }
+
+        /// <summary>GA-2-11 (2026-10-14): <see cref="YieldRatio"/> under the statute as seeded (<see cref="YieldNowAtStatute"/>) - the household burden's seed side.</summary>
+        public static double YieldRatioAtStatute(Country country, TaxLine line, float rate)
+        {
+            if (!Responds(country.Id)) { return 1.0; }
+            return RatioOf(country, YieldNowAtStatute(country, line, rate));
+        }
+
+        private static double RatioOf(Country country, double now)
+        {
             if (!(country.IncomeTaxSeedAer > 0f)) { return 1.0; }   // written so a seed yield that is not a number takes the fallback too
             return now > 0 ? now / country.IncomeTaxSeedAer : 0.0;
         }

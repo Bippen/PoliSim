@@ -136,6 +136,10 @@ namespace PoliSim.Data
         /// <summary>F4-2: the yield ratio's memo for the current boundary (not saved; rebuilt on first read) - see <see cref="TaxSchedule.Memo"/>.</summary>
         [System.NonSerialized] public TaxSchedule.Memo ScheduleMemo;
 
+        /// <summary>GA-2-11 (2026-10-14): the same memo for the statute as seeded - none of the line's own sub-row rates - which the household burden's
+        /// seed side reads (`TaxSchedule.YieldNowAtStatute`); kept apart so the two readings never reset each other. Not saved.</summary>
+        [System.NonSerialized] public TaxSchedule.Memo ScheduleMemoStatute;
+
         /// <summary>P5-B7 (2026-09-05): potential output's factors - the seed's potential, the seed's labour input (PotentialOutput.LabourInput) and the productivity index that compounds daily at the trend (1 at the seed); the labour input as it stood at the last turn, for the derived growth rate. Captured by CaptureStructuralBases; 0 = a save from before this pass, which keeps the old compounding.</summary>
         public float PotentialGdpSeed;
         public float PotentialLabourSeed;

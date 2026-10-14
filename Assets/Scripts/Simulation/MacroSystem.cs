@@ -161,7 +161,9 @@ namespace PoliSim.Simulation
                 // price level - so Sweden's statutory indexation reads as no change of burden, France's frozen 44.6 as a real cut, Germany's schedule as the real rise it is
                 if (atBaseline && line.IsPerTonne) { rate *= Mathf.Max(0.0001f, country.State.PriceLevel); }
 
-                share += TaxBases.RevenueAtRate(country, line.Type, rate) / Mathf.Max(1f, country.State.NominalGdp);   // P5-B3/B6: the nominal revenue at that rate over nominal GDP - a real share; EN-4c: the carbon line is rate per tonne × tonnes through the same accessor
+                // GA-2-11 (2026-10-14): the seed side reads the income tax under the statute AS SEEDED - none of the line's own sub-row rates - so a bill
+                // that reaches only the sub-rows moves the burden (both sides used to read the live line's rates, and the gap stayed zero whatever they did)
+                share += TaxBases.RevenueAtRate(country, line.Type, rate, atStatute: atBaseline) / Mathf.Max(1f, country.State.NominalGdp);   // P5-B3/B6: the nominal revenue at that rate over nominal GDP - a real share; EN-4c: the carbon line is rate per tonne × tonnes through the same accessor
             }
 
             return share;
@@ -179,7 +181,7 @@ namespace PoliSim.Simulation
         /// </summary>
         /// <summary>FT-3 (§377): the household burden's gap from the seed - today's share of GDP handed over by households minus the seed's at the seed's rates,
         /// both on today's base (which therefore cancels) - the quantity the C term multiplies by −MPC × prior GDP. Zero at the seed and under any base movement;
-        /// moves with a RATE, and with a tax the country did not levy at the seed.</summary>
+        /// moves with a RATE, with a tax the country did not levy at the seed, and (GA-2-11, 2026-10-14) with the income tax's own sub-row rates.</summary>
         public static float HouseholdBurdenGap(Country country) => HouseholdTaxBurdenShare(country, atBaseline: false) - HouseholdTaxBurdenShare(country, atBaseline: true);
 
         /// <summary>FT-3 (§377): today's share of GDP collected from households - the burden term's "now" side.</summary>
