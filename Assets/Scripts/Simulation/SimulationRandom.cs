@@ -73,8 +73,10 @@ namespace PoliSim.Simulation
             /// re-running the economy, and so that adding an AI draw can never shift an event,
             /// a cabinet decision or a poll's sampling.
             ///
-            /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2). `CampaignAi` takes a
-            /// `System.Random` from its caller; today the only caller is `CampaignAiHarness`.
+            /// ⚠ CORRECTED (GA-1-3, 2026-10-14): the LIVE campaign draws from it - `CampaignRun` holds the
+            /// object it is handed, as `CampaignAiHarness` does - which is why a caller that runs another
+            /// game on the generator hands it back as objects, not counts (`LiveState`). This said that
+            /// nothing in the live game drew from it (R-N2), true when it was written.
             /// </summary>
             CampaignAi = 8,
 
@@ -83,7 +85,7 @@ namespace PoliSim.Simulation
             /// terms), added 2026-08-29 at W-B7. APPENDED after CampaignAi, never inserted; the
             /// trajectory suite is re-proven byte-identical at the boundary that adds it. Its own
             /// stream so a debate replays under a seed without re-running the AI's choices or the
-            /// economy. ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2).
+            /// economy. ⚠ CORRECTED (GA-1-3): the live campaign holds and draws it, as `CampaignAi` above.
             /// </summary>
             Debate = 9,
 
@@ -91,7 +93,7 @@ namespace PoliSim.Simulation
             /// A scandal's lifecycle draws (elections spec §17: whether the evidence surfaces, and
             /// how strong the party estimates it to be — §36), added 2026-08-29 at W-B8. APPENDED
             /// after Debate, never inserted; the trajectory suite is re-proven byte-identical at the
-            /// boundary that adds it. ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2).
+            /// boundary that adds it. ⚠ CORRECTED (GA-1-3): the live campaign holds and draws it, as `CampaignAi` above.
             /// </summary>
             Scandal = 10,
 
@@ -125,7 +127,7 @@ namespace PoliSim.Simulation
 
         private static readonly Dictionary<Stream, CountingRandom> Streams = new Dictionary<Stream, CountingRandom>();
 
-        /// <summary>Makes every stream reproducible. Called once at the start of a validation run, before any turn is simulated - see SimulationTestRunner's `-seed=` argument. Clears existing streams so a mid-run reseed cannot leave some consumers on stale sequences.</summary>
+        /// <summary>Makes every stream reproducible. Called once at the start of a validation run, before any turn is simulated - see SimulationTestRunner's `-seed=` argument. Clears existing streams, so a consumer that looks its stream up each time reads the new sequence; one that HOLDS a stream object across a reseed (the campaign's run, the run-up's poll) keeps the old one (GA-1-3's review: the films reseed mid-run).</summary>
         public static void Seed(int seed)
         {
             _masterSeed = seed;
@@ -222,6 +224,32 @@ namespace PoliSim.Simulation
                 stream.FastForward(pair.Value);
                 Streams[pair.Key] = stream;
             }
+        }
+
+        /// <summary>
+        /// GA-1-3 (2026-10-14): the generator as it LIVES - its master seed and the stream objects themselves, not their counts. What a caller that runs
+        /// another game on the generator takes and puts back (`ShadowBaseline`): a holder of a live stream - the campaign's run, the run-up's poll -
+        /// draws on the object it was handed, and <see cref="RestoreState"/> builds new objects at the same counts, which such a holder never sees. The
+        /// table's counts then froze while the campaign drew on, a save recorded the frozen figures (the false CAMPAIGN REPLAY alarm on the next load),
+        /// and a campaign begun later in the session started from them, drawing numbers the last one had drawn.
+        /// </summary>
+        public sealed class LiveState
+        {
+            internal int MasterSeed;
+            internal Dictionary<Stream, CountingRandom> Streams;
+            internal LiveState() { }   // GA-1-3's review: only this assembly builds one, so Reinstate never meets a state with no streams
+        }
+
+        /// <summary>GA-1-3: the generator's live state - the master seed (taken as <see cref="MasterSeed"/> takes it) and the very stream objects.</summary>
+        public static LiveState CaptureLive() => new LiveState { MasterSeed = MasterSeed, Streams = new Dictionary<Stream, CountingRandom>(Streams) };
+
+        /// <summary>GA-1-3: puts back exactly what <see cref="CaptureLive"/> took - the same seed, the same objects at the positions they hold; a stream
+        /// created since and absent from it is dropped, as <see cref="RestoreState"/> leaves an uncounted stream uncreated.</summary>
+        public static void Reinstate(LiveState live)
+        {
+            _masterSeed = live.MasterSeed;
+            Streams.Clear();
+            foreach (KeyValuePair<Stream, CountingRandom> pair in live.Streams) { Streams[pair.Key] = pair.Value; }
         }
     }
 }

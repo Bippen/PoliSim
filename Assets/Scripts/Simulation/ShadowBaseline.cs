@@ -41,10 +41,10 @@ namespace PoliSim.Simulation
         private World _world;
         private readonly Dictionary<CountryId, PolicyDecision> _noDecisions = new Dictionary<CountryId, PolicyDecision>();
 
-        /// <summary>The shadow's own generator position, kept between turns so its run is continuous even
-        /// though the real game's state is swapped in and out around it.</summary>
-        private int _masterSeed;
-        private Dictionary<SimulationRandom.Stream, int> _drawCounts;
+        /// <summary>The shadow's own generator, kept between turns so its run is continuous even though the real game's is swapped in and out
+        /// around it. GA-1-3 (2026-10-14): kept as it LIVES - the stream objects, not their counts - so a campaign the shadow carries goes on
+        /// drawing on the objects its table holds, as the real game's does (`SimulationRandom.LiveState`).</summary>
+        private SimulationRandom.LiveState _own;
 
         /// <summary>The counterfactual world. Read-only to callers by convention — advancing it is
         /// <see cref="AdvanceTurn"/>'s job, because only that path protects the real generator.</summary>
@@ -52,8 +52,6 @@ namespace PoliSim.Simulation
 
         public ShadowBaseline(int masterSeed)
         {
-            _masterSeed = masterSeed;
-
             // Its own host object so the shadow manager's own lifetime is ours, and hidden so it never
             // appears in a scene view as a second game. ⚠ NOT DontDestroyOnLoad: that is play-mode only and
             // throws in the Editor, where the proof gate runs - and the host is explicitly disposed anyway.
@@ -66,7 +64,7 @@ namespace PoliSim.Simulation
             foreach (Country c in _world.Countries) { _noDecisions[c.Id] = PolicyDecision.None(); }
 
             // The shadow starts where the real game starts: same master seed, every stream at zero.
-            _drawCounts = new Dictionary<SimulationRandom.Stream, int>();
+            _own = new SimulationRandom.LiveState { MasterSeed = masterSeed, Streams = new Dictionary<SimulationRandom.Stream, CountingRandom>() };
         }
 
         /// <summary>
@@ -98,20 +96,18 @@ namespace PoliSim.Simulation
             Persistence.SaveGame snapshot = Persistence.SaveGameService.CreateSaveGame(realSim, realWorld, playerCountryId, null);
             string json = Persistence.SaveGameService.Serialize(snapshot);
 
-            int realSeed = SimulationRandom.MasterSeed;
-            Dictionary<SimulationRandom.Stream, int> realCounts = SimulationRandom.CaptureDrawCounts();
+            SimulationRandom.LiveState real = SimulationRandom.CaptureLive();   // GA-1-3: the real game's stream OBJECTS, handed back as they were
             try
             {
                 Persistence.SaveGame copy = Persistence.SaveGameService.Deserialize(json);
                 Persistence.SaveGameService.RestoreInto(_sim, copy);
                 _world = _sim.World;
 
-                _masterSeed = SimulationRandom.MasterSeed;
-                _drawCounts = SimulationRandom.CaptureDrawCounts();
+                _own = SimulationRandom.CaptureLive();
             }
             finally
             {
-                SimulationRandom.RestoreState(realSeed, realCounts);
+                SimulationRandom.Reinstate(real);
             }
 
             foreach (Country c in _world.Countries) { _noDecisions[c.Id] = PolicyDecision.None(); }
@@ -128,22 +124,23 @@ namespace PoliSim.Simulation
         /// </summary>
         public void AdvanceTurn(Dictionary<CountryId, PolicyDecision> decisions = null)
         {
-            int realSeed = SimulationRandom.MasterSeed;
-            Dictionary<SimulationRandom.Stream, int> realCounts = SimulationRandom.CaptureDrawCounts();
+            SimulationRandom.LiveState real = SimulationRandom.CaptureLive();   // GA-1-3: the real game's stream OBJECTS, handed back as they were
+            bool swapped = false;
 
             try
             {
-                SimulationRandom.RestoreState(_masterSeed, _drawCounts);
+                SimulationRandom.Reinstate(_own);
+                swapped = true;
 
                 for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { _sim.AdvanceDay(); }
                 _sim.AdvanceTurn(decisions ?? _noDecisions);
-
-                _masterSeed = SimulationRandom.MasterSeed;
-                _drawCounts = SimulationRandom.CaptureDrawCounts();
             }
             finally
             {
-                SimulationRandom.RestoreState(realSeed, realCounts);
+                // GA-1-3's review: the shadow's own objects advance in place, so its state is whatever they hold now - taken here, a turn that throws
+                // keeps the streams it made; and only once the shadow's state is in, or the real game's objects would become the shadow's
+                if (swapped) { _own = SimulationRandom.CaptureLive(); }
+                SimulationRandom.Reinstate(real);
             }
         }
 

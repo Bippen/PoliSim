@@ -34,6 +34,9 @@ namespace PoliSim.EditorTools
     /// <item><description><b>AN EXCEPTION MUST NOT LEAVE THE REAL GENERATOR SHIFTED.</b> The restore is
     /// in a `finally`; this proves the `finally` by throwing inside a shadow turn and checking the real
     /// state came back anyway.</description></item>
+    /// <item><description><b>A HELD STREAM SURVIVES THE SHADOW</b> (GA-1-3, 2026-10-14). A stream object the real game holds - the campaign's,
+    /// the run-up's - is still the table's after a shadow turn and a fork, so its draws reach the table and a save. Counts cannot see this;
+    /// the object's identity can.</description></item>
     /// </list>
     /// </summary>
     public static class ShadowBaselineDiagnostic
@@ -122,11 +125,51 @@ namespace PoliSim.EditorTools
             // ---- 5. the finally ----
             failures += AssertRestoreSurvivesAnException(sb);
 
+            // ---- 6. GA-1-3: a held stream survives the shadow ----
+            failures += AssertHeldStreamSurvives(sb);
+
             sb.Append(F("\n=== ShadowBaselineDiagnostic: {0} ===\n",
                 failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILURE(S)"));
 
             if (failures == 0) { Debug.Log(sb.ToString()); CheckExit.Finish(0); }
             else { Debug.LogError(sb.ToString()); CheckExit.Finish(1); }
+        }
+
+        /// <summary>GA-1-3 (2026-10-14): a stream the real game HOLDS - as the campaign's run and the run-up's poll hold theirs - is still the table's
+        /// stream after a shadow turn and a fork, and a draw on it is the table's draw. The shadow used to put the generator back by its counts, as new
+        /// objects: the holder's draws never reached the table, a save recorded frozen counts, and a later campaign drew numbers the last one had
+        /// drawn. Counts alone cannot see it (check 1 passed under the defect); the object's identity can.</summary>
+        private static int AssertHeldStreamSurvives(StringBuilder sb)
+        {
+            SimulationRandom.Seed(Seed);
+            var go = new GameObject("C-C9 HELD");
+            ShadowBaseline shadow = null, fork = null;
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                World world = WorldFactory.CreateDefault();
+                sim.SetWorld(world);
+                System.Random held = SimulationRandom.For(SimulationRandom.Stream.CampaignAi);
+                held.Next();
+                shadow = new ShadowBaseline(Seed);
+                shadow.AdvanceTurn();
+                fork = new ShadowBaseline(sim, world, CountryId.Sweden);
+                fork.AdvanceTurn();
+                int before = SimulationRandom.CaptureDrawCounts().TryGetValue(SimulationRandom.Stream.CampaignAi, out int b) ? b : 0;
+                held.Next();
+                int after = SimulationRandom.CaptureDrawCounts().TryGetValue(SimulationRandom.Stream.CampaignAi, out int a) ? a : 0;
+                bool same = ReferenceEquals(SimulationRandom.For(SimulationRandom.Stream.CampaignAi), held);
+                bool counted = after == before + 1;
+                sb.Append(F("\n6. GA-1-3 - a held stream across a shadow turn and a fork: the table's CampaignAi stream {0} the one held, and a draw on it {1} the table's count ({2} -> {3}).\n",
+                    same ? "IS" : "IS NOT", counted ? "moves" : "does NOT move", before, after));
+                return same && counted ? 0 : 1;
+            }
+            finally
+            {
+                fork?.Dispose();
+                shadow?.Dispose();
+                UnityEngine.Object.DestroyImmediate(go);
+            }
         }
 
         /// <summary>A real game advanced <paramref name="turns"/> turns, optionally with a shadow
