@@ -1,0 +1,94 @@
+# Phase 4, GA-1-5's recheck (2026-10-14): the cabinet's draw hands out a new minister per candidate (CabinetMinister.Copy, the authored
+# attributes applied to the copy), never the pool's own object - an uninterrupted game and a resumed one seat ministers no other game holds.
+# The finding's area, area 1, as it stands (p4_scen's area-1 part: the determinism, resume and recheck plans whole, in their order - each
+# resume reads the save its earlier run wrote; the cabinet runs b4_se_cab and c2_se_cab search, save and appoint). Expected: no breach, no
+# error; every pair as before; every trajectory byte-identical to its p4_scen twin - the copy carries the same figures and the shuffle draws
+# as before (s826's change and the BURDEN readout touch no run that sets no sub-row).
+#
+# --- Tools/audit/area1_determinism.plan ---
+id=a1_se_base country=Sweden party=M style=idle seed=301 days=300
+id=a1_se_twice country=Sweden party=M style=idle seed=301 days=300 compare=a1_se_base
+id=a1_de_base country=Germany party=SPD style=idle seed=302 days=200
+id=a1_de_twice country=Germany party=SPD style=idle seed=302 days=200 compare=a1_de_base
+id=a1_pl_base country=Poland party=PiS style=idle seed=303 days=280
+id=a1_pl_twice country=Poland party=PiS style=idle seed=303 days=280 compare=a1_pl_base
+id=a1_it_base country=Italy party=FdI style=idle seed=304 days=120
+id=a1_it_twice country=Italy party=FdI style=idle seed=304 days=120 compare=a1_it_base
+id=a1_us_base country=USA party=DEM style=idle seed=305 days=340
+id=a1_us_twice country=USA party=DEM style=idle seed=305 days=340 compare=a1_us_base
+id=a1_fr_base country=France party=RN style=idle seed=306 days=120
+id=a1_fr_twice country=France party=RN style=idle seed=306 days=120 compare=a1_fr_base
+id=a1_se_sl_runup country=Sweden party=M style=idle seed=301 days=300 saveload=100 compare=a1_se_base
+id=a1_se_sl_campaign country=Sweden party=M style=idle seed=301 days=300 saveload=215 compare=a1_se_base
+id=a1_se_sl_night country=Sweden party=M style=idle seed=301 days=300 saveload=239 compare=a1_se_base
+id=a1_se_sl_round country=Sweden party=M style=idle seed=301 days=300 saveload=255,270 compare=a1_se_base
+id=a1_se_s_base country=Sweden party=S style=idle seed=311 days=300
+id=a1_se_s_sl country=Sweden party=S style=idle seed=311 days=300 saveload=200,240,260 compare=a1_se_s_base
+id=a1_se_bound_base country=Sweden party=M style=idle seed=312 days=380
+id=a1_se_sl_boundary country=Sweden party=M style=idle seed=312 days=380 saveload=364,365,366 compare=a1_se_bound_base
+id=a1_de_sl country=Germany party=SPD style=idle seed=302 days=200 saveload=80,110,150 compare=a1_de_base
+id=a1_pl_sl country=Poland party=PiS style=idle seed=303 days=280 saveload=200,239 compare=a1_pl_base
+id=a1_it_sl country=Italy party=FdI style=idle seed=304 days=120 saveload=60 compare=a1_it_base
+id=a1_us_sl country=USA party=DEM style=idle seed=305 days=340 saveload=297,315 compare=a1_us_base
+id=a1_fr_sl country=France party=RN style=idle seed=306 days=120 saveload=60 compare=a1_fr_base
+id=a1_se_fuzz_base country=Sweden party=M style=fuzz seed=321 days=300
+id=a1_se_fuzz_sl country=Sweden party=M style=fuzz seed=321 days=300 saveload=50,150,250 compare=a1_se_fuzz_base
+id=a1_se_ext_base country=Sweden party=M style=extreme pole=deficit seed=322 days=300
+id=a1_se_ext_sl country=Sweden party=M style=extreme pole=deficit seed=322 days=300 saveload=30,240 compare=a1_se_ext_base
+id=a1_se_1x country=Sweden party=M style=idle seed=331 days=90 speed=1 delta=0.05
+id=a1_se_3x country=Sweden party=M style=idle seed=331 days=90 speed=3 delta=0.05 compare=a1_se_1x
+id=a1_se_pause country=Sweden party=M style=idle seed=331 days=90 speed=3 delta=0.05 speeds=20:P,40:1,60:2,70:3 compare=a1_se_1x
+id=a1_de_1x country=Germany party=SPD style=idle seed=332 days=60 speed=1 delta=0.05
+id=a1_de_3x country=Germany party=SPD style=idle seed=332 days=60 speed=3 delta=0.05 compare=a1_de_1x
+id=a1_pl_1x country=Poland party=PiS style=idle seed=333 days=60 speed=1 delta=0.05
+id=a1_pl_3x country=Poland party=PiS style=idle seed=333 days=60 speed=3 delta=0.05 compare=a1_pl_1x
+id=a1_us_1x country=USA party=DEM style=idle seed=334 days=60 speed=1 delta=0.05
+id=a1_us_3x country=USA party=DEM style=idle seed=334 days=60 speed=3 delta=0.05 compare=a1_us_1x
+id=a1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=a1_se_base
+id=a1_se_gui4 country=Sweden party=M style=idle seed=301 days=300 gui=4 compare=a1_se_base
+#
+# --- Tools/audit/area1b_resume.plan ---
+id=b1_se_base country=Sweden party=M style=idle seed=301 days=300
+id=b1_se_multiday country=Sweden party=M style=idle seed=301 days=300 delta=0.333 compare=b1_se_base
+id=b2_se_m_base country=Sweden party=M style=idle seed=361 days=300
+id=b2_se_m_two country=Sweden party=M style=idle seed=361 days=300 saveload=190,220 compare=b2_se_m_base
+id=b2_se_s_base country=Sweden party=S style=idle seed=362 days=300
+id=b2_se_s_two country=Sweden party=S style=idle seed=362 days=300 saveload=190,220 compare=b2_se_s_base
+id=b2_se_s_three country=Sweden party=S style=idle seed=362 days=300 saveload=190,220,236 compare=b2_se_s_base
+id=b2_de_base country=Germany party=SPD style=idle seed=363 days=200
+id=b2_de_two country=Germany party=SPD style=idle seed=363 days=200 saveload=60,90 compare=b2_de_base
+id=b2_se_fuzz_base country=Sweden party=M style=fuzz seed=364 days=300
+id=b2_se_fuzz_two country=Sweden party=M style=fuzz seed=364 days=300 saveload=195,215,230 compare=b2_se_fuzz_base
+id=b3_se_m country=Sweden party=M style=idle seed=371 days=300 save=150,210,245,265
+id=b3_se_m_r150 country=Sweden party=M style=idle seed=371 days=300 resume=b3_se_m.day150.save.json startday=150 compare=b3_se_m
+id=b3_se_m_r210 country=Sweden party=M style=idle seed=371 days=300 resume=b3_se_m.day210.save.json startday=210 compare=b3_se_m
+id=b3_se_m_r245 country=Sweden party=M style=idle seed=371 days=300 resume=b3_se_m.day245.save.json startday=245 compare=b3_se_m
+id=b3_se_m_r265 country=Sweden party=M style=idle seed=371 days=300 resume=b3_se_m.day265.save.json startday=265 compare=b3_se_m
+id=b3_se_s country=Sweden party=S style=idle seed=372 days=300 save=210,245
+id=b3_se_s_r210 country=Sweden party=S style=idle seed=372 days=300 resume=b3_se_s.day210.save.json startday=210 compare=b3_se_s
+id=b3_se_s_r245 country=Sweden party=S style=idle seed=372 days=300 resume=b3_se_s.day245.save.json startday=245 compare=b3_se_s
+id=b3_de country=Germany party=SPD style=idle seed=373 days=200 save=90,120
+id=b3_de_r90 country=Germany party=SPD style=idle seed=373 days=200 resume=b3_de.day90.save.json startday=90 compare=b3_de
+id=b3_de_r120 country=Germany party=SPD style=idle seed=373 days=200 resume=b3_de.day120.save.json startday=120 compare=b3_de
+id=b3_pl country=Poland party=PiS style=idle seed=374 days=280 save=245
+id=b3_pl_r245 country=Poland party=PiS style=idle seed=374 days=280 resume=b3_pl.day245.save.json startday=245 compare=b3_pl
+id=b3_us country=USA party=DEM style=idle seed=375 days=340 save=316
+id=b3_us_r316 country=USA party=DEM style=idle seed=375 days=340 resume=b3_us.day316.save.json startday=316 compare=b3_us
+id=b3_se_fuzz country=Sweden party=M style=fuzz seed=376 days=300 save=150
+id=b3_se_fuzz_r150 country=Sweden party=M style=fuzz seed=376 days=300 resume=b3_se_fuzz.day150.save.json startday=150 compare=b3_se_fuzz
+id=b3_se_created country=Sweden create=Grassroots party=NYA style=idle seed=377 days=230 save=100
+id=b3_se_created_r100 country=Sweden create=Grassroots party=NYA style=idle seed=377 days=230 resume=b3_se_created.day100.save.json startday=100 compare=b3_se_created
+id=b4_se_cab country=Sweden party=M style=idle seed=381 days=300 searchsave=40
+id=b4_se_cab_r40 country=Sweden party=M style=idle seed=381 days=300 resume=b4_se_cab.day40.save.json startday=40 cabinet=40 compare=b4_se_cab
+#
+# --- Tools/audit/area1c_recheck.plan ---
+id=c1_se_fuzz country=Sweden party=M style=fuzz seed=376 days=300 save=150
+id=c1_se_fuzz_r150 country=Sweden party=M style=fuzz seed=376 days=300 resume=c1_se_fuzz.day150.save.json startday=150 compare=c1_se_fuzz
+id=c1_de country=Germany party=SPD style=idle seed=373 days=200 save=120
+id=c1_de_r120 country=Germany party=SPD style=idle seed=373 days=200 resume=c1_de.day120.save.json startday=120 compare=c1_de
+id=c2_se_cab country=Sweden party=M style=idle seed=381 days=120 searchsave=40
+id=c2_se_cab_r40 country=Sweden party=M style=idle seed=381 days=120 resume=c2_se_cab.day40.save.json startday=40 cabinet=40 compare=c2_se_cab
+id=c2_se_cab_r40b country=Sweden party=M style=idle seed=381 days=120 resume=c2_se_cab.day40.save.json startday=40 cabinet=40 compare=c2_se_cab_r40
+id=c3_de_hq country=Germany party=SPD style=idle seed=302 days=115
+id=c3_de_hq_b country=Germany party=SPD style=idle seed=302 days=115 compare=c3_de_hq
+#

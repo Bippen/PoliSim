@@ -54,6 +54,10 @@ namespace PoliSim.Data
             Description = description;
             CompetenceBias = competenceBias;
         }
+
+        /// <summary>GA-1-5 (2026-10-14): a copy of this minister, every field - the cabinet's draw hands out copies, never the pool's own objects
+        /// (`CabinetSystem.GenerateCandidates`). The fields are values and strings, so the shallow copy is a whole one.</summary>
+        public CabinetMinister Copy() => (CabinetMinister)MemberwiseClone();
     }
 
     /// <summary>P2-5.2 (2026-09-02): what LOYALTY's term produces - a resignation or a leak, under pressure.</summary>

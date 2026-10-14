@@ -414,7 +414,6 @@ namespace PoliSim.Simulation
             },
         };
 
-        /// <summary>Draws every candidate for a portfolio (currently exactly 3, one per CabinetMinisterPhilosophy) in shuffled order - simpler than FederalReserveSystem.GenerateCandidates' own sampling, since the pool per portfolio is already exactly "2-3 candidates" without needing to sample a subset.</summary>
         /// <summary>
         /// P2-5.2 (2026-09-02): the four attributes per fictional candidate, `[AUTHORED-DRAFT]` - figures for original
         /// characters, on the Fed-chair pool's precedent, never for a real person. Loyalty · Knowledge · Efficiency ·
@@ -520,10 +519,21 @@ namespace PoliSim.Simulation
             }
             return fired;
         }
+
+        /// <summary>Draws every candidate for a portfolio (currently exactly 3, one per CabinetMinisterPhilosophy) in shuffled order - simpler than FederalReserveSystem.GenerateCandidates' own sampling, since the pool per portfolio is already exactly "2-3 candidates" without needing to sample a subset.
+        /// GA-1-5 (2026-10-14): each draw is a NEW minister, the authored attributes applied to the copy - never the pool's own object. The pool's
+        /// objects used to be handed out and written in place, so an uninterrupted game seated objects shared by every game in the process where a
+        /// resumed game seats the save's copies: the same values, but a change to one seated minister (an Editor check's reflection write) reached
+        /// whatever else held that object. The shuffle draws as before.</summary>
         public static List<CabinetMinister> GenerateCandidates(CabinetPortfolio portfolio)
         {
-            var candidates = new List<CabinetMinister>(CandidatePool[portfolio]);
-            foreach (CabinetMinister candidate in candidates) { ApplyAttributes(candidate); }   // P2-5.2: the authored attributes ride with the candidate
+            var candidates = new List<CabinetMinister>();
+            foreach (CabinetMinister authored in CandidatePool[portfolio])
+            {
+                CabinetMinister candidate = authored.Copy();
+                ApplyAttributes(candidate);   // P2-5.2: the authored attributes ride with the candidate
+                candidates.Add(candidate);
+            }
             Shuffle(candidates);
             return candidates;
         }
