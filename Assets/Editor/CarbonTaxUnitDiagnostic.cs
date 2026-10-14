@@ -24,7 +24,9 @@ namespace PoliSim.EditorTools
     /// dial's per cent. (6) B6: a rate per tonne does not read the price level - the revenue in dollars at price index 2 is the revenue at 1.
     /// (7) THE STATUTES (EN-4e, ruled 2026-09-12, §471): at no policy for ten years Sweden's rate is the seed times the product of the years'
     /// price ratios rounded to four decimals (2 kap. 1 b §), its real rate the seed's and the transport coupling's real term nil; Germany's rate
-    /// follows the BEHG's schedule (45, 55, 55) and then carries the level; France's 44.6 stands nominal, its real rate falls and the coupling's
+    /// follows the BEHG's schedule by the CALENDAR year each boundary falls in (GA-8-1, 2026-10-14) - on the default epoch, whose first boundary
+    /// falls after the schedule, the law's last 55 carried by the level from that boundary; on Germany's own start (2024-11-06) 55, 55 and then the level -
+    /// and a figure a bill passed stands at its year's boundary, Germany's and Sweden's alike, the statute resuming at the next; France's 44.6 stands nominal, its real rate falls and the coupling's
     /// tax factor rises above one; every ceiling carries the level; Poland's unimplemented line stays 0. The raise in (5) is applied once, in
     /// year 1, and indexes thereafter as the law indexes it - the factor is read in REAL dollars.
     /// </summary>
@@ -165,11 +167,13 @@ namespace PoliSim.EditorTools
                 if (Math.Abs(seReal - 1330.0) > 1330.0 * 5e-4 * Years) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's real rate after {Years} years is {seReal:F2} SEK/t in the seed's prices against 1330 - the indexation should hold it within the four-decimal rounding."); }
                 double seCeilingExpected = 3180.0 * se.State.PriceLevel;
                 if (Math.Abs(seLine.RateCeiling - seCeilingExpected) > 1e-3 * seCeilingExpected) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's ceiling reads {seLine.RateCeiling:F1} against 3180 carried by the level ({seCeilingExpected:F1})."); }
-                // Germany: 45 (2024), 55 (2025), 55 (2026, the corridor's floor), then the last figure carried by the level
-                double[] deExpected = { 45.0, 55.0, 55.0 };
-                for (int y = 1; y <= 3; y++) { if (Math.Abs(run.Rate[CountryId.Germany][y] - deExpected[y - 1]) > 1e-4) { ok = false; Debug.LogError($"CARBON TAX UNIT: Germany's rate after boundary {y} is {run.Rate[CountryId.Germany][y]:F2} against the BEHG's {deExpected[y - 1]:F0} for {CarbonRateStatute.SeedYear + y}."); } }
-                double deAfter = 55.0 * run.PriceLevelAtBoundary[CountryId.Germany][Years] / run.PriceLevelAtBoundary[CountryId.Germany][3];
-                if (Math.Abs(deLine.Rate - deAfter) > 1e-3 * deAfter) { ok = false; Debug.LogError($"CARBON TAX UNIT: Germany's rate after {Years} years is {deLine.Rate:F3} against the last legislated 55 carried by the level since 2026 ({deAfter:F3})."); }
+                // Germany on the default epoch (2026-10-01) - GA-8-1: the boundaries fall in 2027 onward, past the schedule, the first among them: the
+                // law's last figure (2026's 55) carried by the level from that boundary, never the seed's 2023 figure carried
+                for (int y = 1; y <= Years; y++)
+                {
+                    double carried = CarbonRateStatute.LastScheduledFigure * run.PriceLevelAtBoundary[CountryId.Germany][y] / run.PriceLevelAtBoundary[CountryId.Germany][0];
+                    if (Math.Abs(run.Rate[CountryId.Germany][y] - carried) > 1e-3 * carried) { ok = false; Debug.LogError($"CARBON TAX UNIT: Germany's rate after boundary {y} on the default epoch is {run.Rate[CountryId.Germany][y]:F3} against the law's last 55 carried by the level ({carried:F3}) - a game whose first boundary falls after the schedule."); }
+                }
                 // France: nominal, the real rate below the seed, the coupling's tax factor above one (the erosion the book shows)
                 if (Math.Abs(frLine.Rate - 44.6f) > 1e-6) { ok = false; Debug.LogError($"CARBON TAX UNIT: France's rate moved to {frLine.Rate} - the composante carbone is a nominal amount, fixed since 2018."); }
                 double frFactor = EnvironmentFamily.TransportTargetFor(fr, frLine.Rate, fr.Environment.InfrastructurePerHeadSeed) / EnvironmentFamily.TransportTargetFor(fr, 44.6f * fr.State.PriceLevel, fr.Environment.InfrastructurePerHeadSeed);
@@ -179,9 +183,27 @@ namespace PoliSim.EditorTools
                 double plCeilingExpected = 1260.0 * pl.State.PriceLevel;
                 if (Math.Abs(plLine.RateCeiling - plCeilingExpected) > 1e-3 * plCeilingExpected) { ok = false; Debug.LogError($"CARBON TAX UNIT: Poland's ceiling reads {plLine.RateCeiling:F1} against 1260 carried by the level ({plCeilingExpected:F1}) - the dial's reach indexes for all six."); }
                 sb.Append(F("    Sweden   {0:F0} → {1:F1} SEK/t over {2} boundaries (the rounded ratios' product {3:F5}; the level {4:F5}) - real {5:F1} in the seed's prices; the ceiling 3180 → {6:F0}\n", 1330.0, seLine.Rate, Years, run.RoundedRatioProduct[CountryId.Sweden], se.State.PriceLevel, seReal, seLine.RateCeiling));
-                sb.Append(F("    Germany  30 → {0:F0} ({1}) → {2:F0} ({3}) → {4:F0} ({5}, the corridor's floor) → {6:F2} after {7} years (55 carried by the level since 2027, the ETS's own convention) - real {8:F1}\n", run.Rate[CountryId.Germany][1], CarbonRateStatute.SeedYear + 1, run.Rate[CountryId.Germany][2], CarbonRateStatute.SeedYear + 2, run.Rate[CountryId.Germany][3], CarbonRateStatute.SeedYear + 3, deLine.Rate, Years, CarbonRateStatute.RealRate(deLine.Rate, de.State.PriceLevel)));
+                sb.Append(F("    Germany  30 → {0:F2} at the first boundary (2027, past the schedule: the law's last 55 carried by the level) → {1:F2} after {2} years - real {3:F1}\n", run.Rate[CountryId.Germany][1], deLine.Rate, Years, CarbonRateStatute.RealRate(deLine.Rate, de.State.PriceLevel)));
                 sb.Append(F("    France   44.6 held nominal; real {0:F2} EUR/t at a price level of {1:F4}; the transport coupling's tax factor {2:F5} (above one: the erosion, shown)\n", CarbonRateStatute.RealRate(frLine.Rate, fr.State.PriceLevel), fr.State.PriceLevel, frFactor));
                 sb.Append(F("    Poland   0, unimplemented, untouched; its ceiling 1260 → {0:F0} PLN/t (the dial's reach in the year's prices, all six)\n", plLine.RateCeiling));
+
+                // GA-8-1 (2026-10-14): Germany's own start, 2024-11-06 - the boundaries fall in 2025, 2026 and 2027 and read their CALENDAR years: 2025's 55,
+                // 2026's 55 (the corridor's floor), then 55 carried by the level - where the turns' count set 2024's 45 at the first, a year behind the law
+                DateTime germanStart = PoliSim.Elections.WorldClock.StartDate(CountryId.Germany);
+                StatuteRun atStart = RunStatutes(3, germanStart);
+                double[] onStart = { 55.0, 55.0, 55.0 * atStart.PriceLevelAtBoundary[CountryId.Germany][3] / atStart.PriceLevelAtBoundary[CountryId.Germany][2] };
+                for (int y = 1; y <= 3; y++) { if (Math.Abs(atStart.Rate[CountryId.Germany][y] - onStart[y - 1]) > 1e-3 * onStart[y - 1]) { ok = false; Debug.LogError($"CARBON TAX UNIT: on Germany's start ({germanStart:yyyy-MM-dd}) its rate after boundary {y} ({germanStart.Year + y}) is {atStart.Rate[CountryId.Germany][y]:F3} against {onStart[y - 1]:F3} - the BEHG's figure for the boundary's calendar year."); } }
+                sb.Append(F("    Germany on its own start ({0:yyyy-MM-dd}): 30 → {1:F0} ({2}) → {3:F0} ({4}, the corridor's floor) → {5:F2} ({6}, carried by the level)\n", germanStart, atStart.Rate[CountryId.Germany][1], germanStart.Year + 1, atStart.Rate[CountryId.Germany][2], germanStart.Year + 2, atStart.Rate[CountryId.Germany][3], germanStart.Year + 3));
+
+                // GA-8-1: a figure a budget bill passed stands for the year it was passed for, whatever the rule - Germany's against its schedule, Sweden's
+                // against its indexation - and the statute moves it again from the first boundary of a later year. Passed on day 100 of the first year, in 2025
+                const int PassedOnDay = 100;
+                StatuteRun passed = RunStatutes(2, germanStart, (CountryId.Germany, PassedOnDay, 80f), (CountryId.Sweden, PassedOnDay, 1500f));
+                int passedYear = germanStart.AddDays(PassedOnDay + 1).Year;
+                double seIndexed = 1500.0 * Math.Round(passed.PriceLevelAtBoundary[CountryId.Sweden][2] / passed.PriceLevelAtBoundary[CountryId.Sweden][1], CarbonRateStatute.JamforelsetalDecimals);
+                if (Math.Abs(passed.Rate[CountryId.Germany][1] - 80.0) > 1e-4 || Math.Abs(passed.Rate[CountryId.Germany][2] - 55.0) > 1e-4) { ok = false; Debug.LogError($"CARBON TAX UNIT: Germany's 80 passed in {passedYear} reads {passed.Rate[CountryId.Germany][1]:F3} at that year's boundary (it stands: 80) and {passed.Rate[CountryId.Germany][2]:F3} at the next (the statute's 55)."); }
+                if (Math.Abs(passed.Rate[CountryId.Sweden][1] - 1500.0) > 1e-3 || Math.Abs(passed.Rate[CountryId.Sweden][2] - seIndexed) > 1e-3 * seIndexed) { ok = false; Debug.LogError($"CARBON TAX UNIT: Sweden's 1500 passed in {passedYear} reads {passed.Rate[CountryId.Sweden][1]:F3} at that year's boundary (it stands: 1500, unindexed) and {passed.Rate[CountryId.Sweden][2]:F3} at the next (indexed: {seIndexed:F3})."); }
+                sb.Append(F("    A figure passed in {0} (day {1}): Germany 80 → {2:F0} at {0}'s boundary (it stands) → {3:F0} at the next (the statute's); Sweden 1500 → {4:F0} (it stands, unindexed) → {5:F1} (indexed again)\n", passedYear, PassedOnDay, passed.Rate[CountryId.Germany][1], passed.Rate[CountryId.Germany][2], passed.Rate[CountryId.Sweden][1], passed.Rate[CountryId.Sweden][2]));
             }
 
             sb.Append(ok ? "\n=== CarbonTaxUnitDiagnostic: ALL ASSERTIONS PASS ===\n" : "\n=== CarbonTaxUnitDiagnostic: FAILED (see above) ===\n");
@@ -198,9 +220,14 @@ namespace PoliSim.EditorTools
             public readonly Dictionary<CountryId, double> RoundedRatioProduct = new Dictionary<CountryId, double>();
         }
 
-        /// <summary>One world at no policy: every country's carbon rate and price level read after each boundary, and the product of the boundaries' price ratios rounded as Sweden's statute rounds them.</summary>
-        private static StatuteRun RunStatutes(int years)
+        /// <summary>One world at no policy: every country's carbon rate and price level read after each boundary, and the product of the boundaries' price ratios rounded as Sweden's statute rounds them.
+        /// GA-8-1: opened on <paramref name="epoch"/> where one is given (a country's start - the boundaries then fall in its calendar years), the
+        /// default epoch otherwise; each of <paramref name="passes"/> passes a budget bill naming that country's carbon figure on that day of the first
+        /// year, through the bill's own applying step (`ParliamentSystem.ApplyBillResult`) with the year of the day it passes.</summary>
+        private static StatuteRun RunStatutes(int years, DateTime? epoch = null, params (CountryId Id, int Day, float Figure)[] passes)
         {
+            using IDisposable epochScope = SimulationManager.EpochScope();
+            SimulationManager.SetEpoch(epoch ?? SimulationManager.DefaultEpoch);   // the default epoch named, never the process's: a start a tool left would move every reading
             SimulationRandom.Seed(777);
             EnergyMarket.ResetCalibration();
             World world = WorldFactory.CreateDefault();
@@ -217,7 +244,18 @@ namespace PoliSim.EditorTools
                 var before = new Dictionary<CountryId, float>();
                 for (int year = 1; year <= years; year++)
                 {
-                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); }
+                    for (int day = 0; day < SimulationManager.DaysPerTurn; day++)
+                    {
+                        sim.AdvanceDay();
+                        if (year != 1) { continue; }
+                        foreach ((CountryId id, int onDay, float figure) in passes)
+                        {
+                            if (onDay != day) { continue; }
+                            var bill = new BudgetBill();
+                            bill.TaxLines[TaxType.CarbonTax] = figure;
+                            ParliamentSystem.ApplyBillResult(world.GetCountry(id), bill, true, (c, b) => { }, sim.CurrentDate.Year);
+                        }
+                    }
                     foreach (Country k in world.Countries) { before[k.Id] = k.PriceLevelAtLastIndex; }   // the reference the statute reads at this boundary
                     sim.AdvanceTurn(decisions);
                     foreach (Country k in world.Countries)

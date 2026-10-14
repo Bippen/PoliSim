@@ -80,7 +80,7 @@ namespace PoliSim.Data
         // statute, Art. 217). These split a bill's rates so; §773's parts split the rest.
 
         /// <summary>§768: whether the bill changes a tax rate in force on <paramref name="country"/> - a levied line's rate, or a sub-row's rate a schedule
-        /// sets (−1 keeps the standing figure). A bill names every levied line at its requested rate, so a line at its current rate is no change.</summary>
+        /// sets (−1 keeps the standing figure). A bill names the lines its author moved (the player's since GA-8-2, 2026-10-14; the AI's and the Finance partner's by their decision), and a line named at its current rate is no change.</summary>
         public bool ChangesTaxRates(Country country)
         {
             foreach (KeyValuePair<TaxType, float> kv in TaxLines)

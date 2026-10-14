@@ -114,16 +114,23 @@ namespace PoliSim.EditorTools
         /// digits: t100 government consumption -6.08 / -1.22 %, debt -5.27 / +0.58 % on 777 / 424242 - on 777 most of it in one turn, t83, where the two paths fall
         /// on opposite sides of the Fiscal Compact's 1 % deficit limit (debt near 33 %, below 60: the ministry cut fp755's lines, not fp717's); the rest
         /// through the euro-zone rate, trade and currency strength. The family `fp755`. Before it 'fp717'.</summary>
-        public const string BaselineLabel = "fp755";   // PS-6 US-2 (§783): `us2b`, on the reviewed tree, is BYTE-IDENTICAL to `fp755` on both seeds (no dump seats a player, so the record by date never acts, by day or at a load). §755: the stance (above). §717: Italy's MEF summed (above). §716: the Finance partner (above). PS-3k (§638): `ps3k` is BYTE-IDENTICAL to `ps3i` (no dump seats a player, so no election reads the record); PS-3i (§636): `ps3i` is BYTE-IDENTICAL to `ps3h` (every confidence trigger is a player verb); PS-3h (§635): `ps3h` is BYTE-IDENTICAL to `ps3g` (no dump tables a bill); PS-3g (§634): `ps3g` is BYTE-IDENTICAL to `ps3e` (the allocation reads seats and gates levers no dump pulls); PS-3e (§632): `ps3e` is BYTE-IDENTICAL to `ps3c` (the AI government's bill is the PLAYER'S country's path alone - no player, no bill); PS-3c (§630): `ps3c` is BYTE-IDENTICAL to `ps3a` (the dump passes no bill and sets no player, so the role gate is never asked); PS-3a (§628): `ps3a` is BYTE-IDENTICAL to `ps2cal` - the dump sets no player and the no-policy century no party, so the who-governs gate reads as before; `ps2cal` was identical to `ps1wc` in turn - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
+        /// <summary>§816 (2026-10-14, GA-8-1, Elias's ruling: "At each boundary, read the BEHG rate for the calendar year, and let a passed rate stand for the
+        /// year it was passed for"): GERMANY'S CARBON STATUTE READS THE CALENDAR YEAR. The dump opens on Sweden's start, so Germany's first boundary falls on
+        /// 2027-01-18, past the schedule: the law's last 55 EUR/t carried by the level (56.6), where the turns' count set 2024's 45 there and 55 only a year
+        /// later. Against 'fp755' Germany moves from its first boundary: on 777 the carbon revenue lowers the debt 0.05 % in turns 2-4, the AI ministry's
+        /// thresholds swap the sign at t6 (-2.6 %) and t8 (+2.2 %), +1.2 % at t20, and t83 - the Fiscal Compact's 1 % deficit limit, §755's knife-edge - takes
+        /// it to +5.9 % at t100 (GDP +0.70 %, approval +1.56 %); on 424242 the debt +0.04 %. Every other country moves from turn 2 in late digits, through
+        /// trade, the euro-zone rate and currency strength (the largest at t100 Italy's debt, +0.13 % on 777). The family `ga81`. Before it 'fp755'.</summary>
+        public const string BaselineLabel = "ga81";   // §816: GA-8-1's calendar clock (above). PS-6 US-2 (§783): `us2b`, on the reviewed tree, is BYTE-IDENTICAL to `fp755` on both seeds (no dump seats a player, so the record by date never acts, by day or at a load). §755: the stance (above). §717: Italy's MEF summed (above). §716: the Finance partner (above). PS-3k (§638): `ps3k` is BYTE-IDENTICAL to `ps3i` (no dump seats a player, so no election reads the record); PS-3i (§636): `ps3i` is BYTE-IDENTICAL to `ps3h` (every confidence trigger is a player verb); PS-3h (§635): `ps3h` is BYTE-IDENTICAL to `ps3g` (no dump tables a bill); PS-3g (§634): `ps3g` is BYTE-IDENTICAL to `ps3e` (the allocation reads seats and gates levers no dump pulls); PS-3e (§632): `ps3e` is BYTE-IDENTICAL to `ps3c` (the AI government's bill is the PLAYER'S country's path alone - no player, no bill); PS-3c (§630): `ps3c` is BYTE-IDENTICAL to `ps3a` (the dump passes no bill and sets no player, so the role gate is never asked); PS-3a (§628): `ps3a` is BYTE-IDENTICAL to `ps2cal` - the dump sets no player and the no-policy century no party, so the who-governs gate reads as before; `ps2cal` was identical to `ps1wc` in turn - the dump holds no election (it drives the manager, not the controller) and the campaign draws on its own streams - so the digests stand
 
         /// <summary>CONVENTION: twenty turns - §490's divergence showed on turn 2, and the pair of runs costs seconds.</summary>
         public const int Turns = 20;
 
-        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_fp755_s{seed}_t100.csv` (before §755 `traj_fp717`'s, before §716 `traj_ps1wc`'s).</summary>
+        /// <summary>SHA-256 of the dump's text through turn 20 (the header and every row of turns 1-20), read off `traj_ga81_s{seed}_t100.csv` (before §816 `traj_fp755`'s, before §755 `traj_fp717`'s, before §716 `traj_ps1wc`'s).</summary>
         private static readonly (int Seed, string Sha256)[] Expected =
         {
-            (777, "2f70e004111451927f85fb1d0743f4c1d872b7f449e9449dae97bdd07fdb1b04"),
-            (424242, "35b65eca7bfda2c64c410cedc7eb135178634c022b43ab5c585afde1b1bf6886"),
+            (777, "c393135bba2ac231c9ece8d11e09218da7bdff5e601df1afeb85d37530a8bc92"),
+            (424242, "9ba38c16302fb5f200ed7982890d6191f212b9ec39fcfeafab8c54fd8e5118a9"),
         };
 
         // ---- FT-10: the bounds pass ------------------------------------------------------------------------------------------------

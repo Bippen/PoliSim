@@ -1253,7 +1253,7 @@ namespace PoliSim.Simulation
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternative.TabledBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
                 if (breakBy != null) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {breakBy} voted its own alternative budget against the government's frames"); Debug.Log($"BUDGET: {country.Id} - {breakBy}, a support party, broke with the government on its budget"); }
                 if (!governmentAdopted) { country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government lost its budget - {alternative.TabledBy}'s frames adopted; it governs on the adopted frames (sweden/budget_procedure.md [BA-3]); the constitution requires no resignation, and the AI government offers none (a premise, PS-3i §636)"); }
-                ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf);
+                ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year);
                 if (governmentAdopted) { FinancePartner.CreditAdopted(country, government); }   // §755: the partner's step counted only where its bill was adopted
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
                 Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
@@ -1268,7 +1268,7 @@ namespace PoliSim.Simulation
             List<BudgetBill.StatutePart> fellG = new List<BudgetBill.StatutePart>();
             BudgetBill appliedG = passed ? PolishStatuteActs(country, government, out fellG) : government;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
             approvalBefore = country.State.ApprovalRating;   // §768 (the second review): a fallen act's cost is its own ledger event - the budget's event starts after it
-            ParliamentSystem.ApplyBillResult(country, appliedG, passed, ApplyBudgetBillSpendingAndSwf);
+            ParliamentSystem.ApplyBillResult(country, appliedG, passed, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year);
             if (passed) { FinancePartner.CreditAdopted(country, government, ratesLanded: !fellG.Contains(BudgetBill.StatutePart.Rates)); }   // §755: counted only where adopted; §768: only what landed
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "The government's budget adopted" : "The government's budget failed", country.State.ApprovalRating - approvalBefore);
             Debug.Log($"BUDGET: {country.Id} - {title}");
@@ -1546,7 +1546,7 @@ namespace PoliSim.Simulation
             ParliamentSystem.RecordDivision(country, "Annual budget bill", concern, passed, CurrentDate);
             BudgetBill applied = passed ? PolishStatuteActs(country, bill, out _) : bill;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
             float approvalBeforeBill = country.State.ApprovalRating;   // §768 (the second review): after the acts, each fall its own ledger event
-            ParliamentSystem.ApplyBillResult(country, applied, passed, ApplyBudgetBillSpendingAndSwf);
+            ParliamentSystem.ApplyBillResult(country, applied, passed, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
             _pendingBudgetBillByCountry.Remove(countryId);
             CountBudgetVoteOnAgreements(country);   // §654
@@ -4932,7 +4932,7 @@ namespace PoliSim.Simulation
             BoundaryLedger?.Invoke(country, "open");
             EconomyState state = country.State;
 
-            CarbonRateStatute.AdvanceYear(country, CurrentTurn);   // EN-4e (§471): the carbon rate moves as its statute moves it, before any override - a passed bill's figure wins; a left dial gets the law's
+            CarbonRateStatute.AdvanceYear(country, CurrentTurn, ComingBoundaryDate.Year);   // EN-4e (§471): the carbon rate moves as its statute moves it, before any override - a passed bill's figure wins; a left dial gets the law's
             float totalTaxHike = ApplyTaxRateChanges(country, decision);
             ApplyWelfareGenerosityChanges(country, decision);
             ApplyMinimumWageChange(country, decision);
@@ -5187,6 +5187,25 @@ namespace PoliSim.Simulation
         public PolicyPreview PreviewTurn(CountryId countryId, PolicyDecision decision)
             => PreviewTurnOnClone(ClonePreviewCountry(_world.GetCountry(countryId)), countryId, decision);
 
+        /// <summary>GA-8-1 (2026-10-14, the review's finding 5 and the second pass's findings 1-2): the calendar year a bill would pass in - the year a
+        /// preview stamps on a carbon figure it passes, so it shows the boundary the real passage will meet. While the government's bill is before the
+        /// chamber every bill is decided on its day (an alternative's own count is copied at tabling and never run down); a draft not yet tabled is
+        /// tabled when a budget process is next open - now, or at the country's next fiscal-year start - and decided a bill's whole course later.</summary>
+        private int PassageYear(CountryId countryId, BudgetBill bill)
+        {
+            BudgetBill government = GetPendingBudgetBill(countryId);
+            if (government != null && government.DaysRemaining > 0) { return CurrentDate.AddDays(government.DaysRemaining).Year; }
+            if (bill != null && bill.DaysRemaining > 0) { return CurrentDate.AddDays(bill.DaysRemaining).Year; }
+            System.DateTime tabled = CurrentDate;
+            if (!GetPendingBudgetProcess(countryId))
+            {
+                (int month, int day) = FiscalYearData.GetFiscalYearStart(countryId);
+                tabled = new System.DateTime(CurrentDate.Year, month, day);
+                if (tabled <= CurrentDate) { tabled = tabled.AddYears(1); }
+            }
+            return tabled.AddDays(ParliamentSystem.BillDurationDays).Year;
+        }
+
         /// <summary>
         /// P3-C1 (2026-09-03): the preview WITH the budget draft enacted - the draft applied to the clone first
         /// (`ParliamentSystem.ApplyBillResult` as a PASS, the same application the boundary makes, on the clone's
@@ -5197,7 +5216,7 @@ namespace PoliSim.Simulation
         public PolicyPreview PreviewTurnWithBudgetDraft(CountryId countryId, PolicyDecision decision, BudgetBill draft)
         {
             Country clone = ClonePreviewCountry(_world.GetCountry(countryId));
-            if (draft != null) { ParliamentSystem.ApplyBillResult(clone, draft, passed: true, ApplyBudgetBillSpendingAndSwf); }
+            if (draft != null) { ParliamentSystem.ApplyBillResult(clone, draft, passed: true, ApplyBudgetBillSpendingAndSwf, PassageYear(countryId, draft)); }
             return PreviewTurnOnClone(clone, countryId, decision);
         }
 
@@ -5280,7 +5299,7 @@ namespace PoliSim.Simulation
                     * 100f * (previewTariffRevenue - StandingPlannedTariffRevenue(countryId)) / Mathf.Max(gdpBeforeThisTurn, 1f)
                 : 0f;
 
-            CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
+            CarbonRateStatute.AdvanceYear(previewCountry, CurrentTurn, ComingBoundaryDate.Year);   // EN-4e: the preview's boundary reads the same statute the turn will (the clone's own lines and reference)
             // §716 (the review's defect 4): the Finance partner's boundary step, as the boundary takes it - after the ministry's claim, which the preview
             // reads (Decide is pure) without running it. Computed on the real country (the clone carries no government; its lines are the real ones'),
             // written into the caller's decision for the preview and withdrawn before it returns. PREMISE, DECLARED (§773's review), accepted (Elias's ruling F7): in the player's Poland
@@ -5489,7 +5508,7 @@ namespace PoliSim.Simulation
             PolicyPreview standing = PreviewTurnOnClone(ClonePreviewCountry(real), countryId, decision);
 
             Country proposed = ClonePreviewCountry(real);
-            ParliamentSystem.ApplyBillResult(proposed, bill, passed: true, ApplyBudgetBillSpendingAndSwf);
+            ParliamentSystem.ApplyBillResult(proposed, bill, passed: true, ApplyBudgetBillSpendingAndSwf, PassageYear(countryId, bill));
             PolicyPreview withBill = PreviewTurnOnClone(proposed, countryId, decision);
 
             return new BudgetBillEstimate

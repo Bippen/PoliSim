@@ -32,9 +32,12 @@ namespace PoliSim.Data
     /// the law. The model carries the fixed prices as written, the 2026 corridor at its FLOOR (CONVENTION: the law guarantees the floor and the
     /// auction clears above it; the ceiling, 65, is the alternative), and after the schedule the last legislated figure carried by the price level -
     /// the rule the exogenous ETS price already follows in the merit order (nominal with nominal, B6), stated as the convention it is until a
-    /// stage gives the ETS 2 a path. The schedule runs on the energy layer's own clock - the seed is 2023's statutory figure (§464) and the
-    /// layer's data year - so the first boundary sets 2024's price; the substrate's calendar (EpochDate, 2026 at turn 0) is the election's clock,
-    /// not this one, and the alternative reading (re-seeding 2026's corridor floor) would re-make §464's ruling, which this does not.</para>
+    /// stage gives the ETS 2 a path. The schedule reads the CALENDAR year each boundary falls in (GA-8-1, ruled 2026-10-14 - it used to count the
+    /// seed's year plus the turns run: a German start read a year or two behind the law, a 2026 start three behind, Italy's 2022 start a year
+    /// ahead): the seed is 2023's statutory figure (§464, the layer's data year) and stands until the game's first boundary, which sets the
+    /// figure of its own year - 2025's 55 for a German start (2024-11-06) - or, where that boundary falls after the schedule, the law's last
+    /// figure carried by the level; re-seeding the start's year would re-make §464's ruling, which this does
+    /// not.</para>
     ///
     /// <para><b>France - NOMINAL FIXED.</b> The composante carbone is not an instrument of its own but a component inside the TICPE, TICGN and
     /// TICC tariffs, which the law sets as nominal amounts per unit (article 265 du code des douanes, since 2022 the code des impositions sur les
@@ -51,7 +54,7 @@ namespace PoliSim.Data
     /// </summary>
     public static class CarbonRateStatute
     {
-        /// <remarks>SOURCED by ruling (§464): the seed's carbon figures are 2023's statutory ones, the energy layer's data year; the schedule counts from it.</remarks>
+        /// <remarks>SOURCED by ruling (§464): the seed's carbon figures are 2023's statutory ones, the energy layer's data year, and they stand until the game's first boundary. The schedule no longer counts from this year: since GA-8-1 it reads each boundary's calendar year.</remarks>
         public const int SeedYear = 2023;
         /// <remarks>SOURCED - lag (1994:1776) om skatt på energi, 2 kap. 1 b § tredje stycket: "Jämförelsetalet ska avrundas till fyra decimaler."</remarks>
         public const int JamforelsetalDecimals = 4;
@@ -91,8 +94,9 @@ namespace PoliSim.Data
             return null;
         }
 
-        /// <summary>The year the boundary opens - the seed's year plus the turns run plus one: the first boundary sets the second year's figure.</summary>
-        public static int ComingYear(int currentTurn) => SeedYear + currentTurn + 1;
+        /// <summary>The schedule's last year and its figure - 2026's corridor floor, the law's last fixed price (§ 10 Abs. 2); after it the figure in force is carried by the level.</summary>
+        public static int LastScheduledYear => BehgSchedule[BehgSchedule.Length - 1].Year;
+        public static float LastScheduledFigure => BehgSchedule[BehgSchedule.Length - 1].EurPerTonne;
 
         /// <summary>The year's price ratio the statute reads at this boundary: the level now over the level at the last indexation (P5-B2's own reference), 1 on a save from before the price level.</summary>
         public static float YearRatio(Country country) => country.PriceLevelAtLastIndex > 0f ? country.State.PriceLevel / country.PriceLevelAtLastIndex : 1f;
@@ -101,15 +105,26 @@ namespace PoliSim.Data
         /// The boundary's step, before the decisions' overrides: the carbon line's rate moves as its country's statute moves it, and every country's
         /// carbon ceiling carries the year's prices. Reads Country.PriceLevelAtLastIndex without writing it - IndexSpendingLines, later in the same
         /// boundary, advances that reference for the lines and this rule alike, so the two read one ratio.
+        ///
+        /// <para>⚠ GA-8-1 (2026-10-14, Elias's ruling: "Keep §471/DS-3's boundary. At each boundary, read the BEHG rate for the calendar year, and let
+        /// a passed rate stand for the year it was passed for"). The step stays at the game's year boundary and reads the CALENDAR year that boundary
+        /// falls in (<paramref name="boundaryYear"/>, the date of the boundary being crossed), where it used to count the seed's year plus the turns
+        /// run - a German start on 2024-11-06 read 2023's 30 EUR/t until 2025-11-06 and 2024's 45 until 2026-11-06, a year or two behind the law (a
+        /// 2026 start three behind, Italy's 2022 start a year ahead). A
+        /// figure a budget bill passed stands for the year it was passed for (`TaxLine.PassedForYear`), whatever the rule: the statute moves it again
+        /// from the first boundary of a later year, where it used to overwrite it at the next boundary. The seed's figure is not re-made (§464): it
+        /// stands until the game's first boundary.</para>
         /// </summary>
-        public static void AdvanceYear(Country country, int currentTurn)
+        public static void AdvanceYear(Country country, int currentTurn, int boundaryYear)
         {
             float ratio = YearRatio(country);
             foreach (TaxLine line in country.TaxLines)
             {
                 if (line.Type != TaxType.CarbonTax) { continue; }
                 if (line.RateCeiling > 0f) { line.RateCeiling *= ratio; }   // the dial's reach in the year's prices, for all six
-                if (!line.IsImplemented || line.Rate <= 0f) { continue; }    // zero-rate countries: nothing to move
+                if (!line.IsImplemented) { continue; }                       // zero-rate countries: nothing to move
+                if (line.Rate <= 0f && line.PassedForYear == 0) { continue; } // a zero no bill stamped (a save from before GA-8-1) stays as it was; a passed zero yields to the statute after its year
+                if (line.PassedForYear >= boundaryYear) { continue; }        // GA-8-1: a passed figure stands for the year it was passed for
                 switch (RuleFor(country.Id))
                 {
                     case CarbonRateRule.PriceLevelIndexed:
@@ -117,9 +132,17 @@ namespace PoliSim.Data
                         break;
                     case CarbonRateRule.LegislatedSchedule:
                     {
-                        float? scheduled = BehgFor(ComingYear(currentTurn));
+                        float? scheduled = BehgFor(boundaryYear);
                         if (scheduled.HasValue) { line.Rate = scheduled.Value; }
-                        else { line.Rate *= ratio; }   // after the schedule: the last legislated figure carried by the price level, the ETS's own convention
+                        else
+                        {
+                            // after the schedule: the last legislated figure carried by the price level, the ETS's own convention. The figure in force IS
+                            // that figure - the statute's from an earlier boundary, or a bill's - except at a game's first boundary when that falls after the
+                            // schedule and no bill has moved the line since the schedule's last year: the seed's 2023 figure still stands there, and the law's
+                            // last one is carried instead
+                            bool lawsFigureInForce = currentTurn > 0 || line.PassedForYear >= LastScheduledYear;
+                            line.Rate = (lawsFigureInForce ? line.Rate : LastScheduledFigure) * ratio;
+                        }
                         break;
                     }
                     default:

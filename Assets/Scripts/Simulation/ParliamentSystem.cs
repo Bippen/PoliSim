@@ -460,8 +460,11 @@ namespace PoliSim.Simulation
         /// doesn't newly invent one; only the pre-existing TaxHike penalty carries over unchanged.
         /// FAIL: every standing value untouched, flat BillFailedApprovalCost charged, draft isn't lost
         /// (GameController's own draft dictionaries are never cleared by this).
+        /// GA-8-1 (2026-10-14): a per-tonne line the bill moves is stamped with <paramref name="passedYear"/>, the calendar year of its
+        /// passage - the year its figure stands for, which the carbon statute leaves it for (`TaxLine.PassedForYear`); a line named at its
+        /// standing figure is no change and stamps nothing.
         /// </summary>
-        public static void ApplyBillResult(Country country, BudgetBill bill, bool passed, System.Action<Country, BudgetBill> applySpendingAndSwf)
+        public static void ApplyBillResult(Country country, BudgetBill bill, bool passed, System.Action<Country, BudgetBill> applySpendingAndSwf, int passedYear)
         {
             if (!passed)
             {
@@ -485,7 +488,9 @@ namespace PoliSim.Simulation
                     totalHike += hike;
                 }
 
+                bool moved = !Mathf.Approximately(clampedRate, line.Rate);   // GA-8-1: a line named at its standing figure passes nothing (a restating bill changes nothing)
                 line.Rate = clampedRate;
+                if (line.IsPerTonne && moved) { line.PassedForYear = passedYear; }   // GA-8-1: the figure stands for the year it was passed for
             }
 
             // F4-4 (2026-09-13): the sub-rows' own rates - a band's, a ramp's end, the flat layer's - the bill's figure where it carries one, the standing

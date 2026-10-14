@@ -138,6 +138,12 @@ namespace PoliSim.Data
         /// uniform shift (the lever's distance from <see cref="RateSeed"/>) lands on top. Null on every line but the income tax's with a statute.</summary>
         public float[] BracketRates;
 
+        /// <summary>GA-8-1 (2026-10-14, Elias's ruling: "a passed rate stands for the year it was passed for"): the calendar year a passed budget
+        /// bill's figure for this line stands for - the year of its passage; 0 for none. Written for a per-tonne line only (the one line a statute
+        /// moves at a boundary, `CarbonRateStatute.AdvanceYear`), which leaves the figure where it is at every boundary of that year and moves it
+        /// again from the first boundary of a later one. A save from before carries 0 - the statute governs at the next boundary, as it did.</summary>
+        public int PassedForYear;
+
         /// <summary>True for the one instrument whose rate is a price per tonne rather than a percentage of a base.</summary>
         public bool IsPerTonne => Type == TaxType.CarbonTax;
 
@@ -185,7 +191,7 @@ namespace PoliSim.Data
         /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - TaxLine.Rate is mutated by ApplyTaxRateChanges, so the preview needs its own copies, not shared references.</summary>
         public TaxLine Clone()
         {
-            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed, BracketRates = BracketRates == null ? null : (float[])BracketRates.Clone() };
+            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed, BracketRates = BracketRates == null ? null : (float[])BracketRates.Clone(), PassedForYear = PassedForYear };
         }
     }
 }

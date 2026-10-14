@@ -519,7 +519,14 @@ namespace PoliSim.UI
             // ---- control 2 of 2: the rate's slider ----
             float newRate = LedgerRow.Track(track, name, taxLine.Rate, draftRate, taxLine.MinRate, taxLine.MaxRate, interactive, _sliderStyle, _sliderThumbStyle,
                 LedgerRow.ScaleOf(_labelStyle), taxLine.DialGrain);
-            if (levied) { _taxRateInputs[taxLine.Type] = newRate; }
+            if (levied)
+            {
+                // GA-8-2 (2026-10-14, the review's finding 7): a draft is the player's move, never the slider at rest. Written every frame, an untouched
+                // line held the rate it showed, and once a boundary moved that rate (the Finance partner's step) the stale draft read as a move, so the
+                // bill named the line and set the old rate back. As the spending lines' drafts: a figure at the standing rate holds no draft.
+                if (Mathf.Approximately(newRate, taxLine.Rate)) { _taxRateInputs.Remove(taxLine.Type); }
+                else { _taxRateInputs[taxLine.Type] = newRate; }
+            }
             DrawBudgetEndLabels(endLane, BudgetTaxEndText(taxLine, taxLine.MinRate), BudgetTaxEndText(taxLine, taxLine.MaxRate), !levied);
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && Event.current.type == EventType.Repaint)
             {

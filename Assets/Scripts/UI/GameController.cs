@@ -9800,7 +9800,12 @@ namespace PoliSim.UI
                 {
                     continue;
                 }
-                bill.TaxLines[taxLine.Type] = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+                // GA-8-2 (2026-10-14): the bill names a line only where the player moved it, as it names spending lines and as the AI's and the Finance
+                // partner's bills already do. Named at its standing figure, a line set that figure again when the bill passed - undoing whatever had moved
+                // it since the bill was tabled (the carbon statute's indexation at a January boundary, the partner's step) - and since GA-8-1 it would
+                // stamp an unmoved carbon line as passed for the year, standing against the statute's own figure
+                float drafted = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+                if (!Mathf.Approximately(drafted, taxLine.Rate)) { bill.TaxLines[taxLine.Type] = drafted; }
                 // F4-4: the sub-rows' figures ride the same bill - the drafted rate per sub-row, −1 where the statute's (or the standing own) figure stands
                 if (taxLine.Type == TaxType.IncomeTax && _bracketRateInputs.Count > 0 && TaxSchedule.Responds(_playerCountry.Id))
                 {

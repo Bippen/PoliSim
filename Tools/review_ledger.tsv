@@ -19,7 +19,6 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	7c35e1ec002d7d0ac82be1a5d515d5c1a
 file	Assets/Scripts/Simulation/EnergyLedger.cs	89d2cde964420e222190a1cfcaa484143bf2384a288940d14e97b40ff8e13e30	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	FT-10 P-A; two readers; comments alone changed after the second, said in the evidence header
 baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
-file	Assets/Scripts/Data/CarbonRateStatute.cs	82018dbcf43ff683a194a5e261214e8ed220cb2617a90662ee6a7f55eda3ee5d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/DebtAttribution.cs	aec4c070ec7b8f20c0580f84efaddbf2dacf09b339b26e61929bf7d14775d901	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfbaf4e7558c5c80b45f743d6a063	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/FiscalYearData.cs	2ba5b2d984b84b5afd776a1137e5bf3840e6d0c168970b8bb9a01b3baa9f0015	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -28,7 +27,6 @@ file	Assets/Scripts/Data/ProgramBill.cs	476f48d616dbd343b1056d935c79aafa72853284
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/TaxLine.cs	b4f96655f47666b49d1aa72429b89696d7c210ac1f9c7c274e3a087991e4aed4	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxType.cs	a15b9d2fbd85f753c6d423f05257c357c75f768055a6e0b545c047c05ad4cfa3	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgram.cs	be37cfb4a401da95c9175c0b9f2ddc9811a9fa0accabff25699bad4da8619911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgramType.cs	88112313e1cebd35c116e0ad7a8d394b46a52e9c58f1d5f04d76592d8e18c2e8	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -210,3 +208,10 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	af3fbdd677d3d26cb7d47410b725
 file	Assets/Scripts/Data/SovereignWealthFund.cs	8b8740e4b93629ff5076d5741448291701c5c5cc17e00f48eb91f520be3c459e	reviewed	2026-10-14	s814	Reviews/2026-10-14_s814_ga2_1_fund_draw.md	-
 file	Assets/Scripts/Data/TaxSchedule.cs	3722fe6e9b5da49e19bd27e5c6b1a2d0446154230d546720726185cb653de315	reviewed	2026-10-14	s815	Reviews/2026-10-14_s815_ga2_2_yield_floor.md	-
 file	Assets/Scripts/Data/TaxBases.cs	301cdb83939d15a0eed9d321590cfd238c2058c46a8e4cd763c13781ca0cb5a8	reviewed	2026-10-14	s815	Reviews/2026-10-14_s815_ga2_2_yield_floor.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	d7755ade3dbd52b5939ca08b942b86f77b9b6c64fba4f796f500d8eb2689ba21	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	-
+file	Assets/Scripts/Simulation/ParliamentSystem.cs	af7bf51d35386dfddcc448a549183c33d8bf1c15201cb57ed5fdb1534a7b838a	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	-
+file	Assets/Scripts/Data/CarbonRateStatute.cs	231c2d8985e4ceb989933546fb873d97c65c93082e863bd4e4df90f7be13dda3	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	-
+file	Assets/Scripts/Data/TaxLine.cs	c3d493538ffc77fe259a5b675c95505fe967cdd262fc37e7889855b7795353e6	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	2b7c59b0d19724b9e069f000730901cb78c3977034d0a7644052b1fea2c70eba	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	-
+baseline	777	c393135bba2ac231c9ece8d11e09218da7bdff5e601df1afeb85d37530a8bc92	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	traj_ga81 s777, turns 1-20 (the dump opens on Sweden's start)
+baseline	424242	9ba38c16302fb5f200ed7982890d6191f212b9ec39fcfeafab8c54fd8e5118a9	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	traj_ga81 s424242, turns 1-20 (the dump opens on Sweden's start)
