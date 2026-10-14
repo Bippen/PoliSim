@@ -371,6 +371,7 @@ namespace PoliSim.EditorTools
             SimulationRandom.Seed(_spec.Seed);
             AuditPrefs.Save(_dir);
             PreferencePins.Pin();
+            AudioListener.volume = 0f;   // Elias (2026-10-14): the run is silent - the listener's volume, never a preference; every cue is still recorded
             _eventsWere = EventSystem.Enabled;
             if (_spec.EventsOff) { EventSystem.Enabled = false; }   // the harness switch (inventory D D-43), restored at the run's end
             GameSettings.DefaultSpeed = _spec.Speed - 1;

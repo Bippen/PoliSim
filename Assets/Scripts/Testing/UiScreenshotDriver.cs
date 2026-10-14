@@ -218,6 +218,9 @@ namespace PoliSim.Testing
             // MM-2 (2026-09-24): EVERY PREFERENCE PINNED before the first frame and restored in Finish, so a film sees the game as a
             // fresh player does and leaves the desk's preferences as it found them (SettingsCheck holds the list to the sources).
             Debug.Log($"SHOT: preferences pinned - {PreferencePins.Pin()} key(s) snapshotted and cleared for the film; restored when it finishes.");
+            // Elias (2026-10-14): A FILM IS SILENT - the listener's volume, never a preference: nothing drawn changes (the settings sheet reads the
+            // preferences) and AudioDirector still records every cue it is asked to fire; the game never writes the listener's volume.
+            AudioListener.volume = 0f;
             Debug.Log("SHOT: capture-identity armed. Surfaces the token palette knows - "
                       + string.Join(", ", CaptureIdentity.Surfaces)
                       + ". Every capture claims one, and the written frame must carry its token.");

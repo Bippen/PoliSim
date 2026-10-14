@@ -1,0 +1,11 @@
+# Phase 4, GA-2-7's control (2026-10-14): Tools/audit/area2b_presented.plan, unchanged, on HEAD's GameController.BudgetV35.cs and
+# PolicyWebRenderer.cs (put back for the run only, restored by digest) with the same harness as p4_ga2_7.plan - so the Balance tile's dash is the
+# one difference in the label tables (the policy web is not captured), and the trajectories are byte-identical.
+id=e1_se country=Sweden party=M style=idle seed=601 days=370 capture=10:HQ,200:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_de country=Germany party=SPD style=idle seed=602 days=370 capture=10:HQ,60:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_pl country=Poland party=PiS style=idle seed=603 days=370 capture=10:HQ,200:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_it country=Italy party=FdI style=idle seed=604 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_us country=USA party=DEM style=idle seed=605 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_fr country=France party=RN style=idle seed=606 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_se_base country=Sweden party=M style=idle seed=601 days=370
+id=e1_se_nocap country=Sweden party=M style=idle seed=601 days=370 compare=e1_se

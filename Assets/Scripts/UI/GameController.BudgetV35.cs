@@ -163,10 +163,11 @@ namespace PoliSim.UI
                 balance.FigureInk = PoliSimTheme.Caution;
                 balanceSlip.Add("THIS YEAR, WITH THE DRAFT · " + balance.Figure).Add("THE PREVIEW'S OWN FIGURE - REVENUE LESS SPENDING ON THE YEAR AHEAD");
             }
-            float closed = lastYear != null ? lastYear.BudgetBalance : state.Budget;
+            // GA-2-7 (2026-10-14): a dash before the first close (§220) - the running accumulator `state.Budget` stood in here, a figure no year computed
+            float? closed = lastYear?.BudgetBalance;
             if (!withDraft.HasValue)
             {
-                balance.Figure = UiFormat.MoneyDelta(closed, MoneyUnit.Billions);
+                if (closed.HasValue) { balance.Figure = UiFormat.MoneyDelta(closed.Value, MoneyUnit.Billions); } else { balance.Glyph = Symbol.Absent; }
                 float? deficit = DerivedStats.DeficitPercentOfGdp(c, lastYear);
                 if (deficit.HasValue) { balance.FigureInk = V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Deficit, deficit.Value, PoliSimTheme.TextPrimary, out string rule); if (rule != null) { balanceSlip.Add(rule); } }
                 List<float> annual = c.History?.BudgetBalanceAnnual;
@@ -180,7 +181,7 @@ namespace PoliSim.UI
                     }
                 }
             }
-            balanceSlip.Add((lastYear == null ? "THE SEED'S STANDING BALANCE · " : _simulationManager.CurrentTurn == 0 ? "LAST YEAR, THE SEED · " : "LAST YEAR · ") + UiFormat.MoneyDelta(closed, MoneyUnit.Billions))
+            balanceSlip.Add(!closed.HasValue ? "BALANCE · NO YEAR HAS CLOSED YET" : (_simulationManager.CurrentTurn == 0 ? "LAST YEAR, THE SEED · " : "LAST YEAR · ") + UiFormat.MoneyDelta(closed.Value, MoneyUnit.Billions))
                 .Add("A CHANGE IN THE BALANCE HAS NO DIRECTION MOST AGREE ON - ITS ARROW IN THE NEUTRAL INK; THE WARNING IS A LEVEL'S, PAST THE COUNTRY'S RULE")
                 .Add(FiscalRules.NationalNote(PlayerCountryId));
 

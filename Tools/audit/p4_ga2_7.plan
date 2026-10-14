@@ -1,0 +1,64 @@
+# Phase 4, GA-2-7's recheck (2026-10-14): the Budget page's Balance tile draws the absent glyph until a year has closed ("a dash before the
+# first close", §220) - the running accumulator stood there, a figure no year computed - and the policy web's yield readout is floored at zero
+# (GA-2-2's UI half, held from §815). The plan that found it, Tools/audit/area2b_presented.plan, unchanged, then area 2 as GA-2-2's recheck ran
+# it (Tools/audit/p4_ga2_2.plan's runs, unchanged). Expected: in <id>_labels.tsv the Budget page's Balance tile on days 1 and 30 is the absent
+# glyph with the slip "BALANCE, NO YEAR HAS CLOSED YET" (it printed -US$23.0M and -US$625M for Sweden), the closed year from day 366 as
+# before; no breach, no error. A presentation change: against Tools/audit/p4_ga2_7_pre.plan (the presented plan on HEAD's two files, the same
+# harness) the trajectories are byte-identical and the label tables differ on the Balance tile alone - the policy web is
+# not a captured page (p4_ga22 ran before §816's and §817's baseline moves, so it is no twin).
+#
+# --- Tools/audit/area2b_presented.plan, unchanged ---
+id=e1_se country=Sweden party=M style=idle seed=601 days=370 capture=10:HQ,200:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_de country=Germany party=SPD style=idle seed=602 days=370 capture=10:HQ,60:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_pl country=Poland party=PiS style=idle seed=603 days=370 capture=10:HQ,200:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_it country=Italy party=FdI style=idle seed=604 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_us country=USA party=DEM style=idle seed=605 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_fr country=France party=RN style=idle seed=606 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_se_base country=Sweden party=M style=idle seed=601 days=370
+id=e1_se_nocap country=Sweden party=M style=idle seed=601 days=370 compare=e1_se
+#
+# --- Tools/audit/p4_ga2_2.plan's runs, unchanged ---
+id=k2_fr_x02 country=France party=RN style=exploit exploit=X-02 seed=475 days=730
+id=k2_fr_x02_b country=France party=RN style=exploit exploit=X-02 seed=477 days=120
+id=k2_fr_idle country=France party=RN style=idle seed=477 days=120
+id=a2_se_deficit country=Sweden party=M style=extreme pole=deficit seed=401 days=730
+id=a2_se_surplus country=Sweden party=M style=extreme pole=surplus seed=402 days=730
+id=a2_se_big country=Sweden party=M style=extreme pole=big seed=403 days=730
+id=a2_se_small country=Sweden party=M style=extreme pole=small seed=404 days=730
+id=a2_de_deficit country=Germany party=SPD style=extreme pole=deficit seed=411 days=730
+id=a2_de_surplus country=Germany party=SPD style=extreme pole=surplus seed=412 days=730
+id=a2_de_big country=Germany party=SPD style=extreme pole=big seed=413 days=730
+id=a2_de_small country=Germany party=SPD style=extreme pole=small seed=414 days=730
+id=a2_pl_deficit country=Poland party=PiS style=extreme pole=deficit seed=421 days=730
+id=a2_pl_surplus country=Poland party=PiS style=extreme pole=surplus seed=422 days=730
+id=a2_pl_big country=Poland party=PiS style=extreme pole=big seed=423 days=730
+id=a2_pl_small country=Poland party=PiS style=extreme pole=small seed=424 days=730
+id=a2_it_deficit country=Italy party=FdI style=extreme pole=deficit seed=431 days=730
+id=a2_it_surplus country=Italy party=FdI style=extreme pole=surplus seed=432 days=730
+id=a2_us_deficit country=USA party=DEM style=extreme pole=deficit seed=441 days=730
+id=a2_us_surplus country=USA party=DEM style=extreme pole=surplus seed=442 days=730
+id=a2_fr_deficit country=France party=RN style=extreme pole=deficit seed=451 days=730
+id=a2_fr_surplus country=France party=RN style=extreme pole=surplus seed=452 days=730
+id=a2_se_x01 country=Sweden party=M style=exploit exploit=X-01 seed=461 days=1500
+id=a2_de_x01 country=Germany party=SPD style=exploit exploit=X-01 seed=462 days=500
+id=a2_pl_x01 country=Poland party=PiS style=exploit exploit=X-01 seed=463 days=500
+id=a2_se_x02 country=Sweden party=M style=exploit exploit=X-02 seed=471 days=730
+id=a2_de_x02 country=Germany party=SPD style=exploit exploit=X-02 seed=472 days=730
+id=a2_pl_x02 country=Poland party=PiS style=exploit exploit=X-02 seed=473 days=730
+id=a2_us_x02 country=USA party=DEM style=exploit exploit=X-02 seed=474 days=500
+id=a2_fr_x02 country=France party=RN style=exploit exploit=X-02 seed=475 days=730
+id=a2_se_x04 country=Sweden party=M style=exploit exploit=X-04 seed=481 days=1100
+id=a2_de_x04 country=Germany party=SPD style=exploit exploit=X-04 seed=482 days=730
+id=a2_fr_x04 country=France party=RN style=exploit exploit=X-04 seed=483 days=1100
+id=a2_se_x16 country=Sweden party=M style=exploit exploit=X-16 seed=491 days=1500
+id=a2_pl_x16 country=Poland party=PiS style=exploit exploit=X-16 seed=492 days=1500
+id=a2_us_x16 country=USA party=DEM style=exploit exploit=X-16 seed=493 days=320
+id=a2_se_fuzz country=Sweden party=M style=fuzz seed=501 days=730
+id=a2_de_fuzz country=Germany party=SPD style=fuzz seed=502 days=730
+id=a2_pl_fuzz country=Poland party=PiS style=fuzz seed=503 days=730
+id=a2_pl_ko_fuzz country=Poland party=KO style=fuzz seed=504 days=900
+id=a2_it_fuzz country=Italy party=FdI style=fuzz seed=505 days=730
+id=a2_us_fuzz country=USA party=DEM style=fuzz seed=506 days=320
+id=a2_fr_fuzz country=France party=RN style=fuzz seed=507 days=730
+id=a2_se_s_nohold country=Sweden party=S style=fuzz seed=511 days=500 holdbudget=0
+id=a2_se_m_nohold country=Sweden party=M style=idle seed=512 days=500 holdbudget=0
