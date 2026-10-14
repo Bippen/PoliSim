@@ -1,0 +1,31 @@
+# Phase 4, GA-11-1's recheck (2026-10-14): the Gini's redistribution anchor re-taken where F4-5 re-seeds the income lever. The repro and its areas'
+# runs - area 11 (thirty years, every country idle, Sweden and Germany under fuzz) and area 7 (society: three years at each pole, a decade idle).
+# The measure is the Gini itself: France 30.00 -> 32.03 in thirty years, the USA 39.50 -> 40.87, Germany and Poland about a point before the fix;
+# Italy (never re-seeded) is the control.
+#
+# --- area 11 (Tools/audit/area11_thirty.plan, unchanged) ---
+id=w_se_idle30 country=Sweden party=M style=idle seed=1501 days=10950
+id=w_de_idle30 country=Germany party=SPD style=idle seed=1502 days=10950
+id=w_pl_idle30 country=Poland party=PiS style=idle seed=1503 days=10950
+id=w_it_idle30 country=Italy party=FdI style=idle seed=1504 days=10950
+id=w_us_idle30 country=USA party=DEM style=idle seed=1505 days=10950
+id=w_fr_idle30 country=France party=RN style=idle seed=1506 days=10950
+id=w_se_fuzz30 country=Sweden party=M style=fuzz seed=1507 days=10950
+id=w_de_fuzz30 country=Germany party=SPD style=fuzz seed=1508 days=10950
+#
+# --- area 7 (Tools/audit/area7_society.plan, unchanged) ---
+id=r1_se_m_idle country=Sweden party=M style=idle seed=1101 days=1095
+id=r1_se_m_spendup country=Sweden party=M style=extreme pole=spendup seed=1101 days=1095
+id=r1_se_m_spenddown country=Sweden party=M style=extreme pole=spenddown seed=1101 days=1095
+id=r2_pl_pis_idle country=Poland party=PiS style=idle seed=1102 days=1095
+id=r2_pl_pis_spendup country=Poland party=PiS style=extreme pole=spendup seed=1102 days=1095
+id=r2_pl_pis_spenddown country=Poland party=PiS style=extreme pole=spenddown seed=1102 days=1095
+id=r3_it_fdi_idle country=Italy party=FdI style=idle seed=1103 days=1095
+id=r3_it_fdi_spendup country=Italy party=FdI style=extreme pole=spendup seed=1103 days=1095
+id=r3_it_fdi_spenddown country=Italy party=FdI style=extreme pole=spenddown seed=1103 days=1095
+id=r4_se_idle10 country=Sweden party=M style=idle seed=1111 days=3650
+id=r4_de_idle10 country=Germany party=SPD style=idle seed=1112 days=3650
+id=r4_pl_idle10 country=Poland party=PiS style=idle seed=1113 days=3650
+id=r4_it_idle10 country=Italy party=FdI style=idle seed=1114 days=3650
+id=r4_us_idle10 country=USA party=DEM style=idle seed=1115 days=3650
+id=r4_fr_idle10 country=France party=RN style=idle seed=1116 days=3650

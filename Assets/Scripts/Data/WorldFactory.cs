@@ -216,8 +216,9 @@ namespace PoliSim.Data
             // carry stay outside. An unimplemented line seeds at 0, not a placeholder.
             // ⚠ F4-5 (2026-09-16): THE `incomeTax` FIGURE BELOW IS THE STATUTE'S TOP RATE, and it is what the line is BUILT with, not what the game runs on.
             // For every schedule with brackets <see cref="SeedIncomeLeverLevel"/> replaces it once the cohorts and their incomes exist with the schedule's own
-            // average rate on the income it taxes (Germany 26.92, France 17.39, Poland 12.36, the USA 17.10); Sweden's reads the statute's flat layer here already
-            // and stands, and Italy is billed and flat. `TaxBaseTable`'s row for each is that country's realised revenue over the rate it ends at.
+            // average rate on the income it taxes (Germany 26.92, France 17.39, Poland 12.36, the USA 17.10, and since §538 Sweden 29.16 - ⚠ CORRECTED,
+            // GA-11-1's review, 2026-10-14: this said Sweden's flat layer here stands, which it has not since the earned-income credit entered the yield),
+            // and Italy is billed and flat. `TaxBaseTable`'s row for each is that country's realised revenue over the rate it ends at.
             SeedTaxLines(usa, incomeTax: 37f, corporateTax: 21f, vat: 0f, vatImplemented: false,
                 payrollTax: 15.3f, capitalGainsTax: 20f, salesTax: 7f, salesTaxImplemented: true,
                 estateTax: 40f, estateTaxImplemented: true, carbonTax: 0f, carbonTaxImplemented: false);
@@ -1124,9 +1125,11 @@ namespace PoliSim.Data
         /// Poland) times what the AI finance ministry spends a point by, and FT-5 divides the wage creep by the after-tax share of a rate almost nobody
         /// faces. The average on taxed income prices the point at one by construction.</para>
         ///
-        /// <para><b>Sweden keeps its statute's own figure</b> (§514: the municipal layer, 32.38, which every krona pays). Where a statute names one rate
+        /// <para><b>Sweden kept its statute's own figure</b> (§514: the municipal layer, 32.38, which every krona pays). Where a statute names one rate
         /// on all taxed income, that rate IS the average on it - the derivation returns 32.24 against the typed 32.38, four tenths of a per cent apart -
-        /// and the statute's own number is the better one to show on a row that cites the statute. Italy is BILLED and flat and prices its point exactly.</para>
+        /// and the statute's own number is the better one to show on a row that cites the statute. ⚠ CORRECTED (GA-11-1's review, 2026-10-14): not since
+        /// §538 put the earned-income credit in the yield - the credited average on taxed income is 29.16 and the rule below applies to Sweden as to the
+        /// four (the method's own comment says so). Italy is BILLED and flat and prices its point exactly.</para>
         ///
         /// <para>Called once, after the cohorts and their incomes exist and before <see cref="Country.CaptureStructuralBases"/> takes the seeds, so the
         /// yield reference, the shift's origin and FT-5's wage wedge all read the same figure. `TaxBaseTable`'s row for each country is that country's
@@ -1149,6 +1152,11 @@ namespace PoliSim.Data
                 // built the line, before any cohort existed, so it is re-taken here. Left stale, the household burden gap opens at the seed itself -
                 // which is what `HouseholdBurdenAnchorDiagnostic` caught on this pass's first run (Germany −0.070, France −0.154, Poland −0.071, the USA −0.108).
                 country.BaselineTaxRates[line.Type] = line.Rate;
+                // GA-11-1 (2026-10-14): the Gini's redistribution anchor is the rate at the seed as well - `SeedTaxLines` took it from the literal before
+                // any cohort existed, and left stale the Gini's target opened displaced, so inequality rose with no policy (France 30.00 to 32.03 in
+                // thirty years, the USA 39.50 to 40.87, Germany and Poland about a point, Sweden a quarter of one). `HouseholdBurdenAnchorDiagnostic`
+                // holds both anchors at the seed.
+                country.BaselineIncomeTaxRate = line.Rate;
             }
         }
 
@@ -1171,6 +1179,7 @@ namespace PoliSim.Data
         {
             // ROUND 4 BATCH 2 (C2): the Gini model's redistribution anchor, captured HERE - the one
             // place the seeded income-tax rate exists - so the anchor and the TaxLine cannot drift.
+            // ⚠ GA-11-1 (2026-10-14): F4-5's SeedIncomeLeverLevel re-seeds the line later and re-takes this too.
             country.BaselineIncomeTaxRate = incomeTax;
 
             // C-N4: the disposable-income term measures a player's change from the country's OWN seeded

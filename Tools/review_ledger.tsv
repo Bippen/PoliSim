@@ -215,3 +215,5 @@ file	Assets/Scripts/Data/TaxLine.cs	c3d493538ffc77fe259a5b675c95505fe967cdd262fc
 file	Assets/Scripts/Data/BudgetBill.cs	2b7c59b0d19724b9e069f000730901cb78c3977034d0a7644052b1fea2c70eba	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	-
 baseline	777	c393135bba2ac231c9ece8d11e09218da7bdff5e601df1afeb85d37530a8bc92	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	traj_ga81 s777, turns 1-20 (the dump opens on Sweden's start)
 baseline	424242	9ba38c16302fb5f200ed7982890d6191f212b9ec39fcfeafab8c54fd8e5118a9	reviewed	2026-10-14	s816	Reviews/2026-10-14_s816_ga8_carbon_statute.md	traj_ga81 s424242, turns 1-20 (the dump opens on Sweden's start)
+baseline	777	030362cd6a20bf87eff90d866ed43b443f13a278a53d805c971b687f56ceb6a2	reviewed	2026-10-14	s817	Reviews/2026-10-14_s817_ga11_1_gini_anchor.md	traj_ga111 s777, turns 1-20 (the dump opens on Sweden's start)
+baseline	424242	100c6f4f795525a86fd29f4630c5e782f9ee4f94025a71885a1467e49d2c6cb6	reviewed	2026-10-14	s817	Reviews/2026-10-14_s817_ga11_1_gini_anchor.md	traj_ga111 s424242, turns 1-20 (the dump opens on Sweden's start)

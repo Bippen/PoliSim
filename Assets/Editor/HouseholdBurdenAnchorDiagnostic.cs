@@ -7,7 +7,8 @@ using UnityEngine;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// FT-3 (2026-09-07, §377) - what LANDED after the measured stop. (1) The household burden gap is zero for six at the seed. (2) Sweden over six turns:
+    /// FT-3 (2026-09-07, §377) - what LANDED after the measured stop. (1) The household burden gap is zero for six at the seed, and (GA-11-1,
+    /// 2026-10-14) so is the Gini's: its anchor is the income line's own flat-equivalent rate there. (2) Sweden over six turns:
     /// the income tax +5 points reads a POSITIVE gap and −5 a negative one (the rate reaches consumption, C-N4). (3) A household tax the country did not
     /// levy at the seed, implemented at 5 %, reads a POSITIVE gap - the C-N4 anchor defect closed here (before, its "seed" rate was today's and it cancelled
     /// itself). (4) Unemployment +5 points on turn 3 leaves the gap where the untouched run has it, to 1e-6: the base is read on both sides and cancels BY
@@ -28,6 +29,15 @@ namespace PoliSim.EditorTools
             {
                 float gap = MacroSystem.HouseholdBurdenGap(c);
                 if (Mathf.Abs(gap) > 1e-5f) { Debug.LogError($"BURDEN ANCHOR: {c.Id} carries a nonzero burden gap at the seed ({gap:R})."); ok = false; }
+                // GA-11-1 (2026-10-14, R-N5: the stale anchor's second cost - the burden's own baseline, caught on F4-5's first run, then the Gini's):
+                // the Gini's redistribution term reads the income line's flat-equivalent rate against `Country.BaselineIncomeTaxRate`, so at the seed
+                // the two are one figure, or the Gini's target opens displaced and inequality drifts with no policy
+                foreach (TaxLine line in c.TaxLines)
+                {
+                    if (line.Type != TaxType.IncomeTax || !line.IsImplemented) { continue; }
+                    float giniGap = TaxBases.EffectiveRate(c, line) - c.BaselineIncomeTaxRate;
+                    if (Mathf.Abs(giniGap) > 1e-4f) { Debug.LogError($"BURDEN ANCHOR: {c.Id}'s Gini anchor is {c.BaselineIncomeTaxRate:R} against the income line's {TaxBases.EffectiveRate(c, line):R} at the seed - a gap of {giniGap:R} the Gini reads as policy."); ok = false; }
+                }
             }
             float untouched = Run(0f, 0f, false);
             float rateUp = Run(5f, 0f, false);
