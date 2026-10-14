@@ -163,26 +163,37 @@ namespace PoliSim.Simulation
             }
         }
 
-        /// <summary>F4-4: the line's rates after a bill's figures - the bill's where it carries one (clamped 0–100), the standing one elsewhere, −1 the statute's.</summary>
-        public static float[] MergedBracketRates(float[] standing, float[] requested)
+        /// <summary>F4-4: the line's rates after a bill's figures - the bill's where it carries one (clamped 0–100), the standing one elsewhere, −1 the statute's.
+        /// GA-2-12 (2026-10-14): a figure that IS the statute's own (<see cref="IsStatuteFigure"/>, against <paramref name="rows"/>) - the figure the Budget
+        /// page's dial leaves for a drag back to it - puts the statute back: −1 there, as before any bill, where it used to stand as a rate of the line's
+        /// own. And a line left with no rate of its own anywhere carries none (null), so the schedule reads exactly as seeded again (the yield's key
+        /// empty, Germany's § 32a formula rather than its ramps).</summary>
+        public static float[] MergedBracketRates(float[] standing, float[] requested, IReadOnlyList<TaxSchedule.SubRow> rows)
         {
             int n = Mathf.Max(standing?.Length ?? 0, requested?.Length ?? 0);
             var merged = new float[n];
+            bool own = false;
             for (int i = 0; i < n; i++)
             {
                 float s = standing != null && i < standing.Length ? standing[i] : -1f;
                 float r = requested != null && i < requested.Length ? requested[i] : -1f;
-                merged[i] = r >= 0f ? Mathf.Clamp(r, 0f, 100f) : s;
+                bool restores = r >= 0f && rows != null && i < rows.Count && IsStatuteFigure(rows[i], r);
+                merged[i] = restores ? -1f : r >= 0f ? Mathf.Clamp(r, 0f, 100f) : s;
+                if (merged[i] >= 0f) { own = true; }
             }
-            return merged;
+            return own ? merged : null;
         }
+
+        /// <summary>GA-2-12 (2026-10-14): whether a requested sub-row figure IS the statute's own - the figure the Budget page's dial leaves where a drag
+        /// lands within half its step of it.</summary>
+        public static bool IsStatuteFigure(TaxSchedule.SubRow r, float figure) => Mathf.Approximately(figure, (float)r.StatuteRate);
 
         /// <summary>F4-4: the effective rate's move a bill's sub-row figures would make, in points - what they add to the bill's direction and its redistribution reading.</summary>
         private static float BracketRateMove(Country country, BudgetBill bill, TaxLine standing)
         {
             if (standing == null || !standing.IsImplemented || !bill.BracketRates.TryGetValue(standing.Type, out float[] requested) || requested == null) { return 0f; }
             TaxLine hypothetical = standing.Clone();
-            hypothetical.BracketRates = MergedBracketRates(standing.BracketRates, requested);
+            hypothetical.BracketRates = MergedBracketRates(standing.BracketRates, requested, TaxSchedule.SubRows(TaxSchedule.Of(country.Id)));
             if (bill.TaxLines.TryGetValue(standing.Type, out float lever)) { hypothetical.Rate = Mathf.Clamp(lever, standing.MinRate, standing.MaxRate); }
             float leverAlone = bill.TaxLines.TryGetValue(standing.Type, out float l2) ? TaxSchedule.EffectiveRate(country, standing, Mathf.Clamp(l2, standing.MinRate, standing.MaxRate)) : TaxBases.EffectiveRate(country, standing);
             return TaxBases.EffectiveRate(country, hypothetical) - leverAlone;
@@ -500,7 +511,7 @@ namespace PoliSim.Simulation
                 TaxLine line = FindTaxLine(country, kvp.Key);
                 if (line == null || !line.IsImplemented || kvp.Value == null) { continue; }
                 float before = TaxBases.EffectiveRate(country, line);
-                line.BracketRates = MergedBracketRates(line.BracketRates, kvp.Value);
+                line.BracketRates = MergedBracketRates(line.BracketRates, kvp.Value, TaxSchedule.SubRows(TaxSchedule.Of(country.Id)));
                 float after = TaxBases.EffectiveRate(country, line);
                 if (after > before) { totalHike += after - before; }
             }

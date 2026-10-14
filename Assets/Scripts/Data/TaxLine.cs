@@ -135,7 +135,9 @@ namespace PoliSim.Data
 
         /// <summary>F4-4 / board 15b (2026-09-13): the line's OWN rate per sub-row of its statute (`TaxSchedule.SubRows`), set by a passed budget bill's
         /// figures - a band's rate, a ramp's END rate, the flat layer's rate; −1 (or a missing entry) means the statute's own figure stands. The
-        /// uniform shift (the lever's distance from <see cref="RateSeed"/>) lands on top. Null on every line but the income tax's with a statute.</summary>
+        /// uniform shift (the lever's distance from <see cref="RateSeed"/>) lands on top. Null on every other line, and on the income tax's until a bill
+        /// sets a sub-row - and again once a bill has put every sub-row back (GA-2-12, 2026-10-14: a sub-row put back reads −1,
+        /// `ParliamentSystem.MergedBracketRates`).</summary>
         public float[] BracketRates;
 
         /// <summary>GA-8-1 (2026-10-14, Elias's ruling: "a passed rate stands for the year it was passed for"): the calendar year a passed budget

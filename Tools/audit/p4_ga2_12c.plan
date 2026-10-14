@@ -1,0 +1,23 @@
+# Phase 4, GA-2-12's last recheck (2026-10-14): the third review's lows on the code p4_ga2_12b measured - the dial's detent summed as its own figure is
+# (in double, then cast: held on the statute, the knob IS the draft, near the track's foot too), its slack's comment, and a lever drafted off the
+# grid. Expected: the fourteen snapped runs byte-identical to their p4_ga2_12b twins (a drag stores the statute's exact figure either way); the two
+# with the lever 6.37 points up restore their 45 % top bands at the track's end and their whole-number bands off the grid.
+#
+id=g212_se_x02r_s05 country=Sweden party=M style=exploit exploit=X-02R snap=0.5 seed=2121 days=730
+id=g212_de_x02r_s05 country=Germany party=SPD style=exploit exploit=X-02R snap=0.5 seed=2122 days=730
+id=g212_pl_x02r_s05 country=Poland party=PiS style=exploit exploit=X-02R snap=0.5 seed=2123 days=730
+id=g212_us_x02r_s05 country=USA party=DEM style=exploit exploit=X-02R snap=0.5 seed=2124 days=500
+id=g212_fr_x02r_s05 country=France party=RN style=exploit exploit=X-02R snap=0.5 seed=2125 days=730
+id=g212_se_x02r_s01 country=Sweden party=M style=exploit exploit=X-02R snap=0.1 seed=2121 days=730
+id=g212_de_x02r_s01 country=Germany party=SPD style=exploit exploit=X-02R snap=0.1 seed=2122 days=730
+id=g212_pl_x02r_s01 country=Poland party=PiS style=exploit exploit=X-02R snap=0.1 seed=2123 days=730
+id=g212_us_x02r_s01 country=USA party=DEM style=exploit exploit=X-02R snap=0.1 seed=2124 days=500
+id=g212_fr_x02r_s01 country=France party=RN style=exploit exploit=X-02R snap=0.1 seed=2125 days=730
+id=g212_de_x02r_s05_up6 country=Germany party=SPD style=exploit exploit=X-02R snap=0.5 leverdelta=6 seed=2122 days=730
+id=g212_fr_x02r_s05_up6 country=France party=RN style=exploit exploit=X-02R snap=0.5 leverdelta=6 seed=2125 days=730
+id=g212_de_x02r_s01_up6 country=Germany party=SPD style=exploit exploit=X-02R snap=0.1 leverdelta=6 seed=2122 days=730
+id=g212_fr_x02r_s01_up6 country=France party=RN style=exploit exploit=X-02R snap=0.1 leverdelta=6 seed=2125 days=730
+#
+# --- the lever drafted off the grid ---
+id=g212_de_x02r_s05_up637 country=Germany party=SPD style=exploit exploit=X-02R snap=0.5 leverdelta=6.37 seed=2122 days=730
+id=g212_fr_x02r_s05_up637 country=France party=RN style=exploit exploit=X-02R snap=0.5 leverdelta=6.37 seed=2125 days=730

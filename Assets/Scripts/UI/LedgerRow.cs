@@ -194,7 +194,8 @@ namespace PoliSim.UI
             string grainUnit = null,
             bool figureSecondLineWide = false,
             GUIStyle nameFace = null,
-            bool knob = true)
+            bool knob = true,
+            float detent = float.NaN)
         {
             // `knob` (2026-09-22, §564 - the Crime & Justice rows): a dial the player cannot move at all draws the family's track, its ticks and its end-names and NO
             // KNOB, and emits no control. Not `interactive: false` - that is a dial the player COULD move and now cannot (PENDING), and it wears the disabled knob
@@ -219,6 +220,8 @@ namespace PoliSim.UI
             grain = grain > 0f ? grain : 1f;
             float unitsPerPixel = trackRect.width > 0f ? (max - min) / trackRect.width / grain : float.PositiveInfinity;
             float step = StepFor(unitsPerPixel) * grain;
+            LastGrain = grain;   // GA-2-12 (2026-10-14): on every event, not the Repaint alone - the sub-row dial reads the step its knob just snapped to
+            LastStep = step;
 
             Color rowInk = interactive ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted;
 
@@ -286,12 +289,10 @@ namespace PoliSim.UI
                 LastFigureRect = figureRect;
                 LastScale = scale;
                 LastHadEndNames = IsEndNames(trailingText);
-                LastGrain = grain;
-                LastStep = step;
             }
 
             // ALWAYS emitted, enabled or not - see the control-ID note above. A knob-less row emits nothing: it is a reading, and paints the track itself.
-            float result = Track(trackRect, name, standing, draft, min, max, interactive, sliderStyle, thumbStyle, scale, grain, tickStep, ghost, knob);
+            float result = Track(trackRect, name, standing, draft, min, max, interactive, sliderStyle, thumbStyle, scale, grain, tickStep, ghost, knob, detent);
 
             // Repaint only: on the Layout event GetRect hands the caller a dummy rect, the columns squeeze to their
             // minimum and the record would keep that ghost as the row's worst (it did, on the first film).
@@ -315,7 +316,7 @@ namespace PoliSim.UI
         /// and calls this for the track, so the two can never drift in how a draft is dragged, snapped or recorded.
         /// </summary>
         public static float Track(Rect track, string name, float standing, float draft, float min, float max, bool interactive, GUIStyle sliderStyle, GUIStyle thumbStyle,
-            float scale, float grain = 1f, float tickStep = 0f, float ghost = float.NaN, bool knob = true)
+            float scale, float grain = 1f, float tickStep = 0f, float ghost = float.NaN, bool knob = true, float detent = float.NaN)
         {
             grain = grain > 0f ? grain : 1f;
             float unitsPerPixel = track.width > 0f ? (max - min) / track.width / grain : float.PositiveInfinity;
@@ -340,7 +341,7 @@ namespace PoliSim.UI
             // EN-8: the step is in the row's grain.
             if (interactive && !Mathf.Approximately(result, draft))
             {
-                result = Mathf.Clamp(Mathf.Round(result / step) * step, min, max);
+                result = Snap(result, step, min, max, detent);
                 if (!Mathf.Approximately(result, draft)) { AudioDirector.FireStep(); }   // P4-2: the draft snapped to its next step
             }
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && track.width > 0f && Event.current.type == EventType.Repaint)
@@ -645,7 +646,22 @@ namespace PoliSim.UI
         /// <summary>Whether a mark at <paramref name="x"/> falls under the knob's face at <paramref name="knobX"/> - the knob is drawn before the caller's
         /// marks, so a mark inside this reach paints on the face and reads as shading on it unless it is drawn clear of the face.</summary>
         public static bool UnderKnob(float x, float knobX, float scale) => Mathf.Abs(x - knobX) <= KnobWidth(scale) * KnobFaceWidthFraction * 0.5f;
-        /// <summary>BR-1: the last row's grain and the step its draft snaps to, in the row's units, so a caller can state a coarse step in the band.</summary>
+        /// <summary>The knob's snap: the value on the track's grid (<paramref name="step"/>), clamped to the track - and, GA-2-12 (2026-10-14), the
+        /// <paramref name="detent"/> itself where the grid point lands within half a step of it: a figure off the grid the knob can still rest on (the
+        /// income tax's sub-row dial passes the statute's figure, so a drag back puts the statute back exactly and the knob holds still there instead of
+        /// re-snapping, and ticking, on every move). NaN, the default: no detent. One body for the knob and the audit harness's drags.</summary>
+        public static float Snap(float value, float step, float min, float max, float detent = float.NaN)
+        {
+            float snapped = Mathf.Clamp(Mathf.Round(value / step) * step, min, max);
+            return !float.IsNaN(detent) && Mathf.Abs(snapped - detent) <= step * 0.5f + DetentSlack ? Mathf.Clamp(detent, min, max) : snapped;
+        }
+
+        /// <summary>The float slack on the detent's half step: a statute's figure plus an off-grid shift can land within a few ulps of it (Germany's first ramp
+        /// end, with the lever on the 0.1 grid and the knob on a 0.1 step, falls inside by 1.2e-5).</summary>
+        public const float DetentSlack = 1e-4f;
+
+        /// <summary>BR-1: the last row's grain and the step its draft snaps to, in the row's units, so a caller can state a coarse step in the band. GA-2-12
+        /// (2026-10-14): written on every event of every `LedgerRow.Draw`, so a caller reads the step of the row it has just drawn - the sub-row dial's drag.</summary>
         public static float LastGrain = 1f;
         public static float LastStep = SnapStep;
         /// <summary>P4-B2: whether the last row drew end-names in its band (the caption then keeps clear of the band's two ends).</summary>

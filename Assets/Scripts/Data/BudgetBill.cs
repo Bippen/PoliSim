@@ -46,7 +46,7 @@ namespace PoliSim.Data
         public System.DateTime FinanceStanceGovernment;
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<TaxType, float> TaxLines = new Dictionary<TaxType, float>();
-        /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the statute's figure stands; only the income tax carries one.</summary>
+        /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the line's figure stands (no change); only the income tax carries one. GA-2-12 (2026-10-14): the statute's own figure where the line carries a rate of its own puts the statute back (`ParliamentSystem.MergedBracketRates`).</summary>
         public Dictionary<TaxType, float[]> BracketRates = new Dictionary<TaxType, float[]>();
         public Dictionary<SpendingCategory, float> SpendingPercentChanges = new Dictionary<SpendingCategory, float>();
         /// <summary>P5-B2: nominal amounts the bill sets outright, and pins it toggles - see PolicyDecision's fields of the same names.</summary>

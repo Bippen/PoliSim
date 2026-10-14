@@ -9460,10 +9460,7 @@ namespace PoliSim.UI
                 // F4-4: the sub-rows' figures ride the same bill - the drafted rate per sub-row, −1 where the statute's (or the standing own) figure stands
                 if (taxLine.Type == TaxType.IncomeTax && _bracketRateInputs.Count > 0 && TaxSchedule.Responds(_playerCountry.Id))
                 {
-                    int count = TaxSchedule.SubRows(TaxSchedule.Of(_playerCountry.Id)).Count;
-                    var requested = new float[count];
-                    for (int i = 0; i < count; i++) { requested[i] = _bracketRateInputs.TryGetValue(i, out float draft) ? draft : -1f; }
-                    bill.BracketRates[taxLine.Type] = requested;
+                    bill.BracketRates[taxLine.Type] = RequestedSubRows(taxLine, TaxSchedule.SubRows(TaxSchedule.Of(_playerCountry.Id)));   // GA-2-12: named only where a draft moves the line
                 }
             }
 
@@ -9557,7 +9554,7 @@ namespace PoliSim.UI
             float draftShift = draftLever - TaxSchedule.RateSeedOf(taxLine);
             double thresholdScale = TaxSchedule.ThresholdScale(country);
             List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(statute);
-            float[] draftOverrides = DraftBracketRates(taxLine, rows.Count);
+            float[] draftOverrides = DraftBracketRates(taxLine, rows);
             bool anyDraft = !Mathf.Approximately(draftShift, standingShift) || _bracketRateInputs.Count > 0;
 
             // ---- the curve: the marginal rate over income, the standing statute solid, the draft dashed where it differs ----------------
@@ -9647,16 +9644,16 @@ namespace PoliSim.UI
                 bool interactive = live && r.Adjustable;
                 float standing = (float)standingRates[i], draft = (float)draftRates[i];
                 bool hasDraft = interactive && !Mathf.Approximately(draft, standing);
-                float result = LedgerRow.Draw(ledgerRect, span, standing, draft, 0f, 50f,
+                // GA-2-12 (2026-10-14): the knob rides the track - a rate the shift carries past an end rests at that end - with a detent at the statute's
+                // figure (as far as the track reaches it), so a drag back lands on it exactly where the grid misses it, and holds still there; the figure
+                // printed is the rate itself
+                float knob = Mathf.Clamp(draft, 0f, SubRowTrackTop);
+                float statuteOnTrack = Mathf.Clamp((float)(r.StatuteRate + draftShift), 0f, SubRowTrackTop);   // summed as the dial's own figure is (EffectiveRowRates), so held there the knob IS the draft
+                float result = LedgerRow.Draw(ledgerRect, span, standing, knob, 0f, SubRowTrackTop,
                     r.Kind == TaxSubRowKind.Exempt ? "—" : standing.ToString("F2", CultureInfo.InvariantCulture) + "%",
                     hasDraft ? draft.ToString("F2", CultureInfo.InvariantCulture) + "%" : null,
-                    trailing, interactive, _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle);
-                if (interactive && !Mathf.Approximately(result, draft))
-                {
-                    // the dial moved: the override is the rate without the lever's shift; back at the statute's figure the draft is dropped
-                    float wanted = result - draftShift;
-                    if (Mathf.Abs(wanted - (float)r.StatuteRate) < 0.005f) { _bracketRateInputs.Remove(i); } else { _bracketRateInputs[i] = Mathf.Clamp(wanted, 0f, 100f); }
-                }
+                    trailing, interactive, _labelStyle, _labelStyle, _sliderStyle, _sliderThumbStyle, detent: statuteOnTrack);
+                if (interactive && !Mathf.Approximately(result, knob)) { DragSubRow(r, i, result - draftShift, LedgerRow.LastStep, draftShift); }   // the dial moved: the override is the rate without the lever's shift, on the step the knob snapped to
                 if (Event.current.type == EventType.Repaint && i == 0)
                 {
                     LedgerRow.Cell(new Rect(verdictRect.x, verdictRect.y, actionRect.xMax - verdictRect.x, verdictRect.height), "ONE BILL FOR THE DIAL AND THE SUB-ROWS", mono, PoliSimTheme.TextMuted, TextAnchor.MiddleLeft);
@@ -9664,16 +9661,45 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>The line's own rates as drafted: the standing overrides with the sub-row drafts on top, −1 where the statute's rate stands.</summary>
-        private float[] DraftBracketRates(TaxLine taxLine, int count)
+        /// <summary>A sub-row's dial dragged to <paramref name="wanted"/> - the rate without the lever's shift - on a track that snaps to <paramref name="step"/>:
+        /// the draft the drag leaves. One body for the dial and the audit harness's sub-row exploits, so the two cannot drift apart. GA-2-12 (2026-10-14):
+        /// a drag that lands within half a step of the statute's figure leaves the statute's figure EXACTLY - the knob's grid seldom holds it (Sweden's flat
+        /// layer at 32.38 sits between 32.0 and 32.5 at 1280, between 32.3 and 32.4 on the widest film), so the grid point nearest it stands for it, as half
+        /// a month stands for the statute on the pension-age dial. The draft is kept either way: the bill names a sub-row only where it moves the line, and a
+        /// draft at the statute's figure where the line carries its own rate is the restore the merge reads as the statute standing again
+        /// (`ParliamentSystem.MergedBracketRates`). The dial used to drop a draft at the statute's figure - a figure no drag could reach exactly, and where
+        /// one did, the line's own rate stayed in force: no bill could put the statute back.</summary>
+        private void DragSubRow(TaxSchedule.SubRow r, int i, float wanted, float step, float shift)
         {
-            var rates = new float[count];
-            for (int i = 0; i < count; i++)
+            // the statute's figure as far as the track reaches it (the review's second reading: a shift that carries it past an end leaves the end for it)
+            float onTrack = Mathf.Clamp((float)(r.StatuteRate + shift), 0f, SubRowTrackTop) - shift;
+            bool atStatute = Mathf.Abs(wanted - onTrack) <= Mathf.Max(0f, step) * 0.5f + LedgerRow.DetentSlack;
+            _bracketRateInputs[i] = atStatute ? (float)r.StatuteRate : Mathf.Clamp(wanted, 0f, 100f);
+        }
+
+        /// <summary>The top of a sub-row dial's track, in points of the rate with the lever's shift on - the curve's own y (0-50).</summary>
+        public const float SubRowTrackTop = 50f;
+
+        /// <summary>The line's own rates as the drafts would leave them - the bill's figures merged on the standing ones as a passed bill merges them
+        /// (`ParliamentSystem.MergedBracketRates`): −1 where the statute's rate stands, null where no rate of its own is left. GA-2-12 (2026-10-14): read
+        /// through the merge, so a kept draft at the statute's figure draws as the statute it puts back - drawn raw, Germany's draft curve read the ramps
+        /// where the standing one read § 32a, and dashed a difference no bill would make.</summary>
+        private float[] DraftBracketRates(TaxLine taxLine, List<TaxSchedule.SubRow> rows)
+            => ParliamentSystem.MergedBracketRates(taxLine.BracketRates, RequestedSubRows(taxLine, rows), rows);
+
+        /// <summary>GA-2-12 (2026-10-14): the bill's figure per sub-row from the drafts, named only where a draft moves the line - as a tax line is
+        /// (GA-8-2): the drafts outlive their bill as the levers' do, so a draft at the figure the line stands at asks for nothing (−1), and a draft at
+        /// the statute's figure where the line carries its own rate is the restore.</summary>
+        private float[] RequestedSubRows(TaxLine taxLine, List<TaxSchedule.SubRow> rows)
+        {
+            var requested = new float[rows.Count];
+            for (int i = 0; i < rows.Count; i++)
             {
-                rates[i] = taxLine.BracketRates != null && i < taxLine.BracketRates.Length ? taxLine.BracketRates[i] : -1f;
-                if (_bracketRateInputs.TryGetValue(i, out float draft)) { rates[i] = draft; }
+                bool ownRate = taxLine.BracketRates != null && i < taxLine.BracketRates.Length && taxLine.BracketRates[i] >= 0f;
+                float standingFigure = ownRate ? taxLine.BracketRates[i] : (float)rows[i].StatuteRate;
+                requested[i] = _bracketRateInputs.TryGetValue(i, out float draft) && !Mathf.Approximately(draft, standingFigure) ? draft : -1f;
             }
-            return rates;
+            return requested;
         }
 
         /// <summary>A sub-row's name: the threshold span in the tariff's own currency at this boundary's prices, mono - "12 349 – 17 799 EUR".</summary>

@@ -63,10 +63,16 @@ namespace PoliSim.EditorTools
         internal int Wall = 3600;
         /// <summary>extreme: deficit (default), surplus, big or small - see the styles' file.</summary>
         internal string Pole = "deficit";
-        /// <summary>exploit: the inventory's lead the run plays (X-01, X-02, X-02S, X-04, X-16, and the sweep's X-05, X-15, X-17, X-07S).</summary>
+        /// <summary>exploit: the inventory's lead the run plays (X-01, X-02, X-02S, X-02R, X-04, X-16, and the sweep's X-05, X-15, X-17, X-07S).</summary>
         internal string Exploit;
         /// <summary>fuzz: days between its own actions (default 21, a bill's passage).</summary>
         internal int Every = 21;
+        /// <summary>X-02S / X-02R: the step the Budget page's sub-row dials snap to on the run's screen - 0.5 at 1280, 0.1 on the widest film
+        /// (`LedgerRow.StepFor`); each drag lands on that grid as the knob does. 0, the default: the exact figure, unsnapped.</summary>
+        internal float Snap;
+        /// <summary>X-02S / X-02R: the income lever drafted this many points from its seed at the floor window, so the sub-rows' track carries a shift -
+        /// a statute's figure the shift pushes past a track's end is restored at that end (GA-2-12's second review). 0, the default: the lever stands.</summary>
+        internal float LeverDelta;
         /// <summary>Days at which to save through the saves screen's write and play on, loading nothing - a later run resumes the file.</summary>
         internal readonly List<int> Save = new List<int>();
         /// <summary>A save file in the plan's output folder to resume in this run's fresh session, through the saves screen's load, in place of NEW GAME.</summary>
@@ -113,7 +119,7 @@ namespace PoliSim.EditorTools
 
         private static readonly string[] Styles = { "idle", "historical", "fuzz", "exploit", "extreme" };
         private static readonly string[] Poles = { "deficit", "surplus", "big", "small", "spendup", "spenddown" };
-        private static readonly string[] Exploits = { "X-01", "X-02", "X-02S", "X-04", "X-16", "X-05", "X-15", "X-17", "X-07S" };
+        private static readonly string[] Exploits = { "X-01", "X-02", "X-02S", "X-02R", "X-04", "X-16", "X-05", "X-15", "X-17", "X-07S" };
 
         internal string Describe() =>
             $"{Id}: {Country} as {(string.IsNullOrEmpty(Create) ? Party : "a created party (" + Create + ")")}, style {Style}{(Style == "extreme" ? " " + Pole : Style == "exploit" ? " " + Exploit : Style == "fuzz" ? " every " + Every + " d" : string.Empty)}, seed {Seed}, {Days} day(s) at {Speed}x, delta {Delta.ToString("R", CultureInfo.InvariantCulture)} s"
@@ -164,6 +170,8 @@ namespace PoliSim.EditorTools
                         case "pole": s.Pole = value.ToLowerInvariant(); break;
                         case "exploit": s.Exploit = value.ToUpperInvariant(); break;
                         case "every": s.Every = int.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "snap": s.Snap = float.Parse(value, CultureInfo.InvariantCulture); break;
+                        case "leverdelta": s.LeverDelta = float.Parse(value, CultureInfo.InvariantCulture); break;
                         case "save": s.Save.AddRange(value.Split(',').Where(v => v.Length > 0).Select(v => int.Parse(v, CultureInfo.InvariantCulture))); break;
                         case "resume": s.Resume = value; break;
                         case "startday": s.StartDay = int.Parse(value, CultureInfo.InvariantCulture); break;
@@ -1007,7 +1015,8 @@ namespace PoliSim.EditorTools
             BudgetBill bill = (BudgetBill)Call("BuildBudgetBillFromDrafts");
             bool ok = _sm.IntroduceBudgetBill(id, bill);
             Count("answer budget window");
-            Event($"{why} budget window: Introduce budget bill {(ok ? "tabled" : "REFUSED")} (IntroduceBudgetBill(BuildBudgetBillFromDrafts()), the button's body; {bill.TaxLines.Count} tax line(s), {bill.SpendingNominalTargets.Count} spending target(s), {bill.WelfarePrograms.Count} programme(s){(bill.PensionAgeSet ? ", pension age " + bill.PensionAge.ToString("R", CultureInfo.InvariantCulture) : string.Empty)})");
+            string subRows = string.Join(" ", bill.BracketRates.Where(kv => kv.Value != null).Select(kv => kv.Key + " [" + string.Join(";", kv.Value.Select(r => r.ToString("0.###", CultureInfo.InvariantCulture))) + "]"));
+            Event($"{why} budget window: Introduce budget bill {(ok ? "tabled" : "REFUSED")} (IntroduceBudgetBill(BuildBudgetBillFromDrafts()), the button's body; {bill.TaxLines.Count} tax line(s), {bill.SpendingNominalTargets.Count} spending target(s), {bill.WelfarePrograms.Count} programme(s){(bill.PensionAgeSet ? ", pension age " + bill.PensionAge.ToString("R", CultureInfo.InvariantCulture) : string.Empty)}{(subRows.Length > 0 ? ", sub-rows " + subRows : string.Empty)})");
             return true;
         }
 

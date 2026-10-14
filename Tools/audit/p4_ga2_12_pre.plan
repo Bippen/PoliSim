@@ -1,0 +1,19 @@
+# Phase 4, GA-2-12's CONTROL (2026-10-14): HEAD's engine (af2390ff) with the dial's decision moved into one body (GameController.DragSubRow, its
+# rule unchanged), under the harness that carries X-02R (the sub-rows floored at the first budget window; at each window after one has passed,
+# every sub-row carrying its own rate dragged back to the statute's figure, through DragSubRow). Expected: each X-02R run's floor bill passes and
+# its restore is lost - the drag drops its draft, the next bill carries nothing for the sub-rows and the line keeps its own rates (the finding);
+# the five X-02S runs byte-identical to their p4_ga211 twins - the dial's one body is the drafts' old rule.
+#
+# --- the repro: X-02R in the five countries whose income tax responds ---
+id=g212_se_x02r country=Sweden party=M style=exploit exploit=X-02R seed=2121 days=730
+id=g212_de_x02r country=Germany party=SPD style=exploit exploit=X-02R seed=2122 days=730
+id=g212_pl_x02r country=Poland party=PiS style=exploit exploit=X-02R seed=2123 days=730
+id=g212_us_x02r country=USA party=DEM style=exploit exploit=X-02R seed=2124 days=500
+id=g212_fr_x02r country=France party=RN style=exploit exploit=X-02R seed=2125 days=730
+#
+# --- the refactor's proof: X-02S through DragSubRow, against p4_ga211 ---
+id=g211_se_x02s country=Sweden party=M style=exploit exploit=X-02S seed=2111 days=730
+id=g211_de_x02s country=Germany party=SPD style=exploit exploit=X-02S seed=2112 days=730
+id=g211_pl_x02s country=Poland party=PiS style=exploit exploit=X-02S seed=2113 days=730
+id=g211_us_x02s country=USA party=DEM style=exploit exploit=X-02S seed=2114 days=500
+id=g211_fr_x02s country=France party=RN style=exploit exploit=X-02S seed=2115 days=730

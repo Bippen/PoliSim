@@ -26,8 +26,8 @@ namespace PoliSim.EditorTools
     /// drawn, and every `every=` days one of a law, a tax's or a programme's switch, a fund drawdown.</item>
     /// <item><b>exploit</b> - maximises approval or money through a named lead of the inventory (`exploit=`): X-01 a fund at -10 % of GDP
     /// (money from an empty fund), X-02 the income tax at its floor, X-02S its adjustable sub-rows at their floor with the lever left standing (the
-    /// household burden against the sub-rows, GA-2-11), X-04 every programme at full generosity (approval through welfare), X-16 the most dovish
-    /// central-bank head.</item>
+    /// household burden against the sub-rows, GA-2-11), X-02R the same and then each restored to the statute's figure (a sub-row put back, GA-2-12),
+    /// X-04 every programme at full generosity (approval through welfare), X-16 the most dovish central-bank head.</item>
     /// <item><b>extreme</b> - every dial at an end, by `pole=`: deficit (taxes at their floor, spending and welfare at their top, the fund drawing,
     /// the pension age at 60), surplus (the reverse), big (taxes and spending at their top), small (both at their floor).</item>
     /// </list>
@@ -105,7 +105,8 @@ namespace PoliSim.EditorTools
                     Event($"STYLE exploit X-02: the income tax at its floor ({(income == null ? "not levied" : income.MinRate.ToString("R", CultureInfo.InvariantCulture))})");
                     break;
                 case "X-02S":
-                    DraftSubRowsAtFloor(c);
+                case "X-02R":
+                    DraftSubRows(c, _spec.Exploit == "X-02R");
                     break;
                 case "X-04":
                     foreach (WelfareProgram w in c.WelfarePrograms.Where(w => w.IsImplemented)) { DraftWelfare(w, 100f); }
@@ -167,25 +168,42 @@ namespace PoliSim.EditorTools
         private void DraftTax(TaxLine t, float rate) => ((IDictionary)Get("_taxRateInputs"))[t.Type] = rate;
 
         /// <summary>X-02S (GA-2-11's repro): every adjustable sub-row of the income tax at its dial's floor, the lever where it stands - the Budget
-        /// page's schedule rows as a drag to each track's left end leaves them (`_bracketRateInputs`: the rate without the lever's shift, clamped to
-        /// 0-100, dropped where it lands on the statute's own figure); the window's bill carries them (`BuildBudgetBillFromDrafts`).</summary>
-        private void DraftSubRowsAtFloor(Country c)
+        /// page's schedule rows as a drag to each track's left end leaves them, through the dial's own body (DragSubRow, given the rate without the
+        /// lever's shift and the knob's step); the window's bill carries them (`BuildBudgetBillFromDrafts`). X-02R (GA-2-12's repro): the same while the
+        /// line carries no rate of its own, and once one has passed, every sub-row carrying its own rate dragged back to the statute's figure - a player's
+        /// restore. With `snap=` the drag lands where the knob does (`LedgerRow.Snap`: the grid, clamped to the track, with the dial's detent at the
+        /// statute's figure); without, on the exact figure, clamped to the track. With `leverdelta=` the lever is drafted that far from its seed at the
+        /// floor window, so the track carries a shift.</summary>
+        private void DraftSubRows(Country c, bool restore)
         {
+            string key = restore ? "X-02R" : "X-02S";
             TaxLine line = c.TaxLines.FirstOrDefault(t => t.IsImplemented && t.Type == TaxType.IncomeTax);
-            if (line == null || !TaxSchedule.Responds(c.Id)) { Event("STYLE exploit X-02S: no income schedule with sub-rows to draft"); return; }
+            if (line == null || !TaxSchedule.Responds(c.Id)) { Event($"STYLE exploit {key}: no income schedule with sub-rows to draft"); return; }
             List<TaxSchedule.SubRow> rows = TaxSchedule.SubRows(TaxSchedule.Of(c.Id));
+            bool back = restore && line.BracketRates != null && line.BracketRates.Any(rate => rate >= 0f);
+            if (!back && _spec.LeverDelta != 0f) { DraftTax(line, Mathf.Clamp(TaxSchedule.RateSeedOf(line) + _spec.LeverDelta, line.MinRate, line.MaxRate)); }
             var levers = (IDictionary)Get("_taxRateInputs");
             float lever = levers.Contains(TaxType.IncomeTax) ? (float)levers[TaxType.IncomeTax] : line.Rate;
-            float shift = lever - TaxSchedule.RateSeedOf(line);   // the dial reads the rate with the lever's shift; the draft is the rate without it
-            var drafts = (IDictionary)Get("_bracketRateInputs");
-            int drafted = 0;
+            float shift = lever - TaxSchedule.RateSeedOf(line);   // the dial reads the rate with the lever's shift; the drag leaves the rate without it
+            float step = _spec.Snap;
+            var landings = new List<string>();
             for (int i = 0; i < rows.Count; i++)
             {
                 if (!rows[i].Adjustable) { continue; }
-                float wanted = Mathf.Clamp(0f - shift, 0f, 100f);
-                if (Mathf.Abs(wanted - (float)rows[i].StatuteRate) < 0.005f) { drafts.Remove(i); } else { drafts[i] = wanted; drafted++; }
+                if (back && !(i < line.BracketRates.Length && line.BracketRates[i] >= 0f)) { continue; }
+                float aim = back ? (float)rows[i].StatuteRate : 0f - shift;   // the rate without the lever's shift the drag aims at: the statute's figure, or the track's left end
+                float top = GameController.SubRowTrackTop;
+                float detent = Mathf.Clamp((float)(rows[i].StatuteRate + shift), 0f, top);   // summed as the dial's is
+                float knob = step > 0f ? LedgerRow.Snap(aim + shift, step, 0f, top, detent) : Mathf.Clamp(aim + shift, 0f, top);
+                float landed = knob - shift;
+                Call("DragSubRow", rows[i], i, landed, step > 0f ? step : LedgerRow.SnapStep, shift);
+                landings.Add(landed.ToString("0.###", CultureInfo.InvariantCulture));
             }
-            Event($"STYLE exploit X-02S: the income tax's adjustable sub-rows at their dials' floor ({drafted} of {rows.Count} rows drafted), the lever where it stands");
+            int drafts = ((IDictionary)Get("_bracketRateInputs")).Count;
+            string grid = step > 0f ? "on a " + step.ToString("0.##", CultureInfo.InvariantCulture) + " step" : "unsnapped";
+            string leverWords = "the lever at " + lever.ToString("0.###", CultureInfo.InvariantCulture) + (!back && _spec.LeverDelta != 0f ? " (drafted " + _spec.LeverDelta.ToString("+0.##;-0.##", CultureInfo.InvariantCulture) + " from its seed)" : "");
+            Event(back ? $"STYLE exploit {key}: the income tax's own sub-row rates dragged back to the statute's figures, {grid} (landed {string.Join(";", landings)}; {drafts} draft(s) standing), {leverWords}"
+                       : $"STYLE exploit {key}: the income tax's adjustable sub-rows at their dials' floor, {grid} (landed {string.Join(";", landings)}; {drafts} draft(s) standing), {leverWords}");
         }
 
         private void DraftWelfare(WelfareProgram w, float generosity) => ((IDictionary)Get("_welfareGenerosityInputs"))[w.Type] = Mathf.Clamp(generosity, 0f, 100f);
