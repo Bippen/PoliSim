@@ -1,0 +1,29 @@
+# Phase 4, GA-6-3's recheck (2026-10-14): the Energy page's two tracks reach their readings - each keeps the end it was drawn to (4 % of GDP,
+# 250 per MWh) until a reading passes it, then ends at the next round figure (1, 2, 2.5 or 5 times a power of ten). The finding's run and its area's:
+# area 6's plans whole. Expected: p1_de_spd_retire's day-400 Energy capture labels its ends at or past its readings (it drew 31.51 % on "4 % of
+# GDP" and 4000.0 EUR/MWh on "250 EUR/MWh"; on the same readings, 50 % of GDP and 5000 EUR/MWh); a page whose readings sit inside the drawn
+# ends draws them as before; no breach, no error.
+#
+# --- Tools/audit/area6_energy.plan, unchanged ---
+id=p1_de_spd_idle country=Germany party=SPD style=idle seed=1001 days=1100
+id=p1_de_spd_retire country=Germany party=SPD style=idle energy=retirefossil seed=1001 days=1100 capture=400:Energy,800:Energy
+id=p2_pl_pis_idle country=Poland party=PiS style=idle seed=1002 days=1100
+id=p2_pl_pis_retire country=Poland party=PiS style=idle energy=retirefossil seed=1002 days=1100 capture=400:Energy
+id=p3_it_fdi_idle country=Italy party=FdI style=idle seed=1003 days=1100
+id=p3_it_fdi_retire country=Italy party=FdI style=idle energy=retirefossil seed=1003 days=1100 capture=400:Energy
+id=p4_us_dem_idle country=USA party=DEM style=idle seed=1004 days=700
+id=p4_us_dem_retire country=USA party=DEM style=idle energy=retirefossil seed=1004 days=700 capture=400:Energy
+id=p5_fr_rn_idle country=France party=RN style=idle seed=1005 days=1100
+id=p5_fr_rn_retirenuc country=France party=RN style=idle energy=retirenuclear seed=1005 days=1100 capture=400:Energy
+id=p5_se_m_retirenuc country=Sweden party=M style=idle energy=retirenuclear seed=1006 days=1100 capture=400:Energy
+id=p6_se_m_build country=Sweden party=M style=idle energy=buildgreen seed=1007 days=1460 capture=1100:Energy
+id=p6_de_spd_build country=Germany party=SPD style=idle energy=buildgreen seed=1001 days=1460 capture=1100:Energy
+id=p6_pl_pis_build country=Poland party=PiS style=idle energy=buildgreen seed=1002 days=1460 capture=1100:Energy
+id=p7_de_spd_carbon country=Germany party=SPD style=extreme pole=big seed=1011 days=400 capture=30:Budget,366:Budget
+id=p7_se_m_carbon country=Sweden party=M style=extreme pole=big seed=1012 days=400 capture=30:Budget,366:Budget
+#
+# --- Tools/audit/area6b_chain.plan, unchanged ---
+id=q1_se_m_retirenuc country=Sweden party=M style=idle energy=retirenuclear seed=1006 days=1100 capture=400:Energy
+id=q1_se_m_retirenuc_b country=Sweden party=M style=idle energy=retirenuclear seed=1016 days=400
+id=q2_se_m_build_b country=Sweden party=M style=idle energy=buildgreen seed=1017 days=1100
+id=q3_se_m_retirefossil country=Sweden party=M style=idle energy=retirefossil seed=1006 days=400

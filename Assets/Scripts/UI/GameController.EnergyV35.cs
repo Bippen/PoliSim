@@ -126,19 +126,25 @@ namespace PoliSim.UI
             DrawV35Tile(billRect, billTile);
             DrawV35Tile(wholesaleRect, wholesaleTile);
             float pad = V35.Px(V35.CardPadX);
+            // GA-6-3 (2026-10-14): each track reaches its readings - its designed end, or past a reading beyond it the next round figure (a 31.51 %
+            // bill stood on a 0-4 % track, a 4 000 per MWh wholesale on 0-250, both ticks pinned at the end)
+            float billEnd = TrackEnd(4f, s.EnergyIndustryBillGdpShare);
+            float wholesaleMax = (float)wholesale;
+            foreach (CountryId id in PeerOrder) { if (_energyPeerWholesale.TryGetValue(id, out double pw) && pw > wholesaleMax) { wholesaleMax = (float)pw; } }
+            float wholesaleEnd = TrackEnd(250f, wholesaleMax);
             if (repaint)
             {
-                // the bill's track, 0-4 % of GDP, its tick at the figure
+                // the bill's track, 0 to 4 % of GDP (or the round figure past a reading beyond it), its tick at the figure
                 var track = new Rect(billRect.x + pad, billRect.yMax - trackBand + V35.Px(8f), billRect.width - pad * 2f, 1f);
                 PoliSimTheme.Rule(track, V35.PyramidThreshold);
-                float bx = track.x + track.width * Mathf.Clamp01(s.EnergyIndustryBillGdpShare / 4f);
+                float bx = track.x + track.width * Mathf.Clamp01(s.EnergyIndustryBillGdpShare / billEnd);
                 PoliSimTheme.Rule(new Rect(Mathf.Round(bx) - 1f, track.y - V35.Px(7f), 2f, V35.Px(14f)), PoliSimTheme.TextPrimary);
                 GUIStyle ends = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
                 GUIStyle endsRight = V35Serif(V35.Floor, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight);
                 GUI.Label(new Rect(track.x, track.y + V35.Px(8f), track.width * 0.5f, V35.Px(20f)), "0 %", ends);
-                GUI.Label(new Rect(track.x + track.width * 0.5f, track.y + V35.Px(8f), track.width * 0.5f, V35.Px(20f)), "4 % of GDP", endsRight);
+                GUI.Label(new Rect(track.x + track.width * 0.5f, track.y + V35.Px(8f), track.width * 0.5f, V35.Px(20f)), PlateFigure(billEnd, 0) + " % of GDP", endsRight);
 
-                // the wholesale's track, 0-250 per MWh, the others' ticks with their tags, its own heavier
+                // the wholesale's track, 0 to 250 per MWh (or the round figure past a reading beyond it), the others' ticks with their tags, its own heavier
                 var wt = new Rect(wholesaleRect.x + pad, wholesaleRect.yMax - trackBand + V35.Px(8f), wholesaleRect.width - pad * 2f, 1f);
                 PoliSimTheme.Rule(wt, V35.PyramidThreshold);
                 GUIStyle tag = V35Mono(V35.Floor, PoliSimTheme.TextSecondary, bold: true, TextAnchor.UpperCenter);
@@ -149,7 +155,7 @@ namespace PoliSim.UI
                 {
                     if (!_energyPeerWholesale.TryGetValue(id, out double w)) { continue; }
                     bool own = id == c.Id;
-                    float x = wt.x + wt.width * Mathf.Clamp01((float)(w / 250.0));
+                    float x = wt.x + wt.width * Mathf.Clamp01((float)(w / wholesaleEnd));
                     PoliSimTheme.Rule(new Rect(Mathf.Round(x) - (own ? 1f : 0f), wt.y - V35.Px(own ? 8f : 5f), own ? 2f : 1f, V35.Px(own ? 16f : 10f)), own ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted);
                     if (own) { continue; }
                     float tw = Mathf.Ceil(tag.CalcSize(new GUIContent(MapRenderer.TagOf(id))).x) + V35.Px(4f);
@@ -159,7 +165,7 @@ namespace PoliSim.UI
                     if (at.HasValue) { tagged.Add(at.Value); GUI.Label(at.Value, MapRenderer.TagOf(id), tag); }
                 }
                 GUI.Label(new Rect(wt.x, wt.y + V35.Px(20f), wt.width * 0.5f, V35.Px(18f)), "0", ends);
-                GUI.Label(new Rect(wt.x + wt.width * 0.5f, wt.y + V35.Px(20f), wt.width * 0.5f, V35.Px(18f)), "250 " + marketUnit, endsRight);
+                GUI.Label(new Rect(wt.x + wt.width * 0.5f, wt.y + V35.Px(20f), wt.width * 0.5f, V35.Px(18f)), PlateFigure(wholesaleEnd, 0) + " " + marketUnit, endsRight);
             }
             SlipAnchor(billRect, "en:bill"); SlipAnchor(wholesaleRect, "en:wholesale");
             _energySlipBook.Anchors["en:bill"] = new SlipContent("INDUSTRY'S POWER BILL · " + billTile.Figure + " OF GDP")
@@ -301,6 +307,20 @@ namespace PoliSim.UI
             DrawEnergyPlate(EnergyPlatePart.Why);
         }
 
+        /// <summary>
+        /// GA-6-3 (2026-10-14): a track's end - the end it was drawn to, or past a reading beyond it the next round figure (1, 2, 2.5 or 5 times a power
+        /// of ten), so no tick is pinned at an end it has run past. A reading that is not a finite number keeps the drawn end.
+        /// </summary>
+        private static float TrackEnd(float drawn, float reading)
+        {
+            if (!(reading > drawn) || float.IsInfinity(reading)) { return drawn; }
+            float decade = Mathf.Pow(10f, Mathf.Floor(Mathf.Log10(reading)));
+            foreach (float step in new[] { 1f, 2f, 2.5f, 5f })
+            {
+                if (reading <= step * decade) { return step * decade; }
+            }
+            return 10f * decade;
+        }
 
         /// <summary>
         /// §748 (the composition's Energy › Policy): <b>the four instruments as dial tiles</b> - the Energy sector's own dials, one draft with the Sectors

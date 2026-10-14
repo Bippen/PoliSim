@@ -38291,3 +38291,19 @@ Nothing here builds on an answer. US-21 waits on R-US17.
 **The ledger** (`docs/audit/AUDIT_LEDGER.md`): GA-2-7 closed with §822's hash (`773a0461`). GA-2-8's, GA-3-6's and GA-10-1's rows are closed with this commit's hash in the next record.
 
 **Bars** (tier UI, on this commit's own tree): the cheap bar **103 of 103** (`cheap823`, after the films, the dry film held to its row `dry823`); the scoped dry film **Swedenx720 154, Germanyx720 146 and USAx720 144 measured, 0 failed** (`dry823`); the filmed width, real Germany at 1280 (`film823`), and Germany's night, real (`film823g`). No simulation bar is owed (bar_tier: UI).
+
+## 824. THE GAMEPLAY AUDIT, PHASE 4 - GA-6-3 FIXED: THE ENERGY PAGE'S TRACKS REACH THEIR READINGS (2026-10-14)
+
+**What was owed** (`docs/audit/AUDIT_PROTOCOL.md`, PHASE 4; Elias's answer to area 6, 2026-10-13: fix): GA-6-3 (S4) - the industry power bill 31.51 % drawn on its track of 0 to "4 % of GDP", and the wholesale 4000.0 EUR/MWh among the peers on a track of 0 to 250 EUR/MWh - both ticks pinned at an end the readings had run past (area 6, `p1_de_spd_retire`, day 400, the fossil fleet retired). The fix proposed: scales that reach the reading, or a mark that it runs off them.
+
+**Built** (`UI/GameController.EnergyV35.cs`): each track keeps the end it was drawn to - 4 % of GDP, 250 per MWh - until a reading passes it, then ends at the next round figure past the reading, 1, 2, 2.5 or 5 times a power of ten (`TrackEnd`), its end label saying so; the wholesale's end reaches the highest of the country's own reading and its peers' ticks. A reading that is not a finite number keeps the drawn end. Nothing else on the page moves.
+
+**Measured** (`Tools/audit/p4_ga6_3.plan`, run `p4_ga63`: area 6 and 6b whole, 20 runs, silent, no error): the finding's capture (`p1_de_spd_retire`, day 400) draws the same readings - 31.51 % and 4000.0 EUR/MWh - on tracks that end at "50 % of GDP" and "5000 EUR/MWh", where they ended at 4 % and 250; the other retired fleets' pages end at 25, 50 or 100 % of GDP and at 5000 per MWh (EUR, or USD for the USA), and every page whose readings sit inside the drawn ends - the built fleets, Sweden's - keeps "4 % of GDP" and "250 EUR/MWh". The plan exits 1 on the ENERGY invariant in five runs - p5_se_m_retirenuc x9, p6_se_m_build x4, q1_se_m_retirenuc x9, q1_se_m_retirenuc_b x3, q2_se_m_build_b x2 - the counts area 6 and 6b logged before, GA-6-2's chain (not on the fix list), which a drawn track cannot move.
+
+**No review owed** (bar_tier: UI; the change books no money and moves no baseline) - the label tables are its evidence.
+
+**On film** (the UI tier - the Energy page): the scoped dry film `dry824`, its row declared before it ran (`Tools/film_scope.tsv`: Germany@1280x720) - **146 measured, 0 failed**, 0 overflows, 0 escapes, 0 errors; the filmed width, real **Germany at 1280** (`film824`) - 146 frames, 0 failed, 0 overflows, 0 escapes, 0 canvas-text violations across 7 asserts.
+
+**The ledger** (`docs/audit/AUDIT_LEDGER.md`): GA-2-8, GA-3-6 and GA-10-1 closed with §823's hash (`8f043753`). GA-6-3's row is closed with this commit's hash in the next record.
+
+**Bars** (tier UI, on this commit's own tree): the cheap bar **103 of 103** (`cheap824`, after the films, the dry film held to its row `dry824`); the scoped dry film **Germanyx720 146 measured, 0 failed** (`dry824`); the filmed width, real Germany at 1280 (`film824`). No simulation bar is owed (bar_tier: UI).
