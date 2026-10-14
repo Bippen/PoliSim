@@ -38,7 +38,7 @@ namespace PoliSim.UI
             _politicsSlipBook = new PeopleSlips.Book();
             float titleHeight = V35.Px(44f);
             Rect titleRow = GUILayoutUtility.GetRect(10f, titleHeight, GUILayout.ExpandWidth(true), GUILayout.Height(titleHeight));
-            string[] words = { "Parliament", "Compass", "Cabinet", GetCentralBankName(PlayerCountryId) };
+            string[] words = { Legislature, "Compass", "Cabinet", GetCentralBankName(PlayerCountryId) };   // GA-10-1: Congress for the USA
             int clicked = DrawV35TitleTabs(titleRow, "Politics", words, System.Array.IndexOf(PoliticsTabCategories, _politicsCategory), UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
             if (clicked >= 0) { _politicsCategory = PoliticsTabCategories[clicked]; }
             GUILayout.Space(V35.Px(4f));

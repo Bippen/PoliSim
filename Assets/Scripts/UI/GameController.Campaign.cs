@@ -461,8 +461,8 @@ namespace PoliSim.UI
             GUIStyle heroCaption = DeskCaption(9f, PoliSimTheme.TextSecondary, false, TextAnchor.LowerLeft);
             float captionLeft = r.x + heroSize.x + Mathf.Round(10f * ux);
             string spent = s.MoneyAtCampaignStart > 0
-                ? string.Format(CultureInfo.InvariantCulture, "kr · {0:F0} % OF THE CHEST SPENT", s.MoneySpentShare * 100.0)
-                : "kr · WAR CHEST";
+                ? string.Format(CultureInfo.InvariantCulture, Purse + " · {0:F0} % OF THE CHEST SPENT", s.MoneySpentShare * 100.0)
+                : Purse + " · WAR CHEST";
             PoliSimWidgets.MeasuredLabel(
                 new Rect(captionLeft, y, Mathf.Max(1f, r.xMax - captionLeft), heroSize.y - Mathf.Round(4f * uy)),
                 spent, heroCaption);
@@ -552,7 +552,7 @@ namespace PoliSim.UI
                 double payroll = 0.0;
                 foreach (StaffMember member in s.Staff) { payroll += member.SalaryPerDay; }
                 DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Payroll",
-                    string.Format(CultureInfo.InvariantCulture, "{0} kr/day", Kronor(payroll)), nameStyle, figureStyle);
+                    string.Format(CultureInfo.InvariantCulture, "{0} " + Purse + "/day", Kronor(payroll)), nameStyle, figureStyle);
                 y += rowHeight;
             }
 
@@ -579,7 +579,7 @@ namespace PoliSim.UI
                 if (i >= room) { continue; }
 
                 DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), s.Offices[i].RegionName,
-                    string.Format(CultureInfo.InvariantCulture, "{0:N0} vol · {1} kr/day",
+                    string.Format(CultureInfo.InvariantCulture, "{0:N0} vol · {1} " + Purse + "/day",
                         s.Offices[i].Volunteers, Kronor(s.Offices[i].UpkeepPerDay)),
                     nameStyle, figureStyle);
                 y += rowHeight;
@@ -590,7 +590,7 @@ namespace PoliSim.UI
                 ? $"{s.Offices.Length} offices ({s.Offices.Length - room} not shown)"
                 : $"{s.Offices.Length} offices";
             DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), totalLabel,
-                string.Format(CultureInfo.InvariantCulture, "{0:N0} vol · {1} kr/day",
+                string.Format(CultureInfo.InvariantCulture, "{0:N0} vol · {1} " + Purse + "/day",
                     volunteers, Kronor(upkeep)),
                 DeskBody(13f, PoliSimTheme.TextSecondary),
                 DeskCaption(11f, PoliSimTheme.TextPrimary, false, TextAnchor.MiddleRight));
@@ -761,7 +761,7 @@ namespace PoliSim.UI
                     PoliSimWidgets.MeasuredLabel(
                         new Rect(row.x + actionWidth + targetWidth, row.y,
                             Mathf.Max(1f, row.width - actionWidth - targetWidth), row.height),
-                        string.Format(CultureInfo.InvariantCulture, "{0} kr · {1:F0} h",
+                        string.Format(CultureInfo.InvariantCulture, "{0} " + Purse + " · {1:F0} h",
                             Kronor(s.Queue[i].MoneyCost), s.Queue[i].Hours),
                         figureStyle);
                     y += rowHeight;
@@ -918,7 +918,7 @@ namespace PoliSim.UI
             bool overHours = hours > s.Resources.Hours + 1e-9;
             bool overMoney = money > s.Resources.Money + 1e-9;
             DrawCampaignRow(new Rect(r.x, y, r.width, rowHeight), "Queued today",
-                string.Format(CultureInfo.InvariantCulture, "{0} kr · {1:F0} of {2:F0} h",
+                string.Format(CultureInfo.InvariantCulture, "{0} " + Purse + " · {1:F0} of {2:F0} h",
                     Kronor(money), hours, s.Resources.Hours),
                 DeskBody(13f, PoliSimTheme.TextSecondary),
                 DeskCaption(11f, overHours || overMoney ? PoliSimTheme.Caution : PoliSimTheme.TextPrimary,
@@ -1180,12 +1180,12 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// A krona amount with thousands separators, invariant.
+        /// A purse amount with thousands separators, invariant - kronor in Sweden, the player's own currency elsewhere (`Purse`, GA-2-8).
         ///
         /// **Not `UiFormat.Number`**, which is a plain `F0` and filmed the war chest as `1120000` —
         /// a seven-digit money hero with no separators is illegible at a glance, which is the one
         /// job a hero numeral has. **Not `UiFormat.Money`** either: that is dollar-prefixed and
-        /// tiered (`$1.12M`), and this sheet is denominated in kronor at full precision because a
+        /// tiered (`$1.12M`), and this sheet is denominated in the purse's national units at full precision because a
         /// campaign budget is spent in units a treasurer would recognise, not in rounded millions.
         /// Invariant, like every other numeric site here (B3's defect class).
         /// </summary>
@@ -1193,6 +1193,13 @@ namespace PoliSim.UI
         {
             return amount.ToString("N0", CultureInfo.InvariantCulture);
         }
+
+        /// <summary>
+        /// GA-2-8 (2026-10-14): the purse's word. Campaign money is a separate purse in national units (ruling S-14), so the HQ names the player's own
+        /// currency - "kr" in Sweden, as the HQ was drawn, and the currency's code elsewhere (Germany's EUR, as a carbon rate's EUR/t reads), where
+        /// Sweden's kronor stood on Germany's HQ. The figures are the model's one price table either way (`LiveCampaignSetup`: a German one billed).
+        /// </summary>
+        private string Purse => PlayerCountryId == PoliSim.Data.CountryId.Sweden ? "kr" : PoliSim.Data.EnergyLayer.CurrencyCode(PlayerCountryId);
 
         /// <summary>"TelevisionAd" -> "Television ad", so an enum reads as a verb rather than an identifier.</summary>
         private static string SpacedIdentifier(string pascal)

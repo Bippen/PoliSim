@@ -1,0 +1,69 @@
+# Phase 4, the S4 words' recheck (2026-10-14): another country's word on the player's screen - GA-2-8, Germany's campaign HQ in kronor (the
+# purse is in national units by ruling S-14, so Germany's reads EUR, Sweden's keeps its kr); GA-3-6, Germany's night calling its parties at the
+# "valkrets" count (the Land's, now); GA-10-1, the USA's pages naming the legislature "Parliament" (Congress, now). The findings' plans: area 2's
+# presented plan (Germany's HQ on days 10 and 60), area 3 (every night's text - Sweden's keeps "valkrets") and area 10 (every page at four widths).
+# Expected: e1_de's HQ label tables carry EUR and no kr; the German nights' "each at the Land count it was called"; v_us_*'s pages "Congress" and
+# no "Parliament"; Sweden's, Poland's, Italy's and France's pages and nights as before; no breach, no error.
+#
+# --- Tools/audit/area2b_presented.plan, unchanged ---
+id=e1_se country=Sweden party=M style=idle seed=601 days=370 capture=10:HQ,200:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_de country=Germany party=SPD style=idle seed=602 days=370 capture=10:HQ,60:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_pl country=Poland party=PiS style=idle seed=603 days=370 capture=10:HQ,200:HQ,1:Desk,1:Budget,1:Statistics,30:Budget,30:Energy,366:Desk,366:Budget,366:Statistics,366:Energy
+id=e1_it country=Italy party=FdI style=idle seed=604 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_us country=USA party=DEM style=idle seed=605 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_fr country=France party=RN style=idle seed=606 days=370 capture=1:Desk,1:Budget,1:Statistics,30:Budget,366:Desk,366:Budget,366:Statistics
+id=e1_se_base country=Sweden party=M style=idle seed=601 days=370
+id=e1_se_nocap country=Sweden party=M style=idle seed=601 days=370 compare=e1_se
+#
+# --- area 3, as GA-3-4's recheck ran it (Tools/audit/p4_ga3_4.plan's runs, unchanged) ---
+id=f1_se_m country=Sweden party=M style=idle seed=701 days=1760
+id=f1_se_s country=Sweden party=S style=idle seed=702 days=1760
+id=f1_se_sd country=Sweden party=SD style=historical seed=703 days=1760
+id=f1_se_c country=Sweden party=C style=fuzz seed=704 days=1760
+id=f1_se_l country=Sweden party=L style=idle seed=705 days=1760
+id=f1_se_mp_x country=Sweden party=MP style=extreme pole=small seed=706 days=1760
+id=f2_se_s_motion country=Sweden party=S style=idle seed=711 days=400 motion=10
+id=f2_se_sd_withdraw country=Sweden party=SD style=idle seed=712 days=400 withdraw=10 motion=12
+id=f2_se_sd_fuzz country=Sweden party=SD style=fuzz seed=713 days=400 withdraw=20 motion=25,60
+id=f3_de_spd country=Germany party=SPD style=idle seed=721 days=260
+id=f3_de_cdu country=Germany party=CDU style=historical seed=722 days=260
+id=f3_de_afd country=Germany party=AfD style=idle seed=723 days=260
+id=f3_de_fdp country=Germany party=FDP style=historical seed=724 days=260 leave=1
+id=f3_de_cdu_cv_before country=Germany party=CDU style=idle seed=725 days=260 motion=20
+id=f3_de_cdu_cv_after country=Germany party=CDU style=idle seed=726 days=260 motion=200
+id=f3_de_linke_fuzz country=Germany party=Linke style=fuzz seed=727 days=260
+id=f4_pl_pis country=Poland party=PiS style=idle seed=731 days=1750
+id=f4_pl_ko country=Poland party=KO style=historical seed=732 days=1750
+id=f4_pl_sld country=Poland party=SLD style=idle seed=733 days=300
+id=f4_pl_psl country=Poland party=PSL style=idle seed=734 days=300
+id=f4_pl_mn country=Poland party=MN style=idle seed=735 days=300
+id=f4_pl_konf_fuzz country=Poland party=Konf style=fuzz seed=736 days=900
+id=f5_it country=Italy party=PD style=idle seed=741 days=800
+id=f5_us_rep country=USA party=REP style=idle seed=742 days=800
+id=f5_fr country=France party=UG style=idle seed=743 days=800
+#
+# --- Tools/audit/area10_ui.plan, unchanged ---
+id=v_se_1280x720 country=Sweden party=M style=idle seed=1401 days=380 geometry=1280x720 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,200:HQ
+id=v_de_1280x720 country=Germany party=SPD style=idle seed=1402 days=380 geometry=1280x720 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,60:HQ
+id=v_pl_1280x720 country=Poland party=PiS style=idle seed=1403 days=380 geometry=1280x720 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_it_1280x720 country=Italy party=FdI style=idle seed=1404 days=380 geometry=1280x720 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_us_1280x720 country=USA party=DEM style=idle seed=1405 days=380 geometry=1280x720 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_fr_1280x720 country=France party=RN style=idle seed=1406 days=380 geometry=1280x720 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_se_1600x950 country=Sweden party=M style=idle seed=1407 days=380 geometry=1600x950 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,200:HQ
+id=v_de_1600x950 country=Germany party=SPD style=idle seed=1408 days=380 geometry=1600x950 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,60:HQ
+id=v_pl_1600x950 country=Poland party=PiS style=idle seed=1409 days=380 geometry=1600x950 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_it_1600x950 country=Italy party=FdI style=idle seed=1410 days=380 geometry=1600x950 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_us_1600x950 country=USA party=DEM style=idle seed=1411 days=380 geometry=1600x950 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_fr_1600x950 country=France party=RN style=idle seed=1412 days=380 geometry=1600x950 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_se_1920x1080 country=Sweden party=M style=idle seed=1413 days=380 geometry=1920x1080 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,200:HQ
+id=v_de_1920x1080 country=Germany party=SPD style=idle seed=1414 days=380 geometry=1920x1080 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,60:HQ
+id=v_pl_1920x1080 country=Poland party=PiS style=idle seed=1415 days=380 geometry=1920x1080 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_it_1920x1080 country=Italy party=FdI style=idle seed=1416 days=380 geometry=1920x1080 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_us_1920x1080 country=USA party=DEM style=idle seed=1417 days=380 geometry=1920x1080 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_fr_1920x1080 country=France party=RN style=idle seed=1418 days=380 geometry=1920x1080 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_se_2560x1440 country=Sweden party=M style=idle seed=1419 days=380 geometry=2560x1440 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,200:HQ
+id=v_de_2560x1440 country=Germany party=SPD style=idle seed=1420 days=380 geometry=2560x1440 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy,60:HQ
+id=v_pl_2560x1440 country=Poland party=PiS style=idle seed=1421 days=380 geometry=2560x1440 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_it_2560x1440 country=Italy party=FdI style=idle seed=1422 days=380 geometry=2560x1440 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_us_2560x1440 country=USA party=DEM style=idle seed=1423 days=380 geometry=2560x1440 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy
+id=v_fr_2560x1440 country=France party=RN style=idle seed=1424 days=380 geometry=2560x1440 capture=1:Desk,1:Statistics,1:Decisions,1:Demographics,1:Budget,1:PolicyLaws,1:Politics,1:Energy,366:Desk,366:Statistics,366:Decisions,366:Demographics,366:Budget,366:PolicyLaws,366:Politics,366:Energy

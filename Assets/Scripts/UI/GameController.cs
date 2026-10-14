@@ -3905,6 +3905,17 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>
+        /// GA-10-1 (2026-10-14): the legislature by the country's own word wherever a page names it - "Congress" for the USA, where "Parliament"
+        /// stood on its Politics page and its law tabs; "Parliament" for the parliamentary five (the Riksdag, the Bundestag, the Sejm, the
+        /// Parlamento and the Parlement all read so in English). The same gap `GetCentralBankName` closed for the central bank.
+        /// </summary>
+        private static string GetLegislatureName(CountryId countryId) => countryId == CountryId.USA ? "Congress" : "Parliament";
+
+        /// <summary>GA-10-1: the player's legislature, as a page's sentence names it, and in the slips' capitals.</summary>
+        private string Legislature => GetLegislatureName(PlayerCountryId);
+        private string LegislatureCaps => Legislature.ToUpperInvariant();
+
         /// <summary>C-C7: what this country calls the person who heads its central bank. The type is
         /// `FedChair` for historical reasons and Sweden does not have a Fed chair - the screens carry the
         /// real title so a player is never told their Riksbank has a "Chair", which is the kind of small
@@ -8763,7 +8774,7 @@ namespace PoliSim.UI
             // the per-party stance rows beneath it.
             // §4.3 item 6: the party split, in seat-map order, beneath everything it justifies - the verdict itself is in the decision block.
             GUILayout.Label("HOW THE HOUSE SPLITS", _labelStyle, GUILayout.Width(contentWidth));
-            if (pendingBill != null) { GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before Parliament - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth)); }
+            if (pendingBill != null) { GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before {Legislature} - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth)); }
             DrawLawPartyStances(paneConcern, contentWidth);
 
             // §4.3: the CTA travels with the decision, so it is drawn in the decision block above - see DrawLawPaneAction.
@@ -9407,7 +9418,7 @@ namespace PoliSim.UI
 
             if (pending.Count == 0)
             {
-                GUILayout.Label("No bill currently before Parliament.", _labelStyle);
+                GUILayout.Label("No bill currently before " + Legislature + ".", _labelStyle);
                 return;
             }
 
@@ -9560,9 +9571,9 @@ namespace PoliSim.UI
             }
 
             string statusText = pendingBill != null
-                ? $"A drawdown bill is before Parliament - {UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1)}% of GDP, resolves in {pendingBill.DaysRemaining} day(s)."
+                ? $"A drawdown bill is before {Legislature} - {UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1)}% of GDP, resolves in {pendingBill.DaysRemaining} day(s)."
                 : fundExists
-                    ? "No drawdown bill before Parliament - one withdraws from the fund now, not at the fiscal year."
+                    ? "No drawdown bill before " + Legislature + " - one withdraws from the fund now, not at the fiscal year."
                     : "No fund stands to draw down - the annual budget creates one first.";
             if (DrawLeverLock()) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
             {
@@ -9747,7 +9758,7 @@ namespace PoliSim.UI
             }
             if (pendingBill != null)
             {
-                return $"An annual budget bill is before Parliament - resolves in {pendingBill.DaysRemaining} day(s).";
+                return $"An annual budget bill is before {Legislature} - resolves in {pendingBill.DaysRemaining} day(s).";
             }
 
             // C-C2: ⚠ "only on your country's own fiscal-year date" was TRUE until the incoming
@@ -9763,7 +9774,7 @@ namespace PoliSim.UI
             return !_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? "The budget is the government's to lay - your party votes on its bill."   // PS-3c (§630)
                 : _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
-                : "No budget bill currently before Parliament. The annual process opens on your country's own fiscal-year date.";
+                : "No budget bill currently before " + Legislature + ". The annual process opens on your country's own fiscal-year date.";
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the

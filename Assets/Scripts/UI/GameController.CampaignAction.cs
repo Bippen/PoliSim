@@ -103,7 +103,7 @@ namespace PoliSim.UI
                 Mathf.Ceil(DeskCaptionHeight(DeskCaption(10.5f, PoliSimTheme.TextPrimary))));
             float barHeight = Mathf.Round(7f * uy);
             float rowHeight = nameHeight + barHeight + Mathf.Round(11f * uy);
-            float costWidth = Mathf.Ceil(costStyle.CalcSize(new GUIContent("000,000 kr · 0 h")).x) + Mathf.Round(8f * ux);
+            float costWidth = Mathf.Ceil(costStyle.CalcSize(new GUIContent("000,000 " + Purse + " · 0 h")).x) + Mathf.Round(8f * ux);
             float pad = Mathf.Round(6f * ux);
 
             // ONE scale across every row: this column is a comparison, and a per-row scale would
@@ -133,7 +133,7 @@ namespace PoliSim.UI
                     SpacedIdentifier(option.Kind.ToString()), DeskBody(13f, ink));
                 PoliSimWidgets.MeasuredLabel(
                     new Rect(row.xMax - costWidth - pad, row.y + Mathf.Round(2f * uy), costWidth, nameHeight),
-                    string.Format(CultureInfo.InvariantCulture, "{0} kr · {1:F0} h", Kronor(option.MoneyCost), option.Hours),
+                    string.Format(CultureInfo.InvariantCulture, "{0} " + Purse + " · {1:F0} h", Kronor(option.MoneyCost), option.Hours),
                     DeskCaption(10.5f, ink, false, TextAnchor.MiddleRight));
 
                 // The row's own estimate band, on the shared scale. Unmeasured draws an empty track

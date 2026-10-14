@@ -202,7 +202,7 @@ namespace PoliSim.UI
             LaborPolicyBill draft = BuildLaborBillFromDrafts();
             DrawLawsBillAction(width, "Introduce labour bill", "laws:labourbill", ParliamentSystem.GetLaborBillConcern(c, draft), pending != null, pending != null ? pending.DaysRemaining : 0,
                 LaborDraftChanges(), () => _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts()),
-                pending != null ? $"A Labor Market bill is before Parliament - resolves in {pending.DaysRemaining} day(s)." : "No Labor Market bill before Parliament - the dials above are its draft.");
+                pending != null ? $"A Labor Market bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.");
         }
 
         /// <summary>Immigration's figure: the flow the lever adds, in thousands of people a year against the projection, at the dial's level (DERIVED -
@@ -467,8 +467,8 @@ namespace PoliSim.UI
             }
             float costDelta = draftCost - standingCost;
             string status = pending != null
-                ? $"An Economic Sectors bill is before Parliament - resolves in {pending.DaysRemaining} day(s)."
-                : "No Economic Sectors bill before Parliament - the dials of all eight sectors are its draft"
+                ? $"An Economic Sectors bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)."
+                : "No Economic Sectors bill before " + Legislature + " - the dials of all eight sectors are its draft"
                     + (Mathf.Abs(costDelta) >= 0.0005f ? " · it would change sector support by " + UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions) + " a year." : ".");
             DrawLawsBillAction(width, "Introduce sectors bill", "laws:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
                 pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status);
@@ -801,8 +801,8 @@ namespace PoliSim.UI
             TradePolicyBill pending = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             int changes = TradeDraftChanges(blocMember);
             string status = pending != null
-                ? $"A Trade bill is before Parliament - resolves in {pending.DaysRemaining} day(s)."
-                : "No Trade bill before Parliament - " + (blocMember ? "the override rates are its draft" : "the base rate and the override rates are its draft");
+                ? $"A Trade bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)."
+                : "No Trade bill before " + Legislature + " - " + (blocMember ? "the override rates are its draft" : "the base rate and the override rates are its draft");
             if (pending == null && changes > 0)
             {
                 // pass 6: the draft's cost at the next boundary, the real functions on throwaway clones (SimulationManager.EstimateTradeBill)
@@ -915,8 +915,8 @@ namespace PoliSim.UI
                 LawDefinition law = LawCatalog.GetById(enacted.LawId);
                 if (law == null || !listed.Add(law.Id)) { continue; }
                 bool repealing = bills != null && bills.TryGetValue(law.Id, out LawBill repeal) && repeal.IsRepeal;
-                string state = repealing ? "Repeal before Parliament · " + bills[law.Id].DaysRemaining + " d" : "In force";
-                rows.Add((law, state, true, "IN FORCE SINCE " + enacted.EnactedOn.ToString("d MMM yyyy").ToUpperInvariant() + (repealing ? " · ITS REPEAL IS BEFORE PARLIAMENT, " + bills[law.Id].DaysRemaining + " DAY(S) TO THE VOTE" : string.Empty)));
+                string state = repealing ? "Repeal before " + Legislature + " · " + bills[law.Id].DaysRemaining + " d" : "In force";
+                rows.Add((law, state, true, "IN FORCE SINCE " + enacted.EnactedOn.ToString("d MMM yyyy").ToUpperInvariant() + (repealing ? " · ITS REPEAL IS BEFORE " + LegislatureCaps + ", " + bills[law.Id].DaysRemaining + " DAY(S) TO THE VOTE" : string.Empty)));
             }
             if (bills != null)
             {
@@ -925,13 +925,13 @@ namespace PoliSim.UI
                     if (kv.Value.IsRepeal || listed.Contains(kv.Key)) { continue; }
                     LawDefinition law = LawCatalog.GetById(kv.Key);
                     if (law == null || !listed.Add(law.Id)) { continue; }
-                    rows.Add((law, "Before Parliament · " + kv.Value.DaysRemaining + " d", false, "A BILL TO ENACT IT IS BEFORE PARLIAMENT · " + kv.Value.DaysRemaining + " DAY(S) TO THE VOTE"));
+                    rows.Add((law, "Before " + Legislature + " · " + kv.Value.DaysRemaining + " d", false, "A BILL TO ENACT IT IS BEFORE " + LegislatureCaps + " · " + kv.Value.DaysRemaining + " DAY(S) TO THE VOTE"));
                 }
             }
 
             DrawLawsSectionHead("Laws", "laws:list", width);
             _lawsSlipBook.Anchors["laws:list"] = new SlipContent("LAWS")
-                .Add(rows.Count == 0 ? "NO LAW IS IN FORCE OR BEFORE PARLIAMENT" : rows.Count + (rows.Count == 1 ? " LAW" : " LAWS") + " IN FORCE OR BEFORE PARLIAMENT")
+                .Add(rows.Count == 0 ? "NO LAW IS IN FORCE OR BEFORE " + LegislatureCaps : rows.Count + (rows.Count == 1 ? " LAW" : " LAWS") + " IN FORCE OR BEFORE " + LegislatureCaps)
                 .Add("EACH ROW: THE LAW'S VERB - RAISE, LOWER, BAN OR ALLOW, READ FROM THE SIGNS OF WHAT IT MOVES - ITS NAME AND ITS STATE")
                 .Add("A CLICK OPENS IT IN THE STATUTE BOOK BELOW, WHERE EVERY LAW IS ENACTED AND REPEALED");
             float rowH = V35.Px(V35.ListRow + 7f), pad = V35.Px(V35.CardPadX), padY = V35.Px(8f);
@@ -947,7 +947,7 @@ namespace PoliSim.UI
             GUIStyle wordFace = DeskCaption(6.5f, PoliSimTheme.TextPrimary);
             if (rows.Count == 0)
             {
-                if (repaint) { PoliSimWidgets.MeasuredLabel(listRect, "No law is in force or before Parliament - the statute book below enacts them.", V35Serif(V35.Floor, PoliSimTheme.TextMuted)); }
+                if (repaint) { PoliSimWidgets.MeasuredLabel(listRect, "No law is in force or before " + Legislature + " - the statute book below enacts them.", V35Serif(V35.Floor, PoliSimTheme.TextMuted)); }
                 GUILayout.Space(V35.Px(V35.Gutter));
                 return cardH + V35.Px(26f) + V35.Px(6f) + V35.Px(V35.Gutter);
             }

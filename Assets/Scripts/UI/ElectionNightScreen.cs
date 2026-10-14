@@ -338,7 +338,7 @@ namespace PoliSim.UI
                 // (the Bundestag elects the chancellor weeks later, §705) with WHY as Sweden's; no ESTIMATED IMPACT (no German budget act carries one).
                 Transform countDe = Column(body.transform, "Count", 1.0f);
                 BuildTallyGermany(countDe, state, partyNames, totalSeats, previous);
-                BuildCalls(countDe, state, partyNames);
+                BuildCalls(countDe, state, partyNames, "Land");   // GA-3-6: Germany counts by Land
                 BuildReference(countDe, state, partyNames, reference, inkCountry);
                 Transform centreDe = Column(body.transform, "MapColumn", 1.8f);
                 laender = BuildLaenderMap(centreDe, state, partyNames, previous, inkCountry);
@@ -350,7 +350,7 @@ namespace PoliSim.UI
             }
             Transform count = Column(body.transform, "Count", 1.0f);
             BuildTally(count, state, partyNames, totalSeats, previous);
-            BuildCalls(count, state, partyNames);
+            BuildCalls(count, state, partyNames, "valkrets");
             BuildReference(count, state, partyNames, reference, inkCountry);   // PS-2 (§619): history beside the count, under it; board 21d's table (§685)
 
             Transform centre = Column(body.transform, "MapColumn", 1.8f);
@@ -1209,7 +1209,7 @@ namespace PoliSim.UI
             return lines;
         }
 
-        private static void BuildCalls(Transform parent, NightState state, string[] partyNames)
+        private static void BuildCalls(Transform parent, NightState state, string[] partyNames, string unit)
         {
             Heading(parent, state.Complete ? "THE CALLS, AS THEY LANDED" : "CALLS — SAFE WHATEVER IS STILL OUT");
             if (state.Calls.Count == 0)
@@ -1229,8 +1229,8 @@ namespace PoliSim.UI
                 return;
             }
 
-            SummariseGroup(parent, state, partyNames, CallKind.ThresholdCleared, "HOLD SEATS");
-            SummariseGroup(parent, state, partyNames, CallKind.ThresholdMissed, "SHUT OUT BY THE THRESHOLD");
+            SummariseGroup(parent, state, partyNames, CallKind.ThresholdCleared, "HOLD SEATS", unit);
+            SummariseGroup(parent, state, partyNames, CallKind.ThresholdMissed, "SHUT OUT BY THE THRESHOLD", unit);
             foreach (ElectionCall call in state.Calls)
             {
                 if (call.Kind == CallKind.ThresholdCleared || call.Kind == CallKind.ThresholdMissed) { continue; }
@@ -1240,7 +1240,7 @@ namespace PoliSim.UI
             }
         }
 
-        private static void SummariseGroup(Transform parent, NightState state, string[] partyNames, CallKind kind, string verb)
+        private static void SummariseGroup(Transform parent, NightState state, string[] partyNames, CallKind kind, string verb, string unit)
         {
             var members = new List<ElectionCall>();
             foreach (ElectionCall call in state.Calls) { if (call.Kind == kind) { members.Add(call); } }
@@ -1265,7 +1265,7 @@ namespace PoliSim.UI
                 12, PoliSimTheme.TextPrimary, bold: true);
             if (members.Count > 1)
             {
-                Wrapped(parent, "each at the valkrets count it was called:  " + string.Join(" · ", landed), 11, PoliSimTheme.TextSecondary);
+                Wrapped(parent, "each at the " + unit + " count it was called:  " + string.Join(" · ", landed), 11, PoliSimTheme.TextSecondary);
             }
         }
 

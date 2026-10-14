@@ -238,7 +238,7 @@ namespace PoliSim.UI
                     : selected ? PoliSimTheme.TextPrimary : PoliSimTheme.TextSecondary;
 
                 double moe = offer.MarginOfErrorPp(s.QuotedShare);
-                string headRight = Invariant("{0} kr · ± {1:F1}", Kronor(offer.Cost), moe);
+                string headRight = Invariant("{0} " + Purse + " · ± {1:F1}", Kronor(offer.Cost), moe);
                 float headRightWidth = Mathf.Ceil(
                     DeskCaption(11f, ink, false, TextAnchor.MiddleRight).CalcSize(new GUIContent(headRight)).x) + pad;
 
@@ -258,7 +258,7 @@ namespace PoliSim.UI
                     ? "THE BASELINE"
                     : double.IsPositiveInfinity(perPoint)
                         ? "NO PRECISION GAINED OVER THE BASELINE"
-                        : Invariant("{0} kr PER POINT OF PRECISION GAINED", Kronor(perPoint));
+                        : Invariant("{0} " + Purse + " PER POINT OF PRECISION GAINED", Kronor(perPoint));
 
                 // Line 1: what the offer IS. Line 2: what the extra precision COSTS. Two facts, two
                 // lines - see rowHeight's note for why this is not one line abbreviated to fit.

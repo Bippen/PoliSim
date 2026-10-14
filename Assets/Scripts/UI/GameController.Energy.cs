@@ -137,7 +137,7 @@ namespace PoliSim.UI
             {
                 PoliSimTheme.Rule(new Rect(row.x, row.y, row.width, 1f), PoliSimTheme.RuleRow);
                 string line = offered
-                    ? string.Format(CultureInfo.InvariantCulture, "OPENS LAWS ON THIS CATEGORY · {0} OFFERED · {1} ENACTED · {2} BEFORE PARLIAMENT · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER", ElectricityTaxLawCount, enacted, pending)
+                    ? string.Format(CultureInfo.InvariantCulture, "OPENS LAWS ON THIS CATEGORY · {0} OFFERED · {1} ENACTED · {2} BEFORE " + LegislatureCaps + " · THE ONE CATEGORY THAT REACHES THE ENERGY LAYER", ElectricityTaxLawCount, enacted, pending)
                     : "NO NATIONAL ELECTRICITY EXCISE FOR " + country.Name.ToUpperInvariant() + " · THE LAWS ARE NOT OFFERED";
                 PoliSimWidgets.MeasuredLabel(new Rect(chip.xMax + StatsUnit(8f), row.y, Mathf.Max(10f, row.xMax - chip.xMax - StatsUnit(12f)), row.height), line, caption);
                 _energyLawsLinkLastArea = row;

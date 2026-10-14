@@ -512,7 +512,7 @@ namespace PoliSim.UI
             SlipAnchor(switchHit, id + "/switch");
             var switchSlip = new SlipContent(!mayIntroduce ? "LOCKED" : pending != null ? "PENDING" : levied ? "ON · LEVIED" : "OFF · NOT LEVIED");
             if (!mayIntroduce) { switchSlip.Add(lockedBecause); }
-            else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE PARLIAMENT · " + pending.DaysRemaining + " DAY(S)").Add("IT " + taxVerdict + " ON TODAY'S COUNT"); }
+            else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE " + LegislatureCaps + " · " + pending.DaysRemaining + " DAY(S)").Add("IT " + taxVerdict + " ON TODAY'S COUNT"); }
             else { switchSlip.Add("A CLICK INTRODUCES A BILL OF ITS OWN TO " + (levied ? "REMOVE" : "LEVY") + " IT - VOTED THEN, NOT WITH THE BUDGET").Add("IF INTRODUCED NOW · " + taxVerdict); }
             if (mayIntroduce && ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { switchSlip.Add(taxVetoLine); }
             _budgetSlipBook.Anchors[id + "/switch"] = switchSlip;
@@ -549,7 +549,7 @@ namespace PoliSim.UI
                 slip.Add(TaxSchedule.KindWord(TaxSchedule.Of(_playerCountry.Id).Kind) + " · AVERAGE EFFECTIVE RATE AT THE MEAN INCOME "
                     + TaxSchedule.AverageEffectiveRateAtMeanIncome(_playerCountry, taxLine, draftRate).ToString("0.0", CultureInfo.InvariantCulture) + "% · THE STATUTE BELOW");
             }
-            if (pending != null) { slip.Add("PENDING - A PROGRAMME BILL IS BEFORE PARLIAMENT; THE RATE WAITS FOR IT"); }
+            if (pending != null) { slip.Add("PENDING - A PROGRAMME BILL IS BEFORE " + LegislatureCaps + "; THE RATE WAITS FOR IT"); }
             if (!levied) { slip.Add("NOT LEVIED - THE SWITCH INTRODUCES THE BILL THAT WOULD LEVY IT"); }
             _budgetSlipBook.Anchors[id] = slip;
         }
@@ -878,7 +878,7 @@ namespace PoliSim.UI
                 SlipAnchor(row, "budget:introduce");
                 _budgetSlipBook.Anchors["budget:introduce"] = new SlipContent("INTRODUCE BUDGET BILL")
                     .Add(changes > 0 ? "ONE BILL FOR EVERY DIAL DRAFTED ON EVERY TAB · " + changes + (changes == 1 ? " CHANGE" : " CHANGES") : "MOVE A DIAL TO DRAFT · AN UNCHANGED BILL RESTATES THE STANDING BUDGET")
-                    .Add(enabled ? "IT GOES TO PARLIAMENT ON THE CLICK" : pendingBill != null ? "A BUDGET BILL IS BEFORE PARLIAMENT ALREADY" : "THE BUDGET PROCESS IS NOT OPEN");
+                    .Add(enabled ? "IT GOES TO " + LegislatureCaps + " ON THE CLICK" : pendingBill != null ? "A BUDGET BILL IS BEFORE " + LegislatureCaps + " ALREADY" : "THE BUDGET PROCESS IS NOT OPEN");
             }
             else
             {
