@@ -1,0 +1,5 @@
+# Phase 4, GA-3-4's control (2026-10-14): the three repro runs of `p4_ga3_4.plan` on HEAD's code (GovernmentRecord, EconomicVote and the two
+# callers put back for the run only), today's harness - so the fix is the one difference.
+id=f2_se_sd_withdraw country=Sweden party=SD style=idle seed=712 days=400 withdraw=10 motion=12
+id=f2_se_sd_fuzz country=Sweden party=SD style=fuzz seed=713 days=400 withdraw=20 motion=25,60
+id=f3_de_fdp country=Germany party=FDP style=historical seed=724 days=260 leave=1

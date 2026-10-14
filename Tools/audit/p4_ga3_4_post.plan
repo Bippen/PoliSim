@@ -1,0 +1,7 @@
+# Phase 4, GA-3-4's review (2026-10-14): GA-4-1's three runs (`Tools/audit/area4_office.plan`, unchanged) on the fixed code with the review's
+# harness note - an exit now relabels the record, so the minority it leaves reads MinorityGovernment and passes the GOVERNMENT invariant as
+# declared; the invariant counts it as the note EXIT-MINORITY instead, so GA-4-1 (what follows the exit, GA-0-16's ruling) stays measured.
+# Expected: no breach; EXIT-MINORITY counted from each exit to the next government (GA-4-1's row: 1,393 days for L, 177 for KD, 207 for SD).
+id=g1_se_kd_leave country=Sweden party=KD style=idle seed=801 days=1760 leave=60
+id=g1_se_l_leave country=Sweden party=L style=idle seed=802 days=1760 leave=300
+id=g1_se_sd_withdraw country=Sweden party=SD style=idle seed=803 days=1760 withdraw=30

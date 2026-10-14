@@ -105,7 +105,7 @@ namespace PoliSim.Elections
         {
             GovernmentRecord g = country?.Government;
             if (g == null) { return null; }
-            if ((g.Outcome == "of record" || g.Provisional) && WorldClock.TryGovernmentAt(country.Id, g.FormedOn, out WorldClock.GovernmentOfRecord row)
+            if ((g.Outcome == "of record" || g.OfRecord || g.Provisional) && WorldClock.TryGovernmentAt(country.Id, g.FormedOn, out WorldClock.GovernmentOfRecord row)
                 && !string.IsNullOrEmpty(g.PmParty) && HeadParty(row.Head) == g.PmParty)
             {
                 DateTime opened = Simulation.PublicationSystem.PreStartWindowOpens(country.Id, g.FormedOn);

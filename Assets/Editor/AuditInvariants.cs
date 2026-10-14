@@ -41,13 +41,26 @@ namespace PoliSim.EditorTools
 
         internal int Breaches => _counts.Values.Sum();
 
+        /// <summary>§819: what a run measures for a ledger row the code does not yet answer - counted and printed like a breach, never failing the run.</summary>
+        private readonly Dictionary<string, int> _noteCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+
         internal string Summary()
         {
             var sb = new StringBuilder();
             sb.Append("invariants exercised: ").Append(string.Join(" ", _exercised.OrderBy(s => s, StringComparer.Ordinal)));
             if (_counts.Count == 0) { sb.Append("; no breach"); }
             else { sb.Append("; BREACHES: ").Append(string.Join(", ", _counts.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => p.Key + " x" + p.Value.ToString(CultureInfo.InvariantCulture)))); }
+            if (_noteCounts.Count > 0) { sb.Append("; notes: ").Append(string.Join(", ", _noteCounts.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p => p.Key + " x" + p.Value.ToString(CultureInfo.InvariantCulture)))); }
             return sb.ToString();
+        }
+
+        private void Note(string note, string key, int day, DateTime date, string detail)
+        {
+            _noteCounts[note] = (_noteCounts.TryGetValue(note, out int n) ? n : 0) + 1;
+            if (_seen.Add("NOTE|" + note + "|" + key))
+            {
+                _log($"NOTE {note} day {day} ({date:yyyy-MM-dd}): {detail}");
+            }
         }
 
         private void Breach(string invariant, string key, int day, DateTime date, string detail)
@@ -198,7 +211,8 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>A government holds a majority or is a declared minority - recomputed from the seats, never trusted from its label (the elections
-        /// inventory's D-14: the label is not recomputed when a partner leaves). The declared exceptions are named, not failed.</summary>
+        /// inventory's D-14: the label was not recomputed when a partner left, until §819's GA-3-4). The declared exceptions are named, not failed;
+        /// a minority an exit left is counted as the note EXIT-MINORITY.</summary>
         internal void Government(Country c, SimulationManager sm, int day, DateTime date)
         {
             GovernmentRecord g = c.Government;
@@ -225,9 +239,17 @@ namespace PoliSim.EditorTools
             bool countDay = c.ElectionHistory.Count > 0 && c.ElectionHistory[c.ElectionHistory.Count - 1].Date.Date == date.Date && g.FormedOn.Date < date.Date;
             if (g.Caretaker || g.Outcome == "what-if" || (round != null && round.Open) || countDay) { return; }
 
-            // Outside those, a label saying majority below one is the inventory's lead D-14 (a partner's exit does not recompute it).
+            // Outside those, a label saying majority below one is the inventory's lead D-14 - an exit relabels the record since §819 (GA-3-4), so this
+            // now reads a label some other path left standing.
             if (g.Outcome == "MajorityCoalition") { Breach("GOVERNMENT", key + "|label", day, date, $"{c.Id} labelled MajorityCoalition below a majority: {state}"); return; }
-            if (g.Outcome == "MinorityGovernment") { return; }   // declared
+            if (g.Outcome == "MinorityGovernment")
+            {
+                // declared - and since §819 the label an exit leaves: a minority a supporter's withdrawal or a partner's exit left is counted a day at a
+                // time as a note, never a breach - what follows the exit is GA-0-16's ruling (GA-4-1, open), and the run keeps measuring it
+                string exit = g.Breaks?.LastOrDefault(b => b.Contains("withdrew its support") || b.Contains("left the government"));
+                if (exit != null) { Note("EXIT-MINORITY", key, day, date, $"{c.Id} a minority an exit left, nothing following it: {state} - {exit}"); }
+                return;
+            }
             Breach("GOVERNMENT", key, day, date, $"{c.Id} neither a majority, a supported minority nor a declared minority: {state}");
         }
 

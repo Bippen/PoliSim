@@ -136,18 +136,21 @@ namespace PoliSim.EditorTools
                     F("(d) Sweden's government took office {0:yyyy-MM-dd} - Kristersson's, 2022-10-18", measuredAfter[CountryId.Sweden].TookOffice));
                 // (d) the walk-back itself, on planted governments (the first review's defect 3: no start reaches it), where it must stop - at the latest
                 // election, by election day (the second review's defect 1) - and every branch proven by a plant that fails without it (its defect 2)
-                DateTime? Took(CountryId id, DateTime formed, string pm, string outcome, bool provisional, WorldClock.ExecutiveKind kind = WorldClock.ExecutiveKind.Cabinet)
+                DateTime? Took(CountryId id, DateTime formed, string pm, string outcome, bool provisional, WorldClock.ExecutiveKind kind = WorldClock.ExecutiveKind.Cabinet, bool ofRecord = false)
                 {
                     using (SimulationManager.EpochScope())
                     {
                         WorldClock.ApplyStart(id);
                         Country c = WorldFactory.CreateDefault().GetCountry(id);
-                        c.Government = new GovernmentRecord { FormedOn = formed, PmParty = pm, Outcome = outcome, Provisional = provisional, Kind = kind };
+                        c.Government = new GovernmentRecord { FormedOn = formed, PmParty = pm, Outcome = outcome, Provisional = provisional, Kind = kind, OfRecord = ofRecord };
                         return EconomicVote.TookOffice(c);
                     }
                 }
                 DateTime? scholzMinority = Took(CountryId.Germany, new DateTime(2024, 11, 7), "SPD", "of record", false);
                 Check(scholzMinority == new DateTime(2021, 12, 8), F("(d) planted: Scholz's minority of record from 2024-11-07 took office {0:yyyy-MM-dd} - walked back to 2021-12-08 over the FDP's exit (the walk)", scholzMinority));
+                // §819 (GA-3-4): the same government once an exit has relabelled it - the label says MinorityGovernment, the provenance rides OfRecord
+                DateTime? relabelled = Took(CountryId.Germany, new DateTime(2024, 11, 7), "SPD", "MinorityGovernment", false, ofRecord: true);
+                Check(relabelled == new DateTime(2021, 12, 8), F("(d) planted: Scholz's government of record relabelled a minority by an exit, from 2024-11-07, took office {0:yyyy-MM-dd} - walked back to 2021-12-08 as before the label moved (the OfRecord gate)", relabelled));
                 DateTime? caretaker = Took(CountryId.Sweden, new DateTime(2026, 9, 17), "M", "of record", false);
                 Check(caretaker == new DateTime(2026, 9, 17), F("(d) planted: Kristersson's caretaker of record from 2026-09-17 took office {0:yyyy-MM-dd} - the 2026-09-13 election stops the walk short of 2022-10-18 (the of-record stop)", caretaker));
                 DateTime? window = Took(CountryId.Germany, new DateTime(2025, 3, 25), "SPD", "of record", false);

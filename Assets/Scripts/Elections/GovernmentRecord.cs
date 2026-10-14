@@ -36,6 +36,11 @@ namespace PoliSim.Elections
         /// <summary>The prime minister's party by key - the premise above.</summary>
         public string PmParty;
         public string Outcome;
+        /// <summary>GA-3-4 (2026-10-14): a government of record whose label <see cref="Relabel"/> replaced with the outcome the seats give - set as the
+        /// "of record" label goes, because the economic vote measures such a government's term from the record's row (`EconomicVote.TookOffice`). False
+        /// on every record never relabelled, a government of record among them (its label still says so - an older save's too): the provenance is
+        /// this flag OR that label, and `TookOffice` reads the two together.</summary>
+        public bool OfRecord;
         public DateTime FormedOn;
         /// <summary>True while the record is the formation's stand-in for a government the record does not yet hold (§605).</summary>
         public bool Provisional;
@@ -84,21 +89,51 @@ namespace PoliSim.Elections
         /// </summary>
         [Newtonsoft.Json.JsonIgnore] public int Version { get; private set; }
 
-        /// <summary>A support party withdraws: struck from the support. False when it was not supporting.</summary>
-        public bool WithdrawSupport(string party)
+        /// <summary>A support party withdraws: struck from the support, and the record relabelled by what it now stands on (GA-3-4). False when it was not supporting.</summary>
+        public bool WithdrawSupport(string party, Country country)
         {
             if (!Support.Remove(party)) { return false; }
             Version++;
+            Relabel(country);
             return true;
         }
 
-        /// <summary>A junior partner leaves the cabinet; the portfolios are re-apportioned among those who stay. False when it was not in the cabinet.</summary>
+        /// <summary>A junior partner leaves the cabinet; the portfolios are re-apportioned among those who stay, and the record relabelled by what it
+        /// now stands on (GA-3-4). False when it was not in the cabinet.</summary>
         public bool LeaveCabinet(string party, Country country)
         {
             if (!Cabinet.Remove(party)) { return false; }
             Version++;   // before the portfolios, so a throw there cannot leave the cabinet changed and the version not (the second reading)
             AllocatePortfolios(country);
+            Relabel(country);
             return true;
+        }
+
+        /// <summary>
+        /// GA-3-4 (2026-10-14): the outcome the record stands on, read off the chamber's seats after a supporter withdraws or a partner leaves - a
+        /// cabinet with a majority of its own (`MajorityCoalition`), a cabinet its remaining support carries to one (`ConfidenceAndSupply`), or a
+        /// minority (`MinorityGovernment`). The label it replaces (a government "of record" with SD's support gone sat on 103 of 349 seats still so
+        /// labelled; the SPD and the Greens on 324 of 736 after the FDP left) said a majority the seats no longer gave. What follows the exit is
+        /// GA-0-16's question; this only names what stands. A government of record keeps its provenance in <see cref="OfRecord"/>; France's what-if
+        /// and a presidency (whose government is not a chamber's majority) keep their labels. Private: only the two exits above call it, each after
+        /// bumping the version (§642's contract).
+        /// </summary>
+        private void Relabel(Country country)
+        {
+            if (Outcome == "what-if" || Outcome == "none" || Kind == WorldClock.ExecutiveKind.Presidency) { return; }
+            if (country?.ParliamentSeats == null || country.ParliamentSeats.Count == 0) { return; }
+            if (Outcome == "of record") { OfRecord = true; }
+            int total = 0, cabinet = 0, support = 0;
+            foreach (KeyValuePair<string, int> seat in country.ParliamentSeats)
+            {
+                total += seat.Value;
+                if (Cabinet.Contains(seat.Key)) { cabinet += seat.Value; }
+                else if (Support.Contains(seat.Key)) { support += seat.Value; }
+            }
+            int majority = total / 2 + 1;
+            Outcome = cabinet >= majority ? CoalitionOutcomeKind.MajorityCoalition.ToString()
+                : Support.Count > 0 && cabinet + support >= majority ? CoalitionOutcomeKind.ConfidenceAndSupply.ToString()
+                : CoalitionOutcomeKind.MinorityGovernment.ToString();
         }
 
         /// <summary>The Speaker discharges the government; it serves on as a caretaker from <paramref name="on"/> (RF 6 kap. 9 §, 11 §) - and, §646, the

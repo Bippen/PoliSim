@@ -2804,7 +2804,7 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.Support) { refusedBecause = "YOUR PARTY IS NOT A SUPPORT PARTY"; return false; }
-            country.Government.WithdrawSupport(country.PlayerPartyAbbrev);
+            country.Government.WithdrawSupport(country.PlayerPartyAbbrev, country);
             country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it; the chamber's confidence votes read it (§636)");
             Debug.Log($"AGREEMENT: {countryId} - {country.PlayerPartyAbbrev} withdrew its support");
             return true;
@@ -2995,7 +2995,7 @@ namespace PoliSim.Simulation
                 Elections.SupportAgreement agreement = g.AgreementOf(supporter);
                 if (agreement == null || !agreement.PastTolerance()) { continue; }
                 int broken = agreement.Count(Elections.AgreementState.Broken);
-                g.WithdrawSupport(supporter);
+                g.WithdrawSupport(supporter, country);
                 g.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {supporter} withdrew its support over {broken} broken item(s) of its agreement's {agreement.Items.Count}, past the share it tolerates");
                 Debug.Log($"AGREEMENT: {country.Id} - {supporter} withdrew its support over {broken} broken item(s)");
             }

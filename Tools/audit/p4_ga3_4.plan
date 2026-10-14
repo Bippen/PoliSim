@@ -1,0 +1,30 @@
+# Phase 4, GA-3-4's recheck (2026-10-14): a government is relabelled by its seats when a supporter withdraws or a partner leaves, its provenance
+# ("of record") kept for the economic vote. The whole of area 3 (the elections; the repro is f2_se_sd_withdraw, f2_se_sd_fuzz and f3_de_fdp, with
+# GOVERNMENT breaches x8, x11 and x106 before). Expected: no GOVERNMENT breach; against `p4_ga3_4_pre.plan` (the three on HEAD's code, today's
+# harness) nothing moves but the label.
+#
+id=f1_se_m country=Sweden party=M style=idle seed=701 days=1760
+id=f1_se_s country=Sweden party=S style=idle seed=702 days=1760
+id=f1_se_sd country=Sweden party=SD style=historical seed=703 days=1760
+id=f1_se_c country=Sweden party=C style=fuzz seed=704 days=1760
+id=f1_se_l country=Sweden party=L style=idle seed=705 days=1760
+id=f1_se_mp_x country=Sweden party=MP style=extreme pole=small seed=706 days=1760
+id=f2_se_s_motion country=Sweden party=S style=idle seed=711 days=400 motion=10
+id=f2_se_sd_withdraw country=Sweden party=SD style=idle seed=712 days=400 withdraw=10 motion=12
+id=f2_se_sd_fuzz country=Sweden party=SD style=fuzz seed=713 days=400 withdraw=20 motion=25,60
+id=f3_de_spd country=Germany party=SPD style=idle seed=721 days=260
+id=f3_de_cdu country=Germany party=CDU style=historical seed=722 days=260
+id=f3_de_afd country=Germany party=AfD style=idle seed=723 days=260
+id=f3_de_fdp country=Germany party=FDP style=historical seed=724 days=260 leave=1
+id=f3_de_cdu_cv_before country=Germany party=CDU style=idle seed=725 days=260 motion=20
+id=f3_de_cdu_cv_after country=Germany party=CDU style=idle seed=726 days=260 motion=200
+id=f3_de_linke_fuzz country=Germany party=Linke style=fuzz seed=727 days=260
+id=f4_pl_pis country=Poland party=PiS style=idle seed=731 days=1750
+id=f4_pl_ko country=Poland party=KO style=historical seed=732 days=1750
+id=f4_pl_sld country=Poland party=SLD style=idle seed=733 days=300
+id=f4_pl_psl country=Poland party=PSL style=idle seed=734 days=300
+id=f4_pl_mn country=Poland party=MN style=idle seed=735 days=300
+id=f4_pl_konf_fuzz country=Poland party=Konf style=fuzz seed=736 days=900
+id=f5_it country=Italy party=PD style=idle seed=741 days=800
+id=f5_us_rep country=USA party=REP style=idle seed=742 days=800
+id=f5_fr country=France party=UG style=idle seed=743 days=800

@@ -234,9 +234,9 @@ Existing checks to reuse: `Assets/Editor/PollingDayDiagnostic.cs`, `WorldClockDi
   - a `CoalitionOutcomeKind` name: `MajorityCoalition`, `ConfidenceAndSupply` or `MinorityGovernment`, set by `FromView` 295 and `FromProposal` 210;
   - `"of record"` (`AtStart` 260), `"what-if"` (France, 283) or `"none"` (294).
 - **The rule that sets the kind.** `CoalitionFormation.cs:597-600`: Majority when cabinet ≥ majority; C&S when cabinet + support ≥ majority with support declared; otherwise Minority.
-  - A government only wins if supported ≥ majority, or under the negative rule (opposed < majority). The negative rule is Sweden only (`GovernmentFormation.cs:475`). So `MinorityGovernment` can only arise in Sweden.
+  - A government only wins if supported ≥ majority, or under the negative rule (opposed < majority). The negative rule is Sweden only (`GovernmentFormation.cs:475`). So `MinorityGovernment` can only arise in Sweden. *(History since §819, GA-3-4: an exit now relabels the record by its seats, so a minority left by a supporter's withdrawal or a partner's exit reads `MinorityGovernment` in any chamber.)*
   - `SeatedGovernment.TryAsResult` applies the same rule to an installed record (117-121).
-- **Recompute from seats; do not trust the label.** Use `Government.Cabinet`, `Government.Support` and `ParliamentSeats`. `Outcome` is not updated after `LeaveCabinet` or `WithdrawSupport` (`GovernmentRecord.cs:88-102`; D-14).
+- **Recompute from seats; do not trust the label.** Use `Government.Cabinet`, `Government.Support` and `ParliamentSeats`. `Outcome` is not updated after `LeaveCabinet` or `WithdrawSupport` (`GovernmentRecord.cs:88-102`; D-14). *(History: both relabel it since §819, GA-3-4; the audit's GOVERNMENT invariant still recomputes from the seats, and counts a minority an exit left as the note EXIT-MINORITY.)*
 - **Expected exceptions to whitelist:**
   - `Caretaker == true` (67);
   - France's `"what-if"`;
@@ -301,6 +301,7 @@ Existing checks to reuse: `Assets/Editor/PollingDayDiagnostic.cs`, `WorldClockDi
 - **D-14: the coalition label goes stale and nothing follows a partner's exit.**
   - `WithdrawSupport` and `LeaveCabinet` change the cabinet or support without recomputing `Outcome` (`GovernmentRecord.cs:88-102`).
   - A record can read "MajorityCoalition" below a majority.
+  - *History: the label half is fixed in §819 (GA-3-4) - the record is relabelled by its seats at each exit. That nothing follows the exit stands (GA-4-1, GA-0-16).*
   - Outside the AI-motion test nothing follows a partner's exit; spec §5.2 says "the government may fall".
 
 ### Severity S3
