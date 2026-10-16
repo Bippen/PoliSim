@@ -731,7 +731,8 @@ The override is two thirds of those present and voting, a quorum present, as the
 ```text
 R-US17'S RULE (c) - Elias's rulings H1-H3: a seeded draw of defectors on the USA's veto
 path, fitted and measured on the record before it reaches play (US-21). Preregistered in
-COMPLETED.md section 832, specified by a design panel blind to every figure of the rule.
+COMPLETED.md section 832, specified by a design panel blind to every figure of the rule;
+amended at section 833 (Elias's answer of 2026-10-16 on S2's reading, before any run).
 
 "Asserted" means the named check (by default the instrument) fails while the statement is
 false. A DEFECT is a code or data failure: it fails the check that finds it (the
@@ -1271,12 +1272,13 @@ THE STOPS, evaluated in this order:
 - S3, TOO THIN (the panel's addition, not one of R-US17's two STOPs): any cell is UNFITTED
   after pooling. A decision cannot be computed on an unfitted cell (H4), so the rule
   re-asks. When S3 fires, S1 and S2 are not evaluated, and their figures print UNFITTED.
-- S2, NEVER SENDS (R-US17's second STOP, as worded: "a party-bloc Congress under Rule XXII
-  never sends a vetoable bill"; the record's measures of V_XXII stand for the vetoable
-  bills). It fires iff:
+- S2, NEVER SENDS (R-US17's second STOP: "a party-bloc Congress under Rule XXII never
+  sends a vetoable bill"; the record's measures of V_XXII stand for the vetoable bills;
+  "never" read as Elias answered on 2026-10-16, in the typical world). It fires iff:
   - case "no Rule XXII measure on the veto path": V_XXII is empty (its figures print
     "UNFITTED m=0"); or
-  - case "never sends": E_XXII[vetoable sent] = 0 exactly (that is, P(NONE_XXII) = 1).
+  - case "never sends": 2 * P(NONE_XXII) >= 1, that is, the chance that no measure of
+    V_XXII is sent is at least one half.
 - S1, FAR MORE (R-US17's first STOP as US-10 read it before its first run, s802,
   PROVISIONAL under G5; also R-US17's test "(a) only if its precision ... is at least
   B1's"), pooled over every kind. It is evaluated only where E[named] > 0, and it fires
@@ -1433,8 +1435,9 @@ printed; never a stop)
 - R11: a thin cell pooled with the other role of its chamber.
 - R12: the veto drawn at (a)'s FITTED precision (F3's form): expected vetoes = E[named] *
   precision.
-- R13: S2 at P(NONE_XXII) >= 1/2; S2 at E_XXII[vetoable sent] < 1; S2 over every kind (V
-  in place of V_XXII); S1 on the BOOT upper bound (strict) and on the lower bound (lax).
+- R13: S2 at E_XXII[vetoable sent] = 0 exactly (the words' own reading, the preregistered
+  default); S2 at E_XXII[vetoable sent] < 1; S2 over every kind (V in place of V_XXII);
+  S1 on the BOOT upper bound (strict) and on the lower bound (lax).
 - R14: N_MIN = 20.
 - R15: the override with (a) the passage's full drawn crossers, whether or not they
   entered the passage, and (b) a fresh keyed draw ("|override") from the same cells.
@@ -1464,13 +1467,12 @@ PREMISES, stated and not read:
 ==========================================================================================
 QUESTIONS FOR ELIAS
 ==========================================================================================
-One, asked beside the block (the plan, after the digests line), never blocking the first
-run: S2's reading of "never". The default is the words' own, E_XXII[vetoable sent] = 0
-exactly; R13 prints P(NONE_XXII) >= 1/2 and E_XXII[vetoable sent] < 1 beside it. An answer
-that comes before the first run is written in by amendment with a new digest; otherwise
-the first run is on this default, and an answer after it is G1's case. Every other choice
-is a default with its reason and, where it is contestable, a reading printed beside it
-and named in the verdict line where its outcome differs.
+None open. The one asked at s832, S2's reading of "never", Elias answered on 2026-10-16,
+before any run: the typical world, P(NONE_XXII) >= 1/2 (THE DECISION, S2), written in by
+amendment at s833; R13 prints the words' own reading (E_XXII[vetoable sent] = 0 exactly,
+the preregistered default) and E_XXII[vetoable sent] < 1 beside it. Every other choice is
+a default with its reason and, where it is contestable, a reading printed beside it and
+named in the verdict line where its outcome differs.
 
 ==========================================================================================
 THE RULING RECORD AND THE BARS
@@ -1570,9 +1572,11 @@ THE RULING RECORD AND THE BARS
 
 **Ruling record:** NONE (§832) - the instrument is not built; its first run registers the outcome.
 
-**The block's digests** (the instrument's list): preregistered `577456a92d1ff7380bd44374b0c6fd02738452f09dfd53396f5aa988887e877a` (§832).
+**The block's digests** (the instrument's list): preregistered `577456a92d1ff7380bd44374b0c6fd02738452f09dfd53396f5aa988887e877a` (§832); AMENDED (Elias's answer on S2's reading, 2026-10-16, §833): `577456a92d1ff7380bd44374b0c6fd02738452f09dfd53396f5aa988887e877a` -> `24de40a77bbaddfaccb98df91a648206fcd5c47bf1b5b6a658caba7270058c9c`.
 
 **Asked blind, before the first run (§832).** One choice, which H1-H3 leave open and which the review named (`Reviews/2026-10-16_s832_rus17c_rule_review.md`, fidelity-F1 and inference-S2-knife-edge, refuted as a declared default rather than a defect): **S2's reading of "never"** - R-US17's second STOP, "a party-bloc Congress under Rule XXII never sends a vetoable bill". Under the draw a measure is sent with a probability, so "never" has to be read. By default it is read as the words have it: the expected number of the record's vetoable measures sent under Rule XXII exactly 0 (equivalently, the chance that none is sent exactly 1). A single measure of the record that the draw can carry through both chambers with any probability at all - past cloture in the Senate and, where the president's party holds the House, through the House too, on crossings recorded on other measures' roll calls - then keeps S2 silent. The alternatives: the chance that none is sent at least one half (the design panel's judge chose this; its reviser restored the words' own reading), or an expected count below one. Reading R13 prints both on every run. **The first run does not wait on the answer** - a default of this block (QUESTIONS FOR ELIAS), not a ruling of Elias's: R-US18's and R-US19's choices waited for his word (G1; §791, §794), while H3 asks only that the digest precede the first run. An answer that comes before it is written into the block by amendment with a new digest; one that comes after it is a choice changed after a result is seen (G1's principle, by analogy), and reported.
+
+**Answered (Elias, 2026-10-16, before any run; installed §833):** the typical world - S2 fires when the chance that no vetoable measure of the record is sent under Rule XXII is at least one half (2 x P(NONE_XXII) >= 1, on exact rationals). Written into the block by amendment, the digest moved as listed above. Reading R13 now prints the words' own reading (the expected count exactly 0, the preregistered default) and the expected count below one beside it. The first run is on the amended block.
 
 **R-US18 — The House's seat method** *(US-11's errors; blocks US-16)*.
 - (a) 435 districts by uniform swing on the latest House election's district results, uncontested seats by a DECLARED rule, and mid-decade redraws entering as dated variants once each enacted map is read;

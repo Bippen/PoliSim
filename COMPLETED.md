@@ -38476,3 +38476,20 @@ Elias is told both, in this record and in the session's report.
 **Next:** the instrument's first run, in its own commit (`UsVeto`, `UsVetoDrawCheck`, the catalog, the document, the mutation suite; the cheap, documents and simulation bars), on the block as preregistered or as amended by Elias's answer. Then US-14 and US-32 (H5).
 
 **Bars** (tier DOCUMENTS, on this commit's own tree): the documents bar **13 of 13** (`doc832`, the record in); then MojibakeCheck, DocumentClaimCheck, ResidueCheck and PreWiringPremiseCheck by name (`named832`, **4 of 4**). The block's digest read from the index blob and from the working copy, equal; R-US18's and R-US19's read again, unchanged. Both ran detached from the session. No film owed: nothing on screen changed; no tool, catalog or code changed.
+
+## 833. ELIAS'S ANSWER ON S2'S READING INSTALLED BEFORE ANY RUN: R-US17'S RULE (c) STOPS ON "NEVER SENDS" IN THE TYPICAL WORLD - THE CHANCE THAT NO VETOABLE MEASURE IS SENT UNDER RULE XXII AT LEAST ONE HALF; THE BLOCK AMENDED, ITS NEW DIGEST LISTED (2026-10-16)
+
+**What was given** (Elias, 2026-10-16, answering the one choice §832 asked blind, before the instrument exists): "Typical world". R-US17's second STOP - "a party-bloc Congress under Rule XXII never sends a vetoable bill" - had to be read, because under H1's draw a measure is sent with a probability. The block's default was the words' own: the expected count of vetoable measures sent under Rule XXII exactly 0. The two refuted review findings of §832 had shown it can almost never fire, since any one measure the draw can carry through both chambers keeps it silent. The alternatives offered: the chance that none is sent at least one half - the panel judge's pick - or an expected count below one. He chose the first, which the session had recommended.
+
+**What changed** (`docs/specs/USA_STAGE_PLAN.md`; the diff touches four places of the block and nothing else):
+- **THE DECISION, S2:** the case "never sends" fires iff 2 x P(NONE_XXII) >= 1 on exact rationals - the chance that no measure of V_XXII is sent at least one half. The case "no Rule XXII measure on the veto path" (V_XXII empty) is unchanged.
+- **R13** now prints the words' own reading (the expected count exactly 0, the preregistered default) and the expected count below one beside the rule. As every reading, they never stop it.
+- **QUESTIONS FOR ELIAS:** none open; the answer recorded there.
+- **The header:** "amended at section 833".
+- **Outside the block:** the digests line gains the amendment (`577456a9` -> **`24de40a77bbaddfaccb98df91a648206fcd5c47bf1b5b6a658caba7270058c9c`**, 840 lines, 57,244 bytes), in R-US18's form. An "Answered" line follows the asked paragraph. The ruling record stays NONE: the instrument is not built.
+
+**Why an amendment, not a re-preregistration:** the answer came before any run, as G1's did for R-US18 and R-US19 (§797). So the first run is on the amended block, and the instrument's list will hold both digests, the preregistered one first. No figure of the rule exists; the session still has computed none.
+
+**Review** (`rus17c-amend833-review`, run `wf_128148cc-824`; appended to `Reviews/2026-10-16_s832_rus17c_rule_review.md`): one finder over the amendment's diff, the block and the plan's lines after it, each finding put to a refute-first skeptic: **0 confirmed, 5 refuted.** The amendment form's "Hn" is a placeholder the block itself fills with "his answer to QUESTIONS FOR ELIAS". The empty V_XXII meeting both S2 cases predates the amendment and names no outcome. The asked paragraph is a dated record of the question, which the plan never rewrites; the answer follows it.
+
+**Bars** (tier DOCUMENTS, on this commit's own tree): the documents bar **13 of 13** (`doc833`, the record in); then MojibakeCheck, DocumentClaimCheck, ResidueCheck and PreWiringPremiseCheck by name (`named833`, **4 of 4**). The amended block's digest read from the index blob and from the working copy, equal; R-US18's and R-US19's unchanged. Both ran detached from the session.

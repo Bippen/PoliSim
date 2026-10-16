@@ -1664,3 +1664,85 @@ Two lenses (did each fix land whole; the whole block once more) read the block a
 
 - REFUTED: "Hn" is an example placeholder, not a fixed label format, and the claimed consequence (a forced mislabel or a rejected amendment) cannot happen. (1) The rule itself is "one entry per amendment naming Elias's ruling" (USA_STAGE_PLAN.md:1485-1486), and the block points to "R-US18's form" for the list (USA_STAGE_PLAN.md:1483). (2) R-US18 sets the precedent. Its prose template reads "AMENDED (Fn): old -> new" (USA_STAGE_PLAN.md:1583), but the amendment it actually recorded is "AMENDED (G1, §797)" (USA_STAGE_PLAN.md:1801), and R-US19 recorded "AMENDED (G1-G3, §797)" (line 2066). So a letter in these templates has never limited which ruling gets named; the real ruling's name is written in. (3) The built instruments keep each entry's label as a free string that nothing parses. UsHouseCountCheck.cs:31-35 declares `(string Digest, string Why)[] RuleDigests` with Why = "AMENDED (G1, §797): choice 4 answered ...", and the only check on the list (UsHouseCountCheck.cs:582) compares the block's digest with the last entry's Digest. Why is only printed. UsSenateRaceCheck.cs:35 is the same. So no "list format" exists that could reject an answer recorded under a new ruling name such as I1. (4) H4 and H5 are already taken (lines 1814, 2115-2116), so an answer to QUESTIONS FOR ELIAS would come in a new series, and the template's literal letter could be slightly confusing. That is the same cosmetic looseness R-US18's "Fn" carried without harm, not a contradiction with QUESTIONS FOR ELIAS (line 1469) or THE FIRST RUN (lines 1191-1192), which both refer to the amendment by what it records, not by a label.
 
+## The amendment of §833 - S2 read in the typical world (`rus17c-amend833-review`)
+
+One finder read the amendment's diff, the block and the plan's lines after it; the same verification.
+
+### Confirmed (0)
+
+### Refuted (5)
+
+### F1 (medium; upheld 0 of 1)
+
+**Quote.** then one entry per amendment naming Elias's
+    ruling ("AMENDED (Hn, sNNN): old -> new").
+
+**Defect.** The block requires every RuleDigests entry for an amendment to name an H-numbered ruling. Elias's answer on S2's reading has no H number, so the entry the first-run commit must write for s833 cannot take the form the block prescribes. The plan's digests line works around this with a different label: "AMENDED (Elias's answer on S2's reading, 2026-10-16, §833)". The R-US18 and R-US19 precedents each name a ruling id ("AMENDED (G1, §797)", "AMENDED (G1-G3, §797)").
+
+**Evidence.** Block line 1489 (THE DIGEST LIST) against plan line 1575 (the digests line) and lines 1806 and 2071 (the precedents). No part of the amendment touches the DIGEST LIST bullet.
+
+**Fix proposed.** Either give the answer an id (for example H5, recorded in COMPLETED.md s833 and used in both the digests line and the Answered line), or widen the block's form to "AMENDED (<Elias's ruling or answer>, sNNN): old -> new". Either way the edit belongs in the same s833 amendment, so the block digest has to be recomputed and the digests line's new digest replaced.
+
+**The skeptics:**
+
+- REFUTED: This is not a defect. "Hn" in the DIGEST LIST bullet (USA_STAGE_PLAN.md:1487-1489) is a placeholder for whatever names Elias's ruling. It is not a required H-numbered id, for three reasons. (1) The block itself counts this kind of answer as one of Elias's rulings. Line 1192-1193 reads: "as amended before it by Elias's rulings (his answer to QUESTIONS FOR ELIAS, a re-pin), the RuleDigests list's last entry". So the block expected an answer to QUESTIONS FOR ELIAS to be the amending ruling, and that answer was never going to carry an H number. The digests line's label at line 1575, "AMENDED (Elias's answer on S2's reading, 2026-10-16, §833)", names exactly that ruling. (2) The precedent already uses the template loosely. R-US18's preregistration prescribes "each naming Elias's ruling ("AMENDED (Fn): old -> new")" (line 1588). Its actual entry is "AMENDED (G1, §797)" (line 1806), and in code it is "AMENDED (G1, §797): choice 4 answered - reading (vi) printed only" (Assets/Editor/UsHouseCountCheck.cs:34). The letter differs, a section was added and free text replaces old -> new. R-US19's entry follows the same pattern (UsSenateRaceCheck.cs:36). The R-US18 and R-US19 precedents the claim cites therefore show the form being adapted, not followed literally. (3) Nothing parses the label. RuleDigests is a (Digest, Why) array, and Why only appears in the check's message (UsHouseCountCheck.cs:582, UsSenateRaceCheck.cs:476). The first-run commit can write "AMENDED (Elias's answer on S2's reading, s833): ..." without breaking anything. The proposed fix would also cause harm. H5 is already taken by "H5, the order" (line 2121; the H1-H5 batch of 2026-10-13, with H4 at line 1819). Widening the block's form would edit the block beyond Elias's answer, against the "nothing else changed" requirement, and force a new digest for wording that does not need to change.
+
+### F2 (low; upheld 0 of 1)
+
+**Quote.**   - case "no Rule XXII measure on the veto path": V_XXII is empty (its figures print
+    "UNFITTED m=0"); or
+  - case "never sends": 2 * P(NONE_XXII) >= 1, that is, the chance that no measure of
+    V_XXII is sent is at least one half.
+
+**Defect.** When V_XXII is empty, P(NONE_XXII) is the empty product, 1/1. The block says so itself: "p_none_xxii=1/1 (the empty sum and product)". So 2 * 1 >= 1 and both S2 cases are true at once. The STOPPED verdict prints "for S2, its case", but nothing says which case to name. The old "= 0 exactly" case overlapped in the same way, so the amendment did not create this. It was simply a chance to fix it, and the review was asked to check the empty case.
+
+**Evidence.** Block lines 1278-1281 (S2), 1311-1312 (the STOPPED verdict, "for S2, its case") and 1514 (empty product = 1/1). The empty case still fires S2 correctly; only the case label is ambiguous.
+
+**Fix proposed.** Make the second case exclusive, for example: "case \"never sends\": V_XXII is non-empty and 2 * P(NONE_XXII) >= 1". Alternatively, state that the first case takes precedence when both hold.
+
+**The skeptics:**
+
+- REFUTED: This is not a defect in the amendment, and it changes nothing that the rule decides. (1) The overlap was there before the amendment. The diff (amend833.diff, hunk @@ -540) only swaps the second case's test, "E_XXII[vetoable sent] = 0 exactly (that is, P(NONE_XXII) = 1)", for "2 * P(NONE_XXII) >= 1". Over an empty V_XXII both tests are true, because USA_STAGE_PLAN.md:1514 gives "e_sent_xxii=0/1 and p_none_xxii=1/1". The claim admits this itself ("the amendment did not create this"). The review's own test is "nothing else changed", so an exclusivity clause Elias never ruled on is outside an amendment meant to write in only his answer. (2) The empty case still reads correctly: S2 fires (plan:1278-1279). Which case gets named reaches nothing decisive. THE OUTCOME is just "S2" (plan:1288). The decisive digest records only "outcome=INSTALL|S3|S1|S2|S1+S2" and has no case key (plan:1511). The ruling record and the mirror name only the outcome (plan:1541). The case shows up only in the generated verdict-line text (plan:1311-1312). (3) Even that label has a natural reading. The cases are an ordered list with the specific one first, "no Rule XXII measure on the veto path" (plan:1278). Its parenthetical says V_XXII's figures print "UNFITTED m=0", and plan:1131 says "a derived figure with m = 0 prints 'UNFITTED m=0'". So in the printed figures the verdict line quotes, P(NONE_XXII) has no value in the empty world, and the line can only cite the first case's "UNFITTED m=0". The mutation suite's "S2 (both cases)" (plan:1555) can still prove each path: a planted non-empty V_XXII hits only the second case. At most this is a cosmetic ambiguity that predates the amendment, and uncertain counts as refuted.
+
+### F3 (low; upheld 0 of 1)
+
+**Quote.** By default it is read as the words have it: the expected number of the record's vetoable measures sent under Rule XXII exactly 0 (equivalently, the chance that none is sent exactly 1). ... Reading R13 prints both on every run. **The first run does not wait on the answer**
+
+**Defect.** The task says the Asked paragraph was updated, but the working-tree diff leaves it unchanged. Several of its present-tense statements are now false. The default is no longer the words' own reading. R13 no longer prints "both" of the alternatives it lists (>= 1/2 and < 1); it now prints = 0 and < 1. The Answered line below it corrects these, but the paragraph does not say it has been superseded.
+
+**Evidence.** git diff -U0 on docs/specs/USA_STAGE_PLAN.md changes only lines 734, 1275-1280, 1438-1440, 1470-1475 and 1575, and adds 1579-1580. Line 1577 (Asked) is unchanged.
+
+**Fix proposed.** Start the Asked paragraph with "(Superseded by the answer below, §833.)" or put its statements in the past tense ("By default it was read ...; Reading R13 printed both ..."). This is outside the block, so the digest does not move.
+
+**The skeptics:**
+
+- REFUTED: The diff evidence is right: line 1577 (the Asked paragraph) is unchanged. But leaving it unchanged is not a defect. It matches how this plan records every question it asks. 1. The paragraph is a dated record of the question. Its heading is "**Asked blind, before the first run (§832).**" (G:\UNITY\Projects\PoliSim\docs\specs\USA_STAGE_PLAN.md:1577). The statements the claim calls false ("By default it is read as the words have it", "Reading R13 prints both on every run", "The first run does not wait on the answer") all describe the block as it stood at §832. They were true then. 2. The plan never rewrites an Asked paragraph once it is answered. It adds an Answered paragraph straight after it.    - R-US18 (line 1808): "**Asked blind, before the first run (§791).** ... The instrument is built once Elias has answered them or given his word to run on the defaults". This is still present tense, although line 1817 records the answer, "**Answered (Elias's ruling G1, 2026-10-06; installed §797):**".    - R-US19 has the same pair at lines 2073 and 2083.    The §832/§833 pair at lines 1577 and 1579 follows the same pattern. Changing 1577 to past tense, or tagging it "superseded", would break that convention. 3. The supersession is already stated on the next line. Line 1579 says the amendment was "Written into the block by amendment, the digest moved as listed above. Reading R13 now prints the words' own reading (the expected count exactly 0, the preregistered default) and the expected count below one beside it. The first run is on the amended block." Each of the three statements the claim objects to is corrected there, and the word "now" marks it as replacing what came before. The digests line (1575) also gives the AMENDED §833 digest. 4. The block itself is consistent with the answer: S2 at block line 1280, R13 at 1438-1440, and QUESTIONS FOR ELIAS at 1470-1475 ("None open ..."). The task text did say the Asked paragraph "was updated", and that is inaccurate. But that is a slip in how the orchestrator described the change, not a defect in the plan or the amendment. This is a dated historical record, already superseded by the paragraph right after it, kept the way the plan keeps the others.
+
+### F4 (low; upheld 0 of 1)
+
+**Quote.** - INSTALL: "By R-US17's rule (c) as ruled (H1-H3), the draw installs:
+
+**Defect.** Since s833, S2's threshold, and therefore whether the outcome is INSTALL, depends on Elias's answer as well as H1-H3. The generated verdict line still credits the rule to H1-H3 alone, so a reader of US_VETO_DRAW.md cannot see that S2 was read in the typical world. The header line was amended to mention s833, but the verdict template was not.
+
+**Evidence.** Block line 1300 (the INSTALL verdict) against line 735 (the amended header) and lines 1275-1281 (S2 now "read as Elias answered on 2026-10-16").
+
+**Fix proposed.** Change the template to "By R-US17's rule (c) as ruled (H1-H3; S2's reading, s833), the draw installs:" or similar, and make the STOPPED template match. This is a block edit, so do it in the same amendment and recompute the digest.
+
+**The skeptics:**
+
+- REFUTED: This is not a defect. The template "By R-US17's rule (c) as ruled (H1-H3)" (USA_STAGE_PLAN.md:1300) names the rulings that chose rule (c). It does not claim the block is unamended, and it is still true after s833. The block's own header does the same thing. Line 732 keeps "Elias's rulings H1-H3" as the rule's provenance, and the amendment adds its record separately at line 735 ("amended at section 833 (Elias's answer of 2026-10-16 on S2's reading, before any run)"). The phrase "amend the rule as ruled" in THE STOPS' OPTIONS (line 1315) uses "as ruled" in the same sense. The amendment is also not hidden from a reader of US_VETO_DRAW.md: - (1) The document is stamped with the block's digest and the ruling-record state (lines 1187-1188). That digest is the amended 24de40a7..., and the plan's digests line and the RuleDigests list record it as AMENDED for §833 (lines 1487-1490 and 1575). - (2) The verdict line's readings clause, "<the same under every declared reading | the outcome differs under <readings>: <outcomes>>" (lines 1309-1310, with 1296-1297), names R13 wherever the result differs. R13 now carries the words' own reading, E_XXII[vetoable sent] = 0 exactly. So whenever the typical-world threshold is what decides INSTALL against S2, the verdict line already says so. - (3) DECLARED READINGS (line 1261) prints R13's outcome and P(NONE_XXII) on every run. The suggested change would only make the verdict line more explicit, and it would widen a minimal amendment beyond its one answered question. Since I am uncertain at most, this counts as refuted.
+
+### F5 (low; upheld 0 of 1)
+
+**Quote.**   - planted runs proving the UNFITTED, S3, S2 (both cases) and S1 paths (s830's form).
+
+**Defect.** A planted "never sends" case with P(NONE_XXII) = 1 passes this bar under both the old reading and the new one, so it does not prove the amended threshold. Nothing requires a planted run inside the band the amendment changed, or at the >= boundary.
+
+**Evidence.** Block line 1555 (THE MUTATION SUITE) against the amended case at lines 1280-1281 (2 * P(NONE_XXII) >= 1).
+
+**Fix proposed.** Name the planted S2 "never sends" runs: one at P(NONE_XXII) = 1/2 exactly, which fires, and one just below 1/2 with V_XXII non-empty, which stays silent. For example: "S2 (both cases; the never-sends case at P(NONE_XXII) = 1/2 and just below it)".
+
+**The skeptics:**
+
+- REFUTED: This is not a defect of the amendment, and the suite line does not contradict it. G:\UNITY\Projects\PoliSim\docs\specs\USA_STAGE_PLAN.md:1555 reads "planted runs proving the UNFITTED, S3, S2 (both cases) and S1 paths (s830's form)". Both of S2's cases are still at 1278-1281: the empty V_XXII case, and "2 * P(NONE_XXII) >= 1". So "both cases" still names exactly what the stop has. "s830's form" means a planted run that drives a path and shows the result. COMPLETED.md:38420, the h4plant run, shows that form: it proves a path is reached and handled. It does not prove a threshold. The suite holds every stop to that same level. S1's comparison, "166 * E[hits] < 45 * E[named]" (plan 1284-1285), has no planted run at its boundary either. Before the amendment, S2 "= 0 exactly / P(NONE_XXII) = 1" had no "just below 1" run required. A planted run at P = 1 would also have passed an implementation that wrongly used >= 1/2. So the gap the finding describes, a test that cannot tell one threshold from another, was there before s833. The change to "P(NONE_XXII) = 1/2" did not create it. The diff (amend833.diff) touches only the header, the S2 wording, R13 and QUESTIONS FOR ELIAS. The review's own criterion, "nothing else changed", argues against widening the suite inside this amendment. What the finding asks for is extra test strength: boundary runs that no part of the block requires for any stop. It is not an inconsistency with what Elias answered. With that uncertainty, the finding counts as refuted.
+
