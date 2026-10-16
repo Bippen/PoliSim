@@ -76,20 +76,62 @@ namespace PoliSim.EditorTools
                       && usaReason == "No US election is held in this game yet: the House and the president are seated as the record seats them, on its dates, until the Electoral College count and the House races are built; no Senate is modelled.",
                     F("US-1: the USA's start says what it holds - no polling-day clause; the folder card \"{0}\"; the start card \"{1}\"; the not-held reason \"{2}\"", usaLine, usaMode, usaReason));
                 Check(electionRow && !pollingRow, "US-1, US-2: the USA's ledger carries an Election row - none in this game yet, the record seated on its dates - and no polling-day row");
-                // the predicate is the USA's alone, and every other playable start with a polling day keeps it, in the brief and the ledger
+                // PS-7-interim (PS-7's "until then"): Italy's start says what it holds, in Italy's words - its calendar offers no polling day, so the snap election
+                // the start is cut on is not held. The folder card's line and the start card's mode line say only that no election is held; the brief, its
+                // Election row and the not-held reason say what holds - the Camera and the government seated at the start, the government a stand-in for the
+                // caretaker's cabinet, no Senato. Each pinned whole, and the snap election's day named on none of them.
+                StartPoints.TryPlayable(CountryId.Italy, out StartPoints.StartPoint italy);
+                string itText = StartBrief.Text(italy);
+                string itLine = WorldClock.StartLine(CountryId.Italy), itMode = StartPoints.ModeLine(italy), itReason = NationalElection.NotHeldReason(CountryId.Italy);
+                DateTime snap = WorldClock.LatestElectionDay(CountryId.Italy);
+                string snapLong = snap.ToString("d MMMM yyyy", CultureInfo.InvariantCulture), snapStamp = snap.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
+                string snapIso = snap.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);   // the brief carries ISO dates too (SeatingDeviation's)
+                bool itElectionRow = false, itPollingRow = false, itNamesSnap = false;
+                foreach (StartBrief.Row row in StartBrief.Rows(italy))
+                {
+                    if (row.Name == "Election" && row.Figure == "NONE IN THIS GAME YET · THE START'S CAMERA AND GOVERNMENT HOLD") { itElectionRow = true; }
+                    if (row.Name.EndsWith("olling day", StringComparison.Ordinal)) { itPollingRow = true; }
+                    if (row.Figure.Contains(snapStamp) || row.Figure.Contains(snapIso)) { itNamesSnap = true; }
+                }
+                foreach (string said in new[] { itText, itLine, itMode, itReason }) { if (said.Contains(snapLong) || said.Contains(snapStamp) || said.Contains(snapIso)) { itNamesSnap = true; } }
+                Check(!itText.Contains("Polling day") && itText.Contains("No election is held in this game yet - the Camera and the government seated at the start hold, the government a stand-in for Draghi's caretaker cabinet; no Senato is modelled.")
+                      && itLine == "OPENS 21 JUL 2022 · NO ELECTION IN THIS GAME YET" && itMode == "NO ELECTION YET · OPENS 21 JUL 2022"
+                      && itReason == "No Italian election is held in this game yet: the Camera and the government seated at the start hold. Italy is a mixed system - 147 uninominal colleges, 245 proportional seats, 8 overseas - that the game does not count yet, and the per-party seat totals on disk are unconfirmed; no Senato is modelled.",
+                    F("PS-7-interim: Italy's start says what it holds - no polling-day clause; the folder card \"{0}\"; the start card \"{1}\"; the not-held reason \"{2}\" - {3}", itLine, itMode, itReason, itText));
+                Check(itElectionRow && !itPollingRow, "PS-7-interim: Italy's ledger carries an Election row - none in this game yet, the start's Camera and government hold - and no polling-day row");
+                Check(!itNamesSnap, F("PS-7-interim: the snap election's day ({0:yyyy-MM-dd}), which the game does not hold, is named on none of Italy's folder line, mode line, brief, ledger or not-held reason", snap));
+                // The premise of Italy's words, pinned (the review): "the Camera and the government seated at the start hold" is true only while nothing seats
+                // Italy's record by its dates and no motion of confidence is taken up there - the day either changes, the words must change with it.
+                Check(!WorldClock.RecordSeatsChamber(CountryId.Italy) && !WorldClock.RecordSeatsExecutive(CountryId.Italy) && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Unsourced,
+                    F("PS-7-interim: the premise of Italy's words holds - the record seats neither Italy's chamber ({0}) nor its executive ({1}) by date, and its confidence rules are unsourced ({2})",
+                        WorldClock.RecordSeatsChamber(CountryId.Italy), WorldClock.RecordSeatsExecutive(CountryId.Italy), ConfidenceProcedure.RulesOf(CountryId.Italy)));
+                // the predicate is the USA's and Italy's alone, and every other playable start with a polling day keeps it, in the brief and the ledger
                 var heldElsewhere = new List<string>();
-                bool usaOnly = true;
+                bool namedOnly = true;
                 foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
                 {
-                    usaOnly &= WorldClock.NoElectionYet(id) == (id == CountryId.USA);
-                    if (id == CountryId.USA || !StartPoints.TryPlayable(id, out StartPoints.StartPoint sp) || sp.PollingDay == DateTime.MinValue) { continue; }
+                    namedOnly &= WorldClock.NoElectionYet(id) == (id == CountryId.USA || id == CountryId.Italy);
+                    if (WorldClock.NoElectionYet(id) || !StartPoints.TryPlayable(id, out StartPoints.StartPoint sp) || sp.PollingDay == DateTime.MinValue) { continue; }
                     string brief = StartBrief.Text(sp);
                     bool row = false;
                     foreach (StartBrief.Row r in StartBrief.Rows(sp)) { if (r.Name == "Polling day" || r.Name == "Last polling day") { row = true; } }
                     if (!brief.Contains("Polling day is " + sp.PollingDay.ToString("d MMMM yyyy", CultureInfo.InvariantCulture) + ".") || !row) { heldElsewhere.Add(id.ToString()); }
                 }
-                Check(usaOnly && heldElsewhere.Count == 0, F("US-1: NoElectionYet is the USA's alone, and every other playable start with a polling day keeps it in its brief and its ledger{0}",
+                Check(namedOnly && heldElsewhere.Count == 0, F("US-1, PS-7-interim: NoElectionYet is the USA's and Italy's alone, and every other playable start with a polling day keeps it in its brief and its ledger{0}",
                     heldElsewhere.Count > 0 ? "; NOT: " + string.Join(", ", heldElsewhere) : string.Empty));
+                // PS-7-interim: the pin over every playable start, both ways - a start says no election is held (NoElectionYet) or governs as a what-if
+                // (GoverningModeOnly) exactly where the game's calendar offers it no polling day from its opening (TryNextPollingDay). A start that promises a
+                // polling day the game does not hold fails here by name, as Italy's would have; so does one that says none while the calendar holds one.
+                var mismatched = new List<string>();
+                foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
+                {
+                    if (!StartPoints.TryPlayable(id, out StartPoints.StartPoint sp)) { continue; }
+                    bool held = WorldClock.TryNextPollingDay(id, sp.Opens, out DateTime heldOn);
+                    bool saysNone = WorldClock.NoElectionYet(id) || WorldClock.GoverningModeOnly(id);
+                    if (held == saysNone) { mismatched.Add(held ? F("{0} says none is held, but its calendar holds {1:yyyy-MM-dd}", id, heldOn) : F("{0} promises a polling day its calendar does not hold", id)); }
+                }
+                Check(mismatched.Count == 0, F("PS-7-interim: every playable start says no election is held exactly where the game's calendar holds none from its opening{0}",
+                    mismatched.Count > 0 ? "; NOT: " + string.Join("; ", mismatched) : string.Empty));
                 StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint france);
                 string frText = StartBrief.Text(france);
                 Check(frText.Contains("under the president Emmanuel Macron"), "France's brief names its cabinet under its president - " + frText);

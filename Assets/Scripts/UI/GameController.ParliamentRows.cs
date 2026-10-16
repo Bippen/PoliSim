@@ -504,7 +504,8 @@ namespace PoliSim.UI
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "record");
 
             var slip = new SlipContent("OF RECORD, BY DATE");
-            slip.Add((WorldClock.NoElectionYet(country) ? "NO US ELECTION IS HELD IN THIS GAME YET: " : "THE GAME DOES NOT ELECT THE HOUSE YET: ")
+            // PS-7-interim: keyed on the USA, not on NoElectionYet alone, which holds for Italy's start too - this row and its words are the USA's (RecordSeatsChamber)
+            slip.Add((country == CountryId.USA && WorldClock.NoElectionYet(country) ? "NO US ELECTION IS HELD IN THIS GAME YET: " : "THE GAME DOES NOT ELECT THE HOUSE YET: ")
                      + (head ? "THE RECORD'S HOUSE AND PRESIDENT ARE SEATED ON THE RECORD'S DATES" : "THE RECORD'S HOUSE IS SEATED ON THE RECORD'S DATES")
                      + "; PAST THE RECORD, THE LAST OF RECORD STANDS");
             var seated = new List<(string key, int seats)>();

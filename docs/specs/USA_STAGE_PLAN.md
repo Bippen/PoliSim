@@ -259,7 +259,7 @@ A contest's winner becomes president-elect and takes office at noon on 20 Januar
 *Done when:*
 - E1's acceptance for the USA: a fresh world on the eve, stepped through 5 Nov 2024, elects Trump — its electors set against 312–226 and every state called wrong written into the card;
 - a fresh US world stepped from 12 Mar 2024 past 5 Nov holds the count once, its log line naming the winner and the electors; a save taken across the count and across the oath loads into the game;
-- `PollingDayDiagnostic`'s USA assertion inverted, as §697 did for Germany; `StartBriefDiagnostic` and US-1's words now name a polling day that is held; `PreStartRecordDiagnostic`'s US row judged; `UnwiredSubsystemCheck`'s unreachable ceiling lowered to what the bar measures, the allocator now wired; `SaveMigrationCheck` and `PreviewParityDiagnostic` green; `elec<N>` diffed;
+- `PollingDayDiagnostic`'s USA assertion inverted, as §697 did for Germany; `StartBriefDiagnostic` and US-1's words now name a polling day that is held (the USA alone leaves `WorldClock.NoElectionYet` - Italy stays in it, PS-7-interim §841 - and `StartBriefDiagnostic`'s two-way pin then holds the USA's polling day by name); `PreStartRecordDiagnostic`'s US row judged; `UnwiredSubsystemCheck`'s unreachable ceiling lowered to what the bar measures, the allocator now wired; `SaveMigrationCheck` and `PreviewParityDiagnostic` green; `elec<N>` diffed;
 - the default-USA paths measured — the controller's pre-pick fallback to the USA, the film driver's USA default, the warm-up's `HoldElectionWithoutTheNight` — so no default world holds a US election by accident;
 - `Reviews/` report and review row before the bar (SimulationManager); cheap and simulation bars; the USA dry film; a REAL film of the start card.
 

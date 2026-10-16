@@ -100,12 +100,20 @@ namespace PoliSim.Elections
         /// <summary>§8: France is selectable in governing mode only - its government of record, no election - until its two-round, 577-constituency system is modelled (R-EL10).</summary>
         public static bool GoverningModeOnly(CountryId id) => id == CountryId.France;
 
-        /// <summary>PS-6, US-1 (`docs/specs/USA_STAGE_PLAN.md`): the USA's start, whose elections the game does not hold yet - until its presidential count (US-8)
-        /// and the House's (US-16) are built. Meanwhile the record's House and president are seated on the record's dates (R-US1 (a), built in US-2:
-        /// <see cref="RecordSeatsChamber"/>, <see cref="RecordSeatsExecutive"/>), and no Senate is modelled (US-15). The folder card's line (<see cref="StartLine"/>), the start card's mode line
-        /// (`StartPoints.ModeLine`), the brief and the not-held reason say so instead of promising a polling day; the card stays playable (§618). Not a general
-        /// test of whether a start's election is held: that is <see cref="TryNextPollingDay"/>'s answer, and Italy's snap start (PS-7) is outside it.</summary>
-        public static bool NoElectionYet(CountryId id) => id == CountryId.USA;
+        /// <summary>The starts whose elections the game does not hold yet, each until its own item builds them and each retired from here by that item:
+        /// <list type="bullet">
+        /// <item><description>PS-6, US-1 (`docs/specs/USA_STAGE_PLAN.md`): the USA's start, until its presidential count (US-8) and the House's (US-16) are built.
+        /// Meanwhile the record's House and president are seated on the record's dates (R-US1 (a), built in US-2: <see cref="RecordSeatsChamber"/>,
+        /// <see cref="RecordSeatsExecutive"/>), and no Senate is modelled (US-15).</description></item>
+        /// <item><description>PS-7's "until then" (PS-7-interim): Italy's snap start, until Italy's mixed-system stages and the Senato are built (PS-7). Its calendar
+        /// offers no polling day (<see cref="TryNextPollingDay"/>), so the snap election the start is cut on is not held: the Camera and the government seated at
+        /// the start hold (the government the formation's stand-in for the caretaker's cabinet, which the record does not name), and no Senato is modelled.</description></item>
+        /// </list>
+        /// The folder card's line (<see cref="StartLine"/>) and the start card's mode line (`StartPoints.ModeLine`) say only that no election is held; the brief, its
+        /// ledger and the not-held reason say what holds, each country in its own words in its own branch - so retiring one country (US-8, the USA) leaves
+        /// another's words untouched. The card stays playable (§618). Not a general test of whether a start's election is held: that is
+        /// <see cref="TryNextPollingDay"/>'s answer (`StartBriefDiagnostic` holds this predicate and that answer together over every playable start).</summary>
+        public static bool NoElectionYet(CountryId id) => id == CountryId.USA || id == CountryId.Italy;
 
         /// <summary>PS-6 US-2 (Elias's ruling F8, R-US1 (a): "whatever the game does not elect is seated on its record's dates"): the chamber the game does not
         /// elect is the record's, seated on the day the record seats it - the USA's House, until the game elects it (US-16); US-15 adds the Senate.</summary>
@@ -238,7 +246,7 @@ namespace PoliSim.Elections
             DateTime start = StartDate(id);
             string opens = start.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
             if (GoverningModeOnly(id)) { return $"OPENS {opens} · A WHAT-IF · NO ELECTION"; }   // PS-3d (§631): the player's party governs as a what-if   // the card's one line at 1280: "MODELLED" wrapped and clipped
-            if (NoElectionYet(id)) { return $"OPENS {opens} · NO ELECTION IN THIS GAME YET"; }   // US-1: no polling day promised that the game does not hold - "in this game", not the world's
+            if (NoElectionYet(id)) { return $"OPENS {opens} · NO ELECTION IN THIS GAME YET"; }   // US-1, PS-7-interim: no polling day promised that the game does not hold - "in this game", not the world's
             string polling = LatestElectionDay(id).ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
             return IsSnapStart(id)
                 ? $"OPENS {opens} · THE SNAP ELECTION OF {polling}"

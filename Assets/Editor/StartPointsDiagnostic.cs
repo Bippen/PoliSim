@@ -53,6 +53,10 @@ namespace PoliSim.EditorTools
                 Check(StartPoints.DateLine(fr) == "7 JUL 2024" && StartPoints.ModeLine(fr) == "WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024", "France's playable card: stamp 7 JUL 2024 · WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024");
                 StartPoints.TryPlayable(CountryId.USA, out StartPoints.StartPoint us);
                 Check(StartPoints.ModeLine(us) == "NO ELECTION YET · OPENS 12 MAR 2024" && !StartPoints.ModeLine(us).Contains("RUN-UP"), "the USA's card (PS-6 US-1): NO ELECTION YET · OPENS 12 MAR 2024 - no run-up to an election the game does not hold");
+                StartPoints.TryPlayable(CountryId.Italy, out StartPoints.StartPoint it);
+                Check(StartPoints.DateLine(it) == "25 SEP 2022" && StartPoints.ModeLine(it) == "NO ELECTION YET · OPENS 21 JUL 2022" && !StartPoints.ModeLine(it).Contains("SNAP") && StartPoints.Name(it) == "General election (snap)",
+                    F("Italy's card (PS-7-interim): stamp 25 SEP 2022 · NO ELECTION YET · OPENS 21 JUL 2022 · General election (snap) - the record's stamp and name kept, no snap election promised that the game does not hold ({0} · {1} · {2})",
+                        StartPoints.DateLine(it), StartPoints.ModeLine(it), StartPoints.Name(it)));
                 StartPoints.TryPlayable(CountryId.Sweden, out StartPoints.StartPoint se);
                 Check(StartPoints.DateLine(se) == "13 SEP 2026" && StartPoints.ModeLine(se) == "RUN-UP · OPENS 18 JAN 2026" && StartPoints.Name(se) == "Riksdag election", "Sweden's card: stamp 13 SEP 2026 · RUN-UP · OPENS 18 JAN 2026 · Riksdag election");
             }

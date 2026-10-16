@@ -38786,3 +38786,37 @@ Built in the roadmap sweep's second wave, in its own worktree. Integrated after 
 Code recommends (a), by the rule. The rule could give nothing else (the reach above), so the recommendation carries only the reach's information: the congressional economic vote as Table 9.1 prints it is too small to produce a midterm loss of record size. Under (a) the model's midterm stays within 1.6 points of the presidential year. In the Clerk's record since 2002, five of the six midterms cost the president's party more than 2.9 points (2006 -5.49, 2010 -8.97, 2014 -3.71, 2018 -4.99, 2022 -2.95; 2002 +2.26). Whether that is acceptable is the ruling.
 
 **Bars:** (tiers: SIMULATION for the raw pages, TOOLING for the instrument, DOCUMENTS for the card and the plan) the cheap bar **106 of 106** (`cheap840`; `cheap840b` after the review’s fixes); the simulation bar **57 of 57** (`sim840`, before the review’s fixes, which touch two Editor files only); the documents bar **16 of 16** (`doc840`, `doc840b`, and `doc840c` on this commit's records). The named run `us13n2` (UsMidtermCheck, UsHouseCountCheck) 2 of 2. `us13w` was the first run; the ask was registered from it, and `us13w2` and `us13w3` rewrote the card. Ran detached.
+## 841. PS-7-INTERIM: ITALY'S START SAYS WHAT IT HOLDS - NO ELECTION IN THIS GAME YET, THE CAMERA AND THE GOVERNMENT SEATED AT THE START HOLDING AND NO SENATO MODELLED, ON THE FOLDER CARD, THE START CARD'S MODE LINE, THE BRIEF AND ITS LEDGER AND THE NOT-HELD REASON; NO SNAP ELECTION PROMISED (2026-10-16)
+
+**What was owed** (the PS-7 row: "until then, US-1's kind of fix in Italy's own words: its start still names a polling day the game does not hold (the folder line, the start card's mode line, the brief and its ledger; `COMPLETED.md` §782's review)"; the audit's GA-0-3): `WorldClock.TryNextPollingDay` offers Italy no polling day, yet its start promised "THE SNAP ELECTION OF 25 SEP 2022". The card stays playable (§618); the USA's words stay as they are, Italy's separable from them for US-8.
+
+**Built** (`1b2d30f7`, `992d862d`):
+- `WorldClock.NoElectionYet` holds for Italy's start beside the USA's, each retired by its own item (the USA's by US-8, Italy's by PS-7).
+- The folder card: "OPENS 21 JUL 2022 · NO ELECTION IN THIS GAME YET"; the start card's mode line: "NO ELECTION YET · OPENS 21 JUL 2022". The card keeps the record's stamp and name, as US-1's.
+- In Italy's own branch: the brief "No election is held in this game yet - the Camera and the government seated at the start hold, the government a stand-in for Draghi's caretaker cabinet; no Senato is modelled." (the caretaker named from the government of record, [CAM-729]); the ledger's Election row "NONE IN THIS GAME YET · THE START'S CAMERA AND GOVERNMENT HOLD"; `NationalElection.NotHeldReason` - what holds, then the mixed system's reason as it stood, no Senato.
+- The Parliament page's record row keys its "NO US ELECTION" words on the USA (the row is the USA's; nothing moves on screen).
+- Why "seated at the start": nothing seats Italy's record by its dates (the XIX Camera's first sitting, Meloni's government - PS-7's or PS-8's) and its confidence rules are unsourced, so an Italian game keeps the start's Camera (the 2022 table standing in for 2018's, E-47) and the formation's provisional stand-in for the whole run.
+
+**Checked:** `StartBriefDiagnostic` pins Italy's strings whole, the snap day named on none of them (three forms), the words' premise (no record-by-date seating, confidence unsourced), `NoElectionYet` the USA's and Italy's alone, and over every playable start that a start says none is held exactly where `TryNextPollingDay` offers none from its opening (the base fails it for Italy by name); `StartPointsDiagnostic` pins Italy's card. Out of the engine first (a console probe on the compiled code): every string as pinned, the USA's unchanged. Named run `nps7i`: **4 of 4** (StartBriefDiagnostic, StartPointsDiagnostic, WorldClockDiagnostic, PollingDayDiagnostic), every PS-7-interim line `ok`.
+
+**The review** (`Reviews/2026-10-16_ps7i_italy_start_words.md`, single agent, refute-first, verbatim): the diff correct, every new check failing on the base, the USA unchanged, US-8 separable; two notes fixed. Outside the diff: the start card's stamp and seat-bar caption still name 25 Sep 2022 (the caption is E-47's stand-in table's day) - put to Elias with the ledger's "In the Camera" row (400 seats "ELECTED 4 MAR 2018"); the picker's K-1 "THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER" on Italy's and France's pickers - filed. Not a money path.
+
+**Integration: a check fooled by a comment.** The first cheap bar on this tree (`cheap842`) failed one check: RatchetSlackCheck found `UnwiredSubsystemCheck.UNREACHABLE` at 1 against its ceiling of 2. `Rosatellum.cs` had left the unreachable list. Nothing had wired it: two of this item’s new comments said "the Rosatellum’s stages", meaning the electoral law, and the check counts a type’s name anywhere in game code, comments included, as reaching it. Lowering the ceiling would have hidden a subsystem that is still unwired. Instead the two comments say "Italy’s mixed-system stages", the measurement is back to the truth (2 of 2, tight), and the blind spot is filed here: `UnwiredSubsystemCheck` reads a name in a comment as a use. A comment can retire a finding.
+
+**Bars:** (tier SIMULATION + UI, and DOCUMENTS for the review file):
+- the named run `nps7i` **4 of 4**;
+- the cheap bar **106 of 106** (`cheap842b`, after the comment rewording; the first, `cheap842`, failed RatchetSlackCheck as above);
+- the simulation bar **57 of 57** (`sim842`, before the comment-only rewording; the sentinel on ga111 unmoved);
+- the documents bar **16 of 16** (`doc841`);
+- the dry film `drys842` (USA@1280x720, scoped first; the run labels carry 842, named before this section’s number moved): 143 measured, 0 failed, 0 overflows, 0 escapes, 0 errors logged;
+- the REAL film `realps7i` (Italy at 1280×720, cut at `01a_selector_yielding`): 6 captured, 0 failed, 0 overflows, 0 canvas violations across 4 asserts.
+
+**Read on the real film:**
+- `01_country_selector`: Italy’s folder reads "OPENS 21 JUL 2022 · NO ELECTION IN THIS GAME YET", one line, the USA’s beside it unchanged.
+- `01f2_start_points`: the card reads "25 SEP 2022 | NO ELECTION YET · OPENS 21 JUL 2022" and "General election (snap)", with the caption "THE CAMERA OF 25 SEP 2022 · 400" unchanged. The ledger reads "BRIEF · ITALY, 21 JUL 2022"; Government "Mario Draghi · CABINET NOT IN THE RECORD"; Since "13 FEB 2021"; **Election "NONE IN THIS GAME YET · THE START’S CAMERA AND GOVERNMENT HOLD"**; In the Camera "14 PARTIES · 400 SEATS · ELECTED 4 MAR 2018". Every line fits.
+- `01g_party_picker`, untouched by this item, shows two pre-existing defects, filed:
+  - the K-1 line "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER" on Italy’s picker (the review’s note; France’s too);
+  - **"1 SEATS"**, a plural for one seat, on four Italian parties (IC, ScN, MAIE, UV).
+
+**Asked** (the closing message): E-47’s display on Italy’s card - the stamp and the caption still say 25 SEP 2022, and the ledger’s 400 seats are the 2022 table beside "ELECTED 4 MAR 2018" (the 2018 Camera had 630). The options: (a) leave all three until E-47 is answered; (b) have the caption and the row say the seated table stands in (`PickerView.Deviation` is computed but never drawn); (c) drop the stamp for a start whose election is not held (the call §782’s review left open for the USA).
+

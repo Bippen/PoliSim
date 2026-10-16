@@ -409,8 +409,10 @@ namespace PoliSim.Elections
                 case CountryId.France:
                     return "France elects 577 single-member seats in two rounds. This model holds no second round.";
                 case CountryId.Italy:
-                    return "Italy is a mixed system - 147 uninominal colleges, 245 proportional seats, 8 overseas - " +
-                           "and the per-party seat totals on disk are unconfirmed.";
+                    // PS-7's "until then" (PS-7-interim): what holds instead, until Italy's mixed-system stages and the Senato are built (PS-7) - never the snap election's day
+                    return "No Italian election is held in this game yet: the Camera and the government seated at the start hold. " +
+                           "Italy is a mixed system - 147 uninominal colleges, 245 proportional seats, 8 overseas - that the game does not count yet, " +
+                           "and the per-party seat totals on disk are unconfirmed; no Senato is modelled.";
                 case CountryId.USA:
                     // PS-6, US-1 and US-2: what holds instead, until the presidential count (US-8) and the House's (US-16) are built; no Senate is modelled (US-15)
                     return "No US election is held in this game yet: the House and the president are seated as the record seats them, on its dates, " +
