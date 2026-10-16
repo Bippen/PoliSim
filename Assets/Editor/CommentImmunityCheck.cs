@@ -69,6 +69,8 @@ namespace PoliSim.EditorTools
             // §702 (2026-09-30): the exit diagnostics count the threads, timers, file watchers and child processes the project's source starts - a start named
             // in a comment is not one.
             "ExitDiagnostics",
+            // §846 (US-9): the campaign-geography harness asks whether a runtime file calls `ElectionDay.Count` - a call named in a comment is not a wiring.
+            "UsCampaignGeographyCheck",
         };
 
         /// <summary>

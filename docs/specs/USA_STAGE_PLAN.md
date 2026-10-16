@@ -277,6 +277,7 @@ In an Editor harness only, stage a US campaign on the 51 jurisdictions — audie
 
 *Needs:* US-3, US-4, US-6.
 *Done when:* the three measurements in the record; R-US16 asked with them; nothing live; cheap bar.
+**Built: `COMPLETED.md` §846** - `UsCampaignGeographyCheck` (the cheap and documents bars; an Editor harness, nothing live; the mirror of `DeriveRegional` proved equal on every staged country's campaign, no seam) and the card's US-9 block. (a) and (b) hold by construction and more: at the US audience every run closes both parties past the compatibility ceiling, so no US campaign moves the national vote (GA-5-1's candidate mechanism). (c): the mobilisation ceiling moves a state 2.90-9.00 points and could flip 13 calls (139 electors); R-US16 (c) sized over Sweden and Germany. R-US16 asked with the card.
 
 **US-10 — The veto and the filibuster on the record (E4's form, before any wiring). Size L.** *(asks R-US17)*
 Read, raw out of tree with extracts in the repo:
@@ -717,6 +718,13 @@ The electorate is fitted free where it is identifiable, and otherwise with its s
 - (c) (b) for every staged country — Sweden's and Germany's backtests and films then move, the sentinel not.
 
 Code expects to recommend (b), sized by US-9.
+
+**Asked §846, with the measurement** (`docs/reference/US_ELECTIONS.md`, *The campaign geography - R-US16*; the figures are the card's):
+- **(a), the count as built, is national in disguise, and at the US audience not even national.** Working a state moves it exactly as much as every state it was not worked in. No US campaign moves the national total either: every run closes both parties past the compatibility ceiling (115-1265 before the clamp at 100; the persuasion scale is per person reached, [AUTHORED-DRAFT]). The AI makes almost no local acts at this scale, and its offices sit in the largest audiences.
+- **(b) would make the ground game count:** the scripted program moves Georgia about 0.8 points of margin; the mobilisation ceiling moves a state 2.90-9.00 points and could flip 13 calls (139 electors). W-D1's declared noise flips the closest states in up to a quarter of counts and the presidency in none of 400.
+- **(c):** Sweden's and Germany's ground games move 0.035 and 0.003 points and no seat; W-D1's frame alone moves Germany 2 seats with no campaign.
+- **Code recommends (b)** for the USA. (c) is not recommended until W-D1's frame reads each region's own turnout.
+- **Also asked:** does R-US16 gate US-30's staging (risk 1), or only US-31 (the needs lines)? Code recommends the needs lines; if so, risk 1's last sentence reads "... before the count or the AI's targeting changes".
 
 **R-US17 — Which bills the president vetoes, and the override's base** *(US-10's document; blocks US-21)*.
 - (a) B1 transposed: a bill a majority of the president's party's House members voted against;

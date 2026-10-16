@@ -39083,3 +39083,51 @@ It is reachable once the game elects the House (US-16), not before.
 
 **Read on the real film:** `01d_desk_held` shows the Desk’s chip "UNITED STATES · YEAR 3 · PRESIDENT", filled. The harness’s REP player sits under Trump of record after the warm-up; before US-7 the chip read GOVERNING.
 
+
+## 846. PS-6 US-9 - THE CAMPAIGN-GEOGRAPHY PROOF: A US CAMPAIGN STAGED ON THE 51 JURISDICTIONS IN THE EDITOR ONLY; THE COUNT IS NATIONAL IN DISGUISE AND NO US CAMPAIGN MOVES THE NATIONAL VOTE - EVERY RUN CLOSES PAST THE COMPATIBILITY CEILING (GA-5-1'S CANDIDATE MECHANISM); W-D1'S PER-STATE COUNT WOULD MOVE A WORKED STATE; R-US16 ASKED (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-9): "In an Editor harness only, stage a US campaign on the 51 jurisdictions ... measure three things"; done when "the three measurements in the record; R-US16 asked with them; nothing live; cheap bar."
+
+Built in the sweep's third wave on US-6's branch. Every parameter was declared in its first commit (a94e7957) before any run; a second commit (6ab1427d) added one explanatory reading after a preview outside Unity, no parameter changed. Integrated here onto main as US-9's own diff.
+
+**Built:**
+- **`UsCampaignGeographyCheck`** (the cheap and documents bars). It stages REP and DEM on the 51 jurisdictions:
+  - the audience is each one's 2020 votes cast;
+  - the electorate is UF's 2024 VEP, already on disk, held to its digest;
+  - the vote model is US-6's at the USA's start, with the casts from `CampaignCasts.Of`.
+- **The runs:** idle, with the rule's cast, and with each of the five personalities cast on both parties.
+- **The mirror:** of `NationalElection.DeriveRegional`, proved equal to the last bit on Sweden's and Germany's campaigns. It is a mirror, not a seam; it fails by name ("re-point the mirror") the day the runtime derives US states.
+- **The card's US-9 section and block** (`docs/reference/US_ELECTIONS.md`, *The campaign geography - R-US16*), written by `WriteReadings`.
+- **Nothing live:** no file under `Assets/Scripts` is touched.
+
+**Measured** (`us9w` wrote the card, `n846` the named run, the card's figures):
+- **(a) Where the AI's local acts land:**
+  - none for the rule's cast, or with both parties Professional, Establishment or Grassroots;
+  - Populist makes 1, in TX;
+  - Chaotic makes 142, all in the 4 largest audiences (CA, TX, FL, NY) and 0 % in the 4 closest 2020 states (GA, AZ, WI, PA);
+  - the day-0 offices sit in the largest states.
+- **(b) A local act reaches a state only through the national total.** The national move is exactly 0 in every program, and every state's derived move is 0. The scripted ground game in GA (109-112 door-to-door acts, mobilisation about 54.3) would move GA's margin +0.79 (REP) or -0.80 (DEM) under W-D1's per-state count. No elector moves under either count.
+- **Why the national move is 0: saturation.** In every US run, both parties' compatibility closes past the scale's ceiling, between 115 and 1265 before the clamp at 100. The persuasion scale (`CampaignPressure.PersuasionPerCompatibilityPoint`, [AUTHORED-DRAFT]) is counted per person reached, so at the US audience the clamp pins the national result whatever either party does.
+- **(c) The maximal ground game** (the mobilisation curve's ceiling, the model's limit, not a budget) moves one state's margin by 2.90-9.00 points. It could flip 13 of the idle map's calls, 139 electors: AZ, CO, GA, ME, MI, MN, NV, NH, NM, NC, PA, VA and WI, every one of 2024's closest states among them.
+- **The AI's own ground game**, under the per-state count: the widest move is IL's, -0.035 points; no elector moves.
+- **W-D1's declared noise** (σ 1.2 points, 400 replays):
+  - 8 jurisdictions change hands in at least one replay (MN 23.3 %, NH 18.3 %);
+  - the presidency changes hands in none.
+- **The declared targeting rule** (electors × §25's swing index on the last published poll) follows one tracker's noise. On the rule's-cast run's last poll (REP 53.5 against a true 51.3), its top four are VA, IL, PA and NJ.
+- **R-US16 (c), every staged country:**
+  - Sweden's ground game moves 0.035 points and no seat; W-D1's frame alone moves 0.062 points and no seat; 2 of its 8 parties close past the ceiling.
+  - Germany's ground game moves 0.003 points and no seat; W-D1's frame alone moves 0.299 points and 2 seats; **8 of its 9 parties close past the ceiling**.
+
+**GA-5-1's candidate mechanism.** GA-5-1, the architect's question, found that the player's campaign does not move the player's vote: every mix stays within 0.1 point of an idle player in Sweden and Germany. This measurement shows the same clamp in the staged campaigns of both countries, 8 of 9 German parties past the ceiling. It is a candidate mechanism, not yet confirmed on GA-5-1's own seeds; the audit ledger's row now points here. The persuasion scale is [AUTHORED-DRAFT]: changing it is a ruling, and nothing here tunes it.
+
+**Declared:** the plan's three measurements with R-US16's option sizes beside them; REP and DEM on US-6's House-vote poll; "2020's valid votes" as the catalog's `VotesTotal`; the UF VEP as the electorate (Editor only; a reading the sweep lists as unruled for US-30); "each AI personality" as all five cast on both parties; "idle" as no act, no debate, no story; the maximal ground game as mobilisation 100; the scripted program priced in kronor (a US table BILLED); seed 777, 400 replays.
+
+**Integration:** the first cheap bar (`cheap846`) failed CommentImmunityCheck. The new check reads C# source (it asks whether a runtime file calls `ElectionDay.Count`), so the census requires it to be enrolled. It already strips comments through `SourceText.ReadWithoutComments`; it is now on `MustStrip`.
+
+**A correction to §841.** §841 wrote that `UnwiredSubsystemCheck` "counts a type's name anywhere in game code, comments included". That is imprecise. CommentImmunityCheck's census lists `UnwiredSubsystemCheck` among the checks that strip comments first, and its own note says the shared stripper is an approximation (a regex, not a C# lexer). The two comments naming the Rosatellum survived that stripper. The effect §841 measured stands: the count moved with the comments alone, and rewording them restored it. The cause is the stripper's approximation, not the absence of stripping. US-8's reviewer, approximating the check in perl, finds Rosatellum.cs unreachable on the reworded tree, as §841 left it.
+
+**Asked** (the sweep's closing message to Elias):
+- **R-US16**, with the card. Code recommends (b), the only option under which a state's campaign reaches an elector. (c) is not recommended until W-D1's frame reads each region's own turnout.
+- **Does R-US16 gate US-30's staging (risk 1), or only US-31 (the needs lines)?** Code recommends the needs lines. US-30 must know before it is built that a staged US campaign cannot move the national vote as the model stands.
+
+**Bars:** (tier TOOLING for the check, DOCUMENTS for the card and records) the named run `n846` **1 of 1**; the cheap bar **109 of 109** (`cheap846b`; `cheap846` failed CommentImmunityCheck as above); the documents bar **19 of 19** (`doc846`). No runtime file changed, so no simulation bar is owed; the sentinel cannot move. Ran detached.

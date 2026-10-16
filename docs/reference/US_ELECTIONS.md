@@ -1,13 +1,14 @@
-# The US presidential count - model card (the states from the national vote; the national vote; the prediction)
+# The US presidential count - model card (the states from the national vote; the national vote; the prediction; the campaign geography)
 
 What the game's US presidential count will rest on, measured before the count goes live - and, since US-6, the prediction it will count, which
 is live (the poll and E1's factors; no polling day and no count until US-8). The figures the measurements produce are not typed
 here: each is written by the instrument that pins it, into its own marked block - under *The readings* the states from the national vote
 (`PoliSim.EditorTools.UsStateSwingCheck.WriteReadings`), under *The readings (US-5)* the national vote itself
 (`PoliSim.EditorTools.UsNationalVoteCheck.WriteReadings`), under *The readings (US-6)* the live prediction
-(`PoliSim.EditorTools.UsPresidentialFactorCheck.WriteReadings`) - and each instrument fails the cheap bar and the documents bar when its block no
+(`PoliSim.EditorTools.UsPresidentialFactorCheck.WriteReadings`), under *The readings (US-9)* the campaign geography R-US16 is asked on
+(`PoliSim.EditorTools.UsCampaignGeographyCheck.WriteReadings`, an Editor harness - nothing live) - and each instrument fails the cheap bar and the documents bar when its block no
 longer says what it measures. The records are `COMPLETED.md` §786 (the returns by state, `ElectionsData/usa/president_returns.md`), §787
-(the states), §788 (the House vote) and §789 (the national vote); US-6's is its own section of the record.
+(the states), §788 (the House vote) and §789 (the national vote); US-6's and US-9's are their own sections of the record.
 
 ## The question - R-US14
 
@@ -679,4 +680,151 @@ A game from the USA's start (12 Mar 2024) seats Usa2022 and its poll reads House
 The nominees are named from the nomination's date of record and "the Democratic/Republican nominee" before it; the withdrawal is not replayed. The Democratic nominee from 6 Aug 2024 - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the game names him "the Republican nominee" on every day, the count's and after included, to a REP player as to anyone: an asymmetry put to Elias.
 
 **A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are "the minor candidates standing only where the FEC shows them on the ballot"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). The per-state table lands with US-8, whose count reads the states.
+<!-- END GENERATED -->
+
+## The campaign geography - R-US16 (US-9)
+
+What "fought state by state" means (`docs/specs/USA_STAGE_PLAN.md`, R-US16): **(a)** national in effect, as Germany's Länder are today, Campaign HQ saying so;
+**(b)** for the USA, a per-state count with the ground game on the derived shares, plus a DECLARED targeting rule for the AI (electors × closeness on
+the last published poll); **(c)** (b) for every staged country. The instrument is `PoliSim.EditorTools.UsCampaignGeographyCheck` - an Editor harness
+only: it stages a US campaign on the jurisdictions in the Editor and wires nothing. It measures the plan's three things (US-9) - (a) where the AI's
+local acts land, (b) that a local act reaches a state only through the national total, (c) how far W-D1's per-region count would move one state under
+a maximal ground game, against the 2024 margins of record - and sizes R-US16's options beside them: the declared rule's picks, the scripted ground game
+and the AI's under the per-state count, W-D1's declared noise, and the same count over every staged country (R-US16 (c)). Its parameters are declared
+in the instrument before its first run and none is tuned on a result. The record is US-9's section of `COMPLETED.md`.
+
+| part | what it does | basis |
+|---|---|---|
+| The jurisdictions | every jurisdiction of US-3's catalog; a jurisdiction's audience (what a local act can reach) its votes cast in the prior election, as the plan names it; its prior shares that election's - the two nominees, and all others pooled | SOURCED (§786); the plan's US-9 |
+| The electorate | the University of Florida Election Lab's 2024 VEP per state (`ElectionsData/usa/raw/returns/`, its digest held to the folder's list) - who a ground game can mobilise. US-30's reading of the electorate is unruled; this stands in for it in the Editor only | SOURCED (an academic estimate); DECLARED for the harness |
+| The vote model | US-6's: `NationalElection.TryCompatibility` at the USA's start - the compatibility, the prior and the loyalty a US game's prediction is made of | RULED (R-US15 (a), G2) |
+| The casts and the staging | each party cast by `CampaignCasts.Of` (§695's rule); the chest, the volunteers, the offices, the staff and the price table are `LiveCampaignSetup`'s - the model's one table, in kronor; a US table (the war chest in dollars) is BILLED, as Germany's is | §695; [AUTHORED-DRAFT] |
+| The salience | Gallup's most-important-problem table of July 2026, the two issues the model has a slot for - dated after the campaign it stands in for; the geography measured here does not read it | SOURCED; DECLARED |
+| The runs | the whole campaign proper on the USA's calendar, one seed, every party an AI unless scripted. The idle run has no act, no debate and no story, and is the prediction; then the rule's cast, and each of §32's personalities cast onto both parties (§695 casts no chaotic party, so a fixture fields them all, as `CampaignAiHarness`'s does) | DECLARED |
+| The national shares a run implies | E1's construction - each nominee's support the party's share times its factor, every other column of the field at its share of record (`PresidencyOfRecord.CandidatesOf`) - with the idle run standing for the reference world: the idle run gives 2024's national shares exactly, as US-6's factors do on its reference world, and a run moves them by its own change to each party's share | E1; DECLARED (US-9) |
+| The states | R-US14 (a): `RegionalVoteModel.RegionalSharesByUniformSwing` on the prior election's jurisdictions - the mirror of the call `NationalElection.DeriveRegional` makes, proved equal to it on every staged country's campaign (the runtime derives no US state until US-8); the electors through `ElectoralCollege`, Maine's and Nebraska's districts as US-4 reads them | RULED (R-US14 (a)); §689 |
+| (a) | each run's local acts by jurisdiction, against the largest prior-election audiences, the closest prior-election states (as many of each as `CampaignAi.LocalCandidateRegions`) and the declared rule's picks on the run's last published poll | the plan's US-9 |
+| (b) | a scripted party - the player's stand-in - works one jurisdiction with the program the instrument declares (its one office there and door-to-door every day), against the same campaign with it idle; the jurisdiction's derived move held against the national move and against every other jurisdiction's | the plan's US-9 |
+| (c) | W-D1's per-region count (`ElectionDay.Count`), each jurisdiction's preferences its derived shares, one base turnout (it cancels from every share; no rate clamps), no noise: the maximal ground game - one party's mobilisation at the curve's ceiling in one jurisdiction - against the 2024 margins of record; the scripted programs' and the AI's own ground games; W-D1's declared regional noise over replays | the plan's US-9; W-D1 |
+| R-US16 (b)'s rule | a jurisdiction's electors × §25's swing index (`SwingRegions.Index`) of its margin derived from the last published poll | DECLARED for this measurement - the rule US-31 would build |
+| R-US16 (c) | every country `LiveCampaignSetup.TryFor` stages, its campaign run whole on the vote model and counted the same way: the ground game's effect, and W-D1's frame alone, in shares and in seats | DECLARED |
+| Not modelled | a minor candidate's campaign (every minor column stands nationally at its share of record); ballot access; faithless electors; Maine's ranked-choice count | DECLARED |
+
+### The readings (US-9)
+
+<!-- GENERATED by PoliSim.EditorTools.UsCampaignGeographyCheck.WriteReadings. DO NOT EDIT BY HAND. source-digest: 5a45d3927849ab4ec900900a339d45b57103f9375cf2ddc8dc72c5a0eaae38f5 -->
+### The staging
+
+A US campaign in the Editor only: REP and DEM on the 51 jurisdictions - audience each one's 2020 votes cast (158,429,631 together), electorate UF's 2024 VEP (240,748,332) - staged on US-6's vote model at the USA's start (12 Mar 2024), the campaign 10 Sep to 4 Nov 2024; casts by `CampaignCasts.Of` (REP Professional, DEM Grassroots); the model's one price table and its [AUTHORED-DRAFT] staging (`LiveCampaignSetup`'s chest, volunteers, offices and staff); salience Gallup's July 2026 (immigration 0.12, the economy 0.11 - dated after the campaign); both parties on every ballot. The idle run - no act, no debate, no story - is the prediction (REP 51.40 %, DEM 48.60 %); by E1's construction its national shares are 2024's exactly (D 48.32 %, R 49.80 %, others 1.88 %), and derived to the jurisdictions by R-US14 (a) they are US-4's row: electors R 312 – D 226, 0 states called wrong.
+
+### (a) Where the AI's local acts land
+
+The AI weighs a local act only in its candidate regions - the 4 largest audiences (`CampaignAi.LocalCandidateRegions`, [AUTHORED-DRAFT]), and, for a reactive personality, the regions it sees an opponent working. Each run below is the whole campaign (10 Sep to 4 Nov 2024, seed 777), every party an AI; its local acts (rally, town hall, door-to-door) counted by jurisdiction. "The rule's 4" are the jurisdictions R-US16 (b)'s declared rule would pick on that run's last published poll (below).
+
+The 4 largest 2020 audiences: CA, TX, FL, NY. The 4 closest 2020 states: GA, AZ, WI, PA.
+
+| run | casts | local acts | in the 4 largest | in the 4 closest | in the rule's 4 | jurisdictions reached | most acts | offices (in the 4 largest) | compatibility at the close, before the clamp |
+|---|---|---:|---:|---:|---:|---:|---|---:|---|
+| the rule's cast (the game's) | REP Professional, DEM Grassroots | 0 | - | - | - | 0 | - | 9 (7) | REP past the ceiling (774), DEM past the ceiling (1020) |
+| both Professional | REP Professional, DEM Professional | 0 | - | - | - | 0 | - | 6 (6) | REP past the ceiling (777), DEM past the ceiling (763) |
+| both Populist | REP Populist, DEM Populist | 1 | 100.0 % | 0.0 % | 0.0 % | 1 | TX 1 | 8 (8) | REP past the ceiling (1265), DEM past the ceiling (698) |
+| both Establishment | REP Establishment, DEM Establishment | 0 | - | - | - | 0 | - | 4 (4) | REP past the ceiling (1082), DEM past the ceiling (1056) |
+| both Grassroots | REP Grassroots, DEM Grassroots | 0 | - | - | - | 0 | - | 12 (8) | REP past the ceiling (965), DEM past the ceiling (966) |
+| both Chaotic | REP Chaotic, DEM Chaotic | 142 | 100.0 % | 0.0 % | 52.1 % | 4 | FL 42, CA 34, NY 34, TX 32 | 2 (2) | REP past the ceiling (425), DEM past the ceiling (458) |
+
+**R-US16 (b)'s targeting rule** (DECLARED for this measurement: a jurisdiction's electors × §25's swing index - `SwingRegions.Index`, [AUTHORED-DRAFT] full scale - of its margin derived from the last published poll's national shares, by E1's construction and R-US14 (a)):
+
+On the rule's-cast run's last published poll (REP 53.50 %, DEM 46.50 %) the rule's 4 are VA (13 electors, index 100), IL (19 electors, index 65), PA (19 electors, index 56), NJ (14 electors, index 71) - 27.6 % of the rule's whole weight over 27 jurisdictions with any.
+
+### (b) A local act reaches a state only through the national total
+
+A scripted party - the player's stand-in, W-C2's seam - works one jurisdiction: its one office there from day 0 and, every campaign day, 2 DoorToDoor there (15,000 kr and 5 hours each, the model's one price table - a US table is BILLED), its staging otherwise its cast's; the other party is an AI at its cast. Each program is held against the same campaign with the scripted party idle (no office, no act). The jurisdictions worked: GA, the closest 2020 state, and CA, the largest 2020 audience.
+
+| party | works | acts made | its mobilisation there (50 untouched) | its nominee nationally (pp) | that jurisdiction's derived move (pp) | largest departure of any jurisdiction's move from the national (pp) | its margin R − D, (a)'s count: idle → program | (b)'s count: idle → program (of which turnout) | electors R − D, (a): idle → program | (b): idle → program |
+|---|---|---:|---:|---:|---:|---:|---|---|---|---|
+| REP | GA | 109 | 54.274 | +0.00e+0 | +0.00e+0 | 0.0e+0 | +5.535 → +5.535 | +5.535 → +6.324 (+0.789) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| REP | CA | 109 | 51.326 | +0.00e+0 | +0.00e+0 | 0.0e+0 | -23.394 → -23.394 | -23.406 → -23.163 (+0.231) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| DEM | GA | 112 | 54.380 | +0.00e+0 | +0.00e+0 | 0.0e+0 | +5.535 → +5.535 | +5.535 → +4.731 (-0.804) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+| DEM | CA | 112 | 51.359 | +0.00e+0 | +0.00e+0 | 0.0e+0 | -23.394 → -23.394 | -23.379 → -23.630 (-0.236) | 312 – 226 → 312 – 226 | 312 – 226 → 312 – 226 |
+
+Under the count as built ((a)'s columns) the worked jurisdiction moved by what the nation moved to within 0.0e+0 points, and every jurisdiction to within 0.0e+0: the derivation is a function of the national shares and the prior alone (R-US14 (a)'s uniform swing gives every jurisdiction one move, re-solved only where a floor binds), so working a state moves it as much as every state it was not worked in. The ground game's turnout - the mobilisation the program built - reaches no count at all: W-D1's per-region count, its one reader, is wired to nothing. (b)'s columns are that count, the derived shares as its preferences (below).
+
+**The national move itself is at most 0.00e+0 points, because no party's campaign can move it**: in every run of this table - each program and the run it is held against - both parties' compatibility closed past the scale's ceiling (the least 115 before the clamp, `ElectionScales.Max` 100). The persuasion scale (`CampaignPressure.PersuasionPerCompatibilityPoint`, [AUTHORED-DRAFT]) is per person reached, and at the US audience a campaign saturates it, so `PreferenceModel`'s clamp pins the national result whatever either party does.
+
+### (c) W-D1's per-state count under a maximal ground game
+
+The count (`ElectionDay.Count`, no noise): each jurisdiction's preferences its derived shares on the idle map (2024's national shares from 2020's jurisdictions, R-US14 (a) - US-4's row), its electorate UF's VEP, one base turnout (0.6581, the votes cast over the electorate - it cancels from every share; no rate clamps), the other attributes neutral. **The maximal ground game** is one party's mobilisation at the curve's ceiling in one jurisdiction (`GotvModel.Mobilization` at 100, its supporters' turnout × 1.20 - `TurnoutModel.MobilizationSpan`, [AUTHORED-DRAFT]): no budget buys more.
+
+**The ceiling moves one jurisdiction's margin by 2.90 to 9.00 points** (R − D, either party's, over every jurisdiction), and could flip 13 of the idle map's calls - 139 electors: AZ, CO, GA, ME, MI, MN, NV, NH, NM, NC, PA, VA, WI. The 4 closest 2024 states of record: WI +0.86 (the ceiling's move for the trailing party -8.95), MI +1.41 (the ceiling's move for the trailing party -8.97), PA +1.70 (the ceiling's move for the trailing party -8.98), GA +2.19 (the ceiling's move for the trailing party -8.99).
+
+**The staged ground game** (the scripted programs above, the model's one price table): its turnout move in the jurisdiction it worked - REP in GA +0.789; REP in CA +0.231; DEM in GA -0.804; DEM in CA -0.236.
+
+**The AI's own ground game** (the rule's-cast run): its national result REP 51.32 %, DEM 48.68 % - D 48.40 %, R 49.72 % by E1's construction; under the per-state count its widest turnout move is IL's, -0.035 points of margin; electors R − D 312 – 226 under (a)'s count, 312 – 226 under (b)'s.
+
+**W-D1's declared regional noise** (σ 1.2 points a party a jurisdiction, `RegionalAggregation.RegionalNoiseSigmaPp`; 400 replays on the idle map, seed 777, no ground game): 8 jurisdictions change hands in at least one replay; the map's 4 closest - MN (margin -1.18) 23.3 %, NH (margin -1.42) 18.3 %, ME (margin -3.14) 4.3 %, MI (margin +3.14) 5.3 %; the presidency changes hands in 0 of 400, no majority in 0.
+
+Each jurisdiction - its electors, its margin of record, the idle map's (R − D, points of the jurisdiction's vote), and the ceiling's move for each party:
+
+| jurisdiction | electors | 2024 of record | the idle map | the ceiling, DEM | the ceiling, REP | the ceiling flips the map's call |
+|---|---:|---:|---:|---:|---:|---|
+| AL | 9 | +30.47 | +31.39 | -8.27 | +7.89 | - |
+| AK | 3 | +13.14 | +15.99 | -8.55 | +8.43 | - |
+| AZ | 11 | +5.53 | +5.62 | -8.97 | +8.89 | flips |
+| AR | 6 | +30.64 | +33.55 | -7.98 | +7.68 | - |
+| CA | 54 | -20.13 | -23.24 | -8.29 | +8.55 | - |
+| CO | 10 | -10.98 | -7.57 | -8.77 | +8.85 | flips |
+| CT | 7 | -14.50 | -14.15 | -8.69 | +8.87 | - |
+| DE | 3 | -14.70 | -13.04 | -8.73 | +8.90 | - |
+| DC | 3 | -83.81 | -80.82 | -2.90 | +2.97 | - |
+| FL | 30 | +13.10 | +9.29 | -9.00 | +8.87 | - |
+| GA | 16 | +2.19 | +5.69 | -8.99 | +8.91 | flips |
+| HI | 4 | -23.10 | -23.54 | -8.28 | +8.56 | - |
+| ID | 4 | +36.49 | +36.70 | -7.76 | +7.46 | - |
+| IL | 19 | -10.90 | -11.06 | -8.75 | +8.89 | - |
+| IN | 11 | +18.96 | +22.00 | -8.61 | +8.35 | - |
+| IA | 6 | +13.21 | +14.13 | -8.83 | +8.65 | - |
+| KS | 6 | +16.12 | +20.56 | -8.63 | +8.40 | - |
+| KY | 8 | +30.53 | +31.86 | -8.20 | +7.84 | - |
+| LA | 8 | +22.01 | +24.54 | -8.55 | +8.25 | - |
+| ME | 4 | -6.94 | -3.14 | -8.82 | +8.86 | flips |
+| MD | 10 | -28.54 | -27.28 | -8.07 | +8.35 | - |
+| MA | 11 | -25.20 | -27.53 | -8.07 | +8.36 | - |
+| MI | 15 | +1.41 | +3.14 | -8.97 | +8.93 | flips |
+| MN | 10 | -4.24 | -1.18 | -8.89 | +8.90 | flips |
+| MS | 6 | +22.89 | +22.47 | -8.67 | +8.37 | - |
+| MO | 10 | +18.41 | +21.32 | -8.66 | +8.40 | - |
+| MT | 4 | +19.93 | +22.30 | -8.55 | +8.31 | - |
+| NE | 5 | +20.46 | +24.99 | -8.43 | +8.18 | - |
+| NV | 6 | +3.10 | +3.54 | -8.91 | +8.87 | flips |
+| NH | 4 | -2.78 | -1.42 | -8.92 | +8.93 | flips |
+| NJ | 14 | -5.91 | -10.01 | -8.82 | +8.96 | - |
+| NM | 5 | -6.00 | -4.86 | -8.85 | +8.91 | flips |
+| NY | 28 | -12.59 | -17.20 | -8.59 | +8.82 | - |
+| NC | 16 | +3.21 | +7.28 | -8.97 | +8.87 | flips |
+| ND | 3 | +36.45 | +39.27 | -7.58 | +7.28 | - |
+| OH | 17 | +11.21 | +13.96 | -8.88 | +8.70 | - |
+| OK | 7 | +34.26 | +39.01 | -7.70 | +7.33 | - |
+| OR | 8 | -14.31 | -10.16 | -8.68 | +8.78 | - |
+| PA | 19 | +1.70 | +4.77 | -8.98 | +8.91 | flips |
+| RI | 4 | -13.78 | -14.85 | -8.63 | +8.81 | - |
+| SC | 9 | +17.87 | +17.61 | -8.80 | +8.57 | - |
+| SD | 3 | +29.19 | +32.09 | -8.09 | +7.78 | - |
+| TN | 11 | +29.72 | +29.14 | -8.33 | +8.00 | - |
+| TX | 40 | +13.68 | +11.51 | -8.92 | +8.77 | - |
+| UT | 6 | +21.58 | +26.41 | -8.20 | +8.01 | - |
+| VT | 3 | -31.51 | -29.48 | -7.90 | +8.16 | - |
+| VA | 13 | -5.77 | -4.19 | -8.89 | +8.94 | flips |
+| WA | 12 | -18.22 | -13.28 | -8.59 | +8.72 | - |
+| WV | 4 | +41.86 | +44.86 | -7.35 | +6.90 | - |
+| WI | 10 | +0.86 | +5.30 | -8.95 | +8.88 | flips |
+| WY | 3 | +45.76 | +49.31 | -6.72 | +6.45 | - |
+
+### R-US16 (c): every staged country
+
+Every country `LiveCampaignSetup.TryFor` stages, on the vote model at its own start, its campaign run whole (every party an AI at its cast, seed 777); its regions derived from the run's national shares by `NationalElection.SharesFromCampaign` (the runtime's own derivation, which the mirror equals to the last bit) and counted by W-D1 as above - one base turnout, the staging's votes over its electorate. The run's ground game's effect is the count with the run's mobilisation against the count with none; the count with none against the run's national shares is W-D1's frame alone (one base turnout weighs each region by its electorate, not its votes). Seats by `NationalElection.Run` on each; no tactical layer in either.
+
+| country | regions | the ground game: largest party move (pp) | seats changing hands | W-D1's frame alone: largest party move (pp) | seats changing hands | parties past the compatibility ceiling at the close |
+|---|---:|---:|---:|---:|---:|---|
+| Sweden | 29 | 0.035 | 0 | 0.062 | 0 | 2 of 8 |
+| Germany | 16 | 0.003 | 0 | 0.299 | 2 | 8 of 9 |
 <!-- END GENERATED -->
