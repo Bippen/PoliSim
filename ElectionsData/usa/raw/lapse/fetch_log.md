@@ -1,0 +1,17 @@
+# fetch_log - ElectionsData/usa/raw/lapse/ (PS-6 US-14 for R-US9 as ruled, F8: the lapse of record and the excepted share), 2026-10-16
+
+Command: `curl -s -L -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36" -H "Accept: text/html,application/xhtml+xml,application/xml,application/pdf,*/*" -o <file> <url>`; bytes stored as received. Status is the final status after redirects. Digests in `SHA256SUMS.txt`. The reading is `ElectionsData/usa/debt_limit.md`, section 7.
+
+| UTC | HTTP | bytes | file | URL |
+|---|---|---|---|---|
+| 2026-10-16T18:48:53Z | 200 | 122952 | govinfo_PLAW-119publ4.htm | https://www.govinfo.gov/content/pkg/PLAW-119publ4/html/PLAW-119publ4.htm |
+| 2026-10-16T18:48:54Z | 200 | 309721 | govinfo_BILLSTATUS-119hr5371.xml | https://www.govinfo.gov/bulkdata/BILLSTATUS/119/hr/BILLSTATUS-119hr5371.xml |
+| 2026-10-16T18:48:54Z | 200 | 549797 | govinfo_PLAW-119publ37.htm | https://www.govinfo.gov/content/pkg/PLAW-119publ37/html/PLAW-119publ37.htm |
+| 2026-10-16T18:49:39Z | 403 | 767 | [NOT KEPT] cbo_61823_shutdown.pdf | https://www.cbo.gov/system/files/2025-10/61823-Shutdown.pdf |
+| 2026-10-16T18:49:53Z | 200 | 621153 | crs_R48832.2.pdf | https://www.congress.gov/crs_external_products/R/PDF/R48832/R48832.2.pdf |
+| 2026-10-16T18:49:53Z | 200 | 377679 | house_arrington_61823_quantitative_effects_of_a_shutdown.pdf | https://arrington.house.gov/uploadedfiles/61823-quantitative-effects-of-a-shutdown-1.pdf |
+
+Notes
+- **The captures of 2026-10-05 brought in.** `PoliSim-captures/sources/us_shutdown_2025/PLAW-119publ4.htm` (sha256 fda2d01e...) and `BILLSTATUS-119hr5371.xml` (sha256 044b0c48...), held out of tree until this item: re-fetched today from the same govinfo URLs, **byte-identical** (the same SHA-256 as the captures) - so the in-tree files are those captures, with their digests in `SHA256SUMS.txt`. P.L. 119-37 (the continuing appropriations act that ended the lapse, approved 12 November 2025) is fetched with them.
+- **The excepted share of discretionary spending in a lapse - BILLED.** No primary read states it. What was tried: (1) OMB's agency contingency plans page (`https://www.whitehouse.gov/omb/information-resources/guidance/agency-contingency-plans/`) now redirects (HTTP 200) to OMB's "Miscellaneous" guidance page, which lists only the Executive Office of the President's own shutdown plans - not kept; the agencies' plans were not fetched one by one. (2) CBO's letter of 29 October 2025 on the shutdown (`cbo.gov/system/files/2025-10/61823-Shutdown.pdf`) - **cbo.gov answered 403 with a captcha page** (767 bytes, not kept); the same letter is served by its addressee, the House Budget Committee's chairman (`house_arrington_61823_quantitative_effects_of_a_shutdown.pdf`, [ADDRESSEE'S COPY] - CBO's letterhead and text, not a third party's rendering). It gives the two nearest figures, neither of them the share: about 600,000 employees excepted and 650,000 furloughed each week on average (from the agencies' contingency plans and OPM), and outlays $33/54/74 billion lower in a four-, six- or eight-week shutdown. (3) CRS R48832 (version 2, 29 January 2026, from congress.gov's crs_external_products path): "CRS could not locate any authoritative information on the total number of programs and agencies that were excepted".
+- congress.gov's other paths stay behind the Cloudflare challenge recorded in `raw/debt_limit/fetch_log.md`; the crs_external_products path serves (versions 1 and 2 of R48832 answered 200, 3-5 404).

@@ -38613,3 +38613,57 @@ US-21 (the veto in play) now needs only US-19 and its own build.
 - **The codebook marks V19, not V8, as CHES's PEOPLE_VS_ELITE** (r 0.598 against CHES-2017). Reversed onto CHES's direction it gives REP 5.46 and DEM 6.13 - no cast move, but the stance model's populism term would then read both parties instead of REP alone. V8 is kept because the plan names it; switching is Elias's.
 
 **Bars:** (tier SIMULATION, on this commit's own tree) the full 100-turn dump **byte-identical to `ga111` on both seeds** (`dump837`, label `us32`) - the roster's LrEcon and Galtan bit-identical, PeopleVsElite read on no path the no-policy game takes; the cheap bar **104 of 104** (`cheap837`: `GeneratedCatalogCheck` holding the extract to its out-of-tree sources, `CampaignCastDiagnostic` the US casts and the held readings); the simulation bar **57 of 57** (`sim837`, the sentinel on `ga111`); the documents bar **14 of 14** (`doc837`, the record in); `Tools/us_gps_mutations.sh` **15 of 15** caught, the control passing. Ran detached.
+
+## 838. PS-6 US-14 - THE DEBT LIMIT MEASURED BEFORE IT RUNS: THE STATUTE AS DATED DATA, THE 2025 REINSTATEMENT REPRODUCED FROM THE RECORD'S OWN DEBT, THE BRIDGE TO THE SEED, THE REACH AND BIND DATES PER START AND PER R-US21 OPTION; THE BUDGET STATUTES AND THE LAPSE OF RECORD READ; R-US21 ASKED (2026-10-16)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-14; Elias's B7, §759; H5's order puts it first after R-US17's rule):
+- the bridge first;
+- the statute as dated data, with $36,103,995,660,231 reproduced from the record's own debt;
+- the day the limit is reached and the day it binds, per R-US21 option and per start, printed in the cheap bar;
+- the budget statutes and the lapse of record read for US-22;
+- nothing live; R-US21 asked with the dates.
+
+Built in the roadmap sweep's first wave, in its own worktree; integrated after US-32 (§837), as each was ready - the two share nothing.
+
+**Sourced** (byte for byte; three new folders, each with `SHA256SUMS.txt` and `fetch_log.md`):
+- `raw/treasury_debt/` - MSPD tables, DTS Table III-C, the Secretary's letters (scanned pages, read from the image and said so where quoted).
+- `raw/budget_statutes/` - GPO's 31 U.S.C. 1102/1105(a)/1341-1342 and 2 U.S.C. 621 note/631/632/681 ff./900-902, P.L. 117-73, 118-5 and 119-21.
+- `raw/lapse/` - the 2025 lapse's records, CRS R48832, CBO's letter of 29 Oct 2025 (the addressee's copy; cbo.gov refused, 403); the `us_shutdown_2025` captures brought in byte-identical.
+
+**Built:**
+- `Tools/us_debt_limit_prep.pl` writes `docs/generated/US_DEBT_LIMIT.md`:
+  - the limit by date: $31,381,463,000,000 from 2021-12-16; suspended from 2023-06-03 through 2025-01-01; $36,103,995,660,231 from 2025-01-02; $41,103,995,660,231 from 2025-07-04;
+  - the reinstatement reproduced from DTS Table III-C, to its whole million: 36,103,995 against Treasury's 36,103,995.660231 - 2 January's opening, the end of 1 January, per Treasury's letter of 27 Dec 2024;
+  - the $25,009,309.5 headroom §401(b) carried;
+  - the record's last extraordinary measures: 21 Jan - 4 Jul 2025, 164 days, ended by the increase; projected "in August" (192-222 days); $338 bn on day one;
+  - Treasury's perimeters.
+- `UsDebtLimitCheck` (cheap and documents groups): the document against the record, the bridge's engine block (`WriteBridge`), the dates printed.
+- `debt_limit.md` §6-§11: the budget statutes, the lapse of record, how every episode ended.
+
+**Measured** (`us14w` wrote the bridge; `us14n` the named run, clean, 12.3 s):
+- **The bridge:** the game's seed $35,960,000,000,000 against Treasury's debt subject to limit on 30 Jun 2026; the ratio 1.092538.
+- **From the seed's state:** the debt subject to limit reaches $41,103,995,660,231 after 313 days under bridge (i)(a), 322 under (i)(b). Carried to the seed's own month-end, that is 2027-05-09 and 2027-05-18 - inside CRS IF10292's outside projections, "early to mid-2027".
+- **The cut** a binding limit asks, pro rata on non-interest outlays: 32.9 % under (i)(a), 34.9 % under (i)(b) (the first year's balance -$1.948 tn and -$2.066 tn on $5.926 tn).
+- **The 2024 starts** (the USA, France, Germany) under (ii)(a), reinstated at the game's own debt on 2025-01-02: reached that day. Under (ii)(b), the record's figures: over by $3.5-4.9 tn on 2025-01-02. Germany's (ii)(b) path is relieved on 2025-07-04 and reached again on 2025-09-15.
+- **The binding day** follows the span: +164 days to 2025-06-15, +192 to 2025-07-13, +222 to 2025-08-12.
+- **Sweden's start (2026-01-18)** reaches the limit of record on 2026-11-27.
+- **The 2022 and 2023 starts (Italy, Poland)** open under P.L. 117-73's limit already over by $7.906 tn, because the seed is mid-2026 against a 2022 calendar - a case R-US21 (ii) does not name.
+- **The AI ministry's ratio-trend trigger**, where it governs the USA (every start but the USA's own), first fires in the third year (e.g. Sweden's start 2029-01-17), sequestering 0.50 % of GDP - against a dollar limit already binding in 2027. On the USA's own start the USA is the player's, and the ministry is idle.
+
+**Declared:**
+- **The path:** `NoPolicyCentury`'s loop run daily for as long as the dates need, not `NoPolicyCentury.For`, whose yearly reading costs about 120 s.
+- **The bridge's inputs:** the vintage month 2026-06-30; "on 2 January 2025" read as the end of 1 January; (ii)(a) generalised as the law in force at the start; (i)(b) measured as a re-seed.
+- **(iii)'s spans:** the 164 / 192 / 222 days and the $338 bn reading; "binds" as reach plus the span.
+- **(iv) and (v):** (iv) read on the first closed year; (v) reconstructed from the ministry's own memory.
+- **BILLED:** the EXCEPTED SHARE of discretionary spending in a lapse - CRS R48832 "could not locate any authoritative information"; CBO gives employees and outlays, not a share. US-22 needs it.
+- **Corrected:** the Byrd rule's three-fifths waiver is §904(c)(1) in the note to 2 U.S.C. 621, not G10's "§644(e)". `AiFinanceMinistry`'s comment cites 2 U.S.C. §902 for the cap's sequester, which in the 2024 edition is §901 - recorded for US-24, the file not touched.
+
+**Review** (one adversarial reviewer, refute-first): one high, two medium, seven low; no figure wrong.
+- **Re-derived correct:** every figure (the reinstatement, the headroom, the spans, the $338 bn) from the raw files by the reviewer's own script; every quote verbatim but the gaps below; the six scanned letters read from their page images and flagged so.
+- **High and first medium, met at integration:** the check enrolled in neither bar list, and the bridge not yet written - the integration registered it in both and ran `WriteBridge` before the bars.
+- **Fixed in the next section (§839):** M2 - three Treasury figures read but compared with no source, the engine block's two rows built from them, and "recomputes every Treasury figure" overclaimed; L1 - the vintage tolerance admitting the wrong month; L3 - the 9 May gloss dropping "cash"; L4 - quote gaps unmarked; L5 - four typed dates the header calls derived; L6 - a pointer to the sweep's plan, which is not in the repo; L7 - precision wording.
+- **Noted, not a defect:** L2 - one opening-figure check is tautological for (i)(b).
+
+**R-US21 asked** (the sweep's closing message to Elias), with these dates: (i) the bridge, recommended (a); (ii) a 2024 start, recommended (a), with the new question of the 2022/2023 starts; (iii) the span, Code recommending 192 days (the 164 ended by an act, not exhaustion); (iv) pro rata; (v) the dollar limit replaces the ministry's trigger for the USA; (vi) an AI-governed USA raises or suspends ("Since 1960, Congress has acted 78 separate times").
+
+**Bars:** (tier SIMULATION, on this commit's own tree) the cheap bar **105 of 105** (`cheap838`, `UsDebtLimitCheck` its 105th, 12.3 s in its named run `us14n`); the simulation bar **57 of 57** (`sim838`, the sentinel on `ga111`: the check restores the generator and the epoch); the documents bar **15 of 15** (`doc838`; with the record in, `doc838b`). `WriteBridge` (`us14w`) wrote the engine block first. Ran detached.
