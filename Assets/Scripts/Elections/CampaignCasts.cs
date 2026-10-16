@@ -17,7 +17,10 @@ namespace PoliSim.Elections
     /// <item><description><b>Professional</b> - every other party (§32's professional: polling, swing voters, money spent efficiently).</description></item>
     /// </list>
     /// **Chaotic**, §32's fifth, is cast to no real party: no CHES item measures a strategy's inconsistency. A missing item (`NaN` - the USA's GPS pair
-    /// carry no salience) fails its test and the rule reads on. The cut points are the scales' own midpoint and thirds - reading choices,
+    /// carry no salience) fails its test and the rule reads on. US-32: GPS 2019 does publish a salience item, V9 (how important populist rhetoric
+    /// is to the party), and it is HELD under ruling G7 (§797) - read onto `anti_elite_salience` it casts the Republicans populist, a cast move
+    /// reported to Elias with its size before it is installed; `CampaignCastDiagnostic` prints the USA's casts both ways. Their people-versus-elite
+    /// is GPS's V8 populist-rhetoric scale (a reading). The cut points are the scales' own midpoint and thirds - reading choices,
     /// [AUTHORED-DRAFT], each strikeable; `CampaignCastDiagnostic` prints every real party's three items beside its cast.
     /// </summary>
     public static class CampaignCasts

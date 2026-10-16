@@ -38578,3 +38578,38 @@ US-21 (the veto in play) now needs only US-19 and its own build.
 - **PS-3-F1** (when the Speaker's round begins after an election) stays OPEN. §714 - formation time from each country's record, no vote before it, the caretaker governing meanwhile - probably settles it, but closing it is Elias's word; it goes in the sweep's asks.
 
 **Bars:** (tier DOCUMENTS, on this commit's own tree) the documents bar **14 of 14** (`doc836`, the record in). Ran detached.
+
+## 837. PS-6 US-32 - THE GLOBAL PARTY SURVEY 2019 READ: THE US ROWS GENERATED FROM IT, PEOPLE-VERSUS-ELITE ON V8 IN PLACE OF THE DRAFT; THE SALIENCE (V9) HELD UNDER G7 - IT WOULD CAST THE REPUBLICANS POPULIST (2026-10-16)
+
+**What was owed** (the plan's US-32; Elias's G7, §797; H5's order):
+- the GPS 2019 datafile and codebook saved;
+- the roster's typed economic, social and immigration values re-read, every difference named;
+- V8 in place of the `[AUTHORED-DRAFT]` people-versus-elite;
+- the experts' spread as each party's range for US-33;
+- the casts re-derived by §695's rule, any move reported with its size before it is installed.
+
+**Order:** built in the roadmap sweep's first wave, implemented beside US-14 in its own worktree, and integrated as soon as it was ready, ahead of US-14, which H5 puts first. The two read and write nothing in common, so the order changes no figure of either.
+
+**Built:**
+- **The GPS files, out of tree (G7):** the by-party and by-expert tables with their originals, the codebook and the questionnaire, fetched from Harvard Dataverse (doi:10.7910/DVN/WMGTNS) into `PoliSim-captures/sources/usa_us32/`. Every original's MD5 equals the one Dataverse publishes. Each file has its line in `ElectionsData/positions/raw/out_of_tree.txt` (sha256, bytes, path, URL, fetch time); no raw byte is committed.
+- **The extract and its prep tool:** `Tools/us_gps_prep.pl` writes `ElectionsData/positions/gps_2019_usa.csv` (`-text`) and the generated `UsGps2019` - V4, V6, V8, V9, V10 and V19 per party: the file's mean, its two decimals, and the experts' spread (placement count, sd, minimum, quartiles, maximum). `Tools/us_gps_mutations.sh` catches 15 of 15 cases, and its control passes.
+- **The roster:** the US rows read the generated constants. LrEcon and Galtan are the same `const float` values as the old literals, so they are bit-identical. People-versus-elite is now V8.
+- **The checks:**
+  - `GeneratedCatalogCheck` holds the extract to its out-of-tree sources, each mean to the by-party file's own cell and the roster to the constants.
+  - `CampaignCastDiagnostic` pins the US casts and prints every reading not installed. Installing V9 without changing the pin fails the cheap bar - that is how the install is held.
+  - `StanceModel`'s US reason names the scale.
+- **The register:** `party_positions.md` cites the digests, carries the readings, and corrects V4's endpoint quote (the typology's words had stood in for the item's).
+
+**Measured** (the saved files):
+- **V4, V6 and V10 equal the typed values** at two decimals for both parties. The residuals are at most 0.005, the largest the half-way ties 8.225 and 2.725.
+- **People-versus-elite:** REP 7.00 -> 7.83, DEM 3.50 -> 3.71.
+- **The means:** each is the by-party file's own text, the mean of the 50 experts' placements, and the CSV upload's value - three ways, equal.
+- **The casts are unchanged:** REP Professional, DEM Grassroots.
+
+**Declared:** V8 onto `people_v_elite` (the plan's words "read V8"; its wording is not CHES's); two decimals, half away from zero; 99 and empty cells are not placements; sample sd, quartiles by linear interpolation.
+
+**For Elias (G7's stop rule, and one reading):**
+- **V9, "how important is populist rhetoric", onto `anti_elite_salience` would cast the REPUBLICANS POPULIST:** 8.13, +3.13 over §695's cut of 5. DEM would not move (4.07). HELD, not installed.
+- **The codebook marks V19, not V8, as CHES's PEOPLE_VS_ELITE** (r 0.598 against CHES-2017). Reversed onto CHES's direction it gives REP 5.46 and DEM 6.13 - no cast move, but the stance model's populism term would then read both parties instead of REP alone. V8 is kept because the plan names it; switching is Elias's.
+
+**Bars:** (tier SIMULATION, on this commit's own tree) the full 100-turn dump **byte-identical to `ga111` on both seeds** (`dump837`, label `us32`) - the roster's LrEcon and Galtan bit-identical, PeopleVsElite read on no path the no-policy game takes; the cheap bar **104 of 104** (`cheap837`: `GeneratedCatalogCheck` holding the extract to its out-of-tree sources, `CampaignCastDiagnostic` the US casts and the held readings); the simulation bar **57 of 57** (`sim837`, the sentinel on `ga111`); the documents bar **14 of 14** (`doc837`, the record in); `Tools/us_gps_mutations.sh` **15 of 15** caught, the control passing. Ran detached.

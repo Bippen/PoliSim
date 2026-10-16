@@ -8,3 +8,5 @@ usa/maine_districts_read_2012_2016.tsv -text
 usa/house_*.csv -text
 usa/senate_*.csv -text
 usa/us_veto_measures.csv -text
+# PS-6 US-32: the GPS extract UsGps2019.cs pins by SHA-256 over its bytes.
+positions/gps_2019_usa.csv -text

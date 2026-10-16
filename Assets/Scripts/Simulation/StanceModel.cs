@@ -366,7 +366,8 @@ namespace PoliSim.Simulation
                     // there is no term (trusting elected office holders is not support for the government of the day -
                     // the first cut pulled S toward a cut it opposed by +0.40, and was wrong). A cabinet or support
                     // party IS the establishment for this bill and carries no term. Unpublished (NaN) means no term
-                    // and the reason says so; the USA's two values are a tagged draft and the reason says that too.
+                    // and the reason says so; the USA's two values are GPS 2019's V8 populist-rhetoric scale read onto this
+                    // item (US-32, a reading) and the reason names the scale, so it cannot be read as CHES.
                     bool inGovernment = cabinet.Contains(party.Abbrev) || support.Contains(party.Abbrev);
                     if (!inGovernment)
                     {
@@ -380,7 +381,7 @@ namespace PoliSim.Simulation
                             float before = alignment;
                             alignment -= bias * (1f + alignment);
                             reasons.Add(string.Format(CultureInfo.InvariantCulture, "populism: people_v_elite {0:0.0}{1} → {2:+0.00;-0.00} (anti-establishment framing of a government bill)",
-                                party.PeopleVsElite, country.Id == CountryId.USA ? " [AUTHORED-DRAFT]" : "", alignment - before));
+                                party.PeopleVsElite, country.Id == CountryId.USA ? " (GPS 2019 V8)" : "", alignment - before));
                         }
                     }
                 }

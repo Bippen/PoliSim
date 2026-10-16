@@ -127,6 +127,7 @@ namespace PoliSim.EditorTools
             failures += CheckUsHouseDistricts(sb);   // PS-6 US-11 (§790): the House by district, its maps, its record
             failures += CheckUsSenate(sb);   // PS-6 US-12 (§792): the Senate by state and by date - the roster diagnostic
             failures += CheckUsSenateRaces(sb);   // PS-6 US-12 (§793, §796): the Senate races of 2016-2024 and the counts R-US19 reads
+            failures += CheckUsGps2019(sb);   // PS-6 US-32: the GPS 2019 US extract, its out-of-tree sources (G7) and the roster that reads it
 
             sb.Append(failures == 0
                 ? "    ✅ every generated catalog is what its source says, and the row counts agree.\n"
@@ -1136,6 +1137,118 @@ namespace PoliSim.EditorTools
             sb.Append(F("    UsPresidentialReturns, the Senate races: {0} page(s) the bytes the run read; {1} race(s), every figure the CSV's; each year 2016-2024 a "
                         + "full-term race in every state of its regular class and the declared specials; every winner his seat's holder by the seat rows; the counts R-US19 reads consistent\n",
                 UsPresidentialReturns.SenateRaceRawSources.Length, rows.Count));
+            return 0;
+        }
+
+        /// <summary>
+        /// PS-6 US-32: the Global Party Survey 2019's US parties - `ElectionsData/positions/gps_2019_usa.csv` and its catalog <see cref="UsGps2019"/>,
+        /// both written by `Tools/us_gps_prep.pl` from files kept OUT OF TREE (ruling G7, §797: the file fetched, its digest kept, not the raw file).
+        /// The drift questions of the blocks above: every file the run read is still the bytes it read - re-hashed where G7 keeps it, beside the
+        /// project under `PoliSim-captures/sources/` (not there, this compares nothing and fails, as a missing source does above); the CSV is
+        /// still the bytes the catalog was written with; every cell of every CSV row is the catalog's. ⚠ Plus the derived table held to its source
+        /// directly: every row's mean is the by-party file's own cell for that party and item, text for text; each item's two decimals the
+        /// catalog's constant; and the roster (<see cref="PartySystems.RealRoster"/>) carries exactly the constants of the rows that name a field,
+        /// and nothing from a row that names none (V9 is held under G7; V10 has no field in the US rows).
+        /// </summary>
+        private static int CheckUsGps2019(StringBuilder sb)
+        {
+            sb.Append("\n=== The GPS 2019 US extract against its sources ===\n");
+            var wrong = new List<string>();
+            string sources = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "PoliSim-captures", "sources"));
+            foreach ((string path, string sha) in UsGps2019.RawSources)
+            {
+                string full = Path.Combine(sources, path.Replace('/', Path.DirectorySeparatorChar));
+                if (!File.Exists(full)) { wrong.Add(path + " is not on disk under " + sources + " - the out-of-tree source G7 keeps, so this compared nothing"); continue; }
+                string onDisk = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(full));
+                if (!string.Equals(onDisk, sha, StringComparison.OrdinalIgnoreCase)) { wrong.Add(path + " changed since generation (on disk " + onDisk + ")"); }
+            }
+
+            if (UsGps2019.RawSources.Length == 0) { wrong.Add("the catalog lists no source file, so no file was compared"); }
+
+            string positions = Path.Combine(Directory.GetCurrentDirectory(), "ElectionsData", "positions");
+            List<string[]> rows = ReadUsCsv(positions, "gps_2019_usa.csv", UsGps2019.SourceDigest, "party,gps_id,gps_party,item,question,roster_field,experts,mean,mean_2dp,sd,min,q1,median,q3,max", wrong);
+            if (rows.Count != UsGps2019.Rows.Length) { wrong.Add("rows: " + rows.Count + " CSV rows, " + UsGps2019.Rows.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(rows.Count, UsGps2019.Rows.Length); i++)
+            {
+                UsGps2019.Row r = UsGps2019.Rows[i];
+                if (!SameRow(rows[i], r.Party, r.GpsId, r.GpsParty, r.Item, r.Question, r.RosterField, r.Experts, r.Mean, r.Mean2dp, r.Sd, r.Min, r.Q1, r.Median, r.Q3, r.Max)) { wrong.Add("row " + i + " (" + r.Party + " " + r.Item + ") differs"); }
+            }
+
+            // every mean the by-party file's own cell - the derived table held to the source, not to the run that wrote it
+            string byParty = UsGps2019.RawSources.Length > 0 ? Path.Combine(sources, "usa_us32", "gps2019_by_party_v2.tab") : null;
+            int held = 0;
+            if (byParty != null && File.Exists(byParty))
+            {
+                string[] lines = File.ReadAllText(byParty, Encoding.UTF8).Split('\n');
+                string[] head = lines[0].TrimEnd('\r').Split('\t');
+                int iso = Array.IndexOf(head, "ISO"), id = Array.IndexOf(head, "ID_GPS");
+                foreach (UsGps2019.Row r in UsGps2019.Rows)
+                {
+                    int col = Array.IndexOf(head, r.Item);
+                    string cell = null;
+                    int found = 0;
+                    for (int l = 1; l < lines.Length && iso >= 0 && id >= 0 && col >= 0; l++)
+                    {
+                        string[] f = lines[l].TrimEnd('\r').Split('\t');
+                        if (f.Length <= Math.Max(col, Math.Max(iso, id)) || f[iso] != "\"USA\"" || f[id] != r.GpsId) { continue; }
+                        found++;
+                        cell = f[col];
+                    }
+                    if (found != 1) { wrong.Add(F("{0} {1}: {2} US row(s) with GPS id {3} and the column in the by-party file, not one", r.Party, r.Item, found, r.GpsId)); continue; }
+                    if (cell != r.Mean) { wrong.Add(F("{0} {1}: the by-party file's cell is '{2}', the extract's mean '{3}'", r.Party, r.Item, cell, r.Mean)); continue; }
+                    held++;
+                }
+            }
+            else if (byParty != null) { wrong.Add("the by-party file is not on disk, so no mean was held to its cell"); }
+
+            // each row's two decimals the catalog's constant, and the roster the constants of the rows that name a field
+            var constants = new Dictionary<string, float>(StringComparer.Ordinal)
+            {
+                { "REP|V4_Scale", UsGps2019.RepEconomicV4 }, { "REP|V6_Scale", UsGps2019.RepSocialV6 }, { "REP|V8_Scale", UsGps2019.RepPopulistRhetoricV8 },
+                { "REP|V9", UsGps2019.RepPopulistSaliencyV9 }, { "REP|V10", UsGps2019.RepImmigrationV10 }, { "REP|V19", UsGps2019.RepPeopleShouldDecideV19 },
+                { "DEM|V4_Scale", UsGps2019.DemEconomicV4 }, { "DEM|V6_Scale", UsGps2019.DemSocialV6 }, { "DEM|V8_Scale", UsGps2019.DemPopulistRhetoricV8 },
+                { "DEM|V9", UsGps2019.DemPopulistSaliencyV9 }, { "DEM|V10", UsGps2019.DemImmigrationV10 }, { "DEM|V19", UsGps2019.DemPeopleShouldDecideV19 },
+            };
+            PoliticalParty[] usa = PartySystems.RealRoster(CountryId.USA);
+            var filled = new List<string>();
+            foreach (UsGps2019.Row r in UsGps2019.Rows)
+            {
+                if (!constants.TryGetValue(r.Party + "|" + r.Item, out float c)) { wrong.Add(r.Party + " " + r.Item + ": no constant in the catalog for this row"); continue; }
+                if (c.ToString("0.00", CultureInfo.InvariantCulture) != r.Mean2dp) { wrong.Add(F("{0} {1}: the constant {2:0.00}, the row's two decimals {3}", r.Party, r.Item, c, r.Mean2dp)); }
+                PoliticalParty p = Array.Find(usa ?? Array.Empty<PoliticalParty>(), x => x.Abbrev == r.Party);
+                if (p.Abbrev == null) { wrong.Add("the USA's roster has no " + r.Party); continue; }
+                float carried;
+                switch (r.RosterField)
+                {
+                    case "LrEcon": carried = p.LrEcon; break;
+                    case "Galtan": carried = p.Galtan; break;
+                    case "PeopleVsElite": carried = p.PeopleVsElite; break;
+                    case "none": continue;
+                    default: wrong.Add(r.Party + " " + r.Item + ": roster field '" + r.RosterField + "' is not one this check reads"); continue;
+                }
+                if (!carried.Equals(c)) { wrong.Add(F("{0} {1}: the roster's {2} is {3:0.00}, the catalog's constant {4:0.00}", r.Party, r.Item, r.RosterField, carried, c)); }
+                else { filled.Add(r.Party + " " + r.RosterField); }
+            }
+
+            foreach (string key in new[] { "REP", "DEM" })
+            {
+                PoliticalParty p = Array.Find(usa ?? Array.Empty<PoliticalParty>(), x => x.Abbrev == key);
+                if (p.Abbrev != null && !(float.IsNaN(p.AntiEliteSalience) && float.IsNaN(p.ImmigratePolicy)))
+                {
+                    wrong.Add(key + " carries a salience or an immigration position - V9 is HELD under G7 (a cast move goes to Elias first) and V10 is not a field of the US rows: change this line with the ruling that installs one");
+                }
+            }
+
+            if (wrong.Count > 0)
+            {
+                Debug.LogError("CATALOGCHECK: UsGps2019 - " + string.Join("; ", wrong.ToArray()) + ". Re-run Tools/us_gps_prep.pl after reading the diff.");
+                sb.Append(F("    ⚠ UsGps2019: {0} disagreement(s)\n", wrong.Count));
+                return 1;
+            }
+
+            sb.Append(F("    UsGps2019: {0} out-of-tree file(s) the bytes the run read; {1} row(s), every cell the CSV's; {2} mean(s) the by-party file's own cell; "
+                        + "the roster carries {3} and nothing from V9 (held, G7) or V10\n",
+                UsGps2019.RawSources.Length, rows.Count, held, string.Join(", ", filled.ToArray())));
             return 0;
         }
 

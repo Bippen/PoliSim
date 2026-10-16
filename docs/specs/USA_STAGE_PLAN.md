@@ -77,8 +77,8 @@
 
 | piece | the USA at HEAD | where it lives |
 |---|---|---|
-| Roster | REP and DEM on GPS 2019's economic and social scales (CHES-USA is unpublished); people-versus-elite `[AUTHORED-DRAFT]`; no general left–right, EU or anti-elite-salience item; the GPS file itself is not on disk | the USA's roster in `Assets/Scripts/Data/PartySystem.cs`; `ElectionsData/positions/party_positions.md` |
-| Casts | DEM grassroots, REP professional, by §695's rule (REP's on the drafted people-versus-elite value) | `CampaignCasts.Of` |
+| Roster | REP and DEM generated from GPS 2019 (`UsGps2019`; the file out of tree by G7, US-32 §837): V4/V6 economic and social, people-versus-elite on V8 (a reading); no general left–right or EU item; V9's salience HELD (G7) | the USA's roster in `Assets/Scripts/Data/PartySystem.cs`; `ElectionsData/positions/party_positions.md` |
+| Casts | DEM grassroots, REP professional, by §695's rule (V9 onto the salience would cast REP populist - held, G7, §837) | `CampaignCasts.Of` |
 | The House's seats | the 2020, 2022 and 2024 elections' tables — election-day figures `[HH-DIV]`, not sworn counts | `PartySystems.SeatsAt` (vintages `Usa2020`, `Usa2022`, `Usa2024`) |
 | Chambers of record | the House by Congress, 117th–119th, dated by the 20th Amendment; **no Senate anywhere in code** | `WorldClock.Chambers` |
 | Executive of record | Biden (DEM) to noon 20 Jan 2025, Trump (REP) from it, each a presidency whose cabinet is its party; installed at the start | `WorldClock.Governments`; `GovernmentRecord.AtStart` (§629) |
@@ -517,6 +517,7 @@ Per R-US16 (b): the USA counts each state with the ground game — W-D1's `Elect
 Save the GPS 2019 datafile and codebook (Harvard Dataverse, doi:10.7910/DVN/WMGTNS). Re-read the roster's typed economic, social and immigration values, naming every difference, and read V8 to replace the `[AUTHORED-DRAFT]` people-versus-elite values. Take the experts' spread, if the file carries per-expert placements, as each party's range for US-33, and re-derive the casts by §695's rule. A switch of source is Elias's.
 *Needs:* US-0 (the read can run ahead; the roster change lands here).
 *Done when:* `party_positions.md` cites the saved file's digest; `CampaignCastDiagnostic` re-pinned; the family explained if a trajectory moves; bars.
+**Built: `COMPLETED.md` §837** - the GPS 2019 saved out of tree (G7) and read into `gps_2019_usa.csv` / `UsGps2019` by `Tools/us_gps_prep.pl`; V4/V6/V10 equal at two decimals; people-versus-elite on V8; the experts' spread extracted (US-33's range); the casts unchanged; V9 (REP -> Populist) HELD and V19's reading asked (G7).
 
 **US-33 — Your own nominee (SP-6a). Size L.** *(R-US4)*
 The creation flow is offered for the USA as a leader at the head of the DEM or REP ticket, with positions inside the party's range (US-32's spread if read, else DECLARED); the nominee stands at factor 1.0, and the character is the person the term limit reads (US-28). The third-party run is added only if R-US4 keeps it inside PS-6, with its billed rules.

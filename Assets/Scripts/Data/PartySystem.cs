@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using PoliSim.Data.Generated;
 using PoliSim.Elections;
 
 namespace PoliSim.Data
@@ -173,9 +174,9 @@ namespace PoliSim.Data
 
         /// <summary>CHES 2024 `redistribution` - "where did these political parties stand on REDISTRIBUTION in 2024? 0 = strongly favors redistribution … 10 = Strongly opposes redistribution". `float.NaN` where absent.</summary>
         public readonly float Redistribution;
-        /// <summary>CHES 2024 `people_v_elite` - "Some political parties take the position that 'THE PEOPLE' should have the final say on the most important issues … At the opposite pole are political parties that believe that ELECTED REPRESENTATIVES should make the most important political decisions. 0 = elected office holders should make the most important decisions … 10 = 'the people', not politicians, should make the most important decisions". `float.NaN` where absent; the USA's two carry an [AUTHORED-DRAFT] value, tagged at their rows.</summary>
+        /// <summary>CHES 2024 `people_v_elite` - "Some political parties take the position that 'THE PEOPLE' should have the final say on the most important issues … At the opposite pole are political parties that believe that ELECTED REPRESENTATIVES should make the most important political decisions. 0 = elected office holders should make the most important decisions … 10 = 'the people', not politicians, should make the most important decisions". `float.NaN` where absent. The USA's two carry the Global Party Survey 2019's V8 populist-rhetoric scale instead (US-32, the plan's mapping) - a READING, its wording not this item's: "0 Strongly favors pluralist rhetoric … 10 Strongly favors populist rhetoric" (`UsGps2019`, `ElectionsData/positions/party_positions.md`).</summary>
         public readonly float PeopleVsElite;
-        /// <summary>CHES 2024 `anti_elite_salience` - "How salient has ANTI-ESTABLISHMENT and ANTI-ELITE RHETORIC been to each party during 2024? 0 = not important at all … 10 = extremely important". `float.NaN` where absent.</summary>
+        /// <summary>CHES 2024 `anti_elite_salience` - "How salient has ANTI-ESTABLISHMENT and ANTI-ELITE RHETORIC been to each party during 2024? 0 = not important at all … 10 = extremely important". `float.NaN` where absent. ⚠ The USA's two carry none: the Global Party Survey 2019's V9 (how important populist rhetoric is) is read and printed (`UsGps2019`) and HELD under ruling G7 (§797) - installed here it would turn the Republicans' campaign cast populist, a cast move that goes to Elias with its size before it lands (US-32).</summary>
         public readonly float AntiEliteSalience;
 
         /// <summary>CHES 2024 `civlib_laworder` - "Position on CIVIL LIBERTIES VS. LAW AND ORDER. 0 = strongly favors civil liberties … 10 = strongly favors tough measures to fight crime". `float.NaN` where absent.</summary>
@@ -183,7 +184,7 @@ namespace PoliSim.Data
         /// <summary>CHES 2024 `nationalism` - "Position towards COSMOPOLITANISM VS. NATIONALISM. 0 = strongly promotes cosmopolitan conceptions of society … 10 = strongly promotes nationalist conceptions of society". `float.NaN` where absent.</summary>
         public readonly float Nationalism;
 
-        /// <summary>True when a populism position is on the record for this party - CHES's own, or the tagged draft.</summary>
+        /// <summary>True when a populism position is on the record for this party - CHES's own, or GPS 2019's V8 for the USA.</summary>
         public bool HasPopulism => !float.IsNaN(PeopleVsElite);
 
         public PoliticalParty(string abbrev, string name, float lrEcon, float galtan, int seedSeats,
@@ -520,13 +521,15 @@ namespace PoliSim.Data
         // named there and named again here so it cannot be read as CHES by a later reader.
         private static readonly PoliticalParty[] UsaParties =
         {
-            // P4-A3 (2026-09-04): populism for the two GPS units. ⚠ [AUTHORED-DRAFT] - GPS 2019 is not on disk and
-            // its populist-rhetoric scale (V8) is not read here; the sheet ruled a tagged draft where nothing is
-            // published rather than a NaN that silences the term. The values are a placement on CHES's own 0–10
-            // `people_v_elite` wording (the party of the 2016–24 anti-establishment turn high, the other below the
-            // midpoint) and are the first thing a GPS read replaces; every reason line prints the tag.
-            new PoliticalParty("REP", "Republican Party", 8.23f, 8.30f, 220, "mark_party_us_rep", peopleVsElite: 7.0f),
-            new PoliticalParty("DEM", "Democratic Party", 3.73f, 2.41f, 215, "mark_party_us_dem", peopleVsElite: 3.5f),
+            // US-32: every figure below is GENERATED - `UsGps2019`, written by Tools/us_gps_prep.pl from the GPS 2019 files kept
+            // out of tree (ruling G7, §797) and held to them by GeneratedCatalogCheck. The economic and social pair are V4 and V6 as
+            // typed since 2026-08-28 (the re-read found them equal at two decimals). People-versus-elite is V8, the populist-rhetoric
+            // scale - the plan's mapping, a READING (its wording is not CHES `people_v_elite`'s; the codebook marks V19 as that
+            // item's counterpart, on the reversed scale - put to Elias, not installed). It replaces P4-A3's [AUTHORED-DRAFT]
+            // placement, which held the term open until GPS was read. V9 (populist saliency) is read and HELD under G7: installed
+            // as `antiEliteSalience` it turns the Republicans' cast populist (CampaignCastDiagnostic prints the move).
+            new PoliticalParty("REP", "Republican Party", UsGps2019.RepEconomicV4, UsGps2019.RepSocialV6, 220, "mark_party_us_rep", peopleVsElite: UsGps2019.RepPopulistRhetoricV8),
+            new PoliticalParty("DEM", "Democratic Party", UsGps2019.DemEconomicV4, UsGps2019.DemSocialV6, 215, "mark_party_us_dem", peopleVsElite: UsGps2019.DemPopulistRhetoricV8),
         };
 
         /// <summary>
