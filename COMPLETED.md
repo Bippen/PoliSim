@@ -38543,3 +38543,25 @@ Beside the findings, section 12 now prints the readings in R-number order, and s
 **Bars** (tier TOOLING + DOCUMENTS + SIMULATION, on this commit's own tree): the cheap bar **104 of 104** (`cheap834b`; `UsVetoDrawCheck` its 104th; `UnwiredSubsystemCheck` UNREACHABLE 2 of 287, unchanged, and UNWIRED 2; `DeadStateCheck` 0 unreached; `PresidentialVetoDiagnostic` and `GovernmentBudgetBillDiagnostic` with their Poland pins clean; the first cheap run, `cheap834`, had failed only on the dead `GitBlobId` the second pass named); the documents bar **14 of 14** (`doc834b`); the simulation bar **57 of 57** (`sim834b`: the trajectory sentinel on both seeds, 777 and 424242, equal to its baseline's digests). The instrument wrote the document (1121 lines) and the catalog by name (`usw3`) and ran clean inside both bars. R-US18's block digest `5c89b0cf` and R-US19's `1caec656` read again, unchanged; the R-US17 block's `24de40a7` read again after the plan's edits. All ran detached.
 
 **Owed to Elias (E4):** the rates - this document - before US-21 wires them. A later section records the reply that carries them, and the ruling record moves to INSTALLED (§834; E4 §NNN). Then US-14, then US-32 (H5).
+
+## 835. E4 RECORDED: R-US17'S RULE (c) INSTALLED - THE RATES WENT TO ELIAS IN §834'S REPORT; THE FEATURE LIST'S PS-6 AND PS-4 ROWS BROUGHT TO WHAT IS BUILT (2026-10-16)
+
+**What was owed** (the block's THE RULING RECORD: "INSTALLED (sNNN; E4 sMMM): once a COMPLETED.md section sMMM records the reply to Elias that carried the rates"): the record of that reply.
+
+**The reply:** the session's report on §834 (2026-10-16) carried the rates to Elias, each figure in THE PRINT's label as the block requires of "any reply":
+- the four cells' mean crossing shares: HP 14.9 %, HO 1.5 %, SP 13.0 %, SO 0.3 %;
+- THE DECISION's figures: P(NONE_XXII) 32.9 % against S2's one half, the precision 87.0 % against B1's 27.1 %;
+- E_XXII 1.03, E[sent] = E[named] 17.35, E[hits] 15.09, the hit rate 65.6 %, and one measure's P(sent) (S. 4199, 16.8 %);
+- the two readings that stop the rule (R2 and R8, S2), the overrides (none), and the full document's path.
+
+Elias read it and gave his next instruction (the roadmap, then the sweep). The labelled lines are in `docs/generated/US_VETO_DRAW.md` and §834.
+
+**Changed:**
+- `UsVetoDrawCheck`: the ruling record **INSTALLED (§834; E4 §835)**; the outcome and the decisive digest `12da26b9` unchanged.
+- The plan's mirror line: `**Ruling record:** INSTALLED (§834; E4 §835): (c).`; H5's line and the audit inventory's B-20 row say so.
+- The document is regenerated: its stamp names the state; no figure moves.
+- The feature list: PS-6's row lists what is built (US-0 to US-5, US-10 with rule (c), US-11, US-12, US-20) in place of "nothing built", and PS-4's row, closed at §707, is ticked.
+
+US-21 (the veto in play) now needs only US-19 and its own build.
+
+**Bars:** (tier TOOLING, on this commit's own tree) the cheap bar **104 of 104** (`cheap835`, the record in), after `usw835` wrote the document (1121 lines; its stamp the new state, no figure moved). The R-US17 block's digest `24de40a7` read again, unchanged. Ran detached.

@@ -44,10 +44,10 @@ namespace PoliSim.EditorTools
 
         /// <summary>THE RULING RECORD: NONE (before the instrument), INSTALLED-PENDING-E4, INSTALLED, ASKED or RULED. NONE fails every run, so the
         /// first-run commit registers the outcome and its decisive digest.</summary>
-        private const string RulingState = "INSTALLED-PENDING-E4";
+        private const string RulingState = "INSTALLED";
         private const string RulingSection = "§834";
         /// <summary>INSTALLED only: the COMPLETED.md section that records the reply to Elias carrying the rates (E4).</summary>
-        private const string RulingE4Section = "";
+        private const string RulingE4Section = "§835";
         private const string RulingOutcome = "INSTALL";
         private const string RulingDecisiveDigest = "12da26b99c3506c38bbd17e5ecf5b0ab38f50e00a503faa53418bc3123842866";
         /// <summary>RULED only: the ruling's words and the option it names - one THE STOPS' OPTIONS lists, or (c) amended by name ("(c) amended by " and
