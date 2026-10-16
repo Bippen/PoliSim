@@ -1,2 +1,6 @@
 docs/reference/raw/** -text
 Assets/Art/Brand/** -text
+# R-US17 rule (c) (s834): the instrument compares its document and catalog with what it generates, byte for byte - core.autocrlf
+# would hand a checkout CRLF where the generator writes LF.
+docs/generated/US_VETO_DRAW.md -text
+Assets/Editor/Generated/UsVetoDefections.cs -text

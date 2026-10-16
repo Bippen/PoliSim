@@ -1570,7 +1570,7 @@ THE RULING RECORD AND THE BARS
 ```
 <!-- R-US17 RULE END -->
 
-**Ruling record:** NONE (§832) - the instrument is not built; its first run registers the outcome.
+**Ruling record:** INSTALLED-PENDING-E4 (§834): (c).
 
 **The block's digests** (the instrument's list): preregistered `577456a92d1ff7380bd44374b0c6fd02738452f09dfd53396f5aa988887e877a` (§832); AMENDED (Elias's answer on S2's reading, 2026-10-16, §833): `577456a92d1ff7380bd44374b0c6fd02738452f09dfd53396f5aa988887e877a` -> `24de40a77bbaddfaccb98df91a648206fcd5c47bf1b5b6a658caba7270058c9c`.
 
@@ -2118,7 +2118,7 @@ Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot 
 - **G9:** no page; this register stays in the plan.
 
 **Elias's rulings of 2026-10-13, H1-H5 (sent 6 Oct, received 13 Oct; recorded §803, built after the gameplay audit).** H1-H3 are written at R-US17, H4 at R-US18's and R-US19's asks. The rest:
-- **H5, the order:** PS-6 is PARKED until the gameplay audit (`docs/audit/AUDIT_PROTOCOL.md`) is done; after it, US-14, then US-32. Read with "build them after the audit": H1-H3's preregistration, fit and mutation suite are US-10's follow-on and come first, R-US18's UNFITTED label (H4) with them (built §830); the rule reaches play with US-21, whose needs are unchanged.
+- **H5, the order:** PS-6 is PARKED until the gameplay audit (`docs/audit/AUDIT_PROTOCOL.md`) is done; after it, US-14, then US-32. Read with "build them after the audit": H1-H3's preregistration, fit and mutation suite are US-10's follow-on and come first, R-US18's UNFITTED label (H4) with them (built §830); rule (c) preregistered §832, amended §833, first run §834 (INSTALL, held INSTALLED-PENDING-E4 until its rates reach Elias, E4); the rule reaches play with US-21, whose needs are unchanged.
 
 **R-US20 — Midterms** *(US-13; blocks US-27)*.
 - (a) The model as it stands, with the congressional economic vote wired (Table 9.1's US legislative row, the weakest in the sample);
