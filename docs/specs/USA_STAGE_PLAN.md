@@ -727,6 +727,853 @@ The override is two thirds of those present and voting, a quorum present, as the
 - **H2 - the fit is thin** (13 vetoable measures, 25 vetoes): every fitted figure prints its n and an interval beside it, labelled `FITTED n=…`. Trump's two 2025 vetoes, with no recorded vote, stay declared unpredictable and are never counted for or against.
 - **H3 - preregistered:** the new rule is preregistered and its digest taken before its first run; the veto tool's mutation suite is re-run, plus one case for the superseded-vote guard.
 
+<!-- R-US17 RULE BEGIN -->
+```text
+R-US17'S RULE (c) - Elias's rulings H1-H3: a seeded draw of defectors on the USA's veto
+path, fitted and measured on the record before it reaches play (US-21). Preregistered in
+COMPLETED.md section 832, specified by a design panel blind to every figure of the rule.
+
+"Asserted" means the named check (by default the instrument) fails while the statement is
+false. A DEFECT is a code or data failure: it fails the check that finds it (the
+instrument; in play, US-21's diagnostic) and is never one of the rule's outcomes or
+registered ASKED. A DEFECT that only a ruling clears (a re-pin, a changed UNPREDICTABLE
+set) is put to Elias as that ruling. "sNNN" and "sMMM" stand
+for the COMPLETED.md section a later commit takes. Items of US-21's design that this rule
+does not decide (ChamberVerdicts' projection, the plate, the gate's name, US-21's 2024
+run) are US-21's text, outside this block.
+
+==========================================================================================
+THE TERMS
+==========================================================================================
+- THE RECORD: ElectionsData/usa/us_veto_measures.csv exactly as Tools/us_veto_prep.pl
+  writes it, read as Tools/us_veto_backtest.pl's read_csv reads it (lines starting "#"
+  skipped, the header taken by name, every row with the header's field count).
+  SourceDigest = SHA-256 over its raw bytes. The rule reads nothing else of the US record
+  and never the member XML.
+- THE PINS (filled at the preregistering commit, s832, by hashing bytes before the block's
+  digest was taken; no figure computed):
+    SOURCE PIN: sha256 505c3fa19ec816d280f8df29c00165d9987ee1b72cbc5a154164e1282e845dec
+    PREP PIN: git blob 358eba1c4a3f1dd0af7e65dc91feaae20ba77558 of Tools/us_veto_prep.pl
+  A run whose SourceDigest or prep blob differs from a pin is a DEFECT until an amendment
+  naming Elias's ruling re-pins it.
+- B1'S YARDSTICK: 45 vetoed of 166 named (precision 45/166), recomputed from
+  ElectionsData/poland/third_readings_term10.csv exactly as us_veto_backtest.pl does. Any
+  other result is a DEFECT.
+- A MEASURE'S IDENTITY: "<congress>|<measure>" (e.g. "116|H.R. 6395").
+- ORIGIN: the House if measure begins "H.", the Senate if it begins "S."; else a DEFECT.
+- VETOED: the outcome contains "veto". NOT VETOED: "signed" or "law without signature".
+  Any other outcome is a DEFECT.
+- UNPREDICTABLE (H2): a vetoed row where neither house_final nor senate_final begins
+  "roll ". Asserted: exactly {119|H.R. 131, 119|H.R. 504}. Any other set is a DEFECT until
+  the block is amended by a ruling.
+- COUNTED MEASURES: every row not UNPREDICTABLE, in CSV row order; M = their number.
+  COUNTED VETOES: the vetoed counted measures; V_COUNT = their number, computed, never
+  typed (23 on the preregistered extract).
+- COUNTED ONLY: every count, sum, denominator, cell, rate and digest of this rule reads
+  counted measures only. The exceptions, none of which enters any figure, denominator or
+  decision: THE US-10 IDENTITIES (THE FIRST RUN, item 10), which read all rows only to
+  verify the re-implementation, print as "US-10's record (s802), not this rule's figure"
+  and reprint no 25-based rate; the UNPREDICTABLE set's own derivation over all rows, its
+  line, its sustained override votes' line and its digest entries (by name); and THE
+  FIRST RUN item 1's counts "in all".
+- A ROLL CALL: a house_final or senate_final that begins "roll <n>"; any other final is NO
+  ROLL CALL. Its IDENTITY is "<H|S>|<congress>|<that final date yyyy-MM-dd>|<n>". A roll
+  call final for several counted measures is ONE roll call everywhere. Its OWNER is the
+  first of them in CSV row order, and every shared roll call is printed with its measures.
+  Asserted: every roll call of a counted measure is dated 2017-01-03 or later (H1, "since
+  2017").
+- PRESIDENT, PP, OP: the row's president and president_party (the decision president;
+  veto_record.md reading 2). OP is whichever of R and D is not the PP. Asserted: every
+  counted row's PP is R or D. In play the president is the one of the vote's day: the
+  game's seated president where PresidentialElection.PresidentAt finds a decided contest,
+  otherwise the president of record from WorldClock.TryGovernmentAt (ExecutiveKind
+  Presidency; PP its party, REP or DEM). PresidentAt alone finds no US president of record
+  (PresidencyOfRecord holds Poland's only). No president found on a US vote day is a
+  DEFECT. A president found with no party has no PP, so no draw is made and (a) never
+  fires (DECLARED default, by analogy to G5 items 14-15, Poland's s778 readings).
+- THE PRESIDENT ON A DATE (R9 only; the CSV carries the decision president alone): by the
+  20th Amendment's noon of 20 January (the rule records_by_date.md applies), D before
+  2017-01-20, R from 2017-01-20 to 2021-01-19, D from 2021-01-20 to 2025-01-19, R from
+  2025-01-20.
+- A LABEL'S SPLIT on a roll call (R, D or I): its yea, nay, present and not_voting columns.
+  A yea of "-" is no split. MEMBERS = the four summed; VOTING = yea + nay + present.
+- BLOC STANCE of R or D on a roll call (us_veto_backtest.pl bloc_passes and
+  party_bloc_opposed): YEA iff yea > nay + present, otherwise NAY (a tie is NAY; present
+  stands against, F3).
+- F3 SET: the counted measures on which opposed_f3 holds in the House or the Senate
+  (nay + present > yea for the PP); US-10's 34 is its count over all rows.
+- INDEPENDENTS:
+  - A Senate independent adds to the SEATS and to S of the bloc that senate_I_caucus names
+    (each space-separated "C:n" entry with C in {R, D}; any other entry stays outside and
+    is printed). He is in no split, stance or observation, but a drawn crosser may be any
+    member of S.
+  - A House independent is in no bloc. He sits inside the House sworn count, counting
+    against.
+- SEATS OF A CONGRESS (literally us_veto_backtest.pl's %seatsOf, over counted rows):
+  1. Order the counted rows by house_final_date with ordinal comparison, stable, ties in
+     CSV row order.
+  2. For each row in that order and each chamber whose final is a roll call: let t = (R
+     members, D members, sworn = R + D + I members), with the Senate's caucus entries
+     added to R or D.
+  3. Replace the stored entry for "<congress> <chamber>" iff there is none or the row's
+     <ch>_final_date >= the stored date (ordinal). Then set the stored date to the row's
+     <ch>_final_date IN EVERY CASE (the code's overwrite, kept on purpose).
+  Asserted: R, D and sworn per Congress and chamber equal the seats table printed in
+  docs/generated/US_VETO_BACKTEST.md. A difference is a DEFECT.
+- KINDS: EXPEDITED iff kind is exactly one of "CRA disapproval", "arms-sale disapproval",
+  "War Powers", "national emergency", "D.C. disapproval" (ordinal, case-sensitive). These
+  are 5 U.S.C. 802, P.L. 94-329 s601(b), 50 U.S.C. 1622 and D.C. Code s1-206.04. Every
+  other kind is RULE XXII, and a kind other than "bill" or "joint resolution" is printed.
+- RECORD BUDGET CLASS, from the title field, upper-cased invariant, ordinal Contains:
+  - RECONCILIATION: "PROVIDE FOR RECONCILIATION", "PROVIDING FOR RECONCILIATION",
+    "RECONCILIATION PURSUANT TO", "PURSUANT TO SECTION 2002 OF THE CONCURRENT RESOLUTION";
+  - APPROPRIATION: "MAKING APPROPRIATIONS", "MAKING CONTINUING APPROPRIATIONS",
+    "MAKING FURTHER CONTINUING APPROPRIATIONS", "CONTINUING APPROPRIATIONS",
+    "APPROPRIATIONS ACT";
+  - DEBT LIMIT: "DEBT LIMIT", "FISCAL RESPONSIBILITY ACT", "BIPARTISAN BUDGET ACT".
+  Every match is printed with its test. Every counted title containing "APPROPRIATION",
+  "RECONCILIATION" or "BUDGET" that matches no test is printed as a NEAR MISS.
+- SENATE PROCEDURE of a counted measure: MAJORITY (expedited) if its kind is EXPEDITED;
+  else MAJORITY (reconciliation, US-18's 2 U.S.C. 641(e) path) if it matches a
+  RECONCILIATION test; else RULE XXII.
+- THE VETO PATH (record), V: the counted measures with at least one roll call on which the
+  PP's bloc stance is NAY. |V| is printed beside F3's 34, with every measure in one and not
+  the other (they differ only at yea = nay + present).
+- V_XXII: the measures of V whose SENATE PROCEDURE is RULE XXII.
+- THE VETO PATH (play): an ORDINARY LEGISLATION bill on which the PP's side in a chamber's
+  division (as US-18 sets it) is AGAINST.
+- BUDGET VOTE (play): every act the US budget procedure tables (WorldClock.BudgetProcedureOf,
+  US-22: the appropriation, a continuing resolution, the pension-age act), a reconciliation
+  bill (US-18), and US-24's debt-limit act. The debt-limit act is the panel's default
+  (US-22 has the debt limit ride reconciliation; 641(a)(3)), with R18 printed. Every other
+  US bill is ORDINARY LEGISLATION.
+- SENT: both chambers pass under the model. NAMED: sent, and rule (a) fires. VETOABLE SENT:
+  a measure of V that is sent.
+- THE CELLS: HP and SP, the PP standing NAY in the House and the Senate. HO and SO, the OP
+  standing YEA on those same roll calls.
+- N_MIN = 12 observations: a floor preregistered with no data read. A data-free yardstick
+  for the floor only: at n = 12 the 95% Wilson interval of a share at p = 1/2 is no wider
+  than 0.5 (0.492; 0.509 at 11). The interval printed for a cell proportion is
+  Clopper-Pearson (THE PRINT), which is wider at the same n.
+- EXACTNESS: every comparison in THE DECISION is made on rationals (BigInteger numerator
+  and denominator). Equal is never "below".
+
+==========================================================================================
+THE MODEL (what is drawn, from what, per what)
+==========================================================================================
+1. Parties stay blocs by default (H1): a party votes as one, and its bloc carries every
+   seat it holds in the chamber. Nothing is drawn or recorded outside item 2.
+2. WHERE A DRAW IS MADE (H1, "on the USA's veto path only"): only for a bill on the veto
+   path, once per party per chamber per bill.
+   - In play the bill is on THE VETO PATH (play). On the record the measure is in V, under
+     premise (B) (item 9), and outside the RECORD BUDGET CLASS.
+   - The PP standing AGAINST (NAY) draws from HP or SP. The OP standing FOR (YEA) draws
+     from HO or SO.
+   - No draw is made for: an OP standing AGAINST; under (A) or in play, a PP standing
+     AGAINST in a chamber where the OP also stands AGAINST (UNCONTESTED); a side
+     UNDECIDED; a third or created party (it votes its bloc); a party with S = 0; anything
+     off the veto path; a budget vote (play) or a RECORD BUDGET CLASS measure (record);
+     anything outside CountryId.USA; a president with no PP.
+3. WHAT IS DRAWN: an index j into the cell's drawn list L (THE FIT), n = |L|, in FIT ORDER.
+   - j = floor(u * n) in IEEE-754 double, clamped to n - 1. The drawn observation is
+     (d, m).
+   - K = 0 if S = 0; otherwise K = min( floor((S - 1) / 2), floor((2*d*S + m) / (2*m)) ),
+     where S is the party's bloc seats in that chamber on that bill (Senate: members plus
+     caucus entries). This is the recorded crossing share carried onto the bloc's size,
+     rounded half up, and capped so that crossers stay a strict minority.
+   - An empty list (only in a LOO list, a bootstrap replicate or an INFLUENCE removal) is
+     the single index "K = 0" (n := 1) in Crossers, the enumeration and the realizations
+     alike. Its occurrences are counted and printed.
+4. The K crossers move to the other side: the PP's from nay to yea, the OP's from yea to
+   nay.
+5. ONE DRAW per party per chamber per bill serves every vote of that chamber on it
+   (cloture, passage, concurrence). PREMISE, stated: the draws of the two parties and of
+   the two chambers are independent (R7 prints the joint draw).
+6. IN PLAY the drawn crossers enter a chamber's recorded division only where they change
+   its outcome (WHEN THE DRAW MATTERS). They enter as each party's crossers on the other
+   side, flagged as defectors. Everywhere else the division is the blocs', byte for byte.
+7. The cells pool over presidents, Congresses, kinds and outcomes. They are split by
+   chamber, role and stance only (four cells), and no split is chosen from the data.
+8. A projection reads exact probabilities and never draws. Only the gate draws.
+9. THE BACKTEST'S PREMISE (B), ONE STANCE (play's premise, US-18; spec-risk 4). For a
+   measure in V:
+   - the PP's one stance is NAY in both chambers;
+   - the OP's one stance is its bloc stance on the House roll call if the PP's House
+     stance there is NAY, otherwise on the Senate roll call;
+   - seats are the SEATS OF A CONGRESS;
+   - draws are made in both chambers whether or not a chamber has a roll call (none for a
+     RECORD BUDGET CLASS measure).
+   Off V a measure is never named and draws nothing. R1, reading (A) chamber by chamber,
+   is printed beside it.
+
+==========================================================================================
+THE FIT (data, members counted, measures, defector definition, estimator)
+==========================================================================================
+- DATA: the final-agreement roll calls of counted measures, the only roll calls the
+  extract carries with a party split (it names each override roll call with its totals
+  alone). The extract holds no cloture vote and no failed measure. The override
+  roll calls are saved out of tree with their member votes, but the extract keeps only
+  their totals; carrying their party split would be a prep change (re-pinned, by
+  amendment). The rule reads the extract alone. The RECORD BUDGET CLASS
+  roll calls stay in the fit (H1: "the recorded chamber-by-chamber votes since 2017"; R16
+  (b) removes them).
+- SELECTION ON PASSAGE, DECLARED PREMISE: the record holds passed measures only, so every
+  observation comes from a measure that passed. Sending is estimated with a bias toward
+  sending. Per chamber, the instrument prints how many PP-NAY roll calls failed at K = 0
+  on their recorded bloc result, as x of y, not fitted. R6 prints the fit without
+  selection.
+- THE FITTED ROLL CALLS, per chamber: every distinct roll call on which the PP of its OWNER
+  has bloc stance NAY. Each gives:
+  - a PP observation: d = PP yea, m = PP voting;
+  - an OP observation only if the OP's bloc stance is YEA: d = OP nay + OP present, m = OP
+    voting. A roll call where the OP also stands NAY gives no OP observation and is
+    listed.
+  Not-voting members are outside m. Independents are in no observation. An observation
+  with m = 0 is excluded and listed. Asserted: every share d/m <= 1/2.
+- DEFECTOR: a member voting against his party's bloc stance as recorded on that roll call.
+  It is not the president's position: no saved page records it, and reading it from the
+  outcome would be circular.
+- A CELL'S OWN LIST L_own: its observations; n_own = |L_own|, which is also its number of
+  roll calls with an observation. n_own alone decides pooling (THIN CELLS).
+- A CELL'S DRAWN LIST L: L_own, or for a pooled cell the union it draws from (THIN CELLS);
+  n = |L|. L and n serve the draw index, CP, q_any, q10, the mean share and the label.
+  Members are never the unit.
+- FIT ORDER: ascending share (compare d1*m2 with d2*m1 in integers), ties by the roll
+  call's IDENTITY in ordinal order.
+- ESTIMATOR: each cell's empirical distribution of (d, m), the nonparametric
+  maximum-likelihood estimate of that party-role's crossing-share MARGINAL. It has no
+  parameter, no optimiser and no convergence failure. Reasons: it assumes no shape for a
+  distribution heavy at zero and overdispersed; each marginal draws only shares the record
+  showed; and each figure is a share of n roll calls. R8 prints the binomial at the pooled
+  rate. The pairing of the two parties' draws is item 5's independence premise.
+- THIN CELLS (decided once on the full fit, and held fixed in every LOO list, bootstrap
+  replicate, INFLUENCE removal and realization):
+  - A cell with n_own < 12 is POOLED with the same role-and-stance cell of the other
+    chamber (HP with SP, HO with SO). It draws from the union of the two own lists, sorted
+    in FIT ORDER.
+  - The partner keeps its own list unless its n_own too is below 12, in which case both
+    draw from the union.
+  - A union of fewer than 12 observations leaves the cell UNFITTED, and S3 fires.
+  - R11 pools with the other role of the same chamber instead.
+- LEAVE ONE OUT (LOO): measure j's draws in the backtest read every cell minus every
+  observation of every roll call final for j (all copies). Play and the catalog use the
+  full cells. In-sample is R5.
+- THE CELL FIGURES: q_any, the share of observations with d >= 1; q10, the share with
+  10*d >= m; the mean share.
+
+==========================================================================================
+WHEN THE DRAW MATTERS (the margin test per chamber and procedure)
+==========================================================================================
+Notation for a chamber: Y0 and N0 are the bloc yeas and nays with every K = 0. Kp is the
+PP's draw and Ko the OP's (0 where none is made). D = Kp - Ko, Y = Y0 + D, N = N0 - D.
+
+- HOUSE (a majority of those voting; a tie fails). PREMISE of this block: suspension's two
+  thirds is not modelled.
+  - (B): passes iff 2*Y > W_H, where W_H is the House sworn count of the SEATS
+    (independents inside, counting against). With the OP standing YEA, Y = S_OP - Ko + Kp;
+    with the OP standing NAY, Y = Kp.
+  - (A): passes iff Y > N over the R and D blocs as the roll call lists them (members),
+    independents outside.
+  - Play: passes iff Y > N among the seated members, every one voting his bloc's side or
+    as a crosser.
+- SENATE, MAJORITY procedure (expedited or reconciliation):
+  - (B): passes iff 2*Y > W_S, the SEATS' sworn count with independents in their caucus.
+  - (A): passes iff Y > N, with the caucus entries in their blocs.
+  - THE VICE PRESIDENT breaks a tie with the PP's stance in that chamber and is never a
+    crosser. He votes under (B), under R1 and in play. On V under (B) that stance is NAY,
+    so a tie fails. A vacant vice presidency (play) fails the tie.
+- SENATE, RULE XXII (every other measure; every ordinary game bill): cloture needs
+  Y >= floor((3*W + 4) / 5), three fifths of the senators duly chosen and sworn, never a
+  fixed 60.
+  - W is: (B) the SEATS' sworn; (A) the roll call's members, all labels; play, the sworn
+    count on the day.
+  - Passage then follows by a majority on the same draw. Cloture implies a majority, and
+    the Vice President has no cloture vote.
+- A CHAMBER WITH NO ROLL CALL (record): (A) passes undrawn ("unanimous under blocs",
+  US-10). (B), for a measure of V, is modelled on the SEATS with the draw.
+- UNCONTESTED (the PP not AGAINST, or both blocs AGAINST): no draw, and the test at K = 0.
+  This applies off V, under (A) and in play. On V under (B) the PP draws under item 2
+  wherever it draws there, the OP's NAY included (never on a RECORD BUDGET CLASS measure
+  or with S = 0).
+- RECORD BUDGET CLASS on V: the test at K = 0 in each chamber, with no draw.
+- THE DRAW MATTERS iff the outcome at the drawn (Kp, Ko) differs from the outcome at
+  (0, 0). This is H1's "the chamber's margin within the drawn count", made exact.
+- MARGIN: the smallest |D|, with the sign that reverses the K = 0 outcome, among D in
+  [-cap_OP, cap_PP], where cap = floor((S - 1) / 2) for a party that draws and 0 otherwise.
+  It prints "unreachable" where none exists.
+- QUORUM: in the model every bloc seat votes, so floor(W/2) + 1 is always present. On the
+  record it is asserted on every roll call of a counted measure: VOTING summed over R, D
+  and I >= floor(MEMBERS summed over R, D and I / 2) + 1.
+- VACANCIES enter only through the bases (members listed, sworn, seated). A vacant seat is
+  in no bloc and no base.
+- SAME-DAY ACTIONS: the final agreement is the extract's (veto_record.md reading 4; the
+  guards of s802 and s831). same_day is printed only. The two chambers' draws are keyed
+  apart.
+- US-10 MODE (used only by THE US-10 IDENTITIES): kinds as US-10 reads them (EXPEDITED or
+  Rule XXII, with no reconciliation path and no budget class), no Vice President (a tie
+  fails), all rows.
+
+==========================================================================================
+THE VETO (rule (a) on a bill in play)
+==========================================================================================
+- A bill both chambers send goes to the president of the day (US-21).
+- (a) fires iff S_PP,H >= 1 and 2 * (the PP's House nays in the chamber's division) >
+  S_PP,H. "More than half" is strict, as in B1.
+  - S_PP,H is the PP's House bloc seats (play, (B)), or its House members as the roll call
+    lists them ((A); US-10's member count).
+  - The nays are S_PP,H - Kp where the PP stands NAY, and 0 otherwise.
+  - A president whose party holds no House seat vetoes nothing.
+- IDENTITY, asserted in every run, reading and replicate: under the cap, (a) fires exactly
+  where the PP's House stance is NAY and S_PP,H >= 1. The draw decides whether a bill
+  REACHES the president, never whether (a) fires. Under (B), NAMED = VETOABLE SENT and
+  E[named] = E[vetoable sent], asserted. A bill the PP opposed only in the Senate is signed
+  under (A).
+- (a) is DETERMINISTIC (H1: "Rule (a) then decides"). R12 prints a drawn veto at (a)'s
+  fitted precision.
+- (a) reads every act presented to an AI president, budget acts included (US-22: "both acts
+  may be vetoed"), on their bloc divisions. Only the draw is withheld from budget votes.
+- A player-president chooses (US-21/US-23), and (a) is not read for him. Congress's draw is
+  the same whoever is president.
+
+==========================================================================================
+THE OVERRIDE
+==========================================================================================
+- BASE (CRS RS22654): "two-thirds of the Members voting, a quorum being present". A chamber
+  overrides iff Y >= 2*N.
+- SIDES: US-21's "voted by the same sides" means the passage's RECORDED division in that
+  chamber. Crossers count only where they entered under item 6, and no fresh draw is made.
+  Reason: the extract carries the override votes' totals only (their party split is out
+  of tree; THE FIT, DATA), so no override crossing can be fitted from what the rule reads.
+  Per premise:
+  - (B): Y = the YEA side of that division over the SEATS; N = W - Y, where W_H counts
+    House independents against and W_S includes the caucus.
+  - (A): Y and N over the roll call's R and D blocs (members), plus the Senate caucus
+    entries; House independents outside.
+  - (A), chamber with no roll call: the SEATS, with the PP's bloc AGAINST, the OP's FOR and
+    no crossers.
+- ORDER: the ORIGIN chamber votes first, and the veto falls iff both chambers override.
+  Where the origin fails, the other chamber does not vote. Both votes fall on the passage's
+  day (Poland's premise). Cloture on an override is not modelled, and with every senator
+  voting, the two-thirds bar is never below three fifths of the sworn (asserted).
+- PRINTED ONLY, never deciding:
+  - omega_j = P(sent and both chambers override), exact. Each chamber's (pass and override)
+    probability is enumerated, and the two are multiplied.
+  - P(override | named) and the expected overrides.
+  - Every recorded override vote beside the model's, and whether 116|H.R. 6395 is in V.
+  - US-21's sentence "under it no Congress of record overrides", measured again with the
+    draw.
+  R15 prints (a) the passage's full drawn crossers applied to the override and (b) a fresh
+  keyed draw ("|override") from the same cells.
+
+==========================================================================================
+THE PRINT (H2)
+==========================================================================================
+- A FITTED FIGURE is any number computed from the cells' observations, under the default
+  or any reading: the cell figures, every per-measure probability that reads a cell, every
+  expected count, precision, hit rate and P(NONE), and every in-game chance. It prints in
+  the label below on EVERY surface: the document, the catalog's comments, any screen and
+  any reply.
+- NOT FITTED, printed plainly as "x of y": counts of the record (measures, vetoes, roll
+  calls, n_own, n, |V|, |V_XXII|, |V_EXP|, the draw-free share of V), the companions, B1's
+  yardstick, the identities at K = 0, INFLUENCE's k ("k of <distinct fitted roll calls>")
+  and a RECORD BUDGET CLASS measure's per-measure figures ("0/1" or "1/1 at K = 0, no
+  draw").
+- DRAWN (not fitted; a check): the seeded realizations' statistics, each naming the FITTED
+  figure it checks.
+- DIAGNOSTIC (not a fitted figure's print; for US-21's assertion only): the full-cell,
+  in-sample P(sent_j) and P(named_j) of every measure of V, written as reduced rationals
+  in their own section of US_VETO_DRAW.md after item 3, with no label or interval, and on
+  no other surface. US-21's diagnostic reads them there.
+- n: for a cell figure, the cell's n (its drawn list, full cells); for a derived figure,
+  the number of DISTINCT observations (by roll-call identity and role) in the union of the
+  full drawn lists the figure reads, so a pooled union counts once.
+- m, for a derived figure: 1 for a per-measure figure; |V| for the sums over V, precision
+  and the pooled P(NONE); |V_XXII| for E_XXII and P(NONE_XXII); |V_EXP| for P(NONE_EXP);
+  V_COUNT for the hit rate. A per-president figure takes the same set within that term.
+  Cell figures carry no m.
+- A TERM WITH NO COUNTED VETO (Trump's second term on the preregistered extract): its
+  record row prints "0 counted vetoes; 2 declared unpredictable"; its sums over V print as
+  usual; its hit rate, and every other figure with V_COUNT in its denominator, prints
+  "no counted veto (H2)" in place of "UNDEFINED (denominator 0)".
+- INTERVALS, all at 95%:
+  - CELL PROPORTIONS (q_any, q10): Clopper-Pearson exact, CP. With x of n, lo solves
+    P(X >= x | n, p) = 0.025 and hi solves P(X <= x | n, p) = 0.025, each by bisection on
+    the exact binomial sum to |delta p| <= 1e-12. lo = 0 at x = 0, and hi = 1 at x = n.
+  - EVERY OTHER FITTED FIGURE: the percentile bootstrap, BOOT, B = 2000 (record
+    resampling).
+    - Replicate b (1..2000) makes M picks with replacement from the counted measures in
+      CSV order. Pick t (0-based) is index floor(Unit("R-US17|boot|" + b + "|" + t) * M).
+    - Its cells hold the observations of the roll calls OWNED by the picked measures, with
+      the picks' multiplicity. Pooling and fitted status are held from the full fit.
+    - PER-MEASURE figures: every measure j of the full V is scored from the replicate's
+      cells, LOO (every copy of j's roll calls removed), whether or not j was picked.
+    - TOTALS: taken over the replicate's picks with multiplicity, using those per-measure
+      figures. The replicate's V_COUNT is its picked counted vetoes with multiplicity.
+    - Computed in IEEE double, with sums in pick order t = 0..M-1.
+    - A replicate whose ratio has a zero denominator is UNDEFINED, and k is the number of
+      such replicates. The UNDEFINED values sort first. If k >= 50 the interval prints
+      "UNDEFINED IN <k> OF 2000". Otherwise lo = sorted[49] and hi = sorted[1950]
+      (0-based), and for 1 <= k < 50 " (<k> of 2000 replicates undefined)" is appended.
+- THE LABEL, exactly:
+    "<value> FITTED n=<n> 95% [<lo>, <hi>] CP"            for a cell proportion;
+    "<value> FITTED n=<n> 95% [<lo>, <hi>] BOOT"          for the mean share;
+    "<value> FITTED n=<n> m=<m> 95% [<lo>, <hi>] BOOT"    for every derived figure.
+  For each pooled cell the figure reads, " (<XX> pooled with <YY>)" follows n=<n>.
+- NUMBER FORMAT: shares, probabilities and rates print as percent to one decimal ("41.3 %");
+  expected counts print to two decimals. An exact rational rounds half up on its exact
+  value; a double rounds half up on its exact decimal value. Invariant culture, "." as the
+  decimal mark.
+- TOO THIN (H4's form):
+  - an UNFITTED cell prints "UNFITTED n_own=<n_own>, pooled with <YY> n=<n> - fewer than
+    12 observations", n its union's size (THE FIT), with no figure and no interval;
+  - every figure that reads it prints "UNFITTED", with no value;
+  - a derived figure with m = 0 prints "UNFITTED m=0";
+  - a ratio whose exact denominator is 0 prints "UNDEFINED (denominator 0)", with no
+    interval.
+- DRAWN FORM: "<mean> DRAWN 1000 worlds [<26th>, <975th>] - seed noise of a single game,
+  not fit uncertainty; checks <figure> FITTED n=<n> above".
+
+==========================================================================================
+SEEDS AND DETERMINISM
+==========================================================================================
+- UNIT(key): FNV-1a 64 over the key's UTF-8 bytes (offset 14695981039346656037, prime
+  1099511628211), finished with MurmurHash3's fmix64. The result is (h >> 11) / 2^53. This
+  is PresidentialVeto.Draw's arithmetic, implemented in UsVeto. PresidentialVeto.cs is not
+  edited. Asserted: UsVeto's Unit on Poland's key format equals PresidentialVeto.Draw on 8
+  fixed (masterSeed, date, title) inputs outside any plant scope.
+- No SimulationRandom stream is created, drawn or moved, and its enum is unchanged. Reasons
+  (Poland's precedent): a stream draw shifts every later draw; a projection must consume
+  nothing; a reload, the shadow and a fork that reach the vote on the same day must draw
+  alike.
+- THE PLAY KEY: masterSeed (invariant) + "|USA|" + yyyy-MM-dd + "|" + title + "|" +
+  ("House" | "Senate") + "|" + ("REP" | "DEM") + "|defectors".
+  - The date is the date of THAT CHAMBER'S FIRST DIVISION on the bill. It is carried on the
+    bill for every later vote of that chamber on it, and US-21's diagnostic asserts one key
+    per chamber per bill.
+  - Two divisions with one title in one chamber on one day are one act. A bill retitled,
+    or first divided on another day, draws apart (Poland's premise, stated).
+  - UsVeto has its own plant scope and never reads PresidentialVeto's _planted.
+- THE BACKTEST'S DECISION FIGURES are EXACT, and no seed decides anything.
+  - Per chamber: P(pass) = (number of index pairs (j_PP, j_OP) over the LOO lists that
+    pass) / (n_PP * n_OP), as a reduced rational. A party with no draw, or an empty list,
+    is the single index "K = 0" (n := 1).
+  - P(sent_j) = P_H * P_S. Histograms of K may implement this but must equal the
+    enumeration.
+- THE SEEDED REALIZATIONS (DRAWN, printed only):
+  - master seeds 1..1000 run the play key over every measure of V, on the LOO lists;
+  - the title is "<congress>th Congress <measure>", and party R -> REP, D -> DEM;
+  - the date is the chamber's final date, or decision_date where it has none, and it
+    serves every vote of that chamber.
+  - Asserted (a failure is a DEFECT): for E[vetoable sent], E_XXII[vetoable sent] and
+    E[hits], |mean - exact| <= 4 * sd / sqrt(1000). sd is the sample sd (1/(N-1)) in
+    double, summed in seed order; equality is required where sd = 0.
+- The bootstrap keys ("R-US17|boot|", and R17's "R-US17|cboot|") carry no master seed and
+  are disjoint from every play key, which begins with an integer.
+- A second run in one session gives the same decisive digest (asserted).
+
+==========================================================================================
+THE FIRST RUN (what the backtest on the record measures and prints)
+==========================================================================================
+THE INSTRUMENT: a new Editor check, Assets/Editor/UsVetoDrawCheck.cs, in the cheap and
+documents groups. It calls the pure class UsVeto (namespace PoliSim.Elections; Applies,
+Unit, Key, Crossers, ChamberOutcome, PassProbability, NamedByA, OverrideCarries) on
+chambers built from the CSV, so the backtest runs the game's arithmetic.
+- UsVeto.cs lands in Assets/Editor beside the instrument, and the catalog in
+  Assets/Editor/Generated, until US-21's gate first calls them; US-21 then moves both into
+  Assets/Scripts/Elections (and its Generated folder) byte for byte, asserted by blob id.
+  So no Assets/Scripts file goes unreached before US-21, and UnwiredSubsystemCheck's
+  UNREACHABLE count stays where it is (asserted in the first-run commit's bars).
+- It writes docs/generated/US_VETO_DRAW.md, stamped with SourceDigest, the pins, the
+  block's digest, the decisive digest and the ruling-record state.
+- It writes the catalog (HOW THE FIGURES REACH THE GAME).
+- us_veto_backtest.pl, US_VETO_BACKTEST.md and UsVetoBacktestCheck stay byte-unchanged, as
+  the record of s802.
+- The first run is on the block as preregistered, or as amended before it by Elias's
+  rulings (his answer to QUESTIONS FOR ELIAS, a re-pin), the RuleDigests list's last entry
+  (H1, H3). A choice
+  changed after a result
+  is in sight takes a new digest and is reported to Elias (G1).
+
+Per measure j of V, under (B), exact and LOO: P_H(j), P_S(j), P(sent_j), P(named_j) and
+omega_j; VETO_j = 1 iff j is a counted veto. Beside them, never deciding: the DIAGNOSTIC
+full-cell figures (THE PRINT).
+
+Totals, pooled and per president (A TERM WITH NO COUNTED VETO: THE PRINT).
+- E[vetoable sent] = sum over V of P(sent_j); E_XXII[vetoable sent] = the same over V_XXII
+- E[named] = sum over V of P(named_j) (asserted equal to E[vetoable sent])
+- E[hits] = sum over V of VETO_j * P(named_j)
+- E[false positives] = E[named] - E[hits]; E[misses] = V_COUNT - E[hits]
+- PRECISION = E[hits] / E[named]; HIT RATE = E[hits] / V_COUNT
+- P(NONE_XXII) = product over V_XXII of (1 - P(sent_j)); P(NONE) = the same over V;
+  P(NONE_EXP) = the same over V_EXP, the measures of V whose kind is EXPEDITED.
+Each prints FITTED with its BOOT interval and, where it is a count, its DRAWN spread. B1's
+yardstick prints beside the precision.
+
+PRINTED, in this order:
+1. THE RECORD per president: measures and vetoes, counted and in all. The UNPREDICTABLE
+   line. |V| beside F3's 34, with the differences. |V_XXII|. The RECORD BUDGET CLASS
+   matches and NEAR MISSES.
+2. THE CELLS: n_own and n; every observation of the drawn list (identity, owner, d, m) in
+   fit order, each marked with its own cell; pooled or UNFITTED; q_any and q10 (CP); the
+   mean share (BOOT). The selection count per chamber (x of y).
+3. PER MEASURE OF V, in CSV order: kind, Senate procedure, budget class, president,
+   recorded outcome; each chamber's procedure, bloc margin at K = 0, MARGIN and roll-call
+   presence; the cells read; P_H, P_S, P(sent), P(named) and omega (FITTED, or for a
+   RECORD BUDGET CLASS measure "0/1" or "1/1 at K = 0, no draw", THE PRINT); and P(the
+   draw matters) in each chamber. Then the DIAGNOSTIC section (THE PRINT).
+4. THE TOTALS above, with the SENDING CALIBRATION beside them: E[vetoable sent] beside
+   "|V| - all sent on the record" and E_XXII beside "|V_XXII| - all sent on the record",
+   both not fitted. E[named] prints beside V_COUNT. The precision prints beside the
+   draw-free share of V (counted vetoes in V, as x of |V|, not fitted).
+5. Every counted veto with P(named), FITTED (or "not in V", or THE PRINT's form for a
+   RECORD BUDGET CLASS measure); every measure named with P > 0
+   and not vetoed.
+6. THE OVERRIDE's prints.
+7. THE SEEDED REALIZATIONS (DRAWN).
+8. COMPANIONS, not fitted, on the counted base only (V_COUNT as the denominator), by
+   us_veto_backtest.pl's own definitions: (a) named and vetoed; both chambers; one stance;
+   chamber by chamber, vetoable and sendable vetoes. A pointer gives
+   docs/generated/US_VETO_BACKTEST.md for US-10's figures over all rows.
+9. Every shared roll call; every caucus entry ignored as neither R nor D; every unknown
+   kind; every roll call with no OP observation; every observation with m = 0; every
+   empty-list occurrence.
+10. THE IDENTITIES, asserted (a failure is a DEFECT):
+    - SEATS equal US_VETO_BACKTEST.md's seats table;
+    - US-10 IDENTITIES, in US-10 MODE, printed as "US-10's record (s802), not this rule's
+      figure":
+      (i) per measure of F3, at K = 0 with the OP forced YEA on full seats, the (B) send
+          verdict equals US-10's one-stance verdict, and the count equals the document's;
+      (ii) (A) at K = 0 over all rows reproduces the document's chamber-by-chamber counts
+           (measures sent, vetoable, vetoes sendable);
+      (iii) (a) on the recorded House votes reproduces the document's (a) pooled row;
+      the measures of V minus F3, and those where the OP's recorded stance is NAY, are
+      printed with their K = 0 verdicts;
+    - every share <= 1/2;
+    - (a) fires exactly where the PP's House stance is NAY, and NAMED = VETOABLE SENT
+      under (B);
+    - the UNPREDICTABLE set; B1 = 45 of 166; Unit = PresidentialVeto.Draw on the 8
+      inputs; the seeded means agree with the exact figures; the pins.
+11. INFLUENCE (printed only): for each distinct fitted roll call, its observations are
+    removed from every cell, LOO lists included, with pooling and fitted status held. The
+    outcome is recomputed exactly. Every roll call whose removal changes the outcome is
+    listed with the new outcome, and k = their number.
+12. DECLARED READINGS, each with its outcome and headline figures (E_XXII[vetoable sent],
+    P(NONE_XXII), E[vetoable sent], E[hits], precision, hit rate), labelled.
+13. THE DECISION, the verdict line and the decisive digest.
+
+==========================================================================================
+THE DECISION (the outcome of a run defined once)
+==========================================================================================
+H1 has ruled (c). A run installs (c) or re-asks; it never chooses among options. The
+outcome reads only the default's exact LOO figures under (B).
+
+THE STOPS, evaluated in this order:
+- S3, TOO THIN (the panel's addition, not one of R-US17's two STOPs): any cell is UNFITTED
+  after pooling. A decision cannot be computed on an unfitted cell (H4), so the rule
+  re-asks. When S3 fires, S1 and S2 are not evaluated, and their figures print UNFITTED.
+- S2, NEVER SENDS (R-US17's second STOP, as worded: "a party-bloc Congress under Rule XXII
+  never sends a vetoable bill"; the record's measures of V_XXII stand for the vetoable
+  bills). It fires iff:
+  - case "no Rule XXII measure on the veto path": V_XXII is empty (its figures print
+    "UNFITTED m=0"); or
+  - case "never sends": E_XXII[vetoable sent] = 0 exactly (that is, P(NONE_XXII) = 1).
+- S1, FAR MORE (R-US17's first STOP as US-10 read it before its first run, s802,
+  PROVISIONAL under G5; also R-US17's test "(a) only if its precision ... is at least
+  B1's"), pooled over every kind. It is evaluated only where E[named] > 0, and it fires
+  iff 166 * E[hits] < 45 * E[named]. Where E[named] = 0, it prints "not evaluated
+  (denominator 0)".
+
+THE OUTCOME is exactly one of: INSTALL (no stop fires); S3; S1; S2; S1 + S2. Its figures
+are not part of it.
+
+PRINTED ONLY, never part of the outcome:
+- every interval, and where 27.1 % lies against the precision's BOOT interval (below,
+  inside or above);
+- the pooled P(NONE) and P(NONE_EXP), the hit rate, the per-president figures, the
+  override, the realizations, the companions and INFLUENCE;
+- every declared reading and its outcome. A reading whose outcome differs is named in the
+  verdict line, and no reading ever stops the rule.
+
+THE VERDICT LINE, generated and never typed:
+- INSTALL: "By R-US17's rule (c) as ruled (H1-H3), the draw installs: under Rule XXII a
+  bloc Congress with the draw sends <E_XXII[vetoable sent]> vetoable measures of the record
+  FITTED n=.. m=.. 95% [..] BOOT (all <|V_XXII|> were sent on the record), P(none under
+  Rule XXII) <q> FITTED ...; over every kind it sends and names <E[named]> FITTED ...,
+  <E[hits]> of them vetoed FITTED ...; precision <p> FITTED ... against B1's 27.1 % (45 of
+  166), the draw-free share of V <x> of <|V|>; hit rate <h> of the <V_COUNT> counted
+  vetoes FITTED ...; every cell fitted; H.R. 131 and H.R. 504 (119th) declared
+  unpredictable, in no count (H2); <FRAGILE: <k> roll calls each flip the outcome | no
+  single roll call flips the outcome>; <the same under every declared reading | the
+  outcome differs under <readings>: <outcomes>> - held INSTALLED-PENDING-E4: the rates go
+  to Elias before US-21 wires them (E4)."
+- STOPPED: "R-US17's rule (c) does not install: <each stop with its figures and, for S2,
+  its case>; <FRAGILE clause>; <readings clause> - asked."
+Whatever the outcome, the full document goes to Elias (E4).
+
+THE STOPS' OPTIONS, each with "amend the rule as ruled" beside it:
+- S3: pool all four cells into one; pool per chamber across roles (R11); or source more
+  roll calls (the Senate's cloture and failed votes, BILLED).
+- S2: install (c) as measured; R1, reading (A), as play's premise (this amends US-18's one
+  stance, re-pinned); source the Senate's cloture and failed votes (BILLED) and run again;
+  or keep the blocs with no draw (an AI president never vetoes; US-21 builds the plate for
+  a player-president).
+- S1: install (c) as measured; (c) with R12's drawn veto; or keep the blocs, as in S2's
+  last option.
+
+==========================================================================================
+WHAT STAYS AS IT IS AND ITS PROOF
+==========================================================================================
+- US-10: Tools/us_veto_prep.pl, us_veto_measures.csv (held to the pins),
+  us_veto_backtest.pl and US_VETO_BACKTEST.md are byte-identical, and UsVetoBacktestCheck
+  is unchanged and green. Tools/us_veto_mutations.sh stays 13 of 13 (s831) and is re-run
+  whenever the prep tool changes, followed by this instrument.
+- BUDGET VOTES draw nothing (H1):
+  - UsVeto refuses every budget vote, and its draw-call counter reads 0 on that path.
+  - On the record, no RECORD BUDGET CLASS measure draws (asserted).
+  - Planted cases: a contested budget act at margin 1 draws zero.
+  - US-21's diagnostic plants j = n - 1 (the largest share): every US budget division is
+    identical to the unplanted run, and the counter reads 0. This is installed at US-21
+    and re-run at US-22.
+- THE FIVE OTHER COUNTRIES (Sweden, Germany, France, Italy, Poland):
+  - UsVeto.Applies is true for CountryId.USA alone, asserted over all six values.
+  - The draw counter reads 0 on every non-US path the diagnostic runs, and SimulationRandom
+    is unchanged.
+  - The simulation bar's trajectory sentinel holds byte-identical against its pins on both
+    seeds (777 and 424242), and the dump diff is inert. Nothing calls UsVeto in play before
+    US-21.
+- POLAND'S B1/F3 (H1: "proved unchanged on the simulation bar"):
+  - PresidentialVeto.cs, Generated/PolishVetoRates.cs and docs/generated/VETO_B1_BACKTEST.md
+    are byte-identical (the review row shows an empty git diff over the three).
+  - PresidentialVetoGate's body is untouched.
+  - PresidentialVetoDiagnostic with its D4 and E2 cases, and GovernmentBudgetBillDiagnostic's
+    Poland pins, pass unmoved.
+  - The sentinel holds.
+  - All of this is required in the first-run commit and again at US-21's.
+- R-US18's and R-US19's block digests are unchanged (5c89b0cf..., 1caec656...).
+
+==========================================================================================
+TRUMP'S 2025 VETOES
+==========================================================================================
+H.R. 131 and H.R. 504 (119th) passed both chambers without a roll call; both were vetoed
+and sustained in the House on 8 January 2026. Under H2 they are UNPREDICTABLE and never
+counted for or against. They are:
+- not in the fit (no roll call; asserted to own no observation);
+- not in V or V_XXII, and not in any expected count, precision, hit rate, P(NONE), V_COUNT,
+  M or the bootstrap population;
+- not in the realizations or INFLUENCE;
+- not in the override's counts: their sustained votes print on their own line only;
+- not in the per-president rows (Trump's second term: "0 counted vetoes; 2 declared
+  unpredictable");
+- not in the companions (counted base only).
+They are read by THE US-10 IDENTITIES only as US-10 read them, printed as US-10's record,
+and they enter the decisive digest by name only.
+One line prints them: "UNPREDICTABLE (H2): H.R. 131, H.R. 504 (119th) - passed both
+chambers without a roll call; never counted for or against."
+
+==========================================================================================
+HOW THE FIGURES REACH THE GAME (US-21)
+==========================================================================================
+- THE CATALOG: UsVetoDefections.cs (namespace PoliSim.Elections.Generated, "GENERATED - DO
+  NOT EDIT"), written by UsVetoDrawCheck into Assets/Editor/Generated and moved into
+  Assets/Scripts/Elections/Generated at US-21 (THE FIRST RUN, THE INSTRUMENT).
+  - It holds SourceDigest, the pins, RuleDigest, DecisiveDigest, Outcome,
+    MinimumObservations = 12 and M.
+  - For each of HP, HO, SP and SO it holds Fitted, PooledWith and the EXACT LIST THE CELL
+    DRAWS FROM: already merged for a pooled cell, in fit order, each entry (Identity,
+    OwnerIndex in counted CSV order, Defectors, Voting), with Identity and OwnerIndex as
+    fields.
+  - The runtime indexes these arrays and never sorts or merges them. LOO stays
+    instrument-side.
+  - The cheap bar regenerates the catalog in memory and fails on any byte of difference.
+    The byte-for-byte form is new here: Generated.PolishVetoRates is the precedent for the
+    catalog's shape only (a static class with its source digest and record arrays), held
+    by its rows and source digests in PresidentialVetoDiagnostic.
+- THE RUNTIME: UsVeto.cs, pure, lands with the instrument (in Assets/Editor until US-21's
+  move) and stays unwired until US-21.
+  The gate alone draws, and a projection reads exact probabilities and never draws.
+- H2 IN PLAY: any surface that shows a fitted chance shows it in THE PRINT's label, with
+  its BOOT interval. The interval is computed from the catalog by THE PRINT's replicate
+  rule (the keyed picks over M, owners' multiplicities), so it is the same interval the
+  instrument would compute. Whether a surface shows a fitted chance at all is US-21's
+  design.
+- US-21'S VETO DIAGNOSTIC asserts:
+  - the ruling record INSTALLED (with its E4 section) or RULED with a buildable option, at
+    the current block and catalog digests;
+  - the projection's draw counter at 0, and the budget and five-country counters at 0;
+  - one play key per chamber per bill;
+  - for every counted veto in V, enumerating the runtime's planted indices reproduces the
+    instrument's exact P(sent) and P(named) as the same rationals (on the full cells).
+
+==========================================================================================
+DECLARED READINGS (each runs the whole rule with one change; outcome and headline figures
+printed; never a stop)
+==========================================================================================
+- R1: (A), chamber by chamber as recorded (s802's declared reading, with the draw and the
+  Vice President), in place of (B).
+- R2: the fit over every contested roll call (R and D bloc stances opposite). Each party's
+  observation is taken against its own stance, with cells by chamber and role, pooled over
+  stances. These are the cells a draw on every contested ordinary bill would use, printed
+  split by stance.
+- R3: cells split by Senate procedure, MAJORITY apart from RULE XXII (eight cells, each
+  under the thin-cell rule).
+- R4: cells by party label (R/D) in place of role.
+- R5: in-sample, no LOO.
+- R6: selection removed. The PP cells keep only roll calls whose chamber's recorded bloc
+  result at K = 0 already passed. Every cell left empty is printed with "no
+  selection-free observation on disk" and falls under the thin-cell rule.
+- R7: a joint draw: one index per chamber over the PP cell's roll calls gives both parties'
+  shares (Ko = 0 where that roll call has no OP observation).
+- R8: the binomial, K ~ Binomial(S, sum d / sum m), capped as in the model (doubles, exact
+  pmf).
+- R9: THE FITTED ROLL CALLS and their observations read with the PP of THE PRESIDENT ON A
+  DATE of each roll call in place of its owner's decision president (the selection and
+  the PP and OP observations alike); V, (B) and (a) keep the decision president.
+- R10: present outside the stance and the observation (stance YEA iff yea > nay; d over
+  yea + nay); any share above 1/2 is capped by the model.
+- R11: a thin cell pooled with the other role of its chamber.
+- R12: the veto drawn at (a)'s FITTED precision (F3's form): expected vetoes = E[named] *
+  precision.
+- R13: S2 at P(NONE_XXII) >= 1/2; S2 at E_XXII[vetoable sent] < 1; S2 over every kind (V
+  in place of V_XXII); S1 on the BOOT upper bound (strict) and on the lower bound (lax).
+- R14: N_MIN = 20.
+- R15: the override with (a) the passage's full drawn crossers, whether or not they
+  entered the passage, and (b) a fresh keyed draw ("|override") from the same cells.
+- R16: the RECORD BUDGET CLASS (a) scored as its kind with the draw (reconciliation as
+  RULE XXII), and (b) with its roll calls removed from the fit.
+- R17: the cell bootstrap: the scoring set fixed (the real V, VETO_j), with the owners of
+  observations resampled. With O owners in CSV order, pick t of replicate b is
+  floor(Unit("R-US17|cboot|" + b + "|" + t) * O). It changes intervals only.
+- R18: debt-limit titles outside the RECORD BUDGET CLASS (scored as their kind with the
+  draw).
+
+SETTLED, NOT READINGS: present stands against in the default (US-10, F3; R10 prints the
+alternative, with V and F3's comparison recomputed under it, and never stops the rule); the
+independents (US-10); the
+Vice President (equal to US-10 on V); the override base (sourced); the UNPREDICTABLE set
+(H2); the narrow scope (H1).
+
+PREMISES, stated and not read:
+- the record holds passed measures only (selection toward sending);
+- the parties' and chambers' draws are independent;
+- the House majority without suspension;
+- the record's budget class read from titles (the extract has no budget column), with
+  unmatched reconciliation acts scored as their kind;
+- the ten days and the pocket veto are not modelled;
+- retitling a bill, or first dividing it on another day, redraws (Poland's premise).
+
+==========================================================================================
+QUESTIONS FOR ELIAS
+==========================================================================================
+One, asked beside the block (the plan, after the digests line), never blocking the first
+run: S2's reading of "never". The default is the words' own, E_XXII[vetoable sent] = 0
+exactly; R13 prints P(NONE_XXII) >= 1/2 and E_XXII[vetoable sent] < 1 beside it. An answer
+that comes before the first run is written in by amendment with a new digest; otherwise
+the first run is on this default, and an answer after it is G1's case. Every other choice
+is a default with its reason and, where it is contestable, a reading printed beside it
+and named in the verdict line where its outcome differs.
+
+==========================================================================================
+THE RULING RECORD AND THE BARS
+==========================================================================================
+- THE BLOCK sits between the plan's two R-US17 RULE marker lines (BEGIN and END),
+  after H1-H3, in plain ASCII inside a ```text fence, with the pins filled. Its digest is
+  SHA-256 over the UTF-8 bytes (no BOM) of the lines strictly between the marker lines,
+  fence lines included, each ending LF with no CR. It is read from the index blob's raw
+  bytes and required equal to the working copy's.
+- THE DIGEST LIST: the preregistered digest is recorded in COMPLETED.md s832 and in the
+  plan's "The block's digests" line (R-US18's form) at the preregistering commit.
+  - UsVetoDrawCheck's RuleDigests is created in the first-run commit, with that digest as
+    its first entry ("preregistered (s832)"), then one entry per amendment naming Elias's
+    ruling ("AMENDED (Hn, sNNN): old -> new").
+  - The block must equal the list's last entry. A change without a ruling fails.
+  - The first-run commit's review row shows the preregistering commit's plan blob hashed
+    to the first entry, and that commit preceding the one that adds UsVetoDrawCheck.cs.
+- THE DECISIVE DIGEST: SHA-256 over these lines, UTF-8 without BOM, each "key=value"
+  ending LF, in this order:
+    source=<SourceDigest>
+    cell.<XX>.status=FITTED|UNFITTED        (XX in HP, HO, SP, SO, in that order)
+    cell.<XX>.pooled=<YY>|-
+    cell.<XX>.n_own=<n_own>
+    cell.<XX>.n=<n>
+    cell.<XX>.obs.<i>=<identity>|<congress>|<measure>|<d>|<m>   (i 0-based, drawn list,
+                                                                 fit order)
+    unpredictable.<i>=<congress>|<measure>  (CSV order)
+    counted=<M>
+    v_count=<V_COUNT>
+    v=<|V|>
+    v_xxii=<|V_XXII|>
+    p_sent.<congress>|<measure>=<p/q>       (every measure of V, CSV order; then p_named)
+    p_named.<congress>|<measure>=<p/q>
+    e_sent=<p/q>  e_sent_xxii=<p/q>  e_named=<p/q>  e_hits=<p/q>  p_none_xxii=<p/q>
+                                                    (one line each, in this order)
+    outcome=INSTALL|S3|S1|S2|S1+S2
+  Rationals are "p/q" in lowest terms, q > 0, zero written "0/1", with no sign. Every key
+  is written in every run: a figure that reads an UNFITTED cell is written key=UNFITTED;
+  over an empty V_XXII, e_sent_xxii=0/1 and p_none_xxii=1/1 (the empty sum and product);
+  an UNFITTED cell writes cell.<XX>.n as its union's size and its obs lines over that
+  union (fit order), with pooled naming the partner it pooled with. Nothing else enters:
+  no interval, reading, (A), override, realization, INFLUENCE or companion.
+- THE RULING RECORD, held by the instrument:
+  - NONE: the state before the instrument exists. The instrument fails while it reads
+    NONE, so the first-run commit registers the outcome.
+  - INSTALLED-PENDING-E4 (sNNN): a first run that gives INSTALL, with its decisive digest.
+  - INSTALLED (sNNN; E4 sMMM): once a COMPLETED.md section sMMM records the reply to Elias
+    that carried the rates.
+  - ASKED (sNNN), with the outcome and the digest.
+  - RULED (Elias's ruling, sNNN), with its option, the outcome it was made on and the
+    digest.
+  - Each state passes while the generated outcome and the decisive digest equal the
+    registered ones.
+  - A CHANGED OUTCOME, in either direction and from any state, fails until it is
+    registered ASKED with the old and new outcomes and digests. Only Elias's ruling moves
+    ASKED to RULED.
+  - A MOVED DIGEST WITH THE SAME OUTCOME fails until a commit re-pins it, naming the old
+    digest, the new one, its cause (source, code or amendment) and "outcome unchanged".
+    The next reply to Elias lists the per-measure P(sent) differences (E4, G1). A changed
+    SourceDigest after the first run is always reported this way.
+  - A ruling must name a buildable option: (c) as measured, a stop's option, or (c)
+    amended by name. Otherwise the record stays ASKED.
+  - THE MIRROR: the line after the block mirrors the state, section and ruling, never a
+    digest: "**Ruling record:** INSTALLED-PENDING-E4 (sNNN): (c)." /
+    "**Ruling record:** INSTALLED (sNNN; E4 sMMM): (c)." /
+    "**Ruling record:** ASKED (sNNN): S1 + S2." /
+    "**Ruling record:** RULED (sNNN): <option>."
+    The instrument fails while the mirror and the record differ.
+- THE MUTATION SUITE: Tools/us_veto_draw_mutations.sh. Each case must fail the check with
+  its own message, and the control reproduces the document and the catalog byte for byte.
+  The cases:
+  - a third vetoed row with no roll call;
+  - H.R. 131 given a roll call;
+  - a share above 1/2;
+  - a CSV byte changed (the source pin);
+  - an edited catalog list;
+  - the block edited without a listed digest;
+  - the mirror line changed;
+  - a RECORD BUDGET CLASS measure made to draw;
+  - planted runs proving the UNFITTED, S3, S2 (both cases) and S1 paths (s830's form).
+- THE BARS:
+  - THE PREREGISTERING COMMIT (documents only, no instrument): the block with its pins;
+    the digest in COMPLETED.md s832 and in the plan's digests line; the documents batch,
+    with MojibakeCheck, DocumentClaimCheck, ResidueCheck and PreWiringPremiseCheck by name.
+  - THE FIRST-RUN COMMIT: UsVeto.cs, UsVetoDrawCheck.cs (RuleDigests first entry = the
+    preregistered digest), the catalog, the document and the mutation suite; the cheap bar
+    with UsVetoDrawCheck added; UsVetoBacktestCheck unchanged and green;
+    UnwiredSubsystemCheck's UNREACHABLE count unchanged (UsVeto.cs and the catalog in
+    Assets/Editor until US-21); the documents
+    bar; the simulation bar (Poland's proof and the five countries inert, H1); R-US18's
+    and R-US19's digests unchanged; the review row's preregistration proof; the ruling
+    record registered (INSTALLED-PENDING-E4 or ASKED).
+  - US-21: everything above, plus its veto diagnostic as stated in HOW THE FIGURES REACH
+    THE GAME, and its own done-when.
+```
+<!-- R-US17 RULE END -->
+
+**Ruling record:** NONE (§832) - the instrument is not built; its first run registers the outcome.
+
+**The block's digests** (the instrument's list): preregistered `577456a92d1ff7380bd44374b0c6fd02738452f09dfd53396f5aa988887e877a` (§832).
+
+**Asked blind, before the first run (§832).** One choice, which H1-H3 leave open and which the review named (`Reviews/2026-10-16_s832_rus17c_rule_review.md`, fidelity-F1 and inference-S2-knife-edge, refuted as a declared default rather than a defect): **S2's reading of "never"** - R-US17's second STOP, "a party-bloc Congress under Rule XXII never sends a vetoable bill". Under the draw a measure is sent with a probability, so "never" has to be read. By default it is read as the words have it: the expected number of the record's vetoable measures sent under Rule XXII exactly 0 (equivalently, the chance that none is sent exactly 1). A single measure of the record that the draw can carry through both chambers with any probability at all - past cloture in the Senate and, where the president's party holds the House, through the House too, on crossings recorded on other measures' roll calls - then keeps S2 silent. The alternatives: the chance that none is sent at least one half (the design panel's judge chose this; its reviser restored the words' own reading), or an expected count below one. Reading R13 prints both on every run. **The first run does not wait on the answer** - a default of this block (QUESTIONS FOR ELIAS), not a ruling of Elias's: R-US18's and R-US19's choices waited for his word (G1; §791, §794), while H3 asks only that the digest precede the first run. An answer that comes before it is written into the block by amendment with a new digest; one that comes after it is a choice changed after a result is seen (G1's principle, by analogy), and reported.
+
 **R-US18 — The House's seat method** *(US-11's errors; blocks US-16)*.
 - (a) 435 districts by uniform swing on the latest House election's district results, uncontested seats by a DECLARED rule, and mid-decade redraws entering as dated variants once each enacted map is read;
 - (b) state delegations by a state swing;
