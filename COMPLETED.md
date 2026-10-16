@@ -38565,3 +38565,16 @@ Elias read it and gave his next instruction (the roadmap, then the sweep). The l
 US-21 (the veto in play) now needs only US-19 and its own build.
 
 **Bars:** (tier TOOLING, on this commit's own tree) the cheap bar **104 of 104** (`cheap835`, the record in), after `usw835` wrote the document (1121 lines; its stamp the new state, no figure moved). The R-US17 block's digest `24de40a7` read again, unchanged. Ran detached.
+
+## 836. TWO HEAD-TRACK ROWS BROUGHT TO THE RECORD: PS-2'S LAST CLAUSE CLOSED BY §653, §657 AND §685, AND PS-3'S OWED RULINGS SHOWN RULED (§638, §653, §654); PS-3-F1 PUT TO ELIAS (2026-10-16)
+
+**What was owed** (the roadmap sweep's planning pass, `roadmap-work-graph`, run `wf_2d1f6389-ec1`): two rows of `POLISIM_FEATURE_LIST.md` still listed as open what the record had already closed.
+
+**Changed (the feature list only):**
+- **PS-2, ticked.** Its done-when was met at §619: a party picked, the campaign fought, the result governed or opposed, history beside it. Its one open clause - "the 2026 declarations taking effect on their dates during the run-up", MEASURED AND STOPPED at §620 - was built after it: the reader at §653 (any election reads its own polling day's declarations), the surface at §657 (the DECLARED chip on Campaign HQ) and §685 (D-PS's declarations page). The row keeps its old words after "As it stood". E-SW, Elias playing Sweden, stays his.
+- **PS-3, not ticked:** its done-when, each role played a full term, is play.
+  - PS-3j's "the ruling on wiring the record into the live vote is owed" now says RULED AND BUILT (§638, PS-3k).
+  - The appendix bullets PS-3i-2b and PS-3i-2c, still headed OPEN, now say RULED AND BUILT (§654 and §653).
+- **PS-3-F1** (when the Speaker's round begins after an election) stays OPEN. §714 - formation time from each country's record, no vote before it, the caretaker governing meanwhile - probably settles it, but closing it is Elias's word; it goes in the sweep's asks.
+
+**Bars:** (tier DOCUMENTS, on this commit's own tree) the documents bar **14 of 14** (`doc836`, the record in). Ran detached.
