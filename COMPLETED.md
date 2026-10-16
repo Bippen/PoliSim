@@ -38692,3 +38692,97 @@ Written by the sweep agent that built US-13's instrument, in its own worktree; c
 **Bars:** (tier DOCUMENTS: the plan’s text and this record, no code) the documents bar **15 of 15** (`doc839`). Ran detached.
 
 **A pointer corrected:** §838 said its review’s M2 and L1-L7 would be "fixed in the next section (§839)". This preregistration had to come before US-13’s first run, so it took §839. The US-14 fixes get their own section once they are integrated.
+
+## 840. PS-6 US-13 - THE MIDTERM RECORD AND THE MODEL'S MIDTERM: THE RECORD SINCE 1946 FROM [HH-DIV], NARA AND THE CLERK; THE MODEL'S 2026 MIDTERM FROM THE EVE OF 5 NOV 2024; R-US20'S RULE GIVES (a), m -0.21 INSIDE [-8.97, +2.26]; R-US20 ASKED (2026-10-16)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-13; H5's order puts it after US-14 and US-32):
+- the record: the president's party's House seat change at every midterm since 1946 and in presidential years;
+- an Editor instrument running the model from the eve of 5 Nov 2024 to 3 Nov 2026 on US-5's staging, with Table 9.1's US legislative row in the instrument only;
+- the record and the model side by side; R-US20 asked.
+
+Built in the roadmap sweep's second wave, in its own worktree. Integrated after the rule it runs was committed (§839).
+
+**Sourced** (`ElectionsData/usa/raw/midterms/`, `SHA256SUMS.txt` and `fetch_log.txt`; 26 files):
+- NARA's Electoral College results pages 1944-2008 (17). 2020 and 2024 were already in `raw/executive`.
+- The Clerk's statistics 1998-2014 (9). The 2014 volume comes from history.house.gov, because the Clerk's own host 404s on both of its URL patterns. 1998-2012 are byte-identical on both hosts (checked for 2000, 2006 and 2010).
+- Vital Statistics on Congress, Table 2-2, kept as SECONDARY and only printed.
+- The Clerk's 1944-1996 statistics were probed, not kept. They are page images, logged with their digests, and their vote is BILLED.
+
+**Built:**
+- **`Tools/us_midterm_record.pl`** writes `ElectionsData/usa/house_midterms.csv` and `docs/generated/US_MIDTERM_RECORD.md` (row in `docs/generated/README.md`).
+  - Inputs: [HH-DIV]'s seats for the 79th-119th Congresses (four footnote marks declared and checked), NARA's presidents and the Clerk's vote where its statistics carry text.
+  - Reading: rows are read with leader and footnote-mark resolution; columns are held to the Total row.
+  - The Clerk's 2016-2024 totals equal US-5's catalog.
+- **`UsMidtermCheck`** (the cheap and documents bars, 3.4 s; the world 2.1 s). It:
+  - holds the record: 37 pages held to their digests; the document's stamp held to the CSV's digest; its tables' rows and ranges recomputed from the CSV;
+  - holds R-US20's block to the digest list;
+  - builds the US world on the eve of 5 Nov 2024 and steps it 729 days to 3 Nov 2026, held to the record: the 2024 House seated on 3 Jan 2025, Trump from 20 Jan 2025;
+  - computes m three ways, plus the legislative cell less and plus its parenthesis;
+  - gives the verdict and enforces the ruling record, which is now ASKED.
+- **The US card's fifth block** (`docs/reference/US_ELECTIONS.md`, *The midterm - R-US20*), written by `WriteReadings`.
+- Nothing live: no file under `Assets/Scripts` is touched.
+
+**Measured** (`us13w` the first run; the ask registered as it printed it; `us13w2` and `us13n` after):
+- **The record:**
+  - seat change at every midterm 1946-2022: -64 / +8 (n 20); unified midterms -64 / +8 (n 12); divided -50 / +4 (n 8);
+  - seat change in presidential years 1948-2024: -35 / +75;
+  - the Clerk's vote swing at the rule's midterms (2002, 2006, 2010, 2014, 2018, 2022): **[L, U] = [-8.97, +2.26]**. L is 2010 and U is 2002; at full precision -8.974131 and 2.256382;
+  - divided midterms have one Clerk year, 2014 (-3.71);
+  - the SECONDARY midterms: -9 / +2.3 (n 20), within 0.31 pp of the Clerk wherever both read a year.
+- **The model's midterm.** The 2026 House is unified (REP 220, DEM 215). US-5's House history gives REP 51.32 % of the two-party vote before the economic vote; the identity holds. The term index is 43.4 (0.131833 units of deterioration). m, the president's party's change:
+
+| economic vote on REP | m (pp) |
+|---|---:|
+| none | +0.00 |
+| the presidential row (the live constants, -0.10 unified) | -1.32 |
+| **Table 9.1's US legislative cell, -0.016 (0.030), n 2: R-US20's figure** | **-0.21** |
+| the cell less its parenthesis / plus it | -0.61 / +0.18 |
+
+- **The verdict:** by R-US20's rule, Code recommends **(a)**. m = -0.210932 lies inside [-8.974131, 2.256382].
+- The model's seat change is UNRULED because R-US18 is asked. The 2026 result itself is BILLED until the Clerk's 2026 statistics exist.
+
+**Declared:**
+- (1)-(5) are the preregistered block's.
+- (6) Table 9.1's parenthesis is read as a standard deviation, by Table 9.2's note.
+- (7) "Unified" means the president's party is the largest in the House alone, as `EconomicVote.Magnitudes` reads it.
+- (8) In presidential years, the president's party is the sitting president's; the year's winner is printed beside.
+- (9) The 2014 statistics come from history.house.gov.
+- (10) The new folder is `raw/midterms`; [HH-DIV] is read from `raw/executive`.
+- (11) The Clerk's pages disagree with themselves in two years, in minor-party columns only: 2002 Libertarian -2,668 / Other Parties +2,668; 2006 the first Other Parties column and the Total -1,202. Neither touches REP or DEM.
+- (12) Vital Statistics is SECONDARY and only printed.
+
+**Not built:** seats under each of R-US18's methods (the 2026 lines need US-16's machinery); a mutation suite for the perl tool.
+
+**The rule's reach, which the review found and the instrument now prints:** the poll is fitted to the 2024 House split that m is measured from, so m without the economic vote is the fit's residual (+0.00). The economic vote moves m by 100 × the cell × the units of deterioration, and the term index bounds those to [-1, 1]. So |m| can never exceed 1.60 points, while the band's nearer edge is 2.26 from zero. **Under R-US20's rule as preregistered, no world that holds the record can give (b).** Once the band was known, the verdict followed from it and from Table 9.1's cells, not from the world's economy. The block's preamble is literally true ("the record's band known, the model's figure not"), but this bound was not stated in it. It is stated now, beside the verdict, and R-US20 goes to Elias with it.
+
+**Review** (one adversarial reviewer, refute-first; `Reviews/2026-10-16_s840_us13_midterm.md`): two high, one medium, six low; no figure wrong.
+- **Re-derived correct, independently:**
+  - all 42 Clerk totals for 1998-2024, with the states summing exactly to each Total row;
+  - the two declared gaps;
+  - the six swings and the band;
+  - 23 Congresses' seats from [HH-DIV] and the unified/divided boundary years;
+  - NARA's 21 winners;
+  - the rule block's digest;
+  - the model's m from the printed d.
+- **The tool** re-run on a scratch copy reproduced the CSV and the document byte for byte.
+- **The code against the block,** line by line: it matches.
+- **Static state:** no leak.
+- **Met here:**
+  - (1) registered in both bars;
+  - (2) the reach printed and checked;
+  - (3) a world that does not hold the record prints "No outcome", and nothing can be registered from it;
+  - (4) the term pinned to the oath's day;
+  - (5) R-US18's state read from `UsHouseCountCheck`, not typed;
+  - (6) [draft] on the cell;
+  - (7) the claim narrowed: pages by digest, tables and ranges recomputed, the rest the tool's;
+  - (8) ASKED and RULED name their section;
+  - (9) merged after the block.
+
+**R-US20 asked** (the sweep's closing message to Elias), with the card's table:
+- (a) the model with the congressional vote wired, built at US-27;
+- (b) a [FITTED] midterm term. Its per-term vote record exists only for 2002-2022, so a fit since 1946 first needs Elias's choice of data before 1998: the page images transcribed under a ruling, Table 2-2 ruled acceptable, a fit on the six midterms, or a fit on seats (which needs R-US18);
+- (c) a literature model, none fetched (BILLED).
+
+Code recommends (a), by the rule. The rule could give nothing else (the reach above), so the recommendation carries only the reach's information: the congressional economic vote as Table 9.1 prints it is too small to produce a midterm loss of record size. Under (a) the model's midterm stays within 1.6 points of the presidential year. In the Clerk's record since 2002, five of the six midterms cost the president's party more than 2.9 points (2006 -5.49, 2010 -8.97, 2014 -3.71, 2018 -4.99, 2022 -2.95; 2002 +2.26). Whether that is acceptable is the ruling.
+
+**Bars:** (tiers: SIMULATION for the raw pages, TOOLING for the instrument, DOCUMENTS for the card and the plan) the cheap bar **106 of 106** (`cheap840`; `cheap840b` after the review’s fixes); the simulation bar **57 of 57** (`sim840`, before the review’s fixes, which touch two Editor files only); the documents bar **16 of 16** (`doc840`, `doc840b`, and `doc840c` on this commit's records). The named run `us13n2` (UsMidtermCheck, UsHouseCountCheck) 2 of 2. `us13w` was the first run; the ask was registered from it, and `us13w2` and `us13w3` rewrote the card. Ran detached.

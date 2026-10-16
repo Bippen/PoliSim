@@ -280,6 +280,7 @@ namespace PoliSim.EditorTools
             ("UsVetoBacktestCheck", UsVetoBacktestCheck.Run),   // PS-6 US-10 (§802): the US veto document against the record - its CSV digest, every rule's counts per president, every override's two thirds
             ("UsVetoDrawCheck", UsVetoDrawCheck.Run),   // PS-6 R-US17 rule (c) (§834): the draw of defectors on the US veto path measured on the record - the cells, the exact LOO figures, BOOT, DRAWN, the readings, THE DECISION, the ruling record, the document and the catalog byte for byte
             ("UsDebtLimitCheck", UsDebtLimitCheck.Run),   // PS-6 US-14 (§838): the debt limit measured before it runs - US_DEBT_LIMIT.md against Treasury's files and the acts, the bridge's engine block, the dates per start and per R-US21 option printed
+            ("UsMidtermCheck", UsMidtermCheck.Run),   // PS-6 US-13 (§840): R-US20's instrument - the midterm record re-read against its pages, the model's 2026 midterm from the eve of 5 Nov 2024 (the legislative cell in the instrument only), the preregistered rule's verdict and the ruling record
 
             // §419 (2026-09-09): the same idiom one document over. `GeneratedCatalogCheck` guards a
             // generated C# catalog against its CSV; this guards the ASK's inventory against the repo it
@@ -749,6 +750,7 @@ namespace PoliSim.EditorTools
             ("UsVetoBacktestCheck", UsVetoBacktestCheck.Run),           // §802: US_VETO_BACKTEST.md against the record - a document-only commit still runs it
             ("UsVetoDrawCheck", UsVetoDrawCheck.Run),                   // §834: US_VETO_DRAW.md and the catalog against R-US17 rule (c)'s run, the block's digest and the mirror
             ("UsDebtLimitCheck", UsDebtLimitCheck.Run),                 // §838: US_DEBT_LIMIT.md against the record and the engine - a document-only commit still runs it
+            ("UsMidtermCheck", UsMidtermCheck.Run),                     // §840: the card's midterm block and US_MIDTERM_RECORD.md against R-US20's run - a document-only commit still runs it
         };
 
         /// <summary>

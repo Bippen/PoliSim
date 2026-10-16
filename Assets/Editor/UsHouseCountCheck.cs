@@ -36,8 +36,8 @@ namespace PoliSim.EditorTools
 
         /// <summary>The ruling record: NONE, ASKED or RULED. The first run registers the ask (its section, the outcome of each run asked, the
         /// decisive digest).</summary>
-        private const string RulingState = "ASKED";
-        private const string RulingSection = "§800";
+        internal const string RulingState = "ASKED";   // internal: UsMidtermCheck prints the model's seat change UNRULED while this is not RULED
+        internal const string RulingSection = "§800";
         private const string RulingOutcomeOverD = "(a) + S2, S5, S4 [(ii)]";
         private const string RulingDecisiveDigest = "2df09e4c3986bda5b6030d0927929cedc273b8ba8cb3771fd405c7aa9af5d513";
         /// <summary>RULED only: the ruling's words and the option it names - one the block's THE ASK AND THE BARS says can be built.</summary>
