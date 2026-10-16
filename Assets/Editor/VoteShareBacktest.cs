@@ -32,9 +32,10 @@ namespace PoliSim.EditorTools
     public static class VoteShareBacktest
     {
         /// <summary>The USA's economic weight - DECLARED from Gallup's most-important-problem table of July 2026 (economy and cost of living against
-        /// immigration; the case's note below), after every US election the model is held to. One copy: US-5's instrument
-        /// (<see cref="UsNationalVoteCheck"/>) reads it here.</summary>
-        internal const double UsEconomicWeight = 0.65;
+        /// immigration; the case's note below), after every US election the model is held to. PS-6 US-6: the one copy is the runtime's,
+        /// <see cref="PoliSim.Data.PartySystems.UsEconomicWeight"/>, which the live US electorate reads; this name, which US-5's instrument
+        /// (<see cref="UsNationalVoteCheck"/>) reads, is that copy.</summary>
+        internal const double UsEconomicWeight = PoliSim.Data.PartySystems.UsEconomicWeight;
 
         private readonly struct Case
         {

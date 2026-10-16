@@ -38937,3 +38937,66 @@ The control reproduces the PKW’s first round to the hundredth at both seeds. T
 - All met in 6f5e66d5, with the three nominations sourced from the parties’ own pages.
 
 **Bars:** (tier SIMULATION by the raw files, TOOLING for the measure, DOCUMENTS for the plan) the measure `sp7m` (MultiRun, exit 0); the cheap bar **106 of 106** (`cheap843`); the simulation bar **57 of 57** (`sim843`); the documents bar **16 of 16** (`doc843`). The measure is in no bar: it runs once, for the ask.
+
+## 844. PS-6 US-6: THE US PREDICTION AND E1'S FACTORS - R-US15'S POLL LIVE (THE HOUSE HISTORY, THE ELECTORATE HELD AT THE FOUR'S MEDIAN, PER SEATED VINTAGE), THE 2024 FIELD OF RECORD AND ITS NAMING BY DATE, THE FACTORS REFIT ON THE REFERENCE WORLD GENERALISED BY COUNTRY (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-6; R-US2 (a) F8 §781, R-US15 (a)+(ii) G2 §797, E1 §772, F4 §779, G8 §797): the USA in `TryElectorate` and `TryRealHistory` in R-US15's unit; the 2024 field per R-US2 at E1's factors, fitted on `PresidentialReferenceWorld` generalised by country; a cheap-bar refit; the card's "by construction", E1's US premise and where acceptance rests; G8's stale texts.
+
+**Sourced** (2026-10-16, byte for byte; `raw/records/fetch_log.txt`, `SHA256SUMS.txt`, `sha256sum -c` clean): the DNC's releases of 12 Mar, 24 Jul, 30 Jul, 5 Aug and 6 Aug 2024; the Biden White House archive's statement and press briefing of 24 Jul 2024. `records_by_date.md` gains §2a and a register table, G13 (the RNC's date BILLED, gop.com 403) and G14 (the 21 Jul letter is not on the archive; it is dated by the briefing).
+
+**Built:**
+- `PartySystems`: `TryRealHistory`/`TryUsHistoryYears` (the House pair from the catalog per vintage; Usa2026 reads the latest sourced), `TryElectorate`/`UsElectorate` (σ and τ the four's median, the mean on the DEM-REP segment, per seated vintage, cached), `UsEconomicWeight`, `UsSpreadFrom`, `HistoryBasis`.
+- `PresidencyOfRecord`: the USA's 2024 field (every FEC column; factors NaN until the first fit is patched in from the log), names, shares, `NomineeName`/`TryNamedFrom`.
+- `PresidentialReferenceWorld.Hold(host, id, thenTo)`: Poland's path statement for statement as before.
+- `UsPresidentialFactorCheck` (the cheap bar and the documents bar), `Tools/us_factor_patch.pl`, `Tools/us_ballot_standing.pl`.
+- The Politics compass captions a held electorate "held, not fitted, on the House vote".
+- G8's stale texts: `TryElectorate`, `LoyaltyModel.CanDerive`, `LoyaltyHarness`, `PresidentialVoteBacktest`, `PRESIDENTIAL_VOTE.md`, `US_ELECTIONS.md`, `NationalElection`, `UsNationalVoteCheck`.
+
+**Measured** (`n844a`, the first run: the FIT lines, the factors NaN, the check failing as built; `Tools/us_factor_patch.pl` patched them from that log; `us6w` wrote the card; `n844b` 4 of 4):
+- **E1's US factors, fitted on the reference world:** Trump (REP) **1.0183908285859777**, Harris (DEM) **0.94561954699236783**. These are the poll's 48.90 / 51.10 of the two against the FEC's 49.80 / 48.32 of all votes, and they equal US-5's card (1.018390 / 0.945620). The field at the stored factors gives the FEC's national shares on the reference world, by construction, and the card says so in words.
+- **The poll, per seated vintage:**
+
+| vintage | the history read | μ (econ, soc) | place | REP of the two (T-1) |
+|---|---|---|---:|---:|
+| Usa2020 | House 2020 against 2018 | (5.933930, 5.294699) | 0.489762 | 0.484437 |
+| Usa2022 | House 2022 against 2020 | (6.023038, 5.411332) | 0.509564 | 0.513968 |
+| Usa2026 | House 2024 against 2022 | (6.020641, 5.408195) | 0.509031 | 0.513174 |
+
+  Each row: σ 1.25, τ 6.00, the four's median. Each equals US-5's instrument within 0.0e+0.
+- **The start** (2024-03-12) seats Usa2022, the House of record that day (REP 222, DEM 213), and the poll reads that House's own election. Stepped to 2025-01-03, the world seats Usa2024 by the record's date, but the live poll still gives REP 0.513968 (House 2022's split, not House 2024's 0.513174): the chamber moves, the history does not (DECLARED).
+- **Poland unchanged:** `PresidentialElectionLiveDiagnostic`'s and `PresidentialVoteBacktest`'s blocks are byte-identical between the tree before US-6 (`pol844a`) and after (`n844b`).
+- **The `elec<N>` diff** (`elec844a` against `elec844b`, through `Tools/elec_report.pl`) moves exactly what was foreseen. GateReRun's US header now says the poll is live as ruled. In LoyaltyHarness's NOT COMPUTABLE block, France's three lines are reworded with no number changed, and the USA's two lines are now computable (House 2022 against 2020, loyalty REP 94.5, DEM 94.1). No other line moves.
+
+**Declared:**
+- *The electorate per seated vintage, not held at 2022's place* (a reading). It is solved at run time on the vintage the world's epoch seats, the one the history reads. A game from the start holds 2022's place for its whole run; the 119th House seated on 3 Jan 2025 moves the seats and not the history (§767). The check holds this on the game's own loop: the plain poll on that day gives House 2022's split, not House 2024's. The card's Usa2024 row says what a 2024 epoch would read.
+- *`HistoryBasis` in place of the plan's `HistoryNote`* (a reading). `HistoryNote`'s readers draw it as LOW CONFIDENCE (`ElectionNightScreen.cs` builds the LOW CONFIDENCE slip from it; `GameController.ParliamentRows.cs` prints the LOW CONFIDENCE word and the note), and the US history maps cleanly. Consequence: no screen shows the US basis; only the card does.
+- *The reference world* sets the player country to the USA, as Poland's does. The check seeds 777 and puts the random streams, the energy state and the regional derivation back.
+- *The field* includes the two ballot lines that are not candidates, so it sums to the FEC total.
+
+**Departure, put to Elias:** minor candidates stand nationally, not "only where the FEC shows them on the ballot". Measured by `Tools/us_ballot_standing.pl`: Kennedy votes in 31 of 51, Stein 41, Oliver 49. National shares are unchanged; the per-state table lands with US-8.
+
+**Owed to Elias:** the departure; the naming asymmetry (Harris from 6 Aug 2024, Trump never named, even to a REP player; NARA's certificates are the plan's stand-in and name him only after the count); the two readings, if he objects.
+
+**Note for US-8:** once US-8 gives the USA a polling day, `GameController`'s election path (`TryPredictShares`, line 6545 today) will log "ELECTION: held for USA … by NotImplemented" where it logged "not held". US-8's count replaces that path for the USA.
+
+**Review** (not required: no money path; run anyway, `Reviews/2026-10-17_s844_us6_prediction.md`, one adversarial reviewer, refute-first): ready to integrate, no high, four medium, seven low.
+- **Re-derived correct:** every SHA-256 (45 of 45), every quote, the catalog’s figures, the fit and the factors, the two-party identity. Every new runtime branch is USA-only; the merge onto main is mechanical.
+- **The mediums, met in 0cf192d5:** the compass captioned the US electorate "fitted" (now "held, not fitted", every other caption byte-identical); the `elec<N>` expectation missed LoyaltyHarness’s block (now foreseen and seen); the integrator’s list lacked verifications (added here); national ballot standing was presented as a reading when it is a departure (now put to Elias).
+- **The lows met:** G13’s wording; `HistoryBasis` declared; LoyaltyHarness reads the start’s chamber; two weak checks strengthened; the patch tool refuses a foreign log; the regional statics restored.
+
+**Integration:** the first cheap bar (`cheap844`) failed MetaTextCheck. `HistoryBasis`’s string carried two ruling references ("R-US15 (a), RULED", "R-US15 (ii), RULED"), developer text in a runtime string. It is drawn on no screen, only into the card, but the rule holds for every runtime literal. The references now live in the card’s own heading ("The poll (R-US15, ruled)") and the doc comment; the card was rewritten (`us6w2`).
+
+**Bars:** (tier SIMULATION + UI; DOCUMENTS for the card and records):
+- the named runs `n844b` **4 of 4** and `n844c` **2 of 2** (UsPresidentialFactorCheck, MetaTextCheck);
+- the cheap bar **107 of 107** (`cheap844b`, after the string fix; `cheap844` failed MetaTextCheck as above);
+- the simulation bar **57 of 57** (`sim844`; the sentinel on ga111 unmoved);
+- the documents bar **18 of 18** (`doc844`; UsPresidentialFactorCheck and PresidentialVoteBacktest join it);
+- Poland’s byte check and the `elec<N>` diff as measured;
+- the dry film `drys844` (USA@1280x720, scoped first): 143 measured, 0 failed, 0 overflows;
+- REAL films `realus6` and `realus6b` (USA at 1280×720, cut at `07b_politics_compass` and then at `_deep`): 107 captured, 0 failed, 0 overflows, 0 canvas violations.
+
+**Read on the real film:** `07b_politics_compass_rows` shows "UNITED STATES’S ELECTORATE · COMPATIBILITY-WEIGHTED MEAN" and "diamond 6.0 · 5.4 · over 2 parties, held, not fitted, on the House vote" on one line. Filed from the same frame, none of it this item’s words:
+- the plot’s "electorate" tag is partly covered by Germany’s dot;
+- the electorate’s diamond sits under the US chamber’s ring, since both are 6.0 · 5.4 (two parties, seats and compatibility nearly agree);
+- "UNITED STATES’S" is the legend’s possessive for a plural name, beside the "…’S CABINET" legend US-7 carried to D-US.
+

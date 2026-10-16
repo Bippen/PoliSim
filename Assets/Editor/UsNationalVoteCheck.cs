@@ -34,7 +34,10 @@ namespace PoliSim.EditorTools
     /// placed unit takes, and how far the split moves when a party's point moves - and the card prints both. The economic vote is printed apart,
     /// never folded into the history's miss. E1's factors close 2024 on the eve world's poll by construction (in-sample).</para>
     ///
-    /// <para>Not live: nothing here reaches <see cref="PartySystems"/> or the game's poll (US-6's change). Pinned in the cheap bar through the US
+    /// <para>What went live (PS-6 US-6): R-US15's ruled choice - history (a), the spread held at the four's median - is the USA's poll
+    /// (`PartySystems.TryElectorate`, `PartySystems.TryHistory`), and `UsPresidentialFactorCheck` holds the runtime's electorate equal to this
+    /// instrument's own median fit (<see cref="HeldAtMedian"/>); everything else here - the free fit, the other spreads, history (b), the cases -
+    /// stays the instrument's. Pinned in the cheap bar through the US
     /// model card's marked block (`docs/reference/US_ELECTIONS.md`, its second block), written by <see cref="WriteReadings"/>; a card that no longer
     /// says what this measures fails here. R-US15's rule is run over the 2024 cases and its verdict printed; a verdict the rule leaves to Elias fails
     /// here, to be asked. <see cref="GateSection"/> prints the same cases in the R-EL13 form after GateReRun's verdict.</para>
@@ -79,8 +82,9 @@ namespace PoliSim.EditorTools
         };
 
         /// <summary>The held spreads: the countries whose electorates <see cref="PartySystems.TryElectorate"/> holds, read there at run time - the
-        /// list checked against every country it answers for.</summary>
-        private static readonly CountryId[] Held = { CountryId.Sweden, CountryId.Germany, CountryId.Poland, CountryId.Italy };
+        /// list checked against every country it answers for. PS-6 US-6: the runtime's list (<see cref="PartySystems.UsSpreadFrom"/>), R-US15's ruled
+        /// four; the USA, whose own electorate is now held at their median, is the one country TryElectorate answers for outside it.</summary>
+        private static readonly CountryId[] Held = PartySystems.UsSpreadFrom;
 
         /// <summary>The figures R-US15 is ruled on, pinned as the card prints them: 2024's miss by each history on its own contest, before and after
         /// the economic vote (points, two-party), and the economic vote itself (DEM, points). A refreshed card cannot move them unseen: the writer
@@ -169,7 +173,8 @@ namespace PoliSim.EditorTools
             VoteModel.PartyPoint[] points = roster.Select(p => new VoteModel.PartyPoint(p.Abbrev, p.LrEcon, p.Galtan)).ToArray();
             double w = VoteShareBacktest.UsEconomicWeight;
             CountryId[] holders = ((CountryId[])Enum.GetValues(typeof(CountryId))).Where(id => PartySystems.TryElectorate(id, out _, out _)).OrderBy(id => id).ToArray();
-            Check(holders.SequenceEqual(Held.OrderBy(id => id)), F("the held spreads are every country PartySystems.TryElectorate holds: {0}", string.Join(", ", holders)));
+            Check(holders.Where(id => id != CountryId.USA).SequenceEqual(Held.OrderBy(id => id)) && holders.Contains(CountryId.USA),
+                F("the held spreads are every country PartySystems.TryElectorate holds but the USA, whose own is held at their median (US-6): {0}", string.Join(", ", holders)));
 
             // ---- the eve worlds: the economic vote each case's poll carries
             var eves = new Dictionary<int, Eve>();
@@ -389,7 +394,7 @@ namespace PoliSim.EditorTools
             PoliticalParty[] roster = PartySystems.RealRoster(CountryId.USA);
             VoteModel.PartyPoint[] points = roster.Select(p => new VoteModel.PartyPoint(p.Abbrev, p.LrEcon, p.Galtan)).ToArray();
             double w = VoteShareBacktest.UsEconomicWeight;
-            sb.Append("\nUSA (PS-6 US-5, R-US15's evidence) - NOT IN THE R-EL13 GATE, and not live. Each history's electorate fitted to its own last election before the\n");
+            sb.Append("\nUSA (PS-6 US-5, R-US15's evidence) - NOT IN THE R-EL13 GATE; live only as ruled - (a) at the four's median is the US poll (US-6). Each history's electorate fitted to its own last election before the\n");
             sb.Append("predicted one (T-1), free (VoteModel.Calibrate) and held at each fitted country's spread; loyalty T-1 against T-2; no world and no economic\n");
             sb.Append("vote here (UsNationalVoteCheck reads them on the eve worlds). Two-party, signed: REP's predicted share less the record's, in points.\n");
             var failed = new List<string>();
@@ -462,6 +467,30 @@ namespace PoliSim.EditorTools
             if (sigmas.Count == Held.Length) { result.Add(HeldFit(points, w, target, Median(sigmas), Median(taus), "the four's median", Check, label)); }
             return result;
         }
+
+        /// <summary>PS-6 US-6: this instrument's own fit held at the four's median to a House election's two-party split - the fit R-US15 ruled -
+        /// for `UsPresidentialFactorCheck` to hold the runtime's electorate (`PartySystems.UsElectorate`) equal to. Its checks fail into
+        /// <paramref name="failed"/>.</summary>
+        internal static VoteModel.Electorate HeldAtMedian(int houseYear, out double place, List<string> failed)
+        {
+            VoteModel.PartyPoint[] points = PartySystems.RealRoster(CountryId.USA).Select(p => new VoteModel.PartyPoint(p.Abbrev, p.LrEcon, p.Galtan)).ToArray();
+            var sigmas = new List<double>();
+            var taus = new List<double>();
+            foreach (CountryId id in Held)
+            {
+                PartySystems.TryElectorate(id, out VoteModel.Electorate e, out double _);
+                sigmas.Add(e.Sigma);
+                taus.Add(e.Tau);
+            }
+            Fit fit = HeldFit(points, VoteShareBacktest.UsEconomicWeight, TwoParty(SharesOf(Contest.House, houseYear)), Median(sigmas), Median(taus), "the four's median",
+                (ok, what) => { if (!ok) { failed.Add(what); } }, F("House {0}", houseYear));
+            place = fit.Place;
+            return fit.Electorate;
+        }
+
+        /// <summary>PS-6 US-6: a House election's REP and DEM shares of all votes cast, as this instrument sums them from the catalog - beside which
+        /// `UsPresidentialFactorCheck` holds the runtime's history.</summary>
+        internal static double[] HouseShares(int year) => SharesOf(Contest.House, year);
 
         /// <summary>A held fit: σ and τ as given, the mean on the segment from DEM's point to REP's at the place that gives <paramref name="target"/>,
         /// found by bisection (the REP share rises along the segment).</summary>

@@ -12,8 +12,8 @@ using UnityEngine;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// PS-5 with S7, PART TWO (§727): THE VOTE THAT FEEDS THE COUNT - the presidential vote model's candidates, measured on the record before any of
-    /// them goes live. Part one (§720) counted the PKW's four rounds by the two-round rule; this asks where the votes it counts come from, in the two
+    /// PS-5 with S7, PART TWO (§727): THE VOTE THAT FEEDS THE COUNT - the presidential vote model's candidates, measured on the record (measured before any of them
+    /// went live; the game's own election reads them since §770, E1's factors since §772). Part one (§720) counted the PKW's four rounds by the two-round rule; this asks where the votes it counts come from, in the two
     /// steps the model must take, each backtested on 2020 and 2025 with nothing fitted to either:
     ///
     /// <para><b>The first round - a candidate inherits the party that backs it</b>: the previous Sejm's share of the committee that runs the candidate
@@ -35,8 +35,8 @@ namespace PoliSim.EditorTools
     /// poll of 1 Jun 2025 (share of each first-round electorate voting Nawrocki/Trzaskowski): Mentzen 88.1/11.9, Braun 92.5/7.5, Hołownia 13.8/86.2,
     /// Zandberg 16.2/83.8, Biejat 9.8/90.2. Abstention rising with distance to the nearer finalist is [AUTHORED-DRAFT]."</i> The transfer's τ is
     /// fitted to those five pairs (`runoff_transfers_2025.csv`, least squares, one parameter) and both run-offs are re-run at it; the abstention is
-    /// the stated draft (<see cref="AbstentionDraftMax"/>), printed at the draft and twice it. The fit lives here until the game's own presidential
-    /// election takes it (item C, its live wiring - held on the ruling owed at §762).</para>
+    /// the stated draft (<see cref="AbstentionDraftMax"/>), printed at the draft and twice it. The game's own presidential
+    /// election reads the fit since §770 (`PresidentialElection.TransferTau`), and this instrument fails where that figure is no longer its fit.</para>
     /// </summary>
     public static class PresidentialVoteBacktest
     {

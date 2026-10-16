@@ -630,18 +630,74 @@ namespace PoliSim.Data
                     latest   = new[] { 35.38, 30.70, 14.40, 8.61, 7.16, 0.0, 0.0, 0.12 };   // 2023
                     previous = new[] { 43.59, 27.40, 8.55, 12.56, 6.81, 0.0, 0.0, 0.17 };   // 2019
                     return true;
+                case CountryId.USA:
+                    return TryUsHouseHistory(vintage, out latest, out previous);   // PS-6 US-6: R-US15 (a), the House national vote - read from the catalog, never typed
                 default:
                     latest = null; previous = null; return false;
             }
         }
 
         /// <summary>
+        /// PS-6 US-6 (R-US15 (a), RULED - Elias's ruling G2, `COMPLETED.md` §797): THE US POLL IS THE HOUSE NATIONAL VOTE. A vintage's history is the House
+        /// election whose chamber the vintage seats (T-1, the prior) and the House election before it (T-2; with T-1, the loyalty), each party's share of
+        /// all votes cast - the Clerk of the House's recapitulation, its Total the denominator (US-5's basis, DECLARED at §788, RULED by G4) - summed from
+        /// the generated catalog (<see cref="Elections.Generated.UsPresidentialReturns.House"/>), never typed (§419). A vintage elected after the catalog's
+        /// last House election reads the latest the catalog holds (Usa2026 reads 2024 against 2022 - the latest sourced, as the chamber it seats is).
+        /// In <see cref="For"/>'s order: REP, DEM. False for a vintage that is not the USA's or a year the catalog cannot pair.
+        /// </summary>
+        private static bool TryUsHouseHistory(ElectionVintage vintage, out double[] latest, out double[] previous)
+        {
+            latest = null; previous = null;
+            if (!TryUsHistoryYears(vintage, out int t1, out int t2)) { return false; }
+            latest = UsHouseShares(t1);
+            previous = UsHouseShares(t2);
+            return true;
+        }
+
+        /// <summary>
+        /// PS-6 US-6: the House elections a US vintage's history reads - T-1, the latest the catalog holds on or before the vintage's election, and T-2,
+        /// the one before it (see <see cref="TryUsHouseHistory"/>); false where the vintage is not the USA's or the catalog cannot pair it. Public so the
+        /// instrument and the card print the years the poll reads.
+        /// </summary>
+        public static bool TryUsHistoryYears(ElectionVintage vintage, out int t1, out int t2)
+        {
+            t1 = t2 = 0;
+            DateTime elected = Elections.WorldClock.ElectionDayOf(CountryId.USA, vintage);
+            if (elected == DateTime.MinValue) { return false; }
+            foreach (var h in Elections.Generated.UsPresidentialReturns.House) { if (h.Year <= elected.Year && h.Year > t1) { t1 = h.Year; } }
+            foreach (var h in Elections.Generated.UsPresidentialReturns.House) { if (h.Year < t1 && h.Year > t2) { t2 = h.Year; } }
+            return t1 > 0 && t2 > 0;
+        }
+
+        /// <summary>US-6: a House election's REP and DEM shares of all votes cast, from the catalog's rows for the year - US-5's sums, the same arithmetic
+        /// in the same order, so the instrument's history and the poll's are one.</summary>
+        private static double[] UsHouseShares(int year)
+        {
+            long r = 0, d = 0, t = 0;
+            foreach (var h in Elections.Generated.UsPresidentialReturns.House) { if (h.Year == year) { r += h.VotesR; d += h.VotesD; t += h.VotesTotal; } }
+            return new[] { (double)r / t, (double)d / t };
+        }
+
+        /// <summary>
         /// §767 (Elias's ruling D1): the note a country's vote history carries where its lists do not carry over clean - shown on the record and in the
-        /// reference view (`WorldClock.Reference.HistoryNote`, the election night's reference). Null where the history maps clean.
+        /// reference view (`WorldClock.Reference.HistoryNote`, the election night's reference), which draw it as LOW CONFIDENCE. Null where the history
+        /// maps clean. PS-6 US-6: the USA's maps clean - REP and DEM on every ballot of the history - so it carries none; the basis its history is read
+        /// on (R-US15's House vote) is stated by <see cref="HistoryBasis"/>, which no screen draws as a warning.
         /// </summary>
         public static string HistoryNote(CountryId id) => id == CountryId.Poland
             ? "LOW CONFIDENCE - Poland's lists changed between elections; the played vote reads them by lineage: KO from PO, NL from SLD, TD from PSL, "
               + "Konfederacja from KORWiN. Only PiS and the German minority carry over clean, and Polska 2050 has no earlier result - TD's history is PSL's alone."
+            : null;
+
+        /// <summary>
+        /// PS-6 US-6 (the plan's "`PartySystems.HistoryNote` states the basis", read beside it, since <see cref="HistoryNote"/>'s readers draw LOW CONFIDENCE
+        /// and the US history maps clean - DECLARED): the vote a country's poll is, where it is not the chamber's own list vote. The USA's (R-US15 (a),
+        /// ruled): the House national vote, which US-6's card prints; null for the countries whose poll is their chamber's list vote.
+        /// </summary>
+        public static string HistoryBasis(CountryId id) => id == CountryId.USA
+            ? "the House national vote: the prior is the House election whose chamber the world seats at its epoch, the loyalty that election against the one "
+              + "before - each party's own ballot line, its share of all votes cast by the Clerk of the House's recapitulation; the presidential candidates carry it by "
+              + "E1's factors, the electorate held at the four fitted countries' median spread"
             : null;
         /// <summary>
         /// W-G1: the electorate the vote model runs against, per country — mu_econ, mu_soc, sigma,
@@ -653,9 +709,16 @@ namespace PoliSim.Data
         /// new numbers and not invented ones; they are the numbers the backtest already stands on,
         /// moved to where the live path can read them.
         ///
-        /// ⚠ **ONLY THE FOUR BACKTESTED COUNTRIES HAVE ONE.** France and the USA were never fitted,
-        /// because neither is a proportional system and the backtest is a share model. `HasElectorate`
-        /// is false for them, and `NationalElection` refuses those two anyway.
+        /// ⚠ **THE FOUR BACKTESTED COUNTRIES' ARE FITTED; THE USA'S IS HELD; FRANCE HAS NONE.** France was never
+        /// fitted - its system is two rounds in single-member seats and the backtest is a share model - so it
+        /// returns false. PS-6 US-6: the USA's is R-US15's, ruled (G2, §797) - the House national vote as the
+        /// poll, the spread held at the four countries' median (<see cref="UsSpreadFrom"/>, read here at run
+        /// time, never typed), the mean on the DEM-REP segment where the seated history's last House election
+        /// falls; solved, not fitted - with two parties a fit pins only the split (US-5, §789). The economic
+        /// weight is <see cref="UsEconomicWeight"/>. ⚠ The USA's is the electorate of the seated vintage at the
+        /// world's epoch - the same vintage <see cref="TryRealHistory"/> resolves - so a game from the USA's start
+        /// holds its start's chamber's for its whole run: a chamber the record seats later moves the seats, not the
+        /// history (the standing history gap, §767); the US card prints which. <see cref="UsElectorate"/> gives any vintage's.
         ///
         /// ⚠ **THE ELECTORATE DOES NOT YET MOVE WITH THE SIMULATION.** §8 couples it to the economy;
         /// nothing does that yet, so two elections in one game return the same chamber. That is a
@@ -674,9 +737,70 @@ namespace PoliSim.Data
                     electorate = new VoteModel.Electorate(3.50, 7.00, 1.50, 8.00); economicWeight = 0.54; return true;
                 case CountryId.Italy:
                     electorate = new VoteModel.Electorate(4.25, 7.00, 1.00, 4.00); economicWeight = 0.79; return true;
+                case CountryId.USA:
+                    economicWeight = UsEconomicWeight;
+                    return UsElectorate(Elections.WorldClock.Resolve(id, ElectionVintage.Seated), out electorate, out double _);   // PS-6 US-6: R-US15, ruled
                 default:
                     electorate = default; economicWeight = 0.0; return false;
             }
+        }
+
+        /// <summary>PS-6 US-6: the USA's economic weight - DECLARED from Gallup's most-important-problem table of July 2026 (economy and cost of living
+        /// against immigration; `VoteShareBacktest`'s US case notes it), after every US election the model is held to. Moved from the Editor to here
+        /// so the live electorate reads it; the Editor's name for it reads this one.</summary>
+        public const double UsEconomicWeight = 0.65;
+
+        /// <summary>PS-6 US-6 (R-US15 (ii), RULED - "the spread held at the four countries' median", G2, §797): the countries whose fitted σ and τ the
+        /// USA's spread is the median of, each read from <see cref="TryElectorate"/> at run time. US-5's instrument holds its own list to this one.</summary>
+        public static readonly CountryId[] UsSpreadFrom = { CountryId.Sweden, CountryId.Germany, CountryId.Poland, CountryId.Italy };
+
+        /// <summary>The USA's electorate per vintage, solved once - a pure function of the catalog, the roster's positions, the four spreads and the weight.</summary>
+        private static readonly Dictionary<ElectionVintage, (VoteModel.Electorate Electorate, double Place)> UsSolved = new Dictionary<ElectionVintage, (VoteModel.Electorate, double)>();
+
+        /// <summary>
+        /// PS-6 US-6 (R-US15 (a) with (ii), RULED): the US electorate a vintage's history gives - σ and τ each the median of <see cref="UsSpreadFrom"/>'s
+        /// (the mean of the middle two of four), the mean on the segment from DEM's point to REP's (the roster's GPS positions) at the
+        /// <paramref name="place"/> (0 at DEM, 1 at REP) where <see cref="VoteModel.PredictShares"/> gives REP the share of the two parties T-1 gave it,
+        /// found by bisection - eighty halvings, the arithmetic `UsNationalVoteCheck`'s held fit runs, which the factor check holds equal to this.
+        /// False for a vintage that is not the USA's. Solved once per vintage: the compass reads it every frame.
+        /// </summary>
+        public static bool UsElectorate(ElectionVintage vintage, out VoteModel.Electorate electorate, out double place)
+        {
+            lock (UsSolved)
+            {
+                if (UsSolved.TryGetValue(vintage, out var solved)) { electorate = solved.Electorate; place = solved.Place; return true; }
+            }
+            electorate = default; place = double.NaN;
+            if (!TryUsHouseHistory(vintage, out double[] latest, out double[] _)) { return false; }
+            var sigmas = new List<double>();
+            var taus = new List<double>();
+            foreach (CountryId from in UsSpreadFrom)
+            {
+                if (!TryElectorate(from, out VoteModel.Electorate e, out double _)) { return false; }
+                sigmas.Add(e.Sigma);
+                taus.Add(e.Tau);
+            }
+            PoliticalParty rep = UsaParties[0], dem = UsaParties[1];
+            var points = new[] { new VoteModel.PartyPoint(rep.Abbrev, rep.LrEcon, rep.Galtan), new VoteModel.PartyPoint(dem.Abbrev, dem.LrEcon, dem.Galtan) };
+            double target = latest[0] / (latest[0] + latest[1]);
+            var spread = new VoteModel.Electorate(0.0, 0.0, Median(sigmas), Median(taus));
+            double lo = 0.0, hi = 1.0;
+            for (int i = 0; i < 80; i++) { double mid = 0.5 * (lo + hi); if (VoteModel.PredictShares(points, UsAlong(points, spread, mid), UsEconomicWeight)[0] < target) { lo = mid; } else { hi = mid; } }
+            place = 0.5 * (lo + hi);
+            electorate = UsAlong(points, spread, place);
+            lock (UsSolved) { UsSolved[vintage] = (electorate, place); }
+            return true;
+        }
+
+        /// <summary>US-6: <paramref name="spread"/>'s σ and τ, the mean at <paramref name="place"/> on the segment from DEM's point (points[1]) to REP's (points[0]).</summary>
+        private static VoteModel.Electorate UsAlong(VoteModel.PartyPoint[] points, VoteModel.Electorate spread, double place)
+            => new VoteModel.Electorate(points[1].Econ + place * (points[0].Econ - points[1].Econ), points[1].Soc + place * (points[0].Soc - points[1].Soc), spread.Sigma, spread.Tau);
+
+        /// <summary>US-6: the median - the middle value, or the mean of the middle two.</summary>
+        private static double Median(List<double> values)
+        {
+            values.Sort();
+            return values.Count % 2 == 1 ? values[values.Count / 2] : 0.5 * (values[values.Count / 2 - 1] + values[values.Count / 2]);
         }
         /// <summary>The country's seat-holding units, in its key order - seat order at the election the order was set on (Sweden's is 2022's,
         /// kept by K-1 because every positional table is indexed by it); a view that needs seat order sorts by <see cref="PoliticalParty.SeedSeats"/>.</summary>

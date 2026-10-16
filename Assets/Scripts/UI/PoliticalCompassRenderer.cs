@@ -122,8 +122,12 @@ namespace PoliSim.UI
 
                 lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S ELECTORATE · COMPATIBILITY-WEIGHTED MEAN", null, false, true));
                 CompassPositions.Point? electorateMean = CompassPositions.ElectorateMean(player, out int electorateParties);
+                // PS-6 US-6: the electorate's basis in the caption - a country whose poll has a basis of its own (the USA's House vote, R-US15) holds an
+                // electorate that was not fitted to it (σ and τ the four fitted countries' median), so "fitted" would be false there; every other country's
+                // caption is the one it was
+                string electorateBasis = PartySystems.HistoryBasis(player.Id) != null ? "held, not fitted, on the House vote" : "the fitted electorate over the cohorts";
                 lines.Add(electorateMean.HasValue
-                    ? new LegendLine(string.Format(CultureInfo.InvariantCulture, "diamond  {0} · over {1} parties, the fitted electorate over the cohorts", Pair(electorateMean.Value), electorateParties), null, false, false)
+                    ? new LegendLine(string.Format(CultureInfo.InvariantCulture, "diamond  {0} · over {1} parties, {2}", Pair(electorateMean.Value), electorateParties, electorateBasis), null, false, false)
                     : new LegendLine("no fitted electorate for this chamber - no point", null, false, false));
                 lines.Add(new LegendLine("TRAILS · each chamber's mean at every turn close, faint", null, false, true));
                 List<(System.DateTime Date, float LrEcon, float Galtan)> playerTrail = CompassPositions.Trail(player);

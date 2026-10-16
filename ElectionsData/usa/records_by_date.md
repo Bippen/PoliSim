@@ -103,6 +103,32 @@ and the same footnote continues that the Vice President's
 
 The popular and electoral returns themselves are `returns_2024.md` (FEC, the Clerk, NARA) and are not repeated here.
 
+### 2a. The 2024 nominations by date (PS-6 US-6, R-US2) [SOURCED; the Republican side BILLED]
+
+R-US2 (a), ruled (F8, `COMPLETED.md` §781): the player is the November nominee of record, named on screen from the nomination's date of record and "the Democratic/Republican nominee" before it; the withdrawal is not replayed. The dates below are the parties' own and the White House's, read in pages fetched on 2026-10-16 (18:37–18:39 UTC; `raw/records/fetch_log.txt`) and saved byte for byte under `raw/records/` (each file's SHA-256 in `raw/records/SHA256SUMS.txt` and in the US-6 register below). Every quote was checked against the saved bytes by the rule above (tags stripped, entities decoded, whitespace collapsed).
+
+| date | event | source |
+|---|---|---|
+| 2024-03-12 | Biden the presumptive Democratic nominee - the start's own day | [DNC-PRESUMPTIVE] |
+| 2024-07-21 | Biden's letter withdrawing from the race - "this past Sunday" in the White House's briefing of 24 July (**DERIVED**: 2024-07-24 is a Wednesday, the Sunday before it 2024-07-21); the letter itself is not on the archive (G14) | [WH-BRIEF-0724] |
+| 2024-07-24 | the President's own statement of the decision | [WH-STATEMENT-0724] |
+| 2024-07-24 | the convention's permanent rules: a virtual nominating process | [DNC-RULES] |
+| 2024-07-30 | the petition's result: only Harris qualified for the ballot; the virtual roll call to run from 1 to 5 August | [DNC-PETITION] |
+| 2024-08-05 | the virtual roll call's window closed | [DNC-ROLLCALL] |
+| **2024-08-06** | **Harris and Walz certified as the Democratic Party's nominees, the nominations accepted - the date of record from which the game names the Democratic nominee** | [DNC-NOMINEE] |
+| BILLED | the Republican nomination - gop.com refused again on 2026-10-16 (G1); NARA's results page names the candidates only after the count ([EC-2024]), so it dates no nomination (G13) | - |
+
+- [DNC-PRESUMPTIVE]: > "March 12, 2024 DNC and DNCC Statements on President Biden Clinching Democratic Nomination" and > "America spoke, and today, Joe Biden has become the presumptive Democratic nominee for President of the United States."
+- [WH-BRIEF-0724] (the press briefing of "July 24, 2024"): > "As the president said in his letter this past Sunday, “It has been the greatest honor of my life to serve as your president. And while it has been my intention to seek reelection, I believe it is in the best interest of my party and the country for me to stand down and to focus solely on fulfilling my duties as president for the remainder of my term."
+- [WH-STATEMENT-0724]: > "July 24, 2024 Remarks by President Biden in Statement to the American People" and > "So, I’ve decided the best way forward is to pass the torch to a new generation."
+- [DNC-RULES]: > "July 24, 2024 DNCC Rules Committee Passes Permanent Rules for 2024 Presidential Nomination" and > "The Rules voted on today by the full Committee establish a virtual nominating process for the presidential nominee"
+- [DNC-PETITION]: > "July 30, 2024 DNC and DNCC Chairs Announce Results of Presidential Nominating Petition Process and Opening of Virtual Roll Call on August 1" and > "Today, DNC Chair Jaime Harrison and DNCC Chair Minyon Moore announced the results of the petitioning for the Democratic presidential ballot, with only Vice President Kamala Harris qualifying for the ballot."
+- [DNC-ROLLCALL]: > "August 5, 2024 DNC Chair Harrison and DNCC Chair Moore Announce Roll Call Voting Window has Closed, Lay Out Next Steps for VP Harris to Officially Clinch Nomination" and > "Today, DNC Chair Jaime Harrison and DNCC Chair Minyon Moore announced that the window for delegates to vote in the virtual roll call has concluded"
+- [DNC-NOMINEE]: > "August 6, 2024 Democratic Party Announces Kamala Harris and Tim Walz Officially Certified as Democratic Nominees for President and Vice President" and > "Today, DNC Chair Jaime Harrison and DNCC Chair Minyon Moore announced that Vice President Kamala Harris and Governor Tim Walz have officially been certified as the Democratic Party’s nominees for President and Vice President. Vice President Harris and Governor Tim Walz officially accepted the nominations today, following the close of delegate voting on Monday, August 5th and the official certification of the roll call by Convention Secretary Jason Rae."
+
+**Read by the game:** `PresidencyOfRecord.NomineeName` names the Democratic nominee from [DNC-NOMINEE]'s date and "the Democratic nominee" before it; with the Republican date BILLED it names "the Republican nominee" on every day - the count's and after included, to a REP player as to anyone (G13).
+
+
 ## 3. PARTY LEADERS BY DATE
 
 ### 3a. The party chairs
@@ -231,6 +257,22 @@ The spec's §4 row for the USA names the start as the standard run-up before the
 
 Discarded fetches (logged in `fetch_log.txt`, files deleted, nothing cited from them): the direct senate.gov / rules.senate.gov / constitution.congress.gov fetches (403 stubs); a Wayback capture of `majority-minority-leaders.htm` that was senate.gov's 404 page; two gop.com captures (403 stubs); the Clerk's roll call 6 of 2025 (the Laken Riley Act, fetched on the wrong guess that it was the Speaker election — roll call 2 is).
 
+### Source register - PS-6 US-6 additions
+(fetched 2026-10-16, 18:37–18:39 UTC; saved as `raw/records/<file>`; bytes and SHA-256 are the saved file's, as in `raw/records/SHA256SUMS.txt`)
+
+| id | URL | publisher | page's own date / capture | basis | file | bytes | SHA-256 |
+|---|---|---|---|---|---|---|---|
+| [DNC-PRESUMPTIVE] | https://democrats.org/dnc-and-dncc-statements-on-president-biden-clinching-democratic-nomination/ | Democratic National Committee | "March 12, 2024" | the party's own press release | `democrats_20240312_biden_clinching_democratic_nomination.html` | 193158 | `a65db7c1175319ba89224a5bb5a489bb02c784376028646f0f1453cc4b8b2b5f` |
+| [DNC-RULES] | https://democrats.org/dncc-rules-committee-passes-permanent-rules-for-2024-presidential-nomination/ | Democratic National Committee | "July 24, 2024" | the party's own press release | `democrats_20240724_permanent_rules_2024_presidential_nomination.html` | 206554 | `6184348de94b36bc1870a927ada47e3b794406592bd5f7246639f4eed9723792` |
+| [DNC-PETITION] | https://democrats.org/dnc-and-dncc-chairs-announce-results-of-presidential-nominating-petition-process-and-opening-of-virtual-roll-call-on-august-1/ | Democratic National Committee | "July 30, 2024" | the party's own press release | `democrats_20240730_petition_results_virtual_roll_call.html` | 196697 | `ed58cb2ecba3c2778a7942f51e21cd6ce70c1c2b0d7a9d95966cace701dbeb7c` |
+| [DNC-ROLLCALL] | https://democrats.org/dnc-chair-harrison-and-dncc-chair-moore-announce-roll-call-voting-window-has-closed-lay-out-next-steps-for-vp-harris-to-officially-clinch-nomination/ | Democratic National Committee | "August 5, 2024" | the party's own press release | `democrats_20240805_roll_call_voting_window_closed.html` | 199782 | `9d4af6b3e1a36880ffdfe6da494765a87bf1266ae06e3d4142e26a40cf8d4c44` |
+| [DNC-NOMINEE] | https://democrats.org/democratic-party-announces-kamala-harris-and-tim-walz-officially-certified-as-democratic-nominees-for-president-and-vice-president/ | Democratic National Committee | "August 6, 2024" | the party's own press release | `democrats_20240806_harris_walz_certified_nominees.html` | 195866 | `d80cb6cefa790afe8818783cccc5d9f92f833c77b121781abd3aa08bc3875f16` |
+| [WH-STATEMENT-0724] | https://bidenwhitehouse.archives.gov/briefing-room/speeches-remarks/2024/07/24/remarks-by-president-biden-in-statement-to-the-american-people/ | The White House (Biden administration archive) | "July 24, 2024" | official transcript, archived site | `bidenwhitehouse_20240724_statement_to_the_american_people.html` | 145370 | `9c37aa34b8a6d22f0b78128109b19111787f200f0214162a75ce4843ffeef243` |
+| [WH-BRIEF-0724] | https://bidenwhitehouse.archives.gov/briefing-room/press-briefings/2024/07/24/press-briefing-by-press-secretary-karine-jean-pierre-64/ | The White House (Biden administration archive) | "July 24, 2024" | official transcript, archived site | `bidenwhitehouse_20240724_press_briefing_64.html` | 200882 | `8ed04deebbeb37b84dff11ac61c1ab6ac88f444d4839a14969a0abd5ff1c5b72` |
+
+Not kept (logged in `fetch_log.txt`): democrats.org's site searches that found the releases; the archive's guessed address of the letter of 21 July 2024 (404); gop.com (403, twice).
+
+
 ## GAPS
 
 - **G1: the RNC chair is not sourced.** gop.com refused every fetch (Akamai 403) and the Wayback Machine does not serve it. No RNC page naming its chair, or the changes of chair inside the window, was saved. The DNC's search index shows a release titled "attn-rnc-chair-michael-whatley…" (a slug seen in the Wayback index only, not fetched) — a rival party's naming, not a source. Billed: the chair on 2024-03-12 and today, and each change date.
@@ -245,6 +287,8 @@ Discarded fetches (logged in `fetch_log.txt`, files deleted, nothing cited from 
 - **G10: the Byrd rule's waiver threshold (§644(e), three-fifths) was not quoted**, only §644(a)'s point of order; the "simple majority passes reconciliation" reading is DERIVED from the 20-hour debate limit, not stated in the statute's words.
 - **G11: Biden's last day and Harrison's last day are DERIVED**, from the 20th Amendment and Martin's election respectively; no fetched page states either in words.
 - **G12: second-session re-verification (R-K9) is pending**, as for every SOURCED file.
+- **G13: the Republican nomination's date of record is not sourced** (PS-6 US-6, R-US2). gop.com refused both probes on 2026-10-16 (Akamai 403, `fetch_log.txt`), as G1; NARA's results page [EC-2024] names Trump [R] only after the count, so it dates no nomination. Billed: the day the Republican National Convention nominated Trump. Until it is sourced the game names him "the Republican nominee" on every day - no date is held, so the count's day and every day after it are included, to a REP player as to anyone (`PresidencyOfRecord.NomineeName`) - while Harris is named from 6 Aug 2024 ([DNC-NOMINEE]): the asymmetry is put to Elias, with the plan's stand-in source, NARA's certificates, which name the candidates only after the count.
+- **G14: Biden's letter of 21 July 2024 is not on the White House archive.** The guessed address answered 404, and the archive's own search finds the letter's words only in the press briefing of 24 July 2024, which quotes it ([WH-BRIEF-0724]); the letter is dated by that briefing's "this past Sunday" (**DERIVED**). R-US2 (a) does not replay the withdrawal, so nothing in the game reads the date.
 
 *(Filed 2026-09-24 by the PS-1 sourcing agent. Nothing outside `ElectionsData/usa/records_by_date.md` and `ElectionsData/usa/raw/records/` was written. No code was touched, Unity was not run, nothing was committed.)*
 

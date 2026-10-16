@@ -62,9 +62,10 @@ namespace PoliSim.Elections
         /// **A country with fewer than two prior elections on file has NO loyalty value, and the
         /// model refuses to run rather than defaulting** (ruled 2026-08-29). A silent default would
         /// reinstate exactly the global constant this type exists to remove — and it would do so
-        /// invisibly, which is worse than the constant was. The USA (one election on disk) and
-        /// France (one, and out of scope for seats by R-EL10) are the current cases; the USA's
-        /// second election is billed as a data line.
+        /// invisibly, which is worse than the constant was. France (one election on disk, and out of
+        /// scope for seats by R-EL10) is the current case. The USA was one until US-5's House series
+        /// (§788) put the House elections of 2016-2024 in the catalog; since US-6 its loyalty is derived
+        /// from the seated history's two House elections (`PartySystems.TryHistory`, R-US15 (a)).
         /// </summary>
         public static bool CanDerive(double[] previous, double[] previousPrevious)
         {

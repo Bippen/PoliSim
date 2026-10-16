@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using PoliSim.Data;
 using PoliSim.Elections;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -109,10 +110,26 @@ namespace PoliSim.EditorTools
             failures += PerGroupItaly(sb);
 
             sb.Append("\n---- NOT COMPUTABLE, stated (the done-when's 'all six' shortfall) ----\n");
-            sb.Append("  USA and FRANCE: only ONE election each is on disk (2024). Volatility needs two\n");
-            sb.Append("  elections before the one modelled, so both are BILLED: the USA needs 2020 + 2016\n");
-            sb.Append("  House national shares; France needs 2022 + 2017 legislative. France is out of scope\n");
-            sb.Append("  for seats by R-EL10 regardless, so the USA is the one that would pay for itself.\n");
+            sb.Append("  FRANCE: only ONE election is on disk (2024). Volatility needs two elections before the\n");
+            sb.Append("  one modelled, so it is BILLED: France needs 2022 + 2017 legislative, and is out of scope\n");
+            sb.Append("  for seats by R-EL10 regardless.\n");
+            // PS-6 US-6: the USA's half of this block moved - US-5's House series (§788) put the House elections in the catalog, and R-US15 (a) made
+            // the House vote the US poll; the loyalty printed is the runtime's own, on the history of the chamber the record seats on the USA's start
+            // (the vintage a game from the start resolves at its epoch - read from WorldClock, never typed here)
+            ElectionVintage usStart = WorldClock.SeatedVintage(CountryId.USA, WorldClock.StartDate(CountryId.USA));
+            if (PartySystems.TryUsHistoryYears(usStart, out int usT1, out int usT2)
+                && PartySystems.TryHistory(CountryId.USA, out double[] usLatest, out double[] usPrevious, usStart))
+            {
+                double[] usLoyalty = LoyaltyModel.PartyLoyalties(usLatest, usPrevious);
+                sb.Append(string.Format(System.Globalization.CultureInfo.InvariantCulture,
+                    "  USA: COMPUTABLE since US-5 (the House series, §788) and live since US-6 (R-US15 (a)): on the start's chamber ({4}),\n  House {0} against {1} - loyalty REP {2:F1}, DEM {3:F1} (PartySystems.TryHistory; each party's share of all votes cast)\n",
+                    usT1, usT2, usLoyalty[0], usLoyalty[1], usStart));
+            }
+            else
+            {
+                sb.Append("  USA: the House history is not readable from the catalog - FAIL\n");
+                failures++;
+            }
 
             sb.Append($"\n=== LoyaltyHarness: {(failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILED")} ===\n");
             Debug.Log(sb.ToString());

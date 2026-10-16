@@ -1,11 +1,13 @@
-# The US presidential count - model card (the states from the national vote; the national vote)
+# The US presidential count - model card (the states from the national vote; the national vote; the prediction)
 
-What the game's US presidential count will rest on, measured before any of it goes live. The figures the measurements produce are not typed
+What the game's US presidential count will rest on, measured before the count goes live - and, since US-6, the prediction it will count, which
+is live (the poll and E1's factors; no polling day and no count until US-8). The figures the measurements produce are not typed
 here: each is written by the instrument that pins it, into its own marked block - under *The readings* the states from the national vote
 (`PoliSim.EditorTools.UsStateSwingCheck.WriteReadings`), under *The readings (US-5)* the national vote itself
-(`PoliSim.EditorTools.UsNationalVoteCheck.WriteReadings`) - and each instrument fails the cheap bar and the documents bar when its block no
+(`PoliSim.EditorTools.UsNationalVoteCheck.WriteReadings`), under *The readings (US-6)* the live prediction
+(`PoliSim.EditorTools.UsPresidentialFactorCheck.WriteReadings`) - and each instrument fails the cheap bar and the documents bar when its block no
 longer says what it measures. The records are `COMPLETED.md` §786 (the returns by state, `ElectionsData/usa/president_returns.md`), §787
-(the states), §788 (the House vote) and §789 (the national vote).
+(the states), §788 (the House vote) and §789 (the national vote); US-6's is its own section of the record.
 
 ## The question - R-US14
 
@@ -262,10 +264,10 @@ and §789 (this measurement).
 |---|---|---|
 | The histories | (a) the House vote by the Clerk of the House's recapitulation - each party's own ballot line, 50 states; (b) the presidential vote, US-3's catalog - 51 jurisdictions | SOURCED (§786, §788) |
 | The positions | the roster's: REP's and DEM's points on GPS 2019's economic and social scales | SOURCED, PROVISIONAL (`ElectionsData/positions/party_positions.md`) |
-| The economic weight | the USA's declared weight (`VoteShareBacktest.UsEconomicWeight`), from Gallup's table of July 2026 - after every election used. Inert for the two-party split at the fitted points; it sets where a held fit's mean sits and what happens away from those points | DECLARED |
-| The fit | to each history's T-1 - the last election before the predicted one, which a game started on the eve holds as its prior - never to the predicted election. Free: `VoteModel.Calibrate` as it stands. Held: the σ and τ of each country `PartySystems.TryElectorate` holds (Sweden, Germany, Poland, Italy - the list checked against it), read there at run time, and - added with the measurement - the four's median (σ and τ each the median of the four); the mean on the segment from DEM's point to REP's, at the place that gives T-1's split, solved continuously | DECLARED |
+| The economic weight | the USA's declared weight (`PartySystems.UsEconomicWeight` since US-6, which the live electorate reads; `VoteShareBacktest.UsEconomicWeight` names it), from Gallup's table of July 2026 - after every election used. Inert for the two-party split at the fitted points; it sets where a held fit's mean sits and what happens away from those points | DECLARED |
+| The fit | to each history's T-1 - the last election before the predicted one, which a game started on the eve holds as its prior - never to the predicted election. Free: `VoteModel.Calibrate` as it stands. Held: the σ and τ of each country R-US15's spread is taken over (`PartySystems.UsSpreadFrom` - every country `PartySystems.TryElectorate` holds but the USA, whose own is their median since US-6; the list checked against it), read there at run time, and - added with the measurement - the four's median (σ and τ each the median of the four); the mean on the segment from DEM's point to REP's, at the place that gives T-1's split, solved continuously | DECLARED |
 | The loyalty | T-1 against T-2 (`LoyaltyModel.PartyLoyalties`), each party's share of all votes cast - the four countries' basis as near as the sources allow: the presidential history's share of the FEC's total, the House history's of the Clerk's Total, which carries the non-votes some states report and Maine's re-counted ballots. With two parties the loyalty cannot move the split (below), so the denominator moves no miss; the prior is normalised over the roster by `PreferenceModel.Preference` itself | DECLARED |
-| The prediction | the live chain's order - `VoteModel.PredictShares`, the compatibility scale, `PreferenceModel.Preference`, `EconomicVote.ApplyRecordShift` - composed in the instrument, since none of it is live for the USA (US-6's change) | as built |
+| The prediction | the live chain's order - `VoteModel.PredictShares`, the compatibility scale, `PreferenceModel.Preference`, `EconomicVote.ApplyRecordShift` - composed in the instrument; since US-6 the USA's live poll is this chain on history (a) at the four's median (`PartySystems.TryElectorate`, held equal to the instrument's fit by `UsPresidentialFactorCheck`), and the rest stays the instrument's | as built |
 | The economic vote | read on a world built on the eve as a new game builds one - the epoch set before the world is created - and stepped to the election day: the record over the term (§752) at Table 9.1's presidential row on the president's party (`EconomicVote.Magnitudes`), for both histories, the House's too. Printed in its own column, never folded into the history's miss; the congressional row stays out of code (US-13's) | as built |
 | The cases | 2024 by each history on its eve world. Out of sample: 2022's House on its eve world, by (a) and by (b)'s presidential 2020; 2020 with no world - (b) the case US-6 cites as "2020 from 2016", and (a) - since no world can be built before the USA's first government of record (`WorldClock.Governments`; none to seat). Each scored on its own contest, where it was held, and on the other | DECLARED |
 | E1's factors | on the 2024 eve world's poll, per history: Trump's factor his share of the FEC's total ÷ REP's poll, Harris's likewise; Stein, Kennedy, Oliver and the rest at their shares of record as base | E1; in-sample by construction |
@@ -358,6 +360,7 @@ The field: Trump (REP) 49.80 %, Harris (DEM) 48.32 %; at their shares of record 
 | (a) House 2022 against 2020 | 48.90 % / 51.10 % | 1.018390 | 0.945620 | 1.000000 | 1.0379 / 0.9637 | -1.85 |
 | (b) presidential 2020 against 2016 | 45.23 % / 54.77 % | 1.100946 | 0.882315 | 1.000000 | 1.1220 / 0.8992 | -5.52 |
 <!-- END GENERATED -->
+
 
 ## The House count - R-US18
 
@@ -597,4 +600,83 @@ Each set's least and greatest, recomputed from `ElectionsData/usa/house_midterms
 **The rule's reach** (printed, never deciding): the poll is fitted to the 2024 House split the midterm is measured from, so m without the economic vote is the fit's residual (+0.00); the economic vote moves m by 100 x the cell x the units of deterioration, which the term index bounds to [-1, 1]. So |m| can never exceed 1.60 points (the cells: unified -0.016, divided +0.012), and the band's nearer edge is 2.26 points from zero: under this rule NO world that holds the record can give (b) - the verdict follows from the band and Table 9.1's cells, not from the world's economy. R-US20 is asked with this stated.
 
 The ruling record: ASKED (§840).
+<!-- END GENERATED -->
+
+## The prediction - US-6
+
+The game's US poll and E1's factors (`docs/specs/USA_STAGE_PLAN.md`, US-6; R-US2 (a) and R-US15 (a), ruled). The poll is R-US15's ruled
+choice composed by the live chain (`NationalElection.TryPredictShares`); the presidential candidates carry it by E1's factors, fitted once to the
+FEC's national result against the game's poll on the reference world and refit on every bar by `PoliSim.EditorTools.UsPresidentialFactorCheck`,
+which fails where a stored factor is no longer the fit. Wired to the prediction only: no polling day and no count (US-8's).
+
+| part | what it does | basis |
+|---|---|---|
+| The poll | the House national vote: the prior the House election whose chamber the world seats, the loyalty that election against the one before, each party's share of all votes cast by the Clerk's recapitulation - read from the generated catalog (`PartySystems.TryHistory`) | RULED (R-US15 (a), G2) |
+| The electorate | held, not fitted: σ and τ each the median of the four fitted countries', the mean on the DEM-REP segment where the history's last House election falls - solved at run time (`PartySystems.UsElectorate`) and held equal to US-5's fit at the four's median | RULED (R-US15 (ii), G2) |
+| Its vintage | the chamber seated at the world's epoch - the vintage the history reads; a game from the start reads the start's for its whole run, the record's later chamber moving the seats and not the history (the standing history gap, §767); each vintage's electorate in the readings | DECLARED (US-6) |
+| The reference world | `PresidentialReferenceWorld`, generalised by country: the epoch set to the eve of the general election of record before the world is created, as a new game builds one, and one day stepped by the game's loop; never a start world with its clock moved | E1; the s772 review's fix |
+| The factors | each nominee's share of the FEC's national total ÷ the party's poll on that world; a later field at factor 1.0 | E1 [FITTED] (`PresidencyOfRecord.CandidatesOf`); F4 - the world that follows history |
+| The field | every column of the FEC's workbook: the two nominees NARA names stand for their parties at their parties' positions; every other column - candidates, None of These Candidates, the scattered write-ins - at its national share of record as base, standing nationally - every jurisdiction, where the plan's words are "standing only where the FEC shows them on the ballot" (`Tools/us_ballot_standing.pl` prints where the workbook shows each with votes) | R-US2 (a); a DEPARTURE (US-6), put to Elias: national standing - the per-state table lands with US-8, whose count reads the states |
+| The naming | the nominee by name from the nomination's date of record, "the Democratic/Republican nominee" before it: the DNC's date sourced; the Republican date BILLED, so "the Republican nominee" on every day, the count's and after included - the asymmetry put to Elias, NARA's certificates the plan's stand-in | R-US2 (a); `ElectionsData/usa/records_by_date.md` §2a, G13 |
+
+### The readings (US-6)
+
+<!-- GENERATED by PoliSim.EditorTools.UsPresidentialFactorCheck.WriteReadings. DO NOT EDIT BY HAND. source-digest: 32f31ec2bfd23e5626f891e0c96b20b288c8011eefba9cd2c6283e65df8f4684 -->
+### The poll (R-US15, ruled)
+
+The USA's poll is the House national vote: the prior is the House election whose chamber the world seats at its epoch, the loyalty that election against the one before - each party's own ballot line, its share of all votes cast by the Clerk of the House's recapitulation; the presidential candidates carry it by E1's factors, the electorate held at the four fitted countries' median spread. The electorate is held, not fitted - σ 1.25 and τ 6.00, each the median of Sweden, Germany, Poland, Italy's (`PartySystems.UsSpreadFrom`), wEcon 0.65 - its mean on the segment from DEM's point to REP's where the seated history's last House election falls (0 at DEM, 1 at REP), solved for each chamber of record:
+
+| chamber of record (vintage) | history read | T-1 split (R) | loyalty R / D | place | μ econ, μ soc |
+|---|---|---:|---:|---:|---|
+| Usa2020 (elected 2020) | House 2020 against 2018 | 48.44 % | 93.7 / 95.0 | 0.4898 | 5.934, 5.295 |
+| Usa2022 (elected 2022) | House 2022 against 2020 | 51.40 % | 94.5 / 94.1 | 0.5096 | 6.023, 5.411 |
+| Usa2024 (elected 2024) | House 2024 against 2022 | 51.32 % | 99.5 / 99.8 | 0.5090 | 6.021, 5.408 |
+| Usa2026 (elected 2026 - read as the latest sourced) | House 2024 against 2022 | 51.32 % | 99.5 / 99.8 | 0.5090 | 6.021, 5.408 |
+
+A game from the USA's start (12 Mar 2024) seats Usa2022 and its poll reads House 2022 against 2020 for the whole run: the record seats Usa2024 on 3 Jan 2025, which moves the chamber and not the history - the history is the chamber's seated at the world's epoch (the standing history gap, §767; the reading DECLARED with US-6, and held: the reference world below, stepped on by the game's loop to 3 Jan 2025, seats Usa2024 and its poll still reads House 2022 against 2020). The other rows say what a world opened on another epoch would read.
+
+### E1's factors - by construction
+
+**The reference world** (`PresidentialReferenceWorld`, generalised by country): the epoch set to 4 Nov 2024, the eve of the general election of 5 Nov 2024, before the world is created - as a new game builds one - and one day stepped by the game's loop. It seats Joseph R. Biden Jr. (DEM), president and the House elected in 2022; its poll is REP 48.90 %, DEM 51.10 %, the record over the term shifting DEM +2.50 pp (term index 70.8 - took office 2021-01-20, judged 2024-11-05: unemployment 6.4 % (2021-01) -> 4.1 % (2024-10); inflation 1.4 % (2021-01) -> 2.4 % (2024-09)).
+
+**The factors** (R-US2 (a): the November nominees of record carry them from the start): each nominee's share of the FEC's national total ÷ the party's poll on that world - Donald J. Trump 1.018391, Kamala D. Harris 0.945620. Every other column of the FEC's workbook stands at its national share of record as its base: Stein 0.56 %, Kennedy 0.49 %, Oliver 0.42 %, the rest 0.42 % (every other candidate, None of These Candidates and the scattered write-ins). A later field starts at factor 1.0 (E1).
+
+**The factors reproduce the 2024 national shares on the reference world by construction**: they are fitted there, so the field's largest miss on it (0.0000 pp, the table below) shows only that the stored factors are still the fit. The acceptance of the US count rests elsewhere - on the states, US-4's layer moving 2020's states to 2024's national shares (*The readings*, above), and on the out-of-sample case, US-5's 2020 predicted from 2016 (*The readings (US-5)*, above).
+
+**E1's premise for the USA** (RULED, F4): a game played from 12 Mar 2024 reaches 5 Nov 2024 on its own economy and its own seed vintage - the economy is seeded to mid-2026 data, 2 year(s) 4 month(s) after this start - one seed vintage per country, the offset stated (§621) - and on its own play, so its poll on the day is its own and its count is not the record's.
+
+| candidate | party | factor | share of record (FEC) | the field on the reference world | miss (pp) |
+|---|---|---:|---:|---:|---:|
+| Ayyadurai | - | base | 0.0183 % | 0.0183 % | +0.0000 |
+| Bowman | - | base | 0.0038 % | 0.0038 % | +0.0000 |
+| De La Cruz | - | base | 0.1070 % | 0.1070 % | +0.0000 |
+| Duncan | - | base | 0.0082 % | 0.0082 % | +0.0000 |
+| Ebke | - | base | 0.0006 % | 0.0006 % | +0.0000 |
+| Everylove | - | base | 0.0017 % | 0.0017 % | +0.0000 |
+| Fruit | - | base | 0.0027 % | 0.0027 % | +0.0000 |
+| Garrity | - | base | 0.0034 % | 0.0034 % | +0.0000 |
+| Kamala D. Harris | DEM | 0.945620 | 48.3242 % | 48.3242 % | +0.0000 |
+| Huber | - | base | 0.0014 % | 0.0014 % | +0.0000 |
+| Kennedy | - | base | 0.4872 % | 0.4872 % | +0.0000 |
+| Kishore | - | base | 0.0030 % | 0.0030 % | +0.0000 |
+| Oliver | - | base | 0.4188 % | 0.4188 % | +0.0000 |
+| Preston | - | base | 0.0018 % | 0.0018 % | +0.0000 |
+| Skousen | - | base | 0.0082 % | 0.0082 % | +0.0000 |
+| Sonski | - | base | 0.0283 % | 0.0283 % | +0.0000 |
+| Stein | - | base | 0.5553 % | 0.5553 % | +0.0000 |
+| Stodden | - | base | 0.0002 % | 0.0002 % | +0.0000 |
+| Supreme | - | base | 0.0006 % | 0.0006 % | +0.0000 |
+| Terry | - | base | 0.0266 % | 0.0266 % | +0.0000 |
+| Donald J. Trump | REP | 1.018391 | 49.7961 % | 49.7961 % | +0.0000 |
+| Wells | - | base | 0.0002 % | 0.0002 % | +0.0000 |
+| West | - | base | 0.0532 % | 0.0532 % | +0.0000 |
+| Wood | - | base | 0.0007 % | 0.0007 % | +0.0000 |
+| None Of These Candidates | - | base | 0.0126 % | 0.0126 % | +0.0000 |
+| Write-Ins (Scattered) | - | base | 0.1355 % | 0.1355 % | +0.0000 |
+
+### The field of record and its naming (R-US2, ruled)
+
+The nominees are named from the nomination's date of record and "the Democratic/Republican nominee" before it; the withdrawal is not replayed. The Democratic nominee from 6 Aug 2024 - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the game names him "the Republican nominee" on every day, the count's and after included, to a REP player as to anyone: an asymmetry put to Elias.
+
+**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are "the minor candidates standing only where the FEC shows them on the ballot"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). The per-state table lands with US-8, whose count reads the states.
 <!-- END GENERATED -->

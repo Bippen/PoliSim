@@ -112,7 +112,9 @@ namespace PoliSim.Elections
         /// exactly the arrangement the backtest reports that 1.47 pp for.
         ///
         /// Returns false when the country has no fitted electorate or no two-election history —
-        /// the four countries without a live path — and the caller holds no election.
+        /// a country without a live path — and the caller holds no election. PS-6 US-6: the USA
+        /// predicts (its poll is R-US15's, `PartySystems.TryElectorate`) and still has no seat path:
+        /// <see cref="Run"/> records why, and its presidential count is US-8's.
         /// </summary>
         /// <summary>
         /// C-R4b step 5 (2026-09-02, D-21): the three inputs the live prediction is made of - each
