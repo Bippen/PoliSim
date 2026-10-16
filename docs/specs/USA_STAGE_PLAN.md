@@ -2129,6 +2129,123 @@ Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot 
 
 Code will recommend (b) if the model's midterm falls outside the record's range, and (a) otherwise.
 
+**The rule, declared before the instrument's first run (US-13).** It was written before any figure of the model's midterm was computed, by hand or by any run, and before the instrument existed. What the session had seen while writing it, stated: the record's side - [HH-DIV]'s divisions, and a secondary compilation's midterm figures (Vital Statistics on Congress, Table 2-2, fetched while probing for a vote record older than the Clerk's text pages); the probe of the Clerk's statistics, 1944-1996 page images and 1998-2024 text; and the code's constants, from which the size of the legislative cell's effect is bounded (its magnitude times at most one unit of deterioration) without any run. Its first wording was set before the record tool had run; its two sentences on the Clerk's sums were then made exact once the tool had met two pages whose own Total rows differ from their states' rows in a column of neither major party - the record's band known by then, the model's figure not - and the change touches nothing the band or the decision reads. The rule is the fenced block between the two markers below; everything outside the markers is not part of it. The instrument (`UsMidtermCheck`, in the cheap and documents bars, writing its own GENERATED block on the US card) holds the list of the block's SHA-256 digests, computed and enforced as R-US18's are: the preregistered one, then one per amendment naming Elias's ruling.
+
+<!-- R-US20 RULE BEGIN -->
+```text
+R-US20'S RULE - US-13's measurement decides Code's recommendation on the midterm.
+Preregistered before UsMidtermCheck's first run (US-13); amended only with Elias's ruling.
+
+THE TERMS
+- An election is a House general election. The president's party at an election is the
+  party of the winner of the last presidential election before it, by NARA's Electoral
+  College results page for that election: a midterm reads the presidential election two
+  years before it, a presidential year the one four years before it (the sitting
+  president's party; Truman, Johnson and Ford each keep their predecessor's party).
+- Unified or divided at an election: unified where the president's party is the largest
+  party in the House sitting on its day - the Congress the election two years before
+  chose, by [HH-DIV]'s divisions - the reading EconomicVote's presidency branch takes for
+  the model; divided otherwise.
+- A seat change: the president's party's seats in the Congress the election chose less its
+  seats in the Congress before, both as [HH-DIV] prints them - the divisions as of each
+  Congress's initial election results, so deaths, specials, vacancies and party switches
+  inside a Congress are not in them, and the chamber's size is each row's own.
+- A vote swing: the president's party's share of the two-party national House vote at the
+  election less its share at the election two years before, in points. A share is the
+  party's own ballot line - the Republican and Democratic columns of the Total row of the
+  Clerk of the House's "Recapitulation of Votes Cast for United States Representatives"
+  (US-5's basis, G1) - those two columns held to the sums of its states' rows exactly (a
+  difference the page carries in another column is declared by the tool and printed).
+- The record's midterms are the House general elections of 1946 to 2022 held between
+  presidential elections, each against the election two years before; the presidential
+  years 1948 to 2024 are printed beside them and never read by the rule.
+
+THE RECORD THE RULE READS
+- VOTES, NOT SEATS. The model's midterm is a vote swing (US-5's House history, R-US15 (a)).
+  A seat change of the model needs R-US18's method, which is ASKED: any seat figure of the
+  model prints UNRULED, and the rule never reads one or picks a method.
+- The record's vote swing is read where the Clerk's statistics of both elections are saved
+  as text. The Clerk's statistics of 1998 to 2024 carry a text layer; those of 1944 to
+  1996 are page images with none (each probed on 2026-10-16), so the vote swing of every
+  midterm from 1946 to 1998 is BILLED - never estimated, never typed from an image, never
+  taken from a secondary compilation. The rule's record is the midterms of 2002 to 2022,
+  each against the election two years before.
+- A year of 1998 to 2024 whose two major-party columns the tool cannot hold to its states'
+  rows fails the tool; it is never dropped from the record.
+- BOTH GOVERNMENT TYPES TOGETHER. The rule reads every midterm of its record, unified and
+  divided alike; the split is printed beside, never deciding (Table 9.1's two cells carry
+  the government type into the model already).
+
+THE BAND
+- The record's range is the closed interval [L, U]: L the least and U the greatest of the
+  rule's record's midterm vote swings, each computed from the vote counts at full
+  precision - nothing is rounded before the comparison.
+
+THE MODEL'S MIDTERM
+- The world: built as a new US game builds one - the epoch 4 Nov 2024, the eve of 5 Nov
+  2024, set before the world is created; seed 777; the player's country the USA and the
+  player's party DEM, so that the AI governs the president's party through the term the
+  midterm scores (from the oath of 20 Jan 2025); no player decision on any turn; stepped
+  one day at a time in the controller's order (the day, the player's day tick, the turn
+  at its boundary) to 3 Nov 2026, the 2026 polling day (2 U.S.C. 7), and read on that
+  day. It must hold the record (R-US1 (a), US-2): Trump (REP) the president of record
+  from the oath, and the House the 2024 election chose from 3 Jan 2025. A world that does
+  not hold them fails the instrument; it is not an outcome of this rule.
+- The poll: US-5's House history as ruled (R-US15 (a), G2) - the electorate held at the
+  four countries' median spread, fitted to the 2024 House split (T-1), the loyalty 2024
+  against 2022, in the live chain's order; the identity checked (the poll no farther from
+  the prior than the fit's own residual).
+- The economic vote: the record over the term on 3 Nov 2026 as the live code reads it
+  (from the day the government took office), in its units of deterioration, times Table
+  9.1's US legislative cell for the world's government type - unified -0.016 (0.03)
+  n = 2, divided 0.012 (0.038) n = 9 [draft] - each with its printed sign, a magnitude
+  being the cell's negative as the presidential row's is in code; on the president's
+  party alone, delivered exactly. In the instrument only: nothing live.
+- The model's midterm, m: the president's party's two-party share in that poll less its
+  two-party share at the 2024 House election of record (the Clerk's, US-5's catalog), in
+  points, at full precision.
+
+THE DECISION
+- m < L or m > U: "By R-US20's rule, code recommends (b): the model's midterm m lies
+  outside the record's range [L, U]", with the figures.
+- L <= m <= U: "By R-US20's rule, code recommends (a): the model's midterm m lies inside
+  the record's range [L, U]", with the figures.
+- The verdict line is generated, never typed. R-US20 is asked with the full table
+  whatever the outcome.
+
+PRINTED, NEVER DECIDING
+- m with no economic vote (the history alone); m with the presidential row (the live
+  constants, the cell US-5's House history reads in 2024); m with the legislative cell
+  moved by its parenthesis either way (the parenthesis is the table's - by Table 9.2's
+  note, a standard deviation of the studies' estimates);
+- the record's seat changes, every midterm 1946-2022 and every presidential year
+  1948-2024, by government type, each set's least and greatest;
+- the record's vote swings by the Clerk, every midterm and presidential year it reads, by
+  government type, each set's least and greatest;
+- a secondary compilation (Vital Statistics on Congress, Table 2-2: each party's
+  percentage of all votes, to one decimal, 1946-2024), labelled SECONDARY: its two-party
+  swings by government type, and its differences from the Clerk where both read a year;
+- the model's seat change: UNRULED (R-US18 ASKED).
+
+THE ASK AND THE BARS
+- UsMidtermCheck holds the list of this block's SHA-256 digests - the preregistered one,
+  then one per amendment naming Elias's ruling; the block must match the list's last, and
+  a change without a ruling fails.
+- The ruling record is held by the instrument: NONE; ASKED, with the ask's section and the
+  registered outcome - the verdict, the government type, and L, U and m to two decimals;
+  or RULED, with the ruling, its option ((a), (b) or (c)) and the outcome it was made on.
+  NONE fails the bars until the first run's ask is registered.
+- ASKED or RULED: the bars pass while the generated outcome equals the registered one. A
+  moved figure with the same verdict fails until a commit re-registers it, naming its
+  cause and "verdict unchanged"; a changed verdict fails until R-US20 is asked again with
+  the new table, and Elias is told.
+- The rule's record changes only by amendment with Elias's ruling - a vote record read
+  further back (the Clerk's 1944-1996 statistics, or a source ruled acceptable) - never
+  silently. The 2026 midterm's own result is BILLED until the Clerk's 2026 statistics are
+  saved (expected 2027); then it is printed beside m, never read by this rule.
+```
+<!-- R-US20 RULE END -->
+
 **R-US21 — B7's open details** *(US-14's dates; blocks US-24)*.
 - (i) **The bridge:** debt subject to limit = the model's debt × the ratio read at the seed's vintage *(recommended)*; or re-seed US debt on that perimeter, a family for every start.
 - (ii) **A 2024-start game:** the law in force at the start — suspended to 1 Jan 2025, reinstated on 2 Jan at the game's own debt subject to limit (P.L. 118-5 §401(b)), with later raises the game's Congress's acts *(recommended)*; or the record's dated figures (P.L. 119-21's +$5.0 trillion on 4 Jul 2025) whatever the game's Congress does. A start after 4 Jul 2025 holds $41,103,995,660,231 as of record either way.

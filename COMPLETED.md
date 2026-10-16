@@ -38667,3 +38667,28 @@ Built in the roadmap sweep's first wave, in its own worktree; integrated after U
 **R-US21 asked** (the sweep's closing message to Elias), with these dates: (i) the bridge, recommended (a); (ii) a 2024 start, recommended (a), with the new question of the 2022/2023 starts; (iii) the span, Code recommending 192 days (the 164 ended by an act, not exhaustion); (iv) pro rata; (v) the dollar limit replaces the ministry's trigger for the USA; (vi) an AI-governed USA raises or suspends ("Since 1960, Congress has acted 78 separate times").
 
 **Bars:** (tier SIMULATION, on this commit's own tree) the cheap bar **105 of 105** (`cheap838`, `UsDebtLimitCheck` its 105th, 12.3 s in its named run `us14n`); the simulation bar **57 of 57** (`sim838`, the sentinel on `ga111`: the check restores the generator and the epoch); the documents bar **15 of 15** (`doc838`; with the record in, `doc838b`). `WriteBridge` (`us14w`) wrote the engine block first. Ran detached.
+
+## 839. PS-6 US-13, THE RULE BEFORE THE MEASUREMENT: R-US20'S DECISION RULE PREREGISTERED IN THE PLAN BEFORE UsMidtermCheck'S FIRST RUN - VOTES NOT SEATS, THE CLERK'S MIDTERMS OF 2002-2022 (EARLIER YEARS PAGE IMAGES, BILLED), THE CLOSED RANGE OVER BOTH GOVERNMENT TYPES (2026-10-16)
+
+**What was owed** (the plan's R-US20: "Code will recommend (b) if the model's midterm falls outside the record's range, and (a) otherwise"; the project's practice since R-US18, §791): what "the record's range" and "the model's midterm" mean, written down before any run measures the model.
+
+**The block** (`docs/specs/USA_STAGE_PLAN.md`, between the R-US20 RULE markers; SHA-256 **`84787a5309a25fb0073a22693a6676d7695aa5e0d44193fc9e2fa5368c00a734`**, 112 lines, on LF-normalised text, the convention of R-US17's and R-US18's blocks; held by `UsMidtermCheck.RuleDigests`):
+- **Votes, not seats.** A seat change of the model needs R-US18's method, which is ASKED, so every model seat figure prints UNRULED and the rule never reads one.
+- **The rule's record is the midterms of 2002-2022.** The vote swing is read only where the Clerk's statistics of both elections carry text. Those of 1944-1996 are page images (each probed on 2026-10-16), so every vote swing from 1946 to 1998 is BILLED: never estimated, never typed from an image, never taken from a secondary compilation.
+- **The band** is the closed interval [least, greatest] of those swings at full precision. Unified and divided midterms are read together; the split prints beside.
+- **The model's midterm, m:** the eve of 5 Nov 2024 (seed 777; the USA the player's, DEM the player's party, so the AI governs the president's party from the oath) stepped day by day to 3 Nov 2026. The world must hold the record (Trump from 20 Jan 2025, the 119th House from 3 Jan 2025).
+  - The poll is US-5's House history as ruled (R-US15 (a)).
+  - The economic vote is Table 9.1's US legislative cell for the government type, sign kept, in the instrument only.
+  - m is the president's party's two-party share less its 2024 House share. Outside [L, U] the rule gives (b); inside, (a).
+- **Printed, never deciding:** m without the economic vote and with the presidential row; the record's seat changes 1946-2022 and presidential years 1948-2024; Vital Statistics' Table 2-2 as SECONDARY.
+
+**What was seen when it was written** (stated in the block's preamble):
+- [HH-DIV]'s divisions, Vital Statistics' figures, the probe of the Clerk's page images, and the constants' bound.
+- The block was first worded before the record tool ran. Two of its sentences on the Clerk's sums were made exact afterwards, when the record's band was known but the model's figure was not. Nothing the band or the decision reads changed.
+- No figure of the model's midterm had been computed by hand or by any run.
+
+Written by the sweep agent that built US-13's instrument, in its own worktree; committed here, before that instrument exists on main.
+
+**Bars:** (tier DOCUMENTS: the plan’s text and this record, no code) the documents bar **15 of 15** (`doc839`). Ran detached.
+
+**A pointer corrected:** §838 said its review’s M2 and L1-L7 would be "fixed in the next section (§839)". This preregistration had to come before US-13’s first run, so it took §839. The US-14 fixes get their own section once they are integrated.
