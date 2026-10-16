@@ -104,7 +104,7 @@ namespace PoliSim.Elections
         /// <list type="bullet">
         /// <item><description>PS-6, US-1 (`docs/specs/USA_STAGE_PLAN.md`): the USA's start, until its presidential count (US-8) and the House's (US-16) are built.
         /// Meanwhile the record's House and president are seated on the record's dates (R-US1 (a), built in US-2: <see cref="RecordSeatsChamber"/>,
-        /// <see cref="RecordSeatsExecutive"/>), and no Senate is modelled (US-15).</description></item>
+        /// <see cref="RecordSeatsExecutive(CountryId)"/>), and no Senate is modelled (US-15).</description></item>
         /// <item><description>PS-7's "until then" (PS-7-interim): Italy's snap start, until Italy's mixed-system stages and the Senato are built (PS-7). Its calendar
         /// offers no polling day (<see cref="TryNextPollingDay"/>), so the snap election the start is cut on is not held: the Camera and the government seated at
         /// the start hold (the government the formation's stand-in for the caretaker's cabinet, which the record does not name), and no Senato is modelled.</description></item>
@@ -120,8 +120,15 @@ namespace PoliSim.Elections
         public static bool RecordSeatsChamber(CountryId id) => id == CountryId.USA;
 
         /// <summary>PS-6 US-2 (R-US1 (a)): the head of the executive the game does not elect is the record's, taking office on the record's day - the USA's
-        /// president, until the game holds the presidential election (US-8 turns this off; the House stays seated by record after it).</summary>
+        /// president, until the game holds the presidential election (per world: <see cref="RecordSeatsExecutive(Country, DateTime)"/>, US-7; the House stays
+        /// seated by record after it). The country's gate - which country the record seats a president in at all.</summary>
         public static bool RecordSeatsExecutive(CountryId id) => id == CountryId.USA;
+
+        /// <summary>PS-6 US-7 (R-US1 (a): the president of record "until the game holds the presidential election"): in a world, the record seats the
+        /// president only until the game has held a presidential election of its own - from that polling day the office is the game's
+        /// (<see cref="UsPresidentialElection.Held"/>): the sitting president stays to the oath, and the winner takes office at it
+        /// (`SimulationManager.SeatTheRecordOnItsDate`).</summary>
+        public static bool RecordSeatsExecutive(Country country, DateTime date) => country != null && RecordSeatsExecutive(country.Id) && !UsPresidentialElection.Held(country, date);
 
         /// <summary>PS-6 US-2: the first chamber of record convened after <paramref name="after"/> whose table is on record - the one the record will seat next.</summary>
         public static bool TryNextChamberOfRecord(CountryId id, DateTime after, out ChamberOfRecord next)
@@ -147,14 +154,21 @@ namespace PoliSim.Elections
         /// <summary>PS-6 US-2: what the record seats next while a change of record is still ahead, in the view's words - the next House of record and, where the
         /// record seats the executive, the next president of record, each with its day, read from the rows; empty once the record holds no later one. The record
         /// row's slip carries them, so the House's day and the oath are named before they come.</summary>
-        public static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date)
+        public static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date) => NextOfRecord(id, date, RecordSeatsExecutive(id));
+
+        /// <summary>PS-6 US-7: the same in a world - the next president of record named only while the record still seats the president there
+        /// (<see cref="RecordSeatsExecutive(Country, DateTime)"/>): once the game has held its own presidential election, the record's next president is not who
+        /// takes office, and the slip does not name him.</summary>
+        public static IReadOnlyList<string> NextOfRecord(Country country, DateTime date) => NextOfRecord(country.Id, date, RecordSeatsExecutive(country, date));
+
+        private static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date, bool seatsExecutive)
         {
             var lines = new List<string>();
             if (RecordSeatsChamber(id) && TryNextChamberOfRecord(id, date, out ChamberOfRecord house))
             {
                 lines.Add("NEXT OF RECORD: THE HOUSE ELECTED " + ViewDay(house.ElectionDay) + " · SEATED " + ViewDay(house.Convened));
             }
-            if (RecordSeatsExecutive(id) && TryNextGovernmentOfRecord(id, date, out GovernmentOfRecord head) && TryPresidentOfRecord(id, head.From, out string name, out _))
+            if (seatsExecutive && TryNextGovernmentOfRecord(id, date, out GovernmentOfRecord head) && TryPresidentOfRecord(id, head.From, out string name, out _))
             {
                 string party = head.Cabinet != null && head.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(id, head.Cabinet[0]).ToUpperInvariant() : string.Empty;
                 lines.Add("NEXT OF RECORD: " + name.ToUpperInvariant() + party + " · TAKES OFFICE " + ViewDay(head.From));

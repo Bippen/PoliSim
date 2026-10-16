@@ -69,8 +69,9 @@ namespace PoliSim.UI
 
         private static string Day(DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
 
-        /// <summary>§705: the office a candidacy names - the Bundestag elects a chancellor.</summary>
-        private static string HeadOfGovernment(CountryId country) => ConfidenceProcedure.RulesOf(country) == ConfidenceProcedure.Rules.Bundestag ? "chancellor" : "prime minister";
+        /// <summary>§705: the office a candidacy names - the Bundestag elects a chancellor; PS-6 US-7: a presidency's head is the president.</summary>
+        private static string HeadOfGovernment(CountryId country) => ConfidenceProcedure.RulesOf(country) == ConfidenceProcedure.Rules.Bundestag ? "chancellor"
+            : ConfidenceProcedure.RulesOf(country) == ConfidenceProcedure.Rules.Presidential ? "president" : "prime minister";
 
         private void DrawCampaignDeclaredStage(float availableHeight, float availableWidth, CampaignSnapshot snapshot)
         {

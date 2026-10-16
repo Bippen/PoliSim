@@ -39000,3 +39000,86 @@ The control reproduces the PKW’s first round to the hundredth at both seeds. T
 - the electorate’s diamond sits under the US chamber’s ring, since both are 6.0 · 5.4 (two parties, seats and compatibility nearly agree);
 - "UNITED STATES’S" is the legend’s possessive for a plural name, beside the "…’S CABINET" legend US-7 carried to D-US.
 
+
+## 845. PS-6 US-7: THE OATH - A PRESIDENCY, NOT A FORMATION: THE PRESIDENTIAL RULE (A FIXED TERM, NO INVESTITURE, NO CONFIDENCE VOTE), THE CONTEST RECORD SAVED (FORMAT 39), THE GAME'S PRESIDENT SWORN AT NOON ON 20 JANUARY ON US-2'S DATED TRANSITION, PRESIDENT AND PRESIDENT-ELECT; WHO GOVERNS WHEN THE HOUSE CANNOT CHOOSE ASKED (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-7):
+- a presidential rule for the USA;
+- no formation and no Speaker's round;
+- a contest's winner takes office at the Twentieth Amendment's noon through US-2's dated transition;
+- PRESIDENT and PRESIDENT-ELECT, words only;
+- tested on planted outcomes.
+
+**Built:**
+- `ConfidenceProcedure.Rules.Presidential` (Art. II §1 quoted; impeachment and the 25th Amendment not modelled) and `TakesMotions`, which gates the desk's motions block and the declaration hold. The USA's motion is refused in the fixed-term sentence.
+- The verdict path skips the formation for a presidency. A chamber election installs nothing and opens no round; leaving the chamber still ends the run.
+- A new runtime file, `UsPresidentialElection`, reached from SimulationManager, WorldClock, GovernmentRecord and the Desk:
+  - the contest record: polling day, electors, the electors' meeting, the count before Congress, the House's contingent choice and its delegations, the winner, the oath's day;
+  - `OathDayAfter`, `Held`, `TryInOffice`, `TryPresidentElect`, `Governs`, `GovernmentOf`; dates compared by day.
+- `Country.UsPresidentialElections`, and `SimulationPendingState.IncomingBudgetWindowOpenNow`.
+  - Format 38 → 39, the pair's intent: one step for US-7 and US-8. Per-state results are not carried, and a second in-game count may owe its own step.
+  - A loaded arrival window now reads as one; before, it read as the annual window.
+- The oath in `SeatTheRecordOnItsDate`, held as state.
+  - The record yields from the game's own polling day: `WorldClock.RecordSeatsExecutive(Country, DateTime)` and `NextOfRecord(Country, DateTime)`.
+  - `GovernmentRecord.OfPresidency`: the president's party alone, every portfolio its own, Gamson not applied.
+  - `RoleOn` and `PlayerRole.PresidentElect`.
+- The desk chip: PRESIDENT filled, PRESIDENT-ELECT outlined. The role gate's PRESIDENT-ELECT reason.
+- `TakeOffice` closes the window first, then resets the arrival flag only where no arrival window stands.
+
+**Behaviour changes:**
+- The chip reads PRESIDENT, not GOVERNING, for the record president's party in every US game from day one. USA film frames move; for example `01d_desk_held` (REP under Trump of record).
+- The USA's motion refusal no longer says "not yet modelled"; it gives the fixed-term sentence.
+- With a contest: a government the game elected dates its term from its oath (`EconomicVote.TookOffice` = `FormedOn`), so the term restarts for a same-party successor.
+- With a contest, a money-path effect: a same-party successor whose arrival window was already used gets a fresh arrival budget (reading 6). The asymmetry (reading 7): a window still open at the oath brings no second.
+- No-party Editor tools keep the used flag at any oath where the window is open.
+- Every v38 save is refused. The play saves must be re-staged; `Tools/build_player.ps1`'s `playtest_4_precampaign_day1` fails until they are.
+- A saved arrival window loads labelled as one.
+
+**Measured** (`n845b`, the named run, **10 of 10**; `slrt845`, the round trip; the cheap bar's PresidencyDiagnostic):
+- **PresidencyDiagnostic, every case `ok`:** (a)-(j), including (c'), a save cut on 2025-01-19 that carries the open arrival window at format 39, loads as the arrival window, not the annual one, and on the 20th swears Harris with the one arrival window kept, as in the continuous run; and (e)'s contingent contest crossing a save whole, NaN shares included. The run ends "each world seats its winner on the oath's date".
+- **The re-pins hold:**
+  - PlayerRoleDiagnostic, ConfidenceDiagnostic and ConstructiveVoteDiagnostic as re-pinned;
+  - CongressOfRecordDiagnostic, GovernmentBudgetBillDiagnostic, FormationSweepDiagnostic (its pin unmoved), PreviewParityDiagnostic and PlayProtocolCheck unchanged.
+- **SaveLoadRoundTripDiagnostic:** PASS, 12 scenarios (6 countries × 2 seeds). It is in no bar table, so it ran by its own method.
+- **The play saves re-staged at format 39** (`PlayProtocolStaging.Run`): `playtest_4_precampaign_day1` (S) and `playtest_4b_precampaign_day1_m` (M), seed 777, turn 0, Sweden. Every v38 save is refused, as declared.
+
+**Declared:**
+1. The record yields from the game's first polling day, decided or not.
+2. The oath is the day the world arrives on 20 January.
+3. **ASKED, see below.**
+4. Every portfolio goes to the president's party (Art. II §2).
+5. A president-elect of the sitting party reads PRESIDENT.
+6. Each term's oath forms its own government and resets the arrival.
+7. A same-party oath keeps an open arrival window and hands no second; a window already used brings a fresh one.
+8. The words are D-US's.
+9. The save step is the pair's.
+10. **§629's debt is CARRIED to D-US, not paid:** the picker's "IN THE CABINET" (`CountrySelectorScreen.cs` lines 199 and 250, a Canvas surface) and the compass legend's "…'S CABINET" (`PoliticalCompassRenderer.cs:110`).
+11. The record row, `NoElectionYet` and the night's formation board are handed to US-8 and D-US.
+
+US-2's reading 11 (the shadow asymmetry) is re-stated.
+
+**Asked (reading 3, before US-16; registered as R-US22 in the plan’s section 4):** who governs when a contest is still undecided at the oath, which happens when the House cannot choose. The code keeps the sitting president, possibly to 2029, and PresidencyDiagnostic (f) pins that until Elias rules. The options:
+- (a) the sitting president stays (the code);
+- (b) the record's president for the date;
+- (c) the Speaker acts under 3 U.S.C. §19 (the House is modelled; the Senate's choice of a Vice President is not).
+
+It is reachable once the game elects the House (US-16), not before.
+
+**Review:** `Reviews/2026-10-17_s845_us7_oath.md`, one adversarial reader, verdict **ship with fixes**.
+- MEDIUM 1, the arrival-window guard lost on a load: fixed. The window rides the save; (c') proves the load equals the continuous run.
+- MEDIUM 2, reading 3: ASKED.
+- LOW 3–10: met, as listed above.
+- The second pass on 81abf12a: clean, no new defect. The ledger row for `SimulationManager.cs` at adcf1559 is written (s845).
+
+**Integration:** the first cheap bar (`cheap845`) failed MetaTextCheck. A log line in `GameController.ResolveElectionVerdict` carried a register number ("a presidency (PS-6 US-7)"), developer text in a runtime string. The reference now stays in the comment, and the line reads "a presidency". The first named run (`n845`) did not start, because it named `SaveLoadRoundTripDiagnostic`, which no table enumerates; it ran apart.
+
+**Bars:** (tier SIMULATION + UI; review REQUIRED and run, the ledger row written):
+- the named run `n845b` **10 of 10**;
+- the cheap bar **108 of 108** (`cheap845b`; PresidencyDiagnostic its 108th);
+- the simulation bar **57 of 57** (`sim845`; the sentinel on ga111 unmoved: the dump seats no player, so no oath reaches it);
+- the documents bar **18 of 18** (`doc845`);
+- the dry film `drys845` (USA@1280x720, scoped first): 143 measured, 0 failed, 0 overflows;
+- the REAL film `realus7` (USA at 1280×720, cut at `01d_desk_held`): 11 captured, 0 failed, 0 overflows, 0 canvas violations.
+
+**Read on the real film:** `01d_desk_held` shows the Desk’s chip "UNITED STATES · YEAR 3 · PRESIDENT", filled. The harness’s REP player sits under Trump of record after the warm-up; before US-7 the chip read GOVERNING.
+

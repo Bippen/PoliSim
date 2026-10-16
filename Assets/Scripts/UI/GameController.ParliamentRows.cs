@@ -459,7 +459,7 @@ namespace PoliSim.UI
             bool onRecord = PartySystems.SeatsSourced(chamber.Vintage);
             WorldClock.GovernmentOfRecord ofRecord = default;
             string president = null, surname = null;
-            bool head = WorldClock.RecordSeatsExecutive(country) && WorldClock.TryGovernmentAt(country, today, out ofRecord)
+            bool head = WorldClock.RecordSeatsExecutive(_playerCountry, today) && WorldClock.TryGovernmentAt(country, today, out ofRecord)   // PS-6 US-7: not once the game has held its own presidential election
                         && WorldClock.TryPresidentOfRecord(country, today, out president, out surname);
             System.DateTime termEnds = head ? WorldClock.TermOfRecordEnds(ofRecord) : System.DateTime.MaxValue;
 
@@ -520,7 +520,7 @@ namespace PoliSim.UI
                 string party = ofRecord.Cabinet != null && ofRecord.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(country, ofRecord.Cabinet[0]).ToUpperInvariant() : string.Empty;
                 slip.Add("THE PRESIDENT: " + president.ToUpperInvariant() + party + " · " + WorldClock.ExecutiveStanding(country, today));
             }
-            foreach (string next in WorldClock.NextOfRecord(country, today)) { slip.Add(next); }   // the House's day and the oath named before they come
+            foreach (string next in WorldClock.NextOfRecord(_playerCountry, today)) { slip.Add(next); }   // the House's day and the oath named before they come - the record's oath only while the record seats the president (PS-6 US-7)
             slip.Add("NO SENATE IS MODELLED");
             book.Anchors["record"] = slip;
             DrawRowRule(row);
@@ -700,7 +700,7 @@ namespace PoliSim.UI
         private void DrawConfidence(PeopleSlips.Book book)
         {
             GovernmentRecord g = _playerCountry?.Government;
-            if (g == null || ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Unsourced) { return; }
+            if (g == null || !ConfidenceProcedure.TakesMotions(PlayerCountryId)) { return; }   // PS-6 US-7: a presidency takes no motion - nothing to draw, as where the rules are unsourced
             GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
             GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
             System.DateTime extra = _simulationManager.ExtraElectionDate;

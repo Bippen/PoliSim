@@ -88,6 +88,13 @@ namespace PoliSim.Persistence
         /// window it did not have. That is the correct behaviour for a pre-C-C2 save (it never had the
         /// window at all, so it is owed one) and is why this needs no SaveVersion bump.</summary>
         public List<CountryId> IncomingBudgetWindowUsed = new List<CountryId>();
+
+        /// <summary>PS-6 US-7 (format 39): the countries whose open budget process IS the incoming government's arrival window, not the annual cycle
+        /// (`SimulationManager.IsIncomingGovernmentBudgetWindow`). Until US-7 it was not saved - "derivable", the manager's note said - and a loaded arrival
+        /// window read as the annual one; since US-7 the oath reads it (a president of the player's own party sworn while it stands keeps that window and is
+        /// handed no second), so a load that dropped it would grant a window the continuous run does not. Carried as the manager holds it (always within
+        /// <see cref="PendingBudgetProcess"/>); an older save restores it empty, the behaviour before.</summary>
+        public List<CountryId> IncomingBudgetWindowOpenNow = new List<CountryId>();
         public Dictionary<CountryId, BudgetBill> PendingBudgetBills = new Dictionary<CountryId, BudgetBill>();
         /// <summary>PS-3e (§632): the alternative budget a party tabled against the government's pending bill (format 29).</summary>
         public Dictionary<CountryId, BudgetBill> PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>();

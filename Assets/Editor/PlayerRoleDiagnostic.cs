@@ -17,6 +17,8 @@ namespace PoliSim.EditorTools
     /// gate follows it (a Sweden the player's S does not lead is AI-governed); the record survives a save round trip; Germany's start reads SPD PRIME MINISTER;
     /// Poland's start reads its PiS government of record (§763), Italy's stand-in is printed. PS-3b (§629): every start stores a record - the USA's president and party, France's cabinet under its president -
     /// and a country with none FAILS LOUDLY at AtStart and at PlayerGoverns (proved red on §628's build first: Reviews/evidence/2026-09-25_s629_probe_red.txt).
+    /// PS-6 US-7, the US rows: the president's party is the head's, the other in opposition; a planted decided contest makes its party the PRESIDENT-ELECT on the days
+    /// before the oath and nothing else; the record yields from the game's polling day; the government a president forms at the oath is a presidency of one party.
     /// </summary>
     public static class PlayerRoleDiagnostic
     {
@@ -109,6 +111,39 @@ namespace PoliSim.EditorTools
                 GovernmentRecord usa = world.GetCountry(CountryId.USA).Government;
                 Check(usa != null && usa.PmParty == "DEM" && !usa.Provisional && usa.Kind == WorldClock.ExecutiveKind.Presidency && usa.Executive != null && usa.Executive.Contains("Biden"),
                     F("the USA's start ({0:yyyy-MM-dd}): the president and their party of record - {1}, {2}", WorldClock.StartDate(CountryId.USA), usa?.Executive ?? "NONE", usa?.PmParty ?? "-"));
+
+                // PS-6 US-7: THE PRESIDENCY'S ROLES. At the USA's start the president's party governs - the head's role (the chip reads PRESIDENT) - and REP is in
+                // opposition; with no contest held the role on a day is the role toward the government. A contest planted for REP and decided, the oath ahead: on the
+                // day after the polling day REP is the PRESIDENT-ELECT - toward the sitting government still in opposition (RoleOf, every test of who governs),
+                // DEM still the head's; once the oath's day has come no president-elect waits, and the role is the government's again (the oath that swaps the
+                // government is the day loop's - PresidencyDiagnostic). The government a president forms at the oath: a presidency, the party alone, every
+                // portfolio its own, no support - and a role it gives: the party PRESIDENT's, every other in opposition.
+                Country us = world.GetCountry(CountryId.USA);
+                DateTime polled = new DateTime(2024, 11, 5), dayAfter = polled.AddDays(1), oath = UsPresidentialElection.OathDayAfter(polled);
+                Check(usa.RoleOf("DEM") == PlayerRole.PrimeMinister && usa.RoleOf("REP") == PlayerRole.Opposition
+                      && GovernmentRecord.RoleOn(us, "DEM", dayAfter) == PlayerRole.PrimeMinister && GovernmentRecord.RoleOn(us, "REP", dayAfter) == PlayerRole.Opposition && GovernmentRecord.RoleOn(us, null, dayAfter) == PlayerRole.None,
+                    "the USA (US-7): DEM, the president's party, is the head's (PRESIDENT); REP in opposition; with no contest held the role on a day is the role toward the government");
+                // the record's 2024 count, read from the catalog (NARA's electors), never typed - the contest planted on it as US-8's count will record one
+                var y2024 = Array.Find(PoliSim.Elections.Generated.UsPresidentialReturns.Years, y => y.Year == 2024);
+                var planted = new UsPresidentialElection.Contest { PollingDay = polled, TakesOffice = oath, ElectorsAppointed = y2024.Electors, Winner = y2024.NomineeR, WinnerParty = "REP", Line = "planted (PlayerRoleDiagnostic)" };
+                planted.Electors.Add(new UsPresidentialElection.Tally { Candidate = y2024.NomineeR, Party = "REP", Votes = y2024.CastR });
+                planted.Electors.Add(new UsPresidentialElection.Tally { Candidate = y2024.NomineeD, Party = "DEM", Votes = y2024.CastD });
+                us.UsPresidentialElections.Add(planted);
+                try
+                {
+                    Check(GovernmentRecord.RoleOn(us, "REP", dayAfter) == PlayerRole.PresidentElect && usa.RoleOf("REP") == PlayerRole.Opposition && GovernmentRecord.RoleOn(us, "DEM", dayAfter) == PlayerRole.PrimeMinister
+                          && GovernmentRecord.RoleOn(us, "REP", oath.AddDays(-1)) == PlayerRole.PresidentElect && GovernmentRecord.RoleOn(us, "REP", oath) == PlayerRole.Opposition,
+                        F("a contest planted for REP (decided, the oath {0:yyyy-MM-dd}): REP the PRESIDENT-ELECT from the day after the polling day to the eve of the oath, toward the sitting government in opposition; DEM the head's; on the oath's day no president-elect waits", oath));
+                    Check(WorldClock.RecordSeatsExecutive(us, polled.AddDays(-1)) && !WorldClock.RecordSeatsExecutive(us, polled) && WorldClock.RecordSeatsExecutive(CountryId.USA),
+                        "the record seats the president in this world up to the eve of the game's polling day, and not from it - the country's gate unchanged (US-7)");
+                }
+                finally { us.UsPresidentialElections.Remove(planted); }
+                GovernmentRecord sworn = GovernmentRecord.OfPresidency("Kamala D. Harris (DEM)", "DEM", oath, UsPresidentialElection.ElectedOutcome, "planted (PlayerRoleDiagnostic)");
+                int portfolios = Enum.GetValues(typeof(CabinetPortfolio)).Length;
+                Check(sworn.Kind == WorldClock.ExecutiveKind.Presidency && sworn.PmParty == "DEM" && sworn.Cabinet.Count == 1 && sworn.Cabinet[0] == "DEM" && sworn.Support.Count == 0 && sworn.Agreements.Count == 0
+                      && sworn.Portfolios.Count == 1 && sworn.Portfolios["DEM"].Count == portfolios && sworn.FormedOn == oath && !sworn.Provisional && sworn.Outcome == UsPresidentialElection.ElectedOutcome
+                      && sworn.RoleOf("DEM") == PlayerRole.PrimeMinister && sworn.RoleOf("REP") == PlayerRole.Opposition,
+                    F("the government a president forms at the oath: a presidency, {0} alone, all {1} portfolios its own, no support, formed {2:yyyy-MM-dd}; DEM the head's, REP in opposition", sworn.PmParty, portfolios, sworn.FormedOn));
                 GovernmentRecord fr = world.GetCountry(CountryId.France).Government;
                 Check(fr != null && fr.Provisional && fr.Kind == WorldClock.ExecutiveKind.Cabinet && fr.Executive != null && fr.Executive.Contains("Macron"),
                     F("France's start ({0:yyyy-MM-dd}): Attal's caretaker cabinet under {3} - its parties are GAP G4, so the formation's stand-in {1} led by {2} is PROVISIONAL", WorldClock.StartDate(CountryId.France), fr == null ? "NONE" : string.Join("+", fr.Cabinet), fr?.PmParty ?? "-", fr?.Executive ?? "no president"));

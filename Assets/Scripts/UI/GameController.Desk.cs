@@ -269,6 +269,9 @@ namespace PoliSim.UI
         /// is the state, so a glance tells whether the player holds office. The run-on line it replaces ("· IN OPPOSITION · THE GOVERNMENT IS THE AI'S")
         /// is the chip's slip: the chip's own words, who governs, what the role cannot do - in the role gate's own words (<see cref="SimulationManager.PlayerMayIntroduce(CountryId, out string)"/>),
         /// never Design's placeholder "YOU MAY NOT DRAFT A BUDGET", which no gate says - and since when. Null where no government is stored.
+        /// PS-6 US-7: a presidency's words (words only; D-US composes them) - PRESIDENT where the player's party holds the presidency (filled: it holds office), and
+        /// PRESIDENT-ELECT where the game elected its candidate and the oath is still ahead (outlined: not yet in office) - the role on the day
+        /// (`GovernmentRecord.RoleOn`), so the chip and the gate's reason say the same.
         /// </summary>
         /// <summary>The desk's slips (the role chip's), rebuilt on every pass of the stage.</summary>
         private PeopleSlips.Book _deskSlipBook = new PeopleSlips.Book();
@@ -277,9 +280,10 @@ namespace PoliSim.UI
         {
             PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
             if (g == null) { return null; }
-            switch (g.RoleOf(_playerCountry.PlayerPartyAbbrev))
+            switch (PoliSim.Elections.GovernmentRecord.RoleOn(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate))
             {
-                case PoliSim.Elections.PlayerRole.PrimeMinister: return (g.Caretaker ? "CARETAKER" : "GOVERNING", true);
+                case PoliSim.Elections.PlayerRole.PrimeMinister: return (g.Kind == PoliSim.Elections.WorldClock.ExecutiveKind.Presidency ? "PRESIDENT" : g.Caretaker ? "CARETAKER" : "GOVERNING", true);
+                case PoliSim.Elections.PlayerRole.PresidentElect: return ("PRESIDENT-ELECT", false);
                 case PoliSim.Elections.PlayerRole.JuniorPartner: return ("JUNIOR PARTNER", true);
                 case PoliSim.Elections.PlayerRole.Support: return ("SUPPORTER FROM OUTSIDE", false);
                 case PoliSim.Elections.PlayerRole.Opposition: return ("IN OPPOSITION", false);
@@ -309,6 +313,16 @@ namespace PoliSim.UI
             {
                 case "GOVERNING": slip.Add("YOUR PARTY LEADS THE GOVERNMENT"); break;
                 case "CARETAKER": slip.Add("YOUR GOVERNMENT SERVES ON AS A CARETAKER"); break;
+                case "PRESIDENT": slip.Add("YOUR PARTY HOLDS THE PRESIDENCY"); break;   // PS-6 US-7
+                case "PRESIDENT-ELECT":
+                {
+                    // PS-6 US-7: the game elected the party's candidate; the outgoing administration governs to the oath
+                    if (PoliSim.Elections.UsPresidentialElection.TryPresidentElect(_playerCountry, _simulationManager.CurrentDate, out PoliSim.Elections.UsPresidentialElection.Contest elect))
+                    {
+                        slip.Add("YOUR CANDIDATE " + elect.Winner.ToUpperInvariant() + " TAKES OFFICE " + DeskDay(elect.TakesOffice));
+                    }
+                    break;
+                }
                 case "JUNIOR PARTNER": slip.Add("IN THE CABINET · YOUR PORTFOLIOS: " + g.PortfoliosOf(you)); break;
                 case "SUPPORTER FROM OUTSIDE":
                 {
@@ -325,7 +339,7 @@ namespace PoliSim.UI
                 slip.Add(cut >= 0 ? locked.Substring(cut + 3) : locked);   // the gate's words after its role word, which the head already says
             }
             System.DateTime since = words == "CARETAKER" ? g.CaretakerSince : g.FormedOn;
-            if (since > System.DateTime.MinValue) { slip.Add("SINCE " + DeskDay(since)); }
+            if (since > System.DateTime.MinValue && words != "PRESIDENT-ELECT") { slip.Add("SINCE " + DeskDay(since)); }   // PS-6 US-7: the sitting government's day is not the president-elect's
             SlipAnchor(r, "role");
             _deskSlipBook.Anchors["role"] = slip;
         }

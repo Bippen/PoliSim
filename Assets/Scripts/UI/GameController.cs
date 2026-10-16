@@ -1406,7 +1406,7 @@ namespace PoliSim.UI
         {
             PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
             return g != null && !g.Caretaker && g.NoConfidenceOn != System.DateTime.MinValue
-                && PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) != PoliSim.Elections.ConfidenceProcedure.Rules.Unsourced   // the block that draws the answers is drawn only then
+                && PoliSim.Elections.ConfidenceProcedure.TakesMotions(PlayerCountryId)   // the block that draws the answers is drawn only then (PS-6 US-7: never for a presidency)
                 && _simulationManager.PlayerGoverns(_playerCountry);
         }
 
@@ -6262,6 +6262,27 @@ namespace PoliSim.UI
             if (latest == null || latest.Date != _simulationManager.CurrentDate || latest.Method == ElectionMethod.NotImplemented)
             {
                 // No election was held today (the record carries the reason); there is no chamber to test.
+                return;
+            }
+
+            // PS-6 US-7 (the plan: "No formation and no Speaker's round run for the USA - the verdict path bypasses the formation for a presidency"): A
+            // PRESIDENCY IS NOT FORMED FROM THE CHAMBER. Under the presidential rule (a fixed term, no investiture, no confidence vote) the government is the
+            // president's: an election of the chamber installs nothing and opens no round - the president serves the term, and a president the game elects takes
+            // office at the oath (SimulationManager.SeatTheRecordOnItsDate). Leaving the chamber still ends the run, as everywhere.
+            if (PoliSim.Elections.ConfidenceProcedure.RulesOf(PlayerCountryId) == PoliSim.Elections.ConfidenceProcedure.Rules.Presidential)
+            {
+                string mine = _playerCountry.PlayerPartyAbbrev;
+                if (latest.Seats != null && !string.IsNullOrEmpty(mine) && (!latest.Seats.TryGetValue(mine, out int mineSeats) || mineSeats <= 0))
+                {
+                    _pendingElectionVerdict = $"Out of the chamber after the election of {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}: "
+                        + $"{PartySystems.ShortName(_playerCountry.Id, mine)} won no seat, and a run ends when its party leaves the chamber.";
+                    _pendingElectionVerdictEndsGame = true;
+                    return;
+                }
+                string president = _playerCountry.Government?.Executive ?? "the president";
+                _pendingElectionVerdict = $"The chamber is elected on {_pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}. A presidency is not formed from the chamber: "
+                    + $"{president} governs to the end of the term.";
+                Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the chamber forms no government - a presidency; {president} governs; the player's {mine ?? "(no party)"} is {(_playerCountry.Government?.RoleOf(mine) ?? PoliSim.Elections.PlayerRole.None)}");
                 return;
             }
 

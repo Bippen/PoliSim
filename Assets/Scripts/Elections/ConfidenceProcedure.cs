@@ -16,11 +16,21 @@ namespace PoliSim.Elections
     /// an ordinary election is due by then [RF-R:6:5]; the government orders no extra election within three months of a new Riksdag's first sitting,
     /// nor as a caretaker [RF-R:3:11]. The 2021 sequence is the precedent (confidence_rules.md): declared 21 June 2021, 181 of 349 [RD-VOT-0621]; the
     /// prime minister asked to be discharged on 28 June rather than dissolve; re-proposed and approved on 7 July, 173 against, below 175 [RD-VOT-0707].
-    /// Every other country's rules are data when its stage lands; until then no motion is taken up there, and the reason says so.
+    /// Every other country's rules are data when its stage lands; until then no motion is taken up there, and the reason says so. The USA's landed with its
+    /// stage (PS-6 US-7): the presidential rule - a fixed term, no investiture and no confidence vote (<see cref="Rules.Presidential"/>).
     /// </summary>
     public static class ConfidenceProcedure
     {
-        public enum Rules { Unsourced, Riksdag, Bundestag }
+        /// <summary>
+        /// The rules a country's government answers to. <b>Presidential</b> (PS-6 US-7, `docs/specs/USA_STAGE_PLAN.md`): the USA's - a presidency, not a
+        /// formation. The president serves a fixed term - Art. II §1 (`ElectionsData/usa/raw/records/archives_constitution_transcript.html`, [CONST]): "He shall
+        /// hold his Office during the Term of four Years" - from noon on the 20th of January (the Twentieth Amendment §1, [EX-AM]); there is no investiture and
+        /// no confidence vote, so no Speaker's round and no formation run (<see cref="TakesMotions"/> is false; `SimulationManager.RoundsApply` admits only the two
+        /// parliamentary rules), and an election of the chamber installs nothing - the government is the president's, and a president the game elects takes office
+        /// at the oath (<see cref="UsPresidentialElection"/>). Removal on impeachment (Art. II §4: "shall be removed from Office on Impeachment for, and Conviction
+        /// of, Treason, Bribery, or other high Crimes and Misdemeanors") is not modelled, stated - nor the Twenty-fifth Amendment.
+        /// </summary>
+        public enum Rules { Unsourced, Riksdag, Bundestag, Presidential }
 
         /// <summary>
         /// §698 (PS-4): <b>the Bundestag's rule is the CONSTRUCTIVE vote</b> - Art. 67 GG, quoted from gesetze-im-internet.de in
@@ -31,7 +41,11 @@ namespace PoliSim.Elections
         /// müssen achtundvierzig Stunden liegen"* - a PREMISE here, stated: the game takes the election on the motion's day, the two days not waited (nothing
         /// the model reads moves a party's vote inside them). The Bundestag's rule on who may move it (its standing orders) is not on disk: any party may.
         /// </summary>
-        public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : Rules.Unsourced;
+        public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : id == CountryId.USA ? Rules.Presidential : Rules.Unsourced;
+
+        /// <summary>PS-6 US-7: whether the chamber takes up a motion against the government - under the Riksdag's rule and the Bundestag's; never under a presidency's
+        /// (a fixed term, Art. II §1), and not where the rules are unsourced. The desk draws the motions' block, and a declaration holds the clock, only where this is true.</summary>
+        public static bool TakesMotions(CountryId id) => RulesOf(id) == Rules.Riksdag || RulesOf(id) == Rules.Bundestag;
 
         /// <summary>[RF-R:6:7]: the government may order an extra election within a week of the declaration, and then no discharge follows (how "a week" counts is on no page - seven days, the premise).</summary>
         public const int ExtraElectionWindowDays = 7;

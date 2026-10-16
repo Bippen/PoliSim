@@ -19,6 +19,7 @@ namespace PoliSim.EditorTools
     /// nothing; a caretaker faces no motion; the player's government ordering an extra election within the week is not discharged, and the polling day moves.
     /// Ruling (3) (§640), as the Speaker's round (§646): after an election a round opens; four rejected proposals break it off to an extra election. Ruling (2) (§641): an AI party moves
     /// no confidence only when the motion would carry and the round would seat it; a supporter past its agreement's tolerance withdraws and is the first mover asked (PS-3i-2a, §644).
+    /// PS-6 US-7, the US rows: the USA's government is a presidency under the presidential rule - a fixed term, no motion taken up, no round, no formation time.
     /// </summary>
     public static class ConfidenceDiagnostic
     {
@@ -389,6 +390,34 @@ namespace PoliSim.EditorTools
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             finally { foreach (GameObject h in hosts) { UnityEngine.Object.DestroyImmediate(h); } EnergyMarket.ResetTurnState(); }
 
+            // 5. PS-6 US-7: THE PRESIDENTIAL RULE - the USA's government answers to no confidence vote (Art. II §1: "He shall hold his Office during the Term of
+            //    four Years"). At the US start, a world as a new game builds one: the rule is the presidency's and takes no motion; the opposition's motion and the
+            //    president's party's are refused with the rule's reason; no Speaker's round runs, no constructive vote is projected and no formation time is on
+            //    record; stepped thirty days with the opposition seated, no motion is moved and the government is the same object, never a caretaker.
+            var go5 = new GameObject("ConfidenceDiagnostic.5");
+            try
+            {
+                (SimulationManager sim, Country usa) = OpenUsa(go5);
+                Check(ConfidenceProcedure.RulesOf(CountryId.USA) == ConfidenceProcedure.Rules.Presidential && !ConfidenceProcedure.TakesMotions(CountryId.USA)
+                      && ConfidenceProcedure.TakesMotions(CountryId.Sweden) && ConfidenceProcedure.TakesMotions(CountryId.Germany) && !ConfidenceProcedure.TakesMotions(CountryId.Poland),
+                    "(US) the USA's rules are the presidency's and take no motion; the Riksdag's and the Bundestag's take motions; Poland's (unsourced) none");
+                GovernmentRecord biden = usa.Government;
+                Check(biden != null && biden.Kind == WorldClock.ExecutiveKind.Presidency && biden.PmParty == "DEM", F("(US) the start's government: {0}, a presidency", biden?.Executive ?? "NONE"));
+                const string FixedTerm = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP";
+                usa.PlayerPartyAbbrev = "REP";
+                Check(!sim.MoveNoConfidence(CountryId.USA, out string refused, out ConfidenceProcedure.MotionVote noVote) && refused == FixedTerm && noVote == null, F("(US) REP, in opposition, moves nothing: {0}", refused));
+                usa.PlayerPartyAbbrev = "DEM";
+                Check(!sim.MoveNoConfidence(CountryId.USA, out refused, out _) && refused == FixedTerm, F("(US) DEM, the president's party, moves nothing - the rule is asked first: {0}", refused));
+                Check(!sim.RoundsApply(CountryId.USA) && sim.RoundOf(CountryId.USA) == null && sim.ProjectConstructiveVote(CountryId.USA) == null && WorldClock.FormationDays(CountryId.USA) == null,
+                    "(US) no Speaker's round runs, no constructive vote is projected and no formation time is on record - a presidency opens on a fixed day");
+                usa.PlayerPartyAbbrev = "REP";
+                for (int d = 0; d < 30; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.USA); }
+                Check(ReferenceEquals(usa.Government, biden) && biden.NoConfidenceOn == DateTime.MinValue && !biden.Caretaker && !usa.Divisions.Entries.Exists(e => e.Motion),
+                    F("(US) thirty days stepped with REP in opposition, to {0:yyyy-MM-dd}: no motion moved, the same government ({1}), never a caretaker", sim.CurrentDate, usa.Government?.Executive));
+            }
+            catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
+            finally { UnityEngine.Object.DestroyImmediate(go5); EnergyMarket.ResetTurnState(); }
+
             // §698: Germany's rules are the Bundestag's constructive vote now (ConstructiveVoteDiagnostic proves them); the unsourced case is Poland's
             Check(ConfidenceProcedure.RulesOf(CountryId.Poland) == ConfidenceProcedure.Rules.Unsourced && ConfidenceProcedure.RulesOf(CountryId.Germany) == ConfidenceProcedure.Rules.Bundestag,
                 "Poland's rules are not yet modelled - no motion is taken up there; Germany's are the Bundestag's (§698)");
@@ -428,6 +457,19 @@ namespace PoliSim.EditorTools
             sim.SetWorld(world);
             sim.PlayerCountryId = CountryId.Sweden;
             return (sim, world.GetCountry(CountryId.Sweden));
+        }
+
+        /// <summary>PS-6 US-7: a world on the USA's start, as a new game builds one, the USA the player's country (no party seated until the caller seats one).</summary>
+        private static (SimulationManager, Country) OpenUsa(GameObject go)
+        {
+            WorldClock.ApplyStart(CountryId.USA);
+            SimulationRandom.Seed(777);
+            EnergyMarket.ResetCalibration();
+            World world = WorldFactory.CreateDefault();
+            SimulationManager sim = go.AddComponent<SimulationManager>();
+            sim.SetWorld(world);
+            sim.PlayerCountryId = CountryId.USA;
+            return (sim, world.GetCountry(CountryId.USA));
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

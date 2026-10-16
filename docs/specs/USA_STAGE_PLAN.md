@@ -247,6 +247,7 @@ A candidate's national share is the party's support in the game's poll × the ca
 A contest's winner becomes president-elect and takes office at noon on 20 January (20th Amendment §1) through US-2's dated transition: a government of the presidency kind, its cabinet the president's party, Gamson's allocation not applied. The outgoing president governs until then; the Fed-chair appointment passes with the governing party, as built. The Desk chip and the role gate's reasons read PRESIDENT and PRESIDENT-ELECT — words only; D-US composes them. Tested on planted outcomes; US-8 supplies the real one. Its code lives in files a game path already reaches (`UnwiredSubsystemCheck` admits no game file nothing reaches, §646).
 *Needs:* US-2, US-6.
 *Done when:* a presidency diagnostic forces each outcome and steps to 21 Jan 2025 — each world seats its winner on the oath's date, and a DEM-player world whose candidate wins reads PRESIDENT; `PlayerRoleDiagnostic` and `ConfidenceDiagnostic` carry the US rows; `FormationSweepDiagnostic` re-pinned if its sweep reaches the USA; a save straddling the oath loads into the game; review row; bars; one filmed width shows the chip after the oath.
+**Built: `COMPLETED.md` §845** - the presidential rule (a fixed term, no investiture, no confidence vote: `ConfidenceProcedure.Rules.Presidential`), the verdict path skipping the formation, the contest record saved (`UsPresidentialElection`; format 39, the step intended once for US-7 and US-8; per-state results not carried), the game's president sworn at noon on 20 January on US-2's dated transition with the record yielding from the game's polling day, the open arrival window carried by the save, PRESIDENT and PRESIDENT-ELECT on the chip and the gate; proved on planted outcomes (`PresidencyDiagnostic`). Who governs when the House cannot choose is ASKED (R-US22). §629's remaining words (the picker's IN THE CABINET, the compass legend) are carried to D-US.
 
 **US-8 — The 2024 presidential election held. Size L.** *(R-US3, R-US14; built so R-US5's row is cheap)* — **checkpoint 1**
 - `WorldClock.TryNextPollingDay` returns the US presidential days under 3 U.S.C. §21(1) — 5 Nov 2024, then every fourth year (midterm days join at US-27) — and `WorldClock.PollingDayBasis` cites the statute read at US-3.
@@ -2257,6 +2258,13 @@ THE ASK AND THE BARS
 - (iv) **The cut to revenue:** pro rata across non-interest outlays *(recommended)*; or in a statute's order.
 - (v) **The AI ministry's ratio-trend "debt-limit logic"** and its borrowed sequester size (`AiFinanceMinistry.UsSequesterPercentOfGdp`): replaced by the dollar limit for the USA *(recommended)*; or kept beside it.
 - (vi) **An AI-governed USA at the limit:** it raises or suspends the limit, as every episode of record ended (to be read) *(recommended)*; or it takes the game's cut.
+
+**R-US22 — Who governs when a contest is still undecided at the oath** *(US-7's reading 3, §845; reachable once the game elects the House, US-16)*. A contingent election the House cannot decide (no candidate at 26 delegations) leaves the contest undecided on 20 January. R-US3 (a) left "a House that cannot choose" unmodelled without saying who governs then.
+- (a) The sitting president stays, possibly to the next term's oath (the code as built; `PresidencyDiagnostic` (f) pins it until ruled);
+- (b) the record's president for the date;
+- (c) the Speaker acts under 3 U.S.C. §19 (the House is modelled; the Senate's choice of a Vice President, the Twentieth Amendment §3, is not).
+
+No recommendation: each option names a different premise, and none is reachable before US-16.
 
 ---
 

@@ -967,8 +967,11 @@ namespace PoliSim.Simulation
         private readonly HashSet<CountryId> _incomingBudgetWindowUsed = new HashSet<CountryId>();
 
         /// <summary>C-C2: true while the currently-open process IS the arrival window rather than the
-        /// annual cycle - so a screen can name which one it is. Not persisted: it is derivable from the
-        /// two sets that are, and a save mid-arrival-window restores the process as open either way.</summary>
+        /// annual cycle - so a screen can name which one it is. PS-6 US-7: PERSISTED since format 39
+        /// (`SimulationPendingState.IncomingBudgetWindowOpenNow`). It was not, on the reading that it was derivable from the two sets that are - it is
+        /// not (an open process with the used flag set is the arrival window or the annual one alike), so a loaded arrival window read as the annual
+        /// one; and the oath reads it (<see cref="TakeOffice"/>: a window still open at a same-party oath is the new government's and earns no second),
+        /// so a load that dropped it would hand a loaded game a budget window the continuous run never gets.</summary>
         private readonly HashSet<CountryId> _incomingBudgetWindowOpenNow = new HashSet<CountryId>();
 
         /// <summary>C-C2: true when the open budget process is the INCOMING GOVERNMENT'S arrival window
@@ -2504,6 +2507,7 @@ namespace PoliSim.Simulation
                 FiscalPeriods = new Dictionary<CountryId, FiscalPeriod>(_fiscalPeriods),
                 PendingBudgetProcess = new List<CountryId>(_pendingBudgetProcessByCountry),
                 IncomingBudgetWindowUsed = new List<CountryId>(_incomingBudgetWindowUsed),
+                IncomingBudgetWindowOpenNow = new List<CountryId>(_incomingBudgetWindowOpenNow),   // PS-6 US-7 (format 39): which open process is the arrival window
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
                 PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>(_pendingBudgetAlternativeByCountry),   // PS-3e (§632)
                 ExtraElectionDate = _extraElectionDate, ExtraElectionOrderedOn = _extraElectionOrderedOn,   // PS-3i (§636)
@@ -2646,13 +2650,20 @@ namespace PoliSim.Simulation
         /// party has every lever; a junior partner its portfolios' (part 4, not yet built - none here); a support party and the opposition their votes
         /// alone. So a player whose party does not lead the government introduces NO bill in their own country, and every Introduce*Bill refuses with
         /// the reason. Another country's bills are its own AI government's (never refused here; the AI writes its book without a bill).
+        /// PS-6 US-7: a president-elect's party governs from the oath, not before - refused like the opposition until then, the reason in the PRESIDENT-ELECT's
+        /// words and its day (<see cref="Elections.GovernmentRecord.RoleOn"/>; words only, D-US composes them).
         /// </summary>
         public bool PlayerMayIntroduce(CountryId countryId, out string lockedBecause)
         {
             lockedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || PlayerGoverns(country)) { return true; }
-            Elections.PlayerRole role = country.Government.RoleOf(country.PlayerPartyAbbrev);
+            Elections.PlayerRole role = Elections.GovernmentRecord.RoleOn(country, country.PlayerPartyAbbrev, CurrentDate);
+            if (role == Elections.PlayerRole.PresidentElect && Elections.UsPresidentialElection.TryPresidentElect(country, CurrentDate, out Elections.UsPresidentialElection.Contest elect))
+            {
+                lockedBecause = "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION GOVERNS UNTIL " + elect.TakesOffice.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · YOUR PARTY VOTES ON ITS BILLS";
+                return false;
+            }
             string roleWord = role == Elections.PlayerRole.Support ? "IN SUPPORT" : role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER" : "IN OPPOSITION";
             lockedBecause = role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER · THE PRIME MINISTER'S LEVER · YOURS: " + country.Government.PortfoliosOf(country.PlayerPartyAbbrev) : roleWord + " · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM";
             return false;
@@ -2832,6 +2843,7 @@ namespace PoliSim.Simulation
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             Elections.GovernmentRecord g = country.Government;
             if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Unsourced) { refusedBecause = "THIS COUNTRY'S CONFIDENCE RULES ARE NOT YET MODELLED"; return false; }
+            if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Presidential) { refusedBecause = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP"; return false; }   // PS-6 US-7: Art. II §1 - a fixed term, no confidence vote
             switch (g.RoleOf(country.PlayerPartyAbbrev))
             {
                 case Elections.PlayerRole.PrimeMinister: refusedBecause = "THE GOVERNMENT MOVES NO MOTION AGAINST ITSELF"; return false;
@@ -3991,6 +4003,17 @@ namespace PoliSim.Simulation
         /// through <see cref="TakeOffice"/> (the arrival budget window reset - DECLARED). Forks reach it as the game does; a world with no player country (the
         /// seeded shadow, the trajectory dump) never does - so the no-policy shadow a new game seeds keeps the start's House and president, while one forked
         /// from a loaded game seats the record with it (DECLARED; which of the two a shadow should be is not US-2's to decide).
+        /// <para>PS-6 US-7 (`docs/specs/USA_STAGE_PLAN.md`): THE OATH, on the same dated transition. A president the game elected takes office on the oath's day -
+        /// noon on the 20th of January after the polling day, the Twentieth Amendment §1 (<see cref="Elections.UsPresidentialElection.OathDayAfter"/>) - held as
+        /// state like the record: the winner of the latest decided contest whose oath has come (<see cref="Elections.UsPresidentialElection.TryInOffice"/>) is
+        /// seated through <see cref="TakeOffice"/> wherever the government in office is not that oath's (<see cref="Elections.UsPresidentialElection.Governs"/>),
+        /// as a presidency whose cabinet is the president's party (<see cref="Elections.UsPresidentialElection.GovernmentOf"/>). From the game's own polling day
+        /// the record seats no president (`WorldClock.RecordSeatsExecutive(Country, DateTime)`, R-US1 (a)), so between the polling day and the oath the sitting
+        /// president governs and nothing re-seats the record's; and a save cut either side of the oath is put right, or left alone, as it loads. A contest still
+        /// undecided on the oath's day seats no one and the sitting president stays, until a later contest is decided - the code's answer, ASKED of Elias
+        /// (US-7's reading 3: the sitting president stays; the record's president for the date; or the Speaker acts under 3 U.S.C. §19), since R-US3 (a)
+        /// leaves a House that cannot choose unmodelled and does not say who governs then; reachable once the game elects the House (US-16). The player's
+        /// country only, as the record (PS-8 owns the rest); the contests are a country's state, so the answer is the same whoever the player is.</para>
         /// </summary>
         internal void SeatTheRecordOnItsDate()
         {
@@ -4009,7 +4032,12 @@ namespace PoliSim.Simulation
                     Debug.Log($"RECORD: {id} - the chamber of record seated on {CurrentDate:yyyy-MM-dd}: {Elections.WorldClock.RecordStanding(id, CurrentDate)}");
                 }
             }
-            if (Elections.WorldClock.RecordSeatsExecutive(id) && Elections.WorldClock.TryGovernmentAt(id, CurrentDate, out Elections.WorldClock.GovernmentOfRecord g)
+            if (Elections.UsPresidentialElection.TryInOffice(country, CurrentDate, out Elections.UsPresidentialElection.Contest sworn))
+            {
+                // PS-6 US-7: the game's president, from the oath - seated once, then left alone (the same government object on every later day and load)
+                if (!Elections.UsPresidentialElection.Governs(country.Government, sworn)) { TakeOffice(country, Elections.UsPresidentialElection.GovernmentOf(sworn, CurrentDate), oath: sworn); }
+            }
+            else if (Elections.WorldClock.RecordSeatsExecutive(country, CurrentDate) && Elections.WorldClock.TryGovernmentAt(id, CurrentDate, out Elections.WorldClock.GovernmentOfRecord g)
                 && country.Government?.Executive != g.President)
             {
                 TakeOffice(country, Elections.GovernmentRecord.AtStart(country, CurrentDate, _world));
@@ -4024,13 +4052,22 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>PS-6 US-2: a government of record takes office, with the arrival budget window reset and a budget window the player no longer governs
-        /// closed (<see cref="CloseBudgetWindowIfNotGoverning"/>, §698). US-7 is to call it with the president the game elects.</summary>
-        private void TakeOffice(Country country, Elections.GovernmentRecord formed)
+        /// closed (<see cref="CloseBudgetWindowIfNotGoverning"/>, §698). PS-6 US-7: the president the game elected takes office through it too, at the oath
+        /// (<paramref name="oath"/>, the contest; null for the record's). The window is closed FIRST and the arrival reset only where no arrival window is
+        /// still open: a president of the player's own party sworn while the player's arrival window stands (the game's oath can keep the party in office;
+        /// the record's never does for a player with a party) keeps that window as the new government's, and is not handed a second one after it - DECLARED.
+        /// The one other case that differs from the reset-then-close: a player country with NO PARTY seated (the instrument's hand - `PlayerGoverns` is true
+        /// under every government) with its arrival window open at any oath, the record's included, now keeps the used flag where it was reset - Editor tools
+        /// only, since the game always seats a party. Every other case ends as before: a window the player no longer governs closed and the arrival reset;
+        /// none open, the arrival reset. The open window is saved (format 39), so a loaded game takes the oath exactly as the continuous one.</summary>
+        private void TakeOffice(Country country, Elections.GovernmentRecord formed, Elections.UsPresidentialElection.Contest oath = null)
         {
             country.Government = formed;
-            ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);
-            Debug.Log($"RECORD: {country.Id} - {formed.Executive} takes office on {CurrentDate:yyyy-MM-dd}, of record");
+            if (!IsIncomingGovernmentBudgetWindow(country.Id)) { ResetArrivalBudgetWindow(country.Id); }
+            Debug.Log(oath == null
+                ? $"RECORD: {country.Id} - {formed.Executive} takes office on {CurrentDate:yyyy-MM-dd}, of record"
+                : $"OATH: {country.Id} - {formed.Executive} takes office on {CurrentDate:yyyy-MM-dd}, elected in the game on {oath.PollingDay:yyyy-MM-dd}{(oath.Contingent ? " (chosen by the House)" : string.Empty)}");
         }
 
         private void Install(Country country, Elections.GovernmentRecord g, Elections.SpeakerRound round, Elections.ProposalVerdict verdict, string basis = null)
@@ -4711,6 +4748,16 @@ namespace PoliSim.Simulation
                 foreach (CountryId id in state.IncomingBudgetWindowUsed)
                 {
                     _incomingBudgetWindowUsed.Add(id);
+                }
+            }
+
+            // PS-6 US-7 (format 39): which open process is the arrival window, as the continuous run holds it - every writer keeps it inside the open
+            // processes (opened with one, removed with one), so a country outside them is not restored; null or empty on an older save, as before
+            if (state.IncomingBudgetWindowOpenNow != null)
+            {
+                foreach (CountryId id in state.IncomingBudgetWindowOpenNow)
+                {
+                    if (_pendingBudgetProcessByCountry.Contains(id)) { _incomingBudgetWindowOpenNow.Add(id); }
                 }
             }
 
@@ -5664,6 +5711,9 @@ namespace PoliSim.Simulation
                 // gate began to throw on a null: the preview's turn asks PlayerGoverns on the clone, and a clone without the record read as the
                 // player's (§628) or throws (§629). A shared reference: nothing on the preview path writes the record.
                 Government = country.Government,
+                // PS-6 US-7: the US presidential contests ride beside who governs - a shared reference, for the same reason: nothing on the preview path writes them,
+                // and the oath that reads them runs on the day loop, never on a clone
+                UsPresidentialElections = country.UsPresidentialElections,
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,

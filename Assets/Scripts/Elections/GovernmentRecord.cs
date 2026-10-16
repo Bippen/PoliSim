@@ -9,13 +9,17 @@ namespace PoliSim.Elections
     {
         /// <summary>No party seated, or no government stored.</summary>
         None,
-        /// <summary>The prime minister's party: the player governs.</summary>
+        /// <summary>The head of government's party - the prime minister's, the chancellor's, or in a presidency the president's (PS-6 US-7): the player governs.</summary>
         PrimeMinister,
         /// <summary>A junior coalition partner - in the cabinet, not leading it.</summary>
         JuniorPartner,
         /// <summary>A support party: carrying the cabinet from outside (confidence and supply).</summary>
         Support,
         Opposition,
+        /// <summary>PS-6 US-7: the party whose candidate the game elected president, the oath still ahead. Toward the sitting government it is in opposition
+        /// until it takes office, so <see cref="GovernmentRecord.RoleOf"/> - every test of who governs - never returns it; <see cref="GovernmentRecord.RoleOn"/>
+        /// does, for the words the desk's chip and the role gate say.</summary>
+        PresidentElect,
     }
 
     /// <summary>
@@ -276,6 +280,40 @@ namespace PoliSim.Elections
             if (Cabinet.Contains(abbrev)) { return PlayerRole.JuniorPartner; }
             if (Support.Contains(abbrev)) { return PlayerRole.Support; }
             return PlayerRole.Opposition;
+        }
+
+        /// <summary>
+        /// PS-6 US-7: a party's role ON A DATE, for the words a player reads - <see cref="RoleOf"/> toward the sitting government, except that a party in
+        /// opposition whose candidate the game elected president, the oath still ahead (<see cref="UsPresidentialElection.TryPresidentElect"/>), is the
+        /// <see cref="PlayerRole.PresidentElect"/>. It governs from the oath, not before, so every test of who governs reads <see cref="RoleOf"/>; the desk's
+        /// chip and the role gate's reason read this. A president-elect of the sitting president's own party governs already, and reads as the head's party.
+        /// </summary>
+        public static PlayerRole RoleOn(Country country, string abbrev, DateTime date)
+        {
+            GovernmentRecord g = country?.Government;
+            if (g == null || string.IsNullOrEmpty(abbrev)) { return PlayerRole.None; }
+            PlayerRole role = g.RoleOf(abbrev);
+            if (role == PlayerRole.Opposition && UsPresidentialElection.TryPresidentElect(country, date, out UsPresidentialElection.Contest elect) && elect.WinnerParty == abbrev)
+            {
+                return PlayerRole.PresidentElect;
+            }
+            return role;
+        }
+
+        /// <summary>
+        /// PS-6 US-7: THE GOVERNMENT A PRESIDENT FORMS AT THE OATH - a presidency (the plan: "a government of the presidency kind, its cabinet the president's
+        /// party, Gamson's allocation not applied"): the president's party alone in the cabinet and leading it, no support and no agreements, every portfolio
+        /// the party's. Gamson's law divides a coalition's posts by its parties' seats, and a presidency has no coalition to divide them among: the department heads
+        /// are the president's to nominate - Art. II §2 ([CONST]): "he shall nominate, and by and with the Advice and Consent of the Senate, shall appoint ... all
+        /// other Officers of the United States" (the Senate's consent not modelled, stated - no Senate is, US-15). <paramref name="outcome"/> labels it
+        /// (<see cref="UsPresidentialElection.ElectedOutcome"/> for the game's oath).
+        /// </summary>
+        public static GovernmentRecord OfPresidency(string executive, string party, DateTime tookOffice, string outcome, string basis)
+        {
+            var record = new GovernmentRecord { FormedOn = tookOffice, Provisional = false, Kind = WorldClock.ExecutiveKind.Presidency, Executive = executive, PmParty = party, Outcome = outcome, Basis = basis };
+            record.Cabinet.Add(party);
+            record.Portfolios[party] = new List<CabinetPortfolio>((CabinetPortfolio[])Enum.GetValues(typeof(CabinetPortfolio)));
+            return record;
         }
 
         /// <summary>
