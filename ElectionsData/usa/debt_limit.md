@@ -176,8 +176,8 @@ The limit's steps, each from its act's text and Treasury's own tables, are gener
 > *Gloss: the Secretary's letter of 27 December 2024 (`raw/treasury_debt/treasury_letter_2024-12-27_yellen.pdf`, read from the page image - no text
 > layer). **"On January 2" is read as the end of 1 January**, so the reinstatement takes 2 January's OPENING. The reproduction in the generated
 > document follows it: the limit in force + 2 January 2025's opening - the close of the last business day before enactment (Friday 2 June 2023;
-> 3 June was a Saturday), from the Daily Treasury Statement, comes to Treasury's figure within the DTS's whole-million rounding; 2 January's close
-> would not. To the dollar, Treasury's figure is its own: the DTS publishes whole millions, and MSPD table 2 has no 2 June 2023 column.*
+> 3 June was a Saturday), from the Daily Treasury Statement, lands within the rounding of the thirteen whole-million lines it combines - half a
+> million on each - of Treasury's figure (the difference and the bound are printed in the generated document); 2 January's close would not. To the dollar, Treasury's figure is its own: the DTS publishes whole millions, and MSPD table 2 has no 2 June 2023 column.*
 
 ## 8. The record's extraordinary measures (US-14, for R-US21 (iii))
 
@@ -200,8 +200,10 @@ The limit's steps, each from its act's text and Treasury's own tables, are gener
 > and extraordinary measures will be exhausted in August while Congress is scheduled to be in recess. Therefore, I respectfully urge Congress to
 > increase or suspend the debt limit by mid-July, before its scheduled break [...]
 >
-> *Gloss: the Secretary's letter of 9 May 2025 (page image). **Treasury's projection of when the measures would have run out: August 2025** - a
-> month, so the span to it is a range (its first and last days). The letter of 25 June 2025 (page image) extends the DISP "through July 24, 2025".*
+> *Gloss: the Secretary's letter of 9 May 2025 (page image). **Treasury's projection of when its CASH AND the measures together would have run
+> out: August 2025** - a month, so the span to it is a range (its first and last days). The span counts the days Treasury's cash balance bought as
+> well as the measures', and the game holds no cash balance: a span read from it is longer than the measures alone bought. The letter of 25 June
+> 2025 (page image) extends the DISP "through July 24, 2025".*
 
 > DEBT SUBJECT TO LIMIT EXTRAORDINARY MEASURES ($ billions) [...] January 21, 2025 19 (12) 6 299 0 299 20 0 20 338 (12) 325
 >
@@ -214,10 +216,12 @@ The limit's steps, each from its act's text and Treasury's own tables, are gener
 > you that beginning on January 19, the outstanding debt of the United States was projected to reach the statutory limit. This letter serves to
 > notify you, pursuant to 5 U.S.C. § 8348(l)(2), of the extraordinary measures Treasury began using today.
 >
-> [...] we now estimate that Treasury will have insufficient resources to satisfy the government's obligations if Congress has not raised or
-> suspended the debt limit by June 5.
+> *Gloss: the Secretary's letter of 19 January 2023 (page image).*
+
+> Based on the most recent available data, we now estimate that Treasury will have insufficient resources to satisfy the government's obligations
+> if Congress has not raised or suspended the debt limit by June 5.
 >
-> *Gloss: the Secretary's letters of 19 January and 26 May 2023 (page images) - the episode before: reached 19 January 2023, projected to run out
+> *Gloss: the Secretary's letter of 26 May 2023 (page image) - with the letter above, the episode before: reached 19 January 2023, projected to run out
 > on 5 June, ended by P.L. 118-5's suspension on 3 June. Both episodes sit inside the CRS's "a few weeks to several months" (section 4). The day
 > counts of both are generated in `docs/generated/US_DEBT_LIMIT.md`.*
 
@@ -232,11 +236,17 @@ The limit's steps, each from its act's text and Treasury's own tables, are gener
 >
 > *Gloss: 31 U.S.C. 1105(a).*
 
-> First Monday in February - President submits his budget. [...] April 15 - Congress completes action on concurrent resolution on the budget.
-> [...] June 15 - Congress completes action on reconciliation legislation. June 30 - House completes action on annual appropriation bills. [...]
-> October 1 - Fiscal year begins.
+> | On or before: | Action to be completed: |
+> |---|---|
+> | First Monday in February | President submits his budget. |
+> | [...] | |
+> | April 15 | Congress completes action on concurrent resolution on the budget. |
+> | [...] | |
+> | June 15 | Congress completes action on reconciliation legislation. |
+> | June 30 | House completes action on annual appropriation bills. |
+> | October 1 | Fiscal year begins. |
 >
-> *Gloss: 2 U.S.C. 631, the timetable (excerpted rows). 2 U.S.C. 632(a): "On or before April 15 of each year, the Congress shall complete action on a
+> *Gloss: 2 U.S.C. 631, the timetable - the statute's own two columns, rows excerpted ([...] marks rows left out). 2 U.S.C. 632(a): "On or before April 15 of each year, the Congress shall complete action on a
 > concurrent resolution on the budget for the fiscal year beginning on October 1 of such year." The dates are the statute's targets; the record
 > misses them (P.L. 119-4 funded a whole fiscal year by continuing resolution, section 10).*
 
@@ -289,22 +299,35 @@ The limit's steps, each from its act's text and Treasury's own tables, are gener
 > *Gloss: P.L. 119-4, the "Full-Year Continuing Appropriations and Extensions Act, 2025", approved March 15, 2025 (`raw/lapse/govinfo_PLAW-119publ4.htm`,
 > byte-identical to the out-of-tree capture of 2026-10-05).*
 
-> Failed of passage/not agreed to in Senate: Under the order of 9/18/2025, not having achieved 60 votes in the affirmative, failed of passage in
-> Senate by Yea-Nay Vote. 44 - 48. Record Vote Number: 528. (2025-09-19)
+> [2025-09-19, Library of Congress] Failed of passage/not agreed to in Senate: Under the order of 9/18/2025, not having achieved 60 votes in the
+> affirmative, failed of passage in Senate by Yea-Nay Vote. 44 - 48. Record Vote Number: 528. (consideration: CR S6785)
 >
-> Cloture on the motion to proceed to the measure not invoked in Senate by Yea-Nay Vote. 55 - 45. Record Vote Number: 537. (2025-10-01)
+> [...]
 >
-> Upon reconsideration, the fifth cloture motion on the motion to proceed to the measure invoked in Senate by Yea-Nay Vote. 60 - 40. Record Vote
-> Number: 610. (2025-11-09)
+> [2025-10-01, Senate] Cloture on the motion to proceed to the measure not invoked in Senate by Yea-Nay Vote. 55 - 45. Record Vote Number: 537.
 >
-> Passed Senate with an amendment by Yea-Nay Vote. 60 - 40. Record Vote Number: 618. (2025-11-10)
+> [...]
 >
-> On motion that the House agree to the Senate amendment Agreed to by the Yeas and Nays: 222 - 209 (Roll no. 285). (2025-11-12)
+> [2025-11-09, Senate] Upon reconsideration, the fifth cloture motion on the motion to proceed to the measure invoked in Senate by Yea-Nay Vote.
+> 60 - 40. Record Vote Number: 610. (CR S8043)
 >
-> Became Public Law No: 119-37. (2025-11-12)
+> [...]
 >
-> *Gloss: H.R. 5371's actions (`raw/lapse/govinfo_BILLSTATUS-119hr5371.xml`, byte-identical to the 2026-10-05 capture; the House passed it on 19
-> September 2025, 217 - 212). The continuing resolution was a bill of its own and needed sixty votes in the Senate; it became P.L. 119-37, the
+> [2025-11-10, Senate] Passed Senate with an amendment by Yea-Nay Vote. 60 - 40. Record Vote Number: 618.
+>
+> [...]
+>
+> [2025-11-12, House floor actions] On motion that the House agree to the Senate amendment Agreed to by the Yeas and Nays: 222 - 209 (Roll no.
+> 285). (text: CR H4609-4652)
+>
+> [...]
+>
+> [2025-11-12, Library of Congress] Became Public Law No: 119-37.
+>
+> *Gloss: H.R. 5371's actions (`raw/lapse/govinfo_BILLSTATUS-119hr5371.xml`, byte-identical to the 2026-10-05 capture): each action's text whole as the
+> file gives it, with its date (the file's actionDate) and the variant quoted (the file's sourceSystem - the file carries some actions twice, as the
+> chamber recorded it and as the Library of Congress did) added in brackets, the actions between them left out ([...]); the House passed it on 19 September
+> 2025, 217 - 212. The continuing resolution was a bill of its own and needed sixty votes in the Senate; it became P.L. 119-37, the
 > "Continuing Appropriations, Agriculture, Legislative Branch, Military Construction and Veterans Affairs, and Extensions Act, 2026", approved
 > November 12, 2025, its continuing appropriations available until "January 30, 2026" (s106(3)) at the latest.*
 
@@ -315,20 +338,23 @@ The limit's steps, each from its act's text and Treasury's own tables, are gener
 >
 > *Gloss: CRS R48832, version 2, 29 January 2026 (`raw/lapse/crs_R48832.2.pdf`).*
 
-> Using information from federal agencies' contingency plans and the Office of Personnel Management (OPM), CBO estimates that under the lapse in
-> appropriations, about 600,000 employees will be considered excepted and continue to work each week, and 650,000 employees will be furloughed, on
-> average.
->
 > During the shutdown, federal outlays will be lower than they would have been otherwise: by $33 billion in the four-week shutdown scenario,
 > $54 billion in the six-week shutdown scenario, and $74 billion in the eight-week shutdown scenario [...] CBO expects that when appropriations
 > resume, the spending that did not occur during the shutdown will be made up.
+>
+> [...]
+>
+> Using information from federal agencies' contingency plans and the Office of Personnel Management (OPM), CBO estimates that under the lapse in
+> appropriations, about 600,000 employees will be considered excepted and continue to work each week, and 650,000 employees will be furloughed, on
+> average.
 >
 > *Gloss: CBO's letter of 29 October 2025 to the House Budget Committee's chairman (`raw/lapse/house_arrington_61823_quantitative_effects_of_a_shutdown.pdf`,
 > the addressee's copy - cbo.gov refused with a captcha). **THE EXCEPTED SHARE OF DISCRETIONARY SPENDING IN A LAPSE IS BILLED**: no primary read
 > states it, and the CRS says no authoritative count of what was excepted exists. The two nearest figures are CBO's - a headcount (excepted against
 > furloughed employees; active-duty military are paid as scheduled and outside both) and the outlays a lapse delays - and neither is a share of
 > discretionary spending without a reading that turns it into one. OMB's agency contingency plans page now redirects to a page listing only the
-> Executive Office of the President's plans (`raw/lapse/fetch_log.md`). US-22 asks Elias (sweep plan, section 5, item 8).*
+> Executive Office of the President's plans (`raw/lapse/fetch_log.md`). If it stays billed, US-22 asks Elias
+> (`docs/specs/USA_STAGE_PLAN.md`, US-22 and R-US9).*
 
 ## 11. How every episode of record ended (US-14, for R-US21 (vi))
 

@@ -19,9 +19,12 @@ namespace PoliSim.EditorTools
     /// until US-24, on R-US21's ruling; this check measures what the ruling must decide and prints it in a form the ask can quote.
     ///
     /// <para><b>(1) The document.</b> `docs/generated/US_DEBT_LIMIT.md` is what `Tools/us_debt_limit_prep.pl` writes from Treasury's tables and the
-    /// acts: its stamp must carry every input's digest as it stands, and the figures the check can recompute from the same files - the limit's steps
-    /// and their days, the 2 January 2025 reinstatement reproduced from the record's own debt (P.L. 118-5 s401(b)), the headroom it carried, the debt
-    /// subject to limit at the seed's vintage, the record's last extraordinary-measures episode - are recomputed here and compared.</para>
+    /// acts: its stamp must carry every input's digest as it stands and the digest of its body (a hand edit anywhere above the engine block fails);
+    /// every line of its Data and Figures blocks that rests on a Treasury JSON table or an act's text is recomputed here from the same files - the
+    /// limit's steps and their days, the 2 January 2025 reinstatement reproduced from the record's own debt (P.L. 118-5 s401(b)) with every day it
+    /// reads derived from an act's day and the DTS's own calendar, the headroom it carried, Treasury's perimeters at the reinstatement and at the seed's
+    /// vintage, both extraordinary-measures episodes on the DTS - and each figure must be printed in the prose. The two readings resting on PDFs (the 2025
+    /// episode's dates in Treasury's report, also held by the DTS; the measures' size) are held by the files' digests and the body digest only.</para>
     ///
     /// <para><b>(2) The bridge (PN-4: same year, same perimeter).</b> The game's US debt seed against Treasury's perimeters at the seed's vintage - the
     /// residual and the ratio R-US21 (i)(a) recommends. The engine alone holds the seed, so the document's engine block is written by
@@ -145,6 +148,16 @@ namespace PoliSim.EditorTools
             public string DataDigest;
         }
 
+        private const string FiguresBegin = "<!-- US14-FIGURES BEGIN -->";
+        private const string FiguresEnd = "<!-- US14-FIGURES END -->";
+        /// <summary>CONVENTION, the prep script's: "at the limit" on the DTS is a debt subject to limit within this many USD millions of it (Treasury's working
+        /// margin in both episodes is about 25), "well below" more than <see cref="WellBelowMil"/> under.</summary>
+        private const decimal AtLimitMil = 100m;
+        private const decimal WellBelowMil = 1000m;
+        /// <summary>The DTS lines one debt-subject-to-limit figure is computed from (<see cref="Dts"/>), each published to the whole million - so half a million
+        /// on each is the rounding a figure built from them can carry.</summary>
+        private const int LinesPerDebt = 6;
+
         private static Record ReadDocument(Action<bool, string> Check)
         {
             string root = Root();
@@ -155,7 +168,22 @@ namespace PoliSim.EditorTools
                 string digest = ElectionsDataCatalogGenerator.Sha256Of(File.ReadAllBytes(Path.Combine(root, path)));
                 Check(stampLine.Contains(key + "=" + digest), F("the document's stamp carries {0}'s digest {1} ({2}) - a changed file is re-run through Tools/us_debt_limit_prep.pl", key, digest.Substring(0, 8), path));
             }
+            // the body - everything the prep script wrote below its stamp and above the engine's block - is held by the digest the script stamped over it: a
+            // hand edit of the prose, the Data or the Figures fails here, and WriteBridge refuses to sign over it
+            int bodyStart = doc.IndexOf('\n') + 1, bodyEnd = doc.IndexOf(EngineStamp, StringComparison.Ordinal);
+            string body = bodyEnd > bodyStart ? doc.Substring(bodyStart, bodyEnd - bodyStart) : string.Empty;
+            Match stamped = Regex.Match(stampLine, @"body-sha256: ([0-9a-f]{64})");
+            string bodyDigest = ElectionsDataCatalogGenerator.Sha256Of(Encoding.UTF8.GetBytes(body));
+            Check(stamped.Success && stamped.Groups[1].Value == bodyDigest, F("the document's body is the prep script's: its digest {0} {1} the stamp's - a hand edit is re-derived with Tools/us_debt_limit_prep.pl", bodyDigest.Substring(0, 8), stamped.Success && stamped.Groups[1].Value == bodyDigest ? "is" : "is NOT"));
+
             Dictionary<string, string> data = DataBlock(doc);
+            Dictionary<string, string> fig = Block(doc, FiguresBegin, FiguresEnd);
+            // the two blocks hold exactly the lines this check reads and recomputes, each once: a line the prep script adds with no recompute here fails
+            List<string> dataKeys = Keys(DataBlockText(doc)), figKeys = Keys(BlockText(doc, FiguresBegin, FiguresEnd));
+            List<string> strayData = dataKeys.Except(DataKeys).Concat(DataKeys.Except(dataKeys)).Concat(dataKeys.GroupBy(k => k).Where(g => g.Count() > 1).Select(g => g.Key + " twice")).ToList();
+            List<string> strayFig = figKeys.Except(FigureKeys).Concat(FigureKeys.Except(figKeys)).Concat(figKeys.GroupBy(k => k).Where(g => g.Count() > 1).Select(g => g.Key + " twice")).ToList();
+            Check(strayData.Count == 0 && strayFig.Count == 0, F("the Data block holds the {0} lines and the Figures block the {1} lines this check reads and recomputes, each once{2}",
+                DataKeys.Length, FigureKeys.Length, strayData.Count + strayFig.Count == 0 ? string.Empty : " - NOT SO: " + string.Join(", ", strayData.Concat(strayFig))));
             var rec = new Record { DataDigest = ElectionsDataCatalogGenerator.Sha256Of(Encoding.UTF8.GetBytes(DataBlockText(doc))) };
             for (int i = 1; data.ContainsKey("law." + i); i++)
             {
@@ -176,7 +204,17 @@ namespace PoliSim.EditorTools
             string[] exDays = data["em.exhaustion"].Split(new[] { ".." }, StringSplitOptions.None);
             rec.EmTotalMeasuresUsd = Dec(data["em.total_measures_usd"]);
 
-            // the limit's steps as Treasury carried them (MSPD table 2, every month-end of both files) and the acts' own days
+            // each recomputed figure against its line: a value by value, a day by day
+            List<string> bad = null;
+            void Want(Dictionary<string, string> block, string key, object value)
+            {
+                if (!block.TryGetValue(key, out string got)) { bad.Add(key + " missing"); return; }
+                bool same = value is DateTime d ? got == Iso(d) : value is string s ? got == s : Dec(got) == Convert.ToDecimal(value, CultureInfo.InvariantCulture);
+                if (!same) { bad.Add(F("{0} = {1}, recomputed {2}", key, got, value is DateTime dd ? Iso(dd) : Convert.ToString(value, CultureInfo.InvariantCulture))); }
+            }
+            string Bad() => bad.Count == 0 ? string.Empty : " - DIFFERS: " + string.Join("; ", bad);
+
+            // the limit's steps as Treasury carried them (MSPD table 2, every month-end of both files) and the acts' own days and amounts
             var months = Rows(Path.Combine(root, InputPath("mspd2a"))).Concat(Rows(Path.Combine(root, InputPath("mspd2b"))))
                 .Where(r => r["debt_limit_class1_desc"] == "Statutory Debt Limit").OrderBy(r => r["record_date"], StringComparer.Ordinal).ToList();
             var steps = new List<(string Date, decimal Mil)>();
@@ -184,48 +222,152 @@ namespace PoliSim.EditorTools
             DateTime d117 = Approved(InputPath("pl117_73")), d118 = Approved(InputPath("pl118_5")), d119 = Approved(InputPath("pl119_21"));
             string fra = Regex.Replace(File.ReadAllText(Path.Combine(root, InputPath("pl118_5")), Encoding.UTF8), @"\s+", " ");
             Match reinstated = Regex.Match(fra, @"Effective on ([A-Z][a-z]+ \d{1,2}, \d{4}), the limitation in effect under section 3101\(b\)");
-            bool shape = steps.Count == 5 && steps[2].Mil == 0m && rec.Laws.Count == 4 && reinstated.Success;
+            Match through = Regex.Match(fra, @"shall not apply for the period beginning on the date of the enactment of this Act and ending on ([A-Z][a-z]+ \d{1,2}, \d{4})\.");
+            bool shape = steps.Count == 5 && steps[2].Mil == 0m && rec.Laws.Count == 4 && reinstated.Success && through.Success;
             Check(shape, F("Treasury's limit moves in the acts' steps: {0}", string.Join(" / ", steps.Select(s => s.Date + " " + s.Mil.ToString(CultureInfo.InvariantCulture)))));
-            if (shape)
+            if (!shape) { return rec; }
+            DateTime dReinstated = DateTime.ParseExact(reinstated.Groups[1].Value, "MMMM d, yyyy", CultureInfo.InvariantCulture);
+            DateTime dThrough = DateTime.ParseExact(through.Groups[1].Value, "MMMM d, yyyy", CultureInfo.InvariantCulture);
+            var want = new (DateTime From, decimal? Usd)[] { (d117, steps[1].Mil * 1000000m), (d118, null), (dReinstated, steps[3].Mil * 1000000m), (d119, steps[4].Mil * 1000000m) };
+            for (int i = 0; i < 4; i++)
             {
-                DateTime dReinstated = DateTime.ParseExact(reinstated.Groups[1].Value, "MMMM d, yyyy", CultureInfo.InvariantCulture);
-                var want = new (DateTime From, decimal? Usd)[] { (d117, steps[1].Mil * 1000000m), (d118, null), (dReinstated, steps[3].Mil * 1000000m), (d119, steps[4].Mil * 1000000m) };
-                for (int i = 0; i < 4; i++)
-                {
-                    Check(rec.Laws[i].From == want[i].From && rec.Laws[i].LimitUsd == want[i].Usd,
-                        F("law.{0}: from {1:yyyy-MM-dd} {2} ({3}) - the act's day and Treasury's figure: {4:yyyy-MM-dd} {5}", i + 1, rec.Laws[i].From, rec.Laws[i].LimitUsd.HasValue ? Usd(rec.Laws[i].LimitUsd.Value) : "suspended", rec.Laws[i].Act, want[i].From, want[i].Usd.HasValue ? Usd(want[i].Usd.Value) : "suspended"));
-                }
-                string act = Regex.Replace(File.ReadAllText(Path.Combine(root, InputPath("pl119_21")), Encoding.UTF8), @"\s+", " ");
-                decimal add119 = Dec(Regex.Match(act, @"as most recently increased by section 401\(b\) of Public Law 118-5 \(31 U\.S\.C\. 3101 note\), is increased by \$([\d,]+)\.").Groups[1].Value.Replace(",", string.Empty));
-                Check(want[3].Usd - want[2].Usd == add119, F("P.L. 119-21 s72001's {0} is the step from the reinstated limit to the limit since {1:yyyy-MM-dd}", Usd(add119), d119));
+                Check(rec.Laws[i].From == want[i].From && rec.Laws[i].LimitUsd == want[i].Usd,
+                    F("law.{0}: from {1:yyyy-MM-dd} {2} ({3}) - the act's day and Treasury's figure: {4:yyyy-MM-dd} {5}", i + 1, rec.Laws[i].From, rec.Laws[i].LimitUsd.HasValue ? Usd(rec.Laws[i].LimitUsd.Value) : "suspended", rec.Laws[i].Act, want[i].From, want[i].Usd.HasValue ? Usd(want[i].Usd.Value) : "suspended"));
             }
+            bad = new List<string>();
+            for (int i = 0; i < 5; i++)
+            {
+                string[] st = Value(fig, "mspd.step." + (i + 1)).Split('|').Select(s => s.Trim()).ToArray();
+                if (st.Length != 2 || st[0] != steps[i].Date || Dec(st[1]) != steps[i].Mil) { bad.Add(F("mspd.step.{0} = {1}, recomputed {2} | {3}", i + 1, string.Join(" | ", st), steps[i].Date, steps[i].Mil)); }
+            }
+            string act117 = Regex.Replace(File.ReadAllText(Path.Combine(root, InputPath("pl117_73")), Encoding.UTF8), @"\s+", " ");
+            decimal add117 = Dec(Regex.Match(act117, @"is increased by \$([\d,]+)\.").Groups[1].Value.Replace(",", string.Empty));
+            string act119 = Regex.Replace(File.ReadAllText(Path.Combine(root, InputPath("pl119_21")), Encoding.UTF8), @"\s+", " ");
+            decimal add119 = Dec(Regex.Match(act119, @"as most recently increased by section 401\(b\) of Public Law 118-5 \(31 U\.S\.C\. 3101 note\), is increased by \$([\d,]+)\.").Groups[1].Value.Replace(",", string.Empty));
+            Want(fig, "law.1.increase_usd", add117);
+            Want(fig, "law.4.increase_usd", add119);
+            if (!rec.Laws[1].Act.EndsWith("through " + Iso(dThrough), StringComparison.Ordinal)) { bad.Add(F("law.2 reads \"{0}\", the act's last day is {1:yyyy-MM-dd}", rec.Laws[1].Act, dThrough)); }
+            Check(bad.Count == 0 && (steps[1].Mil - steps[0].Mil) * 1000000m == add117 && want[3].Usd - want[2].Usd == add119,
+                F("the steps' MSPD month-ends and amounts, P.L. 117-73's {0} and P.L. 119-21's {1} - each the step it names, the suspension through {2:yyyy-MM-dd}{3}", Usd(add117), Usd(add119), dThrough, Bad()));
 
-            // the reinstatement, reproduced from the Daily Treasury Statement (whole millions): the limit in force + 2 Jan 2025's opening - the enactment day's close
+            // the reinstatement, reproduced from the Daily Treasury Statement (whole millions): the limit in force + the reinstatement day's opening - the
+            // enactment day's close. Every day is derived from an act's day and the DTS's own calendar: the enactment's close is the last day the DTS publishes
+            // on or before P.L. 118-5's approval (a Saturday), the reinstatement's opening is the close of the last day it publishes before s401(b)'s day
             var dts06 = Rows(Path.Combine(root, InputPath("dts2306")));
             var dts01 = Rows(Path.Combine(root, InputPath("dts2501")));
-            (decimal enactDsl, decimal enactLimit) = Dts(dts06, "2023-06-02", false);
-            (decimal jan2Open, _) = Dts(dts01, "2025-01-02", true);
-            decimal reproduced = enactLimit + jan2Open - enactDsl;
-            decimal treasury = rec.Laws.Count > 2 && rec.Laws[2].LimitUsd.HasValue ? rec.Laws[2].LimitUsd.Value / 1000000m : 0m;
-            Check(Math.Abs(reproduced - treasury) <= 1.5m && reproduced == Dec(data["reinstatement.reproduced_mil"]),
-                F("P.L. 118-5 s401(b) reproduced from the record's own debt: {0} + {1} - {2} = {3} mil against Treasury's {4} mil (within the three whole-million roundings)", enactLimit, jan2Open, enactDsl, reproduced, treasury));
             var m2b = Rows(Path.Combine(root, InputPath("mspd2b")));
-            rec.ReinstatementDslUsd = Mspd2(m2b, "2024-12-31", "Total Public Debt Subject to Limit") * 1000000m;
-            Check(rec.Laws.Count > 2 && rec.HeadroomUsd == rec.Laws[2].LimitUsd - rec.ReinstatementDslUsd,
-                F("the headroom s401(b) carried: Treasury's limit less MSPD's debt subject to limit at 2 January's opening = {0}", Usd(rec.HeadroomUsd)));
-            Check(rec.VintageDslUsd == Mspd2(m2b, data["vintage.date"], "Total Public Debt Subject to Limit") * 1000000m,
-                F("debt subject to limit at the seed's vintage {0:yyyy-MM-dd}: {1} (MSPD table 2)", rec.VintageDate, Usd(rec.VintageDslUsd)));
-            Check(rec.VintageDate < WorldClock.SeedVintage && WorldClock.SeedVintage.Subtract(rec.VintageDate).TotalDays <= 31,
-                F("the vintage month-end {0:yyyy-MM-dd} is the last statement before WorldClock.SeedVintage {1:yyyy-MM-dd}", rec.VintageDate, WorldClock.SeedVintage));
+            var m1 = Rows(Path.Combine(root, InputPath("mspd1")));
+            bad = new List<string>();
+            string enactClose = DtsDay(dts06, d118, -1, true), enactOpen = DtsDay(dts06, d118, +1, false);
+            (decimal enactDsl, decimal enactLimit) = Dts(dts06, enactClose, false);
+            (decimal enactNext, _) = Dts(dts06, enactOpen, true);
+            string priorClose = DtsDay(dts01, dReinstated, -1, false);
+            (decimal reinOpen, _) = Dts(dts01, Iso(dReinstated), true);
+            (decimal reinClose, _) = Dts(dts01, Iso(dReinstated), false);
+            (decimal priorCloseDsl, _) = Dts(dts01, priorClose, false);
+            decimal reproduced = enactLimit + reinOpen - enactDsl;
+            decimal treasury = rec.Laws[2].LimitUsd.Value / 1000000m;
+            decimal gap = reproduced - treasury, bound = 0.5m * (1 + 2 * LinesPerDebt);
+            decimal closeWould = enactLimit + reinClose - enactDsl;
+            Want(fig, "reinstatement.enactment_close", enactClose); Want(fig, "reinstatement.enactment_open", enactOpen);
+            Want(fig, "reinstatement.limit_in_force_mil", enactLimit); Want(fig, "reinstatement.enactment_dsl_mil", enactDsl);
+            Want(fig, "reinstatement.prior_close", priorClose); Want(fig, "reinstatement.opening_dsl_mil", reinOpen);
+            Want(data, "reinstatement.reproduced_mil", reproduced); Want(fig, "reinstatement.gap_mil", gap); Want(fig, "reinstatement.rounding_bound_mil", bound);
+            Want(fig, "reinstatement.close_dsl_mil", reinClose); Want(fig, "reinstatement.close_would_mil", closeWould); Want(fig, "reinstatement.close_lower_mil", reproduced - closeWould);
+            Check(bad.Count == 0 && enactDsl == enactNext && reinOpen == priorCloseDsl && enactLimit * 1000000m == rec.Laws[0].LimitUsd && Math.Abs(gap) <= bound,
+                F("P.L. 118-5 s401(b) reproduced from the record's own debt: {0} + {1} - {2} = {3} mil against Treasury's {4} mil, a difference of {5} mil, inside the rounding of the {6} published lines combined ({7}); the close of {8:yyyy-MM-dd} would give {9}{10}",
+                    enactLimit, reinOpen, enactDsl, reproduced, treasury, gap, 1 + 2 * LinesPerDebt, bound, dReinstated, closeWould, Bad()));
 
-            // the record's last episode: at the limit from the day Treasury's report names, well below it the business day before; ended by P.L. 119-21
-            string before = dts01.Select(r => r["record_date"]).Where(x => string.CompareOrdinal(x, Iso(rec.EmReached)) < 0).OrderBy(x => x, StringComparer.Ordinal).LastOrDefault();
+            // to the dollar, on the reading that MSPD's month-end before the reinstatement is the DTS's prior close: the headroom s401(b) carried, the enactment-day
+            // debt it implies, and Treasury's perimeters that day (MSPD tables 1 and 2)
+            bad = new List<string>();
+            string monthEnd = m2b.Where(r => r["debt_limit_class1_desc"] == "Total Public Debt Subject to Limit" && string.CompareOrdinal(r["record_date"], Iso(dReinstated)) < 0)
+                .Select(r => r["record_date"]).OrderBy(x => x, StringComparer.Ordinal).Last();
+            rec.ReinstatementDslUsd = Mspd2(m2b, monthEnd, "Total Public Debt Subject to Limit") * 1000000m;
+            decimal implied = rec.Laws[0].LimitUsd.Value - rec.HeadroomUsd, impliedGap = implied / 1000000m - enactDsl;
+            Want(fig, "reinstatement.month_end", monthEnd);
+            Want(fig, "reinstatement.dsl_usd", rec.ReinstatementDslUsd);
+            Want(fig, "reinstatement.implied_enactment_usd", implied); Want(fig, "reinstatement.implied_gap_mil", impliedGap);
+            Want(fig, "reinstatement.tpdo_usd", Mspd1(m1, monthEnd, "total_mil_amt") * 1000000m);
+            Want(fig, "reinstatement.public_usd", Mspd1(m1, monthEnd, "debt_held_public_mil_amt") * 1000000m);
+            Want(fig, "reinstatement.intragov_usd", Mspd1(m1, monthEnd, "intragov_hold_mil_amt") * 1000000m);
+            Check(bad.Count == 0 && monthEnd == priorClose && rec.HeadroomUsd == rec.Laws[2].LimitUsd - rec.ReinstatementDslUsd
+                    && Math.Abs(rec.ReinstatementDslUsd / 1000000m - priorCloseDsl) <= 0.5m * LinesPerDebt && Math.Abs(impliedGap) <= 0.5m * LinesPerDebt,
+                F("the headroom s401(b) carried: Treasury's limit less MSPD's debt subject to limit on {0} (the reinstatement's opening, inside the DTS's rounding) = {1}; the enactment-day debt it implies {2}, {3} mil from the DTS's; the perimeters that day (MSPD table 1){4}",
+                    monthEnd, Usd(rec.HeadroomUsd), Usd(implied), impliedGap, Bad()));
+
+            // the seed's vintage: the last day of the month before WorldClock.SeedVintage's, and Treasury's four perimeters on it (MSPD tables 1 and 2, the DTS's close)
+            bad = new List<string>();
+            DateTime vintageWanted = new DateTime(WorldClock.SeedVintage.Year, WorldClock.SeedVintage.Month, 1).AddDays(-1);
+            Want(data, "vintage.dsl_usd", Mspd2(m2b, Iso(rec.VintageDate), "Total Public Debt Subject to Limit") * 1000000m);
+            Want(data, "vintage.tpdo_usd", Mspd1(m1, Iso(rec.VintageDate), "total_mil_amt") * 1000000m);
+            Want(data, "vintage.public_usd", Mspd1(m1, Iso(rec.VintageDate), "debt_held_public_mil_amt") * 1000000m);
+            Want(data, "vintage.intragov_usd", Mspd1(m1, Iso(rec.VintageDate), "intragov_hold_mil_amt") * 1000000m);
+            (decimal vintageDts, _) = Dts(Rows(Path.Combine(root, InputPath("dts2606"))), Iso(rec.VintageDate), false);
+            Check(bad.Count == 0 && rec.VintageDate == vintageWanted && Math.Abs(rec.VintageDslUsd / 1000000m - vintageDts) <= 0.5m * LinesPerDebt,
+                F("the seed's vintage {0:yyyy-MM-dd} - the last day of the month before WorldClock.SeedVintage's ({1:yyyy-MM-dd}): debt subject to limit {2} (MSPD table 2; the DTS's close {3} mil inside its rounding), total public debt outstanding {4}, held by the public {5} (MSPD table 1){6}",
+                    rec.VintageDate, WorldClock.SeedVintage, Usd(rec.VintageDslUsd), vintageDts, Usd(rec.VintageTpdoUsd), Usd(rec.VintagePublicUsd), Bad()));
+
+            // the record's last episode: at the limit from the day Treasury's report names (that report is a PDF the check cannot read - the DTS holds the day),
+            // well below it the day the DTS publishes before, at it the last day before P.L. 119-21, the new limit the first day after
+            bad = new List<string>();
+            var dts07 = Rows(Path.Combine(root, InputPath("dts2507")));
+            string before = DtsDay(dts01, rec.EmReached, -1, false), lastIn = DtsDay(dts07, rec.EmEnded, -1, false), firstAfter = DtsDay(dts07, rec.EmEnded, +1, false);
             (decimal dslAt, decimal limAt) = Dts(dts01, Iso(rec.EmReached), false);
-            (decimal dslBefore, decimal limBefore) = before == null ? (0m, 0m) : Dts(dts01, before, false);
-            Check(limAt - dslAt < 100m && before != null && limBefore - dslBefore > 1000m && rec.Laws.Count > 3 && rec.EmEnded == rec.Laws[3].From && rec.EmDaysUsed == (rec.EmEnded - rec.EmReached).Days,
-                F("the record's measures: at the limit from {0:yyyy-MM-dd} ({1} mil under; {2} mil under on {3}), ended by {4} on {5:yyyy-MM-dd} - {6} days", rec.EmReached, limAt - dslAt, limBefore - dslBefore, before, rec.Laws.Count > 3 ? rec.Laws[3].Act : "?", rec.EmEnded, rec.EmDaysUsed));
-            Check(rec.EmDaysToExhaustionFrom == (Day(exDays[0]) - rec.EmReached).Days && rec.EmDaysToExhaustionTo == (Day(exDays[1]) - rec.EmReached).Days,
-                F("the projected exhaustion {0}..{1} (Treasury's letter of 9 May 2025, \"in August\") is {2} to {3} days from the reach", exDays[0], exDays[1], rec.EmDaysToExhaustionFrom, rec.EmDaysToExhaustionTo));
+            (decimal dslBefore, decimal limBefore) = Dts(dts01, before, false);
+            (decimal dslLast, decimal limLast) = Dts(dts07, lastIn, false);
+            (_, decimal limAfter) = Dts(dts07, firstAfter, false);
+            Want(fig, "em.before", before); Want(fig, "em.margin_before_mil", limBefore - dslBefore); Want(fig, "em.margin_reached_mil", limAt - dslAt);
+            Want(fig, "em.last_in", lastIn); Want(fig, "em.margin_last_mil", limLast - dslLast); Want(fig, "em.first_after", firstAfter); Want(fig, "em.limit_after_mil", limAfter);
+            Check(bad.Count == 0 && limAt - dslAt < AtLimitMil && limBefore - dslBefore > WellBelowMil && limLast - dslLast < AtLimitMil && Math.Abs(limAfter * 1000000m - rec.Laws[3].LimitUsd.Value) < 1000000m
+                    && rec.EmEnded == rec.Laws[3].From && rec.EmDaysUsed == (rec.EmEnded - rec.EmReached).Days,
+                F("the record's measures: at the limit from {0:yyyy-MM-dd} ({1} mil under; {2} mil under on {3}), {4} under on {5}, the limit line {6} on {7}; ended by {8} on {9:yyyy-MM-dd} - {10} days{11}",
+                    rec.EmReached, limAt - dslAt, limBefore - dslBefore, before, limLast - dslLast, lastIn, limAfter, firstAfter, rec.Laws[3].Act, rec.EmEnded, rec.EmDaysUsed, Bad()));
+            // the letter names a month, so the range is that month whole: its first day to its last - the only part of the typed reading this check can hold
+            DateTime exFrom = Day(exDays[0]), exTo = Day(exDays[1]);
+            bool wholeMonth = exFrom.Day == 1 && exTo == exFrom.AddMonths(1).AddDays(-1);
+            Check(wholeMonth && rec.EmDaysToExhaustionFrom == (exFrom - rec.EmReached).Days && rec.EmDaysToExhaustionTo == (exTo - rec.EmReached).Days,
+                F("the projected exhaustion of Treasury's cash and the measures together, {0}..{1} (the letter of 9 May 2025, \"in August\", a page image - typed with its citation){2}, is {3} to {4} days from the reach",
+                    exDays[0], exDays[1], wholeMonth ? " - one month, first day to last" : " - NOT one whole month", rec.EmDaysToExhaustionFrom, rec.EmDaysToExhaustionTo));
+            string[] parts = Value(fig, "em.total_measures_parts_bn").Split('|').Select(s => s.Trim()).ToArray();
+            decimal partsTotal = parts.Length == 4 ? Dec(parts[3]) : -1m;
+            Check(parts.Length == 4 && Math.Abs(Dec(parts[0]) + Dec(parts[1]) + Dec(parts[2]) - partsTotal) <= 1m && partsTotal * 1000000000m == rec.EmTotalMeasuresUsd,
+                F("the measures' size on the first day, {0} (CSRDF/PSRHBF {1} + G Fund {2} + ESF {3} bn): Treasury's daily table is a PDF the check cannot read - held by its digest and the body digest, its parts adding up", Usd(rec.EmTotalMeasuresUsd), parts[0], parts.Length > 1 ? parts[1] : "?", parts.Length > 2 ? parts[2] : "?"));
+
+            // the 2023 episode, for the span's range: the first day the DTS shows the debt at the limit, to P.L. 118-5's suspension
+            bad = new List<string>();
+            var dts23 = Rows(Path.Combine(root, InputPath("dts2301")));
+            string em23 = DtsDates(dts23).FirstOrDefault(x => { (decimal dd, decimal ll) = Dts(dts23, x, false); return ll - dd < AtLimitMil; });
+            Want(fig, "em2023.reached", em23 ?? "none"); Want(fig, "em2023.ended", d118);
+            if (em23 != null) { Want(fig, "em2023.days", (d118 - Day(em23)).Days); }
+            Check(bad.Count == 0 && em23 != null, F("the 2023 episode: at the limit from {0} on the DTS, suspended by P.L. 118-5 on {1:yyyy-MM-dd}{2}", em23 ?? "no day", d118, Bad()));
+
+            // every figure the Data and Figures blocks hold is printed in the prose - so the prose says what was recomputed. A figure counts as printed only
+            // as a TOKEN of its own: no digit, point, comma or hyphen before it, and no digit - nor a point or comma followed by a digit - after it. So 26 is
+            // not found inside 2026, 19 not inside 2023-01-19, 36,103,995 not inside 36,103,995,660,231, and a date not inside a longer number. And a
+            // figure the blocks hold N times (26 is two margins) must be printed at least N times, so one of two equal figures cannot be garbled unseen.
+            // Beyond that the test does not say in which place a figure is printed, nor catch a figure printed MORE often than the blocks hold it: the
+            // prep script wrote the prose and the blocks in one run, and the body digest holds what it wrote.
+            string prose = RemoveBlock(RemoveBlock(body, "<!-- US14-DATA BEGIN -->", "<!-- US14-DATA END -->"), FiguresBegin, FiguresEnd);
+            var needed = new Dictionary<string, List<string>>(StringComparer.Ordinal);
+            foreach (KeyValuePair<string, string> kv in data.Concat(fig))
+            {
+                foreach (string part in kv.Value.Split('|').SelectMany(p => p.Split(new[] { ".." }, StringSplitOptions.None)).Select(p => p.Trim()))
+                {
+                    string printed = Regex.IsMatch(part, @"^\d{4}-\d\d-\d\d$") ? part : Regex.IsMatch(part, @"^-?\d+(\.\d+)?$") ? Group(part) : null;
+                    if (printed == null) { continue; }
+                    if (!needed.TryGetValue(printed, out List<string> keys)) { keys = new List<string>(); needed[printed] = keys; }
+                    keys.Add(kv.Key);
+                }
+            }
+            var unprinted = new List<string>();
+            foreach (KeyValuePair<string, List<string>> n in needed)
+            {
+                int found = Regex.Matches(prose, @"(?<![\d.,-])" + Regex.Escape(n.Key) + @"(?![\d]|[.,]\d)").Count;
+                if (found < n.Value.Count) { unprinted.Add(F("{0} printed {1} time(s) for {2} line(s): {3}", n.Key, found, n.Value.Count, string.Join(", ", n.Value))); }
+            }
+            Check(unprinted.Count == 0, F("every figure of the Data and Figures blocks ({0} distinct, {1} in all) is printed in the prose as a token of its own, as often as the blocks hold it{2}",
+                needed.Count, needed.Values.Sum(v => v.Count), unprinted.Count == 0 ? string.Empty : " - NOT PRINTED: " + string.Join("; ", unprinted)));
             return rec;
         }
 
@@ -295,12 +437,12 @@ namespace PoliSim.EditorTools
             var spans = new[]
             {
                 new Span { Name = F("+{0}d (the record's measures, as used)", rec.EmDaysUsed), Days = rec.EmDaysUsed },
-                new Span { Name = F("+{0}d (the record's reach to its projected exhaustion's first day)", rec.EmDaysToExhaustionFrom), Days = rec.EmDaysToExhaustionFrom },
-                new Span { Name = F("+{0}d (to its last day)", rec.EmDaysToExhaustionTo), Days = rec.EmDaysToExhaustionTo },
+                new Span { Name = F("+{0}d (to the projected exhaustion of cash AND measures, its first day)", rec.EmDaysToExhaustionFrom), Days = rec.EmDaysToExhaustionFrom },
+                new Span { Name = F("+{0}d (cash AND measures, its last day)", rec.EmDaysToExhaustionTo), Days = rec.EmDaysToExhaustionTo },
                 new Span { Name = F("+{0} (the measures' size)", Tn((double)rec.EmTotalMeasuresUsd)), HeadroomUsd = (double)rec.EmTotalMeasuresUsd },
             };
             decimal latest = rec.Laws.Last(l => l.LimitUsd.HasValue).LimitUsd.Value;
-            sb.Append(F("    read      THE DATES. The limit by date (the record, R-US21 (ii)(b)): {0}. Spans after the reach (iii): {1}. Debt subject to limit = the game's debt x {2} under (i)(a); under (i)(b) the US debt re-seeded to {3} (the seed's ratio, its comfort anchor and the ministry's memory re-read from it - the re-seed as WorldFactory's own rule would carry it).\n",
+            sb.Append(F("    read      THE DATES. The limit by date (the record, R-US21 (ii)(b)): {0}. Spans after the reach (iii): {1} - the August projection is of Treasury's cash balance and the measures together, and the game holds no cash balance, so those two spans count days the cash bought as well. Debt subject to limit = the game's debt x {2} under (i)(a); under (i)(b) the US debt re-seeded to {3} (the seed's ratio, its comfort anchor and the ministry's memory re-read from it - the re-seed as WorldFactory's own rule would carry it).\n",
                 string.Join("; ", rec.Laws.Select(l => F("{0:yyyy-MM-dd} {1}", l.From, l.LimitUsd.HasValue ? Usd(l.LimitUsd.Value) : "suspended"))), string.Join(", ", spans.Select(s => s.Name)), Ratio(bridge.RatioDsl), Usd(rec.VintageDslUsd)));
             sb.Append("    read      CRS IF10292 v22 (21 Sep 2026, ElectionsData/usa/debt_limit.md s4): outside projections from June 2026 put debt reaching the limit in \"early to mid-2027\", the measures delaying a binding limit \"by another several months\" - the record's distance from the seed's season, beside each start's SEED-TO-LIMIT.\n");
             DateTime epochBefore = SimulationManager.EpochDate;
@@ -349,8 +491,12 @@ namespace PoliSim.EditorTools
                     foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
 
                     double dsl0 = Dsl();
+                    // NOT A TEST OF THE RECORD in either bridge. Under (i)(b) it is true by construction - the re-seed sets the figure. Under (i)(a) the ratio
+                    // was read from a world built outside any start's epoch (MeasureBridge) and is applied here to the world this start built: it holds only
+                    // if the seed does not depend on the start - §621's one seed vintage per country - and that is what it tests. The line says which
                     Check(start == WorldClock.StartDate(player) && sim.CurrentDate == start && Math.Abs(dsl0 - (double)rec.VintageDslUsd) < 5e6,
-                        F("{0} {1}: the run opens on the start {2:yyyy-MM-dd} with debt subject to limit {3} - the record's at the seed's vintage, within the float's resolution", player, bridgeName, start, Tn(dsl0)));
+                        F("{0} {1}: the run opens on the start {2:yyyy-MM-dd} with debt subject to limit {3} - the record's at the seed's vintage, within the float's resolution ({4}; not a test of the record)", player, bridgeName, start, Tn(dsl0),
+                            reseed ? "the re-seed applied - true by construction" : "the bridge's ratio applied - the seed the same on this start as outside any, as §621's one seed per country holds"));
 
                     Law atStart = InForce(rec.Laws, start);
                     Law reinstatement = rec.Laws.FirstOrDefault(l => l.LimitUsd.HasValue && l.From > atStart.From && !atStart.LimitUsd.HasValue);
@@ -485,15 +631,91 @@ namespace PoliSim.EditorTools
             return doc.Substring(a, b - a);
         }
 
-        private static Dictionary<string, string> DataBlock(string doc)
+        private static Dictionary<string, string> DataBlock(string doc) => Lines(DataBlockText(doc));
+
+        /// <summary>The Data block's keys - each read by <see cref="ReadDocument"/> and recomputed there or held by its stated digest; the block holds these and no other.</summary>
+        private static readonly string[] DataKeys =
+        {
+            "law.1", "law.2", "law.3", "law.4", "reinstatement.reproduced_mil", "reinstatement.headroom_usd",
+            "vintage.date", "vintage.dsl_usd", "vintage.tpdo_usd", "vintage.public_usd", "vintage.intragov_usd",
+            "em.reached", "em.ended", "em.days_used", "em.exhaustion", "em.days_to_exhaustion", "em.total_measures_usd",
+        };
+
+        /// <summary>The Figures block's keys - each recomputed by <see cref="ReadDocument"/>, but the measures' parts (a PDF reading, held by digest); the block holds these and no other.</summary>
+        private static readonly string[] FigureKeys =
+        {
+            "mspd.step.1", "mspd.step.2", "mspd.step.3", "mspd.step.4", "mspd.step.5", "law.1.increase_usd", "law.4.increase_usd",
+            "reinstatement.enactment_close", "reinstatement.enactment_open", "reinstatement.limit_in_force_mil", "reinstatement.enactment_dsl_mil",
+            "reinstatement.prior_close", "reinstatement.opening_dsl_mil", "reinstatement.gap_mil", "reinstatement.rounding_bound_mil",
+            "reinstatement.close_dsl_mil", "reinstatement.close_would_mil", "reinstatement.close_lower_mil",
+            "reinstatement.month_end", "reinstatement.implied_enactment_usd", "reinstatement.implied_gap_mil",
+            "reinstatement.dsl_usd", "reinstatement.tpdo_usd", "reinstatement.public_usd", "reinstatement.intragov_usd",
+            "em.before", "em.margin_before_mil", "em.margin_reached_mil", "em.last_in", "em.margin_last_mil", "em.first_after", "em.limit_after_mil",
+            "em.total_measures_parts_bn", "em2023.reached", "em2023.ended", "em2023.days",
+        };
+
+        /// <summary>A marked block's text, its BEGIN marker included.</summary>
+        private static string BlockText(string doc, string begin, string end)
+        {
+            int a = doc.IndexOf(begin, StringComparison.Ordinal), b = doc.IndexOf(end, StringComparison.Ordinal);
+            if (a < 0 || b < a) { throw new InvalidDataException(DocRelative + " carries no " + begin + " block"); }
+            return doc.Substring(a, b - a);
+        }
+
+        /// <summary>A marked block's "key = value" lines.</summary>
+        private static Dictionary<string, string> Block(string doc, string begin, string end) => Lines(BlockText(doc, begin, end));
+
+        /// <summary>A block's keys in order, repeats kept.</summary>
+        private static List<string> Keys(string block) =>
+            block.Split('\n').Select(l => l.IndexOf(" = ", StringComparison.Ordinal) is int eq && eq > 0 ? l.Substring(0, eq).Trim() : null).Where(k => k != null).ToList();
+
+        private static Dictionary<string, string> Lines(string block)
         {
             var data = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (string line in DataBlockText(doc).Split('\n'))
+            foreach (string line in block.Split('\n'))
             {
                 int eq = line.IndexOf(" = ", StringComparison.Ordinal);
                 if (eq > 0) { data[line.Substring(0, eq).Trim()] = line.Substring(eq + 3).Trim(); }
             }
             return data;
+        }
+
+        private static string RemoveBlock(string text, string begin, string end)
+        {
+            int a = text.IndexOf(begin, StringComparison.Ordinal), b = text.IndexOf(end, StringComparison.Ordinal);
+            return a < 0 || b < a ? text : text.Substring(0, a) + text.Substring(b + end.Length);
+        }
+
+        private static string Value(Dictionary<string, string> block, string key) => block.TryGetValue(key, out string v) ? v : string.Empty;
+
+        private static IEnumerable<string> DtsDates(List<Dictionary<string, string>> rows) => rows.Select(r => r["record_date"]).Distinct().OrderBy(x => x, StringComparer.Ordinal);
+
+        /// <summary>The DTS's own calendar around a day: <paramref name="direction"/> -1 the last day it publishes before it (or on it, with
+        /// <paramref name="orOn"/>), +1 the first day it publishes after it.</summary>
+        private static string DtsDay(List<Dictionary<string, string>> rows, DateTime day, int direction, bool orOn)
+        {
+            string d = Iso(day);
+            string found = direction < 0
+                ? DtsDates(rows).LastOrDefault(x => string.CompareOrdinal(x, d) < 0 || (orOn && x == d))
+                : DtsDates(rows).FirstOrDefault(x => string.CompareOrdinal(x, d) > 0);
+            return found ?? throw new InvalidDataException(F("the DTS window has no day {0} {1}", direction < 0 ? "before" : "after", d));
+        }
+
+        /// <summary>MSPD table 1's "Total Public Debt Outstanding" row on one month-end: one of its columns, USD millions as given.</summary>
+        private static decimal Mspd1(List<Dictionary<string, string>> rows, string date, string column)
+        {
+            foreach (var r in rows) { if (r["record_date"] == date && r["security_type_desc"] == "Total Public Debt Outstanding") { return Dec(r[column]); } }
+            throw new InvalidDataException(F("MSPD table 1 has no total on {0}", date));
+        }
+
+        /// <summary>A figure as the prep script prints it: the integer part grouped by commas, the fraction as given.</summary>
+        private static string Group(string number)
+        {
+            bool negative = number.StartsWith("-", StringComparison.Ordinal);
+            string[] p = number.TrimStart('-').Split('.');
+            var i = new StringBuilder(p[0]);
+            for (int k = i.Length - 3; k > 0; k -= 3) { i.Insert(k, ","); }
+            return (negative ? "-" : string.Empty) + i + (p.Length > 1 ? "." + p[1] : string.Empty);
         }
 
         /// <summary>The Treasury API's rows: one flat object per row, every value a string; the "meta" labels (whose record_date is a label) are not rows.</summary>

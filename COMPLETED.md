@@ -38820,3 +38820,52 @@ Code recommends (a), by the rule. The rule could give nothing else (the reach ab
 
 **Asked** (the closing message): E-47’s display on Italy’s card - the stamp and the caption still say 25 SEP 2022, and the ledger’s 400 seats are the 2022 table beside "ELECTED 4 MAR 2018" (the 2018 Camera had 630). The options: (a) leave all three until E-47 is answered; (b) have the caption and the row say the seated table stands in (`PickerView.Deviation` is computed but never drawn); (c) drop the stamp for a start whose election is not held (the call §782’s review left open for the USA).
 
+
+## 842. PS-6 US-14, THE REVIEW'S FIXES (THE SECTION §838 PROMISED): UsDebtLimitCheck NOW HOLDS THE DOCUMENT TO TREASURY'S FILES, NOT TO ITSELF; A FIGURES BLOCK RECOMPUTED, A BODY DIGEST, THE DERIVED DATES DERIVED; NO FIGURE OR DATE CHANGED IN VALUE (2026-10-16)
+
+**What was owed:** §838's review (one high, two medium, seven low, no figure wrong). §838 met its high and first medium at integration. This section meets M2 and L1-L7, and comments L2. §839 corrected the pointer: §838 had promised these fixes for "§839".
+
+Built by the US-14 sweep agent on its own branch (on §838's commit). Integrated here.
+
+**Fixed:**
+- **M2: the check compared three Treasury figures with themselves.**
+  - It now holds the vintage's TPDO, held-by-the-public and intragovernmental lines to MSPD table 1's row in the saved JSON, and the debt subject to limit to the DTS close within its rounding. The engine block's rows therefore rest on checked lines.
+  - A new Figures block carries every other figure the prose prints. The check recomputes each from the JSON tables and the acts: the five MSPD steps, the acts' increases, law.2's end date, every DTS day, line and margin, the 2 January close alternative, the implied enactment-day debt, the 31 Dec 2024 perimeter column, and the 2023 episode (135 days).
+  - Every number and date in the Data and Figures blocks must appear in the prose.
+  - The script stamps a `body-sha256` over everything above the engine block. A hand edit fails the check, and WriteBridge refuses to sign over it.
+  - The claim is narrowed. Two readings rest on PDFs the check cannot read: the 2025 episode's dates from the CSRDF report, which the DTS also holds, and the size of the $338 bn measures, whose parts must add up. They are held by digest only, and the document, the class summary and the README row say so. "Recomputes every Treasury figure" is gone.
+- **L1:** the vintage month-end must be the last day of the month before `WorldClock.SeedVintage`'s month.
+- **L3:** the August projection is of Treasury's cash *and* the measures together; the game holds no cash balance. The span names say "cash AND measures".
+- **L4:** the gaps in the quotes are marked:
+  - 2 U.S.C. 631 is quoted as its own table, omitted rows marked [...];
+  - H.R. 5371's added dates are bracketed;
+  - CBO's paragraphs are in the letter's order;
+  - the two 2023 letters are quoted apart.
+- **L5:** the four dates the header calls derived are derived, in perl and in C#, from the act's approval date, §401(b)'s day and the DTS's own calendar. The header lists the constants that remain typed: the "August" month (a page image), the vintage month-end (asserted), and the DTS's two conventions.
+- **L6:** the excepted-share ask points to the plan (US-22, R-US9).
+- **L7:**
+  - MSPD and the DTS being one close is stated as a reading;
+  - the reproduction's bound is half a million on each of the 13 published lines, at most 6.5 mil;
+  - the implied-debt bound is 3 mil;
+  - the seed vintage is referenced, not copied.
+- **L2 (not a defect):** a comment and the printed line say the opening-figure check is true by construction under both bridge options.
+
+**Unchanged in value:** the Data block is byte-identical to §838's (same sha256), so the engine block and its `data-sha256` stand and WriteBridge was not re-run. Every reach and bind date and the cut are as in §838; only the span labels are reworded.
+
+**Verified, then fixed again** (`Reviews/2026-10-16_s842_us14_fix_verify.md`: a second reviewer, refute-first, with its own mutation harness, which compiles the check's code under dotnet against the real files):
+- **Met:** M2, L1, L3, L5, L6. L2 and L7 met with leftovers; L4 partly met.
+- **The prep script** reproduces the document byte for byte. The Data and engine blocks are byte-identical to §838's.
+- **One new medium.** The "every figure printed" test was a substring search, so short figures (26, 0, 19, 20) were always "found" inside 2026 or 2025-01-19. Edits 26→27 or ESF 20→21 passed with the digest re-stamped.
+- **Fixed in a second commit (24f5fdb7):**
+  - a figure must appear as a token of its own, as often as the blocks hold it; every one of the verifier's mutations now fails;
+  - the key sets are closed (17 Data lines and 36 Figures lines, each once);
+  - the H.R. 5371 actions are quoted whole, with the variant named;
+  - the spurious [...] row is deleted;
+  - the derived labels are formatted from the derived days;
+  - em.exhaustion is one whole month;
+  - (i)(a)'s line says it tests §621's one seed;
+  - the reproduction is worded with the 13-line rounding.
+- **Noted, not fixed:** the engine block's label "2 January 2025's opening" waits for the next WriteBridge run.
+- **Body digest** now dedf91d6. The prep script, re-run on this tree, writes the committed document again; only the line endings differ, perl writing LF.
+
+**Bars:** **Bars:** (tier SIMULATION by the prep script, TOOLING for the check, DOCUMENTS for the records) the named run `us14fn2` **1 of 1**; the cheap bar **106 of 106** (`cheap842u`); the simulation bar **57 of 57** (`sim842u`; no runtime file changed); the documents bar **16 of 16** (`doc842`). The first round of fixes (3047b1b1) also ran named, cheap and simulation clean (`us14fn`, `cheap841`, `sim841`) before the verifier’s findings took it back out of the tree. Ran detached.
