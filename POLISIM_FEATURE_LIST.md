@@ -97,7 +97,7 @@ One list for both agents. Code builds, Design composes, Elias plays and rules.
 
 | # | owner | item | needs | done when |
 |---|---|---|---|---|
-| SP-7 | Code | The two-round presidential model; **Poland's 2025 presidential start**; the president's veto and cohabitation | PS-5 | playable as a candidate - **the model and the veto BUILT** (`COMPLETED.md` §720 the rule, §761 the veto, §770 the game's own election from a Sejm start); **the presidential START - the player as a candidate - not built** |
+| SP-7 | Code | The two-round presidential model; **Poland's 2025 presidential start**; the president's veto and cohabitation | PS-5 | playable as a candidate - **the model and the veto BUILT** (`COMPLETED.md` §720 the rule, §761 the veto, §770 the game's own election from a Sejm start); **the presidential START - the player as a candidate - not built**; **DESIGNED AND MEASURED 2026-10-16 (`COMPLETED.md` §843; `docs/specs/POLAND_PRESIDENTIAL_START_PLAN.md`): four rulings ASKED of Elias - who the player is, what follows the vote, the campaign (with a Polish campaign row, PL-C, proposed if no campaign is built first), the start date (15 Jan 2025 recommended, a deviation from §618)** |
 | SP-8 | Code | **France's 2022 presidential start**; the Assembly seated from the records; no dissolution until the legislative model exists, said on screen | SP-7 | playable as a candidate |
 | **D-PR** | Design | The runoff night and the president-in-cohabitation view | SP-7 | answered → built - **for Poland, folded into D-PL** (Elias's ruling E3, `COMPLETED.md` §774); France's run-off night and the cohabitation view stay here |
 

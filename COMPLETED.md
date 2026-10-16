@@ -38869,3 +38869,71 @@ Built by the US-14 sweep agent on its own branch (on §838's commit). Integrated
 - **Body digest** now dedf91d6. The prep script, re-run on this tree, writes the committed document again; only the line endings differ, perl writing LF.
 
 **Bars:** **Bars:** (tier SIMULATION by the prep script, TOOLING for the check, DOCUMENTS for the records) the named run `us14fn2` **1 of 1**; the cheap bar **106 of 106** (`cheap842u`); the simulation bar **57 of 57** (`sim842u`; no runtime file changed); the documents bar **16 of 16** (`doc842`). The first round of fixes (3047b1b1) also ran named, cheap and simulation clean (`us14fn`, `cheap841`, `sim841`) before the verifier’s findings took it back out of the tree. Ran detached.
+## 843. SP-7 DESIGNED AND MEASURED, NOT BUILT: POLAND'S 2025 PRESIDENTIAL START WRITTEN TO THE REPO BEFORE ANY CODE - THE MARSHAL'S ORDER OF 15 JANUARY 2025 AND THE FIVE BACKING PARTIES' OWN NOMINATION PAGES SOURCED, THE EPOCH'S RE-KEYING COSTED, THE MEASURING INSTRUMENT WRITTEN, FOUR RULINGS ASKED (2026-10-17)
+
+**What was owed.** SP-7's build waited on four rulings that had not been asked: who the player is, what follows the vote, the campaign, and the start date. It also waited on a structural blocker: the epoch is keyed by country. §643 requires the design to be in the repo before any code.
+
+**Built.**
+- `docs/specs/POLAND_PRESIDENTIAL_START_PLAN.md`, with a pointer from the start-points spec's S7.
+- `ElectionsData/poland/presidential_calendar_2025.md` and `raw/president_start_2025/`:
+  - Dz.U. 2025 poz. 48 byte-exact (`664ee622…`) with its kalendarz wyborczy;
+  - Konfederacja's, Polska 2050's and KO's own nomination pages (5 pages, digests in SHA256SUMS);
+  - Kodeks wyborczy art. 104, 105 § 2, 289–291 and 303 § 1 (amended after 2011), and Konstytucja Art. 132 and 144 ust. 3, read from texts already held.
+- `Assets/Editor/PresidentialStartMeasure.cs`, in no bar and run through MultiRun:
+  - 20 worlds: the eve control at seeds 777 and 424242, two eve wiring rows, and 4a/4b/4c × KO/PiS × two seeds;
+  - it asserts the control reproduces the PKW's first round, is seed-identical, and that the wiring rows equal it.
+- The review's fixes in `6f5e66d5`.
+
+**Measured.**
+- Start dates, as days before 18 May:
+
+  | Start | Days |
+  |---|---|
+  | 22 Sep 2024, the standard run-up | 238 |
+  | 15 Jan 2025, the order (art. 104 opens the campaign) | 123 |
+  | 24 Mar 2025 | 55 |
+  | 4 Apr 2025 (16:00, day 44) | 44 |
+
+- Backing parties' own pages:
+  - Konfederacja: 20 Aug 2024;
+  - Polska 2050: 13 Nov 2024;
+  - KO: still an open primary on 18 Nov and named by 7 Dec 2024;
+  - PiS: 30 Nov 2024;
+  - Lewica: 15 Dec 2024.
+
+  So four of five were unnamed at the standard run-up, and all five were named by the order.
+- Every candidate start seats E1's basis: the 10th Sejm, Tusk's KO+TD+NL government and Duda.
+- The run-up keys on the Sejm election of 17 Oct 2027, and no Polish campaign is staged.
+- Factor 1.0 instead of the factor of record would move a Hołownia player from 4.99 % to 17.73 % and a Mentzen player from 14.81 % to 7.39 %.
+- Epoch readers at HEAD 43ef9ff9:
+  - date readers: 24 references in 13 runtime files, 15 inside SimulationManager, 47 Editor files — all unaffected;
+  - `StartDate`: 8 runtime reads, 19 Editor lines in 10 files;
+  - `ApplyStart`: 39 Editor lines in 33 files;
+  - the cost sits in the selection path (ShowStartPanel's SELECT → OpenWorldAt), `PickerViewOf`, and the 3 tools that use `TryPlayable`.
+
+**Declared.**
+- The re-key shape, which is Code's call.
+- The instrument's seats, seeds and premises.
+- The Art. 132 reading.
+- The 8 unbacked candidates stand in 2025 (E1) and are kept out only of later fields.
+
+**Asked.** Rulings 1–4 with the recommendations (a); (2a) with (L1) and (end-i); (3a) plus PL-C; (4b).
+
+**Measured by the instrument** (`sp7m`, one MultiRun launch, 8.8 s of work, exit 0; 44 checks `ok`, none failed). Every candidate start elects Nawrocki at both seeds and with either party seated. Neither the seat nor the seed moves any figure: no turn boundary falls in any window, and the vote path reads neither.
+
+| start | days run | first round’s largest miss against the PKW | Nawrocki’s share of the two (record 50.89 %) |
+|---|---:|---:|---:|
+| the eve (control, and the two wiring rows) | 1 | 0.00 pp | 52.32 % |
+| (4a) 22 Sep 2024, the standard run-up | 238 | 1.54 pp (Trzaskowski) | 54.03 % |
+| (4b) 15 Jan 2025, the Marshal’s order | 123 | 1.40 pp (Trzaskowski) | 53.87 % |
+| (4c) 24 Mar 2025, committees notified | 55 | 2.01 pp (Trzaskowski) | 54.56 % |
+| (4c) 4 Apr 2025, candidates filed | 44 | 0.08 pp (Trzaskowski) | 52.41 % |
+
+The control reproduces the PKW’s first round to the hundredth at both seeds. The run-off’s 52.32 % on the eve against the record’s 50.89 % is the model’s, as §770 built it, not this design’s. The miss does not shrink steadily as the start nears the vote: 4c’s 24 March is the furthest off and its 4 April the closest, so ask 4 is not a question of accuracy. That leaves the plan’s grounds: the statute’s campaign start, the candidates named by then, and the run-up’s length.
+
+**Review** (`Reviews/2026-10-17_s843_sp7_design.md`, one adversarial reviewer, refute-first): no high, three medium, nine low.
+- **Re-derived correct:** every checksum (and a re-fetch, byte-identical), the order’s text and annex, every day count, the quotes (diacritics included), and every claim about the game checked against the code.
+- **The mediums:** a quote attributed to the 2011 text that is the 2026 consolidation’s; a recommendation ground resting on three nomination dates not held; the eve rows called an effect when they are wiring.
+- All met in 6f5e66d5, with the three nominations sourced from the parties’ own pages.
+
+**Bars:** (tier SIMULATION by the raw files, TOOLING for the measure, DOCUMENTS for the plan) the measure `sp7m` (MultiRun, exit 0); the cheap bar **106 of 106** (`cheap843`); the simulation bar **57 of 57** (`sim843`); the documents bar **16 of 16** (`doc843`). The measure is in no bar: it runs once, for the ask.

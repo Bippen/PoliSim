@@ -234,7 +234,13 @@ rules (thresholds, funding, ballot access, regions).
 
 **S7 — the two-round presidential model, and Poland's presidential start.** A national two-round popular
 vote; the president's role in a parliamentary republic — the veto and its override, and cohabitation with
-the Sejm of record. **S8 — France's presidential start**, on the same model, with its National Assembly
+the Sejm of record.
+
+> ⚠ **Poland's presidential start designed, not built** (SP-7: `docs/specs/POLAND_PRESIDENTIAL_START_PLAN.md`, put to Elias 2026-10-16): the
+> two-round model, the game's own election and the veto are built (`COMPLETED.md` §720, §761, §770, §772); the start - the player as a
+> candidate - waits on the four rulings asked there (who the player is, what follows the vote, the campaign, the start date).
+
+**S8 — France's presidential start**, on the same model, with its National Assembly
 seated from the records and **no dissolution until the legislative model exists**, said plainly on
 screen.
 
