@@ -212,6 +212,22 @@ for my $ms (@measures) {
         problem("$ms->{measure} ($ms->{congress}th): the $lastCh acts last ($last->{date}) with an amendment - the other chamber's final agreement is not read ('" . substr(norm($last->{text}), 0, 90) . "')")
             if norm($last->{text}) =~ /\bwith (?:an )?amendments?\b/i && norm($last->{text}) !~ /\bdisagree\b/ && !$answered;
     }
+    # H3 (Elias, 2026-10-13), the superseded-vote guard: a chamber's final agreement cannot stand before an agreement of the other chamber that
+    # amends the text it agreed to - the later "with an amendment" supersedes it, and that chamber's own later agreement is in words the matchers
+    # miss. The guard above reads only the agreement acting last, so it is silent where a missed concurrence is followed by the other chamber's
+    # plain agreement (H.R. 4366's shape, 118th: the House's passage of July 2023 taken, the Senate's amendment of November after it). A later
+    # agreement is a later day, or the same day with both actions timed (the Senate's carry no time; the same day is the guard above's).
+    for my $ch ('House', 'Senate') {
+        my $f = $ms->{final}{$ch} or next;
+        my $oc = $ch eq 'House' ? 'Senate' : 'House';
+        my @later = sort { $a->{date} cmp $b->{date} || ($a->{time} || '') cmp ($b->{time} || '') }
+            grep { $_->{date} le $cut
+                   && ($oc eq 'House' ? house_agrees($_->{text}) : senate_agrees($_->{text}))
+                   && ($_->{date} gt $f->{date} || ($_->{date} eq $f->{date} && $_->{time} && $f->{time} && $_->{time} gt $f->{time}))
+                   && norm($_->{text}) =~ /\bwith (?:an )?amendments?\b/i && norm($_->{text}) !~ /\bdisagree\b/ } @it;
+        problem("$ms->{measure} ($ms->{congress}th): the ${ch}'s final agreement ($f->{date}" . ($f->{roll} ? ", roll $f->{roll}" : '')
+            . ") is superseded by the ${oc}'s amendment of $later[0]{date} - the ${ch}'s later agreement is not read ('" . substr(norm($later[0]{text}), 0, 90) . "')") if @later;
+    }
     for my $ch ('House', 'Senate') {
         my @ov = grep { ($ch eq 'House' && house_override($_->{text})) || ($ch eq 'Senate' && senate_override($_->{text})) } @it;
         next unless @ov;

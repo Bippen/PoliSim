@@ -38422,3 +38422,22 @@ Elias is told both, in this record and in the session's report.
 **The ledger** (`docs/audit/AUDIT_LEDGER.md`): GA-2-13 closed with §829's hash (`915bae4d`).
 
 **Bars** (tier TOOLING + DOCUMENTS, on this commit's own tree): the cheap bar **103 of 103** (`cheap830`, the record in), after the named runs `h4real` (clean) and `h4plant` (the planted unfit, failing on the moved digest as the block says). The R-US18 block digest 5c89b0cf read again after the plan edits, unchanged. All ran detached from the session.
+
+## 831. ELIAS'S RULING H3, ITS FIRST PART - THE SUPERSEDED-VOTE GUARD: NO CHAMBER'S FINAL AGREEMENT STANDS BEFORE THE OTHER CHAMBER'S LATER AMENDMENT; THE VETO TOOL'S MUTATION SUITE RE-RUN WITH ITS CASE (2026-10-15)
+
+**What was owed** (Elias's ruling H3, 2026-10-13, recorded §803, built after the gameplay audit, which closed at §829): "Preregister the new rule and take its digest before the first run. Re-run the veto tool's mutation suite, plus one case for the superseded-vote guard." This record is the second sentence. It lands before the rule is preregistered, so the extract the rule is fitted on is settled first.
+
+**Found by reading the guard first**: `Tools/us_veto_prep.pl` takes each chamber's final agreement as its last agreeing action on or before presentment. The structural guard (§802's review) reads only the agreement acting last overall: it stops where that one is "with an amendment". So a missed concurrence followed by the other chamber's plain agreement escaped it - H.R. 4366's shape (118th). If the House's "Pursuant to the provisions of H. Res. 1061, the House agreed to the Senate amendment with an amendment" (6 March 2024) were missed, the House's passage of 27 July 2023 (roll 380) would be taken, superseded by the Senate's amendment of 1 November, while the Senate's plain agreement of 8 March 2024 left the guard silent. A case for the guard as it stood would have been missed. The existing case t03 covers the guard's own direction only.
+
+**Built**:
+- `Tools/us_veto_prep.pl`: **the superseded-vote guard** - no chamber's final agreement stands before a later agreement of the other chamber made "with an amendment", which supersedes it; the tool stops on any measure where one does. A later agreement is a later day, or the same day with both actions timed: the Senate's carry no time, and the same day is the first guard's.
+- `Tools/us_veto_mutations.sh`: **case t04** - the House's agreement by a special rule no longer read (the "Pursuant to the provisions of H. Res." wording dropped from the copy). It is caught only by H.R. 4366's own line: "the House's final agreement (2023-07-27, roll 380) is superseded by the Senate's amendment of 2023-11-01".
+- `ElectionsData/usa/veto_record.md` gains the guard's reading; the plan's US-10 Built line names it.
+
+**Measured**:
+- **On the record the guard finds nothing.** The extract is unchanged byte for byte: the suite's control and a direct run both reproduce `ElectionsData/usa/us_veto_measures.csv`. `UsVetoBacktestCheck`'s pinned digest does not move.
+- **With the wording dropped, the tool as it stood** (HEAD's, run on the same mutation in scratch) stopped on three measures through the first guard (H.R. 4373 and H.R. 1082, 117th; S. 1301, 117th). It took three superseded House passages silently: H.R. 7776 (117th), and H.R. 2882 and H.R. 4366 (118th).
+- **The new guard names all six.**
+- **The suite re-run** (`suite831`): the control passes - exit 0, the repository's CSV - and **13 of 13** cases are caught, t04 among them, each by its own line. A first run, started on 15 October, was cut off during its fourth case when the session stopped; it is not counted.
+
+**Bars** (tier SIMULATION - a prep tool - on this commit's own tree): the cheap bar **103 of 103** (`cheap831`, the record in) and the simulation bar **57 of 57** (`sim831`), each read off its log's verdict line. The first `sim831` died mid-bar at 00:11 on 15 October when the session stopped; both bars and the suite were re-run on 16 October, detached from the session, the labels kept.

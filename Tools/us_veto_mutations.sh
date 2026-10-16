@@ -77,6 +77,8 @@ case_ "TOOL the en bloc Senate vote no longer read as its measures' (S.J.Res. 37
 case_ "TOOL the record's own passage summary no longer an agreement (the en bloc House suspensions lost)" "no House agreement before presentment" t02
 t03() { perl -i -ne 'print unless /^\s+\|\| \$t =~ \/\^Senate agreed\\b/' Tools/us_veto_prep.pl; }   # the Senate's concurrence wording dropped
 case_ "TOOL the Senate's concurrence in a House amendment no longer read (the guard)" "with an amendment - the other chamber's final agreement is not read" t03
+t04() { perl -i -ne 'print unless /^\s+\|\| \$t =~ \/\^Pursuant to the provisions of H/' Tools/us_veto_prep.pl; }   # the House's agreement by a special rule dropped
+case_ "TOOL the House's agreement by a special rule no longer read - its passage, superseded by the Senate's amendment, taken (the superseded-vote guard, H3)" "H.R. 4366 (118th): the House's final agreement (2023-07-27, roll 380) is superseded by the Senate's amendment of 2023-11-01" t04
 
 echo "$caught caught, $bad missed or broken"
 [ $bad -eq 0 ]
