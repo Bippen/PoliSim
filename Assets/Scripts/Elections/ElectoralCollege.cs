@@ -8,9 +8,13 @@ namespace PoliSim.Elections
     /// R-EL8 (ruled by Elias, Day-1 2026-08-29): the United States' REAL presidential elector
     /// allocation — per-state winner-take-all PLUS Maine's and Nebraska's congressional-district
     /// method — implemented from the statutes, to the standard the other five countries' rules
-    /// were held to. PURE FUNCTIONS, WIRED TO NOTHING (R-N2); its callers are editor code only,
-    /// reaching it through <see cref="FromCatalog"/>, which hands it any election the generated
-    /// catalog holds (<see cref="UsPresidentialReturns.Years"/>; since PS-6 US-3, `COMPLETED.md` §786).
+    /// were held to. PURE FUNCTIONS. Two inputs: <see cref="FromCatalog"/> hands it any election
+    /// the generated catalog holds (<see cref="UsPresidentialReturns.Years"/>; since PS-6 US-3,
+    /// `COMPLETED.md` §786) - the backtests' and US-4's; and, since PS-6 US-8, <see cref="FromNationalShares"/>
+    /// hands it a predicted election - the states derived from a national vote by R-US14 (a), which
+    /// is how the game's own count reaches it (<see cref="UsPresidentialElection"/>, on the day loop's
+    /// polling day). US-4's instrument (`UsStateSwingCheck`) reads its method (a) from the same
+    /// derivation, so the game counts the rule the ruling was measured on.
     ///
     /// The rules, each with its citation (full text and URLs in
     /// `ElectionsData/usa/district_method_2024.md`):
@@ -30,7 +34,9 @@ namespace PoliSim.Elections
     ///
     /// What this deliberately does NOT model, so its silence claims nothing: faithless electors
     /// (Me. §805, Neb. §32-714 pledge provisions), the Twelfth-Amendment contingent election when
-    /// no candidate reaches 270, NPVIC activation (Me. §723-A(7)), or any ranked-choice tabulation
+    /// no candidate reaches 270 (this file reports it - <see cref="Winner"/>; the game's count holds
+    /// the House's choice, R-US3 (a), in <see cref="UsPresidentialElection"/>), NPVIC activation
+    /// (Me. §723-A(7)), or any ranked-choice tabulation
     /// (Maine's presidential race is legally RCV-eligible but was decided in round one in 2024 —
     /// see the data file — and in 2020: `Tools/us_returns_prep.pl` requires every Maine leader it
     /// reads from a district workbook to hold more than half of that workbook's total ballots cast,
@@ -84,6 +90,130 @@ namespace PoliSim.Elections
             }
 
             return jurisdictions.ToArray();
+        }
+
+        /// <summary>The order of a state's shares in <see cref="FromNationalShares"/> (and of the national shares it is handed): the Democratic nominee,
+        /// the Republican nominee, every other candidate together - US-4's order, a party with one swing each.</summary>
+        public const int ShareDemocrat = 0, ShareRepublican = 1, ShareOthers = 2;
+
+        /// <summary>PS-6 US-8: one jurisdiction as a predicted election calls it - its electors in force, its shares as derived and as of the prior
+        /// election, its statewide winner, and Maine's and Nebraska's districts with each one's derived two-party share and winner.</summary>
+        public sealed class StateCall
+        {
+            public string State;
+            public int Electors;
+            /// <summary>The derived shares, in <see cref="ShareDemocrat"/>'s order, and the prior election's.</summary>
+            public double[] Shares, PriorShares;
+            /// <summary>The statewide winner, a candidate index (<see cref="Republican"/>, <see cref="Democrat"/>).</summary>
+            public int Winner;
+            /// <summary>Every other candidate together above both nominees - the electors still go to the larger nominee (the others are not one
+            /// candidate; DECLARED), and the count says so by name.</summary>
+            public bool OthersLead;
+            /// <summary>Maine's and Nebraska's congressional districts, by number; empty for a winner-take-all jurisdiction.</summary>
+            public int[] Districts = new int[0];
+            /// <summary>Each district's derived Democratic share of the two nominees' vote, and its winner (a candidate index).</summary>
+            public double[] DistrictDemocraticTwoParty = new double[0];
+            public int[] DistrictWinners = new int[0];
+        }
+
+        /// <summary>
+        /// PS-6 US-8 - R-US14 (a), RULED (Elias's ruling G2, `COMPLETED.md` §797): A PREDICTED ELECTION'S COLLEGE. Every jurisdiction derived from the
+        /// previous presidential election of record (<paramref name="priorYear"/>) at <paramref name="national"/> - the Democratic nominee's, the
+        /// Republican's and every other candidate's together, in <see cref="ShareDemocrat"/>'s order - by §689's normalised uniform swing
+        /// (<see cref="RegionalVoteModel.RegionalSharesByUniformSwing"/>, re-solved until the states give the national shares back; the worst residual
+        /// handed back), each jurisdiction weighing what it cast in the prior election; Maine's and Nebraska's districts swinging with their state in
+        /// two-party terms - each district's prior Democratic two-party share moved by its state's, its prior row standing in for the district of the
+        /// same number whatever its lines (US-4's DECLARED form, `UsStateSwingCheck`); the electors those in force in <paramref name="electorsYear"/>.
+        /// This is US-4's method (a) as its instrument measured it, moved here so that the game's count and the instrument run one derivation: the
+        /// instrument reads its (a) column from this. A winner is the larger of the two nominees (an exact tie goes to the Democratic nominee, as
+        /// US-4's instrument read it - a recount and the statutes' lot are not modelled). Throws where the catalog holds either year not, or where
+        /// the two years' jurisdictions or districts differ.
+        /// </summary>
+        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, out StateCall[] calls, out double worstResidual)
+        {
+            if (national == null || national.Length != 3) { throw new ArgumentException("three national shares: the Democratic nominee, the Republican, every other candidate"); }
+            var prior = new List<(int Year, string State, int Electors, long VotesD, long VotesR, long VotesOther, long VotesTotal, int CastD, int CastR, int CastOther, string CastOtherTo)>();
+            var inForce = new List<(int Year, string State, int Electors, long VotesD, long VotesR, long VotesOther, long VotesTotal, int CastD, int CastR, int CastOther, string CastOtherTo)>();
+            foreach (var state in UsPresidentialReturns.States)
+            {
+                if (state.Year == priorYear) { prior.Add(state); }
+                if (state.Year == electorsYear) { inForce.Add(state); }
+            }
+            if (prior.Count == 0) { throw new ArgumentException($"the catalog holds no presidential election of {priorYear} to swing from"); }
+            if (inForce.Count != prior.Count) { throw new ArgumentException($"the catalog holds {inForce.Count} jurisdictions' electors for {electorsYear} against {prior.Count} in {priorYear}"); }
+
+            var regions = new RegionalVoteModel.RegionInput[prior.Count];
+            var priorShares = new double[prior.Count][];
+            for (int r = 0; r < prior.Count; r++)
+            {
+                if (inForce[r].State != prior[r].State) { throw new ArgumentException($"{electorsYear}'s jurisdiction {inForce[r].State} stands where {priorYear}'s {prior[r].State} does"); }
+                regions[r] = new RegionalVoteModel.RegionInput(prior[r].State, prior[r].VotesTotal, null);
+                priorShares[r] = new[] { (double)prior[r].VotesD / prior[r].VotesTotal, (double)prior[r].VotesR / prior[r].VotesTotal, (double)prior[r].VotesOther / prior[r].VotesTotal };
+            }
+            double[][] derived = RegionalVoteModel.RegionalSharesByUniformSwing(national, regions, priorShares, out worstResidual);
+
+            calls = new StateCall[prior.Count];
+            var college = new Jurisdiction[prior.Count];
+            for (int r = 0; r < prior.Count; r++)
+            {
+                double[] shares = derived[r];
+                int win = shares[ShareRepublican] > shares[ShareDemocrat] ? Republican : Democrat;
+                var call = new StateCall
+                {
+                    State = prior[r].State, Electors = inForce[r].Electors, Shares = shares, PriorShares = priorShares[r], Winner = win,
+                    OthersLead = shares[ShareOthers] > Math.Max(shares[ShareDemocrat], shares[ShareRepublican]),
+                };
+                calls[r] = call;
+                var districts = new List<(int District, long VotesD, long VotesR)>();
+                int districtsInForce = 0;
+                foreach (var d in UsPresidentialReturns.Districts)
+                {
+                    if (d.State != prior[r].State) { continue; }
+                    if (d.Year == priorYear) { districts.Add((d.District, d.VotesD, d.VotesR)); }
+                    if (d.Year == electorsYear) { districtsInForce++; }
+                }
+                if (districts.Count == 0) { college[r] = new Jurisdiction(call.State, call.Electors, win); continue; }
+                if (electorsYear != priorYear && districtsInForce > 0 && districtsInForce != districts.Count)
+                {
+                    throw new ArgumentException($"{call.State}: {districts.Count} districts in {priorYear}, {districtsInForce} in {electorsYear}");
+                }
+                districts.Sort((a, b) => a.District.CompareTo(b.District));
+                // US-4's DECLARED form: the state's change in its Democratic two-party share added to each district's own
+                double statePrior = priorShares[r][ShareDemocrat] / (priorShares[r][ShareDemocrat] + priorShares[r][ShareRepublican]);
+                double stateNext = shares[ShareDemocrat] / (shares[ShareDemocrat] + shares[ShareRepublican]);
+                call.Districts = new int[districts.Count];
+                call.DistrictDemocraticTwoParty = new double[districts.Count];
+                call.DistrictWinners = new int[districts.Count];
+                for (int k = 0; k < districts.Count; k++)
+                {
+                    double d2 = (double)districts[k].VotesD / (districts[k].VotesD + districts[k].VotesR);
+                    double d2Next = d2 + (stateNext - statePrior);
+                    call.Districts[k] = districts[k].District;
+                    call.DistrictDemocraticTwoParty[k] = d2Next;
+                    call.DistrictWinners[k] = d2Next > 0.5 ? Democrat : Republican;
+                }
+                college[r] = new Jurisdiction(call.State, call.Electors, win, call.Electors - districts.Count, call.DistrictWinners);
+            }
+            return college;
+        }
+
+        /// <summary>PS-6 US-8: the catalog's latest presidential election before <paramref name="year"/> - the prior a predicted election of that year
+        /// swings from (R-US14 (a)); false where the catalog holds none.</summary>
+        public static bool TryPriorYear(int year, out int prior)
+        {
+            prior = 0;
+            foreach (var y in UsPresidentialReturns.Years) { if (y.Year < year && y.Year > prior) { prior = y.Year; } }
+            return prior > 0;
+        }
+
+        /// <summary>PS-6 US-8: the catalog's latest presidential election in or before <paramref name="year"/> - whose electors are in force for an
+        /// election that year; past the catalog's last they are carried forward (R-US13 (a), RULED - F8: the 2020-census allocation until the 2030
+        /// apportionment is sourced). False where the catalog holds none.</summary>
+        public static bool TryElectorsYear(int year, out int inForce)
+        {
+            inForce = 0;
+            foreach (var y in UsPresidentialReturns.Years) { if (y.Year <= year && y.Year > inForce) { inForce = y.Year; } }
+            return inForce > 0;
         }
 
         /// <summary>
@@ -194,7 +324,7 @@ namespace PoliSim.Elections
             return total;
         }
 
-        /// <summary>The winning candidate index, or -1 when nobody reaches <see cref="MajorityToElect"/> (the Twelfth-Amendment contingent case, which this model does not resolve — it reports it).</summary>
+        /// <summary>The winning candidate index, or -1 when nobody reaches <see cref="MajorityToElect"/> (the Twelfth-Amendment contingent case, which this file reports and does not resolve - the game's count resolves it, R-US3 (a), in <see cref="UsPresidentialElection"/>).</summary>
         public static int Winner(int[] electors)
         {
             for (int c = 0; c < electors.Length; c++)

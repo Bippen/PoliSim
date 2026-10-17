@@ -1,14 +1,14 @@
-# The US presidential count - model card (the states from the national vote; the national vote; the prediction; the campaign geography)
+# The US presidential count - model card (the states from the national vote; the national vote; the prediction; the campaign geography; the count)
 
-What the game's US presidential count will rest on, measured before the count goes live - and, since US-6, the prediction it will count, which
-is live (the poll and E1's factors; no polling day and no count until US-8). The figures the measurements produce are not typed
+What the game's US presidential count rests on, measured before the count went live - and, since US-6, the prediction it counts, which
+is live (the poll and E1's factors); since US-8 the count itself, on the polling day (*The count - US-8*, at the end). The figures the measurements produce are not typed
 here: each is written by the instrument that pins it, into its own marked block - under *The readings* the states from the national vote
 (`PoliSim.EditorTools.UsStateSwingCheck.WriteReadings`), under *The readings (US-5)* the national vote itself
 (`PoliSim.EditorTools.UsNationalVoteCheck.WriteReadings`), under *The readings (US-6)* the live prediction
 (`PoliSim.EditorTools.UsPresidentialFactorCheck.WriteReadings`), under *The readings (US-9)* the campaign geography R-US16 is asked on
-(`PoliSim.EditorTools.UsCampaignGeographyCheck.WriteReadings`, an Editor harness - nothing live) - and each instrument fails the cheap bar and the documents bar when its block no
+(`PoliSim.EditorTools.UsCampaignGeographyCheck.WriteReadings`, an Editor harness - nothing live), under *The readings (US-8)* the count (`PoliSim.EditorTools.UsPresidentialElectionDiagnostic.WriteReadings`) - and each instrument fails the cheap bar and the documents bar when its block no
 longer says what it measures. The records are `COMPLETED.md` §786 (the returns by state, `ElectionsData/usa/president_returns.md`), §787
-(the states), §788 (the House vote) and §789 (the national vote); US-6's and US-9's are their own sections of the record.
+(the states), §788 (the House vote) and §789 (the national vote); US-6's, US-9's and US-8's are their own sections of the record.
 
 ## The question - R-US14
 
@@ -581,7 +581,7 @@ Each set's least and greatest, recomputed from `ElectionsData/usa/house_midterms
 
 ### The model's midterm - 3 Nov 2026
 
-- **The world**: the epoch 2024-11-04 (the eve of 5 Nov 2024), seed 777, the USA the player's country with DEM its party (the AI governs the president's party through the term), no decision on any turn, stepped one day at a time in the controller's order to 2026-11-03 (729 days). The 2024 election's House from 2025-01-03, Trump (REP) from 2025-01-20 - the record's. On the polling day: the president's party REP, the House's largest party REP - **unified**.
+- **The world**: the epoch 2024-11-04 (the eve of 5 Nov 2024), seed 777, the USA the player's country with DEM its party (the AI governs the president's party through the term), no decision on any turn, stepped one day at a time in the controller's order to 2026-11-03 (729 days). The 2024 election's House from 2025-01-03, Trump (REP) from 2025-01-20 - elected by the world's own count of 5 Nov 2024 (US-8), as the record elected him. On the polling day: the president's party REP, the House's largest party REP - **unified**.
 - **The poll**: US-5's House history (R-US15 (a), G2) - held at the four countries' median spread (σ 1.25, τ 6.00), fitted to the 2024 House split (REP 51.32 %); the loyalty 2024 against 2022, REP 99.48 DEM 99.80; REP 51.32 % before the economic vote - the identity holds (within 0.0e+0 of the prior).
 - **The economic vote**: term index 43.4 - took office 2025-01-20, judged 2026-11-03: unemployment 5.2 % (2025-01) -> 6.0 % (2026-09); inflation 2.3 % (2025-01) -> 1.6 % (2026-09); 0.131833 units of deterioration on the book's scale.
 
@@ -608,7 +608,7 @@ The ruling record: ASKED (§840).
 The game's US poll and E1's factors (`docs/specs/USA_STAGE_PLAN.md`, US-6; R-US2 (a) and R-US15 (a), ruled). The poll is R-US15's ruled
 choice composed by the live chain (`NationalElection.TryPredictShares`); the presidential candidates carry it by E1's factors, fitted once to the
 FEC's national result against the game's poll on the reference world and refit on every bar by `PoliSim.EditorTools.UsPresidentialFactorCheck`,
-which fails where a stored factor is no longer the fit. Wired to the prediction only: no polling day and no count (US-8's).
+which fails where a stored factor is no longer the fit. Since US-8 the count reads it on the polling day (*The count - US-8*, below).
 
 | part | what it does | basis |
 |---|---|---|
@@ -617,8 +617,8 @@ which fails where a stored factor is no longer the fit. Wired to the prediction 
 | Its vintage | the chamber seated at the world's epoch - the vintage the history reads; a game from the start reads the start's for its whole run, the record's later chamber moving the seats and not the history (the standing history gap, §767); each vintage's electorate in the readings | DECLARED (US-6) |
 | The reference world | `PresidentialReferenceWorld`, generalised by country: the epoch set to the eve of the general election of record before the world is created, as a new game builds one, and one day stepped by the game's loop; never a start world with its clock moved | E1; the s772 review's fix |
 | The factors | each nominee's share of the FEC's national total ÷ the party's poll on that world; a later field at factor 1.0 | E1 [FITTED] (`PresidencyOfRecord.CandidatesOf`); F4 - the world that follows history |
-| The field | every column of the FEC's workbook: the two nominees NARA names stand for their parties at their parties' positions; every other column - candidates, None of These Candidates, the scattered write-ins - at its national share of record as base, standing nationally - every jurisdiction, where the plan's words are "standing only where the FEC shows them on the ballot" (`Tools/us_ballot_standing.pl` prints where the workbook shows each with votes) | R-US2 (a); a DEPARTURE (US-6), put to Elias: national standing - the per-state table lands with US-8, whose count reads the states |
-| The naming | the nominee by name from the nomination's date of record, "the Democratic/Republican nominee" before it: the DNC's date sourced; the Republican date BILLED, so "the Republican nominee" on every day, the count's and after included - the asymmetry put to Elias, NARA's certificates the plan's stand-in | R-US2 (a); `ElectionsData/usa/records_by_date.md` §2a, G13 |
+| The field | every column of the FEC's workbook: the two nominees NARA names stand for their parties at their parties' positions; every other column - candidates, None of These Candidates, the scattered write-ins - at its national share of record as base, standing nationally - every jurisdiction, where the plan's words are "standing only where the FEC shows them on the ballot" (`Tools/us_ballot_standing.pl` prints where the workbook shows each with votes) | R-US2 (a); a DEPARTURE (US-6), put to Elias: national standing - US-8's count pools every minor candidate per state (*The count - US-8*), so a per-state table would move no elector; it stays the ask |
+| The naming | the nominee by name from the nomination's date of record, "the Democratic/Republican nominee" before it: the DNC's date sourced; the Republican date BILLED, so "the Republican nominee" on every day before the count (a table no screen reads yet); from the count on, US-8's count names each nominee by NARA's name for the ticket (the contest, the oath's government, the Parliament page's president row) - the asymmetry and that naming put to Elias as one question, NARA's certificates the plan's stand-in | R-US2 (a); `ElectionsData/usa/records_by_date.md` §2a, G13 |
 
 ### The readings (US-6)
 
@@ -677,9 +677,9 @@ A game from the USA's start (12 Mar 2024) seats Usa2022 and its poll reads House
 
 ### The field of record and its naming (R-US2, ruled)
 
-The nominees are named from the nomination's date of record and "the Democratic/Republican nominee" before it; the withdrawal is not replayed. The Democratic nominee from 6 Aug 2024 - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the game names him "the Republican nominee" on every day, the count's and after included, to a REP player as to anyone: an asymmetry put to Elias.
+The nominees are named from the nomination's date of record and "the Democratic/Republican nominee" before it; the withdrawal is not replayed. The Democratic nominee from 6 Aug 2024 - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names him "the Republican nominee" on every day before the count, to a REP player as to anyone; from the count on, the game's own count (US-8) names each nominee by NARA's name for the ticket (the contest, the oath's government, the Parliament page's president row). The asymmetry and that naming are put to Elias as one question.
 
-**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are "the minor candidates standing only where the FEC shows them on the ballot"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). The per-state table lands with US-8, whose count reads the states.
+**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are "the minor candidates standing only where the FEC shows them on the ballot"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). US-8's count reads the states with every minor candidate pooled per state (*The count - US-8*), so a per-state table would move no elector - it stays the ask.
 <!-- END GENERATED -->
 
 ## The campaign geography - R-US16 (US-9)
@@ -827,4 +827,42 @@ Every country `LiveCampaignSetup.TryFor` stages, on the vote model at its own st
 |---|---:|---:|---:|---:|---:|---|
 | Sweden | 29 | 0.035 | 0 | 0.062 | 0 | 2 of 8 |
 | Germany | 16 | 0.003 | 0 | 0.299 | 2 | 8 of 9 |
+<!-- END GENERATED -->
+
+## The count - US-8
+
+The game's US presidential count (`docs/specs/USA_STAGE_PLAN.md`, US-8 - checkpoint 1; R-US3 (a), R-US14 (a), R-US13 (a) and R-US1 (a), ruled). On the
+polling day the day loop counts the player's country (`UsPresidentialElection.Count`, a pure function of the country, the day and the poll - R-US5's
+row then needs only its gate) and the verdict lands at once; the president-elect takes office at the oath through US-7. The acceptance is
+`PoliSim.EditorTools.UsPresidentialElectionDiagnostic`, which writes the readings below and fails where they no longer say what it measures.
+
+| part | what it does | basis |
+|---|---|---|
+| The day | the Tuesday next after the first Monday in November, every fourth year from the election of record (`WorldClock.TryNextPollingDay`); the electors meet on the first Tuesday after the second Wednesday in December, Congress counts on 6 January, the oath is on 20 January | 3 U.S.C. §21(1), §7, §15(a); the Twentieth Amendment §1 - their saved pages |
+| The national vote | the game's poll on the day (the live prediction, the government's record over its term shifting it - the call E1's reference world reads) × E1's factors (US-6); where the election is of record the field of record, every other column at its share of record; later fields unnamed at factor 1.0 | E1 [FITTED]; R-US2 (a) |
+| The states | the previous presidential election of record's states, moved to the national vote by §689's normalised uniform swing; Maine's and Nebraska's districts with their state, in two-party terms; the two nominees and every other candidate together, as US-4 measured it - the derivation US-4's instrument reads its (a) column from | R-US14 (a), RULED (G2); US-4's DECLARED form |
+| The electors | the statutes in force per jurisdiction (`ElectoralCollege`): winner-take-all, Maine's and Nebraska's district method; the electors in force the catalog holds for the year, carried forward from 2032 and labelled so on the Parliament page's president row | R-EL8; R-US13 (a), RULED (F8) |
+| No majority | the House seated on 6 January chooses by states - one vote a state, a majority of ALL the states to elect (from the apportionment, not from the delegations listed); a delegation votes its majority party's nominee, a tied delegation casts none; until the game elects the House, the House of record by its districts | R-US3 (a), RULED (F8) - the delegation's vote DECLARED |
+| The chamber | not elected: the House stays the record's, by date, and the polling day records that no chamber is elected | R-US1 (a), RULED (F8) |
+| The save | the contest rides format 39; the states are re-derived from the national shares it keeps (`UsPresidentialElection.StatesOf`), so no per-state field is saved | US-7's step for the pair |
+| A later count | swings from the record's 2024 states, not the game's own 2024 count (which the stored contest re-derives exactly) - asked of Elias: the record's states or the game's own, and whether US-26 owns the choice | R-US11 (a), RULED (the national prior and loyalty pair, US-26's to build); the state prior ASKED |
+
+### The readings (US-8)
+
+<!-- GENERATED by PoliSim.EditorTools.UsPresidentialElectionDiagnostic.WriteReadings. DO NOT EDIT BY HAND. source-digest: a47b6cf7c5af941d9d8c58e41cb49cf82863d97f765ee67060f10a757ecd3c04 -->
+**E1's acceptance for the USA** - the reference world (US-6's: the epoch the eve of 5 Nov 2024, one day stepped by the game's loop) holds its own count on the poll E1's factors are fitted to, and elects Donald J. Trump (REP): **312 to 226** electors of 538, against the record's **312 to 226** as appointed. Its national vote is the FEC's by construction - REP 49.80 %, DEM 48.32 %, every other candidate 1.88 % (the largest gap 0.0000 pp).
+
+States called wrong: none. Districts called wrong: none.
+
+Its states against US-4's (a) column at the true national shares (*The readings*, above): the largest margin difference 0.000000 pp, 0 calls apart - the per-state misses that table lists for 2020 → 2024 under (a) are the count's own. The stored contest re-derives these states exactly from the national shares it keeps, so the save carries no per-state field (format 39, the step US-7 took for the pair).
+
+**The dates**: the polling day 5 Nov 2024 (3 U.S.C. §21(1)), the electors meet 17 Dec 2024 (§7), Congress counts 6 Jan 2025 (§15(a)), the oath 20 Jan 2025 (the Twentieth Amendment §1) - NARA's key dates for 2024.
+
+**R-US3's path, planted** - the record's 2024 college with Pennsylvania, Michigan and Wisconsin to the Democratic nominee and Nebraska's 2nd district to the Republican gives 269 to 269: no candidate has a majority of the 538 electors appointed. On 6 Jan 2025 the House elected in 2024 (seated by date) chooses by states - 30 for Donald J. Trump, 18 for Kamala D. Harris, 2 tied, casting no vote, of 50; a majority of all the states is 26 - Donald J. Trump elected, sworn on 20 Jan 2025.
+
+**A later day**, on a planted even poll: 7 Nov 2028 counts 302 to 236 - the field unnamed ("Republican Party's candidate (2028)") at E1's future factor and no minor candidate, the states from the record's 2024 - not the game's own 2024 count, which the stored contest could give (asked of Elias, with whether US-26 owns it) - the swing closing to within 5.1E-006 of the national shares (with no minor candidate to absorb the floor it closes only approximately; no call moves), the electors those in force in 2024 (the 2020 census's, by law in force for 2028; carried forward from 2032, R-US13 (a), and labelled so on the president row).
+
+**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Senate's choice of the Vice President; a House that cannot choose (who governs then is US-7's reading 3, asked). The per-state ballot table of the minor candidates (US-6's departure, asked) would not move an elector while the states pool them.
+
+The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8) and R-US14 (a) (G2), each RULED; R-US11 (a), RULED, is US-26's to build.
 <!-- END GENERATED -->

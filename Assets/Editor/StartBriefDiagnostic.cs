@@ -59,23 +59,29 @@ namespace PoliSim.EditorTools
                 bool presidentRow = false;
                 foreach (StartBrief.Row row in StartBrief.Rows(usa)) { if (row.Name == "President" && row.Figure == "Joseph R. Biden Jr. (DEM)") { presidentRow = true; } }
                 Check(presidentRow, "the USA's ledger carries a President row");
-                // PS-6, US-1: the US start says what it holds - the game holds no US election yet, so no polling day is promised. The folder card's line
-                // and the start card's mode line say only that no election is held; the brief, its Election row and the not-held reason say what holds -
-                // since US-2 the record's House and president, seated on the record's dates (the brief reads those dates from the record), no Senate. Each
-                // pinned whole.
+                // PS-6 US-8 (in place of US-1's pin): the US start names its polling day, which the game now holds - 5 November 2024, 3 U.S.C. §21(1)'s day,
+                // the calendar's own answer (WorldClock.TryNextPollingDay), held by name. The folder card's line and the start card's mode line name the run-up;
+                // the brief's polling-day clause says what the day elects - the president, through the Electoral College - and what stays the record's: the House,
+                // seated on its record's day (the brief reads it from the record), no Senate; the ledger's Polling day row; the not-held reason says the House is
+                // not elected. The record's next president is named on none of them (the game's count decides who takes office). Each pinned whole.
                 bool electionRow = false, pollingRow = false;
                 foreach (StartBrief.Row row in StartBrief.Rows(usa))
                 {
-                    if (row.Name == "Election" && row.Figure == "NONE IN THIS GAME YET · THE RECORD SEATED ON ITS DATES") { electionRow = true; }
-                    if (row.Name.EndsWith("olling day", StringComparison.Ordinal)) { pollingRow = true; }
+                    if (row.Name == "Election") { electionRow = true; }
+                    if (row.Name == "Polling day" && row.Figure == "5 NOV 2024") { pollingRow = true; }
                 }
                 string usaLine = WorldClock.StartLine(CountryId.USA), usaReason = NationalElection.NotHeldReason(CountryId.USA);
                 string usaMode = StartPoints.ModeLine(usa);
-                Check(!usaText.Contains("Polling day") && usaText.Contains("No election is held in this game yet - the House elected on 5 November 2024 is seated on 3 January 2025 and Donald J. Trump (REP) takes office on 20 January 2025, as the record dates them; no Senate is modelled.")
-                      && usaLine == "OPENS 12 MAR 2024 · NO ELECTION IN THIS GAME YET" && usaMode == "NO ELECTION YET · OPENS 12 MAR 2024"
-                      && usaReason == "No US election is held in this game yet: the House and the president are seated as the record seats them, on its dates, until the Electoral College count and the House races are built; no Senate is modelled.",
-                    F("US-1: the USA's start says what it holds - no polling-day clause; the folder card \"{0}\"; the start card \"{1}\"; the not-held reason \"{2}\"", usaLine, usaMode, usaReason));
-                Check(electionRow && !pollingRow, "US-1, US-2: the USA's ledger carries an Election row - none in this game yet, the record seated on its dates - and no polling-day row");
+                bool usaHeld = WorldClock.TryNextPollingDay(CountryId.USA, usa.Opens, out DateTime usaPolling);
+                bool namesRecordsNext = usaText.Contains("Donald J. Trump") || usaLine.Contains("TRUMP") || usaMode.Contains("TRUMP");
+                Check(usaHeld && usaPolling == new DateTime(2024, 11, 5) && usa.PollingDay == usaPolling
+                      && usaText.Contains("Polling day is 5 November 2024. The president is elected through the Electoral College; the House of record elected that day is seated on 3 January 2025, as the record dates it, and no Senate is modelled.")
+                      && usaLine == "OPENS 12 MAR 2024 · THE RUN-UP TO 5 NOV 2024" && usaMode == "RUN-UP · OPENS 12 MAR 2024"
+                      && usaReason == "No US House election is held in this game yet: the president is elected through the Electoral College on the polling day, and the House is seated as the record seats it, on its dates, until the House races are built; no Senate is modelled."
+                      && !namesRecordsNext,
+                    F("US-8: the USA's start names the polling day the game holds - the calendar's {0:yyyy-MM-dd}; the folder card \"{1}\"; the start card \"{2}\"; the not-held reason \"{3}\"; the record's next president named on none ({4})",
+                        usaPolling, usaLine, usaMode, usaReason, !namesRecordsNext));
+                Check(pollingRow && !electionRow, "US-8: the USA's ledger carries its Polling day row, 5 NOV 2024, and no Election row (US-1's NONE IN THIS GAME YET retired)");
                 // PS-7-interim (PS-7's "until then"): Italy's start says what it holds, in Italy's words - its calendar offers no polling day, so the snap election
                 // the start is cut on is not held. The folder card's line and the start card's mode line say only that no election is held; the brief, its
                 // Election row and the not-held reason say what holds - the Camera and the government seated at the start, the government a stand-in for the
@@ -105,19 +111,20 @@ namespace PoliSim.EditorTools
                 Check(!WorldClock.RecordSeatsChamber(CountryId.Italy) && !WorldClock.RecordSeatsExecutive(CountryId.Italy) && ConfidenceProcedure.RulesOf(CountryId.Italy) == ConfidenceProcedure.Rules.Unsourced,
                     F("PS-7-interim: the premise of Italy's words holds - the record seats neither Italy's chamber ({0}) nor its executive ({1}) by date, and its confidence rules are unsourced ({2})",
                         WorldClock.RecordSeatsChamber(CountryId.Italy), WorldClock.RecordSeatsExecutive(CountryId.Italy), ConfidenceProcedure.RulesOf(CountryId.Italy)));
-                // the predicate is the USA's and Italy's alone, and every other playable start with a polling day keeps it, in the brief and the ledger
+                // the predicate is Italy's alone since US-8 retired the USA (PS-7-interim keeps Italy), and every other playable start with a polling day keeps it,
+                // in the brief and the ledger - the USA's among them now
                 var heldElsewhere = new List<string>();
                 bool namedOnly = true;
                 foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
                 {
-                    namedOnly &= WorldClock.NoElectionYet(id) == (id == CountryId.USA || id == CountryId.Italy);
+                    namedOnly &= WorldClock.NoElectionYet(id) == (id == CountryId.Italy);
                     if (WorldClock.NoElectionYet(id) || !StartPoints.TryPlayable(id, out StartPoints.StartPoint sp) || sp.PollingDay == DateTime.MinValue) { continue; }
                     string brief = StartBrief.Text(sp);
                     bool row = false;
                     foreach (StartBrief.Row r in StartBrief.Rows(sp)) { if (r.Name == "Polling day" || r.Name == "Last polling day") { row = true; } }
                     if (!brief.Contains("Polling day is " + sp.PollingDay.ToString("d MMMM yyyy", CultureInfo.InvariantCulture) + ".") || !row) { heldElsewhere.Add(id.ToString()); }
                 }
-                Check(namedOnly && heldElsewhere.Count == 0, F("US-1, PS-7-interim: NoElectionYet is the USA's and Italy's alone, and every other playable start with a polling day keeps it in its brief and its ledger{0}",
+                Check(namedOnly && heldElsewhere.Count == 0, F("US-8, PS-7-interim: NoElectionYet is Italy's alone, and every other playable start with a polling day - the USA's among them - keeps it in its brief and its ledger{0}",
                     heldElsewhere.Count > 0 ? "; NOT: " + string.Join(", ", heldElsewhere) : string.Empty));
                 // PS-7-interim: the pin over every playable start, both ways - a start says no election is held (NoElectionYet) or governs as a what-if
                 // (GoverningModeOnly) exactly where the game's calendar offers it no polling day from its opening (TryNextPollingDay). A start that promises a
@@ -129,8 +136,10 @@ namespace PoliSim.EditorTools
                     bool held = WorldClock.TryNextPollingDay(id, sp.Opens, out DateTime heldOn);
                     bool saysNone = WorldClock.NoElectionYet(id) || WorldClock.GoverningModeOnly(id);
                     if (held == saysNone) { mismatched.Add(held ? F("{0} says none is held, but its calendar holds {1:yyyy-MM-dd}", id, heldOn) : F("{0} promises a polling day its calendar does not hold", id)); }
+                    // PS-6 US-8: and the day a start's card names is the day its calendar holds - the USA's 5 November 2024 by name above
+                    else if (held && heldOn != sp.PollingDay) { mismatched.Add(F("{0}'s calendar holds {1:yyyy-MM-dd}, but its card names {2:yyyy-MM-dd}", id, heldOn, sp.PollingDay)); }
                 }
-                Check(mismatched.Count == 0, F("PS-7-interim: every playable start says no election is held exactly where the game's calendar holds none from its opening{0}",
+                Check(mismatched.Count == 0, F("PS-7-interim, US-8: every playable start says no election is held exactly where the game's calendar holds none from its opening, and names the day it holds where it holds one{0}",
                     mismatched.Count > 0 ? "; NOT: " + string.Join("; ", mismatched) : string.Empty));
                 StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint france);
                 string frText = StartBrief.Text(france);

@@ -284,6 +284,7 @@ namespace PoliSim.EditorTools
             ("UsMidtermCheck", UsMidtermCheck.Run),   // PS-6 US-13 (§840): R-US20's instrument - the midterm record re-read against its pages, the model's 2026 midterm from the eve of 5 Nov 2024 (the legislative cell in the instrument only), the preregistered rule's verdict and the ruling record
             ("UsPresidentialFactorCheck", UsPresidentialFactorCheck.Run),   // PS-6 US-6 (§844): the US poll live (the House history, the electorate held at the four's median per seated vintage), E1's factors refit on the reference world each run, the card's US-6 block
             ("UsCampaignGeographyCheck", UsCampaignGeographyCheck.Run),   // PS-6 US-9 (§846): a US campaign on the 51 jurisdictions in the Editor only - where the AI's local acts land, a local act through the national total, W-D1's per-state count, R-US16's sizes; the card's US-9 block
+            ("UsPresidentialElectionDiagnostic", UsPresidentialElectionDiagnostic.Run),   // PS-6 US-8 (§847): the US presidential count - E1's US acceptance on the reference world (Trump, 312-226, no state called wrong), a game from 12 Mar 2024 past the count and the oath with saves loaded into the game, R-US3's planted 269-269 chosen by the House by a majority of all the states, the default-USA paths, the card's US-8 block
 
             // §419 (2026-09-09): the same idiom one document over. `GeneratedCatalogCheck` guards a
             // generated C# catalog against its CSV; this guards the ASK's inventory against the repo it
@@ -756,6 +757,7 @@ namespace PoliSim.EditorTools
             ("UsMidtermCheck", UsMidtermCheck.Run),                     // §840: the card's midterm block and US_MIDTERM_RECORD.md against R-US20's run - a document-only commit still runs it
             ("UsPresidentialFactorCheck", UsPresidentialFactorCheck.Run),       // §844: the card's US-6 block against the refit - a document-only commit still runs it
             ("UsCampaignGeographyCheck", UsCampaignGeographyCheck.Run),         // §846: the card's US-9 block against the harness - a card-only commit still runs it
+            ("UsPresidentialElectionDiagnostic", UsPresidentialElectionDiagnostic.Run),   // §847: the card's US-8 block against the count's run - a document-only commit still runs it
             ("PresidentialVoteBacktest", PresidentialVoteBacktest.Run),         // §844 (G8): PRESIDENTIAL_VOTE.md's readings block against the backtest - a document-only commit still runs it
         };
 

@@ -922,7 +922,8 @@ namespace PoliSim.Data
         /// <summary>PS-6 US-7: the US presidential elections the game held for this country, oldest first - each with its electors, its dates, the House's
         /// contingent choice where it was held, and its winner (`UsPresidentialElection.Contest`). The president from an oath is read from them
         /// (`UsPresidentialElection.TryInOffice`), and from the first polling day the record seats no president (`WorldClock.RecordSeatsExecutive`). Empty where
-        /// the country elects no president by electors - and in play until US-8's count holds one (a diagnostic plants them). Saved (format 39).</summary>
+        /// the country elects no president by electors; PS-6 US-8's count adds one on each polling day the day loop counts (`UsPresidentialElection.Hold`). Saved
+        /// (format 39) - the states are not, being re-derived from the national shares each contest keeps (`UsPresidentialElection.StatesOf`).</summary>
         public List<Elections.UsPresidentialElection.Contest> UsPresidentialElections = new List<Elections.UsPresidentialElection.Contest>();
 
         /// <summary>

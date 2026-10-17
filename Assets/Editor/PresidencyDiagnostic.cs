@@ -17,13 +17,16 @@ namespace PoliSim.EditorTools
     /// <summary>
     /// PS-6 US-7 (`docs/specs/USA_STAGE_PLAN.md`, "The oath: a presidency, not a formation"): THE OATH, ON PLANTED OUTCOMES. The plan's done-when: "a presidency
     /// diagnostic forces each outcome and steps to 21 Jan 2025 - each world seats its winner on the oath's date, and a DEM-player world whose candidate wins reads
-    /// PRESIDENT; ... a save straddling the oath loads into the game". US-8's count does not exist yet, so each contest is PLANTED as that count will record one
-    /// (the plan: "Tested on planted outcomes; US-8 supplies the real one"), its figures read from the catalog (NARA's electors), never typed. Every world is built as
-    /// a new game builds one (the epoch set before the world is created) and stepped in the controller's order (`CongressOfRecordDiagnostic`'s).
+    /// PRESIDENT; ... a save straddling the oath loads into the game". Each contest is PLANTED as the count records one (the plan: "Tested on planted outcomes;
+    /// US-8 supplies the real one"), its figures read from the catalog (NARA's electors), never typed - except where PS-6 US-8's count now holds the real one: a
+    /// world on the eve of 5 November 2024 counts its own polling day (b), and an undecided contingent contest is chosen by the House on the count's day by the
+    /// count's own path (e). Every world is built as a new game builds one (the epoch set before the world is created) and stepped in the controller's order
+    /// (`CongressOfRecordDiagnostic`'s).
     /// <list type="bullet">
     /// <item>(a) the sources: the Twentieth Amendment §1 and Art. II §1 held to their saved pages (SHA-256 in SHA256SUMS.txt), and NARA's key dates for 2024 - the
     /// electors' meeting, the count of 6 January and the inauguration the planted contests carry; the oath's day the rule gives equals the record's own row;</item>
-    /// <item>(b) REP wins, a REP player - the long world, opened on the eve of 5 November 2024: from the polling day the record seats no president, REP is the
+    /// <item>(b) REP wins, a REP player - the long world, opened on the eve of 5 November 2024, whose own count (US-8 - E1's acceptance world) elects REP's nominee
+    /// on the polling day: from the polling day the record seats no president, REP is the
     /// PRESIDENT-ELECT (the chip and the gate's reason) and in opposition toward the sitting government; the 119th House still seated by the record on 3 January;
     /// Biden to the 19th; the game's Trump on the 20th - a presidency the game elected, formed that day, not the record's - and PRESIDENT from it, REP's own
     /// arrival window opening on the oath's day; each change once; every other country untouched;</item>
@@ -32,9 +35,9 @@ namespace PoliSim.EditorTools
     /// eve of the oath and loaded into the game: the open window loads as the arrival window, and the oath keeps it so - the load equals the continuous run;</item>
     /// <item>(d) REP wins, a DEM player: PRESIDENT to the 19th, IN OPPOSITION from the 20th, the DEM window closed and the new government's budget tabled that
     /// day - US-2's oath, through the same transition;</item>
-    /// <item>(e) a contingent election, half the electors appointed each, undecided until the House chooses on 6 January (R-US3 (a)) - no president-elect before
-    /// it, REP's after, its winner sworn on the 20th, the government saying the House chose; the contingent contest - its flag, its delegations, its tallies'
-    /// NaN shares - crosses a save whole;</item>
+    /// <item>(e) a contingent election, half the electors appointed each, undecided until the House chooses on 6 January (R-US3 (a)) - by US-8's count on the day
+    /// loop, the delegations of the House then seated - no president-elect before it, REP's after, its winner sworn on the 20th, the government saying the House
+    /// chose; the contingent contest - its flag, its delegations, its tallies' NaN shares - crosses a save whole;</item>
     /// <item>(f) ASKED of Elias (US-7's reading 3), the code's answer pinned until he rules: a contest still undecided on the oath's day seats no one - the
     /// sitting president stays;</item>
     /// <item>(g) scope: a world whose player is another country keeps the AI USA's president across the oath, a contest planted or not (PS-8 owns the AI row);</item>
@@ -129,14 +132,7 @@ namespace PoliSim.EditorTools
                         c.Electors.Add(new UsPresidentialElection.Tally { Candidate = y2024.NomineeD, Party = "DEM", Votes = y2024.Electors - y2024.Electors / 2 });
                         return c;
                     }
-                    void HouseChooses(UsPresidentialElection.Contest c)
-                    {
-                        // as US-8's count of 6 January will record it: a majority of the states for REP (planted), the rest for DEM
-                        c.Delegations.Add(new UsPresidentialElection.Tally { Candidate = y2024.NomineeR, Party = "REP", Votes = states / 2 + 1 });
-                        c.Delegations.Add(new UsPresidentialElection.Tally { Candidate = y2024.NomineeD, Party = "DEM", Votes = states - (states / 2 + 1) });
-                        c.Winner = y2024.NomineeR; c.WinnerParty = "REP";
-                        c.Line += "; the House chose REP's candidate (planted)";
-                    }
+                    // PS-6 US-8: the House's choice on the count's day is the count's own now (UsPresidentialElection.HoldHouseChoice, on the day loop) - it was planted here
                     Check(y2024.Electors > 0 && y2024.CastR + y2024.CastD == y2024.Electors && y2024.CastR > y2024.CastD && states > 0,
                         F("the planted contests read the catalog's 2024 row: {0} {1} - {2} {3} of {4} electors appointed (REP's win the record's count; DEM's the same electors swapped; the tie half each); {5} states for the House's choice",
                             y2024.NomineeR, y2024.CastR, y2024.NomineeD, y2024.CastD, y2024.Electors, states));
@@ -188,7 +184,7 @@ namespace PoliSim.EditorTools
 
                     // ---- (b) REP wins, a REP player - the long world, from the eve of the polling day to the day after the oath
                     string saveEve = Path.Combine(dir, "eve_of_oath.json"), saveAfter = Path.Combine(dir, "after_oath.json"), saveDemEve = Path.Combine(dir, "dem_eve_of_oath.json");
-                    UsPresidentialElection.Contest contestA = Planted("REP", "REP's win, the record's count");
+                    UsPresidentialElection.Contest contestA;
                     {
                         (SimulationManager sim, World world, Country usa) = Open(Eve, CountryId.USA, "REP");
                         var others = world.Countries.Where(c => c.Id != CountryId.USA).ToDictionary(c => c.Id, c => (Seats: c.ParliamentSeats, Gov: c.Government));
@@ -197,7 +193,13 @@ namespace PoliSim.EditorTools
                         Check(eveGov != null && eveGov.Executive == Biden && WorldClock.RecordSeatsExecutive(usa, Eve) && GovernmentRecord.RoleOn(usa, "REP", Eve) == PlayerRole.Opposition && eveChip == "IN OPPOSITION (outlined)",
                             F("(b) on the eve, {0}: {1} governs, the record seats the president, REP in opposition - the chip \"{2}\"", Day(Eve), eveGov?.Executive, eveChip));
                         Step(sim, world);
-                        usa.UsPresidentialElections.Add(contestA);   // the count's day: the contest held, as US-8's count will add it
+                        // PS-6 US-8: the count's day - the world's own count holds the contest (the day loop's hook); where it held none, the planted REP win stands in so
+                        // the oath's checks still run, and the count's absence fails by name
+                        contestA = usa.UsPresidentialElections.Count == 1 ? usa.UsPresidentialElections[0] : null;
+                        Check(contestA != null && contestA.PollingDay == Polled && contestA.DayBasis != null && contestA.DayBasis.StartsWith(UsPresidentialElection.DayBasis, StringComparison.Ordinal)
+                              && contestA.WinnerParty == "REP" && contestA.Winner == y2024.NomineeR && !contestA.Contingent,
+                            F("(b) on the polling day the world's own count (US-8) holds the contest and elects REP's nominee - {0}", contestA?.Line ?? usa.UsPresidentialElections.Count + " contest(s) held"));
+                        if (contestA == null) { usa.UsPresidentialElections.Clear(); contestA = Planted("REP", "REP's win, the record's count - planted, the world's count held none"); usa.UsPresidentialElections.Add(contestA); }
                         DateTime today = sim.CurrentDate;
                         string elect = Chip(chipController, sim, usa);
                         bool gate = !sim.PlayerMayIntroduce(CountryId.USA, out string locked);
@@ -326,14 +328,22 @@ namespace PoliSim.EditorTools
                         GovernmentRecord eveGov = usa.Government;
                         bool undecided = !tied.Decided() && tied.ElectorsOf("REP") < tied.MajorityOfElectors() && tied.ElectorsOf("DEM") < tied.MajorityOfElectors()
                                          && !WorldClock.RecordSeatsExecutive(usa, sim.CurrentDate) && GovernmentRecord.RoleOn(usa, "REP", sim.CurrentDate) == PlayerRole.Opposition;
-                        bool electAfterCount = false, oathDay = false, crossed = false;
-                        string crossedWhat = "not cut";
+                        bool electAfterCount = false, oathDay = false, crossed = false, houseChose = false;
+                        string crossedWhat = "not cut", choseWhat = "not reached";
                         for (int d = 0; d < 30 && sim.CurrentDate < StepTo; d++)
                         {
                             Step(sim, world);
                             DateTime today = sim.CurrentDate;
-                            if (today < CountedOn && GovernmentRecord.RoleOn(usa, "REP", today) != PlayerRole.Opposition) { undecided = false; }
-                            if (today == CountedOn) { HouseChooses(tied); }   // the House's choice on the count's day, as US-8's count will record it
+                            if (today < CountedOn && (GovernmentRecord.RoleOn(usa, "REP", today) != PlayerRole.Opposition || tied.Delegations.Count > 0)) { undecided = false; }
+                            if (today == CountedOn)
+                            {
+                                // PS-6 US-8: the House's choice on the count's day is the count's own (the day loop's hook) - by the delegations of the House then seated
+                                List<(string State, int Republicans, int Democrats)> house = UsPresidentialElection.DelegationsOn(today, out string houseName);
+                                int forRep = house.Count(h => h.Republicans > h.Democrats), forDem = house.Count(h => h.Democrats > h.Republicans);
+                                houseChose = tied.Decided() && tied.Delegations.Count == 2 && tied.Delegations.Sum(t => t.Votes) == forRep + forDem && house.Count == states
+                                             && tied.WinnerParty == (forRep > house.Count / 2 ? "REP" : forDem > house.Count / 2 ? "DEM" : null);
+                                choseWhat = F("{0}: {1} states REP, {2} DEM, {3} tied of {4} - {5}", houseName, forRep, forDem, house.Count - forRep - forDem, house.Count, tied.Line);
+                            }
                             if (today == CountedOn.AddDays(1))
                             {
                                 electAfterCount = GovernmentRecord.RoleOn(usa, "REP", today) == PlayerRole.PresidentElect && ReferenceEquals(usa.Government, eveGov);
@@ -347,6 +357,7 @@ namespace PoliSim.EditorTools
                             if (today == Oath) { oathDay = IsGameElected(usa.Government, trump) && usa.Government.Basis.Contains("chosen by the House") && sim.PlayerGoverns(usa); }
                         }
                         Check(undecided, F("(e) a tie, {0} to {1} of {2} electors (a majority is {3}): undecided until the House chooses - no president-elect before {4}, the record seating no president", tied.ElectorsOf("REP"), tied.ElectorsOf("DEM"), tied.ElectorsAppointed, tied.MajorityOfElectors(), Day(CountedOn)));
+                        Check(houseChose, F("(e) on {0} the count's own House choice (US-8, the day loop) decides it by the delegations then seated - {1}", Day(CountedOn), choseWhat));
                         Check(electAfterCount, F("(e) the House chooses REP's candidate on {0}: REP is the PRESIDENT-ELECT from then, the sitting government unchanged", Day(CountedOn)));
                         Check(crossed, F("(e) the contingent contest crosses a save whole, field by field, cut {0}: {1}", Day(CountedOn.AddDays(1)), crossedWhat));
                         Check(oathDay, F("(e) {0}: {1} takes office - \"{2}\"", Day(Oath), usa.Government?.Executive, usa.Government?.Basis));
@@ -500,7 +511,7 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>A contest as the save carries it, field by field - the dates, the electors, the delegations, the contingent flag, the winner, the line.</summary>
-        private static bool SameContest(UsPresidentialElection.Contest a, UsPresidentialElection.Contest b)
+        internal static bool SameContest(UsPresidentialElection.Contest a, UsPresidentialElection.Contest b)
         {
             bool Tallies(List<UsPresidentialElection.Tally> x, List<UsPresidentialElection.Tally> y) =>
                 x.Count == y.Count && x.Zip(y, (p, q) => p.Candidate == q.Candidate && p.Party == q.Party && p.Votes == q.Votes && p.Share.Equals(q.Share)).All(same => same);
@@ -509,10 +520,10 @@ namespace PoliSim.EditorTools
                    && Tallies(a.Electors, b.Electors) && Tallies(a.Delegations, b.Delegations);
         }
 
-        private static FieldInfo ControllerField(string name) => typeof(PoliSim.UI.GameController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+        internal static FieldInfo ControllerField(string name) => typeof(PoliSim.UI.GameController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
 
         /// <summary>A saved page's text, true where its SHA-256 is the one its folder's SHA256SUMS.txt lists.</summary>
-        private static bool Page(string relative, out string text)
+        internal static bool Page(string relative, out string text)
         {
             text = string.Empty;
             string path = Path.Combine(Directory.GetCurrentDirectory(), relative);
@@ -528,7 +539,7 @@ namespace PoliSim.EditorTools
 
         /// <summary>A save loaded INTO THE GAME (§557): a controller in edit mode adopts it through its own `RestoreFromSave` - `CongressOfRecordDiagnostic`'s path - its
         /// manager handed to it; the forks the load builds are disposed. Returns the manager the controller now drives and the controller, or nulls with the reason.</summary>
-        private static (SimulationManager, PoliSim.UI.GameController) Adopt(SaveGame save, List<GameObject> hosts, out string error)
+        internal static (SimulationManager, PoliSim.UI.GameController) Adopt(SaveGame save, List<GameObject> hosts, out string error)
         {
             error = null;
             var go = new GameObject("PresidencyDiagnostic.Controller"); hosts.Add(go);

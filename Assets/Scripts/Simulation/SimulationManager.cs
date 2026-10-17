@@ -479,6 +479,8 @@ namespace PoliSim.Simulation
             PollingDayToday = TryPlayerPollingDay(out System.DateTime pollingDay) && pollingDay == CurrentDate;
             // §770 (PS-5 item C4): a round of the player's country's presidential election, on its own day - the simulation's alone (no verdict to show)
             HoldPresidentialRound();
+            // PS-6 US-8: the US presidential count on its polling day, and the House's choice on the count's day where no one has a majority - the verdict at once
+            HoldUsPresidentialCount();
 
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
@@ -4300,6 +4302,39 @@ namespace PoliSim.Simulation
             }
             Elections.PresidentialElection.Contest held = Elections.PresidentialElection.HoldRounds(country, CurrentDate, predicted);
             if (held != null) { Debug.Log("PRESIDENTIAL: " + held.Line); }
+        }
+
+        /// <summary>
+        /// PS-6 US-8 (`docs/specs/USA_STAGE_PLAN.md`): THE US PRESIDENTIAL COUNT, on the day loop - the player's country's alone, as the record is (R-US5 (a): the
+        /// count is a pure function of the world, <see cref="Elections.UsPresidentialElection.Count"/>; PS-8 gives an AI USA its gate). On the count's day of a
+        /// contest no one won outright, the House chooses by states first (R-US3 (a), <see cref="Elections.UsPresidentialElection.HoldHouseChoice"/>). On the
+        /// polling day (3 U.S.C. §21(1)), not yet counted, the count reads the live prediction as Poland's first vote does - the government's record over its term
+        /// shifting it (§752), the same call E1's reference world reads its poll by, so the factors meet the poll they were fitted on - and the contest is added to
+        /// the country: the president-elect takes office at the oath (<see cref="SeatTheRecordOnItsDate"/>), and from the polling day the record seats no president.
+        /// No campaign is staged for the USA (`LiveCampaignSetup.TryFor` - its stated reason stands, as Poland's does), so no campaign's shares are read. A day the
+        /// count cannot be made (no prediction; E1's factors not fitted) holds nothing and says so: the record's president stays seated by date. The count draws
+        /// no random number, so no stream moves. Nothing here is shown as a night: the verdict lands at once (D-US builds the night).
+        /// </summary>
+        private void HoldUsPresidentialCount()
+        {
+            if (!PlayerCountryId.HasValue || !Elections.UsPresidentialElection.ElectsIn(PlayerCountryId.Value)) { return; }
+            Country country = _world?.GetCountry(PlayerCountryId.Value);
+            if (country == null) { return; }
+            Elections.UsPresidentialElection.Contest chosen = Elections.UsPresidentialElection.HoldHouseChoice(country, CurrentDate, out string choice);
+            if (chosen != null) { Debug.Log($"PRESIDENTIAL: {country.Id} - the House's choice: {choice}"); }   // its own line only - the count's was logged on its polling day
+            if (!Elections.UsPresidentialElection.IsPollingDay(country, CurrentDate)) { return; }
+            if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate))
+            {
+                Debug.LogWarning($"PRESIDENTIAL: {country.Id} - no prediction could be made on the polling day {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's president stays seated by date");
+                return;
+            }
+            Elections.UsPresidentialElection.Contest held = Elections.UsPresidentialElection.Hold(country, CurrentDate, poll, out string why);
+            if (held == null)
+            {
+                Debug.LogWarning($"PRESIDENTIAL: {country.Id} - the count of {CurrentDate:yyyy-MM-dd} could not be made: {why}; nothing is counted, and the record's president stays seated by date");
+                return;
+            }
+            Debug.Log($"PRESIDENTIAL: {country.Id} - {held.Line}");
         }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>

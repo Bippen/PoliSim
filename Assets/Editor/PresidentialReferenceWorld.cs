@@ -22,8 +22,10 @@ namespace PoliSim.EditorTools
     /// <para>PS-6 US-6: <b>GENERALISED BY COUNTRY</b> (the s772 review's fix, carried: never a start world with its clock moved). The vote of record is
     /// the country's (<see cref="VoteOfRecord"/>): Poland's first round of 18 May 2025 as before - its path statement for statement what it was, so
     /// `PresidentialElectionLiveDiagnostic` and `PresidentialVoteBacktest` print what they printed - and the USA's general election of 5 Nov 2024, the
-    /// epoch set to its eve before the world is created and one day stepped. The USA holds no contest here (no polling day until US-8), so its world
-    /// is the poll on the day of the vote and the record the poll carries; `UsPresidentialFactorCheck` fits and holds E1's US factors on it. The same
+    /// epoch set to its eve before the world is created and one day stepped. Its world is the poll on the day of the vote and the record the poll
+    /// carries; `UsPresidentialFactorCheck` fits and holds E1's US factors on it. PS-6 US-8: the step now holds the USA's own count on that day, on the
+    /// same poll (the day loop's hook makes the same call), kept with the country (`Country.UsPresidentialElections`, not <see cref="Result.Contest"/>) -
+    /// E1's acceptance for the USA, `UsPresidentialElectionDiagnostic`'s. The same
     /// world is the one R-US18's (c), were it ruled, names as E1's point ("US-6's reference world on the eve of 5 Nov 2024"). A game PLAYED from the
     /// USA's start (12 Mar 2024) reaches 5 Nov on its own economy and the one seed vintage (`WorldClock.SeedVintageLine`), so its count is its own.</para>
     /// </summary>
@@ -40,7 +42,7 @@ namespace PoliSim.EditorTools
             public Dictionary<string, double> PollOnFirstVote;
             /// <summary>PS-6 US-6: the record's shift that poll carries (`EconomicVote.RecordOverTerm`), by party key.</summary>
             public Dictionary<string, double> Shift;
-            /// <summary>The contest the game held - null where the hook held none (always for the USA, whose count is US-8's).</summary>
+            /// <summary>The two-round contest the game held - null where the hook held none (always for the USA, whose count rides its own list, US-8).</summary>
             public PresidentialElection.Contest Contest;
             public DateTime FirstVoteDay, RunOffDay;
             /// <summary>PS-6 US-6: the day the world stood on after its one step - the vote's own day.</summary>

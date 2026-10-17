@@ -36,8 +36,8 @@ namespace PoliSim.EditorTools
     /// their SHA-256 and to the date words - "the Democratic nominee" before; the Republican date BILLED, "the Republican nominee".</description></item>
     /// </list>
     /// Pinned in the cheap bar and the documents bar through the US model card's US-6 block (`docs/reference/US_ELECTIONS.md`, *The readings
-    /// (US-6)*), written by <see cref="WriteReadings"/>; a block that no longer says what this measures fails here. Nothing here holds a polling day or
-    /// counts a vote: the count is US-8's.
+    /// (US-6)*), written by <see cref="WriteReadings"/>; a block that no longer says what this measures fails here. Nothing here counts a vote: the count is
+    /// US-8's (the reference world's step holds it on the same poll, and `UsPresidentialElectionDiagnostic` reads it there).
     /// </summary>
     public static class UsPresidentialFactorCheck
     {
@@ -217,7 +217,7 @@ namespace PoliSim.EditorTools
             ElectionVintage atEve;
             using (SimulationManager.EpochScope()) { SimulationManager.SetEpoch(eve); atEve = WorldClock.Resolve(CountryId.USA, ElectionVintage.Seated); }
             Check(world.Country != null && world.FirstVoteDay == vote && world.Day == vote && world.Contest == null,
-                F("the reference world: the epoch {0:yyyy-MM-dd}, the eve of the general election of record, one day stepped to {1:yyyy-MM-dd}; no contest held (the count is US-8's)", eve, world.Day));
+                F("the reference world: the epoch {0:yyyy-MM-dd}, the eve of the general election of record, one day stepped to {1:yyyy-MM-dd}; no two-round contest held (the US count, US-8's, is held on that day on the same poll - UsPresidentialElectionDiagnostic's)", eve, world.Day));
             WorldClock.TryGovernmentAt(CountryId.USA, eve, out WorldClock.GovernmentOfRecord ofRecord);
             Check(world.GovernmentKind == WorldClock.ExecutiveKind.Presidency && world.GovernmentPmParty == "DEM" && ofRecord.Head != null,
                 F("it seats the government of record - a presidency of {0}: {1}", world.GovernmentPmParty ?? "none", ofRecord.Head ?? "none on record"));
@@ -328,7 +328,7 @@ namespace PoliSim.EditorTools
                 F("named from that day: \"{0}\" on {1:yyyy-MM-dd}, \"{2}\" from {3:yyyy-MM-dd} (NARA's name)", demBefore, demFrom.AddDays(-1), demOn, demFrom));
             string repAfter = PresidencyOfRecord.NomineeName(CountryId.USA, "REP", vote.AddYears(1));
             Check(rep && repFrom == DateTime.MaxValue && repOnVote == "the Republican nominee" && repAfter == repOnVote,
-                F("the Republican nomination's date BILLED (gop.com refuses this machine, records_by_date.md G13): \"{0}\" on the day of the vote and on every day after it, the count's included", repOnVote));
+                F("the Republican nomination's date BILLED (gop.com refuses this machine, records_by_date.md G13): the naming by date gives \"{0}\" on the day of the vote and on every day after it (the naming table before the count - no screen reads it yet; from the count on the count names the nominees by NARA's names - US-8, asked with the asymmetry)", repOnVote));
 
             // ---- the card's block
             double shiftDem = world.Shift != null && world.Shift.TryGetValue("DEM", out double sd) ? sd : double.NaN;
@@ -371,10 +371,10 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add("### The field of record and its naming (R-US2, ruled)");
             card.Add("");
-            card.Add(F("The nominees are named from the nomination's date of record and \"the Democratic/Republican nominee\" before it; the withdrawal is not replayed. The Democratic nominee from {0:d MMM yyyy} - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the game names him \"{1}\" on every day, the count's and after included, to a REP player as to anyone: an asymmetry put to Elias.",
+            card.Add(F("The nominees are named from the nomination's date of record and \"the Democratic/Republican nominee\" before it; the withdrawal is not replayed. The Democratic nominee from {0:d MMM yyyy} - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names him \"{1}\" on every day before the count, to a REP player as to anyone; from the count on, the game's own count (US-8) names each nominee by NARA's name for the ticket (the contest, the oath's government, the Parliament page's president row). The asymmetry and that naming are put to Elias as one question.",
                 demFrom, repOnVote));
             card.Add("");
-            card.Add("**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are \"the minor candidates standing only where the FEC shows them on the ballot\"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). The per-state table lands with US-8, whose count reads the states.");
+            card.Add("**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are \"the minor candidates standing only where the FEC shows them on the ballot\"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). US-8's count reads the states with every minor candidate pooled per state (*The count - US-8*), so a per-state table would move no elector - it stays the ask.");
 
             // the stamp: the catalog's digests, the positions, the spreads, the weight, the stored factors and the dated page
             var stamp = new StringBuilder(UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.HouseSourceDigest + UsPresidentialReturns.YearSourceDigest + pageDigest);

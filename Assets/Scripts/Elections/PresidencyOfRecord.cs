@@ -118,8 +118,9 @@ namespace PoliSim.Elections
         /// record as its base (<see cref="CandidateOfRecord.Factor"/> NaN), so the field sums to the FEC's total. A DEPARTURE (US-6) from the plan's words,
         /// "the minor candidates standing only where the FEC shows them on the ballot", put to Elias: each stands NATIONALLY, at its national share - the
         /// prediction is national, so its shares are the same either way; where the FEC shows a candidate on no ballot (Kennedy, withdrawn, stood on
-        /// some) is a state's matter, and the per-state table lands with US-8, whose count reads the states (`Tools/us_ballot_standing.pl` prints where
-        /// the workbook shows each with votes).
+        /// some) is a state's matter (`Tools/us_ballot_standing.pl` prints where the workbook shows each with votes). PS-6 US-8's count reads the states
+        /// with every minor candidate pooled per state (US-4's form, on which R-US14 was ruled), so a per-state table would move no elector - it stays
+        /// US-6's ask.
         /// </summary>
         private static readonly CandidateOfRecord[] Usa2024 = Usa2024Field();
 
@@ -177,9 +178,11 @@ namespace PoliSim.Elections
         /// PS-6 US-6 (R-US2 (a), RULED - F8, §781: "Named on screen from the nomination's date of record, 'the Democratic/Republican nominee' before
         /// it"): the 2024 nominations by date. DEM: the DNC's release of 6 Aug 2024 - Harris and Walz certified as the party's nominees and the
         /// nominations accepted (`ElectionsData/usa/records_by_date.md` §2a, [DNC-NOMINEE]). REP: BILLED - gop.com refuses this machine (G1, G13) and
-        /// NARA's certificates (the plan's stand-in) name the candidates only after the count, so no date is held and the Republican nominee goes
-        /// unnamed on every day (MaxValue) - the count's and after included, to a REP player as to anyone - while the Democratic nominee is named from
-        /// 6 Aug 2024: the asymmetry put to Elias. The withdrawal of 21 July 2024 is not replayed (R-US2 (a)).
+        /// NARA's certificates (the plan's stand-in) name the candidates only after the count, so no date is held and this table leaves the Republican
+        /// nominee unnamed on every day (MaxValue), to a REP player as to anyone, while the Democratic nominee is named from 6 Aug 2024. PS-6 US-8: that
+        /// is the naming before the count, though no screen reads this table yet; from the count on, the game's own count names each nominee by NARA's name for the ticket
+        /// (<see cref="NameOfRecord"/>; the contest, the oath's government, the Parliament page's president row) - the asymmetry and that naming put to
+        /// Elias as one question. The withdrawal of 21 July 2024 is not replayed (R-US2 (a)).
         /// </summary>
         private static readonly (string Party, string Ticket, string Word, DateTime NamedFrom)[] UsNominations2024 =
         {

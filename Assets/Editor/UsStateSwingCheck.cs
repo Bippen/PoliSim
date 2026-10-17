@@ -19,7 +19,9 @@ namespace PoliSim.EditorTools
     /// the statute's allocator (<see cref="ElectoralCollege.FromCatalog"/>'s shape, the predicted winners in place of the record's):
     /// <list type="bullet">
     /// <item>(a) §689's normalised uniform swing - <see cref="RegionalVoteModel.RegionalSharesByUniformSwing"/>, unchanged: re-solved until the
-    /// states give the national shares back;</item>
+    /// states give the national shares back. RULED (R-US14 (a), G2) - and since PS-6 US-8 read here from the runtime's derivation, the one the
+    /// game's count runs (<see cref="ElectoralCollege.FromNationalShares"/>, the districts with it), so one derivation is measured and played; the
+    /// check holds that the runtime's college allocates as this check's own construction does;</item>
     /// <item>(b) proportional swing - each party's share scaled by its national ratio, each state renormalised, not re-solved;</item>
     /// <item>(c) plain additive swing - Poland's okręg form (<see cref="PolishSejmAllocation"/>): each party's national change added, floored at
     /// zero, neither renormalised nor re-solved.</item>
@@ -131,11 +133,13 @@ namespace PoliSim.EditorTools
                 Check(p.Length > 0 && p.Select(s => s.State).SequenceEqual(n.Select(s => s.State)),
                     F("{0} → {1}: the same {2} jurisdictions in the same order", prev, next, p.Length));
                 double[] natP = National(p), natN = National(n);
-                var regions = p.Select(s => new RegionalVoteModel.RegionInput(s.State, s.VotesTotal, null)).ToArray();
                 double weight = p.Sum(s => (double)s.VotesTotal);
                 double[][] prior = p.Select(Shares).ToArray();
-                double[][] uniform = RegionalVoteModel.RegionalSharesByUniformSwing(natN, regions, prior, out double residual);
+                // PS-6 US-8: (a) is the runtime's derivation - the one the game's count runs - on the true national shares of record
+                ElectoralCollege.Jurisdiction[] runtimeCollege = ElectoralCollege.FromNationalShares(prev, next, natN, out ElectoralCollege.StateCall[] runtime, out double residual);
                 Check(residual < 1e-9, F("{0} → {1}: (a) closes on the national shares (worst residual {2:E1})", prev, next, residual));
+                Check(runtime.Length == p.Length && runtime.Select(c => c.State).SequenceEqual(p.Select(s => s.State)) && runtime.Zip(p, (c, s) => c.PriorShares.SequenceEqual(Shares(s))).All(same => same),
+                    F("{0} → {1}: (a) read from the runtime's derivation (ElectoralCollege.FromNationalShares) - the same {2} jurisdictions, each weighed and swung from this check's own prior", prev, next, runtime.Length));
                 // the record's split as appointed: each nominee's electoral votes plus those the nominee's own electors cast for other persons (§786)
                 var record = UsPresidentialReturns.Years.First(y => y.Year == next);
                 int recR = record.CastR + record.OthersRSlate, recD = record.CastD + record.OthersDSlate;
@@ -158,7 +162,7 @@ namespace PoliSim.EditorTools
                     double absMiss = 0, implied = 0;
                     for (int r = 0; r < p.Length; r++)
                     {
-                        double[] predicted = m == 0 ? uniform[r] : m == 1 ? Proportional(prior[r], natP, natN) : Additive(prior[r], natP, natN);
+                        double[] predicted = m == 0 ? runtime[r].Shares : m == 1 ? Proportional(prior[r], natP, natN) : Additive(prior[r], natP, natN);
                         predictedBy[m][r] = predicted;
                         double[] actual = Shares(n[r]);
                         int win = predicted[1] > predicted[0] ? ElectoralCollege.Republican : ElectoralCollege.Democrat;
@@ -171,7 +175,11 @@ namespace PoliSim.EditorTools
                         var dPrev = UsPresidentialReturns.Districts.Where(d => d.Year == prev && d.State == p[r].State).OrderBy(d => d.District).ToArray();
                         var dNext = UsPresidentialReturns.Districts.Where(d => d.Year == next && d.State == p[r].State).OrderBy(d => d.District).ToArray();
                         if (dNext.Length == 0) { college.Add(new ElectoralCollege.Jurisdiction(p[r].State, n[r].Electors, win)); continue; }
-                        if (m == 0) { Check(dPrev.Length == dNext.Length, F("{0} → {1} {2}: {3} districts, then {4}", prev, next, p[r].State, dPrev.Length, dNext.Length)); }
+                        if (m == 0)
+                        {
+                            Check(dPrev.Length == dNext.Length && runtime[r].Districts.SequenceEqual(dNext.Select(d => d.District)),
+                                F("{0} → {1} {2}: {3} districts, then {4}; the runtime's derivation swings districts {5}", prev, next, p[r].State, dPrev.Length, dNext.Length, string.Join(", ", runtime[r].Districts)));
+                        }
                         // DECLARED: a district swings with its state, in two-party terms - (a) and (c) add the state's change in its Democratic
                         // two-party share, (b) scales each nominee's share by the state's own ratio; its previous row stands in for the next
                         // election's district of the same number, whatever its lines
@@ -186,6 +194,7 @@ namespace PoliSim.EditorTools
                                 double a = d2 * predicted[0] / prior[r][0], b = (1.0 - d2) * predicted[1] / prior[r][1];
                                 d2Next = a / (a + b);
                             }
+                            else if (m == 0) { d2Next = runtime[r].DistrictDemocraticTwoParty[k]; }   // PS-6 US-8: the runtime's - the same form, d2 + the state's change
                             else { d2Next = d2 + (stateNext - statePrior); }
                             winners[k] = d2Next > 0.5 ? ElectoralCollege.Democrat : ElectoralCollege.Republican;
                             double actual2 = (double)dNext[k].VotesD / (dNext[k].VotesD + dNext[k].VotesR);
@@ -200,6 +209,13 @@ namespace PoliSim.EditorTools
                     }
                     int[] ev = ElectoralCollege.Allocate(college.ToArray(), 2);
                     int evR = ev[ElectoralCollege.Republican], evD = ev[ElectoralCollege.Democrat];
+                    if (m == 0)
+                    {
+                        // PS-6 US-8: the college the game's count builds (its at-large electors, its district winners) allocates as this check's own construction does
+                        int[] runtimeEv = ElectoralCollege.Allocate(runtimeCollege, 2);
+                        Check(runtimeEv[ElectoralCollege.Republican] == evR && runtimeEv[ElectoralCollege.Democrat] == evD,
+                            F("{0} → {1}: the runtime's college allocates R {2} - D {3}, as this check's construction (R {4} - D {5})", prev, next, runtimeEv[ElectoralCollege.Republican], runtimeEv[ElectoralCollege.Democrat], evR, evD));
+                    }
                     double mean = absMiss / p.Length;
                     implied = 100.0 * implied / weight;
                     string wrongStates = wrongBy[m].Count == 0 ? "none" : string.Join(", ", p.Select(s => s.State).Where(wrongBy[m].Contains));

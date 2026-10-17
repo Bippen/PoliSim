@@ -11,9 +11,11 @@ namespace PoliSim.Elections
     /// with [seats] of [chamber size] seats. Polling day is [date]. [n] parties sit in the [chamber].</i> Every clause carries the record it
     /// traces to (`WorldClock`'s chambers and governments of record, the seat tables, the calendar); a clause the record cannot fill says so
     /// in the sentence rather than filling itself. The optional tagline is a labelled slot, empty until Elias reviews one. One exception, stated: where
-    /// `WorldClock.NoElectionYet` holds (the USA's start, PS-6 US-1; Italy's snap start, PS-7-interim) the election's slot reports the game's own calendar,
-    /// not the record's - what holds instead of a polling day, each country in its own words in its own branch; its basis is that ruling, not a record. The
-    /// predicate is not `WorldClock.TryNextPollingDay`'s answer; `StartBriefDiagnostic` holds the two together over every playable start.
+    /// `WorldClock.NoElectionYet` holds (Italy's snap start, PS-7-interim; the USA's until PS-6 US-8) the election's slot reports the game's own calendar,
+    /// not the record's - what holds instead of a polling day, in the country's own words; its basis is that ruling, not a record. The predicate is not
+    /// `WorldClock.TryNextPollingDay`'s answer; `StartBriefDiagnostic` holds the two together over every playable start. PS-6 US-8: where the polling day
+    /// elects no chamber (`WorldClock.RecordSeatsChamber` - the USA's House, by date until US-16), the polling-day clause says what it elects and what stays
+    /// the record's, after the same "Polling day is ..." sentence every start's brief carries.
     /// </summary>
     public static class StartBrief
     {
@@ -122,17 +124,16 @@ namespace PoliSim.Elections
                 clauses.Add(new Clause("No election is held in this game yet - the Camera and the government seated at the start hold, the government a stand-in for "
                     + caretaker + " caretaker cabinet; no Senato is modelled.", "WorldClock.NoElectionYet, TryNextPollingDay - none for Italy; SeatedGovernment - provisional (PS-7-interim)"));
             }
-            else if (WorldClock.NoElectionYet(id))
+            else if (start.PollingDay != DateTime.MinValue && WorldClock.RecordSeatsChamber(id))
             {
-                // PS-6, US-1: the game holds no election here yet - the clause says what holds instead, never a polling day it does not hold
-                // PS-6 US-2 (R-US1 (a)): the record's next House and president, named and dated from the record's own rows - never the start's, already named above
-                string house = WorldClock.RecordSeatsChamber(id) && WorldClock.TryNextChamberOfRecord(id, opens, out WorldClock.ChamberOfRecord nextHouse)
-                    ? (nextHouse.ElectionDay == DateTime.MinValue ? "the next House of record" : "the House elected on " + Long(nextHouse.ElectionDay)) + " is seated on " + Long(nextHouse.Convened) : null;
-                string head = WorldClock.RecordSeatsExecutive(id) && WorldClock.TryNextGovernmentOfRecord(id, opens, out WorldClock.GovernmentOfRecord nextHead)
-                    ? (nextHead.President ?? nextHead.Head) + " takes office on " + Long(nextHead.From) : null;
-                string dated = house != null && head != null ? house + " and " + head : house ?? head;
-                clauses.Add(new Clause("No election is held in this game yet - " + (dated != null ? dated + ", as the record dates them" : "the record's House and president hold")
-                    + "; no Senate is modelled.", "WorldClock.NoElectionYet, RecordSeatsChamber, RecordSeatsExecutive (PS-6, US-1 and US-2; R-US1 (a))"));
+                // PS-6 US-8 (R-US1 (a)): the polling day elects the president through the Electoral College and no chamber - the House stays the record's, seated on
+                // the record's day, named and dated from its own rows (US-2); the record's next president is not named: the game's count decides who takes office
+                string house = WorldClock.TryNextChamberOfRecord(id, opens, out WorldClock.ChamberOfRecord nextHouse)
+                    ? (nextHouse.ElectionDay == start.PollingDay ? "the House of record elected that day" : nextHouse.ElectionDay == DateTime.MinValue ? "the next House of record" : "the House of record elected on " + Long(nextHouse.ElectionDay))
+                      + " is seated on " + Long(nextHouse.Convened) + ", as the record dates it"
+                    : "the House of record stands, by its dates";
+                clauses.Add(new Clause("Polling day is " + Long(start.PollingDay) + ". The president is elected through the Electoral College; " + house + ", and no Senate is modelled.",
+                    "StartPoints (" + start.Basis + "); WorldClock.TryNextPollingDay (3 U.S.C. §21(1)), RecordSeatsChamber (the House of record, by date)"));
             }
             else if (start.PollingDay != DateTime.MinValue)
             {
@@ -222,12 +223,9 @@ namespace PoliSim.Elections
             {
                 rows.Add(new Row("Election", "NONE IN THIS GAME YET · THE START'S CAMERA AND GOVERNMENT HOLD", "WorldClock.NoElectionYet, TryNextPollingDay - none for Italy (PS-7-interim)"));   // what holds, not the snap election's day
             }
-            else if (WorldClock.NoElectionYet(id))
-            {
-                rows.Add(new Row("Election", "NONE IN THIS GAME YET · THE RECORD SEATED ON ITS DATES", "WorldClock.NoElectionYet (PS-6, US-1 and US-2; R-US1 (a))"));   // US-2: what holds, not a polling day
-            }
             else if (start.PollingDay != DateTime.MinValue)
             {
+                // PS-6 US-8: the USA's start has its polling day here since its count is built (the House stays the record's - the brief's clause says so)
                 bool past = start.PollingDay < opens;
                 rows.Add(new Row(past ? "Last polling day" : "Polling day", Stamp(start.PollingDay),
                     start.Playable ? "StartPoints (" + start.Basis + ")" : "StartPoints - the record's date; the contest is locked"));

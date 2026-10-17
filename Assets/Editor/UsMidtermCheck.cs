@@ -28,7 +28,8 @@ namespace PoliSim.EditorTools
     /// tool's alone (§840's review, finding 7);</item>
     /// <item>the model's midterm - a US world built as a new game builds one on the eve of 5 Nov 2024 (the epoch set first; the USA the player's
     /// country with DEM its party, so the AI governs the president's party through the term the midterm scores), stepped day by day in the
-    /// controller's order to 3 Nov 2026 and held to the record (R-US1 (a): Trump of record from the oath, the 2024 House from 3 Jan 2025). Its poll is
+    /// controller's order to 3 Nov 2026 and held to the record (R-US1 (a): Trump from the oath, the 2024 House from 3 Jan 2025 - since PS-6 US-8 the world's own
+    /// count elects him on 5 Nov 2024, as the record did, and the check holds that it did). Its poll is
     /// US-5's House history as R-US15 (a) and G2 ruled it - held at the four countries' median spread, fitted to the 2024 House split, the loyalty 2024
     /// against 2022, the live chain's order, the identity checked - and the economic vote is the record over the term on that day, read three ways:
     /// none, the presidential row (<see cref="EconomicVote"/>'s live constants), and Table 9.1's US legislative cell for the world's government type
@@ -288,14 +289,16 @@ namespace PoliSim.EditorTools
             Midterm w = ReadMidterm();
             // a world that does not hold the record is no outcome of R-US20's rule (its block): these checks decide whether a verdict is printed at all
             bool houseFrom = w.HouseFrom == HouseDay && w.HouseChanges == 1;
-            bool oath = w.OathFrom == OathDay && w.Kind == WorldClock.ExecutiveKind.Presidency && w.PmParty == "REP" && w.Executive.StartsWith("Donald J. Trump", StringComparison.Ordinal);
+            bool oath = w.OathFrom == OathDay && w.Kind == WorldClock.ExecutiveKind.Presidency && w.PmParty == "REP" && w.Executive.StartsWith("Donald J. Trump", StringComparison.Ordinal)
+                        && w.CountedParty == "REP";   // PS-6 US-8: the world's own count of 5 Nov 2024 elected him (the record yields from its polling day)
             bool termHeld = w.Term.Unemployment.Complete && w.Term.Inflation.Complete && w.TookOffice.HasValue && w.TookOffice.Value == OathDay;
             bool holds = bandYears && record2026 && w.Reached && houseFrom && w.HouseHeld && oath && termHeld;
             Check(w.Reached, F("the world stepped from {0:yyyy-MM-dd} to {1:yyyy-MM-dd}, one day at a time ({2} days, {3} ms)", Epoch, w.Day, w.Days, w.Ms));
             Check(houseFrom, F("the 2024 election's House seated from {0:yyyy-MM-dd} (once; the record's day {1:yyyy-MM-dd}) and holding on the polling day: {2}", w.HouseFrom, HouseDay, w.HouseHeld));
             Check(w.HouseHeld, "the House on the polling day is the one the 2024 election chose, its seats the record's");
             Check(oath,
-                F("Trump (REP) the president of record from the oath: the government changed to REP on {0:yyyy-MM-dd} (the record's {1:yyyy-MM-dd}); on the polling day {2}", w.OathFrom, OathDay, w.Executive));
+                F("Trump (REP) the president from the oath, as of record - elected by the world's own count (US-8: {0}): the government changed to REP on {1:yyyy-MM-dd} (the record's {2:yyyy-MM-dd}); on the polling day {3}",
+                    w.CountedLine ?? "no count held", w.OathFrom, OathDay, w.Executive));
             Check(termHeld, F("the record over the term read at both ends, the term begun on the oath's day ({0:yyyy-MM-dd}) - {1}", OathDay, EconomicVote.Describe(w.Term)));
             bool unified = w.Largest == w.PmParty;
             string government = unified ? "unified" : "divided";
@@ -342,7 +345,7 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add("### The model's midterm - 3 Nov 2026");
             card.Add("");
-            card.Add(F("- **The world**: the epoch {0:yyyy-MM-dd} (the eve of 5 Nov 2024), seed {1}, the USA the player's country with {2} its party (the AI governs the president's party through the term), no decision on any turn, stepped one day at a time in the controller's order to {3:yyyy-MM-dd} ({4} days). The 2024 election's House from {5:yyyy-MM-dd}, Trump (REP) from {6:yyyy-MM-dd} - the record's. On the polling day: the president's party {7}, the House's largest party {8} - **{9}**.",
+            card.Add(F("- **The world**: the epoch {0:yyyy-MM-dd} (the eve of 5 Nov 2024), seed {1}, the USA the player's country with {2} its party (the AI governs the president's party through the term), no decision on any turn, stepped one day at a time in the controller's order to {3:yyyy-MM-dd} ({4} days). The 2024 election's House from {5:yyyy-MM-dd}, Trump (REP) from {6:yyyy-MM-dd} - elected by the world's own count of 5 Nov 2024 (US-8), as the record elected him. On the polling day: the president's party {7}, the House's largest party {8} - **{9}**.",
                 Epoch, Seed, PlayerParty, w.Day, w.Days, w.HouseFrom, w.OathFrom, w.PmParty, w.Largest, government));
             card.Add(F("- **The poll**: US-5's House history (R-US15 (a), G2) - held at the four countries' median spread (σ {0:0.00}, τ {1:0.00}), fitted to the 2024 House split (REP {2}); the loyalty 2024 against 2022, REP {3:0.00} DEM {4:0.00}; REP {5} before the economic vote - the identity holds (within {6:0.0e+0} of the prior).",
                 held.Sigma, held.Tau, Pct(priorSplit), loyalty[0], loyalty[1], Pct(TwoParty(poll)), off));
@@ -441,6 +444,8 @@ namespace PoliSim.EditorTools
             public Dictionary<string, double> LiveShift, LiveMagnitudes;
             public WorldClock.ExecutiveKind Kind;
             public string PmParty, Executive, Largest;
+            /// <summary>PS-6 US-8: the world's own count of 5 Nov 2024 - the winner's party and the count's line; null where none was held.</summary>
+            public string CountedParty, CountedLine;
         }
 
         /// <summary>The world on the eve of 5 Nov 2024 with the USA the player's country (DEM), stepped in the controller's order - the day, the
@@ -498,6 +503,7 @@ namespace PoliSim.EditorTools
                     result.Kind = usa.Government.Kind;
                     result.PmParty = usa.Government.PmParty;
                     result.Executive = usa.Government.Executive ?? string.Empty;
+                    if (usa.UsPresidentialElections.Count == 1) { result.CountedParty = usa.UsPresidentialElections[0].WinnerParty; result.CountedLine = usa.UsPresidentialElections[0].Line; }
                     result.Largest = usa.ParliamentSeats.OrderByDescending(kv => kv.Value).First().Key;
                 }
             }

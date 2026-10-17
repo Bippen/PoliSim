@@ -39131,3 +39131,92 @@ Built in the sweep's third wave on US-6's branch. Every parameter was declared i
 - **Does R-US16 gate US-30's staging (risk 1), or only US-31 (the needs lines)?** Code recommends the needs lines. US-30 must know before it is built that a staged US campaign cannot move the national vote as the model stands.
 
 **Bars:** (tier TOOLING for the check, DOCUMENTS for the card and records) the named run `n846` **1 of 1**; the cheap bar **109 of 109** (`cheap846b`; `cheap846` failed CommentImmunityCheck as above); the documents bar **19 of 19** (`doc846`). No runtime file changed, so no simulation bar is owed; the sentinel cannot move. Ran detached.
+
+## 847. PS-6 US-8: THE 2024 PRESIDENTIAL ELECTION HELD - THE US COUNT ON 3 U.S.C. §21(1)'S DAY, THE STATES BY R-US14 (A) IN RUNTIME, THE ELECTORS, R-US3'S HOUSE CHOICE BY A MAJORITY OF ALL THE STATES, THE OATH THROUGH US-7; CHECKPOINT 1 (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-8; R-US3 (a), R-US14 (a), R-US13 (a), R-US1 (a), R-US5 (a)): the polling day, the count, the verdict and its dates, the contest saved, the president row, the reference at 312-226, §709's US record judged, and no night.
+
+**Built:**
+- `UsPresidentialElection`:
+  - the day rules: `PresidentialDay`, `ElectorsMeetAfter`, `CountedOnAfter`;
+  - the count: `TryField`, `Count` (pure), `FromCollege`, `StatesOf`, `Hold`;
+  - the House: `HoldHouseChoice` (its own log line), `DelegationsOn` (every state of the year), `AllStates` (from the apportionment), `ChooseByStates` (a majority of all the states);
+  - `ElectorsCarriedForward`.
+- `ElectoralCollege.FromNationalShares` (US-4's derivation in runtime, with UsStateSwingCheck re-pointed at it), `TryPriorYear`, `TryElectorsYear`.
+- `SimulationManager.HoldUsPresidentialCount`.
+- `WorldClock`: the US polling days and basis; `NoElectionYet` is Italy's alone; `NextOfRecord` yields to the game's polling day; `TryReference` carries the electors in a presidency's words.
+- `NotHeldReason(USA)`; the brief's clause naming the House of record; the controller's no-chamber record.
+- `DrawUsPresidentRow`, with the carried-forward label and a cached reference.
+- The unreachable ceiling lowered from 2 to 1.
+- `UsPresidentialElectionDiagnostic` and the card's US-8 section.
+- No format step (stays 39): the states are re-derived from the stored shares.
+
+**Measured** (`us8w1`-`us8w3` wrote the three cards the count touches; `n847`, 21 named checks: every one clean but RatchetSlackCheck, which fails in any subset that leaves its ratchets unrun and is judged by the full bar below):
+- **E1's acceptance for the USA** (the reference world, the eve of 5 Nov 2024 stepped one day): the world holds its own count once.
+  - It elects **Donald J. Trump (REP), 312 to 226 of 538**: the record as appointed, with **no state and no district called wrong**.
+  - Its national vote is the FEC's (REP 49.7961 %, DEM 48.3242 %, others 1.8798 %; the largest gap 0.0000 pp). Its states are US-4's (a) column (the largest margin difference 0.000000 pp, 0 calls apart).
+  - A recount on the same poll is the same contest. The stored contest re-derives its own states exactly (`StatesOf`), so format 39 needs no per-state field.
+  - Its dates: the electors meet 17 Dec 2024, Congress counts 6 Jan 2025, the oath 20 Jan 2025.
+- **A game from the USA's start** (12 Mar 2024, stepped in the controller's order to 21 Jan 2025): it raises its polling day once, on 5 Nov 2024. On its own economy and seed it counts **Trump 329, Harris 209** (51.50 % and 46.62 % of the vote, others 1.88 %) and swears him on 20 Jan 2025. The saves cut after the count and after the oath load into the game.
+- **R-US3 (a)'s planted 269-269** (the record's college with PA, MI and WI to DEM and NE-2 to REP): contingent and undecided. On 6 Jan 2025 the House of record chooses by states:
+  - REP 30, DEM 18, tied 2 (CO, MN), over all 50 states, a majority of 26;
+  - its delegations sum to the seated 220/215;
+  - Trump is chosen and sworn on the 20th, "chosen by the House under the Twelfth Amendment".
+  - The plants decide nothing: 25-25; and 25 / 24 / 1 tied, listed and unlisted.
+- **The count is pure** and draws no random number.
+- **The 2028 day** (7 Nov 2028; an even poll; the field unnamed at factor 1.0; no minor candidate; the record's 2024 states as prior, asked; the 2020 census's electors): REP 302, DEM 236, the oath 20 Jan 2029. Carried-forward electors are labelled from 2032.
+- **The default-USA paths:**
+  - before a pick, the controller falls back to the USA while the manager holds no player country, so no default world holds a US count;
+  - a world with no player country (the seeded shadow's, the dump's), stepped across 5 Nov 2024, holds none;
+  - the film driver's USA warm-up holds 5 Nov 2024 (day 238) by design.
+- **`UnwiredSubsystemCheck`:** 1 of 289 files unreachable (ceiling 1). `ElectoralCollege.cs` is reached by the count's code.
+- **The `elec<N>` diff** (`elec847a` on the tree before US-8 against `elec847b`): **no line moves**, as foreseen.
+- **SaveLoadRoundTripDiagnostic:** PASS, 12 scenarios.
+
+**Declared:**
+1. A delegation votes its majority party's nominee.
+2. The House of 6 January is the House of record by district, as elected.
+3. Every other candidate is pooled per state.
+4. An exact state tie goes to DEM (inherited from US-4).
+5. The count names the nominees by NARA's names. ASKED as R-US23.
+6. The count reads the record over the term on the polling day.
+7. No format step.
+8. The 2028 field and state prior: the prior is ASKED as R-US24.
+9. The record's next president is not named before the game's polling day.
+10. Forks hold their own counts, as they hold Poland's presidential rounds and US-2's record (L9: the impact ledger can attribute a fork's change of government to a dial family; for Elias to confirm). ASKED as R-US25.
+
+**Review:** `Reviews/2026-10-17_s847_us8_count.md`, one adversarial reader, verdict **ship with fixes**. No high defects; no error in the count; 312-226 and 30-18-2 re-derived independently.
+- Met:
+  - M1: claims scoped, one ask.
+  - M2: the label added.
+  - M3: asked; a US-26 draft line.
+  - L1: all-states majority, with plants.
+  - L2, L3, L4, L5, L8, L11: fixed.
+  - L7: measured and printed.
+  - L9: asked.
+- L6, the registration, met here: `UsPresidentialElectionDiagnostic` in the cheap and documents bars.
+- Optional, not taken: L10.
+- **The second pass** (on 5d8c9c98): **ship**. `SimulationManager.cs` is clean at that state (blob a730580a, the integrated file byte-identical to it); the ledger row is written (s847). Its four lows:
+  - N1: the naming texts now name the table, which no screen reads yet, in place of "the screens before the count";
+  - N2: PreStartRecordDiagnostic prints no opening or count-eve line for the USA;
+  - N3: a state with no member of either party is not counted as a tie;
+  - N4, filed: the count-failure warning shares the "the count of" prefix. It is in `SimulationManager.cs`, so it is left for the next change to that file rather than voiding the reviewed state.
+
+**Asked** (registered in the plan’s section 4): R-US23, how the 2024 nominees are named (US-6’s asymmetry with this item’s naming); R-US24, the second count’s state prior; R-US25, a fork’s own count. US-7’s R-US22 and US-6’s ballot-standing departure stand; the count pools the minor candidates per state, so a per-state table would move no elector.
+
+**Bars:** (tier SIMULATION + UI; review REQUIRED and run, two passes, the ledger row written):
+- the named runs `n847` (21 checks; RatchetSlackCheck as above) and `n847b` **5 of 5** after the second pass’s lows;
+- the cheap bar **110 of 110** (`cheap847b`; the first, `cheap847`, failed only ReviewLedgerCheck, the row not yet written);
+- the simulation bar **57 of 57** (`sim847`; the sentinel on ga111 unmoved: the dump seats no player country, so the count never runs in it);
+- the documents bar **20 of 20** (`doc847`; UsPresidentialElectionDiagnostic joins it);
+- SaveLoadRoundTripDiagnostic PASS; the `elec<N>` diff empty;
+- the dry film `drys847` (USA@1280x720, scoped first): 143 measured, 0 failed, 0 overflows; its warm-up held the USA’s election on 2024-11-05 (Trump 329-209);
+- the REAL film `realus8` (USA at 1280×720, cut at `07a_politics_parliament_rows`): 103 captured, 0 failed, 0 overflows, 0 canvas violations.
+
+**Read on the real film:**
+- `01_country_selector`: the USA’s folder reads "OPENS 12 MAR 2024 · THE RUN-UP TO 5 NOV 2024"; Italy’s still "NO ELECTION IN THIS GAME YET".
+- `01f2_start_points`: the card reads "5 NOV 2024 | RUN-UP · OPENS 12 MAR 2024" and "Presidential election". The brief reads President "Joseph R. Biden Jr. (DEM)", Since "20 JAN 2021", House "REP · 222 OF 435", **Polling day "5 NOV 2024"**, In the House "2 PARTIES · 435 SEATS · ELECTED 8 NOV 2022".
+- `07a_politics_parliament_rows`, after the warm-up’s count and oath: the record row reads "OF RECORD, BY DATE · THE HOUSE · STANDS · TERM ENDED 3 JAN 2027" (no later House is on record, and the game does not elect one until US-16); the new president row reads "THE PRESIDENT · TRUMP · ELECTED IN THE GAME · NEXT VOTE 7 NOV 2028". Every line fits.
+
+**CHECKPOINT 1, in plain words.** A US game now starts on 12 March 2024 and plays to 5 November 2024, when the game holds its own presidential election, state by state through the Electoral College, on the player’s own economy. The winner is not fixed to the record: a game from the start elects Trump 329-209 where the record has 312-226. The electors’ meeting, Congress’s count and the oath are dated; on a 269-269 tie the House chooses by states on 6 January (26 of 50). On 20 January 2025 the winner takes office, and the player becomes president or opposition. Congress follows the record by date, and every fourth year the game holds another election. Still missing: the election night (D-US); the House and the Senate elected by the game (US-15, US-16) and the midterms (US-27); the 2028 candidates unnamed (US-28), with the 2028 map’s prior asked (R-US24); no campaign moves the vote (US-9; R-US16 asked); and the naming (R-US23), forks (R-US25) and who governs if the House cannot choose (R-US22), all Elias’s.
+

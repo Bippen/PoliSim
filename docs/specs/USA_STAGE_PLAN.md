@@ -265,6 +265,8 @@ A contest's winner becomes president-elect and takes office at noon on 20 Januar
 - the default-USA paths measured — the controller's pre-pick fallback to the USA, the film driver's USA default, the warm-up's `HoldElectionWithoutTheNight` — so no default world holds a US election by accident;
 - `Reviews/` report and review row before the bar (SimulationManager); cheap and simulation bars; the USA dry film; a REAL film of the start card.
 
+**Built: `COMPLETED.md` §847 (checkpoint 1)** - the count on the day loop (`UsPresidentialElection.Count`, pure: the poll × E1's factors; the states from the previous presidential election of record by R-US14 (a) in runtime, `ElectoralCollege.FromNationalShares`, with US-4's instrument reading it; the electors in force, labelled on screen when carried forward); R-US3 (a)'s House choice on 6 January by the House of record's delegations, a majority of all the states; the president-elect sworn through US-7; Congress by date; no format step (the states re-derived from each contest's national shares); the USA out of `NoElectionYet`; the Parliament page's president row; the reference at the record's electors. The count's naming of the nominees (R-US23), the 2028 state prior (R-US24) and the forks' own counts (R-US25) are asked; the per-state minor-candidate table stays US-6's ask.
+
 ### Phase D — the other proofs: Congress, the campaign, the limit
 
 Each asks its ruling with its table. Their sourcing runs ahead from US-0; their order among themselves is free within their needs.
@@ -2273,6 +2275,21 @@ THE ASK AND THE BARS
 - (c) the Speaker acts under 3 U.S.C. §19 (the House is modelled; the Senate's choice of a Vice President, the Twentieth Amendment §3, is not).
 
 No recommendation: each option names a different premise, and none is reachable before US-16.
+
+**R-US23 — How the 2024 nominees are named** *(US-6's naming asymmetry with US-8's reading 5, §847)*. Harris is named from the DNC's date (6 Aug 2024); Trump is "the Republican nominee" on every screen before the count, the RNC's date BILLED (gop.com 403); from the count on, the game's own count names both by NARA's names (the contest, the oath's government, the Parliament row: "ELECT TRUMP" from 6 Nov 2024).
+- (a) As built: unnamed before the count, NARA's name from the count - the plan's own stand-in;
+- (b) never named, the count's record included (the oath's government reads "the Republican nominee (REP)");
+- (c) named from a dated source fetched by browser (an errand of Elias's, as E-47).
+
+**R-US24 — The state prior of the game's second presidential count** *(US-8's reading 8, §847; US-26's)*. A 2028 count swings its states from:
+- (a) the record's 2024 states, until US-26 (as built);
+- (b) the game's own 2024 states, re-derived exactly from the stored contest (`UsPresidentialElection.StatesOf`), with no save step.
+
+And does US-26 own the choice? The 2024 count is unaffected either way. If (b), US-26's done-when gains: "a US game's second presidential count swings its states from the game's own previous count, its states printed beside the record's 2024 map".
+
+**R-US25 — A fork's own count** *(US-8's reading 10, §847; beside R-US22)*. The impact ledger's and the shadow's forks of a loaded US game step through polling days and hold their own counts, as they already hold Poland's presidential rounds and US-2's record; a fork can therefore seat a different president, and the ledger's leave-one-out attribution then includes that change of government.
+- (a) As built: forks hold their own counts;
+- (b) forks carry the live game's contest forward and hold no count of their own.
 
 ---
 

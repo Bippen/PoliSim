@@ -157,6 +157,16 @@ namespace PoliSim.EditorTools
         internal void Election(Country c, ElectionRecord r, int day, DateTime date)
         {
             _exercised.Add("ELECTION");
+            // PS-6 US-8 (R-US1 (a)): a polling day that elects no chamber - the USA's, whose House the record seats by date until US-16 - is recorded as not held
+            // with its reason (the president is counted on the day loop); it carries no shares and no seats by design, so only its date and its reason are held
+            if (r.Method == ElectionMethod.NotImplemented && WorldClock.RecordSeatsChamber(c.Id))
+            {
+                if (string.IsNullOrEmpty(r.NotHeldReason)) { Breach("SHARES", c.Id + "|reason|" + r.Date.Ticks, day, date, $"{c.Id} the polling day of {r.Date:yyyy-MM-dd} elected no chamber and carries no reason"); }
+                string dayWhy = LegalDate(c.Id, r.Date);
+                if (dayWhy != null) { Breach("DATES", c.Id + "|" + r.Date.Ticks, day, date, $"{c.Id} the polling day of {r.Date:yyyy-MM-dd}: {dayWhy}"); }
+                _pollingDays.Add(r.Date);
+                return;
+            }
             if (r.Shares != null && r.Shares.Count > 0)
             {
                 double total = r.Shares.Values.Sum();
@@ -185,11 +195,16 @@ namespace PoliSim.EditorTools
         /// <summary>The date rules, read from the statutes as ruled (the elections inventory's table), independently of the code that computes them:
         /// Sweden's ordinary election on the second Sunday of September every fourth year from 2026, or the extra election the manager set;
         /// Germany's snap election of 23 February 2025; Poland's Sejm on a Sunday inside the thirty days before the fourth anniversary of the first
-        /// sitting (polling day plus thirty, ruling E2). Null when the date is legal.</summary>
+        /// sitting (polling day plus thirty, ruling E2); PS-6 US-8: the USA's presidential day, 3 U.S.C. §21(1) - a Tuesday, the one after November's first
+        /// Monday (the 2nd to the 8th), every fourth year from 2024. Null when the date is legal.</summary>
         private string LegalDate(CountryId id, DateTime d)
         {
             switch (id)
             {
+                case CountryId.USA:
+                    if (d.DayOfWeek != DayOfWeek.Tuesday) { return "not a Tuesday"; }
+                    return d.Month == 11 && d.Day >= 2 && d.Day <= 8 && d.Year >= 2024 && (d.Year - 2024) % 4 == 0 ? null
+                        : "not the Tuesday after the first Monday in November of a presidential year (2024 + 4k)";
                 case CountryId.Sweden:
                     if (d.DayOfWeek != DayOfWeek.Sunday) { return "not a Sunday"; }
                     if (d.Date == _lastExtraElectionDate.Date) { return null; }

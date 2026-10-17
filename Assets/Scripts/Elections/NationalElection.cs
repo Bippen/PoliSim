@@ -114,7 +114,8 @@ namespace PoliSim.Elections
         /// Returns false when the country has no fitted electorate or no two-election history —
         /// a country without a live path — and the caller holds no election. PS-6 US-6: the USA
         /// predicts (its poll is R-US15's, `PartySystems.TryElectorate`) and still has no seat path:
-        /// <see cref="Run"/> records why, and its presidential count is US-8's.
+        /// <see cref="Run"/> records why. PS-6 US-8: its presidential count reads this prediction on the
+        /// polling day (<see cref="UsPresidentialElection.Count"/>, from the day loop).
         /// </summary>
         /// <summary>
         /// C-R4b step 5 (2026-09-02, D-21): the three inputs the live prediction is made of - each
@@ -416,9 +417,11 @@ namespace PoliSim.Elections
                            "Italy is a mixed system - 147 uninominal colleges, 245 proportional seats, 8 overseas - that the game does not count yet, " +
                            "and the per-party seat totals on disk are unconfirmed; no Senato is modelled.";
                 case CountryId.USA:
-                    // PS-6, US-1 and US-2: what holds instead, until the presidential count (US-8) and the House's (US-16) are built; no Senate is modelled (US-15)
-                    return "No US election is held in this game yet: the House and the president are seated as the record seats them, on its dates, " +
-                           "until the Electoral College count and the House races are built; no Senate is modelled.";
+                    // PS-6 US-8 (R-US1 (a), RULED - F8: "after that only Congress, until the game elects it"), in place of US-1's line: the polling day elects the
+                    // president through the Electoral College (the day loop's count) and no chamber - Congress stays the record's, by date, until the House races
+                    // are built (US-16); no Senate is modelled (US-15)
+                    return "No US House election is held in this game yet: the president is elected through the Electoral College on the polling day, and " +
+                           "the House is seated as the record seats it, on its dates, until the House races are built; no Senate is modelled.";
                 default:
                     return "This model does not implement this country's electoral system.";
             }

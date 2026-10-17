@@ -116,8 +116,8 @@ namespace PoliSim.Elections
             p.PollingDay != DateTime.MinValue ? Stamp(p.PollingDay) : p.Year.ToString(CultureInfo.InvariantCulture);
 
         /// <summary>18a: the playable card's mode and opening in caption mono, in the words this method returns (`StartPointsDiagnostic` pins them): the run-up, a snap
-        /// start's election, France's what-if (`WorldClock.GoverningModeOnly`), or, where `WorldClock.NoElectionYet` holds (the USA's start, PS-6 US-1; Italy's snap start,
-        /// PS-7-interim - read before the snap test), that no election is held yet - never a run-up or a snap election the game does not hold. The card keeps the
+        /// start's election, France's what-if (`WorldClock.GoverningModeOnly`), or, where `WorldClock.NoElectionYet` holds (Italy's snap start, PS-7-interim - read
+        /// before the snap test; the USA's start until PS-6 US-8 built its count, a run-up since), that no election is held yet - never a run-up or a snap election the game does not hold. The card keeps the
         /// record's stamp and name (the start point's identity, SP-1). Null for a locked card (its stamp reads LOCKED there).</summary>
         public static string ModeLine(StartPoint p)
         {

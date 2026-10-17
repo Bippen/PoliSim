@@ -22,7 +22,7 @@ namespace PoliSim.Elections
     /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so.</para>
     ///
     /// <para><b>Every election on a country's calendar inside a run is simulated once that country's model exists</b>; until then its chamber
-    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); §762: Poland's 15 October 2023 the same way; the countries before their stages offer no polling day yet.</para>
+    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); §762: Poland's 15 October 2023 the same way; PS-6 US-8: the USA's presidential day, 3 U.S.C. §21(1)'s, from 5 November 2024 every fourth year; the countries before their stages offer no polling day yet.</para>
     /// </summary>
     public static class WorldClock
     {
@@ -102,18 +102,17 @@ namespace PoliSim.Elections
 
         /// <summary>The starts whose elections the game does not hold yet, each until its own item builds them and each retired from here by that item:
         /// <list type="bullet">
-        /// <item><description>PS-6, US-1 (`docs/specs/USA_STAGE_PLAN.md`): the USA's start, until its presidential count (US-8) and the House's (US-16) are built.
-        /// Meanwhile the record's House and president are seated on the record's dates (R-US1 (a), built in US-2: <see cref="RecordSeatsChamber"/>,
-        /// <see cref="RecordSeatsExecutive(CountryId)"/>), and no Senate is modelled (US-15).</description></item>
         /// <item><description>PS-7's "until then" (PS-7-interim): Italy's snap start, until Italy's mixed-system stages and the Senato are built (PS-7). Its calendar
         /// offers no polling day (<see cref="TryNextPollingDay"/>), so the snap election the start is cut on is not held: the Camera and the government seated at
         /// the start hold (the government the formation's stand-in for the caretaker's cabinet, which the record does not name), and no Senato is modelled.</description></item>
         /// </list>
+        /// PS-6 US-8 retired the USA's start from here (US-1 put it here): the game holds its presidential election on 3 U.S.C. §21(1)'s day
+        /// (<see cref="TryNextPollingDay"/>), while the House stays the record's, by date (R-US1 (a), <see cref="RecordSeatsChamber"/>) until US-16 elects it.
         /// The folder card's line (<see cref="StartLine"/>) and the start card's mode line (`StartPoints.ModeLine`) say only that no election is held; the brief, its
-        /// ledger and the not-held reason say what holds, each country in its own words in its own branch - so retiring one country (US-8, the USA) leaves
+        /// ledger and the not-held reason say what holds, each country in its own words in its own branch - so retiring one country (US-8, the USA) left
         /// another's words untouched. The card stays playable (§618). Not a general test of whether a start's election is held: that is
         /// <see cref="TryNextPollingDay"/>'s answer (`StartBriefDiagnostic` holds this predicate and that answer together over every playable start).</summary>
-        public static bool NoElectionYet(CountryId id) => id == CountryId.USA || id == CountryId.Italy;
+        public static bool NoElectionYet(CountryId id) => id == CountryId.Italy;
 
         /// <summary>PS-6 US-2 (Elias's ruling F8, R-US1 (a): "whatever the game does not elect is seated on its record's dates"): the chamber the game does not
         /// elect is the record's, seated on the day the record seats it - the USA's House, until the game elects it (US-16); US-15 adds the Senate.</summary>
@@ -121,7 +120,10 @@ namespace PoliSim.Elections
 
         /// <summary>PS-6 US-2 (R-US1 (a)): the head of the executive the game does not elect is the record's, taking office on the record's day - the USA's
         /// president, until the game holds the presidential election (per world: <see cref="RecordSeatsExecutive(Country, DateTime)"/>, US-7; the House stays
-        /// seated by record after it). The country's gate - which country the record seats a president in at all.</summary>
+        /// seated by record after it). The country's gate - which country the record seats a president in at all. PS-6 US-8: a US game from its start holds its
+        /// own count on 5 November 2024 (<see cref="TryNextPollingDay"/>), so the record's own next president is never the one a game from the start seats - the
+        /// record seats its president there only to the game's polling day; a world opened after a polling day it never counted (an Editor tool's) still seats
+        /// the record's.</summary>
         public static bool RecordSeatsExecutive(CountryId id) => id == CountryId.USA;
 
         /// <summary>PS-6 US-7 (R-US1 (a): the president of record "until the game holds the presidential election"): in a world, the record seats the
@@ -158,17 +160,19 @@ namespace PoliSim.Elections
 
         /// <summary>PS-6 US-7: the same in a world - the next president of record named only while the record still seats the president there
         /// (<see cref="RecordSeatsExecutive(Country, DateTime)"/>): once the game has held its own presidential election, the record's next president is not who
-        /// takes office, and the slip does not name him.</summary>
-        public static IReadOnlyList<string> NextOfRecord(Country country, DateTime date) => NextOfRecord(country.Id, date, RecordSeatsExecutive(country, date));
+        /// takes office, and the slip does not name him. PS-6 US-8: nor while the game's own polling day comes before his day - the game's count, not the record,
+        /// decides who takes office then (a US game from its start, before 5 November 2024).</summary>
+        public static IReadOnlyList<string> NextOfRecord(Country country, DateTime date) => NextOfRecord(country.Id, date, RecordSeatsExecutive(country, date), gameVotesFirst: true);
 
-        private static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date, bool seatsExecutive)
+        private static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date, bool seatsExecutive, bool gameVotesFirst = false)
         {
             var lines = new List<string>();
             if (RecordSeatsChamber(id) && TryNextChamberOfRecord(id, date, out ChamberOfRecord house))
             {
                 lines.Add("NEXT OF RECORD: THE HOUSE ELECTED " + ViewDay(house.ElectionDay) + " · SEATED " + ViewDay(house.Convened));
             }
-            if (seatsExecutive && TryNextGovernmentOfRecord(id, date, out GovernmentOfRecord head) && TryPresidentOfRecord(id, head.From, out string name, out _))
+            if (seatsExecutive && TryNextGovernmentOfRecord(id, date, out GovernmentOfRecord head) && TryPresidentOfRecord(id, head.From, out string name, out _)
+                && !(gameVotesFirst && UsPresidentialElection.ElectsIn(id) && TryNextPollingDay(id, date, out DateTime polling) && polling < head.From))
             {
                 string party = head.Cabinet != null && head.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(id, head.Cabinet[0]).ToUpperInvariant() : string.Empty;
                 lines.Add("NEXT OF RECORD: " + name.ToUpperInvariant() + party + " · TAKES OFFICE " + ViewDay(head.From));
@@ -537,6 +541,7 @@ namespace PoliSim.Elections
         public static string PollingDayBasis(CountryId id) =>
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
             : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
+            : id == CountryId.USA ? "3 U.S.C. §21(1) as the Electoral Count Reform Act of 2022 wrote it - \"election day\" means \"the Tuesday next after the first Monday in November, in every fourth year succeeding every election of a President and Vice President\" (GPO, govinfo_uscode_3_21.html; usa/president_returns.md) - 5 Nov 2024 the latest of record [EC-DATES], the presidential days only: the midterm days are not yet the game's"   // PS-6 US-8 (the midterm days are US-27's)
             : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - ruled, E2); the principle for both of Poland's votes, ruled with it: the most recent practice"   // §762, §767, §773
             : null;
 
@@ -565,11 +570,22 @@ namespace PoliSim.Elections
         /// 2023 (the PKW's notices), then each term's by Konstytucja Art. 98 ust. 2 (held in `raw/records/trybunal_konstytucja.html`): the window's
         /// first Sunday before the fourth anniversary of the term's first sitting (<see cref="FirstSundayOfTermWindow"/>) - the 10th term's from its
         /// sitting of record, 13 Nov 2023 (17 Oct 2027), every later one from the first sitting its own election gives (<see cref="PolandFirstSittingAfterDays"/>).
-        /// Premise, stated: every term runs its four years - a shortened term (Art. 98 ust. 3-5) is not modelled.
+        /// Premise, stated: every term runs its four years - a shortened term (Art. 98 ust. 3-5) is not modelled. PS-6 US-8: <b>the USA's</b> - the
+        /// presidential day of 3 U.S.C. §21(1) (<see cref="UsPresidentialElection.PresidentialDay"/>), the cycle anchored on the election of record, 5 November
+        /// 2024 (<see cref="LatestElectionDay"/>, NARA's [EC-DATES]), every fourth year in both directions as Sweden's; the midterm days join at US-27, so a
+        /// US game votes on its presidential days only - the House stays the record's, by date (R-US1 (a)).
         /// </summary>
         public static bool TryNextPollingDay(CountryId id, DateTime onOrAfter, out DateTime pollingDay)
         {
             pollingDay = DateTime.MinValue;
+            if (id == CountryId.USA)
+            {
+                int every = LatestElectionDay(id).Year;
+                while (UsPresidentialElection.PresidentialDay(every) < onOrAfter.Date) { every += 4; }
+                while (every - 4 >= 1 && UsPresidentialElection.PresidentialDay(every - 4) >= onOrAfter.Date) { every -= 4; }
+                pollingDay = UsPresidentialElection.PresidentialDay(every);
+                return true;
+            }
             if (id == CountryId.Germany)
             {
                 DateTime onRecord = LatestElectionDay(id);   // the snap's own polling day, and none after it
@@ -651,8 +667,16 @@ namespace PoliSim.Elections
             /// <summary>§767 (Elias's ruling D1): how far the played vote's history can be trusted beside this reference - `PartySystems.HistoryNote`;
             /// null where the country's lists carry over clean.</summary>
             public string HistoryNote;
+            /// <summary>PS-6 US-8: where the polling day was a presidential election of record (the USA's), the electors as appointed by party key - each
+            /// nominee's electoral votes and those the nominee's own electors cast for other persons (§786), read from the catalog (NARA's results pages) - and
+            /// all appointed; null and 0 otherwise. <see cref="Seats"/> stays the House elected that day.</summary>
+            public Dictionary<string, int> Electors;
+            public int ElectorsAppointed;
         }
 
+        /// <summary>PS-6 US-8: the reference for a polling day. Where the record seats the chamber by date (the USA's House) the game elects no chamber and the
+        /// reference is the presidential election's: the record's electors (<see cref="Reference.Electors"/> - 312 to 226 in 2024, as appointed) and the
+        /// president the record shows taking office after it, in the presidency's words (no cabinet's: §629).</summary>
         public static bool TryReference(CountryId id, DateTime pollingDay, out Reference reference)
         {
             reference = null;
@@ -667,12 +691,32 @@ namespace PoliSim.Elections
                     Basis = c.Basis,
                     HistoryNote = PartySystems.HistoryNote(id),   // §767 (D1)
                 };
+                // PS-6 US-8: a presidential election of record on the day - the electors as appointed (§786), NARA's
+                if (UsPresidentialElection.ElectsIn(id))
+                {
+                    foreach (var y in Generated.UsPresidentialReturns.Years)
+                    {
+                        if (y.Year != pollingDay.Year || UsPresidentialElection.PresidentialDay(y.Year) != pollingDay.Date) { continue; }
+                        r.Electors = new Dictionary<string, int> { { "REP", y.CastR + y.OthersRSlate }, { "DEM", y.CastD + y.OthersDSlate } };
+                        r.ElectorsAppointed = y.Electors;
+                    }
+                }
                 // The government the record shows after the election: the first government of record from a day after polling day, if any.
                 GovernmentOfRecord? after = null;
                 foreach (GovernmentOfRecord g in Governments(id)) { if (g.From > pollingDay.Date && (!after.HasValue || g.From < after.Value.From)) { after = g; } }
                 if (!after.HasValue)
                 {
                     r.GovernmentLine = "THE RECORD SHOWS NO CHANGE OF GOVERNMENT AFTER THIS ELECTION (AS OF " + RecordDate.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + ")";
+                }
+                else if (after.Value.Kind == ExecutiveKind.Presidency)
+                {
+                    // PS-6 US-8: a presidency in its own words - the president takes office, the electors that elected them (no cabinet's words, §629)
+                    r.CabinetOfRecord = after.Value.Cabinet;
+                    string party = after.Value.Cabinet != null && after.Value.Cabinet.Length > 0 ? after.Value.Cabinet[0] : null;
+                    string won = r.Electors != null && party != null && r.Electors.TryGetValue(party, out int theirs)
+                        ? " · ELECTED " + theirs.ToString(System.Globalization.CultureInfo.InvariantCulture) + " TO " + (r.ElectorsAppointed - theirs).ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        : string.Empty;
+                    r.GovernmentLine = after.Value.From.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + (after.Value.President ?? after.Value.Head).ToUpperInvariant() + " TAKES OFFICE" + won;
                 }
                 else if (after.Value.CabinetSourced)
                 {

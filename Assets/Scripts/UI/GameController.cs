@@ -6207,7 +6207,9 @@ namespace PoliSim.UI
         /// PS-2 (§619), THE HARNESS'S WARM-UP ONLY: the election held as play holds it - the count, the chamber, the verdict landed - without
         /// the night's board, which is a display the warm-up is not filming. A warm-up that drives the manager past a polling day would leave
         /// a game past an election never held; this keeps the warmed-up world one play could have produced. Invoked by reflection from
-        /// <c>UiScreenshotDriver.AdvanceDays</c>; nothing in play calls it.
+        /// <c>UiScreenshotDriver.AdvanceDays</c>; nothing in play calls it. PS-6 US-8: a US film (the driver's default country) now passes 5 November
+        /// 2024 in its warm-up - the president is counted by the manager's own day (the warm-up's AdvanceDay), and this records that no chamber is
+        /// elected; `UsPresidentialElectionDiagnostic` measures both.
         /// </summary>
         private void HoldElectionWithoutTheNight()
         {
@@ -6531,6 +6533,24 @@ namespace PoliSim.UI
 
         private void RunNationalElection()
         {
+            // PS-6 US-8 (R-US1 (a), RULED - F8): where the record seats the chamber by date (the USA's House, until US-16) the polling day elects no chamber.
+            // The president was counted on the day loop (SimulationManager's hook - UsPresidentialElection.Hold), and the House stays the record's: the record
+            // says so, and no prediction is counted here - this path logged "held for USA ... by NotImplemented" once the USA had a polling day (US-6's note)
+            if (PoliSim.Elections.WorldClock.RecordSeatsChamber(PlayerCountryId))
+            {
+                string reason = NationalElection.NotHeldReason(PlayerCountryId);
+                _playerCountry.ElectionHistory.Add(new ElectionRecord
+                {
+                    Turn = _simulationManager.CurrentTurn,
+                    Date = _simulationManager.CurrentDate,
+                    CountryId = PlayerCountryId.ToString(),
+                    Method = ElectionMethod.NotImplemented,
+                    NotHeldReason = reason,
+                });
+                Debug.Log($"ELECTION: the chamber is not elected for {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} - {reason}");
+                return;
+            }
+
             // C-R4b step 5 (D-21): when the player's campaign ran up to THIS boundary, election night
             // counts the campaign's own shares - the same preference model over the same compatibility,
             // prior and loyalty the prediction uses, moved by eight weeks of campaigning - and the
