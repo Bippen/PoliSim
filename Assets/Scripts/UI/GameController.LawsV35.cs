@@ -202,7 +202,7 @@ namespace PoliSim.UI
             LaborPolicyBill draft = BuildLaborBillFromDrafts();
             DrawLawsBillAction(width, "Introduce labour bill", "laws:labourbill", ParliamentSystem.GetLaborBillConcern(c, draft), pending != null, pending != null ? pending.DaysRemaining : 0,
                 LaborDraftChanges(), () => _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts()),
-                pending != null ? $"A Labor Market bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.");
+                pending != null ? $"A Labor Market bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.", Congress.Kind.Labor);
         }
 
         /// <summary>Immigration's figure: the flow the lever adds, in thousands of people a year against the projection, at the dial's level (DERIVED -
@@ -471,7 +471,7 @@ namespace PoliSim.UI
                 : "No Economic Sectors bill before " + Legislature + " - the dials of all eight sectors are its draft"
                     + (Mathf.Abs(costDelta) >= 0.0005f ? " · it would change sector support by " + UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions) + " a year." : ".");
             DrawLawsBillAction(width, "Introduce sectors bill", "laws:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
-                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status);
+                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status, Congress.Kind.Sector);
 
             DrawLawsReadings(width, UiPalette.SystemArea.Sectors);
         }
@@ -782,7 +782,7 @@ namespace PoliSim.UI
                 .Add("A RATE OF OUR OWN ON ONE PARTNER'S GOODS - IT BEATS THE BLOC AND BASE RATES FOR THAT PARTNER, AND THE PARTNER MIRRORS THE EXCESS ONTO OUR EXPORTS")
                 .Add("SET ONE AND IT STARTS AT TODAY'S RATE, CHANGING NOTHING; ITS RATE MOVES ONLY THROUGH THE TRADE BILL · RESET RETURNS A DRAFT TO THE STANDING OVERRIDE");
             float tileWidth = V35Span(width, 6), dialH = BudgetDialTileHeight(false);
-            bool mayAct = _simulationManager.PlayerMayIntroduce(PlayerCountryId, CabinetPortfolio.ForeignAffairs, out string lockedBecause);
+            bool mayAct = _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs, out string lockedBecause);   // PS-6 US-19: an override's rate moves only through the trade bill
             int index = 0;
             Rect pairRow = default;
             foreach (TradePartner link in c.TradePartners)
@@ -812,8 +812,10 @@ namespace PoliSim.UI
                     + StatsReadings.TrueMinus(estimate.PassThroughPp.ToString("+0.00;-0.00", CultureInfo.InvariantCulture)) + " pp this year";
             }
             else if (pending == null) { status += "."; }
+            // PS-6 US-19, R-US8 (a) stated on screen: where a Congress votes the bill, the tariff is its to move and the president's delegated powers are not modelled
+            if (Congress.Applies(c)) { status += (status.EndsWith(".", System.StringComparison.Ordinal) ? " " : ". ") + Congress.TariffPowersWords; }   // the review's L5: the estimate's clause closed first, so the words do not run on
             DrawLawsBillAction(width, "Introduce trade bill", "laws:tradebill", ParliamentSystem.GetTradeBillConcern(c, BuildTradeBillFromDrafts(), _world), pending != null,
-                pending != null ? pending.DaysRemaining : 0, changes, () => _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts()), status, CabinetPortfolio.ForeignAffairs);
+                pending != null ? pending.DaysRemaining : 0, changes, () => _simulationManager.IntroduceTradeBill(PlayerCountryId, BuildTradeBillFromDrafts()), status, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs);
 
             DrawLawsReadings(width, UiPalette.SystemArea.Trade);
         }
@@ -1252,13 +1254,13 @@ namespace PoliSim.UI
         /// them; where the role locks the lever, the lock and its reason in the button's place (the lever lock's rule - no control is drawn there).
         /// </summary>
         private void DrawLawsBillAction(float width, string label, string anchor, BillConcern concern, bool pending, int daysRemaining, int changes, System.Action introduce, string status,
-            CabinetPortfolio? portfolio = null)
+            Congress.Kind kind, CabinetPortfolio? portfolio = null)
         {
             GUILayout.Space(V35.Px(4f));
             float h = V35.Px(34f);
             Rect row = GUILayoutUtility.GetRect(width, h, GUILayout.Width(width), GUILayout.Height(h));
             float countX = row.x;
-            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out string lockedBecause))   // §741: the lever's portfolio, where it has one (PS-3g - a junior partner holding it draws no lock)
+            if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, kind, portfolio, out string lockedBecause))   // §741: the lever's portfolio, where it has one (PS-3g - a junior partner holding it draws no lock); PS-6 US-19: the bill's kind, which a chamber's majority may introduce in a Congress
             {
                 if (Event.current.type == EventType.Repaint)
                 {

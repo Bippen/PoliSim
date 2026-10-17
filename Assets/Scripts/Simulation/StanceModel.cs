@@ -53,6 +53,10 @@ namespace PoliSim.Simulation
         /// and <see cref="Congress.RidesReconciliation(Country, BudgetBill)"/> - false for every country but the USA, and for every bill kind the reading leaves at
         /// cloture; no stance reads it (the one stance, R-US17 premise (B)), only the second chamber's procedure.</summary>
         public bool Reconciliation;
+        /// <summary>PS-6 US-19: the bill is a REVENUE bill (Art. I §7 cl. 1), which begins in the House wherever a second chamber votes it - set by the bill kinds'
+        /// concern builders from <see cref="Congress.IsRevenue"/> (the tax programme and the budget; false for every country but the USA); no stance reads it,
+        /// only the chamber a bill begins in (<see cref="Congress.OriginOf"/>).</summary>
+        public bool Revenue;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 

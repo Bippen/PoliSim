@@ -234,7 +234,7 @@ namespace PoliSim.EditorTools
                     {
                         compared++;
                         Congress.Verdict cached = cache.Chambers(usa, concern, on);
-                        string difference = cached == null ? "no projection - the cache asked one chamber" : ChamberVerdicts.Difference(cached, Congress.Project(usa, concern, on));
+                        string difference = cached == null ? "no projection - the cache asked one chamber" : ChamberVerdicts.Difference(cached, Congress.Project(usa, concern, on, Congress.OriginOf(usa, concern, on)));   // PS-6 US-19: the chamber the bill begins in, as the gate and the cache read it
                         if (difference != null) { failures.Add($"USA {step}, {what}: {difference}"); }
                         bool verdict = cache.WouldPass(usa, concern, on);
                         if (verdict != ParliamentSystem.WouldBillPass(usa, concern, on)) { failures.Add($"USA {step}, {what}: the cache says {(verdict ? "PASS" : "FAIL")}, the model the other"); }

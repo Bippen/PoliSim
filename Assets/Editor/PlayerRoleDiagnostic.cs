@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Elections;
@@ -19,6 +22,9 @@ namespace PoliSim.EditorTools
     /// and a country with none FAILS LOUDLY at AtStart and at PlayerGoverns (proved red on §628's build first: Reviews/evidence/2026-09-25_s629_probe_red.txt).
     /// PS-6 US-7, the US rows: the president's party is the head's, the other in opposition; a planted decided contest makes its party the PRESIDENT-ELECT on the days
     /// before the oath and nothing else; the record yields from the game's polling day; the government a president forms at the oath is a presidency of one party.
+    /// (On an AI USA - a Sweden player's world, no Senate seated - the roles stay the government's: in opposition.) PS-6 US-19, the US rows re-pinned on US
+    /// players' worlds (<see cref="UsRoles"/>): on 12 Mar 2024 a DEM player governs as the president's party, a REP player holds the House majority, may introduce
+    /// an ordinary bill and sees it die in the Senate; and the rest of R-US7 (a).
     /// </summary>
     public static class PlayerRoleDiagnostic
     {
@@ -33,6 +39,10 @@ namespace PoliSim.EditorTools
             var go = new GameObject("PlayerRoleDiagnostic");
             try
             {
+                // PS-6 US-19: the roles in a presidential system, on US worlds of their own - first, so the streams, the epoch and the energy layer's calibration
+                // this check leaves behind are the Sweden world's below, as before (the streams and the epoch are restored after it too)
+                UsRoles(Check, sb);
+
                 WorldClock.ApplyStart(CountryId.Sweden);
                 SimulationRandom.Seed(777);
                 EnergyMarket.ResetCalibration();
@@ -67,6 +77,42 @@ namespace PoliSim.EditorTools
                 Check(sim.PlayerMayIntroduce(CountryId.Germany, out _), "another country's bills are its own government's - never refused here");
                 sweden.PlayerPartyAbbrev = "M";
                 Check(sim.PlayerMayIntroduce(CountryId.Sweden, out _) && sim.IntroduceLawBill(CountryId.Sweden, new LawBill { LawId = "cash_bail_reform_act", IsRepeal = false }), "M as the prime minister's party: the same bill is introduced");
+
+                // PS-6 US-19 (the review's L6): the kind gate every Introduce*Bill now asks is the old gate, answer and words, in a country with one chamber - the
+                // junior partner and the support party on the budget and the labour bill (the two-argument gate's) and the crime bill (Interior's portfolio)
+                foreach (string party in new[] { "KD", "SD", "M", "S" })
+                {
+                    sweden.PlayerPartyAbbrev = party;
+                    var rows = new List<string>();
+                    bool same = true;
+                    foreach ((Congress.Kind kind, CabinetPortfolio? portfolio) in new (Congress.Kind, CabinetPortfolio?)[] { (Congress.Kind.Budget, null), (Congress.Kind.Labor, null), (Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice) })
+                    {
+                        bool oldAnswer = portfolio.HasValue ? sim.PlayerMayIntroduce(CountryId.Sweden, portfolio, out string oldWords) : sim.PlayerMayIntroduce(CountryId.Sweden, out oldWords);
+                        bool newAnswer = sim.PlayerMayIntroduce(CountryId.Sweden, kind, portfolio, out string newWords);
+                        if (oldAnswer != newAnswer || oldWords != newWords) { same = false; }
+                        rows.Add(F("{0} {1}{2}", kind, newAnswer ? "allowed" : "refused", newWords == null ? string.Empty : " \"" + newWords + "\""));
+                    }
+                    Check(same, F("{0} ({1}): the kind gate is the old gate, answer and words - {2}", party, g.RoleOf(party), string.Join("; ", rows)));
+                }
+
+                // PS-6 US-19 (the review's M2): a government's bill in a country with one chamber still pays - Congress.GovernmentBears is true for every author
+                // there, so a failed vote costs the failed vote's approval and the division marks the day lost (F5), as before
+                sweden.PlayerPartyAbbrev = "M";
+                var swedishBill = new CrimeJusticePolicyBill { PoliceFunding = sweden.PoliceFundingLevel, SentencingSeverity = Mathf.Clamp(sweden.SentencingSeverity + 15f, 0f, 100f), BailReform = sweden.BailReformLevel, DrugPolicy = sweden.DrugPolicyLevel, JudicialFunding = sweden.JudicialFundingLevel, BorderEnforcement = sweden.BorderEnforcementLevel };
+                BillConcern swedishConcern = ParliamentSystem.GetCrimeJusticeBillConcern(sweden, swedishBill);
+                bool bearsEverywhere = new[] { "M", "KD", "SD", "S", "V" }.All(p => { sweden.PlayerPartyAbbrev = p; return Congress.GovernmentBears(sweden, ParliamentSystem.GetCrimeJusticeBillConcern(sweden, swedishBill)); });
+                sweden.PlayerPartyAbbrev = "M";
+                float swedishApproval = sweden.State.ApprovalRating;
+                DateTime lostWas = sweden.BillLostOn;
+                ParliamentSystem.ApplyCrimeJusticeBillResult(sweden, swedishBill, false, (c, b) => { }, Congress.GovernmentBears(sweden, swedishConcern));
+                float swedishCharged = swedishApproval - sweden.State.ApprovalRating;
+                ParliamentSystem.RecordDivision(sweden, "Crime & Justice bill (PlayerRoleDiagnostic, a failed government bill)", swedishConcern, false, start);
+                bool swedishLost = sweden.BillLostOn == start.Date;
+                sweden.State.ApprovalRating = swedishApproval;
+                sweden.BillLostOn = lostWas;
+                Check(bearsEverywhere && Mathf.Abs(swedishCharged - Mathf.Min(ParliamentSystem.BillFailedApprovalCost, swedishApproval)) < 1e-4f && swedishLost,
+                    F("Sweden (one chamber): every author's bill is the government's to bear; M's failed bill costs {0:0.00} of approval (the failed vote's {1:0.0}) and marks the day lost - {2}",
+                        swedishCharged, ParliamentSystem.BillFailedApprovalCost, swedishLost ? "as before" : "NOT MARKED"));
                 sweden.PlayerPartyAbbrev = "S";
 
                 // The record survives the save round trip (format 28).
@@ -168,6 +214,209 @@ namespace PoliSim.EditorTools
             if (failures > 0) { Debug.LogError($"PLAYER ROLE: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);
+        }
+
+        /// <summary>
+        /// PS-6 US-19 (`docs/specs/USA_STAGE_PLAN.md`, "Roles in a presidential system"; R-US7 (a), R-US8 (a)): THE US ROWS, RE-PINNED. Two worlds opened as a new
+        /// game opens them (`UsCongressDiagnostic.OpenUsa`: the epoch, the player's country the USA, the record seated by the day loop's own method - the House, the
+        /// Senate, the president). The done-when's words: "on 12 Mar 2024 a DEM player governs as the president's party, and a REP player holds the House majority,
+        /// may introduce an ordinary bill, and sees it die in the Senate". Beside them: the budget the president's party's alone; a revenue bill the House's; a
+        /// party holding the Senate alone introducing there and no revenue bill (planted - no record day reaches it before the game elects Congress); a party
+        /// holding neither introducing nothing (the plan's risk 18, stated); PRESIDENT where the game elected the party's candidate; the chip read through the
+        /// controller's own `RoleChip`; no US party reads IN OPPOSITION; the revenue reading read off US-18's reconciliation table; R-US8 (a)'s words.
+        /// </summary>
+        private static void UsRoles(Action<bool, string> Check, StringBuilder sb)
+        {
+            var hosts = new List<GameObject>();
+            int seedWas = SimulationRandom.MasterSeed;
+            Dictionary<SimulationRandom.Stream, int> drawsWas = SimulationRandom.CaptureDrawCounts();
+            try
+            {
+                using (SimulationManager.EpochScope())
+                {
+                    var chipHost = new GameObject("PlayerRoleDiagnostic.Chip"); hosts.Add(chipHost);
+                    chipHost.AddComponent<SimulationManager>();
+                    var controller = chipHost.AddComponent<PoliSim.UI.GameController>();
+                    string Chip(SimulationManager s, Country c)
+                    {
+                        PresidencyDiagnostic.ControllerField("_simulationManager").SetValue(controller, s);
+                        PresidencyDiagnostic.ControllerField("_playerCountry").SetValue(controller, c);
+                        object read = typeof(PoliSim.UI.GameController).GetMethod("RoleChip", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(controller, null);
+                        return read is ValueTuple<string, bool> chip ? chip.Item1 + (chip.Item2 ? " (filled)" : " (outlined)") : "NO CHIP";
+                    }
+                    string Count(DivisionRecord r) => r == null ? "none" : r.Cloture
+                        ? F("{0} for, {1} needed of {2} sworn", r.Sides.Where(s => s.Side > 0).Sum(s => s.Seats), r.Required, r.Sworn)
+                        : F("{0}-{1}", r.Sides.Where(s => s.Side > 0).Sum(s => s.Seats), r.Sides.Where(s => s.Side < 0).Sum(s => s.Seats));
+                    string Name(int chamber) => Congress.ChamberName(CountryId.USA, chamber);
+
+                    // ---- the revenue reading, read off US-18's reconciliation table (DECLARED: one classification of the bill kinds' revenue - Congress.IsRevenueKind)
+                    var kinds = (Congress.Kind[])Enum.GetValues(typeof(Congress.Kind));
+                    bool agrees = Congress.IsRevenueKind(Congress.Kind.TaxProgram) && Congress.IsRevenueKind(Congress.Kind.Budget) && !Congress.IsRevenueKind(Congress.Kind.WelfareProgram)
+                                  && kinds.All(k => k == Congress.Kind.Budget || !Congress.IsRevenueKind(k) || Congress.IsReconciliationKind(k))
+                                  && !Congress.IsRevenueKind(Congress.Kind.Trade) && !Congress.IsRevenueKind(Congress.Kind.Sector)
+                                  && kinds.All(k => !Congress.IsRevenue(null, k));
+                    Check(agrees, "(US) the revenue reading (Art. I §7 cl. 1) read off the reconciliation table: " + string.Join("; ", kinds.Select(k => k + " " + (Congress.IsRevenueKind(k) ? "REVENUE" : "ordinary")
+                        + (k == Congress.Kind.Budget ? " (by content at the Senate)" : Congress.IsReconciliationKind(k) ? " / reconciliation" : " / cloture")))
+                        + " - no revenue kind but the budget at cloture; the tariff and the sector bill as the table places them (its asks (a), (b))");
+
+                    // ---- 12 Mar 2024 (the US start): the 118th of record - the House REP, the Senate DEM with its caucus - and Biden of record
+                    DateTime start = WorldClock.StartDate(CountryId.USA);
+                    (SimulationManager sim, World world, Country usa) = UsCongressDiagnostic.OpenUsa(hosts, start, "DEM");
+                    DateTime today = sim.CurrentDate;
+                    BillConcern demOrdinary = ParliamentSystem.GetCrimeJusticeBillConcern(usa, UsCongressDiagnostic.CrimeBill(usa, "DEM"));
+                    bool demBudget = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.Budget, null, out string demBudgetLock);
+                    bool demBills = kinds.All(k => sim.PlayerMayIntroduce(CountryId.USA, k, null, out _)) && sim.PlayerMayIntroduce(CountryId.USA, out _);
+                    string demChip = Chip(sim, usa);
+                    Check(start == new DateTime(2024, 3, 12) && Congress.Applies(usa) && usa.Government.Kind == WorldClock.ExecutiveKind.Presidency && usa.Government.PmParty == "DEM" && !usa.Government.PresidencyIsTheGames()
+                          && sim.PlayerGoverns(usa) && GovernmentRecord.RoleOn(usa, "DEM", today) == PlayerRole.PrimeMinister && demChip == "THE PRESIDENT'S PARTY (filled)" && demBudget && demBudgetLock == null && demBills
+                          && Congress.OriginOf(usa, demOrdinary, today) == Congress.House,
+                        F("(US) {0:yyyy-MM-dd}, a DEM player: {1} of record - DEM governs as the president's party (the chip \"{2}\"): the budget and every bill kind its own to introduce, the administration's bills begun in the {3}",
+                            today, usa.Government.Executive, demChip, Name(Congress.OriginOf(usa, demOrdinary, today))));
+
+                    // the review's M2: the president's party's own bill still costs the government - a DEM crime bill, introduced and voted on its day, dies in the
+                    // REP House; the failed vote's approval and the day marked lost (F5) are the government's, as every government's own bill always was
+                    usa.BillLostOn = DateTime.MinValue;
+                    float demApprovalBefore = usa.State.ApprovalRating;
+                    int demBefore = usa.Divisions.Entries.Count > 0 ? usa.Divisions.Entries.Last().Number : 0;
+                    bool demIntroduced = sim.IntroduceCrimeJusticeBill(CountryId.USA, UsCongressDiagnostic.CrimeBill(usa, "DEM"));
+                    for (int d = 0; d < ParliamentSystem.BillDurationDays && sim.GetPendingCrimeJusticeBill(CountryId.USA) != null; d++) { sim.AdvanceCrimeJusticeBillDay(CountryId.USA); }
+                    List<DivisionRecord> demWritten = usa.Divisions.Entries.Where(r => r.Number > demBefore).ToList();
+                    float demCharged = demApprovalBefore - usa.State.ApprovalRating;
+                    Check(demIntroduced && Congress.GovernmentBears(usa, demOrdinary) && demWritten.Count == 1 && demWritten[0].Chamber == Congress.House && !demWritten[0].Passed
+                          && Mathf.Abs(demCharged - Mathf.Min(ParliamentSystem.BillFailedApprovalCost, demApprovalBefore)) < 1e-4f && usa.BillLostOn == today.Date,
+                        F("(US) the president's party's own bill pays (the review's M2): DEM's crime bill dies in the {0} {1}; the government's approval {2:0.00} -> {3:0.00} (the failed vote's {4:0.0}), the day marked lost {5}",
+                            demWritten.Count > 0 ? Name(demWritten[0].Chamber) : "-", Count(demWritten.FirstOrDefault()), demApprovalBefore, usa.State.ApprovalRating, ParliamentSystem.BillFailedApprovalCost,
+                            usa.BillLostOn == today.Date ? "yes" : "NO"));
+
+                    // the same chamber under a president of REP's (planted - no record day before the game elects Congress has a party out of the White House holding the
+                    // Senate alone): DEM holds the Senate and not the House - SENATE MAJORITY: an ordinary bill begun in the Senate, no revenue bill, no budget
+                    GovernmentRecord ofRecord = usa.Government;
+                    usa.Government = GovernmentRecord.OfPresidency("a planted president (REP)", "REP", today, "planted", "planted (PlayerRoleDiagnostic)");
+                    try
+                    {
+                        bool senateOrdinary = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice, out _);
+                        bool noRevenue = !sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.TaxProgram, CabinetPortfolio.FinanceTreasury, out string revenueLock);
+                        bool noBudget = !sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.Budget, null, out string senateBudgetLock);
+                        BillConcern demTax = ParliamentSystem.GetTaxProgramBillConcern(usa, new TaxProgramBill { Type = usa.TaxLines[0].Type, IsAdd = !usa.TaxLines[0].IsImplemented });
+                        int lastBefore = usa.Divisions.Entries.Count > 0 ? usa.Divisions.Entries.Last().Number : 0;
+                        usa.BillLostOn = DateTime.MinValue;
+                        ParliamentSystem.Divide(usa, "Crime & Justice bill (PlayerRoleDiagnostic, the Senate's majority)", demOrdinary, today, out bool senatePassed);
+                        bool senateLossUnmarked = usa.BillLostOn == DateTime.MinValue && !Congress.GovernmentBears(usa, demOrdinary);   // the review's M2: not the government's loss
+                        List<DivisionRecord> senateFirst = usa.Divisions.Entries.Where(r => r.Number > lastBefore).ToList();
+                        string senateChip = Chip(sim, usa);
+                        Check(GovernmentRecord.RoleOn(usa, "DEM", today) == PlayerRole.SenateMajority && senateChip == "SENATE MAJORITY (outlined)" && !sim.PlayerGoverns(usa) && senateOrdinary
+                              && noRevenue && revenueLock == "SENATE MAJORITY · A REVENUE BILL BEGINS IN THE HOUSE · YOUR PARTY HOLDS THE SENATE ALONE" && noBudget && senateBudgetLock == "SENATE MAJORITY · THE PRESIDENT PROPOSES THE BUDGET · YOUR PARTY VOTES ON IT"
+                              && Congress.OriginOf(usa, demOrdinary, today) == Congress.Senate && demTax.Revenue && Congress.OriginOf(usa, demTax, today) == Congress.House
+                              && senateFirst.Count == 1 && senateFirst[0].Chamber == Congress.Senate && senateFirst[0].Origin == Congress.Senate && senateFirst[0].Cloture && !senatePassed && senateLossUnmarked,
+                            F("(US) planted, a REP president over the same chamber: DEM holds the Senate alone - the chip \"{0}\"; an ordinary bill may be introduced and begins in the Senate (the gate: {1}, {2}), never reaching the House, and is no loss of the government's ({5}); a revenue bill refused - \"{3}\"; the budget - \"{4}\"",
+                                senateChip, senateFirst.Count == 1 ? Name(senateFirst[0].Chamber) : senateFirst.Count + " records", Count(senateFirst.FirstOrDefault()), revenueLock, senateBudgetLock,
+                                senateLossUnmarked ? "the day unmarked" : "THE DAY MARKED LOST"));
+                    }
+                    finally { usa.Government = ofRecord; }
+
+                    // a REP player on the same day: the House's majority - an ordinary bill introduced through the game's own entry point, voted on its day, dies in the Senate
+                    usa.PlayerPartyAbbrev = "REP";
+                    string repChip = Chip(sim, usa);
+                    bool generalRefused = !sim.PlayerMayIntroduce(CountryId.USA, out string generalLock);
+                    bool repBudgetRefused = !sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.Budget, null, out string repBudgetLock);
+                    bool repOrdinary = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice, out string repOrdinaryLock);
+                    bool repRevenue = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.TaxProgram, CabinetPortfolio.FinanceTreasury, out _);
+                    bool repTariff = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs, out _);
+                    Check(!sim.PlayerGoverns(usa) && usa.Government.RoleOf("REP") == PlayerRole.Opposition && GovernmentRecord.RoleOn(usa, "REP", today) == PlayerRole.HouseMajority
+                          && Congress.HoldsHouse(usa, "REP") && !Congress.HoldsSenate(usa, "REP", today) && repChip == "HOUSE MAJORITY (outlined)",
+                        F("(US) {0:yyyy-MM-dd}, a REP player: the House's majority, not the president's party - toward the sitting government in opposition (who governs), on the day HOUSE MAJORITY; the chip \"{1}\"", today, repChip));
+                    Check(generalRefused && generalLock == "HOUSE MAJORITY · THE PRESIDENT'S ADMINISTRATION GOVERNS · YOUR PARTY INTRODUCES ORDINARY AND REVENUE BILLS IN THE HOUSE"
+                          && repBudgetRefused && repBudgetLock == "HOUSE MAJORITY · THE PRESIDENT PROPOSES THE BUDGET · YOUR PARTY VOTES ON IT" && repOrdinary && repOrdinaryLock == null && repRevenue && repTariff,
+                        F("(US) the REP House majority may introduce an ordinary bill, a revenue bill and a tariff (R-US8 (a): a bill through Congress); the budget is the president's - \"{0}\"; the government's own acts - \"{1}\"", repBudgetLock, generalLock));
+                    CrimeJusticePolicyBill repBill = UsCongressDiagnostic.CrimeBill(usa, "REP");
+                    int before = usa.Divisions.Entries.Count > 0 ? usa.Divisions.Entries.Last().Number : 0;
+                    usa.BillLostOn = DateTime.MinValue;
+                    float repApprovalBefore = usa.State.ApprovalRating;
+                    bool introduced = sim.IntroduceCrimeJusticeBill(CountryId.USA, repBill);
+                    for (int d = 0; d < ParliamentSystem.BillDurationDays && sim.GetPendingCrimeJusticeBill(CountryId.USA) != null; d++) { sim.AdvanceCrimeJusticeBillDay(CountryId.USA); }
+                    List<DivisionRecord> written = usa.Divisions.Entries.Where(r => r.Number > before).ToList();
+                    // the review's M2: the House majority's bill is not the government's - its failure leaves the government's approval and its day (F5) untouched
+                    BillConcern repConcern = ParliamentSystem.GetCrimeJusticeBillConcern(usa, repBill);
+                    Check(introduced && !Congress.GovernmentBears(usa, repConcern) && usa.State.ApprovalRating == repApprovalBefore && usa.BillLostOn == DateTime.MinValue,
+                        F("(US) the REP House majority's failed bill charges the government nothing (the review's M2, DECLARED): approval {0:0.00} -> {1:0.00}, the day {2}",
+                            repApprovalBefore, usa.State.ApprovalRating, usa.BillLostOn == DateTime.MinValue ? "not marked lost" : "MARKED LOST " + usa.BillLostOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
+                    // and a law it carried would be enacted without the government's enactment cost: the resolution site picks the effects by Congress.GovernmentBears -
+                    // each effect read here on a law the catalog offers, its cost the law's own (a law needs cloture, so no REP-only law passes this Senate)
+                    LawDefinition law = LawCatalog.All.FirstOrDefault(l => l.EnactmentApprovalCost > 0f && !usa.EnactedLaws.Exists(e => e.LawId == l.Id) && LawCatalog.IsWithinCompetence(world, usa, l));
+                    if (law == null) { Check(false, "(US) no unenacted law with an enactment cost for the effects' row - this assertion VERIFIED NOTHING"); }
+                    else
+                    {
+                        MethodInfo borne = typeof(SimulationManager).GetMethod("ApplyLawBillEffects", BindingFlags.Instance | BindingFlags.NonPublic);
+                        MethodInfo unborne = typeof(SimulationManager).GetMethod("ApplyLawBillEffectsUnborne", BindingFlags.Instance | BindingFlags.NonPublic);
+                        float a0 = usa.State.ApprovalRating;
+                        unborne?.Invoke(sim, new object[] { usa, new LawBill { LawId = law.Id, IsRepeal = false } });
+                        bool enactedFree = usa.EnactedLaws.Exists(e => e.LawId == law.Id) && usa.State.ApprovalRating == a0;
+                        unborne?.Invoke(sim, new object[] { usa, new LawBill { LawId = law.Id, IsRepeal = true } });
+                        float a1 = usa.State.ApprovalRating;
+                        borne?.Invoke(sim, new object[] { usa, new LawBill { LawId = law.Id, IsRepeal = false } });
+                        float paid = a1 - usa.State.ApprovalRating;
+                        borne?.Invoke(sim, new object[] { usa, new LawBill { LawId = law.Id, IsRepeal = true } });
+                        usa.State.ApprovalRating = a0;
+                        Check(borne != null && unborne != null && enactedFree && Mathf.Abs(paid - Mathf.Min(law.EnactmentApprovalCost, a1)) < 1e-4f && !usa.EnactedLaws.Exists(e => e.LawId == law.Id),
+                            F("(US) a law ({0}) enacted for a congressional majority costs the government nothing ({1}); enacted for the government it costs {2:0.00} - the law's own {3:0.0}",
+                                law.Id, enactedFree ? "approval unmoved" : "APPROVAL MOVED", paid, law.EnactmentApprovalCost));
+                    }
+                    bool diesInSenate = introduced && sim.GetPendingCrimeJusticeBill(CountryId.USA) == null && written.Count == 2
+                                        && written[0].Chamber == Congress.House && written[0].Origin == Congress.House && written[0].Passed && written[0].Motion
+                                        && written[1].Chamber == Congress.Senate && written[1].Origin == Congress.House && written[1].Cloture && !written[1].Passed && ReferenceEquals(written[1].OtherChamber, written[0]);
+                    Check(diesInSenate,
+                        F("(US) the REP ordinary bill (a crime-and-justice bill, REP's own) introduced {0} and voted on its day: the {1} passes it {2}, the {3} stops it at cloture - {4}",
+                            introduced ? "through IntroduceCrimeJusticeBill" : "NOT INTRODUCED", written.Count > 0 ? Name(written[0].Chamber) : "-", Count(written.FirstOrDefault()), written.Count > 1 ? Name(written[1].Chamber) : "-", Count(written.Skip(1).FirstOrDefault())));
+
+                    // ---- the 119th of record under Trump of record (UsCongressDiagnostic's day: every seat held): REP the president's party, DEM holding neither
+                    (SimulationManager sim119, World _, Country usa119) = UsCongressDiagnostic.OpenUsa(hosts, UsCongressDiagnostic.Day119, "REP");
+                    DateTime day119 = sim119.CurrentDate;
+                    string partyChip = Chip(sim119, usa119);
+                    Check(usa119.Government.PmParty == "REP" && !usa119.Government.PresidencyIsTheGames() && sim119.PlayerGoverns(usa119) && partyChip == "THE PRESIDENT'S PARTY (filled)",
+                        F("(US) {0:yyyy-MM-dd}, a REP player: {1} of record - the chip \"{2}\"", day119, usa119.Government.Executive, partyChip));
+                    // a president the game elected (planted as the oath installs one): PRESIDENT - "winning makes the player president"
+                    GovernmentRecord recordRep = usa119.Government;
+                    var y2024 = Array.Find(PoliSim.Elections.Generated.UsPresidentialReturns.Years, y => y.Year == 2024);
+                    DateTime oath = UsPresidentialElection.OathDayAfter(new DateTime(2024, 11, 5));
+                    usa119.Government = GovernmentRecord.OfPresidency(y2024.NomineeR + " (REP)", "REP", oath, UsPresidentialElection.ElectedOutcome, "planted (PlayerRoleDiagnostic)");
+                    string presidentChip;
+                    try { presidentChip = Chip(sim119, usa119); }
+                    finally { usa119.Government = recordRep; }
+                    Check(presidentChip == "PRESIDENT (filled)", F("(US) a presidency the game elected (planted as the oath installs one, {0:yyyy-MM-dd}): the chip \"{1}\"", oath, presidentChip));
+                    // DEM in the 119th: neither the presidency nor a chamber - it introduces nothing; the one US role the plan lets read as having nothing to do (risk 18, stated)
+                    usa119.PlayerPartyAbbrev = "DEM";
+                    string minorityChip = Chip(sim119, usa119);
+                    bool ordinaryRefused = !sim119.PlayerMayIntroduce(CountryId.USA, Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice, out string minorityLock);
+                    bool nothing = ordinaryRefused && kinds.All(k => !sim119.PlayerMayIntroduce(CountryId.USA, k, null, out _))
+                                   && !sim119.IntroduceCrimeJusticeBill(CountryId.USA, UsCongressDiagnostic.CrimeBill(usa119, "DEM"));
+                    Check(GovernmentRecord.RoleOn(usa119, "DEM", day119) == PlayerRole.Minority && !Congress.HoldsHouse(usa119, "DEM") && !Congress.HoldsSenate(usa119, "DEM", day119) && minorityChip == "MINORITY (outlined)"
+                          && nothing && minorityLock == "MINORITY · " + Congress.HoldsNothingWords,
+                        F("(US) {0:yyyy-MM-dd}, a DEM player: neither the presidency nor a chamber - the chip \"{1}\"; every bill refused - \"{2}\" (the plan's risk 18, stated, not padded)", day119, minorityChip, minorityLock));
+
+                    // ---- no US party reads IN OPPOSITION on these days, and only a party holding neither has nothing to introduce
+                    var rows = new List<string>();
+                    bool noOpposition = true;
+                    foreach ((Country c, DateTime on) in new[] { (usa, today), (usa119, day119) })
+                    {
+                        foreach (string party in new[] { "DEM", "REP" })
+                        {
+                            PlayerRole role = GovernmentRecord.RoleOn(c, party, on);
+                            bool holdsNothing = c.Government.PmParty != party && !Congress.HoldsHouse(c, party) && !Congress.HoldsSenate(c, party, on);
+                            if (role == PlayerRole.Opposition || (role == PlayerRole.Minority) != holdsNothing) { noOpposition = false; }
+                            rows.Add(F("{0:yyyy-MM-dd} {1} {2}", on, party, role));
+                        }
+                    }
+                    Check(noOpposition, "(US) no US party reads IN OPPOSITION, and MINORITY only where it holds neither the presidency nor a chamber: " + string.Join("; ", rows));
+                    sb.Append("    reading   R-US8 (a), stated on the trade bill: \"").Append(Congress.TariffPowersWords).Append("\"\n");
+                }
+            }
+            catch (Exception e) { Check(false, "(US) threw - " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
+            finally
+            {
+                foreach (GameObject go in hosts) { if (go != null) { UnityEngine.Object.DestroyImmediate(go); } }
+                SimulationRandom.RestoreState(seedWas, drawsWas);
+                EnergyMarket.ResetTurnState();
+            }
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

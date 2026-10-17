@@ -113,7 +113,9 @@ namespace PoliSim.UI
         /// chamber's division, the order and the chamber that stops the bill, as the gate will meet them (the House's count today's, the Senate's seats as
         /// seated, the Vice President of the vote's day). Null where the bill goes through one chamber (`Congress.VotesBothChambers`: one chamber in every country with one, and the USA's government budget until US-22). The key is what the answer reads: the chambers'
         /// seats, the player's party and who governs (<see cref="Bind"/>), the concern with its procedure, and the Vice President's party on the day - the one
-        /// thing the date carries into it. Verified on a hit like every other answer (<see cref="VerifyHits"/>).
+        /// thing the date carries into it. PS-6 US-19: the chamber the bill begins in (`Congress.OriginOf`) reads nothing beyond these - the concern's author and
+        /// whether it is a revenue bill (both in the concern's key), who governs and both chambers' seats, and the Vice President on an equal Senate. Verified on
+        /// a hit like every other answer (<see cref="VerifyHits"/>).
         /// </summary>
         public Congress.Verdict Chambers(Country country, BillConcern concern, System.DateTime on)
         {
@@ -128,7 +130,7 @@ namespace PoliSim.UI
             }
 
             Misses++;
-            Congress.Verdict fresh = Congress.Project(country, concern, on);
+            Congress.Verdict fresh = Congress.Project(country, concern, on, Congress.OriginOf(country, concern, on));   // PS-6 US-19: in the chamber its author introduces it in, as the gate votes it
             _chambers[key] = fresh;
             return fresh;
         }
@@ -237,6 +239,7 @@ namespace PoliSim.UI
             sb.Append(concern.GovernmentAuthored ? "G|" : "M|");
             sb.Append(concern.Author ?? string.Empty).Append('|');   // §654: the author votes for its own bill
             sb.Append(concern.Reconciliation ? "R|" : "C|");   // PS-6 US-18: the second chamber's procedure - reconciliation or cloture
+            if (concern.Revenue) { sb.Append("V|"); }   // PS-6 US-19: a revenue bill begins in the House (Congress.OriginOf) - the one origin input the rest of the key does not carry
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {
@@ -280,7 +283,7 @@ namespace PoliSim.UI
         private Congress.Verdict VerifyChambers(Country country, BillConcern concern, System.DateTime on, string key, Congress.Verdict cached)
         {
             var clock = Stopwatch.StartNew();
-            Congress.Verdict fresh = Congress.Project(country, concern, on);
+            Congress.Verdict fresh = Congress.Project(country, concern, on, Congress.OriginOf(country, concern, on));
             string difference = Difference(cached, fresh);
             VerifyMilliseconds += clock.Elapsed.TotalMilliseconds;
             if (difference == null) { return cached; }

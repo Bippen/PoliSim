@@ -157,6 +157,139 @@ namespace PoliSim.Simulation
             return bill.SpendingPinChanges.Count > 0;
         }
 
+        // ---------------------------------------------------------------------------------------------------------------------------------------------
+        // PS-6 US-19 (`docs/specs/USA_STAGE_PLAN.md`, "Roles in a presidential system"; R-US7 (a), RULED F8): WHO INTRODUCES WHAT. "The president's party
+        // introduces the administration's bills and proposes the budget (31 U.S.C. 1105(a)); a party out of the White House introduces ordinary bills in any
+        // chamber it controls, and revenue bills only where it holds the House (Art. I §7 cl. 1); a party holding neither the presidency nor a chamber votes
+        // and introduces nothing." The gate that reads these is `SimulationManager.PlayerMayIntroduce(CountryId, Congress.Kind, CabinetPortfolio?, out string)`;
+        // the role a party reads on a day is `GovernmentRecord.RoleOn`. Pure functions of the country's chambers as seated and the Vice President of the day.
+        // ---------------------------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// A REVENUE BILL (Art. I §7 cl. 1, [CONST]: "All Bills for raising Revenue shall originate in the House of Representatives") - READ OFF THE
+        /// RECONCILIATION TABLE above (DECLARED: one classification of the bill kinds' revenue, so origination and the Senate's procedure cannot disagree): of
+        /// the kinds <see cref="IsReconciliationKind"/> sends by reconciliation, those it reads under 641(a)(2)'s "changes in the revenue laws" - the
+        /// tax-programme bill, not the welfare programme, which it reads as entitlement authority under 641(a)(1)(C) - and the budget, which carries the rates
+        /// (and is the president's party's alone, R-US7 (a)). The tariff bill and the sector bill are revenue or not as the table places them: today at cloture,
+        /// so ordinary here. ⚠ For the tariff that ties origination to a placement whose own note says the opposite on this point ("customs duties are revenue
+        /// laws under 641(a)(2), and Art. I §7 cl. 1 treats them as revenue" - the table above) and whose second ground, R-US8, is now built as (a): the tariff
+        /// bill's ORIGINATION is ASKED of Elias apart from the table's ask (a). No record day reaches it before the game elects Congress - only a party holding the
+        /// Senate alone begins a bill there.
+        /// </summary>
+        public static bool IsRevenueKind(Kind kind) => kind == Kind.Budget || (IsReconciliationKind(kind) && kind != Kind.WelfareProgram);
+
+        /// <summary>Whether a bill of <paramref name="kind"/> is a revenue bill in <paramref name="country"/> - the USA's reading (<see cref="IsRevenueKind"/>);
+        /// false for every other country, whose single chamber has no origination rule here.</summary>
+        public static bool IsRevenue(Country country, Kind kind) => country != null && country.Id == CountryId.USA && IsRevenueKind(kind);
+
+        /// <summary>Whether <paramref name="party"/> holds the House: more than half of the members seated (`Country.ParliamentSeats`) - the chamber's
+        /// majority, which organises it. A tie holds it for no one.</summary>
+        public static bool HoldsHouse(Country country, string party)
+        {
+            if (country?.ParliamentSeats == null || string.IsNullOrEmpty(party)) { return false; }
+            int total = 0;
+            foreach (int held in country.ParliamentSeats.Values) { if (held > 0) { total += held; } }
+            return country.ParliamentSeats.TryGetValue(party, out int seats) && seats > 0 && 2 * seats > total;
+        }
+
+        /// <summary>Whether <paramref name="party"/> holds the Senate on <paramref name="on"/>: the majority of the seats as seated (`Country.SecondChamberSeats`,
+        /// each independent with his conference - R-US10 (a)), an equal division the Vice President's party's (Art. I §3 cl. 4, <see cref="UsSenate.MajorityOf"/>).
+        /// The Vice President is read only on an equal division - the one case his party decides.</summary>
+        public static bool HoldsSenate(Country country, string party, DateTime on) => !string.IsNullOrEmpty(party) && SenateMajority(country, on) == party;
+
+        /// <summary>
+        /// THE CHAMBER A BILL BEGINS IN (the origin US-18 left to this item, `DivisionRecord.Origin`), on the vote's day: a revenue bill in the House (Art. I §7
+        /// cl. 1); the government's own budget, and a bill with no author, in the House; the administration's bills - its author the president's party - in the
+        /// House, US-18's default kept (DECLARED: R-US7 (a) names no chamber for them; ASKED of Elias - the House by default, the chamber the president's party
+        /// holds, or the player's choice - since it governs the default start, where the DEM player holds the Senate alone); a party out of the White House's
+        /// bill in a chamber it controls - the
+        /// House where it holds the House, else the Senate where it holds the Senate (R-US7 (a): "in any chamber it controls"); otherwise the House. Read where
+        /// the bill is voted (`ParliamentSystem.Divide`) and where the page projects it (`ChamberVerdicts.Chambers`), so the two name the same first chamber.
+        /// Whether both chambers pass a bill does not depend on it - only the order, and so the chamber that stops it.
+        /// </summary>
+        public static int OriginOf(Country country, BillConcern concern, DateTime on)
+        {
+            if (!Applies(country) || concern == null || concern.Revenue || concern.GovernmentAuthored || string.IsNullOrEmpty(concern.Author)) { return House; }
+            GovernmentRecord g = country.Government;
+            if (g == null || g.RoleOf(concern.Author) == PlayerRole.PrimeMinister) { return House; }
+            return !HoldsHouse(country, concern.Author) && HoldsSenate(country, concern.Author, on) ? Senate : House;
+        }
+
+        /// <summary>
+        /// R-US7 (a) FOR A PARTY OUT OF THE WHITE HOUSE (the president's party introduces every bill and is never asked here): may <paramref name="party"/>
+        /// introduce a bill of <paramref name="kind"/> on <paramref name="on"/>? The budget is the president's to propose (31 U.S.C. 1105(a)); a revenue bill
+        /// (<see cref="IsRevenueKind"/>) needs the House; an ordinary bill needs either chamber; a party holding neither introduces nothing. False with
+        /// <paramref name="why"/> - the reason after the role's word, in a page's words - where it may not; true with none where it may.
+        /// </summary>
+        public static bool MayIntroduce(Country country, string party, Kind kind, DateTime on, out string why)
+        {
+            why = null;
+            bool house = HoldsHouse(country, party), senate = HoldsSenate(country, party, on);
+            if (kind == Kind.Budget) { why = "THE PRESIDENT PROPOSES THE BUDGET · YOUR PARTY VOTES ON IT"; return false; }
+            if (!house && !senate) { why = HoldsNothingWords; return false; }
+            if (IsRevenueKind(kind) && !house) { why = "A REVENUE BILL BEGINS IN THE HOUSE · YOUR PARTY HOLDS THE SENATE ALONE"; return false; }
+            return true;
+        }
+
+        /// <summary>
+        /// WHO BEARS A BILL (the review's M2, DECLARED and ASKED): whether the government pays for <paramref name="concern"/> - the approval a failed vote costs
+        /// (`ParliamentSystem.BillFailedApprovalCost`), a passed law's enactment cost (`LawDefinition.EnactmentApprovalCost`), and the day marked lost (Elias's
+        /// ruling F5, `ParliamentSystem.RecordBillLost`, which the cabinet's pressure check reads). Each was written for a bill only the government could table;
+        /// R-US7 (a) lets a congressional majority out of the White House table its own, and charging the president for the opposition's bills is no reading of
+        /// the ruling (the review's M2, Reviews/2026-10-17_s852_us19_roles.md). The smallest change: in a Congress
+        /// (<see cref="Applies"/>) the government bears a bill only where its author is in the government - the president's party, or a party in its cabinet
+        /// (`GovernmentRecord.RoleOf` PrimeMinister or JuniorPartner) - and the government's own budget and a bill with no author (the tools' hand) as before.
+        /// Every other country bears every bill exactly as before, where only the government could table one. The budget's failed vote
+        /// (`ParliamentSystem.ApplyBillResult`) is not routed here - it differs only for a budget pending across a change of presidency, and US-22 rebuilds that
+        /// path (DECLARED; the review's second-pass N1). Who should bear a congressional majority's bill
+        /// instead - its own party's standing, or no one - is Elias's to rule.
+        /// </summary>
+        public static bool GovernmentBears(Country country, BillConcern concern)
+        {
+            if (!Applies(country) || concern == null || concern.GovernmentAuthored || string.IsNullOrEmpty(concern.Author) || country.Government == null) { return true; }
+            PlayerRole role = country.Government.RoleOf(concern.Author);
+            return role == PlayerRole.PrimeMinister || role == PlayerRole.JuniorPartner;
+        }
+
+        /// <summary>What a party holding neither the presidency nor a chamber may do - the plan's risk 18, stated, not padded.</summary>
+        public const string HoldsNothingWords = "YOUR PARTY HOLDS NEITHER THE PRESIDENCY NOR A CHAMBER · IT VOTES AND INTRODUCES NOTHING UNTIL AN ELECTION CHANGES THAT";
+
+        /// <summary>The party holding the House (<see cref="HoldsHouse"/>), by key; null where none holds a majority.</summary>
+        public static string HouseMajority(Country country)
+        {
+            if (country?.ParliamentSeats == null) { return null; }
+            foreach (string party in country.ParliamentSeats.Keys) { if (HoldsHouse(country, party)) { return party; } }
+            return null;
+        }
+
+        /// <summary>The party holding the Senate on <paramref name="on"/> (<see cref="HoldsSenate"/>), by key; null where none is seated or none holds it.</summary>
+        public static string SenateMajority(Country country, DateTime on)
+        {
+            if (country?.SecondChamberSeats == null || Sworn(country.SecondChamberSeats) <= 0) { return null; }
+            return UsSenate.MajorityOf(country.SecondChamberSeats, UsSenate.EquallyDivided(country.SecondChamberSeats) ? UsSenate.VicePresidentParty(country, on) : null);
+        }
+
+        /// <summary>What a party out of the White House may introduce, in a page's words - by the chambers it holds on the day (null where it holds neither).</summary>
+        public static string IntroducesWords(Country country, string party, DateTime on)
+            => HoldsHouse(country, party) ? "YOUR PARTY INTRODUCES ORDINARY AND REVENUE BILLS IN THE HOUSE"
+                : HoldsSenate(country, party, on) ? "YOUR PARTY INTRODUCES ORDINARY BILLS IN THE SENATE · A REVENUE BILL BEGINS IN THE HOUSE"
+                : null;
+
+        /// <summary>The words of a congressional role (<see cref="GovernmentRecord.RoleOn"/>'s for a party out of the White House) - HOUSE MAJORITY, SENATE MAJORITY,
+        /// MINORITY; null for any other role. Words only: D-US composes them (the plan's Design asks, part two, question 5).</summary>
+        public static string RoleWord(PlayerRole role) =>
+            role == PlayerRole.HouseMajority ? "HOUSE MAJORITY" : role == PlayerRole.SenateMajority ? "SENATE MAJORITY" : role == PlayerRole.Minority ? "MINORITY" : null;
+
+        /// <summary>
+        /// R-US8, RULED F8: "(b) where the delegating statutes and the litigation's state are read by date when US-19 is built, otherwise (a), stated." US-19 was
+        /// built with neither read (19 U.S.C. 1862 and 2411, 50 U.S.C. 1701-1702 and the litigation's state - the plan's sources table, its R-US8 (b) row; US-19's
+        /// record says what was on disk), so (a) is built: "only the veto and appointments (with the Senate's consent) are the president's alone. Every dial - the
+        /// tariff included - is a bill through Congress, and the president's delegated tariff powers are named as not modelled." These are the words the Laws
+        /// page's trade bill says it in (its status line, as a sentence; its slip upper-cases it); (b) is a later item's, once the statutes and the litigation are
+        /// read by date.
+        /// </summary>
+        public const string TariffPowersWords = "A tariff moves only by a bill through Congress - the president's delegated tariff powers are not modelled.";
+
         /// <summary>One chamber's division on one bill: its sides (the stances carried onto its seats), the count, the line, and the verdict.</summary>
         public sealed class Division
         {
@@ -293,7 +426,8 @@ namespace PoliSim.Simulation
         /// THE GATE: the bill voted through both chambers on <paramref name="date"/> and RECORDED - each chamber's division its own record, written as it is held:
         /// the chamber the bill began in first, then, only where it passed, the other. A first chamber's division the second follows is marked a motion - its
         /// ceremony is the second's, which carries it (`DivisionRecord.OtherChamber`; §761's precedent, the passage a veto follows) - so the plate shows both
-        /// and a bill is signed once. A bill either chamber rejects is the day's loss (`ParliamentSystem.RecordBillLost`, Elias's ruling F5). Returns the
+        /// and a bill is signed once. A bill either chamber rejects is the day's loss (`ParliamentSystem.RecordBillLost`, Elias's ruling F5) where the government
+        /// bears it (<see cref="GovernmentBears"/>, PS-6 US-19: not a congressional majority's bill from out of the government). Returns the
         /// division that carries the bill's ceremony - the second chamber's where it voted, the first's where it stopped there - and, in
         /// <paramref name="passed"/>, whether both chambers passed it. The log stays write-only: nothing in the simulation reads it back.
         /// </summary>
@@ -315,7 +449,7 @@ namespace PoliSim.Simulation
                 last.OtherChamber = first;
             }
             passed = verdict.Passed;
-            if (!passed) { ParliamentSystem.RecordBillLost(country, date); }
+            if (!passed && GovernmentBears(country, concern)) { ParliamentSystem.RecordBillLost(country, date); }   // PS-6 US-19 (the review's M2): the government's loss only where the bill was the government's
             return last;
         }
 

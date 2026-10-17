@@ -493,7 +493,7 @@ namespace PoliSim.UI
             var switchRect = new Rect(inner.x, inner.yMax - switchHeight, inner.width, switchHeight);
 
             // ---- control 1 of 2: the switch ----
-            bool mayIntroduce = _simulationManager.PlayerMayIntroduce(PlayerCountryId, CabinetPortfolio.FinanceTreasury, out string lockedBecause);
+            bool mayIntroduce = _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.TaxProgram, CabinetPortfolio.FinanceTreasury, out string lockedBecause);   // PS-6 US-19: a revenue bill - in a Congress, the House's majority's too
             var bill = pending ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !levied };
             BillConcern taxConcern = ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill);
             System.DateTime taxVoteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending?.DaysRemaining);
@@ -886,7 +886,7 @@ namespace PoliSim.UI
             {
                 BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
                 string line = null;
-                if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, out line); }
+                if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Budget, null, out line); }   // PS-6 US-19: in a Congress the budget's own reason - the president proposes it
                 else if (tabled != null) { line = "Your alternative is tabled · the chamber decides in " + pendingBill.DaysRemaining + " day(s)"; }
                 else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; }
                 if (line != null)

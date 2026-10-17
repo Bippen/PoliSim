@@ -1509,7 +1509,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool IntroduceBudgetBill(CountryId countryId, BudgetBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.Budget, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingBudgetBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1601,7 +1601,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new standalone TaxProgramBill - a no-op (returns false) if one is already pending for this SAME TaxType (different TaxTypes may all have their own bill pending at once - see _pendingTaxProgramBillsByCountry's own doc comment). No mandatory pause to close - unlike IntroduceBudgetBill, this tier never blocks time in the first place.</summary>
         public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd)
         {
-            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.FinanceTreasury, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.TaxProgram, CabinetPortfolio.FinanceTreasury, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (!_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<TaxType, TaxProgramBill>();
@@ -1640,7 +1640,7 @@ namespace PoliSim.Simulation
                 DivisionRecord vetoable = ParliamentSystem.Divide(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
                 passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
                 float approvalBeforeTaxBill = country.State.ApprovalRating;
-                ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed);
+                ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
                 resolved.Add(bill.Type);
             }
@@ -1660,7 +1660,7 @@ namespace PoliSim.Simulation
         /// <summary>WelfareProgramType equivalent of IntroduceTaxProgramBill - see that method's own doc comment, same pattern.</summary>
         public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd)
         {
-            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.HealthSocialAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.WelfareProgram, CabinetPortfolio.HealthSocialAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (!_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending))
             {
                 pending = new Dictionary<WelfareProgramType, WelfareProgramBill>();
@@ -1699,7 +1699,7 @@ namespace PoliSim.Simulation
                 DivisionRecord vetoable = ParliamentSystem.Divide(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
                 passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
                 float approvalBeforeWelfareBill = country.State.ApprovalRating;
-                ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed);
+                ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
                 resolved.Add(bill.Type);
             }
@@ -1719,7 +1719,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new standalone LaborPolicyBill - a no-op (returns false) if one is already pending, same single-slot pattern as IntroduceBudgetBill. No mandatory pause to close - this tier never blocks time.</summary>
         public bool IntroduceLaborBill(CountryId countryId, LaborPolicyBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.Labor, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingLaborBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1750,7 +1750,7 @@ namespace PoliSim.Simulation
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Labor Market bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeLaborBill = country.State.ApprovalRating;
-            ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects);
+            ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Labor Market bill passed" : "Labor Market bill failed", country.State.ApprovalRating - approvalBeforeLaborBill);
             _pendingLaborBillByCountry.Remove(countryId);
         }
@@ -1808,7 +1808,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceCrimeJusticeBill(CountryId countryId, CrimeJusticePolicyBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.InteriorJustice, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingCrimeJusticeBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -1839,7 +1839,7 @@ namespace PoliSim.Simulation
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Crime & Justice bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeCrimeBill = country.State.ApprovalRating;
-            ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects);
+            ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Crime & Justice bill passed" : "Crime & Justice bill failed", country.State.ApprovalRating - approvalBeforeCrimeBill);
             _pendingCrimeJusticeBillByCountry.Remove(countryId);
         }
@@ -1861,7 +1861,7 @@ namespace PoliSim.Simulation
         /// <summary>Submits a new law bill (enact or repeal, per bill.IsRepeal) - a no-op (returns false) if one is already pending for this SAME LawId. Mirrors IntroduceTaxProgramBill's own pattern exactly.</summary>
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, PortfolioOfLaw(bill), out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.Law, PortfolioOfLaw(bill), out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside the parliament's competence (a monetary-regime law in a
             // country that shares its currency zone; EN-7b: an electricity-tax law where no statute is levied - the USA) is refused here as well as not offered - the browser's line and this gate agree.
             if (!LawCatalog.IsWithinCompetence(_world, _world?.GetCountry(countryId), LawCatalog.GetById(bill.LawId)))
@@ -1918,7 +1918,8 @@ namespace PoliSim.Simulation
                 // scenario since 08-24 - unnoticed, because that harness's own verdict line does not
                 // grep ATTRIB. Observed here exactly as the other eight bill types are.
                 float approvalBeforeLawResult = country.State.ApprovalRating;
-                ParliamentSystem.ApplyLawBillResult(country, bill, passed, ApplyLawBillEffects);
+                bool lawBorne = Congress.GovernmentBears(country, concern);   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears - the failed vote's cost, and the enacted law's
+                ParliamentSystem.ApplyLawBillResult(country, bill, passed, lawBorne ? ApplyLawBillEffects : (System.Action<Country, LawBill>)ApplyLawBillEffectsUnborne, lawBorne);
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate,
                     $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName} ({(passed ? "passed" : "failed")})",
                     country.State.ApprovalRating - approvalBeforeLawResult);
@@ -1952,7 +1953,14 @@ namespace PoliSim.Simulation
         /// between (clamp saturation is the one honest exception - the same caveat every clamped
         /// dial in this codebase already carries).
         /// </summary>
-        private void ApplyLawBillEffects(Country country, LawBill bill)
+        private void ApplyLawBillEffects(Country country, LawBill bill) => EnactOrRepealLaw(country, bill, chargeEnactment: true);
+
+        /// <summary>PS-6 US-19 (the review's M2, DECLARED): a law a congressional majority out of the government carries (<see cref="Congress.GovernmentBears"/>
+        /// false) - enacted or repealed exactly as <see cref="ApplyLawBillEffects"/> does it, without charging the government its enactment cost.</summary>
+        private void ApplyLawBillEffectsUnborne(Country country, LawBill bill) => EnactOrRepealLaw(country, bill, chargeEnactment: false);
+
+        /// <summary>The body of <see cref="ApplyLawBillEffects"/> (its doc above), the enactment cost charged only where <paramref name="chargeEnactment"/>.</summary>
+        private void EnactOrRepealLaw(Country country, LawBill bill, bool chargeEnactment)
         {
             LawDefinition law = LawCatalog.GetById(bill.LawId);
             if (law == null)
@@ -1981,7 +1989,7 @@ namespace PoliSim.Simulation
             else
             {
                 country.EnactedLaws.Add(new EnactedLaw { LawId = bill.LawId, EnactedOn = CurrentDate });
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f);
+                if (chargeEnactment) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own law
             }
             TrackAgreements(country);   // PS-3h (§635): a law enacted or repealed is a delivery or a break the day it applies
 
@@ -2169,7 +2177,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceSectorBill(CountryId countryId, SectorPolicyBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.Sector, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingSectorBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -2200,7 +2208,7 @@ namespace PoliSim.Simulation
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Economic Sectors bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeSectorBill = country.State.ApprovalRating;
-            ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects);
+            ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Economic Sectors bill passed" : "Economic Sectors bill failed", country.State.ApprovalRating - approvalBeforeSectorBill);
             _pendingSectorBillByCountry.Remove(countryId);
         }
@@ -2233,7 +2241,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool IntroduceSwfDrawdownBill(CountryId countryId, SwfDrawdownBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.SwfDrawdown, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingSwfDrawdownBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -2274,7 +2282,7 @@ namespace PoliSim.Simulation
             // it now reaches the stock through ApplyOneTimeBudgetImpact, so the debt ledger observes
             // it here exactly as the cabinet and foreign-policy sites observe theirs.
             float debtBeforeSwfBill = country.State.GovernmentDebt;
-            ParliamentSystem.ApplySwfDrawdownBillResult(country, bill, passed, ApplySwfDrawdownBillEffects);
+            ParliamentSystem.ApplySwfDrawdownBillResult(country, bill, passed, ApplySwfDrawdownBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "SWF drawdown bill passed" : "SWF drawdown bill failed", country.State.ApprovalRating - approvalBeforeSwfBill);
             DebtLedgerRecorder.RecordEvent(country, CurrentDate, "SWF emergency drawdown", debtBeforeSwfBill, country.State.GovernmentDebt);
             _pendingSwfDrawdownBillByCountry.Remove(countryId);
@@ -2322,7 +2330,7 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceTradeBill(CountryId countryId, TradePolicyBill bill)
         {
-            if (!PlayerMayIntroduce(countryId, CabinetPortfolio.ForeignAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingTradeBillByCountry.ContainsKey(countryId))
             {
                 return false;
@@ -2356,7 +2364,7 @@ namespace PoliSim.Simulation
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Trade bill", concern, CurrentDate, out bool passed, BillAxis.Trade);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
             float approvalBeforeTradeBill = country.State.ApprovalRating;
-            ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects);
+            ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Trade bill passed" : "Trade bill failed", country.State.ApprovalRating - approvalBeforeTradeBill);
             _pendingTradeBillByCountry.Remove(countryId);
         }
@@ -2644,6 +2652,10 @@ namespace PoliSim.Simulation
         /// the reason. Another country's bills are its own AI government's (never refused here; the AI writes its book without a bill).
         /// PS-6 US-7: a president-elect's party governs from the oath, not before - refused like the opposition until then, the reason in the PRESIDENT-ELECT's
         /// words and its day (<see cref="Elections.GovernmentRecord.RoleOn"/>; words only, D-US composes them).
+        /// PS-6 US-19 (R-US7 (a)): THIS IS THE EXECUTIVE'S GATE - the government's own acts (the budget, a fleet order, an appointment, a cabinet decision, a
+        /// foreign meeting) and every bill in a country with one chamber. Who may refuse is unchanged; in a presidency whose Congress the game seats, a party out of
+        /// the White House is refused in its own words - HOUSE MAJORITY, SENATE MAJORITY or MINORITY, and what it may introduce instead - because a BILL there is
+        /// asked of <see cref="PlayerMayIntroduce(CountryId, Congress.Kind, CabinetPortfolio?, out string)"/>, which lets a chamber's majority introduce.
         /// </summary>
         public bool PlayerMayIntroduce(CountryId countryId, out string lockedBecause)
         {
@@ -2653,11 +2665,54 @@ namespace PoliSim.Simulation
             Elections.PlayerRole role = Elections.GovernmentRecord.RoleOn(country, country.PlayerPartyAbbrev, CurrentDate);
             if (role == Elections.PlayerRole.PresidentElect && Elections.UsPresidentialElection.TryPresidentElect(country, CurrentDate, out Elections.UsPresidentialElection.Contest elect))
             {
-                lockedBecause = "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION GOVERNS UNTIL " + elect.TakesOffice.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() + " · YOUR PARTY VOTES ON ITS BILLS";
+                // PS-6 US-19: out of the White House until the oath, the party introduces in the chamber it holds (R-US7 (a)) - said where it holds one
+                string introduces = Congress.Applies(country) ? Congress.IntroducesWords(country, country.PlayerPartyAbbrev, CurrentDate) : null;
+                lockedBecause = "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION GOVERNS UNTIL " + OathDayWords(elect) + " · " + (introduces ?? "YOUR PARTY VOTES ON ITS BILLS");
+                return false;
+            }
+            string usRole = Congress.RoleWord(role);
+            if (usRole != null)
+            {
+                // PS-6 US-19: a party out of the White House in a Congress - what the chambers it holds let it do, never IN OPPOSITION with nothing to do
+                lockedBecause = usRole + " · THE PRESIDENT'S ADMINISTRATION GOVERNS · " + (Congress.IntroducesWords(country, country.PlayerPartyAbbrev, CurrentDate) ?? Congress.HoldsNothingWords);
                 return false;
             }
             string roleWord = role == Elections.PlayerRole.Support ? "IN SUPPORT" : role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER" : "IN OPPOSITION";
             lockedBecause = role == Elections.PlayerRole.JuniorPartner ? "JUNIOR PARTNER · THE PRIME MINISTER'S LEVER · YOURS: " + country.Government.PortfoliosOf(country.PlayerPartyAbbrev) : roleWord + " · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM";
+            return false;
+        }
+
+        /// <summary>The president-elect's oath day in a gate's words - "20 JAN 2025".</summary>
+        private static string OathDayWords(Elections.UsPresidentialElection.Contest elect) =>
+            elect.TakesOffice.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+
+        /// <summary>
+        /// PS-6 US-19 (`docs/specs/USA_STAGE_PLAN.md`, "Roles in a presidential system"; R-US7 (a), RULED F8): THE GATE ON A BILL, BY ITS KIND - every
+        /// Introduce*Bill asks it. In a presidency whose Congress the game seats (the player's USA, `Congress.Applies`), "the president's party introduces the
+        /// administration's bills and proposes the budget (31 U.S.C. 1105(a)); a party out of the White House introduces ordinary bills in any chamber it
+        /// controls, and revenue bills only where it holds the House (Art. I §7 cl. 1); a party holding neither ... votes and introduces nothing" - the president's
+        /// party passes (<see cref="PlayerGoverns"/>), and any other party is asked of `Congress.MayIntroduce` by the chambers it holds on the day (a
+        /// president-elect's included: out of the White House until the oath). The budget is gated to the president's party here; its procedure through
+        /// Congress is US-22's. EVERY OTHER COUNTRY, AND AN AI USA, take the gate they always took
+        /// (<see cref="PlayerMayIntroduce(CountryId, CabinetPortfolio?, out string)"/>, the role and the portfolio), word for word.
+        /// </summary>
+        public bool PlayerMayIntroduce(CountryId countryId, Congress.Kind kind, CabinetPortfolio? portfolio, out string lockedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            bool inCongress = country != null && PlayerCountryId.HasValue && PlayerCountryId.Value == countryId && country.Government != null
+                              && country.Government.Kind == Elections.WorldClock.ExecutiveKind.Presidency && Congress.Applies(country);
+            if (!inCongress || PlayerGoverns(country)) { return PlayerMayIntroduce(countryId, portfolio, out lockedBecause); }
+            if (Congress.MayIntroduce(country, country.PlayerPartyAbbrev, kind, CurrentDate, out string why)) { lockedBecause = null; return true; }
+            Elections.PlayerRole role = Elections.GovernmentRecord.RoleOn(country, country.PlayerPartyAbbrev, CurrentDate);
+            if (role == Elections.PlayerRole.PresidentElect && Elections.UsPresidentialElection.TryPresidentElect(country, CurrentDate, out Elections.UsPresidentialElection.Contest elect))
+            {
+                // the president-elect's party is out of the White House to the oath - the outgoing administration's budget, and its bills where it holds no chamber
+                lockedBecause = kind == Congress.Kind.Budget ? "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION PROPOSES THE BUDGET UNTIL " + OathDayWords(elect) + " · YOUR PARTY VOTES ON IT"
+                    : why == Congress.HoldsNothingWords ? "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION GOVERNS UNTIL " + OathDayWords(elect) + " · YOUR PARTY VOTES ON ITS BILLS"
+                    : "PRESIDENT-ELECT · " + why;
+                return false;
+            }
+            lockedBecause = (Congress.RoleWord(role) ?? "IN OPPOSITION") + " · " + why;
             return false;
         }
 

@@ -360,8 +360,11 @@ namespace PoliSim.EditorTools
             DivisionRecord senate = records.FirstOrDefault(r => r.Chamber == Congress.Senate);
             bool senateFields = senate == null || (senate.Sworn == Congress.Sworn(usa.SecondChamberSeats) && senate.Cloture == !concern.Reconciliation
                                                   && senate.Required == (senate.Cloture ? Congress.ClotureLine(senate.Sworn) : 0));
-            bool lost = passed ? usa.BillLostOn == DateTime.MinValue : usa.BillLostOn == date.Date;
-            line = string.Join(" then ", records.Select(Records)) + F(" - {0}{1}", passed ? "both passed it" : "lost, the day marked lost", lost ? string.Empty : " (THE DAY'S LOSS NOT AS EXPECTED)");
+            // PS-6 US-19 (the review's M2): the day is the government's loss only where the government bears the bill - a congressional majority's from out of it
+            // (Congress.GovernmentBears) loses nothing of the government's
+            bool borne = Congress.GovernmentBears(usa, concern);
+            bool lost = passed || !borne ? usa.BillLostOn == DateTime.MinValue : usa.BillLostOn == date.Date;
+            line = string.Join(" then ", records.Select(Records)) + F(" - {0}{1}", passed ? "both passed it" : borne ? "lost, the day marked lost" : "lost, the government's day not marked - the bill a congressional majority's from out of it", lost ? string.Empty : " (THE DAY'S LOSS NOT AS EXPECTED)");
             return written == wantChambers && passed == wantPassed && shape && chambers && senateFields && lost;
         }
 

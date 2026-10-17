@@ -436,7 +436,7 @@ namespace PoliSim.UI
                 ? $"An Economic Sectors bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)."
                 : "No Economic Sectors bill before " + Legislature + " - these dials travel in it, one draft with the Sectors page.";
             DrawLawsBillAction(width, "Introduce sectors bill", "en:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
-                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status);
+                pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status, Congress.Kind.Sector);
             V35.FloorGuarded = false;
             _dialSlipBookOverride = null;
 

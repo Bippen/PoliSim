@@ -30,10 +30,10 @@ namespace PoliSim.EditorTools
     /// PRESIDENT-ELECT (the chip and the gate's reason) and in opposition toward the sitting government; the 119th House still seated by the record on 3 January;
     /// Biden to the 19th; the game's Trump on the 20th - a presidency the game elected, formed that day, not the record's - and PRESIDENT from it, REP's own
     /// arrival window opening on the oath's day; each change once; every other country untouched;</item>
-    /// <item>(c) DEM wins, a DEM player: PRESIDENT before (Biden's party) and after (Harris takes office on the 20th) - the done-when's words; the arrival window
+    /// <item>(c) DEM wins, a DEM player: THE PRESIDENT'S PARTY before (Biden's, of record - PS-6 US-19) and PRESIDENT after (Harris takes office on the 20th) - the done-when's words; the arrival window
     /// open on the eve stays open and stays the one arrival window (the party's own oath closes nothing and hands no second); (c') the same world cut on the
     /// eve of the oath and loaded into the game: the open window loads as the arrival window, and the oath keeps it so - the load equals the continuous run;</item>
-    /// <item>(d) REP wins, a DEM player: PRESIDENT to the 19th, IN OPPOSITION from the 20th, the DEM window closed and the new government's budget tabled that
+    /// <item>(d) REP wins, a DEM player: THE PRESIDENT'S PARTY to the 19th, MINORITY from the 20th (PS-6 US-19: neither chamber of the 119th is DEM's), the DEM window closed and the new government's budget tabled that
     /// day - US-2's oath, through the same transition;</item>
     /// <item>(e) a contingent election, half the electors appointed each, undecided until the House chooses on 6 January (R-US3 (a)) - by US-8's count on the day
     /// loop, the delegations of the House then seated - no president-elect before it, REP's after, its winner sworn on the 20th, the government saying the House
@@ -149,6 +149,9 @@ namespace PoliSim.EditorTools
                         s.SetWorld(w);
                         s.PlayerCountryId = player;
                         w.GetCountry(player).PlayerPartyAbbrev = party;
+                        // PS-6 US-19: the Senate of record seated as the game's selection seats it before any day is stepped (US-15's "once as a new game seats its
+                        // player's country") - the roles on a day read the chambers (GovernmentRecord.RoleOn), so a world checked before its first step holds them too
+                        typeof(SimulationManager).GetMethod("SeatTheSecondChamberOfRecord", BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(s, null);
                         return (s, w, w.GetCountry(CountryId.USA));
                     }
                     // one day in the controller's order (GameController: AdvanceDay, the player's day tick, the boundary's turn)
@@ -190,8 +193,8 @@ namespace PoliSim.EditorTools
                         var others = world.Countries.Where(c => c.Id != CountryId.USA).ToDictionary(c => c.Id, c => (Seats: c.ParliamentSeats, Gov: c.Government));
                         GovernmentRecord eveGov = usa.Government;
                         string eveChip = Chip(chipController, sim, usa);
-                        Check(eveGov != null && eveGov.Executive == Biden && WorldClock.RecordSeatsExecutive(usa, Eve) && GovernmentRecord.RoleOn(usa, "REP", Eve) == PlayerRole.Opposition && eveChip == "IN OPPOSITION (outlined)",
-                            F("(b) on the eve, {0}: {1} governs, the record seats the president, REP in opposition - the chip \"{2}\"", Day(Eve), eveGov?.Executive, eveChip));
+                        Check(eveGov != null && eveGov.Executive == Biden && WorldClock.RecordSeatsExecutive(usa, Eve) && GovernmentRecord.RoleOn(usa, "REP", Eve) == PlayerRole.HouseMajority && eveChip == "HOUSE MAJORITY (outlined)",
+                            F("(b) on the eve, {0}: {1} governs, the record seats the president, REP the House's majority (US-19) - the chip \"{2}\"", Day(Eve), eveGov?.Executive, eveChip));
                         Step(sim, world);
                         // PS-6 US-8: the count's day - the world's own count holds the contest (the day loop's hook); where it held none, the planted REP win stands in so
                         // the oath's checks still run, and the count's absence fails by name
@@ -207,7 +210,13 @@ namespace PoliSim.EditorTools
                             F("(b) on the polling day, {0}, REP's win held: the record seats no president in this world from today (the country's gate unchanged); {1} still governs", Day(today), usa.Government?.Executive));
                         Check(GovernmentRecord.RoleOn(usa, "REP", today) == PlayerRole.PresidentElect && usa.Government.RoleOf("REP") == PlayerRole.Opposition && !sim.PlayerGoverns(usa) && elect == "PRESIDENT-ELECT (outlined)",
                             F("(b) REP is the PRESIDENT-ELECT - toward the sitting government in opposition, it does not govern; the chip \"{0}\"", elect));
-                        Check(gate && locked == "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION GOVERNS UNTIL 20 JAN 2025 · YOUR PARTY VOTES ON ITS BILLS", F("(b) the role gate's reason: \"{0}\"", locked));
+                        Check(gate && locked == "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION GOVERNS UNTIL 20 JAN 2025 · YOUR PARTY INTRODUCES ORDINARY AND REVENUE BILLS IN THE HOUSE", F("(b) the role gate's reason: \"{0}\"", locked));
+                        // PS-6 US-19 (R-US7 (a)): out of the White House to the oath, the president-elect's party introduces where it holds a chamber - REP holds the 118th's
+                        // House - and the budget stays the outgoing administration's
+                        bool electOrdinary = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice, out string electOrdinaryLock);
+                        bool electBudget = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.Budget, null, out string electBudgetLock);
+                        Check(electOrdinary && electOrdinaryLock == null && !electBudget && electBudgetLock == "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION PROPOSES THE BUDGET UNTIL 20 JAN 2025 · YOUR PARTY VOTES ON IT",
+                            F("(b) the president-elect's party, the House's majority, may introduce an ordinary bill ({0}); the budget - \"{1}\"", electOrdinary ? "yes" : "NO", electBudgetLock));
                         Check(WorldClock.NextOfRecord(usa, today).SequenceEqual(new[] { NextHouse }) && WorldClock.NextOfRecord(CountryId.USA, today).SequenceEqual(new[] { NextHouse, NextHead }),
                             "(b) the record row's coming dates name the House's day and no president of record in this world; the record's own view still names its next (US-2's words)");
                         object seatsRef = usa.ParliamentSeats, govRef = usa.Government;
@@ -251,15 +260,15 @@ namespace PoliSim.EditorTools
                         EnergyMarket.ResetTurnState();
                     }
 
-                    // ---- (c) DEM wins, a DEM player: PRESIDENT before (Biden's party) and after (Harris)
+                    // ---- (c) DEM wins, a DEM player: THE PRESIDENT'S PARTY before (Biden's, of record) and PRESIDENT after (Harris, the game's)
                     UsPresidentialElection.Contest contestB = Planted("DEM", "DEM's win, the record's electors swapped");
                     {
                         (SimulationManager sim, World world, Country usa) = Open(OathEve, CountryId.USA, "DEM");
                         usa.UsPresidentialElections.Add(contestB);   // a world cut after the count, as a save carries it
                         GovernmentRecord eveGov = usa.Government;
                         string before = Chip(chipController, sim, usa);
-                        Check(eveGov.Executive == Biden && !WorldClock.RecordSeatsExecutive(usa, OathEve) && GovernmentRecord.RoleOn(usa, "DEM", OathEve) == PlayerRole.PrimeMinister && before == "PRESIDENT (filled)",
-                            F("(c) {0}, DEM's win held: {1} governs, DEM is the head's party (its own candidate elected - no president-elect role), the chip \"{2}\"", Day(OathEve), eveGov.Executive, before));
+                        Check(eveGov.Executive == Biden && !WorldClock.RecordSeatsExecutive(usa, OathEve) && GovernmentRecord.RoleOn(usa, "DEM", OathEve) == PlayerRole.PrimeMinister && before == "THE PRESIDENT'S PARTY (filled)",
+                            F("(c) {0}, DEM's win held: {1} governs, DEM is the head's party (its own candidate elected - no president-elect role; the president the record's, so THE PRESIDENT'S PARTY, US-19), the chip \"{2}\"", Day(OathEve), eveGov.Executive, before));
                         object govRef = usa.Government;
                         int govChanges = 0;
                         DateTime govOn = DateTime.MinValue;
@@ -280,7 +289,7 @@ namespace PoliSim.EditorTools
                             {
                                 sworn = usa.Government;
                                 oathChip = Chip(chipController, sim, usa);
-                                oathDay = IsGameElected(sworn, harris) && sworn.PmParty == "DEM" && sim.PlayerGoverns(usa) && !Governs(sim, usa, "REP") && GovernmentRecord.RoleOn(usa, "REP", today) == PlayerRole.Opposition && oathChip == "PRESIDENT (filled)";
+                                oathDay = IsGameElected(sworn, harris) && sworn.PmParty == "DEM" && sim.PlayerGoverns(usa) && !Governs(sim, usa, "REP") && GovernmentRecord.RoleOn(usa, "REP", today) == PlayerRole.HouseMajority && oathChip == "PRESIDENT (filled)";
                                 // the window kept AND still marked used - so no second arrival window opens once it closes (TakeOffice's reset skipped while it stands)
                                 windowOath = sim.GetPendingBudgetProcess(CountryId.USA) && sim.IsIncomingGovernmentBudgetWindow(CountryId.USA) && sim.CaptureSaveState().IncomingBudgetWindowUsed.Contains(CountryId.USA);
                             }
@@ -297,7 +306,7 @@ namespace PoliSim.EditorTools
                         EnergyMarket.ResetTurnState();
                     }
 
-                    // ---- (d) REP wins, a DEM player: PRESIDENT to the eve, IN OPPOSITION from the oath - US-2's oath, through the same transition
+                    // ---- (d) REP wins, a DEM player: THE PRESIDENT'S PARTY to the eve, MINORITY from the oath - US-2's oath, through the same transition
                     {
                         (SimulationManager sim, World world, Country usa) = Open(OathEve, CountryId.USA, "DEM");
                         usa.UsPresidentialElections.Add(Planted("REP", "REP's win, the record's count"));
@@ -314,9 +323,9 @@ namespace PoliSim.EditorTools
                                 oathDay = IsGameElected(usa.Government, trump) && !sim.PlayerGoverns(usa) && !sim.PlayerMayIntroduce(CountryId.USA, out locked) && OathBudget(sim);
                             }
                         }
-                        Check(eveChip == "PRESIDENT (filled)" && windowBefore, F("(d) {0}: DEM governs under Biden - the chip \"{1}\", its arrival window open", Day(Oath.AddDays(-1)), eveChip));
-                        Check(oathDay && oathChip == "IN OPPOSITION (outlined)" && locked == "IN OPPOSITION · THE GOVERNMENT INTRODUCES BILLS · YOUR PARTY VOTES ON THEM",
-                            F("(d) {0}: the game's {1} takes office; DEM in opposition (\"{2}\"; the gate: \"{3}\"); the DEM window closed and the new government's budget tabled that day, its whole term to run", Day(Oath), usa.Government?.Executive, oathChip, locked));
+                        Check(eveChip == "THE PRESIDENT'S PARTY (filled)" && windowBefore, F("(d) {0}: DEM governs under Biden - the chip \"{1}\", its arrival window open", Day(Oath.AddDays(-1)), eveChip));
+                        Check(oathDay && oathChip == "MINORITY (outlined)" && locked == "MINORITY · THE PRESIDENT'S ADMINISTRATION GOVERNS · " + Congress.HoldsNothingWords,
+                            F("(d) {0}: the game's {1} takes office; DEM out of the White House and holding neither chamber of the 119th (\"{2}\"; the gate: \"{3}\"); the DEM window closed and the new government's budget tabled that day, its whole term to run", Day(Oath), usa.Government?.Executive, oathChip, locked));
                         EnergyMarket.ResetTurnState();
                     }
 
@@ -327,14 +336,14 @@ namespace PoliSim.EditorTools
                         usa.UsPresidentialElections.Add(tied);
                         GovernmentRecord eveGov = usa.Government;
                         bool undecided = !tied.Decided() && tied.ElectorsOf("REP") < tied.MajorityOfElectors() && tied.ElectorsOf("DEM") < tied.MajorityOfElectors()
-                                         && !WorldClock.RecordSeatsExecutive(usa, sim.CurrentDate) && GovernmentRecord.RoleOn(usa, "REP", sim.CurrentDate) == PlayerRole.Opposition;
+                                         && !WorldClock.RecordSeatsExecutive(usa, sim.CurrentDate) && GovernmentRecord.RoleOn(usa, "REP", sim.CurrentDate) == PlayerRole.HouseMajority;
                         bool electAfterCount = false, oathDay = false, crossed = false, houseChose = false;
                         string crossedWhat = "not cut", choseWhat = "not reached";
                         for (int d = 0; d < 30 && sim.CurrentDate < StepTo; d++)
                         {
                             Step(sim, world);
                             DateTime today = sim.CurrentDate;
-                            if (today < CountedOn && (GovernmentRecord.RoleOn(usa, "REP", today) != PlayerRole.Opposition || tied.Delegations.Count > 0)) { undecided = false; }
+                            if (today < CountedOn && (GovernmentRecord.RoleOn(usa, "REP", today) != PlayerRole.HouseMajority || tied.Delegations.Count > 0)) { undecided = false; }   // PS-6 US-19: no president-elect - REP the House's majority in the 118th and the 119th
                             if (today == CountedOn)
                             {
                                 // PS-6 US-8: the House's choice on the count's day is the count's own (the day loop's hook) - by the delegations of the House then seated
@@ -370,7 +379,7 @@ namespace PoliSim.EditorTools
                         usa.UsPresidentialElections.Add(Tied());
                         GovernmentRecord eveGov = usa.Government;
                         for (int d = 0; d < 10 && sim.CurrentDate < StepTo; d++) { Step(sim, world); }
-                        Check(ReferenceEquals(usa.Government, eveGov) && eveGov.Executive == Biden && GovernmentRecord.RoleOn(usa, "REP", sim.CurrentDate) == PlayerRole.Opposition && Governs(sim, usa, "DEM"),
+                        Check(ReferenceEquals(usa.Government, eveGov) && eveGov.Executive == Biden && GovernmentRecord.RoleOn(usa, "REP", sim.CurrentDate) == PlayerRole.HouseMajority && Governs(sim, usa, "DEM"),
                             F("(f) ASKED (reading 3 - the code's answer until Elias rules among: the sitting president stays; the record's president for the date; the Speaker acts under 3 U.S.C. §19): a contest the House never decided, stepped past the oath to {0} - no one is seated and the sitting president stays ({1})", Day(sim.CurrentDate), usa.Government?.Executive));
                         EnergyMarket.ResetTurnState();
                     }

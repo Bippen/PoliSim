@@ -395,7 +395,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static DivisionRecord Divide(Country country, string title, BillConcern concern, System.DateTime date, out bool passed, BillAxis axis = BillAxis.Fiscal)
         {
-            if (Congress.VotesBothChambers(country, concern)) { return Congress.Divide(country, title, concern, date, out passed, axis); }
+            if (Congress.VotesBothChambers(country, concern)) { return Congress.Divide(country, title, concern, date, out passed, axis, Congress.OriginOf(country, concern, date)); }   // PS-6 US-19: in the chamber its author introduced it in (R-US7 (a))
             passed = WouldBillPass(country, concern);
             return RecordDivision(country, title, concern, passed, date, axis);
         }
@@ -404,7 +404,7 @@ namespace PoliSim.Simulation
         /// country the three steps the site took before, in its order: the count, the title, the record.</summary>
         public static DivisionRecord Divide(Country country, System.Func<bool, string> titleOf, BillConcern concern, System.DateTime date, out bool passed, out string title, BillAxis axis = BillAxis.Fiscal)
         {
-            if (Congress.VotesBothChambers(country, concern)) { return Congress.Divide(country, titleOf, concern, date, out passed, out title, axis); }
+            if (Congress.VotesBothChambers(country, concern)) { return Congress.Divide(country, titleOf, concern, date, out passed, out title, axis, Congress.OriginOf(country, concern, date)); }   // PS-6 US-19: in the chamber its author introduced it in
             passed = WouldBillPass(country, concern);
             title = titleOf(passed);
             return RecordDivision(country, title, concern, passed, date, axis);
@@ -612,11 +612,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>PASS: TaxLine.IsImplemented is set directly (Rate is untouched - a separate rate-change bill, or a later BudgetBill, is how the rate itself is adjusted). No approval cost beyond the shared BillFailedApprovalCost on FAIL - implement/remove never carried an extra cost before 5d either (see BudgetBill.ApplyBillResult's own doc comment on why structural changes stay free).</summary>
-        public static void ApplyTaxProgramBillResult(Country country, TaxProgramBill bill, bool passed)
+        public static void ApplyTaxProgramBillResult(Country country, TaxProgramBill bill, bool passed, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -642,11 +642,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>WelfareProgramType equivalent of ApplyTaxProgramBillResult - see that method's own doc comment, same pattern.</summary>
-        public static void ApplyWelfareProgramBillResult(Country country, WelfareProgramBill bill, bool passed)
+        public static void ApplyWelfareProgramBillResult(Country country, WelfareProgramBill bill, bool passed, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -688,11 +688,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>PASS: every dial written directly via the caller-supplied delegate (SimulationManager.ApplyLaborBillEffects, which reuses the existing private Apply*Changes methods and their clamp bounds - see BudgetBill.ApplyBillResult's own doc comment for why this stays a delegate rather than ParliamentSystem owning the clamps itself). No new approval cost on PASS, matching every other non-tax bill tier; shared BillFailedApprovalCost on FAIL.</summary>
-        public static void ApplyLaborBillResult(Country country, LaborPolicyBill bill, bool passed, System.Action<Country, LaborPolicyBill> applyEffects)
+        public static void ApplyLaborBillResult(Country country, LaborPolicyBill bill, bool passed, System.Action<Country, LaborPolicyBill> applyEffects, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -722,11 +722,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplyCrimeJusticeBillEffects).</summary>
-        public static void ApplyCrimeJusticeBillResult(Country country, CrimeJusticePolicyBill bill, bool passed, System.Action<Country, CrimeJusticePolicyBill> applyEffects)
+        public static void ApplyCrimeJusticeBillResult(Country country, CrimeJusticePolicyBill bill, bool passed, System.Action<Country, CrimeJusticePolicyBill> applyEffects, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -798,11 +798,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>See ApplyCrimeJusticeBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplyLawBillEffects).</summary>
-        public static void ApplyLawBillResult(Country country, LawBill bill, bool passed, System.Action<Country, LawBill> applyEffects)
+        public static void ApplyLawBillResult(Country country, LawBill bill, bool passed, System.Action<Country, LawBill> applyEffects, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -850,11 +850,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplySectorBillEffects).</summary>
-        public static void ApplySectorBillResult(Country country, SectorPolicyBill bill, bool passed, System.Action<Country, SectorPolicyBill> applyEffects)
+        public static void ApplySectorBillResult(Country country, SectorPolicyBill bill, bool passed, System.Action<Country, SectorPolicyBill> applyEffects, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -920,11 +920,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplyTradeBillEffects).</summary>
-        public static void ApplyTradeBillResult(Country country, TradePolicyBill bill, bool passed, System.Action<Country, TradePolicyBill> applyEffects)
+        public static void ApplyTradeBillResult(Country country, TradePolicyBill bill, bool passed, System.Action<Country, TradePolicyBill> applyEffects, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -986,7 +986,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
         {
-            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill, Reconciliation = Congress.RidesReconciliation(country, bill) };   // PS-3e (§632); PS-6 US-18: the Senate's path, by the bill's content
+            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill, Reconciliation = Congress.RidesReconciliation(country, bill), Revenue = Congress.IsRevenue(country, Congress.Kind.Budget) };   // PS-3e (§632); PS-6 US-18: the Senate's path, by the bill's content; PS-6 US-19: the budget begins in the House
             foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { concern.Add(StanceAxis.Redistribution, -BracketRateMove(country, bill, FindTaxLine(country, kvp.Key))); }   // F4-4: the sub-rows' points
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
@@ -1100,7 +1100,7 @@ namespace PoliSim.Simulation
         public static BillConcern GetTaxProgramBillConcern(Country country, TaxProgramBill bill)
         {
             float direction = GetTaxProgramBillDirection(country, bill);
-            return Authored(country, new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.TaxProgram) }.Add(StanceAxis.SpendVsTax, -direction));   // PS-6 US-18: the revenue laws, 641(a)(2)
+            return Authored(country, new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.TaxProgram), Revenue = Congress.IsRevenue(country, Congress.Kind.TaxProgram) }.Add(StanceAxis.SpendVsTax, -direction));   // PS-6 US-18: the revenue laws, 641(a)(2); PS-6 US-19: a revenue bill, so it begins in the House
         }
 
         public static BillConcern GetWelfareProgramBillConcern(Country country, WelfareProgramBill bill)
@@ -1213,11 +1213,11 @@ namespace PoliSim.Simulation
         public static void RecordBillLost(Country country, System.DateTime date) { country.BillLostOn = date.Date; }
 
         /// <summary>See ApplyLaborBillResult's own doc comment - identical pattern, different delegate (SimulationManager.ApplySwfDrawdownBillEffects).</summary>
-        public static void ApplySwfDrawdownBillResult(Country country, SwfDrawdownBill bill, bool passed, System.Action<Country, SwfDrawdownBill> applyEffects)
+        public static void ApplySwfDrawdownBillResult(Country country, SwfDrawdownBill bill, bool passed, System.Action<Country, SwfDrawdownBill> applyEffects, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 

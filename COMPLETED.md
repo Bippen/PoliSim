@@ -39501,3 +39501,72 @@ Built in the sweep's third wave on US-6's branch. Every parameter was declared i
 
 Everything fits at both widths. The rejected plate (89c, "LOST IN THE SENATE") was not captured by these sweeps; it stands on the diagnostic, unfilmed.
 
+
+## 852. PS-6 US-19: ROLES IN A PRESIDENTIAL SYSTEM - R-US7 (A): THE PRESIDENT'S PARTY INTRODUCES THE ADMINISTRATION'S BILLS AND PROPOSES THE BUDGET, A PARTY OUT OF THE WHITE HOUSE INTRODUCES IN THE CHAMBER IT HOLDS (REVENUE BILLS ONLY IN THE HOUSE), A PARTY HOLDING NEITHER INTRODUCES NOTHING; PRESIDENT / THE PRESIDENT'S PARTY / HOUSE MAJORITY / SENATE MAJORITY / MINORITY; A CONGRESSIONAL MAJORITY'S BILL NOT CHARGED TO THE GOVERNMENT; R-US8 BUILT AS (A), STATED (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-19; R-US7 (a), R-US8): who introduces what; the president's levers; the chips; PlayerRoleDiagnostic's US rows; the review row; the bars; the USA dry film; one filmed width of the Desk.
+
+**Built:**
+- `Congress`:
+  - the revenue reading, read off US-18's reconciliation table (`IsRevenueKind`: the tax programme and the budget);
+  - the chambers a party holds on a day;
+  - the chamber a bill begins in (`OriginOf`, written to US-18's `DivisionRecord.Origin` and read by the gate and the Laws page alike);
+  - `MayIntroduce`, the rule by bill kind;
+  - `GovernmentBears`, who pays for a bill;
+  - the role words.
+- `BillConcern.Revenue`.
+- The kind gate (`SimulationManager.PlayerMayIntroduce`) on all nine `Introduce*Bill`; the executive gate unchanged in whom it refuses, and who governs unchanged.
+- `GovernmentRecord.RoleOn` returns HouseMajority, SenateMajority or Minority for a US party out of the White House; `PresidencyIsTheGames()`.
+- The costs of a congressional majority's bill left off the government: the failed vote's approval in the eight `ParliamentSystem.Apply*Result` methods (`governmentBears`, default true), a law's enactment (`ApplyLawBillEffects` a forwarder to `EnactOrRepealLaw(…, chargeEnactment)`, beside `ApplyLawBillEffectsUnborne`), and F5's lost day in `Congress.Divide`.
+- The Desk chip and its slip; the pages' locks by bill kind; R-US8 (a) stated on the trade bill as its own sentence.
+- The film stages 01d2-01d4, with the Fed chair's hold, play's clock and the speed snapshotted, held and restored, and a run that fails by name if the hold does not return.
+- PlayerRoleDiagnostic's US rows and its non-US equivalence rows (the kind gate against the old gate, call, answer and words); PresidencyDiagnostic re-pinned, its worlds seating the Senate as the game's selection does; UsCongressDiagnostic's lost day.
+
+**Measured** (`n852c`, 26 named checks, all clean; the reviewer's out-of-engine probe confirmed every expected figure first):
+- **2024-03-12, a DEM player:** Biden of record; DEM reads THE PRESIDENT'S PARTY (filled); the budget and every bill kind its own; the administration's bills begin in the House. Its own crime bill dies in the House 213-222 and costs the government 50.00 -> 48.50 (the failed vote's 1.5), the day marked lost.
+- **2024-03-12, a REP player:** HOUSE MAJORITY (outlined), toward the sitting government in opposition. It may introduce an ordinary bill, a revenue bill and a tariff; the budget is refused ("HOUSE MAJORITY · THE PRESIDENT PROPOSES THE BUDGET · YOUR PARTY VOTES ON IT"). Its crime bill passes the House 222-213 and stops at cloture, 49 of 60. Its failed bill charges the government nothing (48.50 -> 48.50, the day not marked lost); a law enacted for it costs nothing, while the same law (truth_in_sentencing_act) enacted for the government costs its own 1.00.
+- **Planted, a REP president over the 118th:** DEM holds the Senate alone, SENATE MAJORITY (outlined); its ordinary bill begins in the Senate (51 for, 60 needed of 100 sworn) and never reaches the House; a revenue bill is refused ("SENATE MAJORITY · A REVENUE BILL BEGINS IN THE HOUSE · YOUR PARTY HOLDS THE SENATE ALONE").
+- **2025-02-03:** REP of record reads THE PRESIDENT'S PARTY; DEM, holding neither the presidency nor a chamber, reads MINORITY and every bill is refused (the plan's risk 18, stated). A presidency the game elected reads PRESIDENT (filled). No US party reads IN OPPOSITION.
+- **Every other country:** the kind gate gives the old gate's answer and words for KD, SD, M and S on the budget, labour and crime bills; Sweden's failed bill still costs 1.50 and marks the day lost. The reviewer's probe, base build against branch build, printed 256 lines of costs (head, partners and support parties of Sweden, Germany, Poland, Italy and France over every bill kind and every law) identical, and the gate's 13,784 lines identical.
+- **The forwarder in the engine:** LaborLawCompositionDiagnostic and CouplingsPassDiagnostic (in no table) ran on main with the integration stashed and on the fixed tree; their 54 and 25 printed lines are identical.
+- **The `elec<N>` diff** (`elec852b` against `elec852c`): no line moves of 531 (OutOfSample2026Diagnostic fails as it does on `elec851b` and `elec852b`). **SaveLoadRoundTripDiagnostic:** PASS.
+
+**Declared:**
+1. R-US8 is (a): every tariff dial a bill through Congress, the delegated powers stated as not modelled, because the statutes and the litigation were not read.
+2. PRESIDENT means a presidency the game elected; THE PRESIDENT'S PARTY a president of record of the player's party (ask A).
+3. The roles are words only, through `RoleOn`; who governs is unchanged; both presidential words filled, the chamber words and MINORITY outlined.
+4. One revenue classification, read off US-18's table: the tax programme and the budget.
+5. The administration's bills begin in the House (ask E).
+6. A bill's origin and who bears it are read on its vote's day.
+7. The president-elect introduces in the chamber it holds.
+8. The executive acts stay with the president's party (ask C).
+9. For the first time a non-governing player's tax-programme, labour, sector and drawdown bills meet an AI-led book; a junior partner never held tax bills. No AI path breaks.
+10. No veto until US-21 (ask F).
+11. No save change.
+12. In a Congress the government bears only its own bills (ask D). The budget's failed vote is not routed through that rule (the second pass's N1): it differs only for a budget pending across a change of presidency with the budget-window hold off, and US-22, which rebuilds that path, carries it as owed.
+
+**Asked** (Elias's): (A) the presidential words; (B) R-US8 (b) and its sourcing errand; (C) the executive acts outside bills; (D) who bears a congressional majority's bill; (E) the chamber the president's party's bills begin in; (F) the gap until US-21's veto, with the review's figure (a REP Congress under a game-elected Harris passes 24 of 24 tax and welfare records by reconciliation in one cycle); (G) whether a tariff bill is revenue under Art. I §7 cl. 1.
+
+**Review:** Reviews/2026-10-17_s852_us19_roles.md, adversarial, refute-first, read-only with an out-of-engine probe, two passes.
+- First pass on e50e62be: **SHIP WITH FIXES.** Held: the non-US gate identical to the old one, the executive gate and who governs unchanged, the page and the gate naming the same first chamber, the budget gated everywhere.
+- Met in c3076c77 and c786d2f1: M1 (the film staging dropped the Fed chair's hold), M2 (an opposition bill charged to the government; declared and asked), L1 (asked), L2, L5, L6. M3 and M4 asked; L3 and L4 reworded.
+- Second pass on c786d2f1: **SHIP.** `SimulationManager.cs`'s code changed between the passes and the second pass read that state clean. N2 met (a measured figure in a doc comment, replaced by a pointer to the review); N1 declared (reading 12).
+
+**Integration:**
+- The fixed tree is the branch plus main: every file that differs from c786d2f1 differs by exactly US-18's lines, which the branch's base lacked.
+- The dry film `drys852b` measured 150 frames against `drys852`'s 148: no "HELD captures skipped" warning, 90 and 91 back, the restored line "the Fed chair's candidates 2 (before the stage 2), the speed Normal (before Normal)".
+- Owed lines: US-21's row carries the gap until the veto and the composition with `GovernmentBears`; US-22's carries N1.
+
+**Bars:** (tier SIMULATION + UI; review REQUIRED and run, two passes, the ledger row written):
+- the named run `n852c` **26 of 26**, with LaborLawCompositionDiagnostic (`lab852`, PASS) and CouplingsPassDiagnostic (`cpl852`) by their own methods, each identical to main's;
+- the cheap bar **114 of 114** (`cheap852b`);
+- the simulation bar **57 of 57** (`sim852c`);
+- the documents bar **20 of 20** (`doc852`);
+- the round trip PASS (`slrt852c`); the `elec<N>` diff empty (`elec852c`);
+- the dry film `drys852b` (USA@1280x720, scoped first): 150 measured, 0 failed, 0 overflows, 0 errors logged;
+- the REAL film `realus19b` (USA at 1280×720, cut at 06m): 144 captured, exit 0.
+
+**Read on the real film** (frames kept in `PoliSim-captures/realus19b/`):
+- `01d4_desk_role_house` shows the masthead chip HOUSE MAJORITY (outlined).
+- From 06e on, the masthead still carries "DOCKET · THE CHAIR TO APPOINT": the Fed chair's hold came back after the staged roles (M1).
+- `06e_policylaws_trade_deep` reads "No Trade bill before Congress - the base rate and the override rates are its draft. A tariff moves only by a bill through Congress - the president's delegated tariff powers are not modelled." That is the branch whose status already ends in a full stop. L5's own case, a moved draft whose estimate ends without one, is off screen at 06m, where the page is scrolled to the override rows. It stands on the second pass's reading of all three branches, unfilmed.

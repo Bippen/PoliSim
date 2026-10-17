@@ -8462,7 +8462,7 @@ namespace PoliSim.UI
                 _lawActionButtonSource = _neutralActionButtonStyle;
             }
             float actionWidth = Mathf.Max(0f, contentWidth + _labelStyle.margin.horizontal - _lawActionButtonStyle.margin.horizontal);
-            if (DrawLeverLock(null, actionWidth, SimulationManager.PortfolioOfLaw(new LawBill { LawId = law.Id }))) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
+            if (DrawLeverLock(null, actionWidth, SimulationManager.PortfolioOfLaw(new LawBill { LawId = law.Id }), Congress.Kind.Law)) { } else if (PoliSimWidgets.Button(actionLabel, _lawActionButtonStyle, GUILayout.Width(actionWidth)))
             {
                 _simulationManager.IntroduceLawBill(PlayerCountryId, new LawBill { LawId = law.Id, IsRepeal = enacted });
             }
@@ -9241,7 +9241,7 @@ namespace PoliSim.UI
                 : fundExists
                     ? "No drawdown bill before " + Legislature + " - one withdraws from the fund now, not at the fiscal year."
                     : "No fund stands to draw down - the annual budget creates one first.";
-            if (DrawLeverLock()) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
+            if (DrawLeverLock(kind: Congress.Kind.SwfDrawdown)) { } else if (DrawSentenceAction(statusText, pendingBill != null ? $"Pending ({pendingBill.DaysRemaining}d)" : "Introduce", fundExists && pendingBill == null, pendingBill != null ? _pendingButtonStyle : _implementButtonStyle))
             {
                 _simulationManager.IntroduceSwfDrawdownBill(PlayerCountryId,
                     new SwfDrawdownBill { WithdrawalPercentOfGdp = _swfDrawdownPercentInput });
@@ -9312,7 +9312,7 @@ namespace PoliSim.UI
             bool ambient = GUI.enabled; GUI.enabled = true;
             GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
             BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
-            if (pending == null || !pending.GovernmentBill) { DrawLeverLock(); }
+            if (pending == null || !pending.GovernmentBill) { DrawLeverLock(kind: Congress.Kind.Budget); }
             else if (tabled != null) { GUILayout.Label($"YOUR ALTERNATIVE IS TABLED · THE CHAMBER DECIDES IN {pending.DaysRemaining} DAY(S)", caption); }
             else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
             else if (PoliSimWidgets.Button("Table an Alternative Budget", _implementButtonStyle, GUILayout.Width(CtaWidth())))
@@ -9437,7 +9437,7 @@ namespace PoliSim.UI
                        + "After this one, the annual process opens on your country's own fiscal-year date.";
             }
 
-            return !_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? "The budget is the government's to lay - your party votes on its bill."   // PS-3c (§630)
+            return !_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? (Congress.Applies(_playerCountry) ? "The budget is the president's to propose - your party votes on it." : "The budget is the government's to lay - your party votes on its bill.")   // PS-3c (§630); PS-6 US-19: R-US7 (a), the president proposes the budget
                 : _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
                 : "No budget bill currently before " + Legislature + ". The annual process opens on your country's own fiscal-year date.";
@@ -9837,7 +9837,7 @@ namespace PoliSim.UI
             // Control 1 of 2.
             bool ambientEnabledForButton = GUI.enabled;
             GUI.enabled = ambientEnabledForButton && pendingBill == null;
-            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.HealthSocialAffairs)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
+            if (DrawLeverLock(actionRect, 0f, CabinetPortfolio.HealthSocialAffairs, Congress.Kind.WelfareProgram)) { } else if (PoliSimWidgets.Button(actionRect, toggleLabel, toggleStyle))
             {
                 _simulationManager.IntroduceWelfareProgramBill(PlayerCountryId, welfareProgram.Type, !welfareProgram.IsImplemented);
             }
@@ -9922,10 +9922,13 @@ namespace PoliSim.UI
         /// PS-3c (§630): THE LOCK ON A LEVER. Where the player's party does not lead the government, the call to action is not drawn - the family's caption says
         /// the role and whose the bills are (SimulationManager.PlayerMayIntroduce, the one rule the simulation refuses by). A rect draws the short word in the action's column.
         /// </summary>
-        private bool DrawLeverLock(Rect? rect = null, float width = 0f, CabinetPortfolio? portfolio = null)
+        private bool DrawLeverLock(Rect? rect = null, float width = 0f, CabinetPortfolio? portfolio = null, Congress.Kind? kind = null)
         {
-            // PS-3g (§634): the lever's portfolio - a junior partner holding it draws no lock.
-            if (_playerCountry == null || _simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out string lockedBecause)) { return false; }
+            // PS-3g (§634): the lever's portfolio - a junior partner holding it draws no lock. PS-6 US-19: a bill's lever asks by the bill's kind (in a Congress a
+            // chamber's majority introduces it); a lever with no kind is the executive's (the policy rate, an appointment)
+            if (_playerCountry == null) { return false; }
+            string lockedBecause;
+            if (kind.HasValue ? _simulationManager.PlayerMayIntroduce(PlayerCountryId, kind.Value, portfolio, out lockedBecause) : _simulationManager.PlayerMayIntroduce(PlayerCountryId, portfolio, out lockedBecause)) { return false; }
             bool ambient = GUI.enabled; GUI.enabled = true;   // the reason is read at full ink whatever the family's ambient state (the budget page disables its family while the process is closed)
             GUIStyle caption = DeskCaption(9f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft);
             if (rect.HasValue) { GUI.Label(rect.Value, "LOCKED", caption); } else if (width > 0f) { GUILayout.Label(lockedBecause, caption, GUILayout.Width(width)); } else { GUILayout.Label(lockedBecause, caption); }

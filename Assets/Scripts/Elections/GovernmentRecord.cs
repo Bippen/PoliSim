@@ -20,6 +20,16 @@ namespace PoliSim.Elections
         /// until it takes office, so <see cref="GovernmentRecord.RoleOf"/> - every test of who governs - never returns it; <see cref="GovernmentRecord.RoleOn"/>
         /// does, for the words the desk's chip and the role gate say.</summary>
         PresidentElect,
+        /// <summary>PS-6 US-19 (R-US7 (a)): a party out of the White House that holds the House (and perhaps the Senate too) - it introduces ordinary and revenue
+        /// bills there. Toward the sitting government it is in opposition, so <see cref="GovernmentRecord.RoleOf"/> never returns it; <see cref="GovernmentRecord.RoleOn"/>
+        /// does, as it does the president-elect.</summary>
+        HouseMajority,
+        /// <summary>PS-6 US-19 (R-US7 (a)): a party out of the White House that holds the Senate and not the House - it introduces ordinary bills there, and no
+        /// revenue bill (Art. I §7 cl. 1). <see cref="GovernmentRecord.RoleOn"/> alone returns it.</summary>
+        SenateMajority,
+        /// <summary>PS-6 US-19 (R-US7 (a)): a party holding neither the presidency nor a chamber - it votes and introduces nothing (the plan's risk 18, stated).
+        /// <see cref="GovernmentRecord.RoleOn"/> alone returns it.</summary>
+        Minority,
     }
 
     /// <summary>
@@ -287,6 +297,10 @@ namespace PoliSim.Elections
         /// opposition whose candidate the game elected president, the oath still ahead (<see cref="UsPresidentialElection.TryPresidentElect"/>), is the
         /// <see cref="PlayerRole.PresidentElect"/>. It governs from the oath, not before, so every test of who governs reads <see cref="RoleOf"/>; the desk's
         /// chip and the role gate's reason read this. A president-elect of the sitting president's own party governs already, and reads as the head's party.
+        /// PS-6 US-19 (R-US7 (a)): in a presidency whose Congress the game seats - both chambers, the player's USA (`Simulation.Congress.Applies`) - a party out
+        /// of the White House that is not the president-elect reads by the chambers it holds that day: <see cref="PlayerRole.HouseMajority"/> where it holds the
+        /// House, <see cref="PlayerRole.SenateMajority"/> where it holds the Senate alone, <see cref="PlayerRole.Minority"/> where it holds neither - so no US
+        /// party reads as in opposition. An AI USA seats no Senate, and its roles stay the government's.
         /// </summary>
         public static PlayerRole RoleOn(Country country, string abbrev, DateTime date)
         {
@@ -297,8 +311,23 @@ namespace PoliSim.Elections
             {
                 return PlayerRole.PresidentElect;
             }
+            if (role == PlayerRole.Opposition && g.Kind == WorldClock.ExecutiveKind.Presidency && Simulation.Congress.Applies(country))
+            {
+                return Simulation.Congress.HoldsHouse(country, abbrev) ? PlayerRole.HouseMajority
+                    : Simulation.Congress.HoldsSenate(country, abbrev, date) ? PlayerRole.SenateMajority
+                    : PlayerRole.Minority;
+            }
             return role;
         }
+
+        /// <summary>
+        /// PS-6 US-19: whether the presidency in office is the game's own - its president sworn at the oath of a contest the game held (the government labelled
+        /// <see cref="UsPresidentialElection.ElectedOutcome"/>) - rather than the record's. "Winning makes the player president" (the political-system spec's §6):
+        /// the chip reads PRESIDENT where the player's party won it, and THE PRESIDENT'S PARTY where the president in office is the record's and of the player's
+        /// party (DECLARED: the player is the party's nominee, R-US2, and a president of record is not one the player elected). A method, not a property: the
+        /// record is saved whole, and a computed property would ride the save.
+        /// </summary>
+        public bool PresidencyIsTheGames() => Kind == WorldClock.ExecutiveKind.Presidency && Outcome == UsPresidentialElection.ElectedOutcome;
 
         /// <summary>
         /// PS-6 US-7: THE GOVERNMENT A PRESIDENT FORMS AT THE OATH - a presidency (the plan: "a government of the presidency kind, its cabinet the president's

@@ -272,6 +272,10 @@ namespace PoliSim.UI
         /// PS-6 US-7: a presidency's words (words only; D-US composes them) - PRESIDENT where the player's party holds the presidency (filled: it holds office), and
         /// PRESIDENT-ELECT where the game elected its candidate and the oath is still ahead (outlined: not yet in office) - the role on the day
         /// (`GovernmentRecord.RoleOn`), so the chip and the gate's reason say the same.
+        /// PS-6 US-19 (the plan's "PRESIDENT, THE PRESIDENT'S PARTY, HOUSE MAJORITY, SENATE MAJORITY or MINORITY - words only"): the head's party reads PRESIDENT
+        /// where the game elected its candidate and THE PRESIDENT'S PARTY where the president in office is the record's (both filled); a party out of the White
+        /// House reads by the chambers it holds - HOUSE MAJORITY, SENATE MAJORITY, MINORITY (outlined: no office in the administration) - so no US party reads
+        /// IN OPPOSITION; the slip names who holds each chamber and, in the gate's words, what the role may introduce.
         /// </summary>
         /// <summary>The desk's slips (the role chip's), rebuilt on every pass of the stage.</summary>
         private PeopleSlips.Book _deskSlipBook = new PeopleSlips.Book();
@@ -280,13 +284,21 @@ namespace PoliSim.UI
         {
             PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
             if (g == null) { return null; }
-            switch (PoliSim.Elections.GovernmentRecord.RoleOn(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate))
+            PoliSim.Elections.PlayerRole role = PoliSim.Elections.GovernmentRecord.RoleOn(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
+            switch (role)
             {
-                case PoliSim.Elections.PlayerRole.PrimeMinister: return (g.Kind == PoliSim.Elections.WorldClock.ExecutiveKind.Presidency ? "PRESIDENT" : g.Caretaker ? "CARETAKER" : "GOVERNING", true);
+                // PS-6 US-19: a presidency's head's party reads PRESIDENT where the game's own election put the party's candidate in office, THE PRESIDENT'S
+                // PARTY where the president in office is the record's ("winning makes the player president" - the political-system spec's §6)
+                case PoliSim.Elections.PlayerRole.PrimeMinister: return (g.Kind == PoliSim.Elections.WorldClock.ExecutiveKind.Presidency ? (g.PresidencyIsTheGames() ? "PRESIDENT" : "THE PRESIDENT'S PARTY") : g.Caretaker ? "CARETAKER" : "GOVERNING", true);
                 case PoliSim.Elections.PlayerRole.PresidentElect: return ("PRESIDENT-ELECT", false);
                 case PoliSim.Elections.PlayerRole.JuniorPartner: return ("JUNIOR PARTNER", true);
                 case PoliSim.Elections.PlayerRole.Support: return ("SUPPORTER FROM OUTSIDE", false);
                 case PoliSim.Elections.PlayerRole.Opposition: return ("IN OPPOSITION", false);
+                // PS-6 US-19 (R-US7 (a)): a party out of the White House by the chambers it holds - outlined, as it holds no office in the administration
+                case PoliSim.Elections.PlayerRole.HouseMajority:
+                case PoliSim.Elections.PlayerRole.SenateMajority:
+                case PoliSim.Elections.PlayerRole.Minority:
+                    return (Congress.RoleWord(role), false);
                 default: return null;
             }
         }
@@ -313,7 +325,20 @@ namespace PoliSim.UI
             {
                 case "GOVERNING": slip.Add("YOUR PARTY LEADS THE GOVERNMENT"); break;
                 case "CARETAKER": slip.Add("YOUR GOVERNMENT SERVES ON AS A CARETAKER"); break;
-                case "PRESIDENT": slip.Add("YOUR PARTY HOLDS THE PRESIDENCY"); break;   // PS-6 US-7
+                case "PRESIDENT": slip.Add("YOUR PARTY HOLDS THE PRESIDENCY"); CongressSlipLine(slip); break;   // PS-6 US-7
+                case "THE PRESIDENT'S PARTY":
+                    // PS-6 US-19: the president in office is the record's and the party's (R-US7 (a): the administration's bills and the budget are the party's)
+                    slip.Add("THE PRESIDENT IS YOUR PARTY'S, OF RECORD: " + (g.Executive ?? "-").ToUpperInvariant());
+                    slip.Add("YOUR PARTY INTRODUCES THE ADMINISTRATION'S BILLS AND PROPOSES THE BUDGET");
+                    CongressSlipLine(slip);
+                    break;
+                case "HOUSE MAJORITY":
+                case "SENATE MAJORITY":
+                case "MINORITY":
+                    // PS-6 US-19 (R-US7 (a)): out of the White House, what the party holds; the gate's words below say what it may introduce
+                    slip.Add("THE PRESIDENT IS " + (g.Executive ?? "-").ToUpperInvariant());
+                    CongressSlipLine(slip);
+                    break;
                 case "PRESIDENT-ELECT":
                 {
                     // PS-6 US-7: the game elected the party's candidate; the outgoing administration governs to the oath
@@ -339,9 +364,20 @@ namespace PoliSim.UI
                 slip.Add(cut >= 0 ? locked.Substring(cut + 3) : locked);   // the gate's words after its role word, which the head already says
             }
             System.DateTime since = words == "CARETAKER" ? g.CaretakerSince : g.FormedOn;
-            if (since > System.DateTime.MinValue && words != "PRESIDENT-ELECT") { slip.Add("SINCE " + DeskDay(since)); }   // PS-6 US-7: the sitting government's day is not the president-elect's
+            bool outOfOffice = words == "PRESIDENT-ELECT" || words == "HOUSE MAJORITY" || words == "SENATE MAJORITY" || words == "MINORITY";
+            if (since > System.DateTime.MinValue && !outOfOffice) { slip.Add("SINCE " + DeskDay(since)); }   // PS-6 US-7, US-19: the sitting government's day is not the president-elect's, nor a chamber's majority's
             SlipAnchor(r, "role");
             _deskSlipBook.Anchors["role"] = slip;
+        }
+
+        /// <summary>PS-6 US-19: who holds each chamber of Congress, on the role chip's slip - the House's majority and the Senate's on the day, by short name
+        /// (nothing where the country seats no Senate).</summary>
+        private void CongressSlipLine(SlipContent slip)
+        {
+            if (!Congress.Applies(_playerCountry)) { return; }
+            string house = Congress.HouseMajority(_playerCountry), senate = Congress.SenateMajority(_playerCountry, _simulationManager.CurrentDate);
+            string Name(string key) => key == null ? "NO MAJORITY" : PartySystems.ShortName(_playerCountry.Id, key);
+            slip.Add("THE HOUSE: " + Name(house) + " · THE SENATE: " + Name(senate));
         }
 
         private void DrawDeskMasthead(Rect r, bool isTimePaused)

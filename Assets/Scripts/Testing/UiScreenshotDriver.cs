@@ -669,6 +669,7 @@ namespace PoliSim.Testing
             yield return Settle();
             yield return Capture("01d_desk_held");
             AssertDeskState(controller, "01d_desk_held");
+            yield return CaptureDeskUsRoles(controller);   // PS-6 US-19: the US role chip's other words (USA only)
             yield return CaptureDeskEventCard(controller);
             yield return CaptureDeskGameOver(controller);
             SetPrivateField(controller, "_onDesk", false);
@@ -4038,6 +4039,86 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: 01e_desk_event - the card filled with the pool's own \"{pool[0].Name}\" (GDP {pool[0].GdpShockPercent:+0.0;-0.0}%, inflation {pool[0].InflationShockPoints:+0.0;-0.0} pts, approval {pool[0].ApprovalEffect:+0.0;-0.0}).");
             if (had) { lastEvents[_countryId] = previous; } else { lastEvents.Remove(_countryId); }
             yield return Settle();
+        }
+
+        /// <summary>
+        /// PS-6 US-19: THE US ROLE CHIP'S OTHER WORDS, each staged for one capture and restored. The warm-up holds the 2024 count and seats the game's president,
+        /// so the held desk (01d) films that president's party as PRESIDENT; these three film the words a US player meets out of it: 01d2 the same president
+        /// read as the record's (THE PRESIDENT'S PARTY), 01d3 the other major party seated in the player's place (where it holds neither the presidency nor a
+        /// chamber, MINORITY), 01d4 a president of the other party staged over the same Congress (where the player's party holds the House, HOUSE MAJORITY).
+        /// Each prints the role it staged as `GovernmentRecord.RoleOn` reads it. The government record and the player's party are touched, and restored; the
+        /// Fed chair's selection (which a staged party out of the government lifts) and the speed are snapshotted and restored with them, play's clock is held for
+        /// the staged frames, and a hold that does not come back fails the run (the review's M1); another country, or a US world whose stage does not hold,
+        /// captures nothing and says so.
+        /// </summary>
+        private IEnumerator CaptureDeskUsRoles(GameController controller)
+        {
+            var country = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+            var sim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+            if (country == null || sim == null || country.Id != CountryId.USA) { yield break; }
+            GovernmentRecord held = country.Government;
+            string mine = country.PlayerPartyAbbrev;
+            if (held == null || held.Kind != WorldClock.ExecutiveKind.Presidency || !Congress.Applies(country) || string.IsNullOrEmpty(mine))
+            {
+                Debug.LogWarning("SHOT: the US role chip could not be staged (no presidency, no Congress seated or no party) - 01d2-01d4 NOT captured.");
+                yield break;
+            }
+            string other = null;
+            foreach (KeyValuePair<string, int> seat in country.ParliamentSeats) { if (seat.Key != mine && (other == null || seat.Value > country.ParliamentSeats[other])) { other = seat.Key; } }
+            string Role() => GovernmentRecord.RoleOn(country, country.PlayerPartyAbbrev, sim.CurrentDate).ToString();
+            // the review's M1: a staged party out of the government lifts the Fed chair's selection - the chair is the government's to appoint, so the controller
+            // nulls the candidates, and the hold the film rides on (an election eve) goes with them and nothing draws them again for this turn. So the selection,
+            // its turn and the speed are snapshotted and restored, and play's clock is held for the staged frames (§510's idiom: primed an hour short of a day) so
+            // no real-time day can pass under a staged government.
+            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+            FieldInfo candidatesField = controller.GetType().GetField("_fedChairCandidates", Own), forTurnField = controller.GetType().GetField("_fedChairCandidatesForTurn", Own);
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", Own), timerField = controller.GetType().GetField("_daySpeedTimer", Own);
+            if (candidatesField == null || forTurnField == null || speedField == null || timerField == null)
+            {
+                Debug.LogError("SHOT: the US role chip's stage could not snapshot the Fed chair's selection or the clock (_fedChairCandidates/_fedChairCandidatesForTurn/_gameSpeed/_daySpeedTimer not found) - 01d2-01d4 NOT captured.");
+                yield break;
+            }
+            object candidatesWas = candidatesField.GetValue(controller), forTurnWas = forTurnField.GetValue(controller), speedWas = speedField.GetValue(controller), timerWas = timerField.GetValue(controller);
+            int candidatesBefore = (candidatesWas as ICollection)?.Count ?? 0;
+            timerField.SetValue(controller, -ClockHoldSeconds);
+            try
+            {
+                if (held.PmParty == mine)
+                {
+                    country.Government = GovernmentRecord.OfPresidency(held.Executive, held.PmParty, held.FormedOn, "of record", "staged (UiScreenshotDriver): the president in office read as the record's");
+                    yield return Settle();
+                    yield return Capture("01d2_desk_role_record");
+                    Debug.Log($"SHOT: 01d2_desk_role_record - staged: {held.Executive} read as the record's president; {mine} reads {Role()}.");
+                    country.Government = held;
+                }
+                if (other != null)
+                {
+                    country.PlayerPartyAbbrev = other;
+                    yield return Settle();
+                    yield return Capture("01d3_desk_role_other");
+                    Debug.Log($"SHOT: 01d3_desk_role_other - staged: {other} seated in {mine}'s place under {held.Executive}; {other} reads {Role()} (House {Congress.HouseMajority(country) ?? "no majority"}, Senate {Congress.SenateMajority(country, sim.CurrentDate) ?? "no majority"}).");
+                    country.PlayerPartyAbbrev = mine;
+                    country.Government = GovernmentRecord.OfPresidency("a staged president (" + other + ")", other, held.FormedOn, "of record", "staged (UiScreenshotDriver): a president of the other party over the same Congress");
+                    yield return Settle();
+                    yield return Capture("01d4_desk_role_house");
+                    Debug.Log($"SHOT: 01d4_desk_role_house - staged: a president of {other} over the same Congress; {mine} reads {Role()}.");
+                }
+            }
+            finally
+            {
+                country.Government = held;
+                country.PlayerPartyAbbrev = mine;
+                candidatesField.SetValue(controller, candidatesWas);
+                forTurnField.SetValue(controller, forTurnWas);
+                speedField.SetValue(controller, speedWas);
+                timerField.SetValue(controller, timerWas);
+            }
+            yield return Settle();
+            int candidatesAfter = (candidatesField.GetValue(controller) as ICollection)?.Count ?? 0;
+            object speedAfter = speedField.GetValue(controller);
+            string restored = $"SHOT: 01d2-01d4 restored - {held.Executive}'s government and {mine} seated again; the Fed chair's candidates {candidatesAfter} (before the stage {candidatesBefore}), the speed {speedAfter} (before {speedWas})";
+            if (candidatesAfter != candidatesBefore || !Equals(speedAfter, speedWas)) { Debug.LogError(restored + " - THE HOLD DID NOT RETURN."); }
+            else { Debug.Log(restored + "."); }
         }
 
         /// <summary>
