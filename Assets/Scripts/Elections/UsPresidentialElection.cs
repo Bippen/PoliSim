@@ -206,13 +206,20 @@ namespace PoliSim.Elections
         /// E1's rule as US-6 built it: where the election is of record (2024, the term ending 20 January 2025), the field of record - each nominee NARA names at
         /// the party's poll × the nominee's [FITTED] factor, every other column at its national share of record as its base (a DEPARTURE put to Elias by US-6:
         /// standing nationally); otherwise each roster party's candidate at the party's poll × E1's future factor (<see cref="PresidentialElection.FutureFactor"/>),
-        /// unnamed ("Republican Party's candidate (2028)" - the nominee is US-28's) and with no minor candidate (no field of record holds one). Normalised; each
+        /// unnamed ("Republican Party's candidate (2028)") unless a nominee is given (US-28, below) and with no minor candidate (no field of record holds one). Normalised; each
         /// share in %. The nominees are named by NARA's name for the year's ticket (<see cref="PresidencyOfRecord.NameOfRecord"/>) - DECLARED: the count names
         /// the two as its certificates do, after the count, while US-6's naming by date (<see cref="PresidencyOfRecord.NomineeName"/>, the Republican date BILLED)
         /// governs the screens before it - that naming and US-6's asymmetry are asked of Elias as one question (the behaviour kept until he rules). False, with the reason, where a nominee's factor is not fitted (NaN until
         /// `Tools/us_factor_patch.pl` patches US-6's FIT lines in) or where no candidate has support.
+        /// <para>PS-6 US-28: a later field names its nominees from <paramref name="nominees"/> (<see cref="UsTermLimit.NomineesFor"/> - the president within the
+        /// Twenty-second Amendment's limit, a term-limited party's Vice President or the player's pick), each still at the future factor, so the shares are the same
+        /// whoever stands; a party with no nominee given keeps the unnamed label. The field of record ignores them (R-US2 (a)).</para>
         /// </summary>
-        public static bool TryField(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, out List<Tally> field, out string why)
+        public static bool TryField(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, out List<Tally> field, out string why) =>
+            TryField(id, pollingDay, poll, null, out field, out why);
+
+        /// <summary>The field, its later nominees named from <paramref name="nominees"/> (see the overload above); null names none.</summary>
+        public static bool TryField(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, out List<Tally> field, out string why)
         {
             field = new List<Tally>();
             why = null;
@@ -240,7 +247,9 @@ namespace PoliSim.Elections
                 foreach (PoliticalParty party in PartySystems.For(id))
                 {
                     if (!poll.TryGetValue(party.Abbrev, out double p) || double.IsNaN(p) || p <= 0.0) { continue; }
-                    support.Add((party.Name + "'s candidate (" + pollingDay.Year.ToString(CultureInfo.InvariantCulture) + ")", party.Abbrev, p * PresidentialElection.FutureFactor));
+                    string name = UsTermLimit.UnnamedNominee(party, pollingDay.Year);
+                    if (nominees != null) { foreach (UsTermLimit.Nominee n in nominees) { if (n.Party == party.Abbrev && !string.IsNullOrEmpty(n.Person)) { name = n.Person; } } }
+                    support.Add((name, party.Abbrev, p * PresidentialElection.FutureFactor));
                 }
             }
             double sum = 0.0;
@@ -257,11 +266,16 @@ namespace PoliSim.Elections
         /// those in force that year or carried forward (R-US13 (a)), by <see cref="ElectoralCollege.FromNationalShares"/>; then <see cref="FromCollege"/>.
         /// <paramref name="states"/> is every jurisdiction's call. Null, with the reason, where no count can be made.
         /// </summary>
-        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, out ElectoralCollege.StateCall[] states, out string why)
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, out ElectoralCollege.StateCall[] states, out string why) =>
+            Count(id, pollingDay, poll, null, out states, out why);
+
+        /// <summary>PS-6 US-28: the count with a later field's nominees named (<see cref="UsTermLimit.NomineesFor"/>; null names none) - the same count, the same
+        /// shares; where a party is term-limited its line says who cannot be elected again and who stands (<see cref="UsTermLimit.ClauseOf"/>). Pure, as the other.</summary>
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, out ElectoralCollege.StateCall[] states, out string why)
         {
             states = null;
             if (!ElectsIn(id)) { why = id + " chooses no president by electors"; return null; }
-            if (!TryField(id, pollingDay, poll, out List<Tally> field, out why)) { return null; }
+            if (!TryField(id, pollingDay, poll, nominees, out List<Tally> field, out why)) { return null; }
             Tally rep = null, dem = null;
             double others = 0.0;
             foreach (Tally t in field)
@@ -287,6 +301,8 @@ namespace PoliSim.Elections
             {
                 contest.Line += "; every other candidate together leads in " + string.Join(", ", othersLead) + " - its electors go to the larger nominee (a single minor candidate's win is not modelled: the states pool the others)";
             }
+            string limited = UsTermLimit.FieldOfRecord(pollingDay) ? null : UsTermLimit.ClauseOf(nominees);
+            if (limited != null) { contest.Line += "; " + limited; }
             return contest;
         }
 
@@ -377,12 +393,13 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The day loop's count: on the country's polling day, not yet counted, the count on <paramref name="poll"/> added to the country and returned;
-        /// null otherwise, with the reason where a polling day could not be counted.</summary>
+        /// null otherwise, with the reason where a polling day could not be counted. PS-6 US-28: a later field's nominees are the country's own
+        /// (<see cref="UsTermLimit.NomineesFor"/> - read from its contests, the record and the player's pick; none for the field of record).</summary>
         public static Contest Hold(Country country, DateTime date, IReadOnlyDictionary<string, double> poll, out string why)
         {
             if (country?.UsPresidentialElections == null) { why = "the country carries no list of contests"; return null; }
             if (!IsPollingDay(country, date)) { why = "not a polling day the game has still to count"; return null; }
-            Contest contest = Count(country.Id, date.Date, poll, out ElectoralCollege.StateCall[] _, out why);
+            Contest contest = Count(country.Id, date.Date, poll, UsTermLimit.NomineesFor(country, date.Date), out ElectoralCollege.StateCall[] _, out why);
             if (contest != null) { country.UsPresidentialElections.Add(contest); }
             return contest;
         }

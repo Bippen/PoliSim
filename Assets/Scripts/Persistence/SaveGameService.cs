@@ -71,6 +71,9 @@ namespace PoliSim.Persistence
         // scenario keys (`Scenario`, `ScenarioVerdictPending`), which an older save's reader reads past. What such a save keeps, not migrated:
         // the scenario's start, baked into its world (Sweden's debt and the fund it was handed; Italy's debt at 165 % of GDP); a pending
         // verdict is dropped, the run going on as free play; a verdict already closed keeps its game over. `RestoreFromSave` names the scenario.
+        // Nor for PS-6 US-28 (2026-10-16) under ruling A: `Country.UsNomineePicks`, the player's pick of a term-limited party's nominee (`UsTermLimit.Pick`), is
+        // additive - an older save carries none, and none is the default (the Vice President), the only state a build before it could hold; each person's
+        // elections, which the limit reads, are derived from the record and the contests already saved, never stored. Nothing is kept unmigrated.
         // Nor for GA-1-2 (§821, 2026-10-14) under ruling A: `UiDraftState.CabinetShortlists` is additive - an older save carries none. What such
         // a save keeps, not migrated: one cut between a cabinet Search and its appointment loads with no shortlist, and its next Search draws the
         // cabinet stream again (GA-1-2's divergence). GA-1-4 changes no saved field.

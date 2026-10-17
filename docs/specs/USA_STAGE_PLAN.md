@@ -497,6 +497,7 @@ Per R-US11 (a): after the game's own election, its last two counts become the ne
 The 22nd Amendment as data: each person's elections — NARA's 2016 page read at US-3, 2020's and 2024's on disk — and the game's own. A person elected twice cannot stand. Per R-US6 as ruled (F8): "the term limit doesn't end the run. The player picks the party's next nominee (the Vice President by default) and campaigns on the outgoing record." The Vice President of record is read by date from `records_by_date.md` (the record's VP is the record ticket's running mate; a game-elected ticket's running mate is the party's own, DECLARED until a ticket is modelled). The term-limited president's party fields the Vice President by default, the player free to pick another of the party's eligible people (an AI party takes the default); the nominee stands at factor 1.0 (E1's rule for a later field); the outgoing term's record is the party's in the economic vote, as built. The pick is asked of Design (§5, D-US part two).
 *Needs:* US-8; R-US6.
 *Done when:* a term-limit diagnostic — a REP win in 2024 bars that nominee (Trump, elected 2016 and 2024) in 2028; the REP player's 2028 nominee defaults to the Vice President of record (Vance) and can be changed; the run continues; the 2028 campaign reads the outgoing term's record; a Harris win leaves her eligible; bars.
+**Built: `COMPLETED.md` §848** - the 22nd Amendment as data (`UsTermLimit`: each person's elections from the catalog's NARA winners before the game's first contest and the game's own contests, the second clause DECLARED not reachable); the term-limited president's party fields the Vice President by default (the record's by date in one method, `TryVicePresidentOfRecordOn`, or the running mate on the game's ticket - asked, R-US27); the player's party its pick from the party's people who may stand (DECLARED pool), on a presidential polling day; an AI party the default; every nominee at the future factor; the party out of the White House unnamed - asked against §6 (R-US26); no format step (the pick additive under ruling A); the Parliament tab's nominee row. The pick goes on the later D-US list.
 
 **US-29 — The Fed chair by statute — its own BASELINE family. Size M.** *(R-US12)*
 Per R-US12 (a): for the USA the chair's term comes from 12 U.S.C. 242 (read), not the turn cadence (CL-4's stated exception retires for the USA). The president nominates and the Senate confirms by majority (G9's 2013 and 2017 precedents, read). The pool of fictional chairs is kept, and the chair's turn label goes.
@@ -2290,6 +2291,17 @@ And does US-26 own the choice? The 2024 count is unaffected either way. If (b), 
 **R-US25 — A fork's own count** *(US-8's reading 10, §847; beside R-US22)*. The impact ledger's and the shadow's forks of a loaded US game step through polling days and hold their own counts, as they already hold Poland's presidential rounds and US-2's record; a fork can therefore seat a different president, and the ledger's leave-one-out attribution then includes that change of government.
 - (a) As built: forks hold their own counts;
 - (b) forks carry the live game's contest forward and hold no count of their own.
+
+With US-28 (§848): a fork made before the player's pick names the default in its own later count while the real game names the pick - shares and electors identical, the name read only for display and within one world.
+
+**R-US26 — The out-party's nominee** *(US-28's reading 4, §848)*. `POLITICAL_SYSTEM_SPEC.md` §6: "**Losing does not end the run.** A defeated president may run again four years later." As built, a party out of the White House fields its candidate unnamed, and the pick exists only for a term-limited party: Harris elected in 2024 and beaten in 2028 is eligible in 2032 (one election), yet DEM fields "Democratic Party's candidate (2032)" and the player cannot field her.
+- (a) the player's out-party may pick from its people, the defeated president among them, the default unnamed;
+- (b) the out-party fields its last eligible nominee;
+- (c) keep it unnamed and amend §6.
+
+**R-US27 — The running mates** *(US-28's reading 3, §848)*.
+- (i) **The 2024 game ticket's running mate:** DECLARED as the record's (Vance, Walz); R-US2 (a) names only the presidential nominee. The alternative reads the plan's "a game-elected ticket's running mate is the party's own" literally: after a game Trump win, REP's 2028 default would be "Republican Party's candidate for Vice President (2024)", not Vance.
+- (ii) **A re-elected president's ticket** gets a new unnamed running mate (Harris re-elected in 2028: from 20 Jan 2029 the Vice President is "Democratic Party's candidate for Vice President (2028)", and DEM's 2032 default is that mate, Walz an alternative). The alternative: keep the sitting Vice President on a re-elected ticket.
 
 ---
 

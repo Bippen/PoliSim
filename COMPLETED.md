@@ -39220,3 +39220,69 @@ Built in the sweep's third wave on US-6's branch. Every parameter was declared i
 
 **CHECKPOINT 1, in plain words.** A US game now starts on 12 March 2024 and plays to 5 November 2024, when the game holds its own presidential election, state by state through the Electoral College, on the player’s own economy. The winner is not fixed to the record: a game from the start elects Trump 329-209 where the record has 312-226. The electors’ meeting, Congress’s count and the oath are dated; on a 269-269 tie the House chooses by states on 6 January (26 of 50). On 20 January 2025 the winner takes office, and the player becomes president or opposition. Congress follows the record by date, and every fourth year the game holds another election. Still missing: the election night (D-US); the House and the Senate elected by the game (US-15, US-16) and the midterms (US-27); the 2028 candidates unnamed (US-28), with the 2028 map’s prior asked (R-US24); no campaign moves the vote (US-9; R-US16 asked); and the naming (R-US23), forks (R-US25) and who governs if the House cannot choose (R-US22), all Elias’s.
 
+
+## 848. PS-6 US-28: THE TWO-TERM LIMIT AS DATA AND THE TERM-LIMITED PARTY'S NOMINEE - THE VICE PRESIDENT BY DEFAULT, THE PLAYER'S PICK (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-28; R-US6 (b) as ruled, F8 §781; R-US2 (a)):
+- each person's elections as data;
+- a person elected twice cannot stand;
+- the term-limited party fields the Vice President by default, and the player may pick;
+- factor 1.0;
+- the run continues.
+
+**Built:**
+- `UsTermLimit`:
+  - `ElectionsBefore`, `ElectionsOf` and `Eligible`: the catalog's NARA winners before the game's first contest, then the game's decided contests; true only within the catalog's window, which check (i) guards;
+  - `PersonOf` and `WinnerOf`;
+  - `TryPresidentOn` and `TryVicePresidentOn`; the record's Vice President in one method, `TryVicePresidentOfRecordOn`;
+  - the running mates of record, held to NARA's pages;
+  - `NomineesFor` and `NomineeOf`;
+  - `PartyPeople` and `EligibleFor`;
+  - `Pick`: polling days only, refusing the barred, another party, a person not of the party, a party not term-limited, the field of record and the counted day;
+  - `ClauseOf`.
+- `UsPresidentialElection.Count` and `TryField` have nominee overloads; `Hold` names a later field from the country. The 2024 count is byte-identical.
+- `Country.UsNomineePicks`: additive under ruling A, no format step.
+- The Parliament tab's nominee row, its label bounded by NEXT CHOICE.
+- `TermLimitDiagnostic`.
+- records_by_date §4 names the rule as F8 amended it.
+
+**Measured** (`n848`, 11 of 11, on the first version; `n848b`, 6 of 6, after the review's fixes):
+- **The record's elections** are read from the catalog: 2012 Obama, 2016 Trump, 2020 Biden and 2024 Trump, each a majority of the electors. By the record alone, Trump was elected 2016 and 2024 and cannot stand on 2028-11-07. With the game's own 2024 count, 2024 is the game's, counted once. Relabelled "the Republican nominee", the count still elects Trump the person. A House that could not choose elects no one.
+- **A game from the record by date (2028-11-06):** Trump cannot stand. REP fields JD Vance, the Vice President of record. The REP player's choices are [JD Vance; Republican Party's candidate (2028)], Trump not among them.
+- **The 2028 count** fields Vance at the future factor (Vance 312, Democratic Party's candidate (2028) 226 on the reference poll). It reads the outgoing term's record on REP (the shift -0.0083, the term from 2025-01-20). The controller's own election path ends nothing (game over False). The run continues past the limit: the 2028 winner is sworn on 2029-01-20 and the world steps on. In 2032 REP fields its president, Vance, within the limit.
+- **The chain:** Vance elected 2028 and 2032 cannot stand in 2036. A Harris win in 2024 leaves her eligible in 2028.
+- **The pick:** five refusals in code, now all tested:
+  - barred;
+  - another party;
+  - not of the party;
+  - not term-limited (the field of record, 2024);
+  - not a presidential polling day (2028-11-08, 2030-11-05).
+  The counted day is refused too, after the 2028 count. An AI party takes the default. The pick moves no vote: every tally is equal. The pick survives a save loaded into the game.
+- **The `elec<N>` diff** (`elec847b` against `elec848b`): no line moves. **SaveLoadRoundTripDiagnostic:** PASS, 12 scenarios. The 2024 count is byte-identical: US-8's diagnostic unchanged.
+
+**Declared:**
+- The pick's pool: the Vice President and president in office, every person on the party's tickets of the game's contests, and the party's own unnamed candidate.
+- An eligible incumbent stands.
+- The second clause is not reachable.
+- The running mates: the 2024 game ticket's is the record's (Vance, Walz), DECLARED and asked; from 2028 a running mate is the party's own, unnamed and dated, a re-elected president's ticket included (asked).
+- The out-party fields its candidate unnamed: ASKED as R-US26 (§6's "A defeated president may run again four years later").
+
+**Review:** `Reviews/2026-10-17_s848_us28_term_limit.md`, one adversarial reader. Verdict: **ship with fixes**, no high defects. The reviewer re-derived each person's elections, the Vice President by date, the 2024 byte-identity, the AI-never-picks rule and the save round trip.
+- **Met:**
+  - M1: ASKED.
+  - M2: the record branch isolated in `TryVicePresidentOfRecordOn`; the reconciliation with US-15's `WorldClock.TryVicePresidentOfRecord` is owed at US-15's integration.
+  - L1, L2, L5, L6, L7, L8: fixed.
+  - L3, L4: DECLARED and asked.
+- **Notes:** L9 (no change); L10 asked beside R-US25.
+
+**Bars:** (tier SIMULATION + UI; no money path; reviewed anyway):
+- the named runs `n848` **11 of 11** and `n848b` **6 of 6**;
+- the cheap bar **111 of 111** (`cheap848b`; TermLimitDiagnostic its 111th);
+- the simulation bar **57 of 57** (`sim848b`; the sentinel on ga111 unmoved: the dump seats no player, so no count runs);
+- the documents bar **20 of 20** (`doc848`);
+- the round trip PASS; the `elec<N>` diff empty;
+- the dry films `drys848` and `drys848b` (USA@1280x720, scoped first): 143 measured, 0 failed, 0 overflows;
+- the REAL film `realus28` (USA at 1280×720, cut at `07a_politics_parliament_rows`): 103 captured, 0 failed, 0 overflows, 0 canvas violations.
+
+**Read on the real film:** `07a_politics_parliament_rows`, after the warm-up’s count elected Trump for the REP player, reads "YOUR NOMINEE · VANCE · THE VICE PRESIDENT · 7 NOV 2028" with NEXT CHOICE at the row’s right, under "THE PRESIDENT · TRUMP · ELECTED IN THE GAME". It fits. The picked state is proved by the diagnostic, not filmed; its label is bounded by the chip (the review’s L5).
+

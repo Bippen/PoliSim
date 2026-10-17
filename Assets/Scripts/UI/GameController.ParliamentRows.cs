@@ -49,6 +49,7 @@ namespace PoliSim.UI
             DrawRecordRow(book);   // PS-6 US-2: the record by date, where the game does not elect the chamber - the president with it while the record seats the executive
             DrawPresidentRow(book);   // §770 (PS-5 item C4): the president the veto reads, and the game's own presidential election
             DrawUsPresidentRow(book);   // PS-6 US-8: the US president from the game's own count - the electors, the House's choice, the oath, the record beside it
+            DrawUsNomineeRow(book);   // PS-6 US-28: the term-limited party's next nominee - the Vice President by default, the player's pick
             DrawConfidence(book);   // PS-3i (§636)
             Rect tail = ReserveRowPx(1f);
             if (Event.current.type == EventType.Repaint) { _parliamentSlipBounds = new Rect(tail.x, 0f, tail.width, tail.yMax); }
@@ -761,6 +762,114 @@ namespace PoliSim.UI
             if (next && !elect && !houseAhead) { slip.Add("NEXT POLLING DAY " + DeskDay(nextDay)); }
             slip.Add("THE HOUSE STAYS THE RECORD'S, BY DATE - THE GAME DOES NOT ELECT IT YET");
             book.Anchors["uspresident"] = slip;
+            DrawRowRule(row);
+            GUILayout.Space(StatsUnit(10f));
+        }
+
+        // the nominee row's reading, kept for the day, the country, the party and the picks it was read with - a pick marks it stale (the president row's cost note:
+        // an OnGUI event does not re-derive the field)
+        private System.DateTime _usNomineeFor = System.DateTime.MinValue;
+        private Country _usNomineeCountry;
+        private string _usNomineeParty;
+        private int _usNomineePicks = -1;
+        private bool _usNomineeStale = true;
+        private System.DateTime _usNomineeDay;
+        private UsTermLimit.Nominee _usNominee;
+        private List<string> _usNomineeChoices;
+
+        /// <summary>
+        /// PS-6 US-28 (R-US6 (b), as Elias ruled it: "the term limit doesn't end the run. The player picks the party's next nominee (the Vice President by default)
+        /// and campaigns on the outgoing record"): THE NEXT NOMINEE of the player's party where its president cannot be elected again at the next polling day (the
+        /// Twenty-second Amendment, <see cref="UsTermLimit"/>). The row: YOUR NOMINEE, the person who stands and why (THE VICE PRESIDENT, YOUR PICK, THE PARTY'S OWN),
+        /// the polling day, and NEXT CHOICE, which steps the pick through the party's people who may be elected, the default first (<see cref="UsTermLimit.Pick"/>).
+        /// The slip: who cannot stand and the elections that bar him, the amendment's words, the choices, and that every nominee stands at the party's poll on the
+        /// outgoing record. Drawn for no other party - an AI party takes the default. Built as it stands; its board is asked of Design later.
+        /// </summary>
+        private void DrawUsNomineeRow(PeopleSlips.Book book)
+        {
+            if (_playerCountry == null || !UsPresidentialElection.ElectsIn(PlayerCountryId) || string.IsNullOrEmpty(_playerCountry.PlayerPartyAbbrev)) { return; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            CountryId country = _playerCountry.Id;
+            string party = _playerCountry.PlayerPartyAbbrev;
+            int picks = _playerCountry.UsNomineePicks?.Count ?? 0;
+            if (_usNomineeStale || _usNomineeFor != today || !ReferenceEquals(_usNomineeCountry, _playerCountry) || _usNomineeParty != party || _usNomineePicks != picks)
+            {
+                _usNomineeStale = false;
+                _usNomineeFor = today;
+                _usNomineeCountry = _playerCountry;
+                _usNomineeParty = party;
+                _usNomineePicks = picks;
+                _usNominee = null;
+                _usNomineeChoices = null;
+                if (WorldClock.TryNextPollingDay(country, today.AddDays(1), out System.DateTime next))
+                {
+                    _usNomineeDay = next;
+                    _usNominee = UsTermLimit.NomineeOf(_playerCountry, next, party);
+                    _usNomineeChoices = _usNominee != null && _usNominee.TermLimited ? UsTermLimit.EligibleFor(_playerCountry, party, next) : null;
+                }
+            }
+            UsTermLimit.Nominee nominee = _usNominee;
+            List<string> choices = _usNomineeChoices;
+            if (nominee == null || !nominee.TermLimited || choices == null || choices.Count == 0) { return; }
+            System.DateTime day = _usNomineeDay;
+
+            GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
+            GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
+            Rect row = ReserveRow(30f);
+            float x = row.x;
+            void Words(string words, GUIStyle style)
+            {
+                float w = Mathf.Ceil(style.CalcSize(new GUIContent(words)).x) + 2f;
+                PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, w, row.height), words, style);
+                x += w + StatsUnit(10f);
+            }
+            // the row's budget (the US-28 review's L5): everything left of NEXT CHOICE - the nominee's label takes what the fixed words and the stamp leave,
+            // cut at a word with an ellipsis where it is longer (an unnamed candidate's label can run to fifty characters), the whole name on the slip
+            bool stepping = choices.Count > 1;
+            Rect chip = stepping ? RowChipRectEndingAt(row.xMax, row, "NEXT CHOICE", 26f, 12f) : default;
+            float limit = stepping ? chip.x - StatsUnit(10f) : row.xMax;
+            string tag = nominee.Picked ? "YOUR PICK" : nominee.ViceDefault ? "THE VICE PRESIDENT" : "THE PARTY'S OWN";
+            Words("YOUR NOMINEE", caption);
+            DrawPartyMarkSlot(new Rect(x, row.y, StatsUnit(16f), row.height), country, party);
+            x += StatsUnit(16f) + StatsUnit(8f);
+            float tagWidth = Mathf.Ceil(muted.CalcSize(new GUIContent(tag)).x) + 2f + StatsUnit(10f);
+            float stampWidth = RowChipRectFrom(0f, row, DeskDay(day), padBoard: 6f).width + StatsUnit(10f);
+            float nameBudget = Mathf.Max(StatsUnit(16f), limit - x - tagWidth - stampWidth - StatsUnit(10f));
+            string name = V35Fit(Surname(nominee.Person).ToUpperInvariant(), caption, nameBudget - 2f, out bool _);
+            float nameWidth = Mathf.Min(nameBudget, Mathf.Ceil(caption.CalcSize(new GUIContent(name)).x) + 2f);
+            PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, nameWidth, row.height), name, caption);
+            x += nameWidth + StatsUnit(10f);
+            Words(tag, muted);
+            Rect stamp = RowChipRectFrom(x, row, DeskDay(day), padBoard: 6f);
+            DrawRowChip(stamp, DeskDay(day), ChipFace.Outline);
+            x = stamp.xMax + StatsUnit(10f);
+            SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "usnominee");
+            if (stepping)
+            {
+                if (DrawRowChip(chip, "NEXT CHOICE", ChipFace.Paper))
+                {
+                    int at = choices.IndexOf(nominee.Person);
+                    string pick = choices[(at + 1) % choices.Count];
+                    if (!UsTermLimit.Pick(_playerCountry, day, party, pick, out string refused)) { Debug.Log($"NOMINEE: the pick was refused - {refused}"); }
+                    _usNomineeStale = true;
+                }
+                SlipAnchor(chip, "usnominee/next");
+                book.Anchors["usnominee/next"] = new SlipContent("NEXT CHOICE")
+                    .Add("STEPS YOUR NOMINEE THROUGH THE PARTY'S PEOPLE WHO MAY STAND, THE DEFAULT FIRST")
+                    .Add("THE PICK HOLDS UNTIL POLLING DAY, " + DeskDay(day));
+            }
+
+            var people = new List<string>();
+            foreach (string person in choices) { people.Add(person.ToUpperInvariant()); }
+            book.Anchors["usnominee"] = new SlipContent("YOUR NOMINEE")
+                .Add(nominee.Person.ToUpperInvariant() + " · " + PartySystems.ShortName(country, party).ToUpperInvariant() + " · POLLING DAY " + DeskDay(day))
+                .Add(nominee.Barred.ToUpperInvariant() + " CANNOT BE ELECTED AGAIN - " + nominee.BarredBecause.ToUpperInvariant())
+                .Add("THE TWENTY-SECOND AMENDMENT: " + UsTermLimit.FirstClause.ToUpperInvariant())
+                .Add(nominee.ViceDefault ? "THE VICE PRESIDENT, " + nominee.Default.ToUpperInvariant() + ", STANDS BY DEFAULT" : "NO VICE PRESIDENT OF THE PARTY MAY STAND - THE PARTY'S OWN CANDIDATE STANDS BY DEFAULT")
+                .Add("THE PARTY'S PEOPLE WHO MAY STAND: " + string.Join(" · ", people))
+                .Add("EVERY NOMINEE STANDS AT THE PARTY'S POLL - THE CHOICE CHANGES WHO STANDS, NOT THE VOTE")
+                .Add("THE CAMPAIGN IS FOUGHT ON THE OUTGOING TERM'S RECORD")
+                .Add("THE LIMIT BINDS THE PERSON, NOT YOUR RUN");
             DrawRowRule(row);
             GUILayout.Space(StatsUnit(10f));
         }

@@ -181,7 +181,7 @@ R-US2 (a), ruled (F8, `COMPLETED.md` §781): the player is the November nominee 
 **The two-term limit — the 22nd Amendment, Section 1** ([CONST-AM]):
 > "Section 1. No person shall be elected to the office of the President more than twice, and no person who has held the office of President, or acted as President, for more than two years of a term to which some other person was elected President shall be elected to the office of the President more than once."
 
-**DERIVED** (for the game's §6 rule "the constitutional two-term limit ends the run when it binds"): a president elected twice cannot be elected again; a vice president who succeeds and serves more than two years of the predecessor's term can be elected only once. The record here does not apply the rule to any person.
+**DERIVED** (for the game's §6 rule as Elias amended it - F8, R-US6 (b): the two-term limit binds the person, not the run): a president elected twice cannot be elected again; a vice president who succeeds and serves more than two years of the predecessor's term can be elected only once. The record here does not apply the rule to any person; the game applies it (`UsTermLimit`).
 
 **Election day — 2 U.S.C. §7 and §1** (the U.S. Code, 2023 edition, GPO):
 - [USC-7]: > "§7. Time of election The Tuesday next after the 1st Monday in November, in every even numbered year, is established as the day for the election, in each of the States and Territories of the United States, of Representatives and Delegates to the Congress commencing on the 3d day of January next thereafter."

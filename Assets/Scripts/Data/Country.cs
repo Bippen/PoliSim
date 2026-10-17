@@ -926,6 +926,12 @@ namespace PoliSim.Data
         /// (format 39) - the states are not, being re-derived from the national shares each contest keeps (`UsPresidentialElection.StatesOf`).</summary>
         public List<Elections.UsPresidentialElection.Contest> UsPresidentialElections = new List<Elections.UsPresidentialElection.Contest>();
 
+        /// <summary>PS-6 US-28 (R-US6 (b)): the player's picks of the party's nominee where the party is term-limited, one per polling day and party
+        /// (`UsTermLimit.Pick`); the count reads the pick for the player's party only - an AI party takes the default, the Vice President. Empty where no pick
+        /// was made, which is the default: additive under ruling A, so a save from before - which could hold no pick - loads to the same game (no format step).
+        /// Each person's elections, which the limit reads, are not stored here: they are derived from the record and <see cref="UsPresidentialElections"/>.</summary>
+        public List<Elections.UsTermLimit.NomineePick> UsNomineePicks = new List<Elections.UsTermLimit.NomineePick>();
+
         /// <summary>
         /// C-D4 (§38, R-CL3): **each party's long-term political capital — what survives an election.**
         ///
