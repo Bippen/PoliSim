@@ -39286,3 +39286,87 @@ Built in the sweep's third wave on US-6's branch. Every parameter was declared i
 
 **Read on the real film:** `07a_politics_parliament_rows`, after the warm-up’s count elected Trump for the REP player, reads "YOUR NOMINEE · VANCE · THE VICE PRESIDENT · 7 NOV 2028" with NEXT CHOICE at the row’s right, under "THE PRESIDENT · TRUMP · ELECTED IN THE GAME". It fits. The picked state is proved by the diagnostic, not filmed; its label is bounded by the chip (the review’s L5).
 
+
+## 849. PS-6 US-15: THE SENATE AS A CHAMBER - THE SENATE OF RECORD SEATED SENATOR BY SENATOR ON ITS DATES (R-US10 (A)), A GENERIC SECOND CHAMBER ON THE COUNTRY, THE VICE PRESIDENT BY US-28'S ONE DERIVATION AND ART. I §3 CL. 4, SAVE FORMAT 40, THE BRIEF, THE START CARD AND THE PARLIAMENT PAGE; ECONOMICVOTE'S "DIVIDED" READ OVER BOTH CHAMBERS (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-15; R-US10 (a), R-US1 (a), G3, §627 ruling 1):
+- the Senate seated by date from US-12's table;
+- the VP's tie-break;
+- the save, with a format step, its migration and the clone;
+- the brief and the start card naming the Senate majority, with the House bar kept;
+- a Parliament card;
+- EconomicVote's "divided" re-read.
+
+**Built:**
+- `UsSenate`:
+- the roster by date: held from the oath and not on the last day; independents with their caucus;
+- nothing seated before the record's first day (2017-01-03); past the reach (2026-09-06) the reach's roster stands;
+- a read-only cached seating;
+- `MajorityOf`, `EquallyDivided`, `Carries`;
+- `VicePresidentParty(country, date)`, which reads US-28's `UsTermLimit.TryVicePresidentOn`;
+- `CongressOn`, read from [SEN-DIV].
+- `Country.SecondChamberSeats`, generic, so PS-7's Senato can use it.
+- WorldClock: `RecordSeatsSecondChamber`, `SecondChamberOfRecord`, `SecondChamberStanding`.
+- `SimulationManager.SeatTheSecondChamberOfRecord`, held as state: each day, at load and at selection.
+- `ParliamentSystem.SeatSecondChamberOfRecord`.
+- Save format 39 → 40; the clone copies the field.
+- The brief's Senate clause and row; the start card's caption with the independents; the Parliament page's Senate card (no tick, recording nothing into the film's guard); the record slip.
+- EconomicVote reads both chambers where one is seated, the VP's party read on the day.
+- records_by_date §4: Art. I §3 cl. 1, 2 and 4, quote-checked.
+- `ECONOMIC_VOTE.md`: the p. 245 coding; GAP 9 (1980 the likely unified case).
+- `SenateChamberDiagnostic` (new). StartBriefDiagnostic, PreviewParityDiagnostic, SaveLoadRoundTripDiagnostic and PresidencyDiagnostic re-pinned.
+
+**Measured** (`n849`, 27 named checks, all clean; `n849b` after the second pass's low):
+- **The chamber:** 50 states, 100 seats, each state's two in different classes, the classes 33, 33 and 34. All 18 named days of US-12's table and every [SEN-DIV] stretch day are read back by the runtime.
+- **At the US start (2024-03-12): the 118th**, DEM 51 of 100 (48 D and 3 independents: Sinema, King, Sanders), REP 49, none vacant. From 2024-06-05 Manchin is a fourth independent, with the caucus still 51.
+- **The 119th from 2025-01-03:** DEM 47, REP 52, WV class 1 vacant. REP 53 from 2025-01-21. The vacancies fall on their days.
+- **The vice president of record**, by US-28's one derivation, on all 2074 days from 2021-01-20: Harris (DEM), then Vance (REP) from 2025-01-20, each held to NARA's page.
+  - The 117th's 50-50 on 2022-11-08 goes to DEM.
+  - In the game's window, 2024-12-08 (DEM 49, REP 49; CA and NJ vacant) is held by the vice president's party, DEM. That is the reading, DECLARED; the record shows no tie-breaking vote that day.
+- **The gate:** only the USA seats a second chamber. A world with no player, and one with Germany as player, seat none.
+- **A new US game opened 2024-12-06** seats the Senate at selection. Stepped 47 days in the controller's order, it is re-seated on exactly the record's 7 change days, and the tie-break's vice president's party equals US-28's on every day.
+- **EconomicVote over both chambers:** 0.06 under Biden with a REP House and a DEM Senate; 0.10 under Trump with REP in both. The both-chamber and House-only readings agree in every reachable state: the reviewer's 7458 day-states on the compiled code.
+- **The save at format 40** loads into the game and keeps its Senate. A save holding the 118th past its day is put right as it loads. A format-39 save is refused. The clone carries the field.
+- **The `elec<N>` diff** (`elec848b` against `elec849b`): no line moves. **SaveLoadRoundTripDiagnostic:** PASS, 12 scenarios. **The play saves** are re-staged at format 40 (`stage849`).
+
+**Declared:**
+1. "Divided" is read over both chambers. It agrees with the House-only reading in every state reachable before US-16.
+2. An equal division, vacancies included, is the VP's party's — the party, not a vote the record shows.
+3. The VP's party is US-28's derivation: the record's tickets, held to NARA's pages.
+4. A vacant seat is nobody's.
+5. The Senate's seating carries no party capital.
+6. Past the reach, the last of record stands.
+7. The format step is taken because the plan names it.
+8. US-2's shadow asymmetry is declared again for the Senate; an AI USA seats no Senate.
+9. A new game seats the Senate at selection.
+10. **The convention split (L9):** the House of record is seated as elected ([HH-DIV]'s initial division, never vacant). The Senate is seated by its roster at each day's end — vacancies, appointees, Manchin's change counted as a fourth independent — as the plan's "seated by date from US-12's table" and R-US10 (a)'s "dated" ask. That differs from the standing WORLD CLOCK line's "seated AS ELECTED".
+
+**Review:** `Reviews/2026-10-17_s849_us15_senate.md`, verdict "ship with fixes", no high defect.
+- The reviewer re-derived the Senate independently on every day from 2017-01-03 to 2026-09-06, all 18 named days and all 1494 [SEN-DIV] stretch days.
+- The five non-US briefs are byte-identical on the compiled code.
+- The two "divided" readings agree on 4660 day-states.
+- Fixed:
+  - M2: GAP 9 now names 1980, and the second pass confirmed the codings and the draft's page footers;
+  - L1-L8;
+  - the VP sources reconciled on US-28's ticket table: one derivation, held to NARA's pages;
+  - M1, met here: `SenateChamberDiagnostic` registered in the cheap bar.
+- **The second pass** (on 8cc3ab32): **ship**.
+  - `SimulationManager.cs` changed after the reviewed state only in the two comment lines above the clone's copy, byte-identical once comments are stripped. The ledger row is written (s849).
+  - On 7458 day-states (the game electing REP, electing DEM, or holding no contest), no EconomicVote figure differs among the five ways compared, and the tie-break's party equals the president's in every one.
+  - Its one low, (b'')'s wholeness clause a tautology, is met here: it now asserts no vacancy on 2017-01-03.
+
+**Asked:** R-US20's term (the plan's section 4, asked 849 under R-US20). The both-chamber reading is DECLARED and Elias may strike it. GAP 9's codebook is fetched only if he wants it.
+
+**Bars:** (tier SIMULATION + UI + DOCUMENTS; review REQUIRED and run, two passes, the ledger row written):
+- the named runs `n849` **27 of 27** and `n849b` **1 of 1**;
+- the cheap bar **112 of 112** (`cheap849`; SenateChamberDiagnostic its 112th);
+- the simulation bar **57 of 57** (`sim849`; the sentinel on ga111 unmoved: the dump seats no player, so no Senate is seated);
+- the documents bar **20 of 20** (`doc849`);
+- the round trip PASS; the `elec<N>` diff empty; the play saves re-staged at format 40;
+- the dry film `drys849` (USA@1280x720, scoped first): 143 measured, 0 failed, 0 overflows;
+- the REAL films `realus15a` (USA at 1280×720, cut at `07a_politics_parliament_rows`: 103 captured) and `realus15b` (USA at 2560×1440, cut at `01g_party_picker`: 5 captured): 0 failed, 0 overflows, 0 canvas violations.
+
+**Read on the real films:**
+- `01f2_start_points`, at 1280 and at 2560: the caption reads "THE HOUSE OF 8 NOV 2022 · 435 · THE SENATE: DEM 51 OF 100 (3 IND.)" on one line, the House bar kept above it. The brief’s new row reads Senate "DEM · 51 OF 100 · INCLUDING 3 INDEPENDENTS", after the House row. Everything fits at both widths.
+- `07a_politics_parliament`, after the warm-up: the Senate card "100 Senate seats - including 2 independents" sits under the House’s, its REP-DEM bar 53-47 with no majority tick. The House card and its 218 tick are unchanged.
+

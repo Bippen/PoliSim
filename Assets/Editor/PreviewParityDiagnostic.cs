@@ -292,7 +292,20 @@ namespace PoliSim.EditorTools
                     f.SetValue(marked, mark);
                     valueFields++;
                 }
+                // PS-6 US-15: the second chamber is a dictionary the value marks cannot reach (a clone that dropped it would carry the constructor's empty one,
+                // which the reference test below cannot see) - marked by content and read back by content, as the clone's OWN copy
+                var upperMark = new Dictionary<string, int> { { "MARK_UPPER_" + pass, 1000 + pass } };
+                marked.SecondChamberSeats = upperMark;
                 var copy = (Country)clone.Invoke(null, new object[] { marked });
+                if (copy.SecondChamberSeats == null || ReferenceEquals(copy.SecondChamberSeats, upperMark) || copy.SecondChamberSeats.Count != 1
+                    || !copy.SecondChamberSeats.TryGetValue("MARK_UPPER_" + pass, out int upperRead) || upperRead != 1000 + pass)
+                {
+                    if (named.Add(c.Id + ".SecondChamberSeats"))
+                    {
+                        failures++;
+                        Debug.LogError($"PARITY: CLONE ESCAPE - {c.Id}.SecondChamberSeats: the preview's clone does not carry the second chamber as its own copy (marked by content). Add it to ClonePreviewCountry's hand-list, copied.");
+                    }
+                }
                 foreach (FieldInfo f in fieldsOfCountry)
                 {
                     if (f.IsNotSerialized) { continue; }   // a memo rebuilt on first read (TaxSchedule.Memo) - never state

@@ -409,9 +409,12 @@ namespace PoliSim.UI
         /// its abbreviation inside where it fits; over it, where the blocs are sourced, each bloc's bracket with its name and seats; through it the
         /// majority tick where the seat that carries the chamber falls, its number under it. Drawn HERE, the one surface that may draw party ink
         /// (`PartyInkDrawSiteCheck`). It records what it drew against the chamber as the arc does (<see cref="LastDotsDrawn"/>, one seat to a unit of
-        /// the bar), so the film's count holds whichever of the two the page draws.
+        /// the bar), so the film's count holds whichever of the two the page draws. PS-6 US-15: a second chamber's bar (the Senate, under the House's card)
+        /// passes <paramref name="recordsTheChamber"/> false - it draws the same way and records nothing, so the film's count and the House card's slip read the
+        /// chamber the page counts, the first; and it passes <paramref name="majorityTick"/> false - the House's tick (half the seats filled, plus one) is not the
+        /// Senate's carrying number (Art. I §3 cl. 4: an equal division is the vice president's).
         /// </summary>
-        public static void DrawSeatBar(Rect rect, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle caption, GUIStyle abbrev, Color paper)
+        public static void DrawSeatBar(Rect rect, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle caption, GUIStyle abbrev, Color paper, bool recordsTheChamber = true, bool majorityTick = true)
         {
             int total = 0;
             foreach (KeyValuePair<string, int> kvp in seats) { total += Mathf.Max(0, kvp.Value); }
@@ -427,8 +430,11 @@ namespace PoliSim.UI
                 for (int j = 0; j < count; j++) { seatBloc.Add(BlocRank(bloc)); }
             }
             int majority = total / 2 + 1;
-            LastMajoritySeat = majority;
-            LastMajorityReading = blocsKnown ? MajorityReading(seatBloc, total) : string.Empty;
+            if (recordsTheChamber)
+            {
+                LastMajoritySeat = majority;
+                LastMajorityReading = blocsKnown ? MajorityReading(seatBloc, total) : string.Empty;
+            }
             if (Event.current.type != EventType.Repaint) { return; }
 
             float line = Mathf.Ceil(caption.CalcSize(new GUIContent("Ag")).y);
@@ -480,15 +486,19 @@ namespace PoliSim.UI
                 }
             }
             // the majority tick, between the seat before the one that carries the chamber and that seat - where a majority is won
-            float tickX = Mathf.Round(bar.x + bar.width * (majority - 1) / total);
-            GUI.color = PoliSimTheme.TextPrimary;
-            GUI.DrawTexture(new Rect(tickX - 1f, bar.y - 4f, 2f, bar.height + 8f), Texture2D.whiteTexture);
-            GUI.color = previous;
-            string tick = majority.ToString(System.Globalization.CultureInfo.InvariantCulture);
-            var tickFace = new GUIStyle(caption) { alignment = TextAnchor.UpperCenter };
-            float tw = tickFace.CalcSize(new GUIContent(tick)).x + 4f;
-            GUI.Label(new Rect(tickX - tw * 0.5f, bar.yMax + 4f, tw, line), tick, tickFace);
+            if (majorityTick)
+            {
+                float tickX = Mathf.Round(bar.x + bar.width * (majority - 1) / total);
+                GUI.color = PoliSimTheme.TextPrimary;
+                GUI.DrawTexture(new Rect(tickX - 1f, bar.y - 4f, 2f, bar.height + 8f), Texture2D.whiteTexture);
+                GUI.color = previous;
+                string tick = majority.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                var tickFace = new GUIStyle(caption) { alignment = TextAnchor.UpperCenter };
+                float tw = tickFace.CalcSize(new GUIContent(tick)).x + 4f;
+                GUI.Label(new Rect(tickX - tw * 0.5f, bar.yMax + 4f, tw, line), tick, tickFace);
+            }
 
+            if (!recordsTheChamber) { return; }
             LastDotsDrawn = seatBloc.Count;
             LastChamberSeats = total;
             LastDeclaredSeats = PartySystems.ChamberSeats(country);

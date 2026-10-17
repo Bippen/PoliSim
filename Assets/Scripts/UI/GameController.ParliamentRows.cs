@@ -450,7 +450,9 @@ namespace PoliSim.UI
         /// executive (`WorldClock.RecordSeatsExecutive`; since US-8, to the game's own polling day - the president row serves the office from it, <see cref="DrawUsPresidentRow"/>);
         /// past the record - a House elected after the record's date, a president whose term of record has ended - that the last of record stands and the
         /// day its term ended (R-US1 (a): "the 119th stands, said on screen"; the president "until the game holds the presidential election"). The words
-        /// are `WorldClock`'s (`RecordStanding`, `ExecutiveStanding`, `TryPresidentOfRecord`); the slip whole.
+        /// are `WorldClock`'s (`RecordStanding`, `ExecutiveStanding`, `TryPresidentOfRecord`); the slip whole. PS-6 US-15: the slip names the Senate of record
+        /// too where the record seats it (`WorldClock.RecordSeatsSecondChamber`) - its standing (`WorldClock.SecondChamberStanding`) and its seats as seated; the
+        /// chamber itself is drawn as its own card under the House's (<see cref="DrawSecondChamberV35"/>).
         /// </summary>
         private void DrawRecordRow(PeopleSlips.Book book)
         {
@@ -508,7 +510,9 @@ namespace PoliSim.UI
             var slip = new SlipContent("OF RECORD, BY DATE");
             // PS-6 US-8: the game elects the president and not the House - the record's president serves until the oath of the game's own election's winner (the
             // record stops naming presidents from the polling day, and the president row takes over then); the review's L2: not "until the election"
-            slip.Add("THE GAME DOES NOT ELECT THE HOUSE YET: THE RECORD'S HOUSE IS SEATED ON THE RECORD'S DATES"
+            // PS-6 US-15: and not the Senate - the record's, senator by senator on its dates
+            bool upper = WorldClock.RecordSeatsSecondChamber(country);
+            slip.Add((upper ? "THE GAME DOES NOT ELECT CONGRESS YET: THE RECORD'S HOUSE AND SENATE ARE SEATED ON THE RECORD'S DATES" : "THE GAME DOES NOT ELECT THE HOUSE YET: THE RECORD'S HOUSE IS SEATED ON THE RECORD'S DATES")
                      + (head ? ", AND ITS PRESIDENT SERVES UNTIL THE WINNER OF THE GAME'S OWN ELECTION TAKES THE OATH" : string.Empty)
                      + "; PAST THE RECORD, THE LAST OF RECORD STANDS");
             var seated = new List<(string key, int seats)>();
@@ -523,8 +527,13 @@ namespace PoliSim.UI
                 string party = ofRecord.Cabinet != null && ofRecord.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(country, ofRecord.Cabinet[0]).ToUpperInvariant() : string.Empty;
                 slip.Add("THE PRESIDENT: " + president.ToUpperInvariant() + party + " · " + WorldClock.ExecutiveStanding(country, today));
             }
+            if (upper)
+            {
+                // PS-6 US-15: the Senate of record - its standing in WorldClock's words, then its seats as seated, the independents counted with their conference
+                UsSenate.Seating senate = UsSenate.On(today);
+                slip.Add("THE " + StartBrief.SecondChamberOf(country).ToUpperInvariant() + ": " + WorldClock.SecondChamberStanding(country, today) + SecondChamberSeatsWords(country, _playerCountry.SecondChamberSeats, senate));
+            }
             foreach (string next in WorldClock.NextOfRecord(_playerCountry, today)) { slip.Add(next); }   // the House's day and the oath named before they come - the record's oath only while the record seats the president (PS-6 US-7)
-            slip.Add("NO SENATE IS MODELLED");
             book.Anchors["record"] = slip;
             DrawRowRule(row);
             GUILayout.Space(StatsUnit(10f));

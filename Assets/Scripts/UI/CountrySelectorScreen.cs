@@ -732,7 +732,13 @@ namespace PoliSim.UI
             string when = electionDay != DateTime.MinValue
                 ? electionDay.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant()
                 : chamber.Convened.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
-            Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}",
+            // PS-6 US-15: the card names the second chamber of record's majority on the start's day after the House's caption, on the same line - the bar stays the
+            // House's (§627's ruling, until D-US says otherwise), and the card's height is the other cards' (one more line would compress them, PF-13's class)
+            // R-US10 (a): the independents counted with the majority, named on the same line ("(3 IND.)"); the REAL films at 1280 and 2560 read its fit
+            string upper = StartBrief.TrySecondChamberMajority(id, WorldClock.StartDate(id), out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out _, out _)
+                ? $" · THE {StartBrief.SecondChamberOf(id).ToUpperInvariant()}: {PartySystems.ShortName(id, upperParty)} {upperSeats} OF {upperMembers}" + (upperIndependents > 0 ? $" ({upperIndependents} IND.)" : string.Empty)
+                : string.Empty;
+            Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}{upper}",
                 PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
             captionText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
         }

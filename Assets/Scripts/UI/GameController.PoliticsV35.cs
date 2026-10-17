@@ -153,6 +153,9 @@ namespace PoliSim.UI
             _politicsSlipBook.Anchors["parl:chamber"] = chamberSlip;
             GUILayout.Space(gutter);
 
+            // ---- the second chamber (PS-6 US-15), where the country seats one ----
+            DrawSecondChamberV35(width);
+
             // ---- the parties ----
             DrawPoliticsSectionHead("Parties", "parl:parties", width);
             var parties = new List<PoliticalParty>();
@@ -182,6 +185,90 @@ namespace PoliSim.UI
             DrawParliamentPoliticalBlocks();   // PS-3h (§635), the caretaker line, §646's round, PS-3i (§636) - board 21b's rows (§685)
             GUILayout.Space(10f);
             DrawRecentDivisions();
+        }
+
+        /// <summary>
+        /// PS-6 US-15 (`docs/specs/USA_STAGE_PLAN.md`: "Politics › Parliament drawing the Senate as a second chamber card beside the House, structurally"): THE
+        /// SECOND CHAMBER, where the country seats one (`Country.SecondChamberSeats` - the USA's Senate of record, seated on its dates): the House card's own
+        /// structure under it - the seats as the figure, the chamber's name, the seats as one bar with the majority tick (`HemicycleRenderer.DrawSeatBar`, the one
+        /// surface that may draw party ink, told it is not the chamber the film counts) - and its slip: the members seated and vacant, the independents counted
+        /// with their conference (R-US10 (a): the chamber card says "including N independents"), the majority and, on an equal division, the vice president's
+        /// vote (Art. I §3 cl. 4), and the record by date. Nothing is drawn where no second chamber is seated. Its design is D-US's to give.
+        /// </summary>
+        private void DrawSecondChamberV35(float width)
+        {
+            Country c = _playerCountry;
+            IReadOnlyDictionary<string, int> seats = c?.SecondChamberSeats;
+            if (seats == null) { return; }
+            int seated = 0;
+            foreach (KeyValuePair<string, int> kv in seats) { seated += Mathf.Max(0, kv.Value); }
+            if (seated <= 0) { return; }
+            string name = StartBrief.SecondChamberOf(PlayerCountryId) ?? "Second chamber";
+            bool ofRecord = WorldClock.RecordSeatsSecondChamber(PlayerCountryId);
+            // R-US10 (a): the chamber card says "including N independents" - at rest, beside the chamber's name (read from the record's seating for the day)
+            int independents = ofRecord ? UsSenate.On(_simulationManager.CurrentDate).Independents : 0;
+            string label = name + " seats" + (independents > 0 ? " - including " + independents.ToString(System.Globalization.CultureInfo.InvariantCulture) + (independents == 1 ? " independent" : " independents") : string.Empty);
+            float gutter = V35.Px(V35.Gutter);
+            bool blocs = HemicycleRenderer.BlocsKnown(PlayerCountryId);
+            GUIStyle captionFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+            GUIStyle abbrevFace = V35Mono(V35.Floor, V35.OnDataDark, bold: true);
+            float headH = V35.Px(V35.CardIcon), barBand = V35.Px(blocs ? 74f : 52f);
+            float cardH = V35.Px(V35.CardPadY) * 2f + headH + V35.Px(8f) + barBand;
+            Rect card = GUILayoutUtility.GetRect(width, cardH, GUILayout.Width(width), GUILayout.Height(cardH));
+            Rect inner = DrawV35Card(card);
+            Rect head = new Rect(inner.x, inner.y, inner.width, headH);
+            if (Event.current.type == EventType.Repaint)
+            {
+                float side = V35.Px(V35.CardIcon);
+                DrawV35Icon(new Rect(head.x, head.y, side, side), "chamber", UiPalette.GetAreaColor(UiPalette.SystemArea.Political));
+                GUIStyle figure = V35Mono(V35.FigureSmall, PoliSimTheme.TextPrimary, bold: true);
+                string seatsText = seated.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                float fw = Mathf.Ceil(figure.CalcSize(new GUIContent(seatsText)).x) + 2f;
+                GUI.Label(new Rect(head.x + side + V35.Px(12f), head.y, fw, headH), seatsText, figure);
+                PoliSimWidgets.MeasuredLabel(new Rect(head.x + side + V35.Px(12f) + fw + V35.Px(8f), head.y, head.width * 0.6f, headH), label, V35Serif(V35.Name, PoliSimTheme.TextPrimary));
+            }
+            var barRect = new Rect(inner.x, head.yMax + V35.Px(8f), inner.width, barBand);
+            // no majority tick: the House's rule (half the seats filled, plus one) is not the Senate's, where an equal division is the vice president's party's
+            HemicycleRenderer.DrawSeatBar(barRect, PlayerCountryId, seats, captionFace, abbrevFace, V35.CardPaper, recordsTheChamber: false, majorityTick: false);
+            SlipAnchor(new Rect(inner.x, inner.y, inner.width, inner.height), "parl:second");
+            var slip = new SlipContent(UiFormat.Seats(seated).ToUpperInvariant() + " · THE " + name.ToUpperInvariant());
+            if (ofRecord)
+            {
+                System.DateTime today = _simulationManager.CurrentDate;
+                UsSenate.Seating senate = UsSenate.On(today);
+                slip.Add("SEATED" + SecondChamberSeatsWords(PlayerCountryId, seats, senate));
+                string vicePresidentParty = UsSenate.VicePresidentParty(c, today);
+                string majority = UsSenate.MajorityOf(seats, vicePresidentParty);
+                if (majority != null)
+                {
+                    int held = seats.TryGetValue(majority, out int m) ? m : 0;
+                    slip.Add("THE MAJORITY: " + PartySystems.ShortName(PlayerCountryId, majority).ToUpperInvariant() + ", " + held.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        + " OF " + seated.ToString(System.Globalization.CultureInfo.InvariantCulture) + (UsSenate.EquallyDivided(seats) ? " - AN EQUAL DIVISION - THE VICE PRESIDENT'S PARTY" : string.Empty));
+                }
+                slip.Add("THE VICE PRESIDENT VOTES ONLY WHERE THE SENATE IS EQUALLY DIVIDED");
+                slip.Add("OF RECORD, BY DATE: " + WorldClock.SecondChamberStanding(PlayerCountryId, today));
+                slip.Add("THE GAME DOES NOT ELECT THE " + name.ToUpperInvariant() + " YET: EACH SENATOR SITS FROM THE OATH, AND A SEAT LEFT STANDS VACANT TO THE NEXT OATH");
+            }
+            _politicsSlipBook.Anchors["parl:second"] = slip;
+            GUILayout.Space(gutter);
+        }
+
+        /// <summary>PS-6 US-15: a second chamber's seats in the slips' words - " · DEM 51 · REP 49", then the independents counted with their conference
+        /// (R-US10 (a)) and the vacant seats, read from the record's seating for the day.</summary>
+        private static string SecondChamberSeatsWords(CountryId country, IReadOnlyDictionary<string, int> seats, UsSenate.Seating senate)
+        {
+            var parts = new List<(string key, int n)>();
+            if (seats != null) { foreach (KeyValuePair<string, int> kv in seats) { if (kv.Value > 0) { parts.Add((kv.Key, kv.Value)); } } }
+            parts.Sort((a, b) => b.n != a.n ? b.n.CompareTo(a.n) : string.CompareOrdinal(a.key, b.key));
+            var words = new System.Text.StringBuilder();
+            foreach ((string key, int n) in parts) { words.Append(" · ").Append(PartySystems.ShortName(country, key).ToUpperInvariant()).Append(' ').Append(n.ToString(System.Globalization.CultureInfo.InvariantCulture)); }
+            if (senate != null)
+            {
+                int independents = senate.Independents;
+                if (independents > 0) { words.Append(" · INCLUDING ").Append(independents.ToString(System.Globalization.CultureInfo.InvariantCulture)).Append(independents == 1 ? " INDEPENDENT" : " INDEPENDENTS").Append(", EACH COUNTED WITH THE CAUCUS IT SITS WITH"); }
+                if (senate.Vacant > 0) { words.Append(" · ").Append(senate.Vacant.ToString(System.Globalization.CultureInfo.InvariantCulture)).Append(" OF ").Append(senate.Members.ToString(System.Globalization.CultureInfo.InvariantCulture)).Append(" VACANT"); }
+            }
+            return words.ToString();
         }
 
 

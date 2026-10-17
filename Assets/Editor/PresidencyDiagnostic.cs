@@ -492,7 +492,7 @@ namespace PoliSim.EditorTools
                         bool refused = false; string why = null;
                         try { SaveGameService.Deserialize(older); } catch (SaveLoadException e) { refused = true; why = e.Message; }
                         Check(older != json && refused && why.Contains("format version " + (SaveGameService.CurrentSaveVersion - 1).ToString(CultureInfo.InvariantCulture)),
-                            F("(i) a save of the format before (US-7 steps it to {0}) is refused with the plain message: \"{1}\"", SaveGameService.CurrentSaveVersion, why));
+                            F("(i) a save of the format before this build's ({0}) is refused with the plain message: \"{1}\"", SaveGameService.CurrentSaveVersion, why));
                     }
                 }
             }

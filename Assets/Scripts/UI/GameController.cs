@@ -2141,6 +2141,9 @@ namespace PoliSim.UI
             {
                 _playerCountry.Government = PoliSim.Elections.GovernmentRecord.WhatIfGoverning(_playerCountry, _playerCountry.PlayerPartyAbbrev, SimulationManager.EpochDate, _world);
             }
+            // PS-6 US-15: the second chamber of record on the start's own day (the USA's Senate) - the world's factory seats none, and the day loop seats it from the
+            // first day stepped, so the player's country carries it before any screen reads it; every other country seats none and nothing moves
+            _simulationManager.SeatTheSecondChamberOfRecord();
             Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
 
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.

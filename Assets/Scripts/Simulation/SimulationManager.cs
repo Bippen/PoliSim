@@ -4016,6 +4016,7 @@ namespace PoliSim.Simulation
         /// (US-7's reading 3: the sitting president stays; the record's president for the date; or the Speaker acts under 3 U.S.C. §19), since R-US3 (a)
         /// leaves a House that cannot choose unmodelled and does not say who governs then; reachable once the game elects the House (US-16). The player's
         /// country only, as the record (PS-8 owns the rest); the contests are a country's state, so the answer is the same whoever the player is.</para>
+        /// <para>PS-6 US-15 (R-US1 (a), R-US10 (a)): THE SENATE OF RECORD on the same transition, between the House and the president - <see cref="SeatTheSecondChamberOfRecord"/>.</para>
         /// </summary>
         internal void SeatTheRecordOnItsDate()
         {
@@ -4034,6 +4035,7 @@ namespace PoliSim.Simulation
                     Debug.Log($"RECORD: {id} - the chamber of record seated on {CurrentDate:yyyy-MM-dd}: {Elections.WorldClock.RecordStanding(id, CurrentDate)}");
                 }
             }
+            SeatTheSecondChamberOfRecord();
             if (Elections.UsPresidentialElection.TryInOffice(country, CurrentDate, out Elections.UsPresidentialElection.Contest sworn))
             {
                 // PS-6 US-7: the game's president, from the oath - seated once, then left alone (the same government object on every later day and load)
@@ -4044,6 +4046,32 @@ namespace PoliSim.Simulation
             {
                 TakeOffice(country, Elections.GovernmentRecord.AtStart(country, CurrentDate, _world));
             }
+        }
+
+        /// <summary>
+        /// PS-6 US-15 (`docs/specs/USA_STAGE_PLAN.md`; Elias's ruling F8 - R-US1 (a): "whatever the game does not elect is seated on its record's dates";
+        /// R-US10 (a): each independent "counted with the conference it caucuses with"): in the player's country, where the record seats the second chamber
+        /// (`WorldClock.RecordSeatsSecondChamber` - the USA's Senate, until US-16 elects its classes), the Senate of record for the day
+        /// (`WorldClock.SecondChamberOfRecord`, senator by senator from US-12's table) is compared with the one seated and seated where they differ - a vacancy,
+        /// an oath, a new Congress - held as STATE like the House: each day from <see cref="SeatTheRecordOnItsDate"/>, once as a save loads, and once as a new
+        /// game seats its player's country (`GameController`'s selection, so the start's own day carries the start's Senate before any day is stepped).
+        /// DECLARED premises: the Senate's seating carries no party's capital (the capital's carry-over divides by the House's seats, the chamber a party's
+        /// mandate is measured on - US-2's premise is the House's); past the record's reach the last of record stands (R-US1 (a)). Forks reach it as the game
+        /// does; a world with no player country - the seeded shadow, the trajectory dump - never does, so its second chamber stays empty: the no-policy shadow a
+        /// new game seeds keeps no Senate, while one forked from a loaded game seats the record's with it (US-2's shadow asymmetry, DECLARED again for the Senate).
+        /// </summary>
+        internal void SeatTheSecondChamberOfRecord()
+        {
+            if (!PlayerCountryId.HasValue) { return; }
+            CountryId id = PlayerCountryId.Value;
+            Country country = _world?.GetCountry(id);
+            if (country == null || !Elections.WorldClock.RecordSeatsSecondChamber(id)) { return; }
+            Dictionary<string, int> ofRecord = Elections.WorldClock.SecondChamberOfRecord(id, CurrentDate);
+            if (SameSeats(country.SecondChamberSeats, ofRecord)) { return; }
+            ParliamentSystem.SeatSecondChamberOfRecord(country, ofRecord);
+            var seated = new List<string>();
+            foreach (KeyValuePair<string, int> kv in ofRecord) { if (kv.Value > 0) { seated.Add(kv.Key + " " + kv.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)); } }
+            Debug.Log($"RECORD: {id} - the second chamber of record seated on {CurrentDate:yyyy-MM-dd}: {string.Join(", ", seated)} - {Elections.WorldClock.SecondChamberStanding(id, CurrentDate)}");
         }
 
         private static bool SameSeats(IReadOnlyDictionary<string, int> a, IReadOnlyDictionary<string, int> b)
@@ -5749,6 +5777,9 @@ namespace PoliSim.Simulation
                 // PS-6 US-7: the US presidential contests ride beside who governs - a shared reference, for the same reason: nothing on the preview path writes them,
                 // and the oath that reads them runs on the day loop, never on a clone
                 UsPresidentialElections = country.UsPresidentialElections,
+                // PS-6 US-15: the second chamber rides the hand-list, COPIED - so a write on a clone never reaches the country (PreviewParityDiagnostic marks it by
+                // content, a dictionary its value marks cannot reach)
+                SecondChamberSeats = country.SecondChamberSeats == null ? null : new Dictionary<string, int>(country.SecondChamberSeats),
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,

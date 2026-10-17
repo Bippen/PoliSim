@@ -15,7 +15,9 @@ namespace PoliSim.Elections
     /// not the record's - what holds instead of a polling day, in the country's own words; its basis is that ruling, not a record. The predicate is not
     /// `WorldClock.TryNextPollingDay`'s answer; `StartBriefDiagnostic` holds the two together over every playable start. PS-6 US-8: where the polling day
     /// elects no chamber (`WorldClock.RecordSeatsChamber` - the USA's House, by date until US-16), the polling-day clause says what it elects and what stays
-    /// the record's, after the same "Polling day is ..." sentence every start's brief carries.
+    /// the record's, after the same "Polling day is ..." sentence every start's brief carries. PS-6 US-15: where the record seats a second chamber
+    /// (`WorldClock.RecordSeatsSecondChamber` - the USA's Senate, by date until US-16), a clause of its own follows the government's - the Senate of record and
+    /// its majority on the start's day, the independents counted with their conference (R-US10 (a)) - and the ledger a row of its own beside the House's.
     /// </summary>
     public static class StartBrief
     {
@@ -55,6 +57,33 @@ namespace PoliSim.Elections
         /// the Riksdag, the Bundestag, the Sejm, the Camera dei deputati, the House of Representatives, the Assemblée nationale (the Politics screen's
         /// caption said THE NATIONAL ASSEMBLY for all six).</summary>
         public static string ChamberFullOf(CountryId id) => ChamberFullName.TryGetValue(id, out string name) ? name : ChamberOf(id);
+
+        private static readonly Dictionary<CountryId, string> SecondChamberName = new Dictionary<CountryId, string> { { CountryId.USA, "Senate" } };
+
+        /// <summary>PS-6 US-15: the second chamber's name, as the brief, the cards and the Parliament page say it - the Senate; null where no second chamber is
+        /// seated (Italy's Senato joins at PS-7).</summary>
+        public static string SecondChamberOf(CountryId id) => SecondChamberName.TryGetValue(id, out string name) ? name : null;
+
+        /// <summary>PS-6 US-15 (R-US10 (a); Art. I §3 cl. 4): the second chamber of record's majority on a date - the party holding it, its seats, the
+        /// independents counted with it, the members, the vacant seats, and whether it is the vice president of record's party's on an equal division (the
+        /// vice president by PS-6 US-28's one derivation, <see cref="UsTermLimit.TryVicePresidentOfRecordOn"/>). False where the record seats no second chamber,
+        /// or none on the date.</summary>
+        public static bool TrySecondChamberMajority(CountryId id, DateTime on, out string party, out int seats, out int independents, out int members, out int vacant, out bool byVicePresident)
+        {
+            party = null; seats = independents = members = vacant = 0; byVicePresident = false;
+            if (!WorldClock.RecordSeatsSecondChamber(id)) { return false; }
+            UsSenate.Seating senate = UsSenate.On(on);
+            UsTermLimit.TryVicePresidentOfRecordOn(id, on, out _, out string vicePresidentParty, out _);
+            party = UsSenate.MajorityOf(senate.BySide, vicePresidentParty);
+            seats = party != null && senate.BySide.TryGetValue(party, out int held) ? held : 0;
+            independents = party != null && senate.IndependentsBySide.TryGetValue(party, out int counted) ? counted : 0;
+            members = senate.Members;
+            vacant = senate.Vacant;
+            byVicePresident = UsSenate.EquallyDivided(senate.BySide);
+            return party != null;
+        }
+
+        private static string Independents(int n) => n == 1 ? "1 independent" : n.ToString(CultureInfo.InvariantCulture) + " independents";
 
         /// <summary>The chamber's largest party and its seats - a presidential brief's second half (PS-3b, §629).</summary>
         private static (string party, int seats) Majority(Dictionary<string, int> seats)
@@ -114,6 +143,19 @@ namespace PoliSim.Elections
                 clauses.Add(new Clause("No government of record holds on this date.", "WorldClock.Governments - a gap"));
             }
 
+            // PS-6 US-15 (R-US1 (a), R-US10 (a)): the second chamber of record on the start's day, "of record" as the House is - its majority, the independents
+            // counted with the conference they caucus with, an equal division the vice president of record's party's (Art. I §3 cl. 4: the party, not a vote the
+            // record shows), a vacant seat said
+            if (TrySecondChamberMajority(id, opens, out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out int upperVacant, out bool upperByVice))
+            {
+                UsTermLimit.TryVicePresidentOfRecordOn(id, opens, out string vicePresident, out _, out _);
+                clauses.Add(new Clause("The " + SecondChamberOf(id) + " of record is seated by its own dates; its majority is " + upperParty + ", with " + upperSeats.ToString(CultureInfo.InvariantCulture)
+                    + " of " + upperMembers.ToString(CultureInfo.InvariantCulture) + " seats" + (upperIndependents > 0 ? ", including " + Independents(upperIndependents) + " counted with " + upperParty : string.Empty)
+                    + (upperByVice ? ", an equal division held by the party of the vice president, " + vicePresident : string.Empty)
+                    + (upperVacant > 0 ? "; " + upperVacant.ToString(CultureInfo.InvariantCulture) + (upperVacant == 1 ? " seat stands" : " seats stand") + " vacant" : string.Empty) + ".",
+                    "WorldClock.SecondChamberOfRecord (UsSenate.On - US-12's table, senate_seats.csv, each independent with his conference by R-US10 (a)); UsTermLimit.TryVicePresidentOfRecordOn (Art. I §3 cl. 4)"));
+            }
+
             if (id == CountryId.Italy && WorldClock.NoElectionYet(id))
             {
                 // PS-7's "until then" (PS-7-interim): Italy's calendar offers no polling day, so the snap election the start is cut on is not held - the clause says
@@ -127,12 +169,14 @@ namespace PoliSim.Elections
             else if (start.PollingDay != DateTime.MinValue && WorldClock.RecordSeatsChamber(id))
             {
                 // PS-6 US-8 (R-US1 (a)): the polling day elects the president through the Electoral College and no chamber - the House stays the record's, seated on
-                // the record's day, named and dated from its own rows (US-2); the record's next president is not named: the game's count decides who takes office
+                // the record's day, named and dated from its own rows (US-2); the record's next president is not named: the game's count decides who takes office.
+                // PS-6 US-15: the Senate of record has its own clause above, so this one no longer says that none is modelled
                 string house = WorldClock.TryNextChamberOfRecord(id, opens, out WorldClock.ChamberOfRecord nextHouse)
                     ? (nextHouse.ElectionDay == start.PollingDay ? "the House of record elected that day" : nextHouse.ElectionDay == DateTime.MinValue ? "the next House of record" : "the House of record elected on " + Long(nextHouse.ElectionDay))
                       + " is seated on " + Long(nextHouse.Convened) + ", as the record dates it"
                     : "the House of record stands, by its dates";
-                clauses.Add(new Clause("Polling day is " + Long(start.PollingDay) + ". The president is elected through the Electoral College; " + house + ", and no Senate is modelled.",
+                clauses.Add(new Clause("Polling day is " + Long(start.PollingDay) + ". The president is elected through the Electoral College; " + house
+                    + (WorldClock.RecordSeatsSecondChamber(id) ? ", and the " + SecondChamberOf(id) + " of record changes on its own dates." : "."),
                     "StartPoints (" + start.Basis + "); WorldClock.TryNextPollingDay (3 U.S.C. §21(1)), RecordSeatsChamber (the House of record, by date)"));
             }
             else if (start.PollingDay != DateTime.MinValue)
@@ -217,6 +261,16 @@ namespace PoliSim.Elections
             else
             {
                 rows.Add(new Row("Government", "— NONE OF RECORD", "WorldClock.Governments - a gap"));
+            }
+
+            // PS-6 US-15 (R-US10 (a): the chamber card says "including N independents"): the second chamber of record's majority, beside the House's
+            if (TrySecondChamberMajority(id, opens, out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out int upperVacant, out bool upperByVice))
+            {
+                rows.Add(new Row(SecondChamberOf(id), PartySystems.ShortName(id, upperParty) + " · " + upperSeats.ToString(CultureInfo.InvariantCulture) + " OF " + upperMembers.ToString(CultureInfo.InvariantCulture)
+                    + (upperIndependents > 0 ? " · INCLUDING " + Independents(upperIndependents).ToUpperInvariant() : string.Empty)
+                    + (upperByVice ? " · AN EQUAL DIVISION · THE VICE PRESIDENT'S PARTY" : string.Empty)
+                    + (upperVacant > 0 ? " · " + upperVacant.ToString(CultureInfo.InvariantCulture) + " VACANT" : string.Empty),
+                    "WorldClock.SecondChamberOfRecord (UsSenate.On - US-12's table, senate_seats.csv; R-US10 (a)); UsTermLimit.TryVicePresidentOfRecordOn (Art. I §3 cl. 4)"));
             }
 
             if (id == CountryId.Italy && WorldClock.NoElectionYet(id))

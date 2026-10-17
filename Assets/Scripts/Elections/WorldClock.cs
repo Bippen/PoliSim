@@ -115,8 +115,58 @@ namespace PoliSim.Elections
         public static bool NoElectionYet(CountryId id) => id == CountryId.Italy;
 
         /// <summary>PS-6 US-2 (Elias's ruling F8, R-US1 (a): "whatever the game does not elect is seated on its record's dates"): the chamber the game does not
-        /// elect is the record's, seated on the day the record seats it - the USA's House, until the game elects it (US-16); US-15 adds the Senate.</summary>
+        /// elect is the record's, seated on the day the record seats it - the USA's House, until the game elects it (US-16). The second chamber has its own gate,
+        /// <see cref="RecordSeatsSecondChamber"/> (PS-6 US-15), so US-16 can retire them one chamber at a time.</summary>
         public static bool RecordSeatsChamber(CountryId id) => id == CountryId.USA;
+
+        /// <summary>PS-6 US-15 (R-US1 (a); R-US10 (a)): the second chamber the game does not elect is the record's, seated on the record's dates - the USA's Senate,
+        /// senator by senator (<see cref="UsSenate.On"/>), until the game elects its classes (US-16). Italy's Senato is PS-7's, into the same generic field
+        /// (`Country.SecondChamberSeats`).</summary>
+        public static bool RecordSeatsSecondChamber(CountryId id) => id == CountryId.USA;
+
+        /// <summary>PS-6 US-15: the second chamber of record at the end of a date, by party key - every roster party, zero where it holds no seat (the House's
+        /// convention, `ParliamentSystem.SetSeatsFromElection`), an independent counted with his conference (R-US10 (a)), a vacant seat nobody's; past the record's
+        /// reach, the last of record. Empty for a country whose second chamber the record does not seat (<see cref="RecordSeatsSecondChamber"/>), and before the
+        /// record's first day (<see cref="UsSenate.Seating.Covered"/>: the roster is not whole there, so nothing is seated and the House alone is read).</summary>
+        public static Dictionary<string, int> SecondChamberOfRecord(CountryId id, DateTime date)
+        {
+            var seats = new Dictionary<string, int>();
+            if (!RecordSeatsSecondChamber(id)) { return seats; }
+            UsSenate.Seating senate = UsSenate.On(date);
+            if (!senate.Covered) { return seats; }
+            foreach (PoliticalParty party in PartySystems.For(id)) { seats[party.Abbrev] = senate.BySide.TryGetValue(party.Abbrev, out int n) ? n : 0; }
+            foreach (KeyValuePair<string, int> side in senate.BySide)
+            {
+                if (!seats.ContainsKey(side.Key)) { throw new InvalidOperationException($"{id}'s second chamber of record seats '{side.Key}', which its roster does not hold"); }
+            }
+            return seats;
+        }
+
+        /// <summary>
+        /// PS-6 US-15: the second chamber of record on a date, in the view's words - the Congress sitting and the day it convened, read from [SEN-DIV]'s
+        /// numbering and the House of record's rows (<see cref="UsSenate.CongressOn"/>); past the record's reach inside that Congress, the day the record last
+        /// reads; past the last Congress on record, that its Senate stands, the day that Congress ended and that none after it is on record (R-US1 (a): "the 119th
+        /// stands, said on screen"). The words name no later election, so they stay true for every later term. Null where the record seats no second chamber.
+        /// </summary>
+        public static string SecondChamberStanding(CountryId id, DateTime date)
+        {
+            if (!RecordSeatsSecondChamber(id)) { return null; }
+            DateTime reach = UsSenate.RecordReach;
+            if (date.Date < UsSenate.RecordOpens) { return "NOT ON RECORD BEFORE " + ViewDay(UsSenate.RecordOpens); }
+            int congress = UsSenate.CongressOn(date);
+            if (congress > 0)
+            {
+                ChamberOfRecord term = ChamberAt(id, date);
+                return "THE " + UsSenate.Ordinal(congress).ToUpperInvariant() + " CONGRESS · CONVENED " + ViewDay(term.Convened)
+                       + (date.Date > reach ? " · AS THE RECORD LAST READS IT, " + ViewDay(reach) : string.Empty);
+            }
+            if (UsSenate.TryLastCongressOfRecord(out int last, out ChamberOfRecord lastTerm) && date.Date >= lastTerm.Until)
+            {
+                return "STANDS AS THE " + UsSenate.Ordinal(last).ToUpperInvariant() + " CONGRESS LEFT IT ON RECORD, " + ViewDay(reach) + " · THAT CONGRESS ENDED " + ViewDay(lastTerm.Until)
+                       + " · NONE AFTER IT IS ON RECORD";
+            }
+            return "SEATED BY DATE, AS OF " + ViewDay(date.Date > reach ? reach : date.Date);
+        }
 
         /// <summary>PS-6 US-2 (R-US1 (a)): the head of the executive the game does not elect is the record's, taking office on the record's day - the USA's
         /// president, until the game holds the presidential election (per world: <see cref="RecordSeatsExecutive(Country, DateTime)"/>, US-7; the House stays

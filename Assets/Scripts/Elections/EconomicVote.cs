@@ -19,7 +19,12 @@ namespace PoliSim.Elections
     ///   not the game's six abstract portfolio slots, whose sixths are the game's quantisation, not the cabinet's. FLOORED AT ZERO, stated: below a
     ///   12.3 % share the line's intercept (t = 1.25, not significant) would have a small partner GAIN from a worse economy, which no page claims;
     /// - the US PRESIDENT'S PARTY, "coded as holding all administrative responsibility" [BK-D] p. 266 fn 233, by Table 9.1's presidential row:
-    ///   unified government .10, divided .06 - unified read as the president's party holding the House of record;
+    ///   unified government .10, divided .06 - unified read as the president's party holding the House and, where a second chamber is seated, the Senate
+    ///   (PS-6 US-15, DECLARED: the book's divided government "occurs when different parties control the executive and legislative branches of government"
+    ///   [BK-D] p. 245, and its one US example of unified government, "the short period of unified Democratic government in the early 1990's", is the 103rd
+    ///   Congress, whose House and Senate were both Democratic by the Historian's and the Senate's division tables on disk ([HH-DIV], [SEN-DIV]) - read as
+    ///   control of both chambers; a Senate equally divided is the Vice President's party's, the president's own on one ticket,
+    ///   <see cref="UsSenate.MajorityOf"/>); where no second chamber is seated (an AI USA, a world with no player) the House alone decides, as before;
     /// - the OPPOSITION none: the book pools every non-cabinet party (Figure 9.5), so no party of it is given one - stated.
     /// [AUTHORED-DRAFT], the SUPPORT PARTY (GAP 4: no page gives a party outside the cabinet an economic vote - the book counts it with the
     /// opposition; its opposition-influence weight w enters only a concentration measure that predicts the prime minister's vote, and "this impact is
@@ -50,8 +55,10 @@ namespace PoliSim.Elections
         /// <summary>The premise: the perceived index as units of deterioration on the book's scale - +1 at 0 (one category worse), 0 at 50, -1 at 100.</summary>
         private static double Deterioration(double perceivedIndex) => (50.0 - Math.Max(0.0, Math.Min(100.0, perceivedIndex))) / 50.0;
 
-        /// <summary>Each party's economic vote (the size of its loss per unit of deterioration) from the STORED government - empty where none is stored.</summary>
-        public static Dictionary<string, double> Magnitudes(Country country)
+        /// <summary>Each party's economic vote (the size of its loss per unit of deterioration) from the STORED government - empty where none is stored. PS-6 US-15:
+        /// <paramref name="on"/> is the day the Vice President who decides an equal Senate is read on (<see cref="UsSenate.VicePresidentParty"/>); none given, the
+        /// day the government in office formed - the same ticket, so the same party.</summary>
+        public static Dictionary<string, double> Magnitudes(Country country, DateTime? on = null)
         {
             var result = new Dictionary<string, double>();
             GovernmentRecord g = country?.Government;
@@ -63,7 +70,11 @@ namespace PoliSim.Elections
             {
                 string largest = null; int most = -1;
                 foreach (KeyValuePair<string, int> kv in country.ParliamentSeats) { if (kv.Value > most) { most = kv.Value; largest = kv.Key; } }
-                result[g.PmParty] = largest == g.PmParty ? UsPresidentUnified : UsPresidentDivided;
+                // PS-6 US-15 (DECLARED, above): the second chamber too where one is seated - its majority the president's party's, an equal division going to the
+                // Vice President's party (US-28's derivation, read on the day); none seated, the House alone, as before (an AI USA's, the trajectory dump's)
+                bool senateHeld = country.SecondChamberSeats == null || country.SecondChamberSeats.Count == 0
+                                  || UsSenate.MajorityOf(country.SecondChamberSeats, UsSenate.VicePresidentParty(country, on ?? g.FormedOn)) == g.PmParty;
+                result[g.PmParty] = largest == g.PmParty && senateHeld ? UsPresidentUnified : UsPresidentDivided;
                 return result;
             }
             int cabinetSeats = 0; foreach (string p in g.Cabinet) { cabinetSeats += Seats(p); }
@@ -152,7 +163,7 @@ namespace PoliSim.Elections
             DateTime? took = TookOffice(country);
             if (!took.HasValue) { reading = PerceivedPerformance.OverTerm(country, asOf, asOf); return new Dictionary<string, double>(); }
             reading = PerceivedPerformance.OverTerm(country, took.Value, asOf);
-            return RecordShiftOf(country, reading.Index);
+            return RecordShiftOf(country, reading.Index, asOf);
         }
 
         /// <summary>§752 (A1): the term's index alone - Campaign HQ's figure, what the election scores; the neutral 50 where no government is stored.</summary>
@@ -171,12 +182,13 @@ namespace PoliSim.Elections
                 r.Index, r.TookOffice, r.AsOf, One("unemployment", r.Unemployment, " %"), One("inflation", r.Inflation, " %"));
         }
 
-        /// <summary>Each party's vote-share shift at a perceived index: minus its economic vote times the units of deterioration.</summary>
-        public static Dictionary<string, double> RecordShiftOf(Country country, double perceivedIndex)
+        /// <summary>Each party's vote-share shift at a perceived index: minus its economic vote times the units of deterioration (<paramref name="on"/>, the day
+        /// <see cref="Magnitudes"/> reads the Vice President on).</summary>
+        public static Dictionary<string, double> RecordShiftOf(Country country, double perceivedIndex, DateTime? on = null)
         {
             double d = Deterioration(perceivedIndex);
             var shift = new Dictionary<string, double>();
-            foreach (KeyValuePair<string, double> kv in Magnitudes(country)) { shift[kv.Key] = -kv.Value * d; }
+            foreach (KeyValuePair<string, double> kv in Magnitudes(country, on)) { shift[kv.Key] = -kv.Value * d; }
             return shift;
         }
 

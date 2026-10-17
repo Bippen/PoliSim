@@ -178,6 +178,15 @@ R-US2 (a), ruled (F8, `COMPLETED.md` §781): the player is the November nominee 
 **Inauguration and term dates — the 20th Amendment, Section 1** ([CONST-AM]):
 > "Section 1. The terms of the President and Vice President shall end at noon on the 20th day of January, and the terms of Senators and Representatives at noon on the 3d day of January, of the years in which such terms would have ended if this article had not been ratified; and the terms of their successors shall then begin."
 
+**The Senate's composition, its classes and the Vice President's vote — Article I, Section 3, clauses 1, 2 and 4** (NARA's transcript, [CONST]; extracted 2026-10-17 for PS-6 US-15 and quote-checked against the saved bytes as this file's header describes - tags stripped, entities decoded, whitespace collapsed - each found):
+> "The Senate of the United States shall be composed of two Senators from each State, chosen by the Legislature thereof, for six Years; and each Senator shall have one Vote."
+>
+> "Immediately after they shall be assembled in Consequence of the first Election, they shall be divided as equally as may be into three Classes."
+>
+> "The Vice President of the United States shall be President of the Senate, but shall have no Vote, unless they be equally divided."
+
+(NARA's transcript links the words "chosen by the Legislature" of clause 1 to the Seventeenth Amendment, which superseded them: the senators are elected by the people of each state, as 2 U.S.C. §1 below says.) **DERIVED** readings, for the game's Senate (US-15): the chamber is two senators from each state, so its members are twice the states of the Senate's own roster (`senate_seats.csv`); every senator sits in one of three classes; the Vice President votes only where the Senate is equally divided. Which way that vote goes is the Vice President's own; the game reads it as the Vice President's party, which NARA's results pages print beside the name - Kamala D. Harris "[D]" ([EX-EC20], §5) with Biden, JD Vance "[R]" ([EX-EC24], §5) with Trump, each the party of the president elected on the same ticket (§2's table dates them). The record's own case of the vote deciding the chamber is the 117th Congress's 50-50 Senate, quoted in §1b ([SEN-LEAD-H]: the Vice President's "tie-breaking vote established a Democratic majority in the Senate").
+
 **The two-term limit — the 22nd Amendment, Section 1** ([CONST-AM]):
 > "Section 1. No person shall be elected to the office of the President more than twice, and no person who has held the office of President, or acted as President, for more than two years of a term to which some other person was elected President shall be elected to the office of the President more than once."
 

@@ -32,7 +32,9 @@ namespace PoliSim.EditorTools
                     {
                         if (!start.Playable) { continue; }   // a locked contest opens no world; its brief waits for its model
                         List<StartBrief.Clause> clauses = StartBrief.Clauses(start);
-                        Check(clauses.Count == 4, F("{0} {1}: four clauses ({2})", id, start.Kind, clauses.Count));
+                        // PS-6 US-15: and a fifth, the second chamber's, where the record seats one (the USA's Senate)
+                        int expected = WorldClock.RecordSeatsSecondChamber(id) ? 5 : 4;
+                        Check(clauses.Count == expected, F("{0} {1}: {2} clauses ({3}){4}", id, start.Kind, expected == 5 ? "five" : "four", clauses.Count, expected == 5 ? " - the fifth the second chamber's" : string.Empty));
                         foreach (StartBrief.Clause c in clauses)
                         {
                             Check(!string.IsNullOrEmpty(c.Text) && !string.IsNullOrEmpty(c.Basis) && c.Basis.Contains("WorldClock") | c.Basis.Contains("StartPoints") | c.Basis.Contains("PartySystems"),
@@ -62,8 +64,9 @@ namespace PoliSim.EditorTools
                 // PS-6 US-8 (in place of US-1's pin): the US start names its polling day, which the game now holds - 5 November 2024, 3 U.S.C. §21(1)'s day,
                 // the calendar's own answer (WorldClock.TryNextPollingDay), held by name. The folder card's line and the start card's mode line name the run-up;
                 // the brief's polling-day clause says what the day elects - the president, through the Electoral College - and what stays the record's: the House,
-                // seated on its record's day (the brief reads it from the record), no Senate; the ledger's Polling day row; the not-held reason says the House is
-                // not elected. The record's next president is named on none of them (the game's count decides who takes office). Each pinned whole.
+                // seated on its record's day (the brief reads it from the record), and (PS-6 US-15) the Senate of record on its own dates; the ledger's Polling day
+                // row; the not-held reason says the House is not elected and the Senate is the record's too. The record's next president is named on none of them
+                // (the game's count decides who takes office). Each pinned whole.
                 bool electionRow = false, pollingRow = false;
                 foreach (StartBrief.Row row in StartBrief.Rows(usa))
                 {
@@ -75,13 +78,32 @@ namespace PoliSim.EditorTools
                 bool usaHeld = WorldClock.TryNextPollingDay(CountryId.USA, usa.Opens, out DateTime usaPolling);
                 bool namesRecordsNext = usaText.Contains("Donald J. Trump") || usaLine.Contains("TRUMP") || usaMode.Contains("TRUMP");
                 Check(usaHeld && usaPolling == new DateTime(2024, 11, 5) && usa.PollingDay == usaPolling
-                      && usaText.Contains("Polling day is 5 November 2024. The president is elected through the Electoral College; the House of record elected that day is seated on 3 January 2025, as the record dates it, and no Senate is modelled.")
+                      && usaText.Contains("Polling day is 5 November 2024. The president is elected through the Electoral College; the House of record elected that day is seated on 3 January 2025, as the record dates it, and the Senate of record changes on its own dates.")
                       && usaLine == "OPENS 12 MAR 2024 · THE RUN-UP TO 5 NOV 2024" && usaMode == "RUN-UP · OPENS 12 MAR 2024"
-                      && usaReason == "No US House election is held in this game yet: the president is elected through the Electoral College on the polling day, and the House is seated as the record seats it, on its dates, until the House races are built; no Senate is modelled."
+                      && usaReason == "No US House election is held in this game yet: the president is elected through the Electoral College on the polling day, and the House is seated as the record seats it, on its dates, until the House races are built; the Senate is the record's too, on its own dates."
                       && !namesRecordsNext,
-                    F("US-8: the USA's start names the polling day the game holds - the calendar's {0:yyyy-MM-dd}; the folder card \"{1}\"; the start card \"{2}\"; the not-held reason \"{3}\"; the record's next president named on none ({4})",
+                    F("US-8, US-15: the USA's start names the polling day the game holds - the calendar's {0:yyyy-MM-dd}; the folder card \"{1}\"; the start card \"{2}\"; the not-held reason \"{3}\"; the record's next president named on none ({4})",
                         usaPolling, usaLine, usaMode, usaReason, !namesRecordsNext));
                 Check(pollingRow && !electionRow, "US-8: the USA's ledger carries its Polling day row, 5 NOV 2024, and no Election row (US-1's NONE IN THIS GAME YET retired)");
+                // PS-6 US-15 (R-US10 (a): "including N independents"; R-US1 (a): the Senate of record by date): the USA's brief carries a Senate clause of its own after
+                // the government's - the Senate of record on the start's day, its majority, the independents counted with their conference - and its ledger a Senate
+                // row right after the House's; both read from the record (UsSenate.On over US-12's table), pinned whole. No other start carries either: the record seats
+                // no other second chamber, and Italy's words still say no Senato is modelled (pinned below).
+                List<StartBrief.Clause> usaClauses = StartBrief.Clauses(usa);
+                List<StartBrief.Row> usaRows = StartBrief.Rows(usa);
+                int houseRow = usaRows.FindIndex(r => r.Name == StartBrief.ChamberOf(CountryId.USA)), senateRow = usaRows.FindIndex(r => r.Name == "Senate");
+                const string SenateClause = "The Senate of record is seated by its own dates; its majority is DEM, with 51 of 100 seats, including 3 independents counted with DEM.";
+                Check(usaClauses.Count == 5 && usaClauses[2].Text == SenateClause && usaClauses[2].Basis.StartsWith("WorldClock.SecondChamberOfRecord", StringComparison.Ordinal)
+                      && senateRow == houseRow + 1 && houseRow >= 0 && usaRows[senateRow].Figure == "DEM · 51 OF 100 · INCLUDING 3 INDEPENDENTS",
+                    F("US-15: the USA's brief carries its Senate clause, the third of five - \"{0}\" <- {1}; its ledger's Senate row after the House's - \"{2}\"",
+                        usaClauses.Count > 2 ? usaClauses[2].Text : "none", usaClauses.Count > 2 ? usaClauses[2].Basis : "none", senateRow >= 0 ? usaRows[senateRow].Figure : "none"));
+                var upperElsewhere = new List<string>();
+                foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
+                {
+                    if (id == CountryId.USA || !StartPoints.TryPlayable(id, out StartPoints.StartPoint sp)) { continue; }
+                    if (StartBrief.Text(sp).Contains("Senate of record") || StartBrief.Rows(sp).Exists(r => r.Name == "Senate") || StartBrief.SecondChamberOf(id) != null) { upperElsewhere.Add(id.ToString()); }
+                }
+                Check(upperElsewhere.Count == 0, F("US-15: no other playable start carries a second chamber's clause, row or name{0}", upperElsewhere.Count > 0 ? "; NOT: " + string.Join(", ", upperElsewhere) : string.Empty));
                 // PS-7-interim (PS-7's "until then"): Italy's start says what it holds, in Italy's words - its calendar offers no polling day, so the snap election
                 // the start is cut on is not held. The folder card's line and the start card's mode line say only that no election is held; the brief, its
                 // Election row and the not-held reason say what holds - the Camera and the government seated at the start, the government a stand-in for the

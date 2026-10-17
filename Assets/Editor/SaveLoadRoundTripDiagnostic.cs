@@ -562,6 +562,22 @@ namespace PoliSim.EditorTools
 
                 snap[$"{p}.ParliamentSeats.Sum"] = seatSum;
 
+                // PS-6 US-15: the second chamber is persisted state too (format 40) - the USA's Senate of record where the scenario seats it, empty elsewhere -
+                // snapshotted by name and summed the same way, so the restore point and the continuation compare it by the party. It cannot catch a load that
+                // dropped the USA's Senate: RestoreInto re-seats the Senate of record before this snapshot is taken (held as state). That proof is
+                // SenateChamberDiagnostic's (i), which reads the deserialized save before any restore, and puts a planted Senate right as it loads.
+                snap[$"{p}.SecondChamberSeats.Count"] = country.SecondChamberSeats?.Count ?? -1;
+                int upperSum = 0;
+                if (country.SecondChamberSeats != null)
+                {
+                    foreach (KeyValuePair<string, int> seat in country.SecondChamberSeats)
+                    {
+                        snap[$"{p}.SecondChamberSeats.{seat.Key}"] = seat.Value;
+                        upperSum += seat.Value;
+                    }
+                }
+                snap[$"{p}.SecondChamberSeats.Sum"] = upperSum;
+
                 // W-G3: the election record is NEW persisted state (W-G1) and it lives on Country,
                 // inside World, precisely so this diagnostic can see it - see Country.ElectionHistory
                 // for why it is not in UiDraftState, the layer this file's own header records as

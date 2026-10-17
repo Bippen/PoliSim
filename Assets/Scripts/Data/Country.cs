@@ -897,6 +897,16 @@ namespace PoliSim.Data
         public Dictionary<string, int> ParliamentSeats = new Dictionary<string, int>();
 
         /// <summary>
+        /// PS-6 US-15 (`docs/specs/USA_STAGE_PLAN.md`; the plan's risk 12: the seats, divisions, verdicts, formation, save and preview clone each held one
+        /// chamber): <b>THE SECOND CHAMBER</b>, seats per party key beside <see cref="ParliamentSeats"/> - generic, so Italy's Senato (PS-7) seats into the same
+        /// field. Empty where the game seats none; where the record seats one (`WorldClock.RecordSeatsSecondChamber` names the countries), it is seated on its
+        /// dates in the player's country (`SimulationManager.SeatTheRecordOnItsDate`, from `WorldClock.SecondChamberOfRecord`) - an independent counted with the conference he caucuses with
+        /// (R-US10 (a)), a vacant seat nobody's, so the seats sum to the members seated. Changed only where the record seats it; nothing elects it until US-16.
+        /// World state, so it rides the save (format 40) and the preview's clone (`SimulationManager.ClonePreviewCountry`).
+        /// </summary>
+        public Dictionary<string, int> SecondChamberSeats = new Dictionary<string, int>();
+
+        /// <summary>
         /// W-G1: every election this country has held, oldest first.
         ///
         /// ⚠ **IT LIVES ON `Country`, INSIDE `World`, AND THAT IS A DELIBERATE CHOICE ABOUT WHICH

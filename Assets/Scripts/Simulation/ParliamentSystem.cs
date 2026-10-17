@@ -88,6 +88,16 @@ namespace PoliSim.Simulation
             country.ParliamentSeats = PartySystems.InitialSeats(country.Id, vintage);
         }
 
+        /// <summary>PS-6 US-15 (R-US1 (a)): seats the second chamber of record on its date - the sibling of <see cref="SeatChamberOfRecord"/> for
+        /// `Country.SecondChamberSeats` (the USA's Senate of record, `WorldClock.SecondChamberOfRecord`), copied whole so no later read shares the caller's
+        /// dictionary. A second chamber the game elects (US-16; Italy's Senato at PS-7) seats through a sibling of its own.</summary>
+        public static void SeatSecondChamberOfRecord(Country country, IReadOnlyDictionary<string, int> seats)
+        {
+            var seated = new Dictionary<string, int>();
+            if (seats != null) { foreach (KeyValuePair<string, int> kv in seats) { seated[kv.Key] = kv.Value; } }
+            country.SecondChamberSeats = seated;
+        }
+
         /// <summary>
         /// W-G1: the ONLY thing that changes a chamber — an election result: the game's own, here, keyed by the same
         /// abbreviations `PartySystems` uses, or, where the game does not elect the chamber, the record's (<see cref="SeatChamberOfRecord"/>,

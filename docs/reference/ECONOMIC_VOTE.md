@@ -42,6 +42,32 @@ words as the draft's chapter 9 (see element 5). Every draft figure is marked **[
   sourced handle is the opposition-influence formula (element 8b) - a party's responsibility share = (1-w)×cabinet share + w×seat share -
   applied through hypothesis 1 ("a greater share of ... administrative responsibility will receive a greater share of the economic vote");
   the resulting number is `[AUTHORED-DRAFT]`, not a literature figure.
+- The US president's party takes Table 9.1's presidential row, unified or divided. **How the book codes it (read for PS-6 US-15,
+  2026-10-17; a DECLARED reading):** divided government "occurs when different parties control the executive and legislative branches of
+  government" (p. 245), and the book's one US example of unified government is "the short period of unified Democratic government in the
+  early 1990's" - the 103rd Congress, whose House (258 Democrats of 435, the House Historian's divisions) and Senate (57 Democrats of 100,
+  the Senate's Party Division page) were both Democratic (`ElectionsData/usa/raw/records/`). So the game reads "unified" as the president's
+  party holding the House **and** the Senate where a Senate is seated; a Senate equally divided is the Vice President's party's (Art. I §3
+  cl. 4), the president's own on one ticket. Before US-15 the game read the House alone. In every state a US game reaches before US-16 the
+  two readings agree: the 118th Congress (REP House, DEM Senate) sits only under the Democratic president of record, the 119th's House and
+  Senate are both Republican, and past the record both stand.
+- **The cases behind the cells are not named in the draft** (GAP 9): Table 9.1's US presidential row counts five divided studies and one
+  unified, its US legislative row nine and two, and neither list is printed; the studies are in the authors' online codebook (p. 46:
+  "www.nuffield.ox.ac.uk/economicvoting"), not fetched. **The unified presidential case is most likely 1980** (the US-15 review's finding,
+  re-read here): the draft's period is 1979 to 2001 (p. 3, "a long time period (1979-2001)"), it names "the 1980 American presidential
+  election" (p. 4) and the 1988, 1992, 1996 and 2000 ones (p. 64), and six presidential studies 1980 to 2000, each coded by the government
+  sitting on its election day, give exactly five divided and one unified - 1980 - under either reading: the president's party at each
+  election by US-13's record (`ElectionsData/usa/house_midterms.csv`, its president_party column, read from NARA's pages) - D in 1980, R in
+  1984, 1988 and 1992, D in 1996 and 2000 - against the Congress sitting by the two division tables on disk: the 96th Democratic in both
+  chambers (House 278 of 435, Senate 58 of 100), a Democratic House under every Republican president after it, a Republican House and
+  Senate (the 104th and 106th) under the Democratic one. The eleven House elections of 1980 to 2000 coded the same way give nine and two
+  (1980, 1994) - the legislative row's counts. (Page numbers here are the draft's own, the "Duch and Stevenson, Draft Page N" line that
+  closes each page.) Two things stay open: the 1996 figure the draft quotes, "as high as -10 percent" (p. 67), equals the unified cell's
+  -0.10 by coincidence on this reading; and the draft's own sentence that unified government in the period was "only the short period of
+  unified Democratic government in the early 1990's" (p. 245) leaves 1979-81 out. **The counts cannot tell the two readings apart:** inside
+  the period the House's and the Senate's majorities differ only in the 97th to 99th Congresses - a Democratic House and a Republican
+  Senate by the same two tables - so the readings part only for a president of the House's party there, and every president then was
+  Republican by the same record.
 
 ## Size by country - the six model countries
 
@@ -158,6 +184,12 @@ the chapter titles match the printed book's. Page numbers are the draft's own ru
   for the González government that forced the Socialists to govern in a minority with the parliamentary support of the Catalan
   nationalists. Again, we will argue in subsequent chapters that as policy making responsibility is shared more equally declines – which
   would be the case with a minority as opposed to majority government – economic voting will decline." *(sic)*
+- p. 245 (read for PS-6 US-15, 2026-10-17, from `pdftotext -layout` of the saved draft): "The sharing of administrative responsibilities in
+  presidential systems is usually referred to as "divided government." This occurs when different parties control the executive and
+  legislative branches of government (Elgie 1999; Shugart and Carey 1992)." And: "Divided government has been the norm in the US during the
+  period under study here (only the short period of unified Democratic government in the early 1990's is an exception) and has occasionally
+  occurred in France." fn 211: "The current era of divided government in the U.S. began in 1956 when the Republicans won the presidency but
+  failed to carry Congress (Fiorina 1992)."
 - p. 247, **Table 9.1** "Average Economic Vote for Presidential Parties in Different Contexts" - columns Divided Government or Cohabitation
   (C1) / Unified Government (C2) / p-value for C1 = C2: US Presidential Election "-0.06 (0.02) n = 5" / "-0.10 -- -- n = 1" / "0.29";
   French Legislative Election "0.01 (0.03) n = 4" / "-0.05 (0.03) n = 8" / "0.004"; US Legislative Election "0.012 (0.038) n = 9" /
@@ -352,3 +384,8 @@ new folder).
 8. **PA05's signs and abstract.** The PDF's minus glyphs are unmapped, so Table 1's signs are not recoverable from the text; and the
    abstract's "economic evaluations will be more important" as responsibility is shared reads opposite to every other source (quoted as
    printed, flagged, not used for direction).
+9. **The US studies behind Table 9.1's cells** (PS-6 US-15). The draft prints the cells' counts (presidential: five divided, one unified;
+   legislative: nine and two) but not which election studies they are; the list is the authors' online codebook (p. 46,
+   "www.nuffield.ox.ac.uk/economicvoting"), not fetched. Read by the government sitting on each election day, the counts point to 1980 as the
+   unified presidential case and to 1980 and 1994 as the legislative ones (the reading above) - an inference from the counts, the draft's
+   period and its naming of the 1980 election, not a case-by-case check, so the unified case stays unnamed by a source.

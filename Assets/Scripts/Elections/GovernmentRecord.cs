@@ -305,7 +305,8 @@ namespace PoliSim.Elections
         /// party, Gamson's allocation not applied"): the president's party alone in the cabinet and leading it, no support and no agreements, every portfolio
         /// the party's. Gamson's law divides a coalition's posts by its parties' seats, and a presidency has no coalition to divide them among: the department heads
         /// are the president's to nominate - Art. II §2 ([CONST]): "he shall nominate, and by and with the Advice and Consent of the Senate, shall appoint ... all
-        /// other Officers of the United States" (the Senate's consent not modelled, stated - no Senate is, US-15). <paramref name="outcome"/> labels it
+        /// other Officers of the United States" (the Senate's consent not modelled, stated - PS-6 US-15 seats the Senate of record by date, and it votes on no
+        /// nomination). <paramref name="outcome"/> labels it
         /// (<see cref="UsPresidentialElection.ElectedOutcome"/> for the game's oath).
         /// </summary>
         public static GovernmentRecord OfPresidency(string executive, string party, DateTime tookOffice, string outcome, string basis)
