@@ -18,6 +18,8 @@ namespace PoliSim.Elections
     /// the record's, after the same "Polling day is ..." sentence every start's brief carries. PS-6 US-15: where the record seats a second chamber
     /// (`WorldClock.RecordSeatsSecondChamber` - the USA's Senate, by date until US-16), a clause of its own follows the government's - the Senate of record and
     /// its majority on the start's day, the independents counted with their conference (R-US10 (a)) - and the ledger a row of its own beside the House's.
+    /// PS-6 US-33: where the player's own nominee is registered for the start's country (`OwnNominees`), a last clause and a last row name it and its ticket
+    /// (<see cref="NomineeClause"/>, <see cref="NomineeRow"/>); with none registered every clause and row is as before.
     /// </summary>
     public static class StartBrief
     {
@@ -193,7 +195,37 @@ namespace PoliSim.Elections
             clauses.Add(new Clause(partiesSeated.ToString(CultureInfo.InvariantCulture) + " parties sit in the " + chamberName + " (" + size.ToString(CultureInfo.InvariantCulture) + " seats, the election of "
                 + Long(chamber.ElectionDay == DateTime.MinValue ? chamber.Convened : chamber.ElectionDay) + ")" + (deviation != null ? " - " + deviation : string.Empty) + ".",
                 "PartySystems.InitialSeats(" + seated + "); " + chamber.Basis));
+            // PS-6 US-33 (SP-6a): the player's own nominee, where one is registered for the start's country - a clause of its own, last; none registered, none said
+            if (OwnNominees.TryOf(id, out OwnNominee own) && NomineeClause(start, own) is Clause nominee) { clauses.Add(nominee); }
             return clauses;
+        }
+
+        private static string PartyNameOf(CountryId id, string key)
+        {
+            foreach (PoliticalParty p in PartySystems.RealRoster(id)) { if (p.Abbrev == key) { return p.Name; } }
+            return key;
+        }
+
+        /// <summary>
+        /// PS-6 US-33 (SP-6a; the own nominee in place of R-US2 (a)'s nominee of record for the player's party - the plan's "a leader at the head of the DEM or REP ticket"): the brief's clause for the player's own nominee - who heads
+        /// which ticket in place of its nominee of record, and that the party's poll reads the nominee's position - or null where none is given, it is unnamed, or
+        /// the start offers none (<see cref="StartPoints.OffersOwnNominee"/>). It names no nominee of record (the naming before the count is US-6's, by date - asked
+        /// of Elias with R-US23). Read from the nominee given, so the creation flow's review shows it before the nominee is registered; <see cref="Clauses"/> reads
+        /// the registered one (`OwnNominees`).
+        /// </summary>
+        public static Clause? NomineeClause(StartPoints.StartPoint start, OwnNominee nominee)
+        {
+            if (nominee == null || nominee.Country != start.Country || !StartPoints.OffersOwnNominee(start) || string.IsNullOrWhiteSpace(nominee.Name)) { return null; }
+            return new Clause("Your own nominee, " + nominee.Name.Trim() + ", heads the " + PartyNameOf(start.Country, nominee.Party) + "'s ticket in place of its nominee of record; the party's poll reads the nominee's position.",
+                "OwnNominees (the player's own nominee, inside the party's range - the middle half of the Global Party Survey 2019's experts, UsGps2019); StartPoints.OffersOwnNominee (" + start.Basis + ")");
+        }
+
+        /// <summary>PS-6 US-33: the ledger's row for the player's own nominee - "Your nominee", the name and the ticket the president row's way ("Jordan Hale (REP)") -
+        /// or null where <see cref="NomineeClause"/> is.</summary>
+        public static Row? NomineeRow(StartPoints.StartPoint start, OwnNominee nominee)
+        {
+            if (!(NomineeClause(start, nominee) is Clause clause)) { return null; }
+            return new Row("Your nominee", nominee.Name.Trim() + " (" + PartySystems.ShortName(start.Country, nominee.Party) + ")", clause.Basis);
         }
 
         /// <summary>One row of the brief as a ledger (board 18a): the slot's name, its figure in the stamp register, and the record it traces to.</summary>
@@ -294,6 +326,8 @@ namespace PoliSim.Elections
                 partiesSeated.ToString(CultureInfo.InvariantCulture) + " PARTIES · " + size.ToString(CultureInfo.InvariantCulture) + " SEATS · "
                 + (chamber.ElectionDay == DateTime.MinValue ? "CONVENED " : "ELECTED ") + Stamp(elected),
                 "PartySystems.InitialSeats(" + seated + "); " + chamber.Basis));
+            // PS-6 US-33 (SP-6a): the player's own nominee's row, last, where one is registered for the start's country
+            if (OwnNominees.TryOf(id, out OwnNominee own) && NomineeRow(start, own) is Row nominee) { rows.Add(nominee); }
             return rows;
         }
 

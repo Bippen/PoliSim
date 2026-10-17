@@ -532,6 +532,7 @@ Save the GPS 2019 datafile and codebook (Harvard Dataverse, doi:10.7910/DVN/WMGT
 The creation flow is offered for the USA as a leader at the head of the DEM or REP ticket, with positions inside the party's range (US-32's spread if read, else DECLARED); the nominee stands at factor 1.0, and the character is the person the term limit reads (US-28). The third-party run is added only if R-US4 keeps it inside PS-6, with its billed rules.
 *Needs:* US-28, US-32; R-US4.
 *Done when:* a US game starts with its own nominee and plays to the count, which reads that nominee's position through the poll; `StartPointsDiagnostic` and `StartBriefDiagnostic` extended; the flow's US form filmed REAL.
+**Built: `COMPLETED.md` §850** - the creation flow's US form (four steps, from the party panel's YOUR OWN NOMINEE); the range the middle half of the GPS 2019 experts' placements (DECLARED, re-derived from the by-expert file; the alternatives asked with their figures); a person of record refused by surname and first initial; the party's point the nominee's in the poll and the compass, the electorate held; one authority, the registry; the 2024 field at factor 1.0, its tally marked, the person the limit reads; the brief's nominee clause; no format step (additive under ruling A); R-US15 (iii)'s response printed, not acted on.
 
 ### Phase H — the night, the boards, the close
 

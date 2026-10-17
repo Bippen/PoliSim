@@ -448,6 +448,78 @@ namespace PoliSim.Testing
                 }
             }
 
+            // PS-6 US-33 (SP-6a): THE CREATION FLOW'S US FORM - the party panel's YOUR OWN NOMINEE (01g_party_picker shows it), then the four steps on one filled
+            // draft (the ticket's slip pinned on the first; the nominee placed off the party's own point, at its range's economic floor and a quarter up its GAL-TAN
+            // span, so the placement and the review show a moved point), then BACK to the selector through the flow's own close. Nothing is registered, so no frame
+            // after these moves. -shotcreatestart ends it in START instead: the nominee registered, the world rebuilt, the player seated as its party - and the desk
+            // filmed. The ticket is -shotparty's where it is one, else the first offered.
+            if (controller.CanvasSelectorActive && OwnNomineeFlow.Offered(_countryId))
+            {
+                string[] steps = { "01n1_nominee_ticket", "01n2_nominee_placement", "01n3_nominee_name", "01n4_nominee_review" };
+                Expect(steps);
+                Invoke(controller, "RequestPartyCreation", _countryId);
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+                List<string> tickets = OwnNominees.Tickets(_countryId);
+                string ticket = !string.IsNullOrEmpty(Party) && tickets.Contains(Party) ? Party : tickets.Count > 0 ? tickets[0] : null;
+                OwnNominee draft = controller.GetType().GetField("_onDraft", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as OwnNominee;
+                if (draft != null && ticket != null)
+                {
+                    OwnNomineeFlow.ChooseTicket(draft, ticket);
+                    if (OwnNominees.TryRangeOf(_countryId, ticket, out OwnNominees.Range range)) { OwnNomineeFlow.Place(draft, range.EconLo, range.SocLo + 0.25f * (range.SocHi - range.SocLo)); }
+                    draft.Name = "Jordan Hale";
+                }
+                else { Debug.LogWarning($"SHOT: US-33 - the own-nominee flow opened no draft for {_countryId} (ticket {ticket ?? "none"}); its frames show what the controller drew."); }
+                for (int s = 0; s < steps.Length; s++)
+                {
+                    SetPrivateField(controller, "_onStep", s);
+                    if (s == 0 && ticket != null) { Invoke(controller, "PinSlipForFilm", "ticket/" + ticket, null, new Vector2(UiScreen.Width * 0.58f, UiScreen.Height * 0.40f)); }
+                    yield return Settle();
+                    Claim("imgui");
+                    yield return Capture(steps[s]);
+                }
+                if (CreateAndStart)
+                {
+                    Expect("01n5_nominee_seated", "01n6_nominee_parliament_rows");
+                    Invoke(controller, "CommitOwnNominee");
+                    SetPrivateField(controller, "_daySpeedTimer", -ClockHoldSeconds);
+                    yield return Settle();
+                    Country seatedIn = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+                    bool registered = OwnNominees.TryOf(_countryId, out OwnNominee own);
+                    Debug.Log($"SHOT: US-33 - START: the own nominee {(registered ? own.Name + " at (" + own.LrEcon.ToString("0.0", CultureInfo.InvariantCulture) + ", " + own.Galtan.ToString("0.0", CultureInfo.InvariantCulture) + ") heads the " + own.Party + " ticket" : "NOT registered")}; the seated party {seatedIn?.PlayerPartyAbbrev}.");
+                    Claim("imgui");
+                    yield return Capture("01n5_nominee_seated");
+
+                    // the US-33 review's L6: the Parliament tab's nominee row in its own-nominee form - drawn only before the 2024 count, which every film's
+                    // warm-up crosses before 07a - filmed here, on the start's day, at the rows' scroll; the tab, its page and the Desk then put back as they were
+                    FieldInfo onDesk = controller.GetType().GetField("_onDesk", BindingFlags.Instance | BindingFlags.NonPublic);
+                    FieldInfo tab = controller.GetType().GetField("_consolidatedTab", BindingFlags.Instance | BindingFlags.NonPublic);
+                    FieldInfo page = controller.GetType().GetField("_politicsCategory", BindingFlags.Instance | BindingFlags.NonPublic);
+                    object deskWas = onDesk?.GetValue(controller), tabWas = tab?.GetValue(controller), pageWas = page?.GetValue(controller);
+                    SetPrivateField(controller, "_onDesk", false);
+                    bool staged = SetEnumField(controller, "_consolidatedTab", "Politics") && SetEnumField(controller, "_politicsCategory", "Parliament");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    ScrollBy(controller, 900f);
+                    yield return Settle();
+                    Claim("imgui");
+                    yield return Capture("01n6_nominee_parliament_rows");
+                    Debug.Log($"SHOT: US-33 - the Parliament tab before the count ({(staged ? "staged" : "NOT staged")}): the nominee row reads the own nominee {(registered ? own.Name : "-")} for {seatedIn?.PlayerPartyAbbrev}, polling day 2024-11-05.");
+                    ResetScrolls(controller);
+                    if (tab != null && tabWas != null) { tab.SetValue(controller, tabWas); }
+                    if (page != null && pageWas != null) { page.SetValue(controller, pageWas); }
+                    if (onDesk != null && deskWas != null) { onDesk.SetValue(controller, deskWas); }
+                    yield return Settle();
+                }
+                else
+                {
+                    Invoke(controller, "ClosePartyCreation");
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    Debug.Log($"SHOT: US-33 - the own-nominee flow filmed for {_countryId}: four steps on the {ticket} ticket, closed back to the selector, nothing registered ({OwnNominees.Any(_countryId)}).");
+                }
+            }
+
             if (string.IsNullOrEmpty(Party)) { Invoke(controller, "SelectPlayerCountry", _countryId); }
             else
             {

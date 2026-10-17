@@ -39370,3 +39370,60 @@ Built in the sweep's third wave on US-6's branch. Every parameter was declared i
 - `01f2_start_points`, at 1280 and at 2560: the caption reads "THE HOUSE OF 8 NOV 2022 · 435 · THE SENATE: DEM 51 OF 100 (3 IND.)" on one line, the House bar kept above it. The brief’s new row reads Senate "DEM · 51 OF 100 · INCLUDING 3 INDEPENDENTS", after the House row. Everything fits at both widths.
 - `07a_politics_parliament`, after the warm-up: the Senate card "100 Senate seats - including 2 independents" sits under the House’s, its REP-DEM bar 53-47 with no majority tick. The House card and its 218 tick are unchanged.
 
+
+## 850. PS-6 US-33: YOUR OWN NOMINEE (SP-6a) - A LEADER THE PLAYER CREATES AT THE HEAD OF THE DEM OR REP TICKET, INSIDE THE PARTY'S RANGE (THE MIDDLE HALF OF THE GPS 2019 EXPERTS); THE PARTY'S POINT THE NOMINEE'S IN THE POLL; THE 2024 FIELD AT FACTOR 1.0; THE PERSON THE TERM LIMIT READS; NO FORMAT STEP (2026-10-17)
+
+**What was owed** (the plan's US-33; R-US4 (a), R-US6 (b), R-US2 (a), E1; R-US15 (iii) to print): the flow's US form with positions inside the party's range; the nominee at factor 1.0, the 2024 count reading its position through the poll; the person the limit reads; StartPoints and StartBrief diagnostics extended; the save; dry and REAL films.
+
+**Built:**
+- `OwnNominees`: the range is the GPS 2019 Q1–Q3 on V4 and V6, re-derived from the by-expert file by GeneratedCatalogCheck.
+- Refusals: a person of record, read by surname and first initial after folding; the unnamed form.
+- The registry is the one authority for both the moved point and the field.
+- The vote model's moved point: the electorate is held, proved by a fresh solve.
+- The 2024 field at factor 1.0, with its tally marked.
+- `UsTermLimit` changes for the person.
+- `SaveGame.OwnNominees`, additive under ruling A.
+- The flow's US form, with its prediction captioned.
+- The compass's electorate mean at the nominee's point.
+- `StartPoints.OffersOwnNominee`.
+- The brief's nominee clause and row.
+- The Parliament row before the count, filmed as `01n6` under `-shotcreatestart`.
+- `UsOwnNomineeDiagnostic`, and extensions to the StartPoints, StartBrief, PartyCreation, PartyInkDrawSite, GeneratedCatalog and OfficeTest checks.
+
+**Measured** (`n850`, 12 named checks, on 04700d17; `n850b`, 9 of 9, after the review's fixes):
+- **The default game is untouched.** The simulation bar's sentinel on ga111 is unmoved on both trees. That is the Mono proof that the vote model's no-nominee branch is byte-identical, beside the reviewer's out-of-engine comparison: 852 prediction, count and brief lines, base against HEAD, byte-identical for every country.
+- **The range**, re-derived from the by-expert file: REP economic 8.00-9.00, GAL-TAN 7.00-9.00; DEM 3.00-4.00 by 2.00-3.00. Each party's own point lies inside its box.
+- **A person of record is refused** by surname and first initial ("Donald Trump", "Kamala Harris", "J.D. Vance" and others). "Jordan Harris" stands.
+- **The registry is the one authority:** with the player re-seated in DEM, REP's own nominee still heads REP's field and holds REP's point.
+- **The 2024 count** fields the own nominee at the poll × 1.0, and the winner is sworn as the person the count names. US-28's limit reads him: in 2028 he stands within the limit; in 2032 he is barred, "elected 2024 and 2028".
+- **The save** carries the nominee into the game; a stripped save loads with none.
+- **R-US15 (iii), printed, not acted on**, beside the asks' figures. At the corners of each range box, a REP nominee moves REP's share of the two by -0.66 to +0.47 points (interquartile), -1.55 to -0.87 (the whole spread), or -1.21 to +0.91 (the mean ± sd). With the point kept after a 2024 loss, the 2028 idle poll moves +0.0295 (REP) or -0.0203 (DEM) points; the 2028 count is 312-226 either way.
+- **The `elec<N>` diff** (`elec849b` against `elec850b`): no line moves. **SaveLoadRoundTripDiagnostic:** PASS.
+
+**Declared:** the IQR range; the moved point kept for the run; the own ticket's unnamed running mate; a person of record read by surname and first initial (a same-initial namesake is refused); the registry as the one authority; no format step; the flow's figure taken at the selector's epoch.
+
+**Review** (`Reviews/2026-10-17_s850_us33_own_nominee.md`, one adversarial reader, refute-first): **ship with fixes**, no high or medium defects.
+- Re-derived correct: the vote model's default branch, base against HEAD byte-identical for every country out of engine; the count and the person; the IQR under three quartile definitions; the save; the shared state.
+- Met: L1, L2, L3, L4, L5, L6 and L7 (the fresh solve and the by-expert spread), all as above.
+- The coordinator's film finding (the uncaptioned figure) is met too.
+
+**Asked:** the range statistic; whether the moved point reverts; whether a beaten nominee may stand in 2028 (with R-US26).
+
+**Bars:** (tier SIMULATION + UI; no money path; reviewed anyway):
+- the named runs `n850` **12 of 12** and `n850b` **9 of 9**;
+- the cheap bar **113 of 113** (`cheap850b`; UsOwnNomineeDiagnostic its 113th);
+- the simulation bar **57 of 57** (`sim850`, `sim850b`; the sentinel on ga111 unmoved);
+- the documents bar **20 of 20** (`doc850`);
+- the round trip PASS; the `elec<N>` diff empty;
+- the dry films `drys850` and `drys850b` (USA@1280x720, scoped first): 147 measured, 0 failed, 0 overflows; the flow filmed and closed, nothing registered;
+- REAL films (0 failed, 0 overflows, 0 canvas violations in each):
+  - `realus33a` and `realus33b` (USA at 1280×720, cut at `01n4_nominee_review`);
+  - `realus33c` (2560×1440, the same cut);
+  - `realus33d` (1280, `-shotcreatestart`, cut at `01n6_nominee_parliament_rows`).
+
+**Read on the real films:**
+- `01g_party_picker` (Canvas): YOUR OWN NOMINEE under the two party rows.
+- `01n2_nominee_placement`: the compass with REP’s range framed and the nominee at (8.0, 7.5); the figure now captioned "REP’S POLL HERE · 51.3 % · AT THE PARTY’S OWN POINT 51.3 %". The first film showed it bare, and the caption was added for this record.
+- `01n4_nominee_review` at 1280 and 2560: the brief’s ledger ending "YOUR NOMINEE · Jordan Hale (REP)", the Senate row "DEM · 51 OF 100 · INCLUDING 3 INDEPENDENTS"; everything fits.
+- `01n6_nominee_parliament_rows`, on the start’s day: "YOUR NOMINEE · HALE · YOUR OWN · 5 NOV 2024" under the record row.
+

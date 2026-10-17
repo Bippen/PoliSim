@@ -150,7 +150,14 @@ namespace PoliSim.Elections
                 // was dropped here ("it takes no share"), under a note that neither Sweden nor Germany had such a party: Germany's SSW (not in CHES 2024)
                 // is one, and a German game counted it at zero - its 2021 prior discarded, its seat never won. It is carried now at full loyalty, so its
                 // preference is exactly its prior, and its regions derive as every one-Land party's do (§689).
-                if (party.HasPosition) { points.Add(new VoteModel.PartyPoint(party.Abbrev, party.LrEcon, party.Galtan)); }
+                // PS-6 US-33 (SP-6a; R-US15 (iii), the card's moved point): where the player's own nominee heads the party's ticket, the party's point in the vote
+                // model is the nominee's (`OwnNominees.TryPointOf`) - the electorate stays where its history held it (`PartySystems.TryElectorate` reads the
+                // roster's points), so the split moves by the spread's response. None registered, the party stands where the roster puts it, as before.
+                if (party.HasPosition)
+                {
+                    if (OwnNominees.TryPointOf(country, party.Abbrev, out double nomineeEcon, out double nomineeSoc)) { points.Add(new VoteModel.PartyPoint(party.Abbrev, nomineeEcon, nomineeSoc)); }
+                    else { points.Add(new VoteModel.PartyPoint(party.Abbrev, party.LrEcon, party.Galtan)); }
+                }
                 placed.Add(party.HasPosition);
                 keyList.Add(party.Abbrev);
                 priorList.Add(latest[i]);

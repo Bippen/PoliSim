@@ -101,6 +101,11 @@ namespace PoliSim.Elections
 
         private static DateTime Day(StartPoint p) => p.PollingDay != DateTime.MinValue ? p.PollingDay : new DateTime(Math.Max(1, p.Year), 1, 1);
 
+        /// <summary>PS-6 US-33 (SP-6a; R-US4 (a), RULED - F8 §781: the player's own nominee at the head of a major ticket, inside PS-6): whether a start lets the player
+        /// stand a nominee of their own - a playable presidential start in a country where one is offered (`OwnNominees.Offered`: the USA's, 5 Nov 2024); the tickets
+        /// are `OwnNominees.Tickets`. The third-party run (SP-6b) is no start's.</summary>
+        public static bool OffersOwnNominee(StartPoint p) => p.Playable && p.Presidential && OwnNominees.Offered(p.Country);
+
         /// <summary>The playable start point of a country - the one the game opens on today (one per country until the presidential models land).</summary>
         public static bool TryPlayable(CountryId id, out StartPoint start)
         {

@@ -38,6 +38,7 @@ namespace PoliSim.UI
         /// <summary>Opens the flow on a fresh draft - also the film's entry.</summary>
         private void OpenPartyCreation(CountryId country)
         {
+            if (OwnNomineeFlow.Offered(country)) { OpenOwnNominee(country); return; }   // PS-6 US-33 (SP-6a): the flow's US form - a leader at the head of a major ticket
             _partyCreationCountry = country;
             _pcDraft = PartyCreationFlow.NewDraft(country);
             _pcStep = 0;
@@ -54,6 +55,9 @@ namespace PoliSim.UI
             _pcBook = null;
             _slipPins.Clear();   // the flow's pinned slips belong to its anchors; none follows the player out
             _pcDragging = false;
+            _onDraft = null;   // PS-6 US-33: and the US form's draft, dropped the same way
+            _onBook = null;
+            _onDragging = false;
         }
 
         /// <summary>START: the draft registered, the world rebuilt on the roster that carries it, the player seated as it.</summary>
@@ -74,6 +78,7 @@ namespace PoliSim.UI
 
         private void DrawPartyCreationScreen()
         {
+            if (_onDraft != null || OwnNomineeFlow.Offered(_partyCreationCountry)) { DrawOwnNomineeScreen(); return; }   // PS-6 US-33: the US form draws itself
             DrawMenuBackground();
             if (_pcDraft == null) { OpenPartyCreation(_partyCreationCountry); }
             CreatedParty d = _pcDraft;

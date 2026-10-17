@@ -14,6 +14,7 @@ namespace PoliSim.EditorTools
     /// of §618 (its polling day the country's latest election of record, its opening `WorldClock.StartDate`, its line the selector's);
     /// every locked card carries a reason; Poland and France offer two contests, the presidential one locked; the cards are in date order;
     /// a date the record does not hold is the year alone on the card with ROUND DATES NOT IN THE RECORD beneath it, never typed; no register number on any card (18b).
+    /// PS-6 US-33: the USA's presidential start, and no other card, offers the player's own nominee at the head of the DEM or REP ticket, each with its range.
     /// </summary>
     public static class StartPointsDiagnostic
     {
@@ -62,6 +63,26 @@ namespace PoliSim.EditorTools
                         StartPoints.DateLine(it), StartPoints.ModeLine(it), StartPoints.Name(it)));
                 StartPoints.TryPlayable(CountryId.Sweden, out StartPoints.StartPoint se);
                 Check(StartPoints.DateLine(se) == "13 SEP 2026" && StartPoints.ModeLine(se) == "RUN-UP · OPENS 18 JAN 2026" && StartPoints.Name(se) == "Riksdag election", "Sweden's card: stamp 13 SEP 2026 · RUN-UP · OPENS 18 JAN 2026 · Riksdag election");
+                // PS-6 US-33 (SP-6a; R-US4 (a), RULED - F8: the player's own nominee at the head of a major ticket, inside PS-6): the USA's presidential start, and no
+                // other card, lets the player stand a nominee of their own - the two tickets the Global Party Survey 2019 places, each with its range (the first to the
+                // third quartile of its experts' placements), the party's own point inside it; the locked presidential cards offer none (SP-6b's third-party run is no start's)
+                var offering = new List<string>();
+                foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
+                {
+                    foreach (StartPoints.StartPoint p in StartPoints.For(id)) { if (StartPoints.OffersOwnNominee(p)) { offering.Add(id + " " + p.Kind); } }
+                }
+                var ranges = new List<string>();
+                bool inside = true;
+                foreach (string ticket in OwnNominees.Tickets(CountryId.USA))
+                {
+                    if (!OwnNominees.TryRangeOf(CountryId.USA, ticket, out OwnNominees.Range r)) { inside = false; continue; }
+                    foreach (PoliticalParty party in PartySystems.RealRoster(CountryId.USA)) { if (party.Abbrev == ticket) { inside &= r.Holds(party.LrEcon, party.Galtan); } }
+                    ranges.Add(F("{0} economic {1:0.00}-{2:0.00} GAL-TAN {3:0.00}-{4:0.00}", ticket, r.EconLo, r.EconHi, r.SocLo, r.SocHi));
+                }
+                Check(offering.Count == 1 && offering[0] == "USA PRESIDENTIAL ELECTION" && StartPoints.OffersOwnNominee(us) && string.Join(",", OwnNominees.Tickets(CountryId.USA)) == "REP,DEM" && inside
+                      && !StartPoints.OffersOwnNominee(StartPoints.For(CountryId.Poland)[1]) && !StartPoints.OffersOwnNominee(StartPoints.For(CountryId.France)[0]),
+                    F("US-33: the USA's start alone offers the player's own nominee ({0}) - the tickets {1}, each party's own point inside its range; Poland's and France's locked presidential cards offer none",
+                        string.Join("; ", offering), string.Join("; ", ranges)));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             if (failures > 0) { Debug.LogError($"START POINTS: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }

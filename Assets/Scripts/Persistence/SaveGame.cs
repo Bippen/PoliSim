@@ -57,6 +57,10 @@ namespace PoliSim.Persistence
         /// <summary>§671 (SP-3): the game's created parties - registered again before the world is restored, so every roster read sees them. A save
         /// from before §671 carries none, which is what it means: no created party (no format bump).</summary>
         public List<PoliSim.Data.CreatedParty> CreatedParties = new List<PoliSim.Data.CreatedParty>();
+        /// <summary>PS-6 US-33 (SP-6a): the player's own nominee at the head of a major ticket (`OwnNominees`) - registered again before the world is restored, so
+        /// every poll the load reads places the party at its nominee's point. A save from before US-33 carries none, which is what it means: no own nominee, the
+        /// nominee of record standing - the only state a build before it could hold (additive under ruling A, as the created parties: no format step).</summary>
+        public List<PoliSim.Data.OwnNominee> OwnNominees = new List<PoliSim.Data.OwnNominee>();
         /// <summary>GA-0-14 / GA-0-40 (§825): the retired challenge scenario whose progress this save carried, read from the raw file by
         /// `SaveGameService.Deserialize` so the load can name it - null for every other save, and never written.</summary>
         [Newtonsoft.Json.JsonIgnore] public string RetiredScenarioId;

@@ -74,6 +74,10 @@ namespace PoliSim.Persistence
         // Nor for PS-6 US-28 (2026-10-16) under ruling A: `Country.UsNomineePicks`, the player's pick of a term-limited party's nominee (`UsTermLimit.Pick`), is
         // additive - an older save carries none, and none is the default (the Vice President), the only state a build before it could hold; each person's
         // elections, which the limit reads, are derived from the record and the contests already saved, never stored. Nothing is kept unmigrated.
+        // Nor for PS-6 US-33 (2026-10-17) under ruling A: `SaveGame.OwnNominees`, the player's own nominee at the head of a major ticket (`OwnNominees`), and
+        // `UsPresidentialElection.Tally.OwnNominee`, which marks the line it stood on, are additive - an older save carries neither, and neither is what such a
+        // save means: no own nominee (the nominee of record stands, every party at its roster point), the only state a build before them could hold; the
+        // created parties' precedent (§671). The migration is that reading, held by UsOwnNomineeDiagnostic on a save with both keys stripped. Nothing is kept unmigrated.
         // Nor for GA-1-2 (§821, 2026-10-14) under ruling A: `UiDraftState.CabinetShortlists` is additive - an older save carries none. What such
         // a save keeps, not migrated: one cut between a cabinet Search and its appointment loads with no shortlist, and its next Search draws the
         // cabinet stream again (GA-1-2's divergence). GA-1-4 changes no saved field.
@@ -128,6 +132,7 @@ namespace PoliSim.Persistence
                 CurrencyZoneGroups = CaptureZoneGroups(world),
                 World = world,
                 CreatedParties = PoliSim.Data.CreatedParties.All(),   // §671 (SP-3)
+                OwnNominees = PoliSim.Data.OwnNominees.All(),   // PS-6 US-33 (SP-6a)
                 Sim = sim.CaptureSaveState(),
                 PlayerCampaign = sim.CampaignRecord,
                 Ui = ui
@@ -266,6 +271,12 @@ namespace PoliSim.Persistence
             foreach (PoliSim.Data.CreatedParty party in save.CreatedParties ?? new List<PoliSim.Data.CreatedParty>())
             {
                 if (!PoliSim.Data.CreatedParties.TryRegister(party, PoliSim.Data.PartySystems.RealRoster(party.Country), out string refused)) { UnityEngine.Debug.LogError($"SAVE: the created party '{party.Key}' was refused on load - {refused}"); }
+            }
+            // PS-6 US-33 (SP-6a): the save's own nominee replaces the process's, before anything reads a poll - a refused one is logged, never dropped silently
+            PoliSim.Data.OwnNominees.Clear();
+            foreach (PoliSim.Data.OwnNominee nominee in save.OwnNominees ?? new List<PoliSim.Data.OwnNominee>())
+            {
+                if (!PoliSim.Data.OwnNominees.TryRegister(nominee, out string refused)) { UnityEngine.Debug.LogError($"SAVE: the own nominee '{nominee?.Name}' was refused on load - {refused}"); }
             }
             SimulationRandom.RestoreState(save.MasterSeed, save.RngDrawCounts);
             SimulationManager.SetEpoch(save.EpochDate);   // PS-1 (§618): the save's own start, before the clock is restored against it

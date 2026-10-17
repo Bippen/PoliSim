@@ -56,6 +56,9 @@ namespace PoliSim.Elections
             public string Party;
             public int Votes;
             public double Share = double.NaN;
+            /// <summary>PS-6 US-33: the player's own nominee stood on this line in place of the nominee of record (`OwnNominees`) - the person is the line's own name
+            /// (`UsTermLimit.PersonOf`). Additive under ruling A: false in a save from before, which held no own nominee.</summary>
+            public bool OwnNominee;
         }
 
         /// <summary>One presidential election the game held - kept with the country (<see cref="Country.UsPresidentialElections"/>), so a save carries it (format 39).
@@ -213,7 +216,12 @@ namespace PoliSim.Elections
         /// `Tools/us_factor_patch.pl` patches US-6's FIT lines in) or where no candidate has support.
         /// <para>PS-6 US-28: a later field names its nominees from <paramref name="nominees"/> (<see cref="UsTermLimit.NomineesFor"/> - the president within the
         /// Twenty-second Amendment's limit, a term-limited party's Vice President or the player's pick), each still at the future factor, so the shares are the same
-        /// whoever stands; a party with no nominee given keeps the unnamed label. The field of record ignores them (R-US2 (a)).</para>
+        /// whoever stands; a party with no nominee given keeps the unnamed label. The field of record ignores them (R-US2 (a)) - but one:</para>
+        /// <para>PS-6 US-33 (SP-6a; the own nominee in place of R-US2 (a)'s nominee of record for the player's party - the plan's "a leader at the head of the DEM or REP ticket"): the player's own nominee
+        /// (<see cref="UsTermLimit.Nominee.Own"/>) replaces the nominee of record of its party - its own name, at the party's poll × E1's future factor in place of
+        /// the nominee of record's fitted one (E1: "Future fields start at factor 1.0"), its tally marked (<see cref="Tally.OwnNominee"/>). The poll it reads is
+        /// already the moved point's: the party's point is the nominee's in the vote model (`OwnNominees.TryPointOf`, read by `NationalElection.TryCompatibility`).
+        /// Every other column of record stands as before; with no own nominee given every expression here is the one US-6 and US-8 built.</para>
         /// </summary>
         public static bool TryField(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, out List<Tally> field, out string why) =>
             TryField(id, pollingDay, poll, null, out field, out why);
@@ -224,7 +232,7 @@ namespace PoliSim.Elections
             field = new List<Tally>();
             why = null;
             if (poll == null) { why = "no poll"; return false; }
-            var support = new List<(string Name, string Party, double Support)>();
+            var support = new List<(string Name, string Party, double Support, bool Own)>();
             IReadOnlyList<PresidencyOfRecord.CandidateOfRecord> ofRecord = PresidencyOfRecord.CandidatesOf(id, pollingDay.Year + 1);
             if (ofRecord.Count > 0)
             {
@@ -232,14 +240,21 @@ namespace PoliSim.Elections
                 {
                     string name = PresidencyOfRecord.NameOfRecord(id, pollingDay.Year, c.Surname);
                     double s;
-                    if (c.BackingParty != null)
+                    UsTermLimit.Nominee own = c.BackingParty == null ? null : OwnNomineeOf(nominees, c.BackingParty);
+                    if (own != null)
+                    {
+                        // PS-6 US-33: the player's own nominee in place of the nominee of record - its name, the party's poll at E1's future factor
+                        name = own.Person;
+                        s = poll.TryGetValue(c.BackingParty, out double q) && !double.IsNaN(q) && q > 0.0 ? q * PresidentialElection.FutureFactor : 0.0;
+                    }
+                    else if (c.BackingParty != null)
                     {
                         if (double.IsNaN(c.Factor)) { why = name + "'s factor (" + c.BackingParty + ") is not fitted - the factors are NaN until the fit is patched in (Tools/us_factor_patch.pl)"; field.Clear(); return false; }
                         s = poll.TryGetValue(c.BackingParty, out double p) && !double.IsNaN(p) && p > 0.0 ? p * c.Factor : 0.0;
                     }
                     else { s = PresidencyOfRecord.ShareOfRecord(id, pollingDay.Year, c.Surname); }
                     if (double.IsNaN(s) || s <= 0.0) { continue; }
-                    support.Add((name, c.BackingParty, s));
+                    support.Add((name, c.BackingParty, s, own != null));
                 }
             }
             else
@@ -249,14 +264,23 @@ namespace PoliSim.Elections
                     if (!poll.TryGetValue(party.Abbrev, out double p) || double.IsNaN(p) || p <= 0.0) { continue; }
                     string name = UsTermLimit.UnnamedNominee(party, pollingDay.Year);
                     if (nominees != null) { foreach (UsTermLimit.Nominee n in nominees) { if (n.Party == party.Abbrev && !string.IsNullOrEmpty(n.Person)) { name = n.Person; } } }
-                    support.Add((name, party.Abbrev, p * PresidentialElection.FutureFactor));
+                    support.Add((name, party.Abbrev, p * PresidentialElection.FutureFactor, false));
                 }
             }
             double sum = 0.0;
-            foreach ((string _, string _, double s) in support) { sum += s; }
+            foreach ((string _, string _, double s, bool _) in support) { sum += s; }
             if (sum <= 0.0) { why = "no candidate has support in the poll"; return false; }
-            foreach ((string name, string party, double s) in support) { field.Add(new Tally { Candidate = name, Party = party, Share = 100.0 * s / sum }); }
+            foreach ((string name, string party, double s, bool own) in support) { field.Add(new Tally { Candidate = name, Party = party, Share = 100.0 * s / sum, OwnNominee = own }); }
             return true;
+        }
+
+        /// <summary>PS-6 US-33: the player's own nominee among <paramref name="nominees"/> for <paramref name="party"/>, or null - only a nominee marked
+        /// <see cref="UsTermLimit.Nominee.Own"/> replaces a nominee of record.</summary>
+        private static UsTermLimit.Nominee OwnNomineeOf(IReadOnlyList<UsTermLimit.Nominee> nominees, string party)
+        {
+            if (nominees == null) { return null; }
+            foreach (UsTermLimit.Nominee n in nominees) { if (n != null && n.Own && n.Party == party && !string.IsNullOrEmpty(n.Person)) { return n; } }
+            return null;
         }
 
         /// <summary>
@@ -303,6 +327,14 @@ namespace PoliSim.Elections
             }
             string limited = UsTermLimit.FieldOfRecord(pollingDay) ? null : UsTermLimit.ClauseOf(nominees);
             if (limited != null) { contest.Line += "; " + limited; }
+            // PS-6 US-33: who stood in place of the nominee of record - said only where the player's own nominee did, so every other count's line is as before
+            foreach (Tally own in new[] { rep, dem })
+            {
+                if (!own.OwnNominee) { continue; }
+                UsTermLimit.Nominee n = OwnNomineeOf(nominees, own.Party);
+                contest.Line += string.Format(CultureInfo.InvariantCulture, "; {0} stands for {1} in place of the nominee of record{2} - the player's own nominee, at the future factor, {3:0.0}",
+                    own.Candidate, own.Party, n != null && !string.IsNullOrEmpty(n.Default) ? ", " + n.Default : string.Empty, PresidentialElection.FutureFactor);
+            }
             return contest;
         }
 
@@ -340,8 +372,8 @@ namespace PoliSim.Elections
                 PollingDay = pollingDay.Date, DayBasis = dayBasis, ElectorsMeet = ElectorsMeetAfter(pollingDay), CountedOn = CountedOnAfter(pollingDay),
                 TakesOffice = OathDayAfter(pollingDay), ElectorsAppointed = appointed,
             };
-            var r = new Tally { Candidate = rep.Candidate, Party = rep.Party, Votes = electors[ElectoralCollege.Republican], Share = rep.Share };
-            var d = new Tally { Candidate = dem.Candidate, Party = dem.Party, Votes = electors[ElectoralCollege.Democrat], Share = dem.Share };
+            var r = new Tally { Candidate = rep.Candidate, Party = rep.Party, Votes = electors[ElectoralCollege.Republican], Share = rep.Share, OwnNominee = rep.OwnNominee };
+            var d = new Tally { Candidate = dem.Candidate, Party = dem.Party, Votes = electors[ElectoralCollege.Democrat], Share = dem.Share, OwnNominee = dem.OwnNominee };
             bool repFirst = r.Votes > d.Votes || (r.Votes == d.Votes && r.Share >= d.Share);
             contest.Electors.Add(repFirst ? r : d);
             contest.Electors.Add(repFirst ? d : r);

@@ -76,8 +76,19 @@ namespace PoliSim.Elections
                 if (!byAbbrev.TryGetValue(keys[i], out PoliticalParty party) || !HasPair(party)) { continue; }
                 double weight = compatibility[i];
                 if (weight <= 0.0) { continue; }
-                lrSum += party.LrEcon * weight;
-                galSum += party.Galtan * weight;
+                // PS-6 US-33 (the US-33 review's L3): a party whose ticket the player's own nominee heads stands in the vote model at the nominee's point
+                // (`OwnNominees.TryPointOf`), and its compatibility above is computed there - so its weight is laid on that point too, never on the roster's.
+                // None registered (every country but a US game with its own nominee), the published pair, as before.
+                if (OwnNominees.TryPointOf(country.Id, party.Abbrev, out double nomineeEcon, out double nomineeSoc))
+                {
+                    lrSum += nomineeEcon * weight;
+                    galSum += nomineeSoc * weight;
+                }
+                else
+                {
+                    lrSum += party.LrEcon * weight;
+                    galSum += party.Galtan * weight;
+                }
                 weightSum += weight;
                 partiesCounted++;
             }

@@ -140,6 +140,9 @@ namespace PoliSim.EditorTools
                 LiveCampaignSetup.TryCreatedDayZero(regional.Key, sweden, out double _, out int _, out int[] regionalOffices, out CandidateProfile _);
                 Check(regionalOffices.Length > 0 && sweden[regionalOffices[0]].Name == regional.Region,
                     F("a Regional party's first office opens in the valkrets it chose ({0})", regional.Region));
+                CreatedParties.Clear();
+
+                CheckUsForm(Check);
             }
             catch (Exception ex) { failures++; sb.Append("    THREW: " + ex.GetType().Name + ": " + ex.Message + "\n" + ex.StackTrace + "\n"); }
             finally
@@ -151,6 +154,73 @@ namespace PoliSim.EditorTools
             if (failures > 0) { Debug.LogError($"PARTY CREATION: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);
+        }
+
+        /// <summary>
+        /// PS-6 US-33 (SP-6a): **THE FLOW'S US FORM, READ THROUGH THE MEMBERS ITS SCREEN DRAWS FROM** (`OwnNomineeFlow`). Offered for the USA alone, where the party
+        /// form is not; a new draft heads the first ticket on that party's own point, unnamed; a ticket chosen moves the nominee onto its party's point, a party the
+        /// flow does not offer changes nothing; the compass's placement goes to a tenth and stays inside the range; the unnamed draft is refused with its reason and
+        /// nothing is kept; every anchor the four steps register has its slip; the prediction reads the moved point - at the party's own point it is the real
+        /// prediction exactly - and leaves the registry and the real prediction as they were; the commit registers the nominee and adds no party to the roster or
+        /// the campaign's cast. Inside the own nominees' scope, so the process's set is put back whatever happens.
+        /// </summary>
+        private static void CheckUsForm(Action<bool, string> Check)
+        {
+            using (OwnNominees.Scope())
+            {
+                OwnNominees.Clear();
+                const CountryId us = CountryId.USA;
+                var offeredElsewhere = new List<string>();
+                foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId))) { if (id != us && OwnNomineeFlow.Offered(id)) { offeredElsewhere.Add(id.ToString()); } }
+                Check(OwnNomineeFlow.Offered(us) && !PartyCreationFlow.Offered(us) && offeredElsewhere.Count == 0 && OwnNomineeFlow.StepCount == OwnNomineeFlow.StepHeads.Length,
+                    F("US-33: the flow's US form is offered for the USA alone, and the party form not there{0} - {1} steps: {2}",
+                        offeredElsewhere.Count > 0 ? "; ALSO: " + string.Join(", ", offeredElsewhere) : string.Empty, OwnNomineeFlow.StepCount, string.Join(", ", OwnNomineeFlow.StepHeads)));
+
+                PoliticalParty[] real = PartySystems.RealRoster(us);
+                PoliticalParty rep = real.First(p => p.Abbrev == "REP"), dem = real.First(p => p.Abbrev == "DEM");
+                OwnNominee d = OwnNomineeFlow.NewDraft(us);
+                Check(d.Party == "REP" && d.LrEcon == rep.LrEcon && d.Galtan == rep.Galtan && string.IsNullOrEmpty(d.Name),
+                    F("US-33: a new draft heads the first ticket offered (REP) on its own point ({0:0.00}, {1:0.00}), unnamed", d.LrEcon, d.Galtan));
+                OwnNomineeFlow.ChooseTicket(d, "DEM");
+                bool onDem = d.Party == "DEM" && d.LrEcon == dem.LrEcon && d.Galtan == dem.Galtan;
+                OwnNomineeFlow.ChooseTicket(d, "S");
+                Check(onDem && d.Party == "DEM", F("US-33: DEM chosen, the nominee on DEM's own point ({0:0.00}, {1:0.00}); a party the flow does not offer changes nothing", dem.LrEcon, dem.Galtan));
+                OwnNominees.TryRangeOf(us, "DEM", out OwnNominees.Range range);
+                OwnNomineeFlow.Place(d, 10f, 0f);
+                bool clamped = d.LrEcon == range.EconHi && d.Galtan == range.SocLo;
+                OwnNomineeFlow.Place(d, range.EconLo + 0.46f, range.SocLo + 0.54f);
+                Check(clamped && Math.Abs(d.LrEcon - (range.EconLo + 0.5f)) < 1e-4 && Math.Abs(d.Galtan - (range.SocLo + 0.5f)) < 1e-4,
+                    F("US-33: the compass's placement - (10, 0) kept inside DEM's range at ({0:0.0}, {1:0.0}); a point inside it to a tenth, ({2:0.00}, {3:0.00})", range.EconHi, range.SocLo, d.LrEcon, d.Galtan));
+                bool unnamedRefused = !OwnNomineeFlow.TryCommit(d, out string why);
+                Check(OwnNomineeFlow.Missing(d) == "name" && unnamedRefused && why == "the name is not set" && !OwnNominees.Any(us),
+                    "US-33: the unnamed draft is refused, with its reason, and nothing is kept: " + why);
+
+                // the slips
+                PeopleSlips.Book book = OwnNomineeFlow.Slips(d, 50.0, 49.0);
+                var anchors = new List<string> { "compass", "predicted", "name" };
+                for (int s = 0; s < OwnNomineeFlow.StepCount; s++) { anchors.Add("step/" + s); }
+                foreach (string ticket in OwnNominees.Tickets(us)) { anchors.Add("ticket/" + ticket); }
+                foreach (PoliticalParty p in real) { anchors.Add("party/" + p.Abbrev); }
+                var missing = anchors.Where(a => !book.Anchors.TryGetValue(a, out SlipContent c) || c.Lines.Count == 0).ToList();
+                Check(missing.Count == 0, F("US-33: every anchor the four steps register has its slip, with words: {0} anchors{1}", anchors.Count, missing.Count > 0 ? " - missing " + string.Join(", ", missing) : string.Empty));
+
+                // the prediction reads the moved point and leaves nothing
+                NationalElection.TryPredictShares(us, out Dictionary<string, double> before);
+                double atParty = OwnNomineeFlow.PredictedShare(d, atPartyPoint: true);
+                double moved = OwnNomineeFlow.PredictedShare(d);
+                NationalElection.TryPredictShares(us, out Dictionary<string, double> after);
+                Check(atParty.Equals(before["DEM"] * 100.0) && !double.IsNaN(moved) && !moved.Equals(atParty) && !OwnNominees.Any(us) && before.Count == after.Count && before.All(kv => after[kv.Key].Equals(kv.Value)),
+                    F("US-33: the placement's prediction - DEM {0:0.0000} % at its own point (the real prediction exactly), {1:0.0000} % with the nominee at ({2:0.0}, {3:0.0}); the registry and the real prediction are as they were", atParty, moved, d.LrEcon, d.Galtan));
+
+                // the commit
+                string[] castBefore = LiveCampaignSetup.Keys(us);
+                d.Name = "Maria Reyes";
+                bool committed = OwnNomineeFlow.TryCommit(d, out string refused);
+                Check(committed && OwnNominees.TryOf(us, out OwnNominee kept) && ReferenceEquals(kept, d) && PartySystems.For(us).Count == real.Length && LiveCampaignSetup.Keys(us).SequenceEqual(castBefore)
+                      && OwnNomineeFlow.TicketLine(d) == dem.ShortName + " · " + dem.Name,
+                    F("US-33: the named draft commits - {0} heads the {1} ticket; no party is added to the roster ({2}) or the campaign's cast{3}", d.Name, OwnNomineeFlow.TicketLine(d), PartySystems.For(us).Count, committed ? string.Empty : " - refused: " + refused));
+            }
+            NationalElection.TryPredictShares(CountryId.USA, out _);
         }
     }
 }

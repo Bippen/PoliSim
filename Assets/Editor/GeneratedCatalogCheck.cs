@@ -1201,6 +1201,53 @@ namespace PoliSim.EditorTools
             }
             else if (byParty != null) { wrong.Add("the by-party file is not on disk, so no mean was held to its cell"); }
 
+            // PS-6 US-33 (the US-33 review's L7): THE SPREAD HELD TO THE BY-EXPERT FILE, NOT TO THE RUN THAT WROTE IT - the quartiles decide the player's own
+            // nominee's range (`OwnNominees.TryRangeOf`), so each row's experts, minimum, quartiles and maximum are recomputed from every US expert's placement of
+            // the party (the question's column, `_1` the Republican, `_2` the Democratic - the prep tool's slots), by the prep tool's own rules: a placement is 0-10,
+            // 99 and an empty cell are none; the quartiles linear between order statistics at (n-1)p; each held to the printed two decimals
+            string byExpert = UsGps2019.RawSources.Length > 0 ? Path.Combine(sources, "usa_us32", "gps2019_by_expert.tab") : null;
+            int spreads = 0;
+            if (byExpert != null && File.Exists(byExpert))
+            {
+                string[] lines = File.ReadAllText(byExpert, Encoding.UTF8).Split('\n');
+                string[] head = lines[0].TrimEnd('\r').Split('\t');
+                int iso = Array.IndexOf(head, "ISO");
+                foreach (UsGps2019.Row r in UsGps2019.Rows)
+                {
+                    int slot = r.Party == "REP" ? 1 : r.Party == "DEM" ? 2 : 0;
+                    int col = Array.IndexOf(head, r.Question + "_" + slot.ToString(CultureInfo.InvariantCulture));
+                    if (iso < 0 || col < 0 || slot == 0) { wrong.Add(F("{0} {1}: the by-expert file has no column {2}_{3} (or no ISO column)", r.Party, r.Item, r.Question, slot)); continue; }
+                    var placed = new List<double>();
+                    for (int l = 1; l < lines.Length; l++)
+                    {
+                        string[] f = lines[l].TrimEnd('\r').Split('\t');
+                        if (f.Length <= Math.Max(col, iso) || f[iso] != "\"USA\"") { continue; }
+                        string cell = f[col];
+                        if (cell.Length == 0 || cell == "99") { continue; }
+                        if (!double.TryParse(cell, NumberStyles.Float, CultureInfo.InvariantCulture, out double x) || x < 0.0 || x > 10.0) { wrong.Add(F("{0} {1}: a placement '{2}' that is neither 0-10 nor 99", r.Party, r.Item, cell)); continue; }
+                        placed.Add(x);
+                    }
+                    placed.Sort();
+                    if (placed.Count == 0) { wrong.Add(F("{0} {1}: no US expert placed the party in the by-expert file", r.Party, r.Item)); continue; }
+                    double Quantile(double p)
+                    {
+                        double pos = (placed.Count - 1) * p;
+                        int lo = (int)Math.Floor(pos), hi = lo + 1 < placed.Count ? lo + 1 : lo;
+                        return placed[lo] + (placed[hi] - placed[lo]) * (pos - lo);
+                    }
+                    bool Near(string printed, double x) => double.TryParse(printed, NumberStyles.Float, CultureInfo.InvariantCulture, out double c) && Math.Abs(c - x) <= 0.005 + 1e-9;
+                    double min = placed[0], q1 = Quantile(0.25), median = Quantile(0.5), q3 = Quantile(0.75), max = placed[placed.Count - 1];
+                    if (placed.Count.ToString(CultureInfo.InvariantCulture) != r.Experts || !Near(r.Min, min) || !Near(r.Q1, q1) || !Near(r.Median, median) || !Near(r.Q3, q3) || !Near(r.Max, max))
+                    {
+                        wrong.Add(F("{0} {1}: the by-expert file gives {2} placements, min {3:0.00}, quartiles {4:0.00}/{5:0.00}/{6:0.00}, max {7:0.00}; the extract {8}, {9}, {10}/{11}/{12}, {13}",
+                            r.Party, r.Item, placed.Count, min, q1, median, q3, max, r.Experts, r.Min, r.Q1, r.Median, r.Q3, r.Max));
+                        continue;
+                    }
+                    spreads++;
+                }
+            }
+            else if (byExpert != null) { wrong.Add("the by-expert file is not on disk, so no spread was re-derived"); }
+
             // each row's two decimals the catalog's constant, and the roster the constants of the rows that name a field
             var constants = new Dictionary<string, float>(StringComparer.Ordinal)
             {
@@ -1247,8 +1294,9 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append(F("    UsGps2019: {0} out-of-tree file(s) the bytes the run read; {1} row(s), every cell the CSV's; {2} mean(s) the by-party file's own cell; "
+                        + "{4} spread(s) - experts, minimum, quartiles, maximum - re-derived from the by-expert file's placements; "
                         + "the roster carries {3} and nothing from V9 (held, G7) or V10\n",
-                UsGps2019.RawSources.Length, rows.Count, held, string.Join(", ", filled.ToArray())));
+                UsGps2019.RawSources.Length, rows.Count, held, string.Join(", ", filled.ToArray()), spreads));
             return 0;
         }
 

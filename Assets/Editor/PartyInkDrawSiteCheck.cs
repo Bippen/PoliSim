@@ -81,6 +81,11 @@ namespace PoliSim.EditorTools
              "§676 (SP-4, 2026-09-29): the creation flow CHOOSES a party identity - its ink is picked against the real parties' drawn inks and "
              + "its mark placed among theirs on the compass, so party identity is the whole subject, the chamber's argument. The file draws "
              + "NO area accent: the single-issue party's area icons are tinted in plain text ink, never the area's own (clause 2 by construction)."),
+            ("GameController.OwnNominee.cs",
+             "PS-6 US-33 (SP-6a, 2026-10-17): the creation flow's US form CHOOSES which party's ticket the player's own nominee heads - the tickets "
+             + "are the parties' own marks in their own inks, and the compass places the nominee, in its party's mark, inside the party's range "
+             + "framed in that ink among the real parties' marks - so party identity is the whole subject, the creation flow's own argument. The "
+             + "file draws NO area accent (clause 2 by construction)."),
         };
 
         public static void Run()

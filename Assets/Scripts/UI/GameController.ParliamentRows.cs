@@ -793,6 +793,8 @@ namespace PoliSim.UI
         /// the polling day, and NEXT CHOICE, which steps the pick through the party's people who may be elected, the default first (<see cref="UsTermLimit.Pick"/>).
         /// The slip: who cannot stand and the elections that bar him, the amendment's words, the choices, and that every nominee stands at the party's poll on the
         /// outgoing record. Drawn for no other party - an AI party takes the default. Built as it stands; its board is asked of Design later.
+        /// PS-6 US-33: and where the player's own nominee heads the ticket of the field of record (`UsTermLimit.Nominee.Own`), the row names it - YOUR OWN, the
+        /// polling day, no choice to step - until the count; its slip says the party's poll reads the nominee's position.
         /// </summary>
         private void DrawUsNomineeRow(PeopleSlips.Book book)
         {
@@ -819,7 +821,9 @@ namespace PoliSim.UI
             }
             UsTermLimit.Nominee nominee = _usNominee;
             List<string> choices = _usNomineeChoices;
-            if (nominee == null || !nominee.TermLimited || choices == null || choices.Count == 0) { return; }
+            // PS-6 US-33 (SP-6a): the player's own nominee heads the ticket of the field of record - the row says so until the count, with no choice to step
+            bool own = nominee != null && nominee.Own;
+            if (nominee == null || (!own && (!nominee.TermLimited || choices == null || choices.Count == 0))) { return; }
             System.DateTime day = _usNomineeDay;
 
             GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
@@ -834,10 +838,10 @@ namespace PoliSim.UI
             }
             // the row's budget (the US-28 review's L5): everything left of NEXT CHOICE - the nominee's label takes what the fixed words and the stamp leave,
             // cut at a word with an ellipsis where it is longer (an unnamed candidate's label can run to fifty characters), the whole name on the slip
-            bool stepping = choices.Count > 1;
+            bool stepping = !own && choices.Count > 1;
             Rect chip = stepping ? RowChipRectEndingAt(row.xMax, row, "NEXT CHOICE", 26f, 12f) : default;
             float limit = stepping ? chip.x - StatsUnit(10f) : row.xMax;
-            string tag = nominee.Picked ? "YOUR PICK" : nominee.ViceDefault ? "THE VICE PRESIDENT" : "THE PARTY'S OWN";
+            string tag = own ? "YOUR OWN" : nominee.Picked ? "YOUR PICK" : nominee.ViceDefault ? "THE VICE PRESIDENT" : "THE PARTY'S OWN";
             Words("YOUR NOMINEE", caption);
             DrawPartyMarkSlot(new Rect(x, row.y, StatsUnit(16f), row.height), country, party);
             x += StatsUnit(16f) + StatsUnit(8f);
@@ -868,6 +872,19 @@ namespace PoliSim.UI
                     .Add("THE PICK HOLDS UNTIL POLLING DAY, " + DeskDay(day));
             }
 
+            if (own)
+            {
+                OwnNominees.TryOf(country, out OwnNominee registered);
+                book.Anchors["usnominee"] = new SlipContent("YOUR NOMINEE")
+                    .Add(nominee.Person.ToUpperInvariant() + " · " + PartySystems.ShortName(country, party).ToUpperInvariant() + " · POLLING DAY " + DeskDay(day))
+                    .Add("YOUR OWN NOMINEE HEADS THE TICKET IN PLACE OF THE NOMINEE OF RECORD")
+                    .Add(registered != null ? string.Format(System.Globalization.CultureInfo.InvariantCulture, "THE PARTY'S POLL READS YOUR NOMINEE'S POSITION: ECONOMIC {0:0.0} · GAL-TAN {1:0.0}", registered.LrEcon, registered.Galtan) : "THE PARTY'S POLL READS YOUR NOMINEE'S POSITION")
+                    .Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "YOUR NOMINEE STANDS AT THE PARTY'S POLL, AT A FACTOR OF {0:0.0}", PresidentialElection.FutureFactor))
+                    .Add("THE TWENTY-SECOND AMENDMENT READS YOUR NOMINEE AS A PERSON: ELECTED TWICE, BARRED");
+                DrawRowRule(row);
+                GUILayout.Space(StatsUnit(10f));
+                return;
+            }
             var people = new List<string>();
             foreach (string person in choices) { people.Add(person.ToUpperInvariant()); }
             book.Anchors["usnominee"] = new SlipContent("YOUR NOMINEE")

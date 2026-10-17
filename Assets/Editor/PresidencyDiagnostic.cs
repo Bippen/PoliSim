@@ -514,7 +514,7 @@ namespace PoliSim.EditorTools
         internal static bool SameContest(UsPresidentialElection.Contest a, UsPresidentialElection.Contest b)
         {
             bool Tallies(List<UsPresidentialElection.Tally> x, List<UsPresidentialElection.Tally> y) =>
-                x.Count == y.Count && x.Zip(y, (p, q) => p.Candidate == q.Candidate && p.Party == q.Party && p.Votes == q.Votes && p.Share.Equals(q.Share)).All(same => same);
+                x.Count == y.Count && x.Zip(y, (p, q) => p.Candidate == q.Candidate && p.Party == q.Party && p.Votes == q.Votes && p.Share.Equals(q.Share) && p.OwnNominee == q.OwnNominee).All(same => same);
             return a.PollingDay == b.PollingDay && a.DayBasis == b.DayBasis && a.ElectorsMeet == b.ElectorsMeet && a.CountedOn == b.CountedOn && a.TakesOffice == b.TakesOffice
                    && a.ElectorsAppointed == b.ElectorsAppointed && a.Contingent == b.Contingent && a.Winner == b.Winner && a.WinnerParty == b.WinnerParty && a.Line == b.Line
                    && Tallies(a.Electors, b.Electors) && Tallies(a.Delegations, b.Delegations);

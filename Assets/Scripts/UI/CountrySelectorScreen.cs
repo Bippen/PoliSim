@@ -308,6 +308,19 @@ namespace PoliSim.UI
                 createButton.onClick.AddListener(() => OnCreateParty?.Invoke(createFor));
             }
 
+            // PS-6 US-33 (SP-6a): a leader of the player's own at the head of a major ticket, where the country offers it - the creation flow's seam, its US form
+            if (OnCreateParty != null && OwnNomineeFlow.Offered(country.Id))
+            {
+                Button nomineeButton = CanvasChrome.FacedButton(column.transform, "OwnNominee", "YOUR OWN NOMINEE",
+                    PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight), CanvasChrome.Face.Paper);
+                LayoutElement nomineeLayout = nomineeButton.gameObject.AddComponent<LayoutElement>();
+                nomineeLayout.preferredWidth = BackButtonWidth;
+                nomineeLayout.preferredHeight = PartyRowHeight;
+                nomineeLayout.minHeight = PartyRowHeight;
+                CountryId nomineeFor = country.Id;
+                nomineeButton.onClick.AddListener(() => OnCreateParty?.Invoke(nomineeFor));
+            }
+
             Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE COUNTRIES",
                 PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight),
                 CanvasChrome.Face.Paper);

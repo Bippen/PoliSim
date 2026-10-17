@@ -13,7 +13,8 @@ namespace PoliSim.EditorTools
     /// SP-2 (§623): THE BRIEF TRACES. For every start point of every country: four clauses, each with a non-empty basis naming its record;
     /// no clause carries a figure the record does not hold (a gap says so in the sentence); Sweden's brief reads the record's own figures
     /// (Kristersson's M+KD+L since 18 October 2022 with 103 of 349 seats and SD's support; polling day 13 September 2026; 8 parties); the
-    /// tagline slot is empty until one is reviewed.
+    /// tagline slot is empty until one is reviewed. PS-6 US-33: the player's own nominee, registered for the USA, adds a last clause and a last ledger row naming it
+    /// and its ticket - and moves no other brief.
     /// </summary>
     public static class StartBriefDiagnostic
     {
@@ -166,6 +167,46 @@ namespace PoliSim.EditorTools
                 StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint france);
                 string frText = StartBrief.Text(france);
                 Check(frText.Contains("under the president Emmanuel Macron"), "France's brief names its cabinet under its president - " + frText);
+                // PS-6 US-33 (SP-6a; the own nominee in place of R-US2 (a)'s nominee of record for the player's party - the plan's "a leader at the head of the DEM or REP ticket"): with no own nominee registered every brief is as pinned
+                // above; with one registered for the USA its brief gains a sixth clause and its ledger a last row, naming the nominee and the ticket and no nominee of
+                // record (the naming before the count is US-6's, asked with R-US23), each tracing to its record; no other start's brief moves; the clause the flow's
+                // review reads from a draft is the registered one's, and none is made for an unnamed draft or another country's start
+                using (OwnNominees.Scope())
+                {
+                    OwnNominees.Clear();
+                    var before = new Dictionary<CountryId, (string Text, int Rows)>();
+                    foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
+                    {
+                        if (StartPoints.TryPlayable(id, out StartPoints.StartPoint sp)) { before[id] = (StartBrief.Text(sp), StartBrief.Rows(sp).Count); }
+                    }
+                    var hale = new OwnNominee { Country = CountryId.USA, Party = "REP", Name = "Jordan Hale", LrEcon = 8.0f, Galtan = 8.0f };
+                    bool registered = OwnNominees.TryRegister(hale, out string refused);
+                    List<StartBrief.Clause> withClauses = StartBrief.Clauses(usa);
+                    List<StartBrief.Row> withRows = StartBrief.Rows(usa);
+                    string withText = StartBrief.Text(usa);
+                    const string NomineeText = "Your own nominee, Jordan Hale, heads the Republican Party's ticket in place of its nominee of record; the party's poll reads the nominee's position.";
+                    StartBrief.Row last = withRows.Count > 0 ? withRows[withRows.Count - 1] : default;
+                    Check(registered && withClauses.Count == 6 && withClauses[5].Text == NomineeText && withClauses[5].Basis.Contains("StartPoints") && withClauses[5].Basis.Contains("OwnNominees")
+                          && withText == before[CountryId.USA].Text + " " + NomineeText && withRows.Count == before[CountryId.USA].Rows + 1 && last.Name == "Your nominee" && last.Figure == "Jordan Hale (REP)"
+                          && !withText.Contains("Donald J. Trump") && !withText.Contains("Kamala D. Harris"),
+                        F("US-33: the USA's brief with its own nominee registered - the sixth clause \"{0}\" <- {1}; the ledger's last row {2} · {3}; no nominee of record named{4}",
+                            withClauses.Count > 5 ? withClauses[5].Text : "none", withClauses.Count > 5 ? withClauses[5].Basis : "none", last.Name, last.Figure, registered ? string.Empty : " - refused: " + refused));
+                    var moved = new List<string>();
+                    foreach (KeyValuePair<CountryId, (string Text, int Rows)> kv in before)
+                    {
+                        if (kv.Key == CountryId.USA) { continue; }
+                        StartPoints.TryPlayable(kv.Key, out StartPoints.StartPoint sp);
+                        if (StartBrief.Text(sp) != kv.Value.Text || StartBrief.Rows(sp).Count != kv.Value.Rows) { moved.Add(kv.Key.ToString()); }
+                    }
+                    var draft = new OwnNominee { Country = CountryId.USA, Party = "REP", Name = "Jordan Hale", LrEcon = 8.5f, Galtan = 7.5f };
+                    var unnamed = new OwnNominee { Country = CountryId.USA, Party = "REP", Name = " ", LrEcon = 8.5f, Galtan = 7.5f };
+                    StartBrief.Clause? fromDraft = StartBrief.NomineeClause(usa, draft);
+                    Check(moved.Count == 0 && fromDraft.HasValue && fromDraft.Value.Text == NomineeText && !StartBrief.NomineeClause(usa, unnamed).HasValue
+                          && !StartBrief.NomineeClause(sweden, hale).HasValue && !StartBrief.NomineeRow(sweden, hale).HasValue,
+                        F("US-33: no other start's brief moves{0}; the flow's review reads the same clause from its draft; none for an unnamed draft or for Sweden's start", moved.Count > 0 ? " - NOT: " + string.Join(", ", moved) : string.Empty));
+                    OwnNominees.Clear();
+                    Check(StartBrief.Text(usa) == before[CountryId.USA].Text && StartBrief.Clauses(usa).Count == 5, "US-33: the nominee cleared, the USA's brief is the five clauses pinned above again");
+                }
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }
             if (failures > 0) { Debug.LogError($"START BRIEF: {failures} failure(s).\n{sb}"); CheckExit.Finish(1); return; }

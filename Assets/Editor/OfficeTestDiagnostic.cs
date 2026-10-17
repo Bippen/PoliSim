@@ -490,7 +490,9 @@ namespace PoliSim.EditorTools
                     for (int i = 0; i < eKeys.Length; i++)
                     {
                         if (!byAbbrev.TryGetValue(eKeys[i], out PoliticalParty party) || float.IsNaN(party.LrEcon) || float.IsNaN(party.Galtan) || eCompat[i] <= 0.0) { continue; }
-                        lr += party.LrEcon * eCompat[i]; gal += party.Galtan * eCompat[i]; w += eCompat[i]; n++;
+                        // PS-6 US-33: a party whose ticket the player's own nominee heads stands at the nominee's point (the compatibility is computed there)
+                        bool moved = OwnNominees.TryPointOf(country.Id, party.Abbrev, out double nomineeEcon, out double nomineeSoc);
+                        lr += (moved ? nomineeEcon : party.LrEcon) * eCompat[i]; gal += (moved ? nomineeSoc : party.Galtan) * eCompat[i]; w += eCompat[i]; n++;
                     }
                     traces = w > 0.0
                         ? electorate.HasValue && counted == n && Mathf.Abs(electorate.Value.LrEcon - (float)(lr / w)) < 1e-4f && Mathf.Abs(electorate.Value.Galtan - (float)(gal / w)) < 1e-4f
