@@ -412,7 +412,8 @@ namespace PoliSim.EditorTools
                     "(US) no Speaker's round runs, no constructive vote is projected and no formation time is on record - a presidency opens on a fixed day");
                 usa.PlayerPartyAbbrev = "REP";
                 for (int d = 0; d < 30; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.USA); }
-                Check(ReferenceEquals(usa.Government, biden) && biden.NoConfidenceOn == DateTime.MinValue && !biden.Caretaker && !usa.Divisions.Entries.Exists(e => e.Motion),
+                Check(ReferenceEquals(usa.Government, biden) && biden.NoConfidenceOn == DateTime.MinValue && !biden.Caretaker
+                      && !usa.Divisions.Entries.Exists(e => e.Motion && !usa.Divisions.Entries.Exists(s => ReferenceEquals(s.OtherChamber, e))),   // PS-6 US-18: a motion of no confidence - not a first chamber's passage the second chamber's division carries (also marked a motion)
                     F("(US) thirty days stepped with REP in opposition, to {0:yyyy-MM-dd}: no motion moved, the same government ({1}), never a caretaker", sim.CurrentDate, usa.Government?.Executive));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }

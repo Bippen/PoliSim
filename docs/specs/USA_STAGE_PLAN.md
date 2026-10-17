@@ -431,6 +431,7 @@ The main session sends D-US part one in the standard form (§5) against the buil
 
 *Needs:* US-15; R-US9.
 *Done when:* a Congress diagnostic shows, in the 119th of record, a party-line REP ordinary bill passing the House and failing cloture, a party-line REP reconciliation passing both chambers without cloture, and an uncontested bill passing both; and, in the 118th of record, a party-line DEM reconciliation passing the Senate with its caucus (R-US10) and dying in the REP House, while a party-line REP ordinary bill passes the House and dies at cloture. `ChamberVerdictCacheCheck` green; Sweden, Germany and Poland byte-inert by the dump diff; `Reviews/` report and review row (SimulationManager); bars; REAL films of the signing plate with two chambers at 1280 and 2560.
+**Built: `COMPLETED.md` §851** - `Congress` (the House by a majority of those voting, a tie failing; the Senate at cloture - three fifths of the senators sworn on the day - or by reconciliation, the Vice President deciding an equal division; one stance a party in both chambers), each chamber's division its own record with its origin (US-21 reads `DivisionRecord.Origin`), the one projection behind one predicate (`Congress.VotesBothChambers`: the gate, `ParliamentSystem.WouldBillPass` dated, `ChamberVerdicts`), the Laws page and the signing plate naming both chambers; reconciliation DECLARED for the tax and welfare programme bills and a budget moving no spending line nor the pension age (Trade, Sector credits, SwfDrawdown and the unmodelled yearly limit ASKED); the AI president's budget stays in the House until US-22 (DECLARED - US-22 closes it); `UsCongressDiagnostic` with the pass-rate sweep reported.
 
 **US-19 — Roles in a presidential system. Size L.** *(R-US7, R-US8)*
 - Per R-US7: the president's party introduces the administration's bills and proposes the budget; a party out of the White House introduces ordinary bills in any chamber it controls, and revenue bills only where it holds the House (Art. I §7 cl. 1, extracted); a party holding neither votes and introduces nothing.
@@ -458,6 +459,7 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 - where the AI governs (the player is not the president's party), its budget is tabled as the government's bill (§632) and goes through the same procedure.
 
 *Needs:* US-14, US-18, US-20, US-21; R-US9.
+*Owed from US-18 (§851):* the AI president's budget meets Congress here - until then it is voted by the House alone (`Congress.VotesBothChambers`), a DECLARED asymmetry beside the player's own budget, which meets cloture or reconciliation.
 *Done when:*
 - a US budget diagnostic under the 119th of record: a rates change passes by reconciliation; a contested appropriation dies at cloture and a continuing resolution carries the standing figures; where the continuing resolution dies too, a shutdown opens on 1 October and ends the day a bill passes - the game produces one; a pension-age change is its own act at cloture;
 - the US film's budget frame (93b), skipped today as *"THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED"* (§694), is filmed;

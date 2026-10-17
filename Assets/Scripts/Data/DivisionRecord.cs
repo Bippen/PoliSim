@@ -36,10 +36,12 @@ namespace PoliSim.Data
         /// seats - what the ceremony's per-seat vote map draws. Empty on divisions recorded before this pass.</summary>
         public float Direction;
         /// <summary>PS-3i (§636): a MOTION (no confidence), not a bill - no signing ceremony, never the standing budget act. §761: also a statute's passage
-        /// the President returned - its ceremony is the veto's own division, which follows it.</summary>
+        /// the President returned - its ceremony is the veto's own division, which follows it. PS-6 US-18: and a first chamber's passage the second chamber
+        /// then voted - its ceremony is the second's, which carries it (<see cref="OtherChamber"/>).</summary>
         public bool Motion;
         /// <summary>§761: a QUALIFIED vote's line - the votes the motion needed, its base those voting (Poland's override of the President's veto:
-        /// ceil(3/5 of those voting, abstentions in the base), Art. 122 ust. 5). 0 for an ordinary division, where the count decides.</summary>
+        /// ceil(3/5 of those voting, abstentions in the base), Art. 122 ust. 5). 0 for an ordinary division, where the count decides. PS-6 US-18: on the
+        /// Senate's division under Rule XXII (<see cref="Cloture"/>), the cloture line, its base the senators sworn (<see cref="Sworn"/>).</summary>
         public int Required;
         public int Axis;
         public List<DivisionSide> Sides = new List<DivisionSide>();
@@ -49,6 +51,32 @@ namespace PoliSim.Data
         public List<DivisionEffect> Effects = new List<DivisionEffect>();
         /// <summary>PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - each named with its votes, the abstentions, and the adopted one stamped; null for an ordinary for-or-against division.</summary>
         public DivisionContest Contest;
+
+        // PS-6 US-18: A BILL THROUGH TWO CHAMBERS (the `Congress` class) - each chamber's division its own record. Every field below is additive, and its
+        // default is exactly what a division recorded before US-18 was: held in the first (only) chamber, its bill begun there, no reconciliation, no cloture,
+        // no second chamber - so a save of format 40 carries them unchanged and takes no step (US-28's precedent, §848).
+
+        /// <summary>US-18: the chamber this division was held in - 0 the first chamber (the only one in every country with one; the USA's House), 1 the second
+        /// (the Senate) - `Congress.House`, `Congress.Senate`.</summary>
+        public int Chamber;
+        /// <summary>US-18: THE ORIGIN - the chamber the bill began in, which votes first (and, at US-21, votes first on an override: the R-US17 block's "the
+        /// ORIGIN chamber votes first"). Every bill begins in the House until US-19 builds who introduces where.</summary>
+        public int Origin;
+        /// <summary>US-18: the bill rode reconciliation (2 U.S.C. 641(e)) - the Senate's division a majority, no cloture; a BUDGET VOTE in the R-US17 block's
+        /// terms, which draws no crossers (US-21).</summary>
+        public bool Reconciliation;
+        /// <summary>US-18: the Senate's division under Rule XXII - <see cref="Required"/> is its cloture line, three fifths of <see cref="Sworn"/>, rounded up;
+        /// never a vote on a veto (whose line <see cref="Required"/> also carries where this is false).</summary>
+        public bool Cloture;
+        /// <summary>US-18: the senators duly chosen and sworn on the day - the cloture line's base; 0 on a first chamber's division.</summary>
+        public int Sworn;
+        /// <summary>US-18: where the Senate was equally divided on the majority path, the Vice President's party (Art. I §3 cl. 4) - null otherwise.</summary>
+        public string VicePresidentParty;
+        /// <summary>US-18: his vote there - +1 FOR, -1 AGAINST, 0 none cast (his party undecided, so the tie failed).</summary>
+        public int VicePresidentVote;
+        /// <summary>US-18: on the second chamber's division, the first chamber's on the same bill (marked a motion: this one carries the bill's ceremony, and the
+        /// plate shows both); null on every other division. Saved by reference (the save's PreserveReferencesHandling), the log entry it was itself.</summary>
+        public DivisionRecord OtherChamber;
     }
 
     /// <summary>PS-3f (§633): the two proposals of a budget division and how the chamber decided between them (Riksdagsordningen 11 kap. 10 § - the main proposal against the counter-proposal).</summary>

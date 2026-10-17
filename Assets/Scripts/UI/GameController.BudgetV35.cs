@@ -496,8 +496,9 @@ namespace PoliSim.UI
             bool mayIntroduce = _simulationManager.PlayerMayIntroduce(PlayerCountryId, CabinetPortfolio.FinanceTreasury, out string lockedBecause);
             var bill = pending ?? new TaxProgramBill { Type = taxLine.Type, IsAdd = !levied };
             BillConcern taxConcern = ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill);
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, taxConcern);
-            PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending?.DaysRemaining));   // §761: a tax programme's bill is an ordinary statute; F3: the president on its vote's day
+            System.DateTime taxVoteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending?.DaysRemaining);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, taxConcern, taxVoteDay);
+            PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, taxVoteDay);   // §761: a tax programme's bill is an ordinary statute; F3: the president on its vote's day
             // F3: a statute at risk passes the Sejm and meets the President's draw - the verdict is the count's, the risk beside it as a percentage
             string taxVerdict = !wouldPass ? "WOULD FAIL" : "WOULD PASS" + (ChamberVerdicts.AtRisk(taxVeto) ? " · VETO RISK " + ChamberVerdicts.RiskWords(taxVeto) : "");
             string switchWord = !mayIntroduce ? "Locked" : pending != null ? "Pending · " + pending.DaysRemaining + " d" : levied ? "On" : "Off";
@@ -515,6 +516,7 @@ namespace PoliSim.UI
             else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE " + LegislatureCaps + " · " + pending.DaysRemaining + " DAY(S)").Add("IT " + taxVerdict + " ON TODAY'S COUNT"); }
             else { switchSlip.Add("A CLICK INTRODUCES A BILL OF ITS OWN TO " + (levied ? "REMOVE" : "LEVY") + " IT - VOTED THEN, NOT WITH THE BUDGET").Add("IF INTRODUCED NOW · " + taxVerdict); }
             if (mayIntroduce && ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { switchSlip.Add(taxVetoLine); }
+            if (mayIntroduce && _chamberVerdicts.StopWords(_playerCountry, taxConcern, taxVoteDay) is string taxCongress) { switchSlip.Add(taxCongress); }   // PS-6 US-18: where it stops in Congress
             _budgetSlipBook.Anchors[id + "/switch"] = switchSlip;
 
             // ---- control 2 of 2: the rate's slider ----
@@ -986,7 +988,8 @@ namespace PoliSim.UI
             if (changes <= 0) { return; }
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, draft));   // §768/§773: Poland's budget act - the spending alone
             bool contested = concern != null && !concern.IsEmpty;
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
+            System.DateTime budgetVoteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern, budgetVoteDay);
             int forSeats = 0, againstSeats = 0, undecided = 0;
             if (contested)
             {
@@ -1057,15 +1060,26 @@ namespace PoliSim.UI
             }
             var countSlip = new SlipContent(wouldPass ? "WOULD PASS" : "WOULD FAIL")
                 .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
-                    : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED")
-                .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE");
+                    : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED");
+            Congress.Verdict congress = contested ? _chamberVerdicts.Chambers(_playerCountry, concern, budgetVoteDay) : null;   // PS-6 US-18: both chambers, where the budget goes through two
+            if (congress != null)
+            {
+                // the Congress branch counts as each chamber counts (LawsV35's form), and says why a budget that moves a spending line goes to cloture whole
+                countSlip.Add("THE COUNT ABOVE IS THE HOUSE'S - " + Congress.StopWords(PlayerCountryId, congress));
+                foreach (string line in Congress.OrderWords(PlayerCountryId, congress)) { countSlip.Add(line); }
+                countSlip.Add(Congress.RuleWords(congress))
+                    .Add("A BUDGET THAT MOVES ANY SPENDING LINE, OR THE PENSION AGE (ITS OWN STATUTE), GOES TO CLOTURE WHOLE; ONE MOVING ONLY RATES, BENEFIT LEVELS OR THE FUND RIDES RECONCILIATION - SPLITTING A BUDGET INTO ITS ACTS IS NOT YET MODELLED");
+            }
+            else
+            {
+                countSlip.Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE");
+            }
             PoliSim.Elections.PresidentialVeto.Outcome firstAtRisk = null;   // F3 (the review's finding: the slip's height): whose rate the risk is, said once
             foreach (BudgetBill.StatutePart part in acts)
             {
                 BillConcern actConcern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, draft.PartOf(part));
-                bool actPasses = _chamberVerdicts.WouldPass(_playerCountry, actConcern);
-                PoliSim.Elections.PresidentialVeto.Outcome actVeto = _chamberVerdicts.Veto(_playerCountry, actConcern,
-                    ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining));   // F3: the president on the budget's vote day
+                bool actPasses = _chamberVerdicts.WouldPass(_playerCountry, actConcern, budgetVoteDay);
+                PoliSim.Elections.PresidentialVeto.Outcome actVeto = _chamberVerdicts.Veto(_playerCountry, actConcern, budgetVoteDay);   // F3: the president on the budget's vote day
                 string stays = StatutePartStays(part);
                 countSlip.Add("IF THE BUDGET PASSES, " + StatutePartWords(part) + " A SEPARATE " + SimulationManager.ActWords(part).ToUpperInvariant() + " - "
                     + (!actPasses ? "IT WOULD FAIL; " + stays

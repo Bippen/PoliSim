@@ -247,15 +247,19 @@ namespace PoliSim.UI
                         if (side > 0) { forSeats += seats; } else { againstSeats += seats; }
                     }
                 }
-                bool passes = _chamberVerdicts.WouldPass(_playerCountry, concern);
+                System.DateTime voteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id)?.DaysRemaining);
+                bool passes = _chamberVerdicts.WouldPass(_playerCountry, concern, voteDay);
                 // §761 (PS-5), F3: a statute the President's veto could kill (at risk, no override carrying) reads CARRIES · VETO n % - the answer is the vote
                 // day's draw; one an override would carry reads CARRIES, as it stands whatever the draw; an amendment is never vetoed (Art. 235 ust. 7)
-                PoliSim.Elections.PresidentialVeto.Outcome veto = passes ? _chamberVerdicts.Veto(_playerCountry, concern,
-                    ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, _simulationManager.GetPendingLawBill(PlayerCountryId, law.Id)?.DaysRemaining),
+                PoliSim.Elections.PresidentialVeto.Outcome veto = passes ? _chamberVerdicts.Veto(_playerCountry, concern, voteDay,
                     law.ConstitutionalAmendment ? PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment : PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute) : null;
+                // PS-6 US-18: where a law goes through both chambers, the cell names the chamber that stops it, with its count there (the line at cloture)
+                Congress.Verdict congress = concern == null || concern.IsEmpty ? null : _chamberVerdicts.Chambers(_playerCountry, concern, voteDay);
                 string verdictText = concern == null || concern.IsEmpty
                     ? "UNCONTESTED · CARRIES"
-                    : (ChamberVerdicts.AtRiskOfFalling(veto) ? "CARRIES · VETO " + ChamberVerdicts.RiskWords(veto) + " · " : passes ? "CARRIES · " : "FALLS · ") + forSeats + " ⁄ " + againstSeats;
+                    : congress?.Stopping is Congress.Division stop
+                        ? "FALLS IN THE " + Congress.ChamberName(PlayerCountryId, stop.Chamber).ToUpperInvariant() + " · " + (stop.Cloture ? stop.For + " OF " + stop.Required + " FOR CLOTURE" : stop.For + " ⁄ " + stop.Against)
+                    : (ChamberVerdicts.AtRiskOfFalling(veto) ? "CARRIES · VETO " + ChamberVerdicts.RiskWords(veto) + " · " : passes ? (congress != null ? "CARRIES BOTH · " : "CARRIES · ") : "FALLS · ") + forSeats + " ⁄ " + againstSeats;
                 PoliSimWidgets.MeasuredLabel(new Rect(block.x + contentWidth * 0.45f, y, contentWidth * 0.5f, capH), "WILL IT PASS", small);
                 PoliSimWidgets.MeasuredLabel(new Rect(block.x + contentWidth * 0.45f, y + capH, contentWidth * 0.5f, Mathf.Ceil(DeskCaptionHeight(figure))), verdictText, verdict);
                 DrawLawVoteBar(new Rect(block.x + pad, y + capH + Mathf.Ceil(DeskCaptionHeight(figure)) + StatsUnit(6f), contentWidth - pad * 2f, barH), concern, forSeats, againstSeats);

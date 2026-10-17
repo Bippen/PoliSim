@@ -53,6 +53,8 @@ namespace PoliSim.UI
 
         private readonly Dictionary<string, List<PartyStance>> _stances = new Dictionary<string, List<PartyStance>>();
         private readonly Dictionary<string, bool> _verdicts = new Dictionary<string, bool>();
+        /// <summary>PS-6 US-18: the projections over both chambers (<see cref="Chambers"/>).</summary>
+        private readonly Dictionary<string, Congress.Verdict> _chambers = new Dictionary<string, Congress.Verdict>();
         private string _chamberKey;
         // §642: who governs, by identity and version - a government formed, installed or loaded is a new record, one changed in place a new version.
         private PoliSim.Elections.GovernmentRecord _government;
@@ -85,10 +87,12 @@ namespace PoliSim.UI
             }
         }
 
-        /// <summary>`ParliamentSystem.WouldBillPass(country, concern)`, asked once per chamber and concern.</summary>
-        public bool WouldPass(Country country, BillConcern concern)
+        /// <summary>`ParliamentSystem.WouldBillPass(country, concern, on)`, asked once per chamber and concern: the chamber's count, or - where a bill goes through
+        /// both chambers (PS-6 US-18, `Congress.VotesBothChambers`) - the cached projection over both (<see cref="Chambers"/>), on <paramref name="on"/>, the vote's day.</summary>
+        public bool WouldPass(Country country, BillConcern concern, System.DateTime on)
         {
             if (concern == null || concern.IsEmpty) { return ParliamentSystem.WouldBillPass(country, concern); }   // uncontested: the model answers without asking the chamber
+            if (Congress.VotesBothChambers(country, concern)) { return Chambers(country, concern, on).Passed; }   // the one predicate the gate reads (the government's own budget stays in the House until US-22)
             Bind(country);
             string key = ConcernKey(concern);
             if (_verdicts.TryGetValue(key, out bool cached))
@@ -105,6 +109,35 @@ namespace PoliSim.UI
         }
 
         /// <summary>
+        /// PS-6 US-18: THE PROJECTION OVER BOTH CHAMBERS - `Congress.Project` on <paramref name="on"/>, asked once per chamber, concern and Vice President: each
+        /// chamber's division, the order and the chamber that stops the bill, as the gate will meet them (the House's count today's, the Senate's seats as
+        /// seated, the Vice President of the vote's day). Null where the bill goes through one chamber (`Congress.VotesBothChambers`: one chamber in every country with one, and the USA's government budget until US-22). The key is what the answer reads: the chambers'
+        /// seats, the player's party and who governs (<see cref="Bind"/>), the concern with its procedure, and the Vice President's party on the day - the one
+        /// thing the date carries into it. Verified on a hit like every other answer (<see cref="VerifyHits"/>).
+        /// </summary>
+        public Congress.Verdict Chambers(Country country, BillConcern concern, System.DateTime on)
+        {
+            if (!Congress.VotesBothChambers(country, concern)) { return null; }
+            Bind(country);
+            string key = ConcernKey(concern) + "|vp=" + (PoliSim.Elections.UsSenate.VicePresidentParty(country, on) ?? "-");
+            if (_chambers.TryGetValue(key, out Congress.Verdict cached))
+            {
+                Hits++;
+                if (VerifyHits) { cached = VerifyChambers(country, concern, on, key, cached); }
+                return cached;
+            }
+
+            Misses++;
+            Congress.Verdict fresh = Congress.Project(country, concern, on);
+            _chambers[key] = fresh;
+            return fresh;
+        }
+
+        /// <summary>PS-6 US-18: the page's words for where a bill stops in Congress - null where its bills go through one chamber (`Congress.StopWords`).</summary>
+        public string StopWords(Country country, BillConcern concern, System.DateTime on) =>
+            concern == null || concern.IsEmpty ? null : Congress.StopWords(country.Id, Chambers(country, concern, on));
+
+        /// <summary>
         /// §761 (PS-5), F3: THE PRESIDENT'S ANSWER as the page can know it - `PresidentialVeto.Decide` on the same cached sides the count reads: whether the
         /// statute is at risk and at what rate, and what an override would do. The answer itself is the gate's seeded draw (`SimulationManager.PresidentialVetoGate`),
         /// taken on the vote's day and never here - so the page shows the risk, not a verdict. <paramref name="voteDay"/> is that day - today plus a pending
@@ -116,7 +149,7 @@ namespace PoliSim.UI
         public PoliSim.Elections.PresidentialVeto.Outcome Veto(Country country, BillConcern concern, System.DateTime voteDay,
             PoliSim.Elections.PresidentialVeto.Act act = PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute)
         {
-            if (concern == null || concern.IsEmpty || !PoliSim.Elections.PresidentialVeto.Applies(country.Id) || !WouldPass(country, concern)) { return null; }
+            if (concern == null || concern.IsEmpty || !PoliSim.Elections.PresidentialVeto.Applies(country.Id) || !WouldPass(country, concern, voteDay)) { return null; }
             var projected = new List<DivisionSide>();
             foreach ((PoliticalParty party, int seats, int side, float _, bool _) in SeatSides(country, concern)) { projected.Add(new DivisionSide { Abbrev = party.Abbrev, Seats = seats, Side = side }); }
             return PoliSim.Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, voteDay, act, projected);
@@ -154,10 +187,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>`ParliamentSystem.WouldBillPass(country, direction, axis)` - a program bill's scalar direction, through the concern it stands for.</summary>
-        public bool WouldPass(Country country, float direction, BillAxis axis = BillAxis.Fiscal)
+        public bool WouldPass(Country country, float direction, System.DateTime on, BillAxis axis = BillAxis.Fiscal)
         {
             if (Mathf.Approximately(direction, 0f)) { return ParliamentSystem.WouldBillPass(country, direction, axis); }   // a zero direction asks the chamber for nothing
-            return WouldPass(country, BillConcern.FromLegacy(direction, axis));
+            return WouldPass(country, BillConcern.FromLegacy(direction, axis), on);
         }
 
         /// <summary>Drops every entry when the chamber the answers were asked of, or the government it was asked under, is not this one.</summary>
@@ -173,9 +206,11 @@ namespace PoliSim.UI
             _governmentVersion = version;
             _stances.Clear();
             _verdicts.Clear();
+            _chambers.Clear();
         }
 
-        /// <summary>The country, the player's party and every party's seats, in ordinal order.</summary>
+        /// <summary>The country, the player's party and every party's seats, in ordinal order - PS-6 US-18: the second chamber's too (the Senate's division
+        /// reads them; empty in every country with one chamber).</summary>
         private static string ChamberKey(Country country)
         {
             var sb = new StringBuilder(256);
@@ -183,6 +218,13 @@ namespace PoliSim.UI
             var parties = new List<string>(country.ParliamentSeats.Keys);
             parties.Sort(System.StringComparer.Ordinal);
             foreach (string party in parties) { sb.Append(party).Append('=').Append(country.ParliamentSeats[party]).Append(';'); }
+            sb.Append("|second|");
+            if (country.SecondChamberSeats != null)
+            {
+                var upper = new List<string>(country.SecondChamberSeats.Keys);
+                upper.Sort(System.StringComparer.Ordinal);
+                foreach (string party in upper) { sb.Append(party).Append('=').Append(country.SecondChamberSeats[party]).Append(';'); }
+            }
             return sb.ToString();
         }
 
@@ -194,6 +236,7 @@ namespace PoliSim.UI
             // §642 (the review): who authored it - the stance model's term 2 reads a government bill differently from a member's with the same moves.
             sb.Append(concern.GovernmentAuthored ? "G|" : "M|");
             sb.Append(concern.Author ?? string.Empty).Append('|');   // §654: the author votes for its own bill
+            sb.Append(concern.Reconciliation ? "R|" : "C|");   // PS-6 US-18: the second chamber's procedure - reconciliation or cloture
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {
@@ -232,6 +275,41 @@ namespace PoliSim.UI
             Debug.LogError($"CHAMBER CACHE DRIFT: {country.Id}'s verdict on [{key}] - cached {(cached ? "PASS" : "FAIL")}, the model now {(fresh ? "PASS" : "FAIL")}. The cache's key misses an input the stance model reads; the fresh answer replaces the cached one.");
             _verdicts[key] = fresh;
             return fresh;
+        }
+
+        private Congress.Verdict VerifyChambers(Country country, BillConcern concern, System.DateTime on, string key, Congress.Verdict cached)
+        {
+            var clock = Stopwatch.StartNew();
+            Congress.Verdict fresh = Congress.Project(country, concern, on);
+            string difference = Difference(cached, fresh);
+            VerifyMilliseconds += clock.Elapsed.TotalMilliseconds;
+            if (difference == null) { return cached; }
+            Drifts++;
+            Debug.LogError($"CHAMBER CACHE DRIFT: {country.Id}'s two chambers on [{key}] - {difference}. The cache's key misses an input the projection reads; the fresh answer replaces the cached one.");
+            _chambers[key] = fresh;
+            return fresh;
+        }
+
+        /// <summary>PS-6 US-18: null when the two projections are the same answer - the order, the verdict, the stopping chamber, and each chamber's procedure,
+        /// count, line, Vice President and stances; otherwise the first difference, named.</summary>
+        public static string Difference(Congress.Verdict a, Congress.Verdict b)
+        {
+            if (a.Origin != b.Origin || a.Reconciliation != b.Reconciliation || a.Passed != b.Passed || a.StoppedIn != b.StoppedIn)
+            {
+                return $"origin {a.Origin}, reconciliation {a.Reconciliation}, passed {a.Passed}, stopped in {a.StoppedIn} cached against {b.Origin}, {b.Reconciliation}, {b.Passed}, {b.StoppedIn}";
+            }
+            foreach ((Congress.Division x, Congress.Division y) in new[] { (a.House, b.House), (a.Senate, b.Senate) })
+            {
+                if (x.Chamber != y.Chamber || x.Cloture != y.Cloture || x.Contested != y.Contested || x.For != y.For || x.Against != y.Against || x.Abstaining != y.Abstaining
+                    || x.Sworn != y.Sworn || x.Required != y.Required || x.ClotureInvoked != y.ClotureInvoked || x.VicePresidentParty != y.VicePresidentParty
+                    || x.VicePresidentVote != y.VicePresidentVote || x.Alignment != y.Alignment || x.Passed != y.Passed)
+                {
+                    return $"chamber {x.Chamber}: {x.For} for, {x.Against} against, {x.Abstaining} abstaining, line {x.Required} of {x.Sworn}, vice president {x.VicePresidentParty} {x.VicePresidentVote}, passed {x.Passed} cached against {y.For}, {y.Against}, {y.Abstaining}, {y.Required} of {y.Sworn}, {y.VicePresidentParty} {y.VicePresidentVote}, {y.Passed}";
+                }
+                string stances = Difference(x.Stances, y.Stances);
+                if (stances != null) { return $"chamber {x.Chamber}'s stances: {stances}"; }
+            }
+            return null;
         }
 
         /// <summary>Null when the two lists are the same answer party by party; otherwise the first difference, named.</summary>

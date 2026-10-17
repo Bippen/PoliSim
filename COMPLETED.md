@@ -39427,3 +39427,77 @@ Built in the sweep's third wave on US-6's branch. Every parameter was declared i
 - `01n4_nominee_review` at 1280 and 2560: the brief’s ledger ending "YOUR NOMINEE · Jordan Hale (REP)", the Senate row "DEM · 51 OF 100 · INCLUDING 3 INDEPENDENTS"; everything fits.
 - `01n6_nominee_parliament_rows`, on the start’s day: "YOUR NOMINEE · HALE · YOUR OWN · 5 NOV 2024" under the record row.
 
+
+
+## 851. PS-6 US-18: BILLS THROUGH BOTH CHAMBERS - THE HOUSE BY A MAJORITY OF THOSE VOTING, THE SENATE AT CLOTURE OF THE SWORN ON THE DAY OR BY RECONCILIATION, THE VICE PRESIDENT ON AN EQUAL DIVISION; EACH CHAMBER'S DIVISION ON THE RECORD AND THE PLATE; THE AI PRESIDENT'S BUDGET IN THE HOUSE UNTIL US-22 (2026-10-17)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md` US-18; R-US9 (a), R-US10 (a), R-US17's terms): the two-chamber vote, each chamber's division, the one projection, the Laws page naming the stopping chamber, the plate with both divisions, the Congress diagnostic and the sweep.
+
+**Built:**
+- `Congress`:
+  - the House passes on Y > N, a tie failing;
+  - the Senate at cloture needs floor((3W+4)/5) of the senators sworn that day (Rule XXII ¶2), never 60, and an undecided senator is no yea;
+  - by reconciliation, a majority (641(e)(2)), the Vice President's party's stance deciding an equal division (`UsSenate.Carries`);
+  - one stance per party in both chambers (R-US17 (B)).
+- `Congress.VotesBothChambers`, the one predicate, read by the gate, the dated verdict and the page.
+- `ParliamentSystem.Divide` at every bill site, inert for one chamber.
+- `DivisionRecord`'s Chamber, Origin, Reconciliation, Cloture, Sworn, VicePresidentParty, VicePresidentVote and OtherChamber: additive, no step.
+- `ChamberVerdicts.Chambers`. The Laws page and board, the cards, the budget slip and the lists name the stopping chamber. The two-chamber signing plate.
+- `UsCongressDiagnostic`. `ChamberVerdictCacheCheck`'s US section. ConfidenceDiagnostic and the audit log tell a first chamber's passage from a motion. Congress.cs added to MetaTextCheck's roots.
+
+**Measured** (`n851b`, 24 named checks, all clean; the reviewer's out-of-engine probe confirmed every expected figure first):
+- **The 119th:** a party-line REP ordinary bill passes the House 220-215, then stops in the Senate at cloture, 53 for, 60 needed of 100 sworn. A REP reconciliation passes the Senate 53-47. A bill both blocs stand for passes 435-0 and 100 at the 60 line.
+- **The 118th:** a party-line DEM reconciliation passes the Senate 51-49 (48 D and 3 independents) and dies in the House 213-222. A Senate-origin benefits bill passes the Senate and is killed in the House. A party-line REP ordinary bill passes the House 222-213, then reaches 49 of 60 at cloture.
+- **Vacancies on 2025-01-10:** 98 sworn, the line 59.
+- **A planted 50-50 Senate** carries a reconciliation with the 2025-02-03 vice president (REP) and fails with 2025-01-19's (DEM). At cloture the vice president has no vote.
+- **The rule's own statements:**
+  - a planted 217-217 House is rejected, where the old single-chamber count would pass it on its lean (+0.169);
+  - an undecided DEM bloc at cloture is no yea: 53 for, 0 against, 47 undecided, so cloture is not invoked, while by reconciliation the same sides carry it 53-0;
+  - the government's own budget is one House record, carried.
+- **The pass-rate sweep, reported and not tuned**, over every bill kind and both authors:
+  - the 119th: REP's bills pass both chambers 137 of 257 (53.3 %), 120 stopped in the Senate; DEM's 109 of 257 (42.4 %), 119 stopped in the House and 29 in the Senate;
+  - the 118th: REP's 119 of 257 (46.3 %), 138 stopped in the Senate.
+- **ChamberVerdictCacheCheck:** its US section green; the key holds the Senate's seats, the procedure and the vice president on the day. ConfidenceDiagnostic is green with its new motion predicate.
+- **The `elec<N>` diff** (`elec850b` against `elec851b`): no line moves. **SaveLoadRoundTripDiagnostic:** PASS.
+
+**TariffCostsDiagnostic, filed** (in no bar; run because the implementer listed it): its Sweden tariff-removal identity assert fails ("IDENTITY BROKEN"). It fails identically on main without US-18 (`tcbase`, the integration stashed), so it predates this item; it last passed on 2026-08-27. Filed for its own item.
+
+**Declared:**
+- The reconciliation table: TaxProgram, WelfareProgram, and a budget moving no spending line nor the pension age ride reconciliation; the rest go to cloture.
+- ASKED: (a) Trade at cloture, (b) Sector tax credits at cloture, (c) SwfDrawdown as an appropriation, (d) the once-a-year limit not modelled, said on the reconciliation slip.
+- The table is R-US17's BUDGET VOTE (play) input at US-21, so every TaxProgram and WelfareProgram bill is a budget vote that draws no crossers.
+- The origin field (`DivisionRecord.Origin`; every bill begins in the House until US-19).
+- The order (the second chamber votes only if the first passes).
+- The asymmetry US-22 closes: the AI president's budget meets the House alone (risk 19), counted as before; the player's budget goes to cloture whole where it moves a spending line.
+- Every save now carries eight default-valued DivisionRecord keys.
+- The 24-entry log holds about 12 US bills.
+- A bill lost at cloture marks the day lost (F5), so a US game rolls cabinet pressure events more often.
+
+**Review:** Reviews/2026-10-17_s851_us18_congress.md, adversarial, refute-first, read-only with an out-of-engine probe.
+- Verdict: **SHIP WITH FIXES.**
+- Held: the rule, the cloture line, the vice president's tie, one stance per party, the order and the records, and every non-US path, byte-equivalent in effect.
+- Met in 2a1b3d6c and 11d58555: H1, M1 (the reviewer's predicate), M2, M3 (marked and asked; the limit said on screen), and L1 to L6.
+- Not taken: L7 (a per-day VP cache would go stale when a contest is counted).
+
+**Integration:**
+- The first cheap bar (`cheap851`) failed ConstantProvenanceCheck: `Congress.House` and `Congress.Senate`, chamber codes, carried no provenance mark. They are marked CONVENTION.
+- The second pass’s N3 is met: the budget premise line names the pension age.
+- Three diagnostics on the implementer’s list are in no table (SigningStampFixDiagnostic, TradeAxisDiagnostic, TariffCostsDiagnostic), so they ran by their own methods. The first two pass; the third is filed above.
+
+**Bars:** (tier SIMULATION + UI; review REQUIRED and run, two passes, the ledger row written):
+- the named run `n851b` **24 of 24**;
+- the cheap bar **114 of 114** (`cheap851b`; UsCongressDiagnostic its 114th);
+- the simulation bar **57 of 57** (`sim851`; the sentinel on ga111 unmoved);
+- the documents bar **20 of 20** (`doc851`);
+- the round trip PASS; the `elec<N>` diff empty;
+- the dry film `drys851` (USA@1280x720, scoped first): 147 measured, 0 failed, 0 overflows; its staged division logged "through both chambers - No. 1 then No. 2: BOTH CHAMBERS PASS IT (carried)";
+- REAL films `realus18a` (USA at 1280×720) and `realus18b` (2560×1440), the whole sweep: 147 captured each, 0 failed, 0 overflows, 0 canvas violations across 6 asserts.
+
+**Read on the real films:** `89e_signing_settled`, at 1280 and 2560, shows the two-chamber plate:
+- the head "Divisions No. 1 and 2 · House and Senate · 30 Apr 2027" and the CARRIED stamp;
+- the House block, 435 for and 0 against, with its 218 tick;
+- the Senate block "cloture · passed", 100-0 against its 60 line, with "Three fifths of the 100 sworn: 60";
+- the stances column "House · Senate seats - one stance a party": REP 220 · 53, DEM 215 · 47.
+
+Everything fits at both widths. The rejected plate (89c, "LOST IN THE SENATE") was not captured by these sweeps; it stands on the diagnostic, unfilmed.
+

@@ -1280,11 +1280,14 @@ namespace PoliSim.UI
 
                 // the count the draft would meet today, beside the button
                 bool contested = concern != null && !concern.IsEmpty;
-                bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
+                System.DateTime voteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending ? daysRemaining : (int?)null);
+                bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern, voteDay);
+                // PS-6 US-18: where a bill goes through both chambers, the count names the chamber that stops it - or each chamber's count where both pass it
+                Congress.Verdict congress = contested ? _chamberVerdicts.Chambers(_playerCountry, concern, voteDay) : null;
                 // §761 (PS-5), F3: where the President holds a veto the game runs, a statute that passes the Sejm may still meet a veto - its glyph is the
                 // count's, in the caution ink while the veto could kill it (no override carrying), and the slip carries the veto risk as a percentage
                 // whenever it is at risk (the answer is the vote day's draw)
-                PresidentialVeto.Outcome veto = _chamberVerdicts.Veto(_playerCountry, concern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pending ? daysRemaining : (int?)null));
+                PresidentialVeto.Outcome veto = _chamberVerdicts.Veto(_playerCountry, concern, voteDay);
                 bool stands = wouldPass;
                 bool atRisk = wouldPass && ChamberVerdicts.AtRisk(veto);
                 bool atRiskOfFalling = wouldPass && ChamberVerdicts.AtRiskOfFalling(veto);
@@ -1303,15 +1306,28 @@ namespace PoliSim.UI
                     float side = V35.Px(16f);
                     DrawStateGlyph(new Rect(countRect.x, countRect.y + Mathf.Round((row.height - side) * 0.5f), side, side), stands ? Symbol.Good : Symbol.Bad,
                         atRiskOfFalling ? PoliSimTheme.Caution : stands ? PoliSimTheme.Good : PoliSimTheme.Bad);
-                    string count = contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "") : "Nothing changes · uncontested";
+                    string count = !contested ? "Nothing changes · uncontested"
+                        : congress != null ? Congress.CountWords(PlayerCountryId, congress)
+                        : $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "");
                     GUIStyle countFace = V35Mono(V35.Floor, PoliSimTheme.TextSecondary);
                     float cw = countRect.width - side - V35.Px(8f);
                     PoliSimWidgets.MeasuredLabel(new Rect(countRect.x + side + V35.Px(8f), countRect.y, Mathf.Max(1f, cw), countRect.height), V35Fit(count, countFace, Mathf.Max(1f, cw), out _), countFace);
                 }
                 SlipAnchor(countRect, anchor + ":count");
-                var countSlip = new SlipContent(!wouldPass ? "WOULD FAIL" : atRisk ? "WOULD PASS · VETO RISK " + ChamberVerdicts.RiskWords(veto) : "WOULD PASS")
-                    .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "") : "NOTHING CHANGES · UNCONTESTED")
-                    .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING");
+                var countSlip = new SlipContent(!wouldPass ? "WOULD FAIL" + (congress?.Stopping != null ? " · " + Congress.CountWords(PlayerCountryId, congress) : string.Empty)
+                        : atRisk ? "WOULD PASS · VETO RISK " + ChamberVerdicts.RiskWords(veto) : "WOULD PASS");
+                if (congress != null)
+                {
+                    // PS-6 US-18: each chamber's division as the gate will hold it, in the order the bill takes, and the rule each counts by
+                    countSlip.Add(Congress.StopWords(PlayerCountryId, congress));
+                    foreach (string line in Congress.OrderWords(PlayerCountryId, congress)) { countSlip.Add(line); }
+                    countSlip.Add(Congress.RuleWords(congress)).Add("ONE STANCE A PARTY IN BOTH CHAMBERS - THE SEATS BELOW ARE THE HOUSE'S");
+                }
+                else
+                {
+                    countSlip.Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "") : "NOTHING CHANGES · UNCONTESTED")
+                        .Add("THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING");
+                }
                 string vetoLine = ChamberVerdicts.VetoLine(PlayerCountryId, veto);
                 if (vetoLine != null) { countSlip.Add(vetoLine); }
                 if (contested)

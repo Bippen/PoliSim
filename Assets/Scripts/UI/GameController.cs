@@ -3424,7 +3424,7 @@ namespace PoliSim.UI
             // history rather than schedule.
             foreach (DivisionRecord record in _playerCountry.Divisions.Entries)
             {
-                Add(record.Date, $"No. {record.Number} - {record.Title} ({(record.Passed ? "Carried" : "Rejected")})",
+                Add(record.Date, $"No. {record.Number} - {record.Title}{DivisionChamberWords(record)} ({(record.Passed ? "Carried" : "Rejected")})",
                     UiPalette.SystemArea.Political);
             }
 
@@ -6439,7 +6439,8 @@ namespace PoliSim.UI
                 {
                     // §768 (the review's defect 4): a statute act (§773: the tax, pension, benefits or fund act a budget carried, or the Finance partner's
                     // boundary tax act, which rides with none), or the vote on a veto, is never the standing budget
-                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0 && divisions[d].Required == 0
+                    // PS-6 US-18: a Senate division at cloture carries its line in Required and is no vote on a veto - it may be the standing budget
+                    if (divisions[d].Passed && !divisions[d].Motion && divisions[d].Axis != (int)BillAxis.Trade && divisions[d].Effects.Count > 0 && (divisions[d].Required == 0 || divisions[d].Cloture)
                         && !SimulationManager.IsStatuteActTitle(divisions[d].Title)) { standingBudget = divisions[d]; break; }
                 }
                 // Election night item 3 (2026-09-10): what this night compares against. The FIRST election of a game compares
@@ -8884,6 +8885,11 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>PS-6 US-18: which chamber held a division, where the player's bills go through two (`Congress.Applies`) - " · House", " · Senate"; empty
+        /// everywhere else, so a single chamber's list reads as it always has.</summary>
+        private string DivisionChamberWords(DivisionRecord record) =>
+            _playerCountry != null && Congress.Applies(_playerCountry) ? " · " + Congress.ChamberName(PlayerCountryId, record.Chamber) : string.Empty;
+
         /// <summary>
         /// ⚠ ITEM 1a, IN ITS CORRECTED SHAPE (Elias, 2026-08-12) — the FIRST reader of
         /// <c>Country.Divisions</c>. Eight resolution sites had written this log since `a7bd40d` with
@@ -8935,7 +8941,7 @@ namespace PoliSim.UI
                 float rowHeight = Mathf.Max(20f, _labelStyle.fontSize * 1.2f);
 
                 GUILayout.BeginHorizontal();
-                GUILayout.Label($"No. {record.Number} · {record.Title}", _labelStyle, GUILayout.ExpandWidth(true));
+                GUILayout.Label($"No. {record.Number} · {record.Title}{DivisionChamberWords(record)}", _labelStyle, GUILayout.ExpandWidth(true));
                 GUILayout.Label(record.Date.ToString("yyyy-MM-dd"), _divisionMetaStyle, GUILayout.Width(_divisionMetaStyle.fontSize * 6.5f));
 
                 // The lean bar sits in a slot as tall as the stamp beside it and is drawn centred in
@@ -9102,18 +9108,22 @@ namespace PoliSim.UI
         {
             // P3-A3 (2026-09-03): the card's verdict is the vote's own - over the bill's concern (the tariff on
             // openness inside it, R-CL2's axis kept) - and the breakdown beneath the map says why, party by party.
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern);
+            System.DateTime voteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, daysRemaining);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern, voteDay);
             // §761 (PS-5), F3: a statute the President's veto could kill (at risk, no override carrying) leans PASS with its veto risk as a percentage, in the
             // caution ink - the answer is the vote day's draw; the budget act and an amendment never come to the President (act)
-            PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, concern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, daysRemaining), act) : null;
+            PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, concern, voteDay, act) : null;
             bool atRisk = ChamberVerdicts.AtRiskOfFalling(veto);
 
             bool contested = concern != null && !concern.IsEmpty;
+            // PS-6 US-18: where the bill goes through both chambers, the chamber that would stop it is named
+            Congress.Division stop = contested ? _chamberVerdicts.Chambers(_playerCountry, concern, voteDay)?.Stopping : null;
 
             BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
             DrawColoredLabel(
-                contested ? (wouldPass ? "Currently leans PASS" + (atRisk ? " · veto risk " + ChamberVerdicts.RiskWords(veto) : "") : "Currently leans FAIL") : uncontested ?? "Unopposed - no change requested",
+                contested ? (wouldPass ? "Currently leans PASS" + (atRisk ? " · veto risk " + ChamberVerdicts.RiskWords(veto) : "")
+                    : "Currently leans FAIL" + (stop != null ? " · stopped in the " + Congress.ChamberName(PlayerCountryId, stop.Chamber) + (stop.Cloture ? " at cloture" : "") : "")) : uncontested ?? "Unopposed - no change requested",
                 _labelStyle,
                 contested && atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true));
 
@@ -9874,10 +9884,11 @@ namespace PoliSim.UI
             WelfareProgramBill bill = pendingBill ?? new WelfareProgramBill { Type = welfareProgram.Type, IsAdd = !welfareProgram.IsImplemented };
             float direction = ParliamentSystem.GetWelfareProgramBillDirection(_playerCountry, bill);
             BillConcern welfareConcern = ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill);
-            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, welfareConcern);   // §654: the bill's own concern (its cuts and its author), as the vote reads it
+            System.DateTime voteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pendingBill?.DaysRemaining);
+            bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, welfareConcern, voteDay);   // §654: the bill's own concern (its cuts and its author), as the vote reads it; PS-6 US-18: both chambers where there are two
             // §761 (PS-5), F3: a statute the President's veto could kill (at risk, no override carrying) reads its veto risk at rest, in the caution ink -
             // "VETO n %" is shorter than WOULD PASS, so it fits wherever that did; the answer itself is the vote day's draw
-            PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, welfareConcern, ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, pendingBill?.DaysRemaining)) : null;
+            PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, welfareConcern, voteDay) : null;
             bool atRisk = ChamberVerdicts.AtRiskOfFalling(veto);
 
             // See the tax tile's switch slip (DrawBudgetTaxTile) - the "(current seat composition)" qualifier moved to the

@@ -2469,17 +2469,37 @@ namespace PoliSim.Testing
         /// </summary>
         private static void StageDivisionWithContent(Country player, SimulationManager sim, string title, float direction, bool passed)
         {
-            // P3 close (2026-09-03): a record never contradicts its own sides. The verdict is the chamber's (§257, the count
-            // decides); when the harness asks for the other outcome the direction is flipped and re-judged, and when the
-            // chamber decides the same either way the record keeps the chamber's verdict and the log says so.
-            bool verdict = ParliamentSystem.WouldBillPass(player, direction);
-            if (verdict != passed)
+            DivisionRecord record;
+            if (Congress.Applies(player))
             {
-                if (ParliamentSystem.WouldBillPass(player, -direction) == passed) { direction = -direction; verdict = passed; Debug.Log($"SHOT: staged division '{title}' takes direction {direction:+0;-0} so the chamber's own verdict is {(passed ? "CARRIED" : "LOST")}, as the capture asks."); }
-                else { Debug.Log($"SHOT: staged division '{title}': the chamber {(verdict ? "carries" : "loses")} it in either direction; the record keeps the chamber's verdict, not the harness's ask."); }
+                // PS-6 US-18: where a bill goes through both chambers, the staged division is what play writes - the player's own bill (its author, as every
+                // player bill carries since §654) voted through the game's own gate (ParliamentSystem.Divide): both chambers' divisions where the first passes
+                // it, the second carrying the first, its ceremony the second's. The harness's ask picks the direction as below; where the chambers decide the
+                // same either way, theirs stands and the log says so.
+                BillConcern Staged(float d) { BillConcern c = BillConcern.FromLegacy(d, BillAxis.Fiscal); c.Author = player.PlayerPartyAbbrev; return c; }
+                bool both = ParliamentSystem.WouldBillPass(player, Staged(direction), sim.CurrentDate);
+                if (both != passed)
+                {
+                    if (ParliamentSystem.WouldBillPass(player, Staged(-direction), sim.CurrentDate) == passed) { direction = -direction; Debug.Log($"SHOT: staged division '{title}' takes direction {direction:+0;-0} so Congress's own verdict is {(passed ? "CARRIED" : "LOST")}, as the capture asks."); }
+                    else { Debug.Log($"SHOT: staged division '{title}': Congress {(both ? "carries" : "loses")} it in either direction; the records keep Congress's verdict, not the harness's ask."); }
+                }
+                record = ParliamentSystem.Divide(player, title, Staged(direction), sim.CurrentDate, out bool carried);
+                Debug.Log($"SHOT: staged '{title}' through both chambers - {(record.OtherChamber != null ? "No. " + record.OtherChamber.Number + " then No. " + record.Number : "No. " + record.Number + " alone")}: {Congress.StopWords(player.Id, Congress.Project(player, Staged(direction), sim.CurrentDate))} ({(carried ? "carried" : "lost")})");
             }
-            ParliamentSystem.RecordDivision(player, title, direction, verdict, sim.CurrentDate);
-            DivisionRecord record = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+            else
+            {
+                // P3 close (2026-09-03): a record never contradicts its own sides. The verdict is the chamber's (§257, the count
+                // decides); when the harness asks for the other outcome the direction is flipped and re-judged, and when the
+                // chamber decides the same either way the record keeps the chamber's verdict and the log says so.
+                bool verdict = ParliamentSystem.WouldBillPass(player, direction);
+                if (verdict != passed)
+                {
+                    if (ParliamentSystem.WouldBillPass(player, -direction) == passed) { direction = -direction; verdict = passed; Debug.Log($"SHOT: staged division '{title}' takes direction {direction:+0;-0} so the chamber's own verdict is {(passed ? "CARRIED" : "LOST")}, as the capture asks."); }
+                    else { Debug.Log($"SHOT: staged division '{title}': the chamber {(verdict ? "carries" : "loses")} it in either direction; the record keeps the chamber's verdict, not the harness's ask."); }
+                }
+                ParliamentSystem.RecordDivision(player, title, direction, verdict, sim.CurrentDate);
+                record = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+            }
             PolicyPreview preview = sim.PreviewTurn(player.Id, PolicyDecision.None());
             void Add(string name, float value, bool higherIsBetter, string unit)
             {

@@ -26,7 +26,7 @@ namespace PoliSim.EditorTools
     /// DRAFT changed - the budget concern's magnitude moved, so its answers are asked again; (5) the CHAMBER changed -
     /// seats moved from the largest party to the smallest seated one; (6) the PLAYER'S PARTY changed. After (2) the
     /// hits must have risen with no new miss, after (4) a miss must have followed, after (5) and (6) the cache must have
-    /// dropped its entries. The seats and the party are restored. Then (7), on a world of its own, WHO GOVERNS changes with nothing else moved (<see cref="GovernmentChanges"/>, §642).</para>
+    /// dropped its entries. The seats and the party are restored. Then (7), on a world of its own, WHO GOVERNS changes with nothing else moved (<see cref="GovernmentChanges"/>, §642). Then (8), PS-6 US-18: the USA's two chambers on the 119th of record, through a Senate seat moved and a vice president changed (<see cref="TwoChambers"/>).</para>
     ///
     /// <para>⚠ <b>France is not asked here, on cost</b> (ninety milliseconds a question, and this runs on every cheap
     /// bar); the code under test does not branch on the country. France is verified where it is drawn: every film and
@@ -56,7 +56,7 @@ namespace PoliSim.EditorTools
 
                 void Compare(string step, string what, BillConcern concern)
                 {
-                    bool cachedVerdict = cache.WouldPass(country, concern);
+                    bool cachedVerdict = cache.WouldPass(country, concern, SimulationManager.EpochDate);   // PS-6 US-18: the day reads only where a bill goes through two chambers
                     IReadOnlyList<PartyStance> cachedStances = cache.Stances(country, concern);
                     bool modelVerdict = ParliamentSystem.WouldBillPass(country, concern);
                     List<PartyStance> modelStances = StanceModel.Stances(country, concern);
@@ -93,13 +93,13 @@ namespace PoliSim.EditorTools
 
                 ChamberVerdicts.VerifyHits = false;
                 var clock = Stopwatch.StartNew();
-                foreach ((string what, BillConcern concern) in Questions(3f)) { cache.WouldPass(country, concern); cache.Stances(country, concern); }
+                foreach ((string what, BillConcern concern) in Questions(3f)) { cache.WouldPass(country, concern, SimulationManager.EpochDate); cache.Stances(country, concern); }
                 double missMs = clock.Elapsed.TotalMilliseconds;
                 foreach ((string what, BillConcern concern) in Questions(3f)) { Compare("fresh", what, concern); }
                 int missesFresh = cache.Misses, hitsFresh = cache.Hits;
 
                 clock.Restart();
-                foreach ((string what, BillConcern concern) in Questions(3f)) { cache.WouldPass(country, concern); cache.Stances(country, concern); }
+                foreach ((string what, BillConcern concern) in Questions(3f)) { cache.WouldPass(country, concern, SimulationManager.EpochDate); cache.Stances(country, concern); }
                 double hitMs = clock.Elapsed.TotalMilliseconds;
                 if (cache.Hits <= hitsFresh) { failures.Add($"{id}: asked again, the cache took no hits ({cache.Hits} after {hitsFresh}) - it is not caching"); }
                 if (cache.Misses != missesFresh) { failures.Add($"{id}: asked again, the cache missed {cache.Misses - missesFresh} time(s) - an unchanged question went to the chamber again"); }
@@ -138,6 +138,7 @@ namespace PoliSim.EditorTools
             }
 
             GovernmentChanges(failures, sb);
+            TwoChambers(failures, sb);
 
             ChamberVerdicts.VerifyHits = verifyWas;
             int drifts = ChamberVerdicts.Drifts - driftsBefore;
@@ -145,7 +146,7 @@ namespace PoliSim.EditorTools
 
             if (failures.Count == 0)
             {
-                sb.Append("    CLEAN - every cached verdict and every cached stance is the model's own, through a draft, a seat, a party and a government change.\n");
+                sb.Append("    CLEAN - every cached verdict and every cached stance is the model's own, through a draft, a seat, a party and a government change, and over both chambers through a Senate seat and a vice president's change (PS-6 US-18).\n");
                 Debug.Log(sb.ToString());
                 CheckExit.Finish(0);
                 return;
@@ -187,6 +188,105 @@ namespace PoliSim.EditorTools
             sb.Append(line).Append(string.Format(CultureInfo.InvariantCulture, "; this part {0:F1} s of the bar\n", clock.Elapsed.TotalSeconds));
         }
 
+        /// <summary>
+        /// PS-6 US-18: THE CACHE OVER BOTH CHAMBERS - the USA's 119th of record (`UsCongressDiagnostic`'s world: the epoch, the record seated by the day loop's
+        /// own method, REP the player's party) and four bills: a party-line ordinary bill (cloture), a party-line reconciliation (a rate alone), a bill both
+        /// blocs stand for (a spending line: cloture), a welfare programme's bill (reconciliation), and the reconciliation's own moves again at cloture (the procedure in the key: the two must be answered apart). Each is asked of one cache - the projection and the
+        /// verdict - and held against `Congress.Project` and the dated `ParliamentSystem.WouldBillPass` directly, through this check's comparison of every
+        /// chamber's count, line, Vice President and stances: (1) fresh; (2) again - hits, and no new miss; (3) again with the cache's own verification on;
+        /// (4) the SENATE's seats moved with the House untouched - the cache must drop its entries; (5) the VICE PRESIDENT changed with nothing else: a planted
+        /// 50-50 Senate asked on two vote days, the record's REP and DEM vice presidents', where his vote decides the reconciliation - the verdict must move
+        /// between the days, and the cache with it. Without the Senate's seats in the key, (4) answers from the old chamber; without the vice president, (5)
+        /// answers the first day's verdict on the second. The seats are restored and the streams after, so no later check starts elsewhere.
+        /// </summary>
+        private static void TwoChambers(List<string> failures, StringBuilder sb)
+        {
+            using IDisposable epoch = SimulationManager.EpochScope();
+            int seedWas = SimulationRandom.MasterSeed;
+            Dictionary<SimulationRandom.Stream, int> drawsWas = SimulationRandom.CaptureDrawCounts();
+            var hosts = new List<UnityEngine.GameObject>();
+            var clock = Stopwatch.StartNew();
+            try
+            {
+                (SimulationManager sim, World _, Country usa) = UsCongressDiagnostic.OpenUsa(hosts, UsCongressDiagnostic.Day119, "REP");
+                DateTime today = sim.CurrentDate;
+                if (!Congress.Applies(usa)) { failures.Add("USA (two chambers): the premise failed - no Senate seated on the 119th's world"); return; }
+                WelfareProgram programme = usa.WelfarePrograms[0];
+                var bills = new List<(string What, BillConcern Concern)>
+                {
+                    ("a party-line ordinary bill", ParliamentSystem.GetCrimeJusticeBillConcern(usa, UsCongressDiagnostic.CrimeBill(usa, "REP"))),
+                    ("a party-line reconciliation", ParliamentSystem.GetBudgetBillConcern(usa, UsCongressDiagnostic.RatesBill(usa, "REP"))),
+                    ("a bill both blocs stand for", ParliamentSystem.GetBudgetBillConcern(usa, UsCongressDiagnostic.SpendingBill(usa, SpendingCategory.Transportation, 10f))),
+                    ("welfare " + programme.Type, ParliamentSystem.GetWelfareProgramBillConcern(usa, new WelfareProgramBill { Type = programme.Type, IsAdd = !programme.IsImplemented })),
+                };
+                // the procedure is in the key: the reconciliation's own moves, asked again at cloture - the model answers the two apart (a majority against three
+                // fifths of the sworn), so a key without the procedure would answer the second from the first's entry
+                BillConcern atCloture = ParliamentSystem.GetBudgetBillConcern(usa, UsCongressDiagnostic.RatesBill(usa, "REP"));
+                atCloture.Reconciliation = false;
+                bills.Add(("the same moves at cloture", atCloture));
+                var cache = new ChamberVerdicts();
+                ChamberVerdicts.VerifyHits = false;
+                int compared = 0;
+                var verdicts = new Dictionary<string, bool>();
+                void Compare(string step, DateTime on)
+                {
+                    foreach ((string what, BillConcern concern) in bills)
+                    {
+                        compared++;
+                        Congress.Verdict cached = cache.Chambers(usa, concern, on);
+                        string difference = cached == null ? "no projection - the cache asked one chamber" : ChamberVerdicts.Difference(cached, Congress.Project(usa, concern, on));
+                        if (difference != null) { failures.Add($"USA {step}, {what}: {difference}"); }
+                        bool verdict = cache.WouldPass(usa, concern, on);
+                        if (verdict != ParliamentSystem.WouldBillPass(usa, concern, on)) { failures.Add($"USA {step}, {what}: the cache says {(verdict ? "PASS" : "FAIL")}, the model the other"); }
+                        verdicts[step + " " + what] = verdict;
+                    }
+                }
+
+                Compare("fresh", today);
+                if (verdicts["fresh a party-line reconciliation"] == verdicts["fresh the same moves at cloture"]) { failures.Add("USA: the reconciliation and the same moves at cloture are answered alike - the procedure's place in the key proved nothing"); }
+                int missesFresh = cache.Misses, hitsFresh = cache.Hits;
+                Compare("again", today);
+                if (cache.Hits <= hitsFresh) { failures.Add($"USA: asked again, the cache took no hits ({cache.Hits} after {hitsFresh}) - it is not caching the two chambers"); }
+                if (cache.Misses != missesFresh) { failures.Add($"USA: asked again, the cache missed {cache.Misses - missesFresh} time(s) - an unchanged question went to Congress again"); }
+                ChamberVerdicts.VerifyHits = true;
+                Compare("again, verified", today);
+                ChamberVerdicts.VerifyHits = false;
+
+                Dictionary<string, int> seated = usa.SecondChamberSeats;
+                try
+                {
+                    string larger = seated.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).First().Key;
+                    string smaller = seated.Where(kv => kv.Key != larger).OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).First().Key;
+                    var moved = new Dictionary<string, int>(seated);
+                    moved[larger] -= 7;
+                    moved[smaller] += 7;
+                    usa.SecondChamberSeats = moved;
+                    int invalidations = cache.Invalidations;
+                    Compare("the Senate's seats moved", today);
+                    if (cache.Invalidations == invalidations) { failures.Add($"USA: seven Senate seats moved from {larger} to {smaller} and the cache kept its entries - the Senate's seats are not in its key"); }
+
+                    usa.SecondChamberSeats = new Dictionary<string, int> { { "REP", 50 }, { "DEM", 50 } };
+                    Compare("a 50-50 Senate, the vice president of " + today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), today);
+                    Compare("a 50-50 Senate, the vice president of " + UsCongressDiagnostic.HarrisLastDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), UsCongressDiagnostic.HarrisLastDay);
+                    bool onToday = verdicts["a 50-50 Senate, the vice president of " + today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " a party-line reconciliation"];
+                    bool onHarris = verdicts["a 50-50 Senate, the vice president of " + UsCongressDiagnostic.HarrisLastDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " a party-line reconciliation"];
+                    if (onToday == onHarris) { failures.Add($"USA: on a 50-50 Senate the reconciliation {(onToday ? "carries" : "fails")} under both vice presidents - the tie proved nothing about the vice president in the key"); }
+                }
+                finally { usa.SecondChamberSeats = seated; }
+
+                sb.Append(string.Format(CultureInfo.InvariantCulture,
+                    "    USA     {0,2} comparisons over both chambers, {1} hits, {2} misses, {3} invalidations - the Senate's seats moved and a 50-50 tie under two vice presidents; this part {4:F1} s of the bar\n",
+                    compared, cache.Hits, cache.Misses, cache.Invalidations, clock.Elapsed.TotalSeconds));
+            }
+            catch (Exception e) { failures.Add($"USA (two chambers): threw - {e.GetType().Name}: {e.Message}"); }
+            finally
+            {
+                foreach (UnityEngine.GameObject go in hosts) { if (go != null) { UnityEngine.Object.DestroyImmediate(go); } }
+                EnergyMarket.ResetTurnState();
+                SimulationRandom.RestoreState(seedWas, drawsWas);
+            }
+        }
+
         private static void Withdrawal(SimulationManager sim, Country sweden, World world, List<string> failures, StringBuilder line)
         {
             PoliSim.Elections.GovernmentRecord start = sweden.Government;
@@ -211,7 +311,7 @@ namespace PoliSim.EditorTools
                 member.Cuts.AddRange(government.Cuts);
                 if (Differ(StanceModel.Stances(sweden, member), StanceModel.Stances(sweden, government)) == null) { continue; }
                 authorPairs++;
-                bool cachedMember = cache.WouldPass(sweden, member);
+                bool cachedMember = cache.WouldPass(sweden, member, sim.CurrentDate);
                 string difference = Differ(cache.Stances(sweden, member), StanceModel.Stances(sweden, member));
                 if (cachedMember != ParliamentSystem.WouldBillPass(sweden, member) || difference != null) { failures.Add($"Sweden: {law} as a member's bill was answered from the government's entry - the concern's author is not in the key ({difference ?? "the verdict"})"); break; }
                 if (authorPairs >= 3) { break; }
@@ -378,7 +478,7 @@ namespace PoliSim.EditorTools
             int wrong = 0;
             foreach ((string law, BillConcern concern) in bills)
             {
-                bool cached = cache.WouldPass(country, concern);
+                bool cached = cache.WouldPass(country, concern, SimulationManager.EpochDate);
                 var stances = new List<PartyStance>(cache.Stances(country, concern));
                 bool model = ParliamentSystem.WouldBillPass(country, concern);
                 string difference = Differ(stances, StanceModel.Stances(country, concern));

@@ -262,22 +262,30 @@ namespace PoliSim.UI
                 penImage.preserveAspect = true;
                 Fixed(penImage.gameObject, 45f, 45f);
             }
-            Text number = Word(head, "Division No. " + record.Number.ToString(CultureInfo.InvariantCulture), PoliSimTheme.Body, 42, PoliSimTheme.TextPrimary);
+            // PS-6 US-18: a bill through both chambers carries both divisions on one plate - the first chamber's (record.OtherChamber) and the second's
+            DivisionRecord first = record.OtherChamber;
+            bool congress = InCongress(country, record);
+            string numbers = first != null ? "Divisions No. " + first.Number.ToString(CultureInfo.InvariantCulture) + " and " + record.Number.ToString(CultureInfo.InvariantCulture)
+                : "Division No. " + record.Number.ToString(CultureInfo.InvariantCulture);
+            Text number = Word(head, numbers, PoliSimTheme.Body, 42, PoliSimTheme.TextPrimary);
             string day = record.Date.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
-            Word(head, StartBrief.ChamberOf(country.Id) + " · " + day, PoliSimTheme.Body, 26, Muted);
+            string chamber = first != null ? Congress.ChamberName(country.Id, first.Chamber) + " and " + Congress.ChamberName(country.Id, record.Chamber)
+                : congress ? Congress.ChamberName(country.Id, record.Chamber) : StartBrief.ChamberOf(country.Id);
+            Word(head, chamber + " · " + day, PoliSimTheme.Body, 26, Muted);
             CanvasRows.Spacer(head);
 
             DivisionContest contest = record.Contest;
             string stamp = contest != null ? (contest.AlternativeAdopted ? "ALTERNATIVE ADOPTED" : "FRAMES ADOPTED")
-                : record.Required > 0 ? (record.Passed ? "VETO OVERRIDDEN" : "VETO STANDS")   // §761: the Sejm's vote on the President's veto
-                : record.Passed ? "CARRIED" : "LOST";
+                : record.Required > 0 && !record.Cloture ? (record.Passed ? "VETO OVERRIDDEN" : "VETO STANDS")   // §761: the Sejm's vote on the President's veto
+                : record.Passed ? "CARRIED" : congress ? "LOST IN THE " + Congress.ChamberName(country.Id, record.Chamber).ToUpperInvariant() : "LOST";   // PS-6 US-18: the chamber that stopped it
             CanvasRows.Stamp(head, stamp, Figure, record.Passed ? PoliSimTheme.Good : PoliSimTheme.Bad);
 
             string axis = record.Axis == (int)BillAxis.Trade ? "THE OPENNESS AXIS" : "THE FISCAL AXIS";
-            CanvasRows.Slip(number.gameObject, overlay, "DIVISION No. " + record.Number.ToString(CultureInfo.InvariantCulture), new[]
+            CanvasRows.Slip(number.gameObject, overlay, first != null ? numbers.ToUpperInvariant() : "DIVISION No. " + record.Number.ToString(CultureInfo.InvariantCulture), new[]
             {
                 day.ToUpperInvariant() + " · " + stamp,
-                "ALIGNMENT " + Signed(record.Alignment) + " ON " + axis + " - THE SEAT-WEIGHTED LEAN; " + (record.Required > 0 ? "IT DECIDES NOTHING HERE - THE 3/5 LINE DOES" : "IT BREAKS A TIE IN THE COUNT AND NOTHING ELSE"),   // §761
+                "ALIGNMENT " + Signed(record.Alignment) + " ON " + axis + " - THE SEAT-WEIGHTED LEAN; " + (congress ? "IT DECIDES NOTHING HERE - EACH CHAMBER'S COUNT DOES"
+                    : record.Required > 0 ? "IT DECIDES NOTHING HERE - THE 3/5 LINE DOES" : "IT BREAKS A TIE IN THE COUNT AND NOTHING ELSE"),   // §761
             });
 
             // The bill's own title: not in the composition, kept so the plate says what is signed (asked).
@@ -305,7 +313,7 @@ namespace PoliSim.UI
             columns.childForceExpandWidth = false;
             columns.childForceExpandHeight = true;
 
-            BuildDivision(Column(grid.transform, "Division", DivisionWidth, 0f), record, overlay);
+            BuildDivision(Column(grid.transform, "Division", DivisionWidth, 0f), country, record, overlay);
             BuildStances(Column(grid.transform, "Stances", StancesWidth, 0f), country, record, overlay);
             BuildImpact(Column(grid.transform, "Impact", 0f, 1f), record, overlay);
         }
@@ -316,8 +324,17 @@ namespace PoliSim.UI
         /// share of the chamber (with nobody undecided the two agree: 175 of Sweden's 349). A budget contest (PS-3f) is the same count between its two
         /// proposals, a tie keeping the government's frames.
         /// </summary>
-        private static void BuildDivision(Transform column, DivisionRecord record, Transform overlay)
+        private static void BuildDivision(Transform column, Country country, DivisionRecord record, Transform overlay)
         {
+            // PS-6 US-18: a bill through both chambers - each chamber's division in the order it voted (the first chamber's carried on the second's record);
+            // a US division the first chamber stopped is drawn by the same block, its chamber's rule named
+            if (record.Contest == null && InCongress(country, record))
+            {
+                ColumnHead(column, record.OtherChamber != null ? "The divisions" : "The division");
+                if (record.OtherChamber != null) { ChamberDivision(column, country, record.OtherChamber, overlay); }
+                ChamberDivision(column, country, record, overlay);
+                return;
+            }
             ColumnHead(column, "The division");
             if (record.Contest != null)
             {
@@ -376,6 +393,78 @@ namespace PoliSim.UI
                 "FOR " + forSeats.ToString(CultureInfo.InvariantCulture) + " · AGAINST " + against.ToString(CultureInfo.InvariantCulture) + " · UNDECIDED " + undecided.ToString(CultureInfo.InvariantCulture),
                 "THE COUNT DECIDES - FOR AGAINST AGAINST, THE UNDECIDED ABSTAINING; NO FIXED SEAT LINE",
                 "THE LINE: " + (votesCast / 2 + 1).ToString(CultureInfo.InvariantCulture) + ", MORE THAN HALF OF THE " + votesCast.ToString(CultureInfo.InvariantCulture) + " VOTES CAST",
+            });
+        }
+
+        /// <summary>PS-6 US-18: whether a division is Congress's - one of a bill's two chambers' (the second's carrying the first's, or the Senate's alone), or
+        /// any division of a country whose bills go through both chambers (`Congress.Applies`), where even the House's count is "a majority of those voting, a
+        /// tie failing" and no alignment breaks a tie.</summary>
+        private static bool InCongress(Country country, DivisionRecord record) =>
+            record.OtherChamber != null || record.Chamber == Congress.Senate || record.Cloture || Congress.Applies(country);
+
+        /// <summary>
+        /// PS-6 US-18: ONE CHAMBER'S DIVISION ON A CONGRESS PLATE - the chamber and its verdict as a caption, the count, the bar and its line, and what
+        /// abstained. The House counts a majority of those voting (the line more than half the votes cast, a tie failing); the Senate at cloture counts its
+        /// yeas against three fifths of the senators sworn - the bar runs over every senator sworn, an abstaining one no yea, the line at its own share
+        /// (`DivisionRecord.Required` of `DivisionRecord.Sworn`); by reconciliation a majority, the Vice President deciding an equal division (his vote named).
+        /// </summary>
+        private static void ChamberDivision(Transform column, Country country, DivisionRecord record, Transform overlay)
+        {
+            string name = Congress.ChamberName(country.Id, record.Chamber);
+            string procedure = record.Chamber != Congress.Senate ? string.Empty : record.Cloture ? " · cloture" : " · reconciliation";
+            Note(column, name + procedure + " · " + (record.Passed ? "passed" : "rejected"));
+            int forSeats = 0, undecided = 0, against = 0;
+            foreach (DivisionSide side in record.Sides)
+            {
+                if (side.Side > 0) { forSeats += side.Seats; } else if (side.Side < 0) { against += side.Seats; } else { undecided += side.Seats; }
+            }
+            if (record.Sides.Count == 0)
+            {
+                Note(column, "Uncontested - nothing asked of it");
+                return;
+            }
+            Transform count = CanvasRows.HRow(column, "Count", 66f, 15f);
+            count.GetComponent<HorizontalLayoutGroup>().childForceExpandHeight = true;
+            count.GetComponent<LayoutElement>().flexibleHeight = 0f;
+            Word(count, forSeats.ToString(CultureInfo.InvariantCulture), PoliSimTheme.Document, 45, PoliSimTheme.Good, TextAnchor.LowerLeft);
+            Word(count, "for", PoliSimTheme.Body, Line, PoliSimTheme.TextPrimary, TextAnchor.LowerLeft);
+            Fixed(Blank(count), 9f, 1f);
+            Word(count, against.ToString(CultureInfo.InvariantCulture), PoliSimTheme.Document, 45, PoliSimTheme.Bad, TextAnchor.LowerLeft);
+            Word(count, "against", PoliSimTheme.Body, Line, PoliSimTheme.TextPrimary, TextAnchor.LowerLeft);
+            string I(int n) => n.ToString(CultureInfo.InvariantCulture);
+            if (record.Cloture)
+            {
+                int sworn = Mathf.Max(record.Sworn, forSeats + against + undecided);
+                CountBar(column, forSeats, sworn - forSeats, PoliSimTheme.Good, PoliSimTheme.Bad, record.Required, sworn > 0 ? Mathf.Clamp01((float)record.Required / sworn) : 0.6f);
+                Note(column, "Three fifths of the " + I(record.Sworn) + " sworn: " + I(record.Required));
+                if (undecided > 0) { Note(column, I(undecided) + " undecided - no yea"); }
+                CanvasRows.Slip(count.gameObject, overlay, "THE " + name.ToUpperInvariant() + " · CLOTURE", new[]
+                {
+                    "FOR " + I(forSeats) + " · AGAINST " + I(against) + " · UNDECIDED " + I(undecided),
+                    "CLOTURE NEEDS THREE FIFTHS OF THE SENATORS DULY CHOSEN AND SWORN - STANDING RULE XXII; PASSAGE THEN FOLLOWS BY A MAJORITY",
+                    "THE LINE: " + I(record.Required) + " OF THE " + I(record.Sworn) + " SWORN ON THE DAY, NEVER A FIXED SIXTY - " + (forSeats >= record.Required ? "CLOTURE INVOKED" : "CLOTURE NOT INVOKED"),
+                });
+                return;
+            }
+            int cast = forSeats + against;
+            bool vicePresident = !string.IsNullOrEmpty(record.VicePresidentParty);   // an equal division his vote decided: the line is the tie itself, not past it
+            int line = vicePresident ? cast / 2 : cast / 2 + 1;
+            CountBar(column, forSeats, against, PoliSimTheme.Good, PoliSimTheme.Bad, line);
+            if (undecided > 0) { Note(column, I(undecided) + " undecided - they abstain"); }
+            if (!string.IsNullOrEmpty(record.VicePresidentParty))
+            {
+                string party = PartySystems.ShortName(country.Id, record.VicePresidentParty);
+                Note(column, "Tied · the Vice President (" + party + ") " + (record.VicePresidentVote > 0 ? "votes for" : record.VicePresidentVote < 0 ? "votes against" : "casts no vote"));
+            }
+            CanvasRows.Slip(count.gameObject, overlay, "THE " + name.ToUpperInvariant() + (record.Chamber == Congress.Senate ? " · RECONCILIATION" : string.Empty), new[]
+            {
+                "FOR " + I(forSeats) + " · AGAINST " + I(against) + " · UNDECIDED " + I(undecided),
+                record.Chamber == Congress.Senate
+                    ? "A RECONCILIATION BILL NEEDS NO CLOTURE - ITS DEBATE IS LIMITED TO TWENTY HOURS (2 U.S.C. 641(e)); A MAJORITY OF THOSE VOTING CARRIES IT, THE VICE PRESIDENT DECIDING AN EQUAL DIVISION; NO YEARLY LIMIT ON RECONCILIATION IS MODELLED"
+                    : "A MAJORITY OF THOSE VOTING CARRIES IT, THE UNDECIDED ABSTAINING; A TIE FAILS",
+                vicePresident
+                    ? "THE LINE: " + I(line) + ", HALF OF THE " + I(cast) + " VOTES CAST - EQUALLY DIVIDED, THE VICE PRESIDENT DECIDES IT"
+                    : "THE LINE: " + I(line) + ", MORE THAN HALF OF THE " + I(cast) + " VOTES CAST",
             });
         }
 
@@ -464,9 +553,14 @@ namespace PoliSim.UI
         {
             string axis = record.Axis == (int)BillAxis.Trade ? "openness axis" : "fiscal axis";
             ColumnHead(column, "Stances · " + axis);
+            if (record.OtherChamber != null)
+            {
+                StancesInBothChambers(column, country, record.OtherChamber, record, overlay);
+                return;
+            }
             if (record.Sides.Count == 0)
             {
-                Note(column, "No sides recorded - this division predates the stances");
+                Note(column, InCongress(country, record) ? "Uncontested - no stance asked" : "No sides recorded - this division predates the stances");
                 return;
             }
             var names = new Dictionary<string, string>();
@@ -478,7 +572,7 @@ namespace PoliSim.UI
             {
                 string vote = contest != null
                     ? (side.Side > 0 ? "Frames" : side.Side < 0 ? "Alternative" : "Abstains")   // PS-3f (§633): a contest's side names the proposal - in full on the slip
-                    : (side.Side > 0 ? "For" : side.Side < 0 ? "Against" : record.Required > 0 ? "Abstains" : "Undecided");   // §761: on the vote on a veto the undecided abstain, counted among those voting
+                    : (side.Side > 0 ? "For" : side.Side < 0 ? "Against" : record.Required > 0 && !record.Cloture ? "Abstains" : "Undecided");   // §761: on the vote on a veto the undecided abstain, counted among those voting (PS-6 US-18: not at cloture)
                 Color ink = contest != null ? (side.Side == 0 ? Muted : ((side.Side < 0) == contest.AlternativeAdopted ? PoliSimTheme.Good : PoliSimTheme.TextPrimary))
                     : side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : Muted;
                 bool modelled = !string.IsNullOrEmpty(side.Reason);   // a record before the stance model carries no alignment worth printing
@@ -503,6 +597,60 @@ namespace PoliSim.UI
                 }
                 else { lines.Add("NO REASON RECORDED - THIS DIVISION PREDATES THE STANCE MODEL"); }
                 CanvasRows.Slip(row.gameObject, overlay, Shown(side) + (names.TryGetValue(side.Abbrev, out string name) ? " · " + name : string.Empty), lines);
+            }
+        }
+
+        /// <summary>
+        /// PS-6 US-18: THE STANCES ON A TWO-CHAMBER PLATE - one line a party, its ONE stance (R-US17 premise (B): a party votes as one, the same in both chambers),
+        /// its seats in each chamber in the order the bill took them (a note above the rows names the order), in the first chamber's seat order; the party's reason
+        /// on the row's slip, as on a single plate.
+        /// </summary>
+        private static void StancesInBothChambers(Transform column, Country country, DivisionRecord first, DivisionRecord second, Transform overlay)
+        {
+            string firstName = Congress.ChamberName(country.Id, first.Chamber), secondName = Congress.ChamberName(country.Id, second.Chamber);
+            var parties = new List<string>();
+            foreach (DivisionSide s in first.Sides.OrderByDescending(s => s.Seats)) { if (!parties.Contains(s.Abbrev)) { parties.Add(s.Abbrev); } }
+            foreach (DivisionSide s in second.Sides.OrderByDescending(s => s.Seats)) { if (!parties.Contains(s.Abbrev)) { parties.Add(s.Abbrev); } }
+            if (parties.Count == 0)
+            {
+                Note(column, "Uncontested - no stance asked");
+                return;
+            }
+            Note(column, firstName + " · " + secondName + " seats - one stance a party");
+            var names = new Dictionary<string, string>();
+            foreach (PoliticalParty party in PartySystems.For(country.Id)) { names[party.Abbrev] = party.Name; }
+            float rowHeight = Mathf.Clamp(StanceBudget / parties.Count, MinStanceRow, RowHeight);
+            foreach (string abbrev in parties)
+            {
+                DivisionSide a = first.Sides.Find(s => s.Abbrev == abbrev), b = second.Sides.Find(s => s.Abbrev == abbrev);
+                DivisionSide side = b ?? a;   // one stance: the same side and alignment in both chambers
+                int inFirst = a?.Seats ?? 0, inSecond = b?.Seats ?? 0;
+                string vote = side.Side > 0 ? "For" : side.Side < 0 ? "Against" : "Undecided";
+                Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : Muted;
+                bool modelled = !string.IsNullOrEmpty(side.Reason);
+
+                Transform row = CanvasRows.HRow(column, "Stance " + abbrev, rowHeight, 12f);
+                CanvasRows.Mark(row, country.Id, abbrev, 30f);
+                CanvasRows.FixedCell(row, Shown(side), 90f, Figure, PoliSimTheme.TextPrimary);
+                CanvasRows.FixedCell(row, inFirst.ToString(CultureInfo.InvariantCulture) + " · " + inSecond.ToString(CultureInfo.InvariantCulture), 110f, Figure, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+                CanvasRows.FixedCell(row, vote, 132f, Figure, ink, TextAnchor.MiddleLeft, PoliSimTheme.Display);   // the single plate's width: "Undecided" fits it
+                Text alignment = CanvasRows.FixedCell(row, modelled ? Signed(side.Alignment) : string.Empty, 0f, Figure, PoliSimTheme.TextPrimary, TextAnchor.MiddleRight);
+                LayoutElement stretch = alignment.GetComponent<LayoutElement>();
+                stretch.minWidth = 0f;
+                stretch.flexibleWidth = 1f;
+                Hairline(row);
+
+                var lines = new List<string>
+                {
+                    vote.ToUpperInvariant() + " · " + UiFormat.Seats(inFirst).ToUpperInvariant() + " IN THE " + firstName.ToUpperInvariant() + " · " + UiFormat.Seats(inSecond).ToUpperInvariant() + " IN THE " + secondName.ToUpperInvariant(),
+                    "ONE STANCE IN BOTH CHAMBERS - A PARTY VOTES AS ONE",
+                };
+                if (modelled)
+                {
+                    lines.Add("ALIGNMENT " + Signed(side.Alignment) + " ON THE " + (second.Axis == (int)BillAxis.Trade ? "OPENNESS AXIS" : "FISCAL AXIS"));
+                    lines.Add(side.Reason.ToUpperInvariant());
+                }
+                CanvasRows.Slip(row.gameObject, overlay, Shown(side) + (names.TryGetValue(abbrev, out string name) ? " · " + name : string.Empty), lines);
             }
         }
 

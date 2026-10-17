@@ -48,6 +48,11 @@ namespace PoliSim.Simulation
         /// <summary>PS-3i-2b (ruled 2026-09-29, §654): the party that tabled the bill - it votes for its own bill. The player's bills carry the player's
         /// party (`ParliamentSystem`'s bill concerns); a government's own budget and a concern scored for no bill carry none.</summary>
         public string Author;
+        /// <summary>PS-6 US-18: the bill rides RECONCILIATION - where a second chamber votes it (<see cref="Congress"/>, the USA's Senate), the simple-majority
+        /// path of 2 U.S.C. 641(e) in place of cloture. Set by the bill kinds' concern builders from <see cref="Congress.RidesReconciliation(Country, Congress.Kind)"/>
+        /// and <see cref="Congress.RidesReconciliation(Country, BudgetBill)"/> - false for every country but the USA, and for every bill kind the reading leaves at
+        /// cloture; no stance reads it (the one stance, R-US17 premise (B)), only the second chamber's procedure.</summary>
+        public bool Reconciliation;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 

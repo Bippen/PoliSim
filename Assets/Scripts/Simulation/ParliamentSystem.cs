@@ -360,6 +360,9 @@ namespace PoliSim.Simulation
         /// sat above a map of 149 FOR and 200 AGAINST - one panel contradicting itself. An empty concern (nothing
         /// moved) passes unconditionally, as a zero direction always has.
         /// </summary>
+        /// <remarks>PS-6 US-18: this is the FIRST chamber's count - the only chamber of every country with one, the House where a bill goes through two. A bill's
+        /// verdict through every chamber the country votes it in is <see cref="WouldBillPass(Country, BillConcern, System.DateTime)"/>, and every reader that
+        /// can meet the USA reads that one.</remarks>
         public static bool WouldBillPass(Country country, BillConcern concern)
         {
             if (concern == null || concern.IsEmpty) { return true; }
@@ -371,6 +374,40 @@ namespace PoliSim.Simulation
             }
             if (forSeats != againstSeats) { return forSeats > againstSeats; }
             return GetSeatWeightedAlignment(country, concern) > 0f;
+        }
+
+        /// <summary>
+        /// PS-6 US-18: A BILL'S VERDICT THROUGH EVERY CHAMBER THE COUNTRY VOTES IT IN, on <paramref name="on"/> (the vote's day). Where a bill goes through both
+        /// chambers (<see cref="Congress.VotesBothChambers"/> - the USA with its Senate seated, the government's own budget excepted until US-22) it is the one
+        /// projection, <see cref="Congress.Project"/>: the House by a majority of those voting, then the Senate at cloture or by reconciliation, the Vice President
+        /// of that day deciding an equal division. Everywhere else it is the chamber's count above, unchanged.
+        /// </summary>
+        public static bool WouldBillPass(Country country, BillConcern concern, System.DateTime on)
+            => Congress.VotesBothChambers(country, concern) ? Congress.Project(country, concern, on).Passed : WouldBillPass(country, concern);
+
+        /// <summary>
+        /// PS-6 US-18: A BILL VOTED AND RECORDED - every resolution site's one call (the verdict, then the division, as each site wrote them in turn). Where a
+        /// bill goes through both chambers, <see cref="Congress.Divide"/>: each chamber's division its own record, the second carrying the first, and the
+        /// returned one the division that carries the bill's ceremony (<see cref="Congress.VotesBothChambers"/> decides: the USA's government budget stays in the
+        /// House until US-22). Everywhere else exactly the two calls every site made before -
+        /// <see cref="WouldBillPass(Country, BillConcern)"/> then <see cref="RecordDivision(Country, string, BillConcern, bool, System.DateTime, BillAxis)"/> - in
+        /// that order, so no single-chamber country's path moves by a byte.
+        /// </summary>
+        public static DivisionRecord Divide(Country country, string title, BillConcern concern, System.DateTime date, out bool passed, BillAxis axis = BillAxis.Fiscal)
+        {
+            if (Congress.VotesBothChambers(country, concern)) { return Congress.Divide(country, title, concern, date, out passed, axis); }
+            passed = WouldBillPass(country, concern);
+            return RecordDivision(country, title, concern, passed, date, axis);
+        }
+
+        /// <summary>PS-6 US-18: the same, the title read from the bill's verdict (the government's budget names its own fate) - everywhere but a two-chamber
+        /// country the three steps the site took before, in its order: the count, the title, the record.</summary>
+        public static DivisionRecord Divide(Country country, System.Func<bool, string> titleOf, BillConcern concern, System.DateTime date, out bool passed, out string title, BillAxis axis = BillAxis.Fiscal)
+        {
+            if (Congress.VotesBothChambers(country, concern)) { return Congress.Divide(country, titleOf, concern, date, out passed, out title, axis); }
+            passed = WouldBillPass(country, concern);
+            title = titleOf(passed);
+            return RecordDivision(country, title, concern, passed, date, axis);
         }
 
         /// <summary>
@@ -949,7 +986,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
         {
-            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill };   // PS-3e (§632)
+            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill, Reconciliation = Congress.RidesReconciliation(country, bill) };   // PS-3e (§632); PS-6 US-18: the Senate's path, by the bill's content
             foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { concern.Add(StanceAxis.Redistribution, -BracketRateMove(country, bill, FindTaxLine(country, kvp.Key))); }   // F4-4: the sub-rows' points
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
@@ -1063,13 +1100,13 @@ namespace PoliSim.Simulation
         public static BillConcern GetTaxProgramBillConcern(Country country, TaxProgramBill bill)
         {
             float direction = GetTaxProgramBillDirection(country, bill);
-            return Authored(country, new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction));
+            return Authored(country, new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.TaxProgram) }.Add(StanceAxis.SpendVsTax, -direction));   // PS-6 US-18: the revenue laws, 641(a)(2)
         }
 
         public static BillConcern GetWelfareProgramBillConcern(Country country, WelfareProgramBill bill)
         {
             float direction = GetWelfareProgramBillDirection(country, bill);
-            var concern = new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction);
+            var concern = new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.WelfareProgram) }.Add(StanceAxis.SpendVsTax, -direction);   // PS-6 US-18: entitlement authority, 641(a)(1)(C)
             if (!bill.IsAdd && direction < 0f) { concern.Cuts.Add((null, bill.Type, 1f)); }
             return Authored(country, concern);
         }

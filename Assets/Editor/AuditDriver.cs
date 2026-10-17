@@ -675,7 +675,8 @@ namespace PoliSim.EditorTools
                 if (d.Number <= _lastDivision) { continue; }
                 _lastDivision = d.Number;
                 string contest = d.Contest == null ? string.Empty : $" ({d.Contest.VotesFor} for, {d.Contest.VotesAgainst} against, {d.Contest.Abstentions} abstaining{(d.Contest.AlternativeAdopted ? ", the alternative adopted" : string.Empty)})";
-                Event($"DIVISION #{d.Number} {d.Date:yyyy-MM-dd}{(d.Motion ? " motion" : string.Empty)}: '{d.Title}' {(d.Passed ? "PASSED" : "FAILED")}{contest}");
+                bool carried = c.Divisions.Entries.Exists(s => ReferenceEquals(s.OtherChamber, d));   // PS-6 US-18: a first chamber's passage the next division carries is marked a motion, and is no motion
+                Event($"DIVISION #{d.Number} {d.Date:yyyy-MM-dd}{(carried ? " first chamber, carried to the next" : d.Motion ? " motion" : string.Empty)}: '{d.Title}' {(d.Passed ? "PASSED" : "FAILED")}{contest}");
             }
         }
 
