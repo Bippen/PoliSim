@@ -143,8 +143,10 @@ namespace PoliSim.EditorTools
             // K-1 part (4) (2026-09-24, Elias's order: the day-one government "marked provisional"): PROVISIONAL here is the standing of
             // the WORLD's government - the Riksdag has not yet chosen a prime minister, so the formation's result stands in - addressed
             // to the player, the same class as PRELIMINARY on a published figure; not the data-class tag this check hunts. Exactly these
-            // three literals: the picker's line, its row mark, the compass legend's word.
+            // three literals: the picker's line, its row mark, the compass legend's word - and the picker line's other reason, a start whose sitting
+            // cabinet's parties the record does not name (Italy's, France's), the same standing.
             ("CountrySelectorScreen.cs", "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER"),
+            ("CountrySelectorScreen.cs", "PROVISIONAL · THE SITTING CABINET'S PARTIES ARE NOT IN THE RECORD"),
             ("CountrySelectorScreen.cs", " · IN THE CABINET (PROVISIONAL)"),
             ("PoliticalCompassRenderer.cs", " (PROVISIONAL)"),
             // Board 5b (D11 row 2, 2026-09-02): the People page prints its honesty class ON the instrument in the

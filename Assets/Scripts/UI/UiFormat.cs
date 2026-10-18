@@ -162,6 +162,16 @@ namespace PoliSim.UI
         /// "349 seats". Every label that prints a count of seats a party or a bloc may hold one of goes through here.</summary>
         public static string Seats(int count) => count.ToString(CultureInfo.InvariantCulture) + (count == 1 ? " seat" : " seats");
 
+        /// <summary>A name's possessive in the name's own case: "SWEDEN'S", "Sweden's", and a name ending in s takes the apostrophe alone ("UNITED STATES'",
+        /// "United States'") - never "STATES'S".</summary>
+        public static string Possessive(string name)
+        {
+            if (string.IsNullOrEmpty(name)) { return name; }
+            char last = name[name.Length - 1];
+            if (last == 's' || last == 'S') { return name + "'"; }
+            return name + (char.IsUpper(last) ? "'S" : "'s");
+        }
+
         /// <summary>§718: a small count as the captions spell it - ZERO to TWELVE in words, the figure past it (the Policy Web's own rule, lifted
         /// here so the captions that name a count from data share it).</summary>
         public static string CountWord(int count)

@@ -39763,3 +39763,32 @@ COAL-2 and PL-C are filed as rows. **Placements the ORDER does not name** are Co
 **I16** (the asks still open, each answered in one line in the report that follows this installation, built meanwhile on Code's recommendation, PROVISIONAL, wherever it can be reversed): `docs/ASKS_FOR_ELIAS.md`'s header lists them.
 
 **Bars:** one chain on this tree (`chain855`): the three instruments' card blocks rewritten first (`wr855h`, `wr855s`, `wr855m`; `docs/reference/US_ELECTIONS.md`), then the cheap bar `cheap855` 116 of 116 clean and the documents bar `doc855` 20 of 20 clean.
+
+
+## 858. BUG-1, THE CLEAR BUGS (ORDER STEP 1): "1 SEAT"; EACH COUNTRY'S OWN PROVISIONAL REASON ON THE PICKER; A PRESIDENCY'S PARTY "IN THE ADMINISTRATION"; THE COMPASS'S ELECTORATE DRAWN OVER THE DOTS, ITS TAG ON A CLEAR SIDE, AND "UNITED STATES'"; THE US COUNT FAILURE'S OWN LOG PREFIX (US-8'S N4) (2026-10-18)
+
+**What was owed** (Elias's ORDER step 1, `docs/RULINGS_2026-10-18.md`; read at §857 as the defects filed from the films and the reviews, `docs/ASKS_FOR_ELIAS.md`'s last section): five defects.
+
+**Built** (an implementer on `wave/bug1` da9dbf5a, integrated by `git diff --binary -M 40f33c75 wave/bug1 | git apply -3 --index`; every file equals the branch):
+1. **"1 SEAT".** `CountrySelectorScreen.PartyLine` prints SEAT for a party with one seat. The one helper serves both the Canvas panel and the IMGUI picker.
+2. **The provisional line.** It was Sweden's wording for every PROVISIONAL start, but Italy's (Draghi) and France's (Attal) caretaker cabinets are provisional because the record has no party list for them. `ProvisionalLine(id, cabinet)` now gives:
+   - Sweden: its Riksdag line, byte-identical;
+   - any other provisional start: "PROVISIONAL · THE SITTING CABINET'S PARTIES ARE NOT IN THE RECORD".
+   MetaTextCheck's allow list carries the new literal beside Sweden's.
+3. **The compass** (`PoliticalCompassRenderer`):
+   - `UiFormat.Possessive` gives "UNITED STATES'" and leaves every other name's 'S as it was. It is used on the CABINET, ELECTORATE and PARTIES headers and on the trail line.
+   - The electorate's diamond and tag are drawn after the country dots, so the US ring no longer covers them.
+   - The tag takes the first side clear of every recorded dot, ring and tag: above (where it stood), then right, below, left. Where above was clear the position is pixel-identical.
+4. **US-8's N4.** `HoldUsPresidentialCount`'s failure warning reads "PRESIDENTIAL: USA - no count on {date}: …", no longer "the count of …". The readers of count lines (`UsPresidentialElectionDiagnostic`, `TermLimitDiagnostic`) can no longer take a failure for a count, and their listeners still collect it.
+5. **A presidency's words** (`CountrySelectorScreen.PresidencyAtStart`, the start's government of record; on the compass the player's `Government.Kind`):
+   - the picker's president's party reads "IN THE ADMINISTRATION", with the key "= THE PRESIDENT'S PARTY";
+   - the compass reads "UNITED STATES' ADMINISTRATION" and tags the ring "administration".
+   Every other country is byte-identical.
+
+**Declared:** the Italy/France provisional wording; the presidency's words; the tag's order of sides.
+
+**Filed:** the same "'S" possessive after a name ending in s survives in `GameController.LawsV35.cs` (a USA trade partner's goods) and in two central-bank lines of `GameController.cs`. Each needs its own frame.
+
+**Reviewed:** `Reviews/2026-10-18_s858_bug1.md`, an independent adversarial reader on the one money-path hunk: **SHIP**, with no H or M finding. Its L1 comment wording is applied, a comment-only step. Its L2 is met: the integrator's first short note was refused by ReviewLedgerCheck (`cheap858` failed on its 2,000-byte floor for a reviewer's report) and is replaced by the reviewer's report. Ledger row s858.
+
+**Bars:** tier SIMULATION + UI on this tree. The cheap bar `cheap858` was 115 of 116, failing only ReviewLedgerCheck: the integrator's own 1,315-byte note fell under the 2,000-byte floor for a reviewer's report, and is replaced by the independent review. The named run `n858` (ReviewLedgerCheck, CommentClaimCheck, MetaTextCheck, CommentImmunityCheck, PhantomGuardCheck, DocumentClaimCheck) then failed only on the comment step, which has no commit yet; the row is re-pinned at the reviewed state, and `n858b` (ReviewLedgerCheck, CommentClaimCheck) is clean. The simulation bar `sim858` is 58 of 58. The dry film `drys858` is clean in all four sessions: USA, Italy 141, France 141 and Sweden 153 measured, 0 failed, 0 overflows. Real films at 1280 (`realus858`, `realit858`, `realfr858`, `realse858`): the USA's picker reads "DEM - Democratic Party · 213 SEATS · IN THE ADMINISTRATION" with the key "IN THE ADMINISTRATION = THE PRESIDENT'S PARTY"; the compass reads "UNITED STATES' ADMINISTRATION / ELECTORATE / PARTIES", with the electorate's tag to the right, clear of Germany's dot, and "administration" under the REP ring; Italy's picker reads "1 SEAT" on IC, ScN, MAIE and UV, and "PROVISIONAL · THE SITTING CABINET'S PARTIES ARE NOT IN THE RECORD".

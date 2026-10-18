@@ -4659,7 +4659,8 @@ namespace PoliSim.Simulation
             Elections.UsPresidentialElection.Contest held = Elections.UsPresidentialElection.Hold(country, CurrentDate, poll, out string why);
             if (held == null)
             {
-                Debug.LogWarning($"PRESIDENTIAL: {country.Id} - the count of {CurrentDate:yyyy-MM-dd} could not be made: {why}; nothing is counted, and the record's president stays seated by date");
+                // its own prefix: a reader that picks count lines by "the count of" (the diagnostics' filters over what their listeners collect) never takes a failure for a count
+                Debug.LogWarning($"PRESIDENTIAL: {country.Id} - no count on {CurrentDate:yyyy-MM-dd}: {why}; nothing is counted, and the record's president stays seated by date");
                 return;
             }
             Debug.Log($"PRESIDENTIAL: {country.Id} - {held.Line}");

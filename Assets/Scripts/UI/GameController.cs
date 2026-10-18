@@ -2296,14 +2296,14 @@ namespace PoliSim.UI
                     System.Collections.Generic.IReadOnlyList<string> cabinet = PoliSim.Elections.GovernmentFormation.Cabinet(country);
                     bool provisional = PoliSim.Elections.GovernmentFormation.IsProvisional(country);
                     // K-1f (§607): with no cabinet no row carries the PROVISIONAL mark, so the picker says the standing itself.
-                    if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(cabinet), _labelStyle); }
+                    if (provisional && cabinet.Count == 0) { GUILayout.Label(CountrySelectorScreen.ProvisionalLine(country.Id, cabinet), _labelStyle); }
                     PoliSim.Elections.WorldClock.PickerView pickStart = PoliSim.Elections.WorldClock.PickerViewOf(country.Id);   // PS-1 (§618): the chamber at the start, not the selector's world
                     cabinet = pickStart.Cabinet; provisional = pickStart.Provisional;
                     foreach (PoliticalParty party in CountrySelectorScreen.PartiesBySeats(country.Id, pickStart.Seats))
                     {
                         if (!PartySystems.IsPlayable(pickStart.Seats, party)) { continue; }
                         int seatedNow = pickStart.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
-                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, seatedNow, cabinet, provisional), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
+                        if (PoliSimWidgets.Button(CountrySelectorScreen.PartyLine(party, seatedNow, cabinet, provisional, CountrySelectorScreen.PresidencyAtStart(country.Id)), UiPalette.BuildButtonStyle(_buttonStyle, UiPalette.ButtonKind.Primary)))
                         {
                             SelectPlayerCountryAndParty(country.Id, party.Abbrev);
                         }

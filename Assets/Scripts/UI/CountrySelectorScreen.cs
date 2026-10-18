@@ -181,22 +181,29 @@ namespace PoliSim.UI
 
         /// <summary>K-1 part (4) and K-1f: the day-one government's standing, in one wording. The Canvas panel prints it whenever the government
         /// is provisional; the IMGUI pickers print it only when no cabinet forms, because with a cabinet their rows carry the (PROVISIONAL) mark
-        /// (§607: the seated Swedish chamber forms none).</summary>
-        public static string ProvisionalLine(IReadOnlyList<string> cabinet) => cabinet != null && cabinet.Count > 0
-            ? "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE CABINET MARKED IS THE MODEL'S FORMATION ON THESE SEATS"
-            : "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER · THE MODEL FORMS NO GOVERNMENT FROM THESE SEATS";
+        /// (§607: the seated Swedish chamber forms none). The reason is the country's own: Sweden's is the Riksdag's vote not yet held; another provisional
+        /// start (Italy's, France's) is one whose sitting cabinet's parties the record does not name (`SeatedGovernment.TryAt`), so the formation stands in.</summary>
+        public static string ProvisionalLine(CountryId id, IReadOnlyList<string> cabinet) =>
+            (id == CountryId.Sweden ? "PROVISIONAL · THE RIKSDAG HAS NOT YET CHOSEN A PRIME MINISTER" : "PROVISIONAL · THE SITTING CABINET'S PARTIES ARE NOT IN THE RECORD")
+            + (cabinet != null && cabinet.Count > 0 ? " · THE CABINET MARKED IS THE MODEL'S FORMATION ON THESE SEATS" : " · THE MODEL FORMS NO GOVERNMENT FROM THESE SEATS");
+
+        /// <summary>Whether the country's executive at its START is a presidency (the USA's): the picker's mark and key then name the administration, not a cabinet.</summary>
+        public static bool PresidencyAtStart(CountryId id) =>
+            WorldClock.TryGovernmentAt(id, WorldClock.StartDate(id), out WorldClock.GovernmentOfRecord g) && g.Kind == WorldClock.ExecutiveKind.Presidency;
 
         /// <summary>One party's line on the picker: its abbreviation, its name as published, its seats at the last real election, and IN THE CABINET when the chamber's own formation seats it (`GovernmentFormation.Cabinet`).
         /// K-1 part (4): (PROVISIONAL) beside it while that cabinet is the formation's stand-in for a government not yet on record - on the IMGUI pickers, which
         /// have no line to say it; the Canvas panel says it once, under its subtitle, and keeps its rows short (the mark was hiding the longest row's first letter).</summary>
         public static string PartyLine(PoliticalParty party, IReadOnlyList<string> cabinet, bool provisional = false) => PartyLine(party, party.SeedSeats, cabinet, provisional);
 
-        /// <summary>PS-1 (§618): the line with the SEATED chamber's seats - the chamber of record at the start, which need not be the latest election's.</summary>
-        public static string PartyLine(PoliticalParty party, int seats, IReadOnlyList<string> cabinet, bool provisional = false)
+        /// <summary>PS-1 (§618): the line with the SEATED chamber's seats - the chamber of record at the start, which need not be the latest election's.
+        /// A presidency's party is marked IN THE ADMINISTRATION (the president's own party - no chamber forms it), and one seat reads SEAT.</summary>
+        public static string PartyLine(PoliticalParty party, int seats, IReadOnlyList<string> cabinet, bool provisional = false, bool presidency = false)
         {
             bool inCabinet = false;
             if (cabinet != null) { foreach (string abbrev in cabinet) { if (abbrev == party.Abbrev) { inCabinet = true; break; } } }
-            return $"{party.ShortName} — {party.Name} · {seats} SEATS{(inCabinet ? (provisional ? " · IN THE CABINET (PROVISIONAL)" : " · IN THE CABINET") : "")}";
+            string mark = !inCabinet ? "" : presidency ? " · IN THE ADMINISTRATION" : provisional ? " · IN THE CABINET (PROVISIONAL)" : " · IN THE CABINET";
+            return $"{party.ShortName} — {party.Name} · {seats} {(seats == 1 ? "SEAT" : "SEATS")}{mark}";
         }
 
         /// <summary>
@@ -242,19 +249,23 @@ namespace PoliSim.UI
             int seats = start.TotalSeats;
             IReadOnlyList<string> cabinet = start.Cabinet;
             bool provisional = start.Provisional;
+            bool presidency = PresidencyAtStart(country.Id);   // a presidency's party is the administration's, not a cabinet the chamber forms
 
             CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR PARTY — {country.Name.ToUpperInvariant()}", PoliSimTheme.Display, 30,
                 PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
             // K-1f (§607): the key to the cabinet mark is said only when a cabinet is marked - over a chamber that forms none it explained nothing.
+            string key = cabinet.Count == 0 ? string.Empty
+                : presidency ? " · IN THE ADMINISTRATION = THE PRESIDENT'S PARTY"
+                : " · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS";
             CanvasChrome.MakeText(column.transform, "Subtitle",
-                $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST" + (cabinet.Count > 0 ? " · IN THE CABINET = THE CABINET THE CHAMBER FORMS FROM THESE SEATS" : string.Empty),
+                $"THE CHAMBER AS ELECTED · {seats} SEATS · LARGEST FIRST" + key,
                 PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
             // K-1 part (4): the day-one government is the model's stand-in until the Riksdag's vote is on record - said where the cabinet is first named.
             if (provisional)
             {
                 // K-1f: the formation may form NO government from the seated chamber - it forms none with the declared rules held and the
                 // model's hold-out as built (a party votes against while holding out for any admissible cabinet of its own, §607) - the line says which.
-                CanvasChrome.MakeText(column.transform, "Provisional", ProvisionalLine(cabinet),
+                CanvasChrome.MakeText(column.transform, "Provisional", ProvisionalLine(country.Id, cabinet),
                     PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
             }
 
@@ -266,7 +277,7 @@ namespace PoliSim.UI
                 if (!PartySystems.IsPlayable(start.Seats, party)) { continue; }   // PS-1 (§618, ruled): seated, or seats at the latest election, or a contested election with a CHES position
                 int seatedNow = start.Seats.TryGetValue(party.Abbrev, out int held) ? held : 0;
                 Button button = CanvasChrome.FacedButton(column.transform, $"Party_{party.Abbrev}",
-                    PartyLine(party, seatedNow, cabinet), PoliSimTheme.Display, 20,   // K-1: the panel's own line carries PROVISIONAL (above); the row stays short
+                    PartyLine(party, seatedNow, cabinet, presidency: presidency), PoliSimTheme.Display, 20,   // K-1: the panel's own line carries PROVISIONAL (above); the row stays short
                     PoliSimTheme.TextPrimary, new Vector2(PartyRowWidth, PartyRowHeight));
                 // §566 (2026-09-22, Design's sitting part A item 6): THE PARTY'S OWN MARK at the row's left, the delivered `mark_party_*` art the campaign's support
                 // plate already draws - the picker is where the player first meets these parties and it showed them as brass strips of text. A party with no mark on

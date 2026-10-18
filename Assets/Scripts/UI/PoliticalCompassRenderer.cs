@@ -88,6 +88,11 @@ namespace PoliSim.UI
                    + captionStyle.CalcHeight(new GUIContent(captions.Y), width);
         }
 
+        /// <summary>Whether the player's executive is a presidency (the USA's): the legend and the ring's tag then name the administration, not a cabinet.</summary>
+        private static bool IsPresidency(Country country) => country.Government != null
+            ? country.Government.Kind == WorldClock.ExecutiveKind.Presidency
+            : WorldClock.TryGovernmentAt(country.Id, Simulation.SimulationManager.EpochDate, out WorldClock.GovernmentOfRecord g) && g.Kind == WorldClock.ExecutiveKind.Presidency;
+
         private static string Pair(CompassPositions.Point p) => string.Format(CultureInfo.InvariantCulture, "{0:F1} · {1:F1}", p.LrEcon, p.Galtan);
 
         /// <summary>The legend column's lines: every point on the plot, named, with its pair and the seats it rests on.</summary>
@@ -107,7 +112,7 @@ namespace PoliSim.UI
             {
                 // K-1 part (4): the cabinet is the formation's stand-in while the real government is not on record - the legend says so.
                 string standing = GovernmentFormation.IsProvisional(player) ? " (PROVISIONAL)" : string.Empty;
-                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S CABINET{standing} · SEAT-WEIGHTED MEAN", null, false, true));
+                lines.Add(new LegendLine($"{UiFormat.Possessive(player.Name.ToUpperInvariant())} {(IsPresidency(player) ? "ADMINISTRATION" : "CABINET")}{standing} · SEAT-WEIGHTED MEAN", null, false, true));
                 IReadOnlyList<string> cabinet = GovernmentFormation.Cabinet(player);
                 CompassPositions.Point? cabinetMean = CompassPositions.CabinetMean(player, out int _);
                 if (cabinet.Count == 0)
@@ -120,7 +125,7 @@ namespace PoliSim.UI
                     lines.Add(new LegendLine($"{string.Join("+", cabinet)}  {tail}", UiPalette.GetCountryColor(player.Id), true, false));
                 }
 
-                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S ELECTORATE · COMPATIBILITY-WEIGHTED MEAN", null, false, true));
+                lines.Add(new LegendLine($"{UiFormat.Possessive(player.Name.ToUpperInvariant())} ELECTORATE · COMPATIBILITY-WEIGHTED MEAN", null, false, true));
                 CompassPositions.Point? electorateMean = CompassPositions.ElectorateMean(player, out int electorateParties);
                 // PS-6 US-6: the electorate's basis in the caption - a country whose poll has a basis of its own (the USA's House vote, R-US15) holds an
                 // electorate that was not fitted to it (σ and τ the four fitted countries' median), so "fitted" would be false there; every other country's
@@ -133,8 +138,8 @@ namespace PoliSim.UI
                 List<(System.DateTime Date, float LrEcon, float Galtan)> playerTrail = CompassPositions.Trail(player);
                 lines.Add(new LegendLine(playerTrail.Count > 0
                     ? string.Format(CultureInfo.InvariantCulture, "{0} point(s) stored for {1}, {2:yyyy-MM-dd} to {3:yyyy-MM-dd}", playerTrail.Count, player.Name, playerTrail[0].Date, playerTrail[playerTrail.Count - 1].Date)
-                    : $"no turn has closed yet - {player.Name}'s trail starts at the first close", null, false, false));
-                lines.Add(new LegendLine($"{player.Name.ToUpperInvariant()}'S PARTIES · PUBLISHED PAIRS (CHES 2024)", null, false, true));
+                    : $"no turn has closed yet - {UiFormat.Possessive(player.Name)} trail starts at the first close", null, false, false));
+                lines.Add(new LegendLine($"{UiFormat.Possessive(player.Name.ToUpperInvariant())} PARTIES · PUBLISHED PAIRS (CHES 2024)", null, false, true));
                 foreach (PoliticalParty party in PartySystems.For(player.Id))
                 {
                     CompassPositions.Point? own = CompassPositions.Party(party);
@@ -254,20 +259,8 @@ namespace PoliSim.UI
                     previousPoint = next;
                 }
             }
-            if (withLegend && player != null)
-            {
-                CompassPositions.Point? electorate = CompassPositions.ElectorateMean(player, out int _);
-                if (electorate.HasValue)
-                {
-                    Vector2 pixel = ToPlotPixel(plotRect, electorate.Value.LrEcon, electorate.Value.Galtan);
-                    DrawCircle(new Rect(pixel.x - ElectorateDiamond * 0.5f, pixel.y - ElectorateDiamond * 0.5f, ElectorateDiamond, ElectorateDiamond), _diamondTexture, PoliSimTheme.TextPrimary);
-                    const string tag = "electorate";
-                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(tag));
-                    float tagX = Mathf.Clamp(pixel.x - tagSize.x * 0.5f, plotRect.x, plotRect.xMax - tagSize.x);
-                    float tagY = Mathf.Clamp(pixel.y - ElectorateDiamond * 0.5f - tagSize.y, plotRect.y, plotRect.yMax - tagSize.y);
-                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), tag, tagStyle);
-                }
-            }
+            // What the plot has drawn so far, so the electorate's tag (drawn last) can be placed clear of it.
+            var taken = new List<Rect>();
 
             if (withLegend && player != null)
             {
@@ -277,26 +270,30 @@ namespace PoliSim.UI
                     CompassPositions.Point? p = CompassPositions.Party(party);
                     if (!p.HasValue) { continue; }
                     Vector2 pixel = ToPlotPixel(plotRect, p.Value.LrEcon, p.Value.Galtan);
-                    DrawCircle(new Rect(pixel.x - PartyDotDiameter * 0.5f, pixel.y - PartyDotDiameter * 0.5f, PartyDotDiameter, PartyDotDiameter),
-                        _circleTexture, PoliSimTheme.TextSecondary);
+                    var dot = new Rect(pixel.x - PartyDotDiameter * 0.5f, pixel.y - PartyDotDiameter * 0.5f, PartyDotDiameter, PartyDotDiameter);
+                    DrawCircle(dot, _circleTexture, PoliSimTheme.TextSecondary);
                     Vector2 tagSize = tagStyle.CalcSize(new GUIContent(party.ShortName));   // §575: the tag is measured on what it draws
                     float tagX = Mathf.Clamp(pixel.x + PartyDotDiameter * 0.5f + 2f, plotRect.x, plotRect.xMax - tagSize.x);
                     float tagY = Mathf.Clamp(pixel.y - tagSize.y * 0.5f, plotRect.y, plotRect.yMax - tagSize.y);
-                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), party.ShortName, tagStyle);
+                    var tagRect = new Rect(tagX, tagY, tagSize.x, tagSize.y);
+                    GUI.Label(tagRect, party.ShortName, tagStyle);
+                    taken.Add(dot); taken.Add(tagRect);
                 }
 
-                // 2. The sitting cabinet, a hollow ring in the country's ink.
+                // 2. The sitting cabinet - a presidency's administration - a hollow ring in the country's ink.
                 CompassPositions.Point? cabinet = CompassPositions.CabinetMean(player, out int _);
                 if (cabinet.HasValue)
                 {
                     Vector2 pixel = ToPlotPixel(plotRect, cabinet.Value.LrEcon, cabinet.Value.Galtan);
-                    DrawCircle(new Rect(pixel.x - CabinetRingDiameter * 0.5f, pixel.y - CabinetRingDiameter * 0.5f, CabinetRingDiameter, CabinetRingDiameter),
-                        _ringTexture, UiPalette.GetCountryColor(player.Id));
-                    const string tag = "cabinet";
+                    var ring = new Rect(pixel.x - CabinetRingDiameter * 0.5f, pixel.y - CabinetRingDiameter * 0.5f, CabinetRingDiameter, CabinetRingDiameter);
+                    DrawCircle(ring, _ringTexture, UiPalette.GetCountryColor(player.Id));
+                    string tag = IsPresidency(player) ? "administration" : "cabinet";
                     Vector2 tagSize = tagStyle.CalcSize(new GUIContent(tag));
                     float tagX = Mathf.Clamp(pixel.x - tagSize.x * 0.5f, plotRect.x, plotRect.xMax - tagSize.x);
                     float tagY = Mathf.Clamp(pixel.y + CabinetRingDiameter * 0.5f + 1f, plotRect.y, plotRect.yMax - tagSize.y);
-                    GUI.Label(new Rect(tagX, tagY, tagSize.x, tagSize.y), tag, tagStyle);
+                    var tagRect = new Rect(tagX, tagY, tagSize.x, tagSize.y);
+                    GUI.Label(tagRect, tag, tagStyle);
+                    taken.Add(ring); taken.Add(tagRect);
                 }
             }
 
@@ -307,13 +304,53 @@ namespace PoliSim.UI
                 CompassPositions.Point? mean = CompassPositions.ChamberMean(country, out int _);
                 if (!mean.HasValue) { continue; }
                 Vector2 point = ToPlotPixel(plotRect, mean.Value.LrEcon, mean.Value.Galtan);
+                float extent = DotDiameter;
                 if (country.Id == playerCountryId)
                 {
                     playerPixel = point;
                     float ringDiameter = DotDiameter + PlayerRingExtraDiameter;
                     DrawCircle(new Rect(point.x - ringDiameter * 0.5f, point.y - ringDiameter * 0.5f, ringDiameter, ringDiameter), _ringTexture, PlayerRingColor);
+                    extent = ringDiameter;
                 }
                 DrawCircle(new Rect(point.x - DotDiameter * 0.5f, point.y - DotDiameter * 0.5f, DotDiameter, DotDiameter), _circleTexture, UiPalette.GetCountryColor(country.Id));
+                taken.Add(new Rect(point.x - extent * 0.5f, point.y - extent * 0.5f, extent, extent));
+            }
+
+            // 4. The player's electorate, a diamond at the compatibility-weighted mean, drawn LAST: drawn first, a country's dot or the player's
+            // ring could cover it where the points coincide, and another country's dot its tag. The tag takes the first side
+            // of the diamond (above, right, below, left, above clear of the ring) clear of every point and tag already drawn; where none is clear, above, as it was.
+            if (withLegend && player != null)
+            {
+                CompassPositions.Point? electorate = CompassPositions.ElectorateMean(player, out int _);
+                if (electorate.HasValue)
+                {
+                    Vector2 pixel = ToPlotPixel(plotRect, electorate.Value.LrEcon, electorate.Value.Galtan);
+                    DrawCircle(new Rect(pixel.x - ElectorateDiamond * 0.5f, pixel.y - ElectorateDiamond * 0.5f, ElectorateDiamond, ElectorateDiamond), _diamondTexture, PoliSimTheme.TextPrimary);
+                    const string tag = "electorate";
+                    Vector2 tagSize = tagStyle.CalcSize(new GUIContent(tag));
+                    // Above at the diamond's own edge, where it always stood; the other sides clear of the player's ring as well, which the diamond
+                    // sits inside wherever the electorate's mean and the chamber's coincide.
+                    float half = ElectorateDiamond * 0.5f;
+                    float clearOfRing = Mathf.Max(half, (DotDiameter + PlayerRingExtraDiameter) * 0.5f) + 2f;
+                    Vector2[] sides =
+                    {
+                        new Vector2(pixel.x - tagSize.x * 0.5f, pixel.y - half - tagSize.y),
+                        new Vector2(pixel.x + clearOfRing, pixel.y - tagSize.y * 0.5f),
+                        new Vector2(pixel.x - tagSize.x * 0.5f, pixel.y + clearOfRing),
+                        new Vector2(pixel.x - clearOfRing - tagSize.x, pixel.y - tagSize.y * 0.5f),
+                        new Vector2(pixel.x - tagSize.x * 0.5f, pixel.y - clearOfRing - tagSize.y),
+                    };
+                    Rect chosen = Rect.zero;
+                    for (int i = 0; i < sides.Length; i++)
+                    {
+                        var candidate = new Rect(Mathf.Clamp(sides[i].x, plotRect.x, plotRect.xMax - tagSize.x), Mathf.Clamp(sides[i].y, plotRect.y, plotRect.yMax - tagSize.y), tagSize.x, tagSize.y);
+                        if (i == 0) { chosen = candidate; }
+                        bool clear = true;
+                        foreach (Rect other in taken) { if (candidate.Overlaps(other)) { clear = false; break; } }
+                        if (clear) { chosen = candidate; break; }
+                    }
+                    GUI.Label(chosen, tag, tagStyle);
+                }
             }
 
             // Compact: the player's name beside its ring - the one label the card has room for.
