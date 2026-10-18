@@ -65,6 +65,12 @@ namespace PoliSim.Simulation
         /// contract, `LawDefinition.ConstitutionalAmendment`) - so, as before US-21, no defector is drawn on it either: the draw decides only what reaches a
         /// president. Set by the law bill's concern builder from <see cref="Congress.IsUnpresented"/> (false for every country but the USA); no stance reads it.</summary>
         public bool Unpresented;
+        /// <summary>PS-6 US-22 (Ask 2's reading (P), PROVISIONAL - Elias's to rule): the party WITHHOLDING a continuing resolution - it stands AGAINST in both
+        /// chambers and every other seated party FOR (the stance model's fixed sides, `StanceModel.WithheldStances`). A continuing resolution carries the
+        /// standing figures and so moves no axis: with nothing withheld it is asked nothing and passes
+        /// unasked, as an empty concern always has. Set only by the budget's concern builder from `Country.ContinuingResolutionWithheldBy` (the player's verb);
+        /// null on every other concern, so nothing else reads differently.</summary>
+        public string WithheldBy;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 
@@ -77,7 +83,8 @@ namespace PoliSim.Simulation
             return this;
         }
 
-        public bool IsEmpty => _moves.Count == 0;
+        /// <summary>Nothing asked: no axis moved - and, PS-6 US-22, no continuing resolution withheld (<see cref="WithheldBy"/>, null on every other concern).</summary>
+        public bool IsEmpty => _moves.Count == 0 && WithheldBy == null;
 
         /// <summary>The loaded axes with the end each move points at (0 or 10) and the share of the bill's movement it carries.</summary>
         public IEnumerable<(StanceAxis Axis, int End, float Weight)> Loaded()
@@ -277,6 +284,7 @@ namespace PoliSim.Simulation
         {
             var result = new List<PartyStance>();
             if (parties == null) { return result; }
+            if (concern.WithheldBy != null) { return WithheldStances(country, parties, seatsOf, concern.WithheldBy); }   // PS-6 US-22: a withheld continuing resolution's fixed sides - null on every other concern
             bool opennessAvailable = ParliamentSystem.TradeAxisAvailable(country);
             var loaded = new List<(StanceAxis Axis, int End, float Weight)>(concern.Loaded());
 
@@ -446,6 +454,27 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// PS-6 US-22 (Ask 2's reading (P), PROVISIONAL - Elias's to rule): A WITHHELD CONTINUING RESOLUTION'S SIDES. The resolution carries the standing
+        /// figures, so no position is weighed on it: the party that withholds it (<paramref name="withheldBy"/>, the player's verb) stands AGAINST, and every
+        /// other seated party FOR - in each chamber the same (one stance a party, R-US17's premise (B)), its seats this chamber's. Measured, at the full lean
+        /// either way, the reason stated. An AI party never withholds (DECLARED, §636's precedent: an AI motion needs an authored trigger).
+        /// </summary>
+        private static List<PartyStance> WithheldStances(Country country, IReadOnlyList<PoliticalParty> parties, IReadOnlyDictionary<string, int> seatsOf, string withheldBy)
+        {
+            var result = new List<PartyStance>();
+            foreach (PoliticalParty party in parties)
+            {
+                int seats = seatsOf != null ? (seatsOf.TryGetValue(party.Abbrev, out int so) ? so : 0) : (country.ParliamentSeats.TryGetValue(party.Abbrev, out int s) ? s : 0);
+                if (seats <= 0) { continue; }
+                bool withholds = party.Abbrev == withheldBy;
+                var reasons = new List<string> { withholds ? party.Abbrev + " withholds the continuing resolution: it votes against it in both chambers"
+                    : party.Abbrev + " votes for the continuing resolution: it carries the standing figures" };
+                result.Add(new PartyStance(party, seats, withholds ? -1f : 1f, withholds ? -1 : 1, true, reasons));
+            }
+            return result;
+        }
+
+        /// <summary>
         /// P3-A3: the stance's reasons as one line for a screen - the position term first, then the term that moved
         /// it (cohesion, the opposition's line, an opinion cost), then the undecided note; the provenance notes
         /// ("voter profile: ecological …") are left to the record's full list.
@@ -497,6 +526,7 @@ namespace PoliSim.Simulation
                 else if (reason.StartsWith("opinion cost", StringComparison.Ordinal)) { parts.Add("opinion cost below 0.01"); }
                 else if (reason.StartsWith("undecided", StringComparison.Ordinal)) { parts.Add("undecided: inside the band"); }
                 else if (reason.StartsWith("no published", StringComparison.Ordinal)) { parts.Add(reason); }
+                else if (reason.Contains(" the continuing resolution")) { parts.Add(reason.Contains(" withholds ") ? "withholds it" : "for the standing figures"); }   // PS-6 US-22: a withheld resolution's fixed sides
             }
             return string.Join(" · ", parts);
         }

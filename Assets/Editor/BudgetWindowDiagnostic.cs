@@ -66,14 +66,14 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    {0,-8} opens after {1} tick on {2:yyyy-MM-dd}; after it is spent the next opening is tick {3} on {4:yyyy-MM-dd}\n",
                     id, wait, openedOn, reopened, reopenedOn));
 
-                // Once spent, the next opening must be the country's own fiscal-year start - the
-                // arrival window is a one-off, not a process left permanently ajar.
-                (int m, int d2) = FiscalYearData.GetFiscalYearStart(id);
-                if (reopened < 0 || reopenedOn.Month != m || reopenedOn.Day != d2)
+                // Once spent, the next opening must be the country's own request day (PS-6 US-22: its fiscal-year start everywhere but the USA,
+                // whose president's request is due on the first Monday in February) - the arrival window is a one-off, not a process left permanently ajar.
+                DateTime request = FiscalYearData.BudgetRequestDay(id, reopenedOn.Year);
+                if (reopened < 0 || reopenedOn.Date != request)
                 {
                     failures++;
-                    Debug.LogError(F("C-C2: after {0}'s arrival window is spent, the next opening is {1:yyyy-MM-dd}, which is not its fiscal-year start {2:00}-{3:00}. The arrival window must be a one-off.",
-                        id, reopenedOn, m, d2));
+                    Debug.LogError(F("C-C2: after {0}'s arrival window is spent, the next opening is {1:yyyy-MM-dd}, which is not its request day {2:yyyy-MM-dd}. The arrival window must be a one-off.",
+                        id, reopenedOn, request));
                 }
             }
 
@@ -217,11 +217,7 @@ namespace PoliSim.EditorTools
         /// <summary>A date this country's own fiscal-year check will accept, so the window opens on
         /// every tick of the forced run — the strongest form of "opened as early and as often as
         /// possible" without touching the method under test.</summary>
-        private static DateTime FiscalYearStartFor(CountryId id, DateTime near)
-        {
-            (int month, int day) = FiscalYearData.GetFiscalYearStart(id);
-            return new DateTime(near.Year, month, day);
-        }
+        private static DateTime FiscalYearStartFor(CountryId id, DateTime near) => FiscalYearData.BudgetRequestDay(id, near.Year);   // PS-6 US-22: the day the window's own check accepts - the request day
 
         private static string Fingerprint(World world)
         {

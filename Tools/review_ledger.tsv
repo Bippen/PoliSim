@@ -21,7 +21,6 @@ baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	re
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 file	Assets/Scripts/Data/DebtAttribution.cs	aec4c070ec7b8f20c0580f84efaddbf2dacf09b339b26e61929bf7d14775d901	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfbaf4e7558c5c80b45f743d6a063	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/FiscalYearData.cs	2ba5b2d984b84b5afd776a1137e5bf3840e6d0c168970b8bb9a01b3baa9f0015	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/PortfolioEffectiveness.cs	117f10a07b2269d9f5e9ef2150efccb4caf89b50a7df1ca83ca6900c7f03f911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/ProgramBill.cs	476f48d616dbd343b1056d935c79aafa7285328492732c9678bbc12e2fca1f6d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -231,3 +230,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	964c59e2790a8476fa492125fb50
 file	Assets/Scripts/Simulation/SimulationManager.cs	e0a3107d0b4ff87a9f00eef8e9b5436896674e3edcdfc00f4d4938b7b4a3e21b	reviewed	2026-10-17	s851	Reviews/2026-10-17_s851_us18_congress.md	US-18: every bill site through ParliamentSystem.Divide (inert for one chamber; the USA's two chambers, the government's own budget in the House until US-22); two passes, the second confirming the later change comment-only
 file	Assets/Scripts/Simulation/SimulationManager.cs	0bc14c4ae52c9ad5e3b89c16ccfc1b13493b18f0b2929e292b99cfef7df02ab6	reviewed	2026-10-17	s852	Reviews/2026-10-17_s852_us19_roles.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	d1e664445a29435b66700c35e3fd0b05126518d3c45f1d56bf7d30bdcb4f3e75	reviewed	2026-10-18	s853	Reviews/2026-10-17_s853_us21_veto.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	d86302f1e1a55ee1a3ce4df2978a6a3dd57d29bb589e663397fc0c39c9dfeb42	reviewed	2026-10-18	s854	Reviews/2026-10-18_s854_us22_budget.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	0c4e665e6422ec6dac2b8298c86890473363c06cb5bdfbd442482840ffb358e4	reviewed	2026-10-18	s854	Reviews/2026-10-18_s854_us22_budget.md	-
+file	Assets/Scripts/Data/FiscalYearData.cs	56a97c5a3539f8a0aea641376d2a11dcdee52b146205cc2c37be117bd52d3c31	reviewed	2026-10-18	s854	Reviews/2026-10-18_s854_us22_budget.md	-
+file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	36245b15127be777987c12e9b0c8d8c49a8d430c1d7c7d939fc33aa57a412a3a	reviewed	2026-10-18	s854	Reviews/2026-10-18_s854_us22_budget.md	-

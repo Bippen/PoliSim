@@ -378,7 +378,7 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// PS-6 US-18: A BILL'S VERDICT THROUGH EVERY CHAMBER THE COUNTRY VOTES IT IN, on <paramref name="on"/> (the vote's day). Where a bill goes through both
-        /// chambers (<see cref="Congress.VotesBothChambers"/> - the USA with its Senate seated, the government's own budget excepted until US-22) it is the one
+        /// chambers (<see cref="Congress.VotesBothChambers"/> - the USA with its Senate seated, the government's own budget too since US-22) it is the one
         /// projection, <see cref="Congress.Project"/>: the House by a majority of those voting, then the Senate at cloture or by reconciliation, the Vice President
         /// of that day deciding an equal division. Everywhere else it is the chamber's count above, unchanged.
         /// </summary>
@@ -388,8 +388,8 @@ namespace PoliSim.Simulation
         /// <summary>
         /// PS-6 US-18: A BILL VOTED AND RECORDED - every resolution site's one call (the verdict, then the division, as each site wrote them in turn). Where a
         /// bill goes through both chambers, <see cref="Congress.Divide"/>: each chamber's division its own record, the second carrying the first, and the
-        /// returned one the division that carries the bill's ceremony (<see cref="Congress.VotesBothChambers"/> decides: the USA's government budget stays in the
-        /// House until US-22). Everywhere else exactly the two calls every site made before -
+        /// returned one the division that carries the bill's ceremony (<see cref="Congress.VotesBothChambers"/> decides: every bill of the USA with its Senate
+        /// seated, since US-22 the government's own budget too). Everywhere else exactly the two calls every site made before -
         /// <see cref="WouldBillPass(Country, BillConcern)"/> then <see cref="RecordDivision(Country, string, BillConcern, bool, System.DateTime, BillAxis)"/> - in
         /// that order, so no single-chamber country's path moves by a byte.
         /// </summary>
@@ -521,12 +521,15 @@ namespace PoliSim.Simulation
         /// GA-8-1 (2026-10-14): a per-tonne line the bill moves is stamped with <paramref name="passedYear"/>, the calendar year of its
         /// passage - the year its figure stands for, which the carbon statute leaves it for (`TaxLine.PassedForYear`); a line named at its
         /// standing figure is no change and stamps nothing.
+        /// PS-6 US-22 (US-19's owed line, the review's second-pass N1): a failed budget charges the government only where it bears the bill
+        /// (<paramref name="governmentBears"/>, `Congress.GovernmentBears` at the US callers - true in every other country, so their path is the old one),
+        /// as every other bill kind's result already reads it.
         /// </summary>
-        public static void ApplyBillResult(Country country, BudgetBill bill, bool passed, System.Action<Country, BudgetBill> applySpendingAndSwf, int passedYear)
+        public static void ApplyBillResult(Country country, BudgetBill bill, bool passed, System.Action<Country, BudgetBill> applySpendingAndSwf, int passedYear, bool governmentBears = true)
         {
             if (!passed)
             {
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f);
+                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-22: the government pays for its own budget only (Congress.GovernmentBears)
                 return;
             }
 
@@ -969,10 +972,12 @@ namespace PoliSim.Simulation
         /// <summary>§768 (Elias's ruling D4; the review's defect 1): THE BUDGET ACT a chamber votes - where the country's procedure is the Sejm's budget act
         /// and its statutes (Poland; <see cref="Elections.WorldClock.StatutePartsAreActs"/>, US-20) and the bill changes what a statute sets, the bill's spending alone (§773, Elias's ruling E2: "only spending stays in the budget act" -
         /// the rates, the pension age, the benefit levels and the fund's rules are each their own act, voted apart - the benefit levels and the fund's rules
-        /// RULED statute parts by F6: "'Spending' means the budget act's appropriations"); otherwise the bill itself.</summary>
+        /// RULED statute parts by F6: "'Spending' means the budget act's appropriations"); otherwise the bill itself. PS-6 US-22: where the US Congress votes
+        /// the budget as its acts (<see cref="UsBudgetProcedure.Applies"/> - the procedure, and a Senate seated) the same - the appropriation, the spending
+        /// alone (R-US9 (a): "the appropriation (the spending lines) needs cloture"), the rest its own acts; the Budget page's count is then the appropriation's.</summary>
         public static BudgetBill BudgetActOf(Country country, BudgetBill bill)
         {
-            if (bill == null || !Elections.WorldClock.StatutePartsAreActs(country.Id)) { return bill; }   // US-20: Poland's procedure, not its veto
+            if (bill == null || !(Elections.WorldClock.StatutePartsAreActs(country.Id) || UsBudgetProcedure.Applies(country))) { return bill; }   // US-20: Poland's procedure, not its veto; PS-6 US-22: the US Congress's acts
             foreach (BudgetBill.StatutePart part in BudgetBill.StatuteParts) { if (bill.Changes(part, country)) { return bill.SpendingOnly(country); } }
             return bill;
         }
@@ -1014,6 +1019,7 @@ namespace PoliSim.Simulation
                 concern.Add(StanceAxis.SpendVsTax, -delta);
                 if (delta < 0f && standing.GenerosityLevel > 0f) { concern.Cuts.Add((null, kvp.Key, -delta / standing.GenerosityLevel)); }
             }
+            if (bill.ContinuingResolution) { concern.WithheldBy = country.ContinuingResolutionWithheldBy; }   // PS-6 US-22 (Ask 2's (P), PROVISIONAL): a continuing resolution is asked nothing unless the player's party withholds it
             return Authored(country, concern, bill.GovernmentBill);
         }
 

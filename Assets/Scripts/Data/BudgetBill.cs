@@ -36,6 +36,11 @@ namespace PoliSim.Data
         public bool GovernmentBill;
         /// <summary>PS-3e (§632): the party that tabled this budget as an ALTERNATIVE to the government's (the Riksdag's budget motion - a shadow budget); null for a government's own.</summary>
         public string TabledBy;
+        /// <summary>PS-6 US-22 (R-US9 as ruled, F8: "if funding lapses with no continuing resolution, the government shuts down"): TRUE for a CONTINUING
+        /// RESOLUTION - a bill of its own, tabled where the appropriation falls (and while funding is lapsed), carrying the standing figures: it moves no
+        /// line, so it is NEVER APPLIED to the book; enacted, it funds the government (`Country.AppropriatedThrough`). It rides the save with the pending
+        /// budget (format 41). False on every other bill, and in every country but the USA.</summary>
+        public bool ContinuingResolution;
         /// <summary>§755 (Elias's ruling A2; the review's defect 1): the Finance partner's stance step this government bill carries - its holder (null for none),
         /// the points of GDP it moves, the count before it and the government that tabled it - counted only if the chamber adopts the bill (FinancePartner.CreditAdopted).</summary>
         public string FinanceStanceHolder;
@@ -237,6 +242,18 @@ namespace PoliSim.Data
         {
             BudgetBill act = this;
             foreach (StatutePart part in StatuteParts) { act = act.Without(part, country); }
+            return act;
+        }
+
+        /// <summary>PS-6 US-22: this bill with its spending lines withheld - what applies where the US appropriation falls (or its veto stands): every line stays
+        /// as it is (no percentage, no figure set, no pin turned) and the rest of the bill applies. The counterpart of <see cref="Without"/> for the part E2's
+        /// machinery keeps in the budget act.</summary>
+        public BudgetBill WithoutSpending()
+        {
+            var act = (BudgetBill)MemberwiseClone();
+            act.SpendingPercentChanges = new Dictionary<SpendingCategory, float>();
+            act.SpendingNominalTargets = new Dictionary<SpendingCategory, float>();
+            act.SpendingPinChanges = new Dictionary<SpendingCategory, bool>();
             return act;
         }
     }

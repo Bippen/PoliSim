@@ -25,6 +25,8 @@ namespace PoliSim.UI
         GovernmentDraft,
         /// <summary>Not governing, nothing before the chamber: the book as it stands.</summary>
         StandingBook,
+        /// <summary>PS-6 US-22: not governing, a continuing resolution before Congress - it carries the standing figures, so the book as it stands.</summary>
+        ContinuingResolution,
     }
 
     /// <summary>
@@ -39,17 +41,19 @@ namespace PoliSim.UI
 
         /// <summary>The card's subject: <paramref name="governs"/> the player introduces the budget (the prime minister's party); <paramref name="draftMoves"/>
         /// the budget sheet's draft moves the estimate; <paramref name="rateDrafted"/> the rate lever is held and moved; <paramref name="mayTable"/> the
-        /// role may table an alternative (not a junior partner, and the country's budget procedure sourced).</summary>
-        public static DeskEffectsSubject SubjectOf(bool governs, bool draftMoves, bool rateDrafted, bool alternativeTabled, bool mayTable, bool governmentBillPending)
+        /// role may table an alternative (not a junior partner, and the country's budget procedure sourced). PS-6 US-22: <paramref name="continuingResolution"/>
+        /// - the government's bill pending is a continuing resolution, which moves nothing.</summary>
+        public static DeskEffectsSubject SubjectOf(bool governs, bool draftMoves, bool rateDrafted, bool alternativeTabled, bool mayTable, bool governmentBillPending, bool continuingResolution = false)
         {
             if (governs) { return draftMoves || rateDrafted ? DeskEffectsSubject.YourDraft : DeskEffectsSubject.NothingDrafted; }
             if (alternativeTabled) { return DeskEffectsSubject.YourAlternativeTabled; }
-            if (governmentBillPending) { return DeskEffectsSubject.GovernmentDraft; }
+            if (governmentBillPending) { return continuingResolution ? DeskEffectsSubject.ContinuingResolution : DeskEffectsSubject.GovernmentDraft; }
             return mayTable && draftMoves ? DeskEffectsSubject.YourAlternativeDrafted : DeskEffectsSubject.StandingBook;
         }
 
-        /// <summary>Whether the card draws its dashed empty state (nothing of the player's or before the chamber moves the estimate).</summary>
-        public static bool IsEmptyState(DeskEffectsSubject subject) => subject == DeskEffectsSubject.NothingDrafted || subject == DeskEffectsSubject.StandingBook;
+        /// <summary>Whether the card draws its dashed empty state (nothing of the player's or before the chamber moves the estimate - a continuing resolution
+        /// moves nothing).</summary>
+        public static bool IsEmptyState(DeskEffectsSubject subject) => subject == DeskEffectsSubject.NothingDrafted || subject == DeskEffectsSubject.StandingBook || subject == DeskEffectsSubject.ContinuingResolution;
 
         /// <summary>§726 (v3.5): the card's NAME says whose budget the arrows estimate - §694's ruling kept at rest, where the scope line under the arrows,
         /// now the head's slip, used to say it.</summary>
@@ -90,6 +94,8 @@ namespace PoliSim.UI
                     return Alternative + " · AS DRAFTED, NOT TABLED";
                 case DeskEffectsSubject.GovernmentDraft:
                     return "THE GOVERNMENT'S BUDGET · THE CHAMBER DECIDES IN " + days;
+                case DeskEffectsSubject.ContinuingResolution:
+                    return "A CONTINUING RESOLUTION BEFORE CONGRESS — THE STANDING FIGURES, SO THE BOOK AS IT STANDS · CONGRESS DECIDES IN " + days + " · " + Tail;   // PS-6 US-22
                 default:
                     throw new ArgumentOutOfRangeException(nameof(subject));
             }

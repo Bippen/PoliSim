@@ -43,20 +43,20 @@ namespace PoliSim.Simulation
     /// "the pension age is its own statute at cloture"). R-US9 rules the budget's path; the standalone kinds are read here by 641(a)'s own heads - "new
     /// entitlement authority" (641(a)(1)(C)), "the total amount by which revenues are to be changed ... changes in the revenue laws" (641(a)(2)) - and
     /// <see cref="IsReconciliationKind"/> holds the table. A BUDGET bill rides it only where it moves no spending line and not the pension age
-    /// (<see cref="RidesReconciliation(Country, BudgetBill)"/>): until US-22 splits the US budget into its acts on E2's machinery, a bill carrying the
-    /// appropriation carries its cloture whole. THE ONCE-A-YEAR LIMIT IS NOT MODELLED (DECLARED): the statute ties reconciliation to "a concurrent resolution
+    /// (<see cref="RidesReconciliation(Country, BudgetBill)"/>); since US-22 the US budget is voted as its acts on E2's machinery (`UsBudgetProcedure`), each
+    /// act's procedure its own - the appropriation at cloture, the reconciliation by a majority, the pension act at cloture - and a continuing resolution
+    /// at cloture. THE ONCE-A-YEAR LIMIT IS NOT MODELLED (DECLARED): the statute ties reconciliation to "a concurrent resolution
     /// on the budget for any fiscal year" (641(a)), and the game models no concurrent resolution - so neither its directives nor any bound on how many
     /// reconciliation bills one resolution yields; every bill the reading names rides reconciliation whenever it is voted - a trifecta passes the tax and
     /// welfare programme bills and the rate-only budgets by its Senate majority as often as its bills come round, and the reconciliation slip says no yearly
     /// limit is modelled (<see cref="RuleWords"/>). ASKED with the table's placements (<see cref="IsReconciliationKind"/>). R-US17's BUDGET VOTE (play) is "a
     /// reconciliation bill (US-18)", so this table is that ruled block's input at US-21: every bill it sends by reconciliation is a budget vote that draws no
     /// crossers. The Byrd rule is not modelled (R-US9 (a), stated).</para>
-    /// <para><b>THE GOVERNMENT'S OWN BUDGET STAYS IN THE HOUSE UNTIL US-22 (DECLARED).</b> The plan dates the AI president's budget meeting Congress at US-22
-    /// (risk 19: "a US game's AI president's budget meets Congress (US-22)"; US-22: the AI's budget "goes through the same procedure"), so a concern the
-    /// government authored (`BillConcern.GovernmentAuthored`, set from `BudgetBill.GovernmentBill` alone) is voted by its first chamber alone until then -
-    /// one predicate, <see cref="VotesBothChambers"/>, which the gate (`ParliamentSystem.Divide`), the dated verdict and the page (`ChamberVerdicts`) all
-    /// read, so the pending card and the gate cannot disagree. THE ASYMMETRY US-22 CLOSES: the player's own budget meets cloture or reconciliation, the AI
-    /// president's the House alone.</para>
+    /// <para><b>THE GOVERNMENT'S OWN BUDGET MEETS CONGRESS (PS-6 US-22, closing US-18's DECLARED asymmetry).</b> Until US-22 a concern the government
+    /// authored (`BillConcern.GovernmentAuthored`) was voted by its first chamber alone; the plan dates the AI president's budget meeting Congress at US-22
+    /// (risk 19; US-22: the AI's budget "goes through the same procedure"), so every bill of a Congress now goes through both chambers - one predicate,
+    /// <see cref="VotesBothChambers"/>, which the gate (`ParliamentSystem.Divide`), the dated verdict and the page (`ChamberVerdicts`) all read. The budget
+    /// itself is voted as its acts (`UsBudgetProcedure`), each through <see cref="Divide"/>.</para>
     /// <para><b>Scope.</b> <see cref="Applies"/>: the USA with a Senate seated - the player's country, which `SimulationManager.SeatTheSecondChamberOfRecord`
     /// seats from its first day. Every other country's single chamber is untouched (`ParliamentSystem.Divide` keeps its old path byte for byte), and an AI
     /// USA votes no bill (plan risk 19). Deterministic: arithmetic over the state, no random stream drawn.</para>
@@ -78,11 +78,12 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// THE ONE PREDICATE every reader of a bill's chambers asks: whether <paramref name="concern"/> goes through both chambers in
-        /// <paramref name="country"/> - the country's bills do (<see cref="Applies"/>), and the bill is not the government's own budget, which stays in its
-        /// first chamber until US-22 (the class note: DECLARED, the asymmetry US-22 closes). Read by `ParliamentSystem.Divide`, the dated
-        /// `ParliamentSystem.WouldBillPass` and `ChamberVerdicts`, so the gate and the page give one answer.
+        /// <paramref name="country"/> - every bill of a country whose bills do (<see cref="Applies"/>). PS-6 US-22: the government's own budget no longer stays
+        /// in its first chamber (US-18's DECLARED asymmetry, closed - the class note), so the concern no longer decides it; the parameter is kept for the
+        /// readers' one call. Read by `ParliamentSystem.Divide`, the dated `ParliamentSystem.WouldBillPass` and `ChamberVerdicts`, so the gate and the page give
+        /// one answer.
         /// </summary>
-        public static bool VotesBothChambers(Country country, BillConcern concern) => Applies(country) && !(concern != null && concern.GovernmentAuthored);
+        public static bool VotesBothChambers(Country country, BillConcern concern) => Applies(country);
 
         /// <summary>The senators duly chosen and sworn on the day: every seat the chamber's seating holds (a vacancy is in no side and no base - the block's
         /// VACANCIES).</summary>
@@ -140,9 +141,10 @@ namespace PoliSim.Simulation
         /// <summary>Whether a BUDGET bill rides reconciliation in <paramref name="country"/>: the USA's, where it moves no spending line (the appropriation, R-US9
         /// (a): cloture) and not the pension age (641(g): "it shall not be in order ... to consider any reconciliation bill ... that contains recommendations with
         /// respect to the old-age, survivors, and disability insurance program", [USC-641] - its own act at cloture). The rates, the benefit levels (direct
-        /// spending, F6's reading of a benefit level as set by statute) and the fund's rules ride it.</summary>
+        /// spending, F6's reading of a benefit level as set by statute) and the fund's rules ride it. PS-6 US-22: never a continuing resolution - it moves
+        /// nothing, and on the record it needed cloture (H.R. 5371: "not having achieved 60 votes in the affirmative"; cloture invoked 60 - 40, BILLSTATUS).</summary>
         public static bool RidesReconciliation(Country country, BudgetBill bill)
-            => country != null && country.Id == CountryId.USA && bill != null && !ChangesSpendingLines(country, bill) && !bill.ChangesPensionAge(country);
+            => country != null && country.Id == CountryId.USA && bill != null && !bill.ContinuingResolution && !ChangesSpendingLines(country, bill) && !bill.ChangesPensionAge(country);
 
         /// <summary>Whether a budget bill moves a spending line - a percentage change that is not nought, a figure set other than the line's standing amount, or a
         /// pin turned (a bill names only the lines its author moved, GA-8-2).</summary>
@@ -240,10 +242,10 @@ namespace PoliSim.Simulation
         /// the ruling (the review's M2, Reviews/2026-10-17_s852_us19_roles.md). The smallest change: in a Congress
         /// (<see cref="Applies"/>) the government bears a bill only where its author is in the government - the president's party, or a party in its cabinet
         /// (`GovernmentRecord.RoleOf` PrimeMinister or JuniorPartner) - and the government's own budget and a bill with no author (the tools' hand) as before.
-        /// Every other country bears every bill exactly as before, where only the government could table one. The budget's failed vote
-        /// (`ParliamentSystem.ApplyBillResult`) is not routed here - it differs only for a budget pending across a change of presidency, and US-22 rebuilds that
-        /// path (DECLARED; the review's second-pass N1). Who should bear a congressional majority's bill
-        /// instead - its own party's standing, or no one - is Elias's to rule.
+        /// Every other country bears every bill exactly as before, where only the government could table one. PS-6 US-22 (the review's second-pass N1, closed):
+        /// the budget's failed vote reads this too (`ParliamentSystem.ApplyBillResult`'s governmentBears) - each US budget act, each continuing resolution and
+        /// the budget paths of a country without a Congress - so a budget pending across a change of presidency is charged as its lost day is marked. Who
+        /// should bear a congressional majority's bill instead - its own party's standing, or no one - is Elias's to rule.
         /// </summary>
         public static bool GovernmentBears(Country country, BillConcern concern)
         {

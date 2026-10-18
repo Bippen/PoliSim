@@ -1214,6 +1214,24 @@ namespace PoliSim.Testing
                                 }
                                 else { Debug.LogError($"SHOT: §768 - the controller has no PinSlipOnAnchorForFilm / _slipPins; {stem}_taxact_slip NOT written."); _failed++; }
                             }
+                            // PS-6 US-22: where the US Congress votes the draft as its acts, the same slip on the same draft - the acts, their procedures and verdicts, the
+                            // president's answer, the continuing resolution and the lapse - on film beside Poland's, then let go
+                            else if (WorldClock.CongressActs(_countryId))
+                            {
+                                MethodInfo pinActs = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                                FieldInfo actsPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                                if (pinActs != null && actsPins != null)
+                                {
+                                    pinActs.Invoke(controller, new object[] { "ifpassed:count", new Vector2(UiScreen.Width * 0.85f, UiScreen.Height * 0.30f) });
+                                    yield return Settle();
+                                    yield return Settle();
+                                    yield return Capture(stem + "_us_acts_slip");
+                                    Debug.Log("SHOT: 05a_budget_tax_us_acts_slip - the If passed count's slip pinned on the +5 income-tax draft: the acts as Congress votes them (the appropriation, the reconciliation), the continuing resolution, the lapse");
+                                    (actsPins.GetValue(controller) as IList)?.Clear();
+                                    yield return Settle();
+                                }
+                                else { Debug.LogError($"SHOT: 05a US acts - the controller has no PinSlipOnAnchorForFilm / _slipPins; {stem}_us_acts_slip NOT written."); _failed++; }
+                            }
                             if (had) { taxInputs[TaxType.IncomeTax] = before; } else { taxInputs.Remove(TaxType.IncomeTax); }
                             yield return Settle();
                             // EN-8 (2026-09-13): the same tab scrolled to its last rows, so the Carbon Tax row - the one row whose step is
@@ -2229,6 +2247,11 @@ namespace PoliSim.Testing
                 Debug.LogError("SHOT: desk-by-role reflection failed - the 93 captures are MISSING, not clean.");
                 yield break;
             }
+            if (UsBudgetProcedure.Applies(player))
+            {
+                yield return CaptureDeskUsBudget(controller, sim, player);   // PS-6 US-22: the president's budget before Congress, its acts decided, and a shutdown's day
+                yield break;
+            }
             if (sim.PlayerGoverns(player))
             {
                 Debug.Log($"SHOT: 93a/93b are the opposition's Desk - {player.PlayerPartyAbbrev} governs {player.Name} at this frame; skipped, not missing.");
@@ -2257,6 +2280,104 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: 93b_desk_alternative_tabled - {player.PlayerPartyAbbrev}'s alternative tabled against the government's budget");
             yield return Capture("93b_desk_alternative_tabled");
             ScrollDeskTo(controller, null);
+        }
+
+        /// <summary>
+        /// PS-6 US-22 (`docs/specs/USA_STAGE_PLAN.md` US-22's done-when: "the US film's budget frame (93b) ... is filmed"): THE DESK WHERE CONGRESS VOTES THE
+        /// BUDGET AS ITS ACTS, the effects card by role as §694's frames film it - 93a the president's budget before Congress (the government's bill,
+        /// `TableGovernmentBudget`); 93b its acts decided through the game's own day call (`SimulationManager.AdvanceBudgetBillDay`, the date held: each act a
+        /// division through both chambers and the president, each logged by title), the continuing resolution before Congress where the appropriation fell;
+        /// 93c a shutdown's day on the masthead, a lapse planted for the one frame and restored. The card is the opposition's: where the player's party holds the
+        /// presidency at this frame (the warm-up's count seats the game's president), the other major party is staged in the player's place for the three frames
+        /// and restored. US-19's 01d2-01d4 precedent: the Fed chair's selection, its turn, the speed and the clock are snapshotted and restored, play's clock is
+        /// held for the staged frames (no day passes, so no signing is queued), and a hold that does not come back fails the run. The bills the frames table
+        /// stay before Congress after them, as §694's do (the frames run last).
+        /// </summary>
+        private IEnumerator CaptureDeskUsBudget(GameController controller, SimulationManager sim, Country player)
+        {
+            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+            FieldInfo candidatesField = controller.GetType().GetField("_fedChairCandidates", Own), forTurnField = controller.GetType().GetField("_fedChairCandidatesForTurn", Own);
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", Own), timerField = controller.GetType().GetField("_daySpeedTimer", Own);
+            if (candidatesField == null || forTurnField == null || speedField == null || timerField == null)
+            {
+                Debug.LogError("SHOT: the US budget frames could not snapshot the Fed chair's selection or the clock (_fedChairCandidates/_fedChairCandidatesForTurn/_gameSpeed/_daySpeedTimer not found) - 93a-93c are MISSING, not clean.");
+                _failed++;
+                yield break;
+            }
+            if (sim.GetPendingBudgetBill(player.Id) != null)
+            {
+                Debug.LogError("SHOT: 93a - a budget bill is already before Congress at this frame; the US budget frames are MISSING, not clean.");
+                _failed++;
+                yield break;
+            }
+            object candidatesWas = candidatesField.GetValue(controller), forTurnWas = forTurnField.GetValue(controller), speedWas = speedField.GetValue(controller), timerWas = timerField.GetValue(controller);
+            int candidatesBefore = (candidatesWas as ICollection)?.Count ?? 0;
+            string mine = player.PlayerPartyAbbrev, withheldWas = player.ContinuingResolutionWithheldBy;
+            DateTime lapseWas = player.LapseSince, fundedWas = player.AppropriatedThrough;
+            timerField.SetValue(controller, -ClockHoldSeconds);
+            try
+            {
+                if (sim.PlayerGoverns(player))
+                {
+                    string other = null;
+                    foreach (KeyValuePair<string, int> seat in player.ParliamentSeats) { if (seat.Key != mine && (other == null || seat.Value > player.ParliamentSeats[other])) { other = seat.Key; } }
+                    if (other == null) { Debug.LogError("SHOT: 93a - no other party seated to stage as the opposition; the US budget frames are MISSING, not clean."); _failed++; yield break; }
+                    player.PlayerPartyAbbrev = other;
+                    Debug.Log($"SHOT: 93a-93c staged - {mine} holds the presidency at this frame; {other}, the other major party, seated in its place for the opposition's Desk (restored after).");
+                }
+                sim.TableGovernmentBudget(player);
+                BudgetBill pending = sim.GetPendingBudgetBill(player.Id);
+                if (pending == null || !pending.GovernmentBill)
+                {
+                    Debug.LogError("SHOT: 93a - the president's budget could not be tabled - the US budget frames are MISSING, not clean.");
+                    _failed++;
+                    yield break;
+                }
+                SetPrivateField(controller, "_onDesk", true);
+                yield return Settle();
+                ScrollDeskTo(controller, "effects");
+                yield return Settle();
+                Debug.Log($"SHOT: 93a_desk_government_budget - {player.PlayerPartyAbbrev} out of the presidency, the president's budget before Congress ({SimulationManager.DescribeBudgetBill(pending)}), decided in {pending.DaysRemaining} day(s)");
+                yield return Capture("93a_desk_government_budget");
+                int seen = player.Divisions.Entries.Count > 0 ? player.Divisions.Entries[player.Divisions.Entries.Count - 1].Number : 0;
+                for (int i = 0; i <= ParliamentSystem.BillDurationDays && ReferenceEquals(sim.GetPendingBudgetBill(player.Id), pending); i++) { sim.AdvanceBudgetBillDay(player.Id); }
+                foreach (DivisionRecord record in player.Divisions.Entries)
+                {
+                    if (record.Number > seen) { Debug.Log($"SHOT: 93b - No. {record.Number} the {Congress.ChamberName(player.Id, record.Chamber).ToLowerInvariant()} {(record.Passed ? "passed" : "failed")}{(record.Motion ? " (a motion)" : string.Empty)}: {record.Title}"); }
+                }
+                BudgetBill after = sim.GetPendingBudgetBill(player.Id);
+                Debug.Log("SHOT: 93b_desk_us_budget_acts - the president's budget decided as its acts on " + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "; "
+                    + (after != null && after.ContinuingResolution ? $"the appropriation fell: a continuing resolution at the standing figures before Congress, decided in {after.DaysRemaining} day(s)"
+                        : after == null ? $"the appropriation stood: funded through {player.AppropriatedThrough:yyyy-MM-dd}" : "a bill other than a continuing resolution is before Congress (A DEFECT)"));
+                if (after != null && !after.ContinuingResolution) { _failed++; }
+                yield return Settle();
+                yield return Capture("93b_desk_us_budget_acts");
+                // 93c: a lapse planted for one frame - the masthead says the shutdown's day; the horizon and the lapse are put back after
+                player.LapseSince = sim.CurrentDate.AddDays(-11);
+                player.AppropriatedThrough = player.LapseSince.AddDays(-1);
+                ScrollDeskTo(controller, null);
+                yield return Settle();
+                Debug.Log($"SHOT: 93c_desk_us_shutdown - staged: funding lapsed on {player.LapseSince:yyyy-MM-dd}, the masthead on its day {UsBudgetProcedure.LapseDays(player.LapseSince, sim.CurrentDate)}; restored after");
+                yield return Capture("93c_desk_us_shutdown");
+            }
+            finally
+            {
+                player.LapseSince = lapseWas;
+                player.AppropriatedThrough = fundedWas;
+                player.ContinuingResolutionWithheldBy = withheldWas;
+                player.PlayerPartyAbbrev = mine;
+                candidatesField.SetValue(controller, candidatesWas);
+                forTurnField.SetValue(controller, forTurnWas);
+                speedField.SetValue(controller, speedWas);
+                timerField.SetValue(controller, timerWas);
+                ScrollDeskTo(controller, null);
+            }
+            yield return Settle();
+            int candidatesAfter = (candidatesField.GetValue(controller) as ICollection)?.Count ?? 0;
+            object speedAfter = speedField.GetValue(controller);
+            string restored = $"SHOT: 93a-93c restored - {mine} seated again, the funding horizon {player.AppropriatedThrough:yyyy-MM-dd} and the lapse {(player.LapseSince == DateTime.MinValue ? "none" : player.LapseSince.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))} as found; the Fed chair's candidates {candidatesAfter} (before {candidatesBefore}), the speed {speedAfter} (before {speedWas})";
+            if (candidatesAfter != candidatesBefore || !Equals(speedAfter, speedWas) || player.PlayerPartyAbbrev != mine) { Debug.LogError(restored + " - THE HOLD DID NOT RETURN."); _failed++; }
+            else { Debug.Log(restored + "."); }
         }
 
         /// <summary>

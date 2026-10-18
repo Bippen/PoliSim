@@ -879,6 +879,22 @@ namespace PoliSim.Data
         /// loads it so.</summary>
         public System.DateTime BillLostOn;
 
+        /// <summary>PS-6 US-22 (R-US9 as ruled, F8): THE FUNDING HORIZON - the last day the government is funded by an appropriation or a continuing
+        /// resolution in force (31 U.S.C. 1341(a)(1): no expenditure "exceeding an amount available in an appropriation"). Seeded once where the US Congress
+        /// votes the budget, as the end of the fiscal year in progress (DECLARED: the record's acts in force at the start are not read), and advanced the day a
+        /// funding measure becomes law (`UsBudgetProcedure.FundedThrough`). MinValue where no Congress votes the budget. World state, so it rides the save
+        /// (format 41) and the preview's clone.</summary>
+        public System.DateTime AppropriatedThrough;
+
+        /// <summary>PS-6 US-22: THE LAPSE - the first day of a funding gap (the day after <see cref="AppropriatedThrough"/>), held until the day an appropriation or
+        /// a continuing resolution becomes law; its days are said on screen (`UsBudgetProcedure.LapseDays`). MinValue = funded. THE STOP OF NON-EXCEPTED
+        /// SPENDING IS NOT MODELLED (DECLARED, asked of Elias: the excepted share is BILLED): a lapse moves no figure in the book.</summary>
+        public System.DateTime LapseSince;
+
+        /// <summary>PS-6 US-22 (Ask 2's reading (P), PROVISIONAL): the party withholding the continuing resolution - the player's verb
+        /// (`SimulationManager.WithholdContinuingResolution`), standing until released or until funding is restored; null for none. An AI party never withholds.</summary>
+        public string ContinuingResolutionWithheldBy;
+
         /// <summary>
         /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own
         /// election authority uses ("S", "SD", "CDU", "PiS", "UG", "REP"...) and summing to

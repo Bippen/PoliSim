@@ -284,6 +284,10 @@ namespace PoliSim.EditorTools
                             ("Remove tax (planted)", Concern(usa, "REP", u => ParliamentSystem.GetTaxProgramBillConcern(u, new TaxProgramBill { Type = u.TaxLines.First(t => t.IsImplemented).Type, IsAdd = false }))),
                             ("Welfare programme (planted)", Concern(usa, "DEM", u => ParliamentSystem.GetWelfareProgramBillConcern(u, new WelfareProgramBill { Type = u.WelfarePrograms[0].Type, IsAdd = !u.WelfarePrograms[0].IsImplemented }))),
                             ("Sovereign fund drawdown (planted)", Concern(usa, "REP", u => ParliamentSystem.GetSwfDrawdownBillConcern(u, new SwfDrawdownBill { WithdrawalPercentOfGdp = 1f }))),
+                            // PS-6 US-22: the budget's own acts and a withheld continuing resolution - the re-run the block names ("re-run at US-22")
+                            ("Appropriation (planted)", Concern(usa, "REP", u => UsBudgetProcedure.ConcernOf(u, UsCongressDiagnostic.SpendingBill(u, SpendingCategory.Transportation, -10f), UsBudgetProcedure.Act.Appropriation))),
+                            ("Pension act (planted)", Concern(usa, "REP", u => UsBudgetProcedure.ConcernOf(u, new BudgetBill { PensionAgeSet = true, PensionAge = PensionAgeStatute.AgeInForce(u, u.CalendarYear) + 1f }, UsBudgetProcedure.Act.PensionAct))),
+                            ("Continuing resolution (planted, withheld)", Concern(usa, "REP", u => { u.ContinuingResolutionWithheldBy = "DEM"; try { return ParliamentSystem.GetBudgetBillConcern(u, new BudgetBill { ContinuingResolution = true }); } finally { u.ContinuingResolutionWithheldBy = null; } })),
                         };
                         bool allBudget = budgets.All(b => b.Concern.BudgetVote);
                         int ppAgainstBudgets = 0, identical = 0;
@@ -298,7 +302,7 @@ namespace PoliSim.EditorTools
                             if (SameRecords(plain.Written, planted.Written) && plain.Sent == planted.Sent) { identical++; }
                         }
                         Check(allBudget && identical == budgets.Count && budgetDraws == 0 && ppAgainstBudgets > 0,
-                            F("(e) the budget plant: {0} US budget votes (a rates budget, a spending budget, a tax programme, a welfare programme, the fund's drawdown - {1} of them opposed by the president's party) through the gate under j = n - 1 write records identical to the unplanted run's, {2} of {0}; UsVeto refuses each - the counter {3}",
+                            F("(e) the budget plant: {0} US budget votes (a rates budget, a spending budget, a tax programme, a welfare programme, the fund's drawdown, and since US-22 the appropriation, the pension act and a withheld continuing resolution - {1} of them opposed by the president's party) through the gate under j = n - 1 write records identical to the unplanted run's, {2} of {0}; UsVeto refuses each - the counter {3}",
                                 budgets.Count, ppAgainstBudgets, identical, budgetDraws));
 
                         // (e) the five other countries draw nothing, planted or not

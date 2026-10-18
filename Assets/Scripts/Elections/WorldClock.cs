@@ -426,13 +426,23 @@ namespace PoliSim.Elections
         /// the government then governs on those frames. Poland's (US-20; §768, Elias's ruling D4, and §773, E2): the Sejm's budget act carries the spending
         /// alone and each statute part the bill changes - the rates, the pension age, the benefit levels, the fund's rules - travels as an act of its own,
         /// voted apart and put to the President (`SimulationManager.PolishStatuteActs`); its chamber's choice between the government's bill and an
-        /// alternative is not sourced, so the government's bill is voted alone. Every other country's procedure is data when its stage lands (the US
-        /// Congress's at US-22); until it is sourced the government's bill is voted alone and a failed budget leaves the old one standing, stated.
+        /// alternative is not sourced, so the government's bill is voted alone. The US Congress's (PS-6 US-22; R-US9 (a) as ruled, F8): the president's
+        /// budget request is the government's bill (31 U.S.C. 1105(a)), and Congress votes it as its acts on E2's parts - the appropriation (the spending
+        /// lines, DECLARED one appropriation) at cloture, the reconciliation (the rates, the benefit levels and the fund) by a majority (2 U.S.C. 641(e)),
+        /// the pension age its own act at cloture (641(g); 644(b)(1)(F)) - each through both chambers and the veto, a fallen appropriation followed by a
+        /// continuing resolution, and a lapse with none a shutdown (`SimulationManager`'s US budget path, `UsBudgetProcedure`); its chamber weighs no
+        /// alternative. Germany's, Italy's and France's are data when their stages land; until sourced the government's bill is voted alone and a failed
+        /// budget leaves the old one standing, stated. Never saved and never hashed: a value read by the procedure's readers alone.
         /// </summary>
-        public enum BudgetProcedure { Unsourced, RiksdagFrameDecision, SejmBudgetActAndStatutes }
+        public enum BudgetProcedure { Unsourced, RiksdagFrameDecision, SejmBudgetActAndStatutes, UsCongress }
 
         public static BudgetProcedure BudgetProcedureOf(CountryId id) => id == CountryId.Sweden ? BudgetProcedure.RiksdagFrameDecision
-            : id == CountryId.Poland ? BudgetProcedure.SejmBudgetActAndStatutes : BudgetProcedure.Unsourced;
+            : id == CountryId.Poland ? BudgetProcedure.SejmBudgetActAndStatutes : id == CountryId.USA ? BudgetProcedure.UsCongress : BudgetProcedure.Unsourced;
+
+        /// <summary>PS-6 US-22: a budget is voted as Congress's acts (the US procedure) - the appropriation, the reconciliation and the pension act, each its own
+        /// division through both chambers. Every reader of the US split keys on this, beside <see cref="StatutePartsAreActs"/> (Poland's) - and on
+        /// `Congress.Applies` too, so an AI USA in another country's game, which seats no Senate, votes nothing (the plan's risk 19).</summary>
+        public static bool CongressActs(CountryId id) => BudgetProcedureOf(id) == BudgetProcedure.UsCongress;
 
         /// <summary>US-20: a budget's statute parts travel as acts of their own (Poland's procedure). Every reader of the split keys on this - the budget act,
         /// the statute acts, the Finance partner's tax act, the Budget page, the pending cards, the film's staging - never on the President's veto, which is

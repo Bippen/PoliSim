@@ -25,7 +25,7 @@ namespace PoliSim.EditorTools
     /// letter D alone short - and dies in the REP House (the House's origin: it never reaches the Senate; a benefits-only reconciliation begun in the
     /// Senate: passed there, killed in the House); a party-line REP ordinary bill passes the House and dies at cloture;</item>
     /// <item>(d) cloture is three fifths of the senators sworn ON THE DAY, never a fixed sixty - the 119th's opening days with their vacancies; the Vice
-    /// President decides an equal division on the majority path by his party's stance, the record's vice president of the day, and has no cloture vote; the House's tie fails (a planted 217-217 House the single-chamber count would pass on its lean); an undecided bloc is no yea at cloture; the government's own budget is voted by the House alone until US-22 (the review's M1, DECLARED)</item>
+    /// President decides an equal division on the majority path by his party's stance, the record's vice president of the day, and has no cloture vote; the House's tie fails (a planted 217-217 House the single-chamber count would pass on its lean); an undecided bloc is no yea at cloture; the government's own budget goes through both chambers since US-22 (the review's M1, closed)</item>
     /// <item>(e) one stance per party, the same in both chambers (R-US17 premise (B)); the Senate's sides sum to the senators sworn;</item>
     /// <item>(f) scope: Sweden, Germany and Poland vote through their one chamber exactly as before (the dated verdict the count's, one record per bill, no
     /// chamber field moved); an AI USA (a Sweden player's world) seats no Senate and is not voted through two chambers;</item>
@@ -187,17 +187,19 @@ namespace PoliSim.EditorTools
                             F("(d) an undecided bloc at cloture: DEM undecided, REP for - the Senate {0} for, {1} against, {2} undecided, {3} needed of {4} sworn: cloture not invoked, the undecided counting as no yea; by reconciliation the same sides carry it {0}-{1}",
                                 abstaining.Senate.For, abstaining.Senate.Against, abstaining.Senate.Abstaining, abstaining.Senate.Required, abstaining.Senate.Sworn));
 
-                        // THE GOVERNMENT'S OWN BUDGET STAYS IN THE HOUSE UNTIL US-22 (the review's M1, DECLARED): a government-authored concern is voted by the House
-                        // alone - the gate writes one record of the House, the dated verdict is the House's count, and Congress.VotesBothChambers says no
+                        // PS-6 US-22 (closing the review's M1, US-18's DECLARED asymmetry): THE GOVERNMENT'S OWN BUDGET GOES THROUGH BOTH CHAMBERS - a government-authored
+                        // concern is voted by the House and then the Senate as every bill of a Congress is (the budget itself as its acts, UsBudgetProcedureDiagnostic);
+                        // the gate writes both chambers' records and the dated verdict is the projection's
                         BudgetBill governmentBudget = SpendingBill(usa, SpendingCategory.Transportation, -2f);
                         governmentBudget.GovernmentBill = true;
                         BillConcern government = ParliamentSystem.GetBudgetBillConcern(usa, governmentBudget);
                         int beforeGov = usa.Divisions.Entries.Count > 0 ? usa.Divisions.Entries.Last().Number : 0;
                         DivisionRecord govRecord = ParliamentSystem.Divide(usa, "Annual budget: the government's bill (US-18 diagnostic)", government, sim.CurrentDate, out bool govPassed);
                         List<DivisionRecord> govWritten = usa.Divisions.Entries.Where(r => r.Number > beforeGov).ToList();
-                        Check(government.GovernmentAuthored && !Congress.VotesBothChambers(usa, government) && Congress.VotesBothChambers(usa, ordinary) && govWritten.Count == 1 && govRecord.Chamber == Congress.House
-                              && govRecord.OtherChamber == null && !govRecord.Motion && govPassed == ParliamentSystem.WouldBillPass(usa, government) && govPassed == ParliamentSystem.WouldBillPass(usa, government, sim.CurrentDate),
-                            F("(d) the government's own budget (a Transportation cut, the AI's bill): voted by the House alone until US-22 - one record, the House's, {0}; the dated verdict the House's count", govPassed ? "carried" : "lost"));
+                        Congress.Verdict govVerdict = Congress.Project(usa, government, sim.CurrentDate, Congress.OriginOf(usa, government, sim.CurrentDate));
+                        Check(government.GovernmentAuthored && Congress.VotesBothChambers(usa, government) && Congress.VotesBothChambers(usa, ordinary) && govWritten.Count == (govVerdict.House.Passed ? 2 : 1) && govWritten[0].Chamber == Congress.House
+                              && govPassed == govVerdict.Passed && govPassed == ParliamentSystem.WouldBillPass(usa, government, sim.CurrentDate) && (govWritten.Count == 1 || (govWritten[1].Chamber == Congress.Senate && ReferenceEquals(govRecord.OtherChamber, govWritten[0]))),
+                            F("(d) the government's own budget (a Transportation cut, the AI's bill): through both chambers since US-22 - the House {0}{1}; the dated verdict the projection's", govVerdict.House.Passed ? "passes it" : "rejects it", govVerdict.House.Passed ? ", then the Senate " + (govVerdict.Senate.Passed ? "passes it" : "rejects it - " + Congress.StopWords(CountryId.USA, govVerdict)) : string.Empty));
 
                         // =========================== the 119th's opening days: cloture is three fifths of those sworn on the day
                         (SimulationManager simV, World worldV, Country usaV) = OpenUsa(hosts, Vacancies119, "REP");

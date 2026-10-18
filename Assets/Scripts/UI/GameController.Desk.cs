@@ -470,8 +470,11 @@ namespace PoliSim.UI
                 }
             }
 
-            GUIStyle live = DeskCaption(10f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
-            const string liveText = "DESK READINGS · LIVE";
+            // PS-6 US-22: while US funding has lapsed, the live caption says the shutdown's day instead, in the bad ink (its whole words: the Budget page and the pending cards)
+            string shutdown = UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue
+                ? "SHUTDOWN · DAY " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, _simulationManager.CurrentDate).ToString(CultureInfo.InvariantCulture) : null;
+            GUIStyle live = DeskCaption(10f, shutdown != null ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
+            string liveText = shutdown ?? "DESK READINGS · LIVE";
             float liveWidth = live.CalcSize(new GUIContent(liveText)).x + 4f;
             float liveRight = x - Mathf.Round(14f * ux);
             float titleLeft = flagRect.xMax + Mathf.Round(10f * ux);
@@ -1128,7 +1131,7 @@ namespace PoliSim.UI
             BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
             chamberDays = pending != null ? pending.DaysRemaining : 0;
             bool rateDrafted = rateLever != null && !Mathf.Approximately(_interestRateChangeInput, 0f);
-            return DeskEffectsNote.SubjectOf(governs, _cachedDraftMoves, rateDrafted, tabled != null, mayTable, pending != null && pending.GovernmentBill);
+            return DeskEffectsNote.SubjectOf(governs, _cachedDraftMoves, rateDrafted, tabled != null, mayTable, pending != null && pending.GovernmentBill, pending != null && pending.ContinuingResolution);   // PS-6 US-22: a continuing resolution moves nothing
         }
 
         // §694: the preview of a budget the player did not draft this frame - the government's before the chamber, or the player's alternative as tabled -
@@ -1142,7 +1145,7 @@ namespace PoliSim.UI
         /// drafted), the standing book's for nothing before the chamber, and the tabled bill's own for the government's budget or a tabled alternative.</summary>
         private PolicyPreview DeskEffectsPreview(DeskEffectsSubject subject)
         {
-            if (subject == DeskEffectsSubject.StandingBook) { return _cachedPreviewWithoutDraft ?? _cachedPreview; }
+            if (subject == DeskEffectsSubject.StandingBook || subject == DeskEffectsSubject.ContinuingResolution) { return _cachedPreviewWithoutDraft ?? _cachedPreview; }   // PS-6 US-22: a continuing resolution carries the standing figures
             if (subject != DeskEffectsSubject.GovernmentDraft && subject != DeskEffectsSubject.YourAlternativeTabled) { return _cachedPreview; }
             BudgetBill bill = subject == DeskEffectsSubject.GovernmentDraft ? _simulationManager.GetPendingBudgetBill(PlayerCountryId) : _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
             if (bill == null) { return _cachedPreviewWithoutDraft ?? _cachedPreview; }

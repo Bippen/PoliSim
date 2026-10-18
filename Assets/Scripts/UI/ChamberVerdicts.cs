@@ -92,7 +92,7 @@ namespace PoliSim.UI
         public bool WouldPass(Country country, BillConcern concern, System.DateTime on)
         {
             if (concern == null || concern.IsEmpty) { return ParliamentSystem.WouldBillPass(country, concern); }   // uncontested: the model answers without asking the chamber
-            if (Congress.VotesBothChambers(country, concern)) { return Chambers(country, concern, on).Passed; }   // the one predicate the gate reads (the government's own budget stays in the House until US-22)
+            if (Congress.VotesBothChambers(country, concern)) { return Chambers(country, concern, on).Passed; }   // the one predicate the gate reads (since US-22 the government's own budget too)
             Bind(country);
             string key = ConcernKey(concern);
             if (_verdicts.TryGetValue(key, out bool cached))
@@ -111,7 +111,7 @@ namespace PoliSim.UI
         /// <summary>
         /// PS-6 US-18: THE PROJECTION OVER BOTH CHAMBERS - `Congress.Project` on <paramref name="on"/>, asked once per chamber, concern and Vice President: each
         /// chamber's division, the order and the chamber that stops the bill, as the gate will meet them (the House's count today's, the Senate's seats as
-        /// seated, the Vice President of the vote's day). Null where the bill goes through one chamber (`Congress.VotesBothChambers`: one chamber in every country with one, and the USA's government budget until US-22). The key is what the answer reads: the chambers'
+        /// seated, the Vice President of the vote's day). Null where the bill goes through one chamber (`Congress.VotesBothChambers`: one chamber in every country with one). The key is what the answer reads: the chambers'
         /// seats, the player's party and who governs (<see cref="Bind"/>), the concern with its procedure, and the Vice President's party on the day - the one
         /// thing the date carries into it. PS-6 US-19: the chamber the bill begins in (`Congress.OriginOf`) reads nothing beyond these - the concern's author and
         /// whether it is a revenue bill (both in the concern's key), who governs and both chambers' seats, and the Vice President on an equal Senate. Verified on
@@ -298,6 +298,7 @@ namespace PoliSim.UI
             if (concern.Revenue) { sb.Append("V|"); }   // PS-6 US-19: a revenue bill begins in the House (Congress.OriginOf) - the one origin input the rest of the key does not carry
             if (concern.BudgetVote) { sb.Append("B|"); }   // PS-6 US-21: a budget vote draws no defector - the veto projection reads it
             if (concern.Unpresented) { sb.Append("U|"); }   // PS-6 US-21: an act not presented to the president, drawn on by no one - the veto projection reads it
+            if (concern.WithheldBy != null) { sb.Append("W=").Append(concern.WithheldBy).Append('|'); }   // PS-6 US-22: a withheld continuing resolution's fixed sides - the stances read it
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {

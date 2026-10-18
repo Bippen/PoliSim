@@ -57,7 +57,7 @@ namespace PoliSim.EditorTools
     /// </summary>
     public static class MetaTextCheck
     {
-        private static readonly string[] Roots = { "Assets/Scripts/UI", "Assets/Scripts/Simulation/LawCatalog.cs", "Assets/Scripts/Data", "Assets/Scripts/Simulation/Congress.cs" };   // PS-6 US-18: Congress.cs builds the words the Laws page, the cards and the slips print
+        private static readonly string[] Roots = { "Assets/Scripts/UI", "Assets/Scripts/Simulation/LawCatalog.cs", "Assets/Scripts/Data", "Assets/Scripts/Simulation/Congress.cs", "Assets/Scripts/Simulation/UsBudgetProcedure.cs" };   // PS-6 US-18: Congress.cs builds the words the Laws page, the cards and the slips print; PS-6 US-22: UsBudgetProcedure.cs the budget acts', the continuing resolution's and the lapse's
 
         private static readonly (string Name, Regex Pattern)[] Banned =
         {

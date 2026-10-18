@@ -889,10 +889,31 @@ namespace PoliSim.UI
             {
                 BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
                 string line = null;
+                bool withholdVerb = false;   // PS-6 US-22: the opposition's verb on a continuing resolution before Congress (Ask 2's reading (P))
                 if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Budget, null, out line); }   // PS-6 US-19: in a Congress the budget's own reason - the president proposes it
                 else if (tabled != null) { line = "Your alternative is tabled · the chamber decides in " + pendingBill.DaysRemaining + " day(s)"; }
+                else if (PoliSim.Elections.WorldClock.CongressActs(PlayerCountryId))   // PS-6 US-22: Congress votes the president's budget as its acts, weighing no alternative
+                {
+                    withholdVerb = UsBudgetProcedure.Applies(_playerCountry) && UsBudgetProcedure.MayWithhold(_playerCountry, pendingBill, out _);
+                    if (!withholdVerb) { line = "Congress votes the president's budget as its acts - no alternative budget is weighed"; }
+                }
                 else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; }
-                if (line != null)
+                if (withholdVerb)
+                {
+                    // PS-6 US-22: withhold or release - the party stands against the resolution in both chambers while withheld (PROVISIONAL reading, asked)
+                    bool withheld = _playerCountry.ContinuingResolutionWithheldBy == _playerCountry.PlayerPartyAbbrev;
+                    if (DrawBudgetButton(row, withheld ? "Release the continuing resolution" : "Withhold the continuing resolution", null, true))
+                    {
+                        if (!_simulationManager.WithholdContinuingResolution(PlayerCountryId, !withheld, out string refused)) { Debug.Log($"BUDGET: the continuing resolution's verb was refused - {refused}"); }
+                    }
+                    SlipAnchor(row, "budget:introduce");
+                    _budgetSlipBook.Anchors["budget:introduce"] = new SlipContent(withheld ? "RELEASE THE CONTINUING RESOLUTION" : "WITHHOLD THE CONTINUING RESOLUTION")
+                        .Add(withheld ? "YOUR PARTY VOTES AGAINST IT IN BOTH CHAMBERS · RELEASED, IT IS ASKED NOTHING AND PASSES UNCONTESTED"
+                            : "YOUR PARTY WOULD VOTE AGAINST IT IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT · CONGRESS DECIDES IN " + pendingBill.DaysRemaining + " DAY(S)")
+                        .Add("A RESOLUTION THAT FALLS FUNDS NOTHING - FROM 1 OCTOBER UNFUNDED, THE GOVERNMENT SHUTS DOWN, AND IT BEARS EACH ONE THAT FALLS")
+                        .Add("NO OTHER PARTY WITHHOLDS ONE");
+                }
+                else if (line != null)
                 {
                     if (Event.current.type == EventType.Repaint)
                     {
@@ -989,7 +1010,9 @@ namespace PoliSim.UI
         private void DrawBudgetIfPassed(float width, BudgetBill draft, int changes)
         {
             if (changes <= 0) { return; }
-            BillConcern concern = ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, draft));   // §768/§773: Poland's budget act - the spending alone
+            bool usActs = UsBudgetProcedure.Applies(_playerCountry);   // PS-6 US-22: the US Congress votes the draft as its acts - the count is the appropriation's
+            BillConcern concern = usActs ? UsBudgetProcedure.ConcernOf(_playerCountry, draft, UsBudgetProcedure.Act.Appropriation)
+                : ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, draft));   // §768/§773: Poland's budget act - the spending alone
             bool contested = concern != null && !concern.IsEmpty;
             System.DateTime budgetVoteDay = ChamberVerdicts.VoteDay(_simulationManager.CurrentDate, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining);
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, concern, budgetVoteDay);
@@ -1063,9 +1086,29 @@ namespace PoliSim.UI
             }
             var countSlip = new SlipContent(wouldPass ? "WOULD PASS" : "WOULD FAIL")
                 .Add(contested ? $"FOR {forSeats} · AGAINST {againstSeats}" + (undecided > 0 ? $" · UNDECIDED {undecided}" : "")
-                    : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED");
+                    : usActs ? "THE APPROPRIATION CHANGES NO LINE · UNCONTESTED" : acts.Count > 0 ? "THE BUDGET ACT CHANGES NOTHING · UNCONTESTED" : "NOTHING CHANGES · UNCONTESTED");
             Congress.Verdict congress = contested ? _chamberVerdicts.Chambers(_playerCountry, concern, budgetVoteDay) : null;   // PS-6 US-18: both chambers, where the budget goes through two
-            if (congress != null)
+            if (usActs)
+            {
+                // PS-6 US-22: the draft as Congress votes it - each act with its procedure and where it stops, the president's answer to each, what follows a
+                // fallen appropriation, and what is not modelled
+                if (congress != null) { countSlip.Add("THE COUNT ABOVE IS THE HOUSE'S, ON THE APPROPRIATION"); }
+                Congress.Verdict reconciliation = null;
+                foreach (UsBudgetProcedure.Act act in UsBudgetProcedure.Acts)
+                {
+                    if (!UsBudgetProcedure.IsVoted(draft, act, _playerCountry)) { continue; }
+                    BillConcern actConcern = act == UsBudgetProcedure.Act.Appropriation ? concern : UsBudgetProcedure.ConcernOf(_playerCountry, draft, act);
+                    Congress.Verdict actVerdict = actConcern.IsEmpty ? null : _chamberVerdicts.Chambers(_playerCountry, actConcern, budgetVoteDay);
+                    if (act == UsBudgetProcedure.Act.Reconciliation) { reconciliation = actVerdict; }
+                    countSlip.Add("THE " + UsBudgetProcedure.ActWords(act).ToUpperInvariant() + ", " + UsBudgetProcedure.ProcedureOf(act) + " - "
+                        + (actVerdict == null ? "NOTHING ASKED, IT PASSES UNCONTESTED" : Congress.StopWords(PlayerCountryId, actVerdict)));
+                    if (actVerdict != null && actVerdict.Passed) { foreach (string veto in ChamberVerdicts.UsVetoLines(PlayerCountryId, _chamberVerdicts.UsVetoProjection(_playerCountry, actConcern, budgetVoteDay))) { countSlip.Add(veto); } }
+                }
+                foreach (string line in UsBudgetProcedure.ProcedureWords()) { countSlip.Add(line); }
+                if (congress != null) { countSlip.Add(Congress.RuleWords(congress)); }
+                if (reconciliation != null) { countSlip.Add(Congress.RuleWords(reconciliation)); }   // its yearly limit, not modelled, said
+            }
+            else if (congress != null)
             {
                 // the Congress branch counts as each chamber counts (LawsV35's form), and says why a budget that moves a spending line goes to cloture whole
                 countSlip.Add("THE COUNT ABOVE IS THE HOUSE'S - " + Congress.StopWords(PlayerCountryId, congress));

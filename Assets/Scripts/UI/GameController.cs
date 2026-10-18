@@ -3350,11 +3350,19 @@ namespace PoliSim.UI
             // CreditRatingSystem.ReviewIfDue reuses FiscalYearData.GetFiscalYearStart directly). One
             // marker carries both facts rather than two coincident dots for one day.
             (int fyMonth, int fyDay) = FiscalYearData.GetFiscalYearStart(PlayerCountryId);
+            // PS-6 US-22: where the budget's request day is not the fiscal year's start (the USA: 31 U.S.C. 1105(a)'s first Monday in February), two markers
+            System.DateTime requestDay = FiscalYearData.BudgetRequestDay(PlayerCountryId, monthStart.Year);
+            bool requestApart = requestDay.Month != fyMonth || requestDay.Day != fyDay;
             if (fyMonth == monthStart.Month)
             {
                 Add(new System.DateTime(monthStart.Year, fyMonth, fyDay),
-                    "Fiscal year starts - budget process opens; credit rating reviewed",
+                    requestApart ? "Fiscal year starts - credit rating reviewed" : "Fiscal year starts - budget process opens; credit rating reviewed",
                     UiPalette.SystemArea.Fiscal);
+            }
+            if (requestApart) { Add(requestDay, "The president's budget request due - budget process opens", UiPalette.SystemArea.Fiscal); }
+            if (UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue)
+            {
+                Add(today, "Shutdown - day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " - funding lapsed, its spending stop not yet modelled", UiPalette.SystemArea.Fiscal);   // PS-6 US-22
             }
 
             // Publication release days: deterministic date arithmetic (ReleaseCalendar), never a
@@ -3385,7 +3393,7 @@ namespace PoliSim.UI
                     Add(today.AddDays(daysRemaining.Value), $"{label} bill resolves", UiPalette.SystemArea.Political);
                 }
             }
-            AddBill(_simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining, "Annual budget");
+            AddBill(_simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.ContinuingResolution == true ? "Continuing resolution" : "Annual budget");   // PS-6 US-22
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
                 AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} tax");
@@ -8986,6 +8994,9 @@ namespace PoliSim.UI
         private void DrawPendingLegislation()
         {
             GUILayout.Label("Pending Legislation", _headerStyle);
+            bool usActs = UsBudgetProcedure.Applies(_playerCountry);   // PS-6 US-22: the US Congress votes the budget as its acts
+            string lapse = usActs ? UsBudgetProcedure.LapseWords(_playerCountry, _simulationManager.CurrentDate) : null;
+            if (lapse != null) { DrawColoredLabel(lapse, _labelStyle, PoliSimTheme.Bad); }   // PS-6 US-22: a shutdown's days, said while it lasts
 
             // Master Sequence step 5e, Phase C batch 3: each pending bill now carries the DIRECTION it
             // was scored on, not just a pre-formatted sentence, so the lean bar below can show the
@@ -8994,7 +9005,27 @@ namespace PoliSim.UI
             var uncontestedWords = new Dictionary<string, string>();   // §773: a card whose empty concern is not "no change requested", by its label
 
             BudgetBill budgetBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
-            if (budgetBill != null)
+            if (budgetBill != null && usActs)
+            {
+                // PS-6 US-22: a continuing resolution on its own, or the budget's acts - each its own card, each through both chambers and the president (US-21's lean)
+                if (budgetBill.ContinuingResolution)
+                {
+                    string resolutionLabel = $"Continuing resolution - the standing figures - resolves in {budgetBill.DaysRemaining} day(s).";
+                    pending.Add((resolutionLabel, ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, budgetBill.DaysRemaining));
+                    uncontestedWords[resolutionLabel] = "Unopposed - it carries the standing figures, and no party withholds it";
+                }
+                else
+                {
+                    foreach (UsBudgetProcedure.Act act in UsBudgetProcedure.Acts)
+                    {
+                        if (!UsBudgetProcedure.IsVoted(budgetBill, act, _playerCountry)) { continue; }
+                        string actLabel = $"{UsBudgetProcedure.ActWords(act)} with the budget, {(act == UsBudgetProcedure.Act.Reconciliation ? "by a majority" : "at cloture")} - resolves in {budgetBill.DaysRemaining} day(s).";
+                        pending.Add((actLabel, UsBudgetProcedure.ConcernOf(_playerCountry, budgetBill, act), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, budgetBill.DaysRemaining));
+                        if (act == UsBudgetProcedure.Act.Appropriation) { uncontestedWords[actLabel] = "Unopposed - the appropriation carries the standing figures"; }
+                    }
+                }
+            }
+            else if (budgetBill != null)
             {
                 string budgetLabel = $"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).";
                 pending.Add((budgetLabel,
@@ -9421,6 +9452,7 @@ namespace PoliSim.UI
         private string BuildBudgetBillStatusText()
         {
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            if (UsBudgetProcedure.Applies(_playerCountry)) { return UsBudgetStatusText(pendingBill); }   // PS-6 US-22: the US Congress's procedure, its request day and its funding
             // PS-3e (§632): the government's budget named first - what it moves and when the chamber decides - and the draft below as the alternative it can be set against.
             if (pendingBill != null && pendingBill.GovernmentBill)
             {
@@ -9445,6 +9477,35 @@ namespace PoliSim.UI
                 : _simulationManager.GetPendingBudgetProcess(PlayerCountryId)
                 ? "The annual budget process is open - introduce your current draft as a bill below to continue."
                 : "No budget bill currently before " + Legislature + ". The annual process opens on your country's own fiscal-year date.";
+        }
+
+        /// <summary>PS-6 US-22: the bill-status line where the US Congress votes the budget as its acts - what is before Congress (a continuing resolution, the
+        /// president's budget, the player's), when the annual process opens (the president's request day), and the funding: its horizon, or the shutdown's day.</summary>
+        private string UsBudgetStatusText(BudgetBill pendingBill)
+        {
+            System.DateTime today = _simulationManager.CurrentDate;
+            string funding = _playerCountry.LapseSince != System.DateTime.MinValue
+                ? " Funding lapsed on " + _playerCountry.LapseSince.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + " - the government is shut down, day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture)
+                    + ", until an appropriation or a continuing resolution becomes law (the stop of its non-excepted spending is not yet modelled)."
+                : _playerCountry.AppropriatedThrough != System.DateTime.MinValue ? " The government is funded through " + _playerCountry.AppropriatedThrough.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + "." : string.Empty;
+            if (pendingBill != null && pendingBill.ContinuingResolution)
+            {
+                bool withheld = _playerCountry.ContinuingResolutionWithheldBy != null;
+                return $"A continuing resolution at the standing figures is before Congress; it decides in {pendingBill.DaysRemaining} day(s), at cloture." + (withheld ? " Your party withholds it." : string.Empty) + funding;
+            }
+            if (pendingBill != null)
+            {
+                return (pendingBill.GovernmentBill ? $"The president's budget is before Congress ({SimulationManager.DescribeBudgetBill(pendingBill)})" : "Your budget is before Congress")
+                    + $", voted as its acts - the appropriation at cloture, the reconciliation by a majority, the pension act at cloture; Congress decides in {pendingBill.DaysRemaining} day(s)." + funding;
+            }
+            const string RequestDay = "the first Monday in February, the president's request day";
+            if (_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId))
+            {
+                return "Your incoming government's first budget is open - introduce your current draft as a bill below. After this one, the annual process opens on " + RequestDay + "." + funding;
+            }
+            return (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? "The budget is the president's to propose - your party votes on it."
+                : _simulationManager.GetPendingBudgetProcess(PlayerCountryId) ? "The annual budget process is open - introduce your current draft as a bill below to continue."
+                : "No budget bill currently before Congress. The annual process opens on " + RequestDay + ".") + funding;
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the
