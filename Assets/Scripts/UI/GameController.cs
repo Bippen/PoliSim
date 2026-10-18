@@ -106,14 +106,9 @@ namespace PoliSim.UI
         private CountryId PlayerCountryId => _selectedPlayerCountryId ?? CountryId.USA;
 
 
-        /// <summary>This-turn PERCENTAGE-change slider range for a Discretionary SpendingLine - the same range for every category, but a percentage of that line's OWN Amount, so a $1B SBA line and an $850B Defense line move by proportionally (not identically) different dollar amounts. Must match SimulationManager.DiscretionaryPercentChangeRange.</summary>
-        private const float DiscretionaryPercentChangeRange = 30f;
-
-        /// <summary>Narrower than DiscretionaryPercentChangeRange - reflects the real political difficulty of entitlement reform. Must match SimulationManager.MandatoryPercentChangeRange.</summary>
-        private const float MandatoryPercentChangeRange = 15f;
         /// <summary>Master Sequence step 5d: the Trade tab's tariff draft moved from a small this-turn delta (the old TariffRateChangeRange) to an absolute target rate, matching TaxLine.Rate's own pattern - must match SimulationManager's own private MinBaseTariffRate/MaxBaseTariffRate.</summary>
-        private const float MinBaseTariffRate = 0f;
-        private const float MaxBaseTariffRate = 50f;
+        private const float MinBaseTariffRate = SimulationManager.MinBaseTariffRate;   // AF-11 (L5): the one pair, the manager's
+        private const float MaxBaseTariffRate = SimulationManager.MaxBaseTariffRate;
         private const float InterestRateChangeRange = 2f;
 
         /// <summary>Bounds for the Minimum Wage slider (percent of median wage) - must match SimulationManager.MinMinimumWagePercent/MaxMinimumWagePercent.</summary>
@@ -149,8 +144,8 @@ namespace PoliSim.UI
         private const float MaxLaborDialLevel = 100f;
 
         /// <summary>Bounds for a per-partner tariff override slider - the same [0,50] range BaseTariffRate itself uses. Must match SimulationManager's MinBaseTariffRate/MaxBaseTariffRate.</summary>
-        private const float PartnerTariffOverrideMin = 0f;
-        private const float PartnerTariffOverrideMax = 50f;
+        private const float PartnerTariffOverrideMin = SimulationManager.MinBaseTariffRate;   // AF-11 (L5): the override's verb clamps to the same pair
+        private const float PartnerTariffOverrideMax = SimulationManager.MaxBaseTariffRate;
 
         // ⚠ C-C14 (2026-08-31, Elias's ruling on S-12): the cosmetic +-5-10% margin that used to live
         // here is GONE, and is not to come back in any form - not re-rolled, not stabilised at a fixed
@@ -678,6 +673,7 @@ namespace PoliSim.UI
             // player actually moves a dial - a family's counterfactual world is forked on FIRST TOUCH, and
             // that fork is proven byte-exact against the same world run from the seed.
             _impactLedger = new PolicyImpactLedger(_shadowBaseline);
+            _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
         }
 
         /// <summary>
@@ -913,9 +909,10 @@ namespace PoliSim.UI
             // PS-1 (§618, the review's R5): the shadow baseline and the impact ledger are forked from the LOADED game (C-C10's fork), never left as the
             // world just left - a load moves the epoch under them, and the old shadow's clock would count its turns against a foreign start.
             _shadowBaseline?.Dispose();
-            _shadowBaseline = new ShadowBaseline(_simulationManager, _world, save.PlayerCountryId);
+            _shadowBaseline = new ShadowBaseline(_simulationManager, _world, save.PlayerCountryId, insideTurn: true);   // AF-11 (L3): an inactive host - Awake's default world would reset the market's turn state BeginTurn just set
             _impactLedger?.Dispose();
             _impactLedger = new PolicyImpactLedger(_shadowBaseline);
+            _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
 
             // The preview cache indexes into the OLD world's figures; the signing queue's entries
             // reference the OLD log's records. Both rebuild from live state on their own.
@@ -2087,6 +2084,7 @@ namespace PoliSim.UI
             _shadowBaseline = new ShadowBaseline(SimulationRandom.MasterSeed);
             _impactLedger?.Dispose();
             _impactLedger = new PolicyImpactLedger(_shadowBaseline);
+            _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
             _energyResult = null;
             _hasCachedPreview = false;
             Country after = _world.GetCountry(countryId);
@@ -4132,9 +4130,8 @@ namespace PoliSim.UI
             GUILayout.BeginVertical();
             GUILayout.Label($"{candidate.Name} ({candidate.Philosophy})", _labelStyle);
             GUILayout.Label(candidate.Description, _labelStyle);
-            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle))
+            if (DrawLeverLock()) { } else if (PoliSimWidgets.Button($"Appoint {candidate.Name}", _neutralActionButtonStyle) && _simulationManager.AppointCentralBankHead(_playerCountry.Id, candidate, out _))   // AF-11: the manager's verb
             {
-                _playerCountry.CurrentFedChair = candidate;
                 _fedChairCandidates = null;
                 RecomputePolicyPreview();
             }
@@ -5992,10 +5989,12 @@ namespace PoliSim.UI
                 decisions[country.Id] = country.Id == PlayerCountryId && _simulationManager.PlayerGoverns(country) ? BuildPlayerDecision() : PolicyDecision.None();
             }
 
-            // C-C10 (P-G2): ⚠ BEFORE the real advance, and that ordering is load-bearing. A family the
-            // player touches for the first time this turn forks its counterfactual from the state at the
-            // turn's START, which is exactly the state it would have been in had it existed all along -
-            // the identity `PolicyImpactLedgerDiagnostic` asserts byte-for-byte.
+            // C-C10 (P-G2): ⚠ BEFORE the real boundary, and that ordering is load-bearing. A family the
+            // player touches for the first time this turn forks its counterfactual from the real game as it
+            // stands here - the turn's days run, its boundary not crossed - and the fork crosses only the
+            // boundary (AF-11: `ShadowBaseline` reads the days already run; before AF-11 the fork ran a whole
+            // extra turn), which is exactly the state it would have been in had it existed all along -
+            // the identity `PlayerLeverLedgerDiagnostic` asserts on this order for a dial and every lever.
             _impactLedger?.AdvanceTurn(_simulationManager, _world, PlayerCountryId, decisions);
 
             // P2-4.3: the estimate the decision carried, snapshotted before the turn moves the preview on.
@@ -7067,7 +7066,7 @@ namespace PoliSim.UI
                 // 19b: the sheet's slips - the book built from the model each frame, the one StatsSlipReachabilityCheck reads - drawn last, over the sheet
                 FiscalTurnReport closed = _simulationManager.GetLastFiscalReport(PlayerCountryId);
                 PeopleSlips.Book book = StatsSlips.Build(_playerCountry, _world, PairPartner(), _statsSeriesSection.PageFromEnd, _statsTradeSection.PageFromEnd,
-                    closed?.TariffPassThroughPp, DerivedStats.DeficitPercentOfGdp(_playerCountry, closed));
+                    closed?.TariffPassThroughPp, DerivedStats.DeficitPercentOfGdp(_playerCountry, closed), closed);
                 DrawSlips(book, sheet);
             }
         }
@@ -9352,7 +9351,7 @@ namespace PoliSim.UI
             else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { GUILayout.Label("THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE", caption); }
             else if (PoliSimWidgets.Button("Table an Alternative Budget", _implementButtonStyle, GUILayout.Width(CtaWidth())))
             {
-                if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
+                if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
             }
             GUI.enabled = ambient;
         }
@@ -9448,8 +9447,27 @@ namespace PoliSim.UI
         /// <see cref="BuildFoldedInterruptText"/>: it is drawn under the Budget's call to action and in the docket's body,
         /// and its three variants differ in length enough to
         /// change how many lines it wraps to.
+        /// AF-9 (the review's M1): a refusal the manager gave the player's budget action today heads it, so a refused click is never silent.
         /// </summary>
         private string BuildBudgetBillStatusText()
+        {
+            string core = BudgetBillStatusCore();
+            bool refusedToday = _budgetRefusal != null && _simulationManager != null && _simulationManager.CurrentDate.Date == _budgetRefusalOn;
+            return refusedToday ? "REFUSED · " + _budgetRefusal + " · " + core : core;
+        }
+
+        /// <summary>AF-9 (the review's M1): the manager's refusal of the player's budget action, kept for the day it was given.</summary>
+        private string _budgetRefusal;
+        private System.DateTime _budgetRefusalOn;
+
+        /// <summary>AF-9: notes a refusal for the status line (<see cref="BuildBudgetBillStatusText"/>).</summary>
+        private void NoteBudgetRefusal(string refused)
+        {
+            _budgetRefusal = string.IsNullOrEmpty(refused) ? null : refused;
+            _budgetRefusalOn = _simulationManager != null ? _simulationManager.CurrentDate.Date : System.DateTime.MinValue;
+        }
+
+        private string BudgetBillStatusCore()
         {
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
             if (UsBudgetProcedure.Applies(_playerCountry)) { return UsBudgetStatusText(pendingBill); }   // PS-6 US-22: the US Congress's procedure, its request day and its funding
@@ -9588,6 +9606,10 @@ namespace PoliSim.UI
             {
                 // P5-B5: the bill carries the FIGURE the slider set (the parliament weighs it as the percentage it implies).
                 float figure = GetSpendingLineInput(spendingLine.Category, spendingLine.Amount);
+                // AF-9 (the review's M1): the figure clamped to the line's yearly range as it stands now - the track is the range, and a draft left from
+                // an earlier year would otherwise reach a manager that refuses it (SimulationManager.BudgetBillOutsideYearlyRange) behind a silent button
+                (float rangeMin, float rangeMax) = SimulationManager.YearlyRangeOf(_playerCountry, spendingLine);
+                figure = Mathf.Clamp(figure, rangeMin, rangeMax);
                 if (!Mathf.Approximately(figure, spendingLine.Amount))
                 {
                     bill.SpendingNominalTargets[spendingLine.Category] = figure;
@@ -10578,7 +10600,7 @@ namespace PoliSim.UI
             }
             float ratio = Effectiveness.RatioOf(_playerCountry, portfolio.Value);
             ink = ratio < 0.995f ? PoliSimTheme.Bad : PoliSimTheme.TextMuted;
-            return Effectiveness.ShortName(portfolio.Value) + " · EFF ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture);
+            return Effectiveness.ShortName(portfolio.Value) + (Simulation.CabinetSystem.IsVacantChair(_playerCountry, portfolio.Value) ? " · VACANT" : "") + " · EFF ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture);   // AF-30 (the review's M2): an empty chair is named, not read as underfunding
         }
 
         /// <summary>9b: the row's delta - the figure in force (the draft while drafted, else the standing amount) against the amount the year opened with

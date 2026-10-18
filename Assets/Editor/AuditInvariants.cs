@@ -279,7 +279,7 @@ namespace PoliSim.EditorTools
         {
             public DateTime Date;
             public int Turn;
-            public double Contribution, TotalSpending, OtherSpending, Assets;
+            public double Contribution, TotalSpending, OtherSpending, Assets, Returns;   // AF-35: Returns, the period's accrued return
         }
 
         private readonly Dictionary<CountryId, FundEvening> _fundEvening = new Dictionary<CountryId, FundEvening>();
@@ -342,6 +342,7 @@ namespace PoliSim.EditorTools
                     TotalSpending = period.AccruedTotalSpending,
                     OtherSpending = (double)period.AccruedMandatorySpending + period.AccruedUnemploymentBenefitCost + period.AccruedInterestOnDebt + period.AccruedWelfareCost,
                     Assets = fund.TotalAssets,
+                    Returns = period.AccruedSwfReturns,
                 };
                 if (_fundEvening.TryGetValue(c.Id, out FundEvening evening) && evening.Turn == now.Turn && date == evening.Date.AddDays(1))
                 {
@@ -350,7 +351,7 @@ namespace PoliSim.EditorTools
                     double today = now.Contribution - evening.Contribution;
                     double government = period.PlannedGovernmentSpending * perDay;   // the plan's slice, the same every day of the period
                     double booked = (now.TotalSpending - evening.TotalSpending) - (now.OtherSpending - evening.OtherSpending) - government;
-                    double returned = period.PlannedSwfReturn * perDay;
+                    double returned = now.Returns - evening.Returns;   // AF-35: what the day earned (the fund earns on what it holds, no longer the plan's flat slice)
                     double standing = (double)s.NominalGdp * fund.ContributionRatePercent / 100.0 * perDay;   // the scale of the cap's float residue
                     double tolerance = 1e-6 + 1e-5 * (Math.Abs(now.Contribution) + Math.Abs(evening.Contribution) + evening.Assets + Math.Abs(standing) + Math.Abs(returned));
                     double spendingTolerance = tolerance + 3e-7 * (Math.Abs(now.TotalSpending) + Math.Abs(evening.TotalSpending) + Math.Abs(now.OtherSpending) + Math.Abs(evening.OtherSpending) + Math.Abs(government));
@@ -367,7 +368,13 @@ namespace PoliSim.EditorTools
 
                     if (now.Assets > Math.Max(0.0, evening.Assets + today + returned) + tolerance)
                     {
-                        Breach("FUND", c.Id + "|undebited", day, date, $"{c.Id} the fund holds {R(now.Assets)} after a day that booked {R(today)} on {R(evening.Assets)} with a planned return of {R(returned)} - a draw the fund was not debited for");
+                        Breach("FUND", c.Id + "|undebited", day, date, $"{c.Id} the fund holds {R(now.Assets)} after a day that booked {R(today)} on {R(evening.Assets)} with a return of {R(returned)} earned - a draw the fund was not debited for");
+                    }
+
+                    // AF-35 (Elias's ruling q35, 2026-10-18: "a fund earns on what it holds"; GA-2-10): a fund the day's contribution left empty earns nothing
+                    if (evening.Assets + today <= 0.0 && Math.Abs(returned) > tolerance)
+                    {
+                        Breach("FUND", c.Id + "|earns-empty", day, date, $"{c.Id} the fund earned {R(returned)} in a day its contribution left it holding {R(evening.Assets + today)} - a return on assets it no longer had");
                     }
                 }
 

@@ -370,6 +370,8 @@ namespace PoliSim.EditorTools
             ("RangeCaptionCheck", RangeCaptionCheck.Run),   // P4-B1 (2026-09-04): every dial ten bands, every band's direction the dial's own effect sign
             ("EventPoolCheck", EventPoolCheck.Run),   // P4-D2 (2026-09-04): every event named, lined, tagged, cited and banded; the pool at least doubled; EventPool[0] pinned for the Desk film
             ("PolicyImpactLedgerCheck", PolicyImpactLedgerCheck.Run),   // P5-B5 (2026-09-05): every PolicyDecision field in a ledger family - the ledger throws at PLAY time otherwise, which the bars never reached (B2 shipped two fields outside one; the film found it)
+            ("UiLeverVerbCheck", UiLeverVerbCheck.Run),   // AF-11 (q11, 2026-10-18): no UI file writes a lever's model field - each lever rides its SimulationManager verb, which the impact ledger reads
+            ("CardTradeOffCheck", CardTradeOffCheck.Run),   // AF-31 (q31, 2026-10-18): every card's options trade off on a lasting count - no option on a cabinet or meeting card wins on every count
 
             // The coherence audit's EIGHTH sweep (2026-09-01): a ratchet whose ceiling has stopped
             // discriminating. ⚠ REGISTERED LAST AND THAT IS LOAD-BEARING: it reads what the ratchets above
@@ -570,6 +572,8 @@ namespace PoliSim.EditorTools
                 // which is the strongest form of check this suite has.
                 ("VoterGroupViewDiagnostic", VoterGroupViewDiagnostic.Run),
                 ("DomesticMoneyBasisDiagnostic", DomesticMoneyBasisDiagnostic.Run),   // P2-0.1 (2026-09-02): every Domestic money figure to its basis; the one-time settlements as a share of the deciding country GDP
+                ("FundTermsDiagnostic", FundTermsDiagnostic.Run),   // AF-9/AF-35 (q9, q35, 2026-10-18): the fund's money terms weighed by the vote, a dissolution credited, the budget window and the yearly range the manager's refusals, a fund earning on its principal
+                ("PlayerLeverLedgerDiagnostic", PlayerLeverLedgerDiagnostic.Run),   // AF-11 (q11, 2026-10-18): the levers' verbs act, the impact ledger watching them is passive, each lever family's except-world exact against the seed's
                 ("StanceModelDiagnostic", StanceModelDiagnostic.Run),   // P3-A2 (2026-09-03): five drafts of one magnitude across the bill categories on the formed government - different splits, a partner that refuses, the USA on its fallbacks.
                 ("PreviewParityDiagnostic", PreviewParityDiagnostic.Run),   // P2-3.4 (2026-09-02): the preview against the real boundary term by term, and the Riksbank path against the rule - a standalone diagnostic no bar ran until now
                 ("UsVeto2024Run", UsVetoDiagnostic.Run2024),   // PS-6 US-21 (§853): 12 Mar 2024 to 20 Jan 2025 with planted bills - those that reached the president and those vetoed beside the record's 118th and 119th (reported, not asserted; it fails only if the run does not complete)

@@ -560,10 +560,10 @@ namespace PoliSim.UI
             var minus = new Rect(inner.x, inner.yMax - bh, bw, bh);
             var plus = new Rect(inner.x + bw + V35.Px(6f), inner.yMax - bh, bw, bh);
             GUIStyle sign = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, TextAnchor.MiddleCenter);
-            if (DrawDeskChipButton(minus, "−", sign, false, !can || fleetLocked)) { EnergyFleet.Place(c, k, -step, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary
+            if (DrawDeskChipButton(minus, "−", sign, false, !can || fleetLocked)) { _simulationManager.PlaceFleetOrder(c.Id, k, -step, year, out _); _hasCachedPreview = false; }   // §544: a retirement lands at the coming boundary; AF-11: the manager's verb
             string full = can ? EnergyConnectionQueue.FullText(c, k, year) : null;
             double up = can ? EnergyConnectionQueue.StepUpMw(c, k, step, year) : step;   // a step larger than the line's room is the room
-            if (DrawDeskChipButton(plus, "+", sign, false, !can || fleetLocked || full != null)) { EnergyFleet.Place(c, k, up, year, _simulationManager.CurrentTurn); _hasCachedPreview = false; }
+            if (DrawDeskChipButton(plus, "+", sign, false, !can || fleetLocked || full != null)) { _simulationManager.PlaceFleetOrder(c.Id, k, up, year, out _); _hasCachedPreview = false; }
             string anchor = "en:plant:" + k;
             SlipAnchor(new Rect(tile.x, tile.y, tile.width, tile.height - bh - V35.Px(V35.CardPadY)), anchor);
             var slip = new SlipContent(name.ToUpperInvariant() + " · " + figure.ToUpperInvariant());

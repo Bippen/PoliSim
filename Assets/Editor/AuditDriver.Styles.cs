@@ -215,22 +215,12 @@ namespace PoliSim.EditorTools
             if (Mathf.Approximately(figure, line.Amount)) { drafts.Remove(line.Category); } else { drafts[line.Category] = figure; }
         }
 
-        /// <summary>The spending dial's track, as the Budget page computes it: this year's allowed change around the standing figure (the mandatory and
-        /// discretionary ranges are the controller's own constants), on the line's own path where a dial cost stands outside it.</summary>
+        /// <summary>The spending dial's track, as the Budget page draws it: since AF-9 the manager's own yearly range (`SimulationManager.YearlyRangeOf`), the
+        /// one the page and the manager's refusal share - this year's allowed change around the standing figure, on the line's own path where a dial cost
+        /// stands outside it.</summary>
         private (float Min, float Max) SpendingTrack(Country c, SpendingLine line)
         {
-            float range = (float)StaticOf(typeof(GameController), line.IsMandatory ? "MandatoryPercentChangeRange" : "DiscretionaryPercentChangeRange");
-            float standing = line.Amount;
-            float min = standing * (1f - range / 100f), max = standing * (1f + range / 100f);
-            float dialCost = (float)InvokeStatic(typeof(SimulationManager), "DialCostOf", c, line);
-            if (dialCost != 0f)
-            {
-                float own = standing - dialCost;
-                min = (float)InvokeStatic(typeof(SimulationManager), "LandedTotalOf", c, line, own * (1f - range / 100f) + dialCost);
-                max = (float)InvokeStatic(typeof(SimulationManager), "LandedTotalOf", c, line, own * (1f + range / 100f) + dialCost);
-            }
-
-            return (min, max);
+            return SimulationManager.YearlyRangeOf(c, line);
         }
 
         // ------------------------------------------------------------------ the style's own actions between windows
@@ -537,23 +527,6 @@ namespace PoliSim.EditorTools
         {
             if (!SeatedGovernment.TryAt(c.Id, _sm.CurrentDate.AddDays(120), out SeatedGovernment.Record record) || record.Cabinet == null) { return null; }
             return record.Cabinet.Contains(c.PlayerPartyAbbrev) || (record.Support != null && record.Support.Contains(c.PlayerPartyAbbrev));
-        }
-
-        // ------------------------------------------------------------------ reflection on statics
-
-        private static object StaticOf(Type type, string name)
-        {
-            FieldInfo f = type.GetField(name, Any);
-            if (f == null) { throw new MissingFieldException(type.Name, name); }
-            return f.IsLiteral ? f.GetRawConstantValue() : f.GetValue(null);
-        }
-
-        private static object InvokeStatic(Type type, string name, params object[] args)
-        {
-            MethodInfo m = type.GetMethods(Any).FirstOrDefault(x => x.Name == name && x.IsStatic && x.GetParameters().Length == args.Length);
-            if (m == null) { throw new MissingMethodException(type.Name, name); }
-            try { return m.Invoke(null, args); }
-            catch (TargetInvocationException e) { throw e.InnerException ?? e; }
         }
     }
 }

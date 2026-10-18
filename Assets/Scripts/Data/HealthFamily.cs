@@ -43,7 +43,7 @@ namespace PoliSim.Data
         // ---- BASES captured at the seed (HealthFamily.Seed) ----
         public float SpendPerHeadSeed;         // real health spending per head at the seed (the ratio is what matters, not the unit)
         public float SpendPerAgeCostSeed;      // real health spending per age-cost unit at the seed
-        public float EfficiencySeed = 1f;      // the health minister's efficiency at the seed (0..1)
+        public float EfficiencySeed = 1f;      // the efficiency the seed was run at - AF-30: the pool's average, 1
         public float DeathRateSeed;            // the crude death rate at the seed (per 1 000), the feedback pass's anchor
         // ---- THE TREND FAMILY (2026-09-07, ruling 2 of the overnight review) ----
         public float TreatableMortalityTrendPerYear;   // SOURCED: the continuous yearly rate of the OECD's own series since 2000 (DF_AM, TRTM), one vintage per country - negative is improvement
@@ -151,7 +151,7 @@ namespace PoliSim.Data
             s.SpendPerHeadSeed = SpendPerHead(country);
             s.SpendPerAgeCostSeed = SpendPerAgeCost(country);
             s.DeathRateSeed = st.DeathRate;
-            s.EfficiencySeed = Efficiency(country);
+            s.EfficiencySeed = 1f;   // AF-30 (q30): the seed's figures are the record's, run by its own ministries - the pool's average, the scale's neutral 1, whoever sits at the seed
             // docs/data/SOCIETY_STATS.md §9: ln(last ÷ first) ÷ years of the OECD series (deaths per 100 000, age-standardised, total), 2000 (Italy 2003) to the latest published year.
             switch (country.Id)
             {
@@ -205,15 +205,8 @@ namespace PoliSim.Data
         public static float SpendPerAgeCost(Country country)
             => HealthSpendingReal(country) / Mathf.Max(0.0001f, SpendingDrivers.Level(SpendingDriver.AgeCostIndex, country));
 
-        /// <summary>The health minister's efficiency as a 0..1 factor (CabinetMinister.Efficiency is 0..100); 1 when no minister sits.</summary>
-        public static float Efficiency(Country country)
-        {
-            if (country.CabinetMinisters != null && country.CabinetMinisters.TryGetValue(CabinetPortfolio.HealthSocialAffairs, out CabinetMinister m) && m != null)
-            {
-                return Mathf.Clamp(m.Efficiency, 1f, 100f) / 100f;
-            }
-            return 1f;
-        }
+        /// <summary>The health minister's efficiency on AF-30's scale (<see cref="Effectiveness.EfficiencyOf"/>): the pool's average minister 1, a vacant chair the player's to fill below the floor's.</summary>
+        public static float Efficiency(Country country) => Effectiveness.EfficiencyOf(country, CabinetPortfolio.HealthSocialAffairs);
 
         /// <summary>P5-C7 (board 9d): the Health ministry's effectiveness - allocated / requested x the minister's efficiency (Effectiveness.RatioOf);
         /// before the first turn records one it is the efficiency alone (the seed: allocated = requested). The spending-per-head stand-in is retired.</summary>

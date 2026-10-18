@@ -70,6 +70,12 @@ namespace PoliSim.Data
         public float SwfInfrastructureWeight;
         public float SwfRealEstateWeight;
 
+        /// <summary>AF-9 (Elias's ruling q9, 2026-10-18: "fund terms go to the vote"): TRUE on a part built new for the vote's concern and title alone - the tax
+        /// act, the pension act, the benefits act (<see cref="TaxActPart"/>, <see cref="PartOf"/>) - which names no fund: its empty fund block is not a
+        /// dissolution, so the chamber weighs no fund term on it (`ParliamentSystem.FundTermsOf`). False on every whole bill, which always names the fund.
+        /// Never saved: such a part is never pending.</summary>
+        [System.NonSerialized] public bool NamesNoFund;
+
         /// <summary>PN-1's dial (§590, DS-3): whether the bill sets the pension age, and the age it sets in years - a NEGATIVE figure returns the statute's own.
         /// Unset (every bill the dial did not touch), the age stands as it is.</summary>
         public bool PensionAgeSet;
@@ -110,7 +116,7 @@ namespace PoliSim.Data
         /// votes on the rates and reads the same author.</summary>
         public BudgetBill TaxActPart() => new BudgetBill
         {
-            GovernmentBill = GovernmentBill, TabledBy = TabledBy,
+            GovernmentBill = GovernmentBill, TabledBy = TabledBy, NamesNoFund = true,
             TaxLines = new Dictionary<TaxType, float>(TaxLines), BracketRates = new Dictionary<TaxType, float[]>(BracketRates),
         };
 
@@ -128,10 +134,10 @@ namespace PoliSim.Data
         // voted and put to the President like the tax act: the rates (D4), the pension age ("set by ordinary statute, so it travels in its own act and
         // can be vetoed, like tax rates"), and - RULED (Elias's ruling F6: "In Poland benefit levels and the fund's rules are set by statute, so they are
         // statute parts. 'Spending' means the budget act's appropriations.") - the benefit levels and the sovereign fund's rules: the parts that leave the
-        // budget act are whatever `BudgetBill.StatuteParts` lists. The budget act keeps the spending lines alone. ⚠ The fund's act is UNCONTESTED BY
-        // CONSTRUCTION: the chamber's concern weighs none of the fund's terms (`ParliamentSystem.GetBudgetBillConcern`), so it always passes and is
-        // signed - what the fund's rules come to is the budget act's outcome alone. Every act is a division of its own, and the fund's act, always
-        // passed, is voted last among the acts (`BudgetBill.StatuteParts`); since Elias's ruling F5 ("the check reads every bill lost that day") the
+        // budget act are whatever `BudgetBill.StatuteParts` lists. The budget act keeps the spending lines alone. ⚠ CORRECTED, AF-9 (ruling q9, 2026-10-18): the fund's act WAS uncontested by
+        // construction; its money terms now weigh (`ParliamentSystem.FundTermsOf`), so it can fall or be vetoed like any act (a mix-only act still asks
+        // nothing and passes). Every act is a division of its own, and the fund's act
+        // is voted last among the acts (`BudgetBill.StatuteParts`); since Elias's ruling F5 ("the check reads every bill lost that day") the
         // cabinet's pressure test reads every bill lost on the day (`Country.BillLostOn`), so an act passed after a fallen one hides nothing.
 
         /// <summary>§773: the parts of a bill that in Poland travel each in its own act, in the order the acts are voted.</summary>
@@ -175,6 +181,7 @@ namespace PoliSim.Data
         /// <summary>§773: whether the bill creates or dissolves the sovereign fund, or sets any of its rules other than its own (the bill names them all).</summary>
         public bool ChangesFund(Country country)
         {
+            if (NamesNoFund) { return false; }   // AF-9: a part that names no fund changes none
             SovereignWealthFund fund = country.SovereignWealthFund;
             if (SwfShouldExist != (fund != null)) { return true; }
             if (fund == null) { return false; }
@@ -192,8 +199,8 @@ namespace PoliSim.Data
             switch (part)
             {
                 case StatutePart.Rates: return TaxActPart();
-                case StatutePart.PensionAge: return new BudgetBill { GovernmentBill = GovernmentBill, TabledBy = TabledBy, PensionAgeSet = PensionAgeSet, PensionAge = PensionAge };
-                case StatutePart.Benefits: return new BudgetBill { GovernmentBill = GovernmentBill, TabledBy = TabledBy, WelfarePrograms = new Dictionary<WelfareProgramType, float>(WelfarePrograms) };
+                case StatutePart.PensionAge: return new BudgetBill { GovernmentBill = GovernmentBill, TabledBy = TabledBy, NamesNoFund = true, PensionAgeSet = PensionAgeSet, PensionAge = PensionAge };
+                case StatutePart.Benefits: return new BudgetBill { GovernmentBill = GovernmentBill, TabledBy = TabledBy, NamesNoFund = true, WelfarePrograms = new Dictionary<WelfareProgramType, float>(WelfarePrograms) };
                 default:
                     return new BudgetBill
                     {

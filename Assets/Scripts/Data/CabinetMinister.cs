@@ -36,8 +36,9 @@ namespace PoliSim.Data
         /// KNOWLEDGE the Docket's disclosure of an option's estimate (GameController.DrawCabinetOptionEstimate);
         /// EFFICIENCY a multiplier on the portfolio's spending sensitivity (MacroSystem.ApplyCategorySpendingEffects,
         /// three portfolios own one); POPULARITY a multiplier on an option's approval figure and on the dismissal
-        /// cost (CabinetSystem.ApplyDecisionOption, the Reshuffle button). 100 is "as written" - a minister with no authored
-        /// figure (an older save) moves nothing, rolls nothing and hides nothing; absence is not a penalty.
+        /// cost (CabinetSystem.ApplyDecisionOption, the Reshuffle button). EFFICIENCY reads on AF-30's scale (CabinetSystem.EfficiencyScale, ruled 2026-10-18):
+        /// the pool's average candidate is neutral and a vacant chair the player's to fill sits below the pool's floor. 100 is "as written" - a minister with no authored
+        /// figure (an older save) moves nothing, rolls nothing and hides nothing on the other three terms.
         /// </summary>
         public float Loyalty = 100f;
         public float Knowledge = 100f;

@@ -323,9 +323,9 @@ namespace PoliSim.EditorTools
                         bool Gate(List<DivisionSide> sides, PresidentialVeto.Act act, out DivisionRecord passage, out DivisionRecord vote, string title = "Enact: a planted statute")
                         {
                             passage = pl.Divisions.Append(title, sim.CurrentDate, 0.5f, true, 1f, 0, new List<DivisionSide>(sides));
-                            int before = pl.Divisions.Entries.Count;
+                            int before = LastDivisionNumber(pl);
                             bool stood = (bool)gate.Invoke(sim, new object[] { pl, passage, true, act });
-                            vote = pl.Divisions.Entries.Count > before ? pl.Divisions.Entries[pl.Divisions.Entries.Count - 1] : null;
+                            vote = LastDivisionNumber(pl) > before ? pl.Divisions.Entries[pl.Divisions.Entries.Count - 1] : null;
                             return stood;
                         }
                         // F3: every gate case below but the last is decided by name - the draw PLANTED to veto (0) or to sign (1), never the bar's own seed; the
@@ -447,19 +447,19 @@ namespace PoliSim.EditorTools
                         if (chosen != null)
                         {
                             bool introduced = sim.IntroduceLawBill(CountryId.Poland, new LawBill { LawId = chosen.Id });
-                            int before = pl.Divisions.Entries.Count;
+                            int before = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingLawBill(CountryId.Poland, chosen.Id) != null; day++) { sim.AdvanceLawBillsDay(CountryId.Poland); } }
                             bool enacted = pl.EnactedLaws.Exists(e => e.LawId == chosen.Id);
-                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
                             Check(introduced && !enacted && added.Count == 2 && added[0].Motion && added[0].Passed && !added[1].Passed && added[1].Required > 0 && added[1].Title.StartsWith("Vetoed by the President (Karol Nawrocki)", StringComparison.Ordinal),
                                 F("§761, F3: \"{0}\" introduced ({1}), resolved through the game's own bill path, the draw planted to veto - enacted {2}; recorded: {3}", chosen.Name, introduced, enacted,
                                     string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
                             // F3: the same statute again, the draw planted to sign - the President's answer is the draw's, so it is enacted on its one passage
                             bool introducedAgain = sim.IntroduceLawBill(CountryId.Poland, new LawBill { LawId = chosen.Id });
-                            int beforeAgain = pl.Divisions.Entries.Count;
+                            int beforeAgain = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(1.0)) { for (int day = 0; day < 400 && sim.GetPendingLawBill(CountryId.Poland, chosen.Id) != null; day++) { sim.AdvanceLawBillsDay(CountryId.Poland); } }
                             bool enactedAgain = pl.EnactedLaws.Exists(e => e.LawId == chosen.Id);
-                            List<DivisionRecord> addedAgain = pl.Divisions.Entries.GetRange(beforeAgain, pl.Divisions.Entries.Count - beforeAgain);
+                            List<DivisionRecord> addedAgain = DivisionsSince(pl, beforeAgain);
                             Check(introducedAgain && enactedAgain && addedAgain.Count == 1 && addedAgain[0].Passed && !addedAgain[0].Motion,
                                 F("F3: \"{0}\" again, the draw planted to sign - enacted {1} on its one passage; recorded: {2}", chosen.Name, enactedAgain,
                                     string.Join(" | ", addedAgain.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
@@ -507,10 +507,10 @@ namespace PoliSim.EditorTools
                             var bill = new BudgetBill();
                             bill.TaxLines[moved.Type] = newRate;
                             bill.SpendingPercentChanges[spend.Category] = 5f;
-                            bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
-                            int before = pl.Divisions.Entries.Count;
+                            bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                            int before = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
-                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
                             bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed && !added[0].Motion
                                 && added[1].Title.StartsWith("Tax act: ", StringComparison.Ordinal) && added[1].Passed && added[1].Motion
                                 && added[2].Title.StartsWith("Vetoed by the President (Karol Nawrocki): Tax act: ", StringComparison.Ordinal) && !added[2].Passed && added[2].Required > 0;
@@ -519,10 +519,10 @@ namespace PoliSim.EditorTools
                                     spendBefore, spend.Amount, moved.Rate, string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
                             // a budget that changes no rate is one act: nothing beside it
                             var plain = new BudgetBill(); plain.SpendingPercentChanges[spend.Category] = 5f;
-                            bool introducedPlain = sim.IntroduceBudgetBill(CountryId.Poland, plain);
-                            int beforePlain = pl.Divisions.Entries.Count;
+                            bool introducedPlain = BudgetBillHarness.Introduce(sim, CountryId.Poland, plain);
+                            int beforePlain = LastDivisionNumber(pl);
                             for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); }
-                            Check(introducedPlain && pl.Divisions.Entries.Count == beforePlain + 1 && pl.Divisions.Entries[beforePlain].Title == "Annual budget bill",
+                            Check(introducedPlain && DivisionsSince(pl, beforePlain).Count == 1 && DivisionsSince(pl, beforePlain)[0].Title == "Annual budget bill",
                                 "§768: a budget that changes no rate is one act - its division alone, no tax act beside it");
                         }
 
@@ -553,10 +553,10 @@ namespace PoliSim.EditorTools
                             BudgetBill budgetAct = PoliSim.Simulation.ParliamentSystem.BudgetActOf(pl, bill);
                             Check(!budgetAct.PensionAgeSet && budgetAct.TaxLines.Count == 0 && budgetAct.WelfarePrograms.Count == 0 && !budgetAct.ChangesFund(pl) && budgetAct.SpendingPercentChanges.Count == 1,
                                 "§773: the budget act carries the spending alone - no rate, no pension age, no benefit level, the fund as it stands");
-                            bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
-                            int before = pl.Divisions.Entries.Count;
+                            bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                            int before = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
-                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
                             bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed
                                 && added[1].Title.StartsWith("Pension act: the pension age ", StringComparison.Ordinal) && added[1].Passed && added[1].Motion
                                 && added[2].Title.StartsWith("Vetoed by the President (Karol Nawrocki): Pension act: ", StringComparison.Ordinal) && !added[2].Passed && added[2].Required > 0;
@@ -584,9 +584,9 @@ namespace PoliSim.EditorTools
                             // §773's review (finding 4): a Poland holding a fund - the partner's act votes its rates alone, never a fund act it did not ask
                             SovereignWealthFund fundBefore = pl.SovereignWealthFund;
                             pl.SovereignWealthFund = new SovereignWealthFund();
-                            int beforePartner = pl.Divisions.Entries.Count;
+                            int beforePartner = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(0.0)) { partnerAct?.Invoke(sim, new object[] { pl, decision, written, sim.CurrentDate }); }
-                            List<DivisionRecord> partnerAdded = pl.Divisions.Entries.GetRange(beforePartner, pl.Divisions.Entries.Count - beforePartner);
+                            List<DivisionRecord> partnerAdded = DivisionsSince(pl, beforePartner);
                             bool fundKept = pl.SovereignWealthFund != null;
                             pl.SovereignWealthFund = fundBefore;
                             Check(partnerAct != null && partnerAdded.Count == 2 && partnerAdded[0].Title.StartsWith("Tax act: ", StringComparison.Ordinal)
@@ -663,10 +663,10 @@ namespace PoliSim.EditorTools
                                 var bill = new BudgetBill();
                                 bill.WelfarePrograms[program.Type] = levelAsked;
                                 bill.SpendingPercentChanges[spend.Category] = 5f;
-                                bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
-                                int before = pl.Divisions.Entries.Count;
+                                bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                                int before = LastDivisionNumber(pl);
                                 using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
-                                List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                                List<DivisionRecord> added = DivisionsSince(pl, before);
                                 bool shape = added.Count == 3 && added[0].Title == "Annual budget bill" && added[0].Passed
                                     && added[1].Title.StartsWith("Benefits act: ", StringComparison.Ordinal) && added[1].Title.Contains(" to " + levelAsked.ToString("0.#", CultureInfo.InvariantCulture)) && added[1].Passed && added[1].Motion
                                     && added[2].Title.StartsWith("Vetoed by the President (Karol Nawrocki): Benefits act: ", StringComparison.Ordinal) && !added[2].Passed && added[2].Required > 0;
@@ -676,23 +676,79 @@ namespace PoliSim.EditorTools
                             }
                         }
 
-                        // (k4) a fund act - created through the game's own path: uncontested by construction, so it passes and is signed. No side is recorded
-                        // (the second review's finding 7: asserted, so the declared premise trips here the day the fund's terms get a concern).
+                        // (k4) a fund act - created through the game's own path. The second review's finding 7 asserted the act uncontested so the premise would
+                        // trip here the day the fund's terms got a concern: AF-9 (Elias's ruling q9, 2026-10-18: "fund terms go to the vote") is that day. A fund
+                        // created at NO contribution moves no money, so its act still asks nothing: no side recorded, passed and signed, the fund created.
                         {
                             SovereignWealthFund fundBefore = pl.SovereignWealthFund;
                             pl.SovereignWealthFund = null;
-                            var bill = new BudgetBill { SwfShouldExist = true, SwfContributionRatePercent = 1f, SwfDomesticAllocationPercent = 50f, SwfEquitiesWeight = 40f, SwfBondsWeight = 30f, SwfInfrastructureWeight = 15f, SwfRealEstateWeight = 15f };
+                            var bill = new BudgetBill { SwfShouldExist = true, SwfContributionRatePercent = 0f, SwfDomesticAllocationPercent = 50f, SwfEquitiesWeight = 40f, SwfBondsWeight = 30f, SwfInfrastructureWeight = 15f, SwfRealEstateWeight = 15f };
                             bill.SpendingPercentChanges[pl.SpendingLines.First(l => l.Amount > 0f).Category] = 5f;
-                            bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
-                            int before = pl.Divisions.Entries.Count;
+                            bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                            int before = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
-                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
                             DivisionRecord fundAct = added.FirstOrDefault(d => d.Title.StartsWith("Fund act: ", StringComparison.Ordinal));
                             bool created = pl.SovereignWealthFund != null;
                             pl.SovereignWealthFund = fundBefore;
                             Check(introduced && fundAct != null && fundAct.Passed && fundAct.Sides.Count == 0 && fundAct.Title == "Fund act: the sovereign wealth fund created" && PoliSim.Simulation.SimulationManager.IsStatuteActTitle(fundAct.Title)
                                   && !added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal)) && created,
-                                F("§773: a fund act through the game's own path - uncontested (no side recorded), passed and signed, the fund created; recorded: {0}", string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                                F("§773: a fund act at no contribution through the game's own path - uncontested (no side recorded), passed and signed, the fund created; recorded: {0}", string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                        }
+
+                        // (k4-AF9) the same fund created at +1 % of GDP a year: its act now WEIGHS that contribution (the drawdown bill's unit and axis), so the
+                        // Sejm divides on it - sides recorded - and the fund exists exactly where the act stood (passed, and no veto standing on it).
+                        {
+                            SovereignWealthFund fundBefore = pl.SovereignWealthFund;
+                            pl.SovereignWealthFund = null;
+                            var bill = new BudgetBill { SwfShouldExist = true, SwfContributionRatePercent = 1f, SwfDomesticAllocationPercent = 50f, SwfEquitiesWeight = 40f, SwfBondsWeight = 30f, SwfInfrastructureWeight = 15f, SwfRealEstateWeight = 15f };
+                            bill.SpendingPercentChanges[pl.SpendingLines.First(l => l.Amount > 0f).Category] = 5f;
+                            BillConcern fundConcern = PoliSim.Simulation.ParliamentSystem.GetBudgetBillConcern(pl, bill.PartOf(BudgetBill.StatutePart.Fund));
+                            bool weighsContribution = fundConcern.Moves.TryGetValue(StanceAxis.SpendVsTax, out float fundLoad) && Math.Abs(fundLoad - 1f) < 1e-5f && Math.Abs(fundConcern.Direction + 1f) < 1e-5f;
+                            bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                            int before = LastDivisionNumber(pl);
+                            using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
+                            DivisionRecord fundAct = added.FirstOrDefault(d => d.Title.StartsWith("Fund act: ", StringComparison.Ordinal));
+                            bool stood = fundAct != null && fundAct.Passed && !added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && d.Title.Contains("Fund act: ") && !d.Passed);
+                            bool created = pl.SovereignWealthFund != null;
+                            pl.SovereignWealthFund = fundBefore;
+                            Check(introduced && weighsContribution && fundAct != null && fundAct.Sides.Count > 0 && created == stood,
+                                F("AF-9: a fund act at +1 % of GDP a year is weighed - its concern {0:0.###} toward the tax end of spendvtax, direction {1:0.###}; the Sejm divided ({2} side(s)); the act {3}, the fund {4}; recorded: {5}",
+                                    fundLoad, fundConcern.Direction, fundAct?.Sides.Count ?? 0, stood ? "stood" : "fell", created ? "created" : "not created", string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                        }
+
+                        // (k4-AF9b) the review's L4 - the SIGN, pinned: a Sejm PLANTED whole to the party furthest toward "reduce taxes" on CHES spendvtax (chosen
+                        // from its published position, never from the act's own concern), the budget act moving nothing. A point more paid into the fund moves toward
+                        // that end, so the act must stand and the fund be created; a sign error would put that party against it and fail here.
+                        {
+                            PoliticalParty taxCutter = default;
+                            bool found = false;
+                            foreach (PoliticalParty p in PartySystems.For(CountryId.Poland)) { if (!float.IsNaN(p.SpendVsTax) && (!found || p.SpendVsTax > taxCutter.SpendVsTax)) { taxCutter = p; found = true; } }
+                            var seatsBefore = new Dictionary<string, int>(pl.ParliamentSeats);
+                            SovereignWealthFund fundBefore = pl.SovereignWealthFund;
+                            try
+                            {
+                                foreach (string abbrev in seatsBefore.Keys) { pl.ParliamentSeats[abbrev] = 0; }
+                                if (found) { pl.ParliamentSeats[taxCutter.Abbrev] = PartySystems.ChamberSeats(CountryId.Poland); }
+                                pl.SovereignWealthFund = null;
+                                var bill = new BudgetBill { SwfShouldExist = true, SwfContributionRatePercent = 1f, SwfDomesticAllocationPercent = 50f, SwfEquitiesWeight = 40f, SwfBondsWeight = 30f, SwfInfrastructureWeight = 15f, SwfRealEstateWeight = 15f };
+                                bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                                int before = LastDivisionNumber(pl);
+                                using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
+                                List<DivisionRecord> added = DivisionsSince(pl, before);
+                                DivisionRecord fundAct = added.FirstOrDefault(d => d.Title.StartsWith("Fund act: ", StringComparison.Ordinal));
+                                bool stood = fundAct != null && fundAct.Passed && !added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && d.Title.Contains("Fund act: ") && !d.Passed);
+                                bool created = pl.SovereignWealthFund != null;
+                                Check(found && introduced && fundAct != null && fundAct.Sides.Count > 0 && stood && created,
+                                    F("AF-9 (L4): the Sejm PLANTED whole to {0} (spendvtax {1:0.##}, the furthest toward \"reduce taxes\") - a fund act at +1 % of GDP a year stands and the fund is created; recorded: {2}",
+                                        found ? taxCutter.Abbrev : "NONE", found ? taxCutter.SpendVsTax : float.NaN, string.Join(" | ", added.Select(d => (d.Motion ? "[motion] " : "") + d.Title))));
+                            }
+                            finally
+                            {
+                                pl.SovereignWealthFund = fundBefore;
+                                pl.ParliamentSeats = seatsBefore;
+                            }
                         }
 
                         // (k4b) the second and third reviews (findings 7 and 8; 1 and 5): a standing fund's rules moved - a PLANTED fund, every figure set here
@@ -701,15 +757,17 @@ namespace PoliSim.EditorTools
                         // raw, as the Fund tab says them, and the shares of the fund they come to beside them. The expected title is built here from the planted
                         // figures, never transcribed.
                         CultureInfo invariant = CultureInfo.InvariantCulture;
-                        string RunFund(SovereignWealthFund planted, BudgetBill bill, out bool passedUncontested, out bool landed)
+                        string RunFund(SovereignWealthFund planted, BudgetBill bill, out bool passedUncontested, out bool landed) => RunFundWeighed(planted, bill, out passedUncontested, out landed, out _, out _);
+                        // AF-9: also whether the Sejm divided on the act (sides recorded) and whether it stood (passed, no veto standing on it)
+                        string RunFundWeighed(SovereignWealthFund planted, BudgetBill bill, out bool passedUncontested, out bool landed, out bool divided, out bool stood)
                         {
                             SovereignWealthFund fundBefore = pl.SovereignWealthFund;
                             pl.SovereignWealthFund = planted;
                             bill.SpendingPercentChanges[pl.SpendingLines.First(l => l.Amount > 0f).Category] = 5f;
-                            bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
-                            int before = pl.Divisions.Entries.Count;
+                            bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
+                            int before = LastDivisionNumber(pl);
                             using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
-                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
                             DivisionRecord fundAct = added.FirstOrDefault(d => d.Title.StartsWith("Fund act: ", StringComparison.Ordinal));
                             SovereignWealthFund now = pl.SovereignWealthFund;
                             landed = now != null && Math.Abs(now.ContributionRatePercent - bill.SwfContributionRatePercent) < 1e-4f && Math.Abs(now.DomesticAllocationPercent - bill.SwfDomesticAllocationPercent) < 1e-4f
@@ -717,6 +775,8 @@ namespace PoliSim.EditorTools
                                 && Math.Abs(now.InfrastructureWeight - bill.SwfInfrastructureWeight) < 1e-4f && Math.Abs(now.RealEstateWeight - bill.SwfRealEstateWeight) < 1e-4f;
                             pl.SovereignWealthFund = fundBefore;
                             passedUncontested = introduced && fundAct != null && fundAct.Passed && fundAct.Sides.Count == 0 && !added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal));
+                            divided = introduced && fundAct != null && fundAct.Sides.Count > 0;
+                            stood = fundAct != null && fundAct.Passed && !added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && d.Title.Contains("Fund act: ") && !d.Passed);
                             return fundAct?.Title;
                         }
                         {
@@ -734,9 +794,11 @@ namespace PoliSim.EditorTools
                                 + "; its equities weight " + planted.EquitiesWeight.ToString("0.#", invariant) + " to " + bill.SwfEquitiesWeight.ToString("0.#", invariant)
                                 + "; its bonds weight " + planted.BondsWeight.ToString("0.#", invariant) + " to " + bill.SwfBondsWeight.ToString("0.#", invariant)
                                 + "; its shares of the fund: " + ShareWords("equities", SovereignWealthAssetClass.Equities) + ", " + ShareWords("bonds", SovereignWealthAssetClass.Bonds);
-                            string title = RunFund(planted, bill, out bool uncontested, out bool landed);
-                            Check(uncontested && landed && title == expected,
-                                F("§773: a standing fund's rules moved through the game's own path - each rule it moves named, the weights raw and the moved shares beside them, the unmoved shares not named; uncontested, passed, the rules landed; titled: {0}", title ?? "no fund act"));
+                            // AF-9: the contribution moves a point, so the act is weighed now - divided on, and the rules land exactly where it stood
+                            string title = RunFundWeighed(planted, bill, out _, out bool landed, out bool divided, out bool stood);
+                            Check(divided && landed == stood && title == expected,
+                                F("§773: a standing fund's rules moved through the game's own path - each rule it moves named, the weights raw and the moved shares beside them, the unmoved shares not named; AF-9: the contribution weighed, the Sejm divided ({1}), the act {2}, the rules {3}; titled: {0}",
+                                    title ?? "no fund act", divided, stood ? "stood" : "fell", landed ? "landed" : "not landed"));
                         }
 
                         // (k4c) the third review's finding 1: the skip pinned by its purpose - a PLANTED mix whose weights do not sum to a hundred, one weight
@@ -798,14 +860,14 @@ namespace PoliSim.EditorTools
                             float incomeBefore = pl.TaxLines.First(t => t.Type == TaxType.IncomeTax).Rate, vatBefore = pl.TaxLines.First(t => t.Type == TaxType.VAT).Rate;
                             var decisions = new Dictionary<CountryId, PolicyDecision>();
                             foreach (Country k in world.Countries) { decisions[k.Id] = PolicyDecision.None(); }
-                            int before = pl.Divisions.Entries.Count;
+                            int before = LastDivisionNumber(pl);
                             bool turned = false;
                             // F3: the draw PLANTED to sign - the case is the boundary's order (the act standing or falling in the Sejm), not the President's draw
                             using (PresidentialVeto.PlantDraw(1.0))
                             {
                                 for (int day = 0; day < PoliSim.Simulation.SimulationManager.DaysPerTurn + 1 && !turned; day++) { if (sim.AdvanceDay()) { sim.AdvanceTurn(decisions); turned = true; } }
                             }
-                            List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);
+                            List<DivisionRecord> added = DivisionsSince(pl, before);
                             DivisionRecord taxAct = added.FirstOrDefault(d => d.Title.StartsWith("Tax act: ", StringComparison.Ordinal));
                             bool vetoStood = added.Any(d => d.Title.StartsWith("Vetoed by the President", StringComparison.Ordinal) && d.Title.Contains("Tax act: ") && !d.Passed);
                             bool stood = taxAct != null && taxAct.Passed && !vetoStood;
@@ -835,6 +897,14 @@ namespace PoliSim.EditorTools
         }
 
         private static DivisionSide Side(string abbrev, int seats, int side) => new DivisionSide { Abbrev = abbrev, ShortName = abbrev, Seats = seats, Side = side, Alignment = side };
+
+        /// <summary>The newest division's number on <paramref name="c"/>'s log (0 for none) - the mark a case reads its own divisions after. ⚠ The log keeps only
+        /// `DivisionLog.MaxEntries` and evicts the oldest, so a case that marked the COUNT read nothing once the log was full (AF-9's added fund cases filled it:
+        /// (k4c) read "no fund act" while its act had passed and landed); the number keeps rising past an eviction.</summary>
+        private static int LastDivisionNumber(Country c) => c.Divisions.Entries.Count > 0 ? c.Divisions.Entries[c.Divisions.Entries.Count - 1].Number : 0;
+
+        /// <summary>The divisions recorded on <paramref name="c"/> after the one numbered <paramref name="number"/>, oldest first.</summary>
+        private static List<DivisionRecord> DivisionsSince(Country c, int number) => c.Divisions.Entries.Where(d => d.Number > number).ToList();
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
     }

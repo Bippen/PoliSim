@@ -142,7 +142,7 @@ namespace PoliSim.Simulation
             if (lastReport == null || country.SpendingLines == null || country.SpendingLines.Count == 0) { return written; }
             float nominalGdp = country.State.NominalGdp;
             if (nominalGdp <= 0f) { return written; }
-            float balancePercent = lastReport.BudgetBalance / nominalGdp * 100f;   // negative = deficit, nominal over nominal (P5-B6)
+            float balancePercent = lastReport.FlowBalance / nominalGdp * 100f;   // negative = deficit, nominal over nominal (P5-B6); AF-17 (M2): the flow, net of the year's one-offs - a rule judges the standing position
             float debtPercent = country.State.DebtToGdpRatio;
             float fall = country.DebtRatioLastReport > 0f ? country.DebtRatioLastReport - debtPercent : 0f;
             if (IsEuMember(country.Id)) { ApplyEuRule(country, balancePercent, debtPercent, fall, nominalGdp, decision, written); }

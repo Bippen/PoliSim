@@ -64,10 +64,21 @@ namespace PoliSim.UI
 
         private static string P1(double v) => v.ToString("0.0", CultureInfo.InvariantCulture);
 
+        /// <summary>AF-17: the slip the closed year's balance opens when it counts one-offs.</summary>
+        public const string OneOffsAnchor = "fiscal:oneoffs";
+
+        /// <summary>AF-17: whether the closed year counted one-offs - the one test the page's anchors and the book share.</summary>
+        public static bool HasOneOffs(FiscalTurnReport closedYear) => closedYear?.OneOffLines != null && closedYear.OneOffLines.Count > 0;
+
+        /// <summary>AF-17 (the review's L1): "OF WHICH ONE-OFFS · ±X (n, ITEMISED ON THE BUDGET PAGE)", or null for a year without any.</summary>
+        public static string OneOffsLine(FiscalTurnReport closedYear) => HasOneOffs(closedYear)
+            ? "OF WHICH ONE-OFFS · " + UiFormat.MoneyDelta(closedYear.OneOffs, MoneyUnit.Billions) + " (" + closedYear.OneOffLines.Count + ", ITEMISED ON THE BUDGET PAGE)"
+            : null;
+
         /// <summary>The book for the sheet as it stands: <paramref name="partner"/> the pair page's partner (null with no other country),
         /// <paramref name="seriesPage"/> and <paramref name="tradePage"/> the two sections' pages, <paramref name="passThroughPp"/> the last closed
         /// year's tariff pass-through (null before one closed); <paramref name="deficitPercentOfGdp"/> the closed year's deficit (§725's rule test, null before one closed).</summary>
-        public static PeopleSlips.Book Build(Country home, World world, Country partner, int seriesPage, int tradePage, float? passThroughPp, float? deficitPercentOfGdp = null)
+        public static PeopleSlips.Book Build(Country home, World world, Country partner, int seriesPage, int tradePage, float? passThroughPp, float? deficitPercentOfGdp = null, FiscalTurnReport closedYear = null)
         {
             var book = new PeopleSlips.Book();
             StatHistory history = home.History;
@@ -104,7 +115,16 @@ namespace PoliSim.UI
                     .Add("DEFICIT " + deficitPercentOfGdp.Value.ToString("0.0", CultureInfo.InvariantCulture) + "% OF GDP · " + deficitRule.ToUpperInvariant());
                 string national = FiscalRules.NationalNote(home.Id);
                 if (national != null) { warning.Add(national.ToUpperInvariant()); }
+                string ofWhich = OneOffsLine(closedYear);
+                if (ofWhich != null) { warning.Add(ofWhich); }   // AF-17 (the review's L1): the rule's slip names the one-offs the figure counts
                 book.Anchors["fiscal:rule"] = warning;
+            }
+            // AF-17 (q17; the review's L1): the closed year's balance counts its one-offs - the deficit row, the Budget balance tile and the pair row open this
+            // slip whenever it exists (HasOneOffs), so the figure never carries them unnamed
+            if (OneOffsLine(closedYear) is string oneOffs)
+            {
+                book.Anchors[OneOffsAnchor] = new SlipContent("THE YEAR'S BALANCE, ONE-OFFS COUNTED").Add(oneOffs)
+                    .Add("THE DEBT'S CHANGE IS THE DEFICIT").Add("EACH ONE-OFF IS A NAMED LINE OF THE BUDGET PAGE'S CLOSED-YEAR BOOK");
             }
 
             // ---- the sectors (23a ⑧) --------------------------------------------------------------------------------------------------------

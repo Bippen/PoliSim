@@ -46,6 +46,15 @@ namespace PoliSim.Simulation
         /// drawing on the objects its table holds, as the real game's does (`SimulationRandom.LiveState`).</summary>
         private SimulationRandom.LiveState _own;
 
+        /// <summary>AF-11: the days this world has run of the turn in progress. 0 for a world from the seed, and after every boundary; a fork takes the
+        /// real game's (<see cref="SimulationManager.DaysIntoTurn"/>) - a fork made inside a turn, or at its last day before the boundary, has run those
+        /// days already, so <see cref="AdvanceTurn"/> runs only the rest and the world crosses the boundary on the real game's day.</summary>
+        private int _daysRun;
+
+        /// <summary>AF-11: the levers the real game pulled on a day of this turn this world has not reached yet, in the order pulled - each done when
+        /// the day loop reaches its day (<see cref="Schedule"/>).</summary>
+        private readonly List<KeyValuePair<int, PlayerLever>> _scheduled = new List<KeyValuePair<int, PlayerLever>>();
+
         /// <summary>The counterfactual world. Read-only to callers by convention — advancing it is
         /// <see cref="AdvanceTurn"/>'s job, because only that path protects the real generator.</summary>
         public World World => _world;
@@ -87,10 +96,17 @@ namespace PoliSim.Simulation
         ///
         /// <para>⚠ `RestoreInto` restores the GLOBAL generator, so the whole fork sits inside the same
         /// save/swap/restore-in-a-`finally` discipline as <see cref="AdvanceTurn"/>.</para>
+        ///
+        /// <para>⚠ AF-11: <paramref name="insideTurn"/> - a fork made between a turn's days (a lever's moment, <see cref="PolicyImpactLedger.BeforeLever"/>;
+        /// a load, which `GameController` follows with the played world's `EnergyMarket.BeginTurn` and a reset after it would undo)
+        /// builds its host INACTIVE, so the manager's `Awake` never runs: in play mode it builds a default world, and `WorldFactory.CreateDefault` resets the
+        /// energy market's turn state (`EnergyMarket.ResetTurnState`), which the REAL game's remaining days of the turn read. The fork's world is the save's,
+        /// so the default world was never used. The fork at a boundary keeps the host it always had (the boundary sets the market's turn state at its top).</para>
         /// </summary>
-        public ShadowBaseline(SimulationManager realSim, World realWorld, CountryId playerCountryId)
+        public ShadowBaseline(SimulationManager realSim, World realWorld, CountryId playerCountryId, bool insideTurn = false)
         {
             _host = new GameObject("ShadowBaseline (forked)") { hideFlags = HideFlags.HideAndDontSave };
+            if (insideTurn) { _host.SetActive(false); }
             _sim = _host.AddComponent<SimulationManager>();
 
             Persistence.SaveGame snapshot = Persistence.SaveGameService.CreateSaveGame(realSim, realWorld, playerCountryId, null);
@@ -102,6 +118,7 @@ namespace PoliSim.Simulation
                 Persistence.SaveGame copy = Persistence.SaveGameService.Deserialize(json);
                 Persistence.SaveGameService.RestoreInto(_sim, copy);
                 _world = _sim.World;
+                _daysRun = Mathf.Clamp(_sim.DaysIntoTurn, 0, SimulationManager.DaysPerTurn);   // AF-11: the real game's day, not the turn's start
 
                 _own = SimulationRandom.CaptureLive();
             }
@@ -132,8 +149,12 @@ namespace PoliSim.Simulation
                 SimulationRandom.Reinstate(_own);
                 swapped = true;
 
-                for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { _sim.AdvanceDay(); }
+                // AF-11: the turn's days this world has not run (all of them, but for a fork made inside the turn), each lever on its day
+                DoScheduled();
+                for (; _daysRun < SimulationManager.DaysPerTurn; _daysRun++) { _sim.AdvanceDay(); DoScheduled(_daysRun + 1); }
+                DoScheduled(int.MaxValue);
                 _sim.AdvanceTurn(decisions ?? _noDecisions);
+                _daysRun = 0;
             }
             finally
             {
@@ -141,6 +162,31 @@ namespace PoliSim.Simulation
                 // keeps the streams it made; and only once the shadow's state is in, or the real game's objects would become the shadow's
                 if (swapped) { _own = SimulationRandom.CaptureLive(); }
                 SimulationRandom.Reinstate(real);
+            }
+        }
+
+        /// <summary>
+        /// AF-11: the real game pulled <paramref name="lever"/> <paramref name="day"/> days into the turn; this world does the same act on its own copy
+        /// of the country when it reaches that day - now, where it has (a fork made at the lever's moment), or in <see cref="AdvanceTurn"/>'s day loop.
+        /// ⚠ An act draws no random number (an assignment, a queued order, a booked approval), so doing one outside the generator swap moves no stream.
+        /// </summary>
+        internal void Schedule(int day, PlayerLever lever)
+        {
+            if (day <= _daysRun) { lever.ApplyTo(_world, CountryFor(lever.CountryId), replay: true); return; }
+            _scheduled.Add(new KeyValuePair<int, PlayerLever>(day, lever));
+        }
+
+        /// <summary>Does every scheduled lever whose day this world has reached (<paramref name="reached"/>, by default the days run), in the order pulled.</summary>
+        private void DoScheduled(int reached = -1)
+        {
+            if (_scheduled.Count == 0) { return; }
+            if (reached < 0) { reached = _daysRun; }
+            for (int i = 0; i < _scheduled.Count;)
+            {
+                if (_scheduled[i].Key > reached) { i++; continue; }
+                PlayerLever lever = _scheduled[i].Value;
+                _scheduled.RemoveAt(i);
+                lever.ApplyTo(_world, CountryFor(lever.CountryId), replay: true);
             }
         }
 

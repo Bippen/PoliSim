@@ -146,7 +146,7 @@ namespace PoliSim.EditorTools
                         var w1Bill = new BudgetBill { PensionAgeSet = true, PensionAge = PensionAgeStatute.AgeInForce(u1, u1.CalendarYear) + 1f };
                         w1Bill.TaxLines[rate.Type] = Mathf.Clamp(rate.Rate - 2f, rate.MinRate, rate.MaxRate);
                         w1Bill.SpendingPercentChanges[SpendingCategory.Transportation] = -10f;
-                        bool introduced = s1.IntroduceBudgetBill(CountryId.USA, w1Bill);
+                        bool introduced = BudgetBillHarness.Introduce(s1, CountryId.USA, w1Bill);
                         int seen1 = Last(u1);
                         Step(s1, w1, new DateTime(2025, 9, 19));
                         List<DivisionRecord> acts1 = u1.Divisions.Entries.Where(r => r.Number > seen1).ToList();
@@ -322,7 +322,7 @@ namespace PoliSim.EditorTools
                         // ============================================================ (e) N1: a DEM budget introduced under Biden, decided under Trump
                         (SimulationManager s5, World w5, Country u5) = UsCongressDiagnostic.OpenUsa(hosts, new DateTime(2025, 1, 10), "DEM");
                         var raise = UsCongressDiagnostic.RatesBill(u5, "DEM");
-                        bool n1Introduced = s5.PlayerGoverns(u5) && s5.IntroduceBudgetBill(CountryId.USA, raise);
+                        bool n1Introduced = s5.PlayerGoverns(u5) && BudgetBillHarness.Introduce(s5, CountryId.USA, raise);
                         float n1Before = float.NaN, n1After = float.NaN;
                         int seen5 = Last(u5);
                         u5.BillLostOn = DateTime.MinValue;
@@ -408,7 +408,7 @@ namespace PoliSim.EditorTools
             s.PlayerPresidentVetoes = vetoes;
             try
             {
-                if (bill != null) { s.IntroduceBudgetBill(id, bill); }
+                if (bill != null) { BudgetBillHarness.Introduce(s, id, bill); }
                 BudgetBill pending = s.GetPendingBudgetBill(id);
                 for (int i = 0; i <= ParliamentSystem.BillDurationDays && pending != null && ReferenceEquals(s.GetPendingBudgetBill(id), pending); i++) { s.AdvanceBudgetBillDay(id); }
             }

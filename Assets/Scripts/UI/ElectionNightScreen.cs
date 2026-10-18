@@ -1036,7 +1036,7 @@ namespace PoliSim.UI
                 return;
             }
 
-            Heading(parent, string.Format(CultureInfo.InvariantCulture, "WHY — {0} · BASELINE {1:F1} → CLOSE {2:F1} · 1 pp = {3:F0} px",
+            Heading(parent, string.Format(CultureInfo.InvariantCulture, "WHY — {0} · BASELINE (AT THE CLOSE'S AWARENESS) {1:F1} → CLOSE {2:F1} · 1 pp = {3:F0} px",
                 party.ToUpperInvariant(), g.BaselinePoints, g.ClosePoints, AttributionBridge.PixelsPerPoint));
 
             // The move, once, signed - the one number the player is looking for.

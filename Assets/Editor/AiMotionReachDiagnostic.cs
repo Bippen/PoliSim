@@ -223,7 +223,7 @@ namespace PoliSim.EditorTools
                 int budgetVotes = 0, days = 0;
                 while (days++ < 1200 && g.Support.Contains("C") && g.NoConfidenceOn == DateTime.MinValue && sweden.Government == g)
                 {
-                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, new BudgetBill()); }
+                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, BudgetBillHarness.RestatingFund(sweden, new BudgetBill())); }
                     int divisionsBefore = sweden.Divisions.Entries.Count;
                     if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
                     sim.AdvanceCountryDayTick(CountryId.Sweden);
@@ -239,7 +239,7 @@ namespace PoliSim.EditorTools
                 // After the withdrawal the days run on - a motion is weighed every day (TryAiMotion) - for up to 90 more, or until one is moved.
                 for (int after = 0; withdrew && after < 90 && g.NoConfidenceOn == DateTime.MinValue && sweden.Government == g; after++)
                 {
-                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, new BudgetBill()); }
+                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, BudgetBillHarness.RestatingFund(sweden, new BudgetBill())); }
                     if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
                     sim.AdvanceCountryDayTick(CountryId.Sweden);
                     days++;
@@ -279,7 +279,7 @@ namespace PoliSim.EditorTools
                 int budgetVotes = 0, guard = 0;
                 while (sim.CurrentDate < polling && guard++ < 400)
                 {
-                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, new BudgetBill()); }
+                    if (sim.GetPendingBudgetProcess(CountryId.Sweden)) { sim.IntroduceBudgetBill(CountryId.Sweden, BudgetBillHarness.RestatingFund(sweden, new BudgetBill())); }
                     int divisionsBefore = sweden.Divisions.Entries.Count;
                     if (sim.AdvanceDay()) { sim.AdvanceTurn(noDecisions); }
                     sim.AdvanceCountryDayTick(CountryId.Sweden);

@@ -64,7 +64,8 @@ namespace PoliSim.UI
             {
                 ("receipt", "Tax burden", tax, PoliSimTheme.Neutral, null),
                 ("out", "Government spending", spending, PoliSimTheme.Neutral, null),
-                ("scales", deficit.HasValue && deficit.Value < 0f ? "Surplus" : "Deficit", deficit.HasValue ? Mathf.Abs(deficit.Value) : (float?)null, deficitInk, deficitRule != null ? "fiscal:rule" : null),
+                ("scales", deficit.HasValue && deficit.Value < 0f ? "Surplus" : "Deficit", deficit.HasValue ? Mathf.Abs(deficit.Value) : (float?)null, deficitInk,
+                    deficitRule != null ? "fiscal:rule" : StatsSlips.HasOneOffs(report) ? StatsSlips.OneOffsAnchor : null),   // AF-17 (L1): a breach's slip names the one-offs too
                 ("scales", primary.HasValue && primary.Value < 0f ? "Primary surplus" : "Primary deficit", primary.HasValue ? Mathf.Abs(primary.Value) : (float?)null, PoliSimTheme.Neutral, null),
             };
 
@@ -102,7 +103,7 @@ namespace PoliSim.UI
                     {
                         PoliSimTheme.Rule(track, PoliSimTheme.BarTrack);
                         PoliSimTheme.Rule(new Rect(track.x, track.y, track.width * Mathf.Clamp01(row.value.Value / axisMax), track.height), row.ink);
-                        PoliSimWidgets.MeasuredLabel(figure, UiFormat.Number(row.value.Value, 1) + "%", row.anchor != null ? Inked(new GUIStyle(valueFace), V35.Warning) : valueFace);
+                        PoliSimWidgets.MeasuredLabel(figure, UiFormat.Number(row.value.Value, 1) + "%", row.anchor == "fiscal:rule" ? Inked(new GUIStyle(valueFace), V35.Warning) : valueFace);   // AF-17: the one-offs' anchor carries no warning
                     }
                     if (row.anchor != null) { StatsAnchor(new Rect(track.x, y, figure.xMax - track.x, rowHeight), row.anchor); }   // §725: the bar and its figure open the rule's slip
                 }
@@ -481,7 +482,9 @@ namespace PoliSim.UI
                     if (r.Label != label) { continue; }
                     var t = new V35TileData { Icon = icon, IconInk = area, Figure = r.Value, Name = label == "GDP" ? "GDP, current prices" : label.Substring(0, 1) + label.Substring(1).ToLowerInvariant(), FigurePx = V35.FigureSmall };
                     if (!string.IsNullOrEmpty(r.Delta)) { t.Change = r.Delta; t.ChangeInk = r.DeltaInk; }
-                    tiles.Add((t, label == "GDP" ? "card:gdp/growth" : null, false));
+                    string anchor = label == "GDP" ? "card:gdp/growth"
+                        : label == "Budget Balance" && StatsSlips.HasOneOffs(_simulationManager.GetLastFiscalReport(PlayerCountryId)) ? StatsSlips.OneOffsAnchor : null;   // AF-17 (L1)
+                    tiles.Add((t, anchor, false));
                 }
             }
             if (tiles.Count == 0) { return; }

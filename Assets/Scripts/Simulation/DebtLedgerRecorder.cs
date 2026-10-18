@@ -117,7 +117,7 @@ namespace PoliSim.Simulation
         /// scenario seed) as a dated Class B event. Zero deltas are skipped - a writer that moved
         /// nothing still moved nothing. Opens the ledger at the PRE-write value if this is the
         /// period's first touch.</summary>
-        public static void RecordEvent(Country country, DateTime date, string label, float debtBefore, float debtAfter)
+        public static void RecordEvent(Country country, DateTime date, string label, float debtBefore, float debtAfter, string source = null)
         {
             float appliedDelta = debtAfter - debtBefore;
             if (appliedDelta == 0f)
@@ -129,6 +129,7 @@ namespace PoliSim.Simulation
             {
                 Date = date,
                 Label = label,
+                Source = source,
                 AppliedDelta = appliedDelta
             });
         }

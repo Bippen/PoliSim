@@ -169,6 +169,9 @@ namespace PoliSim.Simulation
         // Dictionary<TKey,TValue>'s "{ key, value }" collection-initializer shorthand doesn't parse
         // reliably when TKey is itself a tuple - index-initializer syntax ("[key] = value") sidesteps
         // the ambiguity entirely and is equally valid for building a static readonly dictionary.
+        // The cabinet's decision cards. Every figure is [AUTHORED-DRAFT]. AF-31 (q31, ruled 2026-10-18): every card's options trade off - no option is at least as good
+        // as a rival on every LASTING count (approval, budget, crime, poverty, youth unemployment) and better on one (CardTradeOffCheck); a trade-balance nudge is
+        // not a cost, since the trade system recomputes the balance at the next boundary. The entries AF-31 re-authored say so.
         private static readonly Dictionary<(CabinetPortfolio, CabinetMinisterPhilosophy), List<CabinetDecision>> DecisionPool =
             new Dictionary<(CabinetPortfolio, CabinetMinisterPhilosophy), List<CabinetDecision>>
         {
@@ -190,7 +193,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Audit Staffing Shortfall",
                     "The tax authority is understaffed for the coming filing season, risking a real drop in collections. Emergency contract hires would help, but cost money now.",
-                    new CabinetDecisionOption("Approve emergency hiring", budgetImpact: -60f, stateLean: 1),
+                    new CabinetDecisionOption("Approve emergency hiring", budgetImpact: -60f, approvalEffect: -0.5f, stateLean: 1),   // AF-31 [AUTHORED-DRAFT]: the contract hires' cost in the press - before it, this option won on every count
                     new CabinetDecisionOption("Have staff cover the gap", budgetImpact: -150f, stateLean: -1)),
                 new CabinetDecision(
                     "Unexpected Revenue Windfall",
@@ -234,7 +237,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "High-Profile Case Outcome",
                     "A closely-watched prosecution just concluded. Public reaction is split on whether the outcome was fair.",
-                    new CabinetDecisionOption("Publicly back the verdict", approvalEffect: 1f),
+                    new CabinetDecisionOption("Publicly back the verdict", crimeIndexShock: -0.3f, approvalEffect: -0.5f),   // AF-31 [AUTHORED-DRAFT]: a split public - the half that disagrees costs approval, the courts' backing deters; before it, this option won on every count
                     new CabinetDecisionOption("Stay neutral", approvalEffect: 0f)),
             },
             [(CabinetPortfolio.InteriorJustice, CabinetMinisterPhilosophy.Traditionalist)] = new List<CabinetDecision>
@@ -268,7 +271,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Program Efficiency Review",
                     "A review of existing welfare-program overhead has found real savings without cutting a single benefit.",
-                    new CabinetDecisionOption("Implement the savings", budgetImpact: 90f),
+                    new CabinetDecisionOption("Implement the savings", budgetImpact: 90f, approvalEffect: -0.5f),   // AF-31 [AUTHORED-DRAFT]: the overhead is staff, and the cut is news
                     new CabinetDecisionOption("Leave it as-is for now", budgetImpact: 0f)),
                 new CabinetDecision(
                     "Regional Hardship Spike",
@@ -286,7 +289,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Benefit Fraud Investigation",
                     "An investigation into benefit-fraud claims has concluded, recovering misallocated funds without touching legitimate recipients.",
-                    new CabinetDecisionOption("Recover the funds", budgetImpact: 100f),
+                    new CabinetDecisionOption("Recover the funds", budgetImpact: 100f, approvalEffect: -0.5f),   // AF-31 [AUTHORED-DRAFT]: the recovery makes the loss public - closing it quietly keeps it out of the press
                     new CabinetDecisionOption("Close it quietly", budgetImpact: 40f)),
             },
             // --- ROUND 4 BATCH R4-4: 9 pools x 2 scenarios, Part A parity (ruling R5). Every
@@ -352,7 +355,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Export Market Access Deal",
                     "Months of quiet negotiation have produced market access for your producers - in exchange for concessions the opposition will call a giveaway.",
-                    new CabinetDecisionOption("Close the deal", tradeBalanceShock: 0.4f, approvalEffect: -0.5f),
+                    new CabinetDecisionOption("Close the deal", budgetImpact: 20f, tradeBalanceShock: 0.4f, approvalEffect: -0.5f),   // AF-31 [AUTHORED-DRAFT]: the access is revenue (was trade only, which the next boundary recomputes)
                     new CabinetDecisionOption("Hold out for better terms", approvalEffect: 0f)),
                 new CabinetDecision(
                     "Consular Crisis Abroad",
@@ -370,7 +373,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "Reciprocal Expulsions",
                     "A rival government has expelled two of your diplomats on a pretext. Protocol suggests reciprocating; commerce suggests not.",
-                    new CabinetDecisionOption("Expel in kind", approvalEffect: 1f, tradeBalanceShock: -0.3f),
+                    new CabinetDecisionOption("Expel in kind", budgetImpact: -20f, approvalEffect: 1f, tradeBalanceShock: -0.3f),   // AF-31 [AUTHORED-DRAFT]: commerce pays - contracts lost (was a trade nudge only, which the next boundary recomputes)
                     new CabinetDecisionOption("Protest formally, keep channels open", approvalEffect: -0.5f)),
             },
             [(CabinetPortfolio.Education, CabinetMinisterPhilosophy.Reformist)] = new List<CabinetDecision>
@@ -404,7 +407,7 @@ namespace PoliSim.Simulation
                 new CabinetDecision(
                     "National Standards Examination",
                     "Your minister wants rigorous national exams reinstated - a clear bar, clearly measured, and clearly controversial.",
-                    new CabinetDecisionOption("Reinstate nationally", budgetImpact: -20f, approvalEffect: -0.5f),
+                    new CabinetDecisionOption("Reinstate nationally", budgetImpact: -20f, approvalEffect: -0.5f, youthUnemploymentShock: -0.3f),   // AF-31 [AUTHORED-DRAFT]: the clear bar's gain on the Education channel - before it, this option lost on every count
                     new CabinetDecisionOption("Voluntary adoption only", approvalEffect: 0f)),
                 new CabinetDecision(
                     "Apprenticeship Guilds Revival",
@@ -453,9 +456,77 @@ namespace PoliSim.Simulation
             minister.Popularity = a.Popularity;
         }
 
-        /// <summary>EFFICIENCY's term: the factor on the portfolio's spending sensitivity - 1 as written, 0.5 at 50, 1 for a vacant portfolio (absence is not a penalty).</summary>
-        public static float EfficiencyFactor(Country country, CabinetPortfolio portfolio) =>
-            country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) ? Mathf.Clamp01(m.Efficiency / 100f) : 1f;
+        // ---- AF-30 (q30, ruled 2026-10-18): THE EFFICIENCY SCALE - "a vacant chair sits below the pool's floor; an average minister is neutral" ----
+        // GA-8-3: on the old scale (efficiency / 100, an empty chair 1) every candidate in the pool was worse than leaving the chair empty, so seating a
+        // Health minister lengthened the waits. Now the scale's 1 is the pool's AVERAGE candidate, read off the table above, never typed.
+
+        /// <summary>[AUTHORED-DRAFT] a vacant chair's efficiency on the candidates' 0-100 scale: below the pool's floor (<see cref="PoolFloorEfficiency"/>),
+        /// so an empty chair is worse than any appointment. No source gives one; on the play-calibration list. <c>EffectivenessDiagnostic</c> fails
+        /// while it is not below the floor.</summary>
+        public const float VacantChairEfficiency = 40f;
+
+        /// <summary>The pool's mean efficiency - the scale's neutral point: a minister at it is ×1 on every term EFFICIENCY owns. Derived from the table.</summary>
+        public static readonly float PoolMeanEfficiency = PoolMean();
+
+        /// <summary>The pool's floor - its least efficient candidate's figure. Derived from the table.</summary>
+        public static readonly float PoolFloorEfficiency = PoolFloor();
+
+        private static float PoolMean()
+        {
+            float sum = 0f;
+            foreach ((float Loyalty, float Knowledge, float Efficiency, float Popularity) a in Attributes.Values) { sum += a.Efficiency; }
+            return sum / Attributes.Count;
+        }
+
+        private static float PoolFloor()
+        {
+            float floor = float.MaxValue;
+            foreach ((float Loyalty, float Knowledge, float Efficiency, float Popularity) a in Attributes.Values) { floor = Mathf.Min(floor, a.Efficiency); }
+            return floor;
+        }
+
+        /// <summary>AF-30: whether a chair is the player's to fill - the player's party leads the government, or holds the portfolio as a junior partner (the
+        /// role gate's own test, <c>SimulationManager.PlayerMayIntroduce</c>). Only such a chair can stand VACANT: a cabinet the game does not let anyone
+        /// seat (every AI government's, the player's in opposition, a world with no party chosen) is not modelled, and its ministries run at the pool's
+        /// average, as the seeds' own records did. A junior partner holding Finance acts through the fiscal stance only, and the gate locks the chair (§755), so
+        /// that chair is not the player's either (the review's L).</summary>
+        public static bool ChairIsThePlayers(Country country, CabinetPortfolio portfolio)
+        {
+            if (country == null || string.IsNullOrEmpty(country.PlayerPartyAbbrev) || country.Government == null) { return false; }
+            Elections.PlayerRole role = country.Government.RoleOf(country.PlayerPartyAbbrev);
+            if (role == Elections.PlayerRole.PrimeMinister) { return true; }
+            return role == Elections.PlayerRole.JuniorPartner && country.Government.HoldsPortfolio(country.PlayerPartyAbbrev, portfolio)
+                && !(portfolio == CabinetPortfolio.FinanceTreasury && FinancePartner.PlayerHolds(country));
+        }
+
+        /// <summary>AF-30 (the review's M2): a chair the player's to fill with no minister seated - the one case the readouts name VACANT rather than underfunded.</summary>
+        public static bool IsVacantChair(Country country, CabinetPortfolio portfolio) =>
+            country != null && (country.CabinetMinisters == null || !country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) || m == null) && ChairIsThePlayers(country, portfolio);
+
+        /// <summary>AF-30: EFFICIENCY on its one scale - a seated minister's figure against the pool's mean (an average minister ×1, neutral; the pool's best
+        /// above 1, its floor below), a vacant chair the player's to fill at <see cref="VacantChairEfficiency"/> against the same mean (below the floor's),
+        /// an unmodelled cabinet ×1. Every reader of the term reads this: the portfolio's effectiveness (<c>Effectiveness.EfficiencyOf</c>, the health
+        /// family's waits and quality) and the spending sensitivity (<see cref="EfficiencyFactor"/>).</summary>
+        public static float EfficiencyScale(Country country, CabinetPortfolio portfolio)
+        {
+            bool players = ChairIsThePlayers(country, portfolio);
+            // A seated minister counts in a chair that is the player's, or where no party is chosen (the instrument's hand: a check or a film seats one).
+            // A minister left in a chair the player no longer holds (the party in opposition, or a partner without the portfolio) is IGNORED, not cleared - the
+            // chair is not modelled and reads x1 (the review's L). ⚠ This holds for EFFICIENCY only (the second review's N3): nothing clears the dictionary when the
+            // player leaves office, so the competence bias, POPULARITY, the leaks and the decision roller still read a minister left there - the government's
+            // record changes in several places, in place too, and clearing at each is a pass of its own.
+            if ((players || string.IsNullOrEmpty(country.PlayerPartyAbbrev)) && country.CabinetMinisters != null && country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) && m != null)
+            {
+                return Mathf.Clamp(m.Efficiency, 1f, 100f) / PoolMeanEfficiency;
+            }
+            return players ? VacantChairEfficiency / PoolMeanEfficiency : 1f;
+        }
+
+        /// <summary>EFFICIENCY's term on the portfolio's spending sensitivity - <see cref="EfficiencyScale"/> (AF-30: an average minister ×1, a vacant chair below the floor).
+        /// DECLARED (the second review's N1): SYMMETRIC - a poorly run ministry's spending changes move outcomes less, in either direction. The three lines add to
+        /// persistent stocks, so one factor on rise and cut alike is what lets a cut and an equal restore cancel; a reciprocal on cuts pumped the stocks on a
+        /// round trip and was reverted. The alternative - efficiency acting on the spending LEVEL against its seed, recomputed each turn - is Elias's to rule.</summary>
+        public static float EfficiencyFactor(Country country, CabinetPortfolio portfolio) => EfficiencyScale(country, portfolio);
 
         /// <summary>POPULARITY's term: the factor on an option's approval figure and on the dismissal cost - 1 as written, 1 for a vacant portfolio.</summary>
         public static float PopularityFactor(Country country, CabinetPortfolio portfolio) =>

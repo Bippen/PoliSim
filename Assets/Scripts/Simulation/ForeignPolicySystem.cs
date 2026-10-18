@@ -37,12 +37,15 @@ namespace PoliSim.Simulation
 
         private static System.Random RandomSource => SimulationRandom.For(SimulationRandom.Stream.ForeignPolicy);
 
+        /// <summary>The meeting cards. Every figure is [AUTHORED-DRAFT]. AF-31 (q31, ruled 2026-10-18): every card's options trade off - no option is at least as good as a
+        /// rival on every LASTING count (approval, budget) and better on one (`CardTradeOffCheck`). A trade-balance nudge is not a cost: the trade system
+        /// recomputes the balance at the next boundary. The entries AF-31 re-authored say so.</summary>
         private static readonly List<ForeignPolicyMeeting> MeetingPool = new List<ForeignPolicyMeeting>
         {
             new ForeignPolicyMeeting(
                 "Trade Delegation Visit",
                 "A neighboring country's trade delegation has requested a meeting to discuss lowering mutual barriers. Your Foreign Ministry sees an opening, but domestic producers are wary.",
-                new ForeignPolicyMeetingOption("Pursue closer trade ties", tradeBalanceShock: -0.4f, approvalEffect: 0.5f),
+                new ForeignPolicyMeetingOption("Pursue closer trade ties", tradeBalanceShock: -0.4f, approvalEffect: 0.5f, budgetImpact: -15f),   // AF-31 [AUTHORED-DRAFT]: the barriers lowered are tariff revenue given up - before it, this option won every lasting count
                 new ForeignPolicyMeetingOption("Keep the relationship arm's length", tradeBalanceShock: 0f)),
             new ForeignPolicyMeeting(
                 "Disaster Relief Request",
@@ -54,12 +57,12 @@ namespace PoliSim.Simulation
                 "Joint Security Exercise Proposal",
                 "An allied country has proposed a joint military exercise, framed as routine cooperation but likely to draw attention from rivals in the region.",
                 new ForeignPolicyMeetingOption("Agree to the exercise", budgetImpact: -30f, approvalEffect: -0.5f),
-                new ForeignPolicyMeetingOption("Decline politely", approvalEffect: 0f)),
+                new ForeignPolicyMeetingOption("Decline politely", approvalEffect: -1f)),   // AF-31 [AUTHORED-DRAFT]: the ally's disappointment is public (was 0) - before it, declining won on every count
             new ForeignPolicyMeeting(
                 "Diplomatic Recognition Dispute",
                 "A minor diplomatic incident involving one of your embassies abroad has reached the press. The other government wants a formal statement.",
                 new ForeignPolicyMeetingOption("Issue a conciliatory statement", approvalEffect: -0.5f),
-                new ForeignPolicyMeetingOption("Stand firm on the original position", approvalEffect: 0.5f, tradeBalanceShock: 0.2f)),
+                new ForeignPolicyMeetingOption("Stand firm on the original position", approvalEffect: 0.5f, budgetImpact: -20f, tradeBalanceShock: -0.2f)),   // AF-31 [AUTHORED-DRAFT] (GA-9-1): the other government answers - contracts lost, and on trade (was +0.2 trade, nothing else); before it, this option won on every count
         };
 
         /// <summary>

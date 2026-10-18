@@ -107,7 +107,7 @@ namespace PoliSim.EditorTools
                 var bill = new BudgetBill();
                 bill.TaxLines[TaxType.IncomeTax] = income.Rate + 2f; bill.TaxLines[TaxType.VAT] = vat.Rate + 1f; bill.TaxLines[TaxType.CorporateTax] = corporate.Rate + 1f;
                 bill.BracketRates[TaxType.IncomeTax] = new[] { -1f };
-                Check(sim.IntroduceBudgetBill(CountryId.Germany, bill), "the SPD player's budget is introduced");
+                Check(BudgetBillHarness.Introduce(sim, CountryId.Germany, bill), "the SPD player's budget is introduced");
                 Check(bill.TaxLines.ContainsKey(TaxType.IncomeTax) && bill.TaxLines.ContainsKey(TaxType.VAT) && bill.BracketRates.ContainsKey(TaxType.IncomeTax) && bill.TaxLines.ContainsKey(TaxType.CorporateTax),
                     F("its income tax, VAT and corporate tax all carried ({0} tax line(s))", bill.TaxLines.Count));
 

@@ -24,7 +24,7 @@ namespace PoliSim.EditorTools
                 if (assert == null) { throw new InvalidOperationException("PolicyImpactLedger.AssertPartitionCovers was not found - the ledger's completeness check moved or was renamed."); }
                 try { assert.Invoke(null, null); }
                 catch (TargetInvocationException ex) when (ex.InnerException is InvalidOperationException inner) { throw inner; }
-                Debug.Log("=== PolicyImpactLedgerCheck: every PolicyDecision field is in exactly one ledger family ===");
+                Debug.Log("=== PolicyImpactLedgerCheck: every PolicyDecision field is in exactly one ledger family, and every player lever (AF-11) in one the table holds ===");
                 CheckExit.Finish(0);
             }
             catch (InvalidOperationException ex)

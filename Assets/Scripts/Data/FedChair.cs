@@ -20,6 +20,9 @@ namespace PoliSim.Data
 
         public FedChair() { }
 
+        /// <summary>AF-11 (GA-1-5): a copy for a counterfactual world - no head is shared between two worlds, as <see cref="CabinetMinister.Copy"/>.</summary>
+        public FedChair Copy() => (FedChair)MemberwiseClone();
+
         public FedChair(string name, FedChairPhilosophy philosophy, string description, float rateBias)
         {
             Name = name;

@@ -106,7 +106,7 @@ namespace PoliSim.EditorTools
                     float meanCut = 0f; foreach (float v in next.SpendingLineChanges.Values) { meanCut += v; }
                     if (next.SpendingLineChanges.Count > 0) { meanCut /= next.SpendingLineChanges.Count; }
                     FiscalTurnReport rep = sim.GetLastFiscalReport(CountryId.France);
-                    float req = rep != null ? AiFinanceMinistry.EuRequiredAdjustmentPercentOfGdp(rep.BudgetBalance / frm.State.NominalGdp * 100f, frm.State.DebtToGdpRatio, frm.DebtRatioLastReport > 0f ? frm.DebtRatioLastReport - frm.State.DebtToGdpRatio : 0f) : float.NaN;
+                    float req = rep != null ? AiFinanceMinistry.EuRequiredAdjustmentPercentOfGdp(rep.FlowBalance / frm.State.NominalGdp * 100f, frm.State.DebtToGdpRatio, frm.DebtRatioLastReport > 0f ? frm.DebtRatioLastReport - frm.State.DebtToGdpRatio : 0f) : float.NaN;
                     Macro.Append(string.Format(CultureInfo.InvariantCulture, "{0}#{1}# ministry next: mean line change {2:+0.000;-0.000} % on {3} lines, required adjustment {4:0.000} % of GDP, expenditure excess {5:0.0000}, debt ratio {6:0.00}\n",
                         PensionParticipationResponse.ProbeSuspended ? "off" : "on ", t + 1, meanCut, next.SpendingLineChanges.Count, req, AiFinanceMinistry.EuExpenditureExcess(frm), frm.State.DebtToGdpRatio));
                     Macro.Append(string.Format(CultureInfo.InvariantCulture, "{0}|{1}|P {2:0.00000} infl {3:0.0000} realwage {4:0.0000} gdp {5:0.000} pot {6:0.000} gap {7:0.00000} nomgdp {8:0.000} lfp {9:0.0000} U {10:0.0000} year {11}\n",

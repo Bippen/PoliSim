@@ -50,7 +50,7 @@ namespace PoliSim.EditorTools
                 Check(government != null && government.GovernmentBill && government.TabledBy == null, F("the government tables its budget on day {0}: {1}", day, government != null ? SimulationManager.DescribeBudgetBill(government) : "NONE"));
                 Check(!sim.GetPendingBudgetProcess(CountryId.Sweden), "the player's own process does not open for the opposition");
                 Check(WorldClock.BudgetProcedureOf(CountryId.Sweden) == WorldClock.BudgetProcedure.RiksdagFrameDecision, "Sweden's procedure is the Riksdag's frame decision");
-                var alternative = new BudgetBill();
+                var alternative = BudgetBillHarness.RestatingFund(sweden, new BudgetBill());   // AF-9: the fund restated - a bill built new would read as its dissolution
                 alternative.SpendingPercentChanges[SpendingCategory.SocialSecurity] = 4f;
                 Check(sim.TableShadowBudget(CountryId.Sweden, alternative, out string refused) && refused == null, "S tables an alternative budget against the government's");
                 Check(!sim.TableShadowBudget(CountryId.Sweden, new BudgetBill(), out refused) && refused == "YOUR ALTERNATIVE IS ALREADY TABLED", F("a second alternative is refused: {0}", refused));
@@ -85,7 +85,7 @@ namespace PoliSim.EditorTools
                 sweden.PlayerPartyAbbrev = "KD";
                 Check(!sim.TableShadowBudget(CountryId.Sweden, new BudgetBill(), out refused) && refused == "JUNIOR PARTNER · YOUR BUDGET VOICE IS THE COALITION AGREEMENT", F("KD, a junior partner, is refused: {0}", refused));
                 sweden.PlayerPartyAbbrev = "SD";
-                var sdAlternative = new BudgetBill(); sdAlternative.SpendingPercentChanges[SpendingCategory.SocialSecurity] = -3f;
+                var sdAlternative = BudgetBillHarness.RestatingFund(sweden, new BudgetBill()); sdAlternative.SpendingPercentChanges[SpendingCategory.SocialSecurity] = -3f;
                 Check(sim.TableShadowBudget(CountryId.Sweden, sdAlternative, out refused), "SD, a support party, tables its alternative");
                 int breaksBefore = sweden.Government.Breaks.Count; int divisionsBefore = sweden.Divisions.Entries.Count;
                 for (int i = 0; i < 25 && sim.GetPendingBudgetBill(CountryId.Sweden) != null; i++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.Sweden); }

@@ -13,6 +13,9 @@ namespace PoliSim.Data
     {
         public DateTime Date;
         public string Label;
+        /// <summary>AF-17 (q17): what the event settled - the cabinet decision's or the meeting's own name - where the writer has one; null where it has
+        /// none (the drawdown, whose label names it) and in a save from before the field.</summary>
+        public string Source;
         public float AppliedDelta;
     }
 

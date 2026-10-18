@@ -43,10 +43,13 @@ namespace PoliSim.EditorTools
                 // the game's own staging (SimulationManager's call): the vote model's positional compatibility (D-21), no player script - every party its cast AI.
                 // ⚠ Not LiveCampaignSetup.Sweden() alone: that is the harness's fixed-point staging, compatibility derived from the PRIOR, where a newcomer's
                 // prior 0 is compatibility 0 and it cannot move (§675's first run measured exactly that: 0.00 %, every real party unchanged).
+                CampaignRun.State lastState = null;
                 CampaignRun.Result Campaign()
                 {
                     if (!LiveCampaignSetup.TryFor(CountryId.Sweden, new (int, int, Scandal)[0], null, out CampaignRun.Setup setup, out string why, onVoteModelCompatibility: true)) { throw new InvalidOperationException("no campaign staged: " + why); }
-                    return CampaignRun.Simulate(setup, new System.Random(777), new System.Random(778), new System.Random(779));
+                    lastState = CampaignRun.Begin(setup, new System.Random(777), new System.Random(778), new System.Random(779));   // CampaignRun.Simulate's own three steps, the state kept for AF-23's ledger
+                    while (!lastState.Finished) { CampaignRun.StepDay(lastState); }
+                    return CampaignRun.Finish(lastState);
                 }
                 CampaignRun.Result baseRun = Campaign();
                 Dictionary<string, double> baseShares = new Dictionary<string, double>();
@@ -77,6 +80,20 @@ namespace PoliSim.EditorTools
                         money, PartyOrigins.FundingShare[0], LiveCampaignSetup.WarChest, volunteers, offices.Length));
                 CampaignRun.Result twinRun = Campaign();
                 sb.Append("    measured  (i) on the campaign, seeded (777), M's twin with the Grassroots stats: ").Append(Decompose("NM", twinRun, cast1)).Append('\n');
+                // AF-23 (q23, 2026-10-18): the campaign's attribution ledger reads the created party at the count's standing - SimulationManager's
+                // inputs (RecordCampaignLedger), with and without the standing. Its close is the run's own final share, which the count reads.
+                VoteAttribution.Inputs LedgerInputs(CampaignRun.Result r, int p, bool standing) => new VoteAttribution.Inputs
+                {
+                    OwnPersuasionByAction = r.Parties[p].PersuasionByAction, AttacksReceived = r.Parties[p].PersuasionAgainstMe,
+                    OwnPersuasionFromCoverage = r.Parties[p].PersuasionFromCoverage, TotalPersuasionPerParty = r.PersuasionPerParty,
+                    BaseCompatibility = lastState.Setup.Compatibility, PriorShares = lastState.Prior, LoyaltyPerParty = lastState.Setup.LoyaltyPerParty,
+                    Standing = standing ? CampaignRun.CloseStanding(lastState) : null,
+                };
+                VoteAttribution.Ledger oneStanding = VoteAttribution.Explain(LedgerInputs(twinRun, 8, true), 8);
+                VoteAttribution.Ledger bare = VoteAttribution.Explain(LedgerInputs(twinRun, 8, false), 8);
+                Check(Math.Abs(oneStanding.ShareAtClose - twinRun.FinalShares[8]) < 1e-9 && Math.Abs(oneStanding.Residual) < 1e-9,
+                    F("AF-23: the night's ledger reads NM at the count's standing - BASELINE {0:0.00} -> CLOSE {1:0.00} %, the run's final share {2:0.00} % (opening {3:0.00} %); the bare preference model's, as before AF-23: {4:0.00} -> {5:0.00} %",
+                        oneStanding.ShareAtBaseline * 100.0, oneStanding.ShareAtClose * 100.0, twinRun.FinalShares[8] * 100.0, twinRun.BaselineShares[8] * 100.0, bare.ShareAtBaseline * 100.0, bare.ShareAtClose * 100.0));
 
                 // The player's party index finds a created party.
                 SimulationRandom.Seed(777);

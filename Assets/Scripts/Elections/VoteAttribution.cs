@@ -75,6 +75,10 @@ namespace PoliSim.Elections
             public double[] BaseCompatibility;
             public double[] PriorShares;
             public double[] LoyaltyPerParty;
+            /// <summary>AF-23 (q23): the standing the count reads, as a map from the preference model's shares (`CampaignRun.CloseStanding`) -
+            /// the entrant layer, the record and the reach - applied in every coalition's value, so a created party's baseline is the count's
+            /// standing. Null = the preference model's shares as they come (the harnesses' stagings, which carry no entrant layer).</summary>
+            public Func<double[], double[]> Standing;
         }
 
         /// <summary>One party's finished ledger: the baseline, the close, and a signed contribution per source that sums to the movement.</summary>
@@ -131,7 +135,8 @@ namespace PoliSim.Elections
                 compatibility[i] = input.BaseCompatibility[i] + persuasion[i] / CampaignPressure.PersuasionPerCompatibilityPoint;
             }
 
-            return PreferenceModel.Preference(compatibility, input.PriorShares, input.LoyaltyPerParty)[party];
+            double[] shares = PreferenceModel.Preference(compatibility, input.PriorShares, input.LoyaltyPerParty);
+            return (input.Standing != null ? input.Standing(shares) : shares)[party];
         }
 
         /// <summary>

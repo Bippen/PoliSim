@@ -395,7 +395,7 @@ namespace PoliSim.EditorTools
         /// both continuations.</summary>
         private static void IntroduceCoverageBills(SimulationManager sim, World world, CountryId player, Country playerCountry)
         {
-            sim.IntroduceBudgetBill(player, new BudgetBill());
+            BudgetBillHarness.Introduce(sim, player, BudgetBillHarness.RestatingFund(playerCountry, new BudgetBill()));   // AF-9: the window planted where it is not open - the coverage bill is introduced at the save whatever the day - and the fund restated (the review's L5)
             sim.IntroduceLaborBill(player, new LaborPolicyBill
             {
                 MinimumWage = playerCountry.MinimumWagePercentOfMedian,

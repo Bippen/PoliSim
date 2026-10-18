@@ -195,13 +195,44 @@ namespace PoliSim.EditorTools
 
                 // P2-0.4 (2026-09-02): THE ANNUAL SERIES SUMS TO THE DEBT DELTA. A fresh world, closed one year at a
                 // time; after every close the year's balance must be the newest point of the annual series the
-                // sheet draws, and the balance must be the debt ledger's own flow terms with the sign flipped
-                // (the ledger's terms are contributions TO debt). Over the whole run the identity the row asked
-                // for holds with every other stock mover named beside the balance: the erosion term (the real
-                // stock's -pi*b drift), the one-time settlements (which land on the stock and the accumulator,
-                // never in a year's flow), and the clamp's truncation - the same three the ledger's own audit
-                // adds to explain a period. The tolerance is the ledger's idiom: relative to the stock, floored.
-                sb.Append(F("\n--- 4. The annual budget balance: the series the sheet draws, and the debt identity over {0} closed years ---\n", AnnualYearsToClose));
+                // sheet draws. The tolerance is the ledger's idiom: relative to the stock, floored.
+                //
+                // ⚠ AF-17 (Elias's ruling q17, 2026-10-18; GA-2-9): THE ONE-OFFS COUNT IN THE YEAR THE PLAYER READS, ITEMISED. §220 built
+                // the balance as the year's flow and named the one-time settlements beside it here only, so a year with a cabinet decision
+                // printed a deficit smaller than the debt's own change. Now, every closed year: the debt's change IS the balance with the
+                // sign flipped, beyond the two terms that are not a year's money - the erosion term (retired by P5-B6, read as it stands) and
+                // the clamp's truncation; the balance is the ledger's flow terms PLUS its dated events; and the report itemises every event
+                // as a named line, the lines summing to its one-offs. The harness PUTS one-offs in (the pool's largest cost and largest
+                // windfall in year 1, the cost again in year 2, through the player's own path, ResolveCabinetDecision) - section 4 used to
+                // run with no decisions, so its settlements were zero and the omission could not fail it. The review's L6: the windfall
+                // again on year 2's BOUNDARY DAY, after AdvanceDay and before AdvanceTurn (it belongs to the closing year), and the cost
+                // again directly AFTER year 2's close (it belongs to year 3). Year 4 carries none: its balance must be the flow exactly.
+                // On the pre-AF-17 tree the identities of every planted year fail by the one-offs. The review's M2: the report's
+                // FlowBalance - the figure the EU ministry reads - stays the ledger's flow terms alone, net of the one-offs, every year.
+                sb.Append(F("\n--- 4. The annual budget balance: the series the sheet draws, and the debt identity over {0} closed years, one-offs counted ---\n", AnnualYearsToClose));
+                (string Source, string Option, float Authored) cost = default, windfall = default;
+                foreach ((string source, string option, float authored) in options)
+                {
+                    if (authored < cost.Authored) { cost = (source, option, authored); }
+                    if (authored > windfall.Authored) { windfall = (source, option, authored); }
+                }
+                failures += Assert(sb, "AF-17: the pools carry a cost and a windfall to plant (a harness that plants nothing verifies nothing)",
+                    cost.Authored < 0f && windfall.Authored > 0f, F("cost {0} ({1}), windfall {2} ({3})", cost.Authored, cost.Option, windfall.Authored, windfall.Option));
+                // what each planted day lands: (the closed-year index it falls in, the day of that year - BoundaryEve on the boundary day before
+                // AdvanceTurn, AfterClose directly after the previous year's AdvanceTurn - the pooled settlement)
+                const int BoundaryEve = -1, AfterClose = -2;
+                var planted = new List<(int Year, int Day, (string Source, string Option, float Authored) Option)>
+                    { (0, 60, cost), (0, 120, windfall), (1, 90, cost), (1, BoundaryEve, windfall), (2, AfterClose, cost) };
+                void Plant(SimulationManager sim, World w, int year, int day)
+                {
+                    foreach (var plant in planted)
+                    {
+                        if (plant.Year != year || plant.Day != day) { continue; }
+                        var option = new CabinetDecisionOption("AF-17 probe - " + plant.Option.Option, budgetImpact: plant.Option.Authored);
+                        var decision = new CabinetDecision("AF-17 probe", plant.Option.Source, option);
+                        foreach (Country c in w.Countries) { sim.ResolveCabinetDecision(c.Id, CabinetPortfolio.FinanceTreasury, decision, option); }
+                    }
+                }
                 SimulationRandom.Seed(777);
                 World annualWorld = WorldFactory.CreateDefault();
                 var annualGo = new GameObject("DomesticMoneyBasisAnnual");
@@ -212,21 +243,31 @@ namespace PoliSim.EditorTools
                     var debtAtSeed = new Dictionary<CountryId, float>();
                     var sumNegBalance = new Dictionary<CountryId, float>();
                     var sumErosion = new Dictionary<CountryId, float>();
-                    var sumEvents = new Dictionary<CountryId, float>();
+                    var sumOneOffs = new Dictionary<CountryId, float>();
                     var sumClamp = new Dictionary<CountryId, float>();
+                    var lineCount = new Dictionary<CountryId, int>();
                     foreach (Country c in annualWorld.Countries)
                     {
                         debtAtSeed[c.Id] = c.State.GovernmentDebt;
-                        sumNegBalance[c.Id] = 0f; sumErosion[c.Id] = 0f; sumEvents[c.Id] = 0f; sumClamp[c.Id] = 0f;
+                        sumNegBalance[c.Id] = 0f; sumErosion[c.Id] = 0f; sumOneOffs[c.Id] = 0f; sumClamp[c.Id] = 0f; lineCount[c.Id] = 0;
                     }
 
                     int yearsClosed = 0;
+                    int dayOfYear = 0;
                     int dayGuard = 0;
                     while (yearsClosed < AnnualYearsToClose && dayGuard++ < 400 * AnnualYearsToClose)
                     {
-                        if (!annualSim.AdvanceDay()) { continue; }
+                        bool boundary = annualSim.AdvanceDay();
+                        dayOfYear++;
+                        Plant(annualSim, annualWorld, yearsClosed, dayOfYear);
+                        if (!boundary) { continue; }
+                        Plant(annualSim, annualWorld, yearsClosed, BoundaryEve);
                         annualSim.AdvanceTurn(noDecisions);
                         yearsClosed++;
+                        dayOfYear = 0;
+                        Plant(annualSim, annualWorld, yearsClosed, AfterClose);
+                        int plantedThisYear = 0;
+                        foreach (var plant in planted) { if (plant.Year == yearsClosed - 1) { plantedThisYear++; } }
                         foreach (Country c in annualWorld.Countries)
                         {
                             FiscalTurnReport yearReport = annualSim.GetLastFiscalReport(c.Id);
@@ -237,25 +278,51 @@ namespace PoliSim.EditorTools
                                 newestIsTheYear, F("series has {0} point(s), newest {1}, report {2}", series.Count, series.Count > 0 ? series[series.Count - 1] : float.NaN, yearReport?.BudgetBalance ?? float.NaN));
                             if (yearReport == null || ledger == null) { continue; }
 
-                            float flowTerms = ledger.TermSum - ledger.Erosion;
                             float tolerance = Mathf.Max(0.01f, 2e-4f * Mathf.Max(Mathf.Abs(ledger.DebtAtPeriodOpen), Mathf.Abs(ledger.DebtAtClose)));
-                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: the year's balance is the ledger's flow terms, sign flipped",
-                                Mathf.Abs(-yearReport.BudgetBalance - flowTerms) <= tolerance, F("-balance {0:0.0000} vs terms-erosion {1:0.0000} (tol {2:0.0000})", -yearReport.BudgetBalance, flowTerms, tolerance));
+                            float debtChange = ledger.DebtAtClose - ledger.DebtAtPeriodOpen;
+                            float readAsDeficit = -yearReport.BudgetBalance + ledger.Erosion + ledger.ClampLoss;
+                            sb.Append(F("  {0,-8} year {1}: debt change {2,9:+0.000;-0.000} | the year's balance {3,9:+0.000;-0.000}, of which one-offs {4,8:+0.000;-0.000} in {5} line(s); erosion {6:+0.000;-0.000}, clamp {7:+0.000;-0.000}\n",
+                                c.Id, yearsClosed, debtChange, yearReport.BudgetBalance, yearReport.OneOffs, yearReport.OneOffLines?.Count ?? -1, ledger.Erosion, ledger.ClampLoss));
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: AF-17 - the debt's change IS the closed year's deficit (beyond erosion and the clamp)",
+                                Mathf.Abs(debtChange - readAsDeficit) <= tolerance, F("debt change {0:0.0000} vs -balance+erosion+clamp {1:0.0000} (tol {2:0.0000})", debtChange, readAsDeficit, tolerance));
+                            float flowTerms = ledger.TermSum - ledger.Erosion;
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: the report's FlowBalance (the EU ministry's reading) is the ledger's flow terms alone, sign flipped - net of the one-offs",
+                                Mathf.Abs(-yearReport.FlowBalance - flowTerms) <= tolerance && Mathf.Abs(yearReport.BudgetBalance - yearReport.FlowBalance - yearReport.OneOffs) <= tolerance,
+                                F("-flow {0:0.0000} vs terms-erosion {1:0.0000}; balance-flow {2:0.0000} vs one-offs {3:0.0000} (tol {4:0.0000})", -yearReport.FlowBalance, flowTerms, yearReport.BudgetBalance - yearReport.FlowBalance, yearReport.OneOffs, tolerance));
+                            float flowAndEvents = ledger.TermSum - ledger.Erosion + ledger.EventSum;
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: the year's balance is the ledger's flow terms plus its dated events, sign flipped",
+                                Mathf.Abs(-yearReport.BudgetBalance - flowAndEvents) <= tolerance, F("-balance {0:0.0000} vs terms-erosion+events {1:0.0000} (tol {2:0.0000})", -yearReport.BudgetBalance, flowAndEvents, tolerance));
+
+                            // itemised: one named line per event, as it landed, the lines summing to the one-offs
+                            List<FiscalOneOff> lines = yearReport.OneOffLines;
+                            bool itemised = lines != null && lines.Count == ledger.Events.Count;
+                            float lineSum = 0f;
+                            for (int i = 0; itemised && i < lines.Count; i++)
+                            {
+                                itemised &= lines[i].Label == ledger.Events[i].Label && lines[i].Date == ledger.Events[i].Date && lines[i].Amount == -ledger.Events[i].AppliedDelta && !string.IsNullOrEmpty(lines[i].Label)
+                                    && lines[i].Source == ledger.Events[i].Source && (!lines[i].Label.StartsWith("Cabinet: AF-17 probe", StringComparison.Ordinal) || lines[i].Source == "AF-17 probe");   // L2: the decision's name rides the line
+                                lineSum += lines[i].Amount;
+                            }
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: every one-off is its own named, dated line, as it landed on the debt, and the lines sum to the year's one-offs",
+                                itemised && Mathf.Abs(lineSum - yearReport.OneOffs) <= 1e-5f * Mathf.Max(1f, Mathf.Abs(yearReport.OneOffs)), F("{0} line(s) for {1} event(s); lines sum {2:0.0000}, one-offs {3:0.0000}", lines?.Count ?? -1, ledger.Events.Count, lineSum, yearReport.OneOffs));
+                            failures += Assert(sb, $"{c.Id} year {yearsClosed}: the harness's {plantedThisYear} planted one-off(s) reached the year",
+                                lines != null && lines.Count >= plantedThisYear && (plantedThisYear == 0 || yearReport.OneOffs != 0f), F("{0} line(s), one-offs {1:0.0000}", lines?.Count ?? -1, yearReport.OneOffs));
                             sumNegBalance[c.Id] += -yearReport.BudgetBalance;
                             sumErosion[c.Id] += ledger.Erosion;
-                            sumEvents[c.Id] += ledger.EventSum;
+                            sumOneOffs[c.Id] += yearReport.OneOffs;
                             sumClamp[c.Id] += ledger.ClampLoss;
+                            lineCount[c.Id] += lines?.Count ?? 0;
                         }
                     }
 
                     foreach (Country c in annualWorld.Countries)
                     {
                         float observed = c.State.GovernmentDebt - debtAtSeed[c.Id];
-                        float explained = sumNegBalance[c.Id] + sumErosion[c.Id] + sumEvents[c.Id] + sumClamp[c.Id];
+                        float explained = sumNegBalance[c.Id] + sumErosion[c.Id] + sumClamp[c.Id];
                         float tolerance = Mathf.Max(0.01f, 2e-4f * Mathf.Max(Mathf.Abs(debtAtSeed[c.Id]), Mathf.Abs(c.State.GovernmentDebt))) * AnnualYearsToClose;
-                        sb.Append(F("  {0,-8} debt {1,9:0.0} -> {2,9:0.0}  delta {3,8:+0.0;-0.0} = -sum(annual balance) {4,8:+0.0;-0.0} + erosion {5,7:+0.0;-0.0} + settlements {6,6:+0.0;-0.0} + clamp {7,6:+0.0;-0.0}\n",
-                            c.Id, debtAtSeed[c.Id], c.State.GovernmentDebt, observed, sumNegBalance[c.Id], sumErosion[c.Id], sumEvents[c.Id], sumClamp[c.Id]));
-                        failures += Assert(sb, $"{c.Id}: over {AnnualYearsToClose} years the annual series sums to the debt delta, with erosion, settlements and clamp named",
+                        sb.Append(F("  {0,-8} debt {1,9:0.0} -> {2,9:0.0}  delta {3,8:+0.0;-0.0} = -sum(annual balance) {4,8:+0.0;-0.0} (of which one-offs {5,6:+0.0;-0.0} in {6} line(s)) + erosion {7,7:+0.0;-0.0} + clamp {8,6:+0.0;-0.0}\n",
+                            c.Id, debtAtSeed[c.Id], c.State.GovernmentDebt, observed, sumNegBalance[c.Id], -sumOneOffs[c.Id], lineCount[c.Id], sumErosion[c.Id], sumClamp[c.Id]));
+                        failures += Assert(sb, $"{c.Id}: over {AnnualYearsToClose} years the annual series sums to the debt delta, the one-offs inside it, erosion and clamp named",
                             Mathf.Abs(observed - explained) <= tolerance, F("observed {0:0.0000} vs explained {1:0.0000} (tol {2:0.0000})", observed, explained, tolerance));
                     }
                     // P2-3.3 (2026-09-02): THE COMPASS TRAIL IS THE STORED HISTORY, ONE POINT PER CLOSE. After the

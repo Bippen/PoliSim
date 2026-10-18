@@ -174,10 +174,10 @@ namespace PoliSim.EditorTools
             // resolution at SimulationManager.AdvanceBudgetBillDay and the Budget tab's estimate both call). If the
             // two produce one split, the budget has been reduced to one number before the scorer saw it.
             sb.Append("\n--- P4-A1: two budgets, the same net balance, different compositions (Sweden, the live path) ---\n");
-            var budgetA = new BudgetBill();
+            var budgetA = BudgetBillHarness.RestatingFund(sweden, new BudgetBill());   // AF-9: the fund restated, so the two compositions weigh no fund term
             budgetA.SpendingPercentChanges[SpendingCategory.Defense] = 10f;
             budgetA.SpendingPercentChanges[SpendingCategory.Education] = -10f;
-            var budgetB = new BudgetBill();
+            var budgetB = BudgetBillHarness.RestatingFund(sweden, new BudgetBill());
             budgetB.SpendingPercentChanges[SpendingCategory.Education] = 10f;
             budgetB.SpendingPercentChanges[SpendingCategory.Defense] = -10f;
             var budgetSplits = new List<(string Name, int For, int Undecided, int Against, bool Empty, string Loads)>();

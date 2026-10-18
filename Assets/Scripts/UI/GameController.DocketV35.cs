@@ -248,9 +248,8 @@ namespace PoliSim.UI
                     if (locked && !string.IsNullOrEmpty(lockedBecause)) { slip.Add(lockedBecause.ToUpperInvariant()); }
                     _docketSlipBook.Anchors[anchor] = slip;
                     SlipAnchor(new Rect(nx, ny, nw, V35.Px(48f)), anchor);
-                    if (!locked && PoliSimWidgets.Button(button, GUIContent.none, GUIStyle.none))
+                    if (!locked && PoliSimWidgets.Button(button, GUIContent.none, GUIStyle.none) && _simulationManager.AppointCentralBankHead(_playerCountry.Id, c, out _))   // AF-11: the manager's verb
                     {
-                        _playerCountry.CurrentFedChair = c;
                         _fedChairCandidates = null;
                         RecomputePolicyPreview();
                     }

@@ -872,8 +872,7 @@ namespace PoliSim.UI
                 if (hasOverride) { ResetPartnerTariffDraft(link.PartnerId); }
                 else
                 {
-                    link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, PartnerTariffOverrideMin, PartnerTariffOverrideMax);
-                    RecomputePolicyPreview();
+                    if (_simulationManager.SetPartnerTariffOverride(c.Id, link.PartnerId, out _)) { RecomputePolicyPreview(); }   // AF-11: the verb pins today's rate
                 }
             }
         }

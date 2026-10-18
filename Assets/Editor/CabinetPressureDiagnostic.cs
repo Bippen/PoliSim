@@ -138,10 +138,10 @@ namespace PoliSim.EditorTools
                         pl.BillLostOn = DateTime.MinValue;
                         SovereignWealthFund fundBefore = pl.SovereignWealthFund;
                         pl.SovereignWealthFund = null;
-                        var bill = new BudgetBill { SwfShouldExist = true, SwfContributionRatePercent = 1f, SwfDomesticAllocationPercent = 50f, SwfEquitiesWeight = 40f, SwfBondsWeight = 30f, SwfInfrastructureWeight = 15f, SwfRealEstateWeight = 15f };
+                        var bill = new BudgetBill { SwfShouldExist = true, SwfContributionRatePercent = 0f, SwfDomesticAllocationPercent = 50f, SwfEquitiesWeight = 40f, SwfBondsWeight = 30f, SwfInfrastructureWeight = 15f, SwfRealEstateWeight = 15f };   // AF-9: a fund created at no contribution moves no money, so its act asks nothing and passes - the premise (c) needs, now that the fund's money terms weigh
                         bill.TaxLines[moved.Type] = newRate;
                         bill.SpendingPercentChanges[pl.SpendingLines.First(l => l.Amount > 0f).Category] = 5f;
-                        bool introduced = sim.IntroduceBudgetBill(CountryId.Poland, bill);
+                        bool introduced = BudgetBillHarness.Introduce(sim, CountryId.Poland, bill);
                         int before = pl.Divisions.Entries.Count;
                         using (PresidentialVeto.PlantDraw(0.0)) { for (int day = 0; day < 400 && sim.GetPendingBudgetBill(CountryId.Poland) != null; day++) { sim.AdvanceBudgetBillDay(CountryId.Poland); } }
                         List<DivisionRecord> added = pl.Divisions.Entries.GetRange(before, pl.Divisions.Entries.Count - before);

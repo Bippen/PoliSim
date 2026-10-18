@@ -25,7 +25,10 @@ namespace PoliSim.UI
             float ratio = Effectiveness.RatioOf(_playerCountry, portfolio);
             if (ratio < 0.995f)
             {
-                return portfolio == CabinetPortfolio.HealthSocialAffairs ? "UNDERFUNDED — WAITS RISE, QUALITY DRIFTS" : "UNDERFUNDED — THE PORTFOLIO'S OUTCOMES DRIFT WHEN A FAMILY READS IT";
+                // AF-30 (the review's M2): the shortfall named by its cause - an empty chair, the money, or a minister below the pool's average
+                string cause = Simulation.CabinetSystem.IsVacantChair(_playerCountry, portfolio) ? "VACANT — NO MINISTER SEATED"
+                    : Effectiveness.AllocationRatioOf(_playerCountry, portfolio) < 0.995f ? "UNDERFUNDED" : "BELOW AN AVERAGE MINISTER";
+                return portfolio == CabinetPortfolio.HealthSocialAffairs ? cause + " — WAITS RISE, QUALITY DRIFTS" : cause + " — THE PORTFOLIO'S OUTCOMES DRIFT WHEN A FAMILY READS IT";
             }
             return ratio > 1.005f ? "ABOVE UNITY — MET IS NOT A VERDICT" : "MET — THE REQUEST IS FUNDED";
         }

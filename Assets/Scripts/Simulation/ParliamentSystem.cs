@@ -126,12 +126,14 @@ namespace PoliSim.Simulation
         /// carry a rate/generosity value for a program the country ALREADY has implemented, so this
         /// simply skips any entry for a program that isn't (or a concurrent ProgramBill un-implemented
         /// between introduce and resolve), rather than needing the old "effective value, 0 if not
-        /// implemented" trick. Deliberately does NOT fold in SWF - contribution rate/allocation/
-        /// asset-mix changes are a savings-and-allocation decision, not a tax-and-spend one, and
-        /// there's no principled way to weigh "5% more equities" against "2 points of income tax" on
-        /// the same scale without an arbitrary conversion factor, so SWF terms are simply excluded
-        /// from the vote (they still apply on PASS, they just don't sway it) - a stated simplification,
-        /// not an oversight. Units are summed unnormalized across categories (tax rate points, spending
+        /// implemented" trick. ⚠ CORRECTED, AF-9 (Elias's ruling q9, 2026-10-18: "fund terms go to the
+        /// vote"): this used to leave the fund out of the vote altogether, so a bill creating a fund at the floor of the
+        /// contribution's range, or dissolving one, auto-passed as neutral. The fund's MONEY terms now
+        /// weigh as the drawdown bill's do (<see cref="FundTermsOf"/>): the standing contribution's change
+        /// and the assets a dissolution takes out, in points of GDP. The asset mix and the domestic
+        /// allocation move no money, and there is still no principled way to weigh "5% more equities"
+        /// against "2 points of income tax", so they weigh nothing (they apply on PASS without swaying
+        /// it) - a stated simplification. Units are summed unnormalized across categories (tax rate points, spending
         /// % change, welfare generosity points) - consistent with this formula's own existing precedent
         /// as a stated proposal rather than a rigorously-derived one.
         /// </summary>
@@ -239,7 +241,33 @@ namespace PoliSim.Simulation
                 direction += kvp.Value - standing.GenerosityLevel;
             }
 
+            // AF-9: the fund's money terms, the drawdown bill's sign - paying in is contractionary, taking out expansionary. A branch, so a bill that moves
+            // no fund term reads the old sum to the bit.
+            (float contribution, float dissolved) = FundTermsOf(country, bill);
+            if (contribution != 0f) { direction -= contribution; }
+            if (dissolved != 0f) { direction += dissolved; }
+
             return direction;
+        }
+
+        /// <summary>
+        /// AF-9 (Elias's ruling q9, 2026-10-18: "fund terms go to the vote; a dissolved fund's assets are credited"): what a bill's fund block moves, in
+        /// the drawdown bill's unit, points of GDP (<see cref="GetSwfDrawdownBillDirection"/>). <c>ContributionPoints</c>: the standing contribution's
+        /// change - the rate the bill sets, landed as the fund's own clamp lands it (<see cref="SimulationManager.LandedSwfContributionRate"/>), less the
+        /// rate in force; zero where no fund stands and the bill creates none, and minus the standing rate where the bill dissolves the fund.
+        /// <c>DissolvedPercentOfGdp</c>: where the bill dissolves a fund that holds assets, those assets as a share of nominal GDP - a drawdown of the
+        /// whole fund, which the dissolution credits to the debt (`SimulationManager.ApplyBudgetBillSpendingAndSwf`). Both zero on a part that names no
+        /// fund (<see cref="BudgetBill.NamesNoFund"/>) and on a continuing resolution (the standing figures, never applied).
+        /// </summary>
+        public static (float ContributionPoints, float DissolvedPercentOfGdp) FundTermsOf(Country country, BudgetBill bill)
+        {
+            if (country == null || bill == null || bill.NamesNoFund || bill.ContinuingResolution) { return (0f, 0f); }
+            SovereignWealthFund fund = country.SovereignWealthFund;
+            float standing = fund != null ? fund.ContributionRatePercent : 0f;
+            float set = bill.SwfShouldExist ? SimulationManager.LandedSwfContributionRate(bill.SwfContributionRatePercent) : 0f;
+            float gdp = country.State.NominalGdp;
+            float dissolved = !bill.SwfShouldExist && fund != null && fund.TotalAssets > 0f && gdp > 0f ? fund.TotalAssets / gdp * 100f : 0f;   // P5-B6: nominal with nominal
+            return (set - standing, dissolved);
         }
 
         /// <summary>
@@ -1019,6 +1047,11 @@ namespace PoliSim.Simulation
                 concern.Add(StanceAxis.SpendVsTax, -delta);
                 if (delta < 0f && standing.GenerosityLevel > 0f) { concern.Cuts.Add((null, kvp.Key, -delta / standing.GenerosityLevel)); }
             }
+            // AF-9: the fund's money terms on the drawdown bill's axis (`GetSwfDrawdownBillConcern`): money taken out of the fund moves toward 0 (public
+            // services), a higher contribution toward 10 - the mirror. Add skips a zero, so a bill that moves no fund term asks what it asked before.
+            (float fundContribution, float fundDissolved) = FundTermsOf(country, bill);
+            concern.Add(StanceAxis.SpendVsTax, fundContribution);
+            concern.Add(StanceAxis.SpendVsTax, -fundDissolved);
             if (bill.ContinuingResolution) { concern.WithheldBy = country.ContinuingResolutionWithheldBy; }   // PS-6 US-22 (Ask 2's (P), PROVISIONAL): a continuing resolution is asked nothing unless the player's party withholds it
             return Authored(country, concern, bill.GovernmentBill);
         }

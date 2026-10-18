@@ -19,9 +19,7 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	7c35e1ec002d7d0ac82be1a5d515d5c1a
 file	Assets/Scripts/Simulation/EnergyLedger.cs	89d2cde964420e222190a1cfcaa484143bf2384a288940d14e97b40ff8e13e30	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	FT-10 P-A; two readers; comments alone changed after the second, said in the evidence header
 baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
-file	Assets/Scripts/Data/DebtAttribution.cs	aec4c070ec7b8f20c0580f84efaddbf2dacf09b339b26e61929bf7d14775d901	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfbaf4e7558c5c80b45f743d6a063	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/PortfolioEffectiveness.cs	117f10a07b2269d9f5e9ef2150efccb4caf89b50a7df1ca83ca6900c7f03f911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/ProgramBill.cs	476f48d616dbd343b1056d935c79aafa7285328492732c9678bbc12e2fca1f6d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -30,9 +28,7 @@ file	Assets/Scripts/Data/TaxType.cs	a15b9d2fbd85f753c6d423f05257c357c75f768055a6
 file	Assets/Scripts/Data/WelfareProgram.cs	be37cfb4a401da95c9175c0b9f2ddc9811a9fa0accabff25699bad4da8619911	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/WelfareProgramType.cs	88112313e1cebd35c116e0ad7a8d394b46a52e9c58f1d5f04d76592d8e18c2e8	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/ApprovalLedgerRecorder.cs	1dc1b69cc62be53c8e0f695586a95f1396db51e94b496d8c746e6f4350d129ed	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Simulation/DebtLedgerRecorder.cs	17a3f03980d20fa10b58380ec9855f6a2229d3e402df02f81ed1fc9c5bba69c8	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/EnergyPassThrough.cs	687376765a27746b17b328b64f62774647fd8da645d868e6cc7b8d9a8167d295	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	f667a63554796ab7b42f36f1e37694c633b0d5f504bfbb04ece6e4e297dfffe2	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/SovereignWealthFundSystem.cs	31a1049a924429f2447f94cdd171233491e50843d7ee29ca562a3e2a9732f7f1	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/TradeCosts.cs	d5610741e066a30a74804042e2e7f5c7066592b0ecd06c87515f88470194691e	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Simulation/SimulationManager.cs	85c712fa89ab905cde07284a1ac35b9761c166c6463d5ebd00073ac58e391446	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	named into the pattern by ruling (s549); the state e0f5064 left - that commit changed one doc comment in it and both of its readers read the file; never audited whole
@@ -236,3 +232,12 @@ file	Assets/Scripts/Data/FiscalYearData.cs	56a97c5a3539f8a0aea641376d2a11dcdee52
 file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	36245b15127be777987c12e9b0c8d8c49a8d430c1d7c7d939fc33aa57a412a3a	reviewed	2026-10-18	s854	Reviews/2026-10-18_s854_us22_budget.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	1f8f1dd58471e8e37d23f2fec5cdda9eddddf82676d67c6ab921d8553cfd011a	reviewed	2026-10-18	s858	Reviews/2026-10-18_s858_bug1.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	520a530977a6a548def55c493aa5c5855cf7e94cd816ab2a41f1c1bce20c3a88	reviewed	2026-10-18	s858	Reviews/2026-10-18_s858_bug1.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	ca3618f8f4e27287af3f722bafb315cd7560cb675355cf511f65f1b18e8beecb	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	-
+file	Assets/Scripts/Data/DebtAttribution.cs	248e892ac215d8fc270cccfb432231f186224a3325df7a8a027e46d951c04189	reviewed	2026-10-18	s861	Reviews/2026-10-18_af17_oneoffs.md	-
+file	Assets/Scripts/Simulation/DebtLedgerRecorder.cs	9339303a4a431a217ff4e55062f702707524199fa478a1493eb0d308fedc8f00	reviewed	2026-10-18	s861	Reviews/2026-10-18_af17_oneoffs.md	-
+file	Assets/Scripts/Simulation/AiFinanceMinistry.cs	7bfaca4c049b58379b2857caa6838e0a65b77681ffcf460068c62992e3628bf4	reviewed	2026-10-18	s861	Reviews/2026-10-18_af17_oneoffs.md	-
+file	Assets/Scripts/Data/PortfolioEffectiveness.cs	0471c8a7c5064716396c4e1efb61bc20769e4a734ca6bfc4b82a8c62833d7c95	reviewed	2026-10-18	s862	Reviews/2026-10-18_afpol_q23_q30_q31.md	-
+file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	a5785dc207dfdb7117301354e371f4ff9c3bcdf7bba38ebd0e7b4eaa5d846295	reviewed	2026-10-18	s860	Reviews/2026-10-18_af11_lever_verbs.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	c59ddd16fae68ab88b30ff2086801f0b805643aaaa8f582b8f401a36cb464d2d	reviewed	2026-10-18	s859	Reviews/2026-10-18_s859_s862_integration.md	-
+baseline	777	05736e3d3c62281827a608f26c81d661b28743a9d2c486505e4e6bfbd516811e	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	traj_af35 s777, turns 1-20 (the dump opens on Sweden's start)
+baseline	424242	d841dd2fad1f9f6e1dc2bdd37396d0de608cbc1e8af48de950937beebbbc0d18	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	traj_af35 s424242, turns 1-20 (the dump opens on Sweden's start)

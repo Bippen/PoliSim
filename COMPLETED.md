@@ -39792,3 +39792,137 @@ COAL-2 and PL-C are filed as rows. **Placements the ORDER does not name** are Co
 **Reviewed:** `Reviews/2026-10-18_s858_bug1.md`, an independent adversarial reader on the one money-path hunk: **SHIP**, with no H or M finding. Its L1 comment wording is applied, a comment-only step. Its L2 is met: the integrator's first short note was refused by ReviewLedgerCheck (`cheap858` failed on its 2,000-byte floor for a reviewer's report) and is replaced by the reviewer's report. Ledger row s858.
 
 **Bars:** tier SIMULATION + UI on this tree. The cheap bar `cheap858` was 115 of 116, failing only ReviewLedgerCheck: the integrator's own 1,315-byte note fell under the 2,000-byte floor for a reviewer's report, and is replaced by the independent review. The named run `n858` (ReviewLedgerCheck, CommentClaimCheck, MetaTextCheck, CommentImmunityCheck, PhantomGuardCheck, DocumentClaimCheck) then failed only on the comment step, which has no commit yet; the row is re-pinned at the reviewed state, and `n858b` (ReviewLedgerCheck, CommentClaimCheck) is clean. The simulation bar `sim858` is 58 of 58. The dry film `drys858` is clean in all four sessions: USA, Italy 141, France 141 and Sweden 153 measured, 0 failed, 0 overflows. Real films at 1280 (`realus858`, `realit858`, `realfr858`, `realse858`): the USA's picker reads "DEM - Democratic Party · 213 SEATS · IN THE ADMINISTRATION" with the key "IN THE ADMINISTRATION = THE PRESIDENT'S PARTY"; the compass reads "UNITED STATES' ADMINISTRATION / ELECTORATE / PARTIES", with the electorate's tag to the right, clear of Germany's dot, and "administration" under the REP ring; Italy's picker reads "1 SEAT" on IC, ScN, MAIE and UV, and "PROVISIONAL · THE SITTING CABINET'S PARTIES ARE NOT IN THE RECORD".
+
+
+## 859. AF-9 AND AF-35 (q9, q35): FUND TERMS GO TO THE VOTE; A DISSOLVED FUND'S ASSETS ARE CREDITED; THE BUDGET WINDOW AND THE YEARLY RANGE ARE THE MODEL'S GATES; A FUND EARNS ON ITS PRINCIPAL - THE FAMILY `af35` (2026-10-18)
+
+**What was owed** (Elias's rulings q9 and q35, `docs/RULINGS_2026-10-18.md`, ORDER step 2): GA-0-47, GA-12-2 (a dissolution took Sweden's fund, 195 billion, to nothing), GA-2-10 (§814's review: the period's return credited as a flat slice to an emptied fund).
+
+**Built** (an implementer on `wave/af9` d52edfda, then the review's fixes 47320944, 17b18a13 and 68bc2939):
+- **(a) Fund terms go to the vote.** `ParliamentSystem.FundTermsOf` weighs a bill's fund terms on the drawdown bill's unit and axis: the contribution's change, and a dissolution's assets over nominal GDP. A bill that restates the fund asks exactly what it asked before. `BudgetBill.NamesNoFund` marks the parts built for a vote, so their empty fund block is not read as a dissolution.
+- **(b) A dissolved fund's assets are credited.** A dissolution credits the assets to the debt through `ApplyOneTimeBudgetImpact`, recorded on the debt ledger as "Sovereign fund dissolved". It also zeroes the period's planned return, open assets and accrual (N3), so a fund created again in the same period earns from the next boundary.
+- **(c) The budget gates are the model's.** `IntroduceBudgetBill` refuses a bill outside the window and outside `SimulationManager.YearlyRangeOf` (the one copy; the Budget tile reads it); `TableShadowBudget` refuses outside the range. The Budget page clamps its drafts to the range and writes the clamped figure back, and a refused alternative shows "REFUSED · reason" on the status line.
+- **(d) A fund earns on its principal: `min(principal, open)/open` of the day's slice.** The principal is the period-open assets plus contributions, less draws and drawdowns, without the period's own returns. This is the integrator's ruling on the review's M2, DECLARED and reversible.
+  - A loss year realises its full drawn loss.
+  - Contributions earn from the next boundary.
+  - A fund drawn below its opening earns the share it keeps, and an emptied fund earns nothing.
+  - On a day the zero floor or the ceiling binds, the accrual takes the landed change (N2).
+  - A drawdown scales the period's accrual by the share of holdings kept (P3-1).
+- `FundTermsDiagnostic` (new, simulation bar) holds (a)-(d) with planted cases:
+  - the dissolution's credit and its ledger event;
+  - the window and range refusals;
+  - an emptied fund earning nothing;
+  - a loss year realising its drawn loss;
+  - the floor binding without swallowing the next contribution;
+  - a loss then a drawdown;
+  - a dissolution and a fund created again in one period.
+- PresidentialVetoDiagnostic's (k4) premise tripped exactly as finding 7 intended, and was rewritten: (k4-AF9) and (k4-AF9b) pin the sign of a weighed fund act on a planted Sejm. The harnesses that dissolved funds by accident now restate them (`BudgetBillHarness`).
+
+**Declared:**
+- A dissolution weighs as a full drawdown (asked).
+- The yearly range is checked at introduction only.
+- The turn-form validation step and `PreviewTurn` still earn the flat return.
+- The structural draw on post-return assets comes out of principal whole.
+- Where the ceiling binds because GDP fell, the clamp's cut is booked as a negative return.
+- A dissolution's zeroing drops that period's earned returns from the year's `SwfReturns`.
+
+**Reviewed:** `Reviews/2026-10-18_af9_af35_funds.md`, three passes. (a), (b) and (c) SHIP; (d) SHIP after its fixes. The integration's evidence is `Reviews/2026-10-18_s859_s862_integration.md`.
+
+**The family:** **`af35`** (`TrajectorySentinelCheck`, the BASELINE: `traj_af35_s{777,424242}_t100.csv`), digests `05736e3d` (777) and `d841dd2f` (424242), with two reviewed `baseline` rows. The family diff against `ga111` (`Tools/traj_diff.pl ga111 af35 <seed> 100 first`) shows where each country first diverges, on both seeds:
+- **Sweden** first, at turn 1, in two fields only, its budget and its debt. Its contribution is below the 3 % structural draw, so its principal falls within every period.
+- **The USA** at turn 4 (777) / 3 (424242), and **Poland** at turn 5, in the currency and the trade balance.
+- **France** at turn 17 / 22, in its budget, once its own fund outgrows its contribution, as the review's pass 2 predicted (N1).
+- **Germany and Italy** at turn 21 / 27, through the euro's rate after France.
+
+So every movement traces back to the funds' principal rule. Nothing moves before Sweden's fund does, which is the proof (§400/§402) that AF-11, AF-17 and AF-23/30/31 are inert on the no-policy path. At t100 on 777, Sweden's debt reads 3,477.41 against 3,444.44 (+0.96 %), its GDP 1,925.97 against 1,926.66 (−0.04 %); France's debt 7,291.72 against 7,291.47.
+
+**Bars:** one commit for §859-§862, tier SIMULATION + UI, run on this tree:
+- **The first chain** (`chain859a`): the named run `n859` failed PresidentialVetoDiagnostic (k4c) and ReviewLedgerCheck. The cheap bar `cheap859` failed those two and DeadStateCheck (AuditDriver's `StaticOf` and `InvokeStatic`, dead once AF-9 pointed the AuditDriver at `YearlyRangeOf`) and ConstantProvenanceCheck (`YearlyRangeSlack` unmarked).
+- **Met in this commit:**
+  - (k4c) was the harness's count-based read of the division log, which evicts past 24 entries. AF-9's two new cases filled the log, and every read now marks by the division's number (33960cef).
+  - The two dead helpers are deleted, and `YearlyRangeSlack` is marked CONVENTION.
+  - The ledger: four stale grandfathered rows removed (DebtAttribution, PortfolioEffectiveness, DebtLedgerRecorder, PolicyImpactLedger), the ceiling 16 -> 12; the two reviews name the file and the digests they cover; the baseline rows were added before the second chain.
+- **The second chain** (`chain859c`), all clean:
+  - the cheap bar `cheap859b`, 118 of 118 (the new UiLeverVerbCheck and CardTradeOffCheck among them);
+  - the simulation bar `sim859`, 60 of 60 (FundTermsDiagnostic, PlayerLeverLedgerDiagnostic, DomesticMoneyBasisDiagnostic, EffectivenessDiagnostic and CreatedPartyCampaignDiagnostic among them, the trajectory sentinel holding on `af35`);
+  - `bw859` BudgetWindowDiagnostic ALL ASSERTIONS PASS; `slrt859` the round trip PASS, 12 of 12;
+  - the dry film `drys859`: Sweden 153, Germany 145 and USA 156 measured, 0 failed, 0 overflows;
+  - the real film `realse859` at 1280, 153 frames, the cabinet sheet's frames (07c) among them;
+  - the documents bar `doc859`, 20 of 20.
+- **Not filmed: AF-23's night heading** (a Canvas surface). No current film reaches `88n_election_night_takeover`. The last that did was `dry825`, whose Sweden session measured 177 frames against today's 153. That is a regression of the film's choreography that predates this commit, filed as a finding..
+
+
+## 860. AF-11 (q11): EVERY LEVER THE UI WRITES GETS A MANAGER VERB, AND THE IMPACT LEDGER READS IT (2026-10-18)
+
+**What was owed** (q11; GA-0-55): levers the UI wrote directly with no manager verb.
+
+**Built** (`wave/af11` 56cfd190, the review's fixes 66204ecf):
+- **The verbs.** A sweep of `Assets/Scripts/UI` found five direct writes: the trade override, the central bank's head, fleet orders, minister appointment and minister reshuffle. Each now has a `SimulationManager` verb (`SetPartnerTariffOverride`, `AppointCentralBankHead`, `PlaceFleetOrder`, `AppointMinister`, `ReshuffleMinister`) that asks the UI's own gate and stores the UI's own expression. `SetFinanceStanceTarget`, a verb already, now also goes through `Pull` (the review's M2).
+- **The ledger reads them.** `Pull` shows each lever to the impact ledger. On first touch it forks the lever's family's counterfactual world at the lever's moment, on an inactive host. It replays the act on every other counterfactual world on the real game's day, seating copies. The families are Trade, Monetary, and the new Energy fleet, Cabinet and Fiscal stance. §544 (b) is closed for these levers.
+- **The forks are aligned.** `ShadowBaseline` forks run only the turn's remaining days (`SimulationManager.DaysIntoTurn`). In play, a dial family's first-touch fork used to run one extra turn, and a load's no-policy shadow k extra days. The ledger's displayed lines and the "without your policies" curve after a load now align with the real game's turn. This is display only: the ledger and the shadows run only in `GameController`, never in a bar.
+- **The checks.** `UiLeverVerbCheck` (cheap) fails any UI write to a lever's model field, with 26 planted writes and 26 planted reads as its teeth; aliases, ref/out and harness files are stated as out of its scope. `PlayerLeverLedgerDiagnostic` (simulation) checks that:
+  - the verbs act;
+  - the ledger watching them is passive;
+  - each lever family's except-world, and a Taxes dial forked at a boundary in the game's order, is EXACT against a from-seed run.
+
+**Declared:** the event answers (`ResolveCabinetDecision`, `ResolveForeignPolicyMeeting`, `AnswerOffer`) are one-off decisions, not levers, and stay outside the ledger. The lever map (`LeverMapDump`) still cannot see these levers. The fiscal stance's family is argued exact, not measured (the diagnostic's USA holds no Finance partnership).
+
+**Asked:** the reshuffle's cost reads `PopularityFactor` after the minister is removed, so every dismissal costs the full figure. Fix it as its own item?
+
+**Reviewed:** `Reviews/2026-10-18_af11_lever_verbs.md`, two passes, SHIP WITH FIXES. H1, the CheckSuite registration, is met in this commit.
+
+**Bars:** as §859's (one commit).
+
+
+## 861. AF-17 (q17): THE ONE-OFFS COUNT IN THE YEAR THE PLAYER READS, ITEMISED; THE AI FINANCE MINISTRY READS THE FLOW (2026-10-18)
+
+**What was owed** (q17; GA-2-9): §220 built the closed year's balance as the year's flow, naming the one-time settlements only in `DomesticMoneyBasisDiagnostic`. The balance, the deficit rule's ink and the annual series read a deficit 0.1-0.6 % of GDP smaller than the debt's own change.
+
+**Built** (`wave/af17` 4c7bfabf, the review's fixes b06c265e and 239bf166):
+- **The balance.** `FiscalTurnReport.BudgetBalance` is the period's flow plus its one-offs. The one-offs are the debt ledger's dated events for the closing period, post-clamp. `StatHistory.BudgetBalanceAnnual` takes the same figure.
+- **The itemised lines.** `OneOffLines` holds each line's date, the decision's name (`DebtEventRecord.Source`), its label and its amount.
+  - The Budget page's closed-year book draws them above the balance: four rows, then "N more one-offs", whose slip lists every folded line.
+  - The Balance tile's slip names their sum.
+  - Statistics carries a `fiscal:oneoffs` slip on the deficit row, the headline and the pair row.
+- **The ministry.** `FiscalTurnReport.FlowBalance` is the period's flow alone. `AiFinanceMinistry` reads it: the pre-AF-17 store, with only the field renamed. A pre-AF-17 save's report has `FlowBalance` set from its balance at load.
+- **The check.** `DomesticMoneyBasisDiagnostic` §4 plants one-offs (on the boundary day and after the close among them) and asserts every closed year:
+  - the debt's change IS the deficit beyond erosion and the clamp;
+  - the flow balance equals the ledger's flow terms;
+  - every event is its own named line.
+
+**Declared:** a one-off is what the debt moved. An SWF drawdown is a positive one-off, so a drawdown year's balance counts financing as balance; this stands under q17 and is stated. No save format step.
+
+**Reviewed:** `Reviews/2026-10-18_af17_oneoffs.md`, two passes, SHIP WITH FIXES, met.
+
+**Bars:** as §859's (one commit).
+
+
+## 862. AF-23, AF-30, AF-31 (q23, q30, q31): A CREATED PARTY'S ONE STANDING ON THE NIGHT; A VACANT CHAIR BELOW THE POOL'S FLOOR AND AN AVERAGE MINISTER NEUTRAL; EVERY CARD'S OPTIONS TRADE OFF ON A LASTING COUNT (2026-10-18)
+
+**What was owed** (q23 / GA-4-4, q30 / GA-8-3, q31 / GA-9-1).
+
+**Built** (`wave/afpol` 4f4d8412, the review's fixes through b978a0c3):
+- **AF-23.** The night's attribution ledger reads the count's own standing (`CampaignRun.Standing`: the entrant layer, the record shift, the reach cap) at the close (`CloseStanding`, awareness frozen at the close). So a created party opens at its count's standing, not 20.8 %. The night's heading says "BASELINE (AT THE CLOSE'S AWARENESS)". `CreatedPartyCampaignDiagnostic` asserts the close equals the run's final share to 1e-9.
+- **AF-30.**
+  - **One efficiency scale,** `CabinetSystem.EfficiencyScale`: a seated minister's efficiency over the pool's derived mean, so an average minister is ×1.
+  - **A vacant chair the player could fill** scores 40 [AUTHORED-DRAFT, the calibration list] over the mean, below the pool's derived floor. A chair nobody can fill is ×1: AI governments, the opposition, and a Finance chair a junior partner cannot fill.
+  - **Its readers:** the health family, effectiveness and the spending sensitivity.
+  - **The preview clone** carries the chairs (H1).
+  - **The pages** read VACANT, UNDERFUNDED (allocation only) or BELOW AN AVERAGE MINISTER.
+  - **A rise and a cut are scaled alike** (the review's N1: scaling them differently pumped the stocks). `EffectivenessDiagnostic` (4) asserts that a cut and an equal restore cancel exactly.
+- **AF-31.**
+  - **Ten cards re-authored** [AUTHORED-DRAFT], each option's cost on a lasting count: four meeting cards and six cabinet cards. "Publicly back the verdict" changed two fields: approval +1 to −0.5, and crime −0.3.
+  - **`CardTradeOffCheck`** (new, cheap) compares the five lasting counts. Trade is not one: `TradeSystem` overwrites it at the next boundary. Every public field must be classified.
+
+**Declared:**
+- AF-23's baseline at the close's awareness (asked).
+- AF-30's 18-candidate pool.
+- A vacancy is a vacancy only where the player may seat.
+- The symmetric factor: "a poorly run ministry's spending changes move outcomes less, in either direction". The alternative put to Elias is efficiency acting on the spending level against its seed.
+- A left-over minister is ignored by efficiency only.
+
+**Asked:** an idle governing player who seats no minister now sees health worsen. Is that intended, or should the game seat average ministers at the start?
+
+**Reviewed:** `Reviews/2026-10-18_afpol_q23_q30_q31.md`, two passes: AF-23 SHIP, AF-30 SHIP WITH FIXES (met), AF-31 SHIP. GA-9-1 stays open until `Tools/audit/area9_events.plan` is re-run.
+
+**Bars:** as §859's (one commit).

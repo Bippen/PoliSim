@@ -141,7 +141,7 @@ namespace PoliSim.EditorTools
                         // Close it exactly the way the game does, with no test-only hook: introducing
                         // a bill IS what resolves the process (`IntroduceBudgetBill` removes the
                         // country from the pending set - "introducing IS the resolution").
-                        sim.IntroduceBudgetBill(id, new BudgetBill());
+                        sim.IntroduceBudgetBill(id, BudgetBillHarness.RestatingFund(sim.World.GetCountry(id), new BudgetBill()));   // AF-9 (the review's L5): the fund restated - a bill built new would dissolve it
                         spent = true;
                         continue;
                     }

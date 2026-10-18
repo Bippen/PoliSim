@@ -230,6 +230,9 @@ namespace PoliSim.Testing
                     {
                         if (simulationManager.GetPendingBudgetBill(CountryId.USA) == null)
                         {
+                            // AF-9: the budget window is the manager's gate now, and this stress keeps a bill in flight every day, so it plants the window
+                            // first - the harness's hand, by reflection as the Editor harnesses plant it (`BudgetBillHarness`)
+                            (typeof(SimulationManager).GetField("_pendingBudgetProcessByCountry", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.GetValue(simulationManager) as HashSet<CountryId>)?.Add(CountryId.USA);
                             simulationManager.IntroduceBudgetBill(CountryId.USA, BuildParliamentStressBill(usa));
                         }
                         simulationManager.AdvanceBudgetBillDay(CountryId.USA);

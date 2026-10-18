@@ -1164,10 +1164,33 @@ namespace PoliSim.Elections
             var compatibility = new double[setup.Compatibility.Length];
             for (int i = 0; i < compatibility.Length; i++) { compatibility[i] = setup.Compatibility[i] + bonus[i]; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, setup.LoyaltyPerParty);
-            if (setup.Families != null) { preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, prior, setup.Positions, AwarenessToday(setup, pressure, coverage)) : EntrantLayer.Apply(preference, prior, setup.Families, AwarenessToday(setup, pressure, coverage), setup.Grouping); }   // §681
+            return Standing(setup, prior, preference, setup.Families != null ? AwarenessToday(setup, pressure, coverage) : null);
+        }
+
+        /// <summary>
+        /// AF-23 (q23, ruled 2026-10-18): a party's STANDING - the preference model's shares carried through the entrant layer, the government's
+        /// record and the reach cap, which is what the truth, the trackers' polls and the count all read. One function, so the campaign's
+        /// attribution ledger (<see cref="CloseStanding"/>) reads a created party at the standing the count gives it, not the bare preference
+        /// model's (GA-4-4: every created party's night opened far above the share its tracker and its count gave it).
+        /// </summary>
+        private static double[] Standing(Setup setup, double[] prior, double[] preference, double[] awareness)
+        {
+            if (setup.Families != null) { preference = EntrantLayer.Active == EntrantLayer.Rule.SimilarityForAll ? EntrantSimilarity.Apply(preference, prior, setup.Positions, awareness) : EntrantLayer.Apply(preference, prior, setup.Families, awareness, setup.Grouping); }   // §681
             // PS-3k (§638): the government's record moves the electorate's preference - each governing party by exactly its shift, the rest absorbing it.
             if (setup.RecordShift != null) { preference = EconomicVote.ApplyRecordShiftByIndex(preference, setup.RecordShift); }
             return WithinReach(setup, preference);
+        }
+
+        /// <summary>
+        /// AF-23: the standing as it stood at the campaign's close, as a map from the preference model's shares - each party's awareness frozen
+        /// at the close's, so the attribution's every coalition reads the count's layer and its full coalition lands on <see cref="Result.FinalShares"/>'s
+        /// standing. Awareness grown by the campaign is part of the standing the baseline is read at, not a line of its own.
+        /// </summary>
+        public static Func<double[], double[]> CloseStanding(State s)
+        {
+            if (s == null) { throw new ArgumentNullException(nameof(s)); }
+            double[] awareness = s.Setup.Families != null ? AwarenessToday(s.Setup, s.Pressure, s.Coverage) : null;
+            return preference => Standing(s.Setup, s.Prior, preference, awareness);
         }
 
         /// <summary>

@@ -296,7 +296,19 @@ namespace PoliSim.EditorTools
                 // which the reference test below cannot see) - marked by content and read back by content, as the clone's OWN copy
                 var upperMark = new Dictionary<string, int> { { "MARK_UPPER_" + pass, 1000 + pass } };
                 marked.SecondChamberSeats = upperMark;
+                // AF-30 (the review's H1): the chairs, marked by content the same way - the preview's EFFICIENCY reads them
+                var chairsMark = new Dictionary<CabinetPortfolio, CabinetMinister> { { CabinetPortfolio.HealthSocialAffairs, new CabinetMinister { Name = "MARK_MINISTER_" + pass, Portfolio = CabinetPortfolio.HealthSocialAffairs, Efficiency = 10f + pass } } };
+                marked.CabinetMinisters = chairsMark;
                 var copy = (Country)clone.Invoke(null, new object[] { marked });
+                if (copy.CabinetMinisters == null || ReferenceEquals(copy.CabinetMinisters, chairsMark) || copy.CabinetMinisters.Count != 1
+                    || !copy.CabinetMinisters.TryGetValue(CabinetPortfolio.HealthSocialAffairs, out CabinetMinister chairRead) || chairRead == null || chairRead.Name != "MARK_MINISTER_" + pass)
+                {
+                    if (named.Add(c.Id + ".CabinetMinisters"))
+                    {
+                        failures++;
+                        Debug.LogError($"PARITY: CLONE ESCAPE - {c.Id}.CabinetMinisters: the preview's clone does not carry the chairs as its own copy (marked by content) - the preview would read a governing player's every chair vacant (AF-30). Add it to ClonePreviewCountry's hand-list.");
+                    }
+                }
                 if (copy.SecondChamberSeats == null || ReferenceEquals(copy.SecondChamberSeats, upperMark) || copy.SecondChamberSeats.Count != 1
                     || !copy.SecondChamberSeats.TryGetValue("MARK_UPPER_" + pass, out int upperRead) || upperRead != 1000 + pass)
                 {

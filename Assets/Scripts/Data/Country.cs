@@ -76,8 +76,8 @@ namespace PoliSim.Data
         /// ParliamentSeats). A bare bool would discard the provenance (which law, when) this project
         /// has otherwise consistently kept - see DivisionLog, built for exactly this reason. Empty
         /// for every country by default - no law starts enacted. Deliberately NOT in
-        /// SimulationManager.ClonePreviewCountry's hand-list, matching CabinetMinisters/Divisions'
-        /// own omission - nothing in the PreviewTurn pipeline ever reads or mutates it, since bill
+        /// SimulationManager.ClonePreviewCountry's hand-list, matching Divisions' own omission (CabinetMinisters
+        /// rides it since AF-30: the preview reads the chairs) - nothing in the PreviewTurn pipeline ever reads or mutates it, since bill
         /// resolution (the only writer) runs from the day-tick loop, never from a preview.
         /// </summary>
         public List<EnactedLaw> EnactedLaws = new List<EnactedLaw>();

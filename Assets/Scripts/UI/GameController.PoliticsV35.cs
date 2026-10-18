@@ -476,18 +476,14 @@ namespace PoliSim.UI
                 GUILayout.BeginHorizontal();
                 DrawCabinetChip(minister.Philosophy.ToString(), PoliSimTheme.TextPrimary);
                 float ratio = Effectiveness.RatioOf(c, portfolio);
-                if (ratio < 0.995f) { GUILayout.Space(V35.Px(8f)); DrawCabinetChip("Underfunded ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture), PoliSimTheme.Bad); }
+                if (ratio < 0.995f) { GUILayout.Space(V35.Px(8f)); DrawCabinetChip((Effectiveness.AllocationRatioOf(c, portfolio) < 0.995f ? "Underfunded ×" : "Below average ×") + ratio.ToString("0.00", CultureInfo.InvariantCulture), PoliSimTheme.Bad); }   // AF-30 (the review's M2): a funded ministry under a below-average minister is not underfunded
                 GUILayout.FlexibleSpace();
                 GUILayout.EndHorizontal();
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 if (!mayAct) { DrawCabinetLock(anchor + ":lock", lockedBecause); }
-                else if (DrawCabinetAction("Reshuffle"))
+                else if (DrawCabinetAction("Reshuffle") && _simulationManager.ReshuffleMinister(c.Id, portfolio, $"Cabinet reshuffle ({DisplayName.Of(portfolio.ToString())})", out _))   // AF-11: the manager's verb (P2-5.2's cost rides it)
                 {
-                    c.CabinetMinisters.Remove(portfolio);
-                    float approvalBeforeReshuffle = c.State.ApprovalRating;
-                    c.State.ApprovalRating = Mathf.Clamp(c.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(c, portfolio), 0f, 100f);   // P2-5.2: dismissing a popular minister costs the full figure, an unpopular one less
-                    ApprovalLedgerRecorder.RecordEvent(c, _simulationManager.CurrentDate, $"Cabinet reshuffle ({DisplayName.Of(portfolio.ToString())})", c.State.ApprovalRating - approvalBeforeReshuffle);
                     _cabinetCandidatesByPortfolio[portfolio] = CabinetSystem.GenerateCandidates(portfolio);
                 }
                 GUILayout.EndHorizontal();
@@ -538,9 +534,8 @@ namespace PoliSim.UI
                     GUILayout.EndVertical();
                     GUILayout.FlexibleSpace();
                     if (!mayAct) { DrawCabinetLock(anchor + ":lock", lockedBecause); }
-                    else if (DrawCabinetAction("Appoint"))
+                    else if (DrawCabinetAction("Appoint") && _simulationManager.AppointMinister(c.Id, portfolio, candidate, out _))   // AF-11: the manager's verb
                     {
-                        c.CabinetMinisters[portfolio] = candidate;
                         _cabinetCandidatesByPortfolio.Remove(portfolio);
                         RecomputePolicyPreview();
                     }
@@ -554,7 +549,8 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
             if (Event.current.type == EventType.Repaint && !shortlisted) { SlipAnchor(GUILayoutUtility.GetLastRect(), anchor); }
             _politicsSlipBook.Anchors[anchor] = new SlipContent(name.ToUpperInvariant() + " · VACANT")
-                .Add(shortlisted ? "ITS SHORTLIST IS DRAWN - APPOINT FROM IT" : "NO SHORTLIST DRAWN - THE SEARCH UNDER THE CARDS DRAWS ONE");
+                .Add(shortlisted ? "ITS SHORTLIST IS DRAWN - APPOINT FROM IT" : "NO SHORTLIST DRAWN - THE SEARCH UNDER THE CARDS DRAWS ONE")
+                .Add(Simulation.CabinetSystem.IsVacantChair(c, portfolio) ? "AN EMPTY CHAIR RUNS THE MINISTRY BELOW ITS WEAKEST CANDIDATE - EFFICIENCY ×" + Effectiveness.EfficiencyOf(c, portfolio).ToString("0.00", CultureInfo.InvariantCulture) : "THE CHAIR IS NOT YOURS TO FILL - THE MINISTRY RUNS AT AN AVERAGE MINISTER'S");   // AF-30
         }
 
         /// <summary>§745: a chip in the card's text line - a boxed word at the floor, in <paramref name="ink"/>.</summary>
@@ -632,7 +628,7 @@ namespace PoliSim.UI
             return new List<string>
             {
                 "EFFECTIVENESS ×" + ratio.ToString("0.00", CultureInfo.InvariantCulture) + " - " + allocation.ToString("0.000", CultureInfo.InvariantCulture) + " ALLOC ÷ REQ × "
-                    + efficiency.ToString("0.00", CultureInfo.InvariantCulture) + " EFFICIENCY · UNITY IS THE BASELINE, BELOW IS UNDERFUNDED",
+                    + efficiency.ToString("0.00", CultureInfo.InvariantCulture) + (Simulation.CabinetSystem.IsVacantChair(c, portfolio) ? " VACANT CHAIR" : " EFFICIENCY") + " · UNITY IS FUNDED AT AN AVERAGE MINISTER",   // AF-30: the scale's 1 is the pool's average
                 "LEVEL ×" + level.ToString("0.00", CultureInfo.InvariantCulture) + " · SPENDING PER UNIT AGAINST ITS SEED · "
                     + (level < 0.995f ? "THE ASK HAS SHRUNK" : level > 1.005f ? "THE ASK HAS GROWN" : "THE ASK HOLDS ITS SEED"),
             };

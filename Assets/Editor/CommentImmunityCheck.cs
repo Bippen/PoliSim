@@ -71,6 +71,8 @@ namespace PoliSim.EditorTools
             "ExitDiagnostics",
             // §846 (US-9): the campaign-geography harness asks whether a runtime file calls `ElectionDay.Count` - a call named in a comment is not a wiring.
             "UsCampaignGeographyCheck",
+            // AF-11 (q11, 2026-10-18): the lever guard scans the UI for a write to a lever's model field - a write surviving in a comment is not one.
+            "UiLeverVerbCheck",
         };
 
         /// <summary>

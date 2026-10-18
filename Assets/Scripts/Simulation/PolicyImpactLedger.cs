@@ -74,7 +74,14 @@ namespace PoliSim.Simulation
             // ⚠ S-18: since C-C7 every country has a central-bank head, so ApplyInterestRateChanges never
             // reads this field and its contribution is exactly zero. It stays a family of its own so the
             // ledger reports that zero rather than hiding a dead lever inside another family's line.
+            // AF-11: the head's appointment is this family's lever (LeverFamilies).
             { "Monetary", new[] { "InterestRateChange" } },
+            // AF-11: three families no PolicyDecision field belongs to - each is touched by its levers alone
+            // (LeverFamilies), and an untouched one costs nothing, as any family does. The fiscal stance moves
+            // every line and the two household rates at once (FinancePartner), so it is a family of its own.
+            { "Energy fleet", new string[0] },
+            { "Cabinet", new string[0] },
+            { "Fiscal stance", new string[0] },
             {
                 "Labour", new[]
                 {
@@ -106,6 +113,22 @@ namespace PoliSim.Simulation
             { "Demographics", new[] { "FamilyPolicyOverride", "ImmigrationPolicyOverride" } }
         };
 
+        /// <summary>
+        /// AF-11 (Elias's ruling q11 of 2026-10-18): **the family each lever belongs to** - the levers a player pulls outside the turn's decision,
+        /// through their <see cref="SimulationManager"/> verbs (<see cref="PlayerLeverKind"/>). A lever is read as a dial is: its family's
+        /// except-world never does it, and every other one does (<see cref="BeforeLever"/>, <see cref="AfterLever"/>). Like the table above, the
+        /// grouping is a judgement and its completeness is checked (<see cref="AssertPartitionCovers"/>): a lever kind with no family throws.
+        /// </summary>
+        private static readonly Dictionary<PlayerLeverKind, string> LeverFamilies = new Dictionary<PlayerLeverKind, string>
+        {
+            { PlayerLeverKind.PartnerTariffOverride, "Trade" },
+            { PlayerLeverKind.CentralBankHead, "Monetary" },
+            { PlayerLeverKind.FleetOrder, "Energy fleet" },
+            { PlayerLeverKind.MinisterAppointment, "Cabinet" },
+            { PlayerLeverKind.MinisterReshuffle, "Cabinet" },
+            { PlayerLeverKind.FinanceStance, "Fiscal stance" },
+        };
+
         /// ⚠ Not bound at construction. `GameController.Start` runs BEFORE the player picks a country, so
         /// an id captured then is the default one and every later attribution would be read off the wrong
         /// country - which is exactly what the first film of this panel showed. The id travels with the
@@ -125,8 +148,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
-        /// ⚠ **Call this BEFORE the real game advances the same turn.** A family first touched this turn
-        /// forks from the state at the turn's START, which is precisely the state its except-world would
+        /// ⚠ **Call this BEFORE the real game crosses the same turn's boundary.** A family first touched this
+        /// turn forks from the state the real game holds at the call - in the game, after the turn's days and
+        /// before its boundary (AF-11: the fork then runs no day and crosses the boundary, `ShadowBaseline`'s
+        /// fork reads the days already run; until AF-11 it ran a whole extra turn); in a harness that calls it
+        /// at the turn's start, before the days. Either way it is precisely the state its except-world would
         /// have been in had it existed from the beginning — that is what makes the lazy fork exact.
         /// </summary>
         public void AdvanceTurn(SimulationManager realSim, World realWorld, CountryId playerCountryId, Dictionary<CountryId, PolicyDecision> decisions)
@@ -145,6 +171,38 @@ namespace PoliSim.Simulation
                 if (!_except.TryGetValue(family.Key, out ShadowBaseline world)) { continue; }
 
                 world.AdvanceTurn(Strip(decisions, family.Value));
+            }
+        }
+
+        /// <summary>
+        /// AF-11: **a lever is about to act** (<see cref="SimulationManager"/>'s verbs call this before the act). A family first touched by it forks
+        /// its except-world NOW, from the state the lever finds - the state that world would hold had it existed all along, since every earlier lever
+        /// of another family is in it and none of its own came before (the first touch's reasoning in <see cref="AdvanceTurn"/>, at the lever's moment).
+        /// A fork made inside a turn has run that turn's days so far, and runs only the rest at the boundary (<see cref="ShadowBaseline"/>'s fork).
+        /// </summary>
+        public void BeforeLever(SimulationManager realSim, PlayerLever lever)
+        {
+            string family = LeverFamilies[lever.Kind];
+            if (!_except.ContainsKey(family))
+            {
+                _except[family] = new ShadowBaseline(realSim, realSim.World, realSim.PlayerCountryId ?? lever.CountryId, insideTurn: true);   // the save's player, as the boundary's forks
+            }
+        }
+
+        /// <summary>
+        /// AF-11: **a lever has acted** in the real game: every except-world but its own family's does the same act on its copy of the country, on
+        /// the same day of the turn (<see cref="ShadowBaseline.Schedule"/> - an except-world runs its turn's days at the boundary, so it lags the real
+        /// game inside a turn), as every except-world but a dial's family is handed that dial (<see cref="Strip"/>). The no-policy world never is.
+        /// ⚠ Without this a world forked before the lever never received it, and its effect was booked to every family forked earlier (§544 (b), the fleet).
+        /// </summary>
+        public void AfterLever(SimulationManager realSim, PlayerLever lever)
+        {
+            string family = LeverFamilies[lever.Kind];
+            int day = realSim.DaysIntoTurn;
+            foreach (KeyValuePair<string, ShadowBaseline> pair in _except)
+            {
+                if (pair.Key == family) { continue; }
+                pair.Value.Schedule(day, lever);
             }
         }
 
@@ -278,6 +336,22 @@ namespace PoliSim.Simulation
                     throw new InvalidOperationException(
                         $"PolicyImpactLedger: PolicyDecision.{f.Name} belongs to no family, so the impact ledger would never attribute it. "
                         + "Add it to the family it belongs to - a dial with no family is a dial the player cannot be told about.");
+                }
+            }
+
+            // AF-11: every lever kind in a family the table above names - a lever with none would act in the real game and in no except-world's absence
+            foreach (PlayerLeverKind kind in Enum.GetValues(typeof(PlayerLeverKind)))
+            {
+                if (!LeverFamilies.TryGetValue(kind, out string family))
+                {
+                    throw new InvalidOperationException(
+                        $"PolicyImpactLedger: the lever {kind} belongs to no family, so the impact ledger would never attribute it. Add it to LeverFamilies.");
+                }
+
+                if (!Families.ContainsKey(family))
+                {
+                    throw new InvalidOperationException(
+                        $"PolicyImpactLedger: the lever {kind} names the family '{family}', which the family table does not hold.");
                 }
             }
         }

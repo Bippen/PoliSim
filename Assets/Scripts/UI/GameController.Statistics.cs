@@ -735,7 +735,8 @@ namespace PoliSim.UI
             DrawPairMirrorRow("INFLATION", StatsReadings.Rate(_playerCountry.State.Inflation), StatsReadings.Rate(them.State.Inflation));
             DrawPairMirrorRow("APPROVAL RATING", UiFormat.Number(_playerCountry.State.ApprovalRating, 1), UiFormat.Number(them.State.ApprovalRating, 1));
             DrawPairMirrorRow("DEBT-TO-GDP", StatsReadings.Rate(_playerCountry.State.DebtToGdpRatio), StatsReadings.Rate(them.State.DebtToGdpRatio));
-            DrawPairMirrorRow("BUDGET BALANCE", PairBudgetBalance(_playerCountry), PairBudgetBalance(them));
+            Rect pairBalance = DrawPairMirrorRow("BUDGET BALANCE", PairBudgetBalance(_playerCountry), PairBudgetBalance(them));
+            if (StatsSlips.HasOneOffs(_simulationManager.GetLastFiscalReport(PlayerCountryId))) { StatsAnchor(pairBalance, StatsSlips.OneOffsAnchor); }   // AF-17 (L1): the home side counts its one-offs, and says so
             DrawPairMirrorRow("CREDIT RATING", PairCreditRating(_playerCountry), PairCreditRating(them));
             DrawPairMirrorRow("POVERTY RATE", StatsReadings.Rate(_playerCountry.State.PovertyRate), StatsReadings.Rate(them.State.PovertyRate));
 

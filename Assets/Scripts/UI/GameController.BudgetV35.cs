@@ -181,7 +181,12 @@ namespace PoliSim.UI
                     }
                 }
             }
-            balanceSlip.Add(!closed.HasValue ? "BALANCE · NO YEAR HAS CLOSED YET" : (_simulationManager.CurrentTurn == 0 ? "LAST YEAR, THE SEED · " : "LAST YEAR · ") + UiFormat.MoneyDelta(closed.Value, MoneyUnit.Billions))
+            balanceSlip.Add(!closed.HasValue ? "BALANCE · NO YEAR HAS CLOSED YET" : (_simulationManager.CurrentTurn == 0 ? "LAST YEAR, THE SEED · " : "LAST YEAR · ") + UiFormat.MoneyDelta(closed.Value, MoneyUnit.Billions));
+            if (lastYear != null && lastYear.OneOffLines != null && lastYear.OneOffLines.Count > 0)
+            {
+                balanceSlip.Add("OF WHICH ONE-OFFS · " + UiFormat.MoneyDelta(lastYear.OneOffs, MoneyUnit.Billions) + " (" + lastYear.OneOffLines.Count + ", ITEMISED IN THE BOOK BELOW)");   // AF-17 (q17)
+            }
+            balanceSlip
                 .Add("A CHANGE IN THE BALANCE HAS NO DIRECTION MOST AGREE ON - ITS ARROW IN THE NEUTRAL INK; THE WARNING IS A LEVEL'S, PAST THE COUNTRY'S RULE")
                 .Add(FiscalRules.NationalNote(PlayerCountryId));
 
@@ -625,10 +630,10 @@ namespace PoliSim.UI
             bool hasMandatory = false, hasDiscretionary = false;
             foreach (SpendingLine line in _playerCountry.SpendingLines) { if (line.IsMandatory) { hasMandatory = true; } else { hasDiscretionary = true; } }
             _budgetSlipBook.Anchors["budget:mandatory"] = new SlipContent("MANDATORY LINES")
-                .Add("THIS YEAR'S ALLOWED CHANGE ±" + MandatoryPercentChangeRange.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE · A HIGHER APPROVAL COST FOR ITS SIZE THAN A DISCRETIONARY CHANGE")
+                .Add("THIS YEAR'S ALLOWED CHANGE ±" + SimulationManager.MandatoryPercentChangeRangeForRules.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE · A HIGHER APPROVAL COST FOR ITS SIZE THAN A DISCRETIONARY CHANGE")
                 .Add("THE DRAFT IS A FIGURE; THE BILL CARRIES IT AS A NOMINAL TARGET");
             _budgetSlipBook.Anchors["budget:discretionary"] = new SlipContent("DISCRETIONARY LINES")
-                .Add("THIS YEAR'S ALLOWED CHANGE ±" + DiscretionaryPercentChangeRange.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE")
+                .Add("THIS YEAR'S ALLOWED CHANGE ±" + SimulationManager.DiscretionaryPercentChangeRangeForRules.ToString("0", CultureInfo.InvariantCulture) + " % OF THE LINE")
                 .Add("THE DRAFT IS A FIGURE; THE BILL CARRIES IT AS A NOMINAL TARGET");
             if (hasMandatory) { DrawBudgetSpendingGroup(width, true); }
             if (hasDiscretionary) { DrawBudgetSpendingGroup(width, false); }
@@ -648,7 +653,7 @@ namespace PoliSim.UI
                 Rect row = GUILayoutUtility.GetRect(width, rowHeight, GUILayout.Width(width), GUILayout.Height(rowHeight));
                 for (int k = 0; k < 2 && i + k < lines.Count; k++)
                 {
-                    DrawBudgetSpendingTile(new Rect(row.x + k * (tileWidth + gutter), row.y, tileWidth, rowHeight), lines[i + k], mandatory ? MandatoryPercentChangeRange : DiscretionaryPercentChangeRange);
+                    DrawBudgetSpendingTile(new Rect(row.x + k * (tileWidth + gutter), row.y, tileWidth, rowHeight), lines[i + k], mandatory ? SimulationManager.MandatoryPercentChangeRangeForRules : SimulationManager.DiscretionaryPercentChangeRangeForRules);
                     if (lines[i + k].Category == SpendingCategory.SocialSecurity) { pension = true; }
                 }
                 GUILayout.Space(gutter);
@@ -683,17 +688,14 @@ namespace PoliSim.UI
             string name = DisplayName.Of(line.Category.ToString());
             string id = "spend:" + line.Category;
             float standing = line.Amount;
-            float draft = GetSpendingLineInput(line.Category, standing);
-            bool drafted = !Mathf.Approximately(draft, standing);
             // P5-B5 / SC-1: the track is this year's allowed change around the standing figure - on the line's own path where a dial cost stands outside it
-            float min = standing * (1f - rangePercent / 100f), max = standing * (1f + rangePercent / 100f);
+            // AF-9 (the review's L1): the manager's own range, the one IntroduceBudgetBill refuses outside - no copy of it here
+            (float min, float max) = SimulationManager.YearlyRangeOf(_playerCountry, line);
+            // AF-9 (the second review's N6): the draft clamped to that range as the bill clamps it (BuildBudgetBillFromDrafts), and written back below, so the
+            // thumb and the DRAFTED figure show what the bill carries - a draft left from an earlier year included
+            float draft = Mathf.Clamp(GetSpendingLineInput(line.Category, standing), min, max);
+            bool drafted = !Mathf.Approximately(draft, standing);
             float dialCost = SimulationManager.DialCostOf(_playerCountry, line);
-            if (dialCost != 0f)
-            {
-                float own = standing - dialCost;
-                min = SimulationManager.LandedTotalOf(_playerCountry, line, own * (1f - rangePercent / 100f) + dialCost);
-                max = SimulationManager.LandedTotalOf(_playerCountry, line, own * (1f + rangePercent / 100f) + dialCost);
-            }
             float grain = SpendingGrain(min, max);   // BR-1
             Color area = UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal);
             float gdp = _playerCountry.State.NominalGdp;
@@ -775,6 +777,9 @@ namespace PoliSim.UI
             return true;
         }
 
+        /// <summary>AF-17 (the review's L5): CONVENTION - the most one-off rows the closed year's book draws before the last becomes a row for the rest.</summary>
+        private const int MaxBookOneOffRows = 4;
+
         /// <summary>§735: the closed year's book (§564's) as a list card - each line of the fiscal report and its figure, the recorded balance last in the fiscal
         /// family's neutral ink, the warning only past the country's rule (§725); each line's caption its slip.</summary>
         private void DrawBudgetLastYearBook(float width)
@@ -783,6 +788,8 @@ namespace PoliSim.UI
             DrawBudgetSectionHead("Last year · the book as closed", "budget:book", width);
             _budgetSlipBook.Anchors["budget:book"] = new SlipContent("LAST YEAR · THE BOOK AS CLOSED").Add("THE FISCAL REPORT'S LINES, UNCHANGED; THE BALANCE IS THE RECORDED ONE, NEVER A HAND SUM");
             var rows = new List<(string Name, string Figure, string Caption, Color Ink)>();
+            int foldedRow = -1;   // AF-17 (the review's N2): the "N more one-offs" row, whose slip itemises every line it folds
+            var folded = new List<string>();
             if (report == null) { rows.Add(("No year closed", "—", "AT THE YEAR'S END", PoliSimTheme.TextMuted)); }
             else
             {
@@ -796,6 +803,34 @@ namespace PoliSim.UI
                 rows.Add(("Welfare", UiFormat.Money(report.WelfareCost, MoneyUnit.Billions), "PROGRAMMES", neutral));
                 rows.Add(("Tariffs", UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions), "AT THE STATED RATES", neutral));
                 if (report.ElectricityTaxRevenue != 0f) { rows.Add(("Electricity tax", UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "VS THE 2023 STATUTE", neutral)); }   // EN-7b
+                // AF-17 (q17): the year's one-offs itemised, each its own named line - they count in the balance below, so the debt's change is the deficit
+                if (report.OneOffLines != null)
+                {
+                    // the review's L5: at most MaxBookOneOffRows rows - past it, the first ones and a row for the rest with their net sum; a long name fits as its siblings' do (V35Fit), whole on its slip
+                    int shown = report.OneOffLines.Count <= MaxBookOneOffRows ? report.OneOffLines.Count : MaxBookOneOffRows - 1;
+                    for (int k = 0; k < shown; k++)
+                    {
+                        FiscalOneOff oneOff = report.OneOffLines[k];
+                        string what = string.IsNullOrEmpty(oneOff.Source) ? oneOff.Label : oneOff.Source;
+                        string caption = (string.IsNullOrEmpty(oneOff.Source) ? string.Empty : oneOff.Label.ToUpperInvariant() + " · ")
+                            + "ONE-OFF · " + oneOff.Date.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · COUNTED IN THE YEAR'S BALANCE";
+                        rows.Add((what, UiFormat.MoneyDelta(oneOff.Amount, MoneyUnit.Billions), caption, neutral));
+                    }
+                    if (shown < report.OneOffLines.Count)
+                    {
+                        float rest = 0f;
+                        for (int k = shown; k < report.OneOffLines.Count; k++)
+                        {
+                            FiscalOneOff oneOff = report.OneOffLines[k];
+                            rest += oneOff.Amount;
+                            folded.Add((string.IsNullOrEmpty(oneOff.Source) ? oneOff.Label : oneOff.Source + " · " + oneOff.Label).ToUpperInvariant() + " · "
+                                + oneOff.Date.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + UiFormat.MoneyDelta(oneOff.Amount, MoneyUnit.Billions));
+                        }
+                        int more = report.OneOffLines.Count - shown;
+                        foldedRow = rows.Count;
+                        rows.Add((more + " more one-offs", UiFormat.MoneyDelta(rest, MoneyUnit.Billions), "THEIR NET SUM · EACH COUNTED IN THE YEAR'S BALANCE", neutral));
+                    }
+                }
                 float? deficit = DerivedStats.DeficitPercentOfGdp(_playerCountry, report);
                 string rule = null;
                 Color balanceInk = deficit.HasValue ? V35.FiscalInk(PlayerCountryId, FiscalRules.Measure.Deficit, deficit.Value, neutral, out rule) : neutral;
@@ -805,13 +840,17 @@ namespace PoliSim.UI
             float height = V35.Px(V35.CardPadY) * 2f + rowH * rows.Count;
             Rect card = GUILayoutUtility.GetRect(width, height, GUILayout.Width(width), GUILayout.Height(height));
             Rect inner = DrawV35Card(card);
+            var anchored = new HashSet<string>();
             for (int i = 0; i < rows.Count; i++)
             {
                 var row = new Rect(inner.x, inner.y + i * rowH, inner.width, rowH);
                 DrawV35ListRow(row, null, 0f, rows[i].Name, rows[i].Figure, rows[i].Ink);
                 string rid = "budget:book:" + rows[i].Name;
+                if (!anchored.Add(rid)) { rid += "#" + i; }   // AF-17: two one-offs of one name keep a slip each
                 SlipAnchor(row, rid);
-                _budgetSlipBook.Anchors[rid] = new SlipContent(rows[i].Name.ToUpperInvariant() + " · " + rows[i].Figure).Add(rows[i].Caption.ToUpperInvariant());
+                var slip = new SlipContent(rows[i].Name.ToUpperInvariant() + " · " + rows[i].Figure).Add(rows[i].Caption.ToUpperInvariant());
+                if (i == foldedRow) { foreach (string line in folded) { slip.Add(line); } }   // N2: every folded one-off named, dated and its figure - the book itemises them all
+                _budgetSlipBook.Anchors[rid] = slip;
             }
             GUILayout.Space(V35.Px(V35.Gutter));
         }
@@ -927,7 +966,7 @@ namespace PoliSim.UI
                 {
                     if (DrawBudgetButton(row, "Table an alternative budget", changes > 0 ? changes + (changes == 1 ? " change" : " changes") : null, true))
                     {
-                        if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
+                        if (!_simulationManager.TableShadowBudget(PlayerCountryId, BuildBudgetBillFromDrafts(), out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the alternative was refused - {refused}"); }
                     }
                     SlipAnchor(row, "budget:introduce");
                     _budgetSlipBook.Anchors["budget:introduce"] = new SlipContent("TABLE AN ALTERNATIVE BUDGET")

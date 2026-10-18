@@ -53,7 +53,53 @@ namespace PoliSim.Simulation
         /// a surface showing it as "of which" says so.
         /// </summary>
         public float TotalSpending;
+        /// <summary>
+        /// ⚠ AF-17 (Elias's ruling q17, 2026-10-18): THE YEAR THE PLAYER READS - the period's accrued daily balances PLUS its one-time settlements
+        /// (<see cref="OneOffs"/>), so the closed year's deficit IS the debt's own change (the audit protocol's identity; GA-2-9). §220 built it as the
+        /// flow alone and named the settlements only in a diagnostic; every surface, the deficit rule's ink, the annual series and the EU ministry's
+        /// reading now see one figure. Revenue and TotalSpending stay the flow's; the one-offs are their own line beside them.
+        /// </summary>
         public float BudgetBalance;
+        /// <summary>
+        /// AF-17 (the review's M2): the period's accrued daily balances ALONE - stored exactly as BudgetBalance was before AF-17 (`period.AccruedBudgetBalance`,
+        /// one load and one store), never recovered as BudgetBalance − OneOffs, which is not the same float. The figure a FISCAL RULE reads: the AI ministry's
+        /// EU rule judges a standing position, and q17 ruled what the player reads, not what the ministry reads. NaN only in a report from a save older than
+        /// AF-17, and the load sets it to that report's BudgetBalance (which was the flow then) - so no reader ever sees the NaN.
+        /// </summary>
+        public float FlowBalance = float.NaN;
+        /// <summary>AF-17: the closed year's one-time settlements, net, signed as the balance is (positive is money in) - the sum of <see cref="OneOffLines"/>.
+        /// Inside <see cref="BudgetBalance"/>, so never re-added.</summary>
+        public float OneOffs;
+        /// <summary>AF-17: the one-offs itemised - each one-time settlement of the closed year as it landed on the debt (the debt ledger's dated Class B
+        /// events of the period, <see cref="DebtLedgerRecorder.RecordEvent"/>), named by its writer. Empty in a year that had none, and EMPTY in a report
+        /// from a save older than AF-17 (the field's initializer stands where the save has no key) - that report's balance is the flow, its one-offs unread.</summary>
+        public List<FiscalOneOff> OneOffLines = new List<FiscalOneOff>();
+    }
+
+    /// <summary>AF-17 (q17): one one-time settlement of a closed year, itemised - a cabinet or foreign-policy decision, a fund drawdown, any write to the debt
+    /// off the daily path. Read off the debt ledger's event as it landed (post-clamp), so the line is what the debt moved, with the sign flipped.</summary>
+    public class FiscalOneOff
+    {
+        public System.DateTime Date;
+        public string Label;
+        /// <summary>What the one-off settled - the cabinet decision's or the meeting's own name (<see cref="DebtEventRecord.Source"/>); null where the writer has none.</summary>
+        public string Source;
+        /// <summary>Signed as the balance is: positive is money in (a windfall banked), negative a cost.</summary>
+        public float Amount;
+
+        /// <summary>The closing period's one-offs from its accruing debt ledger, in the order they landed; empty for none.</summary>
+        public static List<FiscalOneOff> FromLedger(DebtAttribution ledger, out float sum)
+        {
+            var lines = new List<FiscalOneOff>();
+            sum = 0f;
+            if (ledger?.Events == null) { return lines; }
+            foreach (DebtEventRecord e in ledger.Events)
+            {
+                lines.Add(new FiscalOneOff { Date = e.Date, Label = e.Label, Source = e.Source, Amount = -e.AppliedDelta });
+                sum += -e.AppliedDelta;
+            }
+            return lines;
+        }
     }
 
     /// <summary>
@@ -581,9 +627,9 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Sane bounds for a country's own tariff policy (see PolicyDecision.TariffRateChange).</summary>
-        private const float MinBaseTariffRate = 0f;
+        public const float MinBaseTariffRate = 0f;   // AF-11 (L5): public - the UI's dials and the override's verb read these one pair
         /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
-        private const float MaxBaseTariffRate = 50f;
+        public const float MaxBaseTariffRate = 50f;
 
         /// <summary>Bounds for a WelfareProgram's GenerosityLevel - uniform across every WelfareProgramType (unlike TaxLine's per-type MinRate/MaxRate), since the task specifies a single 0-100% range for all six.</summary>
         private const float MinGenerosityLevel = 0f;
@@ -617,6 +663,10 @@ namespace PoliSim.Simulation
         private const float MinSwfContributionRate = -10f;
         /// <remarks>CONVENTION - a policy-dial bound. It exists so a slider has ends and a feedback bug cannot run past them; the summary above says which range it shares with which other dials, and none of these is a claim about how far a real government could go.</remarks>
         private const float MaxSwfContributionRate = 10f;
+
+        /// <summary>AF-9: the contribution rate a bill's figure lands at - the clamp <see cref="ApplySwfPolicyChanges"/> applies - so the vote weighs the
+        /// rate the bill would set (`ParliamentSystem.FundTermsOf`).</summary>
+        public static float LandedSwfContributionRate(float requested) => Mathf.Clamp(requested, MinSwfContributionRate, MaxSwfContributionRate);
 
         /// <summary>Bounds for SovereignWealthFund's DomesticAllocationPercent and four asset-class weights - shares the same [0,100] range idiom as the other uniform policy dials in this session's work.</summary>
         private const float MinSwfDialLevel = 0f;
@@ -707,6 +757,51 @@ namespace PoliSim.Simulation
         public const float MandatoryPercentChangeRangeForRules = MandatoryPercentChangeRange;
         /// <summary>DERIVED - see MandatoryPercentChangeRangeForRules.</summary>
         public const float DiscretionaryPercentChangeRangeForRules = DiscretionaryPercentChangeRange;
+
+        /// <summary>
+        /// AF-9 (Elias's ruling q9, 2026-10-18: "the budget gates move into the model"): THE YEARLY RANGE a bill may SET a spending line's figure in -
+        /// this year's allowed change around the line as it stands (±<see cref="MandatoryPercentChangeRange"/> mandatory, ±<see cref="DiscretionaryPercentChangeRange"/>
+        /// discretionary), on the line's own path where a dial cost stands outside it (SC-1): the Budget page's track, which until AF-9 was the only place the
+        /// range was held, so a figure set off the page reached the book unbounded but for the seed band. A percentage change is clamped to the same range where it
+        /// applies (<see cref="ApplySpendingLineChanges"/>); a figure is refused at introduction (<see cref="BudgetBillOutsideYearlyRange"/>).
+        /// </summary>
+        public static (float Min, float Max) YearlyRangeOf(Country country, SpendingLine line)
+        {
+            float rangePercent = line.IsMandatory ? MandatoryPercentChangeRange : DiscretionaryPercentChangeRange;
+            float standing = line.Amount;
+            float min = standing * (1f - rangePercent / 100f), max = standing * (1f + rangePercent / 100f);
+            float dialCost = DialCostOf(country, line);
+            if (dialCost != 0f)
+            {
+                float own = standing - dialCost;
+                min = LandedTotalOf(country, line, own * (1f - rangePercent / 100f) + dialCost);
+                max = LandedTotalOf(country, line, own * (1f + rangePercent / 100f) + dialCost);
+            }
+            return (min, max);
+        }
+
+        /// <summary>CONVENTION (AF-9): the slack a figure at the range's end is allowed, relative to the range - the dial's float, never a policy margin.</summary>
+        private const float YearlyRangeSlack = 1e-4f;
+
+        /// <summary>AF-9: the first figure <paramref name="bill"/> sets outside its line's yearly range (<see cref="YearlyRangeOf"/>), as the refusal's words; null
+        /// where every figure is inside it.</summary>
+        public static string BudgetBillOutsideYearlyRange(Country country, BudgetBill bill)
+        {
+            if (country == null || bill == null) { return null; }
+            foreach (KeyValuePair<SpendingCategory, float> kv in bill.SpendingNominalTargets)
+            {
+                SpendingLine line = country.SpendingLines.Find(l => l.Category == kv.Key);
+                if (line == null) { continue; }
+                (float min, float max) = YearlyRangeOf(country, line);
+                float slack = YearlyRangeSlack * Mathf.Max(Mathf.Abs(min), Mathf.Abs(max));
+                if (kv.Value < min - slack || kv.Value > max + slack)
+                {
+                    return string.Format(System.Globalization.CultureInfo.InvariantCulture, "{0} SET AT {1:0.###} · THIS YEAR'S ALLOWED RANGE {2:0.###} - {3:0.###}", kv.Key, kv.Value, min, max);
+                }
+            }
+            return null;
+        }
+
         /// <summary>§388: the AI finance ministry acts for every country the player does not govern. A diagnostic that measures the indexation rule alone
         /// (LineIndexationDiagnostic, SpendingIndexationDiagnostic) or a tax term's inertness (LaborTaxParticipationDiagnostic) sets this false; play never does.</summary>
         public bool AiFinanceMinistryEnabled = true;
@@ -794,6 +889,12 @@ namespace PoliSim.Simulation
             public float PlannedBaselineGovernmentSpending;
             public float PlannedDiscretionarySpending;
             public float PlannedSwfReturn;
+
+            /// <summary>AF-35 (Elias's ruling q35, 2026-10-18: "a fund earns on what it holds"): the fund's assets when <see cref="PlannedSwfReturn"/> was
+            /// drawn on them - the boundary that opened this period, or the seed. A day's slice of the return is earned on the share of these the fund still
+            /// holds as principal, the period's own returns excluded (`SwfReturnNotEarned`), so an emptied fund earns nothing from the day it is empty. Zero where no fund stood; a zero from an older save
+            /// degrades to the flat slice for the loaded period's remainder (an empty fund still earns nothing) - the WageGrowthGapAtPeriodOpen posture.</summary>
+            public float SwfAssetsAtPeriodOpen;
 
             /// <summary>Pass 5 (2026-08-26): the period's tariff revenue - TradeSystem's figure at the
             /// boundary that opened this period (the seed period reads the same pure function before
@@ -1115,7 +1216,7 @@ namespace PoliSim.Simulation
             float debtBeforeOption = country.State.GovernmentDebt;
             CabinetSystem.ApplyDecisionOption(country, portfolio, chosenOption);   // P2-5.2: POPULARITY scales the approval figure
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
-            DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt);
+            DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Cabinet: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt, decision?.Name);   // AF-17: the decision's name rides the line
 
             if (_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out var pending))
             {
@@ -1161,7 +1262,8 @@ namespace PoliSim.Simulation
             float debtBeforeOption = country.State.GovernmentDebt;
             ForeignPolicySystem.ApplyMeetingOption(country, chosenOption);
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"Foreign policy: {chosenOption.Label}", country.State.ApprovalRating - approvalBeforeOption);
-            DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Foreign policy: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt);
+            DebtLedgerRecorder.RecordEvent(country, CurrentDate, $"Foreign policy: {chosenOption.Label}", debtBeforeOption, country.State.GovernmentDebt,
+                _pendingForeignPolicyMeetingByCountry.TryGetValue(countryId, out ForeignPolicyMeeting settled) ? settled?.Name : null);   // AF-17: the meeting's name rides the line
             _pendingForeignPolicyMeetingByCountry.Remove(countryId);
         }
 
@@ -1202,6 +1304,8 @@ namespace PoliSim.Simulation
             if (!Elections.WorldClock.WeighsAlternative(countryId)) { refusedBecause = "THIS COUNTRY'S BUDGET PROCEDURE IS NOT YET MODELLED · THE GOVERNMENT'S BILL IS VOTED ALONE"; return false; }   // US-20: the chamber weighs no alternative
             if (_pendingBudgetAlternativeByCountry.ContainsKey(countryId)) { refusedBecause = "YOUR ALTERNATIVE IS ALREADY TABLED"; return false; }
             if (country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.JuniorPartner) { refusedBecause = "JUNIOR PARTNER · YOUR BUDGET VOICE IS THE COALITION AGREEMENT"; return false; }   // PS-3f (§633, ruled)
+            refusedBecause = BudgetBillOutsideYearlyRange(country, bill);   // AF-9: the yearly range is the model's gate on an alternative as on the player's own bill
+            if (refusedBecause != null) { return false; }
             bill.TabledBy = country.PlayerPartyAbbrev;
             bill.GovernmentBill = false;
             bill.DaysRemaining = pending.DaysRemaining;
@@ -1291,8 +1395,8 @@ namespace PoliSim.Simulation
         /// costs what every failed bill costs. RULED (E2) for the tax act - "a rejected budget takes its tax act down with it: accepted"; the other acts ride
         /// the same way (READING, DECLARED: the pension act by E2's "like tax rates", the benefit and fund acts as the statute parts F6 rules them) - each
         /// is voted only once the budget is adopted.
-        /// ⚠ The fund act is UNCONTESTED BY CONSTRUCTION: the chamber's concern weighs none of the fund's terms (<see cref="ParliamentSystem.GetBudgetBillConcern"/>,
-        /// the stated simplification), so it always passes and is signed - what the fund's rules come to is the budget act's outcome alone. Every act is a
+        /// ⚠ CORRECTED, AF-9 (Elias's ruling q9, 2026-10-18: "fund terms go to the vote"): the fund act used to be uncontested by construction. Its money
+        /// terms are now weighed (<see cref="ParliamentSystem.FundTermsOf"/>), so it is voted and put to the President like the others; a mix-only act still asks nothing. Every act is a
         /// division of its own; RULED (Elias's ruling F5, "(b): the check reads every bill lost that day"): an act that falls - failed in the Sejm, or vetoed
         /// with the veto standing (<see cref="PresidentialVetoGate"/>) - marks the day lost (<see cref="ParliamentSystem.RecordBillLost"/>), and
         /// <see cref="CabinetSystem.UnderPressure"/> reads that mark, not the day's newest division - so an act passed after a fallen one hides nothing.
@@ -1564,6 +1668,12 @@ namespace PoliSim.Simulation
             {
                 return false;
             }
+            // AF-9 (Elias's ruling q9, 2026-10-18: "the budget gates move into the model"): the budget window and the yearly range are the manager's
+            // refusals, where until AF-9 only the Budget page held them - the button enabled while the process is open, the dial's track the range - and
+            // any other caller was accepted on any day at any figure.
+            if (!GetPendingBudgetProcess(countryId)) { Debug.Log($"LEVERS: {countryId} - a budget bill was refused: THE BUDGET PROCESS IS NOT OPEN"); return false; }
+            string outside = BudgetBillOutsideYearlyRange(_world?.GetCountry(countryId), bill);
+            if (outside != null) { Debug.Log($"LEVERS: {countryId} - a budget bill was refused: {outside}"); return false; }
             bill.DaysRemaining = ParliamentSystem.BillDurationDays;
             _pendingBudgetBillByCountry[countryId] = bill;
             _pendingBudgetProcessByCountry.Remove(countryId);
@@ -1800,7 +1910,25 @@ namespace PoliSim.Simulation
 
             if (!bill.SwfShouldExist)
             {
+                // AF-9 (Elias's ruling q9, 2026-10-18: "a dissolved fund's assets are credited"; GA-12-2): the assets go to the debt stock, a one-time
+                // settlement on F1's path (ApplyOneTimeBudgetImpact: the stock and the Budget accumulator, nominal with nominal) observed on the debt
+                // ledger as the drawdown's is. Until AF-9 a dissolution discarded them (GA-12-2).
+                SovereignWealthFund dissolved = country.SovereignWealthFund;
                 country.SovereignWealthFund = null;
+                if (dissolved != null && dissolved.TotalAssets > 0f)
+                {
+                    float debtBeforeDissolution = country.State.GovernmentDebt;
+                    ApplyOneTimeBudgetImpact(country, dissolved.TotalAssets);
+                    DebtLedgerRecorder.RecordEvent(country, CurrentDate, "Sovereign fund dissolved", debtBeforeDissolution, country.State.GovernmentDebt);
+                }
+                // AF-35 (the second review's N3): the period's return figures were the dissolved fund's - zeroed, so a fund created later in the same period
+                // earns from the next boundary's draw and inherits nothing. The live country's period only: a preview clone shares this manager's table by id.
+                if (dissolved != null && ReferenceEquals(_world?.GetCountry(country.Id), country) && _fiscalPeriods.TryGetValue(country.Id, out FiscalPeriod dissolvedPeriod))
+                {
+                    dissolvedPeriod.PlannedSwfReturn = 0f;
+                    dissolvedPeriod.SwfAssetsAtPeriodOpen = 0f;
+                    dissolvedPeriod.AccruedSwfReturns = 0f;
+                }
                 return;
             }
 
@@ -2553,7 +2681,16 @@ namespace PoliSim.Simulation
             float requested = country.State.NominalGdp * bill.WithdrawalPercentOfGdp / 100f;
             float withdrawn = Mathf.Clamp(requested, 0f, fund.TotalAssets);
 
+            float heldBeforeDrawdown = fund.TotalAssets;
             fund.TotalAssets -= withdrawn;
+            // AF-35 (the third review's P3-1): a drawdown takes the period's earned returns out in proportion with everything else it takes - the period's
+            // accrued returns scaled by the share of the holdings kept, so the principal (TotalAssets - AccruedSwfReturns) keeps its ratio to the holdings.
+            // Taken out of the principal whole instead, a loss year's losses stayed inside a principal far above what the fund held, and a small fund's later
+            // contributions went into losses at the floor. The live country's period only, as the dissolution's zeroing (N3).
+            if (withdrawn > 0f && heldBeforeDrawdown > 0f && ReferenceEquals(_world?.GetCountry(country.Id), country) && _fiscalPeriods.TryGetValue(country.Id, out FiscalPeriod drawnPeriod))
+            {
+                drawnPeriod.AccruedSwfReturns *= fund.TotalAssets / heldBeforeDrawdown;
+            }
             ApplyOneTimeBudgetImpact(country, withdrawn);
         }
 
@@ -2990,13 +3127,123 @@ namespace PoliSim.Simulation
 
         /// <summary>§755 (Elias's ruling A2): the player's party, holding Finance as a partner, sets the stance it asks - points of GDP, + = expansion,
         /// within FinancePartner.PlayerTargetLimit - the minister's call, no bill: its step rides the year's budget as an AI partner's does. False where
-        /// the player's party does not hold Finance as a partner.</summary>
+        /// the player's party does not hold Finance as a partner. AF-11: a lever outside the turn's decision, so it pulls through Pull and the impact ledger
+        /// reads it (<see cref="PlayerLeverKind.FinanceStance"/>).</summary>
         public bool SetFinanceStanceTarget(CountryId countryId, float target)
         {
             Country country = _world?.GetCountry(countryId);
             if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || !FinancePartner.PlayerHolds(country)) { return false; }
-            country.FinanceStancePlayerTarget = Mathf.Clamp(target, -FinancePartner.PlayerTargetLimit, FinancePartner.PlayerTargetLimit);
+            return Pull(new PlayerLever(PlayerLeverKind.FinanceStance, countryId, (world, c, replay) =>
+            {
+                c.FinanceStancePlayerTarget = Mathf.Clamp(target, -FinancePartner.PlayerTargetLimit, FinancePartner.PlayerTargetLimit);
+                return true;
+            }), country);
+        }
+
+        // ---------------------------------------------------------------------------------------------
+        // AF-11 (Elias's ruling q11 of 2026-10-18, `docs/RULINGS_2026-10-18.md`; the audit's GA-0-55): EVERY LEVER THE UI WRITES GETS A MANAGER VERB, AND
+        // THE IMPACT LEDGER READS IT. The levers below act on the day they are pulled and ride no PolicyDecision; each was a write into the model from the
+        // UI. Each verb asks the gate the UI draws its lock from, then pulls through Pull, which shows the lever to the impact ledger before it acts (a
+        // family first touched forks its counterfactual from the state the lever finds) and after (every other family's counterfactual does it too) - so
+        // a lever's effect is attributed to its own family, as a dial's is, and no longer to every family forked before it (§544 (b)).
+        // `UiLeverVerbCheck` holds the UI to the verbs.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>AF-11: the impact ledger reading this game's levers - set by the game that owns the ledger; null in every other world (a shadow's
+        /// counterfactual, a check's), where a lever acts and nothing watches.</summary>
+        public PolicyImpactLedger ImpactLedger { get; set; }
+
+        /// <summary>AF-11: the days this clock has run of the turn in progress - 0 after a boundary, <see cref="DaysPerTurn"/> on the day
+        /// <see cref="AdvanceDay"/> reports the boundary and before it is crossed. A counterfactual world reads it to act on the real game's day.</summary>
+        public int DaysIntoTurn => (int)(CurrentDate - EpochDate).TotalDays - CurrentTurn * DaysPerTurn;
+
+        private bool Pull(PlayerLever lever, Country country)
+        {
+            ImpactLedger?.BeforeLever(this, lever);
+            if (!lever.ApplyTo(_world, country, replay: false)) { return false; }
+            ImpactLedger?.AfterLever(this, lever);
             return true;
+        }
+
+        /// <summary>AF-11: "Set override" - the partner's rate on its goods pinned at today's (the bloc's or the base), from which only the trade bill moves
+        /// it. The trade bill's gate (the UI's lock: a trade bill's kind, Foreign's portfolio). False, with the reason, where it is refused.</summary>
+        public bool SetPartnerTariffOverride(CountryId countryId, CountryId partnerId, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country == null) { refusedBecause = "NO COUNTRY"; return false; }
+            if (!PlayerMayIntroduce(countryId, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs, out refusedBecause)) { return false; }
+            if (country.TradePartners.Find(p => p.PartnerId == partnerId) == null || _world.GetCountry(partnerId) == null) { refusedBecause = "NOT A TRADE PARTNER"; return false; }
+            var lever = new PlayerLever(PlayerLeverKind.PartnerTariffOverride, countryId, (world, c, replay) =>
+            {
+                TradePartner link = c.TradePartners.Find(p => p.PartnerId == partnerId);
+                Country partner = world.GetCountry(partnerId);
+                if (link == null || partner == null) { return false; }
+                float tariffOnOurImports = TradeSystem.GetTariffRate(c, partner, world.TradeBlocs);
+                link.PlayerTariffOverride = Mathf.Clamp(tariffOnOurImports, MinBaseTariffRate, MaxBaseTariffRate);
+                return true;
+            });
+            return Pull(lever, country);
+        }
+
+        /// <summary>AF-11: the central bank's head appointed from the candidates (PS-3c, §630: the government's to appoint - the executive's gate).
+        /// False, with the reason, where it is refused.</summary>
+        public bool AppointCentralBankHead(CountryId countryId, FedChair candidate, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || candidate == null) { refusedBecause = "NO CANDIDATE"; return false; }
+            if (!PlayerMayIntroduce(countryId, out refusedBecause)) { return false; }
+            return Pull(new PlayerLever(PlayerLeverKind.CentralBankHead, countryId, (world, c, replay) => { c.CurrentFedChair = replay ? candidate.Copy() : candidate; return true; }), country);   // GA-1-5: a counterfactual world seats its own copy
+        }
+
+        /// <summary>AF-11: a power-plant order in the turn being played (<see cref="EnergyFleet.Place"/>: <paramref name="mw"/> positive builds, negative
+        /// retires; <paramref name="year"/> is what the page prints) - the government's (PS-3c, §630: the executive's gate). False, with the reason, where
+        /// it is refused or nothing could be placed.</summary>
+        public bool PlaceFleetOrder(CountryId countryId, int technology, double mw, int year, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country == null) { refusedBecause = "NO COUNTRY"; return false; }
+            if (!PlayerMayIntroduce(countryId, out refusedBecause)) { return false; }
+            refusedBecause = mw > 0 ? EnergyFleet.CannotPlaceWhy(country, technology, mw, year) : EnergyFleet.CannotOrderWhy(countryId, technology);
+            if (refusedBecause != null) { return false; }
+            // the orders EnergyFleet.Place places nothing for, refused here so no lever reaches the ledger: a zero order, a retirement with nothing left to retire
+            if (System.Math.Abs(mw) < 1e-9) { refusedBecause = "NOTHING TO PLACE"; return false; }
+            if (mw < 0 && EnergyFleet.CapacityMw(country, technology) + EnergyFleet.QueuedMw(country, technology, retirementsOnly: true) <= 0) { refusedBecause = "NOTHING LEFT TO RETIRE"; return false; }
+            int turn = CurrentTurn;
+            if (Pull(new PlayerLever(PlayerLeverKind.FleetOrder, countryId, (world, c, replay) => EnergyFleet.Place(c, technology, mw, year, turn) != null), country)) { return true; }
+            refusedBecause = "NOTHING TO PLACE";
+            return false;
+        }
+
+        /// <summary>AF-11: a minister appointed to a portfolio from its shortlist - the portfolio's gate (PS-3g, §634). False, with the reason, where it is refused.</summary>
+        public bool AppointMinister(CountryId countryId, CabinetPortfolio portfolio, CabinetMinister candidate, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country == null || candidate == null) { refusedBecause = "NO CANDIDATE"; return false; }
+            if (!PlayerMayIntroduce(countryId, portfolio, out refusedBecause)) { return false; }
+            return Pull(new PlayerLever(PlayerLeverKind.MinisterAppointment, countryId, (world, c, replay) => { c.CabinetMinisters[portfolio] = replay ? candidate.Copy() : candidate; return true; }), country);   // GA-1-5: a counterfactual world seats its own copy
+        }
+
+        /// <summary>AF-11: a minister reshuffled out - the portfolio left vacant and the dismissal's approval cost paid (P2-5.2), recorded on the approval
+        /// ledger as <paramref name="approvalEventLabel"/> (the surface's words). The portfolio's gate (PS-3g, §634). False, with the reason, where it is
+        /// refused or the portfolio is vacant.</summary>
+        public bool ReshuffleMinister(CountryId countryId, CabinetPortfolio portfolio, string approvalEventLabel, out string refusedBecause)
+        {
+            Country country = _world?.GetCountry(countryId);
+            if (country == null) { refusedBecause = "NO COUNTRY"; return false; }
+            if (!PlayerMayIntroduce(countryId, portfolio, out refusedBecause)) { return false; }
+            if (!country.CabinetMinisters.ContainsKey(portfolio)) { refusedBecause = "THE PORTFOLIO IS VACANT"; return false; }
+            System.DateTime today = CurrentDate;
+            var lever = new PlayerLever(PlayerLeverKind.MinisterReshuffle, countryId, (world, c, replay) =>
+            {
+                // ⚠ AF-11 moved this act from the UI in its own order: the minister leaves BEFORE the popularity factor reads the portfolio, so the factor
+                // reads a vacancy - recorded as a finding for its own ruling, not changed here (a move of the cost is a numeric change of its own)
+                if (!c.CabinetMinisters.Remove(portfolio)) { return false; }
+                float approvalBeforeReshuffle = c.State.ApprovalRating;
+                c.State.ApprovalRating = Mathf.Clamp(c.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(c, portfolio), 0f, 100f);   // P2-5.2: dismissing a popular minister costs the full figure, an unpopular one less
+                ApprovalLedgerRecorder.RecordEvent(c, today, approvalEventLabel, c.State.ApprovalRating - approvalBeforeReshuffle);
+                return true;
+            });
+            return Pull(lever, country);
         }
 
         /// <summary>§716, §755: the AI partner holding Finance in the player's own government, where the player's party leads (it moves the fiscal stance, the
@@ -4847,8 +5094,9 @@ namespace PoliSim.Simulation
                 OwnPersuasionFromCoverage = result.Parties[me].PersuasionFromCoverage,
                 TotalPersuasionPerParty = result.PersuasionPerParty,
                 BaseCompatibility = run.Setup.Compatibility,
-                PriorShares = run.Setup.PriorShares,
+                PriorShares = run.Prior,   // AF-23: the run's own normalised prior, the one its truth was computed on
                 LoyaltyPerParty = run.Setup.LoyaltyPerParty,
+                Standing = Elections.CampaignRun.CloseStanding(run),   // AF-23 (q23): one standing for a created party, the campaign's and the count's
             };
             PlayerCampaignLedger = Elections.VoteAttribution.Explain(input, me);
             PlayerCampaignLedgerParty = run.Setup.Parties != null && me < run.Setup.Parties.Length ? run.Setup.Parties[me].Name : Elections.LiveCampaignSetup.Keys(PlayerCountryId.Value)[me];   // the setup's party names - State.Names are the regions; §675 (the review): the fallback reads the cast, which a created party's index is inside
@@ -5135,6 +5383,8 @@ namespace PoliSim.Simulation
             CopyInto(state.PendingSwfDrawdownBills, _pendingSwfDrawdownBillByCountry);
             CopyInto(state.PendingForeignPolicyMeetings, _pendingForeignPolicyMeetingByCountry);
             CopyInto(state.LastFiscalReports, _lastFiscalReports);
+            // AF-17 (M2): a report from a save older than AF-17 carries no flow figure - its BudgetBalance WAS the flow, so it is the flow
+            foreach (FiscalTurnReport loaded in _lastFiscalReports.Values) { if (loaded != null && float.IsNaN(loaded.FlowBalance)) { loaded.FlowBalance = loaded.BudgetBalance; } }
             CopyInto(state.LastEvents, _lastEventsByCountry);
 
             if (state.PendingTaxProgramBills != null)
@@ -5405,6 +5655,9 @@ namespace PoliSim.Simulation
             // Revenue like every other flow - so the report shows the tariff portion that actually
             // accrued over the period that just closed, a true reading of the one real path. (Under the
             // pre-pass-5 books it was a turn figure booked to the accumulator alone.)
+            // AF-17 (q17, 2026-10-18): the year's one-time settlements count in the year, itemised - read off the debt ledger's accruing period, which is
+            // this fiscal period (it closes just below, at the same boundary). With none the sum is 0f and the balance is the flow exactly (x + 0).
+            List<FiscalOneOff> oneOffLines = FiscalOneOff.FromLedger(country.FiscalLedgerAccruing, out float oneOffs);
             _lastFiscalReports[country.Id] = new FiscalTurnReport
             {
                 Revenue = period.AccruedRevenue,
@@ -5422,10 +5675,13 @@ namespace PoliSim.Simulation
                 SwfContribution = period.AccruedSwfContribution,
                 SwfReturns = period.AccruedSwfReturns,
                 TotalSpending = period.AccruedTotalSpending,
-                BudgetBalance = period.AccruedBudgetBalance
+                BudgetBalance = period.AccruedBudgetBalance + oneOffs,
+                FlowBalance = period.AccruedBudgetBalance,   // AF-17 (M2): the pre-AF-17 store, unchanged - the rules read it
+                OneOffs = oneOffs,
+                OneOffLines = oneOffLines
             };
-            // P2-0.4: the closed period's balance joins the annual series the sheet draws - observation only.
-            country.History.BudgetBalanceAnnual.Add(period.AccruedBudgetBalance);
+            // P2-0.4: the closed period's balance joins the annual series the sheet draws - observation only. AF-17: the year as read, one-offs counted.
+            country.History.BudgetBalanceAnnual.Add(_lastFiscalReports[country.Id].BudgetBalance);
             country.History.BudgetBalanceAnnualDates.Add(CurrentDate);
             // P2-3.3: the chamber's compass position joins its trail at the same close - observation only.
             PoliSim.Elections.CompassPositions.RecordTrailPoint(country, CurrentDate);
@@ -5466,6 +5722,7 @@ namespace PoliSim.Simulation
             period.PlannedSwfReturn = country.SovereignWealthFund != null
                 ? SovereignWealthFundSystem.DrawPeriodReturn(country.SovereignWealthFund)
                 : 0f;
+            period.SwfAssetsAtPeriodOpen = country.SovereignWealthFund != null ? country.SovereignWealthFund.TotalAssets : 0f;   // AF-35: what the return was drawn on
             // Pass 5: this boundary's tariff figure (rates and volumes as they stand after this
             // turn's tariff decisions resolved) is the coming period's tariff flow.
             // Pass 6: the CHANGE in that figure against the closing period's plan is the coming
@@ -6081,6 +6338,10 @@ namespace PoliSim.Simulation
                 // PS-6 US-15: the second chamber rides the hand-list, COPIED - so a write on a clone never reaches the country (PreviewParityDiagnostic marks it by
                 // content, a dictionary its value marks cannot reach)
                 SecondChamberSeats = country.SecondChamberSeats == null ? null : new Dictionary<string, int>(country.SecondChamberSeats),
+                // AF-30 (the review's H1): the chairs ride the hand-list, COPIED - the preview's turn reads EFFICIENCY (CabinetSystem.EfficiencyScale) and the
+                // competence biases off them, and a clone without them previewed every chair of a governing player as vacant. The ministers are shared: nothing on
+                // the preview path writes one (PreviewParityDiagnostic marks the dictionary by content, as the second chamber)
+                CabinetMinisters = country.CabinetMinisters == null ? null : new Dictionary<CabinetPortfolio, CabinetMinister>(country.CabinetMinisters),
                 Sectors = ClonePreviewSectors(country.Sectors),
                 InfrastructureAssets = ClonePreviewInfrastructureAssets(country.InfrastructureAssets),
                 CollectionEfficiency = country.CollectionEfficiency,
@@ -7310,6 +7571,7 @@ namespace PoliSim.Simulation
                 PlannedSwfReturn = country.SovereignWealthFund != null
                     ? SovereignWealthFundSystem.GetAverageReturnEstimate(country.SovereignWealthFund)
                     : 0f,
+                SwfAssetsAtPeriodOpen = country.SovereignWealthFund != null ? country.SovereignWealthFund.TotalAssets : 0f,   // AF-35: what the seed's return is estimated on
                 // Pass 5: the opening period's tariff flow, from the same pure function the boundary
                 // reports - so turn 1 accrues the seed rates' take rather than a period of nothing.
                 PlannedTariffRevenueReal = TradeSystem.ComputeTariffRevenue(country, _world),
@@ -7329,6 +7591,37 @@ namespace PoliSim.Simulation
 
             _fiscalPeriods[country.Id] = seeded;
             return seeded;
+        }
+
+        /// <summary>
+        /// AF-35 (Elias's ruling q35, 2026-10-18: "a fund earns on what it holds"; GA-2-10, §814's review): the part of a day's slice of the period's return
+        /// the fund does NOT earn. The return is drawn once on the period-open assets (<see cref="FiscalPeriod.SwfAssetsAtPeriodOpen"/>) and the day earns it
+        /// on the share of those the fund still holds as PRINCIPAL - min(principal, open) / open. The principal is the period-open assets plus the
+        /// period's contributions, less its draws and drawdowns, WITHOUT the period's own returns (the balance after the day's contribution less what the
+        /// period has earned so far, <see cref="FiscalPeriod.AccruedSwfReturns"/>) - the integrator's reading of q35 after the review (M2, DECLARED and
+        /// reversible): measured on the balance with its returns, a loss year softened itself (a drawn loss realised short of its draw) while a gain never
+        /// compounded above the flat slice, a bias upward. On the principal a fund that keeps it earns the drawn return exactly, gain or loss. Assets paid in
+        /// during the period earn from the next boundary's draw (the share is capped at one); a fund drawn below its opening earns the share it keeps. A
+        /// fund emptied within a period earns nothing from the day it is empty (the balance itself, <paramref name="held"/>, at or below zero), where it used
+        /// to earn the flat slice on assets it no longer had (and since §814 the next day's capped draw paid that slice to the budget). Zero while the
+        /// principal is whole; the whole slice where the fund holds nothing; an older save's zero for the open assets reads as whole (the flat slice).
+        /// Where the zero floor or the ceiling binds, the period accrues what landed rather than the return intended (the second review's N2), so the
+        /// principal stays the identity above; a dissolution zeroes the period's return figures (N3), so a fund created after it earns from the next boundary.
+        /// ⚠ STATED (the third review): where the ceiling binds because GDP fell under a fund already above it, the clamp's cut is booked as a negative return
+        /// (P3-2) - the landed change, as N2 books it; a dissolution's zeroing drops that period's earned returns from the year's reported `SwfReturns`
+        /// (P3-3) - they reached the debt inside the assets the dissolution credited; and an emergency drawdown scales the period's accrued returns by the
+        /// share of the holdings it leaves (P3-1, `ApplySwfDrawdownBillEffects`), so the principal keeps its ratio to the holdings and the drawn share of
+        /// the year's returns leaves the year's `SwfReturns` with the assets.
+        /// ⚠ KNOWN LIMITS, stated (the second review's N4, N5): the turn-shaped validation step (<see cref="ApplyPeriodFiscalStepForValidation"/>) and the
+        /// preview (<see cref="PreviewTurn"/>) still credit the flat return - the preview estimates a period ahead, where the principal is whole by
+        /// construction, and the validation step is the turn form the daily one is held against; and the structural draw, taken on the assets after the
+        /// day's return, comes out of the principal whole, though part of it is drawn on returns - a small bias toward earning less.
+        /// </summary>
+        private static float SwfReturnNotEarned(float slice, float held, float principal, float openAssets)
+        {
+            if (held <= 0f || principal <= 0f && openAssets > 0f) { return slice; }
+            if (openAssets <= 0f || principal >= openAssets) { return 0f; }
+            return slice * (1f - principal / openAssets);
         }
 
         /// <summary>
@@ -7383,16 +7676,35 @@ namespace PoliSim.Simulation
             // drawdown bill's own rule). SUMMED IN at each use, never written back into swfContribution: 0 for every fund that can pay, and §501's
             // lesson is that a second write to a local moves the no-policy trajectory by a float's last digit.
             float swfUnpaid = 0f;
+            // AF-35 (Elias's ruling q35, 2026-10-18: "a fund earns on what it holds"; GA-2-10): the part of the day's slice of the period's return the fund
+            // does not earn, because its principal (the balance less the period's own returns so far) no longer covers the assets the return was drawn on.
+            // SUMMED IN at each use like swfUnpaid, never written back into swfReturns: 0 for every fund whose principal is whole, so such a fund reads the
+            // old expressions to the bit.
+            float swfReturnUnearned = 0f;
+            bool swfReturnBound = false;   // N2: the floor or the ceiling bound the day's return
+            float swfReturnLanded = 0f;
             if (country.SovereignWealthFund != null)
             {
                 swfUnpaid = Mathf.Max(0f, -(country.SovereignWealthFund.TotalAssets + swfContribution));
                 country.SovereignWealthFund.TotalAssets += swfContribution + swfUnpaid;
 
                 swfReturns = period.PlannedSwfReturn * FiscalFlowPerDayFraction;
-                country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfReturns);
+                swfReturnUnearned = SwfReturnNotEarned(swfReturns, country.SovereignWealthFund.TotalAssets, country.SovereignWealthFund.TotalAssets - period.AccruedSwfReturns, period.SwfAssetsAtPeriodOpen);
+                float swfBeforeReturn = country.SovereignWealthFund.TotalAssets;
+                country.SovereignWealthFund.TotalAssets = Mathf.Max(0f, country.SovereignWealthFund.TotalAssets + swfReturns - swfReturnUnearned);
 
                 float maxSwfAssets = MaxSwfToGdpPercent / 100f * state.NominalGdp;
                 country.SovereignWealthFund.TotalAssets = Mathf.Clamp(country.SovereignWealthFund.TotalAssets, 0f, maxSwfAssets);
+                // AF-35 (the second review's N2): where the zero floor or the ceiling bound, the period accrues the change that LANDED, not the return
+                // intended, so the principal (TotalAssets - AccruedSwfReturns) stays the period-open assets plus contributions less draws - a loss the floor
+                // cut short is not counted as principal kept, and no later contribution goes into a loss on assets the fund no longer had. A branch: where
+                // neither binds the accrual below is the old expression to the bit.
+                bool swfFloored = country.SovereignWealthFund.TotalAssets == 0f && swfBeforeReturn > 0f && swfReturns - swfReturnUnearned < 0f;
+                if (swfFloored || country.SovereignWealthFund.TotalAssets >= maxSwfAssets)
+                {
+                    swfReturnBound = true;
+                    swfReturnLanded = country.SovereignWealthFund.TotalAssets - swfBeforeReturn;
+                }
 
                 swfDraw = country.SovereignWealthFund.TotalAssets * SwfStructuralDrawPerTurnFraction() * FiscalFlowPerDayFraction;
                 swfDraw = Mathf.Clamp(swfDraw, 0f, country.SovereignWealthFund.TotalAssets);
@@ -7421,7 +7733,8 @@ namespace PoliSim.Simulation
             period.AccruedInterestOnDebt += interestOnDebt;
             period.AccruedWelfareCost += welfareCost;
             period.AccruedSwfContribution += swfContribution + swfUnpaid;   // GA-2-1: what was booked
-            period.AccruedSwfReturns += swfReturns;
+            if (swfReturnBound) { period.AccruedSwfReturns += swfReturnLanded; }   // N2: what landed where the floor or the ceiling bound
+            else { period.AccruedSwfReturns += swfReturns - swfReturnUnearned; }   // AF-35: what the fund earned
             period.AccruedTotalSpending += totalSpending;
             period.AccruedBudgetBalance += budgetBalance;
 
@@ -7488,6 +7801,9 @@ namespace PoliSim.Simulation
         public void AccrueDayForValidation(Country country, float governmentSpending, float mandatorySpending, float swfPeriodReturn, float tariffRevenue)
         {
             FiscalPeriod period = GetOrSeedFiscalPeriod(country);
+            // AF-35 (the review's L3): the plan's period opens on its first day - nothing accrued yet - on the assets the fund holds then, as the boundary sets
+            // them where it draws the return, so the daily form here earns on the principal the turn form's whole-period step starts from
+            if (period.AccruedTotalSpending == 0f) { period.SwfAssetsAtPeriodOpen = country.SovereignWealthFund != null ? country.SovereignWealthFund.TotalAssets : 0f; }
             period.PlannedGovernmentSpending = governmentSpending;
             period.PlannedMandatorySpending = mandatorySpending;
             period.PlannedSwfReturn = swfPeriodReturn;

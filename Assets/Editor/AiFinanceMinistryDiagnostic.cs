@@ -48,7 +48,7 @@ namespace PoliSim.EditorTools
                 {
                     FiscalTurnReport last = sim.GetLastFiscalReport(c.Id);
                     if (last == null) { Debug.LogError($"FINMIN: {c.Id} has no fiscal report after {Turns} turns."); ok = false; continue; }
-                    float balance = last.BudgetBalance / c.State.NominalGdp * 100f;
+                    float balance = last.FlowBalance / c.State.NominalGdp * 100f;   // AF-17 (M2): the figure the ministry reads
                     float debt = c.State.DebtToGdpRatio;
                     PolicyDecision d = AiFinanceMinistry.Decide(c, last);
                     int cuts = 0, restores = 0, raises = 0; float worst = 0f;
@@ -79,24 +79,24 @@ namespace PoliSim.EditorTools
                 // (5) both directions on France
                 Country france = world.GetCountry(CountryId.France);
                 FiscalTurnReport franceLast = sim.GetLastFiscalReport(CountryId.France);
-                float savedDebt = france.State.GovernmentDebt; float savedBalance = franceLast.BudgetBalance; float savedLast = france.DebtRatioLastReport;
+                float savedDebt = france.State.GovernmentDebt; float savedBalance = franceLast.FlowBalance; float savedLast = france.DebtRatioLastReport;
                 france.DebtRatioLastReport = 0f;
                 france.State.GovernmentDebt = 0.5f * france.State.NominalGdp;
                 float ngdp = france.State.NominalGdp;
-                franceLast.BudgetBalance = 0.01f * ngdp;
+                franceLast.FlowBalance = 0.01f * ngdp;
                 float given = Sum(france, AiFinanceMinistry.Decide(france, franceLast), out int givenNeg, out int givenPos);
                 if (givenPos == 0 || givenNeg > 0 || Mathf.Abs(given / ngdp * 100f - 1f) > 0.05f) { Debug.LogError($"FINMIN: France at 50 % debt and a 1 % surplus did not release the surplus ({given / ngdp * 100f:F3} % of GDP, {givenNeg} cuts)."); ok = false; }
-                franceLast.BudgetBalance = 0f;
+                franceLast.FlowBalance = 0f;
                 PolicyDecision atBalance = AiFinanceMinistry.Decide(france, franceLast);
                 if (atBalance.SpendingLineChanges.Count > 0 || atBalance.TaxRateOverrides.Count > 0) { Debug.LogError("FINMIN: France at 50 % debt and balance received a decision - the rule does not rest."); ok = false; }
-                franceLast.BudgetBalance = -0.02f * ngdp;
+                franceLast.FlowBalance = -0.02f * ngdp;
                 float closed = -Sum(france, AiFinanceMinistry.Decide(france, franceLast), out int closedNeg, out int closedPos);
                 if (closedNeg == 0 || closedPos > 0 || Mathf.Abs(closed / ngdp * 100f - 1f) > 0.05f) { Debug.LogError($"FINMIN: France at 50 % debt and a 2 % deficit did not close the deficit back to the 1 % limit ({closed / ngdp * 100f:F3} % of GDP, {closedPos} restores)."); ok = false; }
-                franceLast.BudgetBalance = -0.04f * ngdp;
+                franceLast.FlowBalance = -0.04f * ngdp;
                 PolicyDecision edp = AiFinanceMinistry.Decide(france, franceLast);
                 float taken = -Sum(france, edp, out int edpNeg, out int edpPos);
                 if (edpNeg == 0 || (taken / ngdp * 100f < AiFinanceMinistry.EdpAdjustmentPercentOfGdp - 0.02f && edp.TaxRateOverrides.Count == 0)) { Debug.LogError($"FINMIN: France at a 4 % deficit and 50 % debt did not take the EDP adjustment ({taken / ngdp * 100f:F3} % of GDP in cuts, {edp.TaxRateOverrides.Count} rate rises)."); ok = false; }
-                france.State.GovernmentDebt = savedDebt; franceLast.BudgetBalance = savedBalance; france.DebtRatioLastReport = savedLast;
+                france.State.GovernmentDebt = savedDebt; franceLast.FlowBalance = savedBalance; france.DebtRatioLastReport = savedLast;
                 report.Add($"France at 50 % debt: a 1 % surplus → {givenPos} restores worth {given / ngdp * 100f:F3} % of GDP; balance → nothing; a 2 % deficit → {closedNeg} cuts worth {closed / ngdp * 100f:F3} %; a 4 % deficit → {edpNeg} cuts worth {taken / ngdp * 100f:F3} % and {edp.TaxRateOverrides.Count} rate rise(s)");
             }
             finally { Object.DestroyImmediate(go); }

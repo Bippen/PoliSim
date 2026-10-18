@@ -16,7 +16,7 @@ namespace PoliSim.Data
     {
         public float Requested;      // the indexed lines' sum this turn, nominal
         public float Allocated;      // the resolved lines' sum this turn, nominal
-        public float Efficiency = 1f; // the minister's efficiency, 0..1 (CabinetMinister.Efficiency / 100)
+        public float Efficiency = 1f; // the minister's efficiency on AF-30's scale (CabinetSystem.EfficiencyScale): 1 the pool's average minister, a vacant chair below the floor's
         /// <summary>Ruled 2026-09-06: THE LEVEL beside the flow - the portfolio's lines against their own seed anchors (SpendingLine.SeedAmount, the seed carried
         /// forward by prices, drivers and the AI's real growth), i.e. spending per indexed unit against its seed. The FLOW (Ratio) says "met this year's
         /// ask"; the LEVEL says "the ask has shrunk" - a cut that stands is met from its second year while its level stays low.</summary>
@@ -86,15 +86,9 @@ namespace PoliSim.Data
             }
         }
 
-        /// <summary>The minister's efficiency as a 0..1 factor; 1 when the chair is empty (no ministry to multiply by - the ratio is the allocation alone).</summary>
-        public static float EfficiencyOf(Country country, CabinetPortfolio portfolio)
-        {
-            if (country.CabinetMinisters != null && country.CabinetMinisters.TryGetValue(portfolio, out CabinetMinister m) && m != null)
-            {
-                return Mathf.Clamp(m.Efficiency, 1f, 100f) / 100f;
-            }
-            return 1f;
-        }
+        /// <summary>The minister's efficiency as the ratio's factor - AF-30's one scale (<see cref="PoliSim.Simulation.CabinetSystem.EfficiencyScale"/>): the pool's
+        /// average minister 1 (neutral), a vacant chair the player's to fill below the pool's floor, an unmodelled cabinet 1.</summary>
+        public static float EfficiencyOf(Country country, CabinetPortfolio portfolio) => PoliSim.Simulation.CabinetSystem.EfficiencyScale(country, portfolio);
 
         /// <summary>Records this turn's requests and allocations per portfolio. <paramref name="requestedByCategory"/> is every line's amount after
         /// the index and before the player's figure (SimulationManager.ResolveSpendingForTurn captures it); the allocation is the line's amount now.</summary>
@@ -124,6 +118,11 @@ namespace PoliSim.Data
             if (country.Effectiveness != null && country.Effectiveness.TryGetValue(portfolio, out PortfolioEffectiveness e) && e.Recorded) { return e.Ratio; }
             return EfficiencyOf(country, portfolio);
         }
+
+        /// <summary>AF-30 (the review's M2): the portfolio's allocation ratio alone - allocated / requested, 1 before the first record - so a readout says UNDERFUNDED only
+        /// where the money fell short, and names a below-average minister or a vacant chair as what they are.</summary>
+        public static float AllocationRatioOf(Country country, CabinetPortfolio portfolio) =>
+            country.Effectiveness != null && country.Effectiveness.TryGetValue(portfolio, out PortfolioEffectiveness e) && e.Recorded ? e.AllocationRatio : 1f;
 
         /// <summary>Ruled 2026-09-06: the portfolio's LEVEL - its lines' amounts against their seed anchors (spending per indexed unit against its own seed); 1 before
         /// the first record. Read beside the flow ratio: the flow says whether this year's ask was met, the level whether the ask itself has shrunk or grown.</summary>
