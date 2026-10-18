@@ -1,0 +1,777 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.senato.it/mobile/xsl/dtd/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      lang="it" xml:lang="it">
+
+<!--@thymesVar id="e" type="it.senato.microservizi.schedeweb.model.gruppi.ElencoGruppi"-->
+
+
+	    <head>
+<!--			<base href="https://www.senato.it"/>-->
+	        <title>senato.it - Composizione dei gruppi parlamentari</title>
+	        <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon"/>
+	        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8"/>
+			<meta http-equiv="Content-Script-Type" content="text/javascript" />
+	        <meta name="description" content="Composizione dei gruppi parlamentari"/>
+	        <meta name="canale" content="Composizione"/>
+	        <meta name="area" content="Gruppi"/>
+	        <meta name="dataCreate" content="2022-10-13"/>
+			<meta name="dataUpdate" content="2022-10-18"/>
+	        <meta name="legislatura" content="19"/>
+	        <meta name="tipodoc" content="GRPEL"/>
+	        <meta name="iddoc" content="0"/>
+	
+	        <script src="/javascripts/jquery/jquery-1.5.1.min.js?1403785858" type="text/javascript"></script>
+<script src="/javascripts/jquery/jquery_noconflicts.js?1296649126" type="text/javascript"></script>
+<script src="/javascripts/jquery/jquery.cycle.all.min.js?1306849581" type="text/javascript"></script>
+<script src="/javascripts/jquery/jquery.easing.1.3.js?1306849581" type="text/javascript"></script>
+<script src="/javascripts/jscalendar/calendar.js?1291303645" type="text/javascript"></script>
+<script src="/javascripts/jscalendar/lang/calendar-it.js?1296649124" type="text/javascript"></script>
+<script src="/javascripts/jscalendar/calendar-setup.js?1291303645" type="text/javascript"></script>
+<script src="/javascripts/prototype.js?1302774714" type="text/javascript"></script>
+<script src="/javascripts/builder.js?1302774714" type="text/javascript"></script>
+<script src="/javascripts/effects.js?1302774714" type="text/javascript"></script>
+<script src="/javascripts/dragdrop.js?1302774714" type="text/javascript"></script>
+<script src="/javascripts/controls.js?1302774714" type="text/javascript"></script>
+<script src="/javascripts/slider.js?1302774714" type="text/javascript"></script>
+<script src="/javascripts/lightbox.js?1444302056" type="text/javascript"></script>
+<script src="/javascripts/lightwindow.js?1402907578" type="text/javascript"></script>
+<script src="/javascripts/senato_responsive.js?1489571542" type="text/javascript"></script>
+<script src="/javascripts/swfobject.js?1291303600" type="text/javascript"></script>
+<script src="/javascripts/cookiejar.js?1291303599" type="text/javascript"></script>
+<script src="/javascripts/xmanager_live.js?1372413000" type="text/javascript"></script>
+
+<link href="/stylesheets/calendar-system.css?1291303655" media="screen" rel="stylesheet" type="text/css" />
+<link href="/stylesheets/lightwindow.css?1399560035" media="screen" rel="stylesheet" type="text/css" />
+<link href="/stylesheets/senato_responsive.css?1489678553" media="screen" rel="stylesheet" type="text/css" />
+
+<link href="/application/xmanager/projects/leg19/css/print.css?1664956347" media="print" rel="stylesheet" type="text/css" />
+
+<!--[if IE]>
+  <link href="/application/xmanager/projects/leg19/css/ie.css?1664956347" media="screen" rel="stylesheet" type="text/css" />
+<![endif]-->
+
+	        <link href="/css/style_senato.css" rel="stylesheet" type="text/css"/>
+	        <link href="/css/style_senato_struttura.css" rel="stylesheet" type="text/css"/>
+			
+	        <link href="/css/style_senato_schedeweb.css" rel="stylesheet" type="text/css"/>
+	        <link href="/css/senato5_specs.css" rel="stylesheet" type="text/css"/>
+	        <link href="/css/19/style_senato_legislature.css" rel="stylesheet"
+	              type="text/css"/>
+	        <link href="/css/sharing.css" rel="stylesheet" type="text/css"/>
+	        <script type="text/javascript" src="/js/schede/sharing_x.js"></script>
+	    </head>
+	
+
+<body id="Gruppi">
+
+
+		
+<div id="container">
+	<div class="bgTestata" id="header">
+		<div class="dxTestata">
+			<div id="menu_top_container">
+				<div class="xmanager_menu_spalla" id="container_34644">
+		<div id="tree_menu_top" class="ulOriz">
+
+<ul>
+<li class="OnClick"><span><a href="/Leg19/3275" class="OnClick">accessibilità</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/3303?testo_generico=599" class="OnClick" title="I feed RSS del Senato">rss</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/3227" class="OnClick" title="Come consultare il sito del Senato">guida al sito</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/4570" class="OnClick">privacy</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/4504" class="OnClick">Domande frequenti - FAQ</a></span></li>
+<li class="strong last OnClick"><span><a href="/Leg19/home" class="strong last OnClick">Home</a></span></li>
+</ul>
+<span class="clear"></span>
+</div>
+
+							<span class="clear"></span>
+				</div>
+			</div>
+			<div class="logo">
+				<h1>
+					<span class="hidden">Il sito del Senato della Repubblica</span>
+					<a href="/home"><img width="326" height="117" alt="Senato della Repubblica - Torna alla Home page" src="/application/xmanager/projects/leg17/img/home/logo_interne.gif" /></a>
+				</h1>
+			</div>
+			<div class="hide">
+				<p class="hide">Vai direttamente a: </p>
+				<ul>
+					<li><a href="#content">contenuto della pagina</a></li>
+					<li><a href="#cnt_main_menu">barra di navigazione</a></li>
+					<li><a href="#ricerca">ricerca</a></li>
+					<li><a href="#col_sx">menu di navigazione della sezione</a></li>
+				</ul>
+			</div>
+
+
+					<div id="ric" class="ricerca">   			 
+				<form action="/ric/generale/risultati.do" method="get" id="form1">                 
+					<div>                     
+						<label class="titRicerca" for="labRic">Ricerca</label> 						
+						<input type="hidden" value="0" name="params.start" /> 						
+						<input type="hidden" value="10" name="params.rows" />                     
+						<input type="text" id="labRic" size="28" name="params.query" />                     
+						<input type="submit" class="buttonSearch" value="&raquo;" name="Submit" title="Avvia la ricerca" />                 
+					</div>                 
+				</form>                 
+					<ul class="ulLinkRic">                     
+						<li><a href="/loc/link.asp?tipodoc=ricerca&amp;ricerca=generale">Ricerca avanzata</a></li>                     
+						<li><a href="/loc/link.asp?tipodoc=ricerca&amp;ricerca=instradamento-ricerche">Banche dati</a></li>                 
+					</ul> 			
+			</div>
+			<span class="clear"></span> 
+				</div>
+	</div>
+	<!-- header -->
+		<div id="cnt_main_menu">
+			<div id="main_menu_container">
+				<div class="hide">
+					<h2>Sezioni del sito (barra di navigazione)</h2>
+					<p><a href="#content">salta il menu di navigazione</a></p>
+				</div>
+
+		
+		</div></div>
+<script>
+        var current_group = '4707';
+        var current_mode  = 'live';
+        var current_environment = 'senato_internet';
+        var current_project_name = 'Leg18';
+
+        jQuery(document).ready(function() {
+            var canale = jQuery("meta[name='canale']").attr("content");
+            if (canale == 'Composizione') {
+                jQuery("li.menu-02").addClass("current");
+            } else if (canale == 'Lavori') {
+                jQuery("li.menu-03").addClass("current");
+            } else if (canale == 'Documenti' || canale == 'Leggi e documenti') {
+                jQuery("li.menu-04").addClass("current");
+            } else if (canale == 'Istituzione') {
+                jQuery("li.menu-01").addClass("current");
+            } 
+
+            jQuery.get( "/4707", function( data ) {
+               firstImageSrc = jQuery(data).find("div#slideshow div.immagine img").attr("src");
+               startIndex = data.indexOf("slideLength") + 13;
+               endIndex = data.indexOf(",", startIndex);
+               slides = data.substr(startIndex, endIndex-startIndex);
+                startIndex = data.indexOf("timeout") + 9;
+                endIndex = data.indexOf(",", startIndex);
+                time = data.substr(startIndex, endIndex-startIndex);
+               jQuery("div#slideshow div.immagine img").attr("src", firstImageSrc);
+               jQuery("a.prevSlide").attr("href", "http://www.senato.it/4707?active_slide_51132=" + (parseInt(slides)-1));
+
+               new XmSlider('list_51132',
+               {
+                   next: 2,
+                   wi: 51132,
+                   queryString: '',
+                   timeout: time,
+                   slideLength: slides,
+                   transition: true,
+                   buttons: true
+               });
+
+            });
+        });
+    </script>
+
+<div class="bgHomeTestata">
+    <div class="dxTestata">
+        <div class="logoHome">
+            <h1>
+                <span class="hidden">Il sito del Senato della Repubblica</span><a href="/" title="Torna alla home"><img src="/application/xmanager/projects/leg18/img/home2017/logo-senato-home.png"
+                                                                                    width="375" height="165" alt="Senato della Repubblica" /></a>
+            </h1>
+        </div>
+        <div id="menu_top_container">
+            <div class="xmanager_menu_spalla" id="container_50553"><div id="container_50658"  class="cnt-menu-spalla">
+                <div id="tree_menu_50586"  class="ulOriz">
+
+                    <ul>
+                        <li class="OnClick"><span><a href="/" class="OnClick"><strong>home</strong></a></span></li>
+                        <li class="OnClick"><span><a href="/3275" class="OnClick">accessibilit&agrave;</a></span></li>
+                        <li class="OnClick"><span><a href="/4570" class="OnClick">privacy</a></span></li>
+                        <li class="last english OnClick"><a href="/3801" class="last english OnClick" title=""><img alt="English version" src="/application/xmanager/projects/leg18/img//home2017/flag-en.jpg" /></a></li>
+                    </ul>
+                    <span class="clear"></span></div><div id="list_50575"  class="social_head_home right">
+
+                <ul class="social_head_home right_ul">
+
+                    <li  class="social_head_home right_li_1" id="social_head_home_right_li_22">
+                        <div class="icona" >
+                            <a href="https://twitter.com/SenatoStampa" class=" targetblank" title="L'account Twitter del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/022/ico_Twitter.jpg"    /></a></div>
+
+
+                        <span class="clear"></span>
+                    </li>
+	             <li  class="social_head_home right_li_2" id="social_head_home_right_li_32">
+                       <div class="icona" >
+                           <a href="https://www.instagram.com/senatoitaliano" class=" targetblank" title="L'account Instagram del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/032/ico_instagram.png"    /></a></div>
+
+                  
+                       <span class="clear"></span>
+                    </li>
+                    <li  class="social_head_home right_li_2" id="social_head_home_right_li_23">
+                        <div class="icona" >
+                            <a href="http://www.youtube.com/senatoitaliano" class=" targetblank" title="Il canale YouTube del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/023/ico_youtube.jpg"    /></a></div>
+
+
+                        <span class="clear"></span>
+                    </li>
+                    <li  class="social_head_home right_li_3" id="social_head_home_right_li_24">
+                        <div class="icona" >
+                            <a href="http://webtv.senato.it/webtv_live" class=" targetblank" title="La webtv del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/024/ico_senatotv.jpg"    /></a></div>
+
+
+                        <span class="clear"></span>
+                    </li>
+                </ul>
+                <span class="clear"></span></div>
+                <span class="clear"></span></div><span class="clear"></span></div>
+        </div>
+        <div id="slideshow">
+            <div class="xmanager_slideshow" id="container_51131"><div id="list_51132"  class="slider-home">
+
+                <div id="loading_tab_51132" class="loading_tab" style="display:none;" >
+                    <img alt=""  src="/application/xmanager/projects/leg18/img//home2017/ajax-loader.gif"    />
+                </div>
+
+                <div class="prevSlide">
+                    <a href="http://www.senato.it/4707?active_slide_51132=2" class="prevSlide" title="precedente">&laquo;</a>
+                </div>
+
+
+                <ul id="list_51132_slideshow_list_output" class="" >
+                    <li  class="_1 xresource" id="_2">
+
+                        <div class="immagine" >
+                            <img alt=""  src=""    /></div>
+
+
+
+                        <span class="clear"></span>
+                    </li>
+                </ul>
+
+
+
+                <div class="nextSlide">
+                    <a href="http://www.senato.it/4707?active_slide_51132=1" class="nextSlide" title="successiva">&raquo;</a>
+                </div>
+
+
+                <span class="clear"></span></div><span class="clear"></span></div>
+        </div>
+    </div>
+
+</div>
+
+<div id="cnt_main_menu_new">
+    <div id="main_menu_container">
+        <div class="hide">
+            <h2>Sezioni del sito (barra di navigazione)</h2>
+            <p><a href="#content">salta il menu di navigazione</a></p>
+        </div>
+
+        <div class="xmanager_main_menu" id="container_50554"><div id="tree_menu_50562"  class="divNav1liv">
+
+            <ul>
+                <li class="menu menu-01 tree OnClick"><span><a href="/1009" class="menu menu-01 tree OnClick">L'Istituzione</a></span></li>
+                <li class="menu menu-02 tree OnClick"><span><a href="/senatori" class="menu menu-02 tree OnClick">Senatori</a></span></li>
+                <li class="menu menu-03 tree OnClick"><span><a href="/2765" class="menu menu-03 tree OnClick">Lavori</a></span></li>
+                <li class="menu menu-04 tree OnClick"><span><a href="/2867" class="menu menu-04 tree OnClick">Leggi e Documenti</a></span></li>
+                <li class="menu menu-05 tree OnClick"><span><a href="/2987" class="menu menu-05 tree OnClick">Attualit&agrave;</a></span></li>
+                <li class="menu menu-06 last tree OnClick"><span><a href="/3002" class="menu menu-06 last tree OnClick">Relazioni con i cittadini</a></span></li>
+                <li class="cerca collapsible closed OnClick"><a href="/1?rev=4996" class="cerca collapsible closed OnClick" title=""><img alt="" src="/application/xmanager/projects/leg18/img//home2017/cerca_lente.jpg" /></a></li>
+            </ul>
+
+            <span class="clear"></span></div><span class="clear"></span></div>
+        <br class="brHide" />
+    </div>
+</div>
+<div id="cnt-tool-ricerca-loghi">
+    <div id="tool-ricerca">
+        <div class="xmanager_box_ricerca" id="container_50555"><div id="container_50573"  class="ricercaHome">
+            <div id="free_code_50626"  class="left ricerca">
+                <script>
+                    jQuery( "a.cerca" ).click(function(e) {
+                        e.preventDefault();
+                        jQuery( "#tool-ricerca" ).toggle( "slow" );
+                    });
+                </script>
+
+
+                <!--<form action="/ric/generale/,DanaInfo=xmanager.senato.intranet+risultati.do" charset="UTF-8" id="form1" method="post">
+                    <div><label class="titRicerca hidden" for="labRic">Ricerca</label> <input name="params.start" type="hidden" value="0" /> <input name="params.rows" type="hidden" value="10" /> <input id="labRic" name="params.query" size="28" type="text" /> <input class="buttonSearch" name="Submit" title="Avvia la ricerca" type="submit" value="�" /></div>
+                </form>-->
+
+                <form action="/ric/generale/risultati.do" charset="UTF-8" id="form1" method="post">
+                    <div>
+                        <label class="titRicerca hidden" for="labRic">Ricerca</label>
+                        <input name="params.start" type="hidden" value="0" />
+                        <input name="params.rows" type="hidden" value="10" />
+                        <input id="labRic" name="params.query" size="28" type="text" onfocus="if(this.value=='cerca nel sito') {this.value='';}" onblur="if(this.value=='') {this.value='cerca nel sito';}" value="cerca nel sito" />
+
+
+                        <button class="buttonSearch" name="Submit" title="Avvia la ricerca" type="submit"><span class="hidden">Invia</span></button>
+                    </div>
+                </form>
+
+
+
+
+                <span class="clear"></span></div><div id="tree_menu_50584"  class="ric-av-banchedati">
+
+            <ul>
+                <li class="OnClick"><span><a href="/loc/link.asp?tipodoc=ricerca&amp;ricerca=generale" class="OnClick">Ricerca avanzata</a></span></li>
+                <li class="OnClick"><span><a href="/loc/link.asp?tipodoc=ricerca&amp;ricerca=instradamento-ric" class="OnClick">Banche dati</a></span></li>
+            </ul>
+            <span class="clear"></span></div>
+            <span class="clear"></span></div><span class="clear"></span></div>
+    </div>
+
+
+
+
+
+
+<div id="cnt_cols">
+    <div id="wrapper_cols">
+		<div id="cnt_breadcrumbs">
+		    <div id="free_code_7150" class="divPath">
+<!-- Free Code per le breadcrumbs -->
+
+
+<div id="breadcrumbs">
+		<span class="headPath">Sei in:</span>
+                <a href="/Leg19/home">Home</a> » <a href="http://www.senato.it/loc/link.asp?tipodoc=senelaliniz&amp;leg=19&amp;id=a">Composizione</a> » <a href="/loc/link.asp?tipodoc=grpel&amp;leg=19">Gruppi parlamentari </a>  »  <span class="pathOn">Composizione</span>		 
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<span class="clear"></span>
+</div>
+
+		</div>
+	
+	    									<!-- INIZIO TABELLA CONTENUTO -->
+	   	<div class="sx">
+	    	<div id="col_sx">
+	        	<div id="tree_menu_composizione" class="menu_sx">
+
+<ul>
+<li class="OnClick"><span><a href="http://www.senato.it/presidente" class="OnClick">Presidente</a></span></li>
+<li class="closed OnClick">
+<span><a href="/loc/link.asp?tipodoc=senelaliniz&amp;leg=19&amp;id=a" class="closed OnClick">Senatori</a></span>
+<ul>
+<li class="active_alias_sena_19_comp url OnClick"><span><a href="/loc/link.asp?tipodoc=senelaliniz&amp;leg=19&amp;id=a" class="active_alias_sena_19_comp url OnClick">Elenco alfabetico</a></span></li>
+<li class="active_alias_seav_19_comp url OnClick"><span><a href="/loc/link.asp?tipodoc=senelavita&amp;leg=19" class="active_alias_seav_19_comp url OnClick">Senatori a vita</a></span></li>
+<li class="active_alias_sreg_19_comp url OnClick"><span><a href="/loc/link.asp?tipodoc=senelreg&amp;leg=19&amp;regione=01" class="active_alias_sreg_19_comp url OnClick">Per regione di elezione</a></span></li>
+<li class="active_alias_secs_19_comp url OnClick"><span><a href="/loc/link.asp?tipodoc=senelcess&amp;leg=19" class="active_alias_secs_19_comp url OnClick">Variazioni nella composizione del Senato</a></span></li>
+<li class="active_alias_composizione_senatori_trattamento_economico url OnClick"><span><a href="/Leg19/1075?voce_sommario=61" class="active_alias_composizione_senatori_trattamento_economico url OnClick">Trattamento economico</a></span></li>
+</ul>
+</li>
+<li class="closed OnClick">
+<span><a href="/Leg19/1085" class="closed OnClick">Consiglio di Presidenza</a></span>
+<ul>
+<li class="active_alias_uffp_19_comp tree OnClick"><span><a href="/loc/link.asp?tipodoc=conspres&amp;leg=19" class="active_alias_uffp_19_comp tree OnClick">Composizione</a></span></li>
+</ul>
+</li>
+<li class="url OnClick"><span><a href="/Leg19/1087" class="url OnClick">Collegio dei Questori</a></span></li>
+<li class="url OnClick"><span><a href="/Leg19/1088" class="url OnClick">Conferenza dei Capigruppo</a></span></li>
+<li class=" OnClick active">
+<span><a href="/loc/link.asp?tipodoc=grpel&amp;leg=19" class="closed OnClick">Gruppi parlamentari</a></span>
+<ul>
+<li class="current active_alias_grup_19_comp"><span><a href="/loc/link.asp?tipodoc=grpel&amp;leg=19" class="current active_alias_grup_19_comp">Riepilogo della composizione</a></span></li>
+<li class="url OnClick"><span><a href="/Leg19/4839" class="url OnClick">Variazioni</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/4145" class="OnClick">Regolamenti dei Gruppi</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/4285" class="OnClick">Regolamento di contabilità</a></span></li>
+</ul>
+</li>
+<li class="closed OnClick"><span><a href="/Leg19/1095" class="closed OnClick">Commissioni e Giunte</a></span></li>
+<li class="targetblank OnClick"><span><a href="/Leg19/1450" class="targetblank OnClick">Commissione Contenziosa</a></span></li>
+<li class="targetblank OnClick"><span><a href="/Leg19/1453" class="targetblank OnClick">Consiglio di Garanzia</a></span></li>
+<li class="active_alias_stat_19_comp OnClick"><span><a href="/loc/link.asp?tipodoc=statistiche&amp;tipostat=SenatoriPerEta&amp;leg=19" class="active_alias_stat_19_comp OnClick">Statistiche</a></span></li>
+<li class="active_alias_gove_19_comp OnClick"><span><a href="/loc/link.asp?tipodoc=compgov&amp;leg=19&amp;id=78" class="active_alias_gove_19_comp OnClick">Il Governo</a></span></li>
+<li class="OnClick"><span><a href="/Leg19/4484" class="OnClick">Consiglio dell'Ufficio parlamentare di bilancio</a></span></li>
+</ul>
+<span class="clear"></span>
+</div>
+</div>
+	    </div>
+	
+
+<div class="dx">
+    <div class="top" id="content">
+        <div class="sxSmall">
+
+            <div class="titolo_testata">
+                <div class="titolo_testata_label">Gruppi parlamentari</div>
+                <span class="clear"></span>
+            </div>
+
+            <h1>Gruppi parlamentari</h1>
+            <div class="sottoTit"><strong>XIX Legislatura </strong> (dal 13 ottobre 2022)</div>
+
+            <br/>
+
+            
+
+            <div class="testoCenter">
+                <div class="bordoNero">
+                    <table width="100%"
+                           summary="Riepilogo della composizione nel corso della XIX Legislatura">
+                        <caption>
+                            Composizione dei Gruppi parlamentari
+                        </caption>
+                        <col width="80%"/>
+                        <col width="20%"/>
+                        <tbody>
+                        <tr valign="top">
+                            
+                                <td class="tab1"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=91&amp;leg=19">Azione-ItaliaViva-RenewEurope</a></td>
+                                <td class="tab1n">9</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab2"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=92&amp;leg=19">Civici d'Italia - Noi Moderati (UDC - Coraggio Italia - Noi con l'Italia - Italia al Centro) - MAIE</a></td>
+                                <td class="tab2n">6</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab1"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=56&amp;leg=19">Forza Italia Berlusconi Presidente</a></td>
+                                <td class="tab1n">18</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab2"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=85&amp;leg=19">Fratelli d'Italia</a></td>
+                                <td class="tab2n">63</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab1"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=33&amp;leg=19">Lega Salvini Premier - Partito Sardo d'Azione</a></td>
+                                <td class="tab1n">29</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab2"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=71&amp;leg=19">MoVimento 5 Stelle</a></td>
+                                <td class="tab2n">28</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab1"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=49&amp;leg=19">Partito Democratico - Italia Democratica e Progressista</a></td>
+                                <td class="tab1n">38</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab2"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=69&amp;leg=19">Per le Autonomie (SVP-Patt, Campobase, Sud Chiama Nord)</a></td>
+                                <td class="tab2n">7</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            
+                                <td class="tab1"><a
+                                        href="/loc/link.asp?tipodoc=sgrp&amp;id=9&amp;leg=19">Misto</a></td>
+                                <td class="tab1n">7</td>
+                            
+                        </tr>
+                        <tr valign="top">
+                            <td class="tab2"><strong>Totale</strong></td>
+                            <td class="tab2n">205</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- FINE CONTENUTO -->
+        <!-- INIZIO BOX SPALLA ******************************** -->
+        <div class="dxSmall">
+            <script>writeHref();</script>
+            <div id="sharingLink">
+                <script>sharingList();</script>
+            </div>
+            <!-- INIZIO BOX STAMPA -->
+            <!-- INIZIO FUORI STAMPA -->
+            <div class="verStampa"><a href="/versionestampa/stampa.jsp?" title="Versione per la stampa">Versione per la
+                stampa</a>
+            </div>    <!-- FINE FUORI STAMPA -->
+            <!-- FINE BOX STAMPA -->
+            <!-- INIZIO FUORI STAMPA -->
+            <h2 class="titBoxColDx">Vedi anche</h2>
+            <div class="divBoxColDx">
+                <ul class="listColDx">
+                    <li><a href="/1094">Pagine a cura dei Gruppi parlamentari</a></li>
+                </ul>
+            </div>    <!-- FINE FUORI STAMPA -->
+
+            <!-- INIZIO FUORI STAMPA -->
+            <div><br/></div>
+            <h2 class="titBoxOldLeg">Legislature</h2>
+            <div class="divBoxOldLeg">
+                <ul>
+                    <li>
+                        
+                        <strong>XIX Legislatura</strong>
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=18">XVIII Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=17">XVII Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=16">XVI Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=15">XV Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=14">XIV Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=13">XIII Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=12">XII Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=11">XI Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=10">X Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=9">IX Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=8">VIII Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=7">VII Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=6">VI Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=5">V Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=4">IV Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=3">III Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=2">II Legislatura</a>
+                        
+                    </li>
+                    <li>
+                        <a href="/loc/link.asp?tipodoc=GRPEL&amp;leg=1">I Legislatura</a>
+                        
+                    </li>
+                </ul>
+            </div>    <!-- FINE FUORI STAMPA -->
+            <!-- FINE FUORI STAMPA -->
+        </div>    <!-- fine dxsmall -->
+        <!-- FINE  SPALLA **************************************** -->
+
+    </div>
+</div>
+
+    <!-- INIZIO FUORI STAMPA -->
+    <br/><span class="chiudiWrapper"><br/></span>	<div id="footer">
+		<h2 class="hide">Informazioni aggiuntive</h2>
+		<div id="cnt-menu-arcipelago">
+			
+<div class="xmanager_menu-arcipelago" id="container_50560"><div id="container_50627"  class="cnt-arcipelago">
+<div id="tree_menu_50587"  class="senato arcipelago list-square">
+
+<ul>
+<li class="current logo"><a href="1" class="current logo" title=""><img alt="Senato della Repubblica" src="/application/xmanager/projects/leg18/img//home/logo_senato_footer.png" /></a></li>
+<li class="current"><span><a href="http://www.senato.it/sitostorico/home" class="current">Legislature precedenti</a></span></li>
+<li class="OnClick"><span><a href="http://webtv.senato.it/webtv_live" class="OnClick">WebTv Senato</a></span></li>
+<li class="targetblank OnClick"><span><a href="https://www.youtube.com/SenatoRepubblica" class="targetblank OnClick">YouTube</a></span></li>
+<li class="targetblank OnClick"><span><a href="https://twitter.com/SenatoStampa" class="targetblank OnClick">Twitter</a></span></li>
+</ul>
+<span class="clear"></span></div><div id="tree_menu_50588"  class="presidente arcipelago">
+<div class="presidente arcipelago_label">Presidente <br/>del Senato</div>
+<ul>
+<li class="targetblank OnClick"><span><a href="http://presidente.senato.it" class="targetblank OnClick">HOME</a></span></li>
+<li class="OnClick"><span><a href="/1020" class="OnClick">I PRESIDENTI DEL SENATO DAL 1948</a></span></li>
+</ul>
+<span class="clear"></span></div><div id="tree_menu_50589"  class="camera arcipelago">
+<div class="camera arcipelago_label">La Camera <br/>dei deputati</div>
+<ul>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it" class="targetblank OnClick">HOME</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/1220" class="targetblank OnClick">DEPUTATI E ORGANI</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/76" class="targetblank OnClick">LAVORI</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/1047" class="targetblank OnClick">DOCUMENTI</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/96" class="targetblank OnClick">COMUNICAZIONE</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/13" class="targetblank OnClick">CONOSCERE LA CAMERA</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/1217" class="targetblank OnClick">EUROPA</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.camera.it/leg18/1025" class="targetblank OnClick">INTERNAZIONALE</a></span></li>
+</ul>
+<span class="clear"></span></div><div id="tree_menu_50590"  class="parlamento arcipelago">
+<div class="parlamento arcipelago_label">Parlamento</div>
+<ul>
+<li class="targetblank OnClick"><span><a href="http://www.parlamento.it" class="targetblank OnClick">HOME</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://parlamento18.camera.it/13" class="targetblank OnClick">PARLAMENTO IN SEDUTA COMUNE</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.parlamento.it/1210?legislatura_numero=18" class="targetblank OnClick">ORGANISMI BICAMERALI</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.parlamento.it/798" class="targetblank OnClick">RAPPORTI INTERNAZIONALI</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.parlamento.it/806" class="targetblank OnClick">POLO BIBLIOTECARIO PARLAMENTARE</a></span></li>
+</ul>
+<span class="clear"></span></div><div id="tree_menu_50591"  class="altri arcipelago">
+<div class="altri arcipelago_label">Altri collegamenti</div>
+<ul>
+<li class="targetblank OnClick"><span><a href="http://www.quirinale.it/" class="targetblank OnClick">PRESIDENZA DELLA REPUBBLICA</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.governo.it/" class="targetblank OnClick">PRESIDENZA DEL CONSIGLIO</a></span></li>
+<li class="targetblank OnClick"><span><a href="https://europa.eu/european-union/index_it" class="targetblank OnClick">UNIONE EUROPEA</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.cortecostituzionale.it/default.do" class="targetblank OnClick">CORTE COSTITUZIONALE</a></span></li>
+<li class="targetblank OnClick"><span><a href="http://www.normattiva.it" class="targetblank OnClick">NORMATTIVA: IL PORTALE DELLA LEGGE VIGENTE</a></span></li>
+</ul>
+<span class="clear"></span></div>
+<span class="clear"></span></div><span class="clear"></span></div>
+
+		</div>
+		<div class="bordino"> 
+			
+<div class="xmanager_menu-footer-bottom" id="container_50561"><div id="tree_menu_50592"  class="copyright">
+
+<ul>
+<li class="OnClick"><a href="http://creativecommons.org/licenses/by/3.0/it/legalcode" class="OnClick" title=""><img alt="" src="/application/xmanager/projects/leg18/img//CCBY.png" /></a><span>Senato della Repubblica</span></li>
+</ul>
+<span class="clear"></span></div><div id="tree_menu_50593"  class="menu-servizio">
+
+<ul>
+<li class="OnClick"><span><a href="/4570" class="OnClick">privacy</a></span></li>
+<li class="OnClick"><span><a href="/3227" class="OnClick">guida al sito</a></span></li>
+<li class="OnClick"><span><a href="/3567?testo_generico=809" class="OnClick">avviso legale</a></span></li>
+<li class="OnClick"><span><a href="/3275" class="OnClick">accessibilit&agrave;</a></span></li>
+<li class="OnClick"><span><a href="/4570" class="OnClick">cookie</a></span></li>
+<li class="OnClick"><span><a href="/4504" class="OnClick">FAQ</a></span></li>
+</ul>
+<span class="clear"></span></div><div id="list_50594"  class="social-footer-home right">
+
+<ul class="social-footer-home right_ul">
+
+      <li  class="social-footer-home right_li_1" id="social-footer-home_right_li_27">
+              <div class="icona" >
+<a href="https://twitter.com/SenatoStampa" class=" targetblank" title="L'account Twitter del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/027/twitter.png"    /></a></div>
+
+                  
+      <span class="clear"></span>
+    </li>
+      <li  class="social-footer-home right_li_2" id="social-footer-home_right_li_33">
+              <div class="icona" >
+<a href="https://www.instagram.com/senatoitaliano/" class=" targetblank" title="L'account Instagram del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/033/INSTAGRAM.png"    /></a></div>
+
+                  
+      <span class="clear"></span>
+    </li>
+      <li  class="social-footer-home right_li_3" id="social-footer-home_right_li_29">
+              <div class="icona" >
+<a href="http://www.youtube.com/senatoitaliano" class=" targetblank" title="Il canale YouTube del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/029/youtube.png"    /></a></div>
+
+                  
+      <span class="clear"></span>
+    </li>
+      <li  class="social-footer-home right_li_4" id="social-footer-home_right_li_28">
+              <div class="icona" >
+<a href="http://webtv.senato.it/webtv_live" class=" targetblank" title="La webtv del Senato"><img alt=""  src="/application/xmanager/projects/leg18/attachments/link/iconas/000/000/028/senatoTV.png"    /></a></div>
+
+                  
+      <span class="clear"></span>
+    </li>
+  </ul>
+<span class="clear"></span></div><span class="clear"></span></div>
+ 
+		</div>
+	</div>
+
+    <!-- FINE FUORI STAMPA -->
+    
+
+    <script type="text/javascript">
+        var messageData = '{"static": [{ "descrizione": "Elenco Gruppi - XIX Legislatura",' +
+            '"tipodoc": "sgrp", "params": "leg=19&tipo=ElencoGruppi&versione=3",' +
+            '"paramsLegislatura": "tipo=ElencoSchede&leg=19&versione=3",' +
+            '"pathSchedaDinamica": "/v1/gruppi/19/elenco/attuale"}]}';
+        parent.postMessage(messageData, "*");
+    </script>
+
+
+
+</body>
+</html>

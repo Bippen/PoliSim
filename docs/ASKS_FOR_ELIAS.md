@@ -3,7 +3,8 @@
 **Moved here from the session scratchpad on 2026-10-18 (§855; §643: scratchpads are deleted with the session).** Elias ruled most of this list on 2026-10-18 (`docs/RULINGS_2026-10-18.md`). Status by item:
 - **Ruled:** 1 (I4), 2 (I5), 3 (I3), 4 (I6), 5 (I7), 6 (I8), 7 (I9), 8 (I1, I2), 9 (I14), 13 (the audit's A-LOOP, q24), 18 (I4, the both-chambers amendment), 20 (I10), 21 (I11), 25 (moot: US-22 closed it, §854), 27 (I12), 28 (I13); the errands (I15); the declared readings stand.
 - **Open, to be answered one line each in the next report, built meanwhile on Code's recommendation, PROVISIONAL, wherever reversible (I16):** 10, 11, 12, 14, 15, 16, 17, 19, 22, 23, 24, 26.
-- **Filed defects** (the last section): ORDER item 1 in the rulings.
+- **Filed defects** (the section before the report): ORDER item 1 in the rulings.
+- **The report of 2026-10-18** (the last section): where each ruling is installed, the open items in one line each, and the new asks, A-LOOP's seven questions among them.
 
 
 ## Rulings asked, with Code's recommendation
@@ -133,3 +134,77 @@
 - The compass: the "electorate" tag is covered by Germany's dot; the diamond sits under the US ring; the legend says "UNITED STATES'S".
 - US-8's N4: the count-failure warning shares the count's log prefix. Owed at the next change to `SimulationManager.cs`.
 - §629's words: the picker's "IN THE CABINET" and the compass's "…'S CABINET" for a presidency, carried to D-US.
+
+
+## The report of 2026-10-18: where each ruling is installed, the open items in one line each, and the new asks (§855-§866)
+
+### Where each ruling is installed
+
+| Ruling | Installed | Built |
+|---|---|---|
+| I1-I13 | §856 (the US plan, the instruments' ruling records) | I4's amendment §863; I12 (i) the Docket §864; I13 the lapse §865; I7, I9, I10, I11 §866 |
+| I14 | §857 (`docs/specs/POLAND_PRESIDENTIAL_START_PLAN.md` §5a) | SP-7b, ORDER step 4 |
+| I15 | the errands (`ERRANDS.md`, updated 2026-10-18) | the RNC's date fetched from the Internet Archive (§866, G13 closed); France's FE page fetched (E-47 (b)); E-46 and E-47 (a) need a ruling (below) |
+| I16 | the one-liners below | - |
+| I17 | §855 (16 worktrees removed, the sweep's branches kept) | - |
+| The audit's 37 questions | §857 (every question in `docs/audit/AUDIT_FOR_ARCHITECT.md` marked RULED with its row) | q9/q35 §859; q11 §860; q17 §861; q23/q30/q31 §862; BUG-1 §858 |
+
+### The open items (I16): each ask, the recommendation built meanwhile (PROVISIONAL), and what changes if it is wrong
+
+- **10, US-32.** People-versus-elite as 10 − V19; V9 stays held. *If wrong:* the US parties' populist axis moves, and nothing else.
+- **11, US-6's departure.** Accept it: minor candidates stand nationally. *If wrong:* the minor candidates' votes are restricted to the states the FEC lists, a change confined to the count.
+- **12, E-47's display.** (b): say that the seated table stands in. *If wrong:* one caption on Italy's card.
+- **14, PS-3-F1.** §714 closes it. *If wrong:* it is reopened as a feature row.
+- **15, the Design channel.** Re-send D-CP against v3.5. D-PL night needs your LOOKED AT on boards 28a-28d. *If wrong:* D-CP waits.
+- **16, SP-5.** The German premises are asked when SP-5 is taken up. *If wrong:* they are asked now instead.
+- **17, the blocked rows.**
+  - US-23: a hostile Congress's reconciliation contains the AI ministry's own book.
+  - US-26: asked when it comes.
+  - US-29: the three premises as written.
+  - US-30: the UF VEP as the electorate, with a dated Gallup wave.
+  - *If wrong:* each row's own build, before it lands.
+- **19, US-15.** The both-chambers reading stands (and I4 now extends it to R-US20, §863). *If wrong:* EconomicVote reads the House alone.
+- **22, US-28's pick pool.** Keep it. *If wrong:* the catalog is widened with the 1952-2008 NARA winners.
+- **23, US-33.** (1) the interquartile range; (2) the party's point reverts; (3) per R-US26 (a). *If wrong:* at most a 0.03-point move in the 2028 idle poll, with the count unchanged.
+- **24, US-18 (a)-(d).** As built. *If wrong:* which chamber rule a bill kind meets.
+- **26, US-19 (A)-(G).** As built; (F) is moot. *If wrong:* the role words, and which acts stay with a US president.
+- **R-US21 (ii), the 2022/2023 start.** Asked again: does a start in 2022-2023 seat the 118th's chamber of record or the latest table? Built on the latest table, as `WorldClock.SeatingDeviation` states.
+
+### The errands: two need a ruling, not a browser
+
+- **E-46, the 2022 Senato, and E-47 (a), the 2018 Camera.** No official source assigns the uninominal seats to lists, so the per-list tables cannot be fetched.
+  - **Recommended:** seat each chamber by its parliamentary groups at first constitution: the Senato's of 18 Oct 2022 (saved, `ElectionsData/italy/raw/senato2022/`), and the Camera's XVIII groups of April 2018 (camera.it's leg18 pages, fetchable).
+  - *If wrong:* Italy's two chambers stay BILLED, and the Camera alone is seated.
+- **E-48, AVS's member parties.** There is no primary split, only an uncited secondary one (EV 6, SI 4, PP 1, one independent). europaverde.it refuses this machine (a Sucuri browser check), so this needs your browser, or a ruling that AVS keeps no position.
+
+### New asks from §858-§866 (each built as stated meanwhile)
+
+- **AF-30.** An idle governing player with vacant chairs sees health worsen. Should the cabinet's seats start filled at the average minister? And is the symmetric factor (M1 reverted, §862) right against efficiency on the spending level?
+- **AF-23.** The baseline is read at the close's awareness. Confirm.
+- **AF-9.** A dissolution weighs as a full drawdown. Confirm.
+- **AF-11.** A reshuffle's cost reads PopularityFactor after the removal. Confirm.
+- **US-21b.**
+  - (i) Should an answer act at once rather than at the next day step?
+  - (ii) Is a law's date the day after the tenth counted day?
+  - (iii) Poland's 7-day terms at SP-7b.
+- **US-22b.**
+  - (i) The release's timing: the next funding tick.
+  - (iii) Should the 2013, 2018 and 2019 lapses be added to the fit (n=13 now, 2025 alone)?
+  - (iv) Should furloughs reach unemployment?
+  - The eve's continuing resolution is signed on the day by a player-president and never docketed (where I12 (i) meets I13 (3)).
+  - The hold rule across quarter ends.
+- **The A-LOOP plan (ORDER step 3; `docs/specs/A_LOOP_PLAN.md` §9). No code before your answers.**
+  - Q1: approval net of its three economy terms reaches the vote. **Recommended.**
+  - Q2: transfer Lewis-Beck & Tien's 0.16 as [AUTHORED-DRAFT]. **Recommended.**
+  - Q3: leave approval's reversion out of A-LOOP, as its own family later. **Recommended.**
+  - Q4: convert Brender & Drazen's probability through σ_v (FITTED). **Recommended.**
+  - Q5: debt reaches the vote through the deficits that build it. **Recommended.**
+  - Q6: mobilisation (5b) lands with GATE-18's q2. **Recommended.**
+  - Q7: §5's run-up purchase table (TV BUY kept and charged, POLL as information, OFFICE out until 5b, three hires to q4). **Recommended.**
+
+### Filed (defects, no ask)
+
+- The impact ledger's forks step `AdvanceDay`/`AdvanceTurn` without `AdvanceCountryDayTick`. So a fork's lapse is attributed to every dial family touched (M4), and a fork can differ from the played world with no policy difference (D-45's class).
+- US-22b's L-a: a docketed resolution can be withdrawn on the request day in a narrow path (for US-23).
+- No current film reaches `88n_election_night_takeover` (last filmed in dry825), so AF-23's night heading is unfilmed.
+- The possessive "STATES'S" at `GameController.LawsV35.cs` 839-840 and `GameController.cs` 3884/3914.
