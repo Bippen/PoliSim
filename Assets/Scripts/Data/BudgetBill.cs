@@ -41,6 +41,14 @@ namespace PoliSim.Data
         /// line, so it is NEVER APPLIED to the book; enacted, it funds the government (`Country.AppropriatedThrough`). It rides the save with the pending
         /// budget (format 41). False on every other bill, and in every country but the USA.</summary>
         public bool ContinuingResolution;
+        /// <summary>PS-6 US-21b: a continuing resolution on the player-president's docket (`DocketEntry`); null otherwise. A request's acts are held apart, below.</summary>
+        public DocketEntry Docket;
+        /// <summary>PS-6 US-21b: the request's acts on the player-president's docket, each entry naming its act; null where none is held - and then
+        /// <see cref="ActsLaw"/> and <see cref="ActsFallen"/> are null too. While any is held the bill keeps its slot and nothing of it is applied: the
+        /// acts decided on the vote's day are kept here (law, or fallen and already charged), and the bill completes the day the last held act is decided.</summary>
+        public List<DocketEntry> ActsHeld;
+        public List<int> ActsLaw;
+        public List<int> ActsFallen;
         /// <summary>§755 (Elias's ruling A2; the review's defect 1): the Finance partner's stance step this government bill carries - its holder (null for none),
         /// the points of GDP it moves, the count before it and the government that tabled it - counted only if the chamber adopts the bill (FinancePartner.CreditAdopted).</summary>
         public string FinanceStanceHolder;

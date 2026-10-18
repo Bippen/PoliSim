@@ -20,6 +20,8 @@ namespace PoliSim.Data
         public float FamilyPolicy;
         public float ImmigrationPolicy;
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 
     /// <summary>Crime &amp; Justice tab's dials bundled into one bill - see LaborPolicyBill's own doc comment for the pattern. See ParliamentSystem.GetCrimeJusticeBillDirection for this bill's own sign convention (harsher/stricter dials read negative, funding/reform dials read positive).</summary>
@@ -32,6 +34,8 @@ namespace PoliSim.Data
         public float JudicialFunding;
         public float BorderEnforcement;
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 
     /// <summary>
@@ -49,6 +53,8 @@ namespace PoliSim.Data
         public Dictionary<SectorType, float> ResearchGrantsLevels = new Dictionary<SectorType, float>();
         public Dictionary<SectorType, float> DeregulationLevels = new Dictionary<SectorType, float>();
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 
     /// <summary>
@@ -65,6 +71,8 @@ namespace PoliSim.Data
         public float NewBaseTariffRate;
         public Dictionary<CountryId, float> PartnerTariffOverrides = new Dictionary<CountryId, float>();
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 
     /// <summary>
@@ -99,5 +107,7 @@ namespace PoliSim.Data
         public float WithdrawalPercentOfGdp;
 
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 }

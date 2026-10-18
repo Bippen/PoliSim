@@ -178,40 +178,57 @@ namespace PoliSim.Elections
         /// PS-6 US-6 (R-US2 (a), RULED - F8, §781: "Named on screen from the nomination's date of record, 'the Democratic/Republican nominee' before
         /// it"): the 2024 nominations by date. DEM: the DNC's release of 6 Aug 2024 - Harris and Walz certified as the party's nominees and the
         /// nominations accepted (`ElectionsData/usa/records_by_date.md` §2a, [DNC-NOMINEE]). REP: BILLED - gop.com refuses this machine (G1, G13) and
-        /// NARA's certificates (the plan's stand-in) name the candidates only after the count, so no date is held and this table leaves the Republican
-        /// nominee unnamed on every day (MaxValue), to a REP player as to anyone, while the Democratic nominee is named from 6 Aug 2024. PS-6 US-8: that
-        /// is the naming before the count, though no screen reads this table yet; from the count on, the game's own count names each nominee by NARA's name for the ticket
-        /// (<see cref="NameOfRecord"/>; the contest, the oath's government, the Parliament page's president row) - the asymmetry and that naming put to
-        /// Elias as one question. The withdrawal of 21 July 2024 is not replayed (R-US2 (a)).
+        /// NARA's certificates (the plan's stand-in) name the candidates only after the count, so no date is held (MaxValue). That is the naming before the
+        /// count, though no screen reads this table yet; from the count on, the game's own count names each nominee by NARA's name for the ticket
+        /// (<see cref="NameOfRecord"/>; the contest, the oath's government, the Parliament page's president row). The withdrawal of 21 July 2024 is not
+        /// replayed (R-US2 (a)).
+        /// <para>US-8b (R-US23, RULED - Elias's ruling I7, 2026-10-18: "even-handed. Name neither nominee before the count until both are dated, then name both
+        /// from their conventions' records"): each row's date is its own convention's record (<see cref="TryConventionDate"/>), and NEITHER nominee is named
+        /// before the later of the two (<see cref="TryNamedFrom"/>) - while one date is billed, both are "the ... nominee" on every day before the count, Harris
+        /// included, to a player of either party as to anyone. From the count on the count names both, unchanged.</para>
         /// </summary>
-        private static readonly (string Party, string Ticket, string Word, DateTime NamedFrom)[] UsNominations2024 =
+        private static readonly (string Party, string Ticket, string Word, DateTime Convention)[] UsNominations2024 =
         {
             ("DEM", "D", "Democratic", D(2024, 8, 6)),
-            ("REP", "R", "Republican", DateTime.MaxValue),
+            // The RNC's own press release of 15 July 2024, as gop.com served it (the Internet Archive's capture of 16 July 2024, saved byte for byte from its
+            // raw replay, `ElectionsData/usa/raw/records/`, with its SHA256SUMS line; gop.com refuses this machine). `UsPresidentialFactorCheck` (8) holds the
+            // date to the page. Both nominees are named from the later of the two conventions' dates, the DNC's.
+            ("REP", "R", "Republican", D(2024, 7, 15)),
         };
 
-        /// <summary>PS-6 US-6 (R-US2 (a)): how the 2024 field names a party's nominee on <paramref name="on"/> - the nominee of record by name from the
-        /// nomination's date of record (<see cref="NameOfRecord"/>), "the Democratic nominee" / "the Republican nominee" before it or where the date is
-        /// billed; null for a country or party with no nominee of record. US-8's screens read it; the factor check holds it to the dated pages.</summary>
+        /// <summary>PS-6 US-6 (R-US2 (a)); US-8b (R-US23 as ruled, even-handed): how the 2024 field names a party's nominee on <paramref name="on"/> - the
+        /// nominee of record by name (<see cref="NameOfRecord"/>) from the day BOTH conventions are dated (<see cref="TryNamedFrom"/>), "the Democratic
+        /// nominee" / "the Republican nominee" before it and on every day while either date is billed; null for a country or party with no nominee of record.
+        /// The factor check holds it to the dated pages.</summary>
         public static string NomineeName(CountryId id, string party, DateTime on)
         {
-            if (id != CountryId.USA) { return null; }
+            if (!TryNamedFrom(id, party, out DateTime namedFrom)) { return null; }
             foreach (var n in UsNominations2024)
             {
                 if (n.Party != party) { continue; }
-                if (on.Date < n.NamedFrom) { return "the " + n.Word + " nominee"; }
+                if (on.Date < namedFrom) { return "the " + n.Word + " nominee"; }
                 foreach (var c in Generated.UsPresidentialReturns.Candidates) { if (c.Year == 2024 && c.Ticket == n.Ticket) { return NameOfRecord(id, 2024, c.Candidate); } }
             }
             return null;
         }
 
-        /// <summary>PS-6 US-6: the day the 2024 field names a party's nominee from - MaxValue where the date is billed (the Republican side); false for a
-        /// country or party with no nominee of record.</summary>
+        /// <summary>US-8b (R-US23 as ruled): the day the 2024 field names a party's nominee from - the LATER of the two conventions' dates of record, one day for
+        /// both parties (MaxValue while either is billed); false for a country or party with no nominee of record.</summary>
         public static bool TryNamedFrom(CountryId id, string party, out DateTime namedFrom)
         {
             namedFrom = DateTime.MinValue;
+            if (!TryConventionDate(id, party, out DateTime _)) { return false; }
+            foreach (var n in UsNominations2024) { if (n.Convention > namedFrom) { namedFrom = n.Convention; } }
+            return true;
+        }
+
+        /// <summary>US-8b: a party's own convention's date of record for the 2024 nomination - MaxValue where it is billed (the Republican side, until the RNC's
+        /// page is saved); false for a country or party with no nominee of record. The naming reads <see cref="TryNamedFrom"/>, never this alone.</summary>
+        public static bool TryConventionDate(CountryId id, string party, out DateTime convention)
+        {
+            convention = DateTime.MinValue;
             if (id != CountryId.USA) { return false; }
-            foreach (var n in UsNominations2024) { if (n.Party == party) { namedFrom = n.NamedFrom; return true; } }
+            foreach (var n in UsNominations2024) { if (n.Party == party) { convention = n.Convention; return true; } }
             return false;
         }
 

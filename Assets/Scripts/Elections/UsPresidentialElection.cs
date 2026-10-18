@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using PoliSim.Data;
+using PoliSim.Simulation;
 
 namespace PoliSim.Elections
 {
@@ -211,8 +212,8 @@ namespace PoliSim.Elections
         /// standing nationally); otherwise each roster party's candidate at the party's poll × E1's future factor (<see cref="PresidentialElection.FutureFactor"/>),
         /// unnamed ("Republican Party's candidate (2028)") unless a nominee is given (US-28, below) and with no minor candidate (no field of record holds one). Normalised; each
         /// share in %. The nominees are named by NARA's name for the year's ticket (<see cref="PresidencyOfRecord.NameOfRecord"/>) - DECLARED: the count names
-        /// the two as its certificates do, after the count, while US-6's naming by date (<see cref="PresidencyOfRecord.NomineeName"/>, the Republican date BILLED)
-        /// governs the screens before it - that naming and US-6's asymmetry are asked of Elias as one question (the behaviour kept until he rules). False, with the reason, where a nominee's factor is not fitted (NaN until
+        /// the two as its certificates do, after the count, while US-6's naming by date (<see cref="PresidencyOfRecord.NomineeName"/> - R-US23 as ruled: even-handed, neither named until both conventions
+        /// are dated) governs the screens before it - the count's naming unchanged by that ruling. False, with the reason, where a nominee's factor is not fitted (NaN until
         /// `Tools/us_factor_patch.pl` patches US-6's FIT lines in) or where no candidate has support.
         /// <para>PS-6 US-28: a later field names its nominees from <paramref name="nominees"/> (<see cref="UsTermLimit.NomineesFor"/> - the president within the
         /// Twenty-second Amendment's limit, a term-limited party's Vice President or the player's pick), each still at the future factor, so the shares are the same
@@ -426,14 +427,48 @@ namespace PoliSim.Elections
 
         /// <summary>The day loop's count: on the country's polling day, not yet counted, the count on <paramref name="poll"/> added to the country and returned;
         /// null otherwise, with the reason where a polling day could not be counted. PS-6 US-28: a later field's nominees are the country's own
-        /// (<see cref="UsTermLimit.NomineesFor"/> - read from its contests, the record and the player's pick; none for the field of record).</summary>
+        /// (<see cref="UsTermLimit.NomineesFor"/> - read from its contests, the record and the player's pick; none for the field of record). US-8b (R-US25 as
+        /// ruled): the poll carries the election's noise where a σ is set (<see cref="NoiseSigmaPp"/>), drawn from the day's common source
+        /// (<see cref="SimulationRandom.ElectionNoiseOn"/>), so every fork of the game counts its own election on the live game's noise.</summary>
         public static Contest Hold(Country country, DateTime date, IReadOnlyDictionary<string, double> poll, out string why)
         {
             if (country?.UsPresidentialElections == null) { why = "the country carries no list of contests"; return null; }
             if (!IsPollingDay(country, date)) { why = "not a polling day the game has still to count"; return null; }
-            Contest contest = Count(country.Id, date.Date, poll, UsTermLimit.NomineesFor(country, date.Date), out ElectoralCollege.StateCall[] _, out why);
+            IReadOnlyDictionary<string, double> counted = NoiseSigmaPp > 0.0 && poll != null ? WithNoise(poll, SimulationRandom.ElectionNoiseOn(country.Id, date.Date), NoiseSigmaPp) : poll;
+            Contest contest = Count(country.Id, date.Date, counted, UsTermLimit.NomineesFor(country, date.Date), out ElectoralCollege.StateCall[] _, out why);
             if (contest != null) { country.UsPresidentialElections.Add(contest); }
             return contest;
+        }
+
+        /// <summary>
+        /// US-8b (R-US25 as ruled): the election-day noise on the national vote, σ in percentage points of a share - ZERO in play, DECLARED: no election noise
+        /// is on in play yet (the audit's q2 turns turnout and the declared noise on in play, with its own figure), so the count draws nothing and every count is
+        /// the one US-8 built. Where a σ is set, <see cref="Hold"/> draws it from <see cref="SimulationRandom.ElectionNoiseOn"/> - the live game's and every
+        /// fork's the same numbers for the same polling day (common random numbers) - so a fork elects a different president only because of policy.
+        /// </summary>
+        public static readonly double NoiseSigmaPp = 0.0;
+
+        /// <summary>US-8b: <paramref name="poll"/> with election-day noise of <paramref name="sigmaPp"/> on each party's share (§27's form,
+        /// <see cref="RegionalAggregation.ApplyNoise"/>: a normal draw per share, a negative share floored at zero, re-normalised) - the parties taken in ordinal
+        /// order of their keys, so the draws meet the same parties in every world; a share that is not a positive number is left as it is and draws nothing. The
+        /// noisy shares keep the poll's own total. Pure, given <paramref name="noise"/>.</summary>
+        public static Dictionary<string, double> WithNoise(IReadOnlyDictionary<string, double> poll, System.Random noise, double sigmaPp)
+        {
+            var noisy = new Dictionary<string, double>();
+            var keys = new List<string>();
+            double total = 0.0;
+            foreach (KeyValuePair<string, double> kv in poll)
+            {
+                noisy[kv.Key] = kv.Value;
+                if (!double.IsNaN(kv.Value) && !double.IsInfinity(kv.Value) && kv.Value > 0.0) { keys.Add(kv.Key); total += kv.Value; }
+            }
+            if (keys.Count == 0 || total <= 0.0) { return noisy; }
+            keys.Sort(StringComparer.Ordinal);
+            var shares = new double[keys.Count];
+            for (int i = 0; i < keys.Count; i++) { shares[i] = poll[keys[i]] / total; }
+            double[] drawn = RegionalAggregation.ApplyNoise(shares, noise, sigmaPp);
+            for (int i = 0; i < keys.Count; i++) { noisy[keys[i]] = drawn[i] * total; }
+            return noisy;
         }
 
         /// <summary>

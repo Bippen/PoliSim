@@ -39926,3 +39926,113 @@ So every movement traces back to the funds' principal rule. Nothing moves before
 **Reviewed:** `Reviews/2026-10-18_afpol_q23_q30_q31.md`, two passes: AF-23 SHIP, AF-30 SHIP WITH FIXES (met), AF-31 SHIP. GA-9-1 stays open until `Tools/audit/area9_events.plan` is re-run.
 
 **Bars:** as §859's (one commit).
+
+
+## 863. US-13b - R-US20'S BOTH-CHAMBERS AMENDMENT (I4): UNIFIED OVER BOTH CHAMBERS SITTING ON THE DAY; THE SENATE'S PARTY DIVISION READ INTO THE MIDTERM RECORD; THE VERDICT UNCHANGED (2026-10-18)
+
+**What was owed** (Elias's ruling I4, 2026-10-18, installed §856: "The both-chambers amendment (§849): yes"): R-US20's block read unified as the House alone, while EconomicVote reads both chambers since US-15. Its seat-change lines still said R-US18 was ASKED, though it was ruled (b) at §856 (I1).
+
+**Built** (`wave/us13b` 07a3c845):
+- **The block, amended under I4.**
+  - Unified is now where the president's party holds both the House ([HH-DIV]'s largest party) and the Senate sitting on the election's day.
+  - The Senate's majority is [SEN-DIV]'s printed majority; where the page prints the Congress in periods (the 107th), the line holding the election's day.
+  - An independent counts with the caucus the line names (R-US10 (a)). An equal division belongs to the Vice President's party, which on an election's day is the sitting president's.
+  - The model's world is read by `UsSenate.MajorityOf`.
+  - The seat-change lines name I1 and I4.
+- **The digest.** `84787a53...` -> `6cf56a5d32cb18d312dd15c3a14fc19aa153ec405949dd105067200993768a67`, "AMENDED (I4, §863)", in `UsMidtermCheck.RuleDigests`.
+- **The record.** `Tools/us_midterm_record.pl` reads the Senate's Party Division page, held to `records/SHA256SUMS.txt`, into nine `senate_*` columns of `house_midterms.csv`. It dies on any contradiction.
+- **The instrument.** `UsMidtermCheck` classifies the record and the model over both chambers.
+
+**Measured** (the tool's run; the instrument's on the bars below):
+- The Senate decides the government type in 2002 only: the 107th, DEM from 2001-06-06 to 2002-11-12, Jeffords caucusing.
+- In the printed split, unified midterms go from 12 to 11 and divided from 8 to 9. Presidential years are unchanged.
+- The band [−8.97, +2.26], the model's government (unified: House REP 220, Senate REP 53) and m −0.21 are unchanged. The verdict stays (a) as registered, and the ruling stays RULED (b).
+
+**Declared:** the Senate on the day is the page's line (the 107th by its periods), and mid-Congress changes recorded only in the notes are not read, as with [HH-DIV]'s initial divisions. Independents whose caucus the line does not name (the 83rd, 84th and 118th) are read by the page's printed majority. None of them decides a government type.
+
+**Bars:** `wr863m` wrote the midterm card from the amended block; `n863`'s `UsMidtermCheck` is clean, reading the amended digest with the verdict (a) unchanged; `cheap863c` 119/119; `sim863` 60/60, the trajectory sentinel holding on `af35` (both digests the baseline's: no dump seats a player, so no docket, lapse or pick runs in it); `elec863` with no report line moved against `elec854` (577 lines; OutOfSample2026Diagnostic fails as on every run); `bw863` ALL ASSERTIONS PASS; `slrt863` PASS, 12 scenarios; `drys863` USA 156 measured, 0 failed, 0 overflows; `realus863` 156 real frames, the edge guard exiting 0; `stage863` the play saves re-staged at format 42; `doc863` 20/20.
+
+
+## 864. PS-6 US-21b: THE DOCKET (I12 (i)) - A BILL PRESENTED TO A PLAYER-PRESIDENT IS HELD FOR HIS ANSWER; UNANSWERED AFTER THE TEN DAYS (SUNDAYS EXCEPTED) IT IS LAW (ART. I §7); AN ANSWER STANDS ACROSS A CHANGE OF PRESIDENCY; POLAND'S 21 DAYS DECLARED, NO POLISH PATH YET; THE POCKET VETO OUT OF SCOPE (2026-10-18)
+
+**What was owed** (I12 (i), installed §856): the Docket for both countries on the player-president's hook. Its surface stays US-23's.
+
+**Built** (`wave/us21b` 0c669fe6, the review's fixes dbf9a8e1):
+- **The hold.** `SimulationManager.UsVetoGate` holds a bill presented to a player-president with no answer on the day. A `DocketEntry` (the passage, the presentment day, the answer and `AnsweredOn`) rides the bill in its pending slot.
+- **Each later day step** returns to the gate with no fresh vote:
+  - a recorded answer is acted on as of the day it was answered, whoever is president at the step (the review's M1), a veto going to the override;
+  - unanswered after the period, the bill is law without signature;
+  - where the player no longer holds the presidency, the president in office answers by his own rule.
+- **Every bill site** is docketed: tax and welfare programmes, labor, crime, sector, trade, the fund's drawdown and law. So are the US budget's acts (`BudgetBill.ActsHeld`/`ActsLaw`/`ActsFallen`, the remainder applied once) and a continuing resolution.
+- **The verbs** are `SignDocketBill`, `VetoDocketBill` and `GetDocket`. `PresidentialDocket` keys the period by country: the USA's ten days with Sundays excepted, and Poland's 21 days (Art. 122 ust. 2), DECLARED and unreachable before SP-7b.
+- **The words.** A held bill reads "on the President's desk - law on {date} unless answered" on every surface, and the calendar marks its law day.
+- **No format step** (additive). SaveGameService's note states that an older build drops the docket.
+
+**Declared:**
+- the count, and a law's date as the day after the tenth counted day;
+- an answer acted on at the next day step;
+- the president of the day deciding an unanswered bill;
+- budget acts and resolutions on the docket;
+- Poland's 21 calendar days;
+- a held bill keeping its slot.
+
+**Asked:** (i) an answer at once rather than at the next step; (ii) a law's date; (iii) Poland's 7-day terms at SP-7b.
+
+**Reviewed:** `Reviews/2026-10-18_us21b_docket.md`, two passes: SHIP at dbf9a8e1. P2-L1 to P2-L4 follow with US-23.
+
+**Bars:** The first Unity run of the branches' new diagnostics (`n863`) found three red checks. The causes were a CBO PDF damaged by the patch's text diff driver, two harness gaps in the new diagnostics against AF-9's budget window and the division log's cap, a float literal against a 1e-6 tolerance, and a stale grandfathered ledger row (ceiling 12 -> 11). All are fixed with no game code changed (`Reviews/2026-10-18_s863_s866_integration.md`, the closing section). `n863b` is clean, `UsDocketDiagnostic` among it: the five held on 2025-02-24, the unanswered bill and the budget's two acts law on 2025-03-08, the save mid-docket and its load. `cheap863c` 119/119; `sim863` 60/60, the trajectory sentinel holding on `af35` (both digests the baseline's: no dump seats a player, so no docket, lapse or pick runs in it); `elec863` with no report line moved against `elec854` (577 lines; OutOfSample2026Diagnostic fails as on every run); `bw863` ALL ASSERTIONS PASS; `slrt863` PASS, 12 scenarios; `drys863` USA 156 measured, 0 failed, 0 overflows; `realus863` 156 real frames, the edge guard exiting 0; `stage863` the play saves re-staged at format 42; `doc863` 20/20.
+
+
+## 865. PS-6 US-22b: THE LAPSE (I13) - SPENDING DEFERRED, NOT CANCELLED; CBO 61823'S OUTPUT EFFECT AS QUARTERLY LEVELS (THE LAPSE FAMILY); THE WITHHOLDER'S SENATORS DRAWN AT CLOTURE, FITTED n=13, ON THE RECORD'S 3-DAY SPACING; THE RESOLUTION DECIDED THE DAY BEFORE THE HORIZON; RELEASE ENDS A LAPSE; L2; SAVE FORMAT 42 (2026-10-18)
+
+**What was owed** (I13, installed §856).
+
+**Built** (`wave/us22b` ee617333, rebased onto US-21b, then the review's fixes through c4afcfc9):
+- **(1) The book.** `UsLapse` takes CBO's six-week scenario, which ends 12 Nov 2025, from the letter of 29 Oct 2025 and its page. Both come from the Internet Archive's raw replay of cbo.gov, which refuses this machine, with digests in `raw/lapse/SHA256SUMS.txt`. Each lapsed day:
+  - stops the non-excepted outlays (a share of nominal output) and holds them in `Country.LapseDeferredOutlays`;
+  - pays the stock in full in the first funded day's flows (31 U.S.C. 1341(c));
+  - leaves mandatory spending running.
+- **(1) The output.** Real output carries CBO Table 2's quarterly levels (−28, +13, +4, +1 bn over the 7,500 bn quarter), held over whole calendar quarters, so the game's point-sampled quarters read CBO's figures (the review's H1). The levels are scaled by lapsed days over 42, held at the scenario's size during the lapse, with the rebound from the quarter the lapse ends in. The boundary's year-long anchors read the identity's level (M3).
+- **(2) The withholder's draw.** It is drawn as R-US17 draws, Senate only, at a lapse resolution's cloture. It is FITTED n=13 on the Senate's roll calls on H.R. 5371's cloture motions to proceed, 1 Oct - 9 Nov 2025 (the D+I caucus's yeas, 42/598 = 7.0 %). Lapse resolutions vote on the record's 3-day spacing (M1).
+- **(3) The cadence.**
+  - Where no appropriation for the coming year is law the day before the horizon, a resolution is decided that day, so nothing withheld means no lapse.
+  - A release, or the withholding party taking the presidency, decides an uncontested resolution on the next funding tick (M2, L6).
+  - The request is tabled on its day, and a resolution in the slot is withdrawn (L2).
+  - The government's own resolution decided before a lapse is taken as signed on the day by a player-president, never docketed (the review's N1). This is DECLARED and asked, as where I12 (i) meets I13 (3).
+- **(5) Save format 42.** Its stated reason is conservative under ruling A.
+
+**Measured:** `UsBudgetProcedureDiagnostic` on `n863b`:
+- **The lapse.** The 2025 lapse runs 43 days, 1 Oct to 12 Nov, by the procedure's arithmetic (CRS R48832: 43), not fitted. The government's 13 resolutions while lapsed fall at cloture 53-47 on the 3-day spacing, and the 14 failed resolutions are each charged to the government.
+- **The book.** The deferred stock reaches 52.131, which is 0.182 % of the year's nominal output beside CBO's 0.181 % ($54 bn of $29,755 bn). It is paid in full on 13 Nov.
+- **The output.** The published quarters stand at -0.373 / +0.173 / +0.053 / +0.013 % against the identity, CBO's levels. Their annualized growth is -1.49 / +2.19 points beside CBO's -1.5 / +2.2.
+- **The draw.** The withholder's draw is FITTED n=13: 42/598 = 7.0 %, Wilson 95 % [5.2 %, 9.4 %]. Under play's key (seed 777), cloture carries on 10 Oct and a withheld lapse ends after 10 days.
+
+**Declared:** the readings 1-12, with no. 7 final as above and no. 10 superseded. The CBO-mapping and hold-rule residues (i)-(viii) are in `UsLapse.cs`. The forks run no funding tick, so a lapse is attributed to every dial family the player touched (M4, D-45's class, filed). A docketed resolution can be withdrawn on the request day in a narrow path (pass 3's L-a, filed for US-23).
+
+**Reviewed:** `Reviews/2026-10-18_us22b_lapse.md`, three passes: SHIP at c4afcfc9.
+
+**Bars:** The first Unity run of the branches' new diagnostics (`n863`) found three red checks. The causes were a CBO PDF damaged by the patch's text diff driver, two harness gaps in the new diagnostics against AF-9's budget window and the division log's cap, a float literal against a 1e-6 tolerance, and a stale grandfathered ledger row (ceiling 12 -> 11). All are fixed with no game code changed (`Reviews/2026-10-18_s863_s866_integration.md`, the closing section). `n863b` is clean, `UsBudgetProcedureDiagnostic` among it, with the CBO letter held to its digest again. `cheap863c` 119/119; `sim863` 60/60, the trajectory sentinel holding on `af35` (both digests the baseline's: no dump seats a player, so no docket, lapse or pick runs in it); `elec863` with no report line moved against `elec854` (577 lines; OutOfSample2026Diagnostic fails as on every run); `bw863` ALL ASSERTIONS PASS; `slrt863` PASS, 12 scenarios; `drys863` USA 156 measured, 0 failed, 0 overflows; `realus863` 156 real frames, the edge guard exiting 0; `stage863` the play saves re-staged at format 42; `doc863` 20/20.
+
+
+## 866. PS-6 US-8b AND US-28b (I7, I9, I10, I11): EVEN-HANDED NAMING, THE RNC'S DATE READ FROM ITS OWN PAGE; EVERY FORK DRAWS THE LIVE GAME'S ELECTION NOISE; THE OUT-PARTY'S PICK; A RE-ELECTED PRESIDENT KEEPS THE SITTING VICE PRESIDENT (2026-10-18)
+
+**What was owed** (I7, I9, I10, I11, installed §856).
+
+**Built** (`wave/us8b` 249241b5, 1be10aba, fbcb37ce, 697cf25a; the RNC's date at integration):
+- **I7, R-US23.** `PresidencyOfRecord.UsNominations2024` holds each party's own convention date. `TryNamedFrom` returns the later of the two for both, and `NomineeName` names neither nominee before it.
+  - The RNC's date, 15 July 2024, is read from the RNC's own press release as the Internet Archive captured gop.com on 16 July 2024. It is saved decoded under `raw/records/` with its digest, as [RNC-NOMINEE] in `records_by_date.md` (G13 closed).
+  - Both nominees are named from the DNC's 6 August. So the I7 errand is met without Elias's browser.
+- **I9, R-US25.** `SimulationRandom.ElectionNoiseOn(country, pollingDay)` is keyed by the master seed, the stream's offset, the country and the day. It is never counted or saved, so the live game and every fork draw identical numbers for one election. `UsPresidentialElection.Hold` adds noise only where `NoiseSigmaPp > 0`, which is 0 in play until q2 (DECLARED).
+- **I10, R-US26.** `Nominee.OutParty`: the player's party out of the White House picks from its people (the defeated president among them), with the default unnamed. It shows on the Parliament row. No format step.
+- **I11, R-US27.** `UsTermLimit.KeepsSittingVicePresident`: a ticket headed by the president in office keeps the Vice President in office.
+
+**Declared:** the incumbent's ticket keeps the Vice President whether it wins or loses. The out-party row shows only where there is a choice.
+
+**Filed:** the impact ledger's forks step `AdvanceDay` and `AdvanceTurn` without the controller's `AdvanceCountryDayTick`, so a fork can differ from the played world with no policy difference (D-45's class, beside §865's M4).
+
+**Reviewed:** no money path is touched (the tier needs no review). The changes are held by the diagnostics:
+- `UsPresidentialFactorCheck` (8) holds both conventions' pages;
+- `TermLimitDiagnostic` (l) and (m), and `UsOwnNomineeDiagnostic` (f);
+- `UsPresidentialElectionDiagnostic` (i): the forks' shared draws, and a fork with no policy difference electing the same president.
+
+**Bars:** `wr863f` wrote the factor card with both conventions' pages; `n863`'s `UsPresidentialFactorCheck`, `TermLimitDiagnostic`, `UsOwnNomineeDiagnostic`, `UsPresidentialElectionDiagnostic` and `PresidencyDiagnostic` are clean; `cheap863c` 119/119; `sim863` 60/60, the trajectory sentinel holding on `af35` (both digests the baseline's: no dump seats a player, so no docket, lapse or pick runs in it); `elec863` with no report line moved against `elec854` (577 lines; OutOfSample2026Diagnostic fails as on every run); `bw863` ALL ASSERTIONS PASS; `slrt863` PASS, 12 scenarios; `drys863` USA 156 measured, 0 failed, 0 overflows; `realus863` 156 real frames, the edge guard exiting 0; `stage863` the play saves re-staged at format 42; `doc863` 20/20.

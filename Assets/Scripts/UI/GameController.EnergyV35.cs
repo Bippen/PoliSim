@@ -433,7 +433,7 @@ namespace PoliSim.UI
             SectorPolicyBill pending = _simulationManager.GetPendingSectorBill(PlayerCountryId);
             int drafted = SectorDraftChanges();
             string status = pending != null
-                ? $"An Economic Sectors bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)."
+                ? $"An Economic Sectors bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}."
                 : "No Economic Sectors bill before " + Legislature + " - these dials travel in it, one draft with the Sectors page.";
             DrawLawsBillAction(width, "Introduce sectors bill", "en:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
                 pending != null ? pending.DaysRemaining : 0, drafted, () => _simulationManager.IntroduceSectorBill(PlayerCountryId, BuildSectorBillFromDrafts()), status, Congress.Kind.Sector);

@@ -115,13 +115,15 @@ namespace PoliSim.Simulation
         public const string NoResolutionWords = "THIS COUNTRY VOTES NO CONTINUING RESOLUTION";
 
         /// <summary>
-        /// Ask 2's reading (P), PROVISIONAL: may the player's party withhold <paramref name="pending"/>? Only a continuing resolution before Congress, by a party
-        /// seated and not the president's (the resolution is its own government's). False with <paramref name="why"/>, in a page's words, where not.
+        /// Ask 2's reading (P), PROVISIONAL (it stands, Elias's ruling I13 (2)): may the player's party withhold the continuing resolution? One before Congress
+        /// (<paramref name="pending"/>), or - US-22b (I13 (3)) - one DUE (<see cref="ResolutionDue"/>: the one decided on the day before the horizon is withheld in
+        /// advance, as no day passes between its tabling and its vote), by a party seated and not the president's (the resolution is its own government's). False
+        /// with <paramref name="why"/>, in a page's words, where not.
         /// </summary>
-        public static bool MayWithhold(Country country, BudgetBill pending, out string why)
+        public static bool MayWithhold(Country country, BudgetBill pending, DateTime today, out string why)
         {
             why = null;
-            if (pending == null || !pending.ContinuingResolution) { why = "NO CONTINUING RESOLUTION IS BEFORE CONGRESS"; return false; }
+            if ((pending == null || !pending.ContinuingResolution) && !ResolutionDue(country, pending, today)) { why = "NO CONTINUING RESOLUTION IS BEFORE CONGRESS OR DUE"; return false; }
             if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { why = "NO PARTY OF YOURS IS SEATED"; return false; }
             if (country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == PlayerRole.PrimeMinister) { why = "THE CONTINUING RESOLUTION IS YOUR OWN GOVERNMENT'S"; return false; }
             return true;
@@ -154,17 +156,29 @@ namespace PoliSim.Simulation
             return target > horizon ? target : horizon;
         }
 
+        /// <summary>PS-6 US-22b (I13 (3)): THE DAY BEFORE THE HORIZON - the day a continuing resolution is decided where no appropriation for the coming year is
+        /// law (the horizon is the last funded day, `Country.AppropriatedThrough`).</summary>
+        public static DateTime HorizonEve(DateTime horizon) => horizon.Date.AddDays(-1);
+
+        /// <summary>PS-6 US-22b: whether a continuing resolution is DUE with none before Congress - nothing in the slot (<paramref name="pending"/> null), and
+        /// either funding lapsed (the lapse's cadence) or no appropriation for the coming fiscal year law yet (the horizon the end of the fiscal year in
+        /// progress, so one is decided the day before it). DECLARED: "due" is read from the horizon alone, so it holds from the start of a fiscal year until
+        /// its appropriation for the next is law.</summary>
+        public static bool ResolutionDue(Country country, BudgetBill pending, DateTime today) =>
+            pending == null && country != null && country.AppropriatedThrough != DateTime.MinValue
+            && (country.LapseSince != DateTime.MinValue || country.AppropriatedThrough == FiscalYearEnd(today));
+
         /// <summary>A lapse's days on <paramref name="today"/>: the first day counted (the record's count, F8: 1 Oct to 12 Nov 2025 is 43 days).</summary>
         public static int LapseDays(DateTime since, DateTime today) => (today.Date - since.Date).Days + 1;
 
-        /// <summary>The lapse in a page's words - its day, the day funding lapsed, how it ends, and that its spending stop is not modelled (DECLARED); null where
-        /// funding has not lapsed.</summary>
+        /// <summary>The lapse in a page's words - its day, the day funding lapsed, how it ends, and what it does (US-22b, `UsLapse`); null where funding has not
+        /// lapsed.</summary>
         public static string LapseWords(Country country, DateTime today)
         {
             if (country == null || country.LapseSince == DateTime.MinValue) { return null; }
             return "SHUTDOWN · DAY " + LapseDays(country.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " · FUNDING LAPSED ON "
                 + country.LapseSince.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant()
-                + " · IT ENDS THE DAY AN APPROPRIATION OR A CONTINUING RESOLUTION BECOMES LAW · THE STOP OF NON-EXCEPTED SPENDING IS NOT YET MODELLED";
+                + " · IT ENDS THE DAY AN APPROPRIATION OR A CONTINUING RESOLUTION BECOMES LAW · " + UsLapse.StopWords;
         }
 
         /// <summary>The funding horizon in a page's words, or null where none is held.</summary>
@@ -174,9 +188,9 @@ namespace PoliSim.Simulation
         /// <summary>The procedure in a slip's lines, after each act's own: what follows a fallen appropriation, what is not modelled.</summary>
         public static IEnumerable<string> ProcedureWords()
         {
-            yield return "IF THE APPROPRIATION FAILS, A CONTINUING RESOLUTION AT CLOTURE CARRIES THE STANDING FIGURES; IF THAT FAILS TOO, FUNDING LAPSES ON 1 OCTOBER AND THE GOVERNMENT SHUTS DOWN UNTIL ONE BECOMES LAW";
+            yield return "IF NO APPROPRIATION IS LAW BY 29 SEPTEMBER, A CONTINUING RESOLUTION AT CLOTURE CARRIES THE STANDING FIGURES THAT DAY; IF IT FAILS, FUNDING LAPSES ON 1 OCTOBER AND THE GOVERNMENT SHUTS DOWN UNTIL ONE BECOMES LAW";
             yield return "THE ACTS STAND OR FALL APART - A FAILED APPROPRIATION TAKES NO OTHER ACT DOWN";
-            yield return "THE BYRD RULE IS OTHERWISE NOT MODELLED · THE STOP OF NON-EXCEPTED SPENDING IN A SHUTDOWN IS NOT YET MODELLED";
+            yield return "IN A SHUTDOWN " + UsLapse.StopWords + " · THE BYRD RULE IS OTHERWISE NOT MODELLED";
         }
 
         /// <summary>An act's procedure in a slip's words.</summary>

@@ -19,6 +19,8 @@ namespace PoliSim.Data
         public TaxType Type;
         public bool IsAdd;
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 
     /// <summary>WelfareProgramType equivalent of TaxProgramBill - see that class's own doc comment, same pattern throughout (GenerosityLevel in place of Rate).</summary>
@@ -27,5 +29,7 @@ namespace PoliSim.Data
         public WelfareProgramType Type;
         public bool IsAdd;
         public int DaysRemaining;
+        /// <summary>PS-6 US-21b: on the player-president's docket - voted, presented, awaiting his answer (`DocketEntry`); null otherwise, and in every country but the USA.</summary>
+        public DocketEntry Docket;
     }
 }

@@ -27,17 +27,18 @@ namespace PoliSim.Elections
     /// is left exactly as US-6 and US-8 built it): the president's party fields the president where the amendment allows (DECLARED, Poland's built rule - the
     /// incumbent within the limit stands); a TERM-LIMITED president's party fields the Vice President by default - the record's by date while the record's
     /// president holds the office (`ElectionsData/usa/records_by_date.md` §5), the game ticket's running mate once the game's president does (below) - and the
-    /// player's party fields the player's pick where one stands (<see cref="Pick"/>); an AI party always takes the default. A party out of the White House
-    /// fields its candidate unnamed, as US-8 built it - ASKED of Elias (the US-28 review's M1): POLITICAL_SYSTEM_SPEC.md §6's "A defeated president may run
-    /// again four years later" is not built by it (a Harris elected in 2024 and beaten in 2028 is eligible in 2032 and cannot be fielded); the options put are
-    /// the out-party's pick from its people, its last eligible nominee, or §6 amended. Every nominee stands at E1's later factor
+    /// player's party fields the player's pick where one stands (<see cref="Pick"/>); an AI party always takes the default. A party OUT OF THE WHITE HOUSE fields
+    /// its candidate unnamed by default - and, US-28b (R-US26 (a), RULED - Elias's ruling I10, 2026-10-18: "the player's out-party may pick from its people, the
+    /// defeated president among them, the default unnamed"; POLITICAL_SYSTEM_SPEC.md §6's "A defeated president may run again four years later"), the player's
+    /// out-party may pick from its people who may be elected (<see cref="EligibleFor"/>, the Twenty-second Amendment's count), a defeated president among them:
+    /// a Harris elected in 2024 and beaten in 2028 stands on DEM's 2028 ticket, so she is one of its people in 2032, eligible after one election. Only a party
+    /// whose president may be elected again has no pick: the president stands. Every nominee stands at E1's later factor
     /// (<see cref="PresidentialElection.FutureFactor"/>): the pick changes who stands, never the shares (US-9: no US campaign moves the national vote either).</description></item>
-    /// <item><description><b>The running mate.</b> The record's tickets are NARA's (<see cref="RunningMatesOfRecord"/>). DECLARED, not a consequence of R-US2 (a)
-    /// (which names the presidential nominee only), and ASKED with the rest of this reading: a 2024 ticket the game elects carries the record's running mate
-    /// (Vance, Walz) - the alternative, the plan's "the party's own" read literally, would make REP's 2028 default "Republican Party's candidate for Vice President
-    /// (2024)". A ticket the game makes (2028 on) carries the party's own running mate, unnamed and dated (<see cref="UnnamedRunningMate"/>) - the plan's premise,
-    /// DECLARED until a ticket is modelled - a re-elected president's ticket too, so the sitting Vice President drops to an alternative (the other way, keeping
-    /// the sitting Vice President on a re-elected ticket, is asked beside it).</description></item>
+    /// <item><description><b>The running mate.</b> The record's tickets are NARA's (<see cref="RunningMatesOfRecord"/>). R-US27, RULED (Elias's ruling I11,
+    /// 2026-10-18): (i) as declared - a 2024 ticket the game elects carries the record's running mate (Vance, Walz); (ii) a re-elected president keeps the sitting
+    /// Vice President, as the record does (US-8b, <see cref="RunningMateOf"/>): the ticket a sitting president heads carries the Vice President in office on its
+    /// polling day where of the party. Any other ticket the game makes (2028 on) carries the party's own running mate, unnamed and dated
+    /// (<see cref="UnnamedRunningMate"/>) - the plan's premise, DECLARED until a ticket is modelled.</description></item>
     /// <item><description><b>The party's people</b> (<see cref="PartyPeople"/>, DECLARED - the plan leaves the pool open): the Vice President in office and the
     /// president in office where of the party, every person on the party's tickets of the game's contests (2024's the record's tickets) and the party's own
     /// candidate, unnamed, for the year (R-US6 (b)'s "an unnamed nominee at factor 1.0", which US-33's own nominee will stand beside). The record's earlier
@@ -99,6 +100,9 @@ namespace PoliSim.Elections
             public bool Picked;
             /// <summary>The default is the Vice President (else the party's candidate unnamed, or the president).</summary>
             public bool ViceDefault;
+            /// <summary>US-28b (R-US26 (a) as ruled): the party does not hold the presidency on the polling day - its default the party's candidate, unnamed, and
+            /// the player's pick from its people where the party is the player's.</summary>
+            public bool OutParty;
             /// <summary>The barred president as the game shows him, and the elections that bar him ("elected 2016 and 2024"); null unless term-limited.</summary>
             public string Barred;
             public string BarredBecause;
@@ -167,15 +171,37 @@ namespace PoliSim.Elections
             return PersonOf(contest, new UsPresidentialElection.Tally { Candidate = contest.Winner, Party = contest.WinnerParty });
         }
 
-        /// <summary>The running mate on a contest's ticket for a party: the record's where the field is the record's, else the party's own, unnamed. PS-6 US-33: a
-        /// ticket the player's own nominee headed is a ticket the game made, so it carries the party's own running mate, unnamed and dated, even in a field of record
-        /// (DECLARED - the record's running mate was the nominee of record's choice; asked of Elias with US-28's running-mate reading).</summary>
-        public static string RunningMateOf(UsPresidentialElection.Contest contest, string party)
+        /// <summary>The running mate on a contest's ticket for a party: the record's where the field is the record's, else - US-8b (R-US27 (ii) as ruled: "a
+        /// re-elected president keeps the sitting Vice President, as the record does") - the Vice President in office on the polling day where the ticket is the
+        /// sitting president's (<see cref="KeepsSittingVicePresident"/>), else the party's own, unnamed. PS-6 US-33: a ticket the player's own nominee headed is a
+        /// ticket the game made, so it carries the party's own running mate, unnamed and dated, even in a field of record (DECLARED - the record's running mate was
+        /// the nominee of record's choice).</summary>
+        public static string RunningMateOf(Country country, UsPresidentialElection.Contest contest, string party) => RunningMateOf(country, contest, party, out bool _);
+
+        private static string RunningMateOf(Country country, UsPresidentialElection.Contest contest, string party, out bool kept)
         {
+            kept = false;
             if (contest == null || party == null) { return null; }
             if (FieldOfRecord(contest.PollingDay) && !OwnTicket(contest, party)) { return RunningMateOfRecord(contest.PollingDay.Year, party); }
+            if (KeepsSittingVicePresident(country, contest, party, out string sitting)) { kept = true; return sitting; }
             foreach (PoliticalParty p in PartySystems.For(CountryId.USA)) { if (p.Abbrev == party) { return UnnamedRunningMate(p, contest.PollingDay.Year); } }
             return null;
+        }
+
+        /// <summary>
+        /// US-8b (R-US27 (ii) as ruled): whether <paramref name="party"/>'s ticket in <paramref name="contest"/> is headed by the president in office on its polling
+        /// day (<see cref="TryPresidentOn"/>, the person by <see cref="PersonOf"/>) - a president seeking re-election - and the Vice President in office that day
+        /// (<see cref="TryVicePresidentOn"/>) is of the party: then <paramref name="sitting"/> is that Vice President, kept on the ticket. DECLARED: the ticket is
+        /// the sitting president's whether it wins or loses (only a win puts its running mate in office). The read goes back one contest at a time - the Vice
+        /// President on a polling day is the previous oath's - and ends at the record's.
+        /// </summary>
+        private static bool KeepsSittingVicePresident(Country country, UsPresidentialElection.Contest contest, string party, out string sitting)
+        {
+            sitting = null;
+            if (country == null || contest?.Electors == null) { return false; }
+            UsPresidentialElection.Tally head = contest.Electors.Find(t => t.Party == party);
+            if (head == null || !TryPresidentOn(country, contest.PollingDay, out string president, out string presidentParty, out string _) || presidentParty != party || PersonOf(contest, head) != president) { return false; }
+            return TryVicePresidentOn(country, contest.PollingDay, out sitting, out string viceParty, out string _) && viceParty == party && sitting != null;
         }
 
         /// <summary>
@@ -274,11 +300,12 @@ namespace PoliSim.Elections
             if (UsPresidentialElection.TryInOffice(country, date, out UsPresidentialElection.Contest sworn))
             {
                 party = sworn.WinnerParty;
-                person = RunningMateOf(sworn, party);
-                int year = sworn.PollingDay.Year;
+                person = RunningMateOf(country, sworn, party, out bool kept);
+                string year = sworn.PollingDay.Year.ToString(CultureInfo.InvariantCulture);
                 basis = FieldOfRecord(sworn.PollingDay) && !OwnTicket(sworn, party)
-                    ? "the running mate on the " + year.ToString(CultureInfo.InvariantCulture) + " ticket of record, which the game elected (NARA's results page; DECLARED, asked of Elias)"
-                    : "the running mate on the game's " + year.ToString(CultureInfo.InvariantCulture) + " ticket - the party's own, unnamed until a ticket is modelled";
+                    ? "the running mate on the " + year + " ticket of record, which the game elected (NARA's results page)"
+                    : kept ? "the sitting Vice President, kept on the re-elected president's " + year + " ticket, as the record does"
+                    : "the running mate on the game's " + year + " ticket - the party's own, unnamed until a ticket is modelled";
                 return person != null;
             }
             if (WorldClock.RecordSeatsExecutive(country, date)) { return TryVicePresidentOfRecordOn(country.Id, date, out person, out party, out basis); }
@@ -465,7 +492,10 @@ namespace PoliSim.Elections
             bool president = TryPresidentOn(country, pollingDay, out string incumbent, out string incumbentParty, out string shownAs);
             if (!president || incumbentParty != party.Abbrev)
             {
-                return new Nominee { Party = party.Abbrev, Person = unnamed, Default = unnamed, Basis = "the party's candidate, unnamed - the party does not hold the presidency" };
+                // US-28b (R-US26 (a) as ruled): the out-party's default unnamed, the player's pick from its people
+                var outParty = new Nominee { Party = party.Abbrev, Person = unnamed, Default = unnamed, OutParty = true, Basis = "the party's candidate, unnamed - the party does not hold the presidency" };
+                ApplyPick(country, pollingDay, outParty);
+                return outParty;
             }
             List<Election> won = ElectionsOf(country, incumbent, pollingDay);
             if (won.Count < MostElections)
@@ -489,17 +519,22 @@ namespace PoliSim.Elections
                 nominee.Basis = "the party's own candidate, unnamed - no Vice President of the party may be elected";
             }
             nominee.Person = nominee.Default;
-            if (party.Abbrev == country.PlayerPartyAbbrev && TryPickOf(country, pollingDay, party.Abbrev, out string picked) && picked != nominee.Default)
-            {
-                if (EligibleFor(country, party.Abbrev, pollingDay).Contains(picked))
-                {
-                    nominee.Person = picked;
-                    nominee.Picked = true;
-                    nominee.Basis = "the player's pick, in place of the default (" + nominee.Default + ")";
-                }
-                else { nominee.Basis += "; the player's pick (" + picked + ") is not among the party's people who may be elected, so the default stands"; }
-            }
+            ApplyPick(country, pollingDay, nominee);
             return nominee;
+        }
+
+        /// <summary>The player's pick in place of <paramref name="nominee"/>'s default, for the player's party only, where one is kept and the person is among the party's
+        /// people who may be elected (<see cref="EligibleFor"/>); else the default stands, and a kept pick that no longer may stand is named in the basis.</summary>
+        private static void ApplyPick(Country country, DateTime pollingDay, Nominee nominee)
+        {
+            if (nominee.Party != country.PlayerPartyAbbrev || !TryPickOf(country, pollingDay, nominee.Party, out string picked) || picked == nominee.Default) { return; }
+            if (EligibleFor(country, nominee.Party, pollingDay).Contains(picked))
+            {
+                nominee.Person = picked;
+                nominee.Picked = true;
+                nominee.Basis = "the player's pick, in place of the default (" + nominee.Default + ")";
+            }
+            else { nominee.Basis += "; the player's pick (" + picked + ") is not among the party's people who may be elected, so the default stands"; }
         }
 
         /// <summary>
@@ -524,23 +559,25 @@ namespace PoliSim.Elections
                 {
                     if (c.PollingDay.Date >= pollingDay.Date) { continue; }
                     foreach (UsPresidentialElection.Tally t in c.Electors) { if (t.Party == party) { Add(PersonOf(c, t)); } }
-                    if (c.Electors.Exists(t => t.Party == party)) { Add(RunningMateOf(c, party)); }
+                    if (c.Electors.Exists(t => t.Party == party)) { Add(RunningMateOf(country, c, party)); }
                 }
             }
             Add(UnnamedNominee(p.Value, pollingDay.Year));
             return people;
         }
 
-        /// <summary>The pick's choices for a term-limited party on <paramref name="pollingDay"/>: the party's people who may be elected, the default first; empty
-        /// where the party is not term-limited that day.</summary>
+        /// <summary>The pick's choices for a party on <paramref name="pollingDay"/>: the party's people who may be elected, the default first - for a term-limited
+        /// party (its default the Vice President where eligible), and since US-28b (R-US26 (a) as ruled) for a party out of the White House (its default the
+        /// party's candidate, unnamed); empty where the party's president may be elected again (he stands), and for the field of record.</summary>
         public static List<string> EligibleFor(Country country, string party, DateTime pollingDay)
         {
             var choices = new List<string>();
             if (country == null || !UsPresidentialElection.ElectsIn(country.Id) || FieldOfRecord(pollingDay)) { return choices; }
-            if (!TryPresidentOn(country, pollingDay, out string president, out string presidentParty, out string _) || presidentParty != party || Eligible(country, president, pollingDay)) { return choices; }
+            bool holds = TryPresidentOn(country, pollingDay, out string president, out string presidentParty, out string _) && presidentParty == party;
+            if (holds && Eligible(country, president, pollingDay)) { return choices; }
             PoliticalParty? p = PartyOf(country.Id, party);
             if (!p.HasValue) { return choices; }
-            string fallback = TryVicePresidentOn(country, pollingDay, out string vice, out string viceParty, out string _) && viceParty == party && Eligible(country, vice, pollingDay)
+            string fallback = holds && TryVicePresidentOn(country, pollingDay, out string vice, out string viceParty, out string _) && viceParty == party && Eligible(country, vice, pollingDay)
                 ? vice : UnnamedNominee(p.Value, pollingDay.Year);
             choices.Add(fallback);
             foreach (string person in PartyPeople(country, party, pollingDay)) { if (!choices.Contains(person) && Eligible(country, person, pollingDay)) { choices.Add(person); } }
@@ -561,7 +598,7 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// The player picks the nominee of the player's party for <paramref name="pollingDay"/> (R-US6 (b)): only the player's party, only while it is term-limited
-        /// that day, only one of its people who may be elected (<see cref="EligibleFor"/>), only for a presidential polling day (`WorldClock.TryNextPollingDay`) and
+        /// that day or (US-28b, R-US26 (a) as ruled) out of the White House, only one of its people who may be elected (<see cref="EligibleFor"/>), only for a presidential polling day (`WorldClock.TryNextPollingDay`) and
         /// only before it is counted. Picking the default keeps no pick. False,
         /// with the reason, where the pick is refused; nothing is written then.
         /// </summary>
@@ -575,7 +612,7 @@ namespace PoliSim.Elections
             Nominee nominee = NomineeOf(country, pollingDay, party);
             if (nominee == null) { refused = "the field of that day is the record's"; return false; }
             if (nominee.Own) { refused = "the player's own nominee stands that day - " + nominee.Person; return false; }   // PS-6 US-33: chosen in the creation flow, before the game
-            if (!nominee.TermLimited) { refused = "the party is not term-limited that day - " + nominee.Basis; return false; }
+            if (!nominee.TermLimited && !nominee.OutParty) { refused = "the party's president may be elected again that day, so the president stands - " + nominee.Basis; return false; }
             List<string> choices = EligibleFor(country, party, pollingDay);
             if (!choices.Contains(person)) { refused = (person ?? "no one") + " is not among the party's people who may be elected (" + string.Join("; ", choices) + ")"; return false; }
             if (country.UsNomineePicks == null) { country.UsNomineePicks = new List<NomineePick>(); }
@@ -584,13 +621,15 @@ namespace PoliSim.Elections
             return true;
         }
 
-        /// <summary>The count's clause for a term-limited party - who cannot be elected again and who stands instead; null where no party is term-limited.</summary>
+        /// <summary>The count's clause for a term-limited party - who cannot be elected again and who stands instead - and (US-28b) for a party out of the White
+        /// House that fields the player's pick; null where neither stands.</summary>
         public static string ClauseOf(IReadOnlyList<Nominee> nominees)
         {
             if (nominees == null) { return null; }
             var parts = new List<string>();
             foreach (Nominee n in nominees)
             {
+                if (n.OutParty && n.Picked) { parts.Add(string.Format(CultureInfo.InvariantCulture, "{0}, out of the White House, fields {1} - {2}", n.Party, n.Person, n.Basis)); continue; }
                 if (!n.TermLimited) { continue; }
                 parts.Add(string.Format(CultureInfo.InvariantCulture, "{0}, {1}, cannot be elected again (the Twenty-second Amendment): {2} fields {3} - {4}",
                     n.Barred, n.BarredBecause, n.Party, n.Person, n.Basis));

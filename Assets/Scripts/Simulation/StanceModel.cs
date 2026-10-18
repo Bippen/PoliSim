@@ -71,6 +71,10 @@ namespace PoliSim.Simulation
         /// unasked, as an empty concern always has. Set only by the budget's concern builder from `Country.ContinuingResolutionWithheldBy` (the player's verb);
         /// null on every other concern, so nothing else reads differently.</summary>
         public string WithheldBy;
+        /// <summary>PS-6 US-22b (Elias's ruling I13 (2)): the withholding party's own senators are drawn at this continuing resolution's cloture vote - set only
+        /// by `SimulationManager.ResolveContinuingResolution` while funding is lapsed; no stance reads it, only the gate (`Congress.Divide`). False everywhere
+        /// else, so nothing else is drawn.</summary>
+        public bool DrawsWithholders;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 

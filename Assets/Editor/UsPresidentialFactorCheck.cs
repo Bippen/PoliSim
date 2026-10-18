@@ -32,8 +32,8 @@ namespace PoliSim.EditorTools
     /// `Tools/us_factor_patch.pl` to patch in from the log. The field, at the stored factors, reproduces the FEC's national shares on that world - BY
     /// CONSTRUCTION, which the card says in words: the acceptance rests on the states (US-4) and on the out-of-sample case (US-5's 2020 from 2016).
     /// A later field holds no candidate of record (E1's factor 1.0).</description></item>
-    /// <item><description><b>The naming</b> (R-US2 (a)): the Democratic nominee by name from the DNC's date of record - its saved page's bytes held to
-    /// their SHA-256 and to the date words - "the Democratic nominee" before; the Republican date BILLED, "the Republican nominee".</description></item>
+    /// <item><description><b>The naming</b> (R-US2 (a)): each convention's date of record held to its saved page's bytes (SHA-256)
+    /// and date words - the DNC's; the RNC's BILLED - and, R-US23 as ruled (even-handed), neither nominee named before both are dated, then both by NARA's names.</description></item>
     /// </list>
     /// Pinned in the cheap bar and the documents bar through the US model card's US-6 block (`docs/reference/US_ELECTIONS.md`, *The readings
     /// (US-6)*), written by <see cref="WriteReadings"/>; a block that no longer says what this measures fails here. Nothing here counts a vote: the count is
@@ -50,6 +50,12 @@ namespace PoliSim.EditorTools
         /// <summary>The DNC's dated page the Democratic naming is held to, and the words that date it (records_by_date.md §2a, [DNC-NOMINEE]).</summary>
         private const string NomineePage = "ElectionsData/usa/raw/records/democrats_20240806_harris_walz_certified_nominees.html";
         private const string NomineeWords = "officially accepted the nominations today";
+
+        /// <summary>US-8b (R-US23 as ruled): the RNC's dated page the Republican convention's date is held to, and its words - null while the date is BILLED
+        /// (`PresidencyOfRecord`'s table, the one place the date goes). ⚠ For the integrator: once Elias's saved page is in `ElectionsData/usa/raw/records/` with
+        /// its SHA256SUMS line, name it here with the words that record the nomination, beside the date in the table.</summary>
+        private const string RncPage = "ElectionsData/usa/raw/records/wayback_gop_rnc_nomination_20240716113343.html";
+        private const string RncWords = "nominated Donald J. Trump for President";
 
         public static void Run()
         {
@@ -314,21 +320,49 @@ namespace PoliSim.EditorTools
             Check(PresidencyOfRecord.CandidatesOf(CountryId.USA, 2029).Count == 0 && PresidentialElection.FutureFactor == 1.0,
                 F("a later field holds no candidate of record - its candidates start at factor {0:0.0} (E1, PresidentialElection.FutureFactor)", PresidentialElection.FutureFactor));
 
-            // ---- (8) the naming (R-US2 (a)): the DNC's date of record, held to its saved page; the Republican date billed
-            bool dem = PresidencyOfRecord.TryNamedFrom(CountryId.USA, "DEM", out DateTime demFrom);
-            bool rep = PresidencyOfRecord.TryNamedFrom(CountryId.USA, "REP", out DateTime repFrom);
+            // ---- (8) the naming (R-US2 (a); US-8b, R-US23 as ruled - even-handed): each convention's date held to its saved page; neither nominee named before both are dated
+            bool dem = PresidencyOfRecord.TryConventionDate(CountryId.USA, "DEM", out DateTime demFrom);
+            bool rep = PresidencyOfRecord.TryConventionDate(CountryId.USA, "REP", out DateTime repFrom);
             string page = ReadPage(NomineePage, out string pageDigest, out bool pageHashed);
             string dateWords = dem ? demFrom.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture) : "-";
             Check(dem && pageHashed && page.Contains(dateWords) && page.Contains(NomineeWords),
-                F("the Democratic nomination's date of record {0:yyyy-MM-dd}: its saved page ({1}) its SHA-256 in SHA256SUMS.txt, holding \"{2}\" and \"{3}\"", demFrom, Path.GetFileName(NomineePage), dateWords, NomineeWords));
-            string demBefore = PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", demFrom.AddDays(-1)), demOn = PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", demFrom);
-            string repOnVote = PresidencyOfRecord.NomineeName(CountryId.USA, "REP", vote);
+                F("the Democratic convention's date of record {0:yyyy-MM-dd}: its saved page ({1}) its SHA-256 in SHA256SUMS.txt, holding \"{2}\" and \"{3}\"", demFrom, Path.GetFileName(NomineePage), dateWords, NomineeWords));
+            bool repBilled = rep && repFrom == DateTime.MaxValue;
+            string rncDigest = string.Empty;
+            if (repBilled)
+            {
+                Check(RncPage == null, "the Republican convention's date BILLED (gop.com refuses this machine, records_by_date.md G13; the page of the roll call of 15 July 2024 is Elias's browser errand) - no page is named for it");
+            }
+            else
+            {
+                string rncWords = rep ? repFrom.ToString("MMM d, yyyy", CultureInfo.InvariantCulture) : "-";   // the RNC's page dates itself in the short month ("Jul 15, 2024")
+                bool rncHashed = false;
+                string rnc = RncPage != null ? ReadPage(RncPage, out rncDigest, out rncHashed) : string.Empty;
+                Check(rep && RncPage != null && rncHashed && rnc.Contains(rncWords) && RncWords != null && rnc.Contains(RncWords),
+                    F("the Republican convention's date of record {0:yyyy-MM-dd}: its saved page ({1}) its SHA-256 in SHA256SUMS.txt, holding \"{2}\" and \"{3}\"", repFrom, RncPage ?? "NONE NAMED", rncWords, RncWords ?? "-"));
+            }
+            DateTime later = demFrom > repFrom ? demFrom : repFrom;
+            bool namedDem = PresidencyOfRecord.TryNamedFrom(CountryId.USA, "DEM", out DateTime fromDem), namedRep = PresidencyOfRecord.TryNamedFrom(CountryId.USA, "REP", out DateTime fromRep);
+            Check(dem && rep && namedDem && namedRep && fromDem == later && fromRep == later,
+                F("even-handed: both nominees are named from one day, the later convention's - {0} for each", later == DateTime.MaxValue ? "never, while the Republican date is billed" : later.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)));
             string harris = PresidencyOfRecord.NameOfRecord(CountryId.USA, vote.Year, nomineeD ?? string.Empty);
-            Check(demBefore == "the Democratic nominee" && demOn == harris && harris == UsPresidentialReturns.Years.Where(y => y.Year == vote.Year).Select(y => y.NomineeD).FirstOrDefault(),
-                F("named from that day: \"{0}\" on {1:yyyy-MM-dd}, \"{2}\" from {3:yyyy-MM-dd} (NARA's name)", demBefore, demFrom.AddDays(-1), demOn, demFrom));
-            string repAfter = PresidencyOfRecord.NomineeName(CountryId.USA, "REP", vote.AddYears(1));
-            Check(rep && repFrom == DateTime.MaxValue && repOnVote == "the Republican nominee" && repAfter == repOnVote,
-                F("the Republican nomination's date BILLED (gop.com refuses this machine, records_by_date.md G13): the naming by date gives \"{0}\" on the day of the vote and on every day after it (the naming table before the count - no screen reads it yet; from the count on the count names the nominees by NARA's names - US-8, asked with the asymmetry)", repOnVote));
+            string trump = PresidencyOfRecord.NameOfRecord(CountryId.USA, vote.Year, nomineeR ?? string.Empty);
+            string demOnConvention = PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", demFrom);
+            string demOnVote = PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", vote), repOnVote = PresidencyOfRecord.NomineeName(CountryId.USA, "REP", vote);
+            string demAfter = PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", vote.AddYears(1)), repAfter = PresidencyOfRecord.NomineeName(CountryId.USA, "REP", vote.AddYears(1));
+            if (later == DateTime.MaxValue)
+            {
+                Check(demOnConvention == "the Democratic nominee" && demOnVote == demOnConvention && demAfter == demOnConvention && repOnVote == "the Republican nominee" && repAfter == repOnVote,
+                    F("neither named before the count: \"{0}\" from the DNC's own date {1:yyyy-MM-dd} and on the day of the vote, \"{2}\" on the day of the vote - and on every day after (from the count on the count names both - US-8)", demOnVote, demFrom, repOnVote));
+            }
+            else
+            {
+                DateTime dayBefore = later.AddDays(-1);
+                Check(PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", dayBefore) == "the Democratic nominee" && PresidencyOfRecord.NomineeName(CountryId.USA, "REP", dayBefore) == "the Republican nominee"
+                      && PresidencyOfRecord.NomineeName(CountryId.USA, "DEM", later) == harris && PresidencyOfRecord.NomineeName(CountryId.USA, "REP", later) == trump
+                      && harris == UsPresidentialReturns.Years.Where(y => y.Year == vote.Year).Select(y => y.NomineeD).FirstOrDefault() && trump == UsPresidentialReturns.Years.Where(y => y.Year == vote.Year).Select(y => y.NomineeR).FirstOrDefault(),
+                    F("both named from {0:yyyy-MM-dd} by NARA's names (\"{1}\", \"{2}\"), neither on {3:yyyy-MM-dd}", later, harris, trump, dayBefore));
+            }
 
             // ---- the card's block
             double shiftDem = world.Shift != null && world.Shift.TryGetValue("DEM", out double sd) ? sd : double.NaN;
@@ -369,15 +403,17 @@ namespace PoliSim.EditorTools
             card.Add("|---|---|---:|---:|---:|---:|");
             card.AddRange(fieldRows);
             card.Add("");
-            card.Add("### The field of record and its naming (R-US2, ruled)");
+            card.Add("### The field of record and its naming (R-US2, ruled; R-US23, ruled even-handed)");
             card.Add("");
-            card.Add(F("The nominees are named from the nomination's date of record and \"the Democratic/Republican nominee\" before it; the withdrawal is not replayed. The Democratic nominee from {0:d MMM yyyy} - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). The Republican date is BILLED - gop.com refuses this machine (G13), and NARA's certificates, the plan's stand-in, name the candidates only after the count - so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names him \"{1}\" on every day before the count, to a REP player as to anyone; from the count on, the game's own count (US-8) names each nominee by NARA's name for the ticket (the contest, the oath's government, the Parliament page's president row). The asymmetry and that naming are put to Elias as one question.",
-                demFrom, repOnVote));
+            card.Add(F("The nominees are named from their conventions' dates of record, and neither before both are dated (R-US23, ruled even-handed): \"the Democratic/Republican nominee\" until then; the withdrawal is not replayed. The Democratic convention's date is {0:d MMM yyyy} - the DNC's release certifying the nominees (`ElectionsData/usa/records_by_date.md` §2a, its page held to its SHA-256 and its date). {1} From the count on, the game's own count (US-8) names each nominee by NARA's name for the ticket (the contest, the oath's government, the Parliament page's president row).",
+                demFrom, later == DateTime.MaxValue
+                    ? F("The Republican convention's date is BILLED - gop.com refuses this machine (G13); Elias saves the RNC's page for the roll call of 15 July 2024 by browser - so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names \"{0}\" and \"{1}\" on every day before the count, to a player of either party as to anyone.", demOnVote, repOnVote)
+                    : F("The Republican convention's date is {0:d MMM yyyy} (its saved page held to its SHA-256 and its date), so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names {1} and {2} from {3:d MMM yyyy}.", repFrom, harris, trump, later)));
             card.Add("");
             card.Add("**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are \"the minor candidates standing only where the FEC shows them on the ballot\"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). US-8's count reads the states with every minor candidate pooled per state (*The count - US-8*), so a per-state table would move no elector - it stays the ask.");
 
             // the stamp: the catalog's digests, the positions, the spreads, the weight, the stored factors and the dated page
-            var stamp = new StringBuilder(UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.HouseSourceDigest + UsPresidentialReturns.YearSourceDigest + pageDigest);
+            var stamp = new StringBuilder(UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.HouseSourceDigest + UsPresidentialReturns.YearSourceDigest + pageDigest + rncDigest);
             foreach (CountryId id in PartySystems.UsSpreadFrom) { PartySystems.TryElectorate(id, out VoteModel.Electorate e, out double _); stamp.Append(id).Append(e); }
             stamp.Append(string.Join(",", points.Select(p => F("{0}:{1:R}:{2:R}", p.Name, p.Econ, p.Soc)))).Append(w.ToString("R", CultureInfo.InvariantCulture));
             foreach (PresidencyOfRecord.CandidateOfRecord c in backed) { stamp.Append(c.Surname).Append(c.Factor.ToString("R", CultureInfo.InvariantCulture)); }

@@ -202,7 +202,7 @@ namespace PoliSim.UI
             LaborPolicyBill draft = BuildLaborBillFromDrafts();
             DrawLawsBillAction(width, "Introduce labour bill", "laws:labourbill", ParliamentSystem.GetLaborBillConcern(c, draft), pending != null, pending != null ? pending.DaysRemaining : 0,
                 LaborDraftChanges(), () => _simulationManager.IntroduceLaborBill(PlayerCountryId, BuildLaborBillFromDrafts()),
-                pending != null ? $"A Labor Market bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.", Congress.Kind.Labor);
+                pending != null ? $"A Labor Market bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}." : "No Labor Market bill before " + Legislature + " - the dials above are its draft.", Congress.Kind.Labor);
         }
 
         /// <summary>Immigration's figure: the flow the lever adds, in thousands of people a year against the projection, at the dial's level (DERIVED -
@@ -467,7 +467,7 @@ namespace PoliSim.UI
             }
             float costDelta = draftCost - standingCost;
             string status = pending != null
-                ? $"An Economic Sectors bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)."
+                ? $"An Economic Sectors bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}."
                 : "No Economic Sectors bill before " + Legislature + " - the dials of all eight sectors are its draft"
                     + (Mathf.Abs(costDelta) >= 0.0005f ? " · it would change sector support by " + UiFormat.MoneyDelta(costDelta, MoneyUnit.Billions) + " a year." : ".");
             DrawLawsBillAction(width, "Introduce sectors bill", "laws:sectorsbill", ParliamentSystem.GetSectorBillConcern(c, BuildSectorBillFromDrafts()), pending != null,
@@ -801,7 +801,7 @@ namespace PoliSim.UI
             TradePolicyBill pending = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             int changes = TradeDraftChanges(blocMember);
             string status = pending != null
-                ? $"A Trade bill is before {Legislature} - resolves in {pending.DaysRemaining} day(s)."
+                ? $"A Trade bill is before {Legislature} - {ResolvesIn(pending.DaysRemaining, pending.Docket)}."
                 : "No Trade bill before " + Legislature + " - " + (blocMember ? "the override rates are its draft" : "the base rate and the override rates are its draft");
             if (pending == null && changes > 0)
             {

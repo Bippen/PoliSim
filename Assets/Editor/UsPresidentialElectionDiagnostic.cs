@@ -42,6 +42,11 @@ namespace PoliSim.EditorTools
     /// its day loop never runs and no default world holds a US count; a world with no player country stepped across a US polling day holds none (the
     /// shadow's, the dump's); the film driver's USA default plays the game from the USA's start, and its warm-up's window holds the polling days measured
     /// here - the count held there as play holds it, by design; (h) scope: a world whose player is another country holds no US count (R-US5: PS-8's row).</item>
+    /// <item>(i) US-8b (R-US25, RULED: forks hold their own counts, every fork drawing the live game's election noise): the election's noise source
+    /// (<see cref="SimulationRandom.ElectionNoiseOn"/>) gives the live game and a fork's generator the same draws for one polling day whatever their counted
+    /// streams hold, moves no counted stream, and differs by day, country and game; at a test σ the two worlds' counts on one poll are one contest; and a
+    /// fork of a US game at its start (`ShadowBaseline`, the impact ledger's), advanced a turn on the live game's decisions, elects the same president with
+    /// identical shares.</item>
     /// </list>
     /// Pinned in the cheap bar and the documents bar through the US card's marked block (`docs/reference/US_ELECTIONS.md`, *The readings (US-8)*), written
     /// by <see cref="WriteReadings"/>; a block that no longer says what this measures fails here. ⚠ It depends on US-6's [FITTED] factors being patched in:
@@ -483,6 +488,71 @@ namespace PoliSim.EditorTools
                 Check(driverDefault is CountryId dc && dc == CountryId.USA && minDays is int && maxDays is int && inWindow.Count > 0 && inWindow[0].StartsWith(Day(Polled), StringComparison.Ordinal),
                     F("(g) the film driver's default country is {0} (-shotcountry= unset), played from the USA's start {1}; its warm-up (from {2} to {3} days, stopping on a preliminary release) holds the polling days {4} - each counted as play counts it (the warm-up calls HoldElectionWithoutTheNight, measured in (c)): by design, not by accident; the USA's filmed frames after the warm-up show the game's own president",
                         driverDefault, Day(usStart), minDays, maxDays, string.Join("; ", inWindow)));
+            }
+
+            // ---- (i) US-8b (R-US25, ruled: "(a), with every fork drawing the live game's election noise (common random numbers)"): the election's noise is common
+            // to every world of a game, and a fork with no policy difference counts the live game's contest
+            {
+                SimulationManager.SetEpoch(WorldClock.StartDate(CountryId.USA));
+                (SimulationManager live, World liveWorld, Country liveUsa) = Open(hosts, CountryId.USA, "REP");
+                var none = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country each in liveWorld.Countries) { none[each.Id] = PolicyDecision.None(); }
+                double[] Draws(CountryId id, DateTime day) { System.Random r = SimulationRandom.ElectionNoiseOn(id, day); return new[] { r.NextDouble(), r.NextDouble(), r.NextDouble(), r.NextDouble() }; }
+                string Show(double[] xs) => string.Join(", ", xs.Select(x => x.ToString("0.000000", CultureInfo.InvariantCulture)));
+
+                // the source: the live game's draws for its polling day, a fork's generator (the save's seed, its counted streams elsewhere), another day, country, game
+                SimulationRandom.LiveState real = SimulationRandom.CaptureLive();
+                double[] liveDraws, forkDraws, otherDay, otherCountry, otherGame;
+                bool uncounted;
+                var plantedPoll = new Dictionary<string, double> { { "REP", 0.50 }, { "DEM", 0.48 } };
+                Dictionary<string, double> noisyLive, noisyFork;
+                try
+                {
+                    Dictionary<SimulationRandom.Stream, int> countsBefore = SimulationRandom.CaptureDrawCounts();
+                    liveDraws = Draws(CountryId.USA, Polled);
+                    noisyLive = UsPresidentialElection.WithNoise(plantedPoll, SimulationRandom.ElectionNoiseOn(CountryId.USA, Polled), RegionalAggregation.RegionalNoiseSigmaPp);
+                    Dictionary<SimulationRandom.Stream, int> countsAfter = SimulationRandom.CaptureDrawCounts();
+                    uncounted = countsBefore.Count == countsAfter.Count && countsBefore.All(kv => countsAfter.TryGetValue(kv.Key, out int n) && n == kv.Value);
+                    var forkCounts = new Dictionary<SimulationRandom.Stream, int>(countsBefore);
+                    forkCounts[SimulationRandom.Stream.ElectionNoise] = 5;   // a fork that drew on the counted stream where the live game did not
+                    forkCounts[SimulationRandom.Stream.Event] = (forkCounts.TryGetValue(SimulationRandom.Stream.Event, out int ev) ? ev : 0) + 7;
+                    SimulationRandom.RestoreState(SimulationRandom.MasterSeed, forkCounts);
+                    forkDraws = Draws(CountryId.USA, Polled);
+                    noisyFork = UsPresidentialElection.WithNoise(plantedPoll, SimulationRandom.ElectionNoiseOn(CountryId.USA, Polled), RegionalAggregation.RegionalNoiseSigmaPp);
+                    otherDay = Draws(CountryId.USA, UsPresidentialElection.PresidentialDay(2028));
+                    otherCountry = Draws(CountryId.Poland, Polled);
+                    SimulationRandom.Seed(Seed + 1);
+                    otherGame = Draws(CountryId.USA, Polled);
+                }
+                finally { SimulationRandom.Reinstate(real); }
+                Check(uncounted && liveDraws.SequenceEqual(forkDraws) && !liveDraws.SequenceEqual(otherDay) && !liveDraws.SequenceEqual(otherCountry) && !liveDraws.SequenceEqual(otherGame),
+                    F("(i) the election's noise is common to every world of the game (R-US25, ruled): the live game's draws for {0} ({1}) equal a fork generator's whose counted streams stand elsewhere ({2}); another polling day, another country and another game's seed draw otherwise ({3}; {4}; {5}); no counted stream moves",
+                        Day(Polled), Show(liveDraws), Show(forkDraws), Show(otherDay), Show(otherCountry), Show(otherGame)));
+                UsPresidentialElection.Contest liveNoisy = UsPresidentialElection.Count(CountryId.USA, Polled, noisyLive, out ElectoralCollege.StateCall[] _, out string whyLive);
+                UsPresidentialElection.Contest forkNoisy = UsPresidentialElection.Count(CountryId.USA, Polled, noisyFork, out ElectoralCollege.StateCall[] _, out string _);
+                UsPresidentialElection.Contest quiet = UsPresidentialElection.Count(CountryId.USA, Polled, plantedPoll, out ElectoralCollege.StateCall[] _, out string _);
+                Check(liveNoisy != null && forkNoisy != null && quiet != null && PresidencyDiagnostic.SameContest(liveNoisy, forkNoisy) && !liveNoisy.Electors[0].Share.Equals(quiet.Electors[0].Share),
+                    F("(i) at §27's σ ({0:0.0} pp, a test figure - the count's σ in play is {1:0.0}, DECLARED until noise is on in play) the live game's and the fork's counts on one planted poll (REP 50 / DEM 48) are one contest - \"{2}\" - where the noiseless count reads \"{3}\"",
+                        RegionalAggregation.RegionalNoiseSigmaPp, UsPresidentialElection.NoiseSigmaPp, liveNoisy?.Line ?? whyLive, quiet?.Line ?? "no count"));
+
+                // the fork: the impact ledger's (ShadowBaseline from the game in progress, on its own copy of the streams), advanced with the live game's decisions
+                ShadowBaseline fork = null;
+                try
+                {
+                    fork = new ShadowBaseline(live, liveWorld, CountryId.USA);
+                    EnergyMarket.ResetTurnState();
+                    for (int d = 0; d < SimulationManager.DaysPerTurn; d++) { live.AdvanceDay(); }
+                    live.AdvanceTurn(none);
+                    EnergyMarket.ResetTurnState();   // the market's turn state is static: each world starts its turn from the same one
+                    fork.AdvanceTurn(none);
+                    Country forkUsa = fork.CountryFor(CountryId.USA);
+                    UsPresidentialElection.Contest a = liveUsa.UsPresidentialElections.FirstOrDefault(k => k.PollingDay == Polled), b = forkUsa?.UsPresidentialElections.FirstOrDefault(k => k.PollingDay == Polled);
+                    UsPresidentialElection.Tally aRep = a?.Electors.FirstOrDefault(t => t.Party == "REP"), bRep = b?.Electors.FirstOrDefault(t => t.Party == "REP");
+                    Check(a != null && b != null && liveUsa.UsPresidentialElections.Count == 1 && forkUsa.UsPresidentialElections.Count == 1 && PresidencyDiagnostic.SameContest(a, b) && UsTermLimit.WinnerOf(a) == UsTermLimit.WinnerOf(b),
+                        F("(i) a fork with no policy difference (forked at the USA's start {0}, both worlds a turn of {1} days on the same decisions) counts its own election and elects the same president with identical shares: live \"{2}\" (REP {3:0.000000} %), the fork \"{4}\" (REP {5:0.000000} %)",
+                            Day(WorldClock.StartDate(CountryId.USA)), SimulationManager.DaysPerTurn, a?.Line ?? "no count", aRep?.Share ?? double.NaN, b?.Line ?? "no count", bRep?.Share ?? double.NaN));
+                }
+                finally { fork?.Dispose(); EnergyMarket.ResetTurnState(); }
             }
 
             // ---- the card's block

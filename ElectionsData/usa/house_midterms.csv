@@ -5,7 +5,12 @@
 # initial election results (seats_vacant: the vacancies its footnote puts in the row's total; seats_total: the row's own). clerk_*: the Clerk
 # of the House's recapitulation, its Total row - each party's own ballot line, and the row's Total - where the statistics carry text, else -.
 # vs_*: SECONDARY (Vital Statistics on Congress, Table 2-2), each party's percentage of all votes and the change of the major-party vote
-# from the last election with its direction, as printed; never read by R-US20's rule. The pages read, each with its SHA-256:
+# from the last election with its direction, as printed; never read by R-US20's rule. senate_*: the Senate SITTING on the election's day
+# (senate_day, 2 U.S.C. 7) - the Congress the election two years before chose (senate_congress), by [SEN-DIV]'s line for it, or the line
+# holding the day where the page prints the Congress in periods (senate_period, from..to, else -): its Democrats, Republicans, other parties
+# and seats, and its majority party as printed (senate_majority), held to the line's counts (senate_how: seats - more seats; seats-with-caucus -
+# more with the independents the line names as caucusing with it; equal-vp - an equal division, the Vice President's party; page - the page's
+# own, independents of no caucus named could decide it). The pages read, each with its SHA-256:
 #   executive/archives_electoral_college_2020.html sha256 07b7c440192a0f01d859b9f7d7f1dac40d91506b7a3fa5023026e9fc8caabcef
 #   executive/archives_electoral_college_2024.html sha256 45861f6999e950d22823ee3a952f74cd94b0266576feb278ca5bce053c629f1f
 #   executive/history_house_party_divisions.html sha256 6ec3dff36c297caebbd8e26b82f53b2939b09dcc84a7ddadac7f29821531cbfe
@@ -36,6 +41,7 @@
 #   midterms/clerk_statistics2012.pdf sha256 008405203a2f7fd9258852de449309b430fb0c7dc441ba08b2480845d8413616
 #   midterms/clerk_statistics2014.pdf sha256 5938b54f3445fab9afc008515202bf55fd45bef5dc170ffcf7c6f26a080f4702
 #   midterms/vitalstats_table_2-2.csv sha256 bb1f2ae3339a51110d93e7e5ff3c9210bcf6d1c288c3162eb80d4f5e69adb92b
+#   records/wayback_senate_party_division_20260919.html sha256 ed076a0c0c6be0f7cac83a99afba3c3077d0ed11312eb9c543458b3f5e75befc
 #   returns/archives_electoral_college_2012.html sha256 96e8eb75312ad3acb20ab73dc72b96a4249d32f270f5e1677580f51dde5b6bdb
 #   returns/archives_electoral_college_2016.html sha256 54ca947cb0d766d91d9de3b4f48e0455cd83cd4d34c0b9738ed94b8ef70ce191
 #   returns/clerk_statistics2016.pdf sha256 6d2eba0e60e3f32153a5ba9c369a42a04616ccc73b5b3bca927ea6a11cade3a3
@@ -43,46 +49,46 @@
 #   returns/clerk_statistics2020.pdf sha256 666b2a1f673f263087c141c4d44b0dce47cbddc8f4df27fbc8b415cf05842b76
 #   returns/clerk_statistics2022.pdf sha256 ef9b8cefcc44bebbdc4928bf346b50e00a72dd3bb54a71ed93ec60d4ebf47690
 #   returns/clerk_statistics2024.pdf sha256 d4ba800fc17135b616ae556c92861080ab962d95916ace34b546c5aac824aec4
-year,kind,congress,president_party,president_from,elected_party,seats_d,seats_r,seats_other,seats_vacant,seats_total,clerk_r,clerk_d,clerk_total,vs_dem_pct,vs_rep_pct,vs_vote_change,vs_vote_direction
-1944,presidential,79,-,1940,D,244,189,2,0,435,-,-,-,-,-,-,-
-1946,midterm,80,D,1944,-,188,246,1,0,435,-,-,-,44.3,53.5,6.4,R
-1948,presidential,81,D,1944,D,263,171,1,0,435,-,-,-,51.6,45.4,7.9,D
-1950,midterm,82,D,1948,-,235,199,1,0,435,-,-,-,48.9,48.9,3.2,R
-1952,presidential,83,D,1948,R,213,221,1,0,435,-,-,-,49.2,49.3,0.1,R
-1954,midterm,84,R,1952,-,232,203,0,0,435,-,-,-,52.1,47,2.6,D
-1956,presidential,85,R,1952,R,232,203,0,0,435,-,-,-,50.7,48.7,1.5,R
-1958,midterm,86,R,1956,-,282,153,1,0,436,-,-,-,55.5,43.6,5,D
-1960,presidential,87,R,1956,D,264,173,0,0,437,-,-,-,54.4,44.8,1.2,R
-1962,midterm,88,D,1960,-,258,176,1,0,435,-,-,-,52.1,47.1,2.3,R
-1964,presidential,89,D,1960,D,295,140,0,0,435,-,-,-,56.9,42.4,4.8,D
-1966,midterm,90,D,1964,-,248,187,0,0,435,-,-,-,50.5,48,6,R
-1968,presidential,91,D,1964,R,243,192,0,0,435,-,-,-,50,48.2,0.3,R
-1970,midterm,92,R,1968,-,255,180,0,0,435,-,-,-,53,44.5,3.4,D
-1972,presidential,93,R,1968,R,243,192,0,0,435,-,-,-,51.7,46.4,1.7,R
-1974,midterm,94,R,1972,-,291,144,0,0,435,-,-,-,57.1,40.5,5.8,D
-1976,presidential,95,R,1972,D,292,143,0,0,435,-,-,-,56.2,42.1,1.3,R
-1978,midterm,96,D,1976,-,278,157,0,0,435,-,-,-,53.4,44.7,2.8,R
-1980,presidential,97,D,1976,R,243,192,0,0,435,-,-,-,50.4,48,3.2,R
-1982,midterm,98,R,1980,-,269,166,0,0,435,-,-,-,55.2,43.3,5.2,D
-1984,presidential,99,R,1980,R,253,181,0,1,435,-,-,-,52.1,47,4.1,R
-1986,midterm,100,R,1984,-,258,177,0,0,435,-,-,-,54.5,44.6,2.4,D
-1988,presidential,101,R,1984,R,260,175,0,0,435,-,-,-,53.3,45.5,1.1,R
-1990,midterm,102,R,1988,-,267,167,1,0,435,-,-,-,52.9,45,0.1,D
-1992,presidential,103,R,1988,D,258,176,1,0,435,-,-,-,50.8,45.6,1.4,R
-1994,midterm,104,D,1992,-,204,230,1,0,435,-,-,-,45.4,52.4,6.3,R
-1996,presidential,105,D,1992,D,207,226,2,0,435,-,-,-,48.5,48.9,3.4,D
-1998,midterm,106,D,1996,-,211,223,1,0,435,31983612,31391834,66604802,47.1,48,0.3,R
-2000,presidential,107,D,1996,R,212,221,2,0,435,46750175,46411559,98799963,47,47.3,0.3,D
-2002,midterm,108,R,2000,-,205,229,1,0,435,37091270,33642142,74706555,45,49.6,2.3,R
-2004,presidential,109,R,2000,R,202,232,1,0,435,55713412,52745121,113192286,46.6,49.2,1.1,D
-2006,midterm,110,R,2004,-,233,202,0,0,435,35674808,42082311,80975537,52,45.6,5.4,D
-2008,presidential,111,R,2004,D,257,178,0,0,435,51952981,64888090,122586293,52.9,42.3,1.4,D
-2010,midterm,112,D,2008,-,193,242,0,0,435,44593666,38854459,86784957,44.8,51.4,9,R
-2012,presidential,113,D,2008,D,201,234,0,0,435,57622827,59214910,122346020,48.3,46.9,4.1,D
-2014,midterm,114,D,2012,-,188,247,0,0,435,39926526,35368840,78812769,45.5,50.6,3.4,R
-2016,presidential,115,D,2012,R,194,241,0,0,435,62772225,61417454,129833250,47.3,48.2,2.2,D
-2018,midterm,116,R,2016,-,235,199,0,1,435,50467181,60319623,114016831,53.2,44.5,4.9,D
-2020,presidential,117,R,2016,D,222,212,0,1,435,72466576,77122690,153431405,50,47,2.8,R
-2022,midterm,118,D,2020,-,213,222,0,0,435,54227992,51280463,108443387,47.4,50,2.9,R
-2024,presidential,119,D,2020,R,215,220,0,0,435,74390864,70571330,149543421,47.2,49.7,0.05,D
-2026,midterm,120,R,2024,-,-,-,-,-,-,-,-,-,-,-,-,-
+year,kind,congress,president_party,president_from,elected_party,seats_d,seats_r,seats_other,seats_vacant,seats_total,clerk_r,clerk_d,clerk_total,vs_dem_pct,vs_rep_pct,vs_vote_change,vs_vote_direction,senate_day,senate_congress,senate_period,senate_d,senate_r,senate_other,senate_total,senate_majority,senate_how
+1944,presidential,79,-,1940,D,244,189,2,0,435,-,-,-,-,-,-,-,1944-11-07,78,-,57,38,1,96,D,seats
+1946,midterm,80,D,1944,-,188,246,1,0,435,-,-,-,44.3,53.5,6.4,R,1946-11-05,79,-,57,38,1,96,D,seats
+1948,presidential,81,D,1944,D,263,171,1,0,435,-,-,-,51.6,45.4,7.9,D,1948-11-02,80,-,45,51,0,96,R,seats
+1950,midterm,82,D,1948,-,235,199,1,0,435,-,-,-,48.9,48.9,3.2,R,1950-11-07,81,-,54,42,0,96,D,seats
+1952,presidential,83,D,1948,R,213,221,1,0,435,-,-,-,49.2,49.3,0.1,R,1952-11-04,82,-,49,47,0,96,D,seats
+1954,midterm,84,R,1952,-,232,203,0,0,435,-,-,-,52.1,47,2.6,D,1954-11-02,83,-,47,48,1,96,R,page
+1956,presidential,85,R,1952,R,232,203,0,0,435,-,-,-,50.7,48.7,1.5,R,1956-11-06,84,-,48,47,1,96,D,page
+1958,midterm,86,R,1956,-,282,153,1,0,436,-,-,-,55.5,43.6,5,D,1958-11-04,85,-,49,47,0,96,D,seats
+1960,presidential,87,R,1956,D,264,173,0,0,437,-,-,-,54.4,44.8,1.2,R,1960-11-08,86,-,65,35,0,100,D,seats
+1962,midterm,88,D,1960,-,258,176,1,0,435,-,-,-,52.1,47.1,2.3,R,1962-11-06,87,-,64,36,0,100,D,seats
+1964,presidential,89,D,1960,D,295,140,0,0,435,-,-,-,56.9,42.4,4.8,D,1964-11-03,88,-,66,34,0,100,D,seats
+1966,midterm,90,D,1964,-,248,187,0,0,435,-,-,-,50.5,48,6,R,1966-11-08,89,-,68,32,0,100,D,seats
+1968,presidential,91,D,1964,R,243,192,0,0,435,-,-,-,50,48.2,0.3,R,1968-11-05,90,-,64,36,0,100,D,seats
+1970,midterm,92,R,1968,-,255,180,0,0,435,-,-,-,53,44.5,3.4,D,1970-11-03,91,-,57,43,0,100,D,seats
+1972,presidential,93,R,1968,R,243,192,0,0,435,-,-,-,51.7,46.4,1.7,R,1972-11-07,92,-,54,44,2,100,D,seats-with-caucus
+1974,midterm,94,R,1972,-,291,144,0,0,435,-,-,-,57.1,40.5,5.8,D,1974-11-05,93,-,56,42,2,100,D,seats-with-caucus
+1976,presidential,95,R,1972,D,292,143,0,0,435,-,-,-,56.2,42.1,1.3,R,1976-11-02,94,-,61,37,2,100,D,seats-with-caucus
+1978,midterm,96,D,1976,-,278,157,0,0,435,-,-,-,53.4,44.7,2.8,R,1978-11-07,95,-,61,38,1,100,D,seats-with-caucus
+1980,presidential,97,D,1976,R,243,192,0,0,435,-,-,-,50.4,48,3.2,R,1980-11-04,96,-,58,41,1,100,D,seats-with-caucus
+1982,midterm,98,R,1980,-,269,166,0,0,435,-,-,-,55.2,43.3,5.2,D,1982-11-02,97,-,46,53,1,100,R,seats
+1984,presidential,99,R,1980,R,253,181,0,1,435,-,-,-,52.1,47,4.1,R,1984-11-06,98,-,45,55,0,100,R,seats
+1986,midterm,100,R,1984,-,258,177,0,0,435,-,-,-,54.5,44.6,2.4,D,1986-11-04,99,-,47,53,0,100,R,seats
+1988,presidential,101,R,1984,R,260,175,0,0,435,-,-,-,53.3,45.5,1.1,R,1988-11-08,100,-,55,45,0,100,D,seats
+1990,midterm,102,R,1988,-,267,167,1,0,435,-,-,-,52.9,45,0.1,D,1990-11-06,101,-,55,45,0,100,D,seats
+1992,presidential,103,R,1988,D,258,176,1,0,435,-,-,-,50.8,45.6,1.4,R,1992-11-03,102,-,56,44,0,100,D,seats
+1994,midterm,104,D,1992,-,204,230,1,0,435,-,-,-,45.4,52.4,6.3,R,1994-11-08,103,-,57,43,0,100,D,seats
+1996,presidential,105,D,1992,D,207,226,2,0,435,-,-,-,48.5,48.9,3.4,D,1996-11-05,104,-,48,52,0,100,R,seats
+1998,midterm,106,D,1996,-,211,223,1,0,435,31983612,31391834,66604802,47.1,48,0.3,R,1998-11-03,105,-,45,55,0,100,R,seats
+2000,presidential,107,D,1996,R,212,221,2,0,435,46750175,46411559,98799963,47,47.3,0.3,D,2000-11-07,106,-,45,55,0,100,R,seats
+2002,midterm,108,R,2000,-,205,229,1,0,435,37091270,33642142,74706555,45,49.6,2.3,R,2002-11-05,107,2001-06-06..2002-11-12,50,49,1,100,D,seats-with-caucus
+2004,presidential,109,R,2000,R,202,232,1,0,435,55713412,52745121,113192286,46.6,49.2,1.1,D,2004-11-02,108,-,48,51,1,100,R,seats
+2006,midterm,110,R,2004,-,233,202,0,0,435,35674808,42082311,80975537,52,45.6,5.4,D,2006-11-07,109,-,44,55,1,100,R,seats
+2008,presidential,111,R,2004,D,257,178,0,0,435,51952981,64888090,122586293,52.9,42.3,1.4,D,2008-11-04,110,-,49,49,2,100,D,seats-with-caucus
+2010,midterm,112,D,2008,-,193,242,0,0,435,44593666,38854459,86784957,44.8,51.4,9,R,2010-11-02,111,-,57,41,2,100,D,seats-with-caucus
+2012,presidential,113,D,2008,D,201,234,0,0,435,57622827,59214910,122346020,48.3,46.9,4.1,D,2012-11-06,112,-,51,47,2,100,D,seats-with-caucus
+2014,midterm,114,D,2012,-,188,247,0,0,435,39926526,35368840,78812769,45.5,50.6,3.4,R,2014-11-04,113,-,53,45,2,100,D,seats-with-caucus
+2016,presidential,115,D,2012,R,194,241,0,0,435,62772225,61417454,129833250,47.3,48.2,2.2,D,2016-11-08,114,-,44,54,2,100,R,seats
+2018,midterm,116,R,2016,-,235,199,0,1,435,50467181,60319623,114016831,53.2,44.5,4.9,D,2018-11-06,115,-,47,51,2,100,R,seats
+2020,presidential,117,R,2016,D,222,212,0,1,435,72466576,77122690,153431405,50,47,2.8,R,2020-11-03,116,-,45,53,2,100,R,seats
+2022,midterm,118,D,2020,-,213,222,0,0,435,54227992,51280463,108443387,47.4,50,2.9,R,2022-11-08,117,-,48,50,2,100,D,equal-vp
+2024,presidential,119,D,2020,R,215,220,0,0,435,74390864,70571330,149543421,47.2,49.7,0.05,D,2024-11-05,118,-,47,49,4,100,D,page
+2026,midterm,120,R,2024,-,-,-,-,-,-,-,-,-,-,-,-,-,2026-11-03,119,-,45,53,2,100,R,seats

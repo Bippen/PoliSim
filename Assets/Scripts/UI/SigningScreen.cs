@@ -460,7 +460,7 @@ namespace PoliSim.UI
                     "FOR " + I(forSeats) + " · AGAINST " + I(against) + " · UNDECIDED " + I(undecided) + (crossed > 0 ? " · " + I(crossed) + " DEFECTORS AMONG THEM" : string.Empty),
                     "A VETO IS OVERRIDDEN BY TWO THIRDS OF THOSE VOTING IN EACH CHAMBER, A QUORUM PRESENT - THE CHAMBER THE BILL BEGAN IN FIRST, ON THE SIDES THAT VOTED THE BILL",
                     "THE LINE: " + I(record.Required) + " OF THE " + I(members) + " - " + (record.Passed ? "OVERRIDDEN" : "THE VETO STANDS"),
-                    "THE TEN DAYS AND THE POCKET VETO ARE NOT MODELLED - THE VETO AND THE VOTE ON IT FALL ON THE DAY THE BILL PASSED",
+                    "THE POCKET VETO IS NOT MODELLED · A BILL SENT TO YOU AS PRESIDENT IS LAW IF UNANSWERED FOR TEN DAYS, SUNDAYS EXCEPTED",
                 });
                 return;
             }

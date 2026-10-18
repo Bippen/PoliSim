@@ -338,9 +338,14 @@ namespace PoliSim.Simulation
             public string KeyPp, KeyOp;
             /// <summary>The verdict at the drawn pair differs from the blocs' (0, 0): the draw MATTERS, and the crossers are in the division.</summary>
             public bool Matters;
+            /// <summary>PS-6 US-22b (I13 (2)): the party withholding a continuing resolution, its senators drawn at the resolution's cloture during a lapse
+            /// (`UsLapseDraw`) - its K (crossing from against to for), the list index and the key; null where no such draw was made.</summary>
+            public string Withholder;
+            public int Kw, IndexW = -1;
+            public string KeyW;
 
             /// <summary>The crossers a party sent to the other side in the division - its drawn K where the draw mattered, else none.</summary>
-            public int CrossersOf(string party) => !Matters ? 0 : party == PresidentsParty ? Kp : party == OtherParty ? Ko : 0;
+            public int CrossersOf(string party) => !Matters ? 0 : party == PresidentsParty ? Kp : party == Withholder ? Kw : party == OtherParty ? Ko : 0;   // US-22b (the review's L5): the withholder before the other party
         }
 
         /// <summary>A bill through both chambers: each chamber's division, the order, the procedure, the verdict and the chamber that stops it.</summary>
@@ -471,6 +476,7 @@ namespace PoliSim.Simulation
         {
             verdict = Project(country, concern, date, origin);
             DrawAtTheGate(country, concern, titleOf(verdict.Passed), date, verdict);   // PS-6 US-21: R-US17 rule (c)'s draw - the crossers enter a division only where they change it
+            if (concern != null && concern.DrawsWithholders) { DrawWithholders(country, concern, titleOf(verdict.Passed), date, verdict); }   // PS-6 US-22b (I13 (2)): a lapse's resolution, the withholder's own senators at cloture
             title = titleOf(verdict.Passed);
             DivisionRecord first = Record(country, title, concern, verdict.First, verdict, date, axis);
             DivisionRecord last = first;
@@ -648,6 +654,44 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>
+        /// PS-6 US-22b (Elias's ruling I13 (2): "(P) stands. Add R-US17's draw (H1) for the withholder's own senators on each resolution's cloture vote during a
+        /// lapse"): THE WITHHOLDER'S DRAW. In the Senate alone, where it votes the resolution at cloture, the party withholding it (REP or DEM, standing against
+        /// with a seat there) draws its crossers from the record's lapse-period cloture votes (`UsLapseDraw`, keyed on the master seed, the day, the title and
+        /// the party); they move from against to for and enter the division only where they change its verdict - R-US17's rule, so a lapse can end through
+        /// its defectors. The veto-path draw is untouched (a continuing resolution is a budget vote, which it refuses). Nothing where the chamber's blocs and
+        /// the rule's K = 0 verdict differ (a defect, logged).
+        /// </summary>
+        private static void DrawWithholders(Country country, BillConcern concern, string title, DateTime date, Verdict verdict)
+        {
+            string w = concern.WithheldBy;
+            if (country == null || !UsVeto.Applies(country.Id) || (w != "REP" && w != "DEM")) { return; }
+            Division d = verdict.Senate;
+            if (d == null || !d.Cloture || (verdict.Origin != Senate && !verdict.First.Passed)) { return; }
+            PartyStance? s = StanceOf(d.Stances, w);
+            if (s == null || !s.Value.Measured || s.Value.Side >= 0 || s.Value.Seats <= 0) { return; }
+            var v = new UsVeto.ChamberVote { Procedure = UsVeto.Procedure.SenateCloture, Yea0 = d.For, Nay0 = d.Against, Sworn = d.Sworn, PpSeats = s.Value.Seats, PpList = UsLapseDraw.List };
+            if (UsVeto.ChamberOutcome(v, 0, 0) != d.Passed)
+            {
+                UnityEngine.Debug.LogError($"DRAW: {country.Id} - '{title}' in the Senate: the blocs' verdict and the rule's K = 0 verdict differ - no withholder's draw entered (a defect)");
+                return;
+            }
+            int k = UsLapseDraw.Draw(SimulationRandom.MasterSeed, date, title, w, s.Value.Seats, out int j);
+            var c = d.Crossing ?? new Crossing();
+            c.Withholder = w; c.Kw = k; c.IndexW = j; c.KeyW = UsLapseDraw.Key(SimulationRandom.MasterSeed, date, title, w);
+            c.Matters = UsVeto.ChamberOutcome(v, k, 0) != UsVeto.ChamberOutcome(v, 0, 0);
+            d.Crossing = c;
+            UnityEngine.Debug.Log($"DRAW: {country.Id} - '{title}' in the Senate: {w}, withholding it, draws {k} crosser(s) at cloture (list index {j}, {UsLapseDraw.FittedLabel}) - {(c.Matters ? "the draw changes the verdict, and the crossers enter the count" : "the verdict stands as the blocs give it")}");
+            if (!c.Matters) { return; }
+            d.For += k;
+            d.Against -= k;
+            d.Passed = UsVeto.ChamberOutcome(v, k, 0);
+            d.ClotureInvoked = d.Cloture && d.For >= d.Required;
+            Division first = verdict.First, second = verdict.Second;
+            verdict.StoppedIn = !first.Passed ? first.Chamber : !second.Passed ? second.Chamber : -1;
+            verdict.Passed = first.Passed && second.Passed;
+        }
+
+        /// <summary>
         /// The chamber as `UsVeto` reads it where a draw would be made on it (the block's item 2), null where none would: the president's party standing AGAINST
         /// with a seat there; the other party drawing only where it stands FOR; nothing where both blocs stand against (UNCONTESTED), where nothing is asked, or
         /// where the cell is unfitted. Yea0 and Nay0 are the blocs' FOR and AGAINST, the undecided abstaining as the count has them.
@@ -749,9 +793,10 @@ namespace PoliSim.Simulation
         /// first's (`DivisionRecord.OtherChamber`), both passed - read off the recorded divisions, never re-voted. An AI president vetoes by rule (a): his party
         /// holds a House seat and more than half of its House members in the division voted nay (`UsVeto.NamedByA` - DETERMINISTIC, every act presented, budget
         /// acts included). A player-president's answer is the player's (<paramref name="playerVetoes"/>; R-US7, F8: "a player-president chooses"), and rule (a)
-        /// is not read for him; where no answer is given he signs (DECLARED: every bill that reaches him in this build is one his own party introduced). Where
-        /// vetoed, the override: the origin chamber first, the other only where the origin overrode, the veto falling iff both do, both on the passage's day
-        /// (Poland's premise; the ten days and the pocket veto are not modelled, stated), no cloture on an override. Reads only - the gate records
+        /// is not read for him; where no answer is given he signs (since PS-6 US-21b the gate never presents a bill to him without one: with none on the day the
+        /// bill is held on his docket, `SimulationManager.UsVetoGate`, `PresidentialDocket`). Where vetoed, the override: the origin chamber first, the other
+        /// only where the origin overrode, the veto falling iff both do, both on the day of the answer - an AI president's the day both chambers sent it, a
+        /// player-president's the day his answer is acted on (Poland's premise; the pocket veto is not modelled, stated), no cloture on an override. Reads only - the gate records
         /// (<see cref="RecordVeto"/>). Null where the passage is not a bill both chambers sent, or no president is found on the day.
         /// </summary>
         public static Veto Present(Country country, DivisionRecord passage, DateTime date, Func<DivisionRecord, bool> playerVetoes)

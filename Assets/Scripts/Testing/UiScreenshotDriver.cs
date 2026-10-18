@@ -1890,13 +1890,13 @@ namespace PoliSim.Testing
                     Congress.Verdict v = Congress.Project(player, concern, day, origin);
                     if (!SideIs(v.House, pp, -1) || !SideIs(v.Senate, pp, -1) || !SideIs(v.House, op, 1) || !SideIs(v.Senate, op, 1)) { continue; }
                     if (!UsVetoPlant(v, pp, op, overridden, out int house, out int senate)) { continue; }
-                    MethodInfo gate = typeof(SimulationManager).GetMethod("UsVetoGate", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Country), typeof(DivisionRecord), typeof(BillConcern), typeof(bool), typeof(bool) }, null);   // by its full parameter list: an arity change fails here by name
+                    MethodInfo gate = typeof(SimulationManager).GetMethod("UsVetoGate", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Country), typeof(DivisionRecord), typeof(BillConcern), typeof(bool), typeof(DocketEntry).MakeByRefType(), typeof(bool) }, null);   // by its full parameter list: an arity change fails here by name
                     if (gate == null) { Debug.LogError("SHOT: SimulationManager.UsVetoGate not found - the US veto plate is MISSING, not clean."); return false; }
                     bool sent, law;
                     using (UsVeto.PlantIndex((chamber, party, n) => party == pp ? (chamber == UsVeto.Chamber.House ? house : senate) : 0))
                     {
                         DivisionRecord passage = ParliamentSystem.Divide(player, title, concern, day, out sent);
-                        law = (bool)gate.Invoke(sim, new object[] { player, passage, concern, sent, false });   // every parameter given (not an amendment): MethodInfo.Invoke fills no optional one
+                        law = gate.Invoke(sim, new object[] { player, passage, concern, sent, null, false }) is bool decided && decided;   // every parameter given (no docket held, not an amendment): MethodInfo.Invoke fills no optional one; a bill held on a player-president's docket is not law on the day
                     }
                     DivisionRecord newest = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
                     bool shaped = sent && newest.Required > 0 && !newest.Cloture && newest.Passed == overridden && law == overridden && (newest.OtherChamber != null) == overridden;
@@ -2340,6 +2340,7 @@ namespace PoliSim.Testing
                 Debug.Log($"SHOT: 93a_desk_government_budget - {player.PlayerPartyAbbrev} out of the presidency, the president's budget before Congress ({SimulationManager.DescribeBudgetBill(pending)}), decided in {pending.DaysRemaining} day(s)");
                 yield return Capture("93a_desk_government_budget");
                 int seen = player.Divisions.Entries.Count > 0 ? player.Divisions.Entries[player.Divisions.Entries.Count - 1].Number : 0;
+                DateTime horizonBefore = player.AppropriatedThrough;
                 for (int i = 0; i <= ParliamentSystem.BillDurationDays && ReferenceEquals(sim.GetPendingBudgetBill(player.Id), pending); i++) { sim.AdvanceBudgetBillDay(player.Id); }
                 foreach (DivisionRecord record in player.Divisions.Entries)
                 {
@@ -2348,7 +2349,9 @@ namespace PoliSim.Testing
                 BudgetBill after = sim.GetPendingBudgetBill(player.Id);
                 Debug.Log("SHOT: 93b_desk_us_budget_acts - the president's budget decided as its acts on " + sim.CurrentDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + "; "
                     + (after != null && after.ContinuingResolution ? $"the appropriation fell: a continuing resolution at the standing figures before Congress, decided in {after.DaysRemaining} day(s)"
-                        : after == null ? $"the appropriation stood: funded through {player.AppropriatedThrough:yyyy-MM-dd}" : "a bill other than a continuing resolution is before Congress (A DEFECT)"));
+                        : after == null && player.AppropriatedThrough != horizonBefore ? $"the appropriation stood: funded through {player.AppropriatedThrough:yyyy-MM-dd}"
+                        : after == null ? $"the appropriation fell: nothing before Congress - a continuing resolution is decided on {UsBudgetProcedure.HorizonEve(player.AppropriatedThrough):yyyy-MM-dd}, the day before the horizon (US-22b)"
+                        : "a bill other than a continuing resolution is before Congress (A DEFECT)"));
                 if (after != null && !after.ContinuingResolution) { _failed++; }
                 yield return Settle();
                 yield return Capture("93b_desk_us_budget_acts");

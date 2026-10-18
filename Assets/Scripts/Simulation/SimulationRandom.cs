@@ -59,6 +59,8 @@ namespace PoliSim.Simulation
             /// ⚠ NOTHING IN THE LIVE GAME DRAWS FROM IT (R-N2: the election system is unwired).
             /// The name exists so that whatever eventually wires it cannot be tempted to borrow
             /// another consumer's stream.
+            /// US-8b (R-US25 as ruled): an election counted in play keys its noise off this stream's offset through
+            /// <see cref="ElectionNoiseOn"/> - common to every world of one game - never off the counted stream.
             /// </summary>
             ElectionNoise = 7,
 
@@ -250,6 +252,41 @@ namespace PoliSim.Simulation
             _masterSeed = live.MasterSeed;
             Streams.Clear();
             foreach (KeyValuePair<Stream, CountingRandom> pair in live.Streams) { Streams[pair.Key] = pair.Value; }
+        }
+
+        /// <summary>
+        /// US-8b (R-US25, RULED - Elias's ruling I9, 2026-10-18: "(a), with every fork drawing the live game's election noise (common random numbers), so a fork
+        /// elects a different president only because of policy"): AN ELECTION'S NOISE, COMMON TO EVERY WORLD OF ONE GAME. A fresh generator keyed by the master
+        /// seed, the <see cref="Stream.ElectionNoise"/> stream's offset, the country and the polling day - never a position on a counted stream. The game holds
+        /// several worlds at once (the played one, the shadow's, the impact ledger's forks - each on its own copy of the streams, `ShadowBaseline`), and a
+        /// counted stream's position is a world's own history: a fork that held one election more, or drew once more for any reason, would read the next
+        /// election's noise from another place. Keyed by the day, the live game and every fork of it - which carry the live game's master seed (a fork is the
+        /// live game's save restored; the seeded shadow is built on <see cref="MasterSeed"/>) - draw the same numbers for the same election whatever else each
+        /// drew before it, so two worlds that differ only in policy differ in their count only through policy.
+        /// <para>Not counted and not saved: nothing it returns enters the table, so it moves no stream, no save carries it and no load replays it (the
+        /// numbers are rebuilt from the key). It reads <see cref="MasterSeed"/>, which seeds an unseeded game from the clock as <see cref="For"/> does.</para>
+        /// </summary>
+        public static System.Random ElectionNoiseOn(PoliSim.Data.CountryId country, System.DateTime pollingDay)
+        {
+            unchecked
+            {
+                ulong key = Mix((ulong)(uint)MasterSeed ^ ((ulong)(uint)((int)Stream.ElectionNoise * 7919) << 32));
+                key = Mix(key ^ (ulong)(uint)(int)country);
+                key = Mix(key ^ (ulong)pollingDay.Date.Ticks);
+                return new System.Random((int)(key ^ (key >> 32)));
+            }
+        }
+
+        /// <summary>SplitMix64's finaliser - a fixed bijection on 64 bits, so every part of the key moves every bit of the seed.</summary>
+        private static ulong Mix(ulong z)
+        {
+            unchecked
+            {
+                z += 0x9E3779B97F4A7C15UL;
+                z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+                z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+                return z ^ (z >> 31);
+            }
         }
     }
 }

@@ -3360,7 +3360,7 @@ namespace PoliSim.UI
             if (requestApart) { Add(requestDay, "The president's budget request due - budget process opens", UiPalette.SystemArea.Fiscal); }
             if (UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue)
             {
-                Add(today, "Shutdown - day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " - funding lapsed, its spending stop not yet modelled", UiPalette.SystemArea.Fiscal);   // PS-6 US-22
+                Add(today, "Shutdown - day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " - funding lapsed, non-excepted outlays stopped until it returns", UiPalette.SystemArea.Fiscal);   // PS-6 US-22
             }
 
             // Publication release days: deterministic date arithmetic (ReleaseCalendar), never a
@@ -3384,27 +3384,28 @@ namespace PoliSim.UI
             // probabilistic — today + DaysRemaining is the real resolution date for as long as the
             // bill stays pending. Cabinet/Foreign-Policy interrupts have no equivalent countdown at
             // all, which is exactly why they're absent below rather than merely unhandled.
-            void AddBill(int? daysRemaining, string label)
+            void AddBill(int? daysRemaining, string label, DocketEntry desk = null)
             {
+                if (desk != null) { Add(PresidentialDocket.LawDay(PlayerCountryId, desk.PresentedOn), $"{label} bill law unless the President answers", UiPalette.SystemArea.Political); return; }   // PS-6 US-21b: on the player-president's desk - the day it is law unanswered
                 if (daysRemaining.HasValue)
                 {
                     Add(today.AddDays(daysRemaining.Value), $"{label} bill resolves", UiPalette.SystemArea.Political);
                 }
             }
-            AddBill(_simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.ContinuingResolution == true ? "Continuing resolution" : "Annual budget");   // PS-6 US-22
+            AddBill(_simulationManager.GetPendingBudgetBill(PlayerCountryId)?.DaysRemaining, _simulationManager.GetPendingBudgetBill(PlayerCountryId)?.ContinuingResolution == true ? "Continuing resolution" : "Annual budget", DeskOf(_simulationManager.GetPendingBudgetBill(PlayerCountryId)));   // PS-6 US-22
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
-                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} tax");
+                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} tax", bill.Docket);
             }
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
-                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} welfare");
+                AddBill(bill.DaysRemaining, $"{DisplayName.Spaced(bill.Type.ToString())} welfare", bill.Docket);
             }
-            AddBill(_simulationManager.GetPendingLaborBill(PlayerCountryId)?.DaysRemaining, "Labor Market");
-            AddBill(_simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId)?.DaysRemaining, "Crime & Justice");
-            AddBill(_simulationManager.GetPendingSectorBill(PlayerCountryId)?.DaysRemaining, "Economic Sectors");
-            AddBill(_simulationManager.GetPendingTradeBill(PlayerCountryId)?.DaysRemaining, "Trade");
-            AddBill(_simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId)?.DaysRemaining, "SWF drawdown");
+            AddBill(_simulationManager.GetPendingLaborBill(PlayerCountryId)?.DaysRemaining, "Labor Market", _simulationManager.GetPendingLaborBill(PlayerCountryId)?.Docket);
+            AddBill(_simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId)?.DaysRemaining, "Crime & Justice", _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId)?.Docket);
+            AddBill(_simulationManager.GetPendingSectorBill(PlayerCountryId)?.DaysRemaining, "Economic Sectors", _simulationManager.GetPendingSectorBill(PlayerCountryId)?.Docket);
+            AddBill(_simulationManager.GetPendingTradeBill(PlayerCountryId)?.DaysRemaining, "Trade", _simulationManager.GetPendingTradeBill(PlayerCountryId)?.Docket);
+            AddBill(_simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId)?.DaysRemaining, "SWF drawdown", _simulationManager.GetPendingSwfDrawdownBill(PlayerCountryId)?.Docket);
 
             // Next election: the player's country's own polling day (PS-2 / CL-4, §619: the statute's calendar, `WorldClock.TryNextPollingDay`),
             // never a probabilistic roll; a country whose calendar is not modelled marks none. Past elections are deliberately NOT marked -
@@ -8027,9 +8028,9 @@ namespace PoliSim.UI
         private static string LawRowName(LawRowEntry row)
         {
             string plain = string.IsNullOrEmpty(row.Law.PlainName) ? row.Law.Name : row.Law.PlainName;   // D16 §4.2 (§415): the plain name is the name at rest
-            return row.PendingBill != null
-                ? $"{plain} - VOTE IN {row.PendingBill.DaysRemaining}d"
-                : plain;
+            return row.PendingBill == null ? plain
+                : row.PendingBill.Docket != null ? $"{plain} - ON THE PRESIDENT'S DESK"   // PS-6 US-21b: voted, awaiting the player-president's answer
+                : $"{plain} - VOTE IN {row.PendingBill.DaysRemaining}d";
         }
 
         private GUIStyle _lawNameStyle;
@@ -8438,7 +8439,7 @@ namespace PoliSim.UI
             // the per-party stance rows beneath it.
             // §4.3 item 6: the party split, in seat-map order, beneath everything it justifies - the verdict itself is in the decision block.
             GUILayout.Label("HOW THE HOUSE SPLITS", _labelStyle, GUILayout.Width(contentWidth));
-            if (pendingBill != null) { GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before {Legislature} - resolves in {pendingBill.DaysRemaining} day(s).", _labelStyle, GUILayout.Width(contentWidth)); }
+            if (pendingBill != null) { GUILayout.Label($"{(pendingBill.IsRepeal ? "Repeal" : "Enactment")} before {Legislature} - {ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket)}.", _labelStyle, GUILayout.Width(contentWidth)); }
             DrawLawPartyStances(paneConcern, contentWidth);
 
             // §4.3: the CTA travels with the decision, so it is drawn in the decision block above - see DrawLawPaneAction.
@@ -9009,7 +9010,7 @@ namespace PoliSim.UI
                 // PS-6 US-22: a continuing resolution on its own, or the budget's acts - each its own card, each through both chambers and the president (US-21's lean)
                 if (budgetBill.ContinuingResolution)
                 {
-                    string resolutionLabel = $"Continuing resolution - the standing figures - resolves in {budgetBill.DaysRemaining} day(s).";
+                    string resolutionLabel = $"Continuing resolution - the standing figures - {ResolvesIn(budgetBill.DaysRemaining, budgetBill.Docket)}.";
                     pending.Add((resolutionLabel, ParliamentSystem.GetBudgetBillConcern(_playerCountry, budgetBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, budgetBill.DaysRemaining));
                     uncontestedWords[resolutionLabel] = "Unopposed - it carries the standing figures, and no party withholds it";
                 }
@@ -9018,7 +9019,9 @@ namespace PoliSim.UI
                     foreach (UsBudgetProcedure.Act act in UsBudgetProcedure.Acts)
                     {
                         if (!UsBudgetProcedure.IsVoted(budgetBill, act, _playerCountry)) { continue; }
-                        string actLabel = $"{UsBudgetProcedure.ActWords(act)} with the budget, {(act == UsBudgetProcedure.Act.Reconciliation ? "by a majority" : "at cloture")} - resolves in {budgetBill.DaysRemaining} day(s).";
+                        DocketEntry heldAct = budgetBill.ActsHeld?.Find(e => e.Act == (int)act);
+                        if (budgetBill.ActsHeld != null && heldAct == null) { continue; }   // PS-6 US-21b: decided on its day (its division on the record); the budget applies once the acts on the desk are decided
+                        string actLabel = $"{UsBudgetProcedure.ActWords(act)} with the budget, {(act == UsBudgetProcedure.Act.Reconciliation ? "by a majority" : "at cloture")} - {ResolvesIn(budgetBill.DaysRemaining, heldAct)}.";
                         pending.Add((actLabel, UsBudgetProcedure.ConcernOf(_playerCountry, budgetBill, act), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, budgetBill.DaysRemaining));
                         if (act == UsBudgetProcedure.Act.Appropriation) { uncontestedWords[actLabel] = "Unopposed - the appropriation carries the standing figures"; }
                     }
@@ -9026,7 +9029,7 @@ namespace PoliSim.UI
             }
             else if (budgetBill != null)
             {
-                string budgetLabel = $"Annual budget bill - resolves in {budgetBill.DaysRemaining} day(s).";
+                string budgetLabel = $"Annual budget bill - {ResolvesIn(budgetBill.DaysRemaining, budgetBill.Docket)}.";
                 pending.Add((budgetLabel,
                     ParliamentSystem.GetBudgetBillConcern(_playerCountry, ParliamentSystem.BudgetActOf(_playerCountry, budgetBill)), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.BudgetAct, budgetBill.DaysRemaining));   // §761: the budget act is never vetoed (Art. 224); §768/§773: the spending alone, each statute part its own act
                 if (PoliSim.Elections.WorldClock.StatutePartsAreActs(PlayerCountryId))   // US-20: Poland's procedure, not its veto
@@ -9047,41 +9050,41 @@ namespace PoliSim.UI
 
             foreach (TaxProgramBill bill in _simulationManager.GetPendingTaxProgramBills(PlayerCountryId))
             {
-                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
+                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - {ResolvesIn(bill.DaysRemaining, bill.Docket)}.",
                     ParliamentSystem.GetTaxProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, bill.DaysRemaining));
             }
 
             foreach (WelfareProgramBill bill in _simulationManager.GetPendingWelfareProgramBills(PlayerCountryId))
             {
-                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - resolves in {bill.DaysRemaining} day(s).",
+                pending.Add(($"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} - {ResolvesIn(bill.DaysRemaining, bill.Docket)}.",
                     ParliamentSystem.GetWelfareProgramBillConcern(_playerCountry, bill), UiPalette.SystemArea.Welfare, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, bill.DaysRemaining));
             }
 
             LaborPolicyBill laborBill = _simulationManager.GetPendingLaborBill(PlayerCountryId);
             if (laborBill != null)
             {
-                pending.Add(($"Labor Market bill - resolves in {laborBill.DaysRemaining} day(s).",
+                pending.Add(($"Labor Market bill - {ResolvesIn(laborBill.DaysRemaining, laborBill.Docket)}.",
                     ParliamentSystem.GetLaborBillConcern(_playerCountry, laborBill), UiPalette.SystemArea.Labor, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, laborBill.DaysRemaining));
             }
 
             CrimeJusticePolicyBill crimeJusticeBill = _simulationManager.GetPendingCrimeJusticeBill(PlayerCountryId);
             if (crimeJusticeBill != null)
             {
-                pending.Add(($"Crime & Justice bill - resolves in {crimeJusticeBill.DaysRemaining} day(s).",
+                pending.Add(($"Crime & Justice bill - {ResolvesIn(crimeJusticeBill.DaysRemaining, crimeJusticeBill.Docket)}.",
                     ParliamentSystem.GetCrimeJusticeBillConcern(_playerCountry, crimeJusticeBill), UiPalette.SystemArea.CrimeJustice, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, crimeJusticeBill.DaysRemaining));
             }
 
             SectorPolicyBill sectorBill = _simulationManager.GetPendingSectorBill(PlayerCountryId);
             if (sectorBill != null)
             {
-                pending.Add(($"Economic Sectors bill - resolves in {sectorBill.DaysRemaining} day(s).",
+                pending.Add(($"Economic Sectors bill - {ResolvesIn(sectorBill.DaysRemaining, sectorBill.Docket)}.",
                     ParliamentSystem.GetSectorBillConcern(_playerCountry, sectorBill), UiPalette.SystemArea.Sectors, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, sectorBill.DaysRemaining));
             }
 
             TradePolicyBill tradeBill = _simulationManager.GetPendingTradeBill(PlayerCountryId);
             if (tradeBill != null)
             {
-                pending.Add(($"Trade bill - resolves in {tradeBill.DaysRemaining} day(s).",
+                pending.Add(($"Trade bill - {ResolvesIn(tradeBill.DaysRemaining, tradeBill.Docket)}.",
                     ParliamentSystem.GetTradeBillConcern(_playerCountry, tradeBill, _world), UiPalette.SystemArea.Trade, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, tradeBill.DaysRemaining));
             }
 
@@ -9090,7 +9093,7 @@ namespace PoliSim.UI
             {
                 // Names its amount, unlike the other four. A drawdown IS its number - "an emergency
                 // drawdown bill" tells a player nothing about what they are about to be committed to.
-                pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, resolves in {drawdownBill.DaysRemaining} day(s).",
+                pending.Add(($"SWF emergency drawdown - {drawdownBill.WithdrawalPercentOfGdp:F1}% of GDP, {ResolvesIn(drawdownBill.DaysRemaining, drawdownBill.Docket)}.",
                     ParliamentSystem.GetSwfDrawdownBillConcern(_playerCountry, drawdownBill), UiPalette.SystemArea.SovereignWealth, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, drawdownBill.DaysRemaining));
             }
 
@@ -9103,7 +9106,7 @@ namespace PoliSim.UI
                 LawBill lawBill = lawBillPair.Value;
                 LawDefinition law = LawCatalog.GetById(lawBill.LawId);
                 string lawName = law != null ? law.Name : lawBill.LawId;
-                pending.Add(($"{(lawBill.IsRepeal ? "Repeal" : "Enact")} \"{lawName}\" - resolves in {lawBill.DaysRemaining} day(s).",
+                pending.Add(($"{(lawBill.IsRepeal ? "Repeal" : "Enact")} \"{lawName}\" - {ResolvesIn(lawBill.DaysRemaining, lawBill.Docket)}.",
                     ParliamentSystem.GetLawBillConcern(_playerCountry, lawBill), UiPalette.SystemArea.CrimeJustice,
                     law != null && law.ConstitutionalAmendment ? PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment : PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, lawBill.DaysRemaining));
             }
@@ -9271,7 +9274,7 @@ namespace PoliSim.UI
             }
 
             string statusText = pendingBill != null
-                ? $"A drawdown bill is before {Legislature} - {UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1)}% of GDP, resolves in {pendingBill.DaysRemaining} day(s)."
+                ? $"A drawdown bill is before {Legislature} - {UiFormat.Number(pendingBill.WithdrawalPercentOfGdp, 1)}% of GDP, {ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket)}."
                 : fundExists
                     ? "No drawdown bill before " + Legislature + " - one withdraws from the fund now, not at the fiscal year."
                     : "No fund stands to draw down - the annual budget creates one first.";
@@ -9478,7 +9481,7 @@ namespace PoliSim.UI
             }
             if (pendingBill != null)
             {
-                return $"An annual budget bill is before {Legislature} - resolves in {pendingBill.DaysRemaining} day(s).";
+                return $"An annual budget bill is before {Legislature} - {ResolvesIn(pendingBill.DaysRemaining, pendingBill.Docket)}.";
             }
 
             // C-C2: ⚠ "only on your country's own fiscal-year date" was TRUE until the incoming
@@ -9499,13 +9502,27 @@ namespace PoliSim.UI
 
         /// <summary>PS-6 US-22: the bill-status line where the US Congress votes the budget as its acts - what is before Congress (a continuing resolution, the
         /// president's budget, the player's), when the annual process opens (the president's request day), and the funding: its horizon, or the shutdown's day.</summary>
+        /// <summary>PS-6 US-21b: a pending bill's countdown in a label's words - "resolves in N day(s)" while it is before the legislature (every country's
+        /// words, unchanged); on the player-president's docket, the day it becomes law unless he answers.</summary>
+        private string ResolvesIn(int daysRemaining, DocketEntry desk) => desk == null ? $"resolves in {daysRemaining} day(s)" : "on the President's desk - law on " + DeskLawDay(desk) + " unless answered";
+
+        /// <summary>PS-6 US-21b: the day a bill on the player-president's docket becomes law unanswered (`PresidentialDocket.LawDay`), as a page prints a date.</summary>
+        private string DeskLawDay(DocketEntry desk) => PresidentialDocket.LawDay(PlayerCountryId, desk.PresentedOn).ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+
+        /// <summary>PS-6 US-21b: a budget's entry on the docket - a continuing resolution's, or the first of its held acts; null where none is held.</summary>
+        private static DocketEntry DeskOf(BudgetBill bill) => bill?.Docket ?? (bill?.ActsHeld != null && bill.ActsHeld.Count > 0 ? bill.ActsHeld[0] : null);
+
         private string UsBudgetStatusText(BudgetBill pendingBill)
         {
             System.DateTime today = _simulationManager.CurrentDate;
             string funding = _playerCountry.LapseSince != System.DateTime.MinValue
                 ? " Funding lapsed on " + _playerCountry.LapseSince.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + " - the government is shut down, day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture)
-                    + ", until an appropriation or a continuing resolution becomes law (the stop of its non-excepted spending is not yet modelled)."
+                    + ", until an appropriation or a continuing resolution becomes law: its non-excepted outlays stop until then and are paid in full when funding returns."
                 : _playerCountry.AppropriatedThrough != System.DateTime.MinValue ? " The government is funded through " + _playerCountry.AppropriatedThrough.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + "." : string.Empty;
+            if (DeskOf(pendingBill) is DocketEntry desk)   // PS-6 US-21b: voted, awaiting the player-president's answer
+            {
+                return (pendingBill.ContinuingResolution ? "A continuing resolution passed Congress and is" : "Your budget's acts passed Congress and are") + " on the President's desk - law on " + DeskLawDay(desk) + " unless answered." + funding;
+            }
             if (pendingBill != null && pendingBill.ContinuingResolution)
             {
                 bool withheld = _playerCountry.ContinuingResolutionWithheldBy != null;

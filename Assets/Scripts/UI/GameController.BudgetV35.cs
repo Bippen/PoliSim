@@ -520,6 +520,7 @@ namespace PoliSim.UI
             SlipAnchor(switchHit, id + "/switch");
             var switchSlip = new SlipContent(!mayIntroduce ? "LOCKED" : pending != null ? "PENDING" : levied ? "ON · LEVIED" : "OFF · NOT LEVIED");
             if (!mayIntroduce) { switchSlip.Add(lockedBecause); }
+            else if (pending != null && pending.Docket != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS ON THE PRESIDENT'S DESK - LAW ON " + DeskLawDay(pending.Docket).ToUpperInvariant() + " UNLESS ANSWERED"); }   // PS-6 US-21b: voted, so no count
             else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE " + LegislatureCaps + " · " + pending.DaysRemaining + " DAY(S)").Add("IT " + taxVerdict + " ON TODAY'S COUNT"); }
             else { switchSlip.Add("A CLICK INTRODUCES A BILL OF ITS OWN TO " + (levied ? "REMOVE" : "LEVY") + " IT - VOTED THEN, NOT WITH THE BUDGET").Add("IF INTRODUCED NOW · " + taxVerdict); }
             if (mayIntroduce && ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { switchSlip.Add(taxVetoLine); }
@@ -928,14 +929,14 @@ namespace PoliSim.UI
             {
                 BudgetBill tabled = _simulationManager.GetPendingBudgetAlternative(PlayerCountryId);
                 string line = null;
-                bool withholdVerb = false;   // PS-6 US-22: the opposition's verb on a continuing resolution before Congress (Ask 2's reading (P))
-                if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Budget, null, out line); }   // PS-6 US-19: in a Congress the budget's own reason - the president proposes it
+                // PS-6 US-22: the opposition's verb on a continuing resolution before Congress (Ask 2's reading (P), standing - I13 (2)); US-22b (I13 (3)): or due,
+                // since the one decided the day before the horizon is withheld in advance
+                bool withholdVerb = UsBudgetProcedure.Applies(_playerCountry) && (_playerCountry.ContinuingResolutionWithheldBy == _playerCountry.PlayerPartyAbbrev   // US-22b (the review's M2): the release is offered whenever the player's party withholds, whatever is before Congress
+                                    || ((pendingBill == null || pendingBill.ContinuingResolution) && UsBudgetProcedure.MayWithhold(_playerCountry, pendingBill, _simulationManager.CurrentDate, out _)));
+                if (withholdVerb) { }
+                else if (pendingBill == null || !pendingBill.GovernmentBill) { _simulationManager.PlayerMayIntroduce(PlayerCountryId, Congress.Kind.Budget, null, out line); }   // PS-6 US-19: in a Congress the budget's own reason - the president proposes it
                 else if (tabled != null) { line = "Your alternative is tabled · the chamber decides in " + pendingBill.DaysRemaining + " day(s)"; }
-                else if (PoliSim.Elections.WorldClock.CongressActs(PlayerCountryId))   // PS-6 US-22: Congress votes the president's budget as its acts, weighing no alternative
-                {
-                    withholdVerb = UsBudgetProcedure.Applies(_playerCountry) && UsBudgetProcedure.MayWithhold(_playerCountry, pendingBill, out _);
-                    if (!withholdVerb) { line = "Congress votes the president's budget as its acts - no alternative budget is weighed"; }
-                }
+                else if (PoliSim.Elections.WorldClock.CongressActs(PlayerCountryId)) { line = "Congress votes the president's budget as its acts - no alternative budget is weighed"; }   // PS-6 US-22: Congress votes the president's budget as its acts, weighing no alternative
                 else if (!PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId)) { line = "This country's budget procedure is not yet modelled - the government's bill is voted alone"; }
                 if (withholdVerb)
                 {
@@ -946,10 +947,15 @@ namespace PoliSim.UI
                         if (!_simulationManager.WithholdContinuingResolution(PlayerCountryId, !withheld, out string refused)) { Debug.Log($"BUDGET: the continuing resolution's verb was refused - {refused}"); }
                     }
                     SlipAnchor(row, "budget:introduce");
+                    string decides = pendingBill != null && pendingBill.ContinuingResolution ? "CONGRESS DECIDES IN " + pendingBill.DaysRemaining + " DAY(S)"
+                        : _playerCountry.LapseSince != System.DateTime.MinValue ? "THE NEXT IS TABLED AFTER THE PRESIDENT'S REQUEST IS DECIDED"
+                        : "THE NEXT IS DECIDED ON " + UsBudgetProcedure.HorizonEve(_playerCountry.AppropriatedThrough).ToString("d MMMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " IF NO APPROPRIATION IS LAW BY THEN";
                     _budgetSlipBook.Anchors["budget:introduce"] = new SlipContent(withheld ? "RELEASE THE CONTINUING RESOLUTION" : "WITHHOLD THE CONTINUING RESOLUTION")
-                        .Add(withheld ? "YOUR PARTY VOTES AGAINST IT IN BOTH CHAMBERS · RELEASED, IT IS ASKED NOTHING AND PASSES UNCONTESTED"
-                            : "YOUR PARTY WOULD VOTE AGAINST IT IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT · CONGRESS DECIDES IN " + pendingBill.DaysRemaining + " DAY(S)")
+                        .Add(withheld ? "YOUR PARTY VOTES AGAINST IT IN BOTH CHAMBERS · RELEASED, ONE IS ASKED NOTHING AND PASSES UNCONTESTED THE NEXT DAY"
+                            : "YOUR PARTY WOULD VOTE AGAINST IT IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT")
+                        .Add(decides)
                         .Add("A RESOLUTION THAT FALLS FUNDS NOTHING - FROM 1 OCTOBER UNFUNDED, THE GOVERNMENT SHUTS DOWN, AND IT BEARS EACH ONE THAT FALLS")
+                        .Add("IN A SHUTDOWN YOUR OWN SENATORS MAY CROSS AT CLOTURE - DRAWN FROM THE 2025 LAPSE'S CLOTURE VOTES, " + PoliSim.Elections.UsLapseDraw.FittedLabel)
                         .Add("NO OTHER PARTY WITHHOLDS ONE");
                 }
                 else if (line != null)

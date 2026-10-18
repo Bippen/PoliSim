@@ -49,6 +49,7 @@ namespace PoliSim.EditorTools
         private static readonly (string Digest, string Why)[] RuleDigests =
         {
             ("84787a5309a25fb0073a22693a6676d7695aa5e0d44193fc9e2fa5368c00a734", "preregistered (US-13, before the instrument's first run)"),
+            ("6cf56a5d32cb18d312dd15c3a14fc19aa153ec405949dd105067200993768a67", "AMENDED (I4, §863): both chambers; the seat change's line after R-US18 RULED (I1)"),
         };
 
         /// <summary>The ruling record: NONE, ASKED or RULED. The first run registers the ask - its section and the outcome: the verdict, the government
@@ -144,6 +145,10 @@ namespace PoliSim.EditorTools
             public int Year, Congress, From;
             public string Kind, Party, Elected, VsChange, VsDir;
             public int? SeatsD, SeatsR, SeatsOther, SeatsVacant, SeatsTotal;
+            /// <summary>The Senate sitting on the election's day ([SEN-DIV], the tool's reading): its Congress, the period read ("-" where the line has
+            /// none), its divisions, the majority as printed and how the tool held it to the line's counts.</summary>
+            public int SenateCongress, SenateD, SenateR, SenateOther, SenateTotal;
+            public string SenatePeriod, SenateMajority, SenateHow;
             public long? ClerkR, ClerkD, ClerkTotal;
         }
 
@@ -187,7 +192,7 @@ namespace PoliSim.EditorTools
                 if (header == null) { header = line.Split(','); continue; }
                 rows.Add(ParseRow(header, line.Split(',')));
             }
-            Check(header != null && header.SequenceEqual("year,kind,congress,president_party,president_from,elected_party,seats_d,seats_r,seats_other,seats_vacant,seats_total,clerk_r,clerk_d,clerk_total,vs_dem_pct,vs_rep_pct,vs_vote_change,vs_vote_direction".Split(',')),
+            Check(header != null && header.SequenceEqual("year,kind,congress,president_party,president_from,elected_party,seats_d,seats_r,seats_other,seats_vacant,seats_total,clerk_r,clerk_d,clerk_total,vs_dem_pct,vs_rep_pct,vs_vote_change,vs_vote_direction,senate_day,senate_congress,senate_period,senate_d,senate_r,senate_other,senate_total,senate_majority,senate_how".Split(',')),
                 "the record's CSV carries the heading this check reads");
             int staleSources = 0;
             foreach (var s in sources)
@@ -197,8 +202,14 @@ namespace PoliSim.EditorTools
             }
             int nara = sources.Count(s => s.Rel.Contains("archives_electoral_college_")), clerkPages = sources.Count(s => s.Rel.Contains("clerk_statistics"));
             Check(staleSources == 0 && sources.Any(s => s.Rel == "executive/history_house_party_divisions.html") && sources.Any(s => s.Rel == "midterms/vitalstats_table_2-2.csv")
+                  && sources.Any(s => Regex.IsMatch(s.Rel, @"^records/wayback_senate_party_division_\d{8}\.html$"))
                   && nara == rows.Count(r => r.Year <= 2024 && r.Year % 4 == 0) && clerkPages == rows.Count(r => r.ClerkR.HasValue),
-                F("the pages the record was read from are on disk byte for byte: {0} pages - [HH-DIV], NARA's results for every presidential year ({1}), the Clerk's statistics for every year it reads ({2}), the secondary", sources.Count, nara, clerkPages));
+                F("the pages the record was read from are on disk byte for byte: {0} pages - [HH-DIV], [SEN-DIV], NARA's results for every presidential year ({1}), the Clerk's statistics for every year it reads ({2}), the secondary", sources.Count, nara, clerkPages));
+            // [SEN-DIV] as the tool read it: the Senate sitting on each election's day, the Congress the election two years before chose
+            List<Row> badSenate = rows.Where(r => r.SenateCongress != r.Congress - 1 || r.SenateD + r.SenateR + r.SenateOther != r.SenateTotal || (r.SenateMajority != "R" && r.SenateMajority != "D")
+                                                  || !new[] { "seats", "seats-with-caucus", "equal-vp", "page" }.Contains(r.SenateHow) || (r.SenateHow == "equal-vp" && r.SenateMajority != r.Party)).ToList();
+            Check(badSenate.Count == 0, F("the Senate sitting at every election is the Congress the election two years before chose, its divisions summing to its seats, its majority REP or DEM (an equal division the president's party's, one ticket){0}",
+                badSenate.Count == 0 ? "" : " - not at " + string.Join(", ", badSenate.Select(r => r.Year))));
             string[] doc = File.ReadAllLines(Path.Combine(root, DocRelative), Encoding.UTF8);
             Check(doc.Length > 0 && doc[0].Contains("sha256 " + csvDigest), F("the record document's stamp carries the CSV's digest {0} - a changed CSV is re-run through Tools/us_midterm_record.pl", csvDigest.Substring(0, 8)));
 
@@ -218,7 +229,8 @@ namespace PoliSim.EditorTools
                 Row prev = byYear[x.Year - 2];
                 string largest = prev.SeatsR > prev.SeatsD ? "R" : prev.SeatsD > prev.SeatsR ? "D" : "tie";
                 Check(largest != "tie", F("the House sitting at {0} has one largest party", x.Year));
-                var dv = new Derived { Row = x, Government = largest == x.Party ? "unified" : "divided" };
+                // R-US20's block as amended under I4: unified where the president's party holds the House sitting and the Senate sitting on the day
+                var dv = new Derived { Row = x, Government = largest == x.Party && x.SenateMajority == x.Party ? "unified" : "divided" };
                 int? Seats(Row r, string p) => p == "R" ? r.SeatsR : r.SeatsD;
                 if (Seats(x, x.Party).HasValue && Seats(prev, x.Party).HasValue) { dv.SeatsBefore = Seats(prev, x.Party); dv.SeatsAfter = Seats(x, x.Party); dv.SeatChange = dv.SeatsAfter - dv.SeatsBefore; }
                 if (x.ClerkR.HasValue && prev.ClerkR.HasValue)
@@ -240,9 +252,9 @@ namespace PoliSim.EditorTools
                 string line = doc.SkipWhile(l => !l.StartsWith(section, StringComparison.Ordinal)).Skip(1).TakeWhile(l => !l.StartsWith("## ", StringComparison.Ordinal))
                                  .FirstOrDefault(l => l.StartsWith(F("| {0} | ", d.Row.Year), StringComparison.Ordinal));
                 string[] c = line == null ? new string[0] : Cells(line);
-                bool ok = c.Length == 8 && c[1].StartsWith(F("{0} ({1}: ", PartyName(d.Row.Party), d.Row.From), StringComparison.Ordinal) && c[2] == d.Government
-                          && c[3] == (d.SeatChange.HasValue ? F("{0} -> {1}", d.SeatsBefore, d.SeatsAfter) : "-") && c[4] == Sc(d.SeatChange)
-                          && c[5] == (d.Swing.HasValue ? F("{0} -> {1}", Pct(d.ShareBefore.Value), Pct(d.ShareAfter.Value)) : "-") && c[6] == Pp(d.Swing) && c[7] == Vs(d.VsSwing);
+                bool ok = c.Length == 9 && c[1].StartsWith(F("{0} ({1}: ", PartyName(d.Row.Party), d.Row.From), StringComparison.Ordinal) && c[2] == d.Government && c[3] == SenateCell(d.Row)
+                          && c[4] == (d.SeatChange.HasValue ? F("{0} -> {1}", d.SeatsBefore, d.SeatsAfter) : "-") && c[5] == Sc(d.SeatChange)
+                          && c[6] == (d.Swing.HasValue ? F("{0} -> {1}", Pct(d.ShareBefore.Value), Pct(d.ShareAfter.Value)) : "-") && c[7] == Pp(d.Swing) && c[8] == Vs(d.VsSwing);
                 if (ok) { docRows++; } else { Check(false, F("the record document's {0} row is not what the CSV gives: '{1}'", d.Row.Year, line ?? "no row")); }
             }
             Check(docRows == midterms.Count + presYears.Count, F("the record document's rows are the CSV's, recomputed here: {0} midterms and {1} presidential years", midterms.Count, presYears.Count));
@@ -255,7 +267,7 @@ namespace PoliSim.EditorTools
             };
             card.Add("### The record - the president's party in the House (`docs/generated/US_MIDTERM_RECORD.md`)");
             card.Add("");
-            card.Add("Each set's least and greatest, recomputed from `ElectionsData/usa/house_midterms.csv`: the seat change by [HH-DIV], the two-party vote swing by the Clerk's recapitulations where they carry text (1998 on), and the SECONDARY compilation's (Vital Statistics on Congress, Table 2-2), printed beside and never read by the rule. Points; n counts the elections each column reads.");
+            card.Add("Each set's least and greatest, recomputed from `ElectionsData/usa/house_midterms.csv`, the government type read over both chambers sitting on the day ([HH-DIV]'s House, [SEN-DIV]'s Senate; R-US20's block as amended under I4): the seat change by [HH-DIV], the two-party vote swing by the Clerk's recapitulations where they carry text (1998 on), and the SECONDARY compilation's (Vital Statistics on Congress, Table 2-2), printed beside and never read by the rule. Points; n counts the elections each column reads.");
             card.Add("");
             card.Add("| set | n | seat change: least / greatest | n (the Clerk) | vote swing (the Clerk): least / greatest | n (SECONDARY) | vote swing (SECONDARY): least / greatest |");
             card.Add("|---|---:|---:|---:|---:|---:|---:|");
@@ -281,9 +293,9 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add(F("**R-US20's band** - the rule's record, the midterms {0} by the Clerk, both government types together: {1} (full precision: L = {2:0.000000}, U = {3:0.000000}). Every earlier midterm's vote swing is BILLED - the Clerk's statistics of 1944-1996 are page images.",
                 string.Join(", ", band.Select(d => d.Row.Year)), bandText, bandL, bandU));
-            bool record2026 = m2026.Row.Party == "R" && m2026.Government == "unified" && byYear[2024].SeatsR == 220 && byYear[2024].SeatsD == 215;
+            bool record2026 = m2026.Row.Party == "R" && m2026.Government == "unified" && byYear[2024].SeatsR == 220 && byYear[2024].SeatsD == 215 && m2026.Row.SenateMajority == "R";
             Check(record2026,
-                F("the record's 2026 midterm: the president's party {0} (2024's winner), the House sitting the 2024 election's, REP {1} DEM {2} - {3}", PartyName(m2026.Row.Party), byYear[2024].SeatsR, byYear[2024].SeatsD, m2026.Government));
+                F("the record's 2026 midterm: the president's party {0} (2024's winner), the House sitting the 2024 election's, REP {1} DEM {2}, the Senate sitting {3} - {4}", PartyName(m2026.Row.Party), byYear[2024].SeatsR, byYear[2024].SeatsD, SenateCell(m2026.Row), m2026.Government));
 
             // ---- the model's midterm
             Midterm w = ReadMidterm();
@@ -300,7 +312,9 @@ namespace PoliSim.EditorTools
                 F("Trump (REP) the president from the oath, as of record - elected by the world's own count (US-8: {0}): the government changed to REP on {1:yyyy-MM-dd} (the record's {2:yyyy-MM-dd}); on the polling day {3}",
                     w.CountedLine ?? "no count held", w.OathFrom, OathDay, w.Executive));
             Check(termHeld, F("the record over the term read at both ends, the term begun on the oath's day ({0:yyyy-MM-dd}) - {1}", OathDay, EconomicVote.Describe(w.Term)));
-            bool unified = w.Largest == w.PmParty;
+            // both chambers (R-US20's block as amended under I4): the House's largest party and the seated Senate's majority by UsSenate.MajorityOf
+            Check(w.SenateSeated, F("the Senate is seated in the world on the polling day (the USA the player's country): its majority {0}", w.SenateMajority ?? "none"));
+            bool unified = w.Largest == w.PmParty && w.SenateSeated && w.SenateMajority == w.PmParty;
             string government = unified ? "unified" : "divided";
             double liveMag = w.LiveMagnitudes.TryGetValue(w.PmParty, out double lmag) ? lmag : double.NaN;
             Check(w.LiveMagnitudes.Count == 1 && liveMag == (unified ? EconomicVote.UsPresidentUnified : EconomicVote.UsPresidentDivided),
@@ -345,8 +359,8 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add("### The model's midterm - 3 Nov 2026");
             card.Add("");
-            card.Add(F("- **The world**: the epoch {0:yyyy-MM-dd} (the eve of 5 Nov 2024), seed {1}, the USA the player's country with {2} its party (the AI governs the president's party through the term), no decision on any turn, stepped one day at a time in the controller's order to {3:yyyy-MM-dd} ({4} days). The 2024 election's House from {5:yyyy-MM-dd}, Trump (REP) from {6:yyyy-MM-dd} - elected by the world's own count of 5 Nov 2024 (US-8), as the record elected him. On the polling day: the president's party {7}, the House's largest party {8} - **{9}**.",
-                Epoch, Seed, PlayerParty, w.Day, w.Days, w.HouseFrom, w.OathFrom, w.PmParty, w.Largest, government));
+            card.Add(F("- **The world**: the epoch {0:yyyy-MM-dd} (the eve of 5 Nov 2024), seed {1}, the USA the player's country with {2} its party (the AI governs the president's party through the term), no decision on any turn, stepped one day at a time in the controller's order to {3:yyyy-MM-dd} ({4} days). The 2024 election's House from {5:yyyy-MM-dd}, Trump (REP) from {6:yyyy-MM-dd} - elected by the world's own count of 5 Nov 2024 (US-8), as the record elected him. On the polling day: the president's party {7}, the House's largest party {8}, the Senate's majority {10} (both chambers, R-US20's block as amended under I4) - **{9}**.",
+                Epoch, Seed, PlayerParty, w.Day, w.Days, w.HouseFrom, w.OathFrom, w.PmParty, w.Largest, government, w.SenateMajority ?? "none"));
             card.Add(F("- **The poll**: US-5's House history (R-US15 (a), G2) - held at the four countries' median spread (σ {0:0.00}, τ {1:0.00}), fitted to the 2024 House split (REP {2}); the loyalty 2024 against 2022, REP {3:0.00} DEM {4:0.00}; REP {5} before the economic vote - the identity holds (within {6:0.0e+0} of the prior).",
                 held.Sigma, held.Tau, Pct(priorSplit), loyalty[0], loyalty[1], Pct(TwoParty(poll)), off));
             card.Add(F("- **The economic vote**: {0}; {1:0.000000} units of deterioration on the book's scale.", EconomicVote.Describe(w.Term), deterioration));
@@ -426,6 +440,8 @@ namespace PoliSim.EditorTools
                 Party = Cell("president_party"), From = int.Parse(Cell("president_from"), CultureInfo.InvariantCulture), Elected = Cell("elected_party"),
                 SeatsD = I("seats_d"), SeatsR = I("seats_r"), SeatsOther = I("seats_other"), SeatsVacant = I("seats_vacant"), SeatsTotal = I("seats_total"),
                 ClerkR = L("clerk_r"), ClerkD = L("clerk_d"), ClerkTotal = L("clerk_total"), VsChange = Cell("vs_vote_change"), VsDir = Cell("vs_vote_direction"),
+                SenateCongress = I("senate_congress").Value, SenatePeriod = Cell("senate_period"), SenateD = I("senate_d").Value, SenateR = I("senate_r").Value,
+                SenateOther = I("senate_other").Value, SenateTotal = I("senate_total").Value, SenateMajority = Cell("senate_majority"), SenateHow = Cell("senate_how"),
             };
         }
 
@@ -446,6 +462,9 @@ namespace PoliSim.EditorTools
             public Dictionary<string, double> LiveShift, LiveMagnitudes;
             public WorldClock.ExecutiveKind Kind;
             public string PmParty, Executive, Largest;
+            /// <summary>The Senate seated on the polling day and its majority (<see cref="UsSenate.MajorityOf"/>, the Vice President read on that day).</summary>
+            public bool SenateSeated;
+            public string SenateMajority;
             /// <summary>PS-6 US-8: the world's own count of 5 Nov 2024 - the winner's party and the count's line; null where none was held.</summary>
             public string CountedParty, CountedLine;
         }
@@ -507,6 +526,8 @@ namespace PoliSim.EditorTools
                     result.Executive = usa.Government.Executive ?? string.Empty;
                     if (usa.UsPresidentialElections.Count == 1) { result.CountedParty = usa.UsPresidentialElections[0].WinnerParty; result.CountedLine = usa.UsPresidentialElections[0].Line; }
                     result.Largest = usa.ParliamentSeats.OrderByDescending(kv => kv.Value).First().Key;
+                    result.SenateSeated = usa.SecondChamberSeats != null && usa.SecondChamberSeats.Count > 0;
+                    result.SenateMajority = result.SenateSeated ? UsSenate.MajorityOf(usa.SecondChamberSeats, UsSenate.VicePresidentParty(usa, sim.CurrentDate)) : null;
                 }
             }
             finally
@@ -576,6 +597,12 @@ namespace PoliSim.EditorTools
 
         private static string[] Cells(string line) => line.Trim().Trim('|').Split('|').Select(c => c.Trim()).ToArray();
         private static string PartyName(string p) => p == "R" ? "REP" : p == "D" ? "DEM" : p;
+        private static string SenateCell(Row r)
+        {
+            string how = r.SenateHow == "seats-with-caucus" ? ", with its caucusing independents" : r.SenateHow == "equal-vp" ? ", an equal division - the Vice President's party"
+                       : r.SenateHow == "page" ? ", the page's - independents of no caucus named" : "";
+            return F("{0} (Congress {1}{2}{3})", PartyName(r.SenateMajority), r.SenateCongress, r.SenatePeriod == "-" ? "" : ", " + r.SenatePeriod.Replace("..", " to "), how);
+        }
         private static string Pct(double share) => F("{0:0.00} %", 100.0 * share);
         private static string Pp(double? points) { if (!points.HasValue) { return "-"; } string s = F("{0:+0.00;-0.00}", points.Value); return s == "-0.00" ? "+0.00" : s; }
         private static string Sc(int? seats) => seats.HasValue ? F("{0:+0;-0;+0}", seats.Value) : "-";

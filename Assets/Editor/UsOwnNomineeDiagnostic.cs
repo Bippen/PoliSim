@@ -408,9 +408,9 @@ namespace PoliSim.EditorTools
                 if (win2028 != null) { later.UsPresidentialElections.Add(Copy(win2028)); }
                 UsTermLimit.Nominee rep2032 = UsTermLimit.NomineeOf(later, Polled2032, "REP");
                 Check(win2028 != null && win2028.WinnerParty == "REP" && UsTermLimit.WinnerOf(win2028) == Hale && rep2032 != null && rep2032.TermLimited && rep2032.Barred == Hale
-                      && rep2032.BarredBecause == "elected 2024 and 2028" && rep2032.ViceDefault && rep2032.Person == "Republican Party's candidate for Vice President (2028)"
+                      && rep2032.BarredBecause == "elected 2024 and 2028" && rep2032.ViceDefault && rep2032.Person == "Republican Party's candidate for Vice President (2024)"
                       && !UsTermLimit.EligibleFor(later, "REP", Polled2032).Contains(Hale),
-                    F("(f) elected again in 2028 ({0}), {1} cannot stand in 2032 - {2} ({3}); REP fields {4} - {5}",
+                    F("(f) elected again in 2028 ({0}), {1} cannot stand in 2032 - {2} ({3}); REP fields {4}, the 2024 ticket's running mate kept on the re-elected 2028 ticket (R-US27 (ii), ruled) - {5}",
                         win2028?.Winner ?? why2028, Hale, rep2032?.Barred, rep2032?.BarredBecause, rep2032?.Person, rep2032?.Basis));
                 EnergyMarket.ResetTurnState();
 
@@ -422,8 +422,8 @@ namespace PoliSim.EditorTools
                 List<UsTermLimit.Election> trumpAfter = UsTermLimit.ElectionsOf(demWorld, Trump, Polled2028);
                 UsTermLimit.Nominee rep2028 = UsTermLimit.NomineeOf(demWorld, Polled2028, "REP"), dem2028 = UsTermLimit.NomineeOf(demWorld, Polled2028, "DEM");
                 Check(beaten != null && beaten.WinnerParty == "REP" && UsTermLimit.WinnerOf(beaten) == Trump && trumpAfter.Count == 2 && rep2028 != null && rep2028.TermLimited && rep2028.Person == Vance
-                      && dem2028 != null && dem2028.Person == "Democratic Party's candidate (2028)" && UsTermLimit.PartyPeople(demWorld, "DEM", Polled2028).Contains(Reyes) && UsTermLimit.Eligible(demWorld, Reyes, Polled2028),
-                    F("(f) a DEM nominee beaten in 2024 ({0}): {1} elected {2} cannot stand, REP fields {3} - {4}; DEM, out of the White House, fields \"{5}\", {6} among its people and eligible but not fielded (R-US26, asked)",
+                      && dem2028 != null && dem2028.Person == "Democratic Party's candidate (2028)" && UsTermLimit.PartyPeople(demWorld, "DEM", Polled2028).Contains(Reyes) && UsTermLimit.Eligible(demWorld, Reyes, Polled2028) && dem2028.OutParty && UsTermLimit.EligibleFor(demWorld, "DEM", Polled2028).Contains(Reyes),
+                    F("(f) a DEM nominee beaten in 2024 ({0}): {1} elected {2} cannot stand, REP fields {3} - {4}; DEM, out of the White House, fields \"{5}\" by default, {6} among its people, eligible, and the DEM player's to pick (R-US26 (a), ruled)",
                         beaten?.Winner, Trump, Won(trumpAfter), rep2028?.Person, rep2028?.Basis, dem2028?.Person, Reyes));
                 EnergyMarket.ResetTurnState();
             }

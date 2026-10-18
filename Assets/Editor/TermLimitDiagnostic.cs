@@ -38,10 +38,13 @@ namespace PoliSim.EditorTools
     /// <item>(f) A HARRIS WIN: the game's own 2024 count for DEM leaves Harris eligible - she stands again in 2028 as the president within the limit, no party is
     /// term-limited, and no pick is offered;</item>
     /// <item>(g) a later chain on the game's own contests: Vance elected 2028 and 2032 cannot stand in 2036, and his party's default is the running mate on the
-    /// game's 2032 ticket (the party's own, unnamed - the plan's premise, DECLARED);</item>
+    /// game's 2028 ticket, kept on his re-elected 2032 ticket (US-8b: R-US27 (ii) as ruled - a re-elected president keeps the sitting Vice President);
+    /// (l) the same rule for a Harris re-elected in 2028: Walz kept, and DEM's 2032 default;</item>
     /// <item>(h) the field of record untouched: no nominee of the game's on 5 Nov 2024 and the count the same contest with or without nominees; the no-country
     /// count's later field still unnamed (US-8's (f)); (i) the record's completeness for the people the pick offers: NARA's pages from 1952 to 2008 (US-13's)
     /// name none of them a winner, so the catalog's window holds every election of theirs; (j) the second clause DECLARED not reachable; (k) scope.</item>
+    /// <item>(m) US-28b (R-US26 (a) as ruled): the player's out-party picks from its people, the defeated president among them, the default unnamed - a Harris
+    /// elected in 2024 and beaten in 2028 fielded by the DEM player in 2032; the AI out-party's default; the vote unchanged; the pick in the save and the count.</item>
     /// </list>
     /// No card block: the readings are this check's lines.
     /// </summary>
@@ -218,12 +221,28 @@ namespace PoliSim.EditorTools
                 if (vance2032 != null) { probeContests.Add(vance2032); }
                 UsTermLimit.Nominee rep2036 = UsTermLimit.NomineeOf(probe, Polled2036, "REP");
                 List<string> choices2036 = UsTermLimit.EligibleFor(probe, "REP", Polled2036);
-                string mate2032 = "Republican Party's candidate for Vice President (2032)";
+                string mate2032 = "Republican Party's candidate for Vice President (2028)";   // US-8b (R-US27 (ii) as ruled): the 2028 mate, kept on the re-elected 2032 ticket
+                bool vp2033 = UsTermLimit.TryVicePresidentOn(probe, new DateTime(2033, 2, 1), out string vpAfter2032, out string vpAfter2032Party, out string vpAfter2032Basis);
+                Check(vp2033 && vpAfter2032 == mate2032 && vpAfter2032Party == "REP" && vpAfter2032Basis.Contains("kept on the re-elected president's 2032 ticket"),
+                    F("(l) a re-elected president keeps the sitting Vice President (R-US27 (ii), ruled): after {0}'s 2032 re-election the Vice President is {1} - {2}", Vance, vpAfter2032, vpAfter2032Basis));
                 Check(vance2028?.Winner == Vance && rep2032 != null && rep2032.Person == Vance && !rep2032.TermLimited && vance2032?.Winner == Vance
                       && rep2036 != null && rep2036.TermLimited && rep2036.Barred == Vance && rep2036.BarredBecause == "elected 2028 and 2032" && rep2036.Default == mate2032 && rep2036.ViceDefault
                       && !choices2036.Contains(Vance) && !choices2036.Contains(Trump) && choices2036.FirstOrDefault() == mate2032 && choices2036.Contains("Republican Party's candidate (2036)"),
                     F("(g) a chain on the game's own contests: {0} elected 2028 stands again in 2032 as the president within the limit ({1}); elected 2028 and 2032 he cannot stand in 2036, and REP's default is {2} ({3}); the choices {4}",
                         Vance, rep2032?.Basis, rep2036?.Default, rep2036?.Basis, People(choices2036)));
+
+                // ---- (l) R-US27 (ii), ruled: a Harris re-elected in 2028 keeps Walz, and DEM's 2032 default is Walz
+                probeContests.Clear();
+                probeContests.Add(Copy(countD));
+                UsPresidentialElection.Contest harris2028 = UsPresidentialElection.Count(CountryId.USA, Polled2028, demPoll, UsTermLimit.NomineesFor(probe, Polled2028), out ElectoralCollege.StateCall[] _, out string whyHarris);
+                if (harris2028 != null) { probeContests.Add(harris2028); }
+                bool vp2029 = UsTermLimit.TryVicePresidentOn(probe, new DateTime(2029, 2, 1), out string vpHarris2, out string vpHarris2Party, out string vpHarris2Basis);
+                UsTermLimit.Nominee dem2032 = UsTermLimit.NomineeOf(probe, Polled2032, "DEM");
+                Check(harris2028 != null && UsTermLimit.WinnerOf(harris2028) == Harris && UsTermLimit.RunningMateOf(probe, harris2028, "DEM") == Walz
+                      && vp2029 && vpHarris2 == Walz && vpHarris2Party == "DEM" && vpHarris2Basis.Contains("kept on the re-elected president's 2028 ticket")
+                      && dem2032 != null && dem2032.TermLimited && dem2032.Barred == Harris && dem2032.BarredBecause == "elected 2024 and 2028" && dem2032.ViceDefault && dem2032.Default == Walz,
+                    F("(l) {0} elected 2024 (the ticket of record, Walz) and re-elected 2028 ({1}) keeps the sitting Vice President: from 20 Jan 2029 {2} - {3}; in 2032 she cannot stand, and DEM's default is {4} ({5})",
+                        Harris, harris2028?.Line ?? whyHarris, vpHarris2, vpHarris2Basis, dem2032?.Default, dem2032?.Basis));
             }
             finally { probeContests.Clear(); }
             EnergyMarket.ResetTurnState();
@@ -416,6 +435,55 @@ namespace PoliSim.EditorTools
                 UsPresidentialElection.Contest held = usa.UsPresidentialElections.FirstOrDefault(c => c.PollingDay == Polled2028);
                 Check(held != null && held.Electors.Any(t => t.Party == "DEM" && t.Candidate == Harris) && !held.Line.Contains("cannot be elected again"),
                     F("(f) the count of {0} fields {1} for DEM - {2}", Day(Polled2028), Harris, held?.Line ?? "no count"));
+                EnergyMarket.ResetTurnState();
+            }
+
+            // ---- (m) US-28b (R-US26 (a), ruled): the player's out-party picks from its people, the defeated president among them, the default unnamed - a Harris
+            // elected in 2024 and beaten in 2028 fielded in 2032
+            {
+                const string DemUnnamed2032 = "Democratic Party's candidate (2032)";
+                SimulationManager.SetEpoch(Polled2032.AddDays(-2));
+                (SimulationManager sim, World w, Country usa) = Open(hosts, CountryId.USA, "DEM");
+                usa.UsPresidentialElections.Add(Copy(countD));
+                UsPresidentialElection.Contest beaten2028 = UsPresidentialElection.Count(CountryId.USA, Polled2028, repPoll, UsTermLimit.NomineesFor(usa, Polled2028), out ElectoralCollege.StateCall[] _, out string whyBeaten);
+                if (beaten2028 != null) { usa.UsPresidentialElections.Add(beaten2028); }
+                UsTermLimit.Nominee before = UsTermLimit.NomineeOf(usa, Polled2032, "DEM");
+                List<string> choices = UsTermLimit.EligibleFor(usa, "DEM", Polled2032);
+                Check(beaten2028 != null && beaten2028.WinnerParty == "REP" && beaten2028.Electors.Any(t => t.Party == "DEM" && t.Candidate == Harris)
+                      && before != null && before.OutParty && !before.TermLimited && !before.Picked && before.Person == DemUnnamed2032 && before.Default == DemUnnamed2032
+                      && choices.FirstOrDefault() == DemUnnamed2032 && choices.Contains(Harris) && UsTermLimit.Eligible(usa, Harris, Polled2032) && UsTermLimit.ElectionsOf(usa, Harris, Polled2032).Count == 1,
+                    F("(m) the out-party (R-US26 (a), ruled): {0} elected 2024 and beaten 2028 ({1}); on {2} DEM is out of the White House and fields \"{3}\" by default - {4}; the DEM player's choices, the default first: {5}",
+                        Harris, beaten2028?.Line ?? whyBeaten, Day(Polled2032), before?.Person, before?.Basis, People(choices)));
+                bool picked = UsTermLimit.Pick(usa, Polled2032, "DEM", Harris, out string pickWhy);
+                UsTermLimit.Nominee after = UsTermLimit.NomineeOf(usa, Polled2032, "DEM");
+                bool notOfParty = !UsTermLimit.Pick(usa, Polled2032, "DEM", Vance, out string notOfPartyWhy);
+                usa.PlayerPartyAbbrev = "REP";
+                UsTermLimit.Nominee ai = UsTermLimit.NomineeOf(usa, Polled2032, "DEM");
+                bool aiRefused = !UsTermLimit.Pick(usa, Polled2032, "DEM", Harris, out string aiWhy);
+                usa.PlayerPartyAbbrev = "DEM";
+                Check(picked && after != null && after.Picked && after.OutParty && after.Person == Harris && after.Default == DemUnnamed2032 && notOfParty
+                      && ai != null && !ai.Picked && ai.Person == DemUnnamed2032 && aiRefused && usa.UsNomineePicks.Count == 1 && usa.UsNomineePicks[0].Person == Harris,
+                    F("(m) the DEM player picks {0}: \"{1}\" stands - {2}{3}; {4} is refused - \"{5}\"; an AI out-party takes the default (\"{6}\"; a pick refused - \"{7}\")",
+                        Harris, after?.Person, after?.Basis, picked ? string.Empty : " - refused: " + pickWhy, Vance, notOfPartyWhy, ai?.Person, aiWhy));
+                // the vote with the pick and with the default, on one poll
+                List<UsTermLimit.Nominee> withPick = UsTermLimit.NomineesFor(usa, Polled2032);
+                usa.PlayerPartyAbbrev = "REP";
+                List<UsTermLimit.Nominee> withDefault = UsTermLimit.NomineesFor(usa, Polled2032);
+                usa.PlayerPartyAbbrev = "DEM";
+                UsPresidentialElection.Contest onePick = UsPresidentialElection.Count(CountryId.USA, Polled2032, demPoll, withPick, out ElectoralCollege.StateCall[] _, out string _);
+                UsPresidentialElection.Contest oneDefault = UsPresidentialElection.Count(CountryId.USA, Polled2032, demPoll, withDefault, out ElectoralCollege.StateCall[] _, out string _);
+                bool sameVote = onePick != null && oneDefault != null && onePick.Electors.Any(t => t.Party == "DEM" && t.Candidate == Harris) && oneDefault.Electors.Any(t => t.Party == "DEM" && t.Candidate == DemUnnamed2032)
+                                && onePick.Electors.Zip(oneDefault.Electors, (a, b) => a.Party == b.Party && a.Votes == b.Votes && a.Share == b.Share).All(same => same);
+                Check(sameVote && onePick.Line.Contains("DEM, out of the White House, fields " + Harris),
+                    F("(m) the out-party's pick changes who stands, not the vote: on one poll (REP 45 / DEM 55) every tally equal with {0} and with the default; the line - \"{1}\"", Harris, onePick?.Line ?? "no count"));
+                // the pick rides the save (the list US-28 added - no format step)
+                SaveGame copy = SaveGameService.Deserialize(SaveGameService.Serialize(SaveGameService.CreateSaveGame(sim, w, CountryId.USA, null)));
+                Country copied = copy.World.GetCountry(CountryId.USA);
+                bool carried = copied.UsNomineePicks.Count == 1 && copied.UsNomineePicks[0].Person == Harris && copied.UsNomineePicks[0].Party == "DEM" && copied.UsNomineePicks[0].PollingDay == Polled2032;
+                for (int d = 0; d < 3 && sim.CurrentDate < Polled2032; d++) { Step(sim, w); }
+                UsPresidentialElection.Contest held = usa.UsPresidentialElections.FirstOrDefault(c => c.PollingDay == Polled2032);
+                Check(carried && held != null && held.Electors.Any(t => t.Party == "DEM" && t.Candidate == Harris),
+                    F("(m) the pick rides the save (format {0}, no step: the list US-28 added) and the world's own count of {1} fields it - {2}", copy.SaveVersion, Day(Polled2032), held?.Line ?? "no count"));
                 EnergyMarket.ResetTurnState();
             }
 

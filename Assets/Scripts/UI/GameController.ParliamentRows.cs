@@ -793,6 +793,8 @@ namespace PoliSim.UI
         /// the polling day, and NEXT CHOICE, which steps the pick through the party's people who may be elected, the default first (<see cref="UsTermLimit.Pick"/>).
         /// The slip: who cannot stand and the elections that bar him, the amendment's words, the choices, and that every nominee stands at the party's poll on the
         /// outgoing record. Drawn for no other party - an AI party takes the default. Built as it stands; its board is asked of Design later.
+        /// US-28b (R-US26 (a) as ruled): and where the player's party is out of the White House and has a choice (its people who may be elected beyond the
+        /// default), the same row - THE PARTY'S OWN by default, YOUR PICK once picked - and NEXT CHOICE; its slip says a defeated president may run again.
         /// PS-6 US-33: and where the player's own nominee heads the ticket of the field of record (`UsTermLimit.Nominee.Own`), the row names it - YOUR OWN, the
         /// polling day, no choice to step - until the count; its slip says the party's poll reads the nominee's position.
         /// </summary>
@@ -816,14 +818,16 @@ namespace PoliSim.UI
                 {
                     _usNomineeDay = next;
                     _usNominee = UsTermLimit.NomineeOf(_playerCountry, next, party);
-                    _usNomineeChoices = _usNominee != null && _usNominee.TermLimited ? UsTermLimit.EligibleFor(_playerCountry, party, next) : null;
+                    _usNomineeChoices = _usNominee != null && (_usNominee.TermLimited || _usNominee.OutParty) ? UsTermLimit.EligibleFor(_playerCountry, party, next) : null;
                 }
             }
             UsTermLimit.Nominee nominee = _usNominee;
             List<string> choices = _usNomineeChoices;
             // PS-6 US-33 (SP-6a): the player's own nominee heads the ticket of the field of record - the row says so until the count, with no choice to step
             bool own = nominee != null && nominee.Own;
-            if (nominee == null || (!own && (!nominee.TermLimited || choices == null || choices.Count == 0))) { return; }
+            // US-28b (R-US26 (a) as ruled): the out-party's row where the player has a choice to make - its default unnamed, a defeated president among its people
+            bool outParty = nominee != null && !own && nominee.OutParty && choices != null && choices.Count > 1;
+            if (nominee == null || (!own && !outParty && (!nominee.TermLimited || choices == null || choices.Count == 0))) { return; }
             System.DateTime day = _usNomineeDay;
 
             GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
@@ -887,6 +891,18 @@ namespace PoliSim.UI
             }
             var people = new List<string>();
             foreach (string person in choices) { people.Add(person.ToUpperInvariant()); }
+            if (outParty)
+            {
+                book.Anchors["usnominee"] = new SlipContent("YOUR NOMINEE")
+                    .Add(nominee.Person.ToUpperInvariant() + " · " + PartySystems.ShortName(country, party).ToUpperInvariant() + " · POLLING DAY " + DeskDay(day))
+                    .Add("YOUR PARTY IS OUT OF THE WHITE HOUSE - ITS OWN CANDIDATE STANDS BY DEFAULT")
+                    .Add("A DEFEATED PRESIDENT MAY RUN AGAIN: THE TWENTY-SECOND AMENDMENT BARS ONLY A PERSON ELECTED TWICE")
+                    .Add("THE PARTY'S PEOPLE WHO MAY STAND: " + string.Join(" · ", people))
+                    .Add("EVERY NOMINEE STANDS AT THE PARTY'S POLL - THE CHOICE CHANGES WHO STANDS, NOT THE VOTE");
+                DrawRowRule(row);
+                GUILayout.Space(StatsUnit(10f));
+                return;
+            }
             book.Anchors["usnominee"] = new SlipContent("YOUR NOMINEE")
                 .Add(nominee.Person.ToUpperInvariant() + " · " + PartySystems.ShortName(country, party).ToUpperInvariant() + " · POLLING DAY " + DeskDay(day))
                 .Add(nominee.Barred.ToUpperInvariant() + " CANNOT BE ELECTED AGAIN - " + nominee.BarredBecause.ToUpperInvariant())

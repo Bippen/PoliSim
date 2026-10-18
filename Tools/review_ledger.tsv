@@ -20,7 +20,6 @@ file	Assets/Scripts/Simulation/EnergyLedger.cs	89d2cde964420e222190a1cfcaa484143
 baseline	777	57f1e5cc73f1721c6b69290ad20702ed3dab7f8677777907812687da739fb28d	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 baseline	424242	cd39dfbe1c8927937db2a0fe9cf58f6b35331310039b2c66d53c4f0bc7915014	reviewed	2026-09-21	s545	Reviews/2026-09-21_s545_ft10_pa.md	traj_p6pa
 file	Assets/Scripts/Data/EconomyState.cs	f99a3c9d69b753c6f6df9d6848a716dfb5ccfbaf4e7558c5c80b45f743d6a063	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
-file	Assets/Scripts/Data/ProgramBill.cs	476f48d616dbd343b1056d935c79aafa7285328492732c9678bbc12e2fca1f6d	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingCategory.cs	19c7df9fcc6486acb7ca440902462b5567f69a6375c62f82a763bcec6c8cab8c	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/SpendingLine.cs	614f93a446de40cde1b5ab2692577ec220546507effdcd8811a807c488e38175	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
 file	Assets/Scripts/Data/TaxBaseTable.cs	4b19b2dfe322a91772e6396aeb81714605a3403b4b395ae01c512aefc8e64cfe	grandfathered	2026-09-21	-	-	as the guard found it on 2026-09-21 (HEAD e0f5064)
@@ -242,3 +241,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	c59ddd16fae68ab88b30ff208680
 baseline	777	05736e3d3c62281827a608f26c81d661b28743a9d2c486505e4e6bfbd516811e	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	traj_af35 s777, turns 1-20 (the dump opens on Sweden's start)
 baseline	424242	d841dd2fad1f9f6e1dc2bdd37396d0de608cbc1e8af48de950937beebbbc0d18	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	traj_af35 s424242, turns 1-20 (the dump opens on Sweden's start)
 file	Assets/Scripts/Simulation/SimulationManager.cs	57db163ae6d8d42e331d6d72f87b13f56d523380f1c04c6e219eecb763bb7995	reviewed	2026-10-18	s859	Reviews/2026-10-18_s859_s862_integration.md	-
+file	Assets/Scripts/Data/ProgramBill.cs	7f1495ca926e75641684bfdbf8a1d49ade6c1c7690ce9d238a0f177f1e0431e0	reviewed	2026-10-18	s864	Reviews/2026-10-18_us21b_docket.md	-
+file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	1c122c11a89ebeb8067b288c4cc2bd9ac1553a8a70e705f15268c188de90d16b	reviewed	2026-10-18	s865	Reviews/2026-10-18_us22b_lapse.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	3de453afd4b5b6537609089159dc63f5c1dd38d62a393d0f0ce051a2f361ef23	reviewed	2026-10-18	s864	Reviews/2026-10-18_s863_s866_integration.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	b159cedc7faf6e275b607b043cd883ac99959898f936350842de3381288ee85a	reviewed	2026-10-18	s865	Reviews/2026-10-18_s863_s866_integration.md	-

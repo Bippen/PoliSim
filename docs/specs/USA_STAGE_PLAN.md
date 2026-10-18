@@ -448,7 +448,7 @@ Poland's statute-act split (D4 and E2: §768, §773) keys today on `Presidential
 *Done when:* Poland unchanged, proved by its own instruments — `PresidentialVetoDiagnostic`'s cases and the D4 and E2 cases (the no-policy dump meets no budget bill, §768, so the dump diff alone proves nothing here) — and by the dump diff; `GovernmentBudgetBillDiagnostic` re-pinned; Poland's Budget slip unchanged on Poland's dry film; review rows (SimulationManager, BudgetBill if touched); bars.
 
 **US-21 — The US veto. Size M.** *(R-US17)*
-Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to the president of the day — the record's or the game's — who vetoes by R-US17's rule; a player-president chooses. The override needs two thirds of each House on the sourced base, voted by the same sides (Poland's premise, DECLARED — and measured and said: under it no Congress of record overrides). The ten days and the pocket veto are not modelled, stated. The signing plate draws the veto and the override in both chambers (a US frame like 89g, through the film driver's staging), and `ChamberVerdicts.Veto` projects it.
+Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to the president of the day — the record's or the game's — who vetoes by R-US17's rule; a player-president chooses. The override needs two thirds of each House on the sourced base, voted by the same sides (Poland's premise, DECLARED — and measured and said: under it no Congress of record overrides). The pocket veto is not modelled, stated; the ten days are US-21b's Docket (a player-president's bill is law if unanswered after ten days, Sundays excepted). The signing plate draws the veto and the override in both chambers (a US frame like 89g, through the film driver's staging), and `ChamberVerdicts.Veto` projects it.
 *Needs:* US-10 (its rates already in Elias's hands), US-19, US-20; R-US17.
 *Owed from US-19 (§852):* a congressional majority out of the White House passes reconciliation kinds unvetoed until this item (US-19's ask F); the veto's and the override's costs compose with `Congress.GovernmentBears`.
 *Done when:* a US veto diagnostic on US-10's record cases and on planted bills; a run from 12 Mar 2024 to 20 Jan 2025 prints the bills that reached the president and those vetoed, beside the record's count for the 118th; Poland's veto diagnostics unchanged; review row; bars; REAL films of the veto plate at 1280 and 2560.
@@ -464,7 +464,7 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
   - the president of the day comes from the game's own sworn contest.
 - (vii) **Yes**, that is the override's arithmetic.
 
-*US-21b, owed:* the Docket for both countries, on the player-president's hook. Its surface stays US-23's.
+**Built (US-21b): `COMPLETED.md` §864** - the Docket. A bill presented to a player-president with no answer on the day is held in its slot (`DocketEntry`), answered through `SignDocketBill` / `VetoDocketBill` (acted on at its next day step, as of the day it was answered, whoever is president then; a veto to the override), and law without signature the day after the tenth day counted, Sundays excepted, from the day after presentment (`PresidentialDocket`). The budget's acts and a continuing resolution are docketed likewise. An AI president answers on the day. Poland's 21 days are DECLARED in the same rule, and no Polish path reaches it before SP-7b. The pocket veto is not modelled. No format step. `UsDocketDiagnostic`. Its surface stays US-23's.
 
 
 **US-22 — The US budget procedure. Size L.** *(R-US9)*
@@ -484,7 +484,7 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 - `Reviews/` report and rows for every money path touched (BudgetBill, SimulationManager, `FiscalYearData`); bars; the dry film; one filmed width of the US budget slip.
 **Built: `COMPLETED.md` §854** - the president's request on 1105(a)'s first Monday in February (DECLARED), voted as Congress's acts on E2's parts: the appropriation at cloture, the reconciliation by a majority, the pension act at cloture, each through both chambers and `UsVetoGate`, independent (DECLARED). A fallen appropriation is followed the same day by a continuing resolution at cloture, uncontested unless the player withholds it (reading (P), PROVISIONAL, asked with (S), (C), (L)); the withhold lapses when the withholding party takes the presidency. Funding lapses the day after its horizon and ends the day one becomes law, its days on screen; the spending stop is not built (the excepted share is BILLED, asked: A-E). The AI president's budget now meets Congress (US-18's owed line closed); the budget's failed vote reads `Congress.GovernmentBears` (US-19's N1 closed). Save format 41. `UsBudgetProcedureDiagnostic` reproduces 1 Oct to 12 Nov 2025 (43 days) by the procedure's arithmetic.
 
-**Ruled after it (Elias's ruling I13, 2026-10-18, item 28 of `docs/ASKS_FOR_ELIAS.md`; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`).** *US-22b, owed:*
+**Ruled after it (Elias's ruling I13, 2026-10-18, item 28 of `docs/ASKS_FOR_ELIAS.md`; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`).** **Built (US-22b): `COMPLETED.md` §865** - (1) as below, with CBO 61823's output effect as Table 2's quarterly levels held over calendar quarters (the LAPSE family); (2) the withholder's draw FITTED n=13 on the 2025 lapse's cloture motions, lapse resolutions on the record's 3-day spacing; (3) the cadence, release ending a lapse on the next funding tick, the government's own resolution before a lapse signed on the day by a player-president (DECLARED, asked); save format 42. The ruling's items:
 - (1) **A lapse defers spending; it does not cancel it.**
   - The lapsed acts' non-excepted outlays stop, and are paid in full when funding returns (back pay, 31 U.S.C. 1341(c)). Mandatory spending runs on.
   - The size and the output effect come from CBO's 29 Oct 2025 estimate (publication 61823) and from CBO's delayed outlays already read.
@@ -2193,6 +2193,8 @@ Code will recommend (b) if the model's midterm falls outside the record's range,
 ```text
 R-US20'S RULE - US-13's measurement decides Code's recommendation on the midterm.
 Preregistered before UsMidtermCheck's first run (US-13); amended only with Elias's ruling.
+Amended under Elias's ruling I4 (2026-10-18): unified or divided over both chambers (the
+both-chambers amendment asked with US-15); the model's seat change after R-US18's ruling I1.
 
 THE TERMS
 - An election is a House general election. The president's party at an election is the
@@ -2200,10 +2202,26 @@ THE TERMS
   College results page for that election: a midterm reads the presidential election two
   years before it, a presidential year the one four years before it (the sitting
   president's party; Truman, Johnson and Ford each keep their predecessor's party).
-- Unified or divided at an election: unified where the president's party is the largest
-  party in the House sitting on its day - the Congress the election two years before
-  chose, by [HH-DIV]'s divisions - the reading EconomicVote's presidency branch takes for
-  the model; divided otherwise.
+- Unified or divided at an election: unified where the president's party holds both
+  chambers sitting on its day - the House and the Senate, each the Congress the election
+  two years before chose - the reading EconomicVote's presidency branch takes for the
+  model where a Senate is seated (US-15); divided otherwise.
+  - The House: the president's party is its largest party, by [HH-DIV]'s divisions.
+  - The Senate: the president's party is its majority party as the Senate's Party
+    Division page ([SEN-DIV]) prints it for that Congress, on the line holding the
+    election's day where the page prints the Congress in periods (the 107th); a change
+    inside a Congress that only the page's notes record is not read, as [HH-DIV]'s
+    divisions are its Congress's initial ones. The printed majority is held to the line's
+    own counts, and a line whose counts contradict it fails the tool: an independent
+    counts with the party the line says he caucuses with (R-US10 (a)); an equal division
+    is the Vice President's party's - his deciding vote (Art. I, sec. 3, cl. 4) gives his
+    party the majority, as the page's notes on the 107th and the 117th record - and on an
+    election's day that is the sitting president's party, one ticket; where independents
+    whose caucus the line does not name could decide it, the page's printed majority is
+    read, and the record says so.
+  - The model's world: the House's largest party, and the majority of the Senate seated
+    on the polling day by UsSenate.MajorityOf (the side with more seats, each independent
+    with his conference; an equal division the Vice President's party's, read that day).
 - A seat change: the president's party's seats in the Congress the election chose less its
   seats in the Congress before, both as [HH-DIV] prints them - the divisions as of each
   Congress's initial election results, so deaths, specials, vacancies and party switches
@@ -2220,8 +2238,9 @@ THE TERMS
 
 THE RECORD THE RULE READS
 - VOTES, NOT SEATS. The model's midterm is a vote swing (US-5's House history, R-US15 (a)).
-  A seat change of the model needs R-US18's method, which is ASKED: any seat figure of the
-  model prints UNRULED, and the rule never reads one or picks a method.
+  A seat change of the model needs R-US18's method, RULED (b), state delegations (Elias's
+  ruling I1): the rule never reads a seat figure of the model, and the seat change of
+  R-US20 (b)'s fitted term (Elias's ruling I4) is US-27's.
 - The record's vote swing is read where the Clerk's statistics of both elections are saved
   as text. The Clerk's statistics of 1998 to 2024 carry a text layer; those of 1944 to
   1996 are page images with none (each probed on 2026-10-16), so the vote swing of every
@@ -2283,7 +2302,8 @@ PRINTED, NEVER DECIDING
 - a secondary compilation (Vital Statistics on Congress, Table 2-2: each party's
   percentage of all votes, to one decimal, 1946-2024), labelled SECONDARY: its two-party
   swings by government type, and its differences from the Clerk where both read a year;
-- the model's seat change: UNRULED (R-US18 ASKED).
+- the model's seat change: not computed by the instrument - R-US18 RULED (b) (I1) and
+  R-US20 RULED (b) (I4); the seat change of the fitted term, by (b), is US-27's.
 
 THE ASK AND THE BARS
 - UsMidtermCheck holds the list of this block's SHA-256 digests - the preregistered one,
@@ -2308,7 +2328,7 @@ THE ASK AND THE BARS
 
 **Asked §849 (US-15), R-US20's term:** the block's "unified ... the president's party is the largest in the House ... the reading EconomicVote's presidency branch takes" no longer describes the live code exactly - since US-15, EconomicVote reads both chambers where a Senate is seated. Amend the block to read both chambers? Under a both-chamber term the record's 2002 midterm moves from unified to divided in the printed-only split ([SEN-DIV]: the Democrats held the Senate from 6 Jun 2001 to 12 Nov 2002); L, U and m do not move. The block changes only with Elias's ruling.
 
-**RULED (Elias's ruling I4, 2026-10-18; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):** **(b), a FITTED midterm term on the president's party from the record since 1946, with n and its interval printed.** The rule can never reach (b) (its reach, above), so (a) is untested, and the model's m misses the record's midterm regularity. **Revisit it against (c) once approval reaches the vote** (A-LOOP). **The both-chambers amendment (§849): yes.** Its build is owed: the block amended under I4 with its new digest, and the instrument's printed split read over both chambers from the Senate's Party Division page (on disk). The instrument holds RULED (b) (`UsMidtermCheck`). US-27 builds the fitted term and its seat change by R-US18 (b).
+**RULED (Elias's ruling I4, 2026-10-18; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):** **(b), a FITTED midterm term on the president's party from the record since 1946, with n and its interval printed.** The rule can never reach (b) (its reach, above), so (a) is untested, and the model's m misses the record's midterm regularity. **Revisit it against (c) once approval reaches the vote** (A-LOOP). **The both-chambers amendment (§849): yes.** **Built (US-13b): `COMPLETED.md` §863** - the block amended under I4 (digest `6cf56a5d...`): unified over both chambers sitting on the day, [SEN-DIV]'s Senate parsed by `Tools/us_midterm_record.pl`. The printed split moves 2002 (midterm) to divided; L, U, m and the verdict are unchanged. The instrument holds RULED (b) (`UsMidtermCheck`). US-27 builds the fitted term and its seat change by R-US18 (b).
 
 
 **R-US21 — B7's open details** *(US-14's dates; blocks US-24)*.
@@ -2350,7 +2370,7 @@ Option (a) is retired. `PresidencyDiagnostic` (f)'s pin of it moves with the bui
 - (b) never named, the count's record included (the oath's government reads "the Republican nominee (REP)");
 - (c) named from a dated source fetched by browser (an errand of Elias's, as E-47).
 
-**RULED (Elias's ruling I7, 2026-10-18; installed `COMPLETED.md` §856): even-handed.**
+**RULED (Elias's ruling I7, 2026-10-18; installed `COMPLETED.md` §856): even-handed.** **Built (US-8b): `COMPLETED.md` §866** - neither nominee is named before the later convention's date (`PresidencyOfRecord.TryNamedFrom`); the RNC's date, 15 July 2024, is read from its own press release as the Internet Archive captured it (gop.com refuses this machine), so both are named from the DNC's 6 August.
 - Neither nominee is named before the count until both are dated; then both are named from their conventions' records.
 - Elias saves the RNC's page for the 15 July 2024 roll call by browser, as for E-47 (`ERRANDS.md`).
 - Until that page is read, Harris too is unnamed before the count (US-8b).
@@ -2371,7 +2391,7 @@ And does US-26 own the choice? The 2024 count is unaffected either way. If (b), 
 
 With US-28 (§848): a fork made before the player's pick names the default in its own later count while the real game names the pick - shares and electors identical, the name read only for display and within one world.
 
-**RULED (Elias's ruling I9, 2026-10-18; installed `COMPLETED.md` §856):** **(a), with every fork drawing the live game's election noise (common random numbers)**, so a fork elects a different president only because of policy (US-8b).
+**RULED (Elias's ruling I9, 2026-10-18; installed `COMPLETED.md` §856; built §866: `SimulationRandom.ElectionNoiseOn`, a keyed source every fork shares, with the noise's size 0 in play until q2):** **(a), with every fork drawing the live game's election noise (common random numbers)**, so a fork elects a different president only because of policy (US-8b).
 
 
 **R-US26 — The out-party's nominee** *(US-28's reading 4, §848)*. `POLITICAL_SYSTEM_SPEC.md` §6: "**Losing does not end the run.** A defeated president may run again four years later." As built, a party out of the White House fields its candidate unnamed, and the pick exists only for a term-limited party: Harris elected in 2024 and beaten in 2028 is eligible in 2032 (one election), yet DEM fields "Democratic Party's candidate (2032)" and the player cannot field her.
@@ -2379,14 +2399,14 @@ With US-28 (§848): a fork made before the player's pick names the default in it
 - (b) the out-party fields its last eligible nominee;
 - (c) keep it unnamed and amend §6.
 
-**RULED (Elias's ruling I10, 2026-10-18; installed `COMPLETED.md` §856):** **(a).** The player's out-party may pick from its people, the defeated president among them, with the default unnamed (US-28b).
+**RULED (Elias's ruling I10, 2026-10-18; installed `COMPLETED.md` §856; built §866: `Nominee.OutParty`, the Parliament row's pick):** **(a).** The player's out-party may pick from its people, the defeated president among them, with the default unnamed (US-28b).
 
 
 **R-US27 — The running mates** *(US-28's reading 3, §848)*.
 - (i) **The 2024 game ticket's running mate:** DECLARED as the record's (Vance, Walz); R-US2 (a) names only the presidential nominee. The alternative reads the plan's "a game-elected ticket's running mate is the party's own" literally: after a game Trump win, REP's 2028 default would be "Republican Party's candidate for Vice President (2024)", not Vance.
 - (ii) **A re-elected president's ticket** gets a new unnamed running mate (Harris re-elected in 2028: from 20 Jan 2029 the Vice President is "Democratic Party's candidate for Vice President (2028)", and DEM's 2032 default is that mate, Walz an alternative). The alternative: keep the sitting Vice President on a re-elected ticket.
 
-**RULED (Elias's ruling I11, 2026-10-18; installed `COMPLETED.md` §856):**
+**RULED (Elias's ruling I11, 2026-10-18; installed `COMPLETED.md` §856; built §866: `UsTermLimit.KeepsSittingVicePresident`):**
 - (i) as declared: the 2024 game ticket's running mates are the record's (Vance, Walz);
 - (ii) the alternative: a re-elected president keeps the sitting Vice President, as the record does (US-28b).
 
@@ -2411,7 +2431,7 @@ Attachments: the state table generated by `Tools/us_states_table.pl` (electors, 
 **D-US part two — Congress, the veto, the limit** (US-25, against US-15 to US-24 built):
 
 1. **The Congress view:** both chambers, the majorities, the Senate by class, the independents with their caucus, the cloture line at three fifths of the senators sworn, the override lines at two thirds of each House, the Vice President's vote, the leaders of record.
-2. **A bill's path** House → Senate → president → override on the signing plate, the ten days and the pocket veto stated as not modelled.
+2. **A bill's path** House → Senate → president → override on the signing plate, the pocket veto stated as not modelled, the ten days the Docket's (US-21b).
 3. **The president's desk:** a hostile Congress's reconciliation awaiting signature or veto.
 4. **The debt-limit slip:** the dollar limit, the debt subject to it, the measures' days left, Congress's raise or the cut to revenue.
 5. **The role words:** PRESIDENT, PRESIDENT-ELECT, THE PRESIDENT'S PARTY, HOUSE MAJORITY, SENATE MAJORITY, MINORITY.
@@ -2487,7 +2507,7 @@ Host status is the 2026-10-04 probe's (by status code); *not probed* means unkno
 20. **Save churn.** The record transitions, the contest, the Senate and the nominee each step the save format. `SaveMigrationCheck` and `PreviewParityDiagnostic` catch a field only when it is added to both the save and the clone's hand-list, and the play saves must be re-staged.
 21. **Films and the machine.** Three Canvas surfaces owe REAL films at both widths; only one Unity job runs at a time; the 2560 out-of-memory hit once after another Editor job.
 22. **Scale and contention.** 37 records, at least ten of them reviewed — PS-5's reviews found five defects at §761 and five over two readings at §768. Each owes a simulation bar of about ten minutes. D-PL's night and SP-7 run beside this stage and share its files.
-23. **Not modelled, each stated where it would show:** faithless electors, Maine's ranked-choice count for electors, NPVIC, the Senate's contingent choice of the Vice President, the pocket veto and the ten days, the Byrd rule beyond the pension age, impoundment, impeachment, and delegated tariff powers (unless R-US8 (b)).
+23. **Not modelled, each stated where it would show:** faithless electors, Maine's ranked-choice count for electors, NPVIC, the Senate's contingent choice of the Vice President, the pocket veto (the ten days are modelled: US-21b's Docket), the Byrd rule beyond the pension age, impoundment, impeachment, and delegated tariff powers (unless R-US8 (b)).
 24. **The claim convention.** The repo copy carries references, never transcribed line numbers or code counts. The feature-list rows name no member that does not exist yet, or `DocumentClaimCheck` fails them.
 
 ---
@@ -2500,7 +2520,7 @@ Host status is the 2026-10-04 probe's (by status code); *not probed* means unkno
 - **Primaries and conventions as play,** and the 2024 nominee change replayed (unless R-US2 (c)).
 - **State politics:** governors, state legislatures, state budgets, and state minimum wages (29 U.S.C. 218(a) preserves them; not modelled, §756).
 - **Electoral edge cases:** faithless electors, NPVIC, Maine's ranked-choice count for electors, and the Senate's contingent election of the Vice President.
-- **Budget mechanics beyond R-US9:** the pocket veto and the ten days; the Byrd rule beyond the pension age; impoundment and rescissions. (Shutdowns are in: R-US9 as ruled.)
+- **Budget mechanics beyond R-US9:** the pocket veto (the ten days: US-21b); the Byrd rule beyond the pension age; impoundment and rescissions. (Shutdowns are in: R-US9 as ruled.)
 - **Removal and succession:** impeachment and the 25th Amendment.
 - **Other branches and appointments:** the judiciary, and every Senate confirmation but the Fed chair's (US-29).
 - **Executive orders and regulation;** the Congressional Review Act appears only in US-10's backtest.

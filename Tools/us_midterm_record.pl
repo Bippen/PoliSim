@@ -12,6 +12,9 @@
 #     layer - raw/midterms/fetch_log.txt - so their vote is BILLED);
 #   - raw/midterms/vitalstats_table_2-2.csv: a SECONDARY compilation (Vital Statistics on Congress, Table 2-2), printed beside, never read by the
 #     rule;
+#   - raw/records/wayback_senate_party_division_*.html ([SEN-DIV], the Senate's Party Division page): the Senate sitting on each election's day
+#     (the 78th-119th Congresses), its majority party as the page prints it - on the line holding the day where the page prints a Congress in
+#     periods (the 107th) - held to the line's own counts (R-US20's block, amended under I4: unified reads both chambers);
 # and ElectionsData/usa/house_by_state.csv (US-5's catalog), which the Clerk's rows of 2016-2024 must equal state by state.
 # It writes ElectionsData/usa/house_midterms.csv and docs/generated/US_MIDTERM_RECORD.md. It dies, writing nothing, on:
 #   - a page off its digest, or in no SHA256SUMS.txt;
@@ -24,6 +27,9 @@
 #     that names no state; a column of the states not summing to the Total row, the Total row not closing; 2016-2024 not house_by_state.csv's
 #     figures, state by state;
 #   - the secondary's heading not the one read, a year missing or twice, a direction other than D or R;
+#   - ([SEN-DIV]) a Congress the record reads without a line, or twice; a line whose majority, minority and other parties do not sum to its seats;
+#     a party other than Democrats or Republicans at its head; a period that does not read as dates; an election's day in no period, in two, or on
+#     a period's boundary; a printed majority the line's counts contradict, or an equal division whose majority is not the Vice President's party;
 #   - a largest party tied in a House the record reads; a perl warning during the checks; a non-ASCII byte in an output.
 # All outputs are built and tested before the first is written.
 # Usage: perl Tools/us_midterm_record.pl   (from the project root, Git for Windows' perl; pdftotext at /mingw64/bin or on PATH)
@@ -43,7 +49,7 @@ $SIG{__DIE__} = sub { return if $^S; print STDERR "MISMATCH: $_\n" for splice @p
 # ---------------------------------------------------------------- the saved pages, each held to its SHA256SUMS.txt line before it is used
 # (us_house_prep.pl's gate, with this item's group)
 my %sums;
-for my $g (qw(returns executive midterms)) {
+for my $g (qw(returns executive midterms records)) {
     open my $s, '<', "$raw/$g/SHA256SUMS.txt" or die "$raw/$g/SHA256SUMS.txt: $!\n";
     while (my $l = <$s>) { $sums{"$g/$2"} = $1 if $l =~ /^([0-9a-f]{64}) \*(.+?)\s*$/; }
     close $s;
@@ -313,6 +319,52 @@ my %vs;   # {year} = { dem, rep, change, dir }
     problem("$file: no row for $_") for grep { !$vs{$_} } grep { $_ >= 1946 } @house_years;
 }
 
+# ---------------------------------------------------------------- [SEN-DIV]: the Senate's lines, the 78th-119th Congresses
+# A Congress's line: its majority party and seats, its minority party and seats, its other parties (each with the caucus the line names, if it
+# names one), its total; the 107th prints four such lines, each headed by its period.
+my %months = (Jan => 1, Feb => 2, Mar => 3, Apr => 4, May => 5, Jun => 6, Jul => 7, Aug => 8, Sep => 9, Oct => 10, Nov => 11, Dec => 12);
+sub iso { my ($m, $d, $y) = @_; my $k = $months{substr($m, 0, 3)}; return $k ? sprintf('%04d-%02d-%02d', $y, $k, $d) : undef; }
+sub election_day {   # the Tuesday next after the first Monday in November (2 U.S.C. 7), by Sakamoto's day of the week (0 Sunday)
+    my $y = shift;
+    for my $d (2 .. 8) { my $z = $y; my $w = ($z + int($z / 4) - int($z / 100) + int($z / 400) + 2 + $d) % 7; return sprintf('%04d-11-%02d', $y, $d) if $w == 2; }
+    die "no election day in $y\n";
+}
+my %sen;   # {congress} = [ { from, to (ISO, or undef where the line has no period), maj, majn, min, minn, other, named => {D, R}, unnamed, total } ]
+my $sen_file = (grep { m{^records/wayback_senate_party_division_\d{8}\.html$} } sort keys %sums)[-1] // die "[SEN-DIV]: no page in records/SHA256SUMS.txt\n";
+{
+    (my $t = html_text($sen_file)) =~ s/&ndash;/-/g;
+    my $party = sub { my $p = shift; return $p eq 'Democrats' ? 'D' : $p eq 'Republicans' ? 'R' : undef; };
+    while ($t =~ /\b(\d+)(?:st|nd|rd|th) Congress \((\d{4})-(\d{4})\) (.*?)(?= \d+(?:st|nd|rd|th) Congress \(\d{4}-| Party Division in the House|$)/g) {
+        my ($n, $body) = ($1, $4);
+        next unless $n >= 78 && $n <= 119;
+        problem("$sen_file: the ${n}th Congress twice") if $sen{$n};
+        my @lines;
+        while ($body =~ /Majority Party(?: \(([^)]*)\))?: (\w+) \((\d+) seats?\) Minority Party: (\w+) \((\d+) seats?\)(?: Other Parties: (.*?))? Total Seats: (\d+)/g) {
+            my ($period, $ma, $man, $mi, $min, $oth, $tot) = ($1, $2, $3, $4, $5, $6 // '', $7);
+            my %l = (maj => $party->($ma), majn => $man, min => $party->($mi), minn => $min, other => 0, named => { D => 0, R => 0 }, unnamed => 0, total => $tot, text => trim($oth));
+            if (!$l{maj} || !$l{min} || $l{maj} eq $l{min}) { problem("$sen_file: the ${n}th Congress's line heads '$ma' and '$mi', not the Democrats and the Republicans"); next; }
+            if (defined $period) {
+                if ($period =~ /^([A-Z][a-z]+) (\d+)(?:, (\d{4}))?-(?:([A-Z][a-z]+) )?(\d+), (\d{4})$/) { @l{qw(from to)} = (iso($1, $2, $3 // $6), iso($4 // $1, $5, $6)); }
+                problem("$sen_file: the ${n}th Congress's period '$period' does not read as two dates") unless $l{from} && $l{to} && $l{from} lt $l{to};
+            }
+            my $all = $oth =~ /\((?:both|all) caucus(?:ed)? with the (Democrats|Republicans)\)/ ? $party->($1) : undef;
+            for my $part (grep { /\S/ } split /;\s*/, $oth) {
+                my ($k) = $part =~ /^(\d+)\b/ ? ($1) : $part =~ /\((\d+) seats?\)/ ? ($1) : ();
+                if (!defined $k) { problem("$sen_file: the ${n}th Congress's other party '$part' carries no count"); next; }
+                my $side = $all // ($part =~ /caucus(?:ed)? with the (Democrats|Republicans)/ ? $party->($1) : undef);
+                $l{other} += $k;
+                if ($side) { $l{named}{$side} += $k; } else { $l{unnamed} += $k; }
+            }
+            problem("$sen_file: the ${n}th Congress - $man $ma, $min $mi, $l{other} other: not its $tot seats") unless $man + $min + $l{other} == $tot;
+            push @lines, \%l;
+        }
+        problem("$sen_file: the ${n}th Congress has no line") unless @lines;
+        problem("$sen_file: the ${n}th Congress prints " . scalar(@lines) . " lines, not all of them in periods") if @lines > 1 && grep { !$_->{from} } @lines;
+        $sen{$n} = \@lines;
+    }
+    problem("$sen_file: no line for the ${_}th Congress") for grep { !$sen{$_} } 78 .. 119;
+}
+
 die "\n" if @problems;
 
 # ---------------------------------------------------------------- the record: a row an election, 1944-2024, and the 2026 midterm (its result BILLED)
@@ -323,6 +375,23 @@ for my $y (@house_years, 2026) {
     problem("no presidential election read for $y ($pf)") unless defined $party || $y == 1944;
     my $x = { year => $y, kind => $y % 4 == 0 ? 'presidential' : 'midterm', congress => congress_of($y), party => $party // '-', from => $pf,
               elected => $y % 4 == 0 && $won{$y} ? $won{$y}{party} : '-', hh => $hh{$y}, clerk => $clerk{$y}, vs => $vs{$y} };
+    # the Senate sitting on the election's day: the Congress the election two years before chose, its line holding the day
+    my ($sc, $day) = (congress_of($y) - 1, election_day($y));
+    my @on = grep { !$_->{from} || ($_->{from} lt $day && $day lt $_->{to}) } @{$sen{$sc}};
+    problem("[SEN-DIV] the ${sc}th Congress on $day (the election of $y): its day on a period's boundary") if grep { $_->{from} && ($_->{from} eq $day || $_->{to} eq $day) } @{$sen{$sc}};
+    if (@on != 1) { problem("[SEN-DIV] the ${sc}th Congress on $day (the election of $y): " . scalar(@on) . " lines hold the day"); push @rows, $x; next; }
+    my $l = $on[0];
+    # the printed majority held to the line's counts: an independent with the caucus the line names (R-US10 (a)); an equal division the Vice
+    # President's party's (Art. I sec. 3 cl. 4) - on an election's day the sitting president's, one ticket; where independents of no caucus named
+    # could decide it, the page's own majority is read, and said so
+    my $ms = $l->{majn} + $l->{named}{$l->{maj}}; my $ns = $l->{minn} + $l->{named}{$l->{min}};
+    my $how = $ms > $ns + $l->{unnamed} ? ($l->{named}{$l->{maj}} ? 'seats-with-caucus' : 'seats')
+            : $ms == $ns && $l->{unnamed} == 0 ? 'equal-vp'
+            : $ms + $l->{unnamed} >= $ns && $l->{unnamed} > 0 ? 'page' : '';
+    problem("[SEN-DIV] the ${sc}th Congress on $day: its majority $l->{maj} ($ms with its caucus) against $l->{min} ($ns) and $l->{unnamed} of no caucus named - the counts contradict it") if $how eq '';
+    problem("[SEN-DIV] the ${sc}th Congress on $day: an equal division held by $l->{maj}, not the Vice President's party " . ($party // '-')) if $how eq 'equal-vp' && ($party // '') ne $l->{maj};
+    $x->{sen} = { congress => $sc, day => $day, D => $l->{maj} eq 'D' ? $l->{majn} : $l->{minn}, R => $l->{maj} eq 'R' ? $l->{majn} : $l->{minn}, other => $l->{other},
+                  total => $l->{total}, majority => $l->{maj}, period => $l->{from} ? "$l->{from}..$l->{to}" : '-', how => $how, unnamed => $l->{unnamed} };
     push @rows, $x;
 }
 my %row = map { $_->{year} => $_ } @rows;
@@ -335,7 +404,10 @@ for my $x (grep { $_->{year} >= 1946 } @rows) {
     my $sit = largest($prev->{hh});
     problem("the House sitting at $x->{year}: its largest party tied") if $sit eq 'tie';
     my $p = $x->{party};
-    my %d = (row => $x, unified => $sit eq $p ? 'unified' : 'divided');
+    problem("the Senate sitting at $x->{year}: not read") unless $x->{sen};
+    # unified: the president's party holds both chambers sitting on the day (R-US20's block, amended under I4)
+    my %d = (row => $x, unified => $sit eq $p && $x->{sen} && $x->{sen}{majority} eq $p ? 'unified' : 'divided');
+    $d{senate_decides} = $sit eq $p && $d{unified} eq 'divided';   # the House alone would read it unified
     if ($x->{hh} && $prev->{hh}) { $d{seats_before} = $prev->{hh}{$p}; $d{seats_after} = $x->{hh}{$p}; $d{seat_change} = $x->{hh}{$p} - $prev->{hh}{$p}; }
     if ($x->{clerk} && $prev->{clerk}) { $d{share_before} = share($prev->{clerk}, $p); $d{share_after} = share($x->{clerk}, $p); $d{swing} = 100 * ($d{share_after} - $d{share_before}); }
     if ($x->{vs}) { $d{vs_swing} = ($x->{vs}{dir} eq $p ? 1 : -1) * $x->{vs}{change}; }
@@ -352,15 +424,22 @@ my $csv = "# GENERATED by Tools/us_midterm_record.pl from the pages under Electi
     . "# initial election results (seats_vacant: the vacancies its footnote puts in the row's total; seats_total: the row's own). clerk_*: the Clerk\n"
     . "# of the House's recapitulation, its Total row - each party's own ballot line, and the row's Total - where the statistics carry text, else -.\n"
     . "# vs_*: SECONDARY (Vital Statistics on Congress, Table 2-2), each party's percentage of all votes and the change of the major-party vote\n"
-    . "# from the last election with its direction, as printed; never read by R-US20's rule. The pages read, each with its SHA-256:\n"
+    . "# from the last election with its direction, as printed; never read by R-US20's rule. senate_*: the Senate SITTING on the election's day\n"
+    . "# (senate_day, 2 U.S.C. 7) - the Congress the election two years before chose (senate_congress), by [SEN-DIV]'s line for it, or the line\n"
+    . "# holding the day where the page prints the Congress in periods (senate_period, from..to, else -): its Democrats, Republicans, other parties\n"
+    . "# and seats, and its majority party as printed (senate_majority), held to the line's counts (senate_how: seats - more seats; seats-with-caucus -\n"
+    . "# more with the independents the line names as caucusing with it; equal-vp - an equal division, the Vice President's party; page - the page's\n"
+    . "# own, independents of no caucus named could decide it). The pages read, each with its SHA-256:\n"
     . $sources
-    . "year,kind,congress,president_party,president_from,elected_party,seats_d,seats_r,seats_other,seats_vacant,seats_total,clerk_r,clerk_d,clerk_total,vs_dem_pct,vs_rep_pct,vs_vote_change,vs_vote_direction\n";
+    . "year,kind,congress,president_party,president_from,elected_party,seats_d,seats_r,seats_other,seats_vacant,seats_total,clerk_r,clerk_d,clerk_total,vs_dem_pct,vs_rep_pct,vs_vote_change,vs_vote_direction,"
+    . "senate_day,senate_congress,senate_period,senate_d,senate_r,senate_other,senate_total,senate_majority,senate_how\n";
 for my $x (@rows) {
-    my $h = $x->{hh}; my $c = $x->{clerk}; my $v = $x->{vs};
+    my $h = $x->{hh}; my $c = $x->{clerk}; my $v = $x->{vs}; my $s = $x->{sen};
     $csv .= join(',', $x->{year}, $x->{kind}, $x->{congress}, $x->{party}, $x->{from}, $x->{elected},
         $h ? ($h->{D}, $h->{R}, $h->{other}, $h->{vacant}, $h->{seats}) : ('-') x 5,
         $c ? ($c->{R}, $c->{D}, $c->{total}) : ('-') x 3,
-        $v ? ($v->{dem}, $v->{rep}, $v->{change}, $v->{dir}) : ('-') x 4) . "\n";
+        $v ? ($v->{dem}, $v->{rep}, $v->{change}, $v->{dir}) : ('-') x 4,
+        $s->{day}, $s->{congress}, $s->{period}, $s->{D}, $s->{R}, $s->{other}, $s->{total}, $s->{majority}, $s->{how}) . "\n";
 }
 my $csv_sha = sha256_hex($csv);
 
@@ -378,7 +457,11 @@ my $doc = "<!-- GENERATED by Tools/us_midterm_record.pl from ElectionsData/usa/h
     . "record and prints the model's midterm beside it on the US card (`docs/reference/US_ELECTIONS.md`).\n\n"
     . "- **The president's party** at an election is the party of the winner of the last presidential election before it (NARA): a midterm reads the "
     . "election two years before it, a presidential year the one four years before it - the sitting president's party. The column names the election read and its winner.\n"
-    . "- **Unified** where the president's party is the largest party in the House sitting on the election's day (the Congress the election two years before chose, by [HH-DIV]); **divided** otherwise.\n"
+    . "- **Unified** where the president's party holds both chambers sitting on the election's day, each the Congress the election two years before chose: the House's largest party by [HH-DIV], "
+    . "and the Senate's majority party as [SEN-DIV] prints it - on the line holding the day where the page prints the Congress in periods (the 107th) - an independent counted with the caucus the line names "
+    . "(R-US10 (a)), an equal division the Vice President's party's, the page's own majority read where independents of no caucus named could decide it; **divided** otherwise "
+    . "(R-US20's block as amended under Elias's ruling I4: both chambers, the reading EconomicVote's presidency branch takes where a Senate is seated). "
+    . "The Senate column names the Congress, the period where one is read, and how its majority was held to the line's counts where not by more seats alone.\n"
     . "- **A seat change** is the president's party's seats in the Congress the election chose less its seats in the Congress before, as [HH-DIV] prints them - "
     . "the divisions as of each Congress's initial election results, so deaths, specials, vacancies and party switches inside a Congress are not in them, and the chamber's size is each row's own.\n"
     . "- **A vote swing** is the president's party's share of the two-party House vote less its share at the election two years before, in points - each party's own ballot line, "
@@ -387,12 +470,17 @@ my $doc = "<!-- GENERATED by Tools/us_midterm_record.pl from ElectionsData/usa/h
     . "- **SECONDARY**: Vital Statistics on Congress, Table 2-2 - its change of the major-party vote from the last election, to the decimals it prints, signed for the president's party. "
     . "Its own notes: each party's percentage of all votes excludes districts whose unopposed candidates had no vote recorded; its sources, as its notes list them, are the Biographical Directory of the United States Congress, Congressional Quarterly's Almanac, National Journal, the Almanac of American Politics and the FEC, its latest update MIT's Election Data and Science Lab. "
     . "Printed beside, never read by R-US20's rule.\n\n";
-my $table_head = "| year | president's party (the election read) | government | seats: the Congress before -> the one chosen | seat change | two-party share (the Clerk): before -> after | vote swing (the Clerk) | vote swing (SECONDARY) |\n"
-    . "|---|---|---|---:|---:|---:|---:|---:|\n";
+my $table_head = "| year | president's party (the election read) | government | the Senate sitting: its majority | seats: the Congress before -> the one chosen | seat change | two-party share (the Clerk): before -> after | vote swing (the Clerk) | vote swing (SECONDARY) |\n"
+    . "|---|---|---|---|---:|---:|---:|---:|---:|\n";
+sub senate_cell {   # UsMidtermCheck recomputes this cell from the CSV
+    my $s = shift;
+    my %how = ('seats' => '', 'seats-with-caucus' => ', with its caucusing independents', 'equal-vp' => ', an equal division - the Vice President\'s party', 'page' => ', the page\'s - independents of no caucus named');
+    return sprintf('%s (Congress %d%s%s)', pname($s->{majority}), $s->{congress}, $s->{period} eq '-' ? '' : ', ' . ($s->{period} =~ s/\.\./ to /r), $how{$s->{how}});
+}
 sub line_of {
     my $d = shift; my $x = $d->{row};
     my $w = $won{$x->{from}};
-    return sprintf("| %d | %s (%d: %s) | %s | %s | %s | %s | %s | %s |\n", $x->{year}, pname($x->{party}), $x->{from}, $w->{name}, $d->{unified},
+    return sprintf("| %d | %s (%d: %s) | %s | %s | %s | %s | %s | %s | %s |\n", $x->{year}, pname($x->{party}), $x->{from}, $w->{name}, $d->{unified}, senate_cell($x->{sen}),
         defined $d->{seat_change} ? "$d->{seats_before} -> $d->{seats_after}" : '-', sc($d->{seat_change}),
         defined $d->{swing} ? pct($d->{share_before}) . ' -> ' . pct($d->{share_after}) : '-', pp($d->{swing}), vsfmt($d->{vs_swing}));
 }
@@ -423,6 +511,7 @@ for my $s (@sets) {
     my ($nx, $xl, $xh) = range_of('vs_swing', @set);
     $doc .= sprintf("| %s | %d | %s / %s | %d | %s / %s | %d | %s / %s |\n", $name, $ns, sc($sl), sc($sh), $nv, pp($vl), pp($vh), $nx, vsfmt($xl), vsfmt($xh));
 }
+$doc .= "\nWhere the Senate decides the government type - the House alone would read the year unified: " . (join(', ', map { "$_->{row}{year} ($_->{row}{kind})" } grep { $_->{senate_decides} } @rec) || 'none') . ".\n";
 my @band = grep { defined $_->{swing} } @mid;
 my ($nb, $L, $U) = range_of('swing', @band);
 die "the rule's record is empty\n" unless $nb;
@@ -446,7 +535,7 @@ for my $d (grep { defined $_->{swing} && defined $_->{vs_swing} } @rec) {
 my ($m26) = grep { $_->{row}{year} == 2026 } @rec;
 my $h24 = $hh{2024};
 $doc .= "\n## The 2026 midterm\n\n- The president's party: " . pname($m26->{row}{party}) . " (2024: $won{2024}{name}); the House sitting: the " . congress_of(2024) . "th, "
-    . "REP $h24->{R} / DEM $h24->{D} - $m26->{unified}.\n"
+    . "REP $h24->{R} / DEM $h24->{D}; the Senate sitting: " . senate_cell($m26->{row}{sen}) . ", REP $m26->{row}{sen}{R} / DEM $m26->{row}{sen}{D} / other $m26->{row}{sen}{other} - $m26->{unified}.\n"
     . "- Its result is BILLED until the Clerk's 2026 statistics are saved (expected 2027): never estimated. Once read, it is printed beside the model's midterm, never read by R-US20's rule.\n";
 
 die "\n" if @problems;
@@ -466,5 +555,6 @@ for (my $i = 0; $i < @out; $i += 2) {
 
 # ---------------------------------------------------------------- the run's report
 for my $y (@clerk_years) { my $c = $clerk{$y}; printf "the Clerk %d: %s first, %d columns, REP %d DEM %d total %d\n", $y, $c->{order} eq 'RD' ? 'REP' : 'DEM', $c->{columns}, $c->{R}, $c->{D}, $c->{total}; }
+print "the Senate decides the government type in: " . (join(' ', map { $_->{row}{year} } grep { $_->{senate_decides} } @rec) || 'none') . "\n";
 printf "R-US20's band over %d midterms (%s): [%s, %s]\n", $nb, join(' ', map { $_->{row}{year} } @band), pp($L), pp($U);
 print "wrote $usa/house_midterms.csv (" . scalar(@rows) . " rows, sha256 $csv_sha) and docs/generated/US_MIDTERM_RECORD.md\n";

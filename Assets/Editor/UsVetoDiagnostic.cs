@@ -74,7 +74,7 @@ namespace PoliSim.EditorTools
 
         // resolved by its full parameter list, so a change of its arity fails here by name rather than at Invoke (the review of 54f10b8d, H1)
         private static readonly MethodInfo Gate = typeof(SimulationManager).GetMethod("UsVetoGate", BindingFlags.Instance | BindingFlags.NonPublic, null,
-            new[] { typeof(Country), typeof(DivisionRecord), typeof(BillConcern), typeof(bool), typeof(bool) }, null);
+            new[] { typeof(Country), typeof(DivisionRecord), typeof(BillConcern), typeof(bool), typeof(DocketEntry).MakeByRefType(), typeof(bool) }, null);
 
         public static void Run()
         {
@@ -87,7 +87,7 @@ namespace PoliSim.EditorTools
             Dictionary<SimulationRandom.Stream, int> drawsWas = SimulationRandom.CaptureDrawCounts();
             try
             {
-                Check(Gate != null, "SimulationManager.UsVetoGate resolved by its full parameter list (Country, DivisionRecord, BillConcern, bool passed, bool amendment) - every reflective call gives all five");
+                Check(Gate != null, "SimulationManager.UsVetoGate resolved by its full parameter list (Country, DivisionRecord, BillConcern, bool passed, ref DocketEntry docket, bool amendment) - every reflective call gives all six");
                 // ================================================================ (a) the move, and what stays byte-identical
                 foreach ((string path, string blob, string was) in Moved)
                 {
@@ -385,23 +385,23 @@ namespace PoliSim.EditorTools
                                 senate.Sides.Add(new DivisionSide { Abbrev = "DEM", ShortName = "DEM", Seats = 47, Side = -1 });
                                 return senate;
                             }
-                            (bool Law, bool Lost, DivisionRecord Last) Answer(BillConcern concern, Func<DivisionRecord, bool> answer)
+                            (bool? Law, bool Lost, DivisionRecord Last) Answer(BillConcern concern, Func<DivisionRecord, bool> answer)
                             {
                                 usa119.BillLostOn = DateTime.MinValue;
                                 Func<DivisionRecord, bool> was = sim119.PlayerPresidentVetoes;
                                 sim119.PlayerPresidentVetoes = answer;
                                 try
                                 {
-                                    bool law = (bool)Gate.Invoke(sim119, new object[] { usa119, Sent("Annual budget bill (planted, the player-president)"), concern, true, false });
+                                    bool? law = (bool?)Gate.Invoke(sim119, new object[] { usa119, Sent("Annual budget bill (planted, the player-president)"), concern, true, null, false });   // the answer on the day (the delegate); with none the bill goes to his docket (UsDocketDiagnostic)
                                     return (law, usa119.BillLostOn == UsCongressDiagnostic.Day119.Date, usa119.Divisions.Entries.LastOrDefault());
                                 }
                                 finally { sim119.PlayerPresidentVetoes = was; }
                             }
-                            (bool Law, bool Lost, DivisionRecord Last) signs = Answer(repRates119, null), vetoes = Answer(repRates119, _ => true), ownVetoed = Answer(demRates119, _ => true);
-                            Check(playerFound && isPlayer && UsVeto.NamedByA(215, 215) && signs.Law && !signs.Lost
-                                  && !vetoes.Law && vetoes.Last != null && vetoes.Last.Title.Contains("(you, ") && !vetoes.Last.Passed && !vetoes.Lost && !Congress.GovernmentBears(usa119, repRates119)
-                                  && !ownVetoed.Law && ownVetoed.Lost && Congress.GovernmentBears(usa119, demRates119),
-                                F("(g) the player-president (the planted contest's winner, of the player's party; the bill's records as the gate receives them): with no answer he signs, rule (a) not read though it would veto (215 of his party's 215 House members against); answering veto, it is vetoed and the House sustains it (\"{0}\") - the REP majority's bill, so no day is lost; his veto of his own party's bill is the government's loss: the day marked lost (Congress.RecordLost by Congress.GovernmentBears)",
+                            (bool? Law, bool Lost, DivisionRecord Last) signs = Answer(repRates119, _ => false), vetoes = Answer(repRates119, _ => true), ownVetoed = Answer(demRates119, _ => true);
+                            Check(playerFound && isPlayer && UsVeto.NamedByA(215, 215) && signs.Law == true && !signs.Lost
+                                  && vetoes.Law == false && vetoes.Last != null && vetoes.Last.Title.Contains("(you, ") && !vetoes.Last.Passed && !vetoes.Lost && !Congress.GovernmentBears(usa119, repRates119)
+                                  && ownVetoed.Law == false && ownVetoed.Lost && Congress.GovernmentBears(usa119, demRates119),
+                                F("(g) the player-president (the planted contest's winner, of the player's party; the bill's records as the gate receives them): answering sign on the day, he signs, rule (a) not read though it would veto (215 of his party's 215 House members against); answering veto, it is vetoed and the House sustains it (\"{0}\") - the REP majority's bill, so no day is lost; his veto of his own party's bill is the government's loss: the day marked lost (Congress.RecordLost by Congress.GovernmentBears)",
                                     vetoes.Last?.Title));
 
                             // an UNCONTESTED bill vetoed (the review of 54f10b8d, M1): a law whose concern moves nothing passes both chambers unasked; the player-president
@@ -590,7 +590,7 @@ namespace PoliSim.EditorTools
                 DivisionRecord passage = Congress.Divide(usa, _ => title, concern, date, out bool sent, out _, out Congress.Verdict verdict, BillAxis.Fiscal, Congress.OriginOf(usa, concern, date));
                 g.Sent = sent;
                 g.Verdict = verdict;
-                g.Law = gate ? (bool)Gate.Invoke(sim, new object[] { usa, passage, concern, sent, amendment }) : sent;   // every parameter given (MethodInfo.Invoke fills no optional one); the amendment flag as the law site passes it
+                g.Law = gate ? Gate.Invoke(sim, new object[] { usa, passage, concern, sent, null, amendment }) is bool law && law : sent;   // every parameter given (MethodInfo.Invoke fills no optional one); the amendment flag as the law site passes it; a bill held on a player-president's docket (no answer on the day) is not law on the day
             }
             finally { planted?.Dispose(); sim.PlayerPresidentVetoes = answerWas; }
             g.Draws = UsVeto.DrawCalls - drawsBefore;
