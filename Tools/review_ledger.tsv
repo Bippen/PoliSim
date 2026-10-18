@@ -241,3 +241,4 @@ file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	a5785dc207dfdb7117301354e37
 file	Assets/Scripts/Simulation/SimulationManager.cs	c59ddd16fae68ab88b30ff2086801f0b805643aaaa8f582b8f401a36cb464d2d	reviewed	2026-10-18	s859	Reviews/2026-10-18_s859_s862_integration.md	-
 baseline	777	05736e3d3c62281827a608f26c81d661b28743a9d2c486505e4e6bfbd516811e	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	traj_af35 s777, turns 1-20 (the dump opens on Sweden's start)
 baseline	424242	d841dd2fad1f9f6e1dc2bdd37396d0de608cbc1e8af48de950937beebbbc0d18	reviewed	2026-10-18	s859	Reviews/2026-10-18_af9_af35_funds.md	traj_af35 s424242, turns 1-20 (the dump opens on Sweden's start)
+file	Assets/Scripts/Simulation/SimulationManager.cs	57db163ae6d8d42e331d6d72f87b13f56d523380f1c04c6e219eecb763bb7995	reviewed	2026-10-18	s859	Reviews/2026-10-18_s859_s862_integration.md	-
