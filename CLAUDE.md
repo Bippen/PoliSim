@@ -22,6 +22,7 @@
 | `specs/` | `ENERGY_SPEC.md`, `TAX_SPEC.md`, `docs/specs/ELECTIONS_CAMPAIGN_SPEC.md`, and since §613 `POLITICAL_SYSTEM_SPEC.md` and `START_POINTS_AND_PARTY_CREATION_SPEC.md` (its §9 the main menu and settings) — the source specs; the head track of `POLISIM_FEATURE_LIST.md` is their work list |
 | `data/` | `SOCIETY_STATS.md` (the catalog and its five family spines), `docs/data/ENERGY_LAYER_SPINE.md`, `docs/data/COUNTRY_CENTROIDS.md` |
 | `audit/` | the gameplay audit (ruled 2026-10-13, §803): `docs/audit/AUDIT_PROTOCOL.md` the brief, re-runnable; the ledger of findings and the questions for the architect beside it |
+| `RULINGS_<date>.md`, `ASKS_FOR_ELIAS.md` | Elias's rulings, verbatim, the day they are made (§643, §855), and the open asks with their status - never a scratchpad |
 | `generated/` | written by tools, never hand-edited: `docs/generated/LEVER_MAP.md`, `docs/generated/BUDGET_PREMISE.md`, `docs/generated/ENERGY_LAYER_PREMISE.md`, `docs/generated/POTENTIAL_PREMISE.md` — each named with its tool in `docs/generated/README.md` |
 | `play/` | `docs/play/PLAY_PROTOCOL.md`, `docs/play/PLAY_SHEET.md` |
 | `outbound/` | `docs/outbound/SEND_PACKAGE.md` — the working sheet for whatever paste is pending |

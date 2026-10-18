@@ -307,6 +307,15 @@ starts would follow two rules - a deviation that is Elias's to allow. (4c) opens
 summary table** - for every option, 4a, 4b and both days of 4c, at two seeds and two seats: the first round's drift from the PKW's and the verdict
 for a passive game from that date (F4 makes the drift the game's own, so the table informs the date, it is not a fit).
 
+## 5a. RULED (Elias's ruling I14, 2026-10-18; installed `COMPLETED.md` §857; verbatim in `docs/RULINGS_2026-10-18.md`)
+
+- **Ask 1: (a)**, a candidate of record backed by a roster party, **with the factor of record standing** (the side question).
+- **Ask 2: (2a), with (L1) and (end-i).** The player becomes the President on the oath's day, signs or vetoes each statute the Sejm passes, and continues as the backing party after a loss and when the presidency ends. **I12 (i) adds the Docket:** a statute the player-president leaves unanswered after Art. 122's 21 days is signed, DECLARED.
+- **Ask 3: (3a)**, no campaign staged, said on the card. **PL-C is filed** (`POLISIM_FEATURE_LIST.md`): a Polish campaign serving both Polish elections.
+- **Ask 4: (4b), 15 Jan 2025**, the Marshal's order, as **a stated deviation for presidential starts only**. The Sejm starts keep §618's rule (`POLITICAL_SYSTEM_SPEC.md` decision 2). The start card and the brief say so.
+
+The work plan below is now ruled, every option on the recommendation. Its place in the order of 2026-10-18 is the feature list's.
+
 ## 6. The work plan, once ruled
 
 On the rulings as recommended (the order changes nothing else if another option is ruled):

@@ -39686,3 +39686,80 @@ Everything fits at both widths. The rejected plate (89c, "LOST IN THE SENATE") w
 - the play saves re-staged at format 41 (`stage854`): `playtest_4_precampaign_day1.json` sha256 fbe98ac94a80d0d6..., `playtest_4b_precampaign_day1_m.json` dfbcd107dffec4fa..., 430002 bytes each.
 
 **Read on the real film** (frames in `PoliSim-captures/`): `realus22_05a_budget_tax_us_acts_slip` - the WOULD PASS slip on the +5 income-tax draft lists the appropriation at cloture and the reconciliation by a majority, each reaching President Trump, "a budget vote - no defectors are drawn on it", the continuing resolution and the lapse on 1 October, the acts standing or falling apart, the Byrd rule and the stop of non-excepted spending as not modelled. `realus22_93c_desk_us_shutdown` - the masthead reads SHUTDOWN - DAY 12 in the bad ink. `realus22_93b_desk_us_budget_acts` - the appropriation stood on the day (the log: funded through 2027-09-30), so nothing is before Congress and the Desk's effects card reads its no-budget line ("until the government tables its budget" - the generic words, true but blind to a budget just decided; noted, not filed). Observed: the film's world carries the horizon 2024-09-30 with no lapse at a 2027 date, because the film moves its clock by staging and the funding day never runs there; the staging restores what it found.
+
+
+## 855. ELIAS'S RULINGS OF 2026-10-18 WRITTEN TO THE REPO BEFORE ANYTHING IS BUILT ON THEM (§643): I1-I17 AND THE AUDIT'S ARCHITECT QUESTIONS, VERBATIM; THE SWEEP'S ASKS MOVED OUT OF THE SCRATCHPAD WITH THEIR STATUS; THE COMPILE GATE INTO `Tools/`; THE SWEEP'S WORKTREES REMOVED, THEIR BRANCHES KEPT (2026-10-18)
+
+**The ruling** (Elias, 2026-10-18): *"First write this block into the repo (§643), and move ASKS_FOR_ELIAS.md out of your scratchpad into docs/, because scratchpads are deleted with the session."* And I17: *"Remove the 17 merged worktrees under PoliSim-wt/ (git worktree remove, then prune). Keep their branches."*
+
+**Written.**
+- `docs/RULINGS_2026-10-18.md`: the block as Elias sent it, verbatim, under a header naming where each ruling is installed. The audit's questions are cited as q1-q37, numbered as in `docs/audit/AUDIT_FOR_ARCHITECT.md`.
+- `docs/ASKS_FOR_ELIAS.md`: the sweep's 28 asks (written 2026-10-17 in the 2026-10-16 session's scratchpad), byte for byte below a new status header that says which ruling answers each item and which stay open under I16.
+- `CLAUDE.md`'s table of `docs/` names both files.
+- **§576 applied to the sweep's own tooling:** the compile gate (`Tools/cgate/gate.sh`, `Tools/cgate/make.pl`, run as `bash Tools/cgate/gate.sh <tree>`, about 10 s outside Unity) and the implementer's brief (`Tools/cgate/IMPL_BRIEF.md`, its scratchpad pointers replaced) are committed. Every sweep item used the gate from that scratchpad, which would have been deleted along with it.
+
+**I17.** `git worktree remove` on each of the sweep's worktrees, then `git worktree prune`. Each was clean (`git status --porcelain --ignored` empty) and its branch was already integrated on main. `git worktree list` now shows the main tree alone, and the 17 `sweep/*` branches stay (us14 has two, `sweep/us14` and `sweep/us14fix`). The 16 worktree folders plus `PoliSim-wt/PoliSim-captures` (the textcheck's scratch) made the 17 Elias counted. The captures folder is not a worktree and stays.
+
+**Bars.** Tier DOCUMENTS and TOOLING: PLACEHOLDER-855-BARS.
+
+
+## 856. ELIAS'S US RULINGS OF 2026-10-18 INSTALLED: R-US18 RULED (b) AND R-US19 RULED (c) OVER (a) IN THEIR INSTRUMENTS, US-16 UNBLOCKED; R-US20 RULED (b), A FITTED MIDTERM TERM, ITS BOTH-CHAMBERS AMENDMENT OWED; R-US16 (b), R-US21 (i)-(vi), R-US22 THE TWENTIETH AMENDMENT'S ORDER, R-US23 EVEN-HANDED, R-US24 (b), R-US25 (a) WITH COMMON RANDOM NUMBERS, R-US26 (a), R-US27; US-21'S AND US-22'S ASKS ANSWERED (I1-I13) (2026-10-18)
+
+**The rulings** (Elias, 2026-10-18; verbatim in `docs/RULINGS_2026-10-18.md`, §855): I1-I13. Each one is written into `docs/specs/USA_STAGE_PLAN.md` beside the entry it rules, as a **RULED** line naming this section:
+- R-US16 to R-US27 in §4.2;
+- I12 under US-21's Built line;
+- I13 under US-22's.
+
+**The three instruments' ruling records** (each is held by its check and mirrored in the plan, and each fails while the two differ):
+- **R-US18:** `UsHouseCountCheck` moves from ASKED (§800) to **RULED (§856)**, option **(b)**, which is in the block's buildable list. The ruling's words: S2 is answered by the other method; S5 and S4 (ii) are moot, since (b) has no fallback; a redrawn map enters once an election has been held on it (DECLARED). The outcome and the decisive digest the ruling was made on are the registered ones, unchanged. The plan's mirror line is rewritten to match.
+- **R-US19:** `UsSenateRaceCheck` moves from ASKED (§801) to **RULED (§856)**, option **"(c) over (a)"**. I2 answers S1 by (a) and says yes to the side question: (a) with per-race factors fitted on 2024's class only (E1's form), later fields at 1.0. That is the block's (c) over the parent (a).
+- **R-US20:** `UsMidtermCheck` moves from ASKED (§840) to **RULED (§856)**, option **(b)**. The registered verdict stays (a), the rule's own outcome, because the instrument registers the outcome the ruling was made on and Elias ruled against it with the rule's reach in view. **The both-chambers amendment is ruled but not built here:** the block amended under I4 with a new digest, and the instrument's printed split read over both chambers from the Senate's Party Division page (on disk, `ElectionsData/usa/raw/records/wayback_senate_party_division_20260919.html`). That is the feature list's US-13b.
+- **R-US18's tripwire in `UsMidtermCheck`.** It failed once R-US18 was RULED ("once it is ruled, this instrument owes the seat change by the ruled method") and now asserts the pair: R-US18 RULED and R-US20 RULED (b). The seat change it owed was of m, the term R-US20 (b) replaces with a fitted one, so the seat change of the fitted term by R-US18 (b) is US-27's. The card says so.
+
+**Owed by the rulings, filed as rows** (`POLISIM_FEATURE_LIST.md`'s new head section, §857):
+- US-13b: the amendment.
+- US-21b: the Docket in both countries.
+- US-22b: the lapse's deferral as its own BASELINE family, the withholder's senators' FITTED cloture draw, the cadence, and L2.
+- US-8b: the even-handed naming and the forks' common random numbers.
+- US-28b: the out-party's pick, and the re-elected president keeping the Vice President.
+- R-US22's order, built with US-16, where it becomes reachable.
+- R-US24 (b), US-26's.
+- R-US21's live limit, US-24, now unblocked.
+
+**Bars** (one chain over §855-§857's tree; the cheap and document bars, the instruments' card blocks rewritten first): PLACEHOLDER-856-BARS.
+
+
+## 857. ELIAS'S POLAND AND AUDIT RULINGS OF 2026-10-18 INSTALLED: SP-7 RULED (a) / (2a) WITH (L1) AND (end-i) / (3a) WITH PL-C / (4b) AS A DEVIATION FOR PRESIDENTIAL STARTS; ALL 37 ARCHITECT QUESTIONS POINTED AT THEIR ROWS; THE ORDER OF THE WORK FILED AS THE FEATURE LIST'S HEAD (2026-10-18)
+
+**The rulings** (Elias, 2026-10-18; verbatim in `docs/RULINGS_2026-10-18.md`): I14 (SP-7), I16, and THE AUDIT with its ORDER.
+
+**SP-7** (`docs/specs/POLAND_PRESIDENTIAL_START_PLAN.md` §5a, new):
+- ask 1 (a), with the factor of record standing;
+- ask 2 (2a), with (L1) and (end-i), and with I12 (i)'s Docket at Art. 122's 21 days, DECLARED;
+- ask 3 (3a), with PL-C filed;
+- ask 4 (4b), a stated deviation for presidential starts only, while the Sejm starts keep §618's rule.
+
+The plan's §6 work plan is ruled as written. The build is the feature list's SP-7b.
+
+**The audit** (`docs/audit/AUDIT_FOR_ARCHITECT.md`): each of the 37 questions is marked RULED with its q-number in the rulings file and the feature-list row that carries it. The file stays under its 100-line cap.
+
+**The order** (`POLISIM_FEATURE_LIST.md`, a new head section above the audit's): one row per ruled item, in Elias's ORDER:
+1. BUG-1.
+2. The Fixes: AF-9, AF-11, AF-17, AF-23, AF-30, AF-31, AF-35.
+3. A-LOOP, the plan to Elias before any code, with q4 after it.
+4. US-13b, US-21b, US-22b, US-8b, US-28b, then US-16 onward.
+5. GATE-18 with K-1.
+6. COAL-1.
+7. The model families.
+8. PS-7.
+
+COAL-2 and PL-C are filed as rows. **Placements the ORDER does not name** are Code's reading, said so on the section and reversible by Elias's word:
+- **BUG-1** is read as the defects filed from the films and the reviews (`docs/ASKS_FOR_ELIAS.md`'s last section, US-8's N4 among them). Every audit row Elias marked "fix" is already closed (§814-§829).
+- **These join step 2:** q8 (Poland's government by Art. 162 / 109(2) / 154), q12, q6, q7 with q10, and q36.
+- **These ride with step 5's gate:** q2, q3, q19, q20, q22 and q25.
+- **q16 goes with US-23.**
+- **SP-7b goes in step 4,** after US-21b, whose Docket it shares.
+
+**I16** (the asks still open, each answered in one line in the report that follows this installation, built meanwhile on Code's recommendation, PROVISIONAL, wherever it can be reversed): `docs/ASKS_FOR_ELIAS.md`'s header lists them.
+
+**Bars:** PLACEHOLDER-857-BARS.

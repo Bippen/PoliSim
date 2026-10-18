@@ -36,12 +36,12 @@ namespace PoliSim.EditorTools
 
         /// <summary>The ruling record: NONE, ASKED or RULED. The first run registers the ask (its section, the outcome of each run asked, the
         /// decisive digest).</summary>
-        internal const string RulingState = "ASKED";   // internal: UsMidtermCheck prints the model's seat change UNRULED while this is not RULED
-        internal const string RulingSection = "§800";
+        internal const string RulingState = "RULED";   // internal: UsMidtermCheck prints the model's seat change UNRULED while this is not RULED
+        internal const string RulingSection = "§856";
         private const string RulingOutcomeOverD = "(a) + S2, S5, S4 [(ii)]";
         private const string RulingDecisiveDigest = "2df09e4c3986bda5b6030d0927929cedc273b8ba8cb3771fd405c7aa9af5d513";
         /// <summary>RULED only: the ruling's words and the option it names - one the block's THE ASK AND THE BARS says can be built.</summary>
-        private const string RulingRuled = "", RulingOption = "";
+        private const string RulingRuled = "I1 - (b), state delegations by a state swing (S2 answered by the other method); S5 and S4 [(ii)] moot, (b) having no fallback; a map redrawn since the base enters once an election has been held on it (DECLARED)", RulingOption = "(b)";
         private static readonly string[] BuildableOptions =
         {
             "(a) with F-old", "(a) with F-prop", "(b)", "(b) as (b')'s curve", "(c) reconciled to (a) with F-old", "(c) reconciled to (a) with F-prop", "(c) reconciled to (b)",

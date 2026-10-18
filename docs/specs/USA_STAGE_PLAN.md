@@ -454,6 +454,19 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 *Done when:* a US veto diagnostic on US-10's record cases and on planted bills; a run from 12 Mar 2024 to 20 Jan 2025 prints the bills that reached the president and those vetoed, beside the record's count for the 118th; Poland's veto diagnostics unchanged; review row; bars; REAL films of the veto plate at 1280 and 2560.
 **Built: `COMPLETED.md` §853** - R-US17's rule (c) in play: the draw at the gate (`Congress.Divide`; budget votes refused, an amendment neither drawn on nor presented, crossers entered only where they change a verdict), rule (a) for an AI president and the player-president's answer through a hook (its surface owed to US-23), the override at two thirds on the passage's recorded sides, origin first, one rule for the gate and the page (`Congress.OverrideCount`: an uncontested bill overrides on its whole seated base) (`Congress.Present`, `RecordVeto`, `SimulationManager.UsVetoGate`), composed with `Congress.GovernmentBears` through one lost-day writer (`Congress.RecordLost`); the projection on every verdict surface, no chance shown, an override's outcome stated only where the blocs send the bill; the plate's votes on the veto (89h, 89i); `UsVetoDiagnostic` and the 2024 run; `UsVeto.cs` and its catalog moved into Assets/Scripts/Elections byte for byte.
 
+**Ruled after it (Elias's ruling I12, 2026-10-18, item 27 of `docs/ASKS_FOR_ELIAS.md`; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):**
+- (i) **The Docket.** A bill unanswered after the Constitution's ten days (Sundays excepted) becomes law (Art. I §7). Poland's player-president is the same at Art. 122's 21 days, DECLARED. The pocket veto stays out of scope.
+- (ii) **No cost** for a veto or an override: there is no sourced coefficient, and none is invented.
+- (iii)-(vi) **as recommended:**
+  - an amendment is neither presented nor drawn on;
+  - the fund's drawdown is a budget vote;
+  - the 2024 run's planted bills are the stand-in for play;
+  - the president of the day comes from the game's own sworn contest.
+- (vii) **Yes**, that is the override's arithmetic.
+
+*US-21b, owed:* the Docket for both countries, on the player-president's hook. Its surface stays US-23's.
+
+
 **US-22 — The US budget procedure. Size L.** *(R-US9)*
 `WorldClock.BudgetProcedureOf` gains the US Congress procedure, sourced at US-14:
 - the president's budget request is the government's bill (31 U.S.C. 1105(a), its date read), and the fiscal year opens on 1 October (31 U.S.C. 1102, now behind `FiscalYearData`);
@@ -470,6 +483,19 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 - Sweden's frame decision and Poland's acts unchanged; `GovernmentBudgetBillDiagnostic` re-pinned for Germany, Poland and the USA;
 - `Reviews/` report and rows for every money path touched (BudgetBill, SimulationManager, `FiscalYearData`); bars; the dry film; one filmed width of the US budget slip.
 **Built: `COMPLETED.md` §854** - the president's request on 1105(a)'s first Monday in February (DECLARED), voted as Congress's acts on E2's parts: the appropriation at cloture, the reconciliation by a majority, the pension act at cloture, each through both chambers and `UsVetoGate`, independent (DECLARED). A fallen appropriation is followed the same day by a continuing resolution at cloture, uncontested unless the player withholds it (reading (P), PROVISIONAL, asked with (S), (C), (L)); the withhold lapses when the withholding party takes the presidency. Funding lapses the day after its horizon and ends the day one becomes law, its days on screen; the spending stop is not built (the excepted share is BILLED, asked: A-E). The AI president's budget now meets Congress (US-18's owed line closed); the budget's failed vote reads `Congress.GovernmentBears` (US-19's N1 closed). Save format 41. `UsBudgetProcedureDiagnostic` reproduces 1 Oct to 12 Nov 2025 (43 days) by the procedure's arithmetic.
+
+**Ruled after it (Elias's ruling I13, 2026-10-18, item 28 of `docs/ASKS_FOR_ELIAS.md`; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`).** *US-22b, owed:*
+- (1) **A lapse defers spending; it does not cancel it.**
+  - The lapsed acts' non-excepted outlays stop, and are paid in full when funding returns (back pay, 31 U.S.C. 1341(c)). Mandatory spending runs on.
+  - The size and the output effect come from CBO's 29 Oct 2025 estimate (publication 61823) and from CBO's delayed outlays already read.
+  - This is option (B), made up afterwards, with 61823's output effect added. It is its own BASELINE family wherever a lapse is reached.
+- (2) **(P) stands.** R-US17's draw (H1) is added for the withholder's own senators on each resolution's cloture vote during a lapse, fitted on the record's lapse-period cloture votes and labelled FITTED n=….
+- (3) **How a lapse ends:** when an act becomes law, on release, at the change of presidency (built), or through (2)'s defectors.
+  - **The cadence:** when no appropriation for the coming year is law the day before the horizon, a resolution is tabled that day, so nothing withheld means no lapse. This fixes the 9-September case and the 21-day case.
+  - **The request is tabled on its day whatever is before Congress** (the review's L2).
+- (4) The twelve declared readings stand, with no. 7 amended by (3).
+- (5) Format 41, as built.
+
 
 **US-23 — The president's pen. Size L.** *(R-US7, R-US9)*
 Where both chambers' majorities belong to the party out of the White House, that majority passes its own budget reconciliation once a fiscal year, before 1 October, and it lands on the president's desk. Its content is DECLARED as the AI finance ministry's book for that party (how the ministry takes a party's stance is read at the item). A player-president signs or vetoes it on the Docket, where it waits until decided; a veto goes to the override; a lapse with no continuing resolution shuts the government down (R-US9 as ruled; US-22). This gives spec §6's *"signing or vetoing bills"* a use against a hostile Congress — without it, the introduction rule leaves a player-president nothing from an AI Congress to sign.
@@ -737,6 +763,9 @@ Code expects to recommend (b), sized by US-9.
 - **(c):** Sweden's and Germany's ground games move 0.035 and 0.003 points and no seat; W-D1's frame alone moves Germany 2 seats with no campaign.
 - **Code recommends (b)** for the USA. (c) is not recommended until W-D1's frame reads each region's own turnout.
 - **Also asked:** does R-US16 gate US-30's staging (risk 1), or only US-31 (the needs lines)? Code recommends the needs lines; if so, risk 1's last sentence reads "... before the count or the AI's targeting changes".
+
+**RULED (Elias's ruling I3, 2026-10-18; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):** **(b) for the USA.** It gates US-31 only, so US-30 stages now (risk 1's last sentence reads "... before the count or the AI's targeting changes"). The ground game's state effect enters the presidential share, the Senate race and R-US18 (b)'s House swing alike.
+
 
 **R-US17 — Which bills the president vetoes, and the override's base** *(US-10's document; blocks US-21)*.
 - (a) B1 transposed: a bill a majority of the president's party's House members voted against;
@@ -1826,7 +1855,7 @@ ask is registered. D itself changes only by amendment.
 ```
 <!-- R-US18 RULE END -->
 
-**Ruling record:** ASKED (§800): (a) + S2, S5, S4 [(ii)].
+**Ruling record:** RULED (§856): I1 - (b), state delegations by a state swing (S2 answered by the other method); S5 and S4 [(ii)] moot, (b) having no fallback; a map redrawn since the base enters once an election has been held on it (DECLARED).
 
 **The block's digests** (the instrument's list): preregistered `b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c` (§791); AMENDED (G1, §797): `b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c` -> `5c89b0cf400e50c0e64e687f3f05b8cb74f13f76384bca184773f3724673307a`.
 
@@ -1842,6 +1871,9 @@ ask is registered. D itself changes only by amendment.
 **Answered (Elias's ruling G1, 2026-10-06; installed §797):** run on the defaults as printed - the word that rules none of them - but for the choices he answered: **the swing's basis is US-5's own-line House vote** (R-US18's choice 4 and R-US19's B7, one answer; their readings (vi) and (vii) made printed only), and **a full tie (B2) comes to Elias with the figures**. Both instruments run as preregistered; a result never changes a choice - a choice changed after a result is in sight needs a new digest and a report to Elias.
 
 **Confirmed (Elias's ruling H4, 2026-10-13; recorded §803):** the outcome asked at §800 is confirmed as listed - (a) + S2, S5, S4 [(ii)]. **An unfitted (b') prints as UNFITTED and never counts in the decision**; where the block says otherwise, the block's text wins and Elias is told. Read against the block: step 5 runs only where (b') is fitted in every cycle of D, and the rule never reaches (b') by itself, so the decision agrees; the block's decisive digest does carry whether (b') is fitted and its figures, so a change there moves the digest and asks R-US18 again - the text stands there. The ruling record stays ASKED: the block's THE ASK AND THE BARS has a ruling name an option that can be built, and a confirmation names none. **The UNFITTED label is built (§830):** an unfitted (b')'s row prints `UNFITTED` and the exit that failed, with no figures, and step 5 names the cycles; the decision never reads it. The text stands in two places, and Elias is told: the decisive digest carries an unfitted (b')'s figures and whether it is fitted, so an unfit moves the digest and asks R-US18 again (a planted run, §830); and in the run over D plus C5, not built, reading (ii)'s D (C2, C4, C5) compares S6, so a (b') unfitted in C1 alone would skip the main run's step 5 while reading (ii)'s ran, and S4 could fire on that difference.
+
+**RULED (Elias's ruling I1, 2026-10-18; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):** S2's stop is answered by the other method: **(b), state delegations by a state swing.** (b) about halves the national miss over D and calls the House majority right in C2, where (a) does not; it costs held-state seats and two delegations per swing cycle, and the contingent call is right either way. **S5 and S4 (ii) are moot**, because (b) has no fallback. **DECLARED:** a map redrawn since the base enters once an election has been held on it. The instrument holds RULED, option (b), with the outcome and the decisive digest the ruling was made on (`UsHouseCountCheck`); US-16's Congress-election diagnostic asserts it.
+
 
 **R-US19 — The Senate races** *(US-12's table; blocks US-16)*.
 - (a) The state's presidential-level derived share that day (a straight ticket);
@@ -2091,7 +2123,7 @@ amendment. D itself changes only by amendment.
 ```
 <!-- R-US19 RULE END -->
 
-**Ruling record:** ASKED (§801): S1 + S4 [(i)].
+**Ruling record:** RULED (§856): I2 - (c) over (a): the state's presidential-derived share (S1 answered by (a), S4 [(i)] agreeing), with per-race factors fitted on 2024's class only (E1's form), later fields at 1.0.
 
 **The block's digests** (the instrument's list): preregistered `03382d0c0dd22975dea191650f74962bd852477a86ad177944bd93455f425f9c` (§794); AMENDED (G1-G3, §797): `03382d0c0dd22975dea191650f74962bd852477a86ad177944bd93455f425f9c` -> `1caec656193a6d2d2c9c235af0cefe4d591134a24a3f7d338be0dac0108e3957`.
 
@@ -2144,6 +2176,9 @@ Asked beside the verdict, not blind ((c) decides nothing, so its figures cannot 
 
 **Elias's rulings of 2026-10-13, H1-H5 (sent 6 Oct, received 13 Oct; recorded §803, built after the gameplay audit).** H1-H3 are written at R-US17, H4 at R-US18's and R-US19's asks. The rest:
 - **H5, the order:** PS-6 is PARKED until the gameplay audit (`docs/audit/AUDIT_PROTOCOL.md`) is done; after it, US-14, then US-32. Read with "build them after the audit": H1-H3's preregistration, fit and mutation suite are US-10's follow-on and come first, R-US18's UNFITTED label (H4) with them (built §830); rule (c) preregistered §832, amended §833, first run §834 (INSTALL), INSTALLED §835 once its rates had gone to Elias (E4); the rule reaches play with US-21, whose needs are unchanged.
+
+**RULED (Elias's ruling I2, 2026-10-18; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):** S1 is answered by **(a), the state's presidential-derived share**: the misses tie, (a)'s margin miss is smaller in both cycles, and it is one state geography for the presidency and the Senate. S4 (i) agrees. **The side question: yes.** A 2024-start game in a world that follows history reproduces 2024's Senate class by (a) with its per-race factors (c_j) for that class only (E1's form), later fields at 1.0. So the instrument holds RULED with the option "(c) over (a)" (`UsSenateRaceCheck`).
+
 
 **R-US20 — Midterms** *(US-13; blocks US-27)*.
 - (a) The model as it stands, with the congressional economic vote wired (Table 9.1's US legislative row, the weakest in the sample);
@@ -2273,6 +2308,9 @@ THE ASK AND THE BARS
 
 **Asked §849 (US-15), R-US20's term:** the block's "unified ... the president's party is the largest in the House ... the reading EconomicVote's presidency branch takes" no longer describes the live code exactly - since US-15, EconomicVote reads both chambers where a Senate is seated. Amend the block to read both chambers? Under a both-chamber term the record's 2002 midterm moves from unified to divided in the printed-only split ([SEN-DIV]: the Democrats held the Senate from 6 Jun 2001 to 12 Nov 2002); L, U and m do not move. The block changes only with Elias's ruling.
 
+**RULED (Elias's ruling I4, 2026-10-18; installed `COMPLETED.md` §856; verbatim in `docs/RULINGS_2026-10-18.md`):** **(b), a FITTED midterm term on the president's party from the record since 1946, with n and its interval printed.** The rule can never reach (b) (its reach, above), so (a) is untested, and the model's m misses the record's midterm regularity. **Revisit it against (c) once approval reaches the vote** (A-LOOP). **The both-chambers amendment (§849): yes.** Its build is owed: the block amended under I4 with its new digest, and the instrument's printed split read over both chambers from the Senate's Party Division page (on disk). The instrument holds RULED (b) (`UsMidtermCheck`). US-27 builds the fitted term and its seat change by R-US18 (b).
+
+
 **R-US21 — B7's open details** *(US-14's dates; blocks US-24)*.
 - (i) **The bridge:** debt subject to limit = the model's debt × the ratio read at the seed's vintage *(recommended)*; or re-seed US debt on that perimeter, a family for every start.
 - (ii) **A 2024-start game:** the law in force at the start — suspended to 1 Jan 2025, reinstated on 2 Jan at the game's own debt subject to limit (P.L. 118-5 §401(b)), with later raises the game's Congress's acts *(recommended)*; or the record's dated figures (P.L. 119-21's +$5.0 trillion on 4 Jul 2025) whatever the game's Congress does. A start after 4 Jul 2025 holds $41,103,995,660,231 as of record either way.
@@ -2281,6 +2319,17 @@ THE ASK AND THE BARS
 - (v) **The AI ministry's ratio-trend "debt-limit logic"** and its borrowed sequester size (`AiFinanceMinistry.UsSequesterPercentOfGdp`): replaced by the dollar limit for the USA *(recommended)*; or kept beside it.
 - (vi) **An AI-governed USA at the limit:** it raises or suspends the limit, as every episode of record ended (to be read) *(recommended)*; or it takes the game's cut.
 
+**RULED (Elias's ruling I5, 2026-10-18; installed `COMPLETED.md` §856):** **(i)-(vi) as recommended:**
+- (i) the ratio bridge;
+- (ii) the law in force at the start, later raises being the game's Congress's acts;
+- (iii) one DECLARED span from the record's last episode;
+- (iv) the cut pro rata across non-interest outlays;
+- (v) the dollar limit replaces the AI ministry's ratio-trend logic and its borrowed sequester for the USA;
+- (vi) an AI-governed USA raises or suspends the limit.
+
+US-24 is unblocked. The new question under (ii), the 2022 and 2023 starts opening over P.L. 117-73's limit, stays open under I16.
+
+
 **R-US22 — Who governs when a contest is still undecided at the oath** *(US-7's reading 3, §845; reachable once the game elects the House, US-16)*. A contingent election the House cannot decide (no candidate at 26 delegations) leaves the contest undecided on 20 January. R-US3 (a) left "a House that cannot choose" unmodelled without saying who governs then.
 - (a) The sitting president stays, possibly to the next term's oath (the code as built; `PresidencyDiagnostic` (f) pins it until ruled);
 - (b) the record's president for the date;
@@ -2288,10 +2337,24 @@ THE ASK AND THE BARS
 
 No recommendation: each option names a different premise, and none is reachable before US-16.
 
+**RULED (Elias's ruling I6, 2026-10-18; installed `COMPLETED.md` §856): the Twentieth Amendment's order.**
+- The Senate chooses the Vice President by a majority of the whole Senate (12th Amendment), and the Vice President acts as President until the House chooses.
+- If the Senate cannot choose either, the Speaker acts (3 U.S.C. §19).
+- Never the sitting president past noon on 20 January (Am. XX §1).
+
+Option (a) is retired. `PresidencyDiagnostic` (f)'s pin of it moves with the build, which is reachable once the game elects the House, and is built with US-16.
+
+
 **R-US23 — How the 2024 nominees are named** *(US-6's naming asymmetry with US-8's reading 5, §847)*. Harris is named from the DNC's date (6 Aug 2024); Trump is "the Republican nominee" on every screen before the count, the RNC's date BILLED (gop.com 403); from the count on, the game's own count names both by NARA's names (the contest, the oath's government, the Parliament row: "ELECT TRUMP" from 6 Nov 2024).
 - (a) As built: unnamed before the count, NARA's name from the count - the plan's own stand-in;
 - (b) never named, the count's record included (the oath's government reads "the Republican nominee (REP)");
 - (c) named from a dated source fetched by browser (an errand of Elias's, as E-47).
+
+**RULED (Elias's ruling I7, 2026-10-18; installed `COMPLETED.md` §856): even-handed.**
+- Neither nominee is named before the count until both are dated; then both are named from their conventions' records.
+- Elias saves the RNC's page for the 15 July 2024 roll call by browser, as for E-47 (`ERRANDS.md`).
+- Until that page is read, Harris too is unnamed before the count (US-8b).
+
 
 **R-US24 — The state prior of the game's second presidential count** *(US-8's reading 8, §847; US-26's)*. A 2028 count swings its states from:
 - (a) the record's 2024 states, until US-26 (as built);
@@ -2299,20 +2362,34 @@ No recommendation: each option names a different premise, and none is reachable 
 
 And does US-26 own the choice? The 2024 count is unaffected either way. If (b), US-26's done-when gains: "a US game's second presidential count swings its states from the game's own previous count, its states printed beside the record's 2024 map".
 
+**RULED (Elias's ruling I8, 2026-10-18; installed `COMPLETED.md` §856):** **(b), the game's own 2024 states, and US-26 owns it** (R-US11 (a)). US-26's done-when gains the line above.
+
+
 **R-US25 — A fork's own count** *(US-8's reading 10, §847; beside R-US22)*. The impact ledger's and the shadow's forks of a loaded US game step through polling days and hold their own counts, as they already hold Poland's presidential rounds and US-2's record; a fork can therefore seat a different president, and the ledger's leave-one-out attribution then includes that change of government.
 - (a) As built: forks hold their own counts;
 - (b) forks carry the live game's contest forward and hold no count of their own.
 
 With US-28 (§848): a fork made before the player's pick names the default in its own later count while the real game names the pick - shares and electors identical, the name read only for display and within one world.
 
+**RULED (Elias's ruling I9, 2026-10-18; installed `COMPLETED.md` §856):** **(a), with every fork drawing the live game's election noise (common random numbers)**, so a fork elects a different president only because of policy (US-8b).
+
+
 **R-US26 — The out-party's nominee** *(US-28's reading 4, §848)*. `POLITICAL_SYSTEM_SPEC.md` §6: "**Losing does not end the run.** A defeated president may run again four years later." As built, a party out of the White House fields its candidate unnamed, and the pick exists only for a term-limited party: Harris elected in 2024 and beaten in 2028 is eligible in 2032 (one election), yet DEM fields "Democratic Party's candidate (2032)" and the player cannot field her.
 - (a) the player's out-party may pick from its people, the defeated president among them, the default unnamed;
 - (b) the out-party fields its last eligible nominee;
 - (c) keep it unnamed and amend §6.
 
+**RULED (Elias's ruling I10, 2026-10-18; installed `COMPLETED.md` §856):** **(a).** The player's out-party may pick from its people, the defeated president among them, with the default unnamed (US-28b).
+
+
 **R-US27 — The running mates** *(US-28's reading 3, §848)*.
 - (i) **The 2024 game ticket's running mate:** DECLARED as the record's (Vance, Walz); R-US2 (a) names only the presidential nominee. The alternative reads the plan's "a game-elected ticket's running mate is the party's own" literally: after a game Trump win, REP's 2028 default would be "Republican Party's candidate for Vice President (2024)", not Vance.
 - (ii) **A re-elected president's ticket** gets a new unnamed running mate (Harris re-elected in 2028: from 20 Jan 2029 the Vice President is "Democratic Party's candidate for Vice President (2028)", and DEM's 2032 default is that mate, Walz an alternative). The alternative: keep the sitting Vice President on a re-elected ticket.
+
+**RULED (Elias's ruling I11, 2026-10-18; installed `COMPLETED.md` §856):**
+- (i) as declared: the 2024 game ticket's running mates are the record's (Vance, Walz);
+- (ii) the alternative: a re-elected president keeps the sitting Vice President, as the record does (US-28b).
+
 
 ---
 

@@ -35,12 +35,12 @@ namespace PoliSim.EditorTools
             ("1caec656193a6d2d2c9c235af0cefe4d591134a24a3f7d338be0dac0108e3957", "AMENDED (G1-G3, §797): B7 and B2 answered, R-US14 ruled (a), Sinema's reading ruled"),
         };
 
-        private const string RulingState = "ASKED";
-        private const string RulingSection = "§801";
+        private const string RulingState = "RULED";
+        private const string RulingSection = "§856";
         private const string RulingOutcomeOverD = "S1 + S4 [(i)]";
         private const string RulingDecisiveDigest = "1ede3f625179cddfd3e1d4ea500588c774e5c046033032131db4c55cccc466ed";
         /// <summary>RULED only: the ruling's words and the option it names - one the block's THE ASK AND THE BARS says can be built.</summary>
-        private const string RulingRuled = "", RulingOption = "";
+        private const string RulingRuled = "I2 - (c) over (a): the state's presidential-derived share (S1 answered by (a), S4 [(i)] agreeing), with per-race factors fitted on 2024's class only (E1's form), later fields at 1.0", RulingOption = "(c) over (a)";
         private static readonly string[] BuildableOptions =
         {
             "(a)", "(b)", "(a) on presidential days and (b) at midterms", "(b) on presidential days and (a) at midterms",

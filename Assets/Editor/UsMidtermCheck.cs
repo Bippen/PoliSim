@@ -36,7 +36,7 @@ namespace PoliSim.EditorTools
     /// (`docs/reference/ECONOMIC_VOTE.md`, [BK-D] p. 247, [draft]) - substituted HERE ONLY; nothing reaches the game.</item>
     /// </list>
     /// The rule compares the model's midterm with the legislative cell against the record's band at full precision and prints the verdict. The
-    /// model's seat change is never computed: it would need R-US18's method, which is ASKED, so it prints UNRULED.
+    /// model's seat change is never computed here: R-US18 and R-US20 are both ruled (b) (§856), and the seat change of R-US20 (b)'s fitted term is US-27's.
     ///
     /// <para>Pinned in the cheap bar and the documents bar through the US card's marked block (`docs/reference/US_ELECTIONS.md`, *The midterm -
     /// R-US20*), written by <see cref="WriteReadings"/>; a stale block fails. The instrument holds the rule block's digest list and the ruling record
@@ -53,11 +53,11 @@ namespace PoliSim.EditorTools
 
         /// <summary>The ruling record: NONE, ASKED or RULED. The first run registers the ask - its section and the outcome: the verdict, the government
         /// type and L, U and m to two decimals, as the run prints them.</summary>
-        private const string RulingState = "ASKED";
-        private const string RulingSection = "§840";
+        private const string RulingState = "RULED";
+        private const string RulingSection = "§856";
         private const string RegisteredVerdict = "(a)", RegisteredGovernment = "unified", RegisteredL = "-8.97", RegisteredU = "+2.26", RegisteredM = "-0.21";
         /// <summary>RULED only: the ruling's words and the option it names - (a), (b) or (c).</summary>
-        private const string RulingRuled = "", RulingOption = "";
+        private const string RulingRuled = "I4 - (b), a FITTED midterm term on the president's party from the record since 1946, n and its interval printed (US-27 builds it); revisited against (c) once approval reaches the vote; the both-chambers amendment ruled yes", RulingOption = "(b)";
 
         // ------------------------------------------------------------------ the staging the rule names
         private static readonly DateTime Epoch = new DateTime(2024, 11, 4);
@@ -359,8 +359,10 @@ namespace PoliSim.EditorTools
             card.Add(F("| the legislative cell less its parenthesis | {0:+0.000;-0.000} | {1} | {2} | {3} |", cell - sd, Pp(100.0 * (cell - sd) * deterioration), Pct(recordShare + mLow / 100.0), Pp(mLow)));
             card.Add(F("| the legislative cell plus its parenthesis | {0:+0.000;-0.000} | {1} | {2} | {3} |", cell + sd, Pp(100.0 * (cell + sd) * deterioration), Pct(recordShare + mHigh / 100.0), Pp(mHigh)));
             card.Add("");
-            Check(UsHouseCountCheck.RulingState != "RULED", F("R-US18 is {0} ({1}), not ruled - so the model's seat change prints UNRULED; once it is ruled, this instrument owes the seat change by the ruled method", UsHouseCountCheck.RulingState, UsHouseCountCheck.RulingSection));
-            card.Add(F("- **The model's seat change**: UNRULED - R-US18 is {0} ({1}), so no seat translation of the model's vote swing is computed here; R-US18's method in play is US-16's.", UsHouseCountCheck.RulingState, UsHouseCountCheck.RulingSection));
+            // R-US18 RULED (b) and R-US20 RULED (b) together (§856): the seat change of the midterm R-US20 (b) fits is US-27's, by (b) in play - not of this
+            // instrument's m, which (b) replaces. Held here so a later change of either ruling is seen.
+            Check(UsHouseCountCheck.RulingState == "RULED" && RulingState == "RULED" && RulingOption == "(b)", F("R-US18 is {0} ({1}) and R-US20 {2} {3} - so the model's seat change is US-27's, by R-US18's ruled method on R-US20 (b)'s fitted term", UsHouseCountCheck.RulingState, UsHouseCountCheck.RulingSection, RulingState, RulingOption));
+            card.Add(F("- **The model's seat change**: not computed here - R-US18 is {0} ({1}) by (b), and R-US20 (b) replaces this m with a fitted term; the seat change of that term by (b) is US-27's.", UsHouseCountCheck.RulingState, UsHouseCountCheck.RulingSection));
             card.Add("- **The 2026 midterm's own result**: BILLED until the Clerk's 2026 statistics are saved (expected 2027); then it is printed beside m, never read by the rule.");
 
             // ---- R-US20's rule
