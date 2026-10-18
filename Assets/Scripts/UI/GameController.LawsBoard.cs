@@ -255,10 +255,13 @@ namespace PoliSim.UI
                     law.ConstitutionalAmendment ? PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment : PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute) : null;
                 // PS-6 US-18: where a law goes through both chambers, the cell names the chamber that stops it, with its count there (the line at cloture)
                 Congress.Verdict congress = concern == null || concern.IsEmpty ? null : _chamberVerdicts.Chambers(_playerCountry, concern, voteDay);
+                // PS-6 US-21: a law both chambers pass that the US president vetoes (rule (a)) with no override carrying reads VETOED; an amendment is not presented
+                bool usVetoed = passes && congress != null && !law.ConstitutionalAmendment && ChamberVerdicts.UsVetoFalls(_chamberVerdicts.UsVetoProjection(_playerCountry, concern, voteDay));
                 string verdictText = concern == null || concern.IsEmpty
                     ? "UNCONTESTED · CARRIES"
                     : congress?.Stopping is Congress.Division stop
                         ? "FALLS IN THE " + Congress.ChamberName(PlayerCountryId, stop.Chamber).ToUpperInvariant() + " · " + (stop.Cloture ? stop.For + " OF " + stop.Required + " FOR CLOTURE" : stop.For + " ⁄ " + stop.Against)
+                    : usVetoed ? "PASSES BOTH · VETOED · " + forSeats + " ⁄ " + againstSeats
                     : (ChamberVerdicts.AtRiskOfFalling(veto) ? "CARRIES · VETO " + ChamberVerdicts.RiskWords(veto) + " · " : passes ? (congress != null ? "CARRIES BOTH · " : "CARRIES · ") : "FALLS · ") + forSeats + " ⁄ " + againstSeats;
                 PoliSimWidgets.MeasuredLabel(new Rect(block.x + contentWidth * 0.45f, y, contentWidth * 0.5f, capH), "WILL IT PASS", small);
                 PoliSimWidgets.MeasuredLabel(new Rect(block.x + contentWidth * 0.45f, y + capH, contentWidth * 0.5f, Mathf.Ceil(DeskCaptionHeight(figure))), verdictText, verdict);

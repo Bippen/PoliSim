@@ -242,7 +242,10 @@ namespace PoliSim.EditorTools
                         v = Congress.Project(usa118, repOrdinary, sim118.CurrentDate);
                         Check(PartyLine(v, "REP", "DEM") && v.House.Passed && v.Senate.Cloture && !v.Senate.ClotureInvoked && !v.Passed && v.StoppedIn == Congress.Senate,
                             F("(c) a party-line REP ordinary bill: {0} - {1}; {2}", Congress.StopWords(CountryId.USA, v), string.Join("; ", Congress.OrderWords(CountryId.USA, v)), Sides(v)));
-                        Check(Gate(usa118, "Crime & Justice bill (US-18 diagnostic, 118th)", repOrdinary, sim118.CurrentDate, Congress.House, wantPassed: false, wantChambers: 2, out string repRecords), "(c) through the gate: " + repRecords);
+                        // PS-6 US-21: on the veto path the gate draws defectors (R-US17 rule (c)) - the least recorded crossing planted, so this row holds the blocs' arithmetic it was written for, not the hash of its title (the keyed draw stops it in the Senate too)
+                        bool repGate; string repRecords;
+                        using (UsVeto.PlantIndex(0)) { repGate = Gate(usa118, "Crime & Justice bill (US-18 diagnostic, 118th)", repOrdinary, sim118.CurrentDate, Congress.House, wantPassed: false, wantChambers: 2, out repRecords); }
+                        Check(repGate, "(c) through the gate: " + repRecords);
 
                         // =========================== (f) scope
                         foreach (CountryId id in new[] { CountryId.Sweden, CountryId.Germany, CountryId.Poland })

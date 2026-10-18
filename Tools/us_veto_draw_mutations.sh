@@ -13,9 +13,9 @@ LOGS="$ROOT/../PoliSim-captures/logs"
 WORK=$(mktemp -d)
 CSV=ElectionsData/usa/us_veto_measures.csv
 PLAN=docs/specs/USA_STAGE_PLAN.md
-CAT=Assets/Editor/Generated/UsVetoDefections.cs
+CAT=Assets/Scripts/Elections/Generated/UsVetoDefections.cs
 CHECK=Assets/Editor/UsVetoDrawCheck.cs
-RUNTIME=Assets/Editor/UsVeto.cs
+RUNTIME=Assets/Scripts/Elections/UsVeto.cs
 FILES=("$CSV" "$PLAN" "$CAT" "$CHECK" "$RUNTIME")
 for f in "${FILES[@]}"; do mkdir -p "$WORK/$(dirname "$f")"; cp -p "$ROOT/$f" "$WORK/$f" || { echo "BROKEN  cannot copy $f"; exit 2; }; done
 restore() { for f in "${FILES[@]}"; do cmp -s "$WORK/$f" "$ROOT/$f" || cp -p "$WORK/$f" "$ROOT/$f"; done; }
@@ -71,7 +71,7 @@ case_ mirror_edit m_mirror 'FAIL +the plan'"'"'s line after the block mirrors th
 
 # --- the catalog (recompiles)
 m_cat() { perl -i -pe 'if (!$d && /new Entry\("[^"]+", \d+, (\d+), \d+\),/) { my $x = $1 + 1; s/(new Entry\("[^"]+", \d+, )\d+/$1$x/; $d = 1 }' "$CAT"; }
-case_ catalog_edit m_cat 'FAIL +the catalog Assets/Editor/Generated/UsVetoDefections\.cs differs from the generated one'
+case_ catalog_edit m_cat 'FAIL +the catalog Assets/Scripts/Elections/Generated/UsVetoDefections\.cs differs from the generated one'
 
 # --- CODE (s830's form: one line of the instrument or the runtime, in place for one run)
 m_share()  { perl -i -pe 's/AddObs\(fit, rc, '"'"'P'"'"', pp, sp\.Yea, /AddObs(fit, rc, '"'"'P'"'"', pp, sp.Nay, /' "$CHECK"; }   # the PP's crossers read as its nays

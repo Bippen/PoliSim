@@ -333,6 +333,12 @@ namespace PoliSim.UI
                 ColumnHead(column, record.OtherChamber != null ? "The divisions" : "The division");
                 if (record.OtherChamber != null) { ChamberDivision(column, country, record.OtherChamber, overlay); }
                 ChamberDivision(column, country, record, overlay);
+                // PS-6 US-21: a veto its first chamber sustained is put to that chamber alone - the other never votes on it
+                if (OnVeto(record) && record.OtherChamber == null && !record.Passed)
+                {
+                    int other = record.Chamber == Congress.Senate ? Congress.House : Congress.Senate;
+                    Note(column, "The " + Congress.ChamberName(country.Id, other) + " does not vote - the veto stands");
+                }
                 return;
             }
             ColumnHead(column, "The division");
@@ -402,6 +408,10 @@ namespace PoliSim.UI
         private static bool InCongress(Country country, DivisionRecord record) =>
             record.OtherChamber != null || record.Chamber == Congress.Senate || record.Cloture || Congress.Applies(country);
 
+        /// <summary>PS-6 US-21: a Congress division that is a chamber's vote on the president's veto - its line the two thirds (`DivisionRecord.Required`), never
+        /// a cloture line.</summary>
+        private static bool OnVeto(DivisionRecord record) => record.Required > 0 && !record.Cloture;
+
         /// <summary>
         /// PS-6 US-18: ONE CHAMBER'S DIVISION ON A CONGRESS PLATE - the chamber and its verdict as a caption, the count, the bar and its line, and what
         /// abstained. The House counts a majority of those voting (the line more than half the votes cast, a tie failing); the Senate at cloture counts its
@@ -411,14 +421,18 @@ namespace PoliSim.UI
         private static void ChamberDivision(Transform column, Country country, DivisionRecord record, Transform overlay)
         {
             string name = Congress.ChamberName(country.Id, record.Chamber);
-            string procedure = record.Chamber != Congress.Senate ? string.Empty : record.Cloture ? " · cloture" : " · reconciliation";
-            Note(column, name + procedure + " · " + (record.Passed ? "passed" : "rejected"));
+            bool onVeto = OnVeto(record);   // PS-6 US-21: the chamber's vote on the president's veto
+            string procedure = onVeto ? " · on the veto" : record.Chamber != Congress.Senate ? string.Empty : record.Cloture ? " · cloture" : " · reconciliation";
+            Note(column, name + procedure + " · " + (onVeto ? (record.Passed ? "overridden" : "sustained") : record.Passed ? "passed" : "rejected"));
             int forSeats = 0, undecided = 0, against = 0;
             foreach (DivisionSide side in record.Sides)
             {
                 if (side.Side > 0) { forSeats += side.Seats; } else if (side.Side < 0) { against += side.Seats; } else { undecided += side.Seats; }
             }
-            if (record.Sides.Count == 0)
+            // PS-6 US-21: the vote on the veto of a bill that passed unasked records no sides - every member of its base is for the override (`Congress`'s one
+            // override rule), the base its record's (`DivisionRecord.Sworn`)
+            if (onVeto && record.Sides.Count == 0) { forSeats = record.Sworn; }
+            else if (record.Sides.Count == 0)
             {
                 Note(column, "Uncontested - nothing asked of it");
                 return;
@@ -432,6 +446,25 @@ namespace PoliSim.UI
             Word(count, against.ToString(CultureInfo.InvariantCulture), PoliSimTheme.Document, 45, PoliSimTheme.Bad, TextAnchor.LowerLeft);
             Word(count, "against", PoliSimTheme.Body, Line, PoliSimTheme.TextPrimary, TextAnchor.LowerLeft);
             string I(int n) => n.ToString(CultureInfo.InvariantCulture);
+            int crossed = 0;
+            foreach (DivisionSide side in record.Sides) { if (side.Defectors) { crossed += side.Seats; } }
+            if (onVeto)
+            {
+                // PS-6 US-21: two thirds of those voting, the base every member of the division - the undecided counted against - and the line at its own share
+                int members = Mathf.Max(record.Sworn, forSeats + against + undecided);
+                CountBar(column, forSeats, members - forSeats, PoliSimTheme.Good, PoliSimTheme.Bad, record.Required, members > 0 ? Mathf.Clamp01((float)record.Required / members) : 0.667f);
+                Note(column, "Two thirds of the " + I(members) + " voting: " + I(record.Required));
+                if (undecided > 0) { Note(column, I(undecided) + " undecided - counted against"); }
+                CanvasRows.Slip(count.gameObject, overlay, "THE " + name.ToUpperInvariant() + " · THE VOTE ON THE VETO", new[]
+                {
+                    "FOR " + I(forSeats) + " · AGAINST " + I(against) + " · UNDECIDED " + I(undecided) + (crossed > 0 ? " · " + I(crossed) + " DEFECTORS AMONG THEM" : string.Empty),
+                    "A VETO IS OVERRIDDEN BY TWO THIRDS OF THOSE VOTING IN EACH CHAMBER, A QUORUM PRESENT - THE CHAMBER THE BILL BEGAN IN FIRST, ON THE SIDES THAT VOTED THE BILL",
+                    "THE LINE: " + I(record.Required) + " OF THE " + I(members) + " - " + (record.Passed ? "OVERRIDDEN" : "THE VETO STANDS"),
+                    "THE TEN DAYS AND THE POCKET VETO ARE NOT MODELLED - THE VETO AND THE VOTE ON IT FALL ON THE DAY THE BILL PASSED",
+                });
+                return;
+            }
+            if (crossed > 0) { Note(column, I(crossed) + " drawn defectors decided it"); }   // PS-6 US-21: crossers enter a division only where they change its verdict
             if (record.Cloture)
             {
                 int sworn = Mathf.Max(record.Sworn, forSeats + against + undecided);
@@ -572,7 +605,8 @@ namespace PoliSim.UI
             {
                 string vote = contest != null
                     ? (side.Side > 0 ? "Frames" : side.Side < 0 ? "Alternative" : "Abstains")   // PS-3f (§633): a contest's side names the proposal - in full on the slip
-                    : (side.Side > 0 ? "For" : side.Side < 0 ? "Against" : record.Required > 0 && !record.Cloture ? "Abstains" : "Undecided");   // §761: on the vote on a veto the undecided abstain, counted among those voting (PS-6 US-18: not at cloture)
+                    : side.Defectors ? "Defected"   // PS-6 US-21: a party's drawn defectors, on the other side of its stance
+                    : (side.Side > 0 ? "For" : side.Side < 0 ? "Against" : record.Required > 0 && !record.Cloture && !InCongress(country, record) ? "Abstains" : "Undecided");   // §761: on the vote on a veto the undecided abstain, counted among those voting (PS-6 US-18: not at cloture; PS-6 US-21: on a US veto the undecided count against)
                 Color ink = contest != null ? (side.Side == 0 ? Muted : ((side.Side < 0) == contest.AlternativeAdopted ? PoliSimTheme.Good : PoliSimTheme.TextPrimary))
                     : side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : Muted;
                 bool modelled = !string.IsNullOrEmpty(side.Reason);   // a record before the stance model carries no alignment worth printing
@@ -588,7 +622,8 @@ namespace PoliSim.UI
                 stretch.flexibleWidth = 1f;
                 Hairline(row);
 
-                string full = contest != null ? (side.Side > 0 ? "FOR " + contest.ProposalFor : side.Side < 0 ? "FOR " + contest.ProposalAgainst : "ABSTAINS") : vote.ToUpperInvariant();
+                string full = contest != null ? (side.Side > 0 ? "FOR " + contest.ProposalFor : side.Side < 0 ? "FOR " + contest.ProposalAgainst : "ABSTAINS")
+                    : side.Defectors ? "DEFECTED - VOTED " + (side.Side > 0 ? "FOR" : "AGAINST") + ", ACROSS ITS PARTY'S STANCE" : vote.ToUpperInvariant();
                 var lines = new List<string> { full + " · " + UiFormat.Seats(side.Seats).ToUpperInvariant() };
                 if (modelled)
                 {
@@ -617,14 +652,27 @@ namespace PoliSim.UI
                 return;
             }
             Note(column, firstName + " · " + secondName + " seats - one stance a party");
+            // PS-6 US-21: a party's drawn defectors are a side of their own beside its stance's (entered only where they decided a chamber's verdict) - the row keeps
+            // the party's whole seats and its stance; the defectors are named above the rows and on the row's slip
+            int Seats(DivisionRecord r, string abbrev, bool defectors) { int n = 0; foreach (DivisionSide s in r.Sides) { if (s.Abbrev == abbrev && (!defectors || s.Defectors)) { n += s.Seats; } } return n; }
+            var crossings = new List<string>();
+            foreach (string abbrev in parties)
+            {
+                int x = Seats(first, abbrev, true), y = Seats(second, abbrev, true);
+                if (x > 0) { crossings.Add(PartySystems.ShortName(country.Id, abbrev) + " " + x.ToString(CultureInfo.InvariantCulture) + " in the " + firstName); }
+                if (y > 0) { crossings.Add(PartySystems.ShortName(country.Id, abbrev) + " " + y.ToString(CultureInfo.InvariantCulture) + " in the " + secondName); }
+            }
+            if (crossings.Count > 0) { Note(column, "Defected · " + string.Join(" · ", crossings)); }
             var names = new Dictionary<string, string>();
             foreach (PoliticalParty party in PartySystems.For(country.Id)) { names[party.Abbrev] = party.Name; }
             float rowHeight = Mathf.Clamp(StanceBudget / parties.Count, MinStanceRow, RowHeight);
             foreach (string abbrev in parties)
             {
-                DivisionSide a = first.Sides.Find(s => s.Abbrev == abbrev), b = second.Sides.Find(s => s.Abbrev == abbrev);
+                DivisionSide a = first.Sides.Find(s => s.Abbrev == abbrev && !s.Defectors) ?? first.Sides.Find(s => s.Abbrev == abbrev);
+                DivisionSide b = second.Sides.Find(s => s.Abbrev == abbrev && !s.Defectors) ?? second.Sides.Find(s => s.Abbrev == abbrev);
                 DivisionSide side = b ?? a;   // one stance: the same side and alignment in both chambers
-                int inFirst = a?.Seats ?? 0, inSecond = b?.Seats ?? 0;
+                int inFirst = Seats(first, abbrev, false), inSecond = Seats(second, abbrev, false);
+                int crossedFirst = Seats(first, abbrev, true), crossedSecond = Seats(second, abbrev, true);
                 string vote = side.Side > 0 ? "For" : side.Side < 0 ? "Against" : "Undecided";
                 Color ink = side.Side > 0 ? PoliSimTheme.Good : side.Side < 0 ? PoliSimTheme.Bad : Muted;
                 bool modelled = !string.IsNullOrEmpty(side.Reason);
@@ -645,6 +693,13 @@ namespace PoliSim.UI
                     vote.ToUpperInvariant() + " · " + UiFormat.Seats(inFirst).ToUpperInvariant() + " IN THE " + firstName.ToUpperInvariant() + " · " + UiFormat.Seats(inSecond).ToUpperInvariant() + " IN THE " + secondName.ToUpperInvariant(),
                     "ONE STANCE IN BOTH CHAMBERS - A PARTY VOTES AS ONE",
                 };
+                if (crossedFirst + crossedSecond > 0)
+                {
+                    lines.Add((crossedFirst > 0 ? crossedFirst.ToString(CultureInfo.InvariantCulture) + " DEFECTED IN THE " + firstName.ToUpperInvariant() : string.Empty)
+                        + (crossedFirst > 0 && crossedSecond > 0 ? " · " : string.Empty)
+                        + (crossedSecond > 0 ? crossedSecond.ToString(CultureInfo.InvariantCulture) + " DEFECTED IN THE " + secondName.ToUpperInvariant() : string.Empty)
+                        + " - DRAWN FROM THE RECORDED ROLL CALLS, COUNTED BECAUSE THEY DECIDED THE CHAMBER'S VERDICT");
+                }
                 if (modelled)
                 {
                     lines.Add("ALIGNMENT " + Signed(side.Alignment) + " ON THE " + (second.Axis == (int)BillAxis.Trade ? "OPENNESS AXIS" : "FISCAL AXIS"));

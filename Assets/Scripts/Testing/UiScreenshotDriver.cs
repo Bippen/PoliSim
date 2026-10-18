@@ -1756,6 +1756,28 @@ namespace PoliSim.Testing
                 yield return Settle();
             }
 
+            // (c3) PS-6 US-21: THE US VETO PLATE - a bill both chambers sent, vetoed by the president of the day (rule (a)) and put to the override, each chamber's
+            // vote on the veto its own division. Staged through the game's own gate on the film's own world (Congress.Divide draws the defectors, then
+            // SimulationManager.UsVetoGate answers and records), the other major party's bill against the president's party; the draw's indices PLANTED
+            // (UsVeto.PlantIndex) so that Congress sends it: 89h the bill's first chamber sustaining the veto (the other never voting on it), 89i an override
+            // carrying in both chambers. Filmed real: the surface is Canvas.
+            if (player.Id == CountryId.USA)
+            {
+                foreach ((string shot, bool overridden) in new[] { ("89h_signing_us_veto", false), ("89i_signing_us_override", true) })
+                {
+                    if (!StageUsVetoDivision(player, sim, overridden)) { Debug.LogError($"SHOT: {shot} could not be staged through the gate - MISSING, not clean."); continue; }
+                    InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    Claim("signing");
+                    yield return Capture(shot);
+                    RecordCanvasTextAssert(shot, controller);
+                    InvokeNoArg(controller, "SignPendingDivision");
+                    yield return WaitForCanvasSettle(controller, wantActive: false);
+                    yield return Settle();
+                }
+            }
+
             // (d) PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - the signing screen names each with its votes, the abstentions,
             // and stamps the adopted one. Staged as the frame decision the model records (S's alternative against the government's frames, the
             // government's own parties carrying them), and filmed real: the surface is Canvas.
@@ -1791,6 +1813,134 @@ namespace PoliSim.Testing
             using (PresidentialVeto.PlantDraw(0.0)) { stands = (bool)gate.Invoke(sim, new object[] { player, passage, true, PresidentialVeto.Act.OrdinaryStatute }); }
             DivisionRecord newest = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
             Debug.Log($"SHOT: staged the vote on the President's veto through the game's own gate - stands {stands}, line {newest.Required}: {newest.Title}");
+        }
+
+        /// <summary>
+        /// PS-6 US-21: a US bill both chambers send and the president of the day vetoes, through the game's own gate. The president is read as the gate reads him
+        /// (`Congress.PresidentOn`); for the staging the player's party is set to the OTHER major party - so the president is not the player's and answers by rule
+        /// (a) - and restored after; the bill is that party's own, the first of a few dial moves toward its end that the president's party stands against in both
+        /// chambers. The draw's indices are PLANTED (`UsVeto.PlantIndex`): the other party's held at its lists' first entry, the president's party's searched
+        /// chamber by chamber for the first pair that sends the bill and gives the asked override - sustained in the bill's first chamber, or carried in both. The
+        /// gate then runs whole (`ParliamentSystem.Divide`, `SimulationManager.UsVetoGate`) and its records are the frame's.
+        /// </summary>
+        private static bool StageUsVetoDivision(Country player, SimulationManager sim, bool overridden)
+        {
+            DateTime day = sim.CurrentDate;
+            if (!Congress.Applies(player) || !Congress.PresidentOn(player, day, out string president, out string pp, out _) || (pp != "REP" && pp != "DEM"))
+            {
+                Debug.Log($"SHOT: the US veto is not staged on {day:yyyy-MM-dd} - no Congress seated, or no president of REP or DEM found on the day.");
+                return false;
+            }
+            string op = pp == "REP" ? "DEM" : "REP";
+            string mine = player.PlayerPartyAbbrev;
+            Dictionary<string, int> house0 = player.ParliamentSeats, senate0 = player.SecondChamberSeats;
+            player.PlayerPartyAbbrev = op;
+            try
+            {
+                if (StageUsVetoOn(player, sim, overridden, day, president, pp, op)) { return true; }
+                if (!overridden) { return false; }
+                // An override needs two thirds on the passage's sides, and the crossers enter a chamber only where they change its verdict - so where the other
+                // party holds the House its bill passes there on the blocs, no crosser enters, and its bloc alone is short of two thirds: no plant overrides.
+                // STAGED, said here and in the log: the two parties' seats swapped in both chambers for this frame alone (the president's party holding them),
+                // restored the moment the gate has written its records - the plate reads the records, never the seats
+                player.ParliamentSeats = SwappedSeats(house0, pp, op);
+                player.SecondChamberSeats = SwappedSeats(senate0, pp, op);
+                Debug.Log($"SHOT: 89i - no plant overrides on the film's chambers; {pp}'s and {op}'s seats swapped in both chambers for this staging alone, restored after.");
+                return StageUsVetoOn(player, sim, overridden, day, president, pp, op);
+            }
+            finally { player.PlayerPartyAbbrev = mine; player.ParliamentSeats = house0; player.SecondChamberSeats = senate0; }
+        }
+
+        /// <summary>PS-6 US-21: two parties' seats swapped in a copy of a chamber's seating.</summary>
+        private static Dictionary<string, int> SwappedSeats(Dictionary<string, int> seats, string a, string b)
+        {
+            var swapped = new Dictionary<string, int>(seats);
+            seats.TryGetValue(a, out int na);
+            seats.TryGetValue(b, out int nb);
+            swapped[a] = nb;
+            swapped[b] = na;
+            return swapped;
+        }
+
+        /// <summary>PS-6 US-21: the staging on the chambers as they stand - the first candidate bill with a plant giving the asked shape, through the gate.</summary>
+        private static bool StageUsVetoOn(Country player, SimulationManager sim, bool overridden, DateTime day, string president, string pp, string op)
+        {
+            {
+                foreach ((string title, BillConcern concern) in UsVetoCandidates(player, op))
+                {
+                    int origin = Congress.OriginOf(player, concern, day);
+                    Congress.Verdict v = Congress.Project(player, concern, day, origin);
+                    if (!SideIs(v.House, pp, -1) || !SideIs(v.Senate, pp, -1) || !SideIs(v.House, op, 1) || !SideIs(v.Senate, op, 1)) { continue; }
+                    if (!UsVetoPlant(v, pp, op, overridden, out int house, out int senate)) { continue; }
+                    MethodInfo gate = typeof(SimulationManager).GetMethod("UsVetoGate", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Country), typeof(DivisionRecord), typeof(BillConcern), typeof(bool), typeof(bool) }, null);   // by its full parameter list: an arity change fails here by name
+                    if (gate == null) { Debug.LogError("SHOT: SimulationManager.UsVetoGate not found - the US veto plate is MISSING, not clean."); return false; }
+                    bool sent, law;
+                    using (UsVeto.PlantIndex((chamber, party, n) => party == pp ? (chamber == UsVeto.Chamber.House ? house : senate) : 0))
+                    {
+                        DivisionRecord passage = ParliamentSystem.Divide(player, title, concern, day, out sent);
+                        law = (bool)gate.Invoke(sim, new object[] { player, passage, concern, sent, false });   // every parameter given (not an amendment): MethodInfo.Invoke fills no optional one
+                    }
+                    DivisionRecord newest = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+                    bool shaped = sent && newest.Required > 0 && !newest.Cloture && newest.Passed == overridden && law == overridden && (newest.OtherChamber != null) == overridden;
+                    Debug.Log($"SHOT: staged the US veto through the game's own gate - the president ({president}, {pp}) answering {op}'s '{title}', the draw planted at the president's party's index {house} in the House and {senate} in the Senate, the other party's at 0: sent {sent}, law {law}; the ceremony No. {newest.Number}: {newest.Title}{(shaped ? string.Empty : " - NOT THE ASKED SHAPE")}");
+                    return shaped;
+                }
+                Debug.Log($"SHOT: no staged bill of {op}'s has {pp} against and {op} for in both chambers with a plant giving the asked override - the US veto plate is not staged on these chambers.");
+                return false;
+            }
+        }
+
+        /// <summary>PS-6 US-21: the staged bills, in order - a crime-and-justice dial and a labour dial moved toward <paramref name="author"/>'s end (REP's up the
+        /// sentencing and down the minimum wage, DEM's the other way), each with the title play gives its kind.</summary>
+        private static IEnumerable<(string Title, BillConcern Concern)> UsVetoCandidates(Country u, string author)
+        {
+            float toward = author == "REP" ? 1f : -1f;
+            yield return ("Crime & Justice bill", ParliamentSystem.GetCrimeJusticeBillConcern(u, new CrimeJusticePolicyBill { PoliceFunding = u.PoliceFundingLevel, SentencingSeverity = Mathf.Clamp(u.SentencingSeverity + 15f * toward, 0f, 100f),
+                BailReform = u.BailReformLevel, DrugPolicy = u.DrugPolicyLevel, JudicialFunding = u.JudicialFundingLevel, BorderEnforcement = u.BorderEnforcementLevel }));
+            yield return ("Crime & Justice bill", ParliamentSystem.GetCrimeJusticeBillConcern(u, new CrimeJusticePolicyBill { PoliceFunding = Mathf.Clamp(u.PoliceFundingLevel + 15f * toward, 0f, 100f), SentencingSeverity = u.SentencingSeverity,
+                BailReform = u.BailReformLevel, DrugPolicy = u.DrugPolicyLevel, JudicialFunding = u.JudicialFundingLevel, BorderEnforcement = Mathf.Clamp(u.BorderEnforcementLevel + 15f * toward, 0f, 100f) }));
+            yield return ("Labor Market bill", ParliamentSystem.GetLaborBillConcern(u, new LaborPolicyBill { MinimumWage = u.MinimumWagePercentOfMedianBase - 10f * toward, PaidFamilyLeaveWeeks = u.PaidFamilyLeaveWeeksBase - 10f * toward,
+                OvertimeRegulation = u.OvertimeRegulationBase, RetrainingProgram = u.RetrainingProgramBase, FamilyPolicy = u.FamilyPolicyBase, ImmigrationPolicy = u.ImmigrationPolicyBase }));
+        }
+
+        private static bool SideIs(Congress.Division d, string party, int side)
+        {
+            foreach (PartyStance s in d.Stances) { if (s.Party.Abbrev == party) { return s.Measured && s.Seats > 0 && Math.Sign(s.Side) == side; } }
+            return false;
+        }
+
+        /// <summary>PS-6 US-21: the president's party's planted index in each chamber (the other party's at 0) for the first pair under which both chambers pass the
+        /// bill and the override comes out as asked - the gate's own rule restated over the projection: crossers entering a division only where they change it,
+        /// the override on the passage's sides, the bill's first chamber first.</summary>
+        private static bool UsVetoPlant(Congress.Verdict v, string pp, string op, bool overridden, out int house, out int senate)
+        {
+            house = senate = -1;
+            IReadOnlyList<(int Defectors, int Voting)> hp = Congress.CellOf(Congress.House, true), ho = Congress.CellOf(Congress.House, false), sp = Congress.CellOf(Congress.Senate, true), so = Congress.CellOf(Congress.Senate, false);
+            if (hp == null || ho == null || sp == null || so == null) { return false; }
+            int Seats(Congress.Division d, string party) { foreach (PartyStance s in d.Stances) { if (s.Party.Abbrev == party) { return s.Seats; } } return 0; }
+            int Members(Congress.Division d) { int n = 0; foreach (PartyStance s in d.Stances) { n += s.Seats; } return d.Chamber == Congress.Senate ? Math.Max(n, d.Sworn) : n; }
+            (bool Pass, int Yea) Chamber(Congress.Division d, int kp, int ko)
+            {
+                int moved = kp - ko, yea = d.For + moved, nay = d.Against - moved;
+                bool pass = d.Cloture ? yea >= d.Required : yea > nay;
+                return (pass, pass != d.Passed ? yea : d.For);   // the crossers enter the division only where they change its verdict
+            }
+            int koH = UsVeto.Crossers(Seats(v.House, op), ho[0].Defectors, ho[0].Voting), koS = UsVeto.Crossers(Seats(v.Senate, op), so[0].Defectors, so[0].Voting);
+            for (int jh = 0; jh < hp.Count; jh++)
+            {
+                (bool hPass, int hYea) = Chamber(v.House, UsVeto.Crossers(Seats(v.House, pp), hp[jh].Defectors, hp[jh].Voting), koH);
+                if (!hPass) { continue; }
+                bool hCarries = UsVeto.OverrideCarries(hYea, Members(v.House) - hYea);
+                for (int js = 0; js < sp.Count; js++)
+                {
+                    (bool sPass, int sYea) = Chamber(v.Senate, UsVeto.Crossers(Seats(v.Senate, pp), sp[js].Defectors, sp[js].Voting), koS);
+                    if (!sPass) { continue; }
+                    bool sCarries = UsVeto.OverrideCarries(sYea, Members(v.Senate) - sYea);
+                    bool firstCarries = v.Origin == Congress.Senate ? sCarries : hCarries, secondCarries = v.Origin == Congress.Senate ? hCarries : sCarries;
+                    if (overridden ? firstCarries && secondCarries : !firstCarries) { house = jh; senate = js; return true; }
+                }
+            }
+            return false;
         }
 
         /// <summary>PS-3f (§633): the frame decision as the model records it - the government's parties carrying its frames, the rest by alignment toward S's alternative or abstaining - with the contest on the record.</summary>

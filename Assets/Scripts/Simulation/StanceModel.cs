@@ -57,6 +57,14 @@ namespace PoliSim.Simulation
         /// concern builders from <see cref="Congress.IsRevenue"/> (the tax programme and the budget; false for every country but the USA); no stance reads it,
         /// only the chamber a bill begins in (<see cref="Congress.OriginOf"/>).</summary>
         public bool Revenue;
+        /// <summary>PS-6 US-21: the bill is a BUDGET VOTE in the R-US17 block's play terms - where a second chamber votes it, no defector is drawn on it (H1:
+        /// "Budget votes ... stay as they are"). Set by the bill kinds' concern builders from <see cref="Congress.IsBudgetVote"/> (the budget, the reconciliation
+        /// kinds and the fund's drawdown; false for every country but the USA); no stance reads it, only the gate's draw and the veto projection.</summary>
+        public bool BudgetVote;
+        /// <summary>PS-6 US-21 (the review of 54f10b8d, M3): the act is NOT PRESENTED to the president - a US constitutional amendment (Art. V; the field's own
+        /// contract, `LawDefinition.ConstitutionalAmendment`) - so, as before US-21, no defector is drawn on it either: the draw decides only what reaches a
+        /// president. Set by the law bill's concern builder from <see cref="Congress.IsUnpresented"/> (false for every country but the USA); no stance reads it.</summary>
+        public bool Unpresented;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 

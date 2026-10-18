@@ -1290,7 +1290,11 @@ namespace PoliSim.UI
                 // count's, in the caution ink while the veto could kill it (no override carrying), and the slip carries the veto risk as a percentage
                 // whenever it is at risk (the answer is the vote day's draw)
                 PresidentialVeto.Outcome veto = _chamberVerdicts.Veto(_playerCountry, concern, voteDay);
-                bool stands = wouldPass;
+                // PS-6 US-21: where the US president holds the veto, a bill both chambers pass at the blocs' count that rule (a) vetoes and no override carries
+                // falls - its glyph the count's failing one; the slip carries the president's answer, the override's need and, on the veto path, that defectors are
+                // drawn at the vote (words only: no surface shows a fitted chance)
+                Congress.VetoProjection usVeto = contested ? _chamberVerdicts.UsVetoProjection(_playerCountry, concern, voteDay) : null;
+                bool stands = wouldPass && !ChamberVerdicts.UsVetoFalls(usVeto);
                 bool atRisk = wouldPass && ChamberVerdicts.AtRisk(veto);
                 bool atRiskOfFalling = wouldPass && ChamberVerdicts.AtRiskOfFalling(veto);
                 int forSeats = 0, againstSeats = 0, undecided = 0;
@@ -1317,6 +1321,7 @@ namespace PoliSim.UI
                 }
                 SlipAnchor(countRect, anchor + ":count");
                 var countSlip = new SlipContent(!wouldPass ? "WOULD FAIL" + (congress?.Stopping != null ? " · " + Congress.CountWords(PlayerCountryId, congress) : string.Empty)
+                        : ChamberVerdicts.UsVetoFalls(usVeto) ? "WOULD PASS CONGRESS · VETOED"
                         : atRisk ? "WOULD PASS · VETO RISK " + ChamberVerdicts.RiskWords(veto) : "WOULD PASS");
                 if (congress != null)
                 {
@@ -1332,6 +1337,7 @@ namespace PoliSim.UI
                 }
                 string vetoLine = ChamberVerdicts.VetoLine(PlayerCountryId, veto);
                 if (vetoLine != null) { countSlip.Add(vetoLine); }
+                foreach (string line in ChamberVerdicts.UsVetoLines(PlayerCountryId, usVeto)) { countSlip.Add(line); }   // PS-6 US-21
                 if (contested)
                 {
                     foreach (PartyStance stance in _chamberVerdicts.Stances(_playerCountry, concern))

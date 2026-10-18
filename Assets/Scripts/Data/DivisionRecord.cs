@@ -41,7 +41,7 @@ namespace PoliSim.Data
         public bool Motion;
         /// <summary>§761: a QUALIFIED vote's line - the votes the motion needed, its base those voting (Poland's override of the President's veto:
         /// ceil(3/5 of those voting, abstentions in the base), Art. 122 ust. 5). 0 for an ordinary division, where the count decides. PS-6 US-18: on the
-        /// Senate's division under Rule XXII (<see cref="Cloture"/>), the cloture line, its base the senators sworn (<see cref="Sworn"/>).</summary>
+        /// Senate's division under Rule XXII (<see cref="Cloture"/>), the cloture line, its base the senators sworn (<see cref="Sworn"/>). PS-6 US-21: on a US chamber's vote on the president's veto (never at cloture), two thirds of those voting, its base every member of the division (<see cref="Sworn"/>).</summary>
         public int Required;
         public int Axis;
         public List<DivisionSide> Sides = new List<DivisionSide>();
@@ -68,14 +68,14 @@ namespace PoliSim.Data
         /// <summary>US-18: the Senate's division under Rule XXII - <see cref="Required"/> is its cloture line, three fifths of <see cref="Sworn"/>, rounded up;
         /// never a vote on a veto (whose line <see cref="Required"/> also carries where this is false).</summary>
         public bool Cloture;
-        /// <summary>US-18: the senators duly chosen and sworn on the day - the cloture line's base; 0 on a first chamber's division.</summary>
+        /// <summary>US-18: the senators duly chosen and sworn on the day - the cloture line's base; 0 on a first chamber's division. PS-6 US-21: on a chamber's vote on the president's veto, that vote's base - every member of the division.</summary>
         public int Sworn;
         /// <summary>US-18: where the Senate was equally divided on the majority path, the Vice President's party (Art. I §3 cl. 4) - null otherwise.</summary>
         public string VicePresidentParty;
         /// <summary>US-18: his vote there - +1 FOR, -1 AGAINST, 0 none cast (his party undecided, so the tie failed).</summary>
         public int VicePresidentVote;
         /// <summary>US-18: on the second chamber's division, the first chamber's on the same bill (marked a motion: this one carries the bill's ceremony, and the
-        /// plate shows both); null on every other division. Saved by reference (the save's PreserveReferencesHandling), the log entry it was itself.</summary>
+        /// plate shows both) - PS-6 US-21: and on the second chamber's vote on a president's veto, the first chamber's vote; null on every other division. Saved by reference (the save's PreserveReferencesHandling), the log entry it was itself.</summary>
         public DivisionRecord OtherChamber;
     }
 
@@ -177,6 +177,10 @@ namespace PoliSim.Data
         public string Reason;
         /// <summary>The same reasons in the plate's short form (`StanceModel.ReasonShort`).</summary>
         public string ReasonShort;
+        /// <summary>PS-6 US-21 (R-US17's rule (c), the draw of defectors on the USA's veto path): this side is a party's DEFECTORS - the members the gate drew
+        /// crossing to the other side of their party's stance, entered into a chamber's division only where they changed its verdict (`Congress.Divide`), beside
+        /// the same party's side holding the rest of its seats. False on every other side and on every side saved before US-21: additive, no format step.</summary>
+        public bool Defectors;
     }
 
     /// <summary>P2-4.3: one arrow of the estimate that accompanied a division to its ceremony.</summary>

@@ -333,7 +333,9 @@ namespace PoliSim.EditorTools
                     usa.BillLostOn = DateTime.MinValue;
                     float repApprovalBefore = usa.State.ApprovalRating;
                     bool introduced = sim.IntroduceCrimeJusticeBill(CountryId.USA, repBill);
-                    for (int d = 0; d < ParliamentSystem.BillDurationDays && sim.GetPendingCrimeJusticeBill(CountryId.USA) != null; d++) { sim.AdvanceCrimeJusticeBillDay(CountryId.USA); }
+                    // PS-6 US-21: REP's bill is on the veto path, so the gate draws defectors (R-US17 rule (c)) - the least recorded crossing planted, so this row holds what it was
+                    // written for, not the hash of its title (the keyed draw stops it in the Senate too)
+                    using (UsVeto.PlantIndex(0)) { for (int d = 0; d < ParliamentSystem.BillDurationDays && sim.GetPendingCrimeJusticeBill(CountryId.USA) != null; d++) { sim.AdvanceCrimeJusticeBillDay(CountryId.USA); } }
                     List<DivisionRecord> written = usa.Divisions.Entries.Where(r => r.Number > before).ToList();
                     // the review's M2: the House majority's bill is not the government's - its failure leaves the government's approval and its day (F5) untouched
                     BillConcern repConcern = ParliamentSystem.GetCrimeJusticeBillConcern(usa, repBill);

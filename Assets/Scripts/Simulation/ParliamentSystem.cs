@@ -986,7 +986,7 @@ namespace PoliSim.Simulation
         /// </summary>
         public static BillConcern GetBudgetBillConcern(Country country, BudgetBill bill)
         {
-            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill, Reconciliation = Congress.RidesReconciliation(country, bill), Revenue = Congress.IsRevenue(country, Congress.Kind.Budget) };   // PS-3e (§632); PS-6 US-18: the Senate's path, by the bill's content; PS-6 US-19: the budget begins in the House
+            var concern = new BillConcern { Direction = GetBillDirection(country, bill), GovernmentAuthored = bill.GovernmentBill, Reconciliation = Congress.RidesReconciliation(country, bill), Revenue = Congress.IsRevenue(country, Congress.Kind.Budget), BudgetVote = Congress.IsBudgetVote(country, Congress.Kind.Budget) };   // PS-3e (§632); PS-6 US-18: the Senate's path, by the bill's content; PS-6 US-19: the budget begins in the House; PS-6 US-21: a budget vote draws no defector
             foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { concern.Add(StanceAxis.Redistribution, -BracketRateMove(country, bill, FindTaxLine(country, kvp.Key))); }   // F4-4: the sub-rows' points
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
@@ -1100,13 +1100,13 @@ namespace PoliSim.Simulation
         public static BillConcern GetTaxProgramBillConcern(Country country, TaxProgramBill bill)
         {
             float direction = GetTaxProgramBillDirection(country, bill);
-            return Authored(country, new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.TaxProgram), Revenue = Congress.IsRevenue(country, Congress.Kind.TaxProgram) }.Add(StanceAxis.SpendVsTax, -direction));   // PS-6 US-18: the revenue laws, 641(a)(2); PS-6 US-19: a revenue bill, so it begins in the House
+            return Authored(country, new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.TaxProgram), Revenue = Congress.IsRevenue(country, Congress.Kind.TaxProgram), BudgetVote = Congress.IsBudgetVote(country, Congress.Kind.TaxProgram) }.Add(StanceAxis.SpendVsTax, -direction));   // PS-6 US-18: the revenue laws, 641(a)(2); PS-6 US-19: a revenue bill, so it begins in the House; PS-6 US-21: reconciliation, a budget vote
         }
 
         public static BillConcern GetWelfareProgramBillConcern(Country country, WelfareProgramBill bill)
         {
             float direction = GetWelfareProgramBillDirection(country, bill);
-            var concern = new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.WelfareProgram) }.Add(StanceAxis.SpendVsTax, -direction);   // PS-6 US-18: entitlement authority, 641(a)(1)(C)
+            var concern = new BillConcern { Direction = direction, Reconciliation = Congress.RidesReconciliation(country, Congress.Kind.WelfareProgram), BudgetVote = Congress.IsBudgetVote(country, Congress.Kind.WelfareProgram) }.Add(StanceAxis.SpendVsTax, -direction);   // PS-6 US-18: entitlement authority, 641(a)(1)(C); PS-6 US-21: reconciliation, a budget vote
             if (!bill.IsAdd && direction < 0f) { concern.Cuts.Add((null, bill.Type, 1f)); }
             return Authored(country, concern);
         }
@@ -1147,6 +1147,7 @@ namespace PoliSim.Simulation
             var concern = new BillConcern { Direction = GetLawBillDirection(country, bill) };
             LawDefinition law = LawCatalog.GetById(bill.LawId);
             if (law == null) { return Authored(country, concern); }
+            concern.Unpresented = Congress.IsUnpresented(country, law);   // PS-6 US-21: a US amendment is not presented to the president, and no defector is drawn on it
             float sign = bill.IsRepeal ? -1f : 1f;
             float[] deltas = law.DialDeltas;
             for (int i = 0; i < deltas.Length && i < LawDialAxes.Length; i++)
@@ -1184,7 +1185,7 @@ namespace PoliSim.Simulation
         public static BillConcern GetSwfDrawdownBillConcern(Country country, SwfDrawdownBill bill)
         {
             float direction = GetSwfDrawdownBillDirection(country, bill);
-            return Authored(country, new BillConcern { Direction = direction }.Add(StanceAxis.SpendVsTax, -direction));
+            return Authored(country, new BillConcern { Direction = direction, BudgetVote = Congress.IsBudgetVote(country, Congress.Kind.SwfDrawdown) }.Add(StanceAxis.SpendVsTax, -direction));   // PS-6 US-21: the appropriation's kind (US-18's reading (c)), a budget vote
         }
 
         /// <summary>P3-A2: the record from the concern the verdict read - every party's side from the same enumeration, the scalar direction kept for the lean bar.

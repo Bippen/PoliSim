@@ -1479,6 +1479,50 @@ namespace PoliSim.Simulation
             return veto.Overridden;
         }
 
+        /// <summary>
+        /// PS-6 US-21 (`docs/specs/USA_STAGE_PLAN.md`, "The US veto"; R-US17's rule (c), INSTALLED): THE US VETO GATE, beside Poland's - Art. I §7 cl. 2, "Every
+        /// Bill which shall have passed the House of Representatives and the Senate, shall, before it become a Law, be presented to the President". A bill both
+        /// chambers sent - <paramref name="passage"/>, the second chamber's division carrying the first's - goes to the president of the day (`Congress.Present`):
+        /// an AI president answers by rule (a), deterministically, on every act, budget acts included; a player-president's answer is the player's
+        /// (<see cref="PlayerPresidentVetoes"/>). A veto is put to the origin chamber, then the other, at two thirds of those voting on the passage's recorded sides
+        /// (`Congress.RecordVeto` writes each vote as its own division and the ceremony moves to the last); a veto that stands is the day's loss (Elias's ruling
+        /// F5), written through the one writer a chamber's rejection uses (`Congress.RecordLost`, handed the bill's <paramref name="concern"/> and so its author);
+        /// and the gate charges nothing itself - it returns false, and the site's own result method charges a vetoed bill what it charges any bill that did not
+        /// pass - so a rule on whose cost or loss a failed bill is applies to a vetoed one, and to an overridden one, unchanged. WHO BEARS (US-19's rule,
+        /// `Congress.GovernmentBears`, composed, never repeated here): a congressional majority's bill a president vetoes costs the government nothing and marks no
+        /// day lost; the government's own bill a veto kills (a player-president's veto of his own party's bill) is its failure and its lost day; an overridden
+        /// bill is law, its enactment cost the government's only where it bears the bill. The president bears nothing for a veto, nor for being overridden
+        /// (DECLARED: the plan settles no such cost and no source gives one; asked of Elias). The defectors were drawn at the
+        /// chambers' divisions (`Congress.Divide`), not here, and nothing is drawn here. Returns whether the bill becomes law. Every other country, a bill one
+        /// chamber voted (the government's own budget until US-22) and a bill not passed pass through untouched. A CONSTITUTIONAL AMENDMENT
+        /// (<paramref name="amendment"/>) is not presented (DECLARED: `LawDefinition.ConstitutionalAmendment`'s contract, "never vetoed" where a president holds a
+        /// veto the game runs, and Art. V, under which Congress proposes an amendment with no presentment; the game models no ratification by the states).
+        /// </summary>
+        private bool UsVetoGate(Country country, DivisionRecord passage, BillConcern concern, bool passed, bool amendment = false)
+        {
+            if (!passed || passage == null || passage.OtherChamber == null || !Elections.UsVeto.Applies(country.Id)) { return passed; }
+            if (amendment) { Debug.Log($"VETO: {country.Id} - an amendment is not presented to the President: {passage.Title}"); return passed; }
+            Congress.Veto veto = Congress.Present(country, passage, CurrentDate, PlayerPresidentVetoes);
+            if (veto == null)
+            {
+                Debug.LogError($"VETO: {country.Id} - no president found on {CurrentDate:yyyy-MM-dd} for '{passage.Title}' - signed by no rule, a defect");
+                return passed;
+            }
+            if (!veto.Vetoed) { Debug.Log($"VETO: {country.Id} - signed by the President ({veto.President}): {passage.Title} - {veto.Why}"); return true; }
+            DivisionRecord ceremony = Congress.RecordVeto(country, passage, veto, CurrentDate);
+            if (!veto.Overridden) { Congress.RecordLost(country, concern, CurrentDate); }   // Elias's ruling F5: a veto that stands is a bill lost that day - the writer a chamber's rejection uses
+            Debug.Log($"VETO: {country.Id} - {ceremony.Title} ({veto.Why})");
+            return veto.Overridden;
+        }
+
+        /// <summary>
+        /// PS-6 US-21 (R-US7, F8: "a player-president chooses"): THE PLAYER-PRESIDENT'S ANSWER to a bill both chambers sent him - true vetoes it. Read by the US veto
+        /// gate only where the president of the day is the player (`Congress.PresidentOn`); rule (a) is never read for him. Null - the default - signs (DECLARED:
+        /// the game tables no bill but the player's own, so every bill that reaches a player-president is one his party introduced; the surface that asks him is
+        /// owed where bills from another hand reach him, US-23). Not saved: a delegate - no controller sets it in this build (owed to US-23); checks set it.
+        /// </summary>
+        public System.Func<DivisionRecord, bool> PlayerPresidentVetoes;
+
         /// <summary>One line naming a budget bill's content for the log and the desk: the lines it moves and the rates it sets.</summary>
         public static string DescribeBudgetBill(BudgetBill bill)
         {
@@ -1546,7 +1590,8 @@ namespace PoliSim.Simulation
             if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); CountBudgetVoteOnAgreements(country); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
             float direction = ParliamentSystem.GetBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, bill));   // P3-A2: the chamber votes on what the bill concerns; §768/§773: Poland's budget act - the spending alone
-            ParliamentSystem.Divide(country, "Annual budget bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
+            DivisionRecord budgetVote = ParliamentSystem.Divide(country, "Annual budget bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
+            passed = UsVetoGate(country, budgetVote, concern, passed);   // PS-6 US-21: the president of the day reads every act both chambers send, budget acts included (rule (a) draws nothing on them)
             BudgetBill applied = passed ? PolishStatuteActs(country, bill, out _) : bill;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
             float approvalBeforeBill = country.State.ApprovalRating;   // §768 (the second review): after the acts, each fall its own ledger event
             ParliamentSystem.ApplyBillResult(country, applied, passed, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year);
@@ -1639,6 +1684,7 @@ namespace PoliSim.Simulation
                 BillConcern concern = ParliamentSystem.GetTaxProgramBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
                 DivisionRecord vetoable = ParliamentSystem.Divide(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
                 passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+                passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
                 float approvalBeforeTaxBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
@@ -1698,6 +1744,7 @@ namespace PoliSim.Simulation
                 BillConcern concern = ParliamentSystem.GetWelfareProgramBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
                 DivisionRecord vetoable = ParliamentSystem.Divide(country, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type}", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
                 passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+                passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
                 float approvalBeforeWelfareBill = country.State.ApprovalRating;
                 ParliamentSystem.ApplyWelfareProgramBillResult(country, bill, passed, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeWelfareBill);
@@ -1749,6 +1796,7 @@ namespace PoliSim.Simulation
             BillConcern concern = ParliamentSystem.GetLaborBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Labor Market bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+            passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
             float approvalBeforeLaborBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyLaborBillResult(country, bill, passed, ApplyLaborBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Labor Market bill passed" : "Labor Market bill failed", country.State.ApprovalRating - approvalBeforeLaborBill);
@@ -1838,6 +1886,7 @@ namespace PoliSim.Simulation
             BillConcern concern = ParliamentSystem.GetCrimeJusticeBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Crime & Justice bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+            passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
             float approvalBeforeCrimeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyCrimeJusticeBillResult(country, bill, passed, ApplyCrimeJusticeBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Crime & Justice bill passed" : "Crime & Justice bill failed", country.State.ApprovalRating - approvalBeforeCrimeBill);
@@ -1909,6 +1958,7 @@ namespace PoliSim.Simulation
                 BillConcern concern = ParliamentSystem.GetLawBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
                 DivisionRecord vetoable = ParliamentSystem.Divide(country, $"{(bill.IsRepeal ? "Repeal" : "Enact")}: {lawName}", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
                 passed = PresidentialVetoGate(country, vetoable, passed, law != null && law.ConstitutionalAmendment ? Elections.PresidentialVeto.Act.ConstitutionalAmendment : Elections.PresidentialVeto.Act.OrdinaryStatute);   // §761 (PS-5): a statute goes to the President - Poland's veto and its 3/5 override; an amendment never vetoed (Art. 235 ust. 7)
+                passed = UsVetoGate(country, vetoable, concern, passed, law != null && law.ConstitutionalAmendment);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override; an amendment is not presented
                 // Found by the fiscal-ledger pass's own bar (2026-08-25), pre-existing since the MVP
                 // slice: this was the ONE bill type resolving OUTSIDE the approval ledger's
                 // observation sites - a failed vote's BillFailedApprovalCost and a passed law's
@@ -2207,6 +2257,7 @@ namespace PoliSim.Simulation
             BillConcern concern = ParliamentSystem.GetSectorBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Economic Sectors bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+            passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
             float approvalBeforeSectorBill = country.State.ApprovalRating;
             ParliamentSystem.ApplySectorBillResult(country, bill, passed, ApplySectorBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Economic Sectors bill passed" : "Economic Sectors bill failed", country.State.ApprovalRating - approvalBeforeSectorBill);
@@ -2277,6 +2328,7 @@ namespace PoliSim.Simulation
             BillConcern concern = ParliamentSystem.GetSwfDrawdownBillConcern(country, bill);   // P3-A2: the chamber votes on what the bill concerns
             DivisionRecord vetoable = ParliamentSystem.Divide(country, $"SWF emergency drawdown - {bill.WithdrawalPercentOfGdp:F1}% of GDP", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+            passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
             float approvalBeforeSwfBill = country.State.ApprovalRating;
             // Pass 5 (2026-08-26): the drawdown is F1's THIRD writer, found by the retirement sweep -
             // it now reaches the stock through ApplyOneTimeBudgetImpact, so the debt ledger observes
@@ -2363,6 +2415,7 @@ namespace PoliSim.Simulation
             BillConcern concern = ParliamentSystem.GetTradeBillConcern(country, bill, _world);   // P3-A2: the chamber votes on what the bill concerns
             DivisionRecord vetoable = ParliamentSystem.Divide(country, "Trade bill", concern, CurrentDate, out bool passed, BillAxis.Trade);   // PS-6 US-18: through both chambers where the country has two (Congress)
             passed = PresidentialVetoGate(country, vetoable, passed);   // §761 (PS-5): an ordinary statute goes to the President - Poland's veto and its 3/5 override
+            passed = UsVetoGate(country, vetoable, concern, passed);   // PS-6 US-21: a US bill both chambers sent goes to the president of the day - rule (a), or a player-president's answer - then the override
             float approvalBeforeTradeBill = country.State.ApprovalRating;
             ParliamentSystem.ApplyTradeBillResult(country, bill, passed, ApplyTradeBillEffects, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
             ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Trade bill passed" : "Trade bill failed", country.State.ApprovalRating - approvalBeforeTradeBill);

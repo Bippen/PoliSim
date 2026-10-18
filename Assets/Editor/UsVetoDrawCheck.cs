@@ -24,7 +24,7 @@ namespace PoliSim.EditorTools
     /// decisive digest; the ruling record and its mirror line in the plan.
     ///
     /// <para>Pinned in the cheap bar and the documents bar: `docs/generated/US_VETO_DRAW.md` and the catalog
-    /// (`Assets/Editor/Generated/UsVetoDefections.cs`) are what <see cref="Write"/> writes - a byte of difference fails. The block's digest must be the
+    /// (`Assets/Scripts/Elections/Generated/UsVetoDefections.cs`, moved there from Assets/Editor at US-21) are what <see cref="Write"/> writes - a byte of difference fails. The block's digest must be the
     /// last of <see cref="RuleDigests"/>, read from the working copy and the index blob alike; the CSV and the prep tool must match their pins. US-10's
     /// tool, document and check are not touched.</para>
     /// </summary>
@@ -70,7 +70,7 @@ namespace PoliSim.EditorTools
         private const string DocRelative = "docs/generated/US_VETO_DRAW.md";
         private const string BacktestDocRelative = "docs/generated/US_VETO_BACKTEST.md";
         private const string PolandCsvRelative = "ElectionsData/poland/third_readings_term10.csv";
-        private const string CatalogRelative = "Assets/Editor/Generated/UsVetoDefections.cs";
+        private const string CatalogRelative = "Assets/Scripts/Elections/Generated/UsVetoDefections.cs";   // PS-6 US-21: moved with UsVeto.cs into the runtime, byte for byte, when the gate first called them (the block's THE FIRST RUN)
         private const string BlockBegin = "<!-- R-US17 RULE BEGIN -->\n", BlockEnd = "<!-- R-US17 RULE END -->";
         private static string Root => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
 
@@ -127,6 +127,52 @@ namespace PoliSim.EditorTools
         }
 
         private sealed class Product { public string Document, Catalog; }
+
+        // ------------------------------------------------------------------ PS-6 US-21: what the play diagnostic reads of the instrument (reads only; writes and prints nothing)
+        /// <summary>
+        /// PS-6 US-21: one measure of V as premise (B) builds it, for `UsVetoDiagnostic` - the block's HOW THE FIGURES REACH THE GAME: "for every counted veto in V,
+        /// enumerating the runtime's planted indices reproduces the instrument's exact P(sent) and P(named) as the same rationals (on the full cells)". Each chamber
+        /// as `UsVeto` reads it, its lists left null and the drawing party's CELL named instead (null where that party draws nothing), so the diagnostic hands the
+        /// runtime the catalog's own lists; beside them, this instrument's own full-cell, in-sample rationals (its DIAGNOSTIC section's).
+        /// </summary>
+        internal sealed class VetoPathMeasure
+        {
+            public string Id, PP, OP, Sent, Named;
+            public bool CountedVeto, Budget, PpHouseNay;
+            public int PpHouseSeats;
+            public UsVeto.ChamberVote House, Senate;
+            public string HousePpCell, HouseOpCell, SenatePpCell, SenateOpCell;
+        }
+
+        /// <summary>PS-6 US-21: every measure of V under the default, in CSV order (<see cref="VetoPathMeasure"/>); the party codes the play key's (REP, DEM).</summary>
+        internal static List<VetoPathMeasure> VetoPathForPlay()
+        {
+            Record rec = ReadRecord(File.ReadAllBytes(Path.Combine(Root, CsvRelative)));
+            RunResult main = RunOf(rec, Default);
+            var list = new List<VetoPathMeasure>();
+            UsVeto.ChamberVote Bare(UsVeto.ChamberVote v) => new UsVeto.ChamberVote { Procedure = v.Procedure, Yea0 = v.Yea0, Nay0 = v.Nay0, Sworn = v.Sworn, VicePresident = v.VicePresident, PpSeats = v.PpSeats, OpSeats = v.OpSeats };
+            foreach (Measure j in main.V)
+            {
+                Setup s = main.Setups[j];
+                Score diag = ScoreOf(main.Fit, s, _ => 1.0, true, null);
+                list.Add(new VetoPathMeasure
+                {
+                    Id = j.Id, PP = Code(j.PP), OP = Code(j.OP), Sent = diag.Sent.ToString(), Named = diag.Named.ToString(),
+                    CountedVeto = j.Vetoed && j.Counted >= 0, Budget = s.H.Budget, PpHouseNay = s.PpHouseNay, PpHouseSeats = s.SppH,
+                    House = Bare(s.H.Vote), Senate = Bare(s.S.Vote),
+                    HousePpCell = s.H.PpCell, HouseOpCell = s.H.OpCell, SenatePpCell = s.S.PpCell, SenateOpCell = s.S.OpCell,
+                });
+            }
+            return list;
+        }
+
+        /// <summary>PS-6 US-21: every row of the record (counted or not) - its Congress, identity, decision date and whether it was vetoed - for the 2024 run's
+        /// count of record beside the game's.</summary>
+        internal static List<(int Congress, string Id, string DecisionDate, bool Vetoed)> RecordRows()
+        {
+            Record rec = ReadRecord(File.ReadAllBytes(Path.Combine(Root, CsvRelative)));
+            return rec.All.Select(m => (m.Congress, m.Id, m.DecisionDate, m.Vetoed)).ToList();
+        }
 
         private static byte[] BytesIfExists(string relative) { string p = Path.Combine(Root, relative); return File.Exists(p) ? File.ReadAllBytes(p) : null; }
         /// <summary>Where the bytes on disk part from the generated text: a byte order mark or another encoding by name, else the first differing line

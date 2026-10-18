@@ -413,7 +413,7 @@ namespace PoliSim.EditorTools
                 usa.PlayerPartyAbbrev = "REP";
                 for (int d = 0; d < 30; d++) { sim.AdvanceDay(); sim.AdvanceCountryDayTick(CountryId.USA); }
                 Check(ReferenceEquals(usa.Government, biden) && biden.NoConfidenceOn == DateTime.MinValue && !biden.Caretaker
-                      && !usa.Divisions.Entries.Exists(e => e.Motion && !usa.Divisions.Entries.Exists(s => ReferenceEquals(s.OtherChamber, e))),   // PS-6 US-18: a motion of no confidence - not a first chamber's passage the second chamber's division carries (also marked a motion)
+                      && !usa.Divisions.Entries.Exists(e => e.Motion && e.OtherChamber == null && !usa.Divisions.Entries.Exists(s => ReferenceEquals(s.OtherChamber, e))),   // PS-6 US-18: a motion of no confidence - not a first chamber's passage the second chamber's division carries (also marked a motion); PS-6 US-21: nor a passage or vote on a veto that itself carries the other chamber's (a vetoed bill's second passage, marked a motion when the veto takes its ceremony)
                     F("(US) thirty days stepped with REP in opposition, to {0:yyyy-MM-dd}: no motion moved, the same government ({1}), never a caretaker", sim.CurrentDate, usa.Government?.Executive));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }

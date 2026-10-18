@@ -188,6 +188,62 @@ namespace PoliSim.UI
                 : $"VETO RISK 0 % - THE PRESIDENT ({president}) WOULD SIGN IT: THE BACKING PARTY ({backing}) VOTES FOR IT";
         }
 
+        /// <summary>
+        /// PS-6 US-21: THE US PRESIDENT'S ANSWER as the page can know it - `Congress.ProjectVeto` over the cached projection of both chambers on the vote's day
+        /// (<see cref="Chambers"/>): the president of that day, whether the bill is on the veto path (defectors drawn at the vote), whether rule (a) vetoes it,
+        /// and the override on the blocs' sides. It reads exact chances and never draws (the gate alone draws, `Congress.Divide`); NO SURFACE SHOWS A FITTED
+        /// CHANCE (DECLARED, US-21: the page says what is drawn and what is decided, never a percentage). Null where the bill goes through one chamber or the
+        /// country is not the USA. Not cached itself: the verdict it reads is.
+        /// </summary>
+        public Congress.VetoProjection UsVetoProjection(Country country, BillConcern concern, System.DateTime voteDay)
+        {
+            if (concern == null || concern.IsEmpty || !PoliSim.Elections.UsVeto.Applies(country.Id)) { return null; }
+            Congress.Verdict verdict = Chambers(country, concern, voteDay);
+            return verdict == null ? null : Congress.ProjectVeto(country, concern, voteDay, verdict);
+        }
+
+        /// <summary>PS-6 US-21: whether the US veto kills a bill both chambers pass at the blocs' count - an AI president vetoes it (rule (a)) and no override
+        /// carries. The surfaces at rest mark this as Poland's at-risk statute is marked; a bill only defectors could send is not marked (no chance is shown).</summary>
+        public static bool UsVetoFalls(Congress.VetoProjection veto) => veto != null && veto.BlocsSend && veto.NamedByA && !veto.OverrideCarries;
+
+        /// <summary>
+        /// PS-6 US-21: the US president's answer in a slip's lines - the president of the vote's day and what rule (a) answers (a player-president's own answer
+        /// his), the override each chamber would need on the blocs' sides, and, on the veto path, that defectors are drawn at the vote and counted only where they
+        /// change a chamber's verdict - words only, no chance (DECLARED). The parties by their short names (§575: drawn, never the key).
+        /// </summary>
+        public static IEnumerable<string> UsVetoLines(CountryId id, Congress.VetoProjection veto)
+        {
+            if (veto == null) { yield break; }
+            if (veto.Unpresented) { yield return "AN AMENDMENT IS NOT PRESENTED TO THE PRESIDENT, AND NO DEFECTORS ARE DRAWN ON IT"; yield break; }   // the review of 54f10b8d, M3
+            string president = veto.President.ToUpperInvariant();
+            string party = string.IsNullOrEmpty(veto.PresidentsParty) ? null : PartySystems.ShortName(id, veto.PresidentsParty);
+            if (veto.PlayerPresident) { yield return $"IF CONGRESS SENDS IT, IT REACHES YOU AS PRESIDENT ({president}) - YOUR PARTY INTRODUCED IT, AND YOU SIGN IT"; }
+            else if (party == null) { yield return $"THE PRESIDENT ({president}) STANDS FOR NO PARTY, SO NO BILL IS VETOED"; }
+            else if (veto.NamedByA)
+            {
+                string Need(Congress.OverrideVote v) => Congress.ChamberName(id, v.Chamber).ToUpperInvariant() + " " + v.Required.ToString(CultureInfo.InvariantCulture) + " OF " + v.Members.ToString(CultureInfo.InvariantCulture)
+                    + ", " + v.Yea.ToString(CultureInfo.InvariantCulture) + " FOR";
+                yield return $"IF CONGRESS SENDS IT, THE PRESIDENT ({president}) VETOES IT - THE PRESIDENT'S PARTY ({party}) VOTES AGAINST IT IN THE HOUSE";
+                // the review of 54f10b8d, M2: the override's outcome is stated only where the blocs alone send the bill - there it is exact; where only the draw can
+                // send it, the crossers that send it enter the passage and count on the override too, so no outcome is fixed
+                if (veto.BlocsSend)
+                {
+                    yield return "AN OVERRIDE NEEDS TWO THIRDS OF THOSE VOTING IN EACH CHAMBER, ITS FIRST CHAMBER FIRST: " + Need(veto.First) + " · " + Need(veto.Second)
+                        + (veto.OverrideCarries ? " - AN OVERRIDE WOULD CARRY" : " - THE VETO WOULD STAND");
+                }
+                else if (veto.OnVetoPath)
+                {
+                    yield return "AN OVERRIDE NEEDS TWO THIRDS OF THOSE VOTING IN EACH CHAMBER, ITS FIRST CHAMBER FIRST - IF DEFECTORS SEND IT, THE SAME DEFECTORS COUNT ON THE OVERRIDE";
+                }
+            }
+            else { yield return $"THE PRESIDENT ({president}) WOULD SIGN IT - THE PRESIDENT'S PARTY ({party}) DOES NOT VOTE AGAINST IT IN THE HOUSE"; }
+            if (veto.OnVetoPath)
+            {
+                yield return $"ON THE VETO PATH: AT THE VOTE EACH PARTY'S DEFECTORS ARE DRAWN FROM THE RECORDED ROLL CALLS, AND COUNT ONLY WHERE THEY CHANGE A CHAMBER'S VERDICT - NO CHANCE IS SHOWN";
+            }
+            else if (veto.BudgetVote && party != null) { yield return "A BUDGET VOTE - NO DEFECTORS ARE DRAWN ON IT"; }
+        }
+
         /// <summary>`ParliamentSystem.WouldBillPass(country, direction, axis)` - a program bill's scalar direction, through the concern it stands for.</summary>
         public bool WouldPass(Country country, float direction, System.DateTime on, BillAxis axis = BillAxis.Fiscal)
         {
@@ -240,6 +296,8 @@ namespace PoliSim.UI
             sb.Append(concern.Author ?? string.Empty).Append('|');   // §654: the author votes for its own bill
             sb.Append(concern.Reconciliation ? "R|" : "C|");   // PS-6 US-18: the second chamber's procedure - reconciliation or cloture
             if (concern.Revenue) { sb.Append("V|"); }   // PS-6 US-19: a revenue bill begins in the House (Congress.OriginOf) - the one origin input the rest of the key does not carry
+            if (concern.BudgetVote) { sb.Append("B|"); }   // PS-6 US-21: a budget vote draws no defector - the veto projection reads it
+            if (concern.Unpresented) { sb.Append("U|"); }   // PS-6 US-21: an act not presented to the president, drawn on by no one - the veto projection reads it
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {

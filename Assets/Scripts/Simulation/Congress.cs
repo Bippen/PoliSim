@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using PoliSim.Data;
 using PoliSim.Elections;
+using PoliSim.Elections.Generated;
 
 namespace PoliSim.Simulation
 {
@@ -27,7 +28,7 @@ namespace PoliSim.Simulation
     /// (<see cref="StanceModel.StancesOver(Country, IReadOnlyList{PoliticalParty}, IReadOnlyDictionary{string, int}, BillConcern)"/>, whose alignment reads no
     /// seat count) carried onto that chamber's seats: the House's from `Country.ParliamentSeats`, the Senate's from `Country.SecondChamberSeats`, where each
     /// independent sits in his conference's seats (R-US10 (a), US-15). Stance is never split by chamber (that would amend the R-US17 block - STOP S2's option R1).
-    /// The drawn crossers on the veto path are US-21's (R-US17 rule (c)); here every division is the blocs', K = 0.</description></item>
+    /// The drawn crossers on the veto path are US-21's (R-US17 rule (c), <see cref="Crossing"/>): the projection is the blocs', K = 0, and the gate enters a draw only where it changes a chamber's verdict.</description></item>
     /// <item><description><b>The order:</b> the chamber the bill began in votes first (<see cref="Verdict.Origin"/>), and the other only if it passed - a bill
     /// the first chamber rejects never reaches the second, and the chamber that stops a bill is the first in that order to reject it
     /// (<see cref="Verdict.StoppedIn"/>). THE ORIGIN FIELD, decided here for US-21 (the block's override order, "the ORIGIN chamber votes first"): every
@@ -315,6 +316,29 @@ namespace PoliSim.Simulation
             /// House.</summary>
             public float Alignment;
             public bool Passed;
+            /// <summary>PS-6 US-21: the gate's draw of defectors in this chamber (<see cref="Crossing"/>) - null on every projection (a projection never draws) and
+            /// wherever no draw was made. Where <see cref="Crossing.Matters"/>, <see cref="For"/>, <see cref="Against"/> and <see cref="Passed"/> carry the crossers.</summary>
+            public Crossing Crossing;
+        }
+
+        /// <summary>
+        /// PS-6 US-21: ONE CHAMBER'S DRAW ON ONE BILL, as the gate made it (R-US17's rule (c), THE MODEL items 2-6): the president's party standing AGAINST drew
+        /// <see cref="Kp"/> crossers from its cell (HP or SP), and the other party standing FOR drew <see cref="Ko"/> from its own (HO or SO) - an index into the
+        /// cell's list (<see cref="IndexPp"/>, <see cref="IndexOp"/>; -1 where that party drew nothing), the keyed unit over the play key. The crossers entered
+        /// the chamber's division only where they changed its verdict (<see cref="Matters"/>).
+        /// </summary>
+        public sealed class Crossing
+        {
+            public string PresidentsParty, OtherParty;
+            public int Kp, Ko;
+            public int IndexPp = -1, IndexOp = -1;
+            /// <summary>The play keys the two draws hashed (null where a party drew nothing) - the diagnostic's "one play key per chamber per bill".</summary>
+            public string KeyPp, KeyOp;
+            /// <summary>The verdict at the drawn pair differs from the blocs' (0, 0): the draw MATTERS, and the crossers are in the division.</summary>
+            public bool Matters;
+
+            /// <summary>The crossers a party sent to the other side in the division - its drawn K where the draw mattered, else none.</summary>
+            public int CrossersOf(string party) => !Matters ? 0 : party == PresidentsParty ? Kp : party == OtherParty ? Ko : 0;
         }
 
         /// <summary>A bill through both chambers: each chamber's division, the order, the procedure, the verdict and the chamber that stops it.</summary>
@@ -437,8 +461,14 @@ namespace PoliSim.Simulation
         /// <summary>The gate with the title read from the bill's own verdict (the government's budget names its fate) - <paramref name="titleOf"/> is handed both
         /// chambers' verdict, and both chambers' records carry the one title (the bill's identity: US-21's draw keys on it).</summary>
         public static DivisionRecord Divide(Country country, Func<bool, string> titleOf, BillConcern concern, DateTime date, out bool passed, out string title, BillAxis axis = BillAxis.Fiscal, int origin = House)
+            => Divide(country, titleOf, concern, date, out passed, out title, out _, axis, origin);
+
+        /// <summary>PS-6 US-21: the gate, handing back the verdict it voted - both chambers' divisions with each chamber's draw (<see cref="Division.Crossing"/>:
+        /// its play keys, indices, K and whether it mattered) - for the veto diagnostic; the records it writes are the same.</summary>
+        public static DivisionRecord Divide(Country country, Func<bool, string> titleOf, BillConcern concern, DateTime date, out bool passed, out string title, out Verdict verdict, BillAxis axis = BillAxis.Fiscal, int origin = House)
         {
-            Verdict verdict = Project(country, concern, date, origin);
+            verdict = Project(country, concern, date, origin);
+            DrawAtTheGate(country, concern, titleOf(verdict.Passed), date, verdict);   // PS-6 US-21: R-US17 rule (c)'s draw - the crossers enter a division only where they change it
             title = titleOf(verdict.Passed);
             DivisionRecord first = Record(country, title, concern, verdict.First, verdict, date, axis);
             DivisionRecord last = first;
@@ -449,7 +479,7 @@ namespace PoliSim.Simulation
                 last.OtherChamber = first;
             }
             passed = verdict.Passed;
-            if (!passed && GovernmentBears(country, concern)) { ParliamentSystem.RecordBillLost(country, date); }   // PS-6 US-19 (the review's M2): the government's loss only where the bill was the government's
+            if (!passed) { RecordLost(country, concern, date); }   // PS-6 US-19 (the review's M2), US-21: the day's loss where the government bears the bill - one writer, the US veto gate's too
             return last;
         }
 
@@ -458,7 +488,14 @@ namespace PoliSim.Simulation
             var sides = new List<DivisionSide>();
             foreach (PartyStance stance in d.Stances)
             {
-                sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, ShortName = stance.Party.ShortName, Seats = stance.Seats, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
+                int crossers = d.Crossing != null ? d.Crossing.CrossersOf(stance.Party.Abbrev) : 0;   // PS-6 US-21: none unless the draw changed this chamber's verdict
+                sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, ShortName = stance.Party.ShortName, Seats = stance.Seats - crossers, Side = stance.Side, Alignment = stance.Alignment, Reason = StanceModel.ReasonLine(stance), ReasonShort = StanceModel.ReasonShort(stance) });
+                if (crossers > 0)
+                {
+                    // the party's drawn defectors, on the other side of its stance, flagged (the block's item 6: "they enter as each party's crossers on the other side, flagged as defectors")
+                    sides.Add(new DivisionSide { Abbrev = stance.Party.Abbrev, ShortName = stance.Party.ShortName, Seats = crossers, Side = -stance.Side, Alignment = stance.Alignment, Defectors = true,
+                        Reason = DefectorWords(stance.Side, crossers), ReasonShort = "crossed its party" });
+                }
             }
             DivisionRecord record = country.Divisions.Append(title, date, d.Contested ? d.Alignment : 0f, d.Passed, concern?.Direction ?? 0f, (int)axis, sides);
             record.Chamber = d.Chamber;
@@ -470,6 +507,432 @@ namespace PoliSim.Simulation
             record.VicePresidentVote = d.VicePresidentVote;
             record.VicePresidentParty = d.VicePresidentParty;   // set only where an equal division on the majority path consulted him
             return record;
+        }
+
+        // ---------------------------------------------------------------------------------------------------------------------------------------------
+        // PS-6 US-21 (`docs/specs/USA_STAGE_PLAN.md`, "The US veto"; R-US17's rule (c), INSTALLED - the fenced block's THE MODEL, THE VETO, THE OVERRIDE and SEEDS
+        // AND DETERMINISM): THE DRAW AT THE GATE, THE PRESIDENT'S ANSWER AND THE OVERRIDE. The arithmetic is `UsVeto`'s and the lists are the generated catalog's
+        // (`UsVetoDefections`, indexed, never sorted or merged here); this is only what play reads into them - the president of the day, the veto path, each
+        // chamber's division. No SimulationRandom stream is created, drawn or moved: the draw is keyed.
+        // ---------------------------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>
+        /// R-US17's BUDGET VOTE (play) for the bill kinds the game votes before US-22 (the block: "every act the US budget procedure tables ..., a reconciliation
+        /// bill (US-18), and US-24's debt-limit act"; H1: "Budget votes ... stay as they are") - a READING, DECLARED: the budget, whatever it moves (it carries the
+        /// appropriation - R-US9 (a)'s spending lines DECLARED as one appropriation - or rides reconciliation by its content: a budget vote either way); every
+        /// kind the reconciliation table sends by reconciliation (<see cref="IsReconciliationKind"/> - a ruling on the table's asks moves this with it); and the
+        /// sovereign fund's drawdown, which the table reads as the appropriation's kind (its ask (c); the US seeds no fund). Every other kind is ORDINARY
+        /// LEGISLATION, the only bills a defector is drawn on.
+        /// </summary>
+        public static bool IsBudgetVoteKind(Kind kind) => kind == Kind.Budget || kind == Kind.SwfDrawdown || IsReconciliationKind(kind);
+
+        /// <summary>Whether a bill of <paramref name="kind"/> is a budget vote in <paramref name="country"/> - the USA's reading (<see cref="IsBudgetVoteKind"/>);
+        /// false for every other country, where no draw is made at all.</summary>
+        public static bool IsBudgetVote(Country country, Kind kind) => country != null && country.Id == CountryId.USA && IsBudgetVoteKind(kind);
+
+        /// <summary>
+        /// PS-6 US-21 (the review of 54f10b8d, M3): an act NOT PRESENTED to the president - a US constitutional amendment, enacted or repealed. A READING, DECLARED:
+        /// `LawDefinition.ConstitutionalAmendment`'s own contract ("never vetoed" where a president holds a veto the game runs) and Art. V, under which Congress
+        /// proposes an amendment with no presentment (the game models no ratification by the states). The veto gate does not present it, and - so that the draw
+        /// decides only whether a bill REACHES a president (H1, "on the USA's veto path only") - no defector is drawn on it: an amendment votes its blocs exactly as
+        /// before US-21. False for every other country, where no draw is made at all.
+        /// </summary>
+        public static bool IsUnpresented(Country country, LawDefinition law) => country != null && country.Id == CountryId.USA && law != null && law.ConstitutionalAmendment;
+
+        /// <summary>
+        /// PS-6 US-21: THE DAY'S LOSS for a bill through Congress (Elias's ruling F5, `ParliamentSystem.RecordBillLost`) - written where a chamber rejects the
+        /// bill (<see cref="Divide"/>) and where a veto of it stands (the US veto gate, `SimulationManager.UsVetoGate`): ONE writer, handed the bill's concern
+        /// (its author), so the rule on whose loss a bill is - US-19's (the review's M2): the government's only where it bears the bill (<see cref="GovernmentBears"/>)
+        /// - applies to a rejection and to a sustained veto alike, and is written once. A congressional majority's bill a president vetoes is not the
+        /// government's loss; the government's own bill a veto kills is (a player-president's veto of his own party's bill).
+        /// </summary>
+        public static void RecordLost(Country country, BillConcern concern, DateTime date)
+        {
+            if (GovernmentBears(country, concern)) { ParliamentSystem.RecordBillLost(country, date); }
+        }
+
+        /// <summary>Whether the draw is installed: the generated catalog's outcome is the rule's INSTALL (the ruling record INSTALLED, which `UsVetoDrawCheck`
+        /// holds). Any other outcome leaves every division the blocs', and the veto diagnostic fails while it is so.</summary>
+        public static bool DrawInstalled => UsVetoDefections.Outcome == "INSTALL";
+
+        /// <summary>A cell's drawn list as `UsVeto` indexes it - the catalog's entries in their order (already merged for a pooled cell), read-only; null for an
+        /// unfitted cell, which draws nothing.</summary>
+        public static IReadOnlyList<(int Defectors, int Voting)> ListOf(UsVetoDefections.Cell cell)
+        {
+            if (cell == null || !cell.Fitted) { return null; }
+            var list = new (int Defectors, int Voting)[cell.List.Length];
+            for (int i = 0; i < list.Length; i++) { list[i] = (cell.List[i].Defectors, cell.List[i].Voting); }
+            return Array.AsReadOnly(list);
+        }
+
+        private static readonly IReadOnlyList<(int Defectors, int Voting)> HouseP = ListOf(UsVetoDefections.HP), HouseO = ListOf(UsVetoDefections.HO),
+            SenateP = ListOf(UsVetoDefections.SP), SenateO = ListOf(UsVetoDefections.SO);
+
+        /// <summary>The list a party draws from in <paramref name="chamber"/>: the president's party's cell (HP, SP), or the other party's (HO, SO).</summary>
+        public static IReadOnlyList<(int Defectors, int Voting)> CellOf(int chamber, bool presidentsParty) =>
+            chamber == Senate ? (presidentsParty ? SenateP : SenateO) : (presidentsParty ? HouseP : HouseO);
+
+        /// <summary>
+        /// THE PRESIDENT OF THE DAY a bill goes to (the block's PRESIDENT, PP, OP: "the game's seated president where ... a decided contest, otherwise the
+        /// president of record from WorldClock.TryGovernmentAt (ExecutiveKind Presidency; PP its party, REP or DEM)"), READ through US-28's one derivation,
+        /// `UsTermLimit.TryPresidentOn` (DECLARED): the winner of the game's latest contest sworn by the day (US-7's oath - the US contests, where the block's
+        /// `PresidentialElection.PresidentAt` reads Poland's list and finds no US president), else the president of record by date, else the sitting presidency
+        /// an undecided contest leaves. <paramref name="playerPresident"/>: the president is the game's own and of the player's party - the player is the
+        /// president, and chooses (R-US7, F8). False where none is found - on a US vote day a DEFECT (the block).
+        /// </summary>
+        public static bool PresidentOn(Country country, DateTime on, out string shownAs, out string party, out bool playerPresident)
+        {
+            shownAs = null; party = null; playerPresident = false;
+            if (country == null || !UsTermLimit.TryPresidentOn(country, on, out _, out party, out shownAs)) { return false; }
+            playerPresident = UsPresidentialElection.TryInOffice(country, on, out UsPresidentialElection.Contest sworn) && !string.IsNullOrEmpty(sworn.WinnerParty)
+                              && sworn.WinnerParty == country.PlayerPartyAbbrev;
+            return true;
+        }
+
+        /// <summary>
+        /// THE DRAW AT THE GATE (the block's THE MODEL, items 2 to 6, and THE PLAY KEY): on a US bill, in each chamber as it votes - the bill's first chamber, then
+        /// the second only where the first passed it - a chamber where the president's party stands AGAINST draws its crossers, and where the other party stands
+        /// FOR, so does it: once per party per chamber per bill, keyed on the master seed, the day of that chamber's division, the title, the chamber and the
+        /// party (`UsVeto.Key`), so a reload, the shadow and a fork that vote the bill on the same day draw alike. The crossers enter the chamber's division only
+        /// where they change its verdict (WHEN THE DRAW MATTERS); everywhere else the division is the blocs', untouched. Nothing is drawn on a budget vote (the
+        /// draw is asked and `UsVeto.Draw` refuses it, uncounted), outside the USA, where the president's party is not REP or DEM (a president with no party, the
+        /// block's DECLARED default), where it holds no seat in the chamber or does not stand against, or where both blocs stand against (UNCONTESTED). The game
+        /// votes each chamber once on a bill, so that division's day is the bill's day there, and its one draw serves the override too (no fresh draw: SIDES).
+        /// </summary>
+        private static void DrawAtTheGate(Country country, BillConcern concern, string title, DateTime date, Verdict verdict)
+        {
+            if (country == null || !UsVeto.Applies(country.Id) || concern == null || concern.IsEmpty || concern.Unpresented || !DrawInstalled) { return; }   // an act no president sees is drawn on by no one (the review of 54f10b8d, M3)
+            if (!PresidentOn(country, date, out _, out string pp, out _))
+            {
+                UnityEngine.Debug.LogError($"VETO: {country.Id} - no president found on {date:yyyy-MM-dd} for '{title}': the bill goes undrawn and unsigned by any rule (a defect)");
+                return;
+            }
+            if (pp != "REP" && pp != "DEM") { return; }
+            Division first = verdict.First, second = verdict.Second;
+            DrawIn(country, concern, first, verdict, title, date, pp);
+            if (first.Passed) { DrawIn(country, concern, second, verdict, title, date, pp); }
+            verdict.StoppedIn = !first.Passed ? first.Chamber : !second.Passed ? second.Chamber : -1;
+            verdict.Passed = first.Passed && second.Passed;
+        }
+
+        /// <summary>One chamber's draw at the gate: asked of `UsVeto` wherever the chamber is on the veto path's terms (a budget vote refused there), the crossers
+        /// entered where the draw matters, the division's count, verdict and cloture moved with them.</summary>
+        private static void DrawIn(Country country, BillConcern concern, Division d, Verdict verdict, string title, DateTime date, string pp)
+        {
+            UsVeto.ChamberVote v = DrawableVote(country, d, verdict, date, pp);
+            if (v == null) { return; }
+            string op = pp == "REP" ? "DEM" : "REP";
+            if (UsVeto.ChamberOutcome(v, 0, 0) != d.Passed)
+            {
+                UnityEngine.Debug.LogError($"VETO: {country.Id} - '{title}' in the {ChamberName(country.Id, d.Chamber)}: the blocs' verdict and the rule's K = 0 verdict differ - no draw entered (a defect)");
+                return;
+            }
+            Crossing c = DrawCrossers(v, country.Id, concern.BudgetVote, SimulationRandom.MasterSeed, date, title, d.Chamber, pp, op);
+            if (concern.BudgetVote) { return; }   // refused by UsVeto: K = 0, nothing counted, the division the blocs'
+            d.Crossing = c;
+            UnityEngine.Debug.Log($"DRAW: {country.Id} - '{title}' in the {ChamberName(country.Id, d.Chamber)}: {pp} draws {c.Kp} crosser(s) (list index {c.IndexPp}){(c.IndexOp >= 0 ? $", {op} {c.Ko} (list index {c.IndexOp})" : string.Empty)} - {(c.Matters ? "the draw changes the verdict, and the crossers enter the count" : "the verdict stands as the blocs give it")}");
+            if (!c.Matters) { return; }
+            int moved = c.Kp - c.Ko;   // the president's party's crossers nay to yea, the other party's yea to nay
+            d.For += moved;
+            d.Against -= moved;
+            d.Passed = UsVeto.ChamberOutcome(v, c.Kp, c.Ko);
+            d.ClotureInvoked = d.Cloture && d.For >= d.Required;
+            if (d.Chamber == Senate && !d.Cloture)
+            {
+                bool tie = d.For == d.Against;   // the majority path: the Vice President named only where his vote decides an equal division
+                d.VicePresidentParty = tie ? UsSenate.VicePresidentParty(country, date) : null;
+                d.VicePresidentVote = tie ? v.VicePresident : 0;
+            }
+        }
+
+        /// <summary>
+        /// The chamber as `UsVeto` reads it where a draw would be made on it (the block's item 2), null where none would: the president's party standing AGAINST
+        /// with a seat there; the other party drawing only where it stands FOR; nothing where both blocs stand against (UNCONTESTED), where nothing is asked, or
+        /// where the cell is unfitted. Yea0 and Nay0 are the blocs' FOR and AGAINST, the undecided abstaining as the count has them.
+        /// </summary>
+        private static UsVeto.ChamberVote DrawableVote(Country country, Division d, Verdict verdict, DateTime on, string pp)
+        {
+            if (d == null || !d.Contested || (pp != "REP" && pp != "DEM")) { return null; }
+            string op = pp == "REP" ? "DEM" : "REP";
+            PartyStance? p = StanceOf(d.Stances, pp), o = StanceOf(d.Stances, op);
+            if (p == null || !p.Value.Measured || p.Value.Side >= 0 || p.Value.Seats <= 0) { return null; }
+            if (o != null && o.Value.Measured && o.Value.Side < 0) { return null; }
+            bool opDraws = o != null && o.Value.Measured && o.Value.Side > 0 && o.Value.Seats > 0;
+            var v = new UsVeto.ChamberVote
+            {
+                Procedure = d.Chamber == House ? UsVeto.Procedure.House : d.Cloture ? UsVeto.Procedure.SenateCloture : UsVeto.Procedure.SenateMajority,
+                Yea0 = d.For, Nay0 = d.Against, Sworn = d.Sworn,
+                VicePresident = d.Chamber == Senate && !d.Cloture ? VicePresidentSide(country, verdict, on) : 0,
+                PpSeats = p.Value.Seats, PpList = CellOf(d.Chamber, true),
+                OpSeats = opDraws ? o.Value.Seats : 0, OpList = opDraws ? CellOf(d.Chamber, false) : null,
+            };
+            return v.PpList == null ? null : v;
+        }
+
+        /// <summary>
+        /// THE DRAW IN ONE CHAMBER - the gate's, and the one the veto diagnostic's planted-index enumeration runs (`UsVeto.PlantIndex`): the president's party's
+        /// K from its list, the other party's from its own where it draws (<see cref="UsVeto.ChamberVote.OpList"/> not null), each through `UsVeto.Draw` on the
+        /// play key (every draw not refused counted in `UsVeto.DrawCalls`; a budget vote refused), and whether the verdict at the drawn pair differs from the
+        /// blocs' at (0, 0) - WHEN THE DRAW MATTERS.
+        /// </summary>
+        public static Crossing DrawCrossers(UsVeto.ChamberVote v, CountryId country, bool budgetVote, int masterSeed, DateTime firstDivision, string title, int chamber, string pp, string op)
+        {
+            UsVeto.Chamber which = chamber == Senate ? UsVeto.Chamber.Senate : UsVeto.Chamber.House;
+            var c = new Crossing { PresidentsParty = pp, OtherParty = op };
+            c.Kp = UsVeto.Draw(country, budgetVote, masterSeed, firstDivision, title, which, pp, v.PpSeats, v.PpList, out int jp);
+            if (v.PpList != null && v.PpList.Count > 0 && !budgetVote) { c.IndexPp = jp; c.KeyPp = UsVeto.Key(masterSeed, firstDivision, title, which, pp); }
+            if (v.OpList != null)
+            {
+                c.Ko = UsVeto.Draw(country, budgetVote, masterSeed, firstDivision, title, which, op, v.OpSeats, v.OpList, out int jo);
+                if (v.OpList.Count > 0 && !budgetVote) { c.IndexOp = jo; c.KeyOp = UsVeto.Key(masterSeed, firstDivision, title, which, op); }
+            }
+            c.Matters = UsVeto.ChamberOutcome(v, c.Kp, c.Ko) != UsVeto.ChamberOutcome(v, 0, 0);
+            return c;
+        }
+
+        private static PartyStance? StanceOf(List<PartyStance> stances, string party)
+        {
+            if (stances == null) { return null; }
+            foreach (PartyStance s in stances) { if (s.Party.Abbrev == party) { return s; } }
+            return null;
+        }
+
+        /// <summary>The Vice President's vote on an equal Senate division of the majority path - his party's stance in the Senate, else in the House, else none
+        /// (`SenateDivision`'s own reading, the vote's day).</summary>
+        private static int VicePresidentSide(Country country, Verdict verdict, DateTime on)
+        {
+            string vice = UsSenate.VicePresidentParty(country, on);
+            return SideOf(verdict.Senate?.Stances, vice) ?? SideOf(verdict.House?.Stances, vice) ?? 0;
+        }
+
+        /// <summary>A defector side's reason, in the plate's words.</summary>
+        private static string DefectorWords(int stance, int crossers) =>
+            (crossers == 1 ? "one member" : crossers.ToString(CultureInfo.InvariantCulture) + " members") + " crossed the party's stance to vote "
+            + (stance < 0 ? "for" : "against") + " - drawn defectors, counted because they decided the chamber's verdict";
+
+        /// <summary>One chamber's vote on the president's veto (the block's THE OVERRIDE): on the passage's recorded sides in that chamber - YEA its FOR side, the
+        /// crossers among them where they entered - against every other member of the division, the undecided and the unmeasured counting against (premise
+        /// (B)); "two-thirds of the Members voting, a quorum being present" (CRS RS22654), so it carries iff YEA &gt;= 2 (Members - YEA) - `UsVeto.OverrideCarries`.</summary>
+        public sealed class OverrideVote
+        {
+            public int Chamber;
+            /// <summary>The chamber's passage the vote is held on (null on a projection).</summary>
+            public DivisionRecord Passage;
+            public int Yea, Members;
+            public int Nay => Members - Yea;
+            /// <summary>The votes it needs: the least YEA with YEA &gt;= 2 (Members - YEA), ceil(2 Members / 3).</summary>
+            public int Required => (2 * Members + 2) / 3;
+            public bool Carries;
+        }
+
+        /// <summary>THE PRESIDENT'S ANSWER to a bill both chambers sent, and the override (<see cref="Present"/>).</summary>
+        public sealed class Veto
+        {
+            public string President, PresidentsParty;
+            public bool PlayerPresident;
+            public bool Vetoed;
+            /// <summary>Why, in a log's words.</summary>
+            public string Why;
+            /// <summary>Rule (a)'s inputs: the president's party's House seats in the division, and its nays there.</summary>
+            public int PpHouseSeats, PpHouseNays;
+            /// <summary>The origin chamber's vote on the veto, and the other's - null where the origin sustained it (the other does not vote), and both null where
+            /// nothing was vetoed.</summary>
+            public OverrideVote First, Second;
+            public bool Overridden => Vetoed && First != null && First.Carries && Second != null && Second.Carries;
+            public bool Stands => !Vetoed || Overridden;
+        }
+
+        /// <summary>
+        /// THE PRESIDENT'S ANSWER (the block's THE VETO) to a bill both chambers sent - <paramref name="passage"/>, the second chamber's division carrying the
+        /// first's (`DivisionRecord.OtherChamber`), both passed - read off the recorded divisions, never re-voted. An AI president vetoes by rule (a): his party
+        /// holds a House seat and more than half of its House members in the division voted nay (`UsVeto.NamedByA` - DETERMINISTIC, every act presented, budget
+        /// acts included). A player-president's answer is the player's (<paramref name="playerVetoes"/>; R-US7, F8: "a player-president chooses"), and rule (a)
+        /// is not read for him; where no answer is given he signs (DECLARED: every bill that reaches him in this build is one his own party introduced). Where
+        /// vetoed, the override: the origin chamber first, the other only where the origin overrode, the veto falling iff both do, both on the passage's day
+        /// (Poland's premise; the ten days and the pocket veto are not modelled, stated), no cloture on an override. Reads only - the gate records
+        /// (<see cref="RecordVeto"/>). Null where the passage is not a bill both chambers sent, or no president is found on the day.
+        /// </summary>
+        public static Veto Present(Country country, DivisionRecord passage, DateTime date, Func<DivisionRecord, bool> playerVetoes)
+        {
+            if (country == null || !UsVeto.Applies(country.Id) || passage?.OtherChamber == null || !passage.Passed || !passage.OtherChamber.Passed) { return null; }
+            if (!PresidentOn(country, date, out string president, out string pp, out bool player)) { return null; }
+            DivisionRecord house = passage.Chamber == House ? passage : passage.OtherChamber;
+            var veto = new Veto { President = president, PresidentsParty = pp, PlayerPresident = player };
+            if (!string.IsNullOrEmpty(pp))
+            {
+                foreach (DivisionSide s in house.Sides)
+                {
+                    if (s.Abbrev != pp) { continue; }
+                    veto.PpHouseSeats += s.Seats;
+                    if (s.Side < 0) { veto.PpHouseNays += s.Seats; }
+                }
+            }
+            if (player)
+            {
+                veto.Vetoed = playerVetoes != null && playerVetoes(passage);
+                veto.Why = veto.Vetoed ? "the player-president's veto" : "the player-president signs";
+            }
+            else
+            {
+                veto.Vetoed = UsVeto.NamedByA(veto.PpHouseSeats, veto.PpHouseNays);
+                string party = string.IsNullOrEmpty(pp) ? "no party" : pp;
+                veto.Why = string.IsNullOrEmpty(pp) ? "a president with no party vetoes nothing"
+                    : house.Sides.Count == 0 ? "nothing was asked; the president's party (" + party + ") did not vote against it"   // an uncontested passage records no sides
+                    : veto.PpHouseSeats < 1 ? "the president's party (" + party + ") holds no House seat"
+                    : string.Format(CultureInfo.InvariantCulture, "the president's party ({0}): {1} of its {2} House members voted against it - {3}", party, veto.PpHouseNays, veto.PpHouseSeats,
+                        veto.Vetoed ? "more than half, so rule (a) vetoes it" : "not more than half, so rule (a) signs it");
+            }
+            if (!veto.Vetoed) { return veto; }
+            veto.First = OverrideOf(country, passage.OtherChamber);   // the origin voted first: the second chamber's record carries it
+            if (veto.First.Carries) { veto.Second = OverrideOf(country, passage); }
+            return veto;
+        }
+
+        /// <summary>A chamber's vote on the veto over its passage's record (the gate's): contested where the passage recorded sides.</summary>
+        private static OverrideVote OverrideOf(Country country, DivisionRecord passage)
+        {
+            int yea = 0, sides = 0;
+            foreach (DivisionSide s in passage.Sides)
+            {
+                sides += s.Seats;
+                if (s.Side > 0) { yea += s.Seats; }
+            }
+            return OverrideCount(country, passage.Chamber, passage.Sides.Count > 0, yea, sides, passage.Sworn, passage);
+        }
+
+        /// <summary>A chamber's vote on the veto over a projected division (the page's): the same count on the blocs' sides - contested, by the same test as the
+        /// record's, where it carries sides (its stances, which <see cref="Record"/> writes one side each).</summary>
+        private static OverrideVote OverrideOf(Country country, Division d)
+        {
+            int sides = 0;
+            foreach (PartyStance s in d.Stances) { sides += s.Seats; }
+            return OverrideCount(country, d.Chamber, d.Stances.Count > 0, d.For, sides, d.Sworn, null);
+        }
+
+        /// <summary>
+        /// THE OVERRIDE'S COUNT IN ONE CHAMBER - ONE RULE, which the gate (<see cref="Present"/>, <see cref="RecordVeto"/>) and the projection
+        /// (<see cref="ProjectVeto"/>) both read, so the two cannot decide one bill two ways. "Two-thirds of the Members voting, a quorum being present" (CRS
+        /// RS22654): it carries iff YEA &gt;= 2 (the base - YEA), every member of the base voting (the block's premise (B)).
+        /// <list type="bullet">
+        /// <item>A CONTESTED passage: YEA is its recorded FOR side - the drawn crossers among it where they entered its division, no fresh draw (the block's
+        /// SIDES) - and the base is its recorded sides, the undecided and the unmeasured counting against; the Senate's base the senators sworn where they are
+        /// more (the caucus within).</item>
+        /// <item>AN UNCONTESTED passage - one that passed unasked, its concern moving nothing, so no member stood against it (US-18: "an empty concern passes every
+        /// chamber unasked") - overrides: YEA is the whole base and no member is against. A READING, DECLARED (the review of 54f10b8d, M1): the passage records
+        /// no sides, so the base is the chamber's seated members on the day - the House's seats as seated (<see cref="Sworn"/> of `Country.ParliamentSeats`),
+        /// the Senate's senators sworn. US-22 tables continuing resolutions that may pass unasked and be vetoed; this is the reading they meet.</item>
+        /// </list>
+        /// <para>CONTESTED IS ONE TEST (the review of dc32c5ff, L-b): the passage carries SIDES - a record's `DivisionRecord.Sides`, a projected division's
+        /// <see cref="Division.Stances"/>, the same list (<see cref="Record"/> writes one side per stance, the drawn defectors beside their party's where they
+        /// entered). A division asked something carries one stance per seated party the party system knows (`StanceModel.Stances`, `StanceModel.StancesOver`);
+        /// one asked nothing carries none (<see cref="Division.Contested"/> false). The two coincide but for a division asked something in a chamber where no
+        /// seated party is known to the party system - it carries no sides, and is counted here as passed unasked, by the gate and the projection alike.</para>
+        /// </summary>
+        private static OverrideVote OverrideCount(Country country, int chamber, bool recordedSides, int yea, int sides, int sworn, DivisionRecord passage)
+        {
+            int members = chamber == Senate ? Math.Max(sides, sworn) : sides > 0 ? sides : Sworn(country?.ParliamentSeats);
+            if (!recordedSides) { yea = members; }   // passed unasked: no member against
+            return new OverrideVote { Chamber = chamber, Passage = passage, Yea = yea, Members = members, Carries = UsVeto.OverrideCarries(yea, members - yea) };
+        }
+
+        /// <summary>
+        /// THE VETO ON THE RECORD (the gate's writer, called only where <paramref name="veto"/> vetoed): the passage's ceremony moves to the vote on the veto - the
+        /// passage marked a motion, as Poland's (§761's precedent) - and each chamber's vote on it is a division of its own, written in the order held: the
+        /// origin's, then the other's only where the origin overrode, the second carrying the first (`DivisionRecord.OtherChamber`, so the plate shows both).
+        /// Each copies its chamber's passage sides (the override is voted by the passage's recorded sides, the crossers where they entered, no fresh draw), its
+        /// line the two thirds (`DivisionRecord.Required`, never at cloture), its base the members (`DivisionRecord.Sworn`), passed where it overrode. Returns the
+        /// record that carries the ceremony - the last written.
+        /// </summary>
+        public static DivisionRecord RecordVeto(Country country, DivisionRecord passage, Veto veto, DateTime date)
+        {
+            passage.Motion = true;
+            DivisionRecord first = RecordOverride(country, passage, veto, veto.First, null, date);
+            if (veto.Second == null) { return first; }
+            first.Motion = true;
+            DivisionRecord second = RecordOverride(country, passage, veto, veto.Second, veto.First, date);
+            second.OtherChamber = first;
+            return second;
+        }
+
+        private static DivisionRecord RecordOverride(Country country, DivisionRecord passage, Veto veto, OverrideVote vote, OverrideVote before, DateTime date)
+        {
+            var sides = new List<DivisionSide>();
+            foreach (DivisionSide s in vote.Passage.Sides)
+            {
+                bool presidents = s.Abbrev == veto.PresidentsParty;
+                string reason = s.Defectors ? (s.Reason ?? string.Empty) + "; on the veto they vote as they voted on the bill"
+                    : presidents ? (s.Side < 0 ? "the President's party - against the bill; against overriding the veto" : s.Side > 0 ? "the President's party - for the bill; for overriding the veto"
+                        : "the President's party - undecided on the bill; not for the override, so counted against it")
+                    : s.Side > 0 ? "voted for the bill; for overriding the veto" : s.Side < 0 ? "voted against the bill; against overriding the veto" : "undecided on the bill; not for the override, so counted against it";
+                string shortReason = s.Defectors ? s.ReasonShort : s.Side > 0 ? "for the override" : "against the override";
+                sides.Add(new DivisionSide { Abbrev = s.Abbrev, ShortName = s.ShortName, Seats = s.Seats, Side = s.Side, Alignment = s.Alignment, Defectors = s.Defectors, Reason = reason, ReasonShort = shortReason });
+            }
+            DivisionRecord record = country.Divisions.Append(OverrideTitle(country.Id, passage.Title, veto, before, vote), date, vote.Passage.Alignment, vote.Carries, vote.Passage.Direction, vote.Passage.Axis, sides);
+            record.Chamber = vote.Chamber;
+            record.Origin = passage.Origin;
+            record.Reconciliation = passage.Reconciliation;
+            record.Required = vote.Required;
+            record.Sworn = vote.Members;
+            return record;
+        }
+
+        /// <summary>The vote on the veto's title as a player reads it: who vetoed what, and each chamber's vote so far - its YEA against the two thirds it needed.</summary>
+        private static string OverrideTitle(CountryId id, string bill, Veto veto, OverrideVote before, OverrideVote vote)
+        {
+            string Vote(OverrideVote v) => string.Format(CultureInfo.InvariantCulture, "the {0} {1}, {2} for, {3} needed of {4}", ChamberName(id, v.Chamber), v.Carries ? "overrides" : "sustains the veto", v.Yea, v.Required, v.Members);
+            string who = veto.PlayerPresident ? "you, " + veto.President : veto.President;
+            return "Vetoed by the President (" + who + "): " + bill + " - " + (before != null ? Vote(before) + "; " : string.Empty) + Vote(vote)
+                + (before != null && before.Carries && vote.Carries ? " - two thirds in each chamber, so it becomes law" : !vote.Carries ? " - the veto stands" : string.Empty);
+        }
+
+        /// <summary>
+        /// THE VETO AS A PAGE CAN KNOW IT (the block's item 8: "a projection reads exact probabilities and never draws; only the gate draws"): the president of
+        /// the vote's day, whether the bill is on the veto path, each chamber's exact chance to pass it over the drawn index pairs (`UsVeto.PassProbability`, no
+        /// `UsVeto.Draw`), whether rule (a) would veto it, and the override on the blocs' sides. NO SURFACE SHOWS A FITTED CHANCE (DECLARED, US-21): the
+        /// chances are here for the veto diagnostic; a page reads the deterministic facts beside them.
+        /// </summary>
+        public sealed class VetoProjection
+        {
+            public string President, PresidentsParty;
+            public bool PlayerPresident;
+            /// <summary>Ordinary legislation the president's party stands AGAINST in a chamber - defectors are drawn at the vote.</summary>
+            public bool OnVetoPath;
+            public bool BudgetVote;
+            /// <summary>An act not presented to the president (<see cref="IsUnpresented"/>): no draw, no veto - the page says so.</summary>
+            public bool Unpresented;
+            /// <summary>The exact chance the first and the second chamber pass it - over the drawn index pairs where a draw is made, 1/1 or 0/1 at the blocs' count
+            /// where none is. The chance the bill is sent is their product (the draws independent, the block's item 5).</summary>
+            public UsVeto.Odds FirstPasses, SecondPasses;
+            /// <summary>Both chambers pass it at the blocs' count (K = 0).</summary>
+            public bool BlocsSend;
+            /// <summary>Rule (a) on the blocs' House division: an AI president vetoes it if it reaches him (DETERMINISTIC); false for a player-president.</summary>
+            public bool NamedByA;
+            /// <summary>The override on the blocs' sides, the origin first (where the draw is what sends a bill, the crossers that send it would enter its sides).</summary>
+            public OverrideVote First, Second;
+            public bool OverrideCarries => First != null && First.Carries && Second != null && Second.Carries;
+        }
+
+        /// <summary>The projection (<see cref="VetoProjection"/>) over <paramref name="verdict"/>, the blocs' two divisions on the vote's day - null outside the USA
+        /// or where no president is found. Never draws: `UsVeto.DrawCalls` does not move.</summary>
+        public static VetoProjection ProjectVeto(Country country, BillConcern concern, DateTime on, Verdict verdict)
+        {
+            if (country == null || !UsVeto.Applies(country.Id) || concern == null || verdict == null) { return null; }
+            if (!PresidentOn(country, on, out string president, out string pp, out bool player)) { return null; }
+            var p = new VetoProjection { President = president, PresidentsParty = pp, PlayerPresident = player, BudgetVote = concern.BudgetVote, Unpresented = concern.Unpresented, BlocsSend = verdict.House.Passed && verdict.Senate.Passed };
+            UsVeto.Odds Chance(Division d)
+            {
+                UsVeto.ChamberVote v = concern.BudgetVote || concern.Unpresented || !DrawInstalled ? null : DrawableVote(country, d, verdict, on, pp);
+                if (v != null) { p.OnVetoPath = true; return UsVeto.PassProbability(v); }
+                return new UsVeto.Odds(d.Passed ? 1 : 0, 1);
+            }
+            p.FirstPasses = Chance(verdict.First);
+            p.SecondPasses = Chance(verdict.Second);
+            PartyStance? ppHouse = string.IsNullOrEmpty(pp) ? null : StanceOf(verdict.House.Stances, pp);
+            int seats = ppHouse?.Seats ?? 0;
+            p.NamedByA = !player && !concern.Unpresented && UsVeto.NamedByA(seats, ppHouse != null && ppHouse.Value.Measured && ppHouse.Value.Side < 0 ? seats : 0);
+            p.First = OverrideOf(country, verdict.First);
+            p.Second = OverrideOf(country, verdict.Second);
+            return p;
         }
 
         /// <summary>A chamber's name as a page says it - the House, the Senate (the country's own names, `StartBrief`).</summary>

@@ -500,7 +500,9 @@ namespace PoliSim.UI
             bool wouldPass = _chamberVerdicts.WouldPass(_playerCountry, taxConcern, taxVoteDay);
             PoliSim.Elections.PresidentialVeto.Outcome taxVeto = _chamberVerdicts.Veto(_playerCountry, taxConcern, taxVoteDay);   // §761: a tax programme's bill is an ordinary statute; F3: the president on its vote's day
             // F3: a statute at risk passes the Sejm and meets the President's draw - the verdict is the count's, the risk beside it as a percentage
-            string taxVerdict = !wouldPass ? "WOULD FAIL" : "WOULD PASS" + (ChamberVerdicts.AtRisk(taxVeto) ? " · VETO RISK " + ChamberVerdicts.RiskWords(taxVeto) : "");
+            Congress.VetoProjection taxUsVeto = _chamberVerdicts.UsVetoProjection(_playerCountry, taxConcern, taxVoteDay);   // PS-6 US-21: the US president's answer (words only, no chance shown)
+            string taxVerdict = !wouldPass ? "WOULD FAIL" : ChamberVerdicts.UsVetoFalls(taxUsVeto) ? "WOULD PASS CONGRESS · VETOED"
+                : "WOULD PASS" + (ChamberVerdicts.AtRisk(taxVeto) ? " · VETO RISK " + ChamberVerdicts.RiskWords(taxVeto) : "");
             string switchWord = !mayIntroduce ? "Locked" : pending != null ? "Pending · " + pending.DaysRemaining + " d" : levied ? "On" : "Off";
             Rect switchHit = DrawBudgetSwitch(switchRect, switchWord, levied, mayIntroduce, pending == null);
             if (mayIntroduce && switchHit.width > 0f)
@@ -516,6 +518,7 @@ namespace PoliSim.UI
             else if (pending != null) { switchSlip.Add("A BILL TO " + (pending.IsAdd ? "LEVY" : "REMOVE") + " IT IS BEFORE " + LegislatureCaps + " · " + pending.DaysRemaining + " DAY(S)").Add("IT " + taxVerdict + " ON TODAY'S COUNT"); }
             else { switchSlip.Add("A CLICK INTRODUCES A BILL OF ITS OWN TO " + (levied ? "REMOVE" : "LEVY") + " IT - VOTED THEN, NOT WITH THE BUDGET").Add("IF INTRODUCED NOW · " + taxVerdict); }
             if (mayIntroduce && ChamberVerdicts.VetoLine(PlayerCountryId, taxVeto) is string taxVetoLine) { switchSlip.Add(taxVetoLine); }
+            if (mayIntroduce) { foreach (string line in ChamberVerdicts.UsVetoLines(PlayerCountryId, taxUsVeto)) { switchSlip.Add(line); } }   // PS-6 US-21
             if (mayIntroduce && _chamberVerdicts.StopWords(_playerCountry, taxConcern, taxVoteDay) is string taxCongress) { switchSlip.Add(taxCongress); }   // PS-6 US-18: where it stops in Congress
             _budgetSlipBook.Anchors[id + "/switch"] = switchSlip;
 

@@ -9118,10 +9118,14 @@ namespace PoliSim.UI
             bool contested = concern != null && !concern.IsEmpty;
             // PS-6 US-18: where the bill goes through both chambers, the chamber that would stop it is named
             Congress.Division stop = contested ? _chamberVerdicts.Chambers(_playerCountry, concern, voteDay)?.Stopping : null;
+            // PS-6 US-21: a US bill both chambers pass that the president vetoes (rule (a)) with no override carrying leans FAIL, the veto named; an amendment is not presented
+            bool usVetoed = wouldPass && contested && act != PoliSim.Elections.PresidentialVeto.Act.ConstitutionalAmendment && ChamberVerdicts.UsVetoFalls(_chamberVerdicts.UsVetoProjection(_playerCountry, concern, voteDay));
+            if (usVetoed) { wouldPass = false; }
 
             BeginAreaCard(null, area);
             GUILayout.Label(label, _labelStyle);
             DrawColoredLabel(
+                usVetoed ? "Currently leans FAIL · the President vetoes it" :
                 contested ? (wouldPass ? "Currently leans PASS" + (atRisk ? " · veto risk " + ChamberVerdicts.RiskWords(veto) : "")
                     : "Currently leans FAIL" + (stop != null ? " · stopped in the " + Congress.ChamberName(PlayerCountryId, stop.Chamber) + (stop.Cloture ? " at cloture" : "") : "")) : uncontested ?? "Unopposed - no change requested",
                 _labelStyle,
@@ -9890,13 +9894,15 @@ namespace PoliSim.UI
             // "VETO n %" is shorter than WOULD PASS, so it fits wherever that did; the answer itself is the vote day's draw
             PoliSim.Elections.PresidentialVeto.Outcome veto = wouldPass ? _chamberVerdicts.Veto(_playerCountry, welfareConcern, voteDay) : null;
             bool atRisk = ChamberVerdicts.AtRiskOfFalling(veto);
+            // PS-6 US-21: a US bill both chambers pass that the president vetoes (rule (a)) with no override carrying reads VETOED, in the failing ink
+            bool usVetoed = wouldPass && ChamberVerdicts.UsVetoFalls(_chamberVerdicts.UsVetoProjection(_playerCountry, welfareConcern, voteDay));
 
             // See the tax tile's switch slip (DrawBudgetTaxTile) - the "(current seat composition)" qualifier moved to the
             // screen header there for the same reason it moves here, and it is declared to Design as V1.
-            string text = pendingBill != null ? "PENDING" : atRisk ? "VETO " + ChamberVerdicts.RiskWords(veto) : wouldPass ? "WOULD PASS" : "WOULD FAIL";
+            string text = pendingBill != null ? "PENDING" : usVetoed ? "VETOED" : atRisk ? "VETO " + ChamberVerdicts.RiskWords(veto) : wouldPass ? "WOULD PASS" : "WOULD FAIL";
             Color ink = pendingBill != null
                 ? PoliSimTheme.TextMuted
-                : atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass ? 1f : -1f, higherIsBetter: true);
+                : atRisk ? PoliSimTheme.Caution : UiPalette.GetDeltaColor(wouldPass && !usVetoed ? 1f : -1f, higherIsBetter: true);
 
             LedgerRow.Cell(rect, text, _labelStyle, ink, TextAnchor.MiddleRight);
         }
