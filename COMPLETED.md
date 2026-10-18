@@ -39700,7 +39700,7 @@ Everything fits at both widths. The rejected plate (89c, "LOST IN THE SENATE") w
 
 **I17.** `git worktree remove` on each of the sweep's worktrees, then `git worktree prune`. Each was clean (`git status --porcelain --ignored` empty) and its branch was already integrated on main. `git worktree list` now shows the main tree alone, and the 17 `sweep/*` branches stay (us14 has two, `sweep/us14` and `sweep/us14fix`). The 16 worktree folders plus `PoliSim-wt/PoliSim-captures` (the textcheck's scratch) made the 17 Elias counted. The captures folder is not a worktree and stays.
 
-**Bars.** Tier DOCUMENTS and TOOLING: PLACEHOLDER-855-BARS.
+**Bars.** Tier DOCUMENTS and TOOLING: one chain on this tree (`chain855`): the three instruments' card blocks rewritten first (`wr855h`, `wr855s`, `wr855m`; `docs/reference/US_ELECTIONS.md`), then the cheap bar `cheap855` 116 of 116 clean and the documents bar `doc855` 20 of 20 clean.
 
 
 ## 856. ELIAS'S US RULINGS OF 2026-10-18 INSTALLED: R-US18 RULED (b) AND R-US19 RULED (c) OVER (a) IN THEIR INSTRUMENTS, US-16 UNBLOCKED; R-US20 RULED (b), A FITTED MIDTERM TERM, ITS BOTH-CHAMBERS AMENDMENT OWED; R-US16 (b), R-US21 (i)-(vi), R-US22 THE TWENTIETH AMENDMENT'S ORDER, R-US23 EVEN-HANDED, R-US24 (b), R-US25 (a) WITH COMMON RANDOM NUMBERS, R-US26 (a), R-US27; US-21'S AND US-22'S ASKS ANSWERED (I1-I13) (2026-10-18)
@@ -39726,7 +39726,7 @@ Everything fits at both widths. The rejected plate (89c, "LOST IN THE SENATE") w
 - R-US24 (b), US-26's.
 - R-US21's live limit, US-24, now unblocked.
 
-**Bars** (one chain over §855-§857's tree; the cheap and document bars, the instruments' card blocks rewritten first): PLACEHOLDER-856-BARS.
+**Bars** (one chain over §855-§857's tree; the cheap and document bars, the instruments' card blocks rewritten first): one chain on this tree (`chain855`): the three instruments' card blocks rewritten first (`wr855h`, `wr855s`, `wr855m`; `docs/reference/US_ELECTIONS.md`), then the cheap bar `cheap855` 116 of 116 clean and the documents bar `doc855` 20 of 20 clean.
 
 
 ## 857. ELIAS'S POLAND AND AUDIT RULINGS OF 2026-10-18 INSTALLED: SP-7 RULED (a) / (2a) WITH (L1) AND (end-i) / (3a) WITH PL-C / (4b) AS A DEVIATION FOR PRESIDENTIAL STARTS; ALL 37 ARCHITECT QUESTIONS POINTED AT THEIR ROWS; THE ORDER OF THE WORK FILED AS THE FEATURE LIST'S HEAD (2026-10-18)
@@ -39762,4 +39762,4 @@ COAL-2 and PL-C are filed as rows. **Placements the ORDER does not name** are Co
 
 **I16** (the asks still open, each answered in one line in the report that follows this installation, built meanwhile on Code's recommendation, PROVISIONAL, wherever it can be reversed): `docs/ASKS_FOR_ELIAS.md`'s header lists them.
 
-**Bars:** PLACEHOLDER-857-BARS.
+**Bars:** one chain on this tree (`chain855`): the three instruments' card blocks rewritten first (`wr855h`, `wr855s`, `wr855m`; `docs/reference/US_ELECTIONS.md`), then the cheap bar `cheap855` 116 of 116 clean and the documents bar `doc855` 20 of 20 clean.
