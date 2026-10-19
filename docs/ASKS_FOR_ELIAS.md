@@ -307,3 +307,24 @@ Each item was read by independent reviewers, and every finding is fixed or asked
 - **Read the jump at the excess's peak?** That would resolve Health (+0.18 at EB94) and Natural (+0.20 at EB91). Today the jump is read at the first wave after the event.
 - **Crime is inert.** Sweden 2023's +0.04 (n 1) was gone by the next wave. Find another analogue, or fetch Sweden's SOM series (BILLED)?
 - **Security is inert.** Its five terror attacks give an interval spanning zero. Keep it inert until the EB103 "security and defence" item can bracket an event?
+
+### A-LOOP q4: the absent campaign actions, for your ruling (`docs/specs/A_LOOP_Q4_TABLE.md`)
+
+Each absent action has its sourced effect, the source's digest and a proposed BUILD or CUT, per the plan's §7 rule. No code follows until you rule. The proposed spec migration ("cut by q4") is in the file as an unapplied patch.
+
+- **BUILD:**
+  - fundraising, as a resource that buys contacts and never votes;
+  - the office and its siting, phone banking, and volunteers on 5b;
+  - message topic, targeting, outlet choice, rally size and TV frequency, as parameters of 5a's sourced classes.
+- **CUT:**
+  - policy development, candidate training and strategy as a modifier;
+  - defence against attacks, debate choices, candidate visits and regional tours;
+  - transport, election-day reminders, post categories and virality;
+  - the media and digital hires, and the four missing roles.
+- **Asked (A1-A6):**
+  - A1, information purchases: the pollster, poll breakdowns and the swing index. Keep them as information, as POLL is, or cut them?
+  - A2, attacks: no vote-choice source is in hand, yet 5a's AI attacks at the class CACE. Cut both sides, keep both as [AUTHORED-DRAFT], or keep the AI's only? This ties to NegativeCampaign winning every cell.
+  - A3, debates: no effect on vote choice is measured, but the built debates move the polls. Keep or remove?
+  - A4, targeting: should voters identified one by one earn the larger figure?
+  - A5, strategy: is the cut's scope the player's "choose a strategy" text only?
+  - A6, 5b's door-knock CACE: GG14's 0.6, or Cantoni & Pons' Italian 5.01 %?

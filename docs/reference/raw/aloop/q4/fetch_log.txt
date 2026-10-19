@@ -1,0 +1,35 @@
+# q4 fetch log (A-LOOP q4). Every fetch: curl -sL -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36" -o <file> <url>; columns: UTC time, file, url, HTTP status, content type, bytes. Refusal bodies are kept under *_HTTP403/404/500 or *_REDIRECT names. Files stored unaltered; digests in SHA256SUMS.txt.
+2026-10-19T23:38:16Z nber_w26572_lepennec_pons.pdf https://www.nber.org/system/files/working_papers/w26572/w26572.pdf -> 200 application/pdf 1059449
+2026-10-19T23:38:17Z nber_w27433_cantoni_pons.pdf https://www.nber.org/system/files/working_papers/w27433/w27433.pdf -> 200 application/pdf 448428
+2026-10-19T23:38:18Z calstate_barton_castillo_petrie_negative_fundraising.pdf https://dspace.calstate.edu/bitstream/handle/10211.3/160834/bartonarticle.pdf?sequence=1 -> 403 text/html; charset=UTF-8 4549
+2026-10-19T23:38:18Z lse_eprint_58913_darr_levendusky.html https://researchonline.lse.ac.uk/id/eprint/58913 -> 200 text/html; charset=utf-8 40323
+2026-10-19T23:38:18Z doi_10_1093_poq_nfp079_masket2009.html https://doi.org/10.1093/poq/nfp079 -> 403 text/html; charset=UTF-8 5754
+2026-10-19T23:38:19Z doi_10_1111_j_1468-2508_2007_00618_x_lau2007.html https://doi.org/10.1111/j.1468-2508.2007.00618.x -> 403 text/html; charset=UTF-8 5811
+(renamed: the three 403 bodies kept as *_HTTP403.html)
+2026-10-19T23:38:33Z lse_blog_2014_darr_levendusky_field_offices.pdf https://researchonline.lse.ac.uk/id/eprint/58913/1/__lse.ac.uk_storage_LIBRARY_Secondary_libfile_shared_repository_Content_American%20Politics%20and%20Policy_2014_May_blogs.lse.ac.uk-When_placed_strategically_campaign_field_offices_can_be_very_important_in_turning_battleground_states.pdf -> 200 application/pdf 132866
+2026-10-19T23:39:03Z crossref_lau2007.json https://api.crossref.org/works/10.1111/j.1468-2508.2007.00618.x -> 200 application/json 16349
+2026-10-19T23:39:04Z crossref_masket2009.json https://api.crossref.org/works/10.1093/poq/nfp079 -> 200 application/json 17166
+2026-10-19T23:39:05Z crossref_darr_levendusky2014.json https://api.crossref.org/works/10.1177/1532673X13500520 -> 200 application/json 9713
+2026-10-19T23:39:05Z crossref_barton2016.json https://api.crossref.org/works/10.1016/j.jebo.2015.10.007 -> 200 application/json 20110
+2026-10-19T23:39:06Z crossref_adams2011.json https://api.crossref.org/works/10.1111/j.1540-5907.2010.00489.x -> 200 application/json 11768
+2026-10-19T23:39:06Z crossref_lepennec_pons2023.json https://api.crossref.org/works/10.1093/qje/qjad002 -> 200 application/json 19950
+2026-10-19T23:39:07Z crossref_cantoni_pons2021.json https://api.crossref.org/works/10.1093/qje/qjab048 -> 200 application/json 20167
+2026-10-19T23:39:07Z ideas_gms_wpaper_1037.html https://ideas.repec.org/p/gms/wpaper/1037.html -> 200 text/html; charset=UTF-8 33250
+(removed crossref_masket2009.json and crossref_cantoni_pons2021.json: the DOIs I tried resolve to other articles, not used)
+(removed doi_10_1093_poq_nfp079_masket2009_HTTP403.html: wrong DOI; Masket 2009 is 10.1093/poq/nfp077)
+2026-10-19T23:39:26Z doi_10_1093_poq_nfp077_masket2009.html https://doi.org/10.1093/poq/nfp077 -> 403 text/html; charset=UTF-8 5754
+2026-10-19T23:39:26Z crossref_masket2009.json https://api.crossref.org/works/10.1093/poq/nfp077 -> 200 application/json 5185
+2026-10-19T23:39:28Z gmu_ices_wp1037_barton_castillo_petrie.pdf http://www.gmu.edu/schools/chss/economics/icesworkingpapers.gmu.edu/pdf/1037.pdf -> 200 application/pdf 5797927
+2026-10-19T23:40:41Z essex_repository_3438_adams2011.html https://repository.essex.ac.uk/3438/ -> 200 text/html; charset=utf-8 63271
+2026-10-19T23:40:41Z doi_10_1111_j_1540-5907_2010_00489_x_adams2011.html https://doi.org/10.1111/j.1540-5907.2010.00489.x -> 403 text/html; charset=UTF-8 5788
+2026-10-19T23:40:41Z doi_10_1177_1532673X13500520_darr_levendusky.html https://doi.org/10.1177/1532673X13500520 -> 403 text/html; charset=UTF-8 5740
+2026-10-19T23:40:42Z doi_10_1016_j_jebo_2015_10_007_barton2016.html https://doi.org/10.1016/j.jebo.2015.10.007 -> 200 text/html;charset=UTF-8 2689
+(renamed: the Elsevier linkinghub redirect page for JEBO 2016 kept as *_REDIRECT_paywall.html; sciencedirect not fetched: paywall)
+2026-10-19T23:41:22Z purdue_AAI9808489_medvic_dissertation.html https://docs.lib.purdue.edu/dissertations/AAI9808489 -> 200 text/html; charset=UTF-8 28001
+2026-10-19T23:42:40Z europepmc_PMC3834737_bond2012.xml https://www.ebi.ac.uk/europepmc/webservices/rest/PMC3834737/fullTextXML -> 500 application/json 150
+2026-10-19T23:42:50Z europepmc_search_bond2012_core.json https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=DOI:10.1038/nature11421&format=json&resultType=core -> 200 application/json;charset=UTF-8 5726
+2026-10-19T23:42:50Z europepmc_render_PMC3834737_bond2012.pdf https://europepmc.org/articles/PMC3834737/pdf -> 403 text/html; charset=UTF-8 5697
+2026-10-19T23:42:59Z ncbi_oa_PMC3834737.xml https://www.ncbi.nlm.nih.gov/pmc/utils/oa/oa.fcgi?id=PMC3834737 -> 404 text/html; charset=ISO-8859-1 1584
+2026-10-19T23:43:00Z eutils_pmc_PMC3834737_bond2012.xml https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pmc&id=3834737&rettype=xml -> 200 text/xml; charset=UTF-8 51085
+(renamed: ncbi_oa_PMC3834737.xml -> ncbi_oa_PMC3834737_HTTP404.html; europepmc_PMC3834737_bond2012.xml -> *_HTTP500.json; europepmc_render_*.pdf -> *_HTTP403.html)
+# Named searches with no source to fetch (WebSearch, 2026-10-19): candidate training and vote share (row 3); rides/transport to the polls, randomized (row 16); campaign consultants and vote share (rows 19-22: only Medvic 1997, abstract fetched).
