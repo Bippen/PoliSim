@@ -1558,7 +1558,7 @@ namespace PoliSim.Simulation
         /// the division `RecordDivision` returned for THIS vote (the log is never read back) - goes to the President (<see cref="Elections.PresidentialVeto.Decide"/>):
         /// at risk where the backing party did not vote for it (F3), then vetoed or signed by the seeded draw at the president's rate - drawn here and nowhere
         /// else, keyed on the master seed and the act (<see cref="Elections.PresidentialVeto.Draw"/>), so every world that resolves the act on the same day draws
-        /// alike (a PREMISE stated there: the impact ledger's forks resolve a boundary later, and may draw apart) and no random stream moves. The Sejm's
+        /// alike (a PREMISE stated there; since FORK-1 the impact ledger's forks run the played world's day tick and reach the act on its day) and no random stream moves. The Sejm's
         /// re-pass, voted by the same sides, overrides a veto with 3/5 of those voting. The veto and the vote on it are one division of
         /// their own - its line the 3/5 (`DivisionRecord.Required`), passed where overridden, failed where the veto stands - and it carries the bill's
         /// ceremony; the passage keeps none (marked a motion, so no signing is shown for a statute the President returned). Returns whether the statute stands.

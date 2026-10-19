@@ -27,8 +27,9 @@ namespace PoliSim.EditorTools
     /// a stat (its rate bias reaches the economy).</description></item>
     /// </list>
     ///
-    /// <para>⚠ <b>What it does not claim, stated.</b> The harness runs no player day tick (`AdvanceCountryDayTick`), because a counterfactual world runs
-    /// none (the audit's D-45 - a bill resolving inside a turn is not in an except-world): the claim is the levers', not the bills'. It runs in the Editor,
+    /// <para>⚠ <b>What it does not claim, stated.</b> Since FORK-1 (J8) the harness runs the player's day tick (`AdvanceCountryDayTick`) after each day, as the
+    /// game does and as the ledger's forks now do (`ForkDayTickDiagnostic` holds that a fork with no policy difference equals the played world); the claim
+    /// here is still the levers', not the bills' - a bill the player introduces after a fork is not replayed in it (D-45's remainder). It runs in the Editor,
     /// where a manager's `Awake` does not run; the inside-the-turn fork's inactive host is what keeps play mode the same (<see cref="ShadowBaseline"/>).</para>
     /// </summary>
     public static class PlayerLeverLedgerDiagnostic
@@ -169,6 +170,7 @@ namespace PoliSim.EditorTools
                 for (int d = 1; d <= SimulationManager.DaysPerTurn; d++)
                 {
                     sim.AdvanceDay();
+                    sim.AdvanceCountryDayTick(Player);   // FORK-1 (J8): the game's day - the ledger's forks run it too
                     PullDue(sim, game.World, t, d, skipFamily, leverFamilies, failures);
                 }
                 var decisions = new Dictionary<CountryId, PolicyDecision>();

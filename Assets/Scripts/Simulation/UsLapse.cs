@@ -46,9 +46,9 @@ namespace PoliSim.Simulation
     ///
     /// <para><b>The timing.</b> The economy's day runs before the funding tick (`SimulationManager.AdvanceCountryDayTick`), so the tick ARMS the next day's
     /// flows (`Country.LapseFlowDay`): the lapse's flows run from the day after it opens through the day funding returns, one day fewer than its counted
-    /// days - for the record's lapse (1 Oct to 12 Nov), CBO's six weeks. THE FORKS (the review's M4, a known gap of D-45's class, filed, not built): the
-    /// shadow and the impact ledger's forks run no funding tick, so a fork made mid-lapse carries the armed day once and then pays, and a lapse in the real
-    /// game appears in every fork's difference - the impact ledger attributes it to every dial family the player touched.</para>
+    /// days - for the record's lapse (1 Oct to 12 Nov), CBO's six weeks. THE FORKS (the review's M4, D-45's class): since FORK-1 (Elias's ruling J8) the impact
+    /// ledger's forks run the player's day tick, the funding tick among it, as the played world does (`ShadowBaseline`'s <c>dayTick</c>), so a lapse in the
+    /// played world is in every except-world too and lands on no family. The no-policy world from the game's start runs it too (AF-12 with the s871 review's H1); only the seeded world, with no player, runs none.</para>
     /// </summary>
     public static class UsLapse
     {

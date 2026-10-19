@@ -245,3 +245,5 @@ file	Assets/Scripts/Data/ProgramBill.cs	7f1495ca926e75641684bfdbf8a1d49ade6c1c76
 file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	1c122c11a89ebeb8067b288c4cc2bd9ac1553a8a70e705f15268c188de90d16b	reviewed	2026-10-18	s865	Reviews/2026-10-18_us22b_lapse.md	-
 file	Assets/Scripts/Data/BudgetBill.cs	3de453afd4b5b6537609089159dc63f5c1dd38d62a393d0f0ce051a2f361ef23	reviewed	2026-10-18	s864	Reviews/2026-10-18_s863_s866_integration.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	b159cedc7faf6e275b607b043cd883ac99959898f936350842de3381288ee85a	reviewed	2026-10-18	s865	Reviews/2026-10-18_s863_s866_integration.md	-
+file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	cda345cbcc6169ce19a3643e46610c59135c52d4c0c6d8248d399dafcff6f7c3	reviewed	2026-10-19	s871	Reviews/2026-10-19_s871_fork1_af12.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	a2cd4a588648a149df8a60f8198584fd4a5c4b5dda10c2f02d1137e0c391238f	reviewed	2026-10-19	s871	Reviews/2026-10-19_s871_fork1_af12.md	-

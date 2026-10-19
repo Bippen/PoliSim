@@ -61,6 +61,12 @@ namespace PoliSim.Persistence
         /// every poll the load reads places the party at its nominee's point. A save from before US-33 carries none, which is what it means: no own nominee, the
         /// nominee of record standing - the only state a build before it could hold (additive under ruling A, as the created parties: no format step).</summary>
         public List<PoliSim.Data.OwnNominee> OwnNominees = new List<PoliSim.Data.OwnNominee>();
+        /// <summary>AF-12 (ruling q12, 2026-10-18): the no-policy world "without your policies" - the player's party governing with no changes from the start -
+        /// as `ShadowBaseline.Carry` writes it: a save of its own, compact, inside this one, so a load restores the same counterfactual the game left rather
+        /// than one forked from the load. Null in a save from before AF-12 and in a batch tool's save (no game ran a shadow beside it): such a load forks the
+        /// loaded game, the meaning before AF-12, and says so. Additive under ruling A - a null is what those saves mean, and no field of the played world
+        /// moves (no format step).</summary>
+        public string NoPolicyShadow;
         /// <summary>GA-0-14 / GA-0-40 (§825): the retired challenge scenario whose progress this save carried, read from the raw file by
         /// `SaveGameService.Deserialize` so the load can name it - null for every other save, and never written.</summary>
         [Newtonsoft.Json.JsonIgnore] public string RetiredScenarioId;

@@ -835,6 +835,7 @@ namespace PoliSim.UI
             try
             {
                 SaveGame save = SaveGameService.CreateSaveGame(_simulationManager, _world, PlayerCountryId, CaptureUiDrafts());
+                save.NoPolicyShadow = CarryTheShadow();   // AF-12 (q12): the counterfactual from the start travels with the game
                 bool overwrote = System.IO.File.Exists(path);
                 SaveGameService.SaveToFile(path, save);
                 _lastPersistenceDate = _simulationManager.CurrentDate;
@@ -850,6 +851,56 @@ namespace PoliSim.UI
                 Debug.LogError($"SAVE: FAILED - {e.Message}");
                 return false;
             }
+        }
+
+        /// <summary>AF-12 (Elias's ruling q12 of 2026-10-18): the no-policy world as the save carries it (`ShadowBaseline.Carry`). A world that cannot be
+        /// carried leaves the save without one - the save still lands, and its load will fork, saying so.</summary>
+        private string CarryTheShadow()
+        {
+            try { return _shadowBaseline?.Carry(); }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"SAVE: the no-policy world could not be carried - {e.Message}; a load of this save counts \"without your policies\" from the load.");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// AF-12 (q12): "without your policies" after a load is the SAME world the game left - the one the save carried, restored. A save that carries none
+        /// (one from before AF-12, a batch tool's) or one that will not restore, or one seating another player country, forks the loaded game instead, as
+        /// every load did before AF-12, and the log says the line now counts from the load.
+        /// </summary>
+        private ShadowBaseline CarriedOrForkedShadow(SaveGame save)
+        {
+            if (!string.IsNullOrEmpty(save.NoPolicyShadow))
+            {
+                ShadowBaseline carried = null;
+                try
+                {
+                    carried = ShadowBaseline.FromCarried(save.NoPolicyShadow);
+                    if (carried.PlayerCountryId == save.PlayerCountryId) { return carried; }
+                    Debug.LogError($"LOAD: the carried no-policy world seats {carried.PlayerCountryId?.ToString() ?? "no country"}, the save {save.PlayerCountryId} - it is set aside.");
+                }
+                catch (System.Exception e) { Debug.LogError($"LOAD: the carried no-policy world did not restore - {e.Message}"); }
+                carried?.Dispose();
+            }
+            Debug.LogWarning("LOAD: this save carries no no-policy world from the start - \"without your policies\" counts from this load (the loaded game, forked).");
+            return new ShadowBaseline(_simulationManager, _world, save.PlayerCountryId, insideTurn: true, dayTick: true);   // FORK-1 with AF-12 (the s871 review's H1): the no-policy world seats the player, so it steps the player's day tick as the played world does; AF-11 (L3): an inactive host - Awake's default world would reset the market's turn state BeginTurn just set
+        }
+
+        /// <summary>
+        /// AF-12 (q12): a new game's "without your policies" is the player's party governing with no changes FROM THE START - the world forked from this
+        /// game as it opens (the player's country and party seated, the government of record, C-C10's fork), never the seeded world in which the AI
+        /// governs the player's country. Only at the start: a running game the driver re-seats keeps the world it has.
+        /// </summary>
+        private void ForkTheShadowAtTheStart()
+        {
+            if (_simulationManager.CurrentTurn != 0 || _simulationManager.CurrentDate != SimulationManager.EpochDate) { return; }
+            _shadowBaseline?.Dispose();
+            _shadowBaseline = new ShadowBaseline(_simulationManager, _world, PlayerCountryId, insideTurn: true, dayTick: true);   // FORK-1 with AF-12 (the s871 review's H1): its days run the player's day tick - without it an opposition player's country never adopts a budget in this world; an inactive host, as the load's: a default world's build resets the energy market's turn state
+            _impactLedger?.Dispose();
+            _impactLedger = new PolicyImpactLedger(_shadowBaseline);
+            _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
         }
 
         /// <summary>The one load path - F9 and the menu's confirmed Load both land here, always from
@@ -906,10 +957,10 @@ namespace PoliSim.UI
                     : $"SCENARIO: this save carried the progress of '{save.RetiredScenarioId}', a challenge scenario the game no longer has - the world loads as free play.");
             }
             RestoreUiDrafts(save.Ui);
-            // PS-1 (§618, the review's R5): the shadow baseline and the impact ledger are forked from the LOADED game (C-C10's fork), never left as the
-            // world just left - a load moves the epoch under them, and the old shadow's clock would count its turns against a foreign start.
+            // PS-1 (§618, the review's R5): the shadow baseline and the impact ledger are never left as the world just left - a load moves the epoch under
+            // them. AF-12 (q12): the shadow is the one the save carried, the same world the game left; a save carrying none forks the loaded game (C-C10's fork).
             _shadowBaseline?.Dispose();
-            _shadowBaseline = new ShadowBaseline(_simulationManager, _world, save.PlayerCountryId, insideTurn: true);   // AF-11 (L3): an inactive host - Awake's default world would reset the market's turn state BeginTurn just set
+            _shadowBaseline = CarriedOrForkedShadow(save);
             _impactLedger?.Dispose();
             _impactLedger = new PolicyImpactLedger(_shadowBaseline);
             _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
@@ -2080,11 +2131,7 @@ namespace PoliSim.UI
             _world = WorldFactory.CreateDefault();
             _simulationManager.SetWorld(_world);
             _simulationManager.ResetClockToEpoch();
-            _shadowBaseline?.Dispose();
-            _shadowBaseline = new ShadowBaseline(SimulationRandom.MasterSeed);
-            _impactLedger?.Dispose();
-            _impactLedger = new PolicyImpactLedger(_shadowBaseline);
-            _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
+            // AF-12 (q12): the shadow baseline and the impact ledger are rebuilt once the player's seat is in this world (SelectPlayerCountry, ForkTheShadowAtTheStart)
             _energyResult = null;
             _hasCachedPreview = false;
             Country after = _world.GetCountry(countryId);
@@ -2144,6 +2191,7 @@ namespace PoliSim.UI
             // first day stepped, so the player's country carries it before any screen reads it; every other country seats none and nothing moves
             _simulationManager.SeatTheSecondChamberOfRecord();
             Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
+            ForkTheShadowAtTheStart();   // AF-12 (q12): "without your policies" from this start - the player's seat in it, every seat above already taken
 
             // UI v3.0 Phase B (R-B1): the game lands on Screen 0, the Desk.
             _onDesk = true;

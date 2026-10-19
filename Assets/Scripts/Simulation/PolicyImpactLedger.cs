@@ -165,7 +165,7 @@ namespace PoliSim.Simulation
                 bool touched = playerDecision != null && Touches(playerDecision, family.Value);
                 if (touched && !_except.ContainsKey(family.Key))
                 {
-                    _except[family.Key] = new ShadowBaseline(realSim, realWorld, _playerCountryId);
+                    _except[family.Key] = new ShadowBaseline(realSim, realWorld, _playerCountryId, dayTick: true);   // FORK-1 (J8): its days step as the played world's
                 }
 
                 if (!_except.TryGetValue(family.Key, out ShadowBaseline world)) { continue; }
@@ -185,7 +185,7 @@ namespace PoliSim.Simulation
             string family = LeverFamilies[lever.Kind];
             if (!_except.ContainsKey(family))
             {
-                _except[family] = new ShadowBaseline(realSim, realSim.World, realSim.PlayerCountryId ?? lever.CountryId, insideTurn: true);   // the save's player, as the boundary's forks
+                _except[family] = new ShadowBaseline(realSim, realSim.World, realSim.PlayerCountryId ?? lever.CountryId, insideTurn: true, dayTick: true);   // the save's player, as the boundary's forks; FORK-1 (J8): its days step as the played world's
             }
         }
 

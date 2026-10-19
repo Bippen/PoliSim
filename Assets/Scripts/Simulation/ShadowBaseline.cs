@@ -33,6 +33,11 @@ namespace PoliSim.Simulation
     /// `WorldFactory` at the same master seed and advanced with `PolicyDecision.None()` for every
     /// country, so it is the trajectory the game would have had if the player had done nothing — which
     /// is precisely the recorded no-policy baseline family, and what the diagnostic checks it against.</para>
+    ///
+    /// <para>⚠ <b>AF-12 (ruling q12, 2026-10-18): the GAME's shadow is no longer the seeded one.</b> "Without your policies" is the player's party
+    /// governing with no changes from the start, so a new game forks this world from its own start (the fork constructor, the player's seat in it) and a
+    /// save carries it across a load (<see cref="Carry"/>, <see cref="FromCarried"/>). The seeded world - no player, the AI governing every country - stays
+    /// the world a fresh process holds before a country is chosen, and the proof gate's.</para>
     /// </summary>
     public sealed class ShadowBaseline
     {
@@ -54,6 +59,12 @@ namespace PoliSim.Simulation
         /// <summary>AF-11: the levers the real game pulled on a day of this turn this world has not reached yet, in the order pulled - each done when
         /// the day loop reaches its day (<see cref="Schedule"/>).</summary>
         private readonly List<KeyValuePair<int, PlayerLever>> _scheduled = new List<KeyValuePair<int, PlayerLever>>();
+
+        /// <summary>FORK-1 (Elias's ruling J8 of 2026-10-19, D-45's class): the country whose day tick (<see cref="SimulationManager.AdvanceCountryDayTick"/>)
+        /// this world runs after each day, as the played world runs its player's - the real manager's <see cref="SimulationManager.PlayerCountryId"/> at the
+        /// fork, for the impact ledger's except-worlds. The no-policy world from the game's start and a carried one tick it too (AF-12 with the s871 review's H1). Null for the seeded world and for a fork made
+        /// without <c>dayTick</c>, which step the days alone, as every shadow did before J8.</summary>
+        private readonly CountryId? _dayTickFor;
 
         /// <summary>The counterfactual world. Read-only to callers by convention — advancing it is
         /// <see cref="AdvanceTurn"/>'s job, because only that path protects the real generator.</summary>
@@ -102,9 +113,16 @@ namespace PoliSim.Simulation
         /// builds its host INACTIVE, so the manager's `Awake` never runs: in play mode it builds a default world, and `WorldFactory.CreateDefault` resets the
         /// energy market's turn state (`EnergyMarket.ResetTurnState`), which the REAL game's remaining days of the turn read. The fork's world is the save's,
         /// so the default world was never used. The fork at a boundary keeps the host it always had (the boundary sets the market's turn state at its top).</para>
+        ///
+        /// <para>⚠ FORK-1 (J8): <paramref name="dayTick"/> - the fork steps its days as the played world does, each day's
+        /// <see cref="SimulationManager.AdvanceCountryDayTick"/> for the real manager's player country after the day (the controller's order). Without it a
+        /// fork ran no bill countdown, no budget window and no US funding horizon, so a lapse in the played world was missing from every except-world and
+        /// booked to every family the player had touched (§865's M4), and a fork could differ from the played world with no policy difference.
+        /// The impact ledger's forks pass it (<see cref="PolicyImpactLedger"/>); a real manager with no player country has no tick to mirror.</para>
         /// </summary>
-        public ShadowBaseline(SimulationManager realSim, World realWorld, CountryId playerCountryId, bool insideTurn = false)
+        public ShadowBaseline(SimulationManager realSim, World realWorld, CountryId playerCountryId, bool insideTurn = false, bool dayTick = false)
         {
+            _dayTickFor = dayTick ? realSim.PlayerCountryId : null;
             _host = new GameObject("ShadowBaseline (forked)") { hideFlags = HideFlags.HideAndDontSave };
             if (insideTurn) { _host.SetActive(false); }
             _sim = _host.AddComponent<SimulationManager>();
@@ -151,7 +169,13 @@ namespace PoliSim.Simulation
 
                 // AF-11: the turn's days this world has not run (all of them, but for a fork made inside the turn), each lever on its day
                 DoScheduled();
-                for (; _daysRun < SimulationManager.DaysPerTurn; _daysRun++) { _sim.AdvanceDay(); DoScheduled(_daysRun + 1); }
+                // FORK-1 (J8): the day, then the player's day tick, then the levers pulled on it - the played world's order (`GameController.Update`)
+                for (; _daysRun < SimulationManager.DaysPerTurn; _daysRun++)
+                {
+                    _sim.AdvanceDay();
+                    if (_dayTickFor.HasValue) { _sim.AdvanceCountryDayTick(_dayTickFor.Value); }
+                    DoScheduled(_daysRun + 1);
+                }
                 DoScheduled(int.MaxValue);
                 _sim.AdvanceTurn(decisions ?? _noDecisions);
                 _daysRun = 0;
@@ -197,5 +221,84 @@ namespace PoliSim.Simulation
         {
             if (_host != null) { Object.DestroyImmediate(_host); }
         }
+
+        // ---------------------------------------------------------------------------------------------
+        // AF-12 (Elias's ruling q12 of 2026-10-18): "without your policies" is the player's party governing with no changes FROM THE START, and after a load
+        // it is the same world - CARRIED IN THE SAVE, the cheaper of the two ways measured (`NoPolicyShadowCarryDiagnostic` times both and fails while the
+        // re-run from the start would be the cheaper). The game forks this world from its own start (C-C10's fork, the player's seat in it), advances it
+        // with no decision, writes it into every save it makes (`SaveGame.NoPolicyShadow`) and restores it on the load, where until AF-12 it forked the
+        // loaded game, so the line counted from the load.
+        // ---------------------------------------------------------------------------------------------
+
+        /// <summary>AF-12: the carried world's text, kept for the shadow's date - the world moves only when it advances, so the saves of a turn write one
+        /// snapshot (an autosave between two boundaries pays the bytes and not the serialization).</summary>
+        private string _carried;
+        private System.DateTime _carriedOn;
+
+        /// <summary>
+        /// AF-12: this world as a save carries it - the save layer's own snapshot (the C-C10 fork's round trip) of the world, its manager and ITS generator,
+        /// compact. Null for a world with no player seat (the seeded shadow a fresh process builds before any country is chosen): there is nothing of the
+        /// ruling's world to carry, and the load then forks, saying so. ⚠ The generator is swapped exactly as <see cref="AdvanceTurn"/> swaps it, so the
+        /// snapshot reads the shadow's streams and the real game's come back as the very objects they were (GA-1-3). A world holding levers it has not yet
+        /// done (an except-world inside a turn) is refused: the save layer has no place for them, and the no-policy world is handed none.
+        /// </summary>
+        public string Carry()
+        {
+            if (!_sim.PlayerCountryId.HasValue) { return null; }
+            if (_carried != null && _carriedOn == _sim.CurrentDate) { return _carried; }
+            if (_scheduled.Count > 0) { throw new System.InvalidOperationException("a counterfactual holding levers not yet done is not carried - the no-policy world is handed none"); }
+
+            SimulationRandom.LiveState real = SimulationRandom.CaptureLive();
+            bool swapped = false;
+            try
+            {
+                SimulationRandom.Reinstate(_own);
+                swapped = true;
+                Persistence.SaveGame snapshot = Persistence.SaveGameService.CreateSaveGame(_sim, _world, _sim.PlayerCountryId.Value, null);
+                Newtonsoft.Json.JsonSerializerSettings compact = Persistence.SaveGameService.BuildSettings();
+                compact.Formatting = Newtonsoft.Json.Formatting.None;   // a world inside a save is read by the loader, not a person
+                _carried = Newtonsoft.Json.JsonConvert.SerializeObject(snapshot, compact);
+                _carriedOn = _sim.CurrentDate;
+                return _carried;
+            }
+            finally
+            {
+                if (swapped) { _own = SimulationRandom.CaptureLive(); }
+                SimulationRandom.Reinstate(real);
+            }
+        }
+
+        /// <summary>AF-12: the world a save carried (<see cref="Carry"/>), restored as it was saved - its own generator, its days run, its player seat. Throws
+        /// the save layer's <see cref="Persistence.SaveLoadException"/> on a text that is no save of this build's format; the caller decides what stands then.</summary>
+        public static ShadowBaseline FromCarried(string carried) => new ShadowBaseline(Persistence.SaveGameService.Deserialize(carried));
+
+        /// <summary>AF-12: <see cref="FromCarried"/>'s restore - the fork constructor's, from a snapshot already made. The host is built INACTIVE, as the
+        /// fork made at a load builds it: the manager's `Awake` would build a default world, resetting the energy market's turn state the played world's
+        /// load has just set.</summary>
+        private ShadowBaseline(Persistence.SaveGame carried)
+        {
+            _host = new GameObject("ShadowBaseline (carried)") { hideFlags = HideFlags.HideAndDontSave };
+            _host.SetActive(false);
+            _sim = _host.AddComponent<SimulationManager>();
+
+            SimulationRandom.LiveState real = SimulationRandom.CaptureLive();   // GA-1-3: the real game's stream OBJECTS, handed back as they were
+            try
+            {
+                Persistence.SaveGameService.RestoreInto(_sim, carried);
+                _world = _sim.World;
+                _dayTickFor = _sim.PlayerCountryId;   // FORK-1 with AF-12 (the s871 review's H1): a carried no-policy world steps the player's day tick, as it did before the save
+                _daysRun = Mathf.Clamp(_sim.DaysIntoTurn, 0, SimulationManager.DaysPerTurn);
+                _own = SimulationRandom.CaptureLive();
+            }
+            finally
+            {
+                SimulationRandom.Reinstate(real);
+            }
+
+            foreach (Country c in _world.Countries) { _noDecisions[c.Id] = PolicyDecision.None(); }
+        }
+
+        /// <summary>AF-12: the player country this world seats - the save's, for a world forked from a game or carried by one; null for the seeded shadow.</summary>
+        public CountryId? PlayerCountryId => _sim != null ? _sim.PlayerCountryId : null;
     }
 }

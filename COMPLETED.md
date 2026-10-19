@@ -40132,3 +40132,77 @@ The feature list's A-LOOP row is rewritten from "the plan in Elias's hands" to R
   - the eve's resolution goes on the Docket with the horizon as its deadline, and is signed if unanswered. This replaces §865's DECLARED signing on the day.
 
 **Bars** (tier DOCUMENTS; §867-§870 change no code): the chain `chain867`, the cheap bar `cheap867` 119 of 119 clean and the documents bar `doc867` 20 of 20 clean.
+
+
+## 871. FORK-1 (J8): THE IMPACT LEDGER'S FORKS STEP THROUGH THE PLAYER'S DAY TICK AS THE PLAYED WORLD DOES; A LAPSE LANDS ON NO DIAL FAMILY (2026-10-19)
+
+**What was owed** (Elias's ruling J8, ORDER step 2; D-45's class; §865's M4; §866's filing): a fork stepped `AdvanceDay`/`AdvanceTurn` without the controller's `AdvanceCountryDayTick`. So a US lapse in the played world was missing from every except-world, and it was booked to every dial family the player had touched. A fork could also differ from the played world with no policy difference.
+
+**Built** (an implementer on `wave/fork1` 022cd3ee, integrated by `git diff --binary --no-textconv`; every file equal to the branch but the two named below):
+- `ShadowBaseline`'s fork takes `dayTick`. Each day it runs the day, then `SimulationManager.AdvanceCountryDayTick` for the real manager's player country, then the levers on that day. That is `GameController.Update`'s order.
+- `PolicyImpactLedger` passes `dayTick` at both of its fork sites: a dial's at the boundary and a lever's inside the turn. The seeded world is unchanged.
+- `PlayerLeverLedgerDiagnostic`'s harness runs the tick as the game does.
+- Comments are updated at M4 (`UsLapse`), the Sejm veto (`SimulationManager`) and F3's draw premise. **Integration:** F3's comment is reverted, because `UsVetoDiagnostic` (a) keeps `PresidentialVeto.cs` byte-identical at its blob (US-10's block; `cheap871` caught it).
+
+**The check:** `ForkDayTickDiagnostic` (the simulation group). Each case runs twice: once with the ledger, whose forks tick, and once with a control fork stepped as before J8.
+1. **The USA through the W2 lapse.** A lever's fork on 2025-08-20 equals the played world, the lapse lands on no family (the forked family's line is 0 on six stats), and the control differs.
+2. **Sweden, a lever's fork on the start's first day.**
+3. **Sweden, the Monetary dial's fork at the first boundary.**
+
+Each case also asserts that the played world is identical beside either fork. **Integration finds:**
+- **The reach.** The check read `NominalGdp` as a field. It is a property (`GDP x PriceLevel`), so the first run (`n871b`) verified nothing. It now reads either a field or a property.
+- **The Sweden spans cross the polling day of 13 Sep 2026** (`n871c`). Neither world holds the election, because the harness steps the controller's day path without `CheckElection`. The polling day is now reported rather than asserted absent, and the claim is narrowed to the day tick.
+
+**Measured** (`n871d`): ALL ASSERTIONS PASS - the USA's lever fork and both Sweden forks equal the played world, every forked family's line 0, each control differs (Sweden's dial control first at TreatableMortality 43.7975 against 43.8154).
+
+**Declared:**
+- The tick's country is the real manager's `PlayerCountryId` at the fork.
+- A fork holds no player's election and replays none of the player's non-lever answers (the meetings, bills, docket answers, a withhold). That is D-45's remainder, filed as **FORK-2** together with the review's M1 and M2: the ledger's per-dial worlds restart at a load, and the forks never answer the meetings they roll.
+
+**Reviewed:** `Reviews/2026-10-19_s871_fork1_af12.md`, an independent adversarial reader on FORK-1 and AF-12 together: **SHIP WITH FIXES**. H1 (AF-12's) and M3 are fixed (§872); M1 and M2 are filed with FORK-2; L1-L6 are recorded in the report. Ledger rows s871 cover `PolicyImpactLedger.cs` and `SimulationManager.cs`.
+
+**Filed, not this wave's:** `PolicyImpactLedgerDiagnostic` section 4, "the lazy fork NOT EXACT". A family's except-world forked at first touch is not byte-identical to one run from the seed with that family stripped. It fails on plain main (`pilmain`, at bdaccfc7) exactly as on this integration (`pil871`). The diagnostic is not registered in any bar, so nothing caught it. Filed as **LEDGER-1**.
+
+**Bars:** see §872.
+
+
+## 872. AF-12 (q12): "WITHOUT YOUR POLICIES" IS THE PLAYER'S PARTY GOVERNING WITH NO CHANGES FROM THE START; AFTER A LOAD THE SAME WORLD, CARRIED IN THE SAVE, MEASURED THE CHEAPER (2026-10-19)
+
+**What was owed** (ruling q12, `docs/RULINGS_2026-10-18.md`; row AF-12; GA-0-47; US-2's shadow asymmetry, G5 item 11): "without your policies" is the player's party governing with no changes from the start. After a load it is the same world, either carried in the save or re-run from the start, whichever is cheaper as measured. The decision rule was fixed before the measurement (d06548e3).
+
+**Built** (an implementer on `wave/af12` 6416d9f0, then e2438c25):
+- **The start.** A new game forks its no-policy world from its own start (`GameController.ForkTheShadowAtTheStart`, C-C10's fork, at the end of `SelectPlayerCountry`, on the epoch day only), with the player's seat, the government of record and the second chamber. It no longer starts from the seeded world, in which the AI governed the player's country. US-2's asymmetry closes: both a new game's world and a loaded one's seat the record.
+- **The carry.** Every save carries the world (`ShadowBaseline.Carry`, `SaveGame.NoPolicyShadow`, one snapshot a day at most). The load restores it (`ShadowBaseline.FromCarried`). A save carrying none forks the loaded game, as before, and says so in a warning. No format step (ruling A): the field is additive, and a null is what an older save means.
+- **H1, the review's blocking finding, fixed at integration.** The no-policy world now seats the player, so it runs the player's day tick (`dayTick: true` at both `GameController` sites; the carried constructor ticks the save's player). Without the tick, an opposition player's country never adopted a budget in that world: the government's bill reaches the book only through the day tick (`TryOpenBudgetProcess`, `AdvanceBudgetBillDay`).
+
+**The check:** `NoPolicyShadowCarryDiagnostic` (the simulation group). It proves:
+- the seat;
+- no changes (the player's income tax move is not in the world from the start);
+- the same world after a load, through the game's own `RestoreFromSave`, at the cut and two turns on;
+- that a save carrying none falls back;
+- that the carry leaves the played world untouched (the review's L5).
+
+Case 5 is the review's H1: an opposition player (S, Sweden, seed 777) acting on nothing. On 2026-02-10, after the government's budget passed (division 1, 2026-02-09) and before the polling day, the world from the start EQUALS the played world over 535 fields. A control without the tick differs in 4.
+
+**Measured** (`n871c`; the rule of d06548e3):
+- **CARRIED:** about 0.9 s across a save and its load.
+- **RE-RUN at its floor:** costlier from 1.55 turns into a game.
+- The verdict: CARRIED is the cheaper by 920.4 ms.
+- Built: carried. Every save grows by about 1.76 MB (`n871b`: 4,316,521 → 6,080,332 bytes).
+
+**Declared:**
+- **The seat, not office.** Where the player's party leads the government, it governs with no changes. Where it does not, the government of record governs both worlds.
+- **Time is the measure,** with the bytes printed beside it.
+- **No format step.**
+
+**Asked:**
+- reading (a), the seat rather than office;
+- whether the counterfactual should hold its own election (that rides on FORK-2);
+- whether saves roughly 1.76 MB larger are acceptable.
+
+**Bars** (§871-§872 on one tree; tier SIMULATION + UI):
+- `n871c` is 6 of 8. ForkDayTickDiagnostic and ReviewLedgerCheck failed; both are fixed, then `n871d` 3 of 3 clean (ForkDayTickDiagnostic, UsVetoDiagnostic, ReviewLedgerCheck).
+- `sb871b` ShadowBaselineDiagnostic passes. `slrt871b` round-trip clean: 12 scenarios plus the version gate.
+- The cheap bar `cheap871` is 117 of 119, failing UsVetoDiagnostic (the F3 comment) and ReviewLedgerCheck (SimulationManager's comment-only state, now rowed). Then `cheap871b` 119 of 119 clean.
+- The simulation bar `sim871` is 61 of 62. **TrajectorySentinelCheck holds on af35** (the played world unmoved); only ForkDayTickDiagnostic's Sweden premise failed (fixed above).
+- The dry film `drys871` is Sweden at 1280, as scoped (s871): 153 measured, 0 failed, 0 overflows. The real film `realse871` is Sweden at 1280: 153 captured, 0 failed, 0 overflows.
