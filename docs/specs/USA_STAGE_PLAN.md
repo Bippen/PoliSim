@@ -241,6 +241,8 @@ A candidate's national share is the party's support in the game's poll × the ca
 - the sentinel unmoved, or its family explained; the cheap and simulation bars green; any surface that reads the US poll seen on the USA dry film.
 **Built: `COMPLETED.md` §844** - R-US15's poll live for the USA (`PartySystems.TryHistory`/`TryElectorate`: the House pair from the catalog, the electorate held at the four's median, solved per seated vintage - a game from the start holds 2022's place for its whole run, DECLARED and held by the check; the compass captions it "held, not fitted"); the 2024 field of record (`PresidencyOfRecord`: every FEC column; the nominees' factors [FITTED] on `PresidentialReferenceWorld` generalised by country - Trump 1.0183908, Harris 0.9456195, patched from the log by `Tools/us_factor_patch.pl`; the minor columns standing nationally - a DEPARTURE put to Elias, the per-state table US-8's); the naming by date (from the DNC's 6 Aug 2024; the RNC's date BILLED, G13 - the asymmetry put to Elias); `UsPresidentialFactorCheck` (the cheap and documents bars) refits each run and writes the card's US-6 block; Poland's presidential checks byte-identical; the `elec<N>` diff moves GateReRun's US header and LoyaltyHarness's US/France block.
 
+**RULED (Elias's ruling J3, 2026-10-19, on I16's item 11; installed `COMPLETED.md` §870; verbatim in `docs/RULINGS_2026-10-19.md`):** the departure is reversed. A minor candidate stands only where on the ballot of record (the FEC's states), as US-30 already requires. The build is the feature list's US-6c.
+
 **US-7 — The oath: a presidency, not a formation. Size M.**
 `ConfidenceProcedure.RulesOf` gains a presidential rule for the USA in place of Unsourced: a fixed term, no investiture and no confidence vote (Art. II; impeachment not modelled, stated). No formation and no Speaker's round run for the USA — the verdict path bypasses the formation for a presidency — which pays §629's debt of *"a presidency wearing a cabinet's words"*.
 
@@ -266,6 +268,8 @@ A contest's winner becomes president-elect and takes office at noon on 20 Januar
 - `Reviews/` report and review row before the bar (SimulationManager); cheap and simulation bars; the USA dry film; a REAL film of the start card.
 
 **Built: `COMPLETED.md` §847 (checkpoint 1)** - the count on the day loop (`UsPresidentialElection.Count`, pure: the poll × E1's factors; the states from the previous presidential election of record by R-US14 (a) in runtime, `ElectoralCollege.FromNationalShares`, with US-4's instrument reading it; the electors in force, labelled on screen when carried forward); R-US3 (a)'s House choice on 6 January by the House of record's delegations, a majority of all the states; the president-elect sworn through US-7; Congress by date; no format step (the states re-derived from each contest's national shares); the USA out of `NoElectionYet`; the Parliament page's president row; the reference at the record's electors. The count's naming of the nominees (R-US23), the 2028 state prior (R-US24) and the forks' own counts (R-US25) are asked; the per-state minor-candidate table stays US-6's ask.
+
+**RULED (Elias's ruling J4, 2026-10-19; installed `COMPLETED.md` §870):** the declared readings stand, except reading 4 (*"an exact state tie goes to DEM"*). An exact state tie is broken by a seeded draw, DECLARED, never in one party's favour. The district tie, which breaks to REP by the same inheritance from US-4 (`Reviews/2026-10-17_s847_us8_count.md`, reading 4), is read by Code as falling under the same ruling, reversible by Elias's word. The build is US-8c.
 
 ### Phase D — the other proofs: Congress, the campaign, the limit
 
@@ -466,6 +470,12 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 
 **Built (US-21b): `COMPLETED.md` §864** - the Docket. A bill presented to a player-president with no answer on the day is held in its slot (`DocketEntry`), answered through `SignDocketBill` / `VetoDocketBill` (acted on at its next day step, as of the day it was answered, whoever is president then; a veto to the override), and law without signature the day after the tenth day counted, Sundays excepted, from the day after presentment (`PresidentialDocket`). The budget's acts and a continuing resolution are docketed likewise. An AI president answers on the day. Poland's 21 days are DECLARED in the same rule, and no Polish path reaches it before SP-7b. The pocket veto is not modelled. No format step. `UsDocketDiagnostic`. Its surface stays US-23's.
 
+**RULED (Elias's ruling J6, 2026-10-19; installed `COMPLETED.md` §870):**
+- (i) An answer acts at once; its money moves on the next day step, as every law's does.
+- (ii) A law's date is the day after the tenth counted day, if a law of record that became law unsigned bears that date (one is to be cited); otherwise it is asked again.
+- (iii) Poland's terms, at SP-7b: 7 days for the budget act (Art. 224(1)) and for an urgent bill (Art. 123(3)), 21 otherwise (Art. 122(2)).
+The build of (i) and (ii) is US-21c; (iii) is SP-7b's.
+
 
 **US-22 — The US budget procedure. Size L.** *(R-US9)*
 `WorldClock.BudgetProcedureOf` gains the US Congress procedure, sourced at US-14:
@@ -495,6 +505,14 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
   - **The request is tabled on its day whatever is before Congress** (the review's L2).
 - (4) The twelve declared readings stand, with no. 7 amended by (3).
 - (5) Format 41, as built.
+
+**RULED (Elias's ruling J7, 2026-10-19; installed `COMPLETED.md` §870), on US-22b's asks:**
+- (i) Release ends a lapse on the next funding tick: as built.
+- (iii) Every lapse of record that has lapse-period cloture votes and an identifiable withholder joins the withholder's fit, and n is printed.
+- (iv) Furloughs reach unemployment as BLS counts them (unemployed on temporary layoff, in the household survey), with the headcount from CBO.
+- The eve's resolution goes on the Docket with the horizon as its deadline. Unanswered by then, it is signed, so a lapse needs the player's veto or a withhold. This replaces the DECLARED signing on the day.
+- The hold rule across quarter ends: as built.
+The build of (iii), (iv) and the eve is US-22c.
 
 
 **US-23 — The president's pen. Size L.** *(R-US7, R-US9)*
@@ -2348,6 +2366,8 @@ THE ASK AND THE BARS
 - (vi) an AI-governed USA raises or suspends the limit.
 
 US-24 is unblocked. The new question under (ii), the 2022 and 2023 starts opening over P.L. 117-73's limit, stays open under I16.
+
+**RULED (Elias's ruling J3, 2026-10-19; installed `COMPLETED.md` §870): (ii)'s new question.** A start in 2022 or 2023 seats the chamber of record for the start's date where its table is on disk (the 117th or the 118th), and the latest table only where it is missing. The debt limit is the law in force that day. This replaces the latest-table reading `WorldClock.SeatingDeviation` states. The build is US-2c.
 
 
 **R-US22 — Who governs when a contest is still undecided at the oath** *(US-7's reading 3, §845; reachable once the game elects the House, US-16)*. A contingent election the House cannot decide (no candidate at 26 delegations) leaves the contest undecided on 20 January. R-US3 (a) left "a House that cannot choose" unmodelled without saying who governs then.

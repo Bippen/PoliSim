@@ -423,3 +423,11 @@ Fetched 2026-10-18 with `curl -sL -A "Mozilla/5.0 …"`, stored unaltered under 
    - Alternative: remove every purchase with no effect on the count.
 
 **Declared here, standing unless Elias changes them:** the pass thresholds of §1-§6 (notably §3 (a): the idle count no worse than 0.5 point mean absolute share miss per country), and the [AUTHORED-DRAFT] entries' texts above.
+
+**RULED (Elias's ruling J1, 2026-10-19; installed `COMPLETED.md` §868; verbatim in `docs/RULINGS_2026-10-19.md`):**
+- **Q1 (a):** approval net of its three economy terms reaches the vote.
+- **Q2 (a):** Lewis-Beck & Tien's 0.16, transferred as [AUTHORED-DRAFT]. A European estimate is BILLED to replace it (§8: Nannestad & Paldam 1994, Lewis-Beck & Stegmaier 2013).
+- **Q3 as recommended:** approval's reversion stays out of A-LOOP. It becomes the first of ORDER step 7's model families (`POLISIM_FEATURE_LIST.md`, MF-13), at the sourced 0.79-0.84 a quarter.
+- **Q4:** Brender & Drazen's probability converts through σ_v. **Q5:** debt reaches the vote through the deficits that build it. **Q6:** 5b lands with GATE-18's q2. **Q7:** §5's table.
+- **The declared pass thresholds of §1-§6 stand.**
+- **When:** A-LOOP builds as ORDER step 3, after step 2's remaining fixes (AF-8, AF-12, AF-6, AF-7, AF-36 and J8's fork fix, FORK-1), one piece at a time in §7's order. q18's factors (GATE-18) are fitted after A-LOOP lands, so the fit absorbs it.

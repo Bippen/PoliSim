@@ -40036,3 +40036,99 @@ So every movement traces back to the funds' principal rule. Nothing moves before
 - `UsPresidentialElectionDiagnostic` (i): the forks' shared draws, and a fork with no policy difference electing the same president.
 
 **Bars:** `wr863f` wrote the factor card with both conventions' pages; `n863`'s `UsPresidentialFactorCheck`, `TermLimitDiagnostic`, `UsOwnNomineeDiagnostic`, `UsPresidentialElectionDiagnostic` and `PresidencyDiagnostic` are clean; `cheap863c` 119/119; `sim863` 60/60, the trajectory sentinel holding on `af35` (both digests the baseline's: no dump seats a player, so no docket, lapse or pick runs in it); `elec863` with no report line moved against `elec854` (577 lines; OutOfSample2026Diagnostic fails as on every run); `bw863` ALL ASSERTIONS PASS; `slrt863` PASS, 12 scenarios; `drys863` USA 156 measured, 0 failed, 0 overflows; `realus863` 156 real frames, the edge guard exiting 0; `stage863` the play saves re-staged at format 42; `doc863` 20/20.
+
+
+## 867. ELIAS'S RULINGS OF 2026-10-19 WRITTEN TO THE REPO BEFORE ANYTHING IS BUILT ON THEM (§643): J1-J9, VERBATIM (2026-10-19)
+
+**The ruling** (Elias, 2026-10-19): *"Rulings J1–J9: reply with the § that installs each one. Write them into docs/RULINGS_2026-10-19.md first."* They answer the report of 2026-10-18 (`docs/ASKS_FOR_ELIAS.md`, its last section) and the A-LOOP plan's seven questions.
+
+**Written.** `docs/RULINGS_2026-10-19.md`: the block as Elias sent it, verbatim, under a header naming the section that installs each ruling:
+- J1, J5, J8 and J9: §868;
+- J2: §869;
+- J3, J4, J6 and J7: §870.
+
+`docs/ASKS_FOR_ELIAS.md`'s status header and its last section say the report is ruled and that nothing in the file is open.
+
+**Bars:** see §870.
+
+
+## 868. A-LOOP RULED (J1): Q1-Q7 AS RECOMMENDED, THE THRESHOLDS STANDING, BUILT AS ORDER STEP 3 AFTER STEP 2'S REMAINDER; APPROVAL'S REVERSION THE FIRST MODEL FAMILY (MF-13); AF-30'S FILLED CABINET AND AF-9, AF-11, AF-23 CONFIRMED (J5); THE FORKS' DAY TICK INTO STEP 2 AND THE UI PASS FILED (J8); THE NEXT WORK (J9) (2026-10-19)
+
+**The rulings** (Elias, 2026-10-19; verbatim in `docs/RULINGS_2026-10-19.md`, §867): J1, J5, J8, J9.
+
+**J1, A-LOOP** (`docs/specs/A_LOOP_PLAN.md` §9, a **RULED** block under the seven questions):
+- Q1 (a): approval net of its three economy terms reaches the vote.
+- Q2 (a): Lewis-Beck & Tien's 0.16 as [AUTHORED-DRAFT], with a European estimate BILLED to replace it.
+- Q3 as recommended: approval's reversion stays out of A-LOOP and becomes the first of step 7's model families, at the sourced 0.79-0.84 a quarter. Filed as `POLISIM_FEATURE_LIST.md`'s **MF-13**, ahead of MF-14.
+- Q4 through σ_v; Q5 through the deficits; Q6 with GATE-18's q2; Q7 §5's table.
+- The declared pass thresholds of §1-§6 stand.
+- A-LOOP builds as ORDER step 3, after step 2's remainder. GATE-18's row now says its factors are fitted after A-LOOP lands, so the fit absorbs it.
+
+The feature list's A-LOOP row is rewritten from "the plan in Elias's hands" to RULED, done when each piece lands on its own green bars in the plan's §7 order.
+
+**J5, the audit fixes' asks:**
+- **AF-30:** yes. The cabinet's seats start filled with fictional ministers at the average (Rule 9), and the symmetric factor stays as built (§862). **What the ruling adds to the build:** §862 made an average minister neutral and a vacant chair harmful, but a start's chairs were left as the start seats them. Filling every start's chairs at the average is filed as **AF-30b** in step 2, after FORK-1, and is built with step 2's remainder.
+- **AF-23** (the baseline read at the close's awareness), **AF-9** (a dissolution weighs as a full drawdown) and **AF-11** (a reshuffle's cost reads PopularityFactor after the removal): confirmed as built (§862, §859, §860). Nothing changes.
+
+**J8, the filed defects:**
+- **Into ORDER step 2:** the impact ledger's forks step through `AdvanceCountryDayTick` exactly as the played world does (D-45's class; the simulation tier, with its trajectory diff). Filed as **FORK-1**, after AF-36.
+- **One UI pass, filed as UI-1.** Its place in the order is Code's reading, reversible: step 4's rows, where the next real film is shot.
+  - The possessive helper: §858 built `UiFormat.Possessive` for the compass. The "'S" sites it left in `GameController.LawsV35.cs` and `GameController.cs` move onto it.
+  - "1 SEAT", Sweden's K-1 line on Sweden's picker only, and the compass's overlaps were built at §858 (items 1-3). UI-1 re-checks them on the film rather than rebuilding them.
+  - 88n is filmed at the next real film.
+
+**J9, the next work** (the feature list's head section, its title now naming both days' rulings):
+1. step 2's remainder: AF-8, AF-12, AF-6, AF-7, AF-36, FORK-1 and AF-30b;
+2. A-LOOP;
+3. US-16 onward and SP-7b, with §870's new rows (US-6c, US-8c, US-2c, US-21c, US-22c) and UI-1 among step 4's;
+4. then the ORDER as ruled.
+
+**Bars:** see §870.
+
+
+## 869. ITALY'S SEATS RULED (J2): BOTH CHAMBERS BY THEIR GROUPS AT FIRST CONSTITUTION, A MIXED GROUP'S NAMED COMPONENTS AS THEIR LISTS, DECLARED; AVS AT THE MEAN OF SI'S AND EV'S CHES POSITIONS, DECLARED; E-46, E-47 AND E-48 CLOSED (2026-10-19)
+
+**The ruling** (Elias, 2026-10-19; verbatim in `docs/RULINGS_2026-10-19.md`): J2.
+
+**Installed:**
+- **E-46 and E-47 (a)** (`ERRANDS.md`, each row struck through and marked CLOSED with this section).
+  - The Senato is seated by its groups at first constitution, 18 Oct 2022; the page is on disk, `ElectionsData/italy/raw/senato2022/`.
+  - The Camera is seated by its groups of April 2018.
+  - Both are DECLARED as a deviation, since no official source assigns the single-seat winners to lists.
+  - Where the chamber's page names a mixed group's components, each component is seated as its list.
+- **E-47 (b):** France's FE page is fetched, so the errand closes. Reading it into the record is Code's work.
+- **E-48:** AVS takes the equal-weight mean of SI's and EV's CHES positions, DECLARED. There is no primary split of its seats, and the uncited split moves the mean by about 0.1. A primary split, if one is ever found, replaces it. The errand closes.
+
+**The build is filed** as `POLISIM_FEATURE_LIST.md`'s **SEAT-1**. It is placed before PS-7 by Code's reading, reversible: Italy's seats are PS-7's footing, and the ruling names no step. Its three parts:
+- both chambers seated from the stored pages;
+- the AVS position;
+- France's FE page read into the record.
+
+**Bars:** see §870.
+
+
+## 870. THE US RULINGS OF 2026-10-19 INSTALLED (J3, J4, J6, J7): THE MINOR CANDIDATES ON THE BALLOT OF RECORD ONLY; A 2022-2023 START'S CHAMBER OF RECORD BY DATE; AN EXACT STATE TIE BY A SEEDED DRAW; THE DOCKET'S ANSWER AT ONCE AND POLAND'S TERMS; THE LAPSE'S FIT WIDENED, FURLOUGHS TO UNEMPLOYMENT, THE EVE'S RESOLUTION DOCKETED (2026-10-19)
+
+**The rulings** (Elias, 2026-10-19; verbatim in `docs/RULINGS_2026-10-19.md`): J3, J4, J6, J7. Each one is written into `docs/specs/USA_STAGE_PLAN.md` beside the entry it rules, as a **RULED** line naming this section.
+
+**J3, the I16 lines.** The lines all stand as built (the report of 2026-10-18 lists them), except two:
+- **11 (US-6):** §844's departure is reversed. A minor candidate stands only where on the ballot of record (the FEC's states), as US-30 already requires. Filed as **US-6c**.
+- **R-US21 (ii), a 2022-2023 start:** the start seats the chamber of record for its date where that table is on disk (the 117th or the 118th), and the latest table only where it is missing. The debt limit is the law in force that day. This replaces the latest-table reading in `WorldClock.SeatingDeviation`. Filed as **US-2c**.
+
+**J4, US-8's readings.** They stand except reading 4: an exact state tie is broken by a seeded draw, DECLARED, never in one party's favour. **Code's reading, reversible:** the district tie, which breaks to REP by the same inheritance from US-4 (`Reviews/2026-10-17_s847_us8_count.md`), falls under the same ruling. Filed as **US-8c**.
+
+**J6, US-21b's asks:**
+- (i) An answer acts at once, and its money moves on the next day step.
+- (ii) A law's date is the day after the tenth counted day, **on one condition:** a law of record that became law unsigned must be cited bearing that date. If none is found, the question is asked again.
+- (i) and (ii) are filed as **US-21c**.
+- (iii) Poland's terms are written onto **SP-7b**'s row: 7 days for the budget act (Art. 224(1)) and for an urgent bill (Art. 123(3)), 21 otherwise (Art. 122(2)).
+
+**J7, US-22b's asks:**
+- (i) Release ends a lapse on the next funding tick: as built.
+- The hold rule across quarter ends: as built.
+- Filed as **US-22c:**
+  - (iii) every lapse of record that has lapse-period cloture votes and an identifiable withholder joins the withholder's fit, and n is printed;
+  - (iv) furloughs reach unemployment as BLS counts them, with CBO's headcount;
+  - the eve's resolution goes on the Docket with the horizon as its deadline, and is signed if unanswered. This replaces §865's DECLARED signing on the day.
+
+**Bars** (tier DOCUMENTS; §867-§870 change no code): the chain `chain867`, the cheap bar `cheap867` 119 of 119 clean and the documents bar `doc867` 20 of 20 clean.

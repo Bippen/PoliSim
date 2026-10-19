@@ -5,6 +5,7 @@
 - **Open, to be answered one line each in the next report, built meanwhile on Code's recommendation, PROVISIONAL, wherever reversible (I16):** 10, 11, 12, 14, 15, 16, 17, 19, 22, 23, 24, 26.
 - **Filed defects** (the section before the report): ORDER item 1 in the rulings.
 - **The report of 2026-10-18** (the last section): where each ruling is installed, the open items in one line each, and the new asks, A-LOOP's seven questions among them.
+- **RULED 2026-10-19 (J1-J9, `docs/RULINGS_2026-10-19.md`; installed `COMPLETED.md` §867-§870):** every item of the report of 2026-10-18 - the I16 lines, the errands, the new asks and A-LOOP's Q1-Q7 - is answered. Nothing in this file is open.
 
 
 ## Rulings asked, with Code's recommendation
@@ -137,6 +138,8 @@
 
 
 ## The report of 2026-10-18: where each ruling is installed, the open items in one line each, and the new asks (§855-§866)
+
+**RULED 2026-10-19 by J1-J9** (`docs/RULINGS_2026-10-19.md`; installed `COMPLETED.md` §867-§870). The text below is the report as sent.
 
 ### Where each ruling is installed
 
