@@ -226,6 +226,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 - B&D measure the LEADER's re-election in 347 campaigns, 1960-2003. The game reads it as the share of the parties that govern.
 - The published AER tables are not reachable (403); the 2006 working paper's are used, its figures matching the 2005 NBER version's text. GAP noted in §8.
 
+
+**Built (2026-10-19, `COMPLETED.md` §880, `wave/aloop4` e8de8147):** `FiscalVote` - Brender & Drazen's two balance variables on the closed years the player reads reach the vote through σ_v FITTED on ParlGov (5.90 pp, n 239), split by responsibility, the record's third component; format 46. Inert to the dump. The registered measurement: the deficit pole −10.10 pp as registered; the surplus poles negative (the variables are changes) - the rule's surplus clause FAILED, asked; Germany's poles reach no second count. The first count of a start carries no term (asked); the night's WHY line is owed.
 ---
 
 ## 5. q24 - a campaign moves the vote within sourced bounds, never saturating at the clamp; each run-up purchase buys a measured effect or is removed. Size **L** (5a persuasion, 5b mobilisation).

@@ -270,7 +270,7 @@ namespace PoliSim.EditorTools
                 string json = SaveGameService.Serialize(SaveGameService.CreateSaveGame(sim, world, CountryId.Sweden, null));
                 SaveGame cut = SaveGameService.Deserialize(json);
                 Country saved = cut.World.GetCountry(CountryId.Sweden);
-                Check(cut.SaveVersion == SaveGameService.CurrentSaveVersion && cut.SaveVersion == 45 && saved.ApprovalEconomyStock == se.ApprovalEconomyStock && SameMarks(saved.VoteApprovalMarks, se.VoteApprovalMarks),
+                Check(cut.SaveVersion == SaveGameService.CurrentSaveVersion && cut.SaveVersion >= 45 && saved.ApprovalEconomyStock == se.ApprovalEconomyStock && SameMarks(saved.VoteApprovalMarks, se.VoteApprovalMarks),
                     F("(7a) a save cut on {0:yyyy-MM-dd} carries format {1}, the economy stock {2:R} and {3} mark(s) by content", sim.CurrentDate, cut.SaveVersion, saved.ApprovalEconomyStock, saved.VoteApprovalMarks?.Count));
                 MethodInfo clone = typeof(SimulationManager).GetMethod("ClonePreviewCountry", BindingFlags.NonPublic | BindingFlags.Static);
                 var copy = clone?.Invoke(null, new object[] { se }) as Country;

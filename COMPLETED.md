@@ -40642,3 +40642,73 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 - `sim878` 64 of 64, the sentinel holding on **alooptax** (3c7d3b38 / 0f331e57);
 - `cheap878` 122 of 123: ReviewLedgerCheck found ApprovalLedgerRecorder's stale grandfathered row, removed, with the ceiling 11 → 10; then `cheap878b` 123 of 123 clean;
 - films, scope `drys878` (s878): Sweden 1280 dry 155/0, and the real film `realse878` 155/0.
+
+
+## 880. A-LOOP PIECE 4, q13: DEFICITS REACH THE VOTE - BRENDER & DRAZEN'S BALCH_term AND BALCH_ey ON THE CLOSED YEARS THE PLAYER READS, Δz AT 11.339 / 22.073, CONVERTED THROUGH σ_v FITTED ON PARLGOV (5.90 pp, n 239); SAVE FORMAT 46 (2026-10-19)
+
+**What was owed** (`docs/specs/A_LOOP_PLAN.md` §4; J1: Q4 through σ_v, Q5 through the deficits; the poles' measurement fixed before the run at a7980f22): no vote read the debt or the deficit. GA-2-3 measured it: Sweden's debt ratio went 35 % → 95 % in two years while approval rose 50 → 65.
+
+**Built** (an implementer on `wave/aloop4` e8de8147):
+- **The book** (`Country.FiscalVoteRecord`, `FiscalVoteBook`): the last four closed years (AF-17's balance, one-offs included, over nominal GDP at the close) and the open year to date. `FiscalVote.NoteDay` runs after the daily accrual and `FiscalVote.CloseYear` at the close.
+- **The variables.** BALCH_term and BALCH_ey as [BD06] Appendix I defines them, with its two-year fallback. Δz = 11.339·BALCH_term + 22.073·BALCH_ey (SOURCED, [BD06] Table 2 col. 2, N 164; the expanded sample's 7.172 / 19.390 printed beside).
+- **The bound.** Each variable is held at ±10 % of GDP [AUTHORED-DRAFT]; a non-finite balance carries no term.
+- **The share.** shift_gov = σ_v·Δz, split by responsibility as q15's term is.
+- **σ_v FITTED.** `Tools/aloop_sigma_fit.pl` fits it on ParlGov, fetched byte-exact on 2026-10-19 into `docs/reference/raw/aloop/parlgov/` with its SHA256SUMS (www.parlgov.org/data answered 403, logged):
+  - the frame: the PM's party's vote-share swing between consecutive elections, 1960-2003, over [BD06] Table A2's 22 developed countries in ParlGov;
+  - n 239, mean −2.211 pp, **σ_v 5.899 pp** (95 % 5.414-6.482);
+  - the tool writes `Generated.IncumbentVoteSwing`, and `FiscalVoteFitCheck` refits it each cheap bar.
+- **The record.** `EconomicVote.RecordPartsOverTerm` = economy + approval + fiscal. The RECORD lines name the fiscal term with its variables.
+- **Carried:** the clone copies the book; format 45 → 46 (ruling A).
+
+**Not built, OWED:** the night's WHY line (a Canvas surface, so a real film is owed). The first count of every start carries no fiscal term, because no game year has closed (asked).
+
+**The checks:** `FiscalVoteFitCheck` (cheap) and `FiscalVoteDiagnostic` (simulation):
+- the book on the play path over two boundaries;
+- the definitions on a planted path;
+- the term's size and split;
+- the bound;
+- exactly zero at no change;
+- the save and the clone.
+
+**Measured:**
+- `n880`, 15 of 15:
+  - SIGMA_V n 239 … σ_v 5.899341 pp; FISCAL VOTE FIT PASS; FISCAL VOTE PASS;
+  - the sentinel holding on `alooptax`.
+- The no-policy dump `q13` is byte-identical to `alooptax`.
+- **The registered measurement** (`Tools/audit/aloop_q13.plan`, `audit880`; each term equals σ_v·Δz within 0.01 pp):
+  - q13_se_deficit at its second count (2030-09-07): **−10.10 pp** (BALCH_term −19.3 held at −10). Negative, as registered.
+  - q13_se_x04: +7.31 pp.
+  - **q13_se_surplus −4.94 pp and g1_se_m_surplus −1.62 pp: negative, against the registered "the surplus poles positive".** Both balances worsened across the window (BALCH_term −10.3 and −11.0 pp). Brender & Drazen's variables are changes, so a surplus held and then relaxed reads as a loss.
+  - **The German poles never reach a second count:** the next German election falls after the run's 1,760 days.
+  - **The registered rule FAILS on its surplus clause and is unmeasured on Germany.** The build follows the source. Put to Elias.
+
+**Declared** (`FiscalVote`'s summary):
+1. a fiscal year is the turn period;
+2. BAL0 annualised, with its one-offs unscaled;
+3. the fallback;
+4. the window is the four years before the count, whoever governed;
+5. the book is read as judged;
+6. σ_v is carried to the US president's party;
+7. a leader's re-election is read as the governing parties' share;
+8. ParlGov's development CSV (Germany's CDU-led elections drop out under the joint CDU+CSU cabinet id; the effect on σ_v is about −0.1).
+
+**Asked:**
+- **A1:** the first count carries no fiscal term. Keep it, or seed the pre-run years from a sourced annual balance series?
+- **A2:** the ±10 % bound stays [AUTHORED-DRAFT] until openICPSR's replication data.
+- **M1:** tenure. A government formed in play answers for its predecessor's years, outside [BD06]'s sample.
+- **M2:** the estimator. The swings are fat-tailed: robust 4.2-4.5 pp, bootstrap interval 5.00-6.78.
+- **M3:** the cap is ±19.7 pp of share.
+- **The registered rule's surplus clause** under the change reading.
+
+**Calibration-list entry** (§346's list): *"q13's support bound: BALCH_term and BALCH_ey held within ±10 % of GDP until Brender & Drazen's replication data gives the sample's range."*
+
+**Reviewed:** `Reviews/2026-10-19_s880_aloop_q13.md`: PASS, no H; its Ms are asked and L3 is fixed. Ledger rows s880 cover `FiscalVoteBook.cs`, `FiscalVote.cs` and `SimulationManager.cs`.
+
+**Bars** (tier SIMULATION):
+- `n880` 15 of 15;
+- `slrt880` PASS;
+- `dump880` byte-identical to `alooptax`;
+- `stage880` at format 46;
+- `audit880` 6 runs, exit 0;
+- the cheap bar `cheap880` 124 of 124 clean;
+- the simulation bar `sim880` 65 of 65, the sentinel holding on alooptax.

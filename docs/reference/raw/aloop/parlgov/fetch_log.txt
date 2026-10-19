@@ -1,0 +1,5 @@
+url	file	fetched_utc	http_status	bytes
+https://parlgov.org/data-info/	parlgov_data-info.html	2026-10-19T17:49:28Z	200	2816
+https://parlgov.org/data/parlgov-development_csv-utf-8/view_election.csv	view_election.csv	2026-10-19T17:49:28Z	200	1142264
+https://parlgov.org/data/parlgov-development_csv-utf-8/view_cabinet.csv	view_cabinet.csv	2026-10-19T17:49:29Z	200	1783351
+https://www.parlgov.org/data/	(not kept: the directory index answers 403; the data-info page links the files)	2026-10-19T17:49:29Z	403	787

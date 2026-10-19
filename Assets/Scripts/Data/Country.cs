@@ -1076,6 +1076,12 @@ namespace PoliSim.Data
         /// and one formed in play reads its own first day. Saved (format 45); copied on the preview's clone.</summary>
         public List<ApprovalMark> VoteApprovalMarks = new List<ApprovalMark>();
 
+        /// <summary>A-LOOP q13 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §4 (2)): <b>the fiscal record the vote reads</b> - the latest closed fiscal years
+        /// as the player reads them with nominal GDP at each close, and the open year's flow to date (`FiscalVote.NoteDay`, `FiscalVote.CloseYear`);
+        /// Brender &amp; Drazen's two balance variables are formed on it (`FiscalVote.Judge`). Read by the vote alone, never by the simulation. Null
+        /// until the first daily step. Saved (format 46); copied on the preview's clone.</summary>
+        public FiscalVoteBook FiscalVoteRecord;
+
         /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see
         /// StatHistory.cs. Appended once per turn by SimulationManager.AdvanceTurn, kept entirely

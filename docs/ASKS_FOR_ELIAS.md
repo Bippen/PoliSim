@@ -274,3 +274,16 @@ Each item was read by independent reviewers, and every finding is fixed or asked
   - whether the bloc falls below 175 of 349 is recorded as a reading, unless you keep the seat threshold.
 - **q15, the clamp share (declared, not fixed).** At a bound, the stock's share of the clamp is taken pro rata. That is exact when there was no room before the formula, or when the other terms push away from the bound. Otherwise net approval can move against the economy by at most 0.16 × that room, in vote points. A counterfactual share fixes it exactly if you want it.
 - **Owed:** the election night's WHY line naming the approval term and its size. It is a Canvas surface, so it owes a real film.
+
+### A-LOOP piece 4, q13 (§880): the asks it ends in
+
+- **The registered measurement's surplus clause failed.**
+  - Brender & Drazen's variables are changes in the balance, not its level. A surplus pole whose balance relaxed across the four-year window reads as a loss: q13_se_surplus −4.94 pp, g1_se_m_surplus −1.62 pp.
+  - The deficit pole is −10.10 pp, as registered.
+  - Germany's poles reach no second count within the run.
+  - Restate the clause under the change reading (e.g. "a pole whose balance improves across the window gains"), or rule otherwise?
+- **A1, the first count.** It carries no fiscal term, because no game year has closed. Keep it, or seed the pre-run years from a sourced annual balance series (Eurostat, the US federal budget: a fetch)?
+- **A2, the ±10 % bound.** It stays [AUTHORED-DRAFT] until Brender & Drazen's replication data (openICPSR, a login).
+- **Tenure.** A government formed in play answers for its predecessor's years, outside the source's two-year-tenure sample. Gate each variable on tenure, or record the risk?
+- **σ_v's estimator.** The swings are fat-tailed (kurtosis 6.5): σ 5.90 against robust 4.2-4.5, with a bootstrap interval of 5.00-6.78. Keep the standard deviation (built) or take a robust scale?
+- **The cap** is ±19.7 pp of share at the bound. A tighter interim bound?

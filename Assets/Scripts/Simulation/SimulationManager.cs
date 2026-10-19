@@ -474,6 +474,7 @@ namespace PoliSim.Simulation
                     // Placed last in the day so it charges interest against the debt every earlier
                     // system has finished with, and reads the same GDP the rest of the day did.
                     AccrueDailyFiscalFlows(country);
+                    Elections.FiscalVote.NoteDay(country, GetOrSeedFiscalPeriod(country).AccruedBudgetBalance);   // A-LOOP q13 (§4 (2)): the open year's flow to date mirrored for the vote - reads the period, writes only the vote's book
 
                     // CONTINUOUS TIME PHASE 5 (2026-08-16): the core macro engine, daily - the last
                     // and riskiest conversion, deliberately last. Order preserved from AdvanceTurn's
@@ -5213,9 +5214,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>A-LOOP q15: the record's components for the logs - the economic vote and the approval term per party, and the approval term's
-        /// judgement (net approval then and now, b, its size for the government side).</summary>
+        /// judgement (net approval then and now, b, its size for the government side); A-LOOP q13: the fiscal term per party and its judgement (the two
+        /// balance variables, delta-z, sigma_v, its size for the government side).</summary>
         private static string RecordPartsLine(Elections.EconomicVote.RecordParts parts)
-            => " (economy: " + RecordShiftLine(parts.Economy) + "; approval: " + RecordShiftLine(parts.Approval) + " - " + Elections.ApprovalVote.Describe(parts.ApprovalReading) + ")";
+            => " (economy: " + RecordShiftLine(parts.Economy) + "; approval: " + RecordShiftLine(parts.Approval) + " - " + Elections.ApprovalVote.Describe(parts.ApprovalReading)
+               + "; fiscal: " + RecordShiftLine(parts.Fiscal) + " - " + Elections.FiscalVote.Describe(parts.FiscalReading) + ")";
 
         /// <summary>
         /// One day of the player's campaign - and §752 (Elias's ruling A1): the count reads the ELECTION-DAY value, so before the campaign's last day
@@ -6081,6 +6084,7 @@ namespace PoliSim.Simulation
             // P2-0.4: the closed period's balance joins the annual series the sheet draws - observation only. AF-17: the year as read, one-offs counted.
             country.History.BudgetBalanceAnnual.Add(_lastFiscalReports[country.Id].BudgetBalance);
             country.History.BudgetBalanceAnnualDates.Add(CurrentDate);
+            Elections.FiscalVote.CloseYear(country, CurrentDate, _lastFiscalReports[country.Id].BudgetBalance, state.NominalGdp);   // A-LOOP q13 (§4 (2)): the same year and nominal GDP at its close join the vote's book - observation only
             // P2-3.3: the chamber's compass position joins its trail at the same close - observation only.
             PoliSim.Elections.CompassPositions.RecordTrailPoint(country, CurrentDate);
 
@@ -6749,6 +6753,7 @@ namespace PoliSim.Simulation
                 AppliedEnergySupportCost = country.AppliedEnergySupportCost,   // EN-7a
                 ApprovalEconomyStock = country.ApprovalEconomyStock,   // A-LOOP q15: the vote's economy stock (the preview closes no period, so it stands)
                 VoteApprovalMarks = country.VoteApprovalMarks == null ? null : new List<ApprovalMark>(country.VoteApprovalMarks),   // A-LOOP q15: the approval term's references, the clone's own list
+                FiscalVoteRecord = country.FiscalVoteRecord?.Copy(),   // A-LOOP q13: the vote's fiscal book, the clone's own copy (the preview runs no day and closes no year, so it stands)
 
                 // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line
                 // buys nothing today - it is here because the clone-escape class has now cost this pass twice

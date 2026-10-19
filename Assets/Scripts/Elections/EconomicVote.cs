@@ -178,8 +178,8 @@ namespace PoliSim.Elections
         /// <summary>
         /// A-LOOP (`docs/specs/A_LOOP_PLAN.md` §0): <b>the government's record, by component</b> - one record, per party, for any day. Its components:
         /// the economic vote over the term (<see cref="Economy"/>, §638/§752) and q15's approval term (<see cref="Approval"/>, <see cref="ApprovalVote"/>);
-        /// q13's fiscal term (Brender &amp; Drazen, the plan's §4) joins as a third, split by <see cref="SplitGovernmentShift"/> as the approval term is,
-        /// and is summed into <see cref="Total"/> beside them. COAL-1 reads a party's staying and leaving off the components (the plan's §3 (2)).
+        /// and q13's fiscal term (<see cref="Fiscal"/>, <see cref="FiscalVote"/>: Brender &amp; Drazen, the plan's §4), split by <see cref="SplitGovernmentShift"/>
+        /// as the approval term is, all three summed into <see cref="Total"/>. COAL-1 reads a party's staying and leaving off the components (the plan's §3 (2)).
         /// </summary>
         public sealed class RecordParts
         {
@@ -187,8 +187,10 @@ namespace PoliSim.Elections
             public PerceivedPerformance.TermReading Term;
             /// <summary>The approval term's reading (net approval then and now, b, shift_gov).</summary>
             public ApprovalVote.Reading ApprovalReading;
+            /// <summary>The fiscal term's reading (the two balance variables, delta-z, sigma_v, shift_gov).</summary>
+            public FiscalVote.Reading FiscalReading;
             /// <summary>Each component's shift per party, as a share fraction.</summary>
-            public Dictionary<string, double> Economy = new Dictionary<string, double>(), Approval = new Dictionary<string, double>();
+            public Dictionary<string, double> Economy = new Dictionary<string, double>(), Approval = new Dictionary<string, double>(), Fiscal = new Dictionary<string, double>();
             /// <summary>The record the counts read: every component summed per party.</summary>
             public Dictionary<string, double> Total = new Dictionary<string, double>();
         }
@@ -199,7 +201,8 @@ namespace PoliSim.Elections
             var parts = new RecordParts();
             parts.Economy = EconomyOverTerm(country, asOf, out parts.Term);
             parts.Approval = ApprovalVote.ShiftOverTerm(country, asOf, out parts.ApprovalReading);
-            parts.Total = Sum(parts.Economy, parts.Approval);
+            parts.Fiscal = FiscalVote.ShiftOverTerm(country, asOf, out parts.FiscalReading);
+            parts.Total = Sum(Sum(parts.Economy, parts.Approval), parts.Fiscal);   // A-LOOP q13: economy + approval as q15 summed them, then the fiscal term
             return parts;
         }
 

@@ -1,0 +1,3 @@
+a701681ecd1a6a7b1f66cbfc000cba2e23121e15ce8c2244e84cf8deacc11fee *parlgov_data-info.html
+bd39f73335e8bc49c00d5000ab5a68e7a8c41ca0eb17d8c89ff6d05ba93e6063 *view_cabinet.csv
+4b318c36b1cbe8de74af4a3ca77295f86dd420bbba74b5d24099923fee99ac64 *view_election.csv
