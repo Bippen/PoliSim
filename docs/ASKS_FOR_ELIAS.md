@@ -264,3 +264,13 @@ Each item was read by independent reviewers, and every finding is fixed or asked
   - the ledger's per-dial worlds are not carried in a save;
   - the Monetary except-world's AI pick falls one day late.
 - **LEDGER-1.** `PolicyImpactLedgerDiagnostic`'s lazy fork is not exact. This was already so on main before this wave; the diagnostic was in no bar.
+
+### A-LOOP pieces 1-3 (§877-§879): the asks they end in
+
+- **q37, the pass criterion "a cut and its restore within one fiscal year: |Δapproval| ≤ 0.01".** It holds for a same-day pair. With d days between, the residue is m·s·x·(1 − 0.81^(d/91.25)), itself fading: the plan's own "impulse into a decaying stock", which the plan's half-life criterion requires. Accept the same-day reading, or restate the criterion as "the impulses net to zero"?
+- **q15, §3 (4) (b) under the ruled net form.** The plan's "about −7.8 points" on a2_se_big is whole-approval arithmetic. Under Q1 (a) the term is 0.16 × the change in net approval (approval less the economy stock), which is smaller. Proposed pass:
+  - the RECORD line names the term with the stock;
+  - its size equals 0.16 × the net change within 0.01 pp;
+  - whether the bloc falls below 175 of 349 is recorded as a reading, unless you keep the seat threshold.
+- **q15, the clamp share (declared, not fixed).** At a bound, the stock's share of the clamp is taken pro rata. That is exact when there was no room before the formula, or when the other terms push away from the bound. Otherwise net approval can move against the economy by at most 0.16 × that room, in vote points. A counterfactual share fixes it exactly if you want it.
+- **Owed:** the election night's WHY line naming the approval term and its size. It is a Canvas surface, so it owes a real film.
