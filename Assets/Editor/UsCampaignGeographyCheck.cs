@@ -363,8 +363,15 @@ namespace PoliSim.EditorTools
             var programRows = new List<(string Party, string Where, double TurnoutPp, bool FlipsB)>();
             double widestDeparture = 0.0, ownDeparture = 0.0;
             double widestNational = 0.0, leastCompatibility = double.MaxValue;
-            int programRuns = 0, saturatedRuns = 0;
-            void Saturation(CampaignRun.Setup s, CampaignRun.Result r) { double[] c = CompatibilityAtClose(s, r); programRuns++; if (c.All(v => v >= ElectionScales.Max)) { saturatedRuns++; } leastCompatibility = Math.Min(leastCompatibility, c.Min()); }
+            int programRuns = 0, saturatedRuns = 0, boundBreaches = 0, observedBreaches = 0;
+            double widestEffect = 0.0;
+            // A-LOOP q24 5a, the plan's (4)(b): every party's campaign effect at the close inside Σ_class upper × coverage, in every run of this table
+            void Saturation(CampaignRun.Setup s, CampaignRun.Result r)
+            {
+                double[] c = CompatibilityAtClose(s, r); programRuns++; if (c.All(v => v >= ElectionScales.Max)) { saturatedRuns++; } leastCompatibility = Math.Min(leastCompatibility, c.Min());
+                for (int p = 0; p < r.CampaignEffectPp.Length; p++) { widestEffect = Math.Max(widestEffect, Math.Abs(r.CampaignEffectPp[p])); if (Math.Abs(r.CampaignEffectPp[p]) > r.CampaignBoundPp[p] + 1e-12) { boundBreaches++; } }
+                if (!CampaignPersuasionDiagnostic.ObservedMatchesSources(s, r, out _)) { observedBreaches++; }   // review 881b's M-r1: the observed move against the one its tally implies, recomputed independently
+            }
             foreach (int q in new[] { pr, pd })
             {
                 int col = q == pd ? 0 : 1;
@@ -416,10 +423,12 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add(F("Under the count as built ((a)'s columns) the worked jurisdiction moved by what the nation moved to within {0:0.0e+0} points, and every jurisdiction to within {1:0.0e+0}: the derivation is a function of the national shares and the prior alone (R-US14 (a)'s uniform swing gives every jurisdiction one move, re-solved only where a floor binds), so working a state moves it as much as every state it was not worked in. The ground game's turnout - the mobilisation the program built - reaches no count at all: W-D1's per-region count, its one reader, is wired to nothing. (b)'s columns are that count, the derived shares as its preferences (below).",
                 ownDeparture, widestDeparture));
+            Check(boundBreaches == 0, F("A-LOOP q24 5a (4)(b): in all {0} runs every party's campaign effect lies inside its sourced bound (the widest effect {1:0.000} pp; {2} breaches)", programRuns, widestEffect, boundBreaches));
+            Check(observedBreaches == 0, F("A-LOOP q24 5a (4)(b)/(c), independent: in all {0} runs every party's OBSERVED move from its no-campaign share is the move its tally implies under the sourced CACEs ({1} run(s) breaching)", programRuns, observedBreaches));
+            Check(CampaignPersuasionDiagnostic.AiValuesWithinSource(Staging(idleParties, new int[0]), out string aiValues), "A-LOOP q24 5a (review 881's H1): the AI's value of a contact at the US electorate is the sourced arithmetic and blind to turnout - " + aiValues);
             card.Add("");
-            card.Add(saturatedRuns == programRuns
-                ? F("**The national move itself is at most {0:0.00e+0} points, because no party's campaign can move it**: in every run of this table - each program and the run it is held against - both parties' compatibility closed past the scale's ceiling (the least {1:0} before the clamp, `ElectionScales.Max` {2:0}). The persuasion scale (`CampaignPressure.PersuasionPerCompatibilityPoint`, [AUTHORED-DRAFT]) is per person reached, and at the US audience a campaign saturates it, so `PreferenceModel`'s clamp pins the national result whatever either party does.", widestNational, leastCompatibility, ElectionScales.Max)
-                : F("The national move itself is at most {0:0.00e+0} points; in {1} of the {2} runs of this table both parties' compatibility closed past the scale's ceiling (`ElectionScales.Max` {3:0}; the least any party closed at {4:0.00}).", widestNational, saturatedRuns, programRuns, ElectionScales.Max, leastCompatibility));
+            card.Add(F("The national move itself is at most {0:0.00e+0} points. Since A-LOOP q24 5a the campaign moves the shares by the sourced effects (`CampaignPersuasion`: Kalla & Broockman's CACEs per contact class times each class's coverage of the electorate) and writes no compatibility, so no clamp decides it: the widest campaign effect on any party in the {1} runs of this table is {2:0.000} points, every one inside its sourced bound. The compatibility entering the preference model is the staging's own; in {3} of the {1} runs both parties' sat at the scale's ceiling (`ElectionScales.Max` {4:0}; the least {5:0.00}).",
+                widestNational, programRuns, widestEffect, saturatedRuns, ElectionScales.Max, leastCompatibility));
 
             // ---- (c) W-D1'S PER-STATE COUNT UNDER A MAXIMAL GROUND GAME
             card.Add("");
@@ -643,10 +652,9 @@ namespace PoliSim.EditorTools
         private static int[] Top(double[] weights, int count) =>
             weights == null ? new int[0] : Enumerable.Range(0, weights.Length).Where(r => weights[r] > 0.0).OrderByDescending(r => weights[r]).ThenBy(r => r).Take(count).ToArray();
 
-        /// <summary>Each party's compatibility at a campaign's close, before `PreferenceModel`'s clamp: the staging's plus the persuasion the run left it with
-        /// (`CampaignPressure.ToCompatibilityBonus`'s conversion, attacks netted) - read so that a national result no campaign moves is explained, not inferred.</summary>
-        private static double[] CompatibilityAtClose(CampaignRun.Setup setup, CampaignRun.Result run) =>
-            setup.Compatibility.Select((c, i) => c + run.PersuasionPerParty[i] / CampaignPressure.PersuasionPerCompatibilityPoint).ToArray();
+        /// <summary>Each party's compatibility at a campaign's close, as it enters `PreferenceModel`: the staging's own - since A-LOOP q24 5a the campaign moves the
+        /// shares directly and writes no compatibility, so nothing a campaign does can carry a party past the clamp (the plan's (4)(c)).</summary>
+        private static double[] CompatibilityAtClose(CampaignRun.Setup setup, CampaignRun.Result run) => (double[])setup.Compatibility.Clone();
 
         private static string Compat(string[] keys, double[] compatibility) => string.Join(", ", keys.Select((key, i) =>
             compatibility[i] >= ElectionScales.Max ? F("{0} past the ceiling ({1:0})", key, compatibility[i]) : F("{0} {1:0.00}", key, compatibility[i])));

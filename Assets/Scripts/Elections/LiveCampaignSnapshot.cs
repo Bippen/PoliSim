@@ -275,6 +275,14 @@ namespace PoliSim.Elections
                 }
             }
 
+            // A-LOOP q24 5a (Q7): a television buy moves the run-up's polls for its week and never the count - the HQ says so while it shows.
+            int televisionUntil = PreCampaignRun.TelevisionShowsUntil(pre, shownDay);
+            if (televisionUntil >= 0)
+            {
+                notes.Add(string.Format(System.Globalization.CultureInfo.InvariantCulture, "TV BUY · ON THE POLLS UNTIL {0} · FADED BY POLLING DAY",
+                    calendar.PreCampaignStart.AddDays(televisionUntil).ToString("d MMM").ToUpperInvariant()));
+            }
+
             string markKey = null;
             foreach (PoliticalParty party in PartySystems.For(country.Id))
             {

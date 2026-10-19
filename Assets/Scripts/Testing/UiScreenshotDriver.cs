@@ -4875,11 +4875,14 @@ namespace PoliSim.Testing
                 // a refusal where it means to show a hire.
                 StaffRole hireRole = StaffRole.Pollster;
                 foreach (StaffRole candidate in CampaignStaff.TheFive) { if (!sim.PlayerPreCampaign.HasRole(candidate)) { hireRole = candidate; break; } }
-                sim.QueueCampaignDecision(CampaignActionKind.EstablishOffice, -1, null, CampaignOffices.OpenCost, out string officeRefusal);
+                // A-LOOP q24 5a (Q7): the office is refused in the run-up until 5b counts its doors (its chip dimmed, its reason printed), so the film
+                // queues the purchase that buys a measured effect - a television buy, charged, its week on the polls noted on the HQ once it has aired.
+                sim.QueueCampaignDecision(CampaignActionKind.PrepareAdvertising, -1, null, PreCampaignRun.Price(sim.PlayerPreCampaign, CampaignActionKind.PrepareAdvertising), out string televisionRefusal);
                 sim.QueueCampaignDecision(CampaignActionKind.RecruitStaff, -1, null, CampaignStaff.SalaryPerDay, out string hireRefusal, role: (int)hireRole);
-                if (officeRefusal != null || hireRefusal != null)
+                sim.QueueCampaignDecision(CampaignActionKind.EstablishOffice, -1, null, CampaignOffices.OpenCost, out string officeRefusal);
+                if (televisionRefusal != null || hireRefusal != null || officeRefusal == null)
                 {
-                    Debug.LogError($"SHOT: CL-1 - the run-up refused a priced verb: {officeRefusal ?? hireRefusal}");
+                    Debug.LogError($"SHOT: CL-1 - the run-up refused a priced verb or queued the office: {televisionRefusal ?? hireRefusal ?? "the office was queued"}");
                     _failed++;
                 }
                 yield return Settle();
@@ -4894,7 +4897,7 @@ namespace PoliSim.Testing
                 yield return Capture("cl1_runup_hq_stepped");
                 // §657: the run-up's declarations, opened from the HQ's DECLARED chip - the DECLARED block only, on today's date.
                 yield return FilmDeclared(controller, sim, "ps3d_runup_declared");
-                Debug.Log($"SHOT: CL-1 - the run-up began {(sim.CampaignRecord != null ? sim.CampaignRecord.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "?")} after {daysToRunUp} day(s); HQ filmed on run-up day {sim.PlayerPreCampaign.Day} with an office and a {hireRole} queued and stepped; chest {sim.PlayerPreCampaign.Money:F0}, {sim.PlayerPreCampaign.PlannedOffices.Count} planned office(s), {sim.PlayerPreCampaign.Hired.Count} hired");
+                Debug.Log($"SHOT: CL-1 - the run-up began {(sim.CampaignRecord != null ? sim.CampaignRecord.StartDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "?")} after {daysToRunUp} day(s); HQ filmed on run-up day {sim.PlayerPreCampaign.Day} with a television buy and a {hireRole} queued and stepped, the office refused at the queue; chest {sim.PlayerPreCampaign.Money:F0}, {sim.PlayerPreCampaign.TelevisionAired.Count} buy(s) aired, {sim.PlayerPreCampaign.Hired.Count} hired");
                 InvokeNoArg(controller, "CloseLiveCampaign");
                 SetPrivateField(controller, "_onDesk", true);
                 yield return Settle();
@@ -5526,9 +5529,7 @@ namespace PoliSim.Testing
             {
                 var input = new VoteAttribution.Inputs
                 {
-                    OwnPersuasionByAction = new double[8],
-                    AttacksReceived = 0.0,
-                    TotalPersuasionPerParty = new double[parties.Length],
+                    Pressure = null,   // no campaign: every line zero (A-LOOP q24 5a's form)
                     BaseCompatibility = BaselineCompatibility(national, totalValid),
                     PriorShares = BaselineShares(previous, previousValid),
                     LoyaltyPerParty = FlatLoyalty(parties.Length),

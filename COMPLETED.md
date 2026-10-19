@@ -23599,7 +23599,7 @@ The commentary's own caveats, carried: the results depend on the model's assumpt
 
 | # | entry | owner, in the tree today | still live? | mechanism changed under it? | one thing to look for in play |
 |---|---|---|---|---|---|
-| 1 | persuasion scale | `CampaignPressure.PersuasionPerCompatibilityPoint = 40_000` (`CampaignActions.cs:330`) | yes | The media system (W-B9), the platforms' reach and the ground game (W-B11) now bound what a national act reaches, so the +197…+225 saturation of the addendum is gone (+7…+37 at W-B9); the constant is unchanged. | After eight weeks of a hard campaign, did the party move at all on the poll the player watches - and did the player believe the move was theirs? |
+| 1 | campaign effects (q24) | `CampaignPersuasion.PersonalCacePp = 0.58` · `CampaignPersuasion.ImpersonalCacePp = 0.28` | yes | A-LOOP q24 5a (§881): Kalla & Broockman's and Green & Gerber's US CACEs applied to every country, per contact class and timing; persuadable once (coverage over the party's reach, 1 − e^(−exposure/(reach·electorate))); relevance × credibility normalised to the electorate mean; equal effort drifts share toward small parties under proportional absorption (measured and DECLARED, a ruling owed). The 40 000-per-point scale retired (its row as it stood: `CampaignPressure.PersuasionPerCompatibilityPoint = 40_000`, the media system and the ground game bounding a national act). | After a hard campaign, did the party move by a fraction of a point, and could the player see why it was not more? |
 | 2 | enthusiasm without salience | `CampaignActions.Resolve` (enthusiasm = exposure × credibility × weight) | yes | none | On election night, does a party the player campaigned hard for turn out its own voters, or only persuade the neighbours'? |
 | 3 | earned media is free | `Interview` costs 0 kr and 2 h; availability is `MediaSystem` bookings | yes | **The ruling landed**: bookings are media interest (W-B9); an interview is not always available. | Was there a quiet week where the player could not get booked - and did they understand why? |
 | 4 | polling prices | the four offers (600 / 1 200 / 2 400 / 6 000 at 40 000 / 120 000 / 260 000 / 620 000 kr); ± from `PollingSystem.MarginOfErrorPp` | yes | W-F5 STOPPED (its sourced *mandatbidrag* split; C-D2 measured and proposed a pool, applied nothing) - the prices are still authored. | Did the player ever buy the expensive poll, and did its answer change a decision the cheap one would not have? |
@@ -40712,3 +40712,76 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 - `audit880` 6 runs, exit 0;
 - the cheap bar `cheap880` 124 of 124 clean;
 - the simulation bar `sim880` 65 of 65, the sentinel holding on alooptax.
+
+
+## 881. A-LOOP PIECE 5a, q24 PERSUASION: A CAMPAIGN MOVES SHARES BY SOURCED CACEs TIMES COVERAGE, WITHIN THE SOURCES' BOUNDS, NEVER THROUGH THE CLAMP; THE RUN-UP PER Q7 (TV BUY CHARGED WITH ITS WEEK ON THE POLLS, POLL INFORMATION, OFFICE REFUSED); SAVE FORMAT 47 (2026-10-19)
+
+**What was owed** (`docs/specs/A_LOOP_PLAN.md` §5, 5a; J1: Q7 §5's purchase table; thresholds stand): GA-5-1 found every campaign mix within 0.1 point of idle, and §846 found every staged campaign closing past the compatibility ceiling.
+
+**Built** (an implementer on `wave/aloop5`: 69f011b7..edcef09f, then the review fixes 83f178ae and eba75194):
+- **The campaign leaves compatibility alone and moves shares directly.**
+  - Per party it keeps a tally of exposure and quality per source slot (`CampaignPressure`).
+  - Coverage over the party's reach: r·(1 − e^(−E/(r·N))).
+  - The effect is Σ_class min(CACE·q̄, upper)·coverage, absorbed proportionally (`CampaignPersuasion.Apply`, sum-preserving).
+- **The coefficients**, quoted from the stored PDFs:
+
+| Class | CACE (pp) | Upper (pp) | Source |
+|---|---|---|---|
+| Personal | 0.58 | 1.66 | [KB18] p.159 and Fig. 4 |
+| Impersonal | 0.28 | 0.83 | [KB18] Fig. 4 |
+| Earned | 0.125 | 0.571 | DERIVED from [KB18] p.153 |
+| Run-up TV | 4.73 per 1 000 GRPs (SE 1.42), a 7-day week on the polls | — | [GGGS11] pp. 136, 144, 146 |
+
+- **The AI** values a contact by the run's own class-effect difference (its marginal coverage on the party's own tally), with turnout worth 0 until 5b.
+- **The night's Shapley ledger** reads the same path.
+- **Q7:**
+  - TV BUY is charged its price, with its week on the run-up polls;
+  - POLL is information only;
+  - OFFICE is refused until 5b;
+  - the three hires go to q4's list.
+- **Save format 47** (ruling A; renumbered at integration, q13 having taken 46): a v46 save cut mid-campaign would replay through the new model.
+- **The calibration list's row 1** (§346) is replaced: the 40 000-per-point scale is retired. `docs/play/PLAY_SHEET.md` is regenerated, and `docs/reference/US_ELECTIONS.md`'s US-9 block is rewritten (`UsCampaignGeographyCheck.WriteReadings`).
+
+**Reverted on review:** an s(1−s)/0.25 scaling (83f178ae) meant to cancel the equal-effort drift. It made small parties' campaigns 4-5× smaller than the sourced CACE and broke the ruled criterion (d). The drift is now measured per party and DECLARED.
+
+**The check:** `CampaignPersuasionDiagnostic` (the simulation group):
+- by hand: the classes, persuadable once, the limit, reach, absorption;
+- the AI's value equals the run's own difference;
+- on Sweden and Germany, every party's observed move equals the one its tally implies, independently recomputed (≤1e-8 pp);
+- the cap's share;
+- the AI inside the source and blind to turnout;
+- (a) the player's campaign;
+- (d) the TV buy's sourced size within its SE for the largest and the smallest buyer;
+- the poll as information;
+- the office refused.
+
+`UsCampaignGeographyCheck` holds every US run to the same independent recomputation.
+
+**Measured:**
+- `n881b`, 5 of 5. **(a): S moves its own share +0.1903 points against its idle run, exactly what its tallies imply**, past GA-5-1's 0.1 floor.
+- The harnesses pass: CampaignAi, ChainBand, VoteAttribution, CampaignClock, CampaignAction, Debate, CampaignReactivity, CampaignOffices, CampaignStaff, Gotv.
+- **CampaignStrategyHarness 2a/2b are PENDING** (printed, not counted): NegativeCampaign wins all 30 cells, and only one strategy wins anywhere.
+- The no-policy dump is byte-identical to `alooptax` (no campaign is staged there).
+
+**Declared:**
+- the equal-effort drift (a ruling owed);
+- the earned estimate's vintage;
+- TV's possible partial second week (Table 5's distributed lags);
+- a buy's +0.16 pp sitting inside the poll's error;
+- the AI reading the run's own quality figure;
+- local acts pooled nationally;
+- attacks and absorption without geography;
+- `EnthusiasmValue` read by nothing until 5b.
+
+**Asked:**
+- the equal-effort drift: proportional absorption shifts share toward small parties under equal effort. The candidates are s(1−s) scaling (breaks (d)) and effects relative to the share-weighted mean;
+- the strategies: are they ornamental until 5b's turnout lands, or should an attack share its coverage with the attacker's own contacts?
+- a buy's effect inside the poll's error: can the player see what they bought?
+
+**Reviewed:** `Reviews/2026-10-19_s881_aloop_q24_5a.md`: two readings, every H/M fixed, reverted or asked. Ledger row s881 covers `SimulationManager.cs`.
+
+**Bars** (tier SIMULATION + UI):
+- `n881b` 5 of 5, and the harnesses as above;
+- `slrt881b` PASS; `stage881b` at format 47; `dump881b` byte-identical to `alooptax`;
+- `cheap881` 124 of 124; `sim881` 66 of 66, the sentinel on alooptax;
+- films, scope `drys881` (s881): Sweden 1280 dry 155/0, and the real film `realse881` 155/0.

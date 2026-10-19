@@ -84,8 +84,7 @@ namespace PoliSim.EditorTools
                 // inputs (RecordCampaignLedger), with and without the standing. Its close is the run's own final share, which the count reads.
                 VoteAttribution.Inputs LedgerInputs(CampaignRun.Result r, int p, bool standing) => new VoteAttribution.Inputs
                 {
-                    OwnPersuasionByAction = r.Parties[p].PersuasionByAction, AttacksReceived = r.Parties[p].PersuasionAgainstMe,
-                    OwnPersuasionFromCoverage = r.Parties[p].PersuasionFromCoverage, TotalPersuasionPerParty = r.PersuasionPerParty,
+                    Pressure = r.Pressure, Electorate = lastState.Setup.NationalAudience, PersuasionNorm = CampaignPersuasion.ElectorateMean(lastState.Setup),   // A-LOOP q24 5a
                     BaseCompatibility = lastState.Setup.Compatibility, PriorShares = lastState.Prior, LoyaltyPerParty = lastState.Setup.LoyaltyPerParty,
                     Standing = standing ? CampaignRun.CloseStanding(lastState) : null,
                 };

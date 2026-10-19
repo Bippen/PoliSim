@@ -39,6 +39,14 @@ namespace PoliSim.Elections
     /// STRATEGY has no seam - a scripted party's strategy is its personality's. Refusing on the screen is
     /// the honest form; a chip that quietly did nothing would be the lie.</para>
     ///
+    /// <para><b>A-LOOP q24 5a (ruled J1 2026-10-19, Q7: `docs/specs/A_LOOP_PLAN.md` §5's purchase table): each purchase buys a measured
+    /// effect or is removed.</b> The TELEVISION BUY is charged at the ad's price the day it is made and airs that day: Gerber et al.'s
+    /// weekly effect on the buyer's share shows on the run-up's polls for its week and is gone after it (`CampaignPersuasion.RunUpTelevisionEffectPp`),
+    /// and nothing of it reaches the count - it no longer adds a buy to the campaign manager's plan (SD-33: it used to move only the
+    /// AI's pace reserve, uncharged). The POLL stays as information: its effect is the ± its sample buys, and it changes nothing else.
+    /// The OFFICE is refused until q24 5b counts an office's contacts on polling day's turnout. The five hires stand; three of them
+    /// (the pollster, the media advisor, the digital director) have no sourced effect of their own and go to q4's list.</para>
+    ///
     /// <para><b>Replay.</b> Deterministic under the record's queue and its one stream, so a save inside
     /// the pre-campaign restores by re-stepping (`SimulationManager.RestoreCampaign`), the same idiom the
     /// campaign uses. The digest here is the proof: two replays of one queue print the same one.</para>
@@ -48,7 +56,7 @@ namespace PoliSim.Elections
         /// <summary>The verbs the pre-campaign steps at a price the model already carries.</summary>
         public static readonly CampaignActionKind[] Priced =
         {
-            CampaignActionKind.EstablishOffice, CampaignActionKind.RecruitStaff, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
+            CampaignActionKind.RecruitStaff, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
         };
 
         /// <summary>The verbs the pre-campaign REFUSES, each with the standing reason it prints - null for a priced verb.</summary>
@@ -60,6 +68,7 @@ namespace PoliSim.Elections
                 case CampaignActionKind.DevelopPolicy: return "no price and no seam in the run";
                 case CampaignActionKind.TrainCandidate: return "no price in the model - a figure would be invented";
                 case CampaignActionKind.SetStrategy: return "no seam in the run - a played party's strategy is its personality's";
+                case CampaignActionKind.EstablishOffice: return "an office's doors reach no count until turnout is counted on polling day";   // A-LOOP q24 5a (Q7): out until 5b
                 default: return Array.IndexOf(Priced, kind) >= 0 ? null : $"{kind} is not a preparation verb";
             }
         }
@@ -100,7 +109,8 @@ namespace PoliSim.Elections
             /// <summary>Roles hired here, with the day - on the campaign's payroll from its day 0, on this one's from the day after the hire.</summary>
             public List<(StaffRole Role, int Day)> Hired = new List<(StaffRole Role, int Day)>();
             public int UnpaidStaffDays;
-            public int TelevisionBuysPrepared;
+            /// <summary>A-LOOP q24 5a: the run-up days a television buy aired on, each charged when it was made - its effect on the run-up's polls lasts its week.</summary>
+            public List<int> TelevisionAired = new List<int>();
             public Poll? LatestPoll;
             public int LastPollDay = int.MinValue;
             public int PollsBought;
@@ -155,7 +165,7 @@ namespace PoliSim.Elections
             };
         }
 
-        /// <summary>The price a verb's chip shows today: an office's opening cost, a day's salary, the internal poll, a television buy at the ad's price; 0 for a refused verb.</summary>
+        /// <summary>The price a verb's chip shows: a day's salary, the internal poll, a television buy at the ad's price (charged when made); an office's opening cost, though the run-up refuses it (q24 5a); 0 for a refused verb.</summary>
         public static double Price(State s, CampaignActionKind kind)
         {
             switch (kind)
@@ -215,19 +225,6 @@ namespace PoliSim.Elections
             {
                 switch (d.Kind)
                 {
-                    case CampaignActionKind.EstablishOffice:
-                    {
-                        int region = d.RegionIndex >= 0 ? d.RegionIndex : NextOfficeRegion(s);
-                        if (region < 0 || region >= s.Staged.Regions.Length) { entry.Refusal = "no region without an office is left"; break; }
-                        entry.Target = s.Staged.Regions[region].Name;
-                        entry.Cost = CampaignOffices.OpenCost;
-                        if (!s.Staged.StandsIn(s.Party, region)) { entry.Refusal = "the party has no list there"; break; }   // §697
-                        if (s.HasOffice(region)) { entry.Refusal = "an office is already planned there"; break; }
-                        // The opening is paid on the campaign's day 0 by Begin; the plan must at least be affordable to open now.
-                        if (s.Money < (s.PlannedOffices.Count + 1) * CampaignOffices.OpenCost) { entry.Refusal = "the chest would not open every office planned"; break; }
-                        s.PlannedOffices.Add(region);
-                        break;
-                    }
                     case CampaignActionKind.RecruitStaff:
                     {
                         if (d.Role < 0 || d.Role >= CampaignStaff.TheFive.Length) { entry.Refusal = "no role named"; break; }
@@ -247,7 +244,7 @@ namespace PoliSim.Elections
                         if (s.LastPollDay == day) { entry.Refusal = "one poll a day"; break; }
                         if (s.Money < house.Cost) { entry.Refusal = "the chest cannot pay the house"; break; }
                         s.Money -= house.Cost;
-                        s.LatestPoll = PollingSystem.Conduct(s.Staged.PriorShares, house, s.Today, s.PollRandom);
+                        s.LatestPoll = PollingSystem.Conduct(Standing(s, day), house, s.Today, s.PollRandom);   // q24 5a: the prior, with any television buy of the week on it
                         s.LastPollDay = day;
                         s.PollsBought++;
                         break;
@@ -257,7 +254,9 @@ namespace PoliSim.Elections
                         entry.Target = "television";
                         entry.Cost = CampaignActions.Spec(CampaignActionKind.TelevisionAd).MoneyCost;
                         if (!s.HasRole(StaffRole.CampaignManager)) { entry.Refusal = "no campaign manager - the plan is the manager's"; break; }
-                        s.TelevisionBuysPrepared++;
+                        if (s.Money < entry.Cost) { entry.Refusal = "the chest cannot pay the buy"; break; }
+                        s.Money -= entry.Cost;   // A-LOOP q24 5a (SD-33's fix): charged the day it airs
+                        s.TelevisionAired.Add(day);
                         break;
                     }
                     default:
@@ -280,7 +279,41 @@ namespace PoliSim.Elections
             foreach (int r in s.PlannedOffices) { if (!offices.Contains(r)) { offices.Add(r); } }
             var staff = new List<StaffRole>(p.Staff);
             foreach ((StaffRole Role, int Day) h in s.Hired) { if (!staff.Contains(h.Role)) { staff.Add(h.Role); } }
-            return new Outcome(s.Money, s.Volunteers, offices.ToArray(), staff.ToArray(), p.TelevisionBuys + s.TelevisionBuysPrepared, s.Digest.ToString());
+            return new Outcome(s.Money, s.Volunteers, offices.ToArray(), staff.ToArray(), p.TelevisionBuys, s.Digest.ToString());   // q24 5a: a run-up buy aired in the run-up; the campaign's plan is the staging's
+        }
+
+        /// <summary>
+        /// A-LOOP q24 5a: the electorate's standing on run-up day <paramref name="day"/> - the prior (the electorate has not moved before the
+        /// campaign), with the party's television buys of the week laid on it at [GGGS11]'s weekly size (`CampaignPersuasion.RunUpTelevisionEffectPp`), the sourced size whatever the buyer's (`CampaignPersuasion.Apply`),
+        /// the other parties absorbing it. What a run-up poll is fielded from; the count never reads it.
+        /// </summary>
+        public static double[] Standing(State s, int day)
+        {
+            if (s == null) { throw new ArgumentNullException(nameof(s)); }
+            double[] prior = s.Staged.PriorShares;
+            double pp = CampaignPersuasion.RunUpTelevisionEffectPp(s.TelevisionAired, day);
+            if (pp == 0.0) { return prior; }
+            double sum = 0.0;
+            foreach (double v in prior) { sum += v; }
+            if (sum <= 0.0) { return prior; }
+            var normalised = new double[prior.Length];
+            for (int i = 0; i < prior.Length; i++) { normalised[i] = prior[i] / sum; }
+            var effects = new double[prior.Length];
+            effects[s.Party] = pp / 100.0;
+            return CampaignPersuasion.Apply(normalised, effects);   // on the prior as a distribution, so the other parties absorb exactly the buy
+        }
+
+        /// <summary>A-LOOP q24 5a: the last run-up day a television buy aired on <paramref name="day"/> or before still shows on the polls, or −1 when none does - the HQ's note.</summary>
+        public static int TelevisionShowsUntil(State s, int day)
+        {
+            int until = -1;
+            if (s == null) { return until; }
+            foreach (int aired in s.TelevisionAired)
+            {
+                int last = aired + CampaignPersuasion.TelevisionWeekDays - 1;
+                if (aired <= day && last >= day && last > until) { until = last; }
+            }
+            return until;
         }
 
         /// <summary>A role's name as the screen prints it - "Media advisor", not the enum's spelling.</summary>

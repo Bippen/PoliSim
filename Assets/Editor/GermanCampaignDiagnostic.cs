@@ -160,11 +160,11 @@ namespace PoliSim.EditorTools
                         F("the SSW keeps its prior: its day-0 weight is its 2021 share of the prior, {1:F3} %, alone (full loyalty, no spatial share) - {0:F3} % after the blend's renormalisation; the campaign's end {2:F3} % - above zero, bounded by its reach {3:F2} %",
                             blended0[sswAt] * 100.0, sswPrior * 100.0, sswAuto * 100.0, sswReach * 100.0));
 
-                    // (h) the run-up refuses an office where the party has no list
+                    // (h) the run-up refuses an office where the party has no list - since A-LOOP q24 5a (Q7) it refuses every office, until 5b counts its doors
                     PreCampaignRun.State pre = PreCampaignRun.Begin(scripted, csu, new Random(1));
                     PreCampaignRun.StepDay(pre, new[] { new PreCampaignRun.Decision(CampaignActionKind.EstablishOffice, hamburg) });
                     string refusal = pre.Log.Count > 0 ? pre.Log[pre.Log.Count - 1].Refusal : null;
-                    Check(refusal == "the party has no list there" && !pre.HasOffice(hamburg), "the run-up refuses the CSU an office in Hamburg: " + (refusal ?? "NOTHING REFUSED"));
+                    Check(refusal != null && refusal == PreCampaignRun.Refusal(CampaignActionKind.EstablishOffice) && !pre.HasOffice(hamburg), "the run-up refuses the CSU an office in Hamburg: " + (refusal ?? "NOTHING REFUSED"));
 
                     // (i) A GERMAN GAME'S OWN DAY PATH - a manager opened on the snap start, the CDU the player's party, stepped day by day as the
                     // game steps it (PlayerSmoke's loop) from 6 November into the campaign: the film holds its clock at the start and cannot reach this

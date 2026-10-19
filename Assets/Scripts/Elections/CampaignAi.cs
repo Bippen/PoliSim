@@ -21,7 +21,7 @@ namespace PoliSim.Elections
     /// personality will not (<see cref="PersonalityProfile.ActsBlind"/> false), does not act at
     /// all until it has polled. That is what makes "uses polling" a behaviour rather than a label.
     ///
-    /// **§33's scoring, term for term, in ONE unit — the model's own compatibility points:**
+    /// **§33's scoring, term for term, in ONE unit — points of vote share** (A-LOOP q24 5a re-unitted it from compatibility points):
     /// <code>
     /// value  = expectedGain × targetImportance × probabilityOfSuccess
     /// score  = (value − cost) × (1 − riskAversion × riskScale × relativeWidth) / hours
@@ -29,8 +29,10 @@ namespace PoliSim.Elections
     /// - *expectedGain* — §42's chain evaluated through <see cref="CampaignActions.ResolveBand"/>
     ///   on the MEASURED salience and issue-match (the same function W-E3's action screen prices
     ///   with), read at the personality's <see cref="PersonalityProfile.Optimism"/> point of the
-    ///   band, converted to points by `CampaignPressure.PersuasionPerCompatibilityPoint` plus
-    ///   enthusiasm weighted by <see cref="PersonalityProfile.EnthusiasmValue"/>;
+    ///   band, converted to share points by the sourced CACE of the action's contact class times the MARGINAL coverage the
+    ///   contact adds to the party's own contacts of that class so far (`CampaignPersuasion.Coverage`, the run's own arithmetic);
+    ///   turnout is valued at ZERO until q24 5b (DECLARED, A-LOOP §5 (1): enthusiasm and mobilisation reach no live count, so a
+    ///   turnout point is worth nothing the world pays; 5b's seam is `Points`, where its sourced turnout CACE will enter);
     /// - *targetImportance* — the personality's affinity for the action (§32's descriptions as
     ///   multipliers) times how salient the message's issue is relative to the most salient one
     ///   measured;
@@ -183,6 +185,12 @@ namespace PoliSim.Elections
         public readonly double[] AttackersOnMe;
         /// <summary>C-N7: the share of the electorate the press can reach at all (the roster's reach summed, capped at 1 - `MediaSystem.PressReach`), a public fact about the media like <see cref="BestOutletReach"/>. 0 = unknown, and the scorer then values no coverage.</summary>
         public readonly double PressReach;
+        /// <summary>A-LOOP q24 5a: the electorate-wide mean relevance × credibility the sourced CACEs are read against (`CampaignPersuasion.ElectorateMean`) - one figure per staging, the same for every party, so no party's own truth rides on it. 0 = no persuasion is valued.</summary>
+        public readonly double PersuasionNorm;
+        /// <summary>q24 5a (the review's M3): the party's own exposure so far per contact class (`ContactClass` order) - its own books, so a contact is valued at the coverage it ADDS; null = none yet.</summary>
+        public readonly double[] OwnExposureByClass;
+        /// <summary>q24 5a (review 881b's N3): the party's own Σ exposure × relevance × credibility so far per contact class - with <see cref="OwnExposureByClass"/>, the run's pooled-quality tally, so the AI values a contact by the run's own class-effect difference. DECLARED: the quality of the party's PAST contacts is the run's (the chain resolved on the truth), a reading of its own books the AI could only have estimated; null = none yet.</summary>
+        public readonly double[] OwnQualityByClass;
 
         public double AttacksOnMe
         {
@@ -195,8 +203,12 @@ namespace PoliSim.Elections
             CampaignStrategy ownStrategy = CampaignStrategy.None, double electorateLoyalty = 50.0,
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
-            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0)
+            double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0,
+            double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null)
         {
+            PersuasionNorm = persuasionNorm;
+            OwnExposureByClass = ownExposureByClass;
+            OwnQualityByClass = ownQualityByClass;
             NationalReachShare = nationalReachShare;
             NationalAudienceByKind = nationalAudienceByKind; VolunteerHoursToday = volunteerHoursToday; TelevisionFund = televisionFund;
             RegionPressure = regionPressure; RegionPush = regionPush; AttackersOnMe = attackersOnMe; PressReach = pressReach;
@@ -440,7 +452,7 @@ namespace PoliSim.Elections
         public bool Any => DefendRegion >= 0 || AnswerTo.Length > 0;
     }
 
-    /// <summary>A scored candidate — every term §33 names, kept so the harness can print them. Points are compatibility points.</summary>
+    /// <summary>A scored candidate — every term §33 names, kept so the harness can print them. Points are points of vote share (A-LOOP q24 5a).</summary>
     public readonly struct ScoredCandidate
     {
         public readonly AiDecision Decision;
@@ -705,9 +717,12 @@ namespace PoliSim.Elections
             StrategyModifiers m = CampaignStrategyModel.Modifiers(view.OwnStrategy, view.ElectorateLoyalty,
                 issue.HasValue && topIssue.HasValue && issue.Value == topIssue.Value);
 
-            Band(spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
+            Band(view, spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
                 profile, m, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
 
+            // ⚠ A-LOOP q24 5a (the review's H1): THE TURNOUT TERM BELOW IS VALUED AT ZERO UNTIL 5b. Its points grew with the absolute
+            // electorate while nothing in the live count reads turnout (§5 (1)), so the AI ranked on a value the world pays at 0. C-N2's
+            // reasoning stands for the day 5b counts doors on polling day, and its arithmetic is kept here as that seam's record:
             // ⚠ C-N2, RULED 2026-09-02 (its second half). Door-to-door's payoff in the WORLD is turnout: the
             // run books every knocked door through `gotv.Operate`, which raises the party's regional
             // MOBILIZATION attribute (§26), and election day multiplies turnout by it. The scorer valued
@@ -723,18 +738,8 @@ namespace PoliSim.Elections
             // one region's turnout and not the country's. It lands in the same "turnout points" unit
             // Points() already gives enthusiasm, weighted by the same EnthusiasmValue. The offices' own
             // daily knocking is NOT counted here - it happens with or without this action.
-            if (spec.Kind == CampaignActionKind.DoorToDoor && regionIndex >= 0 && view.NationalAudience > 0.0)
-            {
-                double eligible = view.Regions[regionIndex].Eligible;   // F3: the mobilisable electorate, as the run's own GotvModel base
-                double weighted = audience * GotvModel.Spec(GotvOperation.DoorKnocking).Weight;
-                double attributeLift = GotvModel.Mobilization(weighted, eligible) - GotvModel.Mobilization(0.0, eligible);
-                double turnoutPts = profile.EnthusiasmValue * attributeLift
-                    * (TurnoutModel.MobilizationSpan / TurnoutModel.EnthusiasmSpan)
-                    * (eligible / view.NationalAudience);
-                expectedPts += turnoutPts;
-                lowPts += turnoutPts;
-                highPts += turnoutPts;
-            }
+            // (the attribute lift, GotvModel.Mobilization over the region's eligible, times the two spans' ratio, times the region's share of
+            // the electorate) - and adds nothing to the expected value until 5b gives a knocked door its sourced turnout CACE.
             // ⚠ C-N7 (2026-09-02), re-applied after D-20 (a). Since C-N1 the coverage an action begets
             // reaches the vote; the scorer valued only the action's own chain, so the news a rally or an
             // announcement makes was invisible to it - the same blind spot C-N2 found for turnout. The
@@ -753,7 +758,7 @@ namespace PoliSim.Elections
                 bool generalMeasured = TryMeasurement(view, null, out double gSalience, out _, out double gMatch, out _);
                 CampaignActions.ChainTrace carried = MediaSystem.ResolveCoverage(gain, view.NationalAudience, view.PressReach,
                     generalMeasured ? gSalience : 0.5, generalMeasured ? gMatch : 0.5, view.OwnCredibility, StrategyModifiers.Identity);
-                double coveragePts = Points(carried, profile, StrategyModifiers.Identity);
+                double coveragePts = Points(view, carried, profile, StrategyModifiers.Identity);
                 expectedPts += coveragePts;
                 lowPts += coveragePts;
                 highPts += coveragePts;
@@ -774,7 +779,7 @@ namespace PoliSim.Elections
             double costPts = 0.0;
             if (spend > smallestSpend && smallestSpend > 0.0)
             {
-                Band(spec, audience, view.OwnCredibility, smallestSpend, measured, salience, salienceError, match, matchError,
+                Band(view, spec, audience, view.OwnCredibility, smallestSpend, measured, salience, salienceError, match, matchError,
                     profile, m, out double smallExpected, out _, out double smallLow, out double smallHigh);
                 double smallSuccess = smallHigh > 0 ? 0.5 + 0.5 * (smallLow / smallHigh) : 0.5;
                 double smallValue = smallExpected * importance * smallSuccess;
@@ -794,7 +799,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>§42's band at this spend, read in points at the personality's optimism; blind = a flat prior over both unmeasured inputs.</summary>
-        private static void Band(CampaignActions.ActionSpec spec, double audience, double credibility, double spend, bool measured,
+        private static void Band(AiView view, CampaignActions.ActionSpec spec, double audience, double credibility, double spend, bool measured,
             double salience, double salienceError, double match, double matchError, PersonalityProfile profile, StrategyModifiers m,
             out double expectedPts, out double spanPts, out double lowPts, out double highPts)
         {
@@ -802,24 +807,38 @@ namespace PoliSim.Elections
                 ? CampaignActions.ResolveBand(spec, audience, salience, salienceError, match, matchError, credibility, spend)
                 : CampaignActions.ResolveBand(spec, audience, 0.5, 0.5, 0.5, 0.5, credibility, spend);
 
-            lowPts = Points(band.Low, profile, m);
-            highPts = Points(band.High, profile, m);
+            lowPts = Points(view, band.Low, profile, m);
+            highPts = Points(view, band.High, profile, m);
             expectedPts = lowPts + profile.Optimism * (highPts - lowPts);
             spanPts = highPts - lowPts;
         }
 
         /// <summary>
-        /// Persuasion and enthusiasm pressures converted to the model's own units and weighted by
-        /// what this personality values, under the party's own strategy modifiers (W-B6): reach and
-        /// credibility scale both pressures linearly in the chain, so applying them here is exactly
-        /// what `CampaignStrategyModel.Resolve` does to the world's response.
+        /// A contact's worth in POINTS OF VOTE SHARE (A-LOOP q24 5a), under the party's own strategy modifiers (W-B6): the reach multiplier
+        /// scales the exposure, and reach, credibility and the strategy's persuasion multiplier scale the chain's relevance × credibility
+        /// exactly as `CampaignStrategyModel.Resolve` does to the world's response. Persuasion is the run's OWN class-effect difference (review
+        /// 881b's N3): `CampaignPersuasion.ClassEffectPp` on the party's own class tally with this contact added, less without it
+        /// (`AiView.OwnExposureByClass`, `AiView.OwnQualityByClass`) - the pooled quality and the coverage over the party's reach together, so a
+        /// saturated class is worth little and a contact below the class's mean quality, which lowers the party's effect, is valued below zero
+        /// and never chosen. Turnout is worth ZERO until q24 5b (the review's H1; 5b's turnout CACE enters here). The personality's weights
+        /// reach the score through its importance, cost and risk terms, as before.
         /// </summary>
-        private static double Points(CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m)
+        private static double Points(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m)
         {
             double linear = m.ReachMultiplier * m.CredibilityMultiplier;
-            return trace.Persuasion * linear * m.PersuasionMultiplier / CampaignPressure.PersuasionPerCompatibilityPoint
-                   + profile.EnthusiasmValue * trace.Enthusiasm * linear * m.EnthusiasmMultiplier / CampaignPressure.EnthusiasmPerTurnoutPoint;
+            double weight = CampaignActions.Spec(trace.Kind).PersuasionWeight;
+            double exposure = trace.Exposure * m.ReachMultiplier;
+            double quality = weight > 0.0 ? trace.Persuasion * linear * m.PersuasionMultiplier / weight : 0.0;
+            if (exposure <= 0.0 || quality <= 0.0) { return 0.0; }   // as the run: a contact with a zero in the chain enters no tally
+            ContactClass c = CampaignPersuasion.ClassOf(trace.Kind);
+            double e0 = view.OwnExposureByClass != null && (int)c < view.OwnExposureByClass.Length ? view.OwnExposureByClass[(int)c] : 0.0;
+            double q0 = view.OwnQualityByClass != null && (int)c < view.OwnQualityByClass.Length ? view.OwnQualityByClass[(int)c] : 0.0;
+            return CampaignPersuasion.ClassEffectPp(c, e0 + exposure, q0 + quality, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare)
+                   - CampaignPersuasion.ClassEffectPp(c, e0, q0, view.NationalAudience, view.PersuasionNorm, view.NationalReachShare);
         }
+
+        /// <summary>q24 5a (the review's H1/M5): what the AI values one contact at, in points of share - `Points` as the scorer reads it, for a diagnostic to hold per country.</summary>
+        public static double ContactValuePp(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile) => Points(view, trace, profile, StrategyModifiers.Identity);
 
         /// <summary>The measurement behind a message: one issue's, or for a general message the mean over the issues measured.</summary>
         private static bool TryMeasurement(AiView view, IssueId? issue, out double salience, out double salienceError,

@@ -172,9 +172,10 @@ namespace PoliSim.EditorTools
                 while (!busy.Finished) { PreCampaignRun.StepDay(busy, null); }
                 PreCampaignRun.Outcome busyOutcome = PreCampaignRun.Finish(busy);
                 double expectedChest = staging.Parties[0].StartingMoney - (busy.TotalDays - 1) * CampaignStaff.SalaryPerDay;
-                failures += Assert(sb, $"7c. a {hireRole} hired on day 0 costs the salary on every later run-up day; an office planned costs nothing until the campaign opens",
+                // A-LOOP q24 5a (Q7): the office is out of the run-up until 5b counts its doors - refused with its reason, the chest untouched, no office planned.
+                failures += Assert(sb, $"7c. a {hireRole} hired on day 0 costs the salary on every later run-up day; an office is refused (q24 5a) and costs nothing",
                     Math.Abs(busyOutcome.Money - expectedChest) < 1e-6 && Array.IndexOf(busyOutcome.Staff, hireRole) >= 0
-                    && Array.IndexOf(busyOutcome.Offices, region) >= 0 && busy.Log.Count == 2 && busy.Log[0].Refusal == null && busy.Log[1].Refusal == null,
+                    && Array.IndexOf(busyOutcome.Offices, region) < 0 && busy.Log.Count == 2 && busy.Log[0].Refusal == null && busy.Log[1].Refusal != null,
                     $"chest {busyOutcome.Money:F0} against {expectedChest:F0}; staff {string.Join("/", busyOutcome.Staff)}; offices {busyOutcome.Offices.Length} (region {region} in); log {busy.Log.Count}");
 
                 PreCampaignRun.State refused = PreCampaignRun.Begin(staging, 0, new System.Random(7));

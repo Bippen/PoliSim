@@ -287,3 +287,15 @@ Each item was read by independent reviewers, and every finding is fixed or asked
 - **Tenure.** A government formed in play answers for its predecessor's years, outside the source's two-year-tenure sample. Gate each variable on tenure, or record the risk?
 - **σ_v's estimator.** The swings are fat-tailed (kurtosis 6.5): σ 5.90 against robust 4.2-4.5, with a bootstrap interval of 5.00-6.78. Keep the standard deviation (built) or take a robust scale?
 - **The cap** is ±19.7 pp of share at the bound. A tighter interim bound?
+
+### A-LOOP piece 5a, q24 persuasion (§881): the asks it ends in
+
+- **The equal-effort drift.** Under proportional absorption, equal campaigning shifts share from big parties to small ones: with Sweden's eight parties at 0.4 pp each, S −0.56, SD −0.27, M −0.22, L +0.25 pp. The drift is printed per party.
+  - The candidate fix, scaling by s(1−s)/0.25, made small parties' campaigns 4-5× smaller than the sourced CACE and broke your ruled criterion (d), so it was reverted.
+  - The other candidate is to read effects relative to the share-weighted mean.
+  - Which, or keep the drift?
+- **The strategies' trade-offs (CampaignStrategyHarness 2a/2b, PENDING).** NegativeCampaign wins all 30 cells, and only one strategy wins anywhere. Two causes:
+  - turnout is worth 0 until 5b, so Base Mobilization buys nothing;
+  - an attack's share lands on the opponent's against-tally, whose coverage is separate from the attacker's own contacts.
+  - Are the strategies ornamental until 5b lands, or should an attack share its coverage with the attacker's own contacts?
+- **A run-up TV buy** moves its party +0.16 pp, inside the internal poll's ±1.3 pp error, so the player cannot see what they bought. Acceptable as the sources size it?

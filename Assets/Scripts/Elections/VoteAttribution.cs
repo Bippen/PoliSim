@@ -35,8 +35,8 @@ namespace PoliSim.Elections
     /// does not add up to the thing it explains is a story about the model rather than a reading of
     /// it — the failure `ApprovalAttribution` carries `ClampLoss` to avoid. Here exactness comes
     /// from using SHAPLEY VALUES over the sources: the share a party ends with is a non-linear
-    /// function of the pressures (compatibility is linear in pressure, but `PreferenceModel`
-    /// normalises across parties), so leaving one source out at a time would NOT sum to the total
+    /// function of the contacts (since A-LOOP q24 5a each class's coverage saturates, 1 − e^(−exposure/electorate), and
+    /// the other parties absorb every effect), so leaving one source out at a time would NOT sum to the total
     /// and would need a residual line to hide the gap. Shapley's efficiency axiom gives
     /// Σ contributions = v(all) − v(none) identically, and its symmetry axiom means the order the
     /// sources are considered in cannot change the answer — which a sequential decomposition, the
@@ -63,14 +63,12 @@ namespace PoliSim.Elections
         /// <summary>What the campaign actually delivered, as recorded at the write sites - never recomputed.</summary>
         public sealed class Inputs
         {
-            /// <summary>Persuasion pressure this party's own actions delivered, per §12 action kind, in `CampaignActions.TheEight`'s order.</summary>
-            public double[] OwnPersuasionByAction;
-            /// <summary>Persuasion pressure aimed against this party by others (a positive magnitude; it lowers the party).</summary>
-            public double AttacksReceived;
-            /// <summary>C-N1: the party's own persuasion carried by its earned coverage (`PartyLedger.PersuasionFromCoverage`).</summary>
-            public double OwnPersuasionFromCoverage;
-            /// <summary>Every party's total persuasion, so the opponents' bloc can be applied or withheld.</summary>
-            public double[] TotalPersuasionPerParty;
+            /// <summary>A-LOOP q24 5a: the run's pressure with its tally at the close (`CampaignRun.Result.Pressure`) - every party's contacts per source, so
+            /// each source can be applied or withheld; null = no campaign, and every line is zero.</summary>
+            public CampaignPressure Pressure;
+            /// <summary>q24 5a: the electorate the coverage is read over (the setup's national audience) and the norm the CACEs are read against (`CampaignPersuasion.ElectorateMean`).</summary>
+            public double Electorate;
+            public double PersuasionNorm;
             /// <summary>The compatibility the electorate would have felt with no campaign at all.</summary>
             public double[] BaseCompatibility;
             public double[] PriorShares;
@@ -107,36 +105,23 @@ namespace PoliSim.Elections
         /// </summary>
         private static double Value(Inputs input, int party, int subset)
         {
-            int n = input.BaseCompatibility.Length;
-            var persuasion = new double[n];
-
-            for (int i = 0; i < 8; i++)
+            // A-LOOP q24 5a: compatibility is the campaign's positioning and never moves; the subset's contacts move the shares as the run does.
+            double[] shares = PreferenceModel.Preference(input.BaseCompatibility, input.PriorShares, input.LoyaltyPerParty);
+            if (input.Pressure != null)
             {
-                if ((subset & (1 << i)) != 0) { persuasion[party] += input.OwnPersuasionByAction[i]; }
+                shares = CampaignPersuasion.Apply(shares, input.Pressure.ShareEffects(input.Electorate, input.PersuasionNorm, (p, slot) => Admits(subset, party, p, slot)));
             }
 
-            if ((subset & (1 << (int)VoteAttributionSource.AttacksReceived)) != 0)
-            {
-                persuasion[party] -= input.AttacksReceived;
-            }
-            if ((subset & (1 << (int)VoteAttributionSource.EarnedCoverage)) != 0)
-            {
-                persuasion[party] += input.OwnPersuasionFromCoverage;
-            }
-
-            if ((subset & (1 << (int)VoteAttributionSource.OpponentCampaigns)) != 0)
-            {
-                for (int q = 0; q < n; q++) { if (q != party) { persuasion[q] += input.TotalPersuasionPerParty[q]; } }
-            }
-
-            var compatibility = new double[n];
-            for (int i = 0; i < n; i++)
-            {
-                compatibility[i] = input.BaseCompatibility[i] + persuasion[i] / CampaignPressure.PersuasionPerCompatibilityPoint;
-            }
-
-            double[] shares = PreferenceModel.Preference(compatibility, input.PriorShares, input.LoyaltyPerParty);
             return (input.Standing != null ? input.Standing(shares) : shares)[party];
+        }
+
+        /// <summary>q24 5a: whether a coalition admits a (party, slot) of the tally - the party's own eight actions by their bits, its coverage and the attacks it received by theirs, every other party's everything as the opponents' bloc.</summary>
+        private static bool Admits(int subset, int party, int p, int slot)
+        {
+            if (p != party) { return (subset & (1 << (int)VoteAttributionSource.OpponentCampaigns)) != 0; }
+            if (slot == CampaignPressure.CoverageSlot) { return (subset & (1 << (int)VoteAttributionSource.EarnedCoverage)) != 0; }
+            if (slot == CampaignPressure.AgainstSlot) { return (subset & (1 << (int)VoteAttributionSource.AttacksReceived)) != 0; }
+            return (subset & (1 << slot)) != 0;
         }
 
         /// <summary>
@@ -147,7 +132,7 @@ namespace PoliSim.Elections
         public static Ledger Explain(Inputs input, int party)
         {
             if (input == null) { throw new ArgumentNullException(nameof(input)); }
-            if (input.OwnPersuasionByAction == null || input.OwnPersuasionByAction.Length != 8) { throw new ArgumentException("one persuasion figure per §12 action"); }
+            if (input.Pressure != null && (party < 0 || party >= input.Pressure.PartyCount)) { throw new ArgumentException("the party is not in the run's tally"); }
             int n = Sources.Length;
             int all = (1 << n) - 1;
 

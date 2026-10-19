@@ -534,7 +534,8 @@ namespace PoliSim.EditorTools
             // ---------- 3c. behavioural: no poll, no estimate ----------
             AiView blind = new AiView(0, CampaignPhase.Campaign, 30, new ResourcePool(WarChest, CampaignEconomy.HoursPerCampaignDay, 0),
                 spendingReserve: WarChest, hasPoll: false, latestPoll: default, momentumPp: new double[8], issues: new IssueMeasurement[IssueVector.IssueCount],
-                ownCredibility: FlatCredibility, nationalAudience: setup.NationalAudience, regions: setup.Regions, daysSinceOwnPoll: -1);
+                ownCredibility: FlatCredibility, nationalAudience: setup.NationalAudience, regions: setup.Regions, daysSinceOwnPoll: -1,
+                persuasionNorm: CampaignPersuasion.ElectorateMean(setup));
             List<ScoredCandidate> blindCandidates = CampaignAi.Evaluate(blind, PersonalityCatalog.Profile(AiPersonality.Chaotic), blind.Resources, WarChest);
             bool allBlind = blindCandidates.Count > 0;
             foreach (ScoredCandidate c in blindCandidates) { if (c.Measured) { allBlind = false; } }
@@ -578,20 +579,20 @@ namespace PoliSim.EditorTools
             sb.Append($"  - most persuasion per krona: {bestPersonality}\n");
             sb.Append("  - the free interview's dominance (W-B3, W-E3) is visible in every mix above; it stays W-B9's, as a mechanism\n");
 
-            // The saturation finding: at the REAL national audience the chain's linear reach turns
-            // a campaign's persuasion into hundreds of compatibility points, and ElectionScales
-            // clamps every party at 100 - the final-share column is the clamp's arithmetic.
-            sb.Append("  - compatibility bonus delivered (persuasion / PersuasionPerCompatibilityPoint), clamped at 100 by ElectionScales:\n    ");
+            // A-LOOP q24 5a: the saturation finding is answered by construction - the campaign writes no compatibility; each party's
+            // share effect is the sourced CACEs times its coverage, printed beside the bound the plan's (4)(b) holds it within.
+            sb.Append("  - campaign share effect at the close (sourced CACE x coverage, before the others absorb it) / its bound (upper x coverage), points:\n    ");
+            int outside = 0;
             for (int p = 0; p < first.Parties.Length; p++)
             {
-                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} +{1:F0}  ", first.Parties[p].Name,
-                    first.Parties[p].PersuasionDelivered / CampaignPressure.PersuasionPerCompatibilityPoint));
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} {1:+0.000;-0.000}/{2:0.000}  ", first.Parties[p].Name,
+                    first.CampaignEffectPp[p], first.CampaignBoundPp[p]));
+                if (Math.Abs(first.CampaignEffectPp[p]) > first.CampaignBoundPp[p] + 1e-12) { outside++; }
             }
 
-            sb.Append("\n    -> every party saturates; the +pp column above is the clamp's arithmetic, not the campaign's difference.\n" +
-                      "       W-B3 measured +0.19 pp for a hard week at a 100 000 audience; at 6.5 million the same chain is 65x that.\n" +
-                      "       Reach is linear in audience and in repetition (the same electorate reached six times a day) - a MECHANISM\n" +
-                      "       question (bounded reach, repeated-exposure decay; W-B9's media interest) before it is a calibration one.\n");
+            sb.Append('\n');
+            failures += Assert(sb, "4e. A-LOOP q24 5a (4)(b): every party's campaign effect lies inside its sourced bound at the close",
+                outside == 0, $"{outside} of {first.Parties.Length} outside");
 
             sb.Append(string.Format(CultureInfo.InvariantCulture,
                 "\n=== CampaignAiHarness: {0}; {1} PENDING on THE POOL QUESTION (register row C-D2; W-F5 was STOPPED 2026-08-30, not banked - its sourced split clears two of these lines by bankrupting five of eight parties) and calibration entry 10 (persuasion per personal contact) - printed with their measurements, not counted as passes ===\n",

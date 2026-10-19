@@ -281,67 +281,216 @@ namespace PoliSim.Elections
     }
 
     /// <summary>
-    /// Where an action's pressures accumulate. Still **no vote shares**: this holds per-party
-    /// persuasion and enthusiasm pressure, which <see cref="ToCompatibilityBonus"/> converts into a
-    /// COMPATIBILITY adjustment — so the preference is always recomputed by
-    /// <see cref="PreferenceModel"/> from compatibility and loyalty, exactly as it is with no
-    /// campaign at all. The campaign changes the inputs; it never touches the output.
+    /// Where an action's pressures accumulate. Still **no vote shares**: this holds per-party persuasion and enthusiasm pressure (read by
+    /// the entrant layer's awareness, the ledgers and the AI), and since A-LOOP q24 5a (`docs/specs/A_LOOP_PLAN.md` §5) the TALLY the vote
+    /// reads - per party and per source, the chain's exposure and its exposure-weighted relevance × credibility - which
+    /// <see cref="ShareEffects(double, double)"/> turns into each party's share effect through the sourced CACEs (`CampaignPersuasion`).
+    /// The campaign no longer writes compatibility: the 40 000-per-point conversion and its clamp at 100 left the vote path with 5a.
     /// </summary>
     public sealed class CampaignPressure
     {
         private readonly double[] _persuasion;
         private readonly double[] _enthusiasm;
 
-        public CampaignPressure(int partyCount)
+        /// <summary>q24 5a: the source slots - the eight actions in `CampaignActions.TheEight`'s order, then the party's earned coverage. CONVENTION (an index).</summary>
+        public const int CoverageSlot = 8;
+
+        /// <summary>q24 5a: the number of a party's own source slots. CONVENTION (an index bound).</summary>
+        public const int OwnSlots = 9;
+
+        /// <summary>q24 5a: the slot an inclusion predicate names for the attacks a party received (one per class in the tally). CONVENTION (an index).</summary>
+        public const int AgainstSlot = 9;
+
+        // q24 5a: [party][slot] exposure (people who noticed) and Σ exposure × relevance × credibility (the chain's persuasion over the action's
+        // authored per-kind weight, so the party's strategy still shapes it); [party][class] the same for attacks received.
+        private readonly double[][] _exposure;
+        private readonly double[][] _quality;
+        private readonly double[][] _againstExposure;
+        private readonly double[][] _againstQuality;
+        // q24 5a (the review's M2): each party's reach - the share of the electorate where it stands (`CampaignRun.Setup.StandingShare`); null = 1 everywhere.
+        private readonly double[] _reach;
+
+        /// <param name="reachShare">Each party's share of the electorate it can reach (where it stands); null = every party everywhere.</param>
+        public CampaignPressure(int partyCount, double[] reachShare = null)
         {
+            _reach = reachShare;
             _persuasion = new double[partyCount];
             _enthusiasm = new double[partyCount];
+            _exposure = new double[partyCount][];
+            _quality = new double[partyCount][];
+            _againstExposure = new double[partyCount][];
+            _againstQuality = new double[partyCount][];
+            for (int p = 0; p < partyCount; p++)
+            {
+                _exposure[p] = new double[OwnSlots];
+                _quality[p] = new double[OwnSlots];
+                _againstExposure[p] = new double[CampaignPersuasion.ClassCount];
+                _againstQuality[p] = new double[CampaignPersuasion.ClassCount];
+            }
         }
 
         public int PartyCount => _persuasion.Length;
 
+        /// <summary>q24 5a: the share of the electorate party <paramref name="partyIndex"/> can reach - its coverage is read over it, never past it.</summary>
+        public double Reach(int partyIndex) => _reach == null || partyIndex < 0 || partyIndex >= _reach.Length ? 1.0 : _reach[partyIndex];
+
         /// <summary>
-        /// W-B6 / §11's negative campaign: persuasion pressure landing AGAINST a party. The only
-        /// route by which one campaign can lower another's standing, and it is still pressure on
-        /// compatibility recomputed by `PreferenceModel` — never a share written down.
+        /// W-B6 / §11's negative campaign: persuasion pressure landing AGAINST a party - <paramref name="share"/> of the attacker's contact
+        /// <paramref name="trace"/>. The pressure is netted as before; since q24 5a the contact's exposure and quality, scaled by the share,
+        /// enter the target's tally in the contact's class, and <see cref="ShareEffects(double, double)"/> gives them the sign against it.
         /// </summary>
-        public void AddAgainst(int opponentIndex, double persuasion)
+        public void AddAgainst(int opponentIndex, CampaignActions.ChainTrace trace, double share)
         {
-            if (persuasion < 0) { throw new ArgumentException("pressure against an opponent is given as a positive magnitude"); }
-            _persuasion[opponentIndex] -= persuasion;
+            if (share < 0) { throw new ArgumentException("pressure against an opponent is given as a positive share"); }
+            _persuasion[opponentIndex] -= trace.Persuasion * share;
+            if (Quality(trace) <= 0.0) { return; }   // a contact nobody found relevant or credible persuades nobody, and dilutes nothing
+            int c = (int)CampaignPersuasion.ClassOf(trace.Kind);
+            _againstExposure[opponentIndex][c] += trace.Exposure * share;
+            _againstQuality[opponentIndex][c] += Quality(trace) * share;
         }
 
         public void Add(int partyIndex, CampaignActions.ChainTrace trace)
         {
             _persuasion[partyIndex] += trace.Persuasion;
             _enthusiasm[partyIndex] += trace.Enthusiasm;
+            int slot = Array.IndexOf(CampaignActions.TheEight, trace.Kind);
+            if (slot < 0 || Quality(trace) <= 0.0) { return; }   // §42: a zero anywhere in the chain is a contact that persuades nobody - it enters no tally
+            _exposure[partyIndex][slot] += trace.Exposure;
+            _quality[partyIndex][slot] += Quality(trace);
+        }
+
+        /// <summary>C-N1's coverage as the press carried it (`MediaSystem.ResolveCoverage`): pressure as <see cref="Add"/>, tallied in its own slot (earned).</summary>
+        public void AddCoverage(int partyIndex, CampaignActions.ChainTrace trace)
+        {
+            _persuasion[partyIndex] += trace.Persuasion;
+            _enthusiasm[partyIndex] += trace.Enthusiasm;
+            if (Quality(trace) <= 0.0) { return; }
+            _exposure[partyIndex][CoverageSlot] += trace.Exposure;
+            _quality[partyIndex][CoverageSlot] += Quality(trace);
         }
 
         public double Persuasion(int partyIndex) => _persuasion[partyIndex];
 
         public double Enthusiasm(int partyIndex) => _enthusiasm[partyIndex];
 
-        /// <summary>
-        /// [AUTHORED-DRAFT] `PersuasionPerCompatibilityPoint = 40 000` — persuasion pressure needed
-        /// to move a party's compatibility with a group by one point of 100. Deliberately large:
-        /// §39 forbids any single variable dominating, and a campaign that could rewrite
-        /// compatibility outright would make positioning irrelevant, which is the opposite of §44.
-        /// </summary>
-        public const double PersuasionPerCompatibilityPoint = 40_000.0;
-
-        /// <summary>Converts accumulated persuasion into a compatibility bonus per party — the ONLY route from campaigning into the vote model.</summary>
-        public double[] ToCompatibilityBonus()
+        /// <summary>q24 5a: the exposure tallied in one of a party's own slots, or (with <see cref="AgainstSlot"/>) the attacks it received, summed over the classes.</summary>
+        public double Exposure(int partyIndex, int slot)
         {
-            var bonus = new double[_persuasion.Length];
-            for (int i = 0; i < bonus.Length; i++)
-            {
-                bonus[i] = _persuasion[i] / PersuasionPerCompatibilityPoint;
-            }
-
-            return bonus;
+            if (slot < OwnSlots) { return _exposure[partyIndex][slot]; }
+            double s = 0.0;
+            foreach (double e in _againstExposure[partyIndex]) { s += e; }
+            return s;
         }
 
-        /// <summary>[AUTHORED-DRAFT] `EnthusiasmPerTurnoutPoint = 60 000` — enthusiasm pressure per point of turnout attribute (§26 consumes this, not the preference model).</summary>
+        /// <summary>The chain's relevance × credibility behind a contact, times its exposure: its persuasion over the action's authored per-kind weight.</summary>
+        private static double Quality(CampaignActions.ChainTrace trace)
+        {
+            double weight = CampaignActions.Spec(trace.Kind).PersuasionWeight;
+            return weight > 0.0 ? trace.Persuasion / weight : 0.0;
+        }
+
+        /// <summary>q24 5a: every party's share effect (a FRACTION of the vote, signed), every source included.</summary>
+        public double[] ShareEffects(double electorate, double norm) => ShareEffects(electorate, norm, null);
+
+        /// <summary>
+        /// q24 5a: each party's share effect (a FRACTION, signed, before `CampaignPersuasion.Apply` scales it to the party's size) from the
+        /// sources <paramref name="include"/> admits - (party, slot) over the own slots and <see cref="AgainstSlot"/>; null admits every one.
+        /// Coverage is read over the party's own reach (<see cref="Reach"/>). Per class, the admitted own exposures give the coverage and their
+        /// mean quality the q; the effect is `CampaignPersuasion.ClassEffectPp`, and the attacks received count the same way with the sign
+        /// against. `CampaignRun`'s truth and the night's attribution (`VoteAttribution`) both read this one function.
+        /// </summary>
+        public double[] ShareEffects(double electorate, double norm, Func<int, int, bool> include)
+        {
+            int n = _persuasion.Length;
+            var effects = new double[n];
+            int classes = CampaignPersuasion.ClassCount;
+            for (int p = 0; p < n; p++)
+            {
+                var e = new double[classes];
+                var q = new double[classes];
+                for (int slot = 0; slot < OwnSlots; slot++)
+                {
+                    if (include != null && !include(p, slot)) { continue; }
+                    int c = (int)SlotClass(slot);
+                    e[c] += _exposure[p][slot];
+                    q[c] += _quality[p][slot];
+                }
+                double pp = 0.0;
+                for (int c = 0; c < classes; c++) { pp += CampaignPersuasion.ClassEffectPp((ContactClass)c, e[c], q[c], electorate, norm, Reach(p)); }
+                if (include == null || include(p, AgainstSlot))
+                {
+                    for (int c = 0; c < classes; c++) { pp -= CampaignPersuasion.ClassEffectPp((ContactClass)c, _againstExposure[p][c], _againstQuality[p][c], electorate, norm, Reach(p)); }
+                }
+                effects[p] = pp / 100.0;
+            }
+            return effects;
+        }
+
+        /// <summary>q24 5a, the plan's (4)(b): each party's bound in points - Σ_class upper × coverage over its own contacts, plus the same over the attacks it received - which |effect| can never pass.</summary>
+        public double[] BoundsPp(double electorate)
+        {
+            int n = _persuasion.Length;
+            var bounds = new double[n];
+            int classes = CampaignPersuasion.ClassCount;
+            for (int p = 0; p < n; p++)
+            {
+                var e = new double[classes];
+                for (int slot = 0; slot < OwnSlots; slot++) { e[(int)SlotClass(slot)] += _exposure[p][slot]; }
+                for (int c = 0; c < classes; c++)
+                {
+                    bounds[p] += CampaignPersuasion.BoundPp((ContactClass)c, e[c], electorate, Reach(p)) + CampaignPersuasion.BoundPp((ContactClass)c, _againstExposure[p][c], electorate, Reach(p));
+                }
+            }
+            return bounds;
+        }
+
+        /// <summary>q24 5a: one party's own exposure per contact class, every own slot summed - what its own books say it has already covered (the AI's marginal reading).</summary>
+        public double[] OwnExposureByClass(int partyIndex)
+        {
+            var e = new double[CampaignPersuasion.ClassCount];
+            for (int slot = 0; slot < OwnSlots; slot++) { e[(int)SlotClass(slot)] += _exposure[partyIndex][slot]; }
+            return e;
+        }
+
+        /// <summary>q24 5a (review 881b's N3): one party's own Σ exposure × relevance × credibility per contact class - with <see cref="OwnExposureByClass"/>, the run's pooled-quality arithmetic the AI differences.</summary>
+        public double[] OwnQualityByClass(int partyIndex)
+        {
+            var q = new double[CampaignPersuasion.ClassCount];
+            for (int slot = 0; slot < OwnSlots; slot++) { q[(int)SlotClass(slot)] += _quality[partyIndex][slot]; }
+            return q;
+        }
+
+        /// <summary>q24 5a, review 881b's M-r1: the quality tallied in one of a party's own slots - what an independent recomputation of its effect reads.</summary>
+        public double QualityOf(int partyIndex, int slot) => _quality[partyIndex][slot];
+
+        /// <summary>q24 5a, review 881b's M-r1: the attacks a party received in one class, exposure and quality.</summary>
+        public void Against(int partyIndex, ContactClass c, out double exposure, out double quality)
+        {
+            exposure = _againstExposure[partyIndex][(int)c];
+            quality = _againstQuality[partyIndex][(int)c];
+        }
+
+        /// <summary>q24 5a, the review's M5: over every party and class with any contact (own and against), how many the class's upper limit binds on, of how many.</summary>
+        public void CapBinding(double norm, out int binding, out int total)
+        {
+            binding = 0; total = 0;
+            int classes = CampaignPersuasion.ClassCount;
+            for (int p = 0; p < _persuasion.Length; p++)
+            {
+                var e = new double[classes];
+                var q = new double[classes];
+                for (int slot = 0; slot < OwnSlots; slot++) { int c = (int)SlotClass(slot); e[c] += _exposure[p][slot]; q[c] += _quality[p][slot]; }
+                for (int c = 0; c < classes; c++)
+                {
+                    if (e[c] > 0.0) { total++; if (CampaignPersuasion.CapBinds((ContactClass)c, e[c], q[c], norm)) { binding++; } }
+                    if (_againstExposure[p][c] > 0.0) { total++; if (CampaignPersuasion.CapBinds((ContactClass)c, _againstExposure[p][c], _againstQuality[p][c], norm)) { binding++; } }
+                }
+            }
+        }
+
+        private static ContactClass SlotClass(int slot) => slot == CoverageSlot ? ContactClass.Earned : CampaignPersuasion.ClassOf(CampaignActions.TheEight[slot]);
+
+        /// <summary>[AUTHORED-DRAFT] `EnthusiasmPerTurnoutPoint = 60 000` — enthusiasm pressure per point of turnout attribute (§26 consumes this, not the preference model). It stays until q24 5b gives turnout its sourced CACE (`docs/specs/A_LOOP_PLAN.md` §5, Q6); until then no live count reads it and the AI values it at zero (`CampaignAi`).</summary>
         public const double EnthusiasmPerTurnoutPoint = 60_000.0;
 
         public double[] ToTurnoutBonus()

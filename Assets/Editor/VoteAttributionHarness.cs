@@ -52,10 +52,9 @@ namespace PoliSim.EditorTools
         {
             var input = new VoteAttribution.Inputs
             {
-                OwnPersuasionByAction = run.Parties[party].PersuasionByAction,
-                AttacksReceived = run.Parties[party].PersuasionAgainstMe,
-                OwnPersuasionFromCoverage = run.Parties[party].PersuasionFromCoverage,
-                TotalPersuasionPerParty = run.PersuasionPerParty,
+                Pressure = run.Pressure,   // A-LOOP q24 5a: the tally the run recorded where each contact landed
+                Electorate = setup.NationalAudience,
+                PersuasionNorm = CampaignPersuasion.ElectorateMean(setup),
                 BaseCompatibility = setup.Compatibility,
                 PriorShares = setup.PriorShares,
                 LoyaltyPerParty = setup.LoyaltyPerParty,

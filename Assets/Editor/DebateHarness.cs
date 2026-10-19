@@ -104,10 +104,8 @@ namespace PoliSim.EditorTools
             momentum.AddShock(winner, first.MomentumShockPp);
             momentum.AddShock(loser, -first.MomentumShockPp);
 
-            double[] bonus = pressure.ToCompatibilityBonus();
-            var boosted = new double[4];
-            for (int i = 0; i < 4; i++) { boosted[i] = compatibility[i] + bonus[i]; }
-            double[] after = PreferenceModel.Preference(boosted, prior, loyalty);
+            // A-LOOP q24 5a: the campaign's route to the vote is its share effects; a debate adds no contact to the tally.
+            double[] after = CampaignPersuasion.Apply(PreferenceModel.Preference(compatibility, prior, loyalty), pressure.ShareEffects(100_000.0, 0.5));
             bool preferenceUntouched = true;
             for (int i = 0; i < 4; i++) { if (after[i] != before[i]) { preferenceUntouched = false; } }
 

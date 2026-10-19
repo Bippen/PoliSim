@@ -124,19 +124,18 @@ namespace PoliSim.EditorTools
             // Party 1 does far less.
             AddBurst(pressure, 1, CampaignActionKind.SocialPost, 5, 200_000);
 
-            double[] bonus = pressure.ToCompatibilityBonus();
-            var boosted = new double[compatibility.Length];
-            for (int i = 0; i < boosted.Length; i++) { boosted[i] = compatibility[i] + bonus[i]; }
+            // A-LOOP q24 5a: the campaign leaves compatibility alone and moves the shares by the sourced CACEs times coverage
+            // (`CampaignPressure.ShareEffects`), over the television buy's 1 500 000 (the widest audience the week addresses), at the chain's own relevance x credibility.
+            double[] bonus = pressure.ShareEffects(Electorate, Norm);
+            double[] after = CampaignPersuasion.Apply(before, bonus);
 
-            double[] after = PreferenceModel.Preference(boosted, prior, loyalty);
-
-            sb.Append("\n  end to end - a week of campaigning, preference RECOMPUTED by PreferenceModel:\n");
-            sb.Append("  party  compat  +bonus   before    after     delta\n");
+            sb.Append("\n  end to end - a week of campaigning, the shares moved by the sourced effects (the preference model untouched):\n");
+            sb.Append("  party  compat  effect   before    after     delta\n");
             for (int i = 0; i < 4; i++)
             {
                 sb.Append(string.Format(CultureInfo.InvariantCulture,
-                    "  {0,-5}  {1,6:F2}  {2,6:F2}  {3,7:F3}%  {4,7:F3}%  {5,8:+0.000;-0.000;0.000}pp\n",
-                    i, compatibility[i], bonus[i], 100 * before[i], 100 * after[i], 100 * (after[i] - before[i])));
+                    "  {0,-5}  {1,6:F2}  {2,6:F3}  {3,7:F3}%  {4,7:F3}%  {5,8:+0.000;-0.000;0.000}pp\n",
+                    i, compatibility[i], 100 * bonus[i], 100 * before[i], 100 * after[i], 100 * (after[i] - before[i])));
             }
 
             failures += Assert(sb, "c1. the campaigning party's share rose",
@@ -152,10 +151,7 @@ namespace PoliSim.EditorTools
             AddBurst(deadPressure, 0, CampaignActionKind.TownHall, 2, 0);
             AddBurst(deadPressure, 0, CampaignActionKind.TelevisionAd, 1, 0);
             AddBurst(deadPressure, 0, CampaignActionKind.DoorToDoor, 7, 0);
-            double[] deadBonus = deadPressure.ToCompatibilityBonus();
-            var deadBoost = new double[compatibility.Length];
-            for (int i = 0; i < deadBoost.Length; i++) { deadBoost[i] = compatibility[i] + deadBonus[i]; }
-            double[] afterDead = PreferenceModel.Preference(deadBoost, prior, loyalty);
+            double[] afterDead = CampaignPersuasion.Apply(before, deadPressure.ShareEffects(Electorate, Norm));
 
             bool unchanged = true;
             for (int i = 0; i < 4; i++) { if (Math.Abs(afterDead[i] - before[i]) > 1e-12) { unchanged = false; } }
@@ -167,6 +163,12 @@ namespace PoliSim.EditorTools
             Debug.Log(sb.ToString());
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
+
+        /// <summary>q24 5a: the reachable electorate the end-to-end week's coverage is read over - the television buy's, the widest the week addresses (CONVENTION, this staging's).</summary>
+        private const double Electorate = 1_500_000.0;
+
+        /// <summary>q24 5a: the norm the CACEs are read against - the burst's own relevance x credibility (0.80 x 0.75 x 0.70), so the week takes the sourced CACEs exactly (CONVENTION, this staging's).</summary>
+        private const double Norm = 0.80 * 0.75 * 0.70;
 
         private static void AddBurst(CampaignPressure pressure, int party, CampaignActionKind kind, int times, double audience)
         {

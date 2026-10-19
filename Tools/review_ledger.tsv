@@ -269,3 +269,4 @@ baseline	424242	0f331e57ed8b1e213ed3f345fc67a55e620e3f7711b444508638ea0b81d2d636
 file	Assets/Scripts/Data/FiscalVoteBook.cs	07c57442f17ad4f25340b8212eccba07d32122af6db79fa427e927755d1fdc63	reviewed	2026-10-19	s880	Reviews/2026-10-19_s880_aloop_q13.md	-
 file	Assets/Scripts/Elections/FiscalVote.cs	e4f14840729a87ae5dc5b4ab90ca32df122ac3205841786e9930ccdc8822d908	reviewed	2026-10-19	s880	Reviews/2026-10-19_s880_aloop_q13.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	d750ba75f1e7cafa71bbabad5dc92767a6140cf195f2f5d0c95c20769398f235	reviewed	2026-10-19	s880	Reviews/2026-10-19_s880_aloop_q13.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	9b628f353a5bc7e2f029b9a94c9213a03bbbe3346e0a7f090b0989136921c8c2	reviewed	2026-10-19	s881	Reviews/2026-10-19_s881_aloop_q24_5a.md	-

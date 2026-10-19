@@ -5482,10 +5482,9 @@ namespace PoliSim.Simulation
             if (result == null || run == null || result.Parties == null || me < 0 || me >= result.Parties.Length) { return; }
             var input = new Elections.VoteAttribution.Inputs
             {
-                OwnPersuasionByAction = result.Parties[me].PersuasionByAction,
-                AttacksReceived = result.Parties[me].PersuasionAgainstMe,
-                OwnPersuasionFromCoverage = result.Parties[me].PersuasionFromCoverage,
-                TotalPersuasionPerParty = result.PersuasionPerParty,
+                Pressure = result.Pressure,   // A-LOOP q24 5a: the tally the run's share effects were read off
+                Electorate = run.Setup.NationalAudience,
+                PersuasionNorm = Elections.CampaignPersuasion.ElectorateMean(run.Setup),
                 BaseCompatibility = run.Setup.Compatibility,
                 PriorShares = run.Prior,   // AF-23: the run's own normalised prior, the one its truth was computed on
                 LoyaltyPerParty = run.Setup.LoyaltyPerParty,

@@ -302,6 +302,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 - The AI personalities' choices (`CampaignAi`'s expected value in compatibility points) must be re-unitted to share points, or they choose on a dead scale. This is part of 5a's size.
 - The night's attribution ledger (GA-4-4's 20.8 % baseline) must read the new path, which AF-23 already owns.
 
+
+**Built, 5a (2026-10-19, `COMPLETED.md` §881, `wave/aloop5` 69f011b7..eba75194):** the campaign leaves compatibility alone; Σ_class min(CACE·q̄, upper) × coverage over the party's reach, absorbed proportionally ([KB18], [GGGS11]); the AI (turnout worth 0 until 5b, a contact valued by the run's own difference) and the night's ledger in share points; TV BUY charged with its week on the run-up polls, POLL information, OFFICE refused until 5b; format 47. Inert to the dump. Measured: the player's campaign +0.19 points against idle, past GA-5-1's 0.1. Asked: the equal-effort drift; the strategies' trade-offs until 5b.
 ---
 
 ## 6. q5 - events move salience. Size **M** (with a data fetch).
