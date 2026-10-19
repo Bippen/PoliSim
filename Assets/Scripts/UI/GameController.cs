@@ -109,7 +109,6 @@ namespace PoliSim.UI
         /// <summary>Master Sequence step 5d: the Trade tab's tariff draft moved from a small this-turn delta (the old TariffRateChangeRange) to an absolute target rate, matching TaxLine.Rate's own pattern - must match SimulationManager's own private MinBaseTariffRate/MaxBaseTariffRate.</summary>
         private const float MinBaseTariffRate = SimulationManager.MinBaseTariffRate;   // AF-11 (L5): the one pair, the manager's
         private const float MaxBaseTariffRate = SimulationManager.MaxBaseTariffRate;
-        private const float InterestRateChangeRange = 2f;
 
         /// <summary>Bounds for the Minimum Wage slider (percent of median wage) - must match SimulationManager.MinMinimumWagePercent/MaxMinimumWagePercent.</summary>
         private const float MinMinimumWagePercent = 0f;
@@ -328,12 +327,10 @@ namespace PoliSim.UI
             }
         }
 
-        // Federal Reserve (USA only - see docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section). _fedChairCandidates
-        // is non-null exactly while the player must pick a new chair before Advance Turn can proceed;
-        // _fedChairCandidatesForTurn records which upcoming turn they were generated for, so a pick
-        // already resolved for that turn doesn't immediately regenerate a fresh set next frame (the
-        // condition that triggers generation - "next turn is an election turn" - stays true for the
-        // rest of that same frame/turn window).
+        // The player's own central bank (see docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section). _fedChairCandidates
+        // is non-null exactly while the player must pick a new head before the clock runs on;
+        // _fedChairCandidatesForTurn records the term's end they were drawn for (as yyyymmdd since AF-7 - the saved field kept its name),
+        // so a set already drawn for that term's end is not redrawn on the next frame while the hold stands.
         private List<FedChair> _fedChairCandidates;
         private int _fedChairCandidatesForTurn = -1;
 
@@ -2197,6 +2194,10 @@ namespace PoliSim.UI
             // PS-6 US-15: the second chamber of record on the start's own day (the USA's Senate) - the world's factory seats none, and the day loop seats it from the
             // first day stepped, so the player's country carries it before any screen reads it; every other country seats none and nothing moves
             _simulationManager.SeatTheSecondChamberOfRecord();
+            // AF-30b (J5, ruled 2026-10-19): a new game's cabinet starts filled - the average minister in every chair of the player's that stands vacant,
+            // so an idle governing player's ministries run at the pool's average rather than below its floor. A new game only (the start's own day - the review's L5): a running game re-seated
+            // by the harness keeps its chairs, and a load never comes here.
+            if (_simulationManager.CurrentDate == SimulationManager.EpochDate) { PoliSim.Simulation.CabinetSystem.SeatAverageCabinet(_playerCountry); }
             Debug.Log(PoliSim.Elections.GovernmentRecord.Describe(countryId, SimulationManager.EpochDate, _playerCountry));
             ForkTheShadowAtTheStart();   // AF-12 (q12): "without your policies" from this start - the player's seat in it, every seat above already taken
 
@@ -3758,35 +3759,38 @@ namespace PoliSim.UI
         }
 
         /// <summary>
-        /// Generates 2-3 Fed chair candidates the first time the upcoming turn is detected as an
-        /// election turn (see ElectionSystem.IsElectionTurn), and remembers which turn they were
-        /// generated for so picking a candidate doesn't immediately regenerate a fresh set on the
-        /// next frame - only when that specific upcoming turn changes (i.e. the next election cycle)
-        /// does a new set get drawn. Returns true while a selection is still pending (blocks Advance
-        /// Turn - see OnGUI). No-op (returns false) for a country without an independent Fed chair.
+        /// Generates 2-3 candidates for the player's own bank the first time its head's statutory term is found ended
+        /// (AF-7: <see cref="SimulationManager.CentralBankHeadAwaitsPlayer"/> - the term its statute sets, `CentralBankTerms`, where the election turns'
+        /// cycle stood until AF-7), and remembers which term's end they were drawn for (<c>_fedChairCandidatesForTurn</c> holds that day as yyyymmdd
+        /// since AF-7 - the saved field kept its name) so picking a candidate doesn't regenerate a fresh set on the next frame. Returns true while a
+        /// selection is still pending (blocks Advance Turn - see OnGUI). No-op (returns false) for a country without a head of its own.
         /// </summary>
         private bool UpdateFedChairSelectionState()
         {
-            // PS-3c (§630): the chair is the government's to appoint - where the AI governs the player's country the sitting chair stays and no term hold is raised (the appointment the hold waits on is locked; the hold would freeze the clock).
+            // PS-3c (§630): the chair is the government's to appoint - where the AI governs the player's country the AI appoints at the term's end (AF-7) and no hold is raised.
             if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { _fedChairCandidates = null; return false; }
-            if (_playerCountry.CurrentFedChair == null)
+            if (!_simulationManager.CentralBankHeadAwaitsPlayer(PlayerCountryId))
             {
                 return false;
             }
 
-            int upcomingTurn = _simulationManager.CurrentTurn + 1;
-            if (!ElectionSystem.IsElectionTurn(upcomingTurn))
-            {
-                return false;
-            }
-
-            if (_fedChairCandidatesForTurn != upcomingTurn)
+            System.DateTime termEnded = _playerCountry.CurrentFedChair.TermEnds;
+            int key = termEnded.Year * 10000 + termEnded.Month * 100 + termEnded.Day;
+            if (_fedChairCandidatesForTurn != key)
             {
                 _fedChairCandidates = FederalReserveSystem.GenerateCandidates(_playerCountry.Id);
-                _fedChairCandidatesForTurn = upcomingTurn;
+                _fedChairCandidatesForTurn = key;
             }
 
             return _fedChairCandidates != null && _fedChairCandidates.Count > 0;
+        }
+
+        /// <summary>AF-7: the head's term as a page prints it - the day it ends and the statute that sets it.</summary>
+        private static string CentralBankTermWords(FedChair head, CountryId countryId)
+        {
+            CentralBankTerms.Statute statute = CentralBankTerms.For(countryId);
+            string ends = head != null && head.HasTerm() ? head.TermEnds.ToString("d MMM yyyy", CultureInfo.InvariantCulture) : "no date";
+            return "the " + statute.TermYears + "-year term ends " + ends + " (" + statute.PageCitation + ")";
         }
 
         /// <summary>
@@ -3925,40 +3929,16 @@ namespace PoliSim.UI
             }
             else
             {
-                // Shared-currency countries (e.g. Eurozone members) don't set their own rate - only
-                // show this for a country with an independent CurrencyZone (Sweden, Poland; the
-                // Eurozone trio share one CurrencyZone.InterestRate that none of them set alone).
-                bool hasIndependentCurrency = !CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world);
-                if (hasIndependentCurrency)
-                {
-                    // Playtest-2 item 5, ruled 2026-08-25 (option C): the player-set rate is a
-                    // DELIBERATE GAMEPLAY CHOICE, named as such to the player - the Italy-scenario
-                    // precedent of shipping a premise as authored text, not an apology. The Eurozone
-                    // branch below has carried its own honesty paragraph since the Rate-Voice
-                    // mechanic; this branch now carries its counterpart. The recorded destination
-                    // (independence with appointment influence - the Fed Chair mechanism
-                    // generalized) and its two gates live in the roadmap's Step 4 block and on
-                    // PolicyDecision.InterestRateChange's doc.
-                    GUILayout.Label(
-                        $"The real {GetCentralBankName(PlayerCountryId)} sets its policy rate independently of the government. This game deliberately hands you the central bank, so monetary policy stays a lever you own - a gameplay choice, stated plainly, not a claim about how {_playerCountry.Name}'s institutions work.",
-                        _labelStyle);
-                    // Pass 4 (2026-08-26): the advisory reading - what an independent central bank
-                    // on the same rule would set - Riksbank-B's first visible artefact. Omnibus
-                    // 2026-08-28: the row family (see the chair branch above), same fixed ordinal.
-                    DrawDerivedStatRow($"Independent {GetCentralBankName(PlayerCountryId)} would read", -1f,
-                        $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
-                        $"the Fed/ECB rule: inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
-                    // P5-1 (board 6a): the rate change as a ledger row of the family - in points, a tick per quarter-point while the pitch holds.
-                    if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("Policy rate change", 0f, _interestRateChangeInput, -InterestRateChangeRange, InterestRateChangeRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
-                }
-                else
+                // AF-7 (q10, GA-0-53): the own-currency dial is retired - a country with its own currency always has a head (the chair branch above),
+                // so the dial's branch here was reached by no country. What is left is the shared currency's.
+                if (CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world))
                 {
                     // Eurozone Rate-Voice mechanic (see docs/reference/MODEL_REFERENCE.md's "Eurozone Rate Voice"): the
                     // shared rate is a blend of all three members' own Taylor Rule, weighted by their HICP country weights (FT-16, §585),
                     // readings (EurozoneRateSystem.GetBlendedSuggestedRate), not something any one
                     // member sets unilaterally - but whichever member the player is currently
                     // controlling now gets a real, bounded push on top of that blend (reusing the
-                    // same InterestRateChange field/slider Sweden/Poland use, just with a much
+                    // InterestRateChange field the retired own-currency dial once wrote, just with a much
                     // narrower range - a national governor's real but limited sway, not unilateral
                     // control). Superseded the original country-selection Part 1 framing, which
                     // described this as fully read-only before this mechanic existed.
@@ -3976,6 +3956,13 @@ namespace PoliSim.UI
                     // P5-1 (board 6a): the rate push as a ledger row of the family.
                     if (!DrawLeverLock()) _interestRateChangeInput = DrawDialRow("National rate push", 0f, _interestRateChangeInput, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange, "+0.00;-0.00;0.00", " pts", string.Empty, tickStep: 0.25f);
                     DrawDerivedStatRow("Eurozone interest rate", -1f, $"{_playerCountry.CurrencyZone.InterestRate:F2}%", "shared by all three members", politicalInk);
+                    // AF-7 (q7): the ECB's own head and term - the European Council's appointment, never a member government's.
+                    FedChair ecbHead = _playerCountry.CurrencyZone.Head;
+                    if (ecbHead != null)
+                    {
+                        DrawDerivedStatRow("ECB President", -1f, ecbHead.Name,
+                            $"{ecbHead.Philosophy} · lean {ecbHead.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture)} · appointed by {CentralBankTerms.Ecb.Appointer} · {CentralBankTermWords(ecbHead, PlayerCountryId)}", politicalInk);
+                    }
                 }
             }
 
@@ -4102,10 +4089,8 @@ namespace PoliSim.UI
             GUILayout.Space(StatsUnit(14f));
             GUILayout.BeginVertical(GUILayout.Width(StatsUnit(300f)));
             GUILayout.Label("THE APPOINTMENT LEVER", DeskCaption(8.5f, PoliSimTheme.TextSecondary, true));
-            int termEnds = _simulationManager.CurrentTurn + 1;
-            while (!ElectionSystem.IsElectionTurn(termEnds) && termEnds < _simulationManager.CurrentTurn + 64) { termEnds++; }
             bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
-            GUILayout.Label($"TERM ENDS ON THE CHAIR'S OWN CYCLE · TURN {termEnds} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));
+            GUILayout.Label($"{CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant()} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));   // AF-7: the statute's date, where the turn cadence's label stood (US-29: the turn label goes)
             GUI.enabled = pending;
             if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
@@ -4278,7 +4263,10 @@ namespace PoliSim.UI
             // C-C7: the cadence and the title are the player country's, not the USA's - a Swedish player
             // has no presidential term and no Fed chair, and being told they do is the small falsehood a
             // sheet of real institutions cannot afford.
-            GUILayout.Label($"A new term begins next year - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
+            // AF-7 (the review's L2): the term is the statute's, the appointment is not - the statute names its own appointer (the Riksbank's General Council,
+            // the Sejm on the President's motion, the President with the Senate), and the game hands the choice to the player's government (PS-3c, §630). Said so.
+            CentralBankTerms.Statute statute = CentralBankTerms.For(PlayerCountryId);
+            GUILayout.Label($"The {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}'s {statute.TermYears}-year term has ended ({statute.PageCitation}). The statute gives the appointment to {statute.Appointer}; this game hands the choice to your government - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
             foreach (FedChair candidate in _fedChairCandidates)
             {
                 DrawFedChairCandidateButton(candidate);

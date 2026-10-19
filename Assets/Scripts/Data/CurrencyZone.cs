@@ -57,6 +57,11 @@ namespace PoliSim.Data
         /// keeps the default); TaylorRule.Zone seeds such a zone once from the defaults before reading it.</summary>
         public bool MonetaryParametersSeeded;
 
+        /// <summary>AF-7 (q7): the head of a bank several countries share - the ECB's President for the euro members (`CentralBankTerms.Ecb`), the European
+        /// Council's to appoint and so always AI-run. Null on a country's own zone, whose head is `Country.CurrentFedChair`. Its lean rides the shared rate's
+        /// target (`EurozoneRateSystem.ApplyEurozoneRate`).</summary>
+        public FedChair Head;
+
         /// <summary>Seeds the four monetary parameters and their bases in one move - the constructor's defaults, or an older save's repair.</summary>
         public void SeedMonetaryParameters(float inflationTarget, float neutralRealRate, float inflationGapWeight, float unemploymentGapWeight)
         {

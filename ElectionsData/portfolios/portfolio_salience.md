@@ -96,3 +96,31 @@ decision A); Sweden's and Italy's hold. The no-player trajectory does not move (
 **The ruling's tests** (`PortfolioSalienceDiagnostic`): the 2025 chamber's CDU+CSU+SPD puts Finance with **the SPD** (Klingbeil, the
 record); the 2021 chamber's SPD+Grüne+FDP puts it with **the FDP** (Lindner, the record) - **until §753**: since then 2021's goes to the SPD, a recorded miss (above) — and Education with the FDP too, as the record
 has it (Stark-Watzinger).
+
+## The economy portfolio (AF-6, q6, ruled 2026-10-18) and the small-party bonus as read
+
+The ruling: *one generated table maps each of the eight departments to a portfolio; add an economy portfolio only where none fits. Portfolios
+are allocated by Gamson's law, with Warwick & Druckman's small-party bonus as read.* The table is `docs/generated/DEPARTMENT_PORTFOLIOS.md`:
+Agriculture, Transportation and Energy fit none of the six, so the economy portfolio holds them. Its weight is a PROVISIONAL reading
+(the integrator's, 2026-10-19, pending Elias - the ask of AF-6's record): **(b) the economy ministry that holds energy, alone** [DERIVED] -
+no energy post is rated for these four, and the paper's economy or industry ministry held energy:
+
+| | Germany | Sweden | France (V) | Italy |
+|---|---:|---:|---:|---:|
+| (b), as built | Economic Affairs 0.99 | Industry 1.06 | Industry 1.06 until 2022-05-20; from then Bercy's Finance carries Industry (a ministry counts once) and the energy ministry is unrated - an average portfolio, 1.00 | Industry & Commerce/Trade 0.87 |
+| (a), the alternative put to Elias: (b) plus Agriculture and Transport, summed as the mapping rule above sums a portfolio's ministries | 0.99 + Agriculture (& Food & Forestry) 0.83 + Transport 0.90 | 1.06 + Agriculture (& Food & Fisheries) 0.83 + Communications & Transportation 0.87 | Agriculture 1.24 + Transport 0.82 (+ Industry 1.06 until 2022-05-20) | 0.87 + Agriculture (& Forestry) 0.83 + Transport 0.87 |
+
+Under (a) the economy post is the heaviest of all and takes the largest party's entitlement first. (b) is built because (a) moves Finance off
+the record where (b) does not, in Sweden. Poland and the USA take the mean of the four on the same day, as for every post (`SAL-POL`). Every
+figure is DW05's appendix (`raw/druckman_warwick_ejpr_2005.pdf`, each country's table); the weights themselves are `PortfolioSalience.Weight`'s,
+and `PortfolioSalienceDiagnostic` prints them.
+
+**The bonus, as read** (`docs/reference/GAMSON_PORTFOLIOS.md`, "Reading for the model": *the residual of the rounding (and the observed bonus
+of element 3) going to the smaller partners rather than to the formateur*): step 3 above pays only whole entitlements - a post goes only to a
+party whose outstanding entitlement covers its whole weight - and the posts no entitlement covers, the rounding's residual, go heaviest
+first to the partner other than the head's party whose holding with the post stands least above its due in proportion ((held + post) / due
+least; by most entitlement outstanding, the first cut paid Italy's 7-seat Noi Moderati 2.2 times its due). No abstract sizes the bonus, so nothing beyond the
+residual is paid (`GovernmentRecord.AllocatePortfolios`).
+
+**The outcomes since AF-6** are `PortfolioSalienceDiagnostic`'s and `PortfolioAllocationDiagnostic`'s to print, against the record; the
+outcome paragraphs above are as §753 left them.

@@ -86,7 +86,7 @@ namespace PoliSim.EditorTools
                 Check(!sim.MoveNoConfidence(CountryId.Sweden, out refused, out _) && refused == "LEAVE THE GOVERNMENT FIRST", F("a junior partner moves nothing: {0}", refused));
                 Check(sim.LeaveGovernment(CountryId.Sweden, out refused) && !sweden.Government.Cabinet.Contains("KD") && sweden.Government.RoleOf("KD") == PlayerRole.Opposition, "KD leaves the government - out of the cabinet, in opposition");
                 int held = 0; foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in sweden.Government.Portfolios) { held += kv.Value.Count; }
-                Check(held == 6 && !sweden.Government.Portfolios.ContainsKey("KD"), "the six portfolios re-apportioned among those who stay");
+                Check(held == Enum.GetValues(typeof(CabinetPortfolio)).Length && !sweden.Government.Portfolios.ContainsKey("KD"), F("every portfolio ({0}) re-apportioned among those who stay", held));
                 Check(!sim.MoveNoConfidence(CountryId.Sweden, out refused, out _) && refused.StartsWith("A MOTION NEEDS A TENTH", StringComparison.Ordinal), F("KD, under a tenth of the members, moves nothing: {0}", refused));
 
                 // The player's government answers a declaration with an extra election within the week: no discharge, the polling day moves.

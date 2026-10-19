@@ -530,6 +530,8 @@ namespace PoliSim.Simulation
             HoldPresidentialRound();
             // PS-6 US-8: the US presidential count on its polling day, and the House's choice on the count's day where no one has a majority - the verdict at once
             HoldUsPresidentialCount();
+            // AF-7 (q7, q10): a central bank's head whose statutory term ended today is replaced - by the AI at once, or by the player's pick (the hold)
+            AppointCentralBankHeadsWhoseTermsEnded();
 
             int daysSinceEpoch = (int)(CurrentDate - EpochDate).TotalDays;
             return daysSinceEpoch > 0 && daysSinceEpoch % DaysPerTurn == 0;
@@ -3254,7 +3256,7 @@ namespace PoliSim.Simulation
         // C-R4b step 3 (2026-09-02): THE PLAYER'S CAMPAIGN, IN THE DAY LOOP.
         //
         // The campaign spec's §3 calendar runs eight weeks before polling day. Until PS-2 (§619) the game's election was
-        // the turn boundary `ElectionSystem.IsElectionTurn` named (turns 4, 8, …) and the campaign ran the eight weeks before it,
+        // the turn boundary the turn cadence named (turns 4, 8, …; its predicate since removed) and the campaign ran the eight weeks before it,
         // Sweden's real September date being the calendar's ask and the boundary the game's - a deviation stated here until
         // election night moved off the boundary. IT HAS (CL-4, §619): the calendar is built on the country's real polling day.
         //
@@ -3307,8 +3309,8 @@ namespace PoliSim.Simulation
         // Sunday of September), inside whatever turn that day falls in; the campaign calendar is built on it,
         // and `AdvanceDay` raises `PollingDayToday` on that day for the controller's election call. The AI
         // countries hold no election in a run until their models exist (§618's ruling 4): their chambers hold
-        // as of record. `ElectionSystem.IsElectionTurn` keeps the turn cadence for what still reads it (the
-        // Fed chair's term) and no longer times an election.
+        // as of record. The turn cadence no longer times an election, and since AF-7 not the central bank head's term
+        // either (`CentralBankTerms` - each bank's own statute); its predicate was removed with that last reader.
         // ---------------------------------------------------------------------------------------------
 
         /// <summary>True on the day the player's country votes - set by <see cref="AdvanceDay"/> after the date has advanced, read by the controller the same day.</summary>
@@ -3414,7 +3416,7 @@ namespace PoliSim.Simulation
         /// bill INTERIOR; a trade bill and the foreign-policy meeting FOREIGN; a law by its category (crime INTERIOR; the fiscal, monetary and electricity
         /// categories FINANCE); a cabinet decision its own portfolio. STATED: the budget (the partner's say is the coalition agreement, §5.2), the fund's
         /// drawdown, the labour, sector and energy levers, the pension age and the central bank stay the prime minister's - no portfolio of the six owns
-        /// them (there is no economy portfolio), and the spec gives the budget to the agreement.
+        /// them (AF-6's economy portfolio carries none of them yet), and the spec gives the budget to the agreement.
         /// </summary>
         public bool PlayerMayIntroduce(CountryId countryId, CabinetPortfolio? portfolio, out string lockedBecause)
         {
@@ -3499,13 +3501,63 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>AF-11: the central bank's head appointed from the candidates (PS-3c, §630: the government's to appoint - the executive's gate).
-        /// False, with the reason, where it is refused.</summary>
+        /// False, with the reason, where it is refused. AF-7: the appointee is seated for its statute's full term from today (<see cref="CentralBankTerms"/>);
+        /// the verb does not refuse a pick before the sitting head's term ends (the screens offer candidates only at its end - removal is not modelled).</summary>
         public bool AppointCentralBankHead(CountryId countryId, FedChair candidate, out string refusedBecause)
         {
             Country country = _world?.GetCountry(countryId);
             if (country == null || candidate == null) { refusedBecause = "NO CANDIDATE"; return false; }
             if (!PlayerMayIntroduce(countryId, out refusedBecause)) { return false; }
+            CentralBankTerms.Seat(candidate, CentralBankTerms.For(countryId), CurrentDate);   // AF-7: before the lever is pulled, so every world's copy carries the term
             return Pull(new PlayerLever(PlayerLeverKind.CentralBankHead, countryId, (world, c, replay) => { c.CurrentFedChair = replay ? candidate.Copy() : candidate; return true; }), country);   // GA-1-5: a counterfactual world seats its own copy
+        }
+
+        /// <summary>AF-7 (the review's M1): true on a manager that hosts a COUNTERFACTUAL world - set by every `ShadowBaseline` constructor (the impact
+        /// ledger's except-worlds, the no-policy world), never inferred. Nobody answers a hold there, so the player's bank's head is appointed by the AI's
+        /// keyed rule on its term's day, as an AI-run bank's: "without your policies" is the AI's pick, the same name in every counterfactual.</summary>
+        public bool IsCounterfactual { get; set; }
+
+        /// <summary>AF-7 (q7, q10): true where the player's government appoints this country's central bank head - the player's own country with its own bank,
+        /// the executive's gate open (<see cref="PlayerMayIntroduce(CountryId, out string)"/>), in the played world (not <see cref="IsCounterfactual"/>).
+        /// Every other head is the AI's to appoint, the ECB's always.</summary>
+        public bool PlayerAppointsCentralBankHead(Country country) =>
+            !IsCounterfactual && country?.CurrentFedChair != null && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && PlayerMayIntroduce(country.Id, out _);
+
+        /// <summary>AF-7: true while the player's own bank's head serves past the term's end, waiting for the player's pick - the hold `GameController` raises.</summary>
+        public bool CentralBankHeadAwaitsPlayer(CountryId countryId)
+        {
+            Country country = _world?.GetCountry(countryId);
+            return country != null && PlayerAppointsCentralBankHead(country) && CentralBankTerms.Ended(country.CurrentFedChair, CurrentDate);
+        }
+
+        /// <summary>
+        /// AF-7 (q7, q10; GA-0-29, GA-0-53): every head whose statutory term has ended is replaced on the day - a country's own bank by its AI government
+        /// (<see cref="CentralBankTerms.AiAppointment"/>), unless the player's government appoints it, in which case the sitting head serves on until the
+        /// player's pick (the hold); a shared zone's head (the ECB's President) always by the AI - once per zone, whichever member reaches it first.
+        /// The AI's shortlist is keyed on the game's seed, the bank and the day, so every world of one game seats the same head and no counted stream moves.
+        /// </summary>
+        private void AppointCentralBankHeadsWhoseTermsEnded()
+        {
+            if (_world == null) { return; }
+            List<CurrencyZone> zonesSeen = null;
+            foreach (Country country in _world.Countries)
+            {
+                FedChair own = country.CurrentFedChair;
+                if (own != null)
+                {
+                    if (CentralBankTerms.Ended(own, CurrentDate) && !PlayerAppointsCentralBankHead(country))
+                    {
+                        country.CurrentFedChair = CentralBankTerms.AiAppointment(CentralBankTerms.For(country.Id), own, CurrentDate);
+                    }
+                    continue;
+                }
+                CurrencyZone zone = country.CurrencyZone;
+                if (zone?.Head == null || !CentralBankTerms.Ended(zone.Head, CurrentDate)) { continue; }
+                if (zonesSeen == null) { zonesSeen = new List<CurrencyZone>(); }
+                if (zonesSeen.Contains(zone)) { continue; }
+                zonesSeen.Add(zone);
+                zone.Head = CentralBankTerms.AiAppointment(CentralBankTerms.For(country.Id), zone.Head, CurrentDate);
+            }
         }
 
         /// <summary>AF-11: a power-plant order in the turn being played (<see cref="EnergyFleet.Place"/>: <paramref name="mw"/> positive builds, negative
@@ -6404,24 +6456,22 @@ namespace PoliSim.Simulation
             // Budget "Net" line (never a hand sum beside the model).
             float previewRevenue = ApplyRevenueAndSpending(previewCountry, spendingResult.GovernmentSpending, spendingResult.MandatorySpending, unemploymentBenefitCost, interestOnDebt, welfareCost, swfContribution + swfUnpaid, swfDraw, previewTariffRevenue, previewElectricityTaxRevenue, out float previewSpending, out _);
 
-            float previewedInterestRate;
+            // AF-7 (q10, GA-0-53): THE PREVIEW IS DAMPED AS THE PROJECTION IS - the year runs at the rate the boundary sets, the head closing its speed's
+            // share of the gap to the target (RatePathProjection.Move; EurozoneRateSystem.ApplyEurozoneRate), where it ran at the undamped target until now.
+            // The own-currency dial's branch is retired with the dial: a zone with neither a head nor partners holds its rate, as the boundary does.
+            float previewedInterestRate = previewCountry.CurrencyZone.InterestRate;
             if (previewCountry.CurrentFedChair != null)
             {
-                previewedInterestRate = Mathf.Clamp(
-                    ruleReadingAtOpen + previewCountry.CurrentFedChair.RateBias,   // FT-8 (§398): the reading at the top of the turn
-                    CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                previewedInterestRate = RatePathProjection.Move(previewCountry.CurrencyZone.InterestRate,
+                    RatePathProjection.TargetFor(ruleReadingAtOpen, previewCountry.CurrentFedChair));   // FT-8 (§398): the reading at the top of the turn
             }
             else if (CurrencySystem.SharesCurrencyZoneWithOthers(previewCountry, _world))
             {
                 float blended = blendedAtOpen;   // FT-8 (§398): the reading at the top of the turn
                 float push = Mathf.Clamp(decision.InterestRateChange, -EurozoneRateSystem.MemberRatePushRange, EurozoneRateSystem.MemberRatePushRange);
-                previewedInterestRate = Mathf.Clamp(blended + push, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
-            }
-            else
-            {
-                previewedInterestRate = Mathf.Clamp(
-                    previewCountry.CurrencyZone.InterestRate + decision.InterestRateChange,
-                    CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                float target = Mathf.Clamp(blended + push + EurozoneRateSystem.HeadLean(previewCountry.CurrencyZone), CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                float current = previewCountry.CurrencyZone.InterestRate;
+                previewedInterestRate = current + (target - current) * EurozoneRateSystem.RateAdjustmentSpeed;
             }
             // §506 (2026-09-15): the identity's G deflated as the day's is (P5-B6) - the preview handed the plan nominal, P times the G the day will read; PreviewParityDiagnostic
             // holds this figure to the boundary's. The boundary leaves the price level where the preview reads it; only the day moves it.

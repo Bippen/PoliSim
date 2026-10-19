@@ -32,7 +32,7 @@ namespace PoliSim.EditorTools
             try
             {
                 // (a) THE EFFECTS NOTE, over every role and state
-                string[] rateLevers = { DeskEffectsNote.RateDial, DeskEffectsNote.RatePush, null };
+                string[] rateLevers = { DeskEffectsNote.RatePush, null };   // AF-7: the own-currency dial is retired
                 bool[] tf = { false, true };
                 int wrongSubject = 0, unheldNamed = 0;
                 string firstWrong = null, firstUnheld = null;
@@ -64,12 +64,13 @@ namespace PoliSim.EditorTools
                 }
                 Check(wrongSubject == 0, $"the subject is the player's draft only while the player governs, else the alternative tabled, else the government's budget, else the alternative drafted, else the book as it stands - {cases} states{(firstWrong != null ? "; FIRST WRONG: " + firstWrong : string.Empty)}");
                 Check(unheldNamed == 0, $"no note names a lever the role does not hold - {cases} states{(firstUnheld != null ? "; FIRST: " + firstUnheld : string.Empty)}");
-                string rateNote = DeskEffectsNote.Line(DeskEffectsSubject.NothingDrafted, DeskEffectsNote.RateDial, false, 0);
+                string rateNote = DeskEffectsNote.Line(DeskEffectsSubject.NothingDrafted, DeskEffectsNote.RatePush, false, 0);
                 string chairNote = DeskEffectsNote.Line(DeskEffectsSubject.NothingDrafted, null, false, 0);
-                Check(rateNote.Contains(DeskEffectsNote.RateDial) && !chairNote.Contains("RATE"), "a governing player's empty note names the rate dial where the player holds it, and no rate lever where a chair sets the rate: " + chairNote);
-                const string Pre694 = "NO DRAFT PENDING — ESTIMATES FOLLOW THE RATE DIAL AS DRAFTED AND EVERY BILL AS IT PASSES · NO MARGIN: THE PROJECTION IS DETERMINISTIC · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE";
-                List<string> planted = DeskEffectsNote.UnheldLeversNamed(Pre694, governs: false, rateLever: null, mayTable: true);
-                Check(planted.Count == 1 && planted[0] == DeskEffectsNote.RateDial, "THE PLANTED ERROR is caught: the pre-§694 note read to an opposition player names " + (planted.Count > 0 ? string.Join(", ", planted) : "NOTHING"));
+                Check(rateNote.Contains(DeskEffectsNote.RatePush) && !chairNote.Contains("RATE"), "a governing player's empty note names the rate push where the player holds it (a euro member), and no rate lever where a head sets the rate: " + chairNote);
+                // AF-7: the pre-§694 note named the rate dial, which is retired; the same error is planted with the lever that remains.
+                const string Planted = "NO DRAFT PENDING — ESTIMATES FOLLOW THE RATE PUSH AS DRAFTED AND EVERY BILL AS IT PASSES · NO MARGIN: THE PROJECTION IS DETERMINISTIC · SCALED DISPLAY ESTIMATE, NOT A SIMULATED SUB-YEAR VALUE";
+                List<string> planted = DeskEffectsNote.UnheldLeversNamed(Planted, governs: false, rateLever: null, mayTable: true);
+                Check(planted.Count == 1 && planted[0] == DeskEffectsNote.RatePush, "THE PLANTED ERROR is caught: a note naming the rate push read to an opposition player names " + (planted.Count > 0 ? string.Join(", ", planted) : "NOTHING"));
 
                 // (b) THE RAIL, over every state
                 int railStates = 0, notOne = 0;

@@ -1000,6 +1000,19 @@ namespace PoliSim.Data
                 "The sitting NBP president at the start of the game - tracks the rule's suggested rate closely, with no strong lean in either direction.",
                 0f);
 
+            // AF-7 (q7, q10): EACH HEAD SERVES ITS OWN STATUTE'S TERM, AND THE ECB HAS ONE. The seeded heads' terms begin on the world's start (DECLARED:
+            // the sitting heads are fictional placeholders, so no real appointment date is theirs to carry), each running the term its statute sets
+            // (CentralBankTerms); the euro members' shared zone gets the ECB's President, an ORIGINAL FICTIONAL person under the same rule, at the same
+            // bias 0, so the shared rate moves as before until a term's end seats a successor.
+            System.DateTime termsBegin = SimulationManager.EpochDate;
+            CentralBankTerms.Seat(usa.CurrentFedChair, CentralBankTerms.Fed, termsBegin);
+            CentralBankTerms.Seat(sweden.CurrentFedChair, CentralBankTerms.Riksbank, termsBegin);
+            CentralBankTerms.Seat(poland.CurrentFedChair, CentralBankTerms.Nbp, termsBegin);
+            eurozone.Head = CentralBankTerms.Seat(new FedChair(
+                "Helene Vasseur-Brandt", FedChairPhilosophy.Moderate,
+                "The sitting ECB President at the start of the game - tracks the blended rule's suggested rate closely, with no strong lean in either direction.",
+                0f), CentralBankTerms.Ecb, termsBegin);
+
             var euMembers = new List<CountryId> { germany.Id, france.Id, italy.Id, sweden.Id, poland.Id };
             var europeanUnion = new TradeBloc("European Union", euMembers, externalTariffRate: 3f, internalTariffRate: 0.1f);
 

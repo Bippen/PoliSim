@@ -78,6 +78,7 @@ namespace PoliSim.EditorTools
                 player.PlayerPartyAbbrev = party;   // §665: S the first sitting, M the second
                 player.PartyApprovalRating = player.State.ApprovalRating;
                 player.Government = PoliSim.Elections.GovernmentRecord.AtStart(player, PoliSim.Elections.WorldClock.StartDate(CountryId.Sweden), world);   // PS-3a (§628): the staged save is the game a player would start - S in opposition under M+KD+L
+                PoliSim.Simulation.CabinetSystem.SeatAverageCabinet(player);   // AF-30b (J5): the start's chairs filled as the game fills them (GameController.SelectPlayerCountry) - every chair where M leads, none for S in opposition
                 int days = 0;
                 // K-1 part (5) (2026-09-24, §606): THE TURNS RUN. The game crosses a boundary by calling AdvanceTurn when AdvanceDay reports one
                 // (GameController.Update); this staging advanced days alone, so the save opened years in at TURN 0 with no turn ever run - its next
@@ -89,6 +90,7 @@ namespace PoliSim.EditorTools
                 foreach (Country country in world.Countries) { none[country.Id] = PolicyDecision.None(); }
                 // §579: the game's run-up is four turns out, not seventeen days - the cap is the boundary's own distance plus a year's slack, and a day that does not move is the guard.
                 while (sim.CurrentDate < target && days < 2000) { if (sim.AdvanceDay()) { sim.AdvanceTurn(none); } days++; }
+                sim.GetPendingCabinetDecisions(CountryId.Sweden).Clear();   // AF-30b: the seated cabinet's decisions rolled at the staged boundaries are pauses only a player answers - dropped, the book clean (as the day tick's)
                 if (sim.CurrentDate != target) { return F("the manager advanced {0} days and stands at {1:yyyy-MM-dd}, not the run-up's first day {2:yyyy-MM-dd}", days, sim.CurrentDate, target); }
                 int boundaries = 0;
                 for (int k = 1; SimulationManager.TurnBoundary(k) <= target; k++) { boundaries++; }

@@ -100,7 +100,7 @@ namespace PoliSim.EditorTools
                 // with a sitting chair: the preview's rule reading re-derived from the rule's own formula on the
                 // preview's year-end readings equals PolicyPreview.PreviewRuleRate; the path's three steps are the
                 // chair's target arithmetic (reading + lean, clamped) and the adjustment speed applied twice, from
-                // the rate today; and the previewed year ran at the target on today's readings.
+                // the rate today; and the previewed year ran at the damped step on today's readings (AF-7, q10 - at the target until then).
                 foreach (Country c in world.Countries)
                 {
                     if (c.CurrentFedChair == null) { continue; }
@@ -120,14 +120,32 @@ namespace PoliSim.EditorTools
                         && Mathf.Abs(path[2].RuleReading - ruleOnPreview) < 1e-4f
                         && Mathf.Abs(path[0].Rate - r0) < 1e-5f && Mathf.Abs(path[1].Rate - r1) < 1e-5f && Mathf.Abs(path[2].Rate - r2) < 1e-5f
                         && Mathf.Abs(path[1].Target - targetNow) < 1e-5f && Mathf.Abs(path[2].Target - targetNext) < 1e-5f
-                        && Mathf.Abs(p.PreviewedInterestRate - targetNow) < 1e-4f;
+                        && Mathf.Abs(p.PreviewedInterestRate - r1) < 1e-4f;   // AF-7 (q10): the previewed year runs at the damped step the boundary sets, not the target
                     if (!ok)
                     {
                         failures++;
                         Debug.LogError($"PARITY: {c.Id} rate path does not re-derive: preview rule {p.PreviewRuleRate:F4} vs formula {ruleOnPreview:F4}; path "
-                                       + (path == null ? "null" : $"{path[0].Rate:F4} -> {path[1].Rate:F4} -> {path[2].Rate:F4}") + $" vs {r0:F4} -> {r1:F4} -> {r2:F4}; previewed rate {p.PreviewedInterestRate:F4} vs target {targetNow:F4}.");
+                                       + (path == null ? "null" : $"{path[0].Rate:F4} -> {path[1].Rate:F4} -> {path[2].Rate:F4}") + $" vs {r0:F4} -> {r1:F4} -> {r2:F4}; previewed rate {p.PreviewedInterestRate:F4} vs the damped step {r1:F4} (target {targetNow:F4}).");
                     }
                     Debug.Log($"PARITY: {c.Id} rate path {r0:F2}% -> {r1:F2}% -> {r2:F2}% (rule now {ruleNow:F2}%, on the preview {ruleOnPreview:F2}%; preview inflation {p.PreviewInflation:F2}%, unemployment {p.PreviewUnemployment:F2}% vs NAIRU {p.PreviewNaturalUnemployment:F2}%) {(ok ? "ok" : "FAIL")}.");
+                }
+                // AF-7 (q10): THE SHARED ZONE'S PREVIEW IS DAMPED AS ITS BOUNDARY IS - the blend on today's readings, no push, the ECB President's lean,
+                // clamped, and the zone's adjustment speed applied once from the rate today (EurozoneRateSystem.ApplyEurozoneRate's arithmetic).
+                foreach (Country c in world.Countries)
+                {
+                    if (c.CurrentFedChair != null || !CurrencySystem.SharesCurrencyZoneWithOthers(c, world)) { continue; }
+                    float blend = EurozoneRateSystem.GetBlendedSuggestedRate(world, c);
+                    float r0 = c.CurrencyZone.InterestRate;
+                    float target = Mathf.Clamp(blend + EurozoneRateSystem.HeadLean(c.CurrencyZone), CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                    float r1 = r0 + (target - r0) * EurozoneRateSystem.RateAdjustmentSpeed;
+                    PolicyPreview p = sim.PreviewTurn(c.Id, PolicyDecision.None());
+                    bool ok = Mathf.Abs(p.PreviewedInterestRate - r1) < 1e-4f && c.CurrencyZone.Head != null;
+                    if (!ok)
+                    {
+                        failures++;
+                        Debug.LogError($"PARITY: {c.Id} the shared rate's preview {p.PreviewedInterestRate:F4} is not the damped step {r1:F4} (blend {blend:F4}, target {target:F4}, from {r0:F4}), or the zone has no head ({c.CurrencyZone.Head?.Name ?? "none"}).");
+                    }
+                    Debug.Log($"PARITY: {c.Id} shared rate previewed {p.PreviewedInterestRate:F2}% - the damped step from {r0:F2}% toward {target:F2}% (head {c.CurrencyZone.Head?.Name ?? "none"}) {(ok ? "ok" : "FAIL")}.");
                 }
                 foreach (Country c in world.Countries)
                 {

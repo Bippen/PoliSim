@@ -40,8 +40,8 @@ namespace PoliSim.Simulation
     /// Elias with the collision search recorded in COMPLETED.md §19 - the pre-report that carried it
     /// was consumed 2026-08-27 when the portraits landed). Six of the
     /// six confirmed-scope portfolios are implemented since R4-4 - see CabinetPortfolio's own doc
-    /// comment for the history and the one remaining convention (Economy/Trade &amp; Industry stays
-    /// undefined until built).
+    /// comment for the history; AF-6 (q6) added the economy portfolio, for the departments none of the six
+    /// fits (`Departments`), with no candidate pool of its own yet.
     /// </summary>
     public static class CabinetSystem
     {
@@ -525,8 +525,56 @@ namespace PoliSim.Simulation
         /// <summary>EFFICIENCY's term on the portfolio's spending sensitivity - <see cref="EfficiencyScale"/> (AF-30: an average minister ×1, a vacant chair below the floor).
         /// DECLARED (the second review's N1): SYMMETRIC - a poorly run ministry's spending changes move outcomes less, in either direction. The three lines add to
         /// persistent stocks, so one factor on rise and cut alike is what lets a cut and an equal restore cancel; a reciprocal on cuts pumped the stocks on a
-        /// round trip and was reverted. The alternative - efficiency acting on the spending LEVEL against its seed, recomputed each turn - is Elias's to rule.</summary>
+        /// round trip and was reverted. The alternative - efficiency acting on the spending LEVEL against its seed, recomputed each turn - was put to Elias, and
+        /// J5 (2026-10-19) ruled that the symmetric factor stays as built.</summary>
         public static float EfficiencyFactor(Country country, CabinetPortfolio portfolio) => EfficiencyScale(country, portfolio);
+
+        // ---- AF-30b (J5, ruled 2026-10-19): "the cabinet's seats start filled with fictional ministers at the average (Rule 9)" - so an idle governing
+        // player's ministries do not run below the pool's floor from chairs nobody filled. ----
+
+        /// <summary>AF-30b: the name the average minister carries - a role, not a person (Rule 9: an original fictional character, never a real one; a
+        /// personal name would be Elias's to sign with its collision search, as the R4-4 nine were).</summary>
+        public const string AverageMinisterName = "An average minister";
+
+        /// <summary>AF-30b: the neutral point of LOYALTY, KNOWLEDGE and POPULARITY - "as written" (<see cref="CabinetMinister"/>: 100 moves nothing, rolls
+        /// nothing and hides nothing): no leak or resignation is rolled, every estimate is disclosed, an option's approval lands as written. CONVENTION: the readers' own neutral point, not a measured figure (J5's "at the average" read as neutral per q30; asked).</summary>
+        public const float NeutralAttribute = 100f;
+
+        /// <summary>AF-30b (J5: "at the average", read with q30's "an average minister is neutral", §862 - the review's M2): a fictional minister NEUTRAL on
+        /// every term a reader turns into an effect - efficiency the pool's mean (<see cref="PoolMeanEfficiency"/> itself, so <see cref="EfficiencyScale"/>
+        /// reads exactly ×1), loyalty, knowledge and popularity <see cref="NeutralAttribute"/>, the competence bias 0 (every pool's mean is positive - read by
+        /// the poverty, youth-unemployment and crime targets, it would lower them from day one against an unmodelled cabinet). The philosophy the middle of
+        /// the three [DECLARED: Pragmatic, so its decisions draw from the pragmatic cards].</summary>
+        public static CabinetMinister AverageMinister(CabinetPortfolio portfolio) =>
+            new CabinetMinister(AverageMinisterName, portfolio, CabinetMinisterPhilosophy.Pragmatic,
+                "A fictional career minister at the pool's average efficiency, neutral on every term - reshuffle to choose your own.", 0f)
+            {
+                Loyalty = NeutralAttribute,
+                Knowledge = NeutralAttribute,
+                Efficiency = PoolMeanEfficiency,
+                Popularity = NeutralAttribute,
+            };
+
+        /// <summary>AF-6 (the review's M1): whether a portfolio has authored candidates. One without (the economy portfolio, whose names are Elias's to sign
+        /// under Rule 9) draws a shortlist of the average minister alone (<see cref="GenerateCandidates"/>), so its chair can always be filled.</summary>
+        public static bool HasAuthoredPool(CabinetPortfolio portfolio) => CandidatePool.ContainsKey(portfolio);
+
+        /// <summary>AF-30b (J5): seats the average minister in every chair that is the player's to fill (<see cref="ChairIsThePlayers"/>) and stands
+        /// vacant - once, when a new game's start is chosen (<c>GameController.SelectPlayerCountry</c>); a loaded game keeps the save's chairs, and a chair
+        /// the player comes to hold later (a government formed in play) is not seated by this. Returns how many were seated.</summary>
+        public static int SeatAverageCabinet(Country country)
+        {
+            if (country == null) { return 0; }
+            if (country.CabinetMinisters == null) { country.CabinetMinisters = new Dictionary<CabinetPortfolio, CabinetMinister>(); }
+            int seated = 0;
+            foreach (CabinetPortfolio portfolio in (CabinetPortfolio[])System.Enum.GetValues(typeof(CabinetPortfolio)))
+            {
+                if (!IsVacantChair(country, portfolio)) { continue; }
+                country.CabinetMinisters[portfolio] = AverageMinister(portfolio);
+                seated++;
+            }
+            return seated;
+        }
 
         /// <summary>POPULARITY's term: the factor on an option's approval figure and on the dismissal cost - 1 as written, 1 for a vacant portfolio.</summary>
         public static float PopularityFactor(Country country, CabinetPortfolio portfolio) =>
@@ -599,7 +647,8 @@ namespace PoliSim.Simulation
         public static List<CabinetMinister> GenerateCandidates(CabinetPortfolio portfolio)
         {
             var candidates = new List<CabinetMinister>();
-            foreach (CabinetMinister authored in CandidatePool[portfolio])
+            if (!CandidatePool.TryGetValue(portfolio, out List<CabinetMinister> pool)) { candidates.Add(AverageMinister(portfolio)); return candidates; }   // AF-6 (the review's M1): no authored pool - the shortlist offers the average minister, drawing nothing
+            foreach (CabinetMinister authored in pool)
             {
                 CabinetMinister candidate = authored.Copy();
                 ApplyAttributes(candidate);   // P2-5.2: the authored attributes ride with the candidate

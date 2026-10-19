@@ -35,12 +35,11 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// Applies each turn's interest rate policy decisions. A country with a non-null
-        /// Country.CurrentFedChair (USA, for now) bypasses PolicyDecision.InterestRateChange
+        /// Country.CurrentFedChair (its own bank's head - the USA, Sweden and Poland) bypasses PolicyDecision.InterestRateChange
         /// entirely - see FederalReserveSystem.ApplyFedChairInterestRate. A CurrencyZone shared by
         /// more than one country (Germany/France/Italy, the Eurozone) uses EurozoneRateSystem's own
-        /// HICP-country-weighted, Taylor-Rule-blended mechanic instead - see that class. Every other country
-        /// (an independent, single-country zone - Sweden, Poland) has its own decision's
-        /// InterestRateChange applied directly as a raw rate delta, unchanged from before.
+        /// HICP-country-weighted, Taylor-Rule-blended mechanic instead - see that class. The raw rate delta
+        /// an independent zone without a head once took is retired (AF-7).
         /// </summary>
         public static void ApplyInterestRateChanges(World world, Dictionary<CountryId, PolicyDecision> decisions)
         {
@@ -64,24 +63,11 @@ namespace PoliSim.Simulation
                 if (SharesCurrencyZoneWithOthers(country, world))
                 {
                     EurozoneRateSystem.ApplyEurozoneRate(world, country, decisions);
-                    continue;
                 }
 
-                float totalChange = 0f;
-                foreach (Country member in world.Countries)
-                {
-                    if (member.CurrencyZone != zone)
-                    {
-                        continue;
-                    }
-
-                    if (decisions != null && decisions.TryGetValue(member.Id, out PolicyDecision decision))
-                    {
-                        totalChange += decision.InterestRateChange;
-                    }
-                }
-
-                zone.InterestRate = Mathf.Clamp(zone.InterestRate + totalChange, MinInterestRate, MaxInterestRate);
+                // AF-7 (q10, GA-0-53): THE OWN-CURRENCY DIAL IS RETIRED. A country with its own currency always has a head (the factory seats one and a
+                // term's end replaces it, `CentralBankTerms`), so the player's raw rate change it once applied was read by no world; a zone with neither
+                // a head nor partners holds its rate.
             }
         }
 

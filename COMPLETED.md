@@ -40322,3 +40322,144 @@ All three are fixed.
 - The final tree: `n873d` 8 of 8 clean. The cheap bar `cheap873` was 119 of 120: ChamberVerdictCacheCheck's static guard flagged five writes to who governs in `SimulationManager.Sejm.cs`, a new record built before install and the procedure's own designee lists. They move into `GovernmentRecord.OfNamedCabinet` and `SejmFormation.Designate` (behaviour-preserving, reviewed SHIP), then `n873e` is 2 of 2. `cheap873b` was 119 of 120: CommentClaimCheck caught the new comment citing `SimulationManager.Sejm` as a member, so the comment now names the file. Then `cheap873c` is 120 of 120 clean.
 - The simulation bar `sim873b` is 62 of 62, the sentinel holding on af35.
 - Films, scope `drys873c` (s873): Germany 147, Sweden 155 and Poland 146 measured, 0 failed, 0 overflows; real films `realde873b` 147/0 and `realpl873b` 146/0. Poland's warm-up logs the 2023 verdict: *Expected to form: the record's KO+TD+NL government led by Donald Tusk (KO), its parties holding 246 of 460 seats, with PiS in opposition*. The night's Canvas frame is reached by no film (88n's standing gap, UI-1).
+
+
+## 875. AF-7 (q7, q10): EACH CENTRAL BANK'S HEAD SERVES ITS OWN STATUTE'S TERM; AI-RUN BANKS AND EVERY COUNTERFACTUAL APPOINT BY A KEYED RULE; THE ECB'S PRESIDENT; THE DEAD OWN-CURRENCY DIAL RETIRED; THE PREVIEW DAMPED AS THE PROJECTION IS; SAVE FORMAT 43 (2026-10-19)
+
+**What was owed** (rulings q7 and q10; row AF-7; GA-0-29, GA-0-53):
+- each bank's head is appointed on its own statutory term, not on the election turns' cycle;
+- AI-run banks get a head;
+- the dead own-currency dial is retired;
+- the preview is damped as the projection is.
+
+**Built** (an implementer on `wave/af7`: 0bdf702d, then the review fixes 652bc5ce and 82e9bf4c):
+- **The terms (`CentralBankTerms`).** Each is held to its statute's saved page under `ElectionsData/rules/raw/central_banks/` (SHA256SUMS, fetched byte-exact):
+  - the Fed, 4 years (12 U.S.C. 242);
+  - the Riksbank, 6 years (Lag 2022:1568, 7 kap. 7 §, *"fem eller sex år"*; six is DECLARED);
+  - the NBP, 6 years (its act, Art. 9 ust. 2);
+  - the ECB, 8 years (ESCB Statute Art. 11.2).
+- **The heads.**
+  - `FedChair.TermBegan` and `TermEnds` record each term.
+  - The euro zone has `CurrencyZone.Head`, the ECB President, whose lean rides the shared target.
+- **The appointment, on the term's day.**
+  - The player's own bank raises the hold, and the sitting head serves on.
+  - Every other bank is appointed by the AI: the shortlist's nearest-the-rule candidate, drawn by a generator keyed on the seed, the bank and the day (`SimulationRandom.CentralBankShortlistOn`). No counted stream is touched.
+  - **Every counterfactual world** (`SimulationManager.IsCounterfactual`, set by all three `ShadowBaseline` constructors, AF-12's carried one included) appoints the player's bank by the same keyed rule. Without this, "without your policies" and the ledger's forks would keep the old head forever.
+- **The pages** print the term's end date and its statute. The hold names the statute's appointer and says the game hands the choice to the player's government.
+- **Retired:**
+  - the own-currency dial with its raw-rate branch;
+  - `DeskEffectsNote.RateDial`;
+  - `ElectionSystem.IsElectionTurn`, whose last game reader was the hold.
+- **The preview** is damped by `RatePathProjection.Move`, or for a euro member by the zone's step.
+- **Save format 42 → 43** (ruling A): a v42 save is refused, and the play saves are re-staged (`stage875`).
+
+**Not built:** the US Senate's consent (R-US12 (a)'s second half), which is US-29's; re-appointment limits; removal before a term ends.
+
+**The check:** `CentralBankTermCheck` (the cheap group). It proves:
+- each page holds its words;
+- the seeded heads and the ECB President;
+- the AI's appointment on the term's day, the same in two worlds, with no counted stream moved;
+- the player's hold and pick;
+- a counterfactual's keyed pick.
+
+`PreviewParityDiagnostic` is re-cut to the damped step.
+
+**Measured:** `n875` (then `n875b` after the fixes; CentralBankTermCheck passing in both): the USA's seeded Fed head sits 2026-10-01 to 2030-10-01 (4 years, no lean); with terms planted to end on 2026-10-03, every head is replaced that day (the Fed Roland Kade -0.25 to 2030-10-03, the Riksbank Priya Anand +0.25 to 2032-10-03, the ECB Priya Anand +0.25 to 2034-10-03), a second world of the same seed seats the same heads, and the Federal Reserve stream reads 0 -> 0 draws; (e) a counterfactual fork of a Swedish player's world seats the keyed pick on the term's day while the played world holds Ingrid Hallstrom and raises the hold.
+
+The trajectories (§876's family `af67`) open on Sweden's start epoch. In them the Fed's term ends at turn 5 (2030-01-18), the Riksbank's and the NBP's at turn 7, and the ECB's at turn 9. Every AI appointment matches the keyed draw replayed offline (24 of 24, the baseline review). The largest effect inside 20 turns is a −1.25 Fed head on seed 777 from turn 5.
+
+**Declared:**
+- the Riksbank's six years;
+- seeded terms beginning at the world's start;
+- the AI's nearest-the-rule pick;
+- the holdover until a successor (12 U.S.C. 242's words, read for all four);
+- "the four euro countries" read as the game's three euro members.
+
+**Asked:**
+- the Riksbank, five years or six;
+- whether the seeded heads should carry the real incumbents' term dates;
+- "four euro countries";
+- whether the AI appointer should be guaranteed a no-lean candidate (4 of 24 AI appointments in the dumps seat a ±1.25-1.5 head).
+
+**Reviewed:** `Reviews/2026-10-19_s875_af7_af6.md`: the branch review, the integration review and the baseline review. SHIP WITH FIXES each time, every H and M fixed or asked.
+
+**Bars:** see §876.
+
+
+## 876. AF-6 AND AF-30b (q6, J5): THE EIGHT DEPARTMENTS' GENERATED TABLE AND THE ECONOMY PORTFOLIO; GAMSON WITH THE SMALL-PARTY BONUS AS READ; EVERY START'S PLAYER CABINET SEATED AT THE AVERAGE, NEUTRAL; THE FAMILY `af67` (2026-10-19)
+
+**What was owed:**
+- **q6:** one generated table maps each of the eight departments to a portfolio, adding an economy portfolio only where none fits. Portfolios are allocated by Gamson's law, with Warwick & Druckman's small-party bonus as read.
+- **J5 (AF-30b):** the cabinet's seats start filled with fictional ministers at the average (Rule 9), and the symmetric factor stays as built.
+
+**Built** (an implementer on `wave/af6`: 49abe8cf, 5f388204, d9935b51, 15698fa6 and fe4b8e5b):
+- **The table** (`Departments`, `CabinetPortfolio.cs`):
+  - Education goes to Education, Security to Defense, Health to Health & Social Affairs, State to Foreign Affairs, and Science & Nature to Education.
+  - Agriculture, Transportation and Energy fit none, so `CabinetPortfolio.Economy` is appended. The append is save-safe.
+  - `docs/generated/DEPARTMENT_PORTFOLIOS.md` is rendered by the Editor (`DepartmentPortfolioCheck`) from the runtime table, and held in the cheap and documents bars.
+- **The economy post's weight, PROVISIONALLY reading (b):** the ministry that holds energy, alone (DW05):
+  - Germany 0.99; Sweden 1.06;
+  - France 1.06 until Bercy carried Industry, then the survey's average 1.00;
+  - Italy 0.87;
+  - Poland and the USA the mean.
+- **The allocation.** Whole entitlements are paid first (§711's near-tie standing). The rounding's residual then goes to the partners: each post to the partner whose (held+post)/due is least [AUTHORED-DRAFT]. The head's party keeps at least one post, and §755 stands.
+- **The average minister** (`CabinetSystem.AverageMinister`), neutral on every term that has an effect:
+  - efficiency at the pool's mean, so ×1;
+  - competence bias 0;
+  - loyalty, knowledge and popularity at 100, the value at which each reader does nothing.
+- **The average cabinet.** `CabinetSystem.SeatAverageCabinet` fills every vacant chair that is the player's to fill, on the start's own day (`SelectPlayerCountry`, `PlayProtocolStaging`). That is before AF-12's start fork, so "without your policies" carries the same cabinet.
+- **The economy chair's shortlist** offers the average minister until Rule 9 names are signed.
+
+**The checks:**
+- `DepartmentPortfolioCheck` (cheap, documents);
+- `AverageCabinetDiagnostic` (cheap);
+- re-pinned from the implementer's replica: `PortfolioAllocationDiagnostic` and `PortfolioSalienceDiagnostic` (Italy 2022 and Poland 2023 shares pinned);
+- `ConfidenceDiagnostic`, which counts the enum's portfolios;
+- `RangeCaptionCheck`'s Fiscal stance, measured on a planted Finance partner.
+
+**Measured** (`n875`, `n875b`): DepartmentPortfolioCheck holds the table; AverageCabinetDiagnostic seats every start's player chairs at the neutral average; ConfidenceDiagnostic: every portfolio (7) re-apportioned; RangeCaptionCheck's Fiscal stance -1 against the catalog's -1 on the planted SPD. Finance against the record:
+- Sweden 2022 and 2026: M, the record's;
+- Poland: KO, the record's;
+- Germany 2021: SPD, and Italy: FdI, both misses as before;
+- **Germany 2025: CDU, a new miss** (Klingbeil). Any seventh post near weight 1 causes it.
+
+**The family `af67`** (`TrajectorySentinelCheck`; the baseline is `traj_af67_s{777,424242}_t100.csv`; digests `82d607b7` for 777 and `d317084b` for 424242; two reviewed `baseline` rows):
+- The first mover is **Germany at turn 1**, in 16 fields. Finance passes from the SPD to the CDU at the default epoch, so the partner's +0.25 pp expansion stops. The spending effects and the yearly readouts move in the same turn; Budget and GDP move from turn 2.
+- **France and Italy** move from turn 2 through `Zone.InterestRate` alone: the ECB blend reads Germany's Taylor rate.
+- **The USA, Poland and Sweden** move from turn 2 through `CurrencyStrength` and `TradeBalance`, carried by the euro rate.
+- **AF-7's terms** sit inside the same trajectories (§875).
+- From turn 5 Germany's fiscal gap widens against af35 on both seeds. That is explained by the mechanism (the AI finance ministry no longer clawing back the SPD's expansion) but not isolated.
+
+**Declared:**
+- Security is mapped to Defense, and Science & Nature to Education.
+- The economy post weighs the energy ministry alone.
+- The bonus is the residual alone.
+- The average minister is neutral (attributes at 100).
+- Seating happens at the start only: not at a later entry to government, not on a load, not after a formation in play.
+
+**Asked:**
+- **The economy post's weight:** (b) as built, or (a) its three ministries summed. Under (a), Finance moves to KD in Sweden 2022 and 2026, and to the Grüne in Germany 2021. Either way, Germany 2025's Finance goes to the CDU, the partner's fiscal stance stops for Germany, and no start then has a junior partner at Finance.
+- **J5's "at the average"** (the s875 review's M1): the average minister's loyalty, knowledge and popularity are at 100, the scale's top and the value at which each reader does nothing, rather than at the pool's means (77, 79, 60).
+- **Decision cards** (M2): seated ministers roll cabinet decisions, about 54 % a turn for at least one, so an idle governing player meets cards that stop the clock.
+- Economy's Rule 9 names.
+- Seating on a later entry to government.
+
+**Reviewed:** `Reviews/2026-10-19_s875_af7_af6.md`.
+
+**Bars** (§875-§876 on one tree; tier SIMULATION + UI):
+- `n875` failed five checks, each fixed (the review's H1-H5); then `n875b` 8 of 8 clean, the sentinel on af67.
+- `dump875` wrote the family. `sb875`: ShadowBaselineDiagnostic PASS. `slrt875`: PASS, 12 scenarios, the version gate at 43.
+- The first full chain (`chain875c`):
+  - `stage875` re-staged the play saves at format 43.
+  - `cheap875` was 122 of 123: ConstantProvenanceCheck found `NeutralAttribute` unmarked, now marked CONVENTION.
+  - `sim875` was 61 of 62: InfrastructureReadoutDiagnostic's own run opened on the default epoch while the shared century opens on the player's start. AF-7 seats terms from the epoch, so both runs now open on the start.
+  - `drys875`: USA 16 failed and Germany 5 failed (below). `realse875` was 155/0.
+- The films' finds:
+  - **The USA's** main set had been held by the Fed chair's turn-cycle hold. Released, a real-time day tick lapsed the funding the warm-up never ticks, and the pages went undrawn. The driver now holds the USA's clock after the warm-up.
+  - **Germany's** seated ministers rolled cabinet decisions in the warm-up, which held the clock, so no Speaker's round opened. The warm-up's unanswered decisions are now dropped, in the driver and in the staging.
+  - Holding Sweden as well (`drys875b`) cost it its round, so the hold is the USA's alone.
+- **The final tree:**
+  - `stage875b`; `cheap875b` 123 of 123; `sim875b` 62 of 62, the sentinel holding on **af67** (82d607b7, d317084b).
+  - The dry films: `drys875b` Germany 147/0 (USA 156/0, Sweden then 5 failed, fixed); `drys875c` USA 156, Sweden 155 and Poland 145 measured, 0 failed, 0 overflows.
+  - The real film `realse875c` Sweden at 1280: 155/0.
+  - `cheap875c` 123 of 123 after the films.

@@ -6,7 +6,7 @@ namespace PoliSim.Elections
     /// <summary>
     /// §706 (Elias's ruling of 2026-10-01): WHAT A CABINET POST IS WORTH IN THE GAMSON SHARE - Druckman &amp; Warwick's expert-survey salience
     /// ("The missing piece", EJPR 44, 2005: each post scored against an average portfolio of 1.00; the appendix per country), mapped onto the
-    /// game's six portfolios as `ElectionsData/portfolios/portfolio_salience.md` records: a portfolio that stands for several of the country's
+    /// game's portfolios (the six, and since AF-6 the economy portfolio) as `ElectionsData/portfolios/portfolio_salience.md` records: a portfolio that stands for several of the country's
     /// separate ministries weighs their sum, one that stands for one ministry its score - and Italy's MEF, one ministry merged from the three posts the
     /// paper rates (Treasury, Finance, Budget), weighs their SUM as the paper does (Elias's ruling of 2026-10-01, item 8; §717 - the miss it makes
     /// against the record is recorded there, the method unadjusted). The head of government's weight is credited to its party, never allocated. Poland and the USA take the mean of the four
@@ -67,6 +67,7 @@ namespace PoliSim.Elections
                             return asOf < GermanyBmbfSplit
                                 ? 0.82 + 0.93    // the BMBF: Science & Education + Research & Technology, summed as the paper sums a merged post (§753; was 0.82)
                                 : 0.82 + 0.68;   // the BMBFSFJ, cabinets of the 2025 chamber: Science & Education + Families & Youth (research gone to the BMFTR, no post of the six)
+                        case CabinetPortfolio.Economy: return 0.99;   // AF-6, PROVISIONAL reading (b): Economic Affairs alone, the economy ministry that holds energy (no energy post rated) - Agriculture and Transport not summed, pending Elias
                     }
                     break;
                 case CountryId.Sweden:
@@ -78,6 +79,7 @@ namespace PoliSim.Elections
                         case CabinetPortfolio.Defense: return 0.99;
                         case CabinetPortfolio.ForeignAffairs: return 1.27;
                         case CabinetPortfolio.Education: return 1.07;                     // Education (& Science)
+                        case CabinetPortfolio.Economy: return 1.06;   // AF-6, PROVISIONAL (b): Industry alone, the economy ministry that holds energy (no energy post rated)
                     }
                     break;
                 case CountryId.France:
@@ -89,6 +91,7 @@ namespace PoliSim.Elections
                         case CabinetPortfolio.Defense: return 1.38;
                         case CabinetPortfolio.ForeignAffairs: return 1.45;
                         case CabinetPortfolio.Education: return 1.40;
+                        case CabinetPortfolio.Economy: return asOf < FranceBercyIndustry ? 1.06 : 1.00;   // AF-6, PROVISIONAL (b): Industry until Bercy carried it (§753: a ministry counts once); from then the energy ministry, which the survey does not rate - an average portfolio, 1.00 by the survey's own scale
                     }
                     break;
                 case CountryId.Italy:
@@ -100,10 +103,11 @@ namespace PoliSim.Elections
                         case CabinetPortfolio.Defense: return 1.19;
                         case CabinetPortfolio.ForeignAffairs: return 1.69;
                         case CabinetPortfolio.Education: return 1.10;                     // Istruzione - the post that holds education (Universities & Research, 0.69, a separate ministry)
+                        case CabinetPortfolio.Economy: return 0.87;   // AF-6, PROVISIONAL (b): Industry & Commerce/Trade alone, the economy ministry that holds energy (no energy post rated)
                     }
                     break;
             }
-            if (!System.Enum.IsDefined(typeof(CabinetPortfolio), portfolio)) { return 1.0; }   // a post outside the six (a corrupt save) is average - never the mean, which would recurse (the review's note)
+            if (!System.Enum.IsDefined(typeof(CabinetPortfolio), portfolio)) { return 1.0; }   // a post outside the enum (a corrupt save) is average - never the mean, which would recurse (the review's note)
             // DERIVED: the mean of the four countries rated, each at the same date (§753 - computed, so it follows their dating: Finance 2.545 and
             // Education 1.33 before 2025-02-23, Education 1.2675 from the 2025 chamber; before §753 Finance 2.28 and Education 1.0975, §717's and §706's)
             return (Weight(CountryId.Germany, portfolio, asOf) + Weight(CountryId.Sweden, portfolio, asOf) + Weight(CountryId.France, portfolio, asOf) + Weight(CountryId.Italy, portfolio, asOf)) / 4.0;

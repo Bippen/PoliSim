@@ -28,10 +28,8 @@ namespace PoliSim.Simulation
         /// </summary>
         public const int ElectionCycle = 4;
 
-        /// <summary>True on turn numbers that are a multiple of ElectionCycle (and not turn 0, before any turn has run).</summary>
-        public static bool IsElectionTurn(int turnNumber)
-        {
-            return turnNumber > 0 && turnNumber % ElectionCycle == 0;
-        }
+        // AF-7 (2026-10-19): IsElectionTurn, the turn cadence's predicate, was removed - no election has read it since PS-2 / CL-4 (§619), and the
+        // central bank head's term, its last game reader, is each bank's own statute's (CentralBankTerms). ElectionCycle stays:
+        // SimulationManager.NextElectionTurnAfter reads it.
     }
 }

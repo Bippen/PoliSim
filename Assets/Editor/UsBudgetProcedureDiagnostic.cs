@@ -38,7 +38,7 @@ namespace PoliSim.EditorTools
     /// <item>(f) R-US17's budget-vote re-run: every act and resolution under `UsVeto.PlantIndex` at n - 1 writes the unplanted records, nothing drawn;</item>
     /// <item>(g) the funding arithmetic and the request days, DERIVED;</item>
     /// <item>(h) scope: an AI USA votes nothing and is never seeded; the procedures enumerated;</item>
-    /// <item>(i) the save: a mid-lapse save round-trips into the game at format 42, the lapse's economics with it (US-22b); a format-41 save is refused;</item>
+    /// <item>(i) the save: a mid-lapse save round-trips into the game at the current format (42 at US-22b), the lapse's economics with it (US-22b); a save of the format before it is refused;</item>
     /// <item>(j) US-22b (I13 (2)): the withholder's list recomputed from the Senate's saved roll calls, its label, its pooled share and interval, and the chance
     /// it carries cloture in the 119th;</item>
     /// <item>(k) US-22b (I13 (3)): a governing player who tables no budget does not lapse; the review's L2 - a resolution in the slot on the request day is
@@ -339,7 +339,7 @@ namespace PoliSim.EditorTools
                         SaveGame cut = SaveGameService.Deserialize(json);
                         Country saved = cut.World.GetCountry(CountryId.USA);
                         BudgetBill savedBill = cut.Sim.PendingBudgetBills.TryGetValue(CountryId.USA, out BudgetBill sbill) ? sbill : null;
-                        Check(held3 && u3.LapseSince == LapseOpens && pending3 != null && pending3.ContinuingResolution && cut.SaveVersion == 42 && cut.SaveVersion == SaveGameService.CurrentSaveVersion
+                        Check(held3 && u3.LapseSince == LapseOpens && pending3 != null && pending3.ContinuingResolution && cut.SaveVersion >= 42 && cut.SaveVersion == SaveGameService.CurrentSaveVersion
                               && saved.LapseSince == u3.LapseSince && saved.AppropriatedThrough == u3.AppropriatedThrough && saved.ContinuingResolutionWithheldBy == "DEM"
                               && u3.LapseFlowDay == new DateTime(2025, 10, 16) && u3.LapseDeferredOutlays > 0f && u3.LapseOutputWedge > 0f && u3.LapseOutputDays > 0
                               && saved.LapseFlowDay == u3.LapseFlowDay && saved.LapseDeferredOutlays == u3.LapseDeferredOutlays && saved.LapseOutputWedge == u3.LapseOutputWedge
@@ -359,10 +359,11 @@ namespace PoliSim.EditorTools
                                 F("(i) loaded INTO THE GAME (the controller's RestoreFromSave): the lapse, the horizon, the withheld resolution, the pending resolution and the lapse's economics kept as saved - not re-seeded ({0}, day {1} of the shutdown)",
                                     UsBudgetProcedure.FundedWords(u), UsBudgetProcedure.LapseDays(u.LapseSince, adopted.CurrentDate)));
                         }
-                        string older = json.Replace("\"SaveVersion\": 42", "\"SaveVersion\": 41");
+                        int olderVersion = SaveGameService.CurrentSaveVersion - 1;   // AF-7: the format before this build's, whatever it is (planted as 41 against 42 until the format moved)
+                        string older = json.Replace("\"SaveVersion\": " + SaveGameService.CurrentSaveVersion, "\"SaveVersion\": " + olderVersion);
                         bool refused = false; string refusedWhy = null;
                         try { SaveGameService.Deserialize(older); } catch (SaveLoadException e) { refused = true; refusedWhy = e.Message; }
-                        Check(older != json && refused && refusedWhy.Contains("format version 41"), F("(i) a format-41 save is refused with the plain message (ruling A): \"{0}\"", refusedWhy));
+                        Check(older != json && refused && refusedWhy.Contains("format version " + olderVersion), F("(i) a format-{1} save is refused with the plain message (ruling A): \"{0}\"", refusedWhy, olderVersion));
 
                         // ============================================================ (d) the vetoes: a planted game-elected REP president, the player REP
                         (SimulationManager s4, World w4, Country u4) = UsCongressDiagnostic.OpenUsa(hosts, UsCongressDiagnostic.Day119, "REP");

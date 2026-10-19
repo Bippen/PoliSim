@@ -201,6 +201,8 @@ namespace PoliSim.EditorTools
             ("PlayerRoleDiagnostic", PlayerRoleDiagnostic.Run),   // PS-3a (§628): who governs is the player's role - the record at Sweden's start, the four roles by party, the AI ministry's gate, the save round trip
             ("GovernmentBudgetBillDiagnostic", GovernmentBudgetBillDiagnostic.Run),   // PS-3e (§632): the AI government's budget as a bill, the alternative, the frame decision; player path only
             ("PortfolioAllocationDiagnostic", PortfolioAllocationDiagnostic.Run),   // PS-3g (§634): portfolios by Gamson's law on the record; the gate's portfolio leg
+            ("DepartmentPortfolioCheck", DepartmentPortfolioCheck.Run),   // AF-6 (q6, 2026-10-19): the eight departments' portfolios, generated (docs/generated/DEPARTMENT_PORTFOLIOS.md) and held
+            ("AverageCabinetDiagnostic", AverageCabinetDiagnostic.Run),   // AF-30b (J5, 2026-10-19): every start's player cabinet seated at the average minister, neutral on every term
             ("SupportAgreementDiagnostic", SupportAgreementDiagnostic.Run),   // PS-3h (§635): the support agreement's items owed, delivered, broken; the withdrawal recorded
             ("ConfidenceDiagnostic", ConfidenceDiagnostic.Run),   // PS-3i (§636): a supporter's withdrawal brings a government down by the Riksdag's procedure
             ("ConstructiveVoteDiagnostic", ConstructiveVoteDiagnostic.Run),   // §698 (PS-4): Art. 67 GG - the motion is the successor's election, carried it installs the successor at once; the AI moves it by ruling (2)'s rule
@@ -229,6 +231,7 @@ namespace PoliSim.EditorTools
             ("UsDocketDiagnostic", UsDocketDiagnostic.Run),   // PS-6 US-21b (§864): the player-president's docket - Art. I §7's ten days (Sundays excepted) and Art. 122 ust. 2's 21 days held to their pages, the period's arithmetic, unanswered law the day after the tenth day, signed, vetoed to the override, an answer kept across a change of presidency, the budget's acts, the AI president unchanged, the save mid-docket
             ("MinimumWageRatesCheck", MinimumWageRatesCheck.Run),   // §756 (ruling A5): the statutory minimum wages dated and sourced by read - the table held to its file row by row, Sweden and Italy OFF
             ("FiscalRulesCheck", FiscalRulesCheck.Run),   // §758 (rulings A6 and B6): the statutory rules' ink (A6, §725) and Sweden's debt anchor a notice, never a breach - the constants against the held quotes
+            ("CentralBankTermCheck", CentralBankTermCheck.Run),   // AF-7 (q7, q10, 2026-10-19): each central bank's term held to its statute's saved page; the seeded heads and the ECB President; the AI's appointment on the term's day, the same in two worlds; the player's hold; a counterfactual's keyed pick
             ("AiMotionReachDiagnostic", AiMotionReachDiagnostic.Run),   // PS-3i-2a (§644): an AI supporter past its tolerance withdraws and moves when the round would seat it
             ("EconomicVoteDiagnostic", EconomicVoteDiagnostic.Run),   // PS-3k (§638): elections read the government's record, by the economic-voting literature
             ("PreStartRecordDiagnostic", PreStartRecordDiagnostic.Run),   // §709: the pre-start record - the generated table its CSV, every start's seed window, the reading before and after, Germany 2025 and Sweden 2026 with the record
@@ -756,6 +759,7 @@ namespace PoliSim.EditorTools
         {
             ("UpstreamCheck", UpstreamCheck.Run),                       // the push tripwire: a document commit is still a commit
             ("DocumentClaimCheck", DocumentClaimCheck.Run),             // a written claim about the code, checked against the code
+            ("DepartmentPortfolioCheck", DepartmentPortfolioCheck.Run),   // AF-6: the generated table - a document-only commit still runs it
             ("PreWiringPremiseCheck", PreWiringPremiseCheck.Run),       // the live documents' premise terms
             ("D18InventoryCheck", D18Inventory.Run),                    // the ask's inventory against the repo it describes
             ("DesignNotificationCheck", DesignNotificationCheck.Run),   // a cut screen told to the person drawing it

@@ -78,6 +78,7 @@ namespace PoliSim.Simulation
             _host = new GameObject("ShadowBaseline") { hideFlags = HideFlags.HideAndDontSave };
 
             _sim = _host.AddComponent<SimulationManager>();
+            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (every constructor sets it)
             _world = WorldFactory.CreateDefault();
             _sim.SetWorld(_world);
 
@@ -126,6 +127,7 @@ namespace PoliSim.Simulation
             _host = new GameObject("ShadowBaseline (forked)") { hideFlags = HideFlags.HideAndDontSave };
             if (insideTurn) { _host.SetActive(false); }
             _sim = _host.AddComponent<SimulationManager>();
+            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (every constructor sets it)
 
             Persistence.SaveGame snapshot = Persistence.SaveGameService.CreateSaveGame(realSim, realWorld, playerCountryId, null);
             string json = Persistence.SaveGameService.Serialize(snapshot);
@@ -280,6 +282,7 @@ namespace PoliSim.Simulation
             _host = new GameObject("ShadowBaseline (carried)") { hideFlags = HideFlags.HideAndDontSave };
             _host.SetActive(false);
             _sim = _host.AddComponent<SimulationManager>();
+            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (every constructor sets it; AF-12's carried world too)
 
             SimulationRandom.LiveState real = SimulationRandom.CaptureLive();   // GA-1-3: the real game's stream OBJECTS, handed back as they were
             try

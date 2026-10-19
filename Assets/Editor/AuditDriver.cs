@@ -863,8 +863,8 @@ namespace PoliSim.EditorTools
                 {
                     int pick = PickChair(candidates);
                     object chair = candidates[pick];
-                    // The Appoint button's own body (GameController.cs, the chair's candidates): the model written inline, as the control writes it.
-                    c.CurrentFedChair = (FedChair)chair;
+                    // The Appoint button's own body (GameController.cs, the chair's candidates): the manager's verb (AF-11), which seats the head for its statute's term (AF-7).
+                    _sm.AppointCentralBankHead(id, (FedChair)chair, out _);
                     Set("_fedChairCandidates", null);
                     Call("RecomputePolicyPreview");
                     Count("answer chair");

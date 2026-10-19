@@ -597,8 +597,32 @@ namespace PoliSim.Testing
             // (the warm-up drives the manager, not the controller) and film the NEXT cycle's night against a chamber play never voted in - the
             // 2030 night the first film of §619 showed, with no history beside it. So no warm-up here: the film opens on day 0.
             else if (Interrupts) { Debug.Log("SHOT: -shotinterrupts - no warm-up: the film plays the country's game from its start to its first polling day (PS-2, §619)."); }
-            else { AdvanceDays(controller, _countryId); }
-            SetPrivateField(controller, "_daySpeedTimer", 0f);   // §510: the hold released
+            else
+            {
+                AdvanceDays(controller, _countryId);
+                // AF-30b (J5): a governing player's start now seats the average cabinet, and its ministers roll cabinet decisions at every boundary the
+                // warm-up crosses - which the warm-up, driving the manager, never answers. Left pending they hold the controller's clock (GameController.Update),
+                // so the day the round opens after the warm-up's election never ticks (drys875: Germany's formation sheet never filmed). The warm-up is
+                // "time passed with no policy changes": its unanswered decisions are dropped, unanswered, as the clean Docket the sweep stages its own on.
+                if (controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) is SimulationManager warmed)
+                {
+                    List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> warmupDecisions = warmed.GetPendingCabinetDecisions(_countryId);
+                    if (warmupDecisions.Count > 0) { Debug.Log($"SHOT: the warm-up's {warmupDecisions.Count} unanswered cabinet decision(s) dropped - they would hold the clock (AF-30b's seated cabinet)."); }
+                    warmupDecisions.Clear();
+                }
+            }
+            // §510: the hold released - EXCEPT, since AF-7 (the s875 film), for a country with a bank of its own. Its main set was always filmed on a clock held
+            // by the chair's hold: the warm-up's stop is a turn-3 eve, and the chair's term ended on the election turns' cycle (the note above 01b says so). AF-7
+            // moved the term to the statute's date, so nothing holds that clock now, and real time ticked the controller's day: in the USA the first tick after a
+            // warm-up that ran no day ticks lapses the funding (no appropriation since 2024-09-30), presents the continuing resolution to the President, and every
+            // page after it went undrawn (drys875: 16 failed). The driver now holds that clock itself, as the hold did; a country without one (a euro member)
+            // keeps the released clock its films were made on - Germany's formation sheet opens on that first tick.
+            // s875's second film: the hold is the USA's alone. Sweden's held main set (drys875b) never ticked the day that opens the Speaker's round after the
+            // warm-up's election, so its formation sheet went unfilmed, while its released clock filmed clean (drys875, realse875: 155 of 155). The USA is the
+            // country whose released clock breaks: its appropriation is a day tick the warm-up never runs.
+            bool ownBank = _countryId == CountryId.USA;
+            SetPrivateField(controller, "_daySpeedTimer", ownBank && !opensOnTheSave && !Interrupts ? -ClockHoldSeconds : 0f);
+            if (ownBank && !opensOnTheSave && !Interrupts) { Debug.Log("SHOT: the clock stays HELD after the warm-up - the USA, whose appropriation is a day tick the warm-up never runs (the Fed chair's hold held it until AF-7)."); }
 
             // R-D4: the playtest saves are staged on the warmed-up game BEFORE the sweep's own drafts
             // (diverged SWF weights, drafted spending lines) go in - a playtester should open a clean
@@ -3629,8 +3653,9 @@ namespace PoliSim.Testing
             return false;
         }
 
-        /// <summary>Ceiling on the search for an election eve — bounded like every other wait in this harness. Election cycles are measured in (365-day) turns, so six years covers any cycle this game has ever configured.</summary>
-        private const int MaxHeldSearchDays = 365 * 6;
+        /// <summary>Ceiling on the search for a head's term's end — bounded like every other wait in this harness. AF-7: the longest own-bank term the statutes set
+        /// (`CentralBankTerms`) is six years, and a six-year span holds at most two leap days.</summary>
+        private const int MaxHeldSearchDays = 365 * 6 + 2;
 
         /// <summary>
         /// Drives the calendar to the eve of an election turn so the Fed-chair selection fires through
@@ -3664,11 +3689,17 @@ namespace PoliSim.Testing
                 yield break;
             }
 
+            if (sim.World?.GetCountry(_countryId)?.CurrentFedChair == null)
+            {
+                Debug.LogWarning($"SHOT: {_countryId} has no head of its own bank (the euro members' is the ECB's, the AI's to appoint) - HELD captures skipped rather than mislabelled.");
+                yield break;
+            }
+
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
             int guard = 0;
-            // PS-2 (§619): this eve is the FED CHAIR's - its term still ends on the turn cadence `ElectionSystem.IsElectionTurn` names (stated in §619;
-            // the USA's own calendar is stage 6's), so the HELD state is reached on that cadence, not on a polling day.
-            while (!ElectionSystem.IsElectionTurn(sim.CurrentTurn + 1) && guard < MaxHeldSearchDays)
+            // AF-7 (q7): the head's term ends on its STATUTE's date (`CentralBankTerms`), where the turn cadence stood until AF-7 removed it - so
+            // the HELD state is reached on the day the player's bank's head awaits the player's pick.
+            while (!sim.CentralBankHeadAwaitsPlayer(_countryId) && guard < MaxHeldSearchDays)
             {
                 if (sim.AdvanceDay())
                 {
@@ -3678,9 +3709,9 @@ namespace PoliSim.Testing
                 guard++;
             }
 
-            if (!ElectionSystem.IsElectionTurn(sim.CurrentTurn + 1))
+            if (!sim.CentralBankHeadAwaitsPlayer(_countryId))
             {
-                Debug.LogWarning($"SHOT: no election eve within {MaxHeldSearchDays} days - the HELD banner will NOT be in this capture set.");
+                Debug.LogWarning($"SHOT: no head's term ended within {MaxHeldSearchDays} days (or the player does not appoint {_countryId}'s) - the HELD banner will NOT be in this capture set.");
                 yield break;
             }
 

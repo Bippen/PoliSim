@@ -156,6 +156,7 @@ namespace PoliSim.EditorTools
             game.World = WorldFactory.CreateDefault();
             sim.SetWorld(game.World);
             sim.PlayerCountryId = Player;   // no party seated: the instrument's hand on the country, as every Editor tool that names a player country
+            sim.IsCounterfactual = skipFamily != null;   // AF-7: the seed's world without a family stands for the ledger's except-world, a counterfactual - a head's term ends there in the AI's keyed pick, as in the fork
             if (withLedger)
             {
                 game.None = new ShadowBaseline(SimulationRandom.MasterSeed);

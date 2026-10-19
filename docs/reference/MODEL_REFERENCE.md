@@ -661,6 +661,8 @@ constants, no magic numbers):
   turn's fired event (or null) for the UI to show as "BREAKING: ...".
 
 ## Federal Reserve
+
+> **AF-7 (2026-10-19, rulings q7 and q10): the section below is the mechanic's history; where it disagrees, this note stands.** Each bank's head serves the term its own statute sets (`CentralBankTerms`: the Fed by 12 U.S.C. 242, the Riksbank by its act's 7 kap. 7 §, the NBP by its act's Art. 9, the ECB by its Statute's Art. 11.2 - each row held to its saved page by `CentralBankTermCheck`), not the election turns' cycle. On the day a term ends the player's own bank raises the hold, and every other bank - the ECB's President for the euro members always - is appointed by the AI from a shortlist keyed on the game's seed, the bank and the day. The own-currency rate dial is retired, and the preview runs the year at the damped step the boundary sets, not at the target.
 USA-only mechanic: an independent central bank replaces the player's direct Interest Rate Change
 slider (still unchanged for Sweden, Poland, and the Eurozone trio - see `CurrencySystem.
 ApplyInterestRateChanges` below). A `FedChair` (`FedChair.cs`) picked by the player every

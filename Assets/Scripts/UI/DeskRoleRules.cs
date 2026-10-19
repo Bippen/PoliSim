@@ -37,7 +37,8 @@ namespace PoliSim.UI
     public static class DeskEffectsNote
     {
         /// <summary>The words that name a lever - the check reads a note for each and holds that the role holds it.</summary>
-        public const string RateDial = "THE RATE DIAL", RatePush = "THE RATE PUSH", BudgetSheet = "THE BUDGET SHEET", Alternative = "YOUR ALTERNATIVE";
+        // AF-7 (q10): THE RATE DIAL is retired with the own-currency dial - the push (a euro member's) is the one rate lever a note may name.
+        public const string RatePush = "THE RATE PUSH", BudgetSheet = "THE BUDGET SHEET", Alternative = "YOUR ALTERNATIVE";
 
         /// <summary>The card's subject: <paramref name="governs"/> the player introduces the budget (the prime minister's party); <paramref name="draftMoves"/>
         /// the budget sheet's draft moves the estimate; <paramref name="rateDrafted"/> the rate lever is held and moved; <paramref name="mayTable"/> the
@@ -73,7 +74,7 @@ namespace PoliSim.UI
 
         /// <summary>
         /// The note under the arrows: the dashed empty state's whole caption, or the subject line above the methodology caption.
-        /// <paramref name="rateLever"/> is <see cref="RateDial"/> or <see cref="RatePush"/> where the player holds a rate lever, else null;
+        /// <paramref name="rateLever"/> is <see cref="RatePush"/> where the player holds the rate lever (a euro member's push), else null;
         /// <paramref name="daysRemaining"/> the days until the chamber decides the budget before it.
         /// </summary>
         public static string Line(DeskEffectsSubject subject, string rateLever, bool mayTable, int daysRemaining)
@@ -112,7 +113,6 @@ namespace PoliSim.UI
         public static List<string> UnheldLeversNamed(string note, bool governs, string rateLever, bool mayTable)
         {
             var unheld = new List<string>();
-            if (note.Contains(RateDial) && rateLever != RateDial) { unheld.Add(RateDial); }
             if (note.Contains(RatePush) && rateLever != RatePush) { unheld.Add(RatePush); }
             if (note.Contains(BudgetSheet) && !governs) { unheld.Add(BudgetSheet); }
             if (note.Contains(Alternative) && (governs || !mayTable)) { unheld.Add(Alternative); }

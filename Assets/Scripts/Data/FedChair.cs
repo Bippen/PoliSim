@@ -18,6 +18,13 @@ namespace PoliSim.Data
         /// <summary>Percentage points added to TaylorRule.GetSuggestedInterestRate before clamping - positive (Hawkish) or negative (Dovish), near 0 for Moderate.</summary>
         public float RateBias;
 
+        /// <summary>AF-7: the day this head's term began and the day its statute ends it (`CentralBankTerms`) - default on a harness's hand-made head, which then has no term and never ends.</summary>
+        public DateTime TermBegan;
+        public DateTime TermEnds;
+
+        /// <summary>AF-7: whether a term is recorded at all.</summary>
+        public bool HasTerm() => TermEnds > DateTime.MinValue;
+
         public FedChair() { }
 
         /// <summary>AF-11 (GA-1-5): a copy for a counterfactual world - no head is shared between two worlds, as <see cref="CabinetMinister.Copy"/>.</summary>

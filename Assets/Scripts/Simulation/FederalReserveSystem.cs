@@ -5,11 +5,11 @@ using UnityEngine;
 namespace PoliSim.Simulation
 {
     /// <summary>
-    /// USA's independent central bank mechanic: each presidential election cycle, the player picks a
-    /// new Fed chair from 2-3 fictional candidates, and that chair's RateBias (on top of TaylorRule's
-    /// suggested rate) drives USA's interest rate every turn, bypassing PolicyDecision.
-    /// InterestRateChange entirely (see CurrencySystem.ApplyInterestRateChanges). Sweden, Poland, and
-    /// the Eurozone trio are untouched - they keep the player-controlled slider unchanged.
+    /// The independent central bank mechanic: when a head's statutory term ends (AF-7, `CentralBankTerms` - each bank's own statute), the
+    /// player picks the next head of their own bank from 2-3 fictional candidates (an AI appointer picks from a keyed shortlist), and that
+    /// head's RateBias (on top of TaylorRule's suggested rate) drives the rate every turn, bypassing PolicyDecision.
+    /// InterestRateChange entirely (see CurrencySystem.ApplyInterestRateChanges) - the USA, Sweden and Poland; the euro members' shared rate
+    /// takes the ECB President's lean (EurozoneRateSystem).
     ///
     /// Every FedChair here (CandidatePool and GetDefaultChair) is an ORIGINAL FICTIONAL character -
     /// never a real past or present Federal Reserve chair or any real person. Keep it that way for
@@ -92,21 +92,24 @@ namespace PoliSim.Simulation
         /// Federal Reserve. The pool entries are shared templates and are never mutated; a save carries
         /// the resolved text, so a candidate drawn for Sweden still reads as Sweden's after a load.</para>
         /// </summary>
-        public static List<FedChair> GenerateCandidates(CountryId country)
+        public static List<FedChair> GenerateCandidates(CountryId country) => GenerateCandidates(BankShortName(country), RandomSource);
+
+        /// <summary>AF-7: the same draw on a named bank and a given generator - the player's shortlist on the counted stream (above), an AI appointer's on
+        /// its keyed one (<see cref="CentralBankTerms.AiShortlist"/>). The draws are taken in the order they always were.</summary>
+        public static List<FedChair> GenerateCandidates(string bank, System.Random rng)
         {
             var philosophies = new List<FedChairPhilosophy>
             {
                 FedChairPhilosophy.Hawkish, FedChairPhilosophy.Moderate, FedChairPhilosophy.Dovish
             };
-            Shuffle(philosophies);
+            Shuffle(philosophies, rng);
 
-            int count = RandomSource.Next(MinCandidateCount, MaxCandidateCount + 1);
-            string bank = BankShortName(country);
+            int count = rng.Next(MinCandidateCount, MaxCandidateCount + 1);
             var candidates = new List<FedChair>(count);
             for (int i = 0; i < count; i++)
             {
                 List<FedChair> withPhilosophy = CandidatePool.FindAll(c => c.Philosophy == philosophies[i]);
-                FedChair template = withPhilosophy[RandomSource.Next(withPhilosophy.Count)];
+                FedChair template = withPhilosophy[rng.Next(withPhilosophy.Count)];
                 candidates.Add(new FedChair(template.Name, template.Philosophy,
                     template.Description.Replace("{bank}", bank), template.RateBias));
             }
@@ -114,25 +117,15 @@ namespace PoliSim.Simulation
             return candidates;
         }
 
-        /// <summary>How the institution is referred to inside a sentence, per country. Only the countries
-        /// that appoint their own chair have a named entry; the euro members appoint nobody, and the
-        /// fallback names no institution rather than the wrong one.</summary>
-        public static string BankShortName(CountryId country)
-        {
-            switch (country)
-            {
-                case CountryId.USA: return "the Fed";
-                case CountryId.Sweden: return "the Riksbank";
-                case CountryId.Poland: return "the NBP";
-                default: return "the central bank";
-            }
-        }
+        /// <summary>How the institution is referred to inside a sentence, per country - the bank's statute row (<see cref="CentralBankTerms.For"/>):
+        /// the ECB for a euro member since AF-7 gave the ECB a head.</summary>
+        public static string BankShortName(CountryId country) => CentralBankTerms.For(country).ShortName;
 
-        private static void Shuffle<T>(List<T> list)
+        private static void Shuffle<T>(List<T> list, System.Random rng)
         {
             for (int i = list.Count - 1; i > 0; i--)
             {
-                int j = RandomSource.Next(i + 1);
+                int j = rng.Next(i + 1);
                 T temp = list[i];
                 list[i] = list[j];
                 list[j] = temp;

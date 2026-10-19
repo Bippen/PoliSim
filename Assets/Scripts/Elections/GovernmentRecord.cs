@@ -71,9 +71,11 @@ namespace PoliSim.Elections
         /// to a coalition" [BF73]; "one-to-one proportion" [WD01]; "near-perfect relationship" [WD06]), with no formateur premium [WD06]. §706
         /// (ruled 2026-10-01): each post WEIGHED by Druckman &amp; Warwick's published salience (<see cref="PortfolioSalience"/>), the prime
         /// minister's party credited the head of government's weight, the posts heaviest first to the party with the most entitlement outstanding
-        /// (<see cref="AllocatePortfolios"/>) - Finance can go to a partner (the record: 2021's FDP, 2025's SPD; since §753's dated weights the method gives 2025's to the SPD and 2021's to the SPD, a recorded miss). STATED, UNSIZED: the literature's deviation - the large party
-        /// underpaid, the small overpaid [BF73] [WD01] - is on no abstract as a figure, so the model pays pure proportion and says so; Sweden's real
-        /// cabinet (M 13, KD 6, L 5 of 24 for seat shares 0.66/0.18/0.16, `sweden/portfolios.md`) shows the direction. Which portfolio a party
+        /// (<see cref="AllocatePortfolios"/>) - Finance can go to a partner (the record: 2021's FDP, 2025's SPD; where the method puts it is
+        /// PortfolioSalienceDiagnostic's to print). AF-6 (q6, ruled 2026-10-18): the literature's deviation - the large party underpaid, the small
+        /// overpaid [BF73] [WD01] - is paid as READ: the rounding's residual goes to the partners, not the head's party, each post to the partner left least above its due in proportion; no abstract sizes it,
+        /// so nothing beyond the residual is paid; Sweden's real cabinet (M 13, KD 6, L 5 of 24 for seat shares 0.66/0.18/0.16, `sweden/portfolios.md`)
+        /// shows the direction. Which portfolio a party
         /// takes follows its manifesto's emphasis in the literature [BDD11] - unsourced per party here, so the enum's order stands as the premise.
         /// </summary>
         public Dictionary<string, List<CabinetPortfolio>> Portfolios = new Dictionary<string, List<CabinetPortfolio>>();
@@ -193,18 +195,19 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// §706 (Elias's ruling of 2026-10-01: the Treasury lock lifted, Finance weighed): allocates the six portfolios by Gamson's law WITH
+        /// §706 (Elias's ruling of 2026-10-01: the Treasury lock lifted, Finance weighed): allocates every portfolio by Gamson's law WITH
         /// SALIENCE - each post at Druckman &amp; Warwick's published weight (<see cref="PortfolioSalience"/>), the head of government's weight
         /// credited to its party. [AUTHORED-DRAFT] the method: a party's entitlement is its share of the cabinet's seats times the total weight;
-        /// the posts, heaviest first, each go to the party with the most entitlement outstanding (a near-tie to the larger party, §711); the head's party holds
-        /// at least one post (the rule before, kept - its levers pass the gates anyway, the post is its minister's). Finance goes where the weights put it -
-        /// since §753 (Elias's ruling A3, merged ministries summed as the paper codes them, the weights DATED by the record's own day, <see cref="FormedOn"/>):
-        /// the 2025 chamber's to the SPD (the record's Klingbeil), the 2021 chamber's to the SPD too (a miss against the record's Lindner, recorded) -
-        /// PortfolioSalienceDiagnostic; it carries its levers to whoever holds it (§634).
+        /// the posts, heaviest first, each go to the party with the most entitlement outstanding that covers the post's whole weight (a near-tie to the
+        /// larger party, §711); AF-6 (q6): the posts no entitlement covers - the rounding's residual - go to the partners rather than the head's
+        /// party, Warwick &amp; Druckman's small-party bonus as read (the loop's note); the head's party holds
+        /// at least one post (the rule before, kept - its levers pass the gates anyway, the post is its minister's). Finance goes where the weights put it,
+        /// since §753 the weights DATED by the record's own day (<see cref="FormedOn"/>); which party that is, per chamber and against the record, is
+        /// PortfolioSalienceDiagnostic's to print; it carries its levers to whoever holds it (§634).
         /// </summary>
         /// <summary>§711 [AUTHORED-DRAFT], the play-calibration list's 25th entry: an entitlement gap smaller than this share of a post's own weight is a
         /// near-tie, and the post goes to the larger party (Elias's ruling of 2026-10-01, item 2). A tenth of the post: the 2026 Riksdag's Finance
-        /// gap (0.056 of 1.68, a thirtieth) is one; the Bundestags' Finance gaps are not (§753's weights: 2021's SPD over the Grüne by 0.198 of 1.58).</summary>
+        /// gap (0.056 of 1.68, a thirtieth) was one and the Bundestags' Finance gaps were not (§753); since AF-6 the near-tie is read among the parties whose entitlement covers the post.</summary>
         public const double NearTieShare = 0.10;
 
         public void AllocatePortfolios(Country country)
@@ -219,9 +222,11 @@ namespace PoliSim.Elections
             double weightTotal = head;
             foreach (CabinetPortfolio p in all) { weightTotal += PortfolioSalience.Weight(country.Id, p, FormedOn); }
             var outstanding = new Dictionary<string, double>();
+            var due = new Dictionary<string, double>();   // AF-6: each party's whole Gamson entitlement, the residual pass's yardstick
             foreach (string party in Cabinet)
             {
                 double share = total > 0 ? seats[party] / (double)total : 1.0 / Cabinet.Count;
+                due[party] = share * weightTotal;
                 outstanding[party] = share * weightTotal - (party == PmParty ? head : 0.0);
             }
             var order = new List<string>(Cabinet);
@@ -229,18 +234,47 @@ namespace PoliSim.Elections
             foreach (string party in order) { Portfolios[party] = new List<CabinetPortfolio>(); }
             var posts = new List<CabinetPortfolio>(all);
             posts.Sort((a, b) => PortfolioSalience.Weight(country.Id, b, FormedOn).CompareTo(PortfolioSalience.Weight(country.Id, a, FormedOn)) is int c && c != 0 ? c : ((int)a).CompareTo((int)b));   // heaviest first, a tie in the enum's order
+            var residual = new List<CabinetPortfolio>();
             foreach (CabinetPortfolio post in posts)
             {
                 // §711 (Elias's ruling of 2026-10-01, item 2: "Near-ties in portfolio allocation go to the larger party"): the post goes to the larger
                 // party of any whose outstanding entitlement is within a near-tie of the most outstanding - [AUTHORED-DRAFT] a near-tie is less than
                 // NearTieShare of the post's own weight (the play-calibration list's 25th entry). Order is by seats, so the first such party is the larger.
+                // AF-6 (q6, "Warwick & Druckman's small-party bonus as read"): this pass pays only WHOLE entitlements - a post goes only to a party whose
+                // outstanding entitlement covers its whole weight; a post no party's entitlement covers is the rounding's residual, paid below.
+                double weight = PortfolioSalience.Weight(country.Id, post, FormedOn);
                 double most = double.MinValue;
-                foreach (string party in order) { most = Math.Max(most, outstanding[party]); }
-                double nearTie = NearTieShare * PortfolioSalience.Weight(country.Id, post, FormedOn);
+                foreach (string party in order) { if (outstanding[party] >= weight - 1e-9) { most = Math.Max(most, outstanding[party]); } }
+                if (most == double.MinValue) { residual.Add(post); continue; }
+                double nearTie = NearTieShare * weight;
                 string taker = null;
-                foreach (string party in order) { if (outstanding[party] >= most - nearTie - 1e-9) { taker = party; break; } }
+                foreach (string party in order) { if (outstanding[party] >= weight - 1e-9 && outstanding[party] >= most - nearTie - 1e-9) { taker = party; break; } }
                 Portfolios[taker].Add(post);
-                outstanding[taker] -= PortfolioSalience.Weight(country.Id, post, FormedOn);
+                outstanding[taker] -= weight;
+            }
+            // AF-6 (q6): THE SMALL-PARTY BONUS AS READ (`docs/reference/GAMSON_PORTFOLIOS.md`, "Reading for the model": "the residual of the rounding (and
+            // the observed bonus of element 3) going to the smaller partners rather than to the formateur"; [BF73] "large parties tend to be proportionately
+            // underpaid and small parties overpaid"; [WD01] "slight deviations from proportionality coming at the expense of larger parties that lead
+            // coalition negotiations"). No abstract sizes the bonus, so it is the residual's direction alone: each residual post, heaviest first, goes to a
+            // partner other than the head's party - the one whose holding with the post stands least above its due in PROPORTION ((held + post) / due least;
+            // an exact tie to the smaller), Gamson's own measure being a share against a share. [AUTHORED-DRAFT] the review's M4: by most entitlement
+            // outstanding, the first cut paid a 7-seat partner a post worth 2.2 times its due (Italy 2022's Noi Moderati); a cabinet of one party takes its own.
+            var partners = new List<string>();
+            foreach (string party in order) { if (party != PmParty) { partners.Add(party); } }
+            if (partners.Count == 0) { partners.AddRange(order); }
+            foreach (CabinetPortfolio post in residual)
+            {
+                string taker = null;
+                double weight = PortfolioSalience.Weight(country.Id, post, FormedOn);
+                double least = double.MaxValue;
+                for (int i = partners.Count - 1; i >= 0; i--)
+                {
+                    string party = partners[i];
+                    double over = due[party] > 0.0 ? (weight - outstanding[party]) / due[party] : double.MaxValue / 2.0;   // (held + post) / due - 1; a seatless party last
+                    if (taker == null || over < least - 1e-9) { taker = party; least = over; }
+                }
+                Portfolios[taker].Add(post);
+                outstanding[taker] -= weight;
             }
             if (PmParty != null && Portfolios.TryGetValue(PmParty, out List<CabinetPortfolio> pmHeld) && pmHeld.Count == 0)
             {

@@ -110,7 +110,7 @@ namespace PoliSim.EditorTools
                 // (the preview, the tabling's own call, SimulationManager.PreviewFormation); nothing refuses it for the Treasury.
                 FormationProposal noTreasury = s4.DraftProposal(c4, r4, "M");
                 string partnerOf = noTreasury.CabinetParties.Find(p => p != "M");
-                if (partnerOf != null) { noTreasury.Posts["M"].Remove(CabinetPortfolio.FinanceTreasury); if (!noTreasury.Posts.ContainsKey(partnerOf)) { noTreasury.Posts[partnerOf] = new List<CabinetPortfolio>(); } noTreasury.Posts[partnerOf].Add(CabinetPortfolio.FinanceTreasury); }
+                if (partnerOf != null) { foreach (List<CabinetPortfolio> posts in noTreasury.Posts.Values) { posts.Remove(CabinetPortfolio.FinanceTreasury); }   /* AF-6: the draft may already seat Finance with a partner - held once, by the partner */ if (!noTreasury.Posts.ContainsKey(partnerOf)) { noTreasury.Posts[partnerOf] = new List<CabinetPortfolio>(); } noTreasury.Posts[partnerOf].Add(CabinetPortfolio.FinanceTreasury); }
                 ProposalVerdict treasuryPreview = s4.PreviewFormation(CountryId.Sweden, noTreasury);
                 PartyAnswer financeAnswer = treasuryPreview?.Answers.Find(a => a.Party == partnerOf);
                 Check(partnerOf != null && treasuryPreview != null && treasuryPreview.Investiture != null && !(treasuryPreview.Reason ?? string.Empty).Contains("Treasury")

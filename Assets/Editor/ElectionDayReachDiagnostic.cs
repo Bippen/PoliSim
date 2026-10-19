@@ -78,12 +78,6 @@ namespace PoliSim.EditorTools
                 ParliamentSystem.UpdateSeats(country);
             }
 
-            if (!ElectionSystem.IsElectionTurn(electionTurn))
-            {
-                sb.Append($"  FAIL {id}: turn {electionTurn} is not an election turn\n");
-                failures++;
-            }
-
             // 3. Hold the election on the real path.
             ElectionRecord record = NationalElection.TryPredictShares(id, out System.Collections.Generic.Dictionary<string, double> byParty)
                 ? NationalElection.Run(id, electionTurn, byParty)

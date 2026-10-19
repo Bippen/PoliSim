@@ -241,7 +241,7 @@ namespace PoliSim.UI
             { PolicyNodeId.SwfContributionRate, new PolicyNodeInfo { Name = "SWF Contribution Rate", Area = UiPalette.SystemArea.SovereignWealth, Description = "% of GDP contributed to (or, if negative, withdrawn from) the Sovereign Wealth Fund each year." } },
             { PolicyNodeId.SwfAssetAllocation, new PolicyNodeInfo { Name = "SWF Asset Allocation", Area = UiPalette.SystemArea.SovereignWealth, Description = "Equities/Bonds/Infrastructure/Real Estate weighting - higher equities weight raises expected AND variance of returns." } },
             { PolicyNodeId.TariffPolicy, new PolicyNodeInfo { Name = "Tariff Policy", Area = UiPalette.SystemArea.Trade, Description = "This country's own base tariff rate plus any per-partner override. Partners mirror an override's excess onto your exports; a change in the take passes through to prices for a year." } },
-            { PolicyNodeId.InterestRateDecision, new PolicyNodeInfo { Name = "Interest Rate", Area = UiPalette.SystemArea.Political, Description = "Central bank rate - Taylor-Rule-determined for a country with an independent Fed chair, player-set via PolicyDecision.InterestRateChange otherwise." } },
+            { PolicyNodeId.InterestRateDecision, new PolicyNodeInfo { Name = "Interest Rate", Area = UiPalette.SystemArea.Political, Description = "Central bank rate - the Taylor rule plus the head's lean where a country has its own bank; for a euro member, the blend of the members' rules plus the ECB President's lean and the national push." } },
         };
 
         private static readonly Dictionary<StatNodeId, StatNodeInfo> StatInfo = new Dictionary<StatNodeId, StatNodeInfo>

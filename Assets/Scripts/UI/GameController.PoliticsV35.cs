@@ -492,6 +492,7 @@ namespace PoliSim.UI
                 var slip = new SlipContent(name.ToUpperInvariant() + " · " + minister.Name.ToUpperInvariant())
                     .Add(minister.Philosophy.ToString().ToUpperInvariant() + " · " + minister.Description.ToUpperInvariant())
                     .Add(EffectivenessStateLine(portfolio));
+                slip.Add(CabinetDepartmentsLine(portfolio));   // AF-6 (q6): the catalog's departments this portfolio holds (Departments, the generated table)
                 foreach (string line in CabinetEffectivenessLines(portfolio)) { slip.Add(line); }
                 foreach (string line in CabinetFamilyKeyLines(portfolio)) { slip.Add(line); }
                 slip.Add("RESHUFFLE: THE MINISTER GOES, A SHORTLIST IS DRAWN - APPROVAL PAYS FOR A POPULAR ONE");
@@ -549,7 +550,9 @@ namespace PoliSim.UI
             GUILayout.EndVertical();
             if (Event.current.type == EventType.Repaint && !shortlisted) { SlipAnchor(GUILayoutUtility.GetLastRect(), anchor); }
             _politicsSlipBook.Anchors[anchor] = new SlipContent(name.ToUpperInvariant() + " · VACANT")
-                .Add(shortlisted ? "ITS SHORTLIST IS DRAWN - APPOINT FROM IT" : "NO SHORTLIST DRAWN - THE SEARCH UNDER THE CARDS DRAWS ONE")
+                .Add(!Simulation.CabinetSystem.HasAuthoredPool(portfolio)   // AF-6 (the review's M1): no named candidates yet - the shortlist is the average minister
+                    ? (shortlisted ? "NO NAMED CANDIDATES YET - THE SHORTLIST OFFERS AN AVERAGE MINISTER; APPOINT IT" : "NO NAMED CANDIDATES YET - THE SEARCH UNDER THE CARDS OFFERS AN AVERAGE MINISTER")
+                    : shortlisted ? "ITS SHORTLIST IS DRAWN - APPOINT FROM IT" : "NO SHORTLIST DRAWN - THE SEARCH UNDER THE CARDS DRAWS ONE")
                 .Add(Simulation.CabinetSystem.IsVacantChair(c, portfolio) ? "AN EMPTY CHAIR RUNS THE MINISTRY BELOW ITS WEAKEST CANDIDATE - EFFICIENCY ×" + Effectiveness.EfficiencyOf(c, portfolio).ToString("0.00", CultureInfo.InvariantCulture) : "THE CHAIR IS NOT YOURS TO FILL - THE MINISTRY RUNS AT AN AVERAGE MINISTER'S");   // AF-30
         }
 
@@ -602,6 +605,14 @@ namespace PoliSim.UI
             }
             float side = Mathf.Min(V35.Px(24f), r.width * 0.5f);
             DrawV35Icon(new Rect(r.center.x - side * 0.5f, r.center.y - side * 0.5f, side, side), CabinetIcon(portfolio), PoliSimTheme.TextSecondary);
+        }
+
+        /// <summary>AF-6 (q6): the slip's line naming the catalog's departments a portfolio holds (<see cref="Departments.Of"/>).</summary>
+        private static string CabinetDepartmentsLine(CabinetPortfolio portfolio)
+        {
+            var names = new List<string>();
+            foreach (Department d in Departments.Of(portfolio)) { names.Add(Departments.Name(d).ToUpperInvariant()); }
+            return names.Count > 0 ? "DEPARTMENTS: " + string.Join(" · ", names) : "NO DEPARTMENT OF THE CATALOG'S EIGHT";
         }
 
         private static string CabinetIcon(CabinetPortfolio portfolio)
@@ -808,7 +819,7 @@ namespace PoliSim.UI
                 float tx = govInner.x + side + V35.Px(12f);
                 GUI.Label(new Rect(tx, govInner.y, govInner.width * 0.7f, V35.Px(24f)), head + " · " + chair.Name, V35Serif(V35.Name, PoliSimTheme.TextPrimary));
                 GUI.Label(new Rect(tx, govInner.y + V35.Px(24f), govInner.width * 0.7f, V35.Px(20f)),
-                    pending ? CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates for the next term - the choice is below and on the Docket" : chair.Philosophy + " · the term ends on the bank's own cycle",
+                    pending ? CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates for the next term - the choice is below and on the Docket" : chair.Philosophy + " · " + CentralBankTermWords(chair, PlayerCountryId),
                     V35Serif(V35.Floor, PoliSimTheme.TextSecondary));
                 if (pending)
                 {
@@ -826,7 +837,7 @@ namespace PoliSim.UI
             _politicsSlipBook.Anchors["bank:governor"] = new SlipContent(head.ToUpperInvariant() + " · " + chair.Name.ToUpperInvariant())
                 .Add(chair.Philosophy.ToString().ToUpperInvariant() + " · LEAN " + chair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " ON THE RULE'S RATE")
                 .Add(chair.Description.ToUpperInvariant())
-                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - TIME HOLDS UNTIL ONE IS" : "THE TERM ENDS ON THE BANK'S OWN CYCLE; A SHORTLIST IS DRAWN THEN");
+                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - TIME HOLDS UNTIL ONE IS" : CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant() + "; A SHORTLIST IS DRAWN THEN");
             V35.FloorGuarded = false;
             GUILayout.Space(gutter);
         }

@@ -842,11 +842,10 @@ namespace PoliSim.Data
         public float ImmigrationPolicyLevel = 50f;
 
         /// <summary>
-        /// This country's independent central bank chair, or null for a country that instead uses
-        /// PolicyDecision.InterestRateChange (the player-controlled slider - Sweden, Poland, and the
-        /// Eurozone trio; see CurrencySystem.ApplyInterestRateChanges). Non-null (USA only, for now)
-        /// means CurrencySystem bypasses PolicyDecision.InterestRateChange entirely and instead sets
-        /// InterestRate to TaylorRule.GetSuggestedInterestRate plus this chair's RateBias each turn -
+        /// The head of this country's own central bank (the USA, Sweden and Poland), or null for a euro member, whose shared
+        /// zone's head is CurrencyZone.Head (the ECB's President). Non-null means CurrencySystem bypasses
+        /// PolicyDecision.InterestRateChange entirely and instead moves InterestRate toward TaylorRule.GetSuggestedInterestRate
+        /// plus this head's RateBias each turn; the head serves its statute's term (AF-7, CentralBankTerms) -
         /// see FederalReserveSystem and docs/reference/MODEL_REFERENCE.md's "Federal Reserve" section.
         /// </summary>
         public FedChair CurrentFedChair;

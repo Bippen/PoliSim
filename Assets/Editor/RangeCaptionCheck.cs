@@ -43,7 +43,7 @@ namespace PoliSim.EditorTools
                 foreach (Match m in DialCall.Matches(SourceText.WithoutComments(SourceText.ControllerPartials(path))))   // P6-F2b (§542): every partial of the controller
                 {
                     string key = m.Groups[1].Value;
-                    if (key == "Policy rate change" || key == "National rate push") { continue; }   // the Riksbank's two ±dials are not range dials; DialLabelCheck leaves them too
+                    if (key == "National rate push") { continue; }   // the euro member's ±push is not a range dial; DialLabelCheck leaves it too (AF-7 retired the own-currency "Policy rate change" dial)
                     if (!drawn.Contains(key)) { drawn.Add(key); }
                 }
             }
@@ -171,13 +171,17 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>§755 (ruling A2): the stance's sign on the balance, read off the step itself - Germany's Finance partner as a player's dial at +1 point
-        /// of GDP: the lines FinancePartner.Apply writes (more spent is a lower balance).</summary>
+        /// of GDP: the lines FinancePartner.Apply writes (more spent is a lower balance). AF-6: since the economy portfolio, no start's government seats a
+        /// partner at Finance (Germany's head's party holds it), so the check PLANTS one where none sits - Finance moved to the first cabinet partner the
+        /// Finance-partner rule counts (FinancePartnerDiagnostic's plant), its first post going the other way - and measures the dial where it can act.</summary>
         private static int FiscalStanceSign(out string basis)
         {
             PoliSim.Data.World world = PoliSim.Data.WorldFactory.CreateDefault();
             PoliSim.Data.Country de = world.GetCountry(PoliSim.Data.CountryId.Germany);
             string holder = FinancePartner.Holder(de);
-            basis = "FinancePartner.Apply on Germany's partner (" + (holder ?? "none") + ") as a player's dial at +1 pp of GDP: the lines it writes";
+            bool planted = holder == null && PlantPartnerAtFinance(de);
+            if (planted) { holder = FinancePartner.Holder(de); }
+            basis = "FinancePartner.Apply on Germany's partner (" + (holder ?? "none") + (planted ? ", PLANTED at Finance" : string.Empty) + ") as a player's dial at +1 pp of GDP: the lines it writes";
             if (holder == null) { return 0; }
             de.PlayerPartyAbbrev = holder;
             de.FinanceStancePlayerTarget = 1f;
@@ -186,6 +190,32 @@ namespace PoliSim.EditorTools
             float sum = 0f;
             foreach (KeyValuePair<PoliSim.Data.SpendingCategory, float> kv in decision.SpendingLineChanges) { sum += kv.Value; }
             return sum > 0f ? -1 : sum < 0f ? 1 : 0;
+        }
+
+        /// <summary>AF-6: Finance moved to a cabinet partner that FinancePartner.Holder counts (not the head's party nor its joint group), the partner's first post
+        /// going to the party that held Finance; false where no such partner sits. The government's record is edited in place - this world is the check's own.</summary>
+        private static bool PlantPartnerAtFinance(PoliSim.Data.Country country)
+        {
+            PoliSim.Elections.GovernmentRecord g = country?.Government;
+            if (g == null) { return false; }
+            string financeHolder = null;
+            foreach (KeyValuePair<string, List<PoliSim.Data.CabinetPortfolio>> kv in g.Portfolios) { if (kv.Value != null && kv.Value.Contains(PoliSim.Data.CabinetPortfolio.FinanceTreasury)) { financeHolder = kv.Key; } }
+            if (financeHolder == null) { return false; }
+            foreach (string partner in g.Cabinet)
+            {
+                if (partner == financeHolder || !g.Portfolios.TryGetValue(partner, out List<PoliSim.Data.CabinetPortfolio> its) || its == null || its.Count == 0) { continue; }
+                PoliSim.Data.CabinetPortfolio given = its[0];
+                g.Portfolios[financeHolder].Remove(PoliSim.Data.CabinetPortfolio.FinanceTreasury);
+                g.Portfolios[financeHolder].Add(given);
+                its.Remove(given);
+                its.Add(PoliSim.Data.CabinetPortfolio.FinanceTreasury);
+                if (FinancePartner.Holder(country) != null) { return true; }
+                its.Remove(PoliSim.Data.CabinetPortfolio.FinanceTreasury);   // the head's own group (or the head itself): undone, the next partner tried
+                its.Add(given);
+                g.Portfolios[financeHolder].Remove(given);
+                g.Portfolios[financeHolder].Add(PoliSim.Data.CabinetPortfolio.FinanceTreasury);
+            }
+            return false;
         }
 
         /// <summary>PN-1's dial (§590): the pension line's driver as the age rises - SpendingDrivers.Level(StatutoryPensionAge) on a fresh world's Sweden with the age SET BY A

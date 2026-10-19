@@ -386,6 +386,7 @@ namespace PoliSim.Testing
                 foreach (CabinetPortfolio portfolio in System.Enum.GetValues(typeof(CabinetPortfolio)))
                 {
                     List<CabinetMinister> candidates = CabinetSystem.GenerateCandidates(portfolio);
+                    if (!CabinetSystem.HasAuthoredPool(portfolio)) { continue; }   // AF-6: the economy portfolio has no authored pool (its shortlist is the average minister) - the stress seats authored candidates only, as before
                     usa.CabinetMinisters[portfolio] = candidates.OrderByDescending(c => c.CompetenceBias).First();
                 }
             }

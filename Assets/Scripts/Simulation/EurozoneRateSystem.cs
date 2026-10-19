@@ -17,7 +17,7 @@ namespace PoliSim.Simulation
     /// calmer one, the same directional logic as the real ECB Governing Council. Whichever member the
     /// player currently controls gets a modest, bounded push on top of that blend (mirroring a Fed
     /// Chair's RateBias in scale, not USA's unilateral authority) via the same PolicyDecision.
-    /// InterestRateChange field Sweden/Poland already use - the other members' contribution is always
+    /// InterestRateChange field (since AF-7 read for the euro members alone) - the other members' contribution is always
     /// their own current-turn Taylor Rule reading, unweighted by any player input, since an AI-
     /// controlled country always gets PolicyDecision.None() (InterestRateChange defaults to 0), the
     /// same convention every other decision field already follows. Does not touch Sweden/Poland's own
@@ -36,7 +36,7 @@ namespace PoliSim.Simulation
         public const float MemberRatePushRange = 0.75f;
 
         /// <summary>CONVENTION - a reversion speed, and DERIVED rather than separately chosen. Fraction of the gap between the zone's current rate and this turn's blended target that closes each turn - matches FederalReserveSystem.RateAdjustmentSpeed's value and role (a real central bank moves gradually, not straight to its own textbook target every meeting).</summary>
-        private const float RateAdjustmentSpeed = 0.15f;
+        public const float RateAdjustmentSpeed = 0.15f;
 
         /// <summary>
         /// This turn's HICP-country-weighted blend (<see cref="HicpCountryWeight"/>) of every member's own TaylorRule.GetSuggestedInterestRate
@@ -109,6 +109,10 @@ namespace PoliSim.Simulation
             return totalPush;
         }
 
+        /// <summary>AF-7 (q7): the lean of the shared bank's head (the ECB's President, <see cref="CurrencyZone.Head"/>) on the shared target - zero where no
+        /// head sits; the seed's head leans nowhere, so the rate moves only once an appointment at a term's end seats one who does.</summary>
+        public static float HeadLean(CurrencyZone zone) => zone?.Head != null ? zone.Head.RateBias : 0f;
+
         /// <summary>
         /// Moves the shared zone's rate partway (RateAdjustmentSpeed) toward this turn's target -
         /// GetBlendedSuggestedRate plus GetMemberPush, clamped to CurrencySystem's sane bounds -
@@ -120,7 +124,7 @@ namespace PoliSim.Simulation
             CurrencyZone zone = zoneMember.CurrencyZone;
             float blended = GetBlendedSuggestedRate(world, zoneMember);
             float push = GetMemberPush(world, zone, decisions);
-            float target = Mathf.Clamp(blended + push, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+            float target = Mathf.Clamp(blended + push + HeadLean(zone), CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
 
             float current = zone.InterestRate;
             zone.InterestRate = current + (target - current) * RateAdjustmentSpeed;

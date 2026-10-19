@@ -30,9 +30,9 @@ namespace PoliSim.Data
 
     public static class Effectiveness
     {
-        /// <summary>Which ministry reads a spending line - the table the mechanic runs on. [AUTHORED-DRAFT]: the portfolios are P2-5's six and
+        /// <summary>Which ministry reads a spending line - the table the mechanic runs on. [AUTHORED-DRAFT]: the portfolios are P2-5's six and AF-6's economy portfolio, and
         /// the lines are the book's; the assignment is by the line's subject, stated here in one place. A line no ministry reads (pensions, debt
-        /// interest, municipal grants, transport, energy, housing, the rest) returns null and its row prints no ratio (9d).</summary>
+        /// interest, municipal grants, housing, the rest) returns null and its row prints no ratio (9d).</summary>
         public static CabinetPortfolio? PortfolioOf(SpendingCategory category)
         {
             switch (category)
@@ -66,6 +66,14 @@ namespace PoliSim.Data
                 case SpendingCategory.CentralGovernment:
                 case SpendingCategory.Administration:
                     return CabinetPortfolio.FinanceTreasury;
+                // AF-6 (q6): the departments none of the six fits - Agriculture, Transportation, Energy (`Departments`) - and the economy ministry that holds
+                // energy where the survey rates no energy post of its own (the US Department of Commerce; the five's business and industry line).
+                case SpendingCategory.Agriculture:
+                case SpendingCategory.Transportation:
+                case SpendingCategory.Energy:
+                case SpendingCategory.Commerce:
+                case SpendingCategory.BusinessAndIndustry:
+                    return CabinetPortfolio.Economy;
                 default:
                     return null;
             }
@@ -82,6 +90,7 @@ namespace PoliSim.Data
                 case CabinetPortfolio.InteriorJustice: return "INTERIOR";
                 case CabinetPortfolio.ForeignAffairs: return "FOREIGN";
                 case CabinetPortfolio.FinanceTreasury: return "TREASURY";
+                case CabinetPortfolio.Economy: return "ECONOMY";
                 default: return portfolio.ToString().ToUpperInvariant();
             }
         }

@@ -1123,8 +1123,8 @@ namespace PoliSim.UI
         private DeskEffectsSubject DeskEffectsSubjectNow(out string rateLever, out bool mayTable, out int chamberDays)
         {
             bool governs = _simulationManager.PlayerGoverns(_playerCountry);
-            rateLever = governs && _playerCountry.CurrentFedChair == null
-                ? (CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world) ? DeskEffectsNote.RatePush : DeskEffectsNote.RateDial)
+            rateLever = governs && _playerCountry.CurrentFedChair == null && CurrencySystem.SharesCurrencyZoneWithOthers(_playerCountry, _world)
+                ? DeskEffectsNote.RatePush   // AF-7: the own-currency dial is retired - a country with its own currency always has a head
                 : null;
             bool junior = _playerCountry.Government != null && _playerCountry.Government.RoleOf(_playerCountry.PlayerPartyAbbrev) == PoliSim.Elections.PlayerRole.JuniorPartner;
             mayTable = !governs && !junior && PoliSim.Elections.WorldClock.WeighsAlternative(PlayerCountryId);   // US-20: the chamber weighs an alternative

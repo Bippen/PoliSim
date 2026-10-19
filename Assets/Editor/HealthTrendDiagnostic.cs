@@ -69,6 +69,10 @@ namespace PoliSim.EditorTools
         private static float[] Run(CountryId player, int years, float share)
         {
             SimulationRandom.Seed(777);
+            // AF-7 (the s875 bar): this run opens on the player's own start, as `NoPolicyCentury` does - a world on another epoch is another world (since AF-7 the
+            // central bank heads' terms run from the start, so an AI appointment's day and its keyed shortlist move with it), and the century is held against this run.
+            using System.IDisposable epoch = SimulationManager.EpochScope();
+            PoliSim.Elections.WorldClock.ApplyStart(player);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject("HEALTHTREND");
             try

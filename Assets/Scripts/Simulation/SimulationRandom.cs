@@ -277,6 +277,22 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>
+        /// AF-7 (q10): A CENTRAL BANK'S SHORTLIST AT A TERM'S END, COMMON TO EVERY WORLD OF ONE GAME - <see cref="ElectionNoiseOn"/>'s key on the
+        /// <see cref="Stream.FederalReserve"/> stream's offset, the bank and the day its term ends: an AI appointer draws the same names in the played world,
+        /// the shadow and every fork, and no counted stream moves (the player's own shortlist still draws the counted stream, as it always has).
+        /// </summary>
+        public static System.Random CentralBankShortlistOn(int bank, System.DateTime termEnds)
+        {
+            unchecked
+            {
+                ulong key = Mix((ulong)(uint)MasterSeed ^ ((ulong)(uint)((int)Stream.FederalReserve * 7919) << 32));
+                key = Mix(key ^ (ulong)(uint)bank);
+                key = Mix(key ^ (ulong)termEnds.Date.Ticks);
+                return new System.Random((int)(key ^ (key >> 32)));
+            }
+        }
+
         /// <summary>SplitMix64's finaliser - a fixed bijection on 64 bits, so every part of the key moves every bit of the seed.</summary>
         private static ulong Mix(ulong z)
         {
