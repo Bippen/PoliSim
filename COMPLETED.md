@@ -40463,3 +40463,54 @@ The trajectories (§876's family `af67`) open on Sweden's start epoch. In them t
   - The dry films: `drys875b` Germany 147/0 (USA 156/0, Sweden then 5 failed, fixed); `drys875c` USA 156, Sweden 155 and Poland 145 measured, 0 failed, 0 overflows.
   - The real film `realse875c` Sweden at 1280: 155/0.
   - `cheap875c` 123 of 123 after the films.
+
+
+## 877. A-LOOP PIECE 1, q34: A NEW LEVY IS A RISE FROM ZERO, A REMOVAL IS RELIEF - THE SEED'S LEVIED SET IS THE RECORD, THE BURDEN READS IT, AND A TAX PROGRAMME BILL RETURNS ITS MOVE FOR q37 (2026-10-19)
+
+**What was owed** (`docs/specs/A_LOOP_PLAN.md` §1; A-LOOP ruled by J1 2026-10-19, §868; ORDER step 3, piece 1 of §7): a levy cost nothing and a removal gave no relief.
+- The burden's seed side read `BaselineTaxRates`, which holds every line's placeholder, and both sides skipped a line not levied today (D-32).
+- GA-12-3 measured it: x_se_x05's five levies left approval and participation at the idle run's figures, to the tenth.
+
+**Built** (an implementer on `wave/aloop1` 8af3bfa0):
+- **The record.** `Country.SeedLevied` holds the lines levied at the seed, filled by `WorldFactory.SeedTaxLines`.
+  - It is saved additively under ruling A. An older save reads a missing set as the lines levied at the load (`SimulationManager.RestoreSaveState`), which reproduces that build's burden.
+  - The preview's clone carries it.
+- **The burden.** `MacroSystem.HouseholdTaxBurdenShare`'s seed side reads the record:
+  - a seed-levied line counts at its seed rate, whether or not it is levied today;
+  - an unlevied seed line counts at zero.
+  - The now side counts only what is levied today.
+- **The seam.** `ParliamentSystem.ApplyTaxProgramBillResult` returns a `TaxLevyMove`: a levy is 0 → the line's points, a removal is its points → 0.
+  - The unit is q37's one unit (`ParliamentSystem.TaxTermPoints`): effective-rate points with the sub-rows for a rate line, the dial's per cent for a per-tonne line.
+  - No approval is charged here. The penalty is q37's (§2).
+- **§1 (6).** The four always-off lines are not re-seeded. The diagnostic prints each country's lines not levied at the seed as the game's seed, not the statute.
+
+**The check:** `HouseholdBurdenAnchorDiagnostic`, sections (7)-(9).
+- (7) `SeedLevied` equals the seed's levied lines in all six countries.
+- (8) Every household line goes through its bill and back: 38 levies and 28 removals. Each moves the gap by its revenue share, and each bill returns its move.
+- (9) An older save loads to its own burden.
+
+**Measured:**
+- **`n877`:** BURDEN ANCHOR PASS; PreviewParity's clone audit shows 0 escapes; the sentinel holds on af67.
+- **`slrt877`:** PASS.
+- **The no-policy dump `q34` against `af67`** (`dump877`): every country is identical at every turn, on both seeds. No family.
+- **The levy audit** (`audit877b`; x_se_x05 against x_se_idle, Sweden, seed 1601, 1095 days):
+  - the idle run holds the burden at +0.0000 points from the seed's statute throughout;
+  - in the X-05 run the burden steps up at each levy: excise +0.80, property +0.09, estate +0.40 and wealth +0.07, to +1.3604 points by day 142;
+  - before q34, in GA-12-3, it stayed at zero.
+- q37's approval items are piece 2.
+
+**Declared:**
+- the older-save reading;
+- a null set on a hand-made country means nothing was seeded;
+- the seam's unit (§2 (2), CONVENTION);
+- no move when a bill finds its line already in the state it asks for.
+
+**Reviewed:** `Reviews/2026-10-19_s877_aloop_q34.md`, an independent reader: **SHIP WITH FIXES**, with no H. Its M1 (one reader of a line's position, an unlevied line at 0) and M2 (independent unit expectations) guard q37's snapshot, so they land with q37. Ledger rows s877 cover `ProgramBill.cs`, `MacroSystem.cs` and `SimulationManager.cs`.
+
+**Bars** (tier SIMULATION):
+- `n877` 8 of 8 clean;
+- `slrt877` PASS;
+- `dump877` with `traj_diff` 0 movers;
+- `audit877b` 2 runs, exit 0;
+- the cheap bar `cheap877` 123 of 123 clean;
+- the simulation bar `sim877` 62 of 62, the sentinel holding on af67.

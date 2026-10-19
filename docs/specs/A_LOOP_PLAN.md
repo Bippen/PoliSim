@@ -68,6 +68,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 
 **(6) Risk.** The seed's four always-off lines are a modelling convention, not the statute. The excise, property, wealth and stamp duty lines are seeded inactive at a uniform placeholder (`WorldFactory.SeedTaxLines`, :1171), yet Sweden levies excise duties and a municipal property fee in fact. So "the seed levied it" is the game's seed, not Skatteverket's list. This plan does not widen q34 to re-seed them; it is recorded here as a finding for the model families.
 
+
+**Built (2026-10-19, `COMPLETED.md` §877, `wave/aloop1` 8af3bfa0):** `Country.SeedLevied` is the record and the burden reads it; a tax programme bill returns its `TaxLevyMove` for q37. The penalty is q37's (§2). Inert to the no-policy dump; the levy audit (x_se_x05) steps the burden up by each line's revenue share.
 ---
 
 ## 2. q37 - the tax term reads a change against the fiscal year's opening rates; a cut earns a smaller mirror; the term decays. Size **M**.

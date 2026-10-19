@@ -658,19 +658,41 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>PASS: TaxLine.IsImplemented is set directly (Rate is untouched - a separate rate-change bill, or a later BudgetBill, is how the rate itself is adjusted). No approval cost beyond the shared BillFailedApprovalCost on FAIL - implement/remove never carried an extra cost before 5d either (see BudgetBill.ApplyBillResult's own doc comment on why structural changes stay free).</summary>
-        public static void ApplyTaxProgramBillResult(Country country, TaxProgramBill bill, bool passed, bool governmentBears = true)
+        /// <remarks>A-LOOP q34 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §1 (2)): returns the move the bill made to its line's rate - a levy from 0 to
+        /// the line's rate, a removal from its rate to 0, in q37's one unit (<see cref="TaxTermPoints"/>) - the seam q37's tax term books its impulse
+        /// from (§2 (2): "q34's levy and removal are moves of the same P"). No move (<see cref="TaxLevyMove.Moved"/> false) on a failed bill, a line the
+        /// country does not carry, or a bill that finds its line already as it asks. The approval charge is q37's and is not made here.</remarks>
+        public static TaxLevyMove ApplyTaxProgramBillResult(Country country, TaxProgramBill bill, bool passed, bool governmentBears = true)
         {
+            var move = new TaxLevyMove { Type = bill.Type };
             if (!passed)
             {
                 if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
-                return;
+                return move;
             }
 
             TaxLine line = FindTaxLine(country, bill.Type);
             if (line != null)
             {
+                if (line.IsImplemented != bill.IsAdd)
+                {
+                    move.Moved = true;
+                    move.FromPoints = line.IsImplemented ? TaxTermPoints(country, line) : 0f;
+                    move.ToPoints = bill.IsAdd ? TaxTermPoints(country, line) : 0f;
+                }
                 line.IsImplemented = bill.IsAdd;
             }
+            return move;
+        }
+
+        /// <summary>A-LOOP q34 for q37 (`docs/specs/A_LOOP_PLAN.md` §2 (2), D-33's fix): a line's rate in the tax term's ONE unit, levied or not - the
+        /// effective rate's points for a rate line (`TaxBases.EffectiveRate`: the income tax's flat-equivalent with its sub-rows, every other line its
+        /// own rate), the per cent of its dial for a per-tonne line (`TaxLine.PointsOf`). The unit is the plan's CONVENTION, carried here so the levy
+        /// and q37's rate moves are measured on one scale.</summary>
+        public static float TaxTermPoints(Country country, TaxLine line)
+        {
+            if (line == null) { return 0f; }
+            return line.IsPerTonne ? line.PointsOf(line.Rate) : TaxBases.EffectiveRate(country, line);
         }
 
         /// <summary>WelfareProgramType equivalent of GetTaxProgramBillDirection - see that method's own doc comment, same pattern (GenerosityLevel in place of Rate).</summary>

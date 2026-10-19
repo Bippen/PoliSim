@@ -16,6 +16,13 @@ namespace PoliSim.EditorTools
     /// (5) GA-2-11 (2026-10-14): the income tax's own sub-row rates reach the gap - Sweden's flat layer and state band at 0 open a large negative gap,
     /// Poland's top band five points up a positive one (both sides used to read the live line's rates, and the gap stayed zero). (6) A line with no
     /// rates of its own - no array, an empty one, every entry −1 - reads the gap to the bit in every country whose income tax responds.
+    /// (7) A-LOOP q34 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §1): the seed's levied set (`Country.SeedLevied`) is the lines levied at the seed, in every
+    /// country. (8) On every household line of every country, at the seed, through the tax's own bill (`ParliamentSystem.ApplyTaxProgramBillResult`):
+    /// a levy opens the gap by that line's revenue share and a removal of a seed tax closes it by the same (relief, a negative gap); the bill returns the
+    /// move q37 will read - from 0 to the line's rate, or from its rate to 0 (`ParliamentSystem.TaxTermPoints`); the opposite bill returns the opposite
+    /// move and puts the gap back; the excise line (seeded inactive at its placeholder: D-32's case) opens a positive gap everywhere and a seeded VAT's
+    /// removal a negative one; a failed bill moves nothing. (9) A save from before q34 (no seed set) loads with the lines levied at the load as its set
+    /// (`SimulationManager.RestoreSaveState`), so a line levied before it was cut reads no gap - the older build's reading.
     /// </summary>
     public static class HouseholdBurdenAnchorDiagnostic
     {
@@ -60,6 +67,9 @@ namespace PoliSim.EditorTools
             float plRaised = GapWith(pl, IncomeLine(pl), SubRowRates(CountryId.Poland, row => row.Adjustable && row.StatuteRate == plTop ? (float)plTop + 5f : -1f));
             if (!(seZeroed < -0.05f)) { Debug.LogError($"BURDEN ANCHOR: Sweden's flat layer and state band at 0 leave the gap at {seZeroed:R} - the sub-rows do not reach consumption."); ok = false; }
             if (!(plRaised > 1e-4f)) { Debug.LogError($"BURDEN ANCHOR: Poland's top band at {plTop + 5.0:R} leaves the gap at {plRaised:R} - the sub-rows do not reach consumption."); ok = false; }
+            // A-LOOP q34: (7) and (8) on the seed world (each line put back after), then (9) on a world of its own
+            ok &= LevyAndRemoval(seedWorld);
+            ok &= OlderSaveReading();
 
             float untouched = Run(0f, 0f, false);
             float rateUp = Run(5f, 0f, false);
@@ -73,7 +83,7 @@ namespace PoliSim.EditorTools
             Debug.Log($"BURDEN ANCHOR: Sweden at turn {Turns} - untouched gap {untouched:F6}; income tax +5: {rateUp:F5}; -5: {rateDown:F5}; unemployment +5 on turn {ShockTurn}: {jobsShock:F6} (the base cancels by design); "
                 + (float.IsNaN(newTax) ? "new-tax anchor untestable." : $"a household tax absent at the seed at 5 %: {newTax:F5}.")
                 + $" At the seed, the sub-rows: Sweden's flat layer and state band at 0 {seZeroed:F5}; Poland's top band at {plTop + 5.0:R} {plRaised:F5}.");
-            Debug.Log(ok ? "BURDEN ANCHOR: PASS - zero at the seed, the rate both ways, the base cancels, a new tax anchors at zero, the sub-rows reach the gap, and no rates of its own read it to the bit." : "BURDEN ANCHOR: FAILED (see above).");
+            Debug.Log(ok ? "BURDEN ANCHOR: PASS - zero at the seed, the rate both ways, the base cancels, a new tax anchors at zero, the sub-rows reach the gap, no rates of its own read it to the bit, and (q34) a levy is a rise from zero, a removal is relief, the bill returns the move, and an older save loads to its own burden." : "BURDEN ANCHOR: FAILED (see above).");
             CheckExit.Finish(ok ? 0 : 1);
         }
 
@@ -111,6 +121,102 @@ namespace PoliSim.EditorTools
                 }
                 if (implementNewTax && !newTaxFound) { return float.NaN; }
                 return MacroSystem.HouseholdBurdenGap(c);
+            }
+            finally { Object.DestroyImmediate(go); }
+        }
+
+        /// <summary>(7) and (8): the seed set is the seed's levied lines, and every household line's levy or removal moves the gap by that line's revenue share and
+        /// returns its move; each line is put back by the opposite bill before the next.</summary>
+        private static bool LevyAndRemoval(World world)
+        {
+            bool ok = true;
+            int levies = 0, removals = 0;
+            foreach (Country c in world.Countries)
+            {
+                var levied = new List<TaxType>();
+                var outside = new List<string>();
+                foreach (TaxLine line in c.TaxLines) { if (line.IsImplemented) { levied.Add(line.Type); } else { outside.Add(line.Type.ToString()); } }
+                if (c.SeedLevied == null || c.SeedLevied.Count != levied.Count || !levied.TrueForAll(c.SeedLevies))
+                {
+                    Debug.LogError($"BURDEN ANCHOR: q34 {c.Id}'s seed set ({(c.SeedLevied == null ? "none" : string.Join(", ", c.SeedLevied))}) is not the lines levied at the seed ({string.Join(", ", levied)})."); ok = false;
+                }
+                Debug.Log($"BURDEN ANCHOR: q34 {c.Id} - the seed levied {levied.Count} lines; not levied at the seed: {string.Join(", ", outside)} (the game's seed, not the statute: §1 (6)).");
+
+                foreach (TaxLine line in c.TaxLines)
+                {
+                    if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
+                    bool levy = !line.IsImplemented;
+                    float before = MacroSystem.HouseholdBurdenGap(c);
+                    float points = ParliamentSystem.TaxTermPoints(c, line);
+                    float share = TaxBases.RevenueAtRate(c, line.Type, line.Rate) / Mathf.Max(1f, c.State.NominalGdp);   // the "now" side's own term for the line
+                    float expected = levy ? share : -share;
+                    TaxLevyMove move = ParliamentSystem.ApplyTaxProgramBillResult(c, new TaxProgramBill { Type = line.Type, IsAdd = levy }, true);
+                    float after = MacroSystem.HouseholdBurdenGap(c);
+                    TaxLevyMove undo = ParliamentSystem.ApplyTaxProgramBillResult(c, new TaxProgramBill { Type = line.Type, IsAdd = !levy }, true);
+                    float restored = MacroSystem.HouseholdBurdenGap(c);
+                    string what = $"{c.Id} {(levy ? "levies" : "removes")} {line.Type}";
+                    if (levy) { levies++; } else { removals++; }
+
+                    if (Mathf.Abs((after - before) - expected) > 1e-5f + 1e-3f * Mathf.Abs(expected))
+                    {
+                        Debug.LogError($"BURDEN ANCHOR: q34 {what} - the gap moved {after - before:R}, the line's revenue share is {expected:R}."); ok = false;
+                    }
+                    if (Mathf.Abs(expected) > 1e-6f && (levy ? !(after > before) : !(after < before)))
+                    {
+                        Debug.LogError($"BURDEN ANCHOR: q34 {what} - the gap went {before:R} -> {after:R}, the wrong way."); ok = false;
+                    }
+                    if (line.Type == TaxType.ExciseTax && levy && !(expected > 1e-6f)) { Debug.LogError($"BURDEN ANCHOR: q34 {what} at its placeholder {line.Rate:R} - its revenue share is {expected:R}, so D-32's case is not tested."); ok = false; }
+                    if (line.Type == TaxType.VAT && !levy && !(after < -1e-6f)) { Debug.LogError($"BURDEN ANCHOR: q34 {what} - the gap reads {after:R}, no relief."); ok = false; }
+                    bool moveRight = move.Moved && move.Type == line.Type
+                        && (levy ? move.FromPoints == 0f && move.ToPoints == points : move.FromPoints == points && move.ToPoints == 0f);
+                    if (!moveRight) { Debug.LogError($"BURDEN ANCHOR: q34 {what} - the bill returned {(move.Moved ? $"{move.FromPoints:R} -> {move.ToPoints:R}" : "no move")}, the line's rate is {points:R} points."); ok = false; }
+                    if (!undo.Moved || undo.FromPoints != move.ToPoints || undo.ToPoints != move.FromPoints)
+                    {
+                        Debug.LogError($"BURDEN ANCHOR: q34 {what} then the opposite bill - it returned {(undo.Moved ? $"{undo.FromPoints:R} -> {undo.ToPoints:R}" : "no move")}, not the move undone."); ok = false;
+                    }
+                    if (line.IsImplemented == levy || Mathf.Abs(restored - before) > 1e-7f)
+                    {
+                        Debug.LogError($"BURDEN ANCHOR: q34 {what} then the opposite bill - the line is {(line.IsImplemented ? "levied" : "not levied")} and the gap {restored:R} against {before:R} before."); ok = false;
+                    }
+                }
+            }
+
+            Country se = world.GetCountry(CountryId.Sweden);
+            TaxLine probe = null;
+            foreach (TaxLine line in se.TaxLines) { if (!line.IsImplemented) { probe = line; break; } }
+            if (probe != null)
+            {
+                float approval = se.State.ApprovalRating;
+                TaxLevyMove failed = ParliamentSystem.ApplyTaxProgramBillResult(se, new TaxProgramBill { Type = probe.Type, IsAdd = true }, false, false);
+                if (failed.Moved || probe.IsImplemented || se.State.ApprovalRating != approval) { Debug.LogError($"BURDEN ANCHOR: q34 a failed bill to levy Sweden's {probe.Type} moved something (move {failed.Moved}, levied {probe.IsImplemented})."); ok = false; }
+            }
+            Debug.Log($"BURDEN ANCHOR: q34 - {levies} levies and {removals} removals on the seed, each through its bill and back.");
+            return ok;
+        }
+
+        /// <summary>(9): a save from before q34 carries no seed set; `SimulationManager.RestoreSaveState` reads it as the lines levied at the load. Sweden's excise,
+        /// levied before the "save", then reads no gap - the older build's reading - where the seed's own set would read its whole revenue share.</summary>
+        private static bool OlderSaveReading()
+        {
+            SimulationRandom.Seed(777);
+            World world = WorldFactory.CreateDefault();
+            var go = new GameObject("BURDEN.restore");
+            try
+            {
+                SimulationManager sim = go.AddComponent<SimulationManager>();
+                Country c = world.GetCountry(CountryId.Sweden);
+                TaxLine excise = null;
+                foreach (TaxLine line in c.TaxLines) { if (line.Type == TaxType.ExciseTax) { excise = line; } }
+                if (excise == null || excise.IsImplemented) { Debug.LogError("BURDEN ANCHOR: q34 Sweden carries no unlevied excise line - the older-save reading is not tested."); return false; }
+                excise.IsImplemented = true;
+                float seedSetGap = MacroSystem.HouseholdBurdenGap(c);
+                c.SeedLevied = null;
+                sim.RestoreSaveState(world, 0, sim.CurrentDate, null);
+                float loadedGap = MacroSystem.HouseholdBurdenGap(c);
+                bool ok = c.SeedLevied != null && c.SeedLevies(TaxType.ExciseTax) && Mathf.Abs(loadedGap) <= 1e-5f && seedSetGap > 1e-6f;
+                Debug.Log($"BURDEN ANCHOR: q34 an older save - Sweden's excise levied before it was cut: the seed's set reads a gap of {seedSetGap:F6}, the set read at the load {loadedGap:F6} (the older build's reading).");
+                if (!ok) { Debug.LogError($"BURDEN ANCHOR: q34 the older-save reading failed - the set read at the load is {(c.SeedLevied == null ? "none" : string.Join(", ", c.SeedLevied))} and the gap {loadedGap:R}."); }
+                return ok;
             }
             finally { Object.DestroyImmediate(go); }
         }

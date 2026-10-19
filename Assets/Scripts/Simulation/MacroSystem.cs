@@ -148,12 +148,20 @@ namespace PoliSim.Simulation
             float share = 0f;
             foreach (TaxLine line in country.TaxLines)
             {
-                if (!line.IsImplemented) { continue; }
+                // A-LOOP q34 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §1): the two sides read two different sets. The "now" side counts what is levied
+                // today; the seed side counts what the SEED levied (`Country.SeedLevied`, the record), at its seed rate whether or not it is levied today -
+                // so a removed seed tax is relief (a negative gap) - and a line the seed did not levy has a seed rate of zero, so a levy is a rise from
+                // zero. Before q34 both sides skipped a line not levied today, and the seed side read `BaselineTaxRates`, which holds EVERY line's rate:
+                // a levy at its placeholder rate cancelled itself and a removal gave no relief (D-32, GA-12-3). The sets are one set until a line is
+                // levied or removed, so the no-policy trajectory sums the same terms in the same order.
+                if (atBaseline ? !country.SeedLevies(line.Type) : !line.IsImplemented) { continue; }
                 if (line.Type == TaxType.CorporateTax || line.Type == TaxType.Tariffs) { continue; }
 
                 float rate = line.Rate;
                 // FT-3 (2026-09-07, §377): a line the country did not levy at the seed has a seed rate of ZERO, not today's rate - so implementing a new
                 // household tax reaches consumption (before this the new line cancelled itself in this term: a C-N4 gap found while reading the seat).
+                // ⚠ CORRECTED by A-LOOP q34: the lookup below never gave that zero - `BaselineTaxRates` holds every line - so the zero is the seed set's
+                // (the line is skipped above); the lookup's own zero stands only for a seed-levied line with no seeded rate.
                 // The base is read at today's level on BOTH sides and cancels by design - FT-3 measured the seed-share anchor and STOPPED (§377): a live
                 // base inside a period fails the turn-vs-daily equivalence bar, and the seed's share reads the bases' secular trend as a permanent tax.
                 if (atBaseline && !country.BaselineTaxRates.TryGetValue(line.Type, out rate)) { rate = 0f; }
@@ -181,7 +189,9 @@ namespace PoliSim.Simulation
         /// </summary>
         /// <summary>FT-3 (§377): the household burden's gap from the seed - today's share of GDP handed over by households minus the seed's at the seed's rates,
         /// both on today's base (which therefore cancels) - the quantity the C term multiplies by −MPC × prior GDP. Zero at the seed and under any base movement;
-        /// moves with a RATE, with a tax the country did not levy at the seed, and (GA-2-11, 2026-10-14) with the income tax's own sub-row rates.</summary>
+        /// moves with a RATE, with a tax the country did not levy at the seed, and (GA-2-11, 2026-10-14) with the income tax's own sub-row rates. A-LOOP q34
+        /// (2026-10-19): a levy of a line the seed did not levy opens it by that line's revenue share, and a removal of a seed tax closes it by the line's share at
+        /// its seed rate (relief), the seed side reading `Country.SeedLevied`.</summary>
         public static float HouseholdBurdenGap(Country country) => HouseholdTaxBurdenShare(country, atBaseline: false) - HouseholdTaxBurdenShare(country, atBaseline: true);
 
         /// <summary>FT-3 (§377): today's share of GDP collected from households - the burden term's "now" side.</summary>

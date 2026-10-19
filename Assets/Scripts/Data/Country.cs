@@ -497,6 +497,28 @@ namespace PoliSim.Data
         /// </summary>
         public Dictionary<TaxType, float> BaselineTaxRates = new Dictionary<TaxType, float>();
 
+        /// <summary>A-LOOP q34 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §1): <b>which lines the seed levied - the record</b>, the tax lines
+        /// `IsImplemented` at the seed, taken by `WorldFactory.SeedTaxLines` beside `BaselineTaxRates` and never mutated. `BaselineTaxRates` holds EVERY
+        /// line's seeded rate, the never-levied lines' placeholders included, so it cannot say what the seed levied (D-32): the household burden
+        /// (`MacroSystem.HouseholdBurdenGap`) reads its seed side from this set - a line the seed levied at its seed rate whether or not it is levied
+        /// today, a line it did not at zero - so a levy is a rise from zero and a removal is relief.
+        /// <para>⚠ <b>"The seed levied it" is the GAME's seed, not the statute</b> (§1 (6)): the excise, property, wealth and stamp-duty lines are
+        /// seeded inactive by convention, though Sweden levies excise duties and a municipal property fee in fact; q34 does not re-seed them.</para>
+        /// <para>Saved (additive, no format step, ruling A). A save from before carries none (null), and `SimulationManager.RestoreSaveState` reads
+        /// it as the lines levied at the load - the older build's own reading, which counted only today's levied lines on both sides, so such a
+        /// game's burden loads to the figure it was saved at. Null on a hand-made country: nothing levied at the seed, as its empty
+        /// `BaselineTaxRates` already read.</para></summary>
+        public List<TaxType> SeedLevied;
+
+        /// <summary>A-LOOP q34: whether the seed levied this line (`SeedLevied`) - false where the set is null. A loop rather than the list's own Contains, so the daily
+        /// burden boxes no enum.</summary>
+        public bool SeedLevies(TaxType type)
+        {
+            if (SeedLevied == null) { return false; }
+            foreach (TaxType levied in SeedLevied) { if (levied == type) { return true; } }
+            return false;
+        }
+
         /// <summary>P-I2 stage 1: the country's FIVE-YEAR AGE PYRAMID, 21 bands in millions of persons,
         /// seeded from `PopulationPyramids` (Eurostat demo_pjan 1 Jan 2024 for the EU five, US Census PEP
         /// vintage 2024 for the USA).

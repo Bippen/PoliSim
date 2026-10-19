@@ -5695,6 +5695,14 @@ namespace PoliSim.Simulation
                 if (restored.RetrainingProgramBase < 0f) { restored.RetrainingProgramBase = restored.RetrainingProgramLevel; }
                 if (restored.FamilyPolicyBase < 0f) { restored.FamilyPolicyBase = restored.FamilyPolicyLevel; }
                 if (restored.ImmigrationPolicyBase < 0f) { restored.ImmigrationPolicyBase = restored.ImmigrationPolicyLevel; }
+                // A-LOOP q34 (2026-10-19, additive under ruling A): a save from before carries no seed set, and it is read as the lines levied at the load -
+                // the older build's burden counted only today's levied lines on both sides, so the game loads to the burden it was saved at. Not migrated:
+                // a line levied or removed before such a save stays as the old build read it (no gap from it); a move after the load reads q34's way.
+                if (restored.SeedLevied == null)
+                {
+                    restored.SeedLevied = new List<TaxType>();
+                    foreach (TaxLine line in restored.TaxLines) { if (line.IsImplemented) { restored.SeedLevied.Add(line.Type); } }
+                }
             }
 
             _fiscalPeriods.Clear();
@@ -6713,6 +6721,7 @@ namespace PoliSim.Simulation
                 // turn showed one. A preview that disagrees with the turn it previews is the one thing
                 // `EstimateBudgetBill` exists to prevent.
                 BaselineTaxRates = new Dictionary<TaxType, float>(country.BaselineTaxRates),
+                SeedLevied = country.SeedLevied == null ? null : new List<TaxType>(country.SeedLevied),   // A-LOOP q34: the burden's seed side, as the anchor above
                 // §497: the dial costs' trackers - the R4-1 clone-escape class a fourth time: a clone with zero trackers re-applied every
                 // standing dial's whole cost on top of lines that already carried it, so the preview overstated spending off neutral
                 AppliedJusticeEnforcementCost = country.AppliedJusticeEnforcementCost,

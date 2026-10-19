@@ -1223,6 +1223,9 @@ namespace PoliSim.Data
 
             country.BaselineTaxRates.Clear();
             foreach (TaxLine line in country.TaxLines) { country.BaselineTaxRates[line.Type] = line.Rate; }
+            // A-LOOP q34 (§1 (2)): which lines the seed levied is the record - the burden's seed side reads it (`Country.SeedLevied`)
+            country.SeedLevied = new List<TaxType>();
+            foreach (TaxLine line in country.TaxLines) { if (line.IsImplemented) { country.SeedLevied.Add(line.Type); } }
         }
 
         /// <summary>Every WelfareProgram's default starting GenerosityLevel if/when a player later implements it - a plausible mid-range starting point, not a researched figure, mirroring the "modest/inactive" tax lines' own placeholder-rate idiom.</summary>
