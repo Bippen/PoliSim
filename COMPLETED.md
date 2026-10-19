@@ -40785,3 +40785,76 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 - `slrt881b` PASS; `stage881b` at format 47; `dump881b` byte-identical to `alooptax`;
 - `cheap881` 124 of 124; `sim881` 66 of 66, the sentinel on alooptax;
 - films, scope `drys881` (s881): Sweden 1280 dry 155/0, and the real film `realse881` 155/0.
+
+
+## 882. A-LOOP PIECE 6, q5: EVENTS MOVE SALIENCE - THE EUROBAROMETER QA3 SERIES FETCHED (EB83-EB103), JUMPS AND DECAYS FITTED; AN ADVERSE EVENT LANDS THE SURVEY JUMP ON ITS ISSUE, HELD TO THE SURVEY'S DATE, THEN DECAYING; A CRIME EVENT AND A WAR EVENT IN THE POOL; THE FAMILY `aloopsal2`; SAVE FORMAT 48 (2026-10-20)
+
+**What was owed** (`docs/specs/A_LOOP_PLAN.md` §6; J1): salience was a constant per country (EB105). Events acted through the economy and approval only. No crime or war event existed (GA-0-25).
+
+**Built** (an implementer on `wave/aloop6`: ff44bfc9, 18256aac, 3e38b531, then the review fixes 18f43a3f and 78af78fc, merged onto cb3facc3 cleanly):
+- **The data.** The Eurobarometer QA3 ("most important issue", by country, weighted) series:
+  - 21 Standard EB Volume A workbooks, EB83-EB103, fetched byte-exact from the European Commission's catalogue on data.europa.eu (`Tools/aloop_eb_fetch.sh`; `docs/reference/raw/aloop/eb/` with SHA256SUMS and a fetch log; every request 200);
+  - read in place, BIFF8 and xlsx alike, by `Tools/aloop_salience_fit.pl`;
+  - written to `docs/generated/EB_QA3_SERIES.tsv` (494 rows; its digest is stamped into the generated constants).
+- **The fit** (FITTED, with n and 95 % intervals; the design is in the tool's header with its three amendments recorded):
+
+| Class → issue | n | Survey jump (95 %) | Hold | Half-life after the hold | Status |
+|---|---|---|---|---|---|
+| Economy → Economy (EB96 → EB97, the 2022 shock) | 27 | +0.1026 (+0.066..+0.139) | 128 days | 156.6 days | generated |
+| Migration → Immigration (EB83 → EB84, 2015) | 28 | +0.1464 (+0.095..+0.198) | 68 days | 165.2 days | generated |
+| Security (five terror attacks) | — | interval spans zero | — | — | inert |
+| Health | — | decay not resolved | — | — | inert |
+| Crime (Sweden 2023, n 1) | — | gone before the next wave | — | — | inert |
+| Natural (Sweden 2018, n 1) | — | decay not resolved | — | — | inert |
+
+  The back-cast to the event day is reported only: it is an extrapolation above the series' maximum.
+- **The mechanism.**
+  - `Country.SalienceShift` holds what events add above the sourced seed, with `Country.SalienceHoldDays` beside it.
+  - An adverse event lands its class's survey jump (GDP shock < 0, or approval effect < 0), holds it flat until the survey's own date, then lets it decay daily at the fitted rate.
+  - The tag map is DECLARED. "War on the Doorstep" moves Economy, since it is the Economy fit's own anchor.
+  - The USA moves no salience: its seeds are Gallup's single-mention figures, and no Gallup analogue is fitted.
+- **The readers.**
+  - The stance model's opinion cost (the AI's bill votes).
+  - The campaign's issue messages, the parties' ground and the issue polls, through the shift the campaign record takes on its window's first day.
+  - In the general message the shift cancels against the norm: DECLARED.
+- **The pool.** It grows 50 → 52 with "Gang Violence Wave" (Crime) and "War on the Doorstep" (War), each with its analogue line; Terror Attack is retagged Security and Migration Surge Migration.
+- **The save.** Format 47 → 48 (ruling A).
+
+**The checks:**
+- `SalienceFitCheck` (cheap): every workbook against its digest, the series' digest, and each class's n, jump, hold, rate and status.
+- `EventSalienceDiagnostic` (simulation): each listed event moves its issue by its class's jump, logged; the hold, then the half-life; [0, 1]; the readers, including (4e) a German campaign played through with and without the shift; the save, the record and the clone.
+- `EventPoolCheck`: a crime event and a war or security event; inert classes' analogues say they move nothing.
+
+**Measured:**
+- `n882c`: SALIENCE FIT PASS; EVENT SALIENCE PASS. (4e): Germany's campaign ends on different shares with the Economy shift, the widest move −0.1476 points (BSW).
+- **§3 (a), the idle elections** (`Tools/audit/area3_elections.plan`, 25 runs on the same seeds, before `audit882pre` and after `audit882post3`): **every first count, on the record's dates, is identical** (mean |Δshare| 0.000). The 2030 second counts, four years of events on, move 0.21-0.90 pp mean (Sweden). There is no record to miss there; it is a reading.
+- The events plan (`audit882ev3`) and the fuzz set (13 runs, the two 30-year runs among them): exit 0, no breach.
+- **The family `aloopsal2`** (dump on the final tree; first divergences at turns 1-4 in every country): it is the event pool's 50 → 52 re-pick ALONE: the Event stream draws as before (834 draws and 234 fires at 777, 846 and 246 at 424242, identical in both families), but a different event is picked in about 74 % of fires (173 of 234, 180 of 246); each country moves from its first changed pick, its neighbours a turn later through the euro rate and trade; salience moves nothing in a no-policy world (no bill that cuts a spending line is voted there). An independent replay of the Event stream matches 600 of 600 country-turns in both families (the s882d baseline review). Digests `ba0cc3a8` (777) and `7e600f20` (424242).
+
+**Declared:**
+- the tag map;
+- adverse events only;
+- one jump per class, whatever the band;
+- the hold;
+- the stacked case: two events in consecutive years overstate by at most about 0.016 of share, settling near 1.54 jumps under an event every year;
+- the campaign's reading and where it cancels;
+- the USA out;
+- the event dates chosen;
+- the item changes at EB97 and EB103;
+- the Economy slot as the larger of its two items.
+
+**Asked:**
+- **M-6:** every adverse Economy event, minor ones included, lands +0.103 and holds it 128 days. On Sweden's 0.10 floor that doubles the opinion cost of cutting a welfare line. Scale by band, or major and severe events only?
+- **The USA:** stay out until a Gallup analogue is fitted, or scale by the instruments' bases?
+- (a) read the jump at the excess's peak (Health and Natural would resolve);
+- (b) Crime's analogue, or fetch SOM;
+- (c) Security stays inert until the EB103 item can bracket an event.
+
+**Reviewed:** `Reviews/2026-10-20_s882_aloop_q5.md`: three code readings and the baseline's; every H and M fixed, declared or asked.
+
+**Bars** (tier SIMULATION):
+- `n882c` 13 of 13; `slrt882c` PASS; `stage882c` at format 48;
+- `n882d` 3 of 3 (EventPoolCheck, EventSalienceDiagnostic and TrajectorySentinelCheck on the final tree);
+- the cheap bar `cheap882` 125 of 125;
+- the simulation bar `sim882` 67 of 67, the sentinel holding on **aloopsal2**;
+- the audits: `audit882ev3` (6 runs), `audit882post3` (25), and the fuzz set `audit882fz11c` / `fz30ac` / `fz30bc` (13 runs), all exit 0 with no breach.

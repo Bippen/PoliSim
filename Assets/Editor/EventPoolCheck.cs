@@ -47,6 +47,15 @@ namespace PoliSim.EditorTools
                 bandCount[e.Band] = (bandCount.TryGetValue(e.Band, out int b) ? b : 0) + 1;
                 tagCount[e.Tag] = (tagCount.TryGetValue(e.Tag, out int t) ? t : 0) + 1;
             }
+            if (!tagCount.ContainsKey(EventTag.Crime) || !(tagCount.ContainsKey(EventTag.Security) || tagCount.ContainsKey(EventTag.War))) { /* the s882c review's L-4: the war event (tagged War since 78af78fc) or a security event */ Debug.LogError("EVENTPOOL: the pool carries no crime event or no war or security event - A-LOOP q5 (docs/specs/A_LOOP_PLAN.md section 6 (2)) puts one of each in it, each with its analogue line."); failures++; }   // A-LOOP q5: a crime event and a war or security event join the pool
+            foreach (EconomicEvent e in pool)   // A-LOOP q5 (review 882's M-5, 882b's L-D): an event of q5's tags, or one whose analogue speaks of salience, says truly whether it moves salience
+            {
+                if (e.Tag != EventTag.Crime && e.Tag != EventTag.Security && e.Tag != EventTag.Migration && e.Tag != EventTag.War
+                    && (e.Analogue == null || e.Analogue.IndexOf("salience", System.StringComparison.OrdinalIgnoreCase) < 0)) { continue; }
+                bool inert = !EventSalience.TryClassOf(e.Tag, out SalienceClass c) || !(EventSalience.JumpOf(c) > 0f) || !EventSalience.Moves(e);
+                bool says = e.Analogue != null && e.Analogue.Contains("It moves no salience");
+                if (inert != says) { Debug.LogError($"EVENTPOOL: {e.Name} ({e.Tag}) {(inert ? "moves no salience - its class is inert - and its analogue does not say so" : "moves salience, and its analogue says it moves none")}."); failures++; }
+            }
             if (pool.Count < MinimumPoolSize) { Debug.LogError($"EVENTPOOL: {pool.Count} events, below the {MinimumPoolSize} the row set."); failures++; }
             if (pool.Count == 0 || pool[0].Name != StagedFirstEvent) { Debug.LogError($"EVENTPOOL: the first event is not '{StagedFirstEvent}' - the Desk film stages EventPool[0]; keep it first or re-stage the driver."); failures++; }
 

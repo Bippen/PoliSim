@@ -335,6 +335,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 - The event-to-issue map is a DECLARED table that only play judges.
 - Sweden's top EB105 issue ("threats to democracy") still has no slot (the salience file's W-F3 note); events cannot fix that.
 
+
+**Built (2026-10-20, `COMPLETED.md` §882, `wave/aloop6` ff44bfc9..78af78fc):** the QA3 series fetched (EB83-EB103 Volume A, data.europa.eu, byte-exact) and fitted by `Tools/aloop_salience_fit.pl` - Economy (+0.103, held 128 d, half-life 157 d) and Migration (+0.146, held 68 d, 165 d) generated; Security, Health, Crime and Natural inert (unresolved); `EventSalience` lands the survey jump on an adverse event's issue, holds it to the survey's date, then decays; read by the stance model and the campaign's issue messages (it cancels in the general message); a crime and a war event in the pool; the USA out (Gallup seeds); format 48. The family `aloopsal2` is the pool's re-pick alone. Asked: band scaling, the USA, the peak reading, Crime, Security.
 ---
 
 ## 7. The order, one at a time, and q4

@@ -177,7 +177,8 @@ namespace PoliSim.Simulation
             { CountryId.USA, new Dictionary<IssueId, float> { { IssueId.Immigration, 0.12f }, { IssueId.Economy, 0.11f } } },
         };
 
-        /// <summary>The country's salience for an issue, or the floor with <paramref name="measured"/> false when the survey's top five do not name it.</summary>
+        /// <summary>The country's salience for an issue, or the floor with <paramref name="measured"/> false when the survey's top five do not name it - the
+        /// SEED: since A-LOOP q5 the opinion cost reads it through `EventSalience.Of`, the seed plus what events still hold of it.</summary>
         public static float SalienceOf(CountryId country, IssueId issue, out bool measured)
         {
             if (Salience.TryGetValue(country, out Dictionary<IssueId, float> table) && table.TryGetValue(issue, out float s)) { measured = true; return s; }
@@ -431,7 +432,7 @@ namespace PoliSim.Simulation
                         if (category.HasValue && LineBands.TryGetValue(category.Value, out band)) { line = category.Value.ToString(); }
                         else if (program.HasValue && ProgramBands.TryGetValue(program.Value, out band)) { line = program.Value.ToString(); }
                         else { continue; }
-                        float salience = SalienceOf(country.Id, band.Issue, out bool salienceMeasured);
+                        float salience = EventSalience.Of(country, band.Issue, out bool salienceMeasured, out bool salienceMoved);   // A-LOOP q5 (§6 (2)): the seed plus what events still hold of it
                         float dependence = voters == null ? 1f : BandShare(voters, band.From, band.To);
                         float cost = OpinionWeight * salience * dependence * Mathf.Clamp01(cutShare);
                         if (cost <= 0f) { continue; }
@@ -440,7 +441,7 @@ namespace PoliSim.Simulation
                         string bands = band.From == 0 && band.To >= PopulationCohorts.OpenBandIndex ? "every band" : "bands " + PopulationCohorts.Label(band.From) + "–" + PopulationCohorts.Label(band.To);
                         reasons.Add(string.Format(CultureInfo.InvariantCulture, "cuts {0} by {1:P0}: its voters {2} in {3}, {4} salience {5:0.00}{6} → {7:+0.00;-0.00}",
                             line, cutShare, voters == null ? "(no voter profile for this chamber)" : string.Format(CultureInfo.InvariantCulture, "{0:P0}", dependence),
-                            bands, band.Issue, salience, salienceMeasured ? " (EB105)" : " (floor: not in the survey's top five)", -cost));
+                            bands, band.Issue, salience, salienceMeasured ? (salienceMoved ? " (EB105, raised by recent events)" : " (EB105)") : (salienceMoved ? " (raised by recent events from the floor)" : " (floor: not in the survey's top five)"), -cost));
                     }
                     if (quiet.Count > 0)
                     {

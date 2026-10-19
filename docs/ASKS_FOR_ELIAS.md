@@ -299,3 +299,11 @@ Each item was read by independent reviewers, and every finding is fixed or asked
   - an attack's share lands on the opponent's against-tally, whose coverage is separate from the attacker's own contacts.
   - Are the strategies ornamental until 5b lands, or should an attack share its coverage with the attacker's own contacts?
 - **A run-up TV buy** moves its party +0.16 pp, inside the internal poll's ±1.3 pp error, so the player cannot see what they bought. Acceptable as the sources size it?
+
+### A-LOOP piece 6, q5 events move salience (§882): the asks it ends in
+
+- **Every adverse Economy event lands the same jump.** Minor ones included, each lands +0.103 and holds it 128 days, the figure fitted on the 2022 price shock. On Sweden's 0.10 floor that doubles the opinion cost of cutting a welfare line. Scale the jump by the event's band ([AUTHORED-DRAFT]), or apply it to MAJOR/SEVERE events only?
+- **The USA moves no salience.** Its seeds are Gallup's single-mention "most important problem" figures, and the Eurobarometer jump is a two-mention measure. Keep it out until a Gallup analogue is fitted, or scale by the instruments' bases?
+- **Read the jump at the excess's peak?** That would resolve Health (+0.18 at EB94) and Natural (+0.20 at EB91). Today the jump is read at the first wave after the event.
+- **Crime is inert.** Sweden 2023's +0.04 (n 1) was gone by the next wave. Find another analogue, or fetch Sweden's SOM series (BILLED)?
+- **Security is inert.** Its five terror attacks give an interval spanning zero. Keep it inert until the EB103 "security and defence" item can bracket an event?

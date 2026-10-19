@@ -4,3 +4,6 @@ Assets/Art/Brand/** -text
 # would hand a checkout CRLF where the generator writes LF.
 docs/generated/US_VETO_DRAW.md -text
 Assets/Scripts/Elections/Generated/UsVetoDefections.cs -text
+Tools/aloop_eb_fetch.sh text eol=lf
+docs/generated/EB_QA3_SERIES.tsv -text
+Assets/Scripts/Elections/Generated/EventSalienceFit.cs -text

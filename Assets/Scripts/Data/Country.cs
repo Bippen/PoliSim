@@ -532,6 +532,18 @@ namespace PoliSim.Data
         /// (format 44); copied on the preview's clone.</summary>
         public Dictionary<TaxType, float> TaxTermNet;
 
+        /// <summary>A-LOOP q5 (`docs/specs/A_LOOP_PLAN.md` §6 (2)): <b>what events still hold of the country's salience above its sourced seed</b>, per issue
+        /// (indexed by `IssueId`, share units 0..1): an adverse event's fitted jump lands on its issue (`EventSalience.Land`), is held flat for its class's hold (`SalienceHoldDays`) and then decays back daily
+        /// (`EventSalience.AdvanceDay`). The vector the stance model and the campaign read is the seed plus this, clamped to [0, 1]
+        /// (`EventSalience.Of`, `EventSalience.ApplyToCampaign`). Null while nothing stands. Saved (format 48 under ruling A: an older save is refused);
+        /// copied on the preview's clone.</summary>
+        public float[] SalienceShift;
+
+        /// <summary>A-LOOP q5 (review 882b's M-A): the days each issue's shift is still HELD flat before it decays (indexed by `IssueId`), set to the
+        /// class's hold by `EventSalience.Land` and counted down by `EventSalience.AdvanceDay`; null with the shift. Saved (format 48); copied on the
+        /// preview's clone.</summary>
+        public int[] SalienceHoldDays;
+
         /// <summary>P-I2 stage 1: the country's FIVE-YEAR AGE PYRAMID, 21 bands in millions of persons,
         /// seeded from `PopulationPyramids` (Eurostat demo_pjan 1 Jan 2024 for the EU five, US Census PEP
         /// vintage 2024 for the USA).

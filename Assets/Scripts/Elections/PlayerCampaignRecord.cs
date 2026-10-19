@@ -43,6 +43,13 @@ namespace PoliSim.Elections
         /// reached that day, and on one written before §752 - which replays its last day on <see cref="RecordShift"/>, as the build that wrote it did.
         /// </summary>
         public Dictionary<string, double> CountRecordShift;
+        /// <summary>
+        /// A-LOOP q5 (`docs/specs/A_LOOP_PLAN.md` §6 (2)): what events held of the country's salience on the window's first day (`Country.SalienceShift`,
+        /// copied by `EventSalience.Snapshot`) - the campaign's relevance reads its own wave moved by this (`EventSalience.ApplyToCampaign`) at every
+        /// staging for this record, so a load replays the campaign on the salience it opened on, not on the salience at the load. ADDITIVE: null on a
+        /// record no event touched and on one written before q5, which replays at the seed, as the build that wrote it did.
+        /// </summary>
+        public float[] SalienceShift;
         /// <summary>The three campaign streams' draw counts the moment the campaign began - the replay's rewind point.</summary>
         public Dictionary<SimulationRandom.Stream, int> DrawCountsAtStart = new Dictionary<SimulationRandom.Stream, int>();
 

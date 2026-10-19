@@ -97,3 +97,26 @@ kept byte-exact as `ElectionsData/germany/raw/records/ec_eb102_nationaler-berich
 FlateDecode streams (no renderer on this machine); the sentence above is the report's own text, its umlauts restored from the PDF's
 octal escapes. The same immigration figure is quoted by the EC's German representation on 15 Dec 2025 (*"EB102, Herbst 2024:
 35 Prozent, +5 Pp"*). Not found by this fetch: the EB102 data annex (the europa.eu survey page is a JS application).
+
+---
+
+## EVENTS MOVE IT - A-LOOP q5 (2026-10-19): the QA3 trend series, and what the tables above are now
+
+The tables above stay the SEED: the stance model reads its row (`StanceModel.SalienceOf`), the campaign the wave its staging names
+(`LiveCampaignSetup`). Since A-LOOP q5 (`docs/specs/A_LOOP_PLAN.md` §6) an adverse event raises the issue its tag names above that seed
+by a FITTED jump that decays back to it (`EventSalience`; the country's displacement is `Country.SalienceShift`).
+
+**The jump and the decay are fitted on Eurobarometer's QA3 series** around dated real events - the 2015 arrivals, the 2022 price
+shock, five terror attacks of 2016-17 for the security class, the pandemic, Sweden's autumn of 2023 and its summer of 2018. The
+design, the units, the estimator and which classes the fit could not resolve are `Tools/aloop_salience_fit.pl`'s header and its
+printed output; the figures are `Assets/Scripts/Elections/Generated/EventSalienceFit.cs`; `SalienceFitCheck` refits them.
+
+**Source:** each Standard Eurobarometer wave's *Volume A* table workbook (QA3 by country, weighted), from the European Commission's
+DG COMM catalogue on data.europa.eu (`https://data.europa.eu/api/hub/search/datasets/<id>` lists each workbook's download link on
+webgate.ec.europa.eu), fetched byte-exact with curl by `Tools/aloop_eb_fetch.sh`: the workbooks and the catalogue records under
+`docs/reference/raw/aloop/eb/`, digests in its `SHA256SUMS.txt`, every request in its `fetch_log.txt`. Read out of the stored
+bytes (the older waves are BIFF8 .xls inside zips, the newer .xlsx) into `docs/generated/EB_QA3_SERIES.tsv`.
+
+**What this does not change:** the W-F3 gaps above stand - an event cannot give "threats to democracy" a slot, and the series
+is Eurobarometer's two-mention shares, not SOM's. The USA's row (Gallup's single-mention "most important problem") is
+not moved by events: no Gallup analogue is fitted, and a two-mention jump on a one-mention seed would have no coefficient behind it.

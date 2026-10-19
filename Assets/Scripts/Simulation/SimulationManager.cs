@@ -380,6 +380,7 @@ namespace PoliSim.Simulation
                     // A-LOOP q37 (`docs/specs/A_LOOP_PLAN.md` §2 (2)): first in the day - on the fiscal year's first day its booked net emptied (every line at its opening) before any of the day's moves
                     // (the boundary's decision and the bills run after this loop), then the tax term's fading handed back to approval, recorded
                     TaxTerm.AdvanceDay(country, CurrentDate);
+                    EventSalience.AdvanceDay(country);   // A-LOOP q5 (§6 (2)): what events hold of the country's salience decays back toward the seed, first in the day (nothing while nothing stands)
                     PublicationSystem.PublishDueFigures(country, CurrentDate);
 
                     // Step C4's scheduled rating review, deliberately AFTER the day's closings are
@@ -5371,7 +5372,8 @@ namespace PoliSim.Simulation
                     brought = Elections.PreCampaignRun.Finish(PlayerPreCampaign);
                 }
                 Elections.PlayerCampaignRecord record = brought.HasValue ? CampaignRecord
-                    : new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0 };
+                    : new Elections.PlayerCampaignRecord { ElectionDate = calendar.ElectionDate, StartDate = calendar.CampaignStart, DaysStepped = 0,
+                        SalienceShift = EventSalience.Snapshot(_world.GetCountry(PlayerCountryId.Value)) };   // A-LOOP q5: the salience the window opened on
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                         out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
                         playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record), playerOutcome: brought,
@@ -5379,6 +5381,7 @@ namespace PoliSim.Simulation
                 {
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
+                EventSalience.ApplyToCampaign(record.SalienceShift, setup.TrueSalience);   // A-LOOP q5 (§6 (2)): the campaign's relevance reads the salience its window opened on
                 CampaignRecord = record;
                 // PS-3k (§638, ruled): the government's record judged at the campaign's opening, stored on the record so a replay is the same campaign -
                 // §752 (A1): over the government's TERM, the change since it took office, never levels; judged again for the count (StepPlayerCampaignDay).
@@ -5434,7 +5437,9 @@ namespace PoliSim.Simulation
                 {
                     ElectionDate = calendar.ElectionDate, StartDate = calendar.PreCampaignStart, DaysStepped = 0,
                     PreCampaignDays = 7 * calendar.PreCampaignWeeks, PreCampaignDaysStepped = 0,
+                    SalienceShift = EventSalience.Snapshot(_world.GetCountry(PlayerCountryId.Value)),   // A-LOOP q5: the salience the window opened on
                 };
+                EventSalience.ApplyToCampaign(record.SalienceShift, staged.TrueSalience);
                 System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();
                 record.DrawCountsAtStart[PreCampaignStream] = atStart.TryGetValue(PreCampaignStream, out int n0) ? n0 : 0;
                 CampaignRecord = record;
@@ -5634,6 +5639,7 @@ namespace PoliSim.Simulation
                 && Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                     out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me))
             {
+                EventSalience.ApplyToCampaign(record.SalienceShift, staged.TrueSalience);   // A-LOOP q5: the salience the record's window opened on, replayed
                 var preRewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
                 if (record.DrawCountsAtStart.TryGetValue(PreCampaignStream, out int preAtStart)) { preRewound[PreCampaignStream] = preAtStart; }
                 SimulationRandom.RestoreState(masterSeed, preRewound);
@@ -5657,6 +5663,7 @@ namespace PoliSim.Simulation
             {
                 return;
             }
+            EventSalience.ApplyToCampaign(record.SalienceShift, setup.TrueSalience);   // A-LOOP q5: the salience the record's window opened on, replayed
             setup = setup.WithRecordShift(RecordShiftFor(setup, record.RecordShift));   // PS-3k (§638): the record the campaign opened on, replayed
             var rewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
             foreach (SimulationRandom.Stream stream in CampaignStreams)
@@ -6753,6 +6760,8 @@ namespace PoliSim.Simulation
                 ApprovalEconomyStock = country.ApprovalEconomyStock,   // A-LOOP q15: the vote's economy stock (the preview closes no period, so it stands)
                 VoteApprovalMarks = country.VoteApprovalMarks == null ? null : new List<ApprovalMark>(country.VoteApprovalMarks),   // A-LOOP q15: the approval term's references, the clone's own list
                 FiscalVoteRecord = country.FiscalVoteRecord?.Copy(),   // A-LOOP q13: the vote's fiscal book, the clone's own copy (the preview runs no day and closes no year, so it stands)
+                SalienceShift = country.SalienceShift == null ? null : (float[])country.SalienceShift.Clone(),   // A-LOOP q5: what events hold of salience - the stance model's opinion cost reads it; the clone's own copy
+                SalienceHoldDays = country.SalienceHoldDays == null ? null : (int[])country.SalienceHoldDays.Clone(),   // A-LOOP q5: the days each issue's jump is still held, the clone's own copy
 
                 // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line
                 // buys nothing today - it is here because the clone-escape class has now cost this pass twice

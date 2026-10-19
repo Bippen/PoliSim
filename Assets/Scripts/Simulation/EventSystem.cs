@@ -14,7 +14,8 @@ namespace PoliSim.Simulation
     {
         public string Name;
         public string Description;
-        /// <summary>P4-D2 (2026-09-04): the kind of shock, for the record and the pool check - never read by the model.</summary>
+        /// <summary>P4-D2 (2026-09-04): the kind of shock, for the record and the pool check. Since A-LOOP q5 (2026-10-19) it is read by the model:
+        /// the tag names the issue an adverse event raises (`EventSalience.TryClassOf`).</summary>
         public EventTag Tag;
         /// <summary>P4-D2: the history the event mirrors, prefixed with the law catalog's citation class - CONFIRMED (the figure is the record's), CONFIRMED-DIRECTION (the sign is, the size is the game's), DIRECTIONAL (a rhyme, not a measurement), GENRE-IDIOM (no record exists; a game's convention). Text for the record, never read by the model.</summary>
         public string Analogue;
@@ -25,8 +26,11 @@ namespace PoliSim.Simulation
         public EventBand Band => EventBands.Of(GdpShockPercent);
     }
 
-    /// <summary>P4-D2: what kind of shock an event is. A label for the record and the pool check.</summary>
-    public enum EventTag { External, Domestic, Commodity, Financial, Political, Natural, Health, Technology, Trade, Labour }
+    /// <summary>P4-D2: what kind of shock an event is. A label for the record and the pool check, and since A-LOOP q5 the issue an adverse event
+    /// raises (`EventSalience.TryClassOf`). Migration, Security and Crime added by q5 (§6 (2): a crime event and a war or security event join the
+    /// pool), at the end so the earlier values keep their numbers; War added after review 882b (M-C) - a war's measured salience effect is the
+    /// Economy class's (`EventSalience.TryClassOf`).</summary>
+    public enum EventTag { External, Domestic, Commodity, Financial, Political, Natural, Health, Technology, Trade, Labour, Migration, Security, Crime, War }
 
     /// <summary>P4-D2: the magnitude bands, on the GDP shock in percent of GDP, the model's own first term.</summary>
     public enum EventBand { Minor, Moderate, Major, Severe }
@@ -338,14 +342,14 @@ namespace PoliSim.Simulation
             new EconomicEvent
             {
                 Name = "Terror Attack",
-                Tag = EventTag.Political, Analogue = "DIRECTIONAL: the rally-round-the-flag effect - approval of the US president rose to about 90 % after September 2001 (Gallup); Stockholm's April 2017 attack moved the economy little.",
+                Tag = EventTag.Security, Analogue = "DIRECTIONAL: the rally-round-the-flag effect - approval of the US president rose to about 90 % after September 2001 (Gallup); Stockholm's April 2017 attack moved the economy little. It moves no salience: the five attacks Eurobarometer's QA3 brackets (2016-17) give a jump whose interval spans zero, so the Security class is inert (Tools/aloop_salience_fit.pl).",
                 Description = "An attack in the capital has shaken the country; the nation is rallying behind its institutions.",
                 GdpShockPercent = -0.4f, InflationShockPoints = 0f, ApprovalEffect = 3f
             },
             new EconomicEvent
             {
                 Name = "Migration Surge",
-                Tag = EventTag.Political, Analogue = "CONFIRMED-DIRECTION: 2015 - about 163,000 asylum applications in Sweden (Migrationsverket); public spending rose, and the government's standing fell through the year.",
+                Tag = EventTag.Migration, Analogue = "CONFIRMED-DIRECTION: 2015 - about 163,000 asylum applications in Sweden (Migrationsverket); public spending rose, and the government's standing fell through the year.",
                 Description = "Arrivals have surged past anything the reception system was built for; spending is up and so is the temperature of the debate.",
                 GdpShockPercent = 0.3f, InflationShockPoints = 0f, ApprovalEffect = -3f
             },
@@ -433,6 +437,22 @@ namespace PoliSim.Simulation
                 Description = "The rating agencies have upgraded the sovereign; borrowing is cheaper and the treasury is smiling.",
                 GdpShockPercent = 0.3f, InflationShockPoints = -0.1f, ApprovalEffect = 2f
             },
+            // ---- A-LOOP q5 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §6 (2)): a crime event and a war event join the pool, each with its analogue
+            // line under P4-D2's rule; appended, so the pool's first entry (the Desk film's staged event) stays first.
+            new EconomicEvent
+            {
+                Name = "Gang Violence Wave",
+                Tag = EventTag.Crime, Analogue = "CONFIRMED-DIRECTION: Sweden's autumn of 2023 - after a September of shootings and bombings the Prime Minister addressed the nation on 28 September. The economy hardly moved; the sizes here are the game's. It moves no salience: 42 % of Swedes named crime among the country's two most important issues in Eurobarometer 99 (spring 2023) and 46 % in Eurobarometer 100 (autumn 2023), a rise inside the survey's sampling error and gone by EB101 (QA3, docs/generated/EB_QA3_SERIES.tsv), so the Crime class is inert.",
+                Description = "A wave of shootings and bombings has gripped the cities; the government is being asked what it will do about it.",
+                GdpShockPercent = -0.1f, InflationShockPoints = 0f, ApprovalEffect = -2f
+            },
+            new EconomicEvent
+            {
+                Name = "War on the Doorstep",
+                Tag = EventTag.War, Analogue = "CONFIRMED-DIRECTION: Russia's invasion of Ukraine (24 February 2022), the Economy salience fit's own anchor event - across 27 EU member states the share naming rising prices or the economic situation (the larger of the two) among their country's two most important issues rose by 10.3 points on their unweighted mean between Eurobarometer 96 (January-February 2022) and 97 (June-July 2022), QA3 (docs/generated/EB_QA3_SERIES.tsv, Tools/aloop_salience_fit.pl); the event moves the Economy slot by that fitted jump. No QA3 item measured the war's own salience before it (the international situation entered the list at EB97, security and defence at EB103). The sizes of its output, price and approval shocks are the game's.",
+                Description = "War has broken out across a nearby border; energy prices are jumping and the country is asking whether it is ready to defend itself.",
+                GdpShockPercent = -1.0f, InflationShockPoints = 1.0f, ApprovalEffect = -1f
+            },
         };
 
         /// <summary>Rolls whether an event fires this turn; returns null (no event) most of the time.</summary>
@@ -456,7 +476,7 @@ namespace PoliSim.Simulation
         /// <summary>Lands the year's event. The inflation and approval shocks are one-time, at the boundary, as before. The GDP shock is NOT applied here since
         /// FT-9 (§404): until then it multiplied GDP at the boundary, where Okun's daily form never saw the fall and read the following year's recovery as
         /// growth above potential - the tenth of the unemployment gap §400 measured. Now the shock is ARMED - its percentage of the GDP it hits, spread evenly
-        /// over ShockDurationDays - and MacroSystem.ApplyEventShockDaily lands it day by day inside the increment Okun reads. No-op if economicEvent is null.</summary>
+        /// over ShockDurationDays - and MacroSystem.ApplyEventShockDaily lands it day by day inside the increment Okun reads. Since A-LOOP q5 an adverse event also raises the issue its tag names (`EventSalience.Land`). No-op if economicEvent is null.</summary>
         public static void ApplyEvent(Country country, EconomicEvent economicEvent)
         {
             if (economicEvent == null)
@@ -470,6 +490,7 @@ namespace PoliSim.Simulation
             state.EventGdpShockAppliedThisPeriod = 0f;
             state.Inflation = Mathf.Clamp(state.Inflation + economicEvent.InflationShockPoints, 0f, MacroSystem.MaxInflationPercent);
             TaxTerm.Shock(country, economicEvent.ApprovalEffect);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
+            EventSalience.Land(country, economicEvent);   // A-LOOP q5 (§6 (2)): an adverse event raises the issue its tag names by its class's fitted jump (nothing for a political or a favourable one)
         }
     }
 }
