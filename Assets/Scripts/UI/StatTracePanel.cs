@@ -192,7 +192,7 @@ namespace PoliSim.UI
         private const string TermMiseryInflation = "· inflation off target";
         private const string TermMiseryCrime = "· crime above baseline";
         private const string TermMiseryCorruption = "· corruption above baseline";
-        private const string TermTaxHikes = "Tax hikes";
+        private const string TermTaxHikes = "Tax changes";   // A-LOOP q37: the tax term - the turn's impulse (a cut's mirror is a gain) and the period's fading of the standing term
         private const string TermSpending = "Spending changes";
         private const string TermWelfare = "Welfare vs baseline";
         private const string TermPaidLeave = "Paid family leave vs baseline";
@@ -240,7 +240,7 @@ namespace PoliSim.UI
                 new DeskTerm(TermReversion, ledger.Reversion),
                 new DeskTerm(TermGrowth, ledger.GrowthEffect),
                 new DeskTerm(TermMisery, ledger.MiseryUnemployment + ledger.MiseryInflation + ledger.MiseryCrime + ledger.MiseryCorruption),
-                new DeskTerm(TermTaxHikes, ledger.TaxHikePenalty),
+                new DeskTerm(TermTaxHikes, ledger.TaxHikePenalty + ledger.TaxTermFading),   // A-LOOP q37: one row for the tax term, its fading with it
                 new DeskTerm(TermSpending, ledger.SpendingEffect),
                 new DeskTerm(TermWelfare, ledger.WelfareEffect),
                 new DeskTerm(TermPaidLeave, ledger.PaidLeaveEffect),
@@ -309,7 +309,7 @@ namespace PoliSim.UI
             Term(rows, TermMiseryInflation, ledger.MiseryInflation, indented: true);
             Term(rows, TermMiseryCrime, ledger.MiseryCrime, indented: true);
             Term(rows, TermMiseryCorruption, ledger.MiseryCorruption, indented: true);
-            Term(rows, TermTaxHikes, ledger.TaxHikePenalty);
+            Term(rows, TermTaxHikes, ledger.TaxHikePenalty + ledger.TaxTermFading);   // A-LOOP q37: as the Desk's row
             Term(rows, TermSpending, ledger.SpendingEffect);
             Term(rows, TermWelfare, ledger.WelfareEffect);
             Term(rows, TermPaidLeave, ledger.PaidLeaveEffect);

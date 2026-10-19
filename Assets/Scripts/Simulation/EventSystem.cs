@@ -469,7 +469,7 @@ namespace PoliSim.Simulation
             state.EventGdpShockDaysLeft = ShockDurationDays;
             state.EventGdpShockAppliedThisPeriod = 0f;
             state.Inflation = Mathf.Clamp(state.Inflation + economicEvent.InflationShockPoints, 0f, MacroSystem.MaxInflationPercent);
-            state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + economicEvent.ApprovalEffect, 0f, 100f);
+            TaxTerm.Shock(country, economicEvent.ApprovalEffect);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
         }
     }
 }

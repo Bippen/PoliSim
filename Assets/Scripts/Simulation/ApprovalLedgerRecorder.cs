@@ -67,6 +67,19 @@ namespace PoliSim.Simulation
             });
         }
 
+        /// <summary>A-LOOP q37: records one day's fading of the tax term (`TaxTerm.AdvanceDay`) - the post-clamp approval it handed back - into the
+        /// accruing ledger's named term <see cref="ApprovalAttribution.TaxTermFading"/>, summed over the period rather than a row a day. Zero skipped;
+        /// the first touch opens the ledger at the pre-write approval, as <see cref="RecordEvent"/> does.</summary>
+        public static void RecordTaxTermFading(Country country, DateTime date, float appliedDelta)
+        {
+            if (appliedDelta == 0f)
+            {
+                return;
+            }
+
+            EnsureAccruing(country, date, country.State.ApprovalRating - appliedDelta).TaxTermFading += appliedDelta;
+        }
+
         /// <summary>
         /// Closes the period: audits Σ(events)+Σ(terms)+clamp against the observed movement,
         /// promotes the accruing ledger to <see cref="Country.ApprovalLedgerLastPeriod"/>, and
@@ -111,6 +124,7 @@ namespace PoliSim.Simulation
             }
 
             country.ApprovalLedgerLastPeriod = ledger;
+            PoliSim.Elections.ApprovalVote.AdvanceEconomyStock(country, ledger);   // A-LOOP q15: the vote's economy stock, from the period's own recorded terms
             country.ApprovalLedgerAccruing = new ApprovalAttribution
             {
                 PeriodOpenDate = date,

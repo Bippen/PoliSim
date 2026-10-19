@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using PoliSim.Data;
+using PoliSim.Persistence;
 using PoliSim.Simulation;
 using UnityEditor;
 using UnityEngine;
@@ -195,30 +196,43 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>(9): a save from before q34 carries no seed set; `SimulationManager.RestoreSaveState` reads it as the lines levied at the load. Sweden's excise,
-        /// levied before the "save", then reads no gap - the older build's reading - where the seed's own set would read its whole revenue share.</summary>
+        /// levied before the "save", then reads no gap - the older build's reading - where the seed's own set would read its whole revenue share.
+        /// A-LOOP q37 (review 877's L1): through the real load path - a save cut, its `SeedLevied` keys stripped from the JSON TEXT (what an older
+        /// build wrote: no key), then deserialized and restored into a manager - so an initializer added to the field one day, which would turn the
+        /// missing key into "the seed levied nothing", fails here rather than passing on a hand-nulled field.</summary>
         private static bool OlderSaveReading()
         {
+            using System.IDisposable epoch = SimulationManager.EpochScope();   // a save is loaded: the process epoch is restored after (§618)
             SimulationRandom.Seed(777);
             World world = WorldFactory.CreateDefault();
             var go = new GameObject("BURDEN.restore");
+            var go2 = new GameObject("BURDEN.restore.B");
             try
             {
                 SimulationManager sim = go.AddComponent<SimulationManager>();
+                sim.SetWorld(world);
+                sim.PlayerCountryId = CountryId.Sweden;
                 Country c = world.GetCountry(CountryId.Sweden);
                 TaxLine excise = null;
                 foreach (TaxLine line in c.TaxLines) { if (line.Type == TaxType.ExciseTax) { excise = line; } }
                 if (excise == null || excise.IsImplemented) { Debug.LogError("BURDEN ANCHOR: q34 Sweden carries no unlevied excise line - the older-save reading is not tested."); return false; }
                 excise.IsImplemented = true;
                 float seedSetGap = MacroSystem.HouseholdBurdenGap(c);
-                c.SeedLevied = null;
-                sim.RestoreSaveState(world, 0, sim.CurrentDate, null);
-                float loadedGap = MacroSystem.HouseholdBurdenGap(c);
-                bool ok = c.SeedLevied != null && c.SeedLevies(TaxType.ExciseTax) && Mathf.Abs(loadedGap) <= 1e-5f && seedSetGap > 1e-6f;
-                Debug.Log($"BURDEN ANCHOR: q34 an older save - Sweden's excise levied before it was cut: the seed's set reads a gap of {seedSetGap:F6}, the set read at the load {loadedGap:F6} (the older build's reading).");
-                if (!ok) { Debug.LogError($"BURDEN ANCHOR: q34 the older-save reading failed - the set read at the load is {(c.SeedLevied == null ? "none" : string.Join(", ", c.SeedLevied))} and the gap {loadedGap:R}."); }
+                string json = SaveGameService.Serialize(SaveGameService.CreateSaveGame(sim, world, CountryId.Sweden, null));
+                var key = new System.Text.RegularExpressions.Regex("\"SeedLevied\":\\s*(?:null|\\[[^\\]]*\\])\\s*,");
+                int stripped = key.Matches(json).Count;
+                SaveGame loaded = SaveGameService.Deserialize(key.Replace(json, string.Empty));
+                SimulationManager simB = go2.AddComponent<SimulationManager>();
+                SaveGameService.RestoreInto(simB, loaded);
+                Country back = simB.World.GetCountry(CountryId.Sweden);
+                float loadedGap = MacroSystem.HouseholdBurdenGap(back);
+                bool ok = stripped >= world.Countries.Count && !json.Equals(key.Replace(json, string.Empty)) && back.SeedLevied != null && back.SeedLevies(TaxType.ExciseTax)
+                    && Mathf.Abs(loadedGap) <= 1e-5f && seedSetGap > 1e-6f;
+                Debug.Log($"BURDEN ANCHOR: q34 an older save (its {stripped} SeedLevied keys stripped from the JSON, loaded and restored) - Sweden's excise levied before it was cut: the seed's set reads a gap of {seedSetGap:F6}, the set read at the load {loadedGap:F6} (the older build's reading).");
+                if (!ok) { Debug.LogError($"BURDEN ANCHOR: q34 the older-save reading failed - {stripped} keys stripped of {world.Countries.Count}; the set read at the load is {(back.SeedLevied == null ? "none" : string.Join(", ", back.SeedLevied))} and the gap {loadedGap:R}."); }
                 return ok;
             }
-            finally { Object.DestroyImmediate(go); }
+            finally { Object.DestroyImmediate(go); Object.DestroyImmediate(go2); }
         }
 
         private static TaxLine IncomeLine(Country c)

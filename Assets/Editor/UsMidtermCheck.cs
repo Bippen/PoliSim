@@ -519,7 +519,7 @@ namespace PoliSim.EditorTools
                     result.Reached = sim.CurrentDate == PollingDay;
                     result.HouseHeld = Holds(usa.ParliamentSeats);
                     result.TookOffice = EconomicVote.TookOffice(usa);
-                    result.LiveShift = EconomicVote.RecordOverTerm(usa, sim.CurrentDate, out result.Term);
+                    result.LiveShift = EconomicVote.EconomyOverTerm(usa, sim.CurrentDate, out result.Term);   // A-LOOP q15 (review 879 H1): the economic vote alone - R-US20 reads the House, which carries no approval term before the game counts it (US-16)
                     result.LiveMagnitudes = EconomicVote.Magnitudes(usa);
                     result.Kind = usa.Government.Kind;
                     result.PmParty = usa.Government.PmParty;

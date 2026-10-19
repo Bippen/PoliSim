@@ -97,7 +97,7 @@ namespace PoliSim.Simulation
             // share of THIS country's GDP - see AuthoredImpactScale for the seam and its measurement.
             SimulationManager.ApplyOneTimeBudgetImpact(country, AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, country));
             state.TradeBalance += option.TradeBalanceShock;
-            state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + option.ApprovalEffect, 0f, 100f);
+            TaxTerm.Shock(country, option.ApprovalEffect);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
         }
     }
 }

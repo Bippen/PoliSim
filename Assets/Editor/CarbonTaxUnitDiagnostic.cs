@@ -370,7 +370,7 @@ namespace PoliSim.EditorTools
                             if (carry) { bill.CarriedTaxLines.Add(TaxType.CarbonTax); }
                             float approvalBeforeBill = world.GetCountry(id).State.ApprovalRating;   // the bill's approval cost recorded as the game's callers record it (SimulationManager's budget resolution) - unrecorded, a hike in a later year failed the approval ledger's audit
                             ParliamentSystem.ApplyBillResult(world.GetCountry(id), bill, true, (c, b) => { }, sim.CurrentDate.Year);
-                            ApprovalLedgerRecorder.RecordEvent(world.GetCountry(id), sim.CurrentDate, "Budget bill passed (tax hike)", world.GetCountry(id).State.ApprovalRating - approvalBeforeBill);
+                            ApprovalLedgerRecorder.RecordEvent(world.GetCountry(id), sim.CurrentDate, "Budget bill passed (tax changes)", world.GetCountry(id).State.ApprovalRating - approvalBeforeBill);
                             if (draft != null) { run.CarrySpent[p] = draft.SpentOn(Find(world.GetCountry(id))); }
                             run.ShownYield[p] = sim.TryPassedCarbonFigure(id, out TaxLine _, out DateTime shown) ? shown : (DateTime?)null;   // AF-36: the date the slip and the Desk show, read as they read it
                         }

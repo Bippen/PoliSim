@@ -16,6 +16,18 @@ namespace PoliSim.Data
         public float AppliedDelta;
     }
 
+    /// <summary>A-LOOP q15 (2026-10-19): net approval (approval less its economy stock, held in [0, 100]) on the first day the country's daily step
+    /// saw a stored government, keyed by that government's formation day - the approval term's reference (`Country.VoteApprovalMarks`).</summary>
+    public class ApprovalMark
+    {
+        /// <summary>The stored government's formation day (`GovernmentRecord.FormedOn`) - a new day is a new government.</summary>
+        public DateTime FormedOn;
+        /// <summary>The day the mark was taken.</summary>
+        public DateTime On;
+        /// <summary>Net approval that day, in approval points.</summary>
+        public double Net;
+    }
+
     /// <summary>
     /// One period's approval attribution - Step 2's ledger, the minimum slice (R-S2d).
     ///
@@ -58,6 +70,12 @@ namespace PoliSim.Data
         public float DrugPolicyEffect;
         public float GiniEffect;
 
+        /// <summary>A-LOOP q37 (2026-10-19): <b>the tax term's fading</b> - the approval handed back over the period as the tax term T fades
+        /// (`TaxTerm.AdvanceDay`), the post-clamp actuals summed day by day. A named term of the period, not of the boundary formula: it is in
+        /// <see cref="TermSum"/> and so in the self-audit, and out of <see cref="FormulaTermSum"/>, which the clamp term is measured against. The term's
+        /// impulses ride where the moves land: the turn's decision in <see cref="TaxHikePenalty"/>, a bill's in its event.</summary>
+        public float TaxTermFading;
+
         /// <summary>The [0,100] clamp's truncation of the formula delta, 0 when it never bound.</summary>
         public float ClampLoss;
 
@@ -72,10 +90,14 @@ namespace PoliSim.Data
         // Class B - dated, labeled, post-clamp actuals.
         public List<ApprovalEventRecord> Events = new List<ApprovalEventRecord>();
 
-        public float TermSum =>
+        /// <summary>The boundary formula's own terms (`MacroSystem.RecordApprovalAttribution`), which the clamp term is measured against.</summary>
+        public float FormulaTermSum =>
             Reversion + GrowthEffect + MiseryUnemployment + MiseryInflation + MiseryCrime
             + MiseryCorruption + TaxHikePenalty + SpendingEffect + WelfareEffect
             + PaidLeaveEffect + DrugPolicyEffect + GiniEffect;
+
+        /// <summary>Every named term of the period: the formula's and the tax term's fading (A-LOOP q37).</summary>
+        public float TermSum => FormulaTermSum + TaxTermFading;
 
         public float EventSum
         {

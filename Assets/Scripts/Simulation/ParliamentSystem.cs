@@ -529,10 +529,12 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Applies a resolved BudgetBill's effect. PASS: every ALREADY-IMPLEMENTED TaxLine's Rate is
         /// written directly (clamped to that TaxType's own range, the same clamp
-        /// SimulationManager.ApplyTaxRateChanges already applies) with the SAME one-time TaxHike
-        /// ApprovalRating penalty the step 4 pilot already charged (MacroSystem.TaxHikeApprovalSensitivity,
-        /// applied as a single immediate shock rather than threaded through the turn-scoped
-        /// ApplyApprovalRating formula, since a bill can resolve on any day, not just a turn boundary);
+        /// SimulationManager.ApplyTaxRateChanges already applies) with the tax term's impulse (A-LOOP q37, 2026-10-19: `TaxTerm.Move` - each move
+        /// against the fiscal year's opening, a rise at MacroSystem.TaxHikeApprovalSensitivity per point and a cut at the smaller mirror, what lands
+        /// booked into `Country.TaxTermStock` by `TaxTerm.ChargeApproval`; before q37 a rises-only hike against the rate the moment before) applied as
+        /// a single immediate shock rather than threaded through the turn-scoped ApplyApprovalRating formula, since a bill can resolve on any day, not
+        /// just a turn boundary - and only where the government bears the bill (<paramref name="governmentBears"/>, review 878's L-1: a congressional
+        /// majority's budget is no move of the president's; its rates enter no net and charge nothing);
         /// Welfare's GenerosityLevel is written the same way, for already-implemented programs only.
         /// Master Sequence step 5d moved implement/remove out of this bill entirely (see BudgetBill's
         /// own doc comment) - a bill entry for a program the country no longer has implemented (e.g. a
@@ -543,7 +545,7 @@ namespace PoliSim.Simulation
         /// plus direct SWF create/dissolve handling, which those functions don't own. Deliberately does
         /// NOT charge a separate approval cost for Spending/Welfare/SWF changes - those applied with
         /// zero structural-change cost before this bill gated them, so passing them through this bill
-        /// doesn't newly invent one; only the pre-existing TaxHike penalty carries over unchanged.
+        /// doesn't newly invent one; only the tax term (q37, the pre-existing TaxHike penalty's successor) is charged.
         /// FAIL: every standing value untouched, flat BillFailedApprovalCost charged, draft isn't lost
         /// (GameController's own draft dictionaries are never cleared by this).
         /// GA-8-1 (2026-10-14): a per-tonne line the bill moves is stamped with <paramref name="passedYear"/>, the calendar year of its
@@ -558,11 +560,14 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-22: the government pays for its own budget only (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-22: the government pays for its own budget only (Congress.GovernmentBears)
                 return;
             }
 
-            float totalHike = 0f;
+            // A-LOOP q37 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §2 (2)): every rate move the bill makes - a line's rate, its sub-rows - is the
+            // government's move where it bears the bill, and books the tax term's impulse P(net after) − P(net before) against the fiscal year's opening
+            // (`TaxTerm.Move`), a cut at the smaller mirror; the impulse is charged to approval below and what lands stands in `Country.TaxTermStock` to fade
+            float taxTermImpulse = 0f;
             foreach (KeyValuePair<TaxType, float> kvp in bill.TaxLines)
             {
                 TaxLine line = FindTaxLine(country, kvp.Key);
@@ -572,14 +577,11 @@ namespace PoliSim.Simulation
                 }
 
                 float clampedRate = Mathf.Clamp(kvp.Value, line.MinRate, line.MaxRate);
-                float hike = line.PointsOf(clampedRate - line.Rate);   // EN-4c: the political scale
-                if (hike > 0f)
-                {
-                    totalHike += hike;
-                }
-
                 bool moved = !Mathf.Approximately(clampedRate, line.Rate);   // GA-8-1: a line named at its standing figure passes nothing (a restating bill changes nothing)
+                bool rateMoves = clampedRate != line.Rate;   // q37: any move books (a restating bill books nothing - an impulse of exactly 0)
+                float fromPoints = rateMoves ? TaxLevelPoints(country, line) : 0f;
                 line.Rate = clampedRate;
+                if (rateMoves && governmentBears) { taxTermImpulse += TaxTerm.Move(country, line.Type, fromPoints, TaxLevelPoints(country, line)); }   // q37: in the one unit (D-33), the dial's per cent for a per-tonne line
                 if (line.IsPerTonne && moved) { line.PassedForYear = passedYear; }   // GA-8-1: the figure stands for the year it was passed for
             }
 
@@ -603,10 +605,10 @@ namespace PoliSim.Simulation
             {
                 TaxLine line = FindTaxLine(country, kvp.Key);
                 if (line == null || !line.IsImplemented || kvp.Value == null) { continue; }
-                float before = TaxBases.EffectiveRate(country, line);
+                float before = TaxLevelPoints(country, line);
                 line.BracketRates = MergedBracketRates(line.BracketRates, kvp.Value, TaxSchedule.SubRows(TaxSchedule.Of(country.Id)));
-                float after = TaxBases.EffectiveRate(country, line);
-                if (after > before) { totalHike += after - before; }
+                float after = TaxLevelPoints(country, line);
+                if (governmentBears) { taxTermImpulse += TaxTerm.Move(country, line.Type, before, after); }   // A-LOOP q37: a band's move and a rate's of the same effective points book the same
             }
 
             foreach (KeyValuePair<WelfareProgramType, float> kvp in bill.WelfarePrograms)
@@ -632,8 +634,10 @@ namespace PoliSim.Simulation
             // clamped to the dial's own track. Nothing else moves here: the pension line follows the new age through its driver at the next index.
             if (bill.PensionAgeSet) { country.PensionAgeOverride = bill.PensionAge < 0f ? -1f : Mathf.Clamp(bill.PensionAge, BudgetBill.PensionAgeMin, BudgetBill.PensionAgeMax); }
 
-            float taxHikePenalty = MacroSystem.TaxHikeApprovalSensitivity * totalHike;
-            country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - taxHikePenalty, 0f, 100f);
+            // A-LOOP q37: the tax term's impulse, signed (a cut's mirror raises approval) - replacing the rises-only s × the hike - charged where the
+            // government bears the bill, what lands booked into T (`TaxTerm.ChargeApproval`, review 878's M-2); every caller records the bill's approval
+            // move around this call (`ApprovalLedgerRecorder.RecordEvent`), the impulse with it
+            if (governmentBears) { TaxTerm.ChargeApproval(country, taxTermImpulse); }
         }
 
         /// <summary>
@@ -667,23 +671,33 @@ namespace PoliSim.Simulation
             var move = new TaxLevyMove { Type = bill.Type };
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return move;
             }
 
             TaxLine line = FindTaxLine(country, bill.Type);
             if (line != null)
             {
-                if (line.IsImplemented != bill.IsAdd)
+                // A-LOOP q37 (review 877's M1): the move is read through the ONE reader of a line's position, the levy's side before the flip and the
+                // other after it - so a line not levied reads 0 however its placeholder rate stands, here and in q37's fiscal-year snapshot alike
+                bool flips = line.IsImplemented != bill.IsAdd;
+                float fromPoints = flips ? TaxLevelPoints(country, line) : 0f;
+                line.IsImplemented = bill.IsAdd;
+                if (flips)
                 {
                     move.Moved = true;
-                    move.FromPoints = line.IsImplemented ? TaxTermPoints(country, line) : 0f;
-                    move.ToPoints = bill.IsAdd ? TaxTermPoints(country, line) : 0f;
+                    move.FromPoints = fromPoints;
+                    move.ToPoints = TaxLevelPoints(country, line);
                 }
-                line.IsImplemented = bill.IsAdd;
             }
             return move;
         }
+
+        /// <summary>A-LOOP q37 (review 877's M1): <b>a line's POSITION in the tax term's one unit</b> - <see cref="TaxTermPoints"/> where the line is
+        /// levied, 0 where it is not, whatever placeholder rate it carries (an unlevied excise line's rate is a placeholder, D-32). The ONE reader q37's
+        /// moves (`TaxTerm.Move`, read on either side of each write - the year's net is their sum) and q34's levy move read, so the seam carries one answer to "where does
+        /// this line stand".</summary>
+        public static float TaxLevelPoints(Country country, TaxLine line) => line != null && line.IsImplemented ? TaxTermPoints(country, line) : 0f;
 
         /// <summary>A-LOOP q34 for q37 (`docs/specs/A_LOOP_PLAN.md` §2 (2), D-33's fix): a line's rate in the tax term's ONE unit, levied or not - the
         /// effective rate's points for a rate line (`TaxBases.EffectiveRate`: the income tax's flat-equivalent with its sub-rows, every other line its
@@ -714,7 +728,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -760,7 +774,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -794,7 +808,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -870,7 +884,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -922,7 +936,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -992,7 +1006,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 
@@ -1294,7 +1308,7 @@ namespace PoliSim.Simulation
         {
             if (!passed)
             {
-                if (governmentBears) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - BillFailedApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
+                if (governmentBears) { TaxTerm.Shock(country, -BillFailedApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own bills, never a congressional majority's out of it (Congress.GovernmentBears)
                 return;
             }
 

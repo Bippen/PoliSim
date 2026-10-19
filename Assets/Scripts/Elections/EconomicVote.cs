@@ -156,9 +156,18 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// §752 (A1): the government's record judged over its term, as of a day - the term's reading (<see cref="PerceivedPerformance.OverTerm"/>)
-        /// from the day it took office, then each party's shift at that index. Empty where no government is stored.
+        /// from the day it took office, then each party's shift at that index. Empty where no government is stored. Since A-LOOP q15 (2026-10-19) the
+        /// RECORD the counts read is every component summed (<see cref="RecordPartsOverTerm"/>): the economic vote alone is <see cref="EconomyOverTerm"/>.
         /// </summary>
         public static Dictionary<string, double> RecordOverTerm(Country country, DateTime asOf, out PerceivedPerformance.TermReading reading)
+        {
+            RecordParts parts = RecordPartsOverTerm(country, asOf);
+            reading = parts.Term;
+            return parts.Total;
+        }
+
+        /// <summary>§752 (A1): the economic vote alone over the term - the record's first component.</summary>
+        public static Dictionary<string, double> EconomyOverTerm(Country country, DateTime asOf, out PerceivedPerformance.TermReading reading)
         {
             DateTime? took = TookOffice(country);
             if (!took.HasValue) { reading = PerceivedPerformance.OverTerm(country, asOf, asOf); return new Dictionary<string, double>(); }
@@ -166,10 +175,68 @@ namespace PoliSim.Elections
             return RecordShiftOf(country, reading.Index, asOf);
         }
 
+        /// <summary>
+        /// A-LOOP (`docs/specs/A_LOOP_PLAN.md` §0): <b>the government's record, by component</b> - one record, per party, for any day. Its components:
+        /// the economic vote over the term (<see cref="Economy"/>, §638/§752) and q15's approval term (<see cref="Approval"/>, <see cref="ApprovalVote"/>);
+        /// q13's fiscal term (Brender &amp; Drazen, the plan's §4) joins as a third, split by <see cref="SplitGovernmentShift"/> as the approval term is,
+        /// and is summed into <see cref="Total"/> beside them. COAL-1 reads a party's staying and leaving off the components (the plan's §3 (2)).
+        /// </summary>
+        public sealed class RecordParts
+        {
+            /// <summary>The economic vote's term reading (the perceived index over the term).</summary>
+            public PerceivedPerformance.TermReading Term;
+            /// <summary>The approval term's reading (net approval then and now, b, shift_gov).</summary>
+            public ApprovalVote.Reading ApprovalReading;
+            /// <summary>Each component's shift per party, as a share fraction.</summary>
+            public Dictionary<string, double> Economy = new Dictionary<string, double>(), Approval = new Dictionary<string, double>();
+            /// <summary>The record the counts read: every component summed per party.</summary>
+            public Dictionary<string, double> Total = new Dictionary<string, double>();
+        }
+
+        /// <summary>A-LOOP: the record over the term as of a day, by component, and the total every live count reads (<see cref="RecordOverTerm"/>).</summary>
+        public static RecordParts RecordPartsOverTerm(Country country, DateTime asOf)
+        {
+            var parts = new RecordParts();
+            parts.Economy = EconomyOverTerm(country, asOf, out parts.Term);
+            parts.Approval = ApprovalVote.ShiftOverTerm(country, asOf, out parts.ApprovalReading);
+            parts.Total = Sum(parts.Economy, parts.Approval);
+            return parts;
+        }
+
+        /// <summary>The components summed per party key - a key in one only carries that one's shift.</summary>
+        private static Dictionary<string, double> Sum(Dictionary<string, double> a, Dictionary<string, double> b)
+        {
+            var total = new Dictionary<string, double>(a);
+            foreach (KeyValuePair<string, double> kv in b) { total[kv.Key] = total.TryGetValue(kv.Key, out double has) ? has + kv.Value : kv.Value; }
+            return total;
+        }
+
+        /// <summary>A-LOOP (§0): <b>the responsibility vector</b> - each party's economic vote (<see cref="Magnitudes"/>) as its share of the
+        /// government's, normalised to sum to one (DERIVED). Empty where no government is stored or every magnitude is zero.</summary>
+        public static Dictionary<string, double> Responsibility(Country country, DateTime? on = null)
+        {
+            Dictionary<string, double> magnitudes = Magnitudes(country, on);
+            double sum = 0.0;
+            foreach (KeyValuePair<string, double> kv in magnitudes) { sum += kv.Value; }
+            var shares = new Dictionary<string, double>();
+            if (!(sum > 0.0)) { return shares; }
+            foreach (KeyValuePair<string, double> kv in magnitudes) { shares[kv.Key] = kv.Value / sum; }
+            return shares;
+        }
+
+        /// <summary>A-LOOP (§0): a government-wide shift (share fraction) split among the governing parties by <see cref="Responsibility"/> - the
+        /// opposition gets none, so its share of a loss arrives by absorption (<see cref="ApplyRecordShift"/>). q15's approval term; q13's fiscal term.</summary>
+        public static Dictionary<string, double> SplitGovernmentShift(Country country, double governmentShift, DateTime? on = null)
+        {
+            var split = new Dictionary<string, double>();
+            foreach (KeyValuePair<string, double> kv in Responsibility(country, on)) { split[kv.Key] = governmentShift * kv.Value; }
+            return split;
+        }
+
         /// <summary>§752 (A1): the term's index alone - Campaign HQ's figure, what the election scores; the neutral 50 where no government is stored.</summary>
         public static double RecordTermIndex(Country country, DateTime asOf)
         {
-            RecordOverTerm(country, asOf, out PerceivedPerformance.TermReading reading);
+            EconomyOverTerm(country, asOf, out PerceivedPerformance.TermReading reading);   // the index alone - the record's other components are not needed
             return reading.Index;
         }
 

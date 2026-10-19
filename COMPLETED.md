@@ -40514,3 +40514,131 @@ The trajectories (§876's family `af67`) open on Sweden's start epoch. In them t
 - `audit877b` 2 runs, exit 0;
 - the cheap bar `cheap877` 123 of 123 clean;
 - the simulation bar `sim877` 62 of 62, the sentinel holding on af67.
+
+
+## 878. A-LOOP PIECE 2, q37: THE TAX TERM - A CHANGE CHARGED AGAINST THE FISCAL YEAR'S BOOKED NET, A CUT EARNING A SMALLER MIRROR, THE CHARGE FADING AT 0.81 A QUARTER; THE FAMILY `alooptax`; SAVE FORMAT 44 (2026-10-19)
+
+**What was owed** (`docs/specs/A_LOOP_PLAN.md` §2; A-LOOP ruled by J1, §868; piece 2 of §7). Before this piece:
+- the budget bill and the turn's decision charged 1.5 approval per point raised, rises only, against the line's rate the moment before;
+- a cut was free, and the bill that restored it paid the whole penalty;
+- the units were mixed (D-33);
+- nothing decayed the penalty but approval's own 5 % reversion.
+
+GA-2-12 measured the result: the restore of Sweden's floor bill took approval from 52 to 18 in a day.
+
+**Built** (an implementer on `wave/aloop2`: cced4100, then the review fixes fa6ae430, d91250e7, 47d529b4 and a081e77c):
+- **The year's booked net** (`Country.TaxTermNet`). It is the sum of the government's own moves on each line in the fiscal year, each measured on either side of its write in ONE unit (`ParliamentSystem.TaxLevelPoints`: effective-rate points with the sub-rows, the dial's per cent for a per-tonne line, 0 for a line not levied). It is emptied on the year's first day.
+  - Moves nobody voted for enter no net: the carbon statute's step, indexation, bracket creep, a bill the government does not bear.
+  - This replaces the plan's opening snapshot (review 878's M-3), and it is the opening shifted by every unbooked move.
+- **The charge.** P(net) = s·x for a rise and m·s·x for a cut, with s = 1.5 (`MacroSystem.TaxHikeApprovalSensitivity`, [AUTHORED-DRAFT], unchanged) and m = 0.5 (`TaxTerm.MirrorFraction`, [AUTHORED-DRAFT]).
+  - Each change books the impulse P(net after) − P(net before) into the stock T (`Country.TaxTermStock`).
+  - It is booked from the turn's decision (`ApplyTaxRateChanges`), from every passed budget bill the government bears (`ParliamentSystem.ApplyBillResult`; the rises-only charge is retired), and from q34's `TaxLevyMove`.
+- **The fading.** T fades daily at 0.81 a quarter (`TaxTerm.QuarterlyPersistence`, SOURCED [LBS00] Table 2, transferred; daily 0.81^(1/91.25)), and the faded part is handed back to approval.
+- **The invariant.** approval + T is the approval of the run without the term, held inside [0, 100]:
+  - approval's reversion reads approval + T (review 878's M-1), so the points never return twice;
+  - `TaxTerm.Reclamp` forgives a T standing past a bound;
+  - `BookFormula` books what landed under the formula's clamp;
+  - every other clamped approval writer goes through `TaxTerm.Shock` (events, cabinet leaks and decisions, foreign meetings, failed-bill costs, fallen statute acts, law enactment costs, the reshuffle), which writes exactly the old value when T is 0.
+- **The ledger's named term** `ApprovalAttribution.TaxTermFading`. The Desk's and the Statistics trace's approval row reads "Tax changes".
+- **Carried:** the save carries T and the net (format 43 → 44 under ruling A), and so does the preview's clone.
+
+**The check:** `TaxTermDiagnostic` (the simulation group):
+- (1) the one unit;
+- (2) the form through the bill;
+- (3) against the run with neither;
+- (4) the player's decision through the formula;
+- (5) a mid-year save;
+- (6) the clamp at the floor and the ceiling, through the formula, and against T;
+- (7) ten years of the reversion;
+- (8) the half-life on the game's own days: 300.2 ± 10 days.
+
+`HouseholdBurdenAnchorDiagnostic` (9) now loads a real save with its `SeedLevied` keys stripped.
+
+**Measured:**
+- `n879c`: TAX TERM PASS, including both (6g) cases. In ten years a rise never sits above the no-move run, and a cut never below it.
+- **The family `alooptax`** (dump on the final tree, byte-identical to the interim dumps):
+  - the only mover is Poland's ApprovalRating, from turn 2, on both seeds;
+  - one AI rate move, the ministry's household rise at the second boundary (1.25 lever points, 0.95 effective), is charged 1.42 (it was 1.88) and fades;
+  - the gap peaks at +1.5 at turn 5 and is +0.0123 at turn 100;
+  - every other country is byte-identical at every turn.
+- **GA-2-12's replay** (`p4_ga2_12c`: `audit878c` on the interim tree and `audit879b` on the final tree, the same path):
+  - Sweden's floor bill cut lifts approval 50 → 66.7, the mirror, which then fades;
+  - its restore in the same fiscal year takes the same points back, to 44.1, where the old code dropped it from 52 to 18.
+- **The money poles and the fuzz runs** (`area2_money`, 41 runs): exit 0 and no breach on the final tree (`audit879c`); x_se_x05 against x_se_idle (`audit879a`) the same as at §877.
+
+**Declared:**
+1. The term reaches approval as a level.
+2. **The pass criterion "a cut and its restore within one fiscal year: |Δapproval| ≤ 0.01" holds for a same-day pair.** With d days between, the residue is m·s·x·(1 − 0.81^(d/91.25)), itself fading: the plan's own "impulse into a decaying stock". Asked.
+3. A quarter is 365/4 days.
+4. The preview shows the turn's impulse, not the coming year's fading.
+5. T stays with the country across a change of government.
+6. The fading's daily hand-back rounds in float32: about 1e-3 near approval 100, held by (6b) at 2e-3.
+7. The income line's band pair nets only to about 1e-3 across time.
+
+**Calibration-list entries** (§346's list):
+- *"q37's mirror `m` (a cut's approval gain per point, as a fraction of a rise's cost): 0.5 drafted; the direction ruled 2026-10-18. Look for in play: does a tax cut buy anything a player notices, and does the restoring bill still sting?"*
+- *"q37's tax-term persistence: 0.81 a quarter, from the US popularity functions [LBS00] Table 2 (0.79-0.84 across the tabulated quarterly ones), transferred to every country. Look for in play: a year after a rise, is the player still being punished for it?"*
+
+**Reviewed:** `Reviews/2026-10-19_s878_s879_aloop_q37_q15.md`. It holds six readings across q37 and q15 and the baseline's; every H and M is fixed, or declared and asked as §879 states. Ledger rows s878 cover `ApprovalLedgerRecorder.cs`, `MacroSystem.cs`, `SimulationManager.cs`, `TaxTerm.cs` and the two baseline digests. ApprovalLedgerRecorder's stale grandfathered row is removed; the ceiling goes 11 → 10.
+
+**Bars:** see §879.
+
+
+## 879. A-LOOP PIECE 3, q15: APPROVAL, NET OF ITS THREE ECONOMY TERMS, REACHES THE VOTE AT LEWIS-BECK & TIEN'S 0.16; SAVE FORMAT 45 (2026-10-19)
+
+**What was owed** (`docs/specs/A_LOOP_PLAN.md` §3; J1: Q1 (a) net of the economy, Q2 (a) 0.16 transferred as [AUTHORED-DRAFT], Q3 the reversion out): approval did not reach the vote.
+
+**Built** (an implementer on `wave/aloop3`: ed85e802, eb944d74, the review fixes, f7db2e68):
+- **The economy stock** (`ApprovalVote`, `Country.ApprovalEconomyStock`): the growth, unemployment and inflation misery terms as the ledger recorded them, reverting at approval's own rate, advanced at each period's close.
+  - It takes its share of a clamp at a bound (`ApprovalVote.ClampShare`): the base's clamp (approval + T) by each part's push past the bound, or approval's own clamp in the window where approval meets a bound and the base does not.
+- **Net approval** is clamp(approval − stock, 0, 100).
+- **The reference A_0** is the first daily mark on or after the government took office (`Country.VoteApprovalMarks`); a government formed in play reads its own mark.
+- **The vote term.** shift_gov = 0.16·(A_E − A_0)/100 (`ApprovalVote.PresidentialVoteCoefficient`, SOURCED [LBS00] Table 4 col. 2 for the USA, [AUTHORED-DRAFT] transferred elsewhere), split among the governing parties by `EconomicVote.Responsibility`.
+- **The record.** `EconomicVote.RecordPartsOverTerm` returns economy + approval: q13's seam. `RecordOverTerm` is the total, so the term reaches every live count. `EconomyOverTerm` keeps the economic vote alone: `UsMidtermCheck` and the HQ's term index read it.
+- **The RECORD log lines** name the parts.
+- **Carried:** the clone carries both fields; format 44 → 45 (ruling A).
+
+**Not built, OWED:** the election night's WHY line naming the approval term and its size (`ElectionNightScreen`, a Canvas surface, so a real film is owed); the US House coefficients (US-16).
+
+**The check:** `ApprovalVoteDiagnostic` (the simulation group):
+- the reference;
+- the term's size and split;
+- exactly zero at no change;
+- the bounds;
+- a government formed in play;
+- three boundaries' composition, the stock being part of approval + T;
+- the clamp's share at the floor and the ceiling, with T ≠ 0;
+- the save and the clone.
+
+**Measured:**
+- `n879b`: APPROVAL VOTE PASS.
+- The no-policy dump is byte-identical to `alooptax` (q15 moves nothing: only the player's country holds a count).
+- `UsMidtermCheck` and the US checks that read the record pass unchanged.
+
+**Declared** (`ApprovalVote`'s summary):
+1. The stock reverts at approval's rate.
+2. The clamp's share. Pro rata is exact when there was no room before the formula, or when the other terms push away from the bound. Otherwise net approval can move against the economy by at most 0.16 × the room, in vote points (the s879d review's M-1, declared rather than fixed; a counterfactual share is the fix if Elias wants it).
+3. A_E is approval as judged.
+4. The reference mark is as above.
+5. The preview's stock stands still.
+6. A successor inherits the predecessor's non-economy residue and standing tax term.
+7. Economic events stay in net approval.
+8. 0.16, estimated on the two-party share, is applied to the multiparty share.
+
+**Asked:**
+- **§3 (4) (b) under the net form.** The plan's "about −7.8 points" on a2_se_big is whole-approval arithmetic. Under Q1 (a) the term is 0.16 × [(A_E − S_E) − (A_0 − S_0)]. Proposed pass:
+  - the RECORD line names the term with S_E;
+  - its size equals 0.16 × the net change within 0.01 pp;
+  - whether the bloc falls below 175 is a reading, unless Elias keeps the seat threshold.
+- The clamp share's declared error (above).
+
+**Calibration-list entry** (§346's list): *"q15's approval-to-vote coefficient outside the USA: 0.16 per point of approval change over the term, Lewis-Beck & Tien's US presidential figure [LBS00] transferred; the fetched bracket is 0.13-0.38. Look for in play: does a government the player has driven to 20 % lose the count it would otherwise win?"*
+
+**Reviewed:** `Reviews/2026-10-19_s878_s879_aloop_q37_q15.md`.
+
+**Bars** (§878-§879 on one tree; tier SIMULATION + UI):
+- `n879c` TaxTermDiagnostic PASS; `n879b` 23 of 24 before (6e)'s test fix;
+- `slrt879b` PASS; `stage878f` at format 45; `dump879b` byte-identical to `alooptax`;
+- `sim878` 64 of 64, the sentinel holding on **alooptax** (3c7d3b38 / 0f331e57);
+- `cheap878` 122 of 123: ReviewLedgerCheck found ApprovalLedgerRecorder's stale grandfathered row, removed, with the ceiling 11 → 10; then `cheap878b` 123 of 123 clean;
+- films, scope `drys878` (s878): Sweden 1280 dry 155/0, and the real film `realse878` 155/0.

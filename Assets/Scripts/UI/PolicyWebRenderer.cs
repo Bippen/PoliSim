@@ -367,8 +367,8 @@ namespace PoliSim.UI
             e.Add(Derived(PolicyNodeId.JudicialFunding, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.JudicialFundingBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint, TermPrimaryBalance));
             e.Add(Derived(PolicyNodeId.BorderEnforcement, StatNodeId.DebtToGdp, true, CrimeJusticeCouplings.BorderEnforcementBudgetCostPercentOfGdpPerPoint / CrimeJusticeCouplings.PoliceFundingBudgetCostPercentOfGdpPerPoint, TermPrimaryBalance));
 
-            // Taxes: every TaxType shares the SAME two real channels (MacroSystem.ApplyApprovalRating's
-            // TaxHikeApprovalSensitivity on a this-turn hike; SimulationManager.GetTotalTaxRevenue feeding
+            // Taxes: every TaxType shares the SAME two real channels (the tax term, A-LOOP q37: each move's impulse against the fiscal
+            // year's opening, `TaxTerm.Move`, charged through MacroSystem.ApplyApprovalRating at the boundary and fading after; SimulationManager.GetTotalTaxRevenue feeding
             // Budget/GovernmentDebt, i.e. DebtToGdp) - not a fabricated per-tax-type distinction.
             // PolicyNodeId.Tariffs is NOT in this list (edge sweep, 2026-08-27): TaxType.Tariffs never
             // gets a TaxLine, so neither channel exists for it - its two edges were phantoms. The node
@@ -378,8 +378,9 @@ namespace PoliSim.UI
                 PolicyNodeId.CapitalGainsTax, PolicyNodeId.SalesTax, PolicyNodeId.ExciseTax, PolicyNodeId.PropertyTax,
                 PolicyNodeId.EstateTax, PolicyNodeId.WealthTax, PolicyNodeId.CarbonTax, PolicyNodeId.StampDuty })
             {
-                // Both derived: the approval ledger's TaxHikePenalty and the debt ledger's
-                // PrimaryBalanceEffect record exactly these two channels.
+                // Both derived: the approval ledger's TaxHikePenalty (the turn's impulse; its fading is the ledger's TaxTermFading, which the
+                // Desk's "Tax changes" row adds and this edge's tag does not name - a bill's impulse rides its event) and the debt ledger's
+                // PrimaryBalanceEffect record these two channels.
                 e.Add(Derived(tax, StatNodeId.Approval, false, 1f, TermTaxHike));
                 e.Add(Derived(tax, StatNodeId.DebtToGdp, false, 1f, TermPrimaryBalance));
             }
@@ -1331,7 +1332,7 @@ namespace PoliSim.UI
                 {
                     // EN-4c: a price per tonne, presented as stored - the country's currency per tonne of CO₂; the revenue is the rate times the taxed tonnes
                     lines.Add(line.IsImplemented ? $"Current rate: {line.Rate:F0} {EnergyLayer.CurrencyCode(country.Id)} per tonne of CO2" : "Not currently implemented.");
-                    lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per 1% of the dial's range ({line.MaxRate:F0} {EnergyLayer.CurrencyCode(country.Id)} per tonne) raised this year");
+                    lines.Add($"Approval: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per 1% of the dial's range ({line.MaxRate:F0} {EnergyLayer.CurrencyCode(country.Id)} per tonne) raised above the fiscal year's opening, {TaxTerm.MirrorFraction * MacroSystem.TaxHikeApprovalSensitivity:F2} gained per 1% cut below it; the effect fades by {(1f - TaxTerm.QuarterlyPersistence) * 100f:F0}% a quarter");   // A-LOOP q37
                     lines.Add($"Revenue: the rate x the taxed CO2 - transport's tonnes (the power fleet pays the ETS and is exempt of the tax), {TaxBases.Level(TaxBaseDriver.Emissions, country):F1} Mt today (x{TaxBases.DriverRatio(country, line.Type):F3} of the seed) - feeds Budget/DebtToGdp");
                     lines.Add("Between decisions the rate moves as the law moves it: " + CarbonRateStatute.Caption(country.Id));   // EN-4e
                     return true;
@@ -1344,7 +1345,7 @@ namespace PoliSim.UI
                     double yielded = TaxSchedule.YieldNow(country, line, line.Rate);
                     lines.Add($"The statute: {TaxSchedule.KindWord(TaxSchedule.Of(country.Id).Kind)} - the dial shifts every taxed band by its points; the yield is {(yielded > 0 ? yielded : 0.0):F1}% of income against {country.IncomeTaxSeedAer:F1}% at the seed, the flat-equivalent rate {TaxBases.EffectiveRate(country, line):F1}%.");
                 }
-                lines.Add($"Approval sensitivity to a hike: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised this year");
+                lines.Add($"Approval: {MacroSystem.TaxHikeApprovalSensitivity:F2} pts lost per point raised above the fiscal year's opening, {TaxTerm.MirrorFraction * MacroSystem.TaxHikeApprovalSensitivity:F2} gained per point cut below it; the effect fades by {(1f - TaxTerm.QuarterlyPersistence) * 100f:F0}% a quarter");   // A-LOOP q37
                 lines.Add($"Revenue base: ~{TaxBaseTable.BaseShareOfGdp(country.Id, line.Type) * 100f:F0}% of GDP at the seed, following {TaxBases.Name(TaxBases.Of(line.Type))} (x{TaxBases.DriverRatio(country, line.Type):F3} today) x rate (feeds Budget/DebtToGdp)");
                 return true;
             }

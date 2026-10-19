@@ -629,7 +629,7 @@ namespace PoliSim.Simulation
                 else
                 {
                     float before = country.State.ApprovalRating;
-                    country.State.ApprovalRating = Mathf.Clamp(before - ReshuffleApprovalCost, 0f, 100f);
+                    TaxTerm.Shock(country, -ReshuffleApprovalCost);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
                     record.ApprovalDelta = country.State.ApprovalRating - before;
                     record.Text = $"A leak from {appointment.Key} ({appointment.Value.Name}) has cost the government {ReshuffleApprovalCost:0.#} points of approval.";
                 }
@@ -727,7 +727,7 @@ namespace PoliSim.Simulation
             // P2-0.1 (2026-09-02): the authored figure is on the USA seed's scale and lands as the same
             // share of THIS country's GDP - see AuthoredImpactScale for the seam and its measurement.
             SimulationManager.ApplyOneTimeBudgetImpact(country, AuthoredImpactScale.ToCountryBillions(option.BudgetImpact, country));
-            state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + option.ApprovalEffect, 0f, 100f);
+            TaxTerm.Shock(country, option.ApprovalEffect);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
             // R4-4 (ruling R2): unclamped like ApplyMeetingOption's identical trade shock - the
             // trade system recomputes the balance every turn, which is the fade that qualifies it.
             state.TradeBalance += option.TradeBalanceShock;

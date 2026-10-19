@@ -2098,7 +2098,7 @@ namespace PoliSim.Simulation
 
         /// <summary>Approval mean-reverts toward this absent any other effect - a "neutral" governing position, not an extreme.</summary>
         /// <remarks>CONVENTION - a scale origin. Approval reverts here absent any other effect: a neutral governing position, chosen so the stat has a middle, not measured from anything.</remarks>
-        private const float NeutralApprovalRating = 50f;
+        internal const float NeutralApprovalRating = 50f;   // internal for A-LOOP q15: ApprovalVote.ClampShare reads the formula's base back from its reversion term
 
         /// <summary>Fraction of the gap versus NeutralApprovalRating that closes each turn on its
         /// own. Internal since Step 2: the trace panel derives EQUILIBRIUM framing from it
@@ -2151,7 +2151,10 @@ namespace PoliSim.Simulation
 
         // DrugPolicyApprovalSensitivity moved to CrimeJusticeCouplings (item 6, 2026-08-25).
 
-        /// <summary>Approval points lost per percentage point a tax rate hike this turn.</summary>
+        /// <summary>Approval points lost per percentage point a tax rate hike this turn. A-LOOP q37 (2026-10-19): s, the tax term's charge per point
+        /// RAISED AGAINST THE FISCAL YEAR'S OPENING (`TaxTerm.Charge`; a cut earns `TaxTerm.MirrorFraction` of it), in the term's one unit - effective-rate
+        /// points for every rate line, the income tax's bands and sub-rows included, the dial's per cent for a per-tonne line (D-33). The re-unitting
+        /// is a ruling-free unit change and leaves the figure as is (`docs/specs/A_LOOP_PLAN.md` §2 (3)).</summary>
         /// <remarks>[AUTHORED-DRAFT] MAGNITUDE, documented DIRECTION - the summary above gives the mechanism and, where it applies, its size relative to the other approval terms; the number itself is a game figure.</remarks>
         public const float TaxHikeApprovalSensitivity = 1.5f;
 
@@ -2257,13 +2260,11 @@ namespace PoliSim.Simulation
         /// implemented Country.WelfarePrograms' CURRENT GenerosityLevel, not a one-time change like
         /// the tax-hike/spending-change terms above). Clamped to [0, 100].
         /// </summary>
-        /// <param name="totalTaxHike">
-        /// Sum of every positive per-tax-type rate increase actually applied this turn (clamped target
-        /// minus prior rate, where positive) - computed by SimulationManager.ApplyTaxRateChanges
-        /// before it overwrites TaxLine.Rate (PolicyDecision.TaxRateOverrides holds an absolute target,
-        /// not a delta, so the hike can only be known by comparing against the pre-change rate) and
-        /// threaded through here. Raising several taxes at once still compounds the penalty, same
-        /// spirit as the old delta-based hike penalty.
+        /// <param name="taxTermImpulse">
+        /// A-LOOP q37 (2026-10-19): the tax term's impulse of this turn's rate changes, in approval points (positive: approval lost) - the
+        /// sum over every line SimulationManager.ApplyTaxRateChanges moved of P(net after) − P(net before) against the fiscal year's opening
+        /// (`TaxTerm.Move`; the caller books what lands into `Country.TaxTermStock` after this formula), a cut at the smaller mirror. Before q37 the sum of every positive
+        /// rate increase, which the formula multiplied by TaxHikeApprovalSensitivity; the impulse arrives multiplied.
         /// </param>
         /// <param name="totalMandatorySpendingChange">
         /// Sum of this turn's ACTUAL dollar change (after clamping and floor-at-0) across every
@@ -2272,7 +2273,7 @@ namespace PoliSim.Simulation
         /// by MandatorySpendingApprovalMultiplier, distinctly higher than any Discretionary category's
         /// multiplier - see that constant's doc comment.
         /// </param>
-        public static void ApplyApprovalRating(Country country, PolicyDecision decision, float actualGrowthRatePercent, float totalTaxHike, float totalMandatorySpendingChange)
+        public static void ApplyApprovalRating(Country country, PolicyDecision decision, float actualGrowthRatePercent, float taxTermImpulse, float totalMandatorySpendingChange)
         {
             EconomyState state = country.State;
 
@@ -2288,7 +2289,7 @@ namespace PoliSim.Simulation
                 + CrimeApprovalSensitivity * crimePenaltyGap
                 + CorruptionApprovalSensitivity * corruptionPenaltyGap;
 
-            float taxHikePenalty = TaxHikeApprovalSensitivity * totalTaxHike;
+            float taxHikePenalty = taxTermImpulse;   // A-LOOP q37: the tax term's impulse, signed (a cut's mirror is a gain)
 
             float weightedSpendingPercent =
                 HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp) +
@@ -2332,7 +2333,10 @@ namespace PoliSim.Simulation
             // this whole formula is turn-boundary-resident (politics lives at boundaries).
             float giniApprovalEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
 
-            float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - state.ApprovalRating);
+            // A-LOOP q37 (review 878's M-1): the reversion reads approval WITHOUT the tax term's standing stock (approval + T) - the term's points come
+            // back by its own fading (`TaxTerm.AdvanceDay`) and by nothing else; reverting the approval that carries −T paid them back twice and left an
+            // old rise RAISING approval for a decade. The speed is untouched (Q3); with no standing term the expression is the old one (x + 0 is exact)
+            float reversion = ApprovalReversionSpeed * (NeutralApprovalRating - (state.ApprovalRating + country.TaxTermStock));
             float delta = reversion + growthEffect - miseryPenalty - taxHikePenalty + spendingEffect + welfareApprovalEffect + paidLeaveApprovalEffect + drugPolicyApprovalEffect + giniApprovalEffect;
             state.ApprovalRating = Mathf.Clamp(state.ApprovalRating + delta, 0f, 100f);
         }
@@ -2353,7 +2357,7 @@ namespace PoliSim.Simulation
         /// ATTRIB immediately. Any edit to the formula's terms MUST be mirrored here - the audit
         /// is the enforcement, this comment is the courtesy.
         /// </summary>
-        public static void RecordApprovalAttribution(Country country, PolicyDecision decision, float actualGrowthRatePercent, float totalTaxHike, float totalMandatorySpendingChange, System.DateTime boundaryDate, float approvalBeforeFormula)
+        public static void RecordApprovalAttribution(Country country, PolicyDecision decision, float actualGrowthRatePercent, float taxTermImpulse, float totalMandatorySpendingChange, System.DateTime boundaryDate, float approvalBeforeFormula)
         {
             EconomyState state = country.State;
 
@@ -2365,7 +2369,7 @@ namespace PoliSim.Simulation
             float crimePenaltyGap = state.CrimeIndex - country.BaselineCrimeIndex;
             float corruptionPenaltyGap = state.CorruptionIndex - country.BaselineCorruptionIndex;
 
-            float taxHikePenalty = TaxHikeApprovalSensitivity * totalTaxHike;
+            float taxHikePenalty = taxTermImpulse;   // A-LOOP q37: the tax term's impulse, signed (a cut's mirror is a gain)
 
             float weightedSpendingPercent =
                 HealthcareApprovalMultiplier * PercentOfGdp(decision.HealthcareSpendingChange, state.NominalGdp) +
@@ -2395,7 +2399,7 @@ namespace PoliSim.Simulation
             // window BEFORE the terms it is about to record - the first-touch class, closed by
             // construction on every path (2026-08-25).
             ApprovalAttribution ledger = ApprovalLedgerRecorder.EnsureAccruing(country, boundaryDate, approvalBeforeFormula);
-            ledger.Reversion = ApprovalReversionSpeed * (NeutralApprovalRating - approvalBeforeFormula);
+            ledger.Reversion = ApprovalReversionSpeed * (NeutralApprovalRating - (approvalBeforeFormula + country.TaxTermStock));   // A-LOOP q37 (M-1): the formula's own base, T not yet booked with this turn's impulse
             ledger.GrowthEffect = growthEffect;
             ledger.MiseryUnemployment = -(UnemploymentApprovalSensitivity * unemploymentPenaltyGap);
             ledger.MiseryInflation = -(InflationApprovalSensitivity * inflationPenaltyGap);
@@ -2407,7 +2411,7 @@ namespace PoliSim.Simulation
             ledger.PaidLeaveEffect = LaborCouplings.PaidFamilyLeaveApprovalSensitivity * (country.PaidFamilyLeaveWeeks - country.BaselinePaidFamilyLeaveWeeks);
             ledger.DrugPolicyEffect = CrimeJusticeCouplings.DrugPolicyApprovalSensitivity * (country.DrugPolicyLevel - NeutralPolicyDialLevel);
             ledger.GiniEffect = -GiniApprovalSensitivity * (state.Gini - country.BaselineGini);
-            ledger.ClampLoss = (state.ApprovalRating - approvalBeforeFormula) - ledger.TermSum;
+            ledger.ClampLoss = (state.ApprovalRating - approvalBeforeFormula) - ledger.FormulaTermSum;   // A-LOOP q37: the formula's own terms - the period's tax-term fading is a term of the period, not of this formula
             ledger.ApprovalAfterFormula = state.ApprovalRating;
         }
 

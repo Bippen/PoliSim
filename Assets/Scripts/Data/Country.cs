@@ -519,6 +519,19 @@ namespace PoliSim.Data
             return false;
         }
 
+        /// <summary>A-LOOP q37 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §2): <b>the tax term T</b>, approval points the government's tax changes hold
+        /// against it - what LANDED of each move's impulse (`TaxTerm.Move`, `TaxTerm.ChargeApproval`, `TaxTerm.BookFormula`), fading by
+        /// `TaxTerm.DailyPersistence` a day (`TaxTerm.AdvanceDay`), what fades handed back to approval; approval's reversion reads approval + this.
+        /// Positive: a standing penalty; negative: a cut's mirror still standing. Saved (format 44); carried on the preview's clone.</summary>
+        public float TaxTermStock;
+
+        /// <summary>A-LOOP q37: <b>the year's booked net per line</b> - the sum, since the fiscal year's opening, of the moves the government made to each
+        /// line, in the tax term's one unit (`ParliamentSystem.TaxLevelPoints` on either side of each write: 0 for a line not levied), read by every
+        /// impulse (`TaxTerm.Move`). The opening shifted by every move no one booked (the statute's step, indexation, a bill the government does not
+        /// bear). Null - every line at its opening - on the fiscal year's first day (`TaxTerm.AdvanceDay`) and until the year's first move. Saved
+        /// (format 44); copied on the preview's clone.</summary>
+        public Dictionary<TaxType, float> TaxTermNet;
+
         /// <summary>P-I2 stage 1: the country's FIVE-YEAR AGE PYRAMID, 21 bands in millions of persons,
         /// seeded from `PopulationPyramids` (Eurostat demo_pjan 1 Jan 2024 for the EU five, US Census PEP
         /// vintage 2024 for the USA).
@@ -1048,6 +1061,20 @@ namespace PoliSim.Data
         /// PERSISTS - which is itself the change, since before this there was no such stock at all.</para>
         /// </summary>
         public float PartyApprovalRating = 50f;
+
+        /// <summary>A-LOOP q15 (2026-10-19, `docs/specs/A_LOOP_PLAN.md` §3 (2), Elias's ruling J1 Q1 (a)): <b>approval's economy stock</b> - the part of
+        /// approval its three economy terms built (the growth gap and the unemployment and inflation misery terms, the approval ledger's
+        /// `ApprovalAttribution.GrowthEffect`, `ApprovalAttribution.MiseryUnemployment` and `ApprovalAttribution.MiseryInflation`), carried under approval's
+        /// own reversion rate, with its share of the clamp where approval + T (the base its reversion reads) met a bound (`ApprovalVote.AdvanceEconomyStock`, as each boundary's approval period closes). The vote reads approval net of it
+        /// (`ApprovalVote.NetApproval`), because the economy already votes through the economic vote. Read by the vote alone, never by the simulation.
+        /// Saved (format 45); carried on the preview's clone.</summary>
+        public float ApprovalEconomyStock;
+
+        /// <summary>A-LOOP q15: <b>net approval as each government found it</b> - one mark the first day the country's daily step sees a stored
+        /// government (`ApprovalVote.NoteGovernment`), in the order seen. The approval term's reference is the first mark on or after the day the
+        /// government took office (`EconomicVote.TookOffice`), so a government of record that took office before the run reads the start's (the seed's)
+        /// and one formed in play reads its own first day. Saved (format 45); copied on the preview's clone.</summary>
+        public List<ApprovalMark> VoteApprovalMarks = new List<ApprovalMark>();
 
         /// <summary>
         /// Rolling numeric history of this country's key tracked stats, for UI graphs - see

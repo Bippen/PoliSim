@@ -122,6 +122,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 
 **(6) Risk.** None beyond the family. T must ride the preview's clone (`PreviewParityDiagnostic` fails the simulation bar by name if it does not) and the save, which is a format bump.
 
+
+**Built (2026-10-19, `COMPLETED.md` §878, `wave/aloop2` cced4100..a081e77c):** the tax term against the year's booked net (`Country.TaxTermNet` through `ParliamentSystem.TaxLevelPoints` - the opening shifted by every unbooked move), m = 0.5 [AUTHORED-DRAFT], 0.81 a quarter [LBS00] fading daily, approval + T held as the run without the term (`Reclamp`, `BookFormula`, `Shock`), the reversion reading approval + T; format 44. The family `alooptax`. The pass criterion "a cut and its restore within one fiscal year" holds for a same-day pair (asked, §878).
 ---
 
 ## 3. q15 - approval reaches the vote, through a sourced popularity function. Size **M**.
@@ -179,6 +181,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 
 **(6) Risk.** Approval's persistence (Q3). Approval's own reversion keeps 95 % of a shock a year, against the 0.79-0.84 a QUARTER the tabulated popularity functions measure [LBS00]. Read over a term, this term will carry shocks a real electorate has forgotten. The term-change form limits it to the current term. Changing approval's reversion is a family of its own across every country.
 
+
+**Built (2026-10-19, `COMPLETED.md` §879, `wave/aloop3` ed85e802..f7db2e68):** `ApprovalVote` - approval net of the economy stock reaches the vote at b = 0.16, split by responsibility, joined to the record by `EconomicVote.RecordPartsOverTerm` (q13's seam); format 45. Inert to the dump. (4) (b)'s expected size under the net form is asked (§879); the night's WHY line is owed.
 ---
 
 ## 4. q13 - deficits and debt reach the vote (Brender & Drazen 2008, AER). Size **M**. *(after q15; it shares the plumbing)*

@@ -377,6 +377,9 @@ namespace PoliSim.Simulation
             {
                 foreach (Country country in _world.Countries)
                 {
+                    // A-LOOP q37 (`docs/specs/A_LOOP_PLAN.md` §2 (2)): first in the day - on the fiscal year's first day its booked net emptied (every line at its opening) before any of the day's moves
+                    // (the boundary's decision and the bills run after this loop), then the tax term's fading handed back to approval, recorded
+                    TaxTerm.AdvanceDay(country, CurrentDate);
                     PublicationSystem.PublishDueFigures(country, CurrentDate);
 
                     // Step C4's scheduled rating review, deliberately AFTER the day's closings are
@@ -386,6 +389,7 @@ namespace PoliSim.Simulation
                     // in the simulation consumes, so it cannot influence the turn boundary computed
                     // below. It draws no randomness either, so the seeded trajectory is unaffected.
                     CreditRatingSystem.ReviewIfDue(country, CurrentDate);
+                    Elections.ApprovalVote.NoteGovernment(country, CurrentDate);   // A-LOOP q15 (§3 (2)): net approval marked the first day a government is seen - the approval term's reference; writes nothing else
 
                     // CONTINUOUS TIME PHASE 1 (2026-08-02): Sectors and Infrastructure now evolve DAILY.
                     // This is the first economic state AdvanceDay has ever touched - Phase 0 deliberately
@@ -1368,7 +1372,7 @@ namespace PoliSim.Simulation
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternative.TabledBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
                 if (breakBy != null) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {breakBy} voted its own alternative budget against the government's frames"); Debug.Log($"BUDGET: {country.Id} - {breakBy}, a support party, broke with the government on its budget"); }
                 if (!governmentAdopted) { country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government lost its budget - {alternative.TabledBy}'s frames adopted; it governs on the adopted frames (sweden/budget_procedure.md [BA-3]); the constitution requires no resignation, and the AI government offers none (a premise, PS-3i §636)"); }
-                ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year);
+                ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year, governmentAdopted);   // A-LOOP q37 (review 878b's L-5): an alternative adopted over the government's frames is no move of the government's - its rates charge it nothing and enter no net
                 if (governmentAdopted) { FinancePartner.CreditAdopted(country, government); }   // §755: the partner's step counted only where its bill was adopted
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
                 Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
@@ -1428,7 +1432,7 @@ namespace PoliSim.Simulation
                 applied = applied.Without(part, country);
                 // a statute that falls costs what every failed bill costs (ApplyXResult's FAIL branch) - §768's review, question (2)
                 float approvalBefore = country.State.ApprovalRating;
-                country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - ParliamentSystem.BillFailedApprovalCost, 0f, 100f);
+                TaxTerm.Shock(country, -ParliamentSystem.BillFailedApprovalCost);   // A-LOOP q37 (review 879b M-1): the shock through TaxTerm.Shock - the same write, and the run without the tax term takes it through its own clamp
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, ActWords(part) + " failed", country.State.ApprovalRating - approvalBefore);
             }
             return applied;
@@ -1835,7 +1839,7 @@ namespace PoliSim.Simulation
             BudgetBill applied = passed ? PolishStatuteActs(country, bill, out _) : bill;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
             float approvalBeforeBill = country.State.ApprovalRating;   // §768 (the second review): after the acts, each fall its own ledger event
             ParliamentSystem.ApplyBillResult(country, applied, passed, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year, Congress.GovernmentBears(country, concern));   // PS-6 US-22 (N1): charged where the government bears it - true in every country without a Congress
-            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax hike)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
+            ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, passed ? "Budget bill passed (tax changes)" : "Budget bill failed", country.State.ApprovalRating - approvalBeforeBill);
             _pendingBudgetBillByCountry.Remove(countryId);
             CountBudgetVoteOnAgreements(country);   // §654
         }
@@ -2254,7 +2258,9 @@ namespace PoliSim.Simulation
                 if (decided == null) { continue; }   // PS-6 US-21b: on the player-president's docket - decided the day he answers, or law when the period runs out unanswered
                 passed = decided.Value;
                 float approvalBeforeTaxBill = country.State.ApprovalRating;
-                ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed, Congress.GovernmentBears(country, concern));   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
+                bool bears = Congress.GovernmentBears(country, concern);
+                TaxLevyMove levyMove = ParliamentSystem.ApplyTaxProgramBillResult(country, bill, passed, bears);   // PS-6 US-19 (the review's M2): the government pays only for a bill it bears
+                TaxTerm.ChargeLevyMove(country, levyMove, bears);   // A-LOOP q37 (§1 (2), §2 (2)): a levy is a rise from 0 against the year's opening, a removal a cut at the mirror, where the government bears the bill (review 878's L-1) - recorded with the bill on the next line
                 ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, $"{(bill.IsAdd ? "Implement" : "Remove")} {bill.Type} bill {(passed ? "passed" : "failed")}", country.State.ApprovalRating - approvalBeforeTaxBill);
                 resolved.Add(bill.Type);
             }
@@ -2635,7 +2641,7 @@ namespace PoliSim.Simulation
             else
             {
                 country.EnactedLaws.Add(new EnactedLaw { LawId = bill.LawId, EnactedOn = CurrentDate });
-                if (chargeEnactment) { country.State.ApprovalRating = Mathf.Clamp(country.State.ApprovalRating - law.EnactmentApprovalCost, 0f, 100f); }   // PS-6 US-19 (the review's M2): the government pays for its own law
+                if (chargeEnactment) { TaxTerm.Shock(country, -law.EnactmentApprovalCost); }   // PS-6 US-19 (the review's M2): the government pays for its own law
             }
             TrackAgreements(country);   // PS-3h (§635): a law enacted or repealed is a delivery or a break the day it applies
 
@@ -3604,7 +3610,7 @@ namespace PoliSim.Simulation
                 // reads a vacancy - recorded as a finding for its own ruling, not changed here (a move of the cost is a numeric change of its own)
                 if (!c.CabinetMinisters.Remove(portfolio)) { return false; }
                 float approvalBeforeReshuffle = c.State.ApprovalRating;
-                c.State.ApprovalRating = Mathf.Clamp(c.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(c, portfolio), 0f, 100f);   // P2-5.2: dismissing a popular minister costs the full figure, an unpopular one less
+                c.State.ApprovalRating = Mathf.Clamp(c.State.ApprovalRating - CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(c, portfolio), 0f, 100f); TaxTerm.AfterShock(c, approvalBeforeReshuffle, -(CabinetSystem.ReshuffleApprovalCost * CabinetSystem.PopularityFactor(c, portfolio)));   // P2-5.2: dismissing a popular minister costs the full figure, an unpopular one less
                 ApprovalLedgerRecorder.RecordEvent(c, today, approvalEventLabel, c.State.ApprovalRating - approvalBeforeReshuffle);
                 return true;
             });
@@ -5206,6 +5212,11 @@ namespace PoliSim.Simulation
             return string.Join(", ", parts);
         }
 
+        /// <summary>A-LOOP q15: the record's components for the logs - the economic vote and the approval term per party, and the approval term's
+        /// judgement (net approval then and now, b, its size for the government side).</summary>
+        private static string RecordPartsLine(Elections.EconomicVote.RecordParts parts)
+            => " (economy: " + RecordShiftLine(parts.Economy) + "; approval: " + RecordShiftLine(parts.Approval) + " - " + Elections.ApprovalVote.Describe(parts.ApprovalReading) + ")";
+
         /// <summary>
         /// One day of the player's campaign - and §752 (Elias's ruling A1): the count reads the ELECTION-DAY value, so before the campaign's last day
         /// (the eve; polling day itself is never stepped - `CampaignClock`) the government's record is judged again over its term as of that day (the
@@ -5229,9 +5240,10 @@ namespace PoliSim.Simulation
                     if (recordCountry != null && recordCountry.Government != null)
                     {
                         System.DateTime countDay = PlayerCampaign.Setup.Calendar.CampaignStart.AddDays(PlayerCampaign.Day);
-                        record.CountRecordShift = Elections.EconomicVote.RecordOverTerm(recordCountry, countDay, out Elections.PerceivedPerformance.TermReading term);
+                        Elections.EconomicVote.RecordParts parts = Elections.EconomicVote.RecordPartsOverTerm(recordCountry, countDay);   // A-LOOP q15: the economy and the approval term, one record
+                        record.CountRecordShift = parts.Total;
                         PlayerCampaign.Setup = PlayerCampaign.Setup.WithRecordShift(RecordShiftFor(PlayerCampaign.Setup, record.CountRecordShift));
-                        UnityEngine.Debug.Log($"RECORD: the government's record judged for the count on {countDay:yyyy-MM-dd} for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(term)}: " + RecordShiftLine(record.CountRecordShift));
+                        UnityEngine.Debug.Log($"RECORD: the government's record judged for the count on {countDay:yyyy-MM-dd} for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(parts.Term)}: " + RecordShiftLine(record.CountRecordShift) + RecordPartsLine(parts));
                     }
                 }
             }
@@ -5370,8 +5382,9 @@ namespace PoliSim.Simulation
                 Country recordCountry = _world.GetCountry(PlayerCountryId.Value);
                 if (record.RecordShift == null && recordCountry != null)
                 {
-                    record.RecordShift = Elections.EconomicVote.RecordOverTerm(recordCountry, CurrentDate, out Elections.PerceivedPerformance.TermReading term);
-                    UnityEngine.Debug.Log($"RECORD: the government's record judged at the campaign's opening for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(term)}: " + RecordShiftLine(record.RecordShift));
+                    Elections.EconomicVote.RecordParts parts = Elections.EconomicVote.RecordPartsOverTerm(recordCountry, CurrentDate);   // A-LOOP q15: the economy and the approval term, one record
+                    record.RecordShift = parts.Total;
+                    UnityEngine.Debug.Log($"RECORD: the government's record judged at the campaign's opening for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(parts.Term)}: " + RecordShiftLine(record.RecordShift) + RecordPartsLine(parts));
                 }
                 setup = setup.WithRecordShift(RecordShiftFor(setup, record.RecordShift));
                 System.Collections.Generic.Dictionary<SimulationRandom.Stream, int> atStart = SimulationRandom.CaptureDrawCounts();   // a stream that has never drawn is absent, and absent means 0
@@ -5979,7 +5992,7 @@ namespace PoliSim.Simulation
             EconomyState state = country.State;
 
             CarbonRateStatute.AdvanceYear(country, CurrentTurn, ComingBoundaryDate.Year);   // EN-4e (§471): the carbon rate moves as its statute moves it, before any override - a passed bill's figure wins; a left dial gets the law's
-            float totalTaxHike = ApplyTaxRateChanges(country, decision);
+            float taxTermImpulse = ApplyTaxRateChanges(country, decision);
             ApplyWelfareGenerosityChanges(country, decision);
             ApplyMinimumWageChange(country, decision);
             ApplyCrimePolicyChanges(country, decision);
@@ -6171,10 +6184,12 @@ namespace PoliSim.Simulation
             // runs BEFORE the formula: a run's FIRST boundary lazy-creates the ledger, and a
             // ledger created after the formula would open at the post-formula value - the audit
             // caught exactly that (observed Δ 0 vs nonzero terms, 2026-08-18).
+            TaxTerm.Reclamp(country);   // A-LOOP q37 (review 878b's M-5): the reversion below reads approval + T - a base a clamped write left outside [0, 100] since the day began is put back first (T only; nothing where T is 0)
             float approvalBeforeFormula = country.State.ApprovalRating;
             ApprovalLedgerRecorder.EnsureAccruing(country, CurrentDate, approvalBeforeFormula);
-            MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
-            MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
+            MacroSystem.ApplyApprovalRating(country, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn);
+            MacroSystem.RecordApprovalAttribution(country, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, approvalBeforeFormula);
+            TaxTerm.BookFormula(country, taxTermImpulse, approvalBeforeFormula, country.ApprovalLedgerAccruing);   // A-LOOP q37: what landed of the turn's impulse into T, after the formula and its twin read T (the reversion reads approval + T)
 
             BoundaryLedger?.Invoke(country, "close");
             EconomicEvent economicEvent = EventSystem.TryRollEvent();
@@ -6393,7 +6408,7 @@ namespace PoliSim.Simulation
                 PolicyDecision claimedByMinistry = AiFinanceMinistryEnabled && !PlayerGoverns(previewedReal) ? AiFinanceMinistry.Decide(previewedReal, GetLastFiscalReport(countryId)) : null;
                 previewPartner = FinancePartner.Apply(previewedReal, decision, ComingBoundaryDate, claimedByMinistry?.SpendingLineChanges.Keys, claimedByMinistry?.TaxRateOverrides.Keys);   // due as of the boundary the preview stands for; recorded never
             }
-            float totalTaxHike = ApplyTaxRateChanges(previewCountry, decision);
+            float taxTermImpulse = ApplyTaxRateChanges(previewCountry, decision);
             ApplyWelfareGenerosityChanges(previewCountry, decision);
             ApplyMinimumWageChange(previewCountry, decision);
             ApplyCrimePolicyChanges(previewCountry, decision);
@@ -6500,9 +6515,11 @@ namespace PoliSim.Simulation
             MacroSystem.ApplyCrimeEffects(previewCountry);
             MacroSystem.ApplyPrisonPopulationRate(previewCountry);
 
+            TaxTerm.Reclamp(previewCountry);   // A-LOOP q37 (M-5): as the boundary does
             float previewApprovalBeforeFormula = state.ApprovalRating;
-            MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn);
-            MacroSystem.RecordApprovalAttribution(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, totalTaxHike, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, previewApprovalBeforeFormula);
+            MacroSystem.ApplyApprovalRating(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn);
+            MacroSystem.RecordApprovalAttribution(previewCountry, spendingResult.EffectiveDecision, actualGrowthRate, taxTermImpulse, spendingResult.MandatorySpendingChangeThisTurn, CurrentDate, previewApprovalBeforeFormula);
+            TaxTerm.BookFormula(previewCountry, taxTermImpulse, previewApprovalBeforeFormula, previewCountry.ApprovalLedgerAccruing);   // A-LOOP q37: as the boundary books it
             if (previewPartner != null) { FinancePartner.Withdraw(decision, previewPartner); }   // §716: the caller's decision as it came in, after every reader the boundary keeps it for
 
             return new PolicyPreview
@@ -6722,12 +6739,16 @@ namespace PoliSim.Simulation
                 // `EstimateBudgetBill` exists to prevent.
                 BaselineTaxRates = new Dictionary<TaxType, float>(country.BaselineTaxRates),
                 SeedLevied = country.SeedLevied == null ? null : new List<TaxType>(country.SeedLevied),   // A-LOOP q34: the burden's seed side, as the anchor above
+                TaxTermStock = country.TaxTermStock,   // A-LOOP q37: the tax term T - the preview books the turn's impulse into the clone's own
+                TaxTermNet = country.TaxTermNet == null ? null : new Dictionary<TaxType, float>(country.TaxTermNet),   // A-LOOP q37: the year's booked net the impulse is read against, the clone's own copy
                 // §497: the dial costs' trackers - the R4-1 clone-escape class a fourth time: a clone with zero trackers re-applied every
                 // standing dial's whole cost on top of lines that already carried it, so the preview overstated spending off neutral
                 AppliedJusticeEnforcementCost = country.AppliedJusticeEnforcementCost,
                 AppliedBorderEnforcementCost = country.AppliedBorderEnforcementCost,
                 AppliedSectorSupportCost = country.AppliedSectorSupportCost,
                 AppliedEnergySupportCost = country.AppliedEnergySupportCost,   // EN-7a
+                ApprovalEconomyStock = country.ApprovalEconomyStock,   // A-LOOP q15: the vote's economy stock (the preview closes no period, so it stands)
+                VoteApprovalMarks = country.VoteApprovalMarks == null ? null : new List<ApprovalMark>(country.VoteApprovalMarks),   // A-LOOP q15: the approval term's references, the clone's own list
 
                 // P-I2 stage 1: the pyramid, CLONED. Nothing reads it on the preview path yet, so this line
                 // buys nothing today - it is here because the clone-escape class has now cost this pass twice
@@ -6968,14 +6989,14 @@ namespace PoliSim.Simulation
         /// PolicyDecision.TaxRateOverrides value (clamped to that TaxLine's own TaxTypeRateRanges), a
         /// no-op for any TaxType with no entry or that isn't implemented - implementing/removing a
         /// tax is a separate, immediate action on TaxLine.IsImplemented, not something this method
-        /// does. Returns the sum of every positive rate increase actually applied (clamped target
-        /// minus the prior rate, where positive), computed here - before TaxLine.Rate is overwritten -
-        /// since PolicyDecision only carries the absolute target, not a delta; the caller threads this
-        /// into MacroSystem.ApplyApprovalRating's tax-hike penalty.
+        /// does. Returns the tax term's impulse of the moves (A-LOOP q37, `TaxTerm.Move`: each line's P(net after) − P(net before) against
+        /// the fiscal year's opening, a cut at the smaller mirror; the caller books what lands into `Country.TaxTermStock` after the formula, `TaxTerm.BookFormula`), computed here - around the write of
+        /// TaxLine.Rate - since PolicyDecision only carries the absolute target, not a delta; the caller threads this
+        /// into MacroSystem.ApplyApprovalRating's tax term (before q37: the sum of every positive rate increase).
         /// </summary>
         private float ApplyTaxRateChanges(Country country, PolicyDecision decision)
         {
-            float totalTaxHike = 0f;
+            float taxTermImpulse = 0f;
             foreach (TaxLine taxLine in country.TaxLines)
             {
                 if (!taxLine.IsImplemented)
@@ -6989,16 +7010,16 @@ namespace PoliSim.Simulation
                 }
 
                 float clampedRate = Mathf.Clamp(requestedRate, taxLine.MinRate, taxLine.MaxRate);
-                float hike = taxLine.PointsOf(clampedRate - taxLine.Rate);   // EN-4c: the carbon tax's currency-per-tonne change enters the approval term as the per cent of its dial it spans
-                if (hike > 0f)
-                {
-                    totalTaxHike += hike;
-                }
+                if (clampedRate == taxLine.Rate) { continue; }   // no move, no impulse (exactly 0)
 
+                // A-LOOP q37 (`docs/specs/A_LOOP_PLAN.md` §2 (2)): the move's impulse against the fiscal year's opening, in the term's one unit (D-33:
+                // effective-rate points, the dial's per cent for a per-tonne line - EN-4c's scale), added to the line's net and returned for the formula
+                float fromPoints = ParliamentSystem.TaxLevelPoints(country, taxLine);
                 taxLine.Rate = clampedRate;
+                taxTermImpulse += TaxTerm.Move(country, taxLine.Type, fromPoints, ParliamentSystem.TaxLevelPoints(country, taxLine));
             }
 
-            return totalTaxHike;
+            return taxTermImpulse;
         }
 
         /// <summary>
