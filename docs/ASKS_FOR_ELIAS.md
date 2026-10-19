@@ -5,7 +5,7 @@
 - **Open, to be answered one line each in the next report, built meanwhile on Code's recommendation, PROVISIONAL, wherever reversible (I16):** 10, 11, 12, 14, 15, 16, 17, 19, 22, 23, 24, 26.
 - **Filed defects** (the section before the report): ORDER item 1 in the rulings.
 - **The report of 2026-10-18** (the last section): where each ruling is installed, the open items in one line each, and the new asks, A-LOOP's seven questions among them.
-- **RULED 2026-10-19 (J1-J9, `docs/RULINGS_2026-10-19.md`; installed `COMPLETED.md` §867-§870):** every item of the report of 2026-10-18 - the I16 lines, the errands, the new asks and A-LOOP's Q1-Q7 - is answered. Nothing in this file is open.
+- **RULED 2026-10-19 (J1-J9, `docs/RULINGS_2026-10-19.md`; installed `COMPLETED.md` §867-§870):** every item of the report of 2026-10-18 - the I16 lines, the errands, the new asks and A-LOOP's Q1-Q7 - is answered. Nothing in this file is open. The report of 2026-10-19 (the last section) asks anew, from step 2's builds.
 
 
 ## Rulings asked, with Code's recommendation
@@ -211,3 +211,56 @@
 - US-22b's L-a: a docketed resolution can be withdrawn on the request day in a narrow path (for US-23).
 - No current film reaches `88n_election_night_takeover` (last filmed in dry825), so AF-23's night heading is unfilmed.
 - The possessive "STATES'S" at `GameController.LawsV35.cs` 839-840 and `GameController.cs` 3884/3914.
+
+
+## The report of 2026-10-19: ORDER step 2 landed (§867-§876), and the asks it ends in
+
+J1-J9 are installed at §867-§870. Step 2's remainder is built, each item on its own green bars:
+
+| Item | § | Commit |
+|---|---|---|
+| FORK-1 (J8) | §871 | 4d51f9bf |
+| AF-12 (q12) | §872 | 4d51f9bf |
+| AF-36 (q36) | §873 | a43936b3 |
+| AF-8 (q8) | §874 | a43936b3 |
+| AF-7 (q7, q10) | §875 | fc622f88 |
+| AF-6 and AF-30b (q6, J5) | §876 | fc622f88 |
+
+The trajectory family is now **af67**. AF-6 moves Germany's Finance from the SPD to the CDU at the default epoch.
+
+Each item was read by independent reviewers, and every finding is fixed or asked below. Each is built meanwhile as stated, PROVISIONAL wherever it can be reversed.
+
+### The asks
+
+- **AF-12, "without your policies" (§872).**
+  - (a) An opposition player's counterfactual is the government of record governing with no changes, not the player's party installed. Confirm.
+  - Should the counterfactual hold its own elections? That rides on FORK-2.
+  - Every save is about 1.76 MB larger (it carries the world). Acceptable?
+- **AF-36, the carry (§873).**
+  - A carry is free, and the vote does not see it: no approval cost for the move it prevents, and no chamber concern. Should it be priced as that move?
+  - Should the revert date also stand as a permanent line on the Desk's face (it is now a dated entry and a slip line)?
+- **AF-8, Poland's steps (§874).**
+  - Where no record names the designee, the President designates the formation's projection.
+  - Art. 155 and the shortened term are not modelled.
+  - **GA-0-45 premise 6:** Sweden's blocs for 2026 and later. Options: (a) source them from 2026's dated declarations (MP has only a paraphrase); (b) cut them; (c) carry 2022's forward. (a) and (b) move Sweden's counts through tactical lending.
+  - **Premise 7:** the seatless player country read as governing, kept as an instrument convention.
+  - A player's party that is in the record's cabinet (2023: KO+TD+NL) is seated in it as on the record, unasked. The model never does that elsewhere. Keep it, drop the player's party, or use the projection?
+- **AF-7, central banks (§875).**
+  - The Riksbank: the act says "fem eller sex år" (five or six years); the build uses six.
+  - Should the seeded heads carry the real incumbents' term dates (sourced) instead of starting at the world's start?
+  - "The ECB for the four euro countries": the game holds three (Germany, France, Italy).
+  - The AI appointer seats the shortlist's smallest lean, and 4 of 24 AI appointments in the dumps seat a ±1.25-1.5 head. Should a no-lean candidate be guaranteed?
+- **AF-6 and AF-30b, portfolios and the seated cabinet (§876).**
+  - **The economy portfolio's weight.** It is built as (b), the energy ministry alone. (a), its three ministries summed, moves Finance to KD in Sweden 2022/2026 and to the Grüne in Germany 2021. Either way Germany 2025's Finance goes to the CDU (a miss against Klingbeil), the partner's fiscal stance stops for Germany, and no start then has a junior partner at Finance.
+  - **"At the average" (J5).** The average minister's loyalty, knowledge and popularity sit at 100: the value at which each reader does nothing, and the top of the scale. The alternative is the pool's means (77, 79, 60), which would roll occasional leaks and scale approval effects.
+  - **The decision cards.** Seated ministers roll cabinet decisions, about 54 % a turn for at least one, and each stops the clock. So an idle governing player now meets cards, where empty chairs rolled none. The films drop the warm-up's unanswered cards.
+  - Rule 9 names for the economy portfolio's candidates (its shortlist offers the average minister meanwhile).
+  - Should the average cabinet also be seated when the player enters government later?
+
+### Filed (defects, no ask)
+
+- **FORK-2.** D-45's remainder:
+  - a fork holds no player's election and replays none of the player's non-lever answers;
+  - the ledger's per-dial worlds are not carried in a save;
+  - the Monetary except-world's AI pick falls one day late.
+- **LEDGER-1.** `PolicyImpactLedgerDiagnostic`'s lazy fork is not exact. This was already so on main before this wave; the diagnostic was in no bar.
