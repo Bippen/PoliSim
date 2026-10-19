@@ -217,6 +217,7 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
   - the surplus poles gain;
   - an idle government whose balance path is the no-policy one moves by what the no-policy balance implies, printed per country;
   - (a) of §3 holds with both terms on.
+- **Fixed before the run (2026-10-19, the build's prereg):** the deficit and surplus poles are measured at their SECOND count, the first that reads closed years (the a2_* 730-day runs reach only the start's own count, where no year has closed, and print "no fiscal term" - the expected reading). `Tools/audit/aloop_q13.plan`: q13_se_deficit (Sweden, M, extreme deficit, seed 401), q13_se_surplus (402), q13_de_deficit (Germany, SPD, 411), q13_de_surplus (412) and q13_se_x04 (Sweden, M, exploit X-04, 481), each 1760 days, beside g1_se_m_surplus (805). **Pass:** at the second count each RECORD line prints the fiscal term from four closed years; the deficit poles' term is negative and the surplus poles' positive, each equal to σ_v·Δz from the printed variables within 0.01 pp.
 
 **(5) Families.** None in the no-policy dump (the same reason as q15). Proved by the dump diff.
 

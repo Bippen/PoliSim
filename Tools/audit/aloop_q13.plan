@@ -1,0 +1,7 @@
+# A-LOOP q13 (2026-10-19): the deficit and surplus poles measured at their second count, the first that reads closed years (A_LOOP_PLAN.md section 4 (4), fixed before the run)
+id=q13_se_deficit country=Sweden party=M style=extreme pole=deficit seed=401 days=1760
+id=q13_se_surplus country=Sweden party=M style=extreme pole=surplus seed=402 days=1760
+id=q13_de_deficit country=Germany party=SPD style=extreme pole=deficit seed=411 days=1760
+id=q13_de_surplus country=Germany party=SPD style=extreme pole=surplus seed=412 days=1760
+id=q13_se_x04 country=Sweden party=M style=exploit exploit=X-04 seed=481 days=1760
+id=g1_se_m_surplus country=Sweden party=M style=extreme pole=surplus seed=805 days=1760
