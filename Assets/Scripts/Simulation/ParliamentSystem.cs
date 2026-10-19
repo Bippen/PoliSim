@@ -548,7 +548,8 @@ namespace PoliSim.Simulation
         /// (GameController's own draft dictionaries are never cleared by this).
         /// GA-8-1 (2026-10-14): a per-tonne line the bill moves is stamped with <paramref name="passedYear"/>, the calendar year of its
         /// passage - the year its figure stands for, which the carbon statute leaves it for (`TaxLine.PassedForYear`); a line named at its
-        /// standing figure is no change and stamps nothing.
+        /// standing figure is no change and stamps nothing. AF-36 (q36): a line the bill CARRIES (<see cref="BudgetBill.CarriedTaxLines"/>) whose
+        /// figure is a passed one is stamped the year after <paramref name="passedYear"/>.
         /// PS-6 US-22 (US-19's owed line, the review's second-pass N1): a failed budget charges the government only where it bears the bill
         /// (<paramref name="governmentBears"/>, `Congress.GovernmentBears` at the US callers - true in every other country, so their path is the old one),
         /// as every other bill kind's result already reads it.
@@ -580,6 +581,20 @@ namespace PoliSim.Simulation
                 bool moved = !Mathf.Approximately(clampedRate, line.Rate);   // GA-8-1: a line named at its standing figure passes nothing (a restating bill changes nothing)
                 line.Rate = clampedRate;
                 if (line.IsPerTonne && moved) { line.PassedForYear = passedYear; }   // GA-8-1: the figure stands for the year it was passed for
+            }
+
+            // AF-36 (Elias's ruling q36, 2026-10-18: "a bill may carry a passed figure into the next year"): a carried line's passed figure - the one this
+            // bill just passed, or one standing from an earlier bill - stands for the year after this passage too. A line whose figure is the statute's
+            // (no stamp: never passed, or taken back at a boundary) carries nothing - a carry is not a way to freeze the statute's own figure
+            if (bill.CarriedTaxLines != null)
+            {
+                foreach (TaxType carried in bill.CarriedTaxLines)
+                {
+                    TaxLine line = FindTaxLine(country, carried);
+                    if (line == null || !line.IsImplemented || !line.IsPerTonne || !CarbonRateStatute.StatuteMoves(country.Id) || line.PassedForYear <= 0) { continue; }   // the review's L1: no carry where the statute moves nothing
+                    line.PassedForYear = Mathf.Max(line.PassedForYear, passedYear + 1);
+                    line.CarriesPassed++;   // the carry was carried: what spends the player's draft
+                }
             }
 
             // F4-4 (2026-09-13): the sub-rows' own rates - a band's, a ramp's end, the flat layer's - the bill's figure where it carries one, the standing

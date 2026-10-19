@@ -40206,3 +40206,119 @@ Case 5 is the review's H1: an opposition player (S, Sweden, seed 777) acting on 
 - The cheap bar `cheap871` is 117 of 119, failing UsVetoDiagnostic (the F3 comment) and ReviewLedgerCheck (SimulationManager's comment-only state, now rowed). Then `cheap871b` 119 of 119 clean.
 - The simulation bar `sim871` is 61 of 62. **TrajectorySentinelCheck holds on af35** (the played world unmoved); only ForkDayTickDiagnostic's Sweden premise failed (fixed above).
 - The dry film `drys871` is Sweden at 1280, as scoped (s871): 153 measured, 0 failed, 0 overflows. The real film `realse871` is Sweden at 1280: 153 captured, 0 failed, 0 overflows.
+
+
+## 873. AF-36 (q36): THE SLIP AND THE DESK SHOW THE DATE A PASSED CARBON RATE REVERTS; A BUDGET BILL MAY CARRY A PASSED FIGURE INTO THE NEXT YEAR (2026-10-19)
+
+**What was owed** (ruling q36, `docs/RULINGS_2026-10-18.md`: *"the reading is right. The slip and the Desk show the date the rate reverts, and a bill may carry a passed figure into the next year"*). Since §816 a passed carbon figure stood for the year of its passage, and nothing told the player when it would yield. Since GA-8-2 a bill named only the lines it moved, so a passed figure could not be kept past its year.
+
+**Built** (an implementer on `wave/af36`: e73d017f, then the review fixes 62967f0b, dd2d6dfe, 62a33839 and baf8bc43):
+- **The date.**
+  - Where it comes from: `CarbonRateStatute.YieldsOn`, `PassedFigureStands` and `StatuteMoves`; `SimulationManager.TryPassedCarbonFigure`, `CarbonFigureYieldsOn`, `LastBoundaryYear` and `DraftPassageYear`. The date is the boundary at which the statute's step meets the passed figure.
+  - On the Budget page, the carbon tile's slip reads "PASSED · <figure> STANDS UNTIL <date>, THEN <what the statute does>". Germany reverts to the schedule's figure, or past the schedule is carried by the price level; Sweden indexes.
+  - On the Desk there is a dated calendar entry on that day, and the same line on the calendar card's slip.
+  - `AdvanceYear` clears the stamp where the statute takes the figure back, so a stamp means a passed figure is standing. This is inert for the no-policy run: the sentinel holds.
+- **The carry.**
+  - `BudgetBill.CarriedTaxLines`, applied in `ParliamentSystem.ApplyBillResult`. A carried line's passed figure (the bill's own, or one already standing) stands for the year after the bill's passage too. The statute's own figure carries nothing, and a country whose statute moves no figure carries nothing.
+  - It rides Poland's tax act, and `WithoutRateChanges` drops it.
+  - The carbon tile's "Carry over" drafts it. It is disabled while the player's own budget bill is before the chamber.
+  - A draft is spent only when a passed bill actually carried its line (`TaxLine.CarriesPassed`). Otherwise it persists through a bill passed without it, a failed bill, or a boundary.
+  - The draft is saved in `UiDraftState.TaxCarryDrafts`.
+- **No format step** (ruling A): every field is additive.
+
+**The check:** `CarbonTaxUnitDiagnostic` section 8 (the simulation group). It proves:
+- the date the surfaces read is the boundary that moved the figure (2026-11-06);
+- a figure passed and carried in 2025 stands through 2026 and yields at 2027-11-06;
+- a carry alone in 2026 keeps the standing 80;
+- a carry of Sweden's statutory figure carries nothing;
+- the tax act keeps the carry;
+- a draft is kept past a boundary and past a bill without it, and is spent only by its carrying bill.
+
+**Integration find.** The harness applied bills without recording their approval cost (the game's callers record it). Its first year-2 hikes failed the approval ledger's audit (`n873b`: `ATTRIB: Sweden … Δ -6,0507 vs explained 0,6077`). The harness now records them, so it was not a game writer.
+
+**Measured** (`n873d`, 8 of 8 clean): section 8 ALL PASS - the date the surfaces read is the boundary that moved the figure (Germany and Sweden 2026-11-06); passed and carried in 2025 both stand at the 2026 boundary and yield at 2027-11-06 (Germany 80 then 81.91, Sweden 1500 then 1528.2); a carry drafted before a boundary survives it (Germany 30 to 55, Sweden 1330 to 1356.1) and is spent by its bill; only a carrying bill spends the draft (Germany kept past a bill without it; Sweden kept past the boundary that took 1500 back, 1530.9 with the stamp 0, then spent by the 2027 bill carrying 1600).
+
+**Declared:**
+- A carried figure stands for the year after the bill's passage (stamp = passage year + 1).
+- "Reverts" is read per rule: Germany's schedule figure; past the schedule, the price level from the passed figure; Sweden's indexation from it.
+- Only a passed figure is carried.
+- The Desk shows a dated entry and a slip line, not a permanent line on its face.
+- A boundary falling between tabling and passage can void a drafted carry. This is reachable only for a start whose boundary falls between 1 and 22 January.
+
+**Asked:**
+- **A carry is free and the vote does not see it.** It pays no approval cost for the move it prevents, and the chamber's budget concern does not count it. Should it be priced as the move it prevents?
+- Should the date also stand as a permanent line on the Desk's face?
+
+**Reviewed:** `Reviews/2026-10-19_s873_af36_af8.md`. Four independent readings: the branch's, two delta reviews and the final delta review. **SHIP WITH FIXES** each time; every M finding is fixed except the carry's price, which is asked above.
+
+**Bars:** see §874.
+
+
+## 874. AF-8 (q8): POLAND'S GOVERNMENT BY THE STATUTE'S STEPS - THE CABINET RESIGNS AT THE NEW SEJM'S FIRST SITTING (ART. 162), THE SITTING ON THE RECORD'S DATE (ART. 109(2)), THEN ART. 154; TUSK'S CABINET FROM 13 DEC 2023; GA-0-45'S PREMISES RULED, SOURCED OR CUT (2026-10-19)
+
+**What was owed** (ruling q8; row AF-8; GA-0-45):
+- A premise backed by a statute becomes a ruling with its citation; one without a statute is sourced or cut.
+- Poland's government changes by the statute's steps: Art. 162, Art. 109(2) on the record's date, then Art. 154.
+
+**Built** (an implementer on `wave/af8`: df48913e, then 364bc900, 500dc6de, 843709e5 and 7884dee9):
+- **The night installs nothing in Poland** (`GameController.SejmVerdict.cs`). It opens the procedure on the outgoing government, names the first sitting, and says what is EXPECTED TO FORM.
+- **The steps** (`SejmFormation`, `SimulationManager.Sejm.cs`, run from `AdvanceConfidenceDay`):
+  1. At the first sitting the cabinet resigns and carries on (Art. 162 ust. 1, 3). The sitting falls on the record's 2023-11-13 [API-TERM]; otherwise polling day + 30 (ruling E2).
+  2. Art. 154 ust. 1: designation and appointment.
+  3. Ust. 2: the confidence vote.
+  4. Ust. 3: the Sejm's own election, then the appointment.
+- **The dates.** Each step falls on the record's date where the record dates it (`poland/records_by_date.md` §2a-2b), and each vote is decided on the game's own seats.
+- **The cabinet the Sejm elects.** For a Sejm of record it is the record's cabinet: KO+TD+NL led by KO, the government of record appointed 2023-12-13. It is elected where those parties hold a majority of the game's seats; otherwise the projection is elected, and the log says so. The night and the install decide this through one helper (`SejmFormation.TryRecordCabinet`). A Sejm the game elects is given the projection.
+- **The save.** The procedure rides `GovernmentRecord.Sejm`, saved additively.
+- **GA-0-45** (`POLITICAL_SYSTEM_SPEC.md` §5.4a):
+  1. The constructive vote's Monday cadence is CUT. The AI weighs daily, through a per-manager memo keyed on everything the weighing reads (`SimulationManager.AiVoteMemo.cs`). Decisions are byte-identical to the unmemoized run, and a German day costs 1.47 ms instead of 10.53 ms.
+  2. GO-BT § 97 Abs. 1's quarter governs the player's constructive vote [GOBT-4]. It shows on the Bundestag row's chip and slip.
+  3. Art. 63(4) is ruled with its citation.
+  4. Sweden's extra-election Sunday is SOURCED [RD-EV-4].
+  5. Poland's first sitting is built as above.
+  6. 2022's blocs for later Swedish elections: asked.
+  7. The seatless instrument case: asked.
+
+**The checks:**
+- `SejmFormationDiagnostic` (the cheap group, new):
+  - the 2023 steps on the record's dates;
+  - the done-when, *KO+NL+TD led by KO takes office on 2023-12-13*;
+  - a save cut on 2023-11-20 carrying the procedure, Designated;
+  - a Sejm the game elects;
+  - (e) the night and the install naming one cabinet, and the fallback on planted seats.
+- `ConstructiveVoteDiagnostic`: the cadence cut, and (h) the memo's decisions against the control, with the cost.
+
+**Integration finds** (the Unity runs `n873` and `n873b`):
+- The Sejm elected the projection KO+TD, not the record's cabinet.
+- The diagnostic's save was serialised after the run.
+- The night named the projection while the install seated the record.
+
+All three are fixed.
+
+**Measured** (`n873d`, 8 of 8 clean; `n873e` after the guard's refactor, 2 of 2): the done-when - *KO+NL+TD led by KO takes office on 2023-12-13, the record's day for Donald Tusk (KO)'s cabinet [KO+NL+TD], elected by the Sejm (Art. 154 ust. 3)*; the save cut on 2023-11-20 carries the procedure, Designated, next 2023-11-27; (e) the night and the install name the record's cabinet (248 of 460), the planted short cabinet (200 of 460) falls back to the projection, logged; the memo's decisions are the control's (two changes of government, the same days, cabinets and bases) at 1.47 ms a German day against 10.53 ms (8 days weighed, 52 skipped, of 60).
+
+**Declared:**
+- With no record, the designee is the formation's projection.
+- Every member is present.
+- An undated step falls on its window's last day, and the appointment comes 2 days after the Sejm's election.
+- Art. 155 and the shortened term are not modelled.
+- A player's party in the record's cabinet is seated in it, as on the record.
+
+**Asked:**
+- the designee where no record names one;
+- Art. 155;
+- the 2026+ Swedish blocs (premise 6);
+- the seatless instrument case (premise 7);
+- whether the record's cabinet seats the player's party unasked.
+
+**Reviewed:** `Reviews/2026-10-19_s873_af36_af8.md`. SHIP WITH FIXES; every M finding is fixed.
+
+**Bars** (§873-§874 on one tree; tier SIMULATION + UI):
+- `n873` and `n873b` found the three integration defects above.
+- `n873c` is 3 of 3 clean (before the last two fixes).
+- `slrt873`: PASS, 12 scenarios.
+- The simulation bar `sim873` is 62 of 62. **TrajectorySentinelCheck holds on af35.**
+- Films, scope `drys873b` (s873): the dry films of Germany, Sweden and Poland at 1280 with 0 failed and 0 overflows; the real films `realde873` (147/0) and `realpl873` (146/0). All of these ran before the last two fixes.
+- The final tree: `n873d` 8 of 8 clean. The cheap bar `cheap873` was 119 of 120: ChamberVerdictCacheCheck's static guard flagged five writes to who governs in `SimulationManager.Sejm.cs`, a new record built before install and the procedure's own designee lists. They move into `GovernmentRecord.OfNamedCabinet` and `SejmFormation.Designate` (behaviour-preserving, reviewed SHIP), then `n873e` is 2 of 2. `cheap873b` was 119 of 120: CommentClaimCheck caught the new comment citing `SimulationManager.Sejm` as a member, so the comment now names the file. Then `cheap873c` is 120 of 120 clean.
+- The simulation bar `sim873b` is 62 of 62, the sentinel holding on af35.
+- Films, scope `drys873c` (s873): Germany 147, Sweden 155 and Poland 146 measured, 0 failed, 0 overflows; real films `realde873b` 147/0 and `realpl873b` 146/0. Poland's warm-up logs the 2023 verdict: *Expected to form: the record's KO+TD+NL government led by Donald Tusk (KO), its parties holding 246 of 460 seats, with PiS in opposition*. The night's Canvas frame is reached by no film (88n's standing gap, UI-1).

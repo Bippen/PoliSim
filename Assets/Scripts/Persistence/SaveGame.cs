@@ -137,6 +137,8 @@ namespace PoliSim.Persistence
     public class UiDraftState
     {
         public Dictionary<TaxType, float> TaxRateInputs = new Dictionary<TaxType, float>();
+        /// <summary>AF-36 (2026-10-19): the per-tonne lines drafted to carry their passed figure into the next year, each with the line as it stood when drafted (`TaxCarryDraft`). A save from before carries none.</summary>
+        public Dictionary<TaxType, TaxCarryDraft> TaxCarryDrafts = new Dictionary<TaxType, TaxCarryDraft>();
         /// <summary>F4-4 (2026-09-13): the income tax's sub-row drafts by sub-row index - the rate without the lever's shift.</summary>
         public Dictionary<int, float> BracketRateInputs = new Dictionary<int, float>();
         public Dictionary<WelfareProgramType, float> WelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>();

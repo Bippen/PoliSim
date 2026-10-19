@@ -94,6 +94,9 @@ namespace PoliSim.Elections
         public List<string> StandingRefusals = new List<string>();
         /// <summary>§646: the Speaker's round this government serves through as a caretaker (premise 8), or null. Saved (format 35).</summary>
         public SpeakerRound Round;
+        /// <summary>AF-8 (ruling q8): the Sejm's formation after an election (Konstytucja Art. 162, 154) this government serves through, or null - moved to the
+        /// cabinet each appointment installs, and kept on it once concluded. Additive in the save: an older one carries none.</summary>
+        public SejmFormation Sejm;
 
         /// <summary>
         /// §642 (the ultrareview of PR #1): WHO GOVERNS HAS A VERSION. A government formed, installed or loaded is a new record; every change made to a
@@ -156,6 +159,15 @@ namespace PoliSim.Elections
         {
             Caretaker = true;
             CaretakerSince = on;
+            Version++;
+        }
+
+        /// <summary>AF-8 (Konstytucja Art. 154 ust. 1): the President appoints the cabinet that resigned as the new one - the record's designee of 2023 was the
+        /// outgoing prime minister - so it governs again from <paramref name="on"/>, no longer a caretaker - the same record, its term unbroken as the record's row is.</summary>
+        public void Reappoint(DateTime on)
+        {
+            Caretaker = false;
+            CaretakerSince = DateTime.MinValue;
             Version++;
         }
 
@@ -388,6 +400,17 @@ namespace PoliSim.Elections
             whatIf.Cabinet.Add(party);
             whatIf.AllocatePortfolios(country);
             return whatIf;
+        }
+
+        /// <summary>AF-8: a record of a cabinet named outright - a designee or a cabinet of record with no formation behind it (Poland's Art. 154 steps,
+        /// `SimulationManager.Sejm.cs`) - its parties, supporters and prime minister's party as given. Built here, by the record's own method, so every write
+        /// to who governs stays inside GovernmentRecord (ChamberVerdictCacheCheck's guard).</summary>
+        public static GovernmentRecord OfNamedCabinet(string pmParty, IEnumerable<string> cabinet, IEnumerable<string> support, DateTime formedOn, string basis)
+        {
+            var record = new GovernmentRecord { FormedOn = formedOn, Basis = basis, PmParty = pmParty };
+            record.Cabinet.AddRange(cabinet);
+            record.Support.AddRange(support);
+            return record;
         }
 
         /// <summary>The government the formation formed after the game's own election (or none: a record with an empty cabinet and the reason).</summary>

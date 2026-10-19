@@ -180,6 +180,39 @@ confidence in both chambers. A partner leaving or a supporter withdrawing trigge
 procedure — a new formation from the sitting chamber, or an extra election if the country's rules call
 for one. The election system already runs an election on any date.
 
+### 5.4a The stated premises, ruled (q8, 2026-10-18; AF-8; the audit's GA-0-45)
+
+Elias's ruling q8: *"a premise backed by a statute becomes a ruling with the citation; one without a statute is sourced or
+cut."* Each premise the audit found stated in code with no row here:
+
+- **Poland's government after a Sejm election changes by the constitution's steps** (Konstytucja, the Tribunal's text
+  [TK-KONST]): the cabinet resigns at the new Sejm's first sitting and carries on until a new one is appointed (Art. 162
+  ust. 1, 3); the first sitting falls within 30 days of the election (Art. 109 ust. 2), on the record's date where the
+  record has one and otherwise on the window's last day (ruling E2); then Art. 154 - the President designates and
+  appoints within 14 days, the cabinet asks the Sejm's confidence within 14 days, and failing either the Sejm elects
+  its own within 14 days by an absolute majority. Each step falls on the record's date where the record dates it
+  (`poland/records_by_date.md`), and so are the designee and the cabinet the Sejm elects - the record's, where its parties hold a
+  majority of the game's Sejm; each vote's outcome is the game's own chamber's. Where no record dates a step, it
+  falls on its window's last day, as the 10th term's did. DECLARED and asked: where no record names the President's
+  designee, the designee is the formation's projection on the new Sejm. DECLARED and asked: a player's party that is in the record's cabinet
+  is seated in it as on the record (the night says so) - where elsewhere the model never drafts the player's party unasked. Not modelled, stated: Art. 155 and the
+  shortened term it ends in - where the Sejm elects no one, the caretaker serves on.
+- **The constructive vote's AI weighed on Mondays** - no statute: **CUT**. The AI weighs it every day.
+- **"Any party may move" the constructive vote** - the statute is the Bundestag's standing orders, GO-BT § 97 Abs. 1
+  [GOBT-4]: a quarter of the members, or a Fraktion of a quarter, sign the motion, or it is not put on the agenda. The
+  signatories are the members who would elect the candidate - §706's reading of § 4's identical quarter.
+- **Art. 63 Abs. 4 Satz 3 GG, "the Bundespräsident appoints"** - a ruling with its citation (§713): the article allows
+  the appointment or a dissolution, and the game takes the appointment.
+- **The Sunday rules.** Sweden's extra election on a Sunday is **SOURCED**: the one extra election on record was held on
+  a Sunday, 1 June 1958 [RD-EV-4] - the most recent practice, ruling E2's principle; vallagen names only who decides the
+  day. The last Sunday inside the three months is stated. Poland's Sejm polling day, the first Sunday of Art. 98 ust. 2's
+  window (ruling D3), and its presidential first vote, the last Sunday of Art. 128 ust. 2's window (ruling E2), are
+  rulings with their citations.
+- **2022's blocs for every later Swedish election** - OPEN, asked: the blocs are a party's declared side, which q19
+  dates by election; the 2026 declarations name sides for some parties and not others.
+- **A seatless player country read as governing** - the instruments' convention for a world with no player party; the
+  game always seats one. Not a premise of the modelled world; asked.
+
 ### 5.5 Between elections
 
 A government's record feeds the next vote through perceived performance, as it already does. A

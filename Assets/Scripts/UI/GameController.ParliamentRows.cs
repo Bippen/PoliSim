@@ -152,7 +152,8 @@ namespace PoliSim.UI
             DrawRowChip(date, day, ChipFace.Outline);
             SlipAnchor(new Rect(row.x, row.y, date.xMax - row.x, row.height), "caretaker");
             book.Anchors["caretaker"] = new SlipContent("CARETAKER SINCE " + day).Add("THE OUTGOING GOVERNMENT SERVES ON")
-                .Add(ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag ? "UNTIL THE BUNDESTAG ELECTS A CHANCELLOR (ART. 69 ABS. 3)" : "UNTIL A PROPOSAL WINS ITS INVESTITURE");   // §705
+                .Add(ConfidenceProcedure.RulesOf(PlayerCountryId) == ConfidenceProcedure.Rules.Bundestag ? "UNTIL THE BUNDESTAG ELECTS A CHANCELLOR (ART. 69 ABS. 3)"
+                    : SejmFormation.Applies(PlayerCountryId) ? "UNTIL A NEW COUNCIL OF MINISTERS IS APPOINTED (ART. 162 UST. 3)" : "UNTIL A PROPOSAL WINS ITS INVESTITURE");   // §705; AF-8 the Sejm's words
             DrawRowRule(row);
         }
 
@@ -952,17 +953,29 @@ namespace PoliSim.UI
             float mw = Mathf.Ceil(caption.CalcSize(new GUIContent(motion)).x) + 2f;
             PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, mw, row.height), motion, caption);
             x += mw + StatsUnit(12f);
-            x = DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + projected.Needed.ToString(CultureInfo.InvariantCulture) + " NEEDED");
+            // AF-8 (ruling q8): GO-BT § 97 Abs. 1 [GOBT-4] - a quarter of the members sign the motion, or it is not put on the agenda; the signatories are the
+            // members who would elect the candidate (`SimulationManager.MoveNoConfidence`). Short of it the row says so and the act is not offered - the
+            // Riksdag row's tenth, below, in the Bundestag's words.
+            int quarter = (projected.Members + 3) / 4;
+            bool signed = projected.For >= quarter;
+            x = signed
+                ? DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + projected.Needed.ToString(CultureInfo.InvariantCulture) + " NEEDED")
+                : DrawFigurePair(x, row, projected.For.ToString(CultureInfo.InvariantCulture), "⁄ " + quarter.ToString(CultureInfo.InvariantCulture) + " TO SIGN IT");
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "motion");
-            SlipContent slip = new SlipContent("A CONSTRUCTIVE VOTE OF NO CONFIDENCE")
+            string quarterLine = string.Format(CultureInfo.InvariantCulture, "A QUARTER OF THE MEMBERS, {0}, MUST SIGN IT (GO-BT § 97 ABS. 1)", quarter);
+            SlipContent slip = !signed
+                ? new SlipContent("NOT YET A MOTION").Add(quarterLine)
+                    .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} MEMBERS WOULD ELECT YOUR CANDIDATE", projected.For, projected.Members))
+                : new SlipContent("A CONSTRUCTIVE VOTE OF NO CONFIDENCE")
                 .Add(string.Format(CultureInfo.InvariantCulture, "{0} OF {1} MEMBERS WOULD ELECT YOUR CANDIDATE", projected.For, projected.Members))
                 .Add(string.Format(CultureInfo.InvariantCulture, "IT NEEDS {0}, A MAJORITY OF THE MEMBERS", projected.Needed))
+                .Add(quarterLine)
                 .Add("YOUR GOVERNMENT: " + Names(projected.Governing.Count > 0 ? projected.Governing : projected.SuccessorCabinet).ToUpperInvariant() + (projected.PartnersAccept && projected.SuccessorSupport.Count > 0 ? " WITH " + Names(projected.SuccessorSupport).ToUpperInvariant() : string.Empty));
             // §754 (ruling A4): the vote elects the person - a refusing partner changes the government the elected successor forms, never his election
-            if (!projected.PartnersAccept) { slip.Add(projected.Carried ? "A PARTNER REFUSES ITS PLACE - ELECTED, YOU GOVERN WITHOUT IT" : "A PARTNER REFUSES ITS PLACE"); }
+            if (signed && !projected.PartnersAccept) { slip.Add(projected.Carried ? "A PARTNER REFUSES ITS PLACE - ELECTED, YOU GOVERN WITHOUT IT" : "A PARTNER REFUSES ITS PLACE"); }
             book.Anchors["motion"] = slip;
             Rect move = RowChipRectEndingAt(row.xMax, row, "ELECT A SUCCESSOR", 26f, 12f);
-            if (DrawRowChip(move, "ELECT A SUCCESSOR", ChipFace.Paper))
+            if (DrawRowChip(move, "ELECT A SUCCESSOR", ChipFace.Paper, disabled: !signed))
             {
                 if (!_simulationManager.MoveNoConfidence(PlayerCountryId, out string refused, out _)) { Debug.Log($"CONFIDENCE: the motion was refused - {refused}"); }
                 _constructiveProjection = null;

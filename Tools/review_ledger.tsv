@@ -247,3 +247,10 @@ file	Assets/Scripts/Data/BudgetBill.cs	3de453afd4b5b6537609089159dc63f5c1dd38d62
 file	Assets/Scripts/Simulation/SimulationManager.cs	b159cedc7faf6e275b607b043cd883ac99959898f936350842de3381288ee85a	reviewed	2026-10-18	s865	Reviews/2026-10-18_s863_s866_integration.md	-
 file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	cda345cbcc6169ce19a3643e46610c59135c52d4c0c6d8248d399dafcff6f7c3	reviewed	2026-10-19	s871	Reviews/2026-10-19_s871_fork1_af12.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	a2cd4a588648a149df8a60f8198584fd4a5c4b5dda10c2f02d1137e0c391238f	reviewed	2026-10-19	s871	Reviews/2026-10-19_s871_fork1_af12.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	cf5e1ac9a25b61da91c066fbb8b0d5c295dfda4f89a5b2ae7655fe3a15cf42b0	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-
+file	Assets/Scripts/Data/CarbonRateStatute.cs	8ef63e92c7c985d22931e02fc4a8a34a1681a728ab45eb90189026d7396feffa	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-
+file	Assets/Scripts/Data/TaxLine.cs	507a3000cd647c2a27d20fd6b69b8d105f783449b51f46ca7ed5cd79eb3175aa	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-
+file	Assets/Scripts/Simulation/SimulationManager.AiVoteMemo.cs	a101f629e5d67b16a9d9e6775096ec794505c357b23ca286ea77c92bfd9fad96	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	339b43c0201e15a85587f23715337668c3ebef54990330c0d19a9618af497aa0	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	6cf853f133f422bb720af2fb9d2a3ff248663b82c7aedbc264f24957656bcc6a	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	caf51456a6828e73e8cafaba4b93cddaacb44f39510cb7bb33c4c279cb8c1e89	reviewed	2026-10-19	s873	Reviews/2026-10-19_s873_af36_af8.md	-

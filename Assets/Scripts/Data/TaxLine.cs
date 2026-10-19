@@ -143,8 +143,15 @@ namespace PoliSim.Data
         /// <summary>GA-8-1 (2026-10-14, Elias's ruling: "a passed rate stands for the year it was passed for"): the calendar year a passed budget
         /// bill's figure for this line stands for - the year of its passage; 0 for none. Written for a per-tonne line only (the one line a statute
         /// moves at a boundary, `CarbonRateStatute.AdvanceYear`), which leaves the figure where it is at every boundary of that year and moves it
-        /// again from the first boundary of a later one. A save from before carries 0 - the statute governs at the next boundary, as it did.</summary>
+        /// again from the first boundary of a later one. A save from before carries 0 - the statute governs at the next boundary, as it did.
+        /// AF-36 (q36, 2026-10-18): a bill that CARRIES the figure (`BudgetBill.CarriedTaxLines`) stamps the year after its passage, so the figure
+        /// stands into the next year; the statute's step clears the stamp where it takes the figure back.</summary>
         public int PassedForYear;
+
+        /// <summary>AF-36 (the review s873b's M1): how many passed budget bills have CARRIED this line's figure (`BudgetBill.CarriedTaxLines`, applied in
+        /// `ParliamentSystem.ApplyBillResult`) - the one thing that spends the player's carry draft (`TaxCarryDraft.SpentOn`): a bill passed without the
+        /// carry, or a boundary, never moves it. 0 in a save from before.</summary>
+        public int CarriesPassed;
 
         /// <summary>True for the one instrument whose rate is a price per tonne rather than a percentage of a base.</summary>
         public bool IsPerTonne => Type == TaxType.CarbonTax;
@@ -193,7 +200,7 @@ namespace PoliSim.Data
         /// <summary>Used by SimulationManager.PreviewTurn's throwaway country clone - TaxLine.Rate is mutated by ApplyTaxRateChanges, so the preview needs its own copies, not shared references.</summary>
         public TaxLine Clone()
         {
-            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed, BracketRates = BracketRates == null ? null : (float[])BracketRates.Clone(), PassedForYear = PassedForYear };
+            return new TaxLine(Type, Rate, IsImplemented) { RateCeiling = RateCeiling, RateSeed = RateSeed, BracketRates = BracketRates == null ? null : (float[])BracketRates.Clone(), PassedForYear = PassedForYear, CarriesPassed = CarriesPassed };
         }
     }
 }

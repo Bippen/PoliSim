@@ -90,3 +90,14 @@ CSU–Linke pair likewise. A formation that turns on them says so only on the fo
 [GOBT-4] is read for § 4 (*Wahl des Bundeskanzlers*) Abs. 2 and 3 — who may nominate in Art. 63's later ballots — and § 10 (a Fraktion
 is at least five per cent of the members). The game applies it in `SimulationManager.Nominated` (`COMPLETED.md` §706). Every file above
 also has its line in `raw/records/SHA256SUMS.txt`.
+[GOBT-4] is also read (AF-8, ruling q8, 2026-10-19) for **§ 97 Abs. 1 Satz 2** - who may move the constructive vote
+of Art. 67 GG. The text, as the print's own content streams carry it (FlateDecode inflated with perl, the strings of its text operators
+joined; the print breaks "V iertel" with a kerning gap and "unter - zeichnen" at a line end, both joined here; nothing else changed):
+*"Der Antrag ist von einem Viertel der Mitglieder des Bundestages oder einer Fraktion, die mindestens ein Viertel der Mitglieder des
+Bundestages umfasst, zu unterzeichnen und in der Weise zu stellen, dass dem Bundestag ein namentlich benannter Kandidat als Nachfolger
+zur Wahl vorgeschlagen wird. Anträge, die diesen Voraussetzungen nicht entsprechen, dürfen nicht auf die Tagesordnung gesetzt werden."*
+The section's heading is drawn in CID glyphs; it is read as § 97 by its sequence - the next heading, *Vertrauensantrag des Bundeskanzlers*,
+is § 98, one glyph code higher - and by the Bundestag's own record of the 20th term's constituent sitting, which names the quorum
+*"zum Mißtrauensantrag gegen den Bundeskanzler § 97 Absatz 1 Satz 2 GOBT"* (`raw/records/bt_2021-10-26_konstituierende-sitzung.html`,
+[BT-K20]). The game applies it in `SimulationManager.MoveNoConfidence`: the signatories are the members who would elect the candidate
+(§706's reading of § 4's identical quarter), and a motion short of a quarter is refused, with no division.

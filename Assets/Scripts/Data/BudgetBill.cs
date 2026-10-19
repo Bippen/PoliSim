@@ -59,6 +59,11 @@ namespace PoliSim.Data
         public System.DateTime FinanceStanceGovernment;
         /// <summary>Requested absolute Rate per TaxType - only meaningful for a TaxType the country currently has implemented (see this class's own doc comment).</summary>
         public Dictionary<TaxType, float> TaxLines = new Dictionary<TaxType, float>();
+        /// <summary>AF-36 (Elias's ruling q36, 2026-10-18: "a bill may carry a passed figure into the next year"): the per-tonne lines whose passed figure
+        /// this bill CARRIES - the figure it passes on the line, or the passed figure standing - so it stands for the year after the bill's passage too
+        /// (`TaxLine.PassedForYear`, `ParliamentSystem.ApplyBillResult`). A line whose figure is the statute's carries nothing. Rides the save with the
+        /// pending budget; empty in an older one.</summary>
+        public List<TaxType> CarriedTaxLines = new List<TaxType>();
         /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the line's figure stands (no change); only the income tax carries one. GA-2-12 (2026-10-14): the statute's own figure where the line carries a rate of its own puts the statute back (`ParliamentSystem.MergedBracketRates`).</summary>
         public Dictionary<TaxType, float[]> BracketRates = new Dictionary<TaxType, float[]>();
         public Dictionary<SpendingCategory, float> SpendingPercentChanges = new Dictionary<SpendingCategory, float>();
@@ -126,6 +131,7 @@ namespace PoliSim.Data
         {
             GovernmentBill = GovernmentBill, TabledBy = TabledBy, NamesNoFund = true,
             TaxLines = new Dictionary<TaxType, float>(TaxLines), BracketRates = new Dictionary<TaxType, float[]>(BracketRates),
+            CarriedTaxLines = new List<TaxType>(CarriedTaxLines ?? new List<TaxType>()),   // AF-36: a carry is the rates' business
         };
 
         /// <summary>§768: the budget act with the rates withheld - what applies where the tax act fails or its veto stands: the old rates stand and the
@@ -135,6 +141,7 @@ namespace PoliSim.Data
             var act = (BudgetBill)MemberwiseClone();
             act.TaxLines = new Dictionary<TaxType, float>();
             act.BracketRates = new Dictionary<TaxType, float[]>();
+            act.CarriedTaxLines = new List<TaxType>();   // AF-36: the rates withheld, their carry with them
             return act;
         }
 
@@ -271,5 +278,21 @@ namespace PoliSim.Data
             act.SpendingPinChanges = new Dictionary<SpendingCategory, bool>();
             return act;
         }
+    }
+
+    /// <summary>AF-36 (Elias's ruling q36, 2026-10-18; the reviews' M1, s872, s873 and s873b): the player's drafted CARRY on a per-tonne line - the count of
+    /// carries the line had passed (`TaxLine.CarriesPassed`) when the carry was drafted. The carry is SPENT only when a passed bill has actually carried the
+    /// line since (`ParliamentSystem.ApplyBillResult` counts it) - never by a bill that passed without the carry (one tabled before the box was ticked), a
+    /// failed bill, a boundary, or a rate or stamp the statute moved: where the figure it would carry is gone, the box carries nothing until one stands. So
+    /// a carry rides one bill, and a further carry is a fresh, deliberate act. Rides the save in `UiDraftState.TaxCarryDrafts`.</summary>
+    [System.Serializable]
+    public class TaxCarryDraft
+    {
+        public int Carries;
+
+        public static TaxCarryDraft Of(TaxLine line) => new TaxCarryDraft { Carries = line.CarriesPassed };
+
+        /// <summary>Whether a passed bill has carried the line since the draft.</summary>
+        public bool SpentOn(TaxLine line) => line == null || line.CarriesPassed != Carries;
     }
 }

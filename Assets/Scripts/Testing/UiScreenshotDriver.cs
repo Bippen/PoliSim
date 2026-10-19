@@ -1240,6 +1240,47 @@ namespace PoliSim.Testing
                             ScrollBy(controller, 2000f);
                             yield return Settle();
                             yield return Capture(stem + "_rows_carbon");   // PF-12 (§598): was "_rows", which the sweep's own 900 px frame overwrote (1000) - the Carbon Tax row never survived
+                            // AF-36 (Elias's ruling q36, 2026-10-18: "the slip and the Desk show the date the rate reverts, and a bill may carry a passed figure into
+                            // the next year"): on the scrolled carbon row a figure passed this year is planted standing and the carry drafted, the tile's slip pinned
+                            // (the day it reverts, the carry), then the Desk's calendar slip pinned (the same day) - and everything put back. Where the statute moves
+                            // no figure (France; the three with no carbon tax) there is no date and no carry, and nothing is filmed.
+                            if (CarbonRateStatute.StatuteMoves(_countryId))
+                            {
+                                Country carbonPlayer = controller.GetType().GetField("_playerCountry", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Country;
+                                SimulationManager carbonSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                                var carryInputs = controller.GetType().GetField("_taxCarryInputs", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as Dictionary<TaxType, TaxCarryDraft>;
+                                MethodInfo pinCarbon = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                                FieldInfo carbonPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                                TaxLine carbonLine = carbonPlayer?.TaxLines.Find(t => t.IsPerTonne);
+                                if (carbonSim != null && carryInputs != null && carbonLine != null && pinCarbon != null && carbonPins != null)
+                                {
+                                    int stampBefore = carbonLine.PassedForYear;
+                                    carryInputs.TryGetValue(carbonLine.Type, out TaxCarryDraft carryBefore);
+                                    carbonLine.PassedForYear = carbonSim.CurrentDate.Year;   // a figure passed this year, standing
+                                    carryInputs[carbonLine.Type] = TaxCarryDraft.Of(carbonLine);   // drafted against the planted stamp
+                                    pinCarbon.Invoke(controller, new object[] { "tax:" + carbonLine.Type, new Vector2(UiScreen.Width * 0.30f, UiScreen.Height * 0.30f) });
+                                    yield return Settle();
+                                    yield return Settle();
+                                    yield return Capture(stem + "_carbon_passed");
+                                    bool shown = carbonSim.TryPassedCarbonFigure(_countryId, out TaxLine _, out DateTime reverts);
+                                    Debug.Log($"SHOT: AF-36 - {stem}_carbon_passed: the carbon line passed for {carbonLine.PassedForYear}, its tile's slip pinned with the day it reverts ({reverts:yyyy-MM-dd}) and the carry drafted.");
+                                    (carbonPins.GetValue(controller) as IList)?.Clear();
+                                    SetPrivateField(controller, "_onDesk", true);
+                                    yield return Settle();
+                                    pinCarbon.Invoke(controller, new object[] { "card:calendar", new Vector2(UiScreen.Width * 0.70f, UiScreen.Height * 0.25f) });
+                                    yield return Settle();
+                                    yield return Settle();
+                                    yield return Capture("01d_desk_carbon_passed");
+                                    Debug.Log($"SHOT: AF-36 - 01d_desk_carbon_passed: the Desk's calendar slip pinned with the same day ({reverts:yyyy-MM-dd}).");
+                                    (carbonPins.GetValue(controller) as IList)?.Clear();
+                                    SetPrivateField(controller, "_onDesk", false);
+                                    if (carryBefore == null) { carryInputs.Remove(carbonLine.Type); } else { carryInputs[carbonLine.Type] = carryBefore; }
+                                    carbonLine.PassedForYear = stampBefore;
+                                    yield return Settle();
+                                    if (!shown) { Debug.LogError($"SHOT: AF-36 - a figure planted as passed for {carbonSim.CurrentDate.Year} reads as no passed figure on {_countryId}; the date is NOT on film."); _failed++; }
+                                }
+                                else { Debug.LogError("SHOT: AF-36 - the controller has no player, manager, carry drafts or slip pins reachable; the carbon carry is NOT filmed."); _failed++; }
+                            }
                             ScrollBy(controller, 0f);
                             yield return Settle();
                         }

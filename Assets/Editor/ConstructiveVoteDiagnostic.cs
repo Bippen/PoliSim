@@ -224,14 +224,14 @@ namespace PoliSim.EditorTools
                         F("the AI: on the planted chamber the CDU moves its own constructive vote and installs {0} led by {1}", de3.Government != null ? string.Join("+", de3.Government.Cabinet) : "none", de3.Government?.PmParty));
                     Check(de3.Government.RoleOf("SSW") == sswBefore && !de3.Government.Cabinet.Contains("SSW") && !de3.Government.Support.Contains("SSW"),
                         F("the review's defect 1: an AI successor never seats the player's party unasked - the SSW {0} before and {1} after", sswBefore, de3.Government.RoleOf("SSW")));
-                    // a weekday that is not Monday and not the day after a formation: the AI does not weigh (the stated cadence)
+                    // AF-8 (ruling q8): the Monday cadence is cut - on a day that is neither a Monday nor the day after a formation the AI weighs, and moves
                     (SimulationManager sim5, Country de5) = Open("ConstructiveVoteDiagnostic cadence", "SSW");
                     Plant(de5);
                     GovernmentRecord outgoing5 = de5.Government;
                     outgoing5.FormedOn = sim5.CurrentDate.AddDays(-30);
                     tryAi?.Invoke(sim5, new object[] { de5 });
-                    Check(sim5.CurrentDate.DayOfWeek != DayOfWeek.Monday && ReferenceEquals(de5.Government, outgoing5),
-                        F("the cadence: on {0:yyyy-MM-dd}, a {1} a month after the government formed, the AI weighs nothing - Mondays and the day after a formation only", sim5.CurrentDate, sim5.CurrentDate.DayOfWeek));
+                    Check(sim5.CurrentDate.DayOfWeek != DayOfWeek.Monday && !ReferenceEquals(de5.Government, outgoing5) && de5.Government.PmParty == "CDU" && de5.Government.Basis.Contains("Art. 67"),
+                        F("AF-8, the cadence cut: on {0:yyyy-MM-dd}, a {1} a month after the government formed, the AI weighs and the CDU's successor takes office ({2})", sim5.CurrentDate, sim5.CurrentDate.DayOfWeek, de5.Government?.PmParty));
 
                     // (e) the review's defect 2: the player chancellor's open budget window closes when an AI successor takes office
                     (SimulationManager sim4, Country de4) = Open("ConstructiveVoteDiagnostic window", "SPD");
@@ -245,6 +245,44 @@ namespace PoliSim.EditorTools
                     Check(openBefore && de4.Government.PmParty == "CDU" && !sim4.GetPendingBudgetProcess(CountryId.Germany),
                         F("the review's defect 2: the SPD player's open budget window (open {0}) is closed when the CDU's successor takes office (the government {1}; the window {2})",
                             openBefore, de4.Government.PmParty, sim4.GetPendingBudgetProcess(CountryId.Germany) ? "STILL OPEN" : "closed"));
+
+                    // (h) AF-8 (the s873 review's M2): THE MEMO GIVES THE SAME DECISIONS ON THE SAME DAYS. One German span, run twice from the same seed -
+                    // the memo on, and off (the control, weighing every day as before it) - on the game's own day path; the record's chamber until day 20,
+                    // the planted one from it (the CDU's motion carries), the start's seats back from day 40. Every change of government, its day and its
+                    // basis, must be the same in both; the tick's cost per German day is printed both ways (the integrator's measurement).
+                    const int memoDays = 60;
+                    string MemoSpan(bool memo, out double msPerDay, out int weighed, out int skipped)
+                    {
+                        (SimulationManager s, Country d) = Open("ConstructiveVoteDiagnostic memo " + (memo ? "on" : "off"), "SSW");
+                        typeof(SimulationManager).GetField("_aiVoteMemoEnabled", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(s, memo);
+                        var startSeats = new Dictionary<string, int>(d.ParliamentSeats);
+                        var events = new StringBuilder();
+                        GovernmentRecord seen = d.Government;
+                        var watch = new System.Diagnostics.Stopwatch();
+                        for (int day = 1; day <= memoDays; day++)
+                        {
+                            s.AdvanceDay();
+                            if (day == 20) { Plant(d); }
+                            if (day == 40) { foreach (KeyValuePair<string, int> kv in startSeats) { d.ParliamentSeats[kv.Key] = kv.Value; } }
+                            watch.Start();
+                            s.AdvanceCountryDayTick(CountryId.Germany);
+                            watch.Stop();
+                            if (!ReferenceEquals(d.Government, seen)) { seen = d.Government; events.Append(F("{0:yyyy-MM-dd} {1} [{2}] {3}; ", s.CurrentDate, seen.PmParty, string.Join("+", seen.Cabinet), seen.Basis)); }
+                        }
+                        msPerDay = watch.Elapsed.TotalMilliseconds / memoDays;
+                        weighed = (int)(typeof(SimulationManager).GetField("_aiVoteWeighed", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(s) ?? -1);
+                        skipped = (int)(typeof(SimulationManager).GetField("_aiVoteSkipped", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(s) ?? -1);
+                        return events.ToString();
+                    }
+                    string withMemo = MemoSpan(true, out double msOn, out int weighedOn, out int skippedOn);
+                    string withoutMemo = MemoSpan(false, out double msOff, out int weighedOff, out int skippedOff);
+                    sb.Append("    events    memo on:  ").Append(withMemo.Length > 0 ? withMemo : "none").Append('\n');
+                    sb.Append("    events    memo off: ").Append(withoutMemo.Length > 0 ? withoutMemo : "none").Append('\n');
+                    Check(withMemo.Length > 0 && withMemo == withoutMemo,
+                        "(h) the memo's decisions are the control's: every change of government on the same day, to the same cabinet, on the same basis");
+                    Check(skippedOn > 0 && skippedOff == 0 && weighedOff > 0,
+                        F("(h) THE COST: the German day's tick {0:0.00} ms with the memo ({1} day(s) weighed, {2} skipped) against {3:0.00} ms without it ({4} weighed), over {5} days",
+                            msOn, weighedOn, skippedOn, msOff, weighedOff, memoDays));
                 }
             }
             catch (Exception e) { failures++; sb.Append("    FAIL      threw: ").Append((e.InnerException ?? e).GetType().Name).Append(": ").Append((e.InnerException ?? e).Message).Append('\n'); }

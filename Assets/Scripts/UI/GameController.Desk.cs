@@ -851,6 +851,7 @@ namespace PoliSim.UI
             Rect inner = DrawV35Card(r);
             var slip = new SlipContent("CALENDAR").Add("TODAY · " + today.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture))
                 .Add("A DOT IS AN ENTRY IN THIS MONTH'S LEDGER, IN ITS AREA'S INK · A STRUCK DAY HAS PASSED");
+            if (PassedCarbonFigureLine() is string passedCarbon) { slip.Add("CARBON TAX · " + passedCarbon); }   // AF-36 (q36): the date the passed rate reverts, whatever month it falls in
             _deskSlipBook.Anchors["card:calendar"] = slip;
             Rect head = DrawV35CardHead(inner, "cal", monthStart.ToString("MMMM yyyy", CultureInfo.CurrentCulture), PoliSimTheme.TextSecondary);
             DeskAnchor(head, "card:calendar");

@@ -118,6 +118,7 @@ namespace PoliSim.UI
                 if (draft.TaxLines.TryGetValue(line.Type, out float rate) && !Mathf.Approximately(rate, line.Rate)) { n++; }
             }
             foreach (KeyValuePair<TaxType, float[]> brackets in draft.BracketRates) { if (brackets.Value != null) { foreach (float r in brackets.Value) { if (r >= 0f) { n++; } } } }
+            foreach (TaxType carried in draft.CarriedTaxLines) { if (!draft.TaxLines.ContainsKey(carried)) { n++; } }   // AF-36: a carry of a standing figure is a change of its own
             n += draft.SpendingNominalTargets.Count;
             foreach (WelfareProgram program in _playerCountry.WelfarePrograms)
             {
@@ -539,6 +540,44 @@ namespace PoliSim.UI
                 if (Mathf.Approximately(newRate, taxLine.Rate)) { _taxRateInputs.Remove(taxLine.Type); }
                 else { _taxRateInputs[taxLine.Type] = newRate; }
             }
+
+            // ---- control 3, on a per-tonne line a statute moves: the carry (AF-36, Elias's ruling q36: "a bill may carry a passed figure into the next
+            // year"). Drawn on such a tile every frame whatever the state, after the two above (the control-ID rule): the line's type and its country's
+            // statute are the session's, never mutable state. It drafts; the budget bill carries the figure where there is one to carry ----
+            SlipContent carrySlip = null;
+            if (taxLine.IsPerTonne && CarbonRateStatute.StatuteMoves(_playerCountry.Id))
+            {
+                float carryDraft = GetTaxRateInput(taxLine.Type, taxLine.Rate);
+                bool carryOn = _taxCarryInputs.ContainsKey(taxLine.Type);
+                bool carries = CarbonCarryCarries(taxLine, carryDraft);
+                // the review s873b's M1 (a): the player's own budget before the chamber was frozen when it was introduced - a box ticked now would ride no bill
+                BudgetBill playerBudget = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+                bool playerBudgetPending = (playerBudget != null && !playerBudget.GovernmentBill) || _simulationManager.GetPendingBudgetAlternative(PlayerCountryId) != null;
+                bool carryEnabled = interactive && !playerBudgetPending && (carries || carryOn);
+                Rect carryHit = DrawBudgetCarry(switchRect, switchHit.xMax, carryOn, carryEnabled);
+                bool ambientCarry = GUI.enabled;
+                GUI.enabled = ambientCarry && carryEnabled;
+                if (PoliSimWidgets.Button(carryHit, GUIContent.none, GUIStyle.none)) { if (carryOn) { _taxCarryInputs.Remove(taxLine.Type); } else { _taxCarryInputs[taxLine.Type] = TaxCarryDraft.Of(taxLine); } }   // the carries the line has passed, so the draft is spent once a bill carries it
+                GUI.enabled = ambientCarry;
+                SlipAnchor(carryHit, id + "/carry");
+                int passage = _simulationManager.DraftPassageYear(PlayerCountryId);
+                carrySlip = new SlipContent("CARRY OVER · " + (carryOn ? "ON" : "OFF"));
+                if (carries)
+                {
+                    System.DateTime until = _simulationManager.CarbonFigureYieldsOn(passage + 1);
+                    carrySlip.Add((carryOn ? "THE BILL CARRIES " : "A CLICK DRAFTS THE CARRY - THE BILL WOULD CARRY ") + TaxRateText(taxLine, carryDraft) + " INTO " + (passage + 1).ToString(CultureInfo.InvariantCulture))
+                        .Add((Mathf.Approximately(carryDraft, taxLine.Rate) ? "CARRIED BY A BILL OF " : "PASSED IN ") + passage.ToString(CultureInfo.InvariantCulture) + ", IT STANDS UNTIL " + until.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture)
+                            + ", THEN " + CarbonYieldWords(until, passage + 1, caps: true));
+                }
+                else if (CarbonRateStatute.PassedFigureStands(_playerCountry.Id, taxLine, _simulationManager.LastBoundaryYear))
+                {
+                    carrySlip.Add("THE PASSED FIGURE IS CARRIED INTO " + taxLine.PassedForYear.ToString(CultureInfo.InvariantCulture) + " ALREADY - A BILL PASSED IN " + passage.ToString(CultureInfo.InvariantCulture) + " CARRIES IT NO FURTHER");
+                }
+                else { carrySlip.Add("NOTHING TO CARRY - THE RATE IS THE STATUTE'S").Add("A FIGURE THE BILL PASSES, OR ONE PASSED AND STANDING, MAY BE CARRIED INTO THE NEXT YEAR"); }
+                if (!interactive) { carrySlip.Add(pending != null ? "THE RATE WAITS FOR THE PROGRAMME BILL" : "NOT LEVIED"); }
+                else if (playerBudgetPending) { carrySlip.Add("YOUR BUDGET BILL IS BEFORE " + LegislatureCaps + " AS IT WAS INTRODUCED - A CARRY RIDES THE NEXT ONE"); }
+                _budgetSlipBook.Anchors[id + "/carry"] = carrySlip;
+            }
             DrawBudgetEndLabels(endLane, BudgetTaxEndText(taxLine, taxLine.MinRate), BudgetTaxEndText(taxLine, taxLine.MaxRate), !levied);
             if (interactive && PoliSim.Testing.CaptureIdentity.Armed && Event.current.type == EventType.Repaint)
             {
@@ -554,6 +593,8 @@ namespace PoliSim.UI
             {
                 float step = LedgerRow.StepFor((taxLine.MaxRate - taxLine.MinRate) / track.width / Mathf.Max(0.0001f, taxLine.DialGrain)) * taxLine.DialGrain;
                 slip.Add("BY " + step.ToString("0.#", CultureInfo.InvariantCulture) + " " + EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t A STEP");
+                if (PassedCarbonFigureLine() is string passedLine) { slip.Add(passedLine); }   // AF-36 (q36): the date the passed rate reverts
+                if (carrySlip != null && carrySlip.Lines.Count > 0 && _taxCarryInputs.ContainsKey(taxLine.Type)) { slip.Add("CARRY OVER · " + carrySlip.Lines[0]); }
             }
             if (taxLine.Type == TaxType.IncomeTax && TaxSchedule.Of(_playerCountry.Id).Kind != TaxScheduleKind.Flat)
             {
@@ -586,6 +627,27 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(pill.xMax + V35.Px(8f), row.y, wordW, row.height), word, face);
             }
             return new Rect(pill.x, row.y, pillW + V35.Px(8f) + wordW, row.height);
+        }
+
+        /// <summary>AF-36 (Elias's ruling q36): the carry at the right of the switch's row - a box (filled while the carry is drafted) and its word, kept
+        /// clear of the switch's word ending at <paramref name="leftLimit"/>; the word is cut, never shrunk, where the row is short. Returns the rect a click takes.</summary>
+        private Rect DrawBudgetCarry(Rect row, float leftLimit, bool on, bool enabled)
+        {
+            const string word = "Carry over";
+            GUIStyle face = V35Serif(V35.Floor, enabled ? PoliSimTheme.TextPrimary : PoliSimTheme.TextMuted);
+            float box = V35.Px(12f), gap = V35.Px(6f);
+            float wordW = Mathf.Ceil(face.CalcSize(new GUIContent(word)).x) + 2f;
+            float x = Mathf.Max(leftLimit + V35.Px(12f), row.xMax - box - gap - wordW);
+            var hit = new Rect(x, row.y, Mathf.Max(1f, row.xMax - x), row.height);
+            if (Event.current.type == EventType.Repaint)
+            {
+                var b = new Rect(x, row.y + Mathf.Round((row.height - box) * 0.5f), box, box);
+                PoliSimTheme.Rule(b, enabled ? V35.SlipEdge : PoliSimTheme.TextMuted);
+                PoliSimTheme.Rule(new Rect(b.x + 1f, b.y + 1f, b.width - 2f, b.height - 2f), on ? (enabled ? V35.PyramidThreshold : V35.SwitchTrack) : V35.SlipPaper);
+                float wx = b.xMax + gap, room = Mathf.Max(1f, row.xMax - wx);
+                PoliSimWidgets.MeasuredLabel(new Rect(wx, row.y, room, row.height), V35Fit(word, face, room, out _), face);
+            }
+            return hit;
         }
 
         // =============================================================================================================================================

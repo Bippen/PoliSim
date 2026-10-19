@@ -180,6 +180,10 @@ namespace PoliSim.UI
         // cleared by ResetPolicyInputs after Advance Turn: once committed, TaxLine.Rate already
         // equals whatever was in here, so the slider keeps showing the same (now-persisted) value.
         private readonly Dictionary<TaxType, float> _taxRateInputs = new Dictionary<TaxType, float>();
+        /// <summary>AF-36 (Elias's ruling q36, 2026-10-18): the per-tonne lines the player has drafted to CARRY - the budget bill carries their passed
+        /// figure into the next year (`BudgetBill.CarriedTaxLines`) wherever there is one to carry, each with the line as it stood when drafted: a carry is spent once
+        /// a passed bill carries it (`TaxCarryDraft.SpentOn`, `TaxLine.CarriesPassed`; never a boundary, a failed bill or one passed without it) and dropped then (<see cref="SettleSpentCarries"/>). Saved the way `_taxRateInputs` is.</summary>
+        private readonly Dictionary<TaxType, TaxCarryDraft> _taxCarryInputs = new Dictionary<TaxType, TaxCarryDraft>();
         /// <summary>F4-4 / board 15b (2026-09-13): the income tax's SUB-ROW drafts, by sub-row index (`TaxSchedule.SubRows`) - the rate the player set on a band's
         /// own dial, without the lever's shift; they ride the same budget bill as the lever (`BudgetBill.BracketRates`) and are kept the way `_taxRateInputs` is.</summary>
         private readonly Dictionary<int, float> _bracketRateInputs = new Dictionary<int, float>();
@@ -987,6 +991,7 @@ namespace PoliSim.UI
             return new UiDraftState
             {
                 TaxRateInputs = new Dictionary<TaxType, float>(_taxRateInputs),
+                TaxCarryDrafts = new Dictionary<TaxType, TaxCarryDraft>(_taxCarryInputs),   // AF-36
                 BracketRateInputs = new Dictionary<int, float>(_bracketRateInputs),
                 WelfareGenerosityInputs = new Dictionary<WelfareProgramType, float>(_welfareGenerosityInputs),
                 SectorSubsidyInputs = new Dictionary<SectorType, float>(_sectorSubsidyInputs),
@@ -1040,6 +1045,8 @@ namespace PoliSim.UI
         private void RestoreUiDrafts(UiDraftState ui)
         {
             _taxRateInputs.Clear();
+            _taxCarryInputs.Clear();
+            if (ui?.TaxCarryDrafts != null) { foreach (KeyValuePair<TaxType, TaxCarryDraft> carried in ui.TaxCarryDrafts) { if (carried.Value != null) { _taxCarryInputs[carried.Key] = carried.Value; } } }   // AF-36; null in a save from before
             _bracketRateInputs.Clear();
             if (ui?.BracketRateInputs != null) { foreach (KeyValuePair<int, float> kvp in ui.BracketRateInputs) { _bracketRateInputs[kvp.Key] = kvp.Value; } }   // ⚠ `ui?.` - a batch-written save has NO UI layer (the doc above), and until §557 this one line read it bare: the play protocol's staged save threw here and the game said Load FAILED
             _welfareGenerosityInputs.Clear();
@@ -3409,6 +3416,11 @@ namespace PoliSim.UI
             if (UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue)
             {
                 Add(today, "Shutdown - day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " - funding lapsed, non-excepted outlays stopped until it returns", UiPalette.SystemArea.Fiscal);   // PS-6 US-22
+            }
+            // AF-36 (Elias's ruling q36, 2026-10-18): the day a passed carbon figure yields to its statute - the boundary the statute's step meets it at
+            if (_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine passedCarbon, out System.DateTime carbonYields))
+            {
+                Add(carbonYields, "Carbon tax - the passed " + TaxRateText(passedCarbon, passedCarbon.Rate) + " " + CarbonYieldWords(carbonYields, passedCarbon.PassedForYear, caps: false), UiPalette.SystemArea.Fiscal);
             }
 
             // Publication release days: deterministic date arithmetic (ReleaseCalendar), never a
@@ -6382,6 +6394,7 @@ namespace PoliSim.UI
                 Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the Speaker's round opens tomorrow; the order is {string.Join(", ", order)}");
                 return;
             }
+            if (_simulationManager.SejmStepsApply(PlayerCountryId)) { ResolveSejmVerdict(latest, government); return; }   // AF-8 (q8): Poland's government changes by Art. 162 and 154's steps, not tonight (GameController.SejmVerdict.cs)
             if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date, world: _world); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
@@ -9633,7 +9646,69 @@ namespace PoliSim.UI
                 sb.Append("|B").Append((int)brackets.Key);
                 if (brackets.Value != null) { foreach (float r in brackets.Value) { sb.Append(':').Append(r.ToString("R", CultureInfo.InvariantCulture)); } }
             }
+            foreach (TaxType carried in draft.CarriedTaxLines) { sb.Append("|C").Append((int)carried); }   // AF-36: a carry moves the year past the boundary
             return sb.ToString();
+        }
+
+        /// <summary>AF-36 (Elias's ruling q36, 2026-10-18: "a bill may carry a passed figure into the next year"): whether a carry on this line would
+        /// carry anything in a bill passed now - the line is per tonne under a statute that moves it, and the bill passes a figure on it (<paramref name="drafted"/>
+        /// off its rate) or a passed figure stands on it that the carry would keep past its own year.</summary>
+        private bool CarbonCarryCarries(TaxLine line, float drafted)
+        {
+            if (_simulationManager == null || line == null || !line.IsPerTonne || !line.IsImplemented || !CarbonRateStatute.StatuteMoves(_playerCountry.Id)) { return false; }
+            if (!Mathf.Approximately(drafted, line.Rate)) { return true; }
+            return CarbonRateStatute.PassedFigureStands(_playerCountry.Id, line, _simulationManager.LastBoundaryYear)
+                && line.PassedForYear < _simulationManager.DraftPassageYear(PlayerCountryId) + 1;
+        }
+
+        /// <summary>AF-36 (the review's M1): drops every drafted carry a passed bill has carried (`TaxCarryDraft.SpentOn`) - on any
+        /// passage path, since `ParliamentSystem.ApplyBillResult` counts it; never a boundary, a failed bill or a bill passed without the carry. Without it a box left ticked re-carried
+        /// the figure on every later budget, holding it off the statute for good; a carry is one bill's, and a further one is drafted afresh.</summary>
+        private void SettleSpentCarries()
+        {
+            if (_taxCarryInputs.Count == 0 || _playerCountry == null) { return; }
+            List<TaxType> spent = null;
+            foreach (KeyValuePair<TaxType, TaxCarryDraft> carry in _taxCarryInputs)
+            {
+                if (carry.Value == null || carry.Value.SpentOn(_playerCountry.TaxLines.Find(t => t.Type == carry.Key))) { (spent ??= new List<TaxType>()).Add(carry.Key); }
+            }
+            if (spent != null) { foreach (TaxType type in spent) { _taxCarryInputs.Remove(type); } }
+        }
+
+        /// <summary>AF-36 (q36: "the slip and the Desk show the date the rate reverts"): what the statute does to a passed carbon figure on the day it
+        /// yields - <paramref name="caps"/> in the slips' capitals, else as the calendar's sentence. Germany's schedule sets its figure for the year
+        /// (a revert), and past the schedule carries the figure in force by the price level - the passed one, which becomes its base (the reading
+        /// q36 confirmed), but at a game's first boundary, where the law's last figure is carried instead; Sweden's index moves the passed figure.</summary>
+        private string CarbonYieldWords(System.DateTime on, int stamp, bool caps)
+        {
+            string unit = EnergyLayer.CurrencyCode(_playerCountry.Id) + "/t";
+            switch (CarbonRateStatute.RuleFor(_playerCountry.Id))
+            {
+                case CarbonRateRule.PriceLevelIndexed:
+                    return caps ? "THE STATUTE INDEXES IT BY THE PRICE LEVEL FROM THEN" : "indexed by the statute from that day";
+                case CarbonRateRule.LegislatedSchedule:
+                {
+                    float? scheduled = CarbonRateStatute.BehgFor(on.Year);
+                    bool lawsLast = !scheduled.HasValue && on == SimulationManager.TurnBoundary(1) && stamp < CarbonRateStatute.LastScheduledYear;   // AdvanceYear's first-boundary case
+                    if (lawsLast) { scheduled = CarbonRateStatute.LastScheduledFigure; }
+                    if (scheduled.HasValue)
+                    {
+                        string figure = scheduled.Value.ToString("F0", CultureInfo.InvariantCulture) + " " + unit + (lawsLast ? (caps ? " CARRIED BY THE PRICE LEVEL" : " carried by the price level") : "");
+                        return caps ? "IT REVERTS TO THE LAW'S " + figure : "reverts to the law's " + figure;
+                    }
+                    return caps ? "THE STATUTE CARRIES IT WITH THE PRICE LEVEL FROM THEN" : "carried with the price level from that day";
+                }
+                default:
+                    return caps ? "THE STATUTE WRITES NO MOVE" : "stands";
+            }
+        }
+
+        /// <summary>AF-36: the passed carbon figure's line for a slip - its year and the day it yields - or null where none stands.</summary>
+        private string PassedCarbonFigureLine()
+        {
+            if (_simulationManager == null || !_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine line, out System.DateTime on)) { return null; }
+            return "PASSED · " + TaxRateText(line, line.Rate) + " STANDS UNTIL " + on.ToString("d MMMM yyyy", CultureInfo.CurrentCulture).ToUpper(CultureInfo.CurrentCulture)
+                + ", THEN " + CarbonYieldWords(on, line.PassedForYear, caps: true);
         }
 
         /// <summary>
@@ -9646,6 +9721,7 @@ namespace PoliSim.UI
         /// </summary>
         private BudgetBill BuildBudgetBillFromDrafts()
         {
+            SettleSpentCarries();   // AF-36 (the review's M1): a carry whose bill has passed is not drafted any more
             var bill = new BudgetBill();
 
             foreach (TaxLine taxLine in _playerCountry.TaxLines)
@@ -9660,6 +9736,10 @@ namespace PoliSim.UI
                 // stamp an unmoved carbon line as passed for the year, standing against the statute's own figure
                 float drafted = GetTaxRateInput(taxLine.Type, taxLine.Rate);
                 if (!Mathf.Approximately(drafted, taxLine.Rate)) { bill.TaxLines[taxLine.Type] = drafted; }
+                // AF-36 (q36): the carry rides the bill only where it carries something - the figure this bill passes, or a passed figure standing that
+                // would not otherwise stand into the next year. A carry whose bill has passed is dropped above (SettleSpentCarries), so it never rides a
+                // second bill: the next year's carry is drafted afresh
+                if (_taxCarryInputs.ContainsKey(taxLine.Type) && CarbonCarryCarries(taxLine, drafted)) { bill.CarriedTaxLines.Add(taxLine.Type); }
                 // F4-4: the sub-rows' figures ride the same bill - the drafted rate per sub-row, −1 where the statute's (or the standing own) figure stands
                 if (taxLine.Type == TaxType.IncomeTax && _bracketRateInputs.Count > 0 && TaxSchedule.Responds(_playerCountry.Id))
                 {

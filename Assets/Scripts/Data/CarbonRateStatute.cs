@@ -148,7 +148,30 @@ namespace PoliSim.Data
                     default:
                         break;   // nominal fixed: the statute writes no move, and the book shows the erosion
                 }
+                line.PassedForYear = 0;   // AF-36 (q36): the passed figure's years are over - the figure is the statute's now, and no bill can carry it
             }
+        }
+
+        /// <summary>AF-36 (Elias's ruling q36, 2026-10-18: "the slip and the Desk show the date the rate reverts, and a bill may carry a passed figure
+        /// into the next year"): whether a statute moves this country's carbon line at all - a passed figure under a nominal-fixed rule never yields,
+        /// so it has no date and nothing to carry.</summary>
+        public static bool StatuteMoves(CountryId id) => RuleFor(id) != CarbonRateRule.NominalFixed;
+
+        /// <summary>AF-36: whether the line's figure is a passed one still standing - stamped (`TaxLine.PassedForYear`) for a year no boundary has gone
+        /// past. <paramref name="lastBoundaryYear"/> is the calendar year of the last boundary crossed, 0 before the first; it reads a stamp an older
+        /// save left after its year as the statute's figure (since AF-36 the stamp is cleared where the statute takes the figure back).</summary>
+        public static bool PassedFigureStands(CountryId id, TaxLine line, int lastBoundaryYear) =>
+            line != null && line.IsPerTonne && line.IsImplemented && StatuteMoves(id) && line.PassedForYear > 0 && line.PassedForYear >= lastBoundaryYear;
+
+        /// <summary>AF-36: the boundary at which a figure standing for <paramref name="standsForYear"/> yields to the statute - the first boundary from
+        /// turn <paramref name="nextTurn"/> on whose calendar year is later (the step in <see cref="AdvanceYear"/>), <paramref name="boundaryOfTurn"/>
+        /// being the game's own boundary date (`SimulationManager.TurnBoundary`).</summary>
+        public static DateTime YieldsOn(int standsForYear, int nextTurn, Func<int, DateTime> boundaryOfTurn)
+        {
+            int turn = nextTurn;
+            DateTime on = boundaryOfTurn(turn);
+            while (on.Year <= standsForYear && turn < nextTurn + 1000) { turn++; on = boundaryOfTurn(turn); }
+            return on;
         }
 
         /// <summary>A rate in the seed's prices - what the couplings compare against their seed references (EnvironmentFamily.TransportTargetFor, the household burden's baseline): the nominal figure over the price level, 1 at the seed.</summary>

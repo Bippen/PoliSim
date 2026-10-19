@@ -222,7 +222,7 @@ namespace PoliSim.Simulation
     /// Each rule is a small, separately named method with named constants rather than one large
     /// update function, so individual pieces of theory can be tuned or replaced independently.
     /// </summary>
-    public class SimulationManager : MonoBehaviour
+    public partial class SimulationManager : MonoBehaviour
     {
         public int CurrentTurn { get; private set; }
 
@@ -3711,6 +3711,14 @@ namespace PoliSim.Simulation
                 // §698 (Art. 67 GG): the motion IS the successor's election - carried, the successor's government takes office today
                 refusedBecause = null;
                 vote = ConstructiveVoteOf(country, country.PlayerPartyAbbrev, out Elections.FormationProposal successor, out Elections.ProposalVerdict verdict);
+                // AF-8 (Elias's ruling q8: a premise backed by a statute becomes a ruling with its citation): WHO MAY MOVE IT is GO-BT § 97 Abs. 1, read in the
+                // official print on disk [GOBT-4]: "Der Antrag ist von einem Viertel der Mitglieder des Bundestages oder einer Fraktion, die mindestens ein Viertel
+                // der Mitglieder des Bundestages umfasst, zu unterzeichnen ... Anträge, die diesen Voraussetzungen nicht entsprechen, dürfen nicht auf die
+                // Tagesordnung gesetzt werden." The signatories are §706's reading of § 4's identical quarter (ruled with it): the members who would elect the
+                // candidate. Short of a quarter the motion is not put on the agenda - refused, no division. The AI moves only a motion that carries, a majority
+                // of the members, so its quarter always stands.
+                int quarter = (vote.Members + 3) / 4;
+                if (vote.For < quarter) { refusedBecause = $"A CONSTRUCTIVE VOTE NEEDS A QUARTER OF THE MEMBERS TO SIGN IT - {quarter} - ITS CANDIDATE HAS {vote.For}"; vote = null; return false; }
                 country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
                 if (vote.Carried && successor != null) { InstallSuccessor(country, successor, verdict, vote); }
@@ -3824,6 +3832,7 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             Elections.GovernmentRecord g = country?.Government;
             if (g == null) { return; }
+            if (AdvanceSejmFormation(country, g)) { return; }   // AF-8 (q8): Poland's Art. 162 and 154 steps run their days (SimulationManager.Sejm.cs)
             // §646: a round open runs its day; the day after an election a round opens (R2 - §640's resumption is this); a caretaker waits on either.
             if (OpenRoundAfterElection(country, g)) { return; }   // first: an election held while a round is open ends that round (the reader, §646)
             if (g.Round != null && g.Round.Open) { AdvanceSpeakerRound(country, g); return; }
@@ -4032,10 +4041,12 @@ namespace PoliSim.Simulation
             if (g == null || g.Caretaker || g.Cabinet.Count == 0) { return; }
             if ((g.Round != null && g.Round.Open) || ElectionAwaitsRound(country, g)) { return; }   // §705 (the review's defect 5, and its second pass A): the chancellor's election runs - Art. 63, not Art. 67
             if (TryPlayerPollingDay(out System.DateTime polling) && polling <= CurrentDate.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { return; }
-            // The review's latent cost: a formation per candidate every German day cost ~12 ms a day (measured: the German day path's check 1.7 s -> 3.0 s
-            // over 111 days). PREMISE, stated: the AI weighs a constructive vote on MONDAYS and on the day after a government forms - stateless, so a loaded
-            // game weighs on the days a continuous one does (a cached key would re-weigh on the load day and part the two runs).
-            if (CurrentDate.DayOfWeek != System.DayOfWeek.Monday && g.FormedOn.Date.AddDays(1) != CurrentDate.Date) { return; }
+            // AF-8 (Elias's ruling q8, 2026-10-18: "a premise ... without a statute is sourced or cut"): THE MONDAY CADENCE IS CUT - the AI weighs a constructive
+            // vote every day. It was §698's performance premise (Mondays and the day after a formation), backed by no statute and sourced by nothing; its cost
+            // is the one the review measured then, a formation per candidate each German day (about 12 ms a day: the German day path's check 1.7 s -> 3.0 s
+            // over 111 days). Stateless as before, so a loaded game weighs on the days a continuous one does. The s873 review's M2: every ticking fork weighs too,
+            // so a day whose inputs equal the last quiet day's is not weighed again (SimulationManager.AiVoteMemo.cs - the key is everything the weighing reads).
+            if (AiVoteMemoHolds(country, g, out string memoKey)) { return; }
             foreach (string mover in AiMotionCandidates(country, g))
             {
                 if (SeatsOf(country, mover) <= 0) { continue; }   // a party with no members moves nothing
@@ -4050,6 +4061,7 @@ namespace PoliSim.Simulation
                 InstallSuccessor(country, successor, verdict, vote);
                 return;
             }
+            AiVoteMemoNothing(g, memoKey);
         }
 
         /// <summary>Ruling (2)'s order: the parties that withdrew over broken agreement items first (the natural movers), then the rest of the opposition by
@@ -4610,7 +4622,7 @@ namespace PoliSim.Simulation
         /// stated"). Art. 63 Abs. 4 Satz 2-3 GG, as written: "Vereinigt der Gewählte die Stimmen der Mehrheit der Mitglieder des Bundestages auf sich,
         /// so muß der Bundespräsident ihn binnen sieben Tagen nach der Wahl ernennen. Erreicht der Gewählte diese Mehrheit nicht, so hat der
         /// Bundespräsident binnen sieben Tagen entweder ihn zu ernennen oder den Bundestag aufzulösen." With a majority the appointment is the
-        /// article's; without one the choice is the Bundespräsident's, and **THE PREMISE FOR HIS CHOICE, STATED [AUTHORED-DRAFT]: he appoints.**
+        /// article's; without one the choice is the Bundespräsident's, and **THE PREMISE FOR HIS CHOICE, STATED [AUTHORED-DRAFT]: he appoints** - since q8 (AF-8) a ruling with its citation, the appointment being one of the two acts Satz 3 allows.
         /// Why: no Bundespräsident has faced the choice, so no record decides it; and a dissolution calls a new election within sixty days (Art. 39
         /// Abs. 1 Satz 4 GG), which is not modelled for Germany. He appoints at once, inside the seven days - as the record's chancellors were appointed
         /// on the day of their election (Merz, 6 May 2025 [BT-KW25]). The premise is on the division's title, the round's log and the government's basis.
@@ -6189,6 +6201,30 @@ namespace PoliSim.Simulation
                 if (tabled <= CurrentDate) { tabled = FiscalYearData.BudgetRequestDay(countryId, CurrentDate.Year + 1); }
             }
             return tabled.AddDays(ParliamentSystem.BillDurationDays).Year;
+        }
+
+        /// <summary>AF-36 (Elias's ruling q36, 2026-10-18): the calendar year the player's budget draft would pass in (<see cref="PassageYear"/>) - the
+        /// year a carry counts its next year from.</summary>
+        public int DraftPassageYear(CountryId countryId) => PassageYear(countryId, null);
+
+        /// <summary>AF-36: the calendar year of the last boundary crossed, 0 before the first - what tells a passed figure still standing from a stamp
+        /// an older save left after its year (`CarbonRateStatute.PassedFigureStands`).</summary>
+        public int LastBoundaryYear => CurrentTurn > 0 ? TurnBoundary(CurrentTurn).Year : 0;
+
+        /// <summary>AF-36 (q36: "the slip and the Desk show the date the rate reverts"): the boundary at which a carbon figure standing for
+        /// <paramref name="standsForYear"/> yields to its statute, from the coming boundary on (`CarbonRateStatute.YieldsOn`).</summary>
+        public System.DateTime CarbonFigureYieldsOn(int standsForYear) => CarbonRateStatute.YieldsOn(standsForYear, CurrentTurn + 1, TurnBoundary);
+
+        /// <summary>AF-36: the country's carbon line where a passed figure stands on it, with the day its statute takes it back; false where none
+        /// stands (never passed, taken back, or a statute that moves nothing).</summary>
+        public bool TryPassedCarbonFigure(CountryId countryId, out TaxLine line, out System.DateTime yieldsOn)
+        {
+            yieldsOn = default;
+            Country country = _world?.GetCountry(countryId);
+            line = country?.TaxLines.Find(t => t.IsPerTonne);
+            if (country == null || !CarbonRateStatute.PassedFigureStands(country.Id, line, LastBoundaryYear)) { return false; }
+            yieldsOn = CarbonFigureYieldsOn(line.PassedForYear);
+            return true;
         }
 
         /// <summary>

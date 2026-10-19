@@ -249,10 +249,10 @@ namespace PoliSim.EditorTools
 
             // The declared exceptions, which neither the label nor the majority is held to: a caretaker, France's what-if, a round in progress, and the
             // count's own day - the new chamber is seated at the count and the outgoing government awaits the formation, whose round opens the next day
-            // (Sweden's and Germany's) or which installs that night (Poland's). From the next day an outgoing government below a majority with no round
-            // open is a breach - which is how a Polish chamber that forms nothing would show (the elections inventory's lead D-03).
+            // (Sweden's and Germany's) or whose Sejm's steps run from it (Poland's, AF-8: Konstytucja Art. 162 and 154 - the procedure open is the round's
+            // exception). From the next day an outgoing government below a majority with no round or procedure open is a breach - which is how a Polish chamber that forms nothing would show (the elections inventory's lead D-03).
             bool countDay = c.ElectionHistory.Count > 0 && c.ElectionHistory[c.ElectionHistory.Count - 1].Date.Date == date.Date && g.FormedOn.Date < date.Date;
-            if (g.Caretaker || g.Outcome == "what-if" || (round != null && round.Open) || countDay) { return; }
+            if (g.Caretaker || g.Outcome == "what-if" || (round != null && round.Open) || (g.Sejm != null && g.Sejm.Open) || countDay) { return; }
 
             // Outside those, a label saying majority below one is the inventory's lead D-14 - an exit relabels the record since §819 (GA-3-4), so this
             // now reads a label some other path left standing.

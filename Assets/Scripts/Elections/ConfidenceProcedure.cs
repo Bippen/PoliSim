@@ -39,7 +39,8 @@ namespace PoliSim.Elections
         /// dem Ersuchen entsprechen und den Gewählten ernennen."* No motion without a successor; it carries only by electing that successor with a majority
         /// of the members, and the successor is appointed at once - no week, no discharge, no caretaker, no round. (2): *"Zwischen dem Antrage und der Wahl
         /// müssen achtundvierzig Stunden liegen"* - a PREMISE here, stated: the game takes the election on the motion's day, the two days not waited (nothing
-        /// the model reads moves a party's vote inside them). The Bundestag's rule on who may move it (its standing orders) is not on disk: any party may.
+        /// the model reads moves a party's vote inside them). AF-8 (ruling q8): who may move it is the standing orders' rule, GO-BT § 97 Abs. 1 [GOBT-4] - a quarter of the members
+        /// or a Fraktion of a quarter sign it, or it is not put on the agenda (`SimulationManager.MoveNoConfidence`).
         /// </summary>
         public static Rules RulesOf(CountryId id) => id == CountryId.Sweden ? Rules.Riksdag : id == CountryId.Germany ? Rules.Bundestag : id == CountryId.USA ? Rules.Presidential : Rules.Unsourced;
 
@@ -254,7 +255,9 @@ namespace PoliSim.Elections
             return moverSeats >= tenth;
         }
 
-        /// <summary>The extra election's polling day: the Sunday on or before three months after the decision - the constitution gives the limit, the Sunday is the premise (Swedish elections are held on Sundays).</summary>
+        /// <summary>The extra election's polling day: the Sunday on or before three months after the decision - the constitution gives the limit; AF-8 (ruling q8)
+        /// SOURCES the Sunday: the one extra election on record was held on 1 June 1958, a Sunday [RD-EV-4] (`sweden/confidence_rules.md`) - the most recent
+        /// practice, ruling E2's principle - while vallagen 1 kap. 3 § names only who decides the day [VL-1-3]. Which Sunday in the window, the last, is stated.</summary>
         public static DateTime ExtraElectionDay(DateTime decidedOn)
         {
             DateTime limit = decidedOn.Date.AddMonths(ExtraElectionMonths);
