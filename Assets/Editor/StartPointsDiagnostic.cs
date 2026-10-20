@@ -10,9 +10,10 @@ using Debug = UnityEngine.Debug;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// SP-1 (§622): THE START POINTS, ASSERTED. Every country offers at least one; exactly one is playable today and it is the ruled start
-    /// of §618 (its polling day the country's latest election of record, its opening `WorldClock.StartDate`, its line the selector's);
-    /// every locked card carries a reason; Poland and France offer two contests, the presidential one locked; the cards are in date order;
+    /// SP-1 (§622): THE START POINTS, ASSERTED. Every country offers at least one; one is playable per country and it is the ruled start
+    /// of §618 (its polling day the country's latest election of record, its opening `WorldClock.StartDate`, its line the selector's) - SP-7b: Poland
+    /// two, its presidential start a candidate's, opening on the Marshal's order (I14) with its candidates of record; every locked card carries a
+    /// reason; Poland and France offer two contests, France's presidential one locked; the cards are in date order;
     /// a date the record does not hold is the year alone on the card with ROUND DATES NOT IN THE RECORD beneath it, never typed; no register number on any card (18b).
     /// PS-6 US-33: the USA's presidential start, and no other card, offers the player's own nominee at the head of the DEM or REP ticket, each with its range.
     /// </summary>
@@ -32,7 +33,8 @@ namespace PoliSim.EditorTools
                     IReadOnlyList<StartPoints.StartPoint> points = StartPoints.For(id);
                     int playable = 0;
                     foreach (StartPoints.StartPoint p in points) { if (p.Playable) { playable++; } }
-                    Check(points.Count >= 1 && playable == 1, F("{0}: {1} start point(s), {2} playable", id, points.Count, playable));
+                    int playableRuled = id == CountryId.Poland ? 2 : 1;   // SP-7b: Poland's Sejm start and, since I14, its presidential start
+                    Check(points.Count >= 1 && playable == playableRuled, F("{0}: {1} start point(s), {2} playable ({3} ruled)", id, points.Count, playable, playableRuled));
                     Check(StartPoints.TryPlayable(id, out StartPoints.StartPoint start) && start.PollingDay == WorldClock.LatestElectionDay(id) && start.Opens == WorldClock.StartDate(id) && start.Line == WorldClock.StartLine(id),
                         F("{0}: the playable start is the ruled one - {1}, polling day {2:yyyy-MM-dd}, opens {3:yyyy-MM-dd}: {4}", id, start.Kind, start.PollingDay, start.Opens, start.Line));
                     for (int i = 0; i < points.Count; i++)
@@ -49,7 +51,31 @@ namespace PoliSim.EditorTools
                 }
                 Check(StartPoints.For(CountryId.Poland)[1].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.Poland)[1].PollingDay == new DateTime(2025, 5, 18), "Poland's presidential card: 18 May 2025 (the record's first round), after the Sejm's");
                 Check(StartPoints.For(CountryId.France)[0].Kind.StartsWith("PRESIDENTIAL", StringComparison.Ordinal) && StartPoints.For(CountryId.France)[0].DateNote == null && StartPoints.For(CountryId.France)[0].PollingDay == new DateTime(2022, 4, 10) && !StartPoints.For(CountryId.France)[0].Playable, "France's presidential card: first round 10 April 2022 [CC-195] (E-49 closed, §629), locked, before the legislative");
-                Check(StartPoints.For(CountryId.Poland)[1].Line == "LOCKED · THE PRESIDENTIAL START IS NOT YET BUILT" && StartPoints.For(CountryId.France)[0].Line == StartPoints.For(CountryId.Poland)[1].Line, "the two locked presidential cards carry the one reason in the player's words (18b)");
+                Check(StartPoints.For(CountryId.France)[0].Line == "LOCKED · THE PRESIDENTIAL START IS NOT YET BUILT", "France's locked presidential card carries the one reason in the player's words (18b)");
+                // SP-7b (Elias's ruling I14): Poland's presidential card PLAYABLE - a candidate's start, opening on the Marshal's order (4b: a stated deviation for
+                // presidential starts only - the Sejm start keeps the standard run-up), its card saying the deviation and that no campaign is staged (3a); the
+                // default start (TryPlayable, the sheet's pre-selection) stays the Sejm's
+                StartPoints.StartPoint plPres = StartPoints.For(CountryId.Poland)[1];
+                StartPoints.TryPlayable(CountryId.Poland, out StartPoints.StartPoint plDefault);
+                Check(plPres.Playable && PresidentialStart.IsCandidateStart(plPres) && plPres.Opens == new DateTime(2025, 1, 15) && plPres.Opens == PresidentialStart.PolandOpens
+                      && StartPoints.ModeLine(plPres) == "THE MARSHAL'S ORDER · NO CAMPAIGN · OPENS 15 JAN 2025" && StartPoints.DateLine(plPres) == "18 MAY 2025"
+                      && plDefault.Kind == "SEJM ELECTION" && plDefault.Opens == WorldClock.StartDate(CountryId.Poland) && WorldClock.StartDate(CountryId.Poland) == new CampaignCalendar(WorldClock.LatestElectionDay(CountryId.Poland)).PreCampaignStart
+                      && !PresidentialStart.IsCandidateStart(plDefault) && PresidentialStart.KeyOf(plPres) == "PRESIDENTIAL ELECTION 2025",
+                    F("SP-7b: Poland's presidential card is a candidate's start, playable - stamp {0} · {1}; it opens {2:yyyy-MM-dd} (the Marshal's order) while the Sejm start, the default, opens {3:yyyy-MM-dd} on the standard run-up; its key \"{4}\"",
+                        StartPoints.DateLine(plPres), StartPoints.ModeLine(plPres), plPres.Opens, plDefault.Opens, PresidentialStart.KeyOf(plPres)));
+                List<PresidentialStart.Offer> offers = PresidentialStart.Offers(plPres);
+                var pickable = new List<string>();
+                bool reasons = true;
+                foreach (PresidentialStart.Offer o in offers)
+                {
+                    if (o.Pickable) { pickable.Add(o.Party); reasons &= o.Role != null && o.Reason == null; }
+                    else { reasons &= o.Party == null && o.Reason == PresidentialStart.UnbackedReason; }
+                }
+                Check(offers.Count == 13 && string.Join(",", pickable) == "PiS,KO,Konf,TD,NL" && reasons
+                      && offers.Find(o => o.Party == "KO").Role == "THE PRIME MINISTER'S PARTY" && offers.Find(o => o.Party == "TD").Role == "JUNIOR PARTNER" && offers.Find(o => o.Party == "PiS").Role == "IN OPPOSITION"
+                      && PresidentialStart.Offers(plDefault).Count == 0,
+                    F("SP-7b (I14 ask 1 (a)): the candidate picker offers the field of record, {0} candidates - pickable the {1} a Sejm party backs ({2}), each with its party's role on 15 Jan 2025 (KO {3}, TD {4}, PiS {5}); the rest shown with \"{6}\"; the Sejm start offers none",
+                        offers.Count, pickable.Count, string.Join(", ", pickable), offers.Find(o => o.Party == "KO").Role, offers.Find(o => o.Party == "TD").Role, offers.Find(o => o.Party == "PiS").Role, PresidentialStart.UnbackedReason));
                 StartPoints.TryPlayable(CountryId.France, out StartPoints.StartPoint fr);
                 Check(StartPoints.DateLine(fr) == "7 JUL 2024" && StartPoints.ModeLine(fr) == "WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024", "France's playable card: stamp 7 JUL 2024 · WHAT-IF · YOUR PARTY GOVERNS · OPENS 18 JUL 2024");
                 StartPoints.TryPlayable(CountryId.USA, out StartPoints.StartPoint us);
@@ -81,7 +107,7 @@ namespace PoliSim.EditorTools
                 }
                 Check(offering.Count == 1 && offering[0] == "USA PRESIDENTIAL ELECTION" && StartPoints.OffersOwnNominee(us) && string.Join(",", OwnNominees.Tickets(CountryId.USA)) == "REP,DEM" && inside
                       && !StartPoints.OffersOwnNominee(StartPoints.For(CountryId.Poland)[1]) && !StartPoints.OffersOwnNominee(StartPoints.For(CountryId.France)[0]),
-                    F("US-33: the USA's start alone offers the player's own nominee ({0}) - the tickets {1}, each party's own point inside its range; Poland's and France's locked presidential cards offer none",
+                    F("US-33: the USA's start alone offers the player's own nominee ({0}) - the tickets {1}, each party's own point inside its range; Poland's presidential card (a candidate of record's, SP-7b) and France's locked one offer none",
                         string.Join("; ", offering), string.Join("; ", ranges)));
             }
             catch (Exception e) { failures++; sb.Append("    THREW: " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace + "\n"); }

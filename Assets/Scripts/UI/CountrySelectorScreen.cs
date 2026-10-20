@@ -33,6 +33,10 @@ namespace PoliSim.UI
         /// <summary>§676 (SP-4): the party panel's CREATE A PARTY - set by the controller; drawn where it is set and the country offers creation.</summary>
         public Action<CountryId> OnCreateParty;
 
+        /// <summary>SP-7b: the candidate picker's commit - the start chosen and the candidate of record - set by the controller; with none set the picker draws
+        /// and seats nobody (the capture driver's use).</summary>
+        public Action<CountryId, StartPoints.StartPoint, string> OnSelectCandidate;
+
         /// <summary>CL-2: the party panel over the folders - the country's seeded chamber, largest first; null when no country is open.</summary>
         private GameObject _partyPanel;
 
@@ -342,6 +346,99 @@ namespace PoliSim.UI
             backButton.onClick.AddListener(() => { if (_sheet != null) { ClosePartyPanel(); } else { HidePartyPanel(); } });   // §626 (the review): BACK returns to the step it came from - the start sheet where one is open, else the countries
         }
 
+        /// <summary>
+        /// SP-7b (Elias's ruling I14, ask 1 (a)): THE CANDIDATE PICKER - a candidate's start's second step, in place of the party panel and drawn as it is (the
+        /// dim ground, one centred column, a faced row per choice, BACK on the paper face). The field of record in the record's order: the five a party in the
+        /// Sejm backs are rows the player picks, each with the backing party's mark, its name and its role on the start's day (`PresidentialStart.Offers`);
+        /// the eight no Sejm party backs are lines in muted ink with the one reason, not pickable. A row commits through <see cref="OnSelectCandidate"/>; BACK
+        /// returns to the sheet. Public so the capture driver can film it; with no commit set the picker draws and seats nobody.
+        /// </summary>
+        public void ShowCandidatePanel(Country country, StartPoints.StartPoint start)
+        {
+            ClosePartyPanel();
+            if (Root == null || country == null || !PresidentialStart.IsCandidateStart(start)) { return; }
+
+            var panel = new GameObject("CandidatePanel");
+            _partyPanel = panel;   // one panel over the sheet at a time - closed as the party panel is
+            panel.transform.SetParent(Root.transform, false);
+            Stretch(panel.AddComponent<RectTransform>());
+            Image dim = panel.AddComponent<Image>();
+            dim.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 0.94f);
+            dim.raycastTarget = true;
+
+            var column = new GameObject("Column");
+            column.transform.SetParent(panel.transform, false);
+            var columnRect = column.AddComponent<RectTransform>();
+            columnRect.anchorMin = new Vector2(0.5f, 0.5f);
+            columnRect.anchorMax = new Vector2(0.5f, 0.5f);
+            columnRect.pivot = new Vector2(0.5f, 0.5f);
+            columnRect.anchoredPosition = Vector2.zero;
+            columnRect.sizeDelta = new Vector2(1200f, 800f);
+            VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.spacing = 6f;
+            layout.childControlHeight = true;
+            layout.childControlWidth = true;
+            layout.childForceExpandHeight = false;
+            layout.childForceExpandWidth = false;
+
+            Text title = CanvasChrome.MakeText(column.transform, "Title", $"CHOOSE YOUR CANDIDATE — {country.Name.ToUpperInvariant()}, {StartPoints.DateLine(start)}", PoliSimTheme.Display, 30,
+                PoliSimTheme.Hex(0xE8DDC4), TextAnchor.MiddleCenter, FontStyle.Bold);
+            title.gameObject.AddComponent<LayoutElement>().minHeight = 40f;
+            Text subtitle = CanvasChrome.MakeText(column.transform, "Subtitle", "THE FIELD OF RECORD · YOUR PARTY IS THE ONE THAT BACKS YOU · NO CAMPAIGN IS STAGED",
+                PoliSimTheme.Body, 14, PoliSimTheme.Hex(0xB7A98C), TextAnchor.MiddleCenter);
+            subtitle.gameObject.AddComponent<LayoutElement>().minHeight = SubtitleMinHeight;
+
+            foreach (PresidentialStart.Offer offer in PresidentialStart.Offers(start))
+            {
+                if (!offer.Pickable)
+                {
+                    // the plan's (b), shown and not pickable: no Sejm party, so no verb reaches the candidate's share
+                    Text line = CanvasChrome.MakeText(column.transform, $"Unbacked_{offer.Surname}", $"{offer.Name.ToUpperInvariant()} · {offer.Reason}",
+                        PoliSimTheme.Body, 14, PoliSimTheme.Hex(0x8C8270), TextAnchor.MiddleCenter);
+                    LayoutElement lineLayout = line.gameObject.AddComponent<LayoutElement>();
+                    lineLayout.preferredWidth = PartyRowWidth;
+                    lineLayout.minHeight = SubtitleMinHeight + 4f;
+                    continue;
+                }
+                Button button = CanvasChrome.FacedButton(column.transform, $"Candidate_{offer.Party}",
+                    $"{offer.Name.ToUpperInvariant()} — {PartySystems.ShortName(country.Id, offer.Party)} · {offer.Role}", PoliSimTheme.Display, 20,
+                    PoliSimTheme.TextPrimary, new Vector2(PartyRowWidth, PartyRowHeight));
+                foreach (PoliticalParty party in PartySystems.For(country.Id))
+                {
+                    if (party.Abbrev != offer.Party) { continue; }
+                    Texture2D markTexture = IconLibrary.GetPartyMark(party.MarkName);   // §566: the backing party's own mark, as the party picker draws it
+                    if (markTexture == null) { break; }
+                    Image mark = CanvasChrome.AsAuthoredImage(button.transform, "Mark", CanvasChrome.Whole(markTexture, "mark_" + party.MarkName));
+                    mark.raycastTarget = false;
+                    mark.preserveAspect = true;
+                    RectTransform markRect = mark.rectTransform;
+                    markRect.anchorMin = new Vector2(0f, 0.5f);
+                    markRect.anchorMax = new Vector2(0f, 0.5f);
+                    markRect.pivot = new Vector2(0f, 0.5f);
+                    markRect.sizeDelta = new Vector2(PartyMarkSize, PartyMarkSize);
+                    markRect.anchoredPosition = new Vector2(PartyMarkInset, 0f);
+                    break;
+                }
+                LayoutElement rowLayout = button.gameObject.AddComponent<LayoutElement>();
+                rowLayout.preferredWidth = PartyRowWidth;
+                rowLayout.preferredHeight = PartyRowHeight;
+                rowLayout.minHeight = PartyRowHeight;
+                string name = offer.Name;
+                CountryId id = country.Id;
+                StartPoints.StartPoint picked = start;
+                button.onClick.AddListener(() => OnSelectCandidate?.Invoke(id, picked, name));
+            }
+
+            Button backButton = CanvasChrome.FacedButton(column.transform, "Back", "BACK TO THE STARTS",
+                PoliSimTheme.Display, 14, PoliSimTheme.Hex(0x4A3A22), new Vector2(BackButtonWidth, PartyRowHeight), CanvasChrome.Face.Paper);
+            LayoutElement backLayout = backButton.gameObject.AddComponent<LayoutElement>();
+            backLayout.preferredWidth = BackButtonWidth;
+            backLayout.preferredHeight = PartyRowHeight;
+            backLayout.minHeight = PartyRowHeight;
+            backButton.onClick.AddListener(ClosePartyPanel);
+        }
+
         /// <summary>CL-2: closes the party panel; 18a: closes the sheet too and restores the folders, so BACK from either step returns to the countries (the harness's pair: ShowStartPanel, then HidePartyPanel).</summary>
         public void HidePartyPanel()
         {
@@ -375,13 +472,15 @@ namespace PoliSim.UI
         /// selectable) with a LOCKED stamp in the Caution ink where a playable card shows its mode and its reason as one caption line.
         /// Public so the capture driver can film it; <paramref name="onSelect"/> null draws the sheet and seats nobody.
         /// </summary>
-        public void ShowStartPanel(Country country, Action<CountryId, string> onSelect)
+        public void ShowStartPanel(Country country, Action<CountryId, string> onSelect, string selectKind = null)
         {
             HidePartyPanel();
             if (Root == null || country == null) { return; }
             IReadOnlyList<StartPoints.StartPoint> points = StartPoints.For(country.Id);
             int selected = -1;
             for (int i = 0; i < points.Count; i++) { if (points[i].Playable) { selected = i; break; } }
+            // SP-7b: the capture driver opens the sheet on a named playable card (Poland's presidential) - as a click on that card would select it
+            for (int i = 0; selectKind != null && i < points.Count; i++) { if (points[i].Playable && points[i].Kind == selectKind) { selected = i; break; } }
             BuildSheet(country, onSelect, points, selected);
         }
 
@@ -516,7 +615,9 @@ namespace PoliSim.UI
             SizeControl(selectButton, SelectButtonWidth, ControlHeight);
             selectButton.interactable = selected >= 0;
             Country chosen = country;
-            selectButton.onClick.AddListener(() => { if (selected >= 0) { ShowPartyPanel(chosen, onSelect); } });
+            StartPoints.StartPoint chosenStart = selected >= 0 ? points[selected] : default;
+            // SP-7b: a candidate's start (Poland's presidential) opens the candidate picker in place of the party panel; every other start the party panel
+            selectButton.onClick.AddListener(() => { if (selected >= 0) { if (PresidentialStart.IsCandidateStart(chosenStart)) { ShowCandidatePanel(chosen, chosenStart); } else { ShowPartyPanel(chosen, onSelect); } } });
         }
 
         private static void SizeControl(Button button, float width, float height)
@@ -632,7 +733,7 @@ namespace PoliSim.UI
             // House (divided government is the presidency's central constraint); Poland's and France's presidential cards follow the rule when they unlock.
             if (playable)
             {
-                BuildSeatBar(content.transform, country.Id);
+                BuildSeatBar(content.transform, country.Id, point.Opens);   // SP-7b: the chamber seated at THIS start's date - Poland's presidential card the 10th Sejm
             }
             else if (!playable)
             {
@@ -678,9 +779,9 @@ namespace PoliSim.UI
         /// <summary>18a: THE CHAMBER AS A SEAT BAR - one axis segmented by party in the parties' inks (PoliSimTheme's party accessor, keyed
         /// country/abbreviation; the neutral register where a party has none), largest first, widths proportional to seats, the abbreviations
         /// under the segments that clear 18 device pixels; then the caption THE RIKSDAG OF 11 SEP 2022 · 349.</summary>
-        private static void BuildSeatBar(Transform parent, CountryId id)
+        private static void BuildSeatBar(Transform parent, CountryId id, DateTime opens)
         {
-            WorldClock.PickerView start = WorldClock.PickerViewOf(id);
+            WorldClock.PickerView start = WorldClock.PickerViewOf(id, opens);
             List<PoliticalParty> parties = PartiesBySeats(id, start.Seats);
             int total = start.TotalSeats;
             if (total <= 0) { return; }
@@ -751,7 +852,7 @@ namespace PoliSim.UI
                 }
             }
 
-            WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(id, WorldClock.StartDate(id));
+            WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(id, opens);
             DateTime electionDay = WorldClock.ElectionDayOf(id, start.Vintage);
             string when = electionDay != DateTime.MinValue
                 ? electionDay.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant()
@@ -759,7 +860,7 @@ namespace PoliSim.UI
             // PS-6 US-15: the card names the second chamber of record's majority on the start's day after the House's caption, on the same line - the bar stays the
             // House's (§627's ruling, until D-US says otherwise), and the card's height is the other cards' (one more line would compress them, PF-13's class)
             // R-US10 (a): the independents counted with the majority, named on the same line ("(3 IND.)"); the REAL films at 1280 and 2560 read its fit
-            string upper = StartBrief.TrySecondChamberMajority(id, WorldClock.StartDate(id), out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out _, out _)
+            string upper = StartBrief.TrySecondChamberMajority(id, opens, out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out _, out _)
                 ? $" · THE {StartBrief.SecondChamberOf(id).ToUpperInvariant()}: {PartySystems.ShortName(id, upperParty)} {upperSeats} OF {upperMembers}" + (upperIndependents > 0 ? $" ({upperIndependents} IND.)" : string.Empty)
                 : string.Empty;
             Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}{upper}",

@@ -75,7 +75,18 @@ namespace PoliSim.UI
         private static string Shown(DivisionSide side) => string.IsNullOrEmpty(side.ShortName) ? side.Abbrev : side.ShortName;
 
         /// <summary>Null when there is no record to sign — the caller drops the ceremony and the resolution stays silent (degradation costs the ceremony, never correctness).</summary>
-        public static SigningScreen Build(Country country, DivisionRecord record, Action onSign)
+        public static SigningScreen Build(Country country, DivisionRecord record, Action onSign) => Build(country, record, onSign, null, null, null);
+
+        /// <summary>
+        /// SP-7b (Elias's ruling I14, ask 2 (2a)): THE PLATE'S TWO ANSWERS - a statute the Sejm passed, presented to the player-president and held on his docket:
+        /// the plate as the ceremony draws it, its sign row carrying <paramref name="answerLine"/> (on his desk, the day it is signed unanswered) and its
+        /// answers - LATER (<paramref name="onLater"/>: the plate closes, the statute stays held and is answered on the Docket page) and VETO
+        /// (<paramref name="onVeto"/>; null where the act takes none - the budget act, a constitutional amendment) on the paper face, SIGN on the brass. The seal
+        /// drops on a signature; a veto or LATER settles the same beat with no seal shown (<see cref="Veto"/>).
+        /// </summary>
+        public static SigningScreen BuildAnswer(Country country, DivisionRecord record, string answerLine, Action onSign, Action onVeto, Action onLater) => Build(country, record, onSign, onVeto, onLater, answerLine ?? string.Empty);
+
+        private static SigningScreen Build(Country country, DivisionRecord record, Action onSign, Action onVeto, Action onLater, string answerLine)
         {
             if (country == null || record == null)
             {
@@ -171,6 +182,13 @@ namespace PoliSim.UI
             // landing zone's 104x104 slot stays reserved either way, so the button sits in the
             // identical position for both verdicts; only what fills it, and what the button says,
             // now depends on the record.
+            if (answerLine != null)
+            {
+                // SP-7b: the answer's line at the row's left - on the President's desk, and the day it is signed unanswered
+                Text onDesk = CanvasChrome.MakeText(signRow.transform, "OnYourDesk", answerLine, PoliSimTheme.Document, Caption, Muted, TextAnchor.MiddleLeft);
+                onDesk.horizontalOverflow = HorizontalWrapMode.Wrap;
+                ((RectTransform)onDesk.transform).sizeDelta = new Vector2(AnswerLineWidth, 60f);
+            }
             var landing = new GameObject("SealLanding");
             landing.transform.SetParent(signRow.transform, false);
             landing.AddComponent<RectTransform>().sizeDelta = new Vector2(104f, 104f);
@@ -205,7 +223,7 @@ namespace PoliSim.UI
             screen._seal = sealBeat.AddComponent<SealDrop>();
             sealBeat.SetActive(false);
 
-            CanvasGroup controls = BuildSignButton(signRow.transform, onSign, record.Passed);
+            CanvasGroup controls = answerLine == null ? BuildSignButton(signRow.transform, onSign, record.Passed) : BuildAnswerButtons(signRow.transform, onSign, onVeto, onLater);   // SP-7b: the plate's answers
 
             // §A.13's two rows that had no implementation (re-derived against the seam 2026-08-28,
             // omnibus roadmap item 4): row 4, the document rises 24px and settles −0.6° → 0° over
@@ -233,6 +251,17 @@ namespace PoliSim.UI
         {
             if (_seal != null && !_seal.gameObject.activeSelf)
             {
+                _seal.gameObject.SetActive(true);
+            }
+        }
+
+        /// <summary>SP-7b: the beat with no seal shown - a veto (a statute returned is not sealed) or LATER (nothing answered); the seam watches <see cref="Sealed"/> as for SIGN.</summary>
+        public void Veto()
+        {
+            if (_seal != null && !_seal.gameObject.activeSelf)
+            {
+                Image sealImage = _seal.GetComponent<Image>();
+                if (sealImage != null) { sealImage.enabled = false; }
                 _seal.gameObject.SetActive(true);
             }
         }
@@ -834,6 +863,49 @@ namespace PoliSim.UI
         {
             string magnitude = UiFormat.Number(Mathf.Abs(value), 2);
             return value > 0f ? "+" + magnitude : value < 0f ? "−" + magnitude : magnitude;
+        }
+
+        /// <summary>SP-7b: the answer line's width in the sign row, in canvas units - the row's width less the landing, the three answers and the gaps, with room spare.</summary>
+        private const float AnswerLineWidth = 640f;
+
+        /// <summary>SP-7b: an answer's face on the plate, in canvas units - narrower than SIGN alone, so three fit beside the line.</summary>
+        private const float AnswerWidth = 200f;
+
+        /// <summary>SP-7b: the plate's answers - LATER (the statute stays on the docket, answered there), VETO where the act takes one, both on the paper
+        /// face, and SIGN on the brass - in one group that fades in last (§A.13's row 6), as the SIGN button alone does.</summary>
+        private static CanvasGroup BuildAnswerButtons(Transform parent, Action onSign, Action onVeto, Action onLater)
+        {
+            var answers = new GameObject("Answers");
+            answers.transform.SetParent(parent, false);
+            int count = 1 + (onVeto != null ? 1 : 0) + (onLater != null ? 1 : 0);
+            answers.AddComponent<RectTransform>().sizeDelta = new Vector2(count * AnswerWidth + (count - 1) * 30f, 60f);
+            HorizontalLayoutGroup answersLayout = answers.AddComponent<HorizontalLayoutGroup>();
+            answersLayout.childAlignment = TextAnchor.MiddleRight;
+            answersLayout.spacing = 30f;
+            answersLayout.childControlWidth = false;
+            answersLayout.childControlHeight = false;
+            answersLayout.childForceExpandWidth = false;
+            answersLayout.childForceExpandHeight = false;
+            if (onLater != null)
+            {
+                Button later = CanvasChrome.FacedButton(answers.transform, "LaterButton", "Later",
+                    PoliSimTheme.Body, 27, PoliSimTheme.Hex(0x4A3A22), new Vector2(AnswerWidth, 60f), CanvasChrome.Face.Paper, FontStyle.Normal);
+                later.onClick.AddListener(() => onLater());
+            }
+            if (onVeto != null)
+            {
+                Button veto = CanvasChrome.FacedButton(answers.transform, "VetoButton", "Veto",
+                    PoliSimTheme.Body, 27, PoliSimTheme.Hex(0x4A3A22), new Vector2(AnswerWidth, 60f), CanvasChrome.Face.Paper, FontStyle.Normal);
+                veto.onClick.AddListener(() => onVeto());
+            }
+            Button sign = CanvasChrome.FacedButton(answers.transform, "SignButton", "Sign",
+                PoliSimTheme.Body, 27, PoliSimTheme.TextPrimary, new Vector2(AnswerWidth, 60f), CanvasChrome.Face.Brass, FontStyle.Normal);
+            sign.onClick.AddListener(() => onSign());
+            CanvasGroup group = answers.AddComponent<CanvasGroup>();
+            group.alpha = 0f;
+            group.interactable = false;
+            group.blocksRaycasts = false;
+            return group;
         }
 
         /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "Sign" only for a passed division - "File" for a lost one, matching the plate's own LOST stamp rather than claiming an enactment that did not happen. Returns the button's CanvasGroup - §A.13 row 6's fade handle (the controls fade in last).</summary>

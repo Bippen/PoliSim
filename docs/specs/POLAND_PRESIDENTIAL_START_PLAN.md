@@ -334,6 +334,8 @@ On the rulings as recommended (the order changes nothing else if another option 
 4. **The close**: the cheap and simulation bars; the dry film of the Poland session; REAL films of the start panel, the candidate picker, the
    President row and the signing plate at 1280 and 2560.
 
+**Built** (SP-7b, `COMPLETED.md` §886, 2026-10-20): steps 1-4 as ruled - the card on the Marshal's order, the candidate picker, the contest's mark, the office from the oath (the party's verbs refused, the budget window closed), the player's veto on the docket at J6 (iii)'s terms (an answer at once), the plate's answers with LATER and the Docket page's answer row, format 50; the bars and the REAL films at 1280 and 2560.
+
 ## 7. Stated premises
 
 - The start date's options all lie in Duda's term and Tusk's government; none crosses a Sejm election, so no formation runs before the vote.

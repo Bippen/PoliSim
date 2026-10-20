@@ -1866,6 +1866,7 @@ namespace PoliSim.UI
 
                     _canvasScreenKind = CanvasScreenKind.Selector;
                     _countrySelector.OnCreateParty = RequestPartyCreation;   // §676 (SP-4)
+                    _countrySelector.OnSelectCandidate = SelectPresidentialCandidate;   // SP-7b: Poland's presidential start - the candidate picker's commit
                     _countrySelector.SetVisible(false);
                     BeginCanvasPhase(CanvasPhase.CoverIn);
                     break;
@@ -1880,7 +1881,7 @@ namespace PoliSim.UI
                     DivisionRecord signing = _signingQueue.Dequeue();
                     try
                     {
-                        _signingScreen = SigningScreen.Build(_playerCountry, signing, SignPendingDivision);
+                        _signingScreen = BuildSigningOrAnswer(signing);   // SP-7b: a statute on Poland's player-president's docket gets the plate's two answers
                     }
                     catch (System.Exception e)
                     {
@@ -2124,9 +2125,12 @@ namespace PoliSim.UI
                 return;
             }
 
-            System.DateTime start = PoliSim.Elections.WorldClock.StartDate(countryId);
+            // SP-7b (the plan's §4.2 class B): a start chosen on the sheet that is not the country's default (Poland's presidential) opens on its own day; every
+            // other choice on the country's (WorldClock.StartDate, unchanged)
+            System.DateTime start = _chosenStart.HasValue && _chosenStart.Value.Country == countryId ? _chosenStart.Value.Opens : PoliSim.Elections.WorldClock.StartDate(countryId);
             Country before = _world?.GetCountry(countryId);
             string seatedParty = before?.PlayerPartyAbbrev;
+            string seatedCandidate = before?.PlayerCandidate, seatedStart = before?.PlayerStart;   // SP-7b: the candidate the picker seated, carried across as the party is
             bool sameEpoch = start == SimulationManager.EpochDate && _simulationManager.CurrentDate == start;
             if (sameEpoch && !_worldRosterStale) { return; }   // §676: a party registered after the world was built rebuilds it - the world snapshots the roster
             _worldRosterStale = false;
@@ -2149,13 +2153,15 @@ namespace PoliSim.UI
             {
                 after.PlayerPartyAbbrev = seatedParty;
                 after.PartyApprovalRating = after.State.ApprovalRating;
+                after.PlayerCandidate = seatedCandidate;   // SP-7b
+                after.PlayerStart = seatedStart;
             }
 
             _seamHitchPending = true;   // the frame that rebuilt the world is longer than the seam's cover; its next phase starts after it
             string deviation = PoliSim.Elections.WorldClock.SeatingDeviation(countryId, start);
             Debug.Log($"WORLD CLOCK: {countryId} opens {start:yyyy-MM-dd} - the chamber of record {PoliSim.Elections.WorldClock.ChamberAt(countryId, start).Vintage}"
                       + (deviation != null ? $"; DEVIATION: {deviation}" : string.Empty));
-            Debug.Log($"WORLD CLOCK: {countryId} - {PoliSim.Elections.WorldClock.SeedVintageLine(countryId)}");
+            Debug.Log($"WORLD CLOCK: {countryId} - {PoliSim.Elections.WorldClock.SeedVintageLine(countryId, start)}");   // SP-7b: from the start's own day
         }
 
         private void SelectPlayerCountry(CountryId countryId)
@@ -9562,7 +9568,10 @@ namespace PoliSim.UI
         private string DeskLawDay(DocketEntry desk) => SimulationManager.DocketLawDay(PlayerCountryId, desk).ToString("d MMM yyyy", CultureInfo.InvariantCulture);
 
         /// <summary>PS-6 US-21b: a budget's entry on the docket - a continuing resolution's, or the first of its held acts; null where none is held.</summary>
-        private static DocketEntry DeskOf(BudgetBill bill) => bill?.Docket ?? (bill?.ActsHeld != null && bill.ActsHeld.Count > 0 ? bill.ActsHeld[0] : null);
+        /// SP-7b (the rebase review's C1): a held Polish budget applies when its LAST act is decided - every held act shares the adoption day, so the entry read is a
+        /// statute act's (21 days) where one is still held, the budget act's (7) only where it alone is left; a US budget's acts share one period, so its first.
+        private static DocketEntry DeskOf(BudgetBill bill) => bill?.Docket ?? (bill?.ActsHeld != null && bill.ActsHeld.Count > 0
+            ? bill.ActsHeld.Find(e => e.Bill != (int)PresidentialDocket.Bill.BudgetAct) ?? bill.ActsHeld[0] : null);
 
         private string UsBudgetStatusText(BudgetBill pendingBill)
         {

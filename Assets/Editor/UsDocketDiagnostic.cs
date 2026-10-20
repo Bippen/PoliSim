@@ -21,8 +21,9 @@ namespace PoliSim.EditorTools
     /// <item>(a) the words held to their saved pages by SHA-256 - Art. I §7 cl. 2's ten days and its adjournment clause (the pocket veto, not modelled), and
     /// Konstytucja Art. 122 ust. 2's 21 days;</item>
     /// <item>(b) the period's arithmetic (`PresidentialDocket`), DERIVED by hand: the USA's count from the day after presentment with no Sunday counted, a span
-    /// with one Sunday and one with two; Poland's 21 calendar days; no period elsewhere; and the docket's one holder (`SimulationManager.UsVetoGate`) acting
-    /// in the USA alone (`UsVeto.Applies`) - so NO POLISH PATH REACHES THE DOCKET YET (Poland has no player-president until SP-7b);</item>
+    /// with one Sunday and one with two; Poland's 21 calendar days; no period elsewhere; and the US veto's rule acting in the USA alone (`UsVeto.Applies`) -
+    /// Poland's player-president's docket, its 7- and 21-day terms and its answers are SP-7b's (`SimulationManager.PolishDocketGate`, proved by
+    /// `PolishPresidentialStartDiagnostic`);</item>
     /// <item>(c) a planted game-elected Trump, the player REP - the player-president: three REP tax-programme bills and a REP rates budget (its appropriation
     /// and its reconciliation) pass both chambers on one day and are HELD on his docket, nothing applied; unanswered, a bill is still held on its last day
     /// and is LAW THE DAY AFTER (a Sunday inside the span); US-21c (Elias's ruling J6 (i)): signed, it is law AT ONCE, on the answer's day, no money moved
@@ -104,7 +105,7 @@ namespace PoliSim.EditorTools
                                                                                             && (c == CountryId.USA || c == CountryId.Poland || PresidentialDocket.LastDay(c, new DateTime(2025, 2, 3)) == DateTime.MinValue));
                 bool usaAlone = Enum.GetValues(typeof(CountryId)).Cast<CountryId>().All(c => UsVeto.Applies(c) == (c == CountryId.USA));
                 Check(noneElse && usaAlone && PresidentialDocket.TryPeriodOf(CountryId.Poland, out int plDays, out bool plSundays) && plDays == 21 && !plSundays,
-                    "(b) a period in the USA and Poland alone (ten days with Sundays excepted; 21 days, DECLARED for Poland's player-president), none elsewhere; the docket's one holder, the US veto gate, acts in the USA alone - NO POLISH PATH REACHES THE DOCKET YET (Poland has no player-president until SP-7b; its president answers by its own gate on the day)");
+                    "(b) a period in the USA and Poland alone (ten days with Sundays excepted; 21 days, DECLARED for Poland's player-president), none elsewhere; the US veto's rule acts in the USA alone - Poland's player-president's docket (its 7- and 21-day terms, J6 (iii)) is SP-7b's, held by its own gate and proved by PolishPresidentialStartDiagnostic");
 
                 using (SimulationManager.EpochScope())
                 {

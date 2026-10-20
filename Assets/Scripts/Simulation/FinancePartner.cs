@@ -130,12 +130,13 @@ namespace PoliSim.Simulation
         public static string AiHolder(Country country)
         {
             string holder = Holder(country);
-            return holder != null && holder != country.PlayerPartyAbbrev ? holder : null;
+            return holder != null && (holder != country.PlayerPartyAbbrev || country.PlayerHoldsPresidency) ? holder : null;   // SP-7b: a player-president's party is an AI partner
         }
 
-        /// <summary>§755: the player's own party holds Finance as a partner - its dial sets the stance.</summary>
+        /// <summary>§755: the player's own party holds Finance as a partner - its dial sets the stance. SP-7b (I14 (2a)): never while the player is President - his
+        /// party is the AI's then, and its partner steps by the AI's rule.</summary>
         public static bool PlayerHolds(Country country) =>
-            country != null && !string.IsNullOrEmpty(country.PlayerPartyAbbrev) && Holder(country) == country.PlayerPartyAbbrev;
+            country != null && !string.IsNullOrEmpty(country.PlayerPartyAbbrev) && !country.PlayerHoldsPresidency && Holder(country) == country.PlayerPartyAbbrev;
 
         private static bool SameGroup(CountryId id, string a, string b)
         {
@@ -164,7 +165,7 @@ namespace PoliSim.Simulation
         {
             target = 0f;
             if (string.IsNullOrEmpty(holder)) { return false; }
-            if (holder == country.PlayerPartyAbbrev) { target = Mathf.Clamp(country.FinanceStancePlayerTarget, -PlayerTargetLimit, PlayerTargetLimit); return true; }
+            if (holder == country.PlayerPartyAbbrev && !country.PlayerHoldsPresidency) { target = Mathf.Clamp(country.FinanceStancePlayerTarget, -PlayerTargetLimit, PlayerTargetLimit); return true; }
             if (!TryEconomicPosition(country.Id, holder, out float holderAt) || !TryEconomicPosition(country.Id, country.Government.PmParty, out float headAt)) { return false; }
             target = StancePointsPerChesPoint * (headAt - holderAt);
             return true;

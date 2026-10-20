@@ -50,9 +50,8 @@ namespace PoliSim.Elections
 
         /// <summary>18b: the one reason every locked card carries today, in the player's words.</summary>
         public const string LockedPrefix = "LOCKED · ";
-        /// <summary>18b's one reason, its words changed at §770: Poland's two-round election is modelled and the game holds its own (PS-5 item C4,
-        /// <see cref="PresidentialElection"/>), but neither presidential START - the player as a candidate - is built, here or in France (S8, whose
-        /// two-round system is not modelled either).</summary>
+        /// <summary>18b's one reason, its words changed at §770: the presidential START - the player as a candidate - is not built in France (S8, whose
+        /// two-round system is not modelled either). Poland's is built since SP-7b (`PresidentialStart`).</summary>
         public const string PresidentialStartReason = "THE PRESIDENTIAL START IS NOT YET BUILT";
         public const string RoundDatesNote = "ROUND DATES NOT IN THE RECORD";
 
@@ -71,11 +70,13 @@ namespace PoliSim.Elections
                 case CountryId.Poland:
                     list.Add(Ruled(id, "SEJM ELECTION", "the PKW's notice, Dz.U. 2023 poz. 2234 (poland/returns_2023.md); the run-up by the standard window (§618)"));
                     // §720 (PS-5 with S7, part one): the presidential start reads its record through the two-round rule - the first vote's day from the
-                    // PKW's returns, the verdict, the run-off and the term counted, not typed; §770: the game holds its own presidential election from a Sejm start; the player as a candidate is not yet a start
+                    // PKW's returns, the verdict, the run-off and the term counted, not typed; §770: the game holds its own presidential election from a Sejm start.
+                    // SP-7b (Elias's ruling I14): PLAYABLE - the player a candidate of record (ask 1 (a)), the world opened on the Marshal's order (ask 4 (4b), a
+                    // stated deviation for presidential starts only - `PresidentialStart.PolandOpens`), no campaign staged (ask 3 (3a))
                     TwoRoundElection.RoundOfRecord(id, 2025, 1, out DateTime firstVote2025);
-                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", firstVote2025, null, DateTime.MinValue, false,
-                        LockedPrefix + PresidentialStartReason,
-                        TwoRoundElection.RecordBrief(id, 2025) + " (the PKW's notices, poland/presidential_returns.md; the oaths, poland/records_by_date.md)"));
+                    list.Add(new StartPoint(id, "PRESIDENTIAL ELECTION", firstVote2025, null, PresidentialStart.PolandOpens, true,
+                        CandidateLine(PresidentialStart.PolandOpens, firstVote2025),
+                        TwoRoundElection.RecordBrief(id, 2025) + " (the PKW's notices, poland/presidential_returns.md; the oaths, poland/records_by_date.md); opens on the Marshal's order, Dz.U. 2025 poz. 48 (poland/presidential_calendar_2025.md) - ruled I14 (4b), a deviation from the standard run-up for presidential starts only"));
                     break;
                 case CountryId.Italy:
                     list.Add(Ruled(id, "GENERAL ELECTION (SNAP)", "DPR 97/2022 [DPR-97]; opens on the dissolution of 2022-07-21 [DPR-96] (§618)"));
@@ -99,6 +100,11 @@ namespace PoliSim.Elections
         private static StartPoint Ruled(CountryId id, string kind, string basis) =>
             new StartPoint(id, kind, WorldClock.LatestElectionDay(id), null, WorldClock.StartDate(id), true, WorldClock.StartLine(id), basis);
 
+        /// <summary>SP-7b: a candidate's start in the selector's words - its opening on the Marshal's order (I14 (4b), the stated deviation), no campaign staged
+        /// (I14 (3a)), and the first vote.</summary>
+        private static string CandidateLine(DateTime opens, DateTime firstVote) =>
+            "OPENS " + Stamp(opens) + " · THE MARSHAL'S ORDER · NO CAMPAIGN IS STAGED · THE FIRST VOTE " + Stamp(firstVote);
+
         private static DateTime Day(StartPoint p) => p.PollingDay != DateTime.MinValue ? p.PollingDay : new DateTime(Math.Max(1, p.Year), 1, 1);
 
         /// <summary>PS-6 US-33 (SP-6a; R-US4 (a), RULED - F8 §781: the player's own nominee at the head of a major ticket, inside PS-6): whether a start lets the player
@@ -106,7 +112,8 @@ namespace PoliSim.Elections
         /// are `OwnNominees.Tickets`. The third-party run (SP-6b) is no start's.</summary>
         public static bool OffersOwnNominee(StartPoint p) => p.Playable && p.Presidential && OwnNominees.Offered(p.Country);
 
-        /// <summary>The playable start point of a country - the one the game opens on today (one per country until the presidential models land).</summary>
+        /// <summary>The country's DEFAULT start point - the first playable in date order, the one `WorldClock.StartDate` opens and the sheet pre-selects (SP-7b:
+        /// Poland offers two playable starts, its Sejm start first; DECLARED, the plan's §4.2 class E).</summary>
         public static bool TryPlayable(CountryId id, out StartPoint start)
         {
             foreach (StartPoint p in For(id)) { if (p.Playable) { start = p; return true; } }
@@ -128,6 +135,7 @@ namespace PoliSim.Elections
         {
             if (!p.Playable) { return null; }
             string opens = "OPENS " + Stamp(p.Opens);
+            if (PresidentialStart.IsCandidateStart(p)) { return "THE MARSHAL'S ORDER · NO CAMPAIGN · " + opens; }   // SP-7b (I14 (4b), (3a)): the deviation's day and no campaign staged, said on the card
             if (WorldClock.GoverningModeOnly(p.Country)) { return "WHAT-IF · YOUR PARTY GOVERNS · " + opens; }   // PS-3d (§631, ruled): the card states the what-if plainly
             if (WorldClock.NoElectionYet(p.Country)) { return "NO ELECTION YET · " + opens; }   // PS-6 US-1 (its review), PS-7-interim: the card the folder opens onto promises no run-up and no snap election
             return (WorldClock.IsSnapStart(p.Country) ? "SNAP ELECTION · " : "RUN-UP · ") + opens;

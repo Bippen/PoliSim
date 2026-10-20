@@ -1019,6 +1019,21 @@ namespace PoliSim.Data
         /// elects no president in two rounds.</summary>
         public List<Elections.PresidentialElection.Contest> PresidentialElections = new List<Elections.PresidentialElection.Contest>();
 
+        /// <summary>SP-7b (Elias's ruling I14, ask 1 (a)): the candidate of record the player stands as, chosen at Poland's presidential start
+        /// (`PresidentialStart.Seat`) - the name as the contest prints it; null on every other start. The game's first presidential contest after the start
+        /// marks it (`PresidentialElection.PlayerCandidateFor`). Saved (format 50).</summary>
+        public string PlayerCandidate;
+
+        /// <summary>SP-7b: the start the player's game opened on, by its key (`PresidentialStart.KeyOf`) - null for the country's default start, which is
+        /// every save cut before format 50 (each such save is a Sejm-start game). Saved (format 50).</summary>
+        public string PlayerStart;
+
+        /// <summary>SP-7b (I14, ask 2 (2a)): whether the player holds the presidency today - the winner of a contest in which he was the player's candidate,
+        /// sworn and not yet succeeded (`PresidentialElection.PlayerHoldsOffice`). Written by the day loop at the day's start (`SimulationManager.NotePlayerPresidency`)
+        /// for the readers that hold no date (the cabinet's chairs, the Finance partner); while it holds, the party's levers are the AI's (Art. 132, READING).
+        /// Saved (format 50).</summary>
+        public bool PlayerHoldsPresidency;
+
         /// <summary>PS-6 US-7: the US presidential elections the game held for this country, oldest first - each with its electors, its dates, the House's
         /// contingent choice where it was held, and its winner (`UsPresidentialElection.Contest`). The president from an oath is read from them
         /// (`UsPresidentialElection.TryInOffice`), and from the first polling day the record seats no president (`WorldClock.RecordSeatsExecutive`). Empty where

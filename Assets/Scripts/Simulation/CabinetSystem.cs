@@ -493,6 +493,7 @@ namespace PoliSim.Simulation
         public static bool ChairIsThePlayers(Country country, CabinetPortfolio portfolio)
         {
             if (country == null || string.IsNullOrEmpty(country.PlayerPartyAbbrev) || country.Government == null) { return false; }
+            if (country.PlayerHoldsPresidency) { return false; }   // SP-7b (I14 (2a)): while the player is President his party - its chairs included - is the AI's, and an AI party's chairs are not modelled
             Elections.PlayerRole role = country.Government.RoleOf(country.PlayerPartyAbbrev);
             if (role == Elections.PlayerRole.PrimeMinister) { return true; }
             return role == Elections.PlayerRole.JuniorPartner && country.Government.HoldsPortfolio(country.PlayerPartyAbbrev, portfolio)

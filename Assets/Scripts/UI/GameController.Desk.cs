@@ -284,6 +284,7 @@ namespace PoliSim.UI
         {
             PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
             if (g == null) { return null; }
+            if (_playerCountry.PlayerHoldsPresidency) { return ("PRESIDENT", true); }   // SP-7b (I14 (2a)): Poland's player-president - the office, filled; the party is the AI's while he serves
             PoliSim.Elections.PlayerRole role = PoliSim.Elections.GovernmentRecord.RoleOn(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
             switch (role)
             {
@@ -325,6 +326,12 @@ namespace PoliSim.UI
             {
                 case "GOVERNING": slip.Add("YOUR PARTY LEADS THE GOVERNMENT"); break;
                 case "CARETAKER": slip.Add("YOUR GOVERNMENT SERVES ON AS A CARETAKER"); break;
+                case "PRESIDENT" when _playerCountry.PlayerHoldsPresidency:
+                    // SP-7b (I14 (2a)): the office beside the party - who holds the party, what the office does, which party governs
+                    slip.Add("YOU HOLD THE PRESIDENCY · YOUR PARTY IS THE AI'S WHILE YOU SERVE");
+                    slip.Add("YOU SIGN OR VETO EACH STATUTE THE SEJM PASSES · THE SEJM OVERRIDES A VETO BY 3/5 OF THOSE VOTING");
+                    if (!string.IsNullOrEmpty(g.PmParty)) { slip.Add("THE GOVERNMENT IS " + (PartySystems.ShortName(_playerCountry.Id, g.PmParty) ?? g.PmParty).ToUpperInvariant() + "'S"); }   // the review's L3: no head party, no line
+                    break;
                 case "PRESIDENT": slip.Add("YOUR PARTY HOLDS THE PRESIDENCY"); CongressSlipLine(slip); break;   // PS-6 US-7
                 case "THE PRESIDENT'S PARTY":
                     // PS-6 US-19: the president in office is the record's and the party's (R-US7 (a): the administration's bills and the budget are the party's)

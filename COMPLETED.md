@@ -40961,3 +40961,41 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 **Reviewed:** `Reviews/2026-10-20_us6c_review.md` (independent): M1 (the nominees' priors - most of DC's 2.13 pp was the three-way prior, not the ballots) and L1, L3, L4, L5 fixed; L2, L6 declared. No money path; the sentinel holds, so no review row is owed.
 
 **Bars** (tier SIMULATION): `wr885a` / `wr885b` (the US-6 and US-8 blocks written); `n885` 12 of 12 (GeneratedCatalog, UsPresidentialFactor, UsPresidentialElection, TermLimit, UsOwnNominee, Presidency, UsStateSwing, CongressElection, the text guards, ReviewLedger); `slrt885` 12 of 12; the cheap bar `cheap885` 126 of 126; the documents bar `doc885` 22 of 22; the simulation bar `sim885` 67 of 67, the sentinel holding on **aloopsal2**. No film: no UI path.
+
+
+## 886. SP-7b: POLAND'S PRESIDENTIAL START, BUILT (I14, J6 (iii)) - A CANDIDATE OF RECORD ON THE MARSHAL'S ORDER, THE OFFICE FROM THE OATH, THE PLAYER'S VETO ON THE DOCKET AT 7 AND 21 DAYS; SAVE FORMAT 50 (2026-10-20)
+
+**What was owed:** I14 (ask 1 (a); ask 2 (2a) with L1 and end-i; ask 3 (3a); ask 4 (4b)) and J6 (iii)'s terms, per `docs/specs/POLAND_PRESIDENTIAL_START_PLAN.md` §6.
+
+**Built** (an implementer on `wave/sp7b`: nine commits on d8bbe5b8 to 45381a46, the first review's fixes 4ff8175d (kept as `wave/sp7b-pre-rebase`), then squashed and rebased onto §884 as 71c14a10, the rebase review's fixes 2d13050c):
+- **The start.** Poland's presidential card is playable on 15 January 2025 (`PresidentialStart.PolandOpens`, the Marshal's order, Dz.U. 2025 poz. 48 - I14 (4b), a deviation for presidential starts only; `WorldClock.StartDate` unchanged, so the Sejm start keeps §618's rule); its mode line "THE MARSHAL'S ORDER · NO CAMPAIGN · OPENS 15 JAN 2025"; SELECT opens the candidate picker (a Canvas panel); the world opens on the start's own day.
+- **The candidate.** `PresidentialStart.Offers`: the 13 of record - the five a Sejm party backs pickable, each with its party's role on the day; the other eight shown with "NO PARTY IN THE SEJM BACKS THE CANDIDATE · NOTHING YOU COULD MOVE". `PresidentialStart.Seat` seats the backing party; the contest marks the player's candidate (`Contest.PlayerCandidate`), its factor of record standing. The brief adds two clauses and four ledger rows.
+- **The verdict and the office.** The verdict on each round's day and on the President row (a re-election's verdict too, while in office). From the oath `Country.PlayerHoldsPresidency`: the party is the AI's (`PlayerGoverns` false; Art. 132, READING); the role gate and the party's own verbs (leave the government, withdraw support, no confidence) refuse in the office's words; an open budget window is closed, so the AI government tables the next budget (§698's class); the chip reads PRESIDENT. After a loss, or when the presidency ends, the party plays on.
+- **The docket.** Every statute the Sejm passes is held on the President's desk at J6 (iii)'s terms - 7 days the budget act, 21 otherwise, an amendment sign-only - read by the docket's one source (`SimulationManager.DocketLastDay` / `DocketLawDay`, through `DocketEntry.Bill`). An answer acts at once (J6 (i)'s rule, read for Poland), its ceremony queued that day; unanswered, a statute is signed the day after its last day; a veto goes to the 3/5 override. Polish budgets adopted while the player is President are held as their acts and applied once, with the adoption year; the calendar shows the day a held budget applies (its last act).
+- **The plate.** SIGN, VETO and LATER (`SigningScreen.BuildAnswer`; the budget act and an amendment SIGN and LATER), with a truthful desk line; every held statute is answerable on the Docket page's answer row, after a load too.
+- **The save.** Format 49 -> 50 (ruling A): the candidate, the start key, the office, the contest's mark and `DocketEntry.Bill`; the preview clone and the forks carry them.
+- `PolishPresidentialStartDiagnostic` (new, cheap); `StartPointsDiagnostic`, `StartBriefDiagnostic` and `WorldClockDiagnostic` re-pinned; `UsDocketDiagnostic`'s (b) prose brought up to date; `UsVetoDiagnostic`'s pin of `PresidentialVeto.cs` moved to f672528d (SP-7b added `VetoedByThePlayer()` alone; the B1/F3 draw unchanged).
+
+**Measured** (`n886`, the first run in Unity, 20 checks):
+- the start opens 15 January 2025; the contest on 2025-05-18 with the player's candidate marked, the no-candidate control identical share for share; the run-off on 2025-06-01; the office from 2025-08-06;
+- J6 (iii)'s terms: last days 2025-08-31 (ordinary) and 2025-08-26 (budget act); SIGNED and VETOED at once on the answer's day; unanswered signed on 2025-09-01; the budget act signed after its 7 days and the budget applied once;
+- AN ANSWER MOVES ITS OWN BILL ALONE: a statute signed on 2025-08-19 is law at once, a bill still counting down keeps its 2 days, the held budget keeps its 2 held acts;
+- the party's verbs refuse while he is President; THE WINDOW AT THE OATH closed on 2025-08-06 and the AI government's budget tabled on 2026-01-01;
+- saves across the rounds and the oath load into the game, a held statute still answerable after the load;
+- `PresidentialElectionLiveDiagnostic` unchanged; no baseline moves (every path needs `PlayerCandidate` or `PlayerHoldsPresidency`; the sentinel holds).
+
+**Declared:**
+- the party passes to the AI through `PlayerGoverns`, the role gate, the chairs and the Finance partner; the player's earlier dial values are not cleared;
+- the 7 days after an override (Art. 122 ust. 5) are not modelled; no bill is urgent (the game has no urgent procedure, so the urgent term is defined but unreached);
+- an unanswered held statute whose president is no longer the player is answered that day by the AI president's draw;
+- a Polish answer acts at once (J6 (i) read for Poland);
+- a Polish budget held across 1 January skips that year's request day (review L2);
+- the impact ledger's forks never answer the docket (review L4, inherited from US-21b);
+- LATER and the Docket row stand in for re-raising the plate on load;
+- the folder card keeps the Sejm start's line; the IMGUI selector keeps the default start.
+
+**Asked:** the President-ELECT chip for Poland is not shown - the party keeps its own chip until the oath. Keep it, or show PRESIDENT-ELECT?
+
+**Reviewed:** `Reviews/2026-10-20_sp7b_review.md` (independent, of 45381a46: M1-M3, L1, L3, L5, L6 fixed at 4ff8175d; L2, L4 declared) and `Reviews/2026-10-20_sp7b_rebase_review.md` (independent, of 71c14a10: no H/M; L1-L5 and C1-C3 fixed at 2d13050c). Review rows s886 for `SimulationManager.cs`, `SimulationManager.PlayerPresident.cs` and `FinancePartner.cs`.
+
+**Bars** (tier SIMULATION + UI): `n886` 20 checks (PolishPresidentialStart, StartPoints, StartBrief, WorldClock, UsDocket, UsBudgetProcedure, UsVeto, PresidentialVeto, CabinetPressure, PresidentialElectionLive, PresidentialElection, PreviewParity, SaveMigration, the text guards, ChamberVerdictCache, Unwired, ReviewLedger): 18 clean on the first run, `UsVetoDiagnostic`'s byte-identical pin of `PresidentialVeto.cs` and the ledger's two rows owed - both answered, `n886b` 3 of 3; `slrt886` 12 of 12; `stage886` at format 50; the cheap bar `cheap886` 127 of 127; the documents bar `doc886` 22 of 22; the simulation bar `sim886` 67 of 67, the sentinel holding on **aloopsal2**; the dry film `drys886` Poland@1280x720, 149 measured, 0 failed (scope row s886, declared before the film); the REAL films `realpl886` (1280) and `realpl886w` (2560): the presidential start card (01f3), the candidate picker (01g3), the answer plate with LATER (89j), the President row's verdict (07a president_elect / president_you_won, PLANTED by the driver - its dates the harness's). The candidate picker draws over the dimmed start screen without a backdrop of its own, as the party picker (01g) does, so the brief's lines show through behind its rows: noted for J8's UI pass (UI-1).

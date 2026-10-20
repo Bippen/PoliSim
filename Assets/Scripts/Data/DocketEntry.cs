@@ -33,5 +33,9 @@ namespace PoliSim.Data
         /// day step after it, so it can still be answered on the deadline itself (`SimulationManager.UsVetoGate`; the law day `SimulationManager.DocketLawDay`). MinValue - the default, and every entry a save of an earlier build carries - is the
         /// period's rule (`PresidentialDocket`), so the field is additive.</summary>
         public DateTime Deadline;
+        /// <summary>SP-7b (Elias's ruling J6 (iii)): the kind of bill its term is read by (`PresidentialDocket.Bill` as its number) - Poland's budget act at 7 days,
+        /// every other Polish bill at 21; 0, ordinary, on every US bill. A Polish budget's statute act keeps its part in <see cref="Act"/> (`BudgetBill.StatutePart`
+        /// as its number), its budget act -1.</summary>
+        public int Bill;
     }
 }

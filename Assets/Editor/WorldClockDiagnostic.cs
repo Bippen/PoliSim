@@ -154,6 +154,18 @@ namespace PoliSim.EditorTools
                 }
                 sb.Append("    France's window 2024-06-09..2024-07-18 holds no other country's start.\n");
 
+                // SP-7b (Elias's ruling I14, ask 4 (4b)): Poland's presidential start follows its own ruled rule - the Marshal's order, a deviation for presidential
+                // starts alone - while the country's start (above) keeps §618's standard run-up; the picker's view at its date reads the 10th Sejm and Tusk's
+                // KO+TD+NL government, where the country's default start reads the 2019 chamber
+                StartPoints.StartPoint presidential = StartPoints.For(CountryId.Poland)[1];
+                WorldClock.PickerView atOrder = WorldClock.PickerViewOf(CountryId.Poland, presidential.Opens), atDefault = WorldClock.PickerViewOf(CountryId.Poland);
+                bool presidentialRule = PresidentialStart.IsCandidateStart(presidential) && presidential.Opens == PresidentialStart.PolandOpens && presidential.Opens != starts[CountryId.Poland]
+                    && atOrder.Vintage == ElectionVintage.Poland2023 && atDefault.Vintage == ElectionVintage.Poland2019 && atOrder.TotalSeats == 460
+                    && string.Join("+", atOrder.Cabinet) == "KO+TD+NL" && WorldClock.ChamberAt(CountryId.Poland, presidential.Opens).Holds(presidential.Opens);
+                if (!presidentialRule) { failures++; }
+                sb.Append(F("    {0} Poland's presidential start opens {1:yyyy-MM-dd} (the Marshal's order, I14 (4b)), the country's start {2:yyyy-MM-dd} (the run-up, §618); the picker reads {3} ({4} seats, cabinet {5}) at the order, {6} at the default\n",
+                    presidentialRule ? "ok  " : "FAIL", presidential.Opens, starts[CountryId.Poland], atOrder.Vintage, atOrder.TotalSeats, string.Join("+", atOrder.Cabinet), atDefault.Vintage));
+
                 // the default epoch keeps K-1's standing
                 SimulationManager.SetEpoch(SimulationManager.DefaultEpoch);
                 World k1 = WorldFactory.CreateDefault();

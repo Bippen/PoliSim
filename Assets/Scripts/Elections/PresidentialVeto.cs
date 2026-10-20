@@ -151,6 +151,10 @@ namespace PoliSim.Elections
             public bool Stands => !Vetoed || Overridden;
             /// <summary>F3: the gate's decision - vetoed where the statute is at risk and the draw <paramref name="u"/> falls below the risk.</summary>
             public void DrawOn(double u) { Vetoed = AtRisk && u < Risk; }
+            /// <summary>SP-7b (Elias's ruling I14, ask 2 (2a)): the PLAYER-president's veto - his answer in place of the draw, on any ordinary statute, at risk
+            /// or not (the risk is the record's reading of an AI president; the player answers each statute the Sejm passes). The override is counted as
+            /// built, on the passage's sides (B2).</summary>
+            public void VetoedByThePlayer() { Vetoed = true; }
         }
 
         /// <summary>

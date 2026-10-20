@@ -56,7 +56,7 @@ namespace PoliSim.EditorTools
         /// <summary>The files the block keeps byte-identical (WHAT STAYS AS IT IS): Poland's B1/F3 and US-10's record of §802.</summary>
         private static readonly (string Path, string Blob)[] Unchanged =
         {
-            ("Assets/Scripts/Elections/PresidentialVeto.cs", "e63fa8423e86613c3c29934ff2a1774c0fdb0686"),
+            ("Assets/Scripts/Elections/PresidentialVeto.cs", "f672528d15396e3a86bb65186fcf07d8e57052ae"),   // SP-7b (§886) added VetoedByThePlayer() alone - the B1/F3 draw and its rates unchanged (was e63fa842)
             ("Assets/Scripts/Elections/Generated/PolishVetoRates.cs", "5383688ba952a582f2a3f69eb6372f05e005aa46"),
             ("docs/generated/VETO_B1_BACKTEST.md", "a5eea1003e1f90cadcc264ea7985477bfe02e171"),
             ("Tools/us_veto_prep.pl", "358eba1c4a3f1dd0af7e65dc91feaae20ba77558"),

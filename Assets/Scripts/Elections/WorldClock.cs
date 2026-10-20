@@ -605,9 +605,11 @@ namespace PoliSim.Elections
         public static readonly DateTime SeedVintage = D(2026, 7, 1);
 
         /// <summary>The seed's offset from a country's start, in words - the statement §621 requires beside every start that is not the seed's own season.</summary>
-        public static string SeedVintageLine(CountryId id)
+        public static string SeedVintageLine(CountryId id) => SeedVintageLine(id, StartDate(id));
+
+        /// <summary>SP-7b: the same offset from a start's own day (Poland's presidential start opens on 15 Jan 2025, not the country's default start).</summary>
+        public static string SeedVintageLine(CountryId id, DateTime start)
         {
-            DateTime start = StartDate(id);
             int months = (SeedVintage.Year - start.Year) * 12 + SeedVintage.Month - start.Month;
             if (months <= 0) { return "the economy is seeded to mid-2026 data, the start's own season"; }
             return "the economy is seeded to mid-2026 data, " + (months >= 12 ? (months / 12) + " year(s) " + (months % 12 > 0 ? (months % 12) + " month(s) " : string.Empty) : months + " month(s) ") + "after this start - one seed vintage per country, the offset stated (§621)";
@@ -861,9 +863,12 @@ namespace PoliSim.Elections
             public string Deviation;
         }
 
-        public static PickerView PickerViewOf(CountryId id)
+        public static PickerView PickerViewOf(CountryId id) => PickerViewOf(id, StartDate(id));
+
+        /// <summary>SP-7b (the plan's §4.2 class D): the picker's view evaluated at a start's own date - Poland's presidential start reads the 10th Sejm and its
+        /// government of record on 15 Jan 2025, where its Sejm start reads the chamber of its own run-up.</summary>
+        public static PickerView PickerViewOf(CountryId id, DateTime start)
         {
-            DateTime start = StartDate(id);
             var view = new PickerView { Vintage = SeatedVintage(id, start), Deviation = SeatingDeviation(id, start) };
             view.Seats = PartySystems.InitialSeats(id, view.Vintage);
             foreach (KeyValuePair<string, int> kv in view.Seats) { view.TotalSeats += kv.Value; }

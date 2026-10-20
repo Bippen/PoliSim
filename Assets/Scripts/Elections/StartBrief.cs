@@ -105,7 +105,7 @@ namespace PoliSim.Elections
             CountryId id = start.Country;
             string country = CountryName.TryGetValue(id, out string named) ? named : id.ToString();
             DateTime opens = start.Opens;
-            clauses.Add(new Clause(country + ", " + Long(opens) + ".", "WorldClock.StartDate (" + start.Basis + ")"));
+            clauses.Add(new Clause(country + ", " + Long(opens) + ".", (PresidentialStart.IsCandidateStart(start) ? "StartPoints - PresidentialStart.PolandOpens (" : "WorldClock.StartDate (") + start.Basis + ")"));   // SP-7b: a candidate's start opens on its own day
 
             WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(id, opens);
             ElectionVintage seated = WorldClock.SeatedVintage(id, opens);
@@ -200,7 +200,49 @@ namespace PoliSim.Elections
                 "PartySystems.InitialSeats(" + seated + "); " + chamber.Basis));
             // PS-6 US-33 (SP-6a): the player's own nominee, where one is registered for the start's country - a clause of its own, last; none registered, none said
             if (OwnNominees.TryOf(id, out OwnNominee own) && NomineeClause(start, own) is Clause nominee) { clauses.Add(nominee); }
+            // SP-7b (I14): a candidate's start says the contest - the president of record and his term's end, the run-off's day, the field - and that it opens on
+            // the Marshal's order, a deviation for presidential starts alone, with no campaign staged; two clauses, last
+            clauses.AddRange(CandidateClauses(start));
             return clauses;
+        }
+
+        /// <summary>SP-7b (I14, asks 1, 3 and 4): a candidate's start's two clauses - the contest (the president of record and his term's end, the run-off of
+        /// record's day, the field and how many of it a Sejm party backs) and the start's own terms (the Marshal's order, a stated deviation; no campaign
+        /// staged). Empty for any other start.</summary>
+        public static List<Clause> CandidateClauses(StartPoints.StartPoint start)
+        {
+            var clauses = new List<Clause>();
+            if (!PresidentialStart.IsCandidateStart(start)) { return clauses; }
+            CountryId id = start.Country;
+            PresidencyOfRecord.TryAt(id, start.Opens, out PresidencyOfRecord.President sitting);
+            TwoRoundElection.RoundOfRecord(id, start.Year, 2, out DateTime runOff);
+            List<PresidentialStart.Offer> offers = PresidentialStart.Offers(start);
+            int pickable = offers.FindAll(o => o.Pickable).Count;
+            clauses.Add(new Clause("The president is " + (sitting.Name ?? "not of record") + ", whose term ends on " + Long(sitting.Until) + "; the first vote is on " + Long(start.PollingDay)
+                + ", and the run-off, if no one has more than half, on " + Long(runOff) + ". " + offers.Count.ToString(CultureInfo.InvariantCulture) + " candidates stand of record, "
+                + pickable.ToString(CultureInfo.InvariantCulture) + " of them backed by a party in the " + ChamberOf(id) + " - you stand as one of the " + pickable.ToString(CultureInfo.InvariantCulture) + ", and your party is the one that backs you.",
+                "StartPoints (" + start.Basis + "); PresidencyOfRecord (records_by_date.md §2d); TwoRoundElection.RoundOfRecord (the PKW's notices); PresidentialStart.Offers (PresidencyOfRecord.CandidatesOf, PartySystems.InitialSeats)"));
+            clauses.Add(new Clause("The game opens on " + Long(start.Opens) + ", the day the Marshal of the Sejm ordered the election and its campaign opened - not the standard run-up, for presidential starts alone. No campaign is staged: your candidate's vote moves with your party's standing until the first vote.",
+                "StartPoints, PresidentialStart.PolandOpens (Dz.U. 2025 poz. 48; Kodeks wyborczy art. 104) - ruled I14 (4b) and (3a); WorldClock.StartDate keeps the Sejm start's own rule"));
+            return clauses;
+        }
+
+        /// <summary>SP-7b: a candidate's start's four ledger rows - the term's end, the run-off, the field, how the start opens. Empty for any other start.</summary>
+        public static List<Row> CandidateRows(StartPoints.StartPoint start)
+        {
+            var rows = new List<Row>();
+            if (!PresidentialStart.IsCandidateStart(start)) { return rows; }
+            CountryId id = start.Country;
+            PresidencyOfRecord.TryAt(id, start.Opens, out PresidencyOfRecord.President sitting);
+            TwoRoundElection.RoundOfRecord(id, start.Year, 2, out DateTime runOff);
+            List<PresidentialStart.Offer> offers = PresidentialStart.Offers(start);
+            int pickable = offers.FindAll(o => o.Pickable).Count;
+            rows.Add(new Row("Term ends", Stamp(sitting.Until) + " · " + (sitting.Name ?? "-").ToUpperInvariant(), "PresidencyOfRecord (records_by_date.md §2d)"));
+            rows.Add(new Row("Run-off", Stamp(runOff) + " · IF NO ONE HAS MORE THAN HALF", "TwoRoundElection.RoundOfRecord (the PKW's notices; Art. 127 ust. 4)"));
+            rows.Add(new Row("Candidates", offers.Count.ToString(CultureInfo.InvariantCulture) + " OF RECORD · " + pickable.ToString(CultureInfo.InvariantCulture) + " BACKED BY A PARTY IN THE " + ChamberOf(id).ToUpperInvariant(),
+                "PresidentialStart.Offers (PresidencyOfRecord.CandidatesOf, PartySystems.InitialSeats)"));
+            rows.Add(new Row("Opens on", "THE MARSHAL'S ORDER · NO CAMPAIGN IS STAGED", "StartPoints, PresidentialStart.PolandOpens (Dz.U. 2025 poz. 48) - ruled I14 (4b), (3a)"));
+            return rows;
         }
 
         private static string PartyNameOf(CountryId id, string key)
@@ -331,6 +373,7 @@ namespace PoliSim.Elections
                 "PartySystems.InitialSeats(" + seated + "); " + chamber.Basis));
             // PS-6 US-33 (SP-6a): the player's own nominee's row, last, where one is registered for the start's country
             if (OwnNominees.TryOf(id, out OwnNominee own) && NomineeRow(start, own) is Row nominee) { rows.Add(nominee); }
+            rows.AddRange(CandidateRows(start));   // SP-7b: a candidate's start's rows, last
             return rows;
         }
 

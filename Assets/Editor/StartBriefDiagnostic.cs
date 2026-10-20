@@ -35,7 +35,9 @@ namespace PoliSim.EditorTools
                         List<StartBrief.Clause> clauses = StartBrief.Clauses(start);
                         // PS-6 US-15: and a fifth, the second chamber's, where the record seats one (the USA's Senate)
                         int expected = WorldClock.RecordSeatsSecondChamber(id) ? 5 : 4;
-                        Check(clauses.Count == expected, F("{0} {1}: {2} clauses ({3}){4}", id, start.Kind, expected == 5 ? "five" : "four", clauses.Count, expected == 5 ? " - the fifth the second chamber's" : string.Empty));
+                        bool candidate = PresidentialStart.IsCandidateStart(start);   // SP-7b: and two more, the contest's and the start's own terms, on a candidate's start (Poland's presidential)
+                        if (candidate) { expected += 2; }
+                        Check(clauses.Count == expected, F("{0} {1}: {2} clauses ({3}){4}", id, start.Kind, expected, clauses.Count, expected == 5 ? " - the fifth the second chamber's" : candidate ? " - the last two the contest's and the start's (the Marshal's order, no campaign)" : string.Empty));
                         foreach (StartBrief.Clause c in clauses)
                         {
                             Check(!string.IsNullOrEmpty(c.Text) && !string.IsNullOrEmpty(c.Basis) && c.Basis.Contains("WorldClock") | c.Basis.Contains("StartPoints") | c.Basis.Contains("PartySystems"),
@@ -49,6 +51,18 @@ namespace PoliSim.EditorTools
                         sb.Append("    brief     ").Append(StartBrief.Text(start)).Append('\n');
                     }
                 }
+                // SP-7b (I14): Poland's presidential start's brief - the 10th Sejm and Tusk's government on 15 Jan 2025, the president of record and his term's end, the
+                // run-off of record's day, the field, and the start's own terms said plainly (the Marshal's order, a deviation for presidential starts; no campaign)
+                StartPoints.StartPoint polandPresidential = StartPoints.For(CountryId.Poland)[1];
+                string plText = StartBrief.Text(polandPresidential);
+                var plRows = new List<string>();
+                foreach (StartBrief.Row r in StartBrief.Rows(polandPresidential)) { plRows.Add(r.Name + " = " + r.Figure); }
+                Check(plText.StartsWith("Poland, 15 January 2025.", StringComparison.Ordinal) && plText.Contains("(KO+TD+NL) has governed since 13 December 2023")
+                      && plText.Contains("The president is Andrzej Duda, whose term ends on 6 August 2025; the first vote is on 18 May 2025, and the run-off, if no one has more than half, on 1 June 2025.")
+                      && plText.Contains("13 candidates stand of record, 5 of them backed by a party in the Sejm") && plText.Contains("the Marshal of the Sejm ordered the election") && plText.Contains("No campaign is staged")
+                      && plRows.Contains("Term ends = 6 AUG 2025 · ANDRZEJ DUDA") && plRows.Contains("Run-off = 1 JUN 2025 · IF NO ONE HAS MORE THAN HALF") && plRows.Contains("Candidates = 13 OF RECORD · 5 BACKED BY A PARTY IN THE SEJM")
+                      && plRows.Contains("Opens on = THE MARSHAL'S ORDER · NO CAMPAIGN IS STAGED") && StartBrief.Head(polandPresidential) == "BRIEF · POLAND, 15 JAN 2025",
+                    F("SP-7b: Poland's presidential brief reads the record on 15 Jan 2025 and says the start's terms - {0} | {1}", plText, string.Join("; ", plRows)));
                 StartPoints.TryPlayable(CountryId.Sweden, out StartPoints.StartPoint sweden);
                 string text = StartBrief.Text(sweden);
                 Check(text.StartsWith("Sweden, 18 January 2026.", StringComparison.Ordinal) && text.Contains("since 18 October 2022, with 103 of 349 seats and the support of SD.")

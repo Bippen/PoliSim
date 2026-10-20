@@ -93,10 +93,57 @@ namespace PoliSim.Elections
             public string ElectedParty;
             /// <summary>The count's verdict in a line - the first vote's, then the run-off's.</summary>
             public string Line;
+            /// <summary>SP-7b (Elias's ruling I14, ask 1 (a)): the player's candidate in this contest - a candidate of record backed by a roster party, chosen at
+            /// Poland's presidential start, or the player-president standing for re-election (<see cref="PlayerCandidateFor"/>); null where the player stands no
+            /// one, which is every contest of a Sejm-start game and every contest a save from before carries. The field and its factors are the record's either
+            /// way (the factor of record stands, I14's side question): the mark changes no share.</summary>
+            public string PlayerCandidate;
 
             public bool Decided() => Elected != null;
             /// <summary>A run-off the first vote called and the day has not yet held.</summary>
             public bool RunOffPending() => !Decided() && RunOffA != null && !RunOffHeld;
+            /// <summary>SP-7b: whether the player's candidate stood in the first vote (a candidate with no support to count is in <see cref="NotStanding"/>).</summary>
+            public bool PlayerStood() => PlayerCandidate != null && Field.Exists(c => c.Name == PlayerCandidate);
+            /// <summary>SP-7b: whether the player's candidate won - decided, and elected.</summary>
+            public bool PlayerWon() => PlayerCandidate != null && Decided() && Elected == PlayerCandidate;
+        }
+
+        /// <summary>
+        /// SP-7b (I14, ask 1 (a) and ask 2 (end-i)): who the player stands as in the contest whose first vote is <paramref name="firstVote"/> - the candidate
+        /// chosen at a presidential start (<see cref="Country.PlayerCandidate"/>) in the first contest the game holds after it; in a later one, the player
+        /// holding the presidency on the day stands for re-election (Art. 127 ust. 2, [TK-KONST]: "może być ponownie wybrany tylko raz" - the incumbent fields himself,
+        /// <see cref="CandidateFor"/>'s rule, within the term limit); otherwise none - after a lost contest, or once the presidency ends, the run goes on as
+        /// the backing party (L1, end-i), which stands its own candidate as an AI party's.
+        /// </summary>
+        public static string PlayerCandidateFor(Country country, DateTime firstVote)
+        {
+            if (country == null || string.IsNullOrEmpty(country.PlayerCandidate)) { return null; }
+            bool marked = false;
+            foreach (Contest c in country.PresidentialElections) { if (c.PlayerCandidate != null) { marked = true; break; } }
+            if (!marked) { return country.PlayerCandidate; }
+            return PlayerHoldsOffice(country, firstVote, out string president) ? president : null;
+        }
+
+        /// <summary>SP-7b (I14, ask 2 (2a)): whether the president in office on <paramref name="date"/> is the player - the winner of a contest the game held in
+        /// which he was the player's candidate, sworn on its day (the oath, E2) and not yet succeeded. <paramref name="president"/> is his name.</summary>
+        public static bool PlayerHoldsOffice(Country country, DateTime date, out string president)
+        {
+            president = null;
+            if (country == null || country.PresidentialElections.Count == 0) { return false; }
+            Contest sitting = null;
+            foreach (Contest c in country.PresidentialElections) { if (c.Decided() && c.TakesOffice <= date && (sitting == null || c.TakesOffice > sitting.TakesOffice)) { sitting = c; } }
+            if (sitting == null || !sitting.PlayerWon()) { return false; }
+            president = sitting.Elected;
+            return true;
+        }
+
+        /// <summary>SP-7b: the latest contest the player stood a candidate in, held on or before <paramref name="date"/>; null where none.</summary>
+        public static Contest PlayerContestOn(Country country, DateTime date)
+        {
+            Contest last = null;
+            if (country == null) { return null; }
+            foreach (Contest c in country.PresidentialElections) { if (c.PlayerCandidate != null && c.FirstVote <= date && (last == null || c.FirstVote > last.FirstVote)) { last = c; } }
+            return last;
         }
 
         /// <summary>A candidate's position in the sovereignty space: CHES galtan and nationalism (0-10) and the EU position (1-7).</summary>
@@ -219,7 +266,12 @@ namespace PoliSim.Elections
                 if (c.RunOffPending() && c.RunOffOn == date) { HoldRunOff(c); return c; }
             }
             if (predicted == null || !TryNextFirstVote(country, date, out DateTime day, out DateTime termEnds, out string basis) || day != date) { return null; }
+            string player = PlayerCandidateFor(country, date);   // SP-7b: read before the contest joins the country - the first contest after a presidential start is the start's
+            bool startContest = !country.PresidentialElections.Exists(c => c.PlayerCandidate != null);
             Contest contest = FirstVote(country, rule, date, termEnds, basis, predicted);
+            // the start's candidate is marked whether or not he stood (the verdict says so); a sitting player-president only where he stands again - one the term
+            // limit bars (Art. 127 ust. 2) is not the player's candidate, and the run goes on as the party (end-i)
+            contest.PlayerCandidate = player != null && (startContest || contest.Field.Exists(c => c.Name == player)) ? player : null;
             country.PresidentialElections.Add(contest);
             return contest;
         }

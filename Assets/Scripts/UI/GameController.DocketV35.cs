@@ -85,6 +85,9 @@ namespace PoliSim.UI
                 DrawDocketItem(key, "bell", PoliSimTheme.Bad, "Minister alert · " + cabinetEvent.Text, null, holdsTime: false, action: null);
             }
 
+            // ---- SP-7b: the statutes on Poland's player-president's desk, each answerable here (after LATER, or after a load) ----
+            if (DrawPresidentDeskItems()) { anyPending = true; }
+
             // ---- the budget process, the fourth thing that holds the clock ----
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {

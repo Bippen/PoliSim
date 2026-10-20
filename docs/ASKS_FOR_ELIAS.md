@@ -340,3 +340,8 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 
 - **A player-president cannot cause a lapse.** J7 says a lapse "needs the player's veto or a withhold". In this build neither can happen. Your veto of the eve's uncontested resolution is overridden on its whole seated base (US-21's rule). Your own party may not withhold, and AI parties never do. Should the eve's veto stand? Should the president's party be allowed to withhold? Or is this outcome fine?
 - **Two readings of the lapse record you may reverse.** 2019's roll 9 is counted as the president's side's measure, though it is a full-year package rather than a clean resolution. 9 February 2018 is excluded, because each caucus's majority voted for it, so there was no withholder.
+
+### SP-7b Poland's presidential start (§886): the ask it ends in
+
+- **No President-ELECT chip.** Between the run-off and the oath, the player's party keeps its own chip on the desk; PRESIDENT shows only from the oath on 6 August. Keep it that way, or show PRESIDENT-ELECT in between? It is words only.
+- **Read for Poland, declared (reverse if wrong).** Your J6 (i) rule, that an answer acts at once, is applied to Poland's docket as well: one docket, one rule. A signed statute is law that day, and a veto goes to the Sejm's 3/5 vote that day.

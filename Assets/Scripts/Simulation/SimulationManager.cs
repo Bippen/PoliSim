@@ -360,6 +360,7 @@ namespace PoliSim.Simulation
         {
             CurrentDate = CurrentDate.AddDays(1);
             CommitCalendarYear();   // PN-1's driver (§520): the year the pension line's driver reads is the clock's
+            NotePlayerPresidency();   // SP-7b: the player-president's office on the day, before anything reads it (nothing where the player stood no candidate)
             // F2 step 4: which day of the turn's year this is (1..DaysPerTurn) - the cohort substrate
             // reads its year at this fraction. Derived from the same day count the boundary test uses.
             int dayOfTurn = ((int)(CurrentDate - EpochDate).TotalDays - 1) % DaysPerTurn + 1;
@@ -1382,9 +1383,10 @@ namespace PoliSim.Simulation
             }
             // The government's bill alone (no alternative tabled, or a chamber that weighs none - WeighsAlternative, US-20): for or against; a failed budget leaves the old one standing, stated.
             // PS-6 US-22: the US Congress's budget never comes here (AdvanceBudgetBillDay routes it to its acts); a US world with no Senate seated still does, through its one chamber
-            ParliamentSystem.Divide(country, adopted => adopted ? "Annual budget: the government's bill adopted" : (!Elections.WorldClock.WeighsAlternative(country.Id)   // US-20: no alternative procedure sourced
+            DivisionRecord budgetDivision = ParliamentSystem.Divide(country, adopted => adopted ? "Annual budget: the government's bill adopted" : (!Elections.WorldClock.WeighsAlternative(country.Id)   // US-20: no alternative procedure sourced
                 ? "Annual budget: the government's bill failed - the old budget stands (this country's procedure is not yet sourced)"
                 : "Annual budget: the government's bill failed with no alternative tabled - the old budget stands"), concernG, CurrentDate, out bool passed, out string title);
+            if (passed && HoldPolishBudget(country, government, budgetDivision)) { return; }   // SP-7b: adopted, Poland's budget act and its statute acts go to the player-president's docket - the slot kept (AdvanceBudgetBillDay)
             List<BudgetBill.StatutePart> fellG = new List<BudgetBill.StatutePart>();
             BudgetBill appliedG = passed ? PolishStatuteActs(country, government, out fellG) : government;   // §768 (D4), §773 (E2): Poland's statute parts travel in their own acts
             approvalBefore = country.State.ApprovalRating;   // §768 (the second review): a fallen act's cost is its own ledger event - the budget's event starts after it
@@ -1427,7 +1429,7 @@ namespace PoliSim.Simulation
                 bool passed = ParliamentSystem.WouldBillPass(country, concern);
                 string title = StatuteActTitle(country, part, act);
                 DivisionRecord vote = ParliamentSystem.RecordDivision(country, title, concern, passed, CurrentDate);
-                passed = PresidentialVetoGate(country, vote, passed);
+                passed = PresidentialVetoDrawn(country, vote, passed);   // SP-7b: a player-president's budget is held before it comes here (HoldPolishBudget); the boundary's partner act is not his to answer (DECLARED)
                 Debug.Log($"BUDGET: {country.Id} - {title}: {(passed ? "stands - it applies" : "falls - what it would set stays as it is, and the rest applies")}");   // "the rest": the budget act's, or the partner's step less its rates (§773's second review)
                 if (passed) { continue; }
                 fell.Add(part);
@@ -1571,8 +1573,19 @@ namespace PoliSim.Simulation
         /// their own - its line the 3/5 (`DivisionRecord.Required`), passed where overridden, failed where the veto stands - and it carries the bill's
         /// ceremony; the passage keeps none (marked a motion, so no signing is shown for a statute the President returned). Returns whether the statute stands.
         /// The budget act never comes here (Art. 224); a constitutional amendment passes through unvetoed (Art. 235 ust. 7, <paramref name="act"/>); Poland alone.
+        /// SP-7b (Elias's ruling I14, ask 2 (2a)): where the president of the day is the PLAYER nothing is drawn here - the passage is returned as voted, and
+        /// the docket's gate, which every site calling this reaches next (<see cref="PolishDocketGate"/>), holds it for his answer; the draw stays for every AI
+        /// president (<see cref="PresidentialVetoDrawn"/>, the gate's own body, which the budget's statute acts call directly).
         /// </summary>
         private bool PresidentialVetoGate(Country country, DivisionRecord passage, bool passed, Elections.PresidentialVeto.Act act = Elections.PresidentialVeto.Act.OrdinaryStatute)
+        {
+            if (passed && passage != null && PlayerPresidentDockets(country)) { return passed; }   // SP-7b: the player-president's answer, not the draw - the docket's gate holds it
+            return PresidentialVetoDrawn(country, passage, passed, act);
+        }
+
+        /// <summary>SP-7b: the gate's draw (§761, F3), whoever the president is - <see cref="PresidentialVetoGate"/>'s body as it stood, called directly where no
+        /// docket follows: a budget's statute acts (`PolishStatuteActs`) and a held statute an AI president answers once the player no longer holds the office.</summary>
+        private bool PresidentialVetoDrawn(Country country, DivisionRecord passage, bool passed, Elections.PresidentialVeto.Act act = Elections.PresidentialVeto.Act.OrdinaryStatute)
         {
             if (!passed || passage == null || !Elections.PresidentialVeto.Applies(country.Id)) { return passed; }
             Elections.PresidentialVeto.Outcome veto = Elections.PresidentialVeto.Decide(country.Id, country.PresidentialElections, CurrentDate, act, passage.Sides);
@@ -1580,22 +1593,7 @@ namespace PoliSim.Simulation
             veto.DrawOn(Elections.PresidentialVeto.Draw(SimulationRandom.MasterSeed, country.Id, CurrentDate, passage.Title));
             string risk = (veto.Risk * 100.0).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " %";
             if (!veto.Vetoed) { Debug.Log($"VETO: {country.Id} - signed at a {risk} risk ({veto.RiskBasis}): {passage.Title}"); return true; }
-            passage.Motion = true;
-            var sides = new List<DivisionSide>();
-            foreach (DivisionSide s in passage.Sides)
-            {
-                bool backing = s.Abbrev == veto.BackingParty;
-                sides.Add(new DivisionSide { Abbrev = s.Abbrev, ShortName = s.ShortName, Seats = s.Seats, Side = s.Side, Alignment = s.Alignment,
-                    Reason = !backing ? s.Reason : s.Side < 0 ? "the President's backing party - voted against the statute; against overriding the veto"
-                        : "the President's backing party - abstained on the statute; abstains on the override",
-                    ReasonShort = !backing ? s.ReasonShort : s.Side < 0 ? "the President's party - against the override" : "the President's party - abstains" });
-            }
-            string title = $"Vetoed by the President ({veto.President}): {passage.Title} - " + (veto.Overridden ? "overridden" : "the veto stands") + $", {veto.Yes} for, {veto.Required} needed (3/5 of those voting, Art. 122 ust. 5)";
-            DivisionRecord overrideVote = country.Divisions.Append(title, CurrentDate, passage.Alignment, veto.Overridden, passage.Direction, passage.Axis, sides);
-            overrideVote.Required = veto.Required;
-            if (!veto.Overridden) { ParliamentSystem.RecordBillLost(country, CurrentDate); }   // Elias's ruling F5: a veto that stands is a bill lost that day
-            Debug.Log($"VETO: {country.Id} - {title} (drawn at a {risk} risk, {veto.RiskBasis})");
-            return veto.Overridden;
+            return RecordPresidentialVeto(country, passage, veto, $"drawn at a {risk} risk, {veto.RiskBasis}");   // SP-7b: the vote on the veto, one writer for the draw and the player's answer
         }
 
         /// <summary>
@@ -1612,7 +1610,8 @@ namespace PoliSim.Simulation
         /// day lost; the government's own bill a veto kills (a player-president's veto of his own party's bill) is its failure and its lost day; an overridden
         /// bill is law, its enactment cost the government's only where it bears the bill. The president bears nothing for a veto, nor for being overridden
         /// (DECLARED: the plan settles no such cost and no source gives one; asked of Elias). The defectors were drawn at the
-        /// chambers' divisions (`Congress.Divide`), not here, and nothing is drawn here. Returns whether the bill becomes law. Every other country, a bill one
+        /// chambers' divisions (`Congress.Divide`), not here, and nothing is drawn here. Returns whether the bill becomes law. Poland goes to its own docket's gate
+        /// (SP-7b, `PolishDocketGate`: held for a player-president, else passed through as its own gate decided it); every other country, a bill one
         /// chamber voted (a US world with no Senate seated) and a bill not passed pass through untouched; since US-22 every US budget act and continuing
         /// resolution comes here (`UsBudgetActs`, `ResolveContinuingResolution`). A CONSTITUTIONAL AMENDMENT
         /// (<paramref name="amendment"/>) is not presented (DECLARED: `LawDefinition.ConstitutionalAmendment`'s contract, "never vetoed" where a president holds a
@@ -1646,6 +1645,7 @@ namespace PoliSim.Simulation
         /// bill it puts on the docket (`DocketEntry.Deadline`; default for the period's rule).</summary>
         private bool? UsVetoGate(Country country, DivisionRecord passage, BillConcern concern, bool passed, ref DocketEntry docket, bool amendment, System.DateTime deadline)
         {
+            if (Elections.PresidentialVeto.Applies(country.Id)) { return PolishDocketGate(country, passage, passed, ref docket, amendment ? Elections.PresidentialDocket.Bill.ConstitutionalAmendment : Elections.PresidentialDocket.Bill.Ordinary); }   // SP-7b: Poland's player-president's docket, at the gate every bill site reaches with its slot (an AI president answered at PresidentialVetoGate)
             if (docket != null) { passage = docket.Passage; passed = passage != null; }   // PS-6 US-21b: held from an earlier day - the division it was presented on
             if (!passed || passage == null || passage.OtherChamber == null || !Elections.UsVeto.Applies(country.Id)) { docket = null; return passed; }
             if (amendment) { docket = null; Debug.Log($"VETO: {country.Id} - an amendment is not presented to the President: {passage.Title}"); return passed; }
@@ -1729,9 +1729,10 @@ namespace PoliSim.Simulation
 
         /// <summary>PS-6 US-21c (J6 (i)): the answered bills acted on at once - the country's bill sites run in the day tick's order with every unanswered bill
         /// skipped, so a signature is law today, a veto goes to the override today, and the law's money flows from the next day step (the economy's day runs
-        /// before the bills', `AdvanceCountryDayTick`). The funding tick, the budget process and the confidence day are not run. LATENT (the review's L2,
-        /// DECLARED): a veto's override divisions written here are queued for the signing ceremony only after the next day step (the controller queues new
-        /// divisions after its day tick) - nothing calls the verbs in play yet; when US-23 wires them, its caller queues the divisions right after the answer.</summary>
+        /// before the bills', `AdvanceCountryDayTick`). The funding tick, the budget process and the confidence day are not run. The review's L2: a veto's
+        /// override divisions written here reach the signing ceremony only when the caller queues them - SP-7b's Polish callers (the answer plate and the Docket
+        /// page, `GameController.PresidentialStart.cs`) queue them right after the answer, on the answer's day; the US verbs have no caller in play until US-23
+        /// wires them, and its caller queues them the same way.</summary>
         private void ActOnDocketAnswers(CountryId countryId)
         {
             _docketAnswersOnly = true;
@@ -1751,14 +1752,15 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>PS-6 US-22c: the last day to answer a bill on the docket - its own deadline where it carries one (`DocketEntry.Deadline`), else the country's
-        /// period (`PresidentialDocket.LastDay`).</summary>
+        /// period (`PresidentialDocket.LastDay`) - SP-7b: for the bill's kind (`DocketEntry.Bill`, J6 (iii): Poland's budget act 7 days, every other bill 21;
+        /// ordinary on every US bill, so the USA's ten days).</summary>
         public static System.DateTime DocketLastDay(CountryId countryId, DocketEntry entry)
-            => entry.Deadline != System.DateTime.MinValue ? entry.Deadline : Elections.PresidentialDocket.LastDay(countryId, entry.PresentedOn);
+            => entry.Deadline != System.DateTime.MinValue ? entry.Deadline : Elections.PresidentialDocket.LastDay(countryId, entry.PresentedOn, (Elections.PresidentialDocket.Bill)entry.Bill);
 
         /// <summary>PS-6 US-22c: the day a bill on the docket is law unanswered - the day after its last day to answer: after its own deadline where it carries one
-        /// (signed at that day's step), else after the period's last day (`PresidentialDocket.LawDay`).</summary>
+        /// (signed at that day's step), else after the period's last day (`PresidentialDocket.LawDay`) - SP-7b: for the bill's kind, as <see cref="DocketLastDay"/>.</summary>
         public static System.DateTime DocketLawDay(CountryId countryId, DocketEntry entry)
-            => entry.Deadline != System.DateTime.MinValue ? entry.Deadline.AddDays(1) : Elections.PresidentialDocket.LawDay(countryId, entry.PresentedOn);
+            => entry.Deadline != System.DateTime.MinValue ? entry.Deadline.AddDays(1) : Elections.PresidentialDocket.LawDay(countryId, entry.PresentedOn, (Elections.PresidentialDocket.Bill)entry.Bill);
 
         /// <summary>One bill on the docket, as a page or a check reads it: the division it was presented on, the day, the last day to answer
         /// (<see cref="DocketLastDay"/>) and the answer recorded (0 none, +1 signed, -1 vetoed - acted on at once).</summary>
@@ -1795,6 +1797,7 @@ namespace PoliSim.Simulation
             refusedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country == null || passage == null) { refusedBecause = "no such bill"; return false; }
+            if (Elections.PresidentialVeto.Applies(countryId)) { return AnswerPolishDocket(country, passage, answer, out refusedBecause); }   // SP-7b: Poland's player-president
             if (!Congress.PresidentOn(country, CurrentDate, out _, out _, out bool playerPresident) || !playerPresident) { refusedBecause = "you do not hold the presidency today"; return false; }
             DocketEntry answered = null;
             foreach (DocketEntry entry in DocketEntries(countryId))
@@ -1902,10 +1905,12 @@ namespace PoliSim.Simulation
 
             Country country = _world.GetCountry(countryId);
             if (UsBudgetProcedure.Applies(country)) { ResolveUsBudgetDay(country, bill); return; }   // PS-6 US-22: the US Congress votes the budget as its acts, the government's and the player's alike, and a continuing resolution on its own
-            if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); CountBudgetVoteOnAgreements(country); _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); return; }   // PS-3e (§632)
+            if (bill.ActsHeld != null && Elections.WorldClock.StatutePartsAreActs(countryId)) { FinishPolishBudget(country, bill); return; }   // SP-7b: Poland's budget act and statute acts on the player-president's docket - decided as he answers
+            if (bill.GovernmentBill) { ResolveGovernmentBudget(country, bill); CountBudgetVoteOnAgreements(country); if (bill.ActsHeld == null) { _pendingBudgetBillByCountry.Remove(countryId); _pendingBudgetAlternativeByCountry.Remove(countryId); } return; }   // PS-3e (§632); SP-7b: held on the player-president's docket, the bill keeps its slot
             float direction = ParliamentSystem.GetBillDirection(country, bill);
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, ParliamentSystem.BudgetActOf(country, bill));   // P3-A2: the chamber votes on what the bill concerns; §768/§773: Poland's budget act - the spending alone
             DivisionRecord budgetVote = ParliamentSystem.Divide(country, "Annual budget bill", concern, CurrentDate, out bool passed);   // PS-6 US-18: through both chambers where the country has two (Congress)
+            if (passed && HoldPolishBudget(country, bill, budgetVote)) { CountBudgetVoteOnAgreements(country); return; }   // SP-7b: adopted, Poland's budget act and its statute acts go to the player-president's docket - the slot kept
             DocketEntry unheld = null;   // PS-6 US-21b: never held here - a Congress votes its budget as its acts (ResolveUsBudgetDay), and a budget one chamber voted passes the US gate untouched
             bool? budgetDecided = UsVetoGate(country, budgetVote, concern, passed, ref unheld);   // PS-6 US-21: the president of the day reads every act both chambers send, budget acts included (rule (a) draws nothing on them)
             if (budgetDecided == null)
@@ -3435,6 +3440,7 @@ namespace PoliSim.Simulation
             // A player country with NO PARTY SEATED is the instrument's hand on it - the meaning every Editor tool that names a player country without a party
             // has always had (the AI ministries keep off it). The game itself always seats a party (SelectPlayerCountry's fallback), so this is the tools' case, stated.
             if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { return true; }
+            if (country.PlayerHoldsPresidency) { return false; }   // SP-7b (I14 (2a); Art. 132, READING): while the player is President his party is the AI's - its government's levers the AI ministries'
             return country.Government.RoleOf(country.PlayerPartyAbbrev) == Elections.PlayerRole.PrimeMinister;
         }
 
@@ -3455,6 +3461,7 @@ namespace PoliSim.Simulation
             lockedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || PlayerGoverns(country)) { return true; }
+            if (country.PlayerHoldsPresidency) { lockedBecause = PresidentOfficeWords; return false; }   // SP-7b: the party's levers are the AI's while the player holds the office
             Elections.PlayerRole role = Elections.GovernmentRecord.RoleOn(country, country.PlayerPartyAbbrev, CurrentDate);
             if (role == Elections.PlayerRole.PresidentElect && Elections.UsPresidentialElection.TryPresidentElect(country, CurrentDate, out Elections.UsPresidentialElection.Contest elect))
             {
@@ -3524,7 +3531,7 @@ namespace PoliSim.Simulation
             // player head is gone
             if (PlayerMayIntroduce(countryId, out lockedBecause)) { return true; }
             Country country = _world?.GetCountry(countryId);
-            if (country?.Government == null || country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { return false; }
+            if (country?.Government == null || country.PlayerHoldsPresidency || country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { return false; }   // SP-7b: no portfolio is the player-president's
             // §755 ("a partner holding Finance acts through the fiscal stance only ... the same whether the player or the AI holds Finance"): a player
             // partner holding Finance has the stance's dial (the Budget page), not Finance's other levers - as an AI partner has none of them
             if (portfolio == CabinetPortfolio.FinanceTreasury && Simulation.FinancePartner.PlayerHolds(country))
@@ -3814,6 +3821,7 @@ namespace PoliSim.Simulation
             refusedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
             if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.Support) { refusedBecause = "YOUR PARTY IS NOT A SUPPORT PARTY"; return false; }
             country.Government.WithdrawSupport(country.PlayerPartyAbbrev, country);
             country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} withdrew its support - the government stands on without it; the chamber's confidence votes read it (§636)");
@@ -3842,6 +3850,7 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             Elections.GovernmentRecord g = country.Government;
+            if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
             if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Unsourced) { refusedBecause = "THIS COUNTRY'S CONFIDENCE RULES ARE NOT YET MODELLED"; return false; }
             if (Elections.ConfidenceProcedure.RulesOf(countryId) == Elections.ConfidenceProcedure.Rules.Presidential) { refusedBecause = "A PRESIDENCY SERVES A FIXED TERM · NO MOTION OF NO CONFIDENCE IS TAKEN UP"; return false; }   // PS-6 US-7: Art. II §1 - a fixed term, no confidence vote
             switch (g.RoleOf(country.PlayerPartyAbbrev))
@@ -3898,6 +3907,7 @@ namespace PoliSim.Simulation
         {
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
+            if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
             if (country.Government.RoleOf(country.PlayerPartyAbbrev) != Elections.PlayerRole.JuniorPartner) { refusedBecause = "YOUR PARTY IS NOT A JUNIOR PARTNER"; return false; }
             // §705 (the review's latent case): the smaller member of a parliamentary group does not leave its group's cabinet alone - the CSU sits in the
             // Union's Fraktion, and a CDU cabinet without it is one no chamber could have elected
@@ -5386,6 +5396,7 @@ namespace PoliSim.Simulation
             }
             Elections.PresidentialElection.Contest held = Elections.PresidentialElection.HoldRounds(country, CurrentDate, predicted);
             if (held != null) { Debug.Log("PRESIDENTIAL: " + held.Line); }
+            NotePlayerVerdict(country, held);   // SP-7b: what the round means for the player, where his candidate stood
         }
 
         /// <summary>
@@ -6401,7 +6412,7 @@ namespace PoliSim.Simulation
         {
             BudgetBill government = GetPendingBudgetBill(countryId);
             DocketEntry desk = government?.Docket ?? (government?.ActsHeld != null && government.ActsHeld.Count > 0 ? government.ActsHeld[0] : null);
-            if (desk != null) { return DocketLawDay(countryId, desk).Year; }   // PS-6 US-21b: voted and on the player-president's desk - law on that day at the latest (DECLARED: the year it is law unanswered); US-22c: its own deadline where it carries one
+            if (desk != null) { return Elections.PresidentialVeto.Applies(countryId) ? desk.PresentedOn.Year : DocketLawDay(countryId, desk).Year; }   // SP-7b (the review's L1): a held Polish budget applies with its adoption year (FinishPolishBudget);   // PS-6 US-21b: voted and on the player-president's desk - law on that day at the latest (DECLARED: the year it is law unanswered); US-22c: its own deadline where it carries one
             if (government != null && government.DaysRemaining > 0) { return CurrentDate.AddDays(government.DaysRemaining).Year; }
             if (bill != null && bill.DaysRemaining > 0) { return CurrentDate.AddDays(bill.DaysRemaining).Year; }
             System.DateTime tabled = CurrentDate;
@@ -6909,6 +6920,11 @@ namespace PoliSim.Simulation
                 UsPresidentialElections = country.UsPresidentialElections,
                 // PS-6 US-16: the Congress contests ride beside them - shared, for the same reason (the count and the seating run on the day loop, never on a clone)
                 UsCongressElections = country.UsCongressElections,
+                // SP-7b: the player's candidate, the start and the office ride beside who governs - the preview's turn asks PlayerGoverns on the clone, which
+                // reads the office (a player-president's party is the AI's)
+                PlayerCandidate = country.PlayerCandidate,
+                PlayerStart = country.PlayerStart,
+                PlayerHoldsPresidency = country.PlayerHoldsPresidency,
                 // PS-6 US-15: the second chamber rides the hand-list, COPIED - so a write on a clone never reaches the country (PreviewParityDiagnostic marks it by
                 // content, a dictionary its value marks cannot reach)
                 SecondChamberSeats = country.SecondChamberSeats == null ? null : new Dictionary<string, int>(country.SecondChamberSeats),

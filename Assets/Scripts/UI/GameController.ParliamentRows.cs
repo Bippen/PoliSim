@@ -118,7 +118,7 @@ namespace PoliSim.UI
                     i++;
                 }
 
-                if (agreement.Supporter == _playerCountry.PlayerPartyAbbrev && !withdrawn)
+                if (agreement.Supporter == _playerCountry.PlayerPartyAbbrev && !withdrawn && !_playerCountry.PlayerHoldsPresidency)   // SP-7b: no party verb while the player is President
                 {
                     Rect act = ReserveRow(34f);
                     Rect chip = RowChipRectEndingAt(act.xMax, act, "WITHDRAW SUPPORT", 26f, 12f);
@@ -607,9 +607,12 @@ namespace PoliSim.UI
                     Chip(DeskDay(firstVote));
                 }
             }
+            string yours = PlayerPresidentialWords(today, out string yoursLine);   // SP-7b: the verdict for the player, where he stands a candidate
+            if (yours != null) { Words(yours, caption); }
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "president");
 
             var slip = new SlipContent("THE PRESIDENT");
+            if (yoursLine != null) { slip.Add(yoursLine); }
             slip.Add(president.Name.ToUpperInvariant() + (president.BackingParty != null ? " · " + PartySystems.ShortName(country, president.BackingParty).ToUpperInvariant() : string.Empty)
                 + " · IN OFFICE SINCE " + DeskDay(president.TookOffice));
             slip.Add(ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT");
@@ -1156,7 +1159,7 @@ namespace PoliSim.UI
                 }
                 DrawRowRule(row);
             }
-            switch (g.RoleOf(_playerCountry.PlayerPartyAbbrev))
+            switch (_playerCountry.PlayerHoldsPresidency ? PlayerRole.None : g.RoleOf(_playerCountry.PlayerPartyAbbrev))   // SP-7b (I14 (2a)): no party verb - no motion, no leaving - while the player is President
             {
                 case PlayerRole.Opposition:
                 {

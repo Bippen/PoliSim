@@ -367,6 +367,27 @@ namespace PoliSim.Testing
                     startScreen.HidePartyPanel();
                     yield return Settle();
                     Debug.Log($"SHOT: SP-1 - the start panel filmed for {_countryId}: {StartPoints.For(_countryId).Count} start point(s).");
+
+                    // SP-7b (Elias's ruling I14): Poland's presidential start - the sheet with its card selected (the Marshal's order, no campaign, the brief's
+                    // contest rows), then the candidate picker its SELECT opens (the five of record a Sejm party backs, the eight shown with their reason);
+                    // both filmed, then hidden, so no frame after them moves. Canvas surfaces: a REAL film reads them.
+                    if (_countryId == CountryId.Poland)
+                    {
+                        Expect("01f3_start_presidential", "01g3_candidate_picker");
+                        startScreen.ShowStartPanel(startCountry, null, "PRESIDENTIAL ELECTION");
+                        yield return Settle();
+                        Claim("selector");
+                        yield return Capture("01f3_start_presidential");
+                        RecordCanvasTextAssert("01f3_start_presidential", controller);
+                        startScreen.ShowCandidatePanel(startCountry, StartPoints.For(CountryId.Poland)[1]);
+                        yield return Settle();
+                        Claim("selector");
+                        yield return Capture("01g3_candidate_picker");
+                        RecordCanvasTextAssert("01g3_candidate_picker", controller);
+                        startScreen.HidePartyPanel();
+                        yield return Settle();
+                        Debug.Log($"SHOT: SP-7b - the presidential card and the candidate picker filmed: {PresidentialStart.Offers(StartPoints.For(CountryId.Poland)[1]).Count} candidates of record.");
+                    }
                 }
             }
 
@@ -1484,10 +1505,19 @@ namespace PoliSim.Testing
                                 yield return Settle();
                                 yield return Settle();
                                 yield return Capture(stem + "_president_elect");
+
+                                // SP-7b: the same row with the winner the player's candidate - PLANTED (the contest marked, the country's candidate set), so the
+                                // row and its pinned slip read the verdict for the player (YOU WON, the oath's day, the party the AI's while he serves); undone below
+                                held.PlayerCandidate = held.Elected;
+                                presCountry.PlayerCandidate = held.Elected;
+                                Debug.Log($"SHOT: SP-7b - PLANTED: {held.Elected} marked the player's candidate for the President row's verdict");
+                                yield return Settle();
+                                yield return Capture(stem + "_president_you_won");
                             }
                         }
                         finally
                         {
+                            if (presCountry != null) { presCountry.PlayerCandidate = null; }   // SP-7b: the film's session is a Sejm start - no candidate
                             (presPins?.GetValue(controller) as IList)?.Clear();
                             if (presCountry != null && presCountry.PresidentialElections.Count > heldBefore) { presCountry.PresidentialElections.RemoveRange(heldBefore, presCountry.PresidentialElections.Count - heldBefore); }
                         }
@@ -1834,6 +1864,20 @@ namespace PoliSim.Testing
                 Claim("signing");
                 yield return Capture("89g_signing_veto");
                 RecordCanvasTextAssert("89g_signing_veto", controller);
+                InvokeNoArg(controller, "SignPendingDivision");
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+
+                // (c2b) SP-7b: THE PLATE'S TWO ANSWERS - a player-president's statute on his docket: the line (on your desk, the day it is signed unanswered),
+                // VETO on the paper face and SIGN on the brass. Staged on the newest division by the controller's hook (no statute is held, so the answer
+                // writes nothing; the beat closes it); filmed real: the surface is Canvas.
+                StageDivisionWithContent(player, sim, "Harness: staged statute for the answer plate (SP-7b)", 30f, passed: true);   // a statute the Sejm passed, with sides and an estimate
+                InvokeNoArg(controller, "TriggerAnswerPlateForNewestDivision");
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                Claim("signing");
+                yield return Capture("89j_signing_answer");
+                RecordCanvasTextAssert("89j_signing_answer", controller);
                 InvokeNoArg(controller, "SignPendingDivision");
                 yield return WaitForCanvasSettle(controller, wantActive: false);
                 yield return Settle();
