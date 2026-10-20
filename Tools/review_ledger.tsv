@@ -273,3 +273,4 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	9b628f353a5bc7e2f029b9a94c92
 file	Assets/Scripts/Simulation/SimulationManager.cs	0bd3037cb6414657a5ec18b6cbd40eabb301c81cdaa79aaa03269f6d03080ec2	reviewed	2026-10-20	s882	Reviews/2026-10-20_s882_aloop_q5.md	-
 baseline	777	ba0cc3a89175baee008b84a12447029d5e4d9768e3f43ab24b322fe6096bffde	reviewed	2026-10-20	s882	Reviews/2026-10-20_s882_aloop_q5.md	traj_aloopsal2 s777, turns 1-20; A-LOOP q5: the event pool's 50 -> 52 re-pick alone (salience reaches no no-policy vote)
 baseline	424242	7e600f20d1a473032b0405231bec594a5e009dd4b0c8b49fc9c8a18463dd6340	reviewed	2026-10-20	s882	Reviews/2026-10-20_s882_aloop_q5.md	traj_aloopsal2 s424242, turns 1-20; A-LOOP q5: the event pool's 50 -> 52 re-pick alone (salience reaches no no-policy vote)
+file	Assets/Scripts/Simulation/SimulationManager.cs	ee54a378170aa08ac2fde7d2f4fdbdd6933b6d83607dd1610016a4ea2eeab926	reviewed	2026-10-20	s883	Reviews/2026-10-20_us16_second_reading.md	-

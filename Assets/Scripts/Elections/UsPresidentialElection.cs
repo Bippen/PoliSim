@@ -49,6 +49,16 @@ namespace PoliSim.Elections
         /// <summary>The name the count gives every candidate but the two nominees, together - one tally, as the states pool them (US-4's DECLARED form).</summary>
         public const string OtherCandidates = "every other candidate";
 
+        /// <summary>PS-6 US-16 - R-US22 RULED (I6): how a government an undecided contest leaves at the oath is labelled - a president ACTING, never elected
+        /// (<see cref="ElectedOutcome"/>) nor of record.</summary>
+        public const string ActingOutcome = "acting";
+
+        /// <summary>R-US22's two capacities: the Vice President the Senate chose, acting as President until the House chooses (the Twentieth Amendment §3: "the
+        /// Vice President elect shall act as President until a President shall have qualified"); the Speaker, acting where the Senate could not choose either
+        /// (3 U.S.C. §19(a)(1)).</summary>
+        public const string ActsAsVicePresident = "the Vice President chosen by the Senate (the Twelfth Amendment), acting as President (the Twentieth Amendment §3) to the next oath - the House votes once, on the count's day";
+        public const string ActsAsSpeaker = "the Speaker of the House, acting as President where neither the House nor the Senate could choose (3 U.S.C. §19(a)(1))";
+
         /// <summary>One line of a count: a candidate, the candidate's party by key, the votes counted (electors in the electors' count, states in the House's
         /// contingent election) and the candidate's national share of the popular vote (%, NaN where the count carries none).</summary>
         public sealed class Tally
@@ -91,6 +101,19 @@ namespace PoliSim.Elections
             public string WinnerParty;
             /// <summary>The count's verdict in a line.</summary>
             public string Line;
+            /// <summary>PS-6 US-8c (Elias's ruling J4): the seed an exact state or district tie is drawn on (<see cref="ElectoralCollege.TieBreak"/>) - the
+            /// world's master seed with the year folded in (<see cref="TieSeedOf"/>), kept so that <see cref="StatesOf"/> re-derives the count's own calls. 0 in a
+            /// planted contest. Saved (format 49).</summary>
+            public int TieSeed;
+            /// <summary>PS-6 US-16 - R-US22 RULED (Elias's ruling I6, `COMPLETED.md` §856), the Twentieth Amendment's order: where the House could not choose, the
+            /// Senate's choice of the Vice President (the Twelfth Amendment - "a majority of the whole number shall be necessary to a choice"), one tally per
+            /// running mate with the Senate's seats on the ticket's side; empty where no Senate choice was held.</summary>
+            public List<Tally> SenateChoice = new List<Tally>();
+            /// <summary>R-US22: who acts as President from the oath while the contest is undecided - the person, the party key, and in what capacity
+            /// (<see cref="ActsAsVicePresident"/> or <see cref="ActsAsSpeaker"/>); null while no one acts (the House chose, or the oath has not come).</summary>
+            public string Acting;
+            public string ActingParty;
+            public string ActingAs;
 
             public bool Decided() => Winner != null;
 
@@ -147,16 +170,33 @@ namespace PoliSim.Elections
             return false;
         }
 
-        /// <summary>The contest whose winner holds the office on <paramref name="date"/>: the latest decided contest whose oath's day is on or before it; false where
-        /// no president the game elected has taken office.</summary>
+        /// <summary>The contest whose winner holds the office on <paramref name="date"/>: the latest contest whose oath's day is on or before it, where it is
+        /// decided; false where no president the game elected has taken office - and, since PS-6 US-16 (R-US22 RULED, I6: "never the sitting president past noon
+        /// on 20 January", Am. XX §1), false where that latest contest is undecided: an earlier winner's term has ended, and someone acts
+        /// (<see cref="TryActingOn"/>).</summary>
         public static bool TryInOffice(Country country, DateTime date, out Contest contest)
         {
             contest = null;
             if (country?.UsPresidentialElections == null) { return false; }
             foreach (Contest c in country.UsPresidentialElections)
             {
-                if (c.Decided() && c.TakesOffice.Date <= date.Date && (contest == null || c.TakesOffice.Date > contest.TakesOffice.Date)) { contest = c; }
+                if (c.TakesOffice.Date <= date.Date && (contest == null || c.TakesOffice.Date > contest.TakesOffice.Date)) { contest = c; }
             }
+            if (contest != null && !contest.Decided()) { contest = null; }
+            return contest != null;
+        }
+
+        /// <summary>PS-6 US-16 - R-US22 RULED (I6): the contest an acting president serves for on <paramref name="date"/> - the latest contest whose oath's day has
+        /// come, still undecided; false where none.</summary>
+        public static bool TryActingOn(Country country, DateTime date, out Contest contest)
+        {
+            contest = null;
+            if (country?.UsPresidentialElections == null) { return false; }
+            foreach (Contest c in country.UsPresidentialElections)
+            {
+                if (c.TakesOffice.Date <= date.Date && (contest == null || c.TakesOffice.Date > contest.TakesOffice.Date)) { contest = c; }
+            }
+            if (contest != null && contest.Decided()) { contest = null; }
             return contest != null;
         }
 
@@ -198,6 +238,87 @@ namespace PoliSim.Elections
                 contest.PollingDay, ExecutiveOf(contest), electors, contest.ElectorsAppointed,
                 contest.Contingent ? ", chosen by the House under the Twelfth Amendment (R-US3 (a))" : string.Empty, on);
             return GovernmentRecord.OfPresidency(ExecutiveOf(contest), contest.WinnerParty, on, ElectedOutcome, basis);
+        }
+
+        /// <summary>PS-6 US-16 - R-US22: whether <paramref name="government"/> is the acting presidency an undecided <paramref name="contest"/> left at the oath.</summary>
+        public static bool ActingGoverns(GovernmentRecord government, Contest contest) =>
+            government != null && contest?.Acting != null && government.Kind == WorldClock.ExecutiveKind.Presidency && government.Outcome == ActingOutcome
+            && government.Executive == contest.Acting + " (" + contest.ActingParty + ")" && government.FormedOn.Date >= contest.TakesOffice.Date;
+
+        /// <summary>
+        /// PS-6 US-16 - R-US22 RULED (Elias's ruling I6, `COMPLETED.md` §856): THE TWENTIETH AMENDMENT'S ORDER, at the oath of a contest still undecided on
+        /// <paramref name="on"/>: "never the sitting president past noon on 20 January" (Am. XX §1). The Vice President the Senate chose acts as President
+        /// (Am. XX §3); where the Senate did not choose either, the Speaker acts (3 U.S.C. §19(a)(1)). The Senate's choice is the count day's
+        /// (<see cref="HoldHouseChoice"/>); a contest whose count day passed without one (a world opened after it) holds it here, on the Senate seated today -
+        /// DECLARED. The Speaker is of the House's majority party - the House elects its Speaker (Art. I §2 cl. 5), and the model reads the majority's choice
+        /// (DECLARED; the person is not named: "the Speaker of the House"); a House with no majority party takes its larger side, and an equal one a seeded
+        /// draw (US-8c's, never in one party's favour). DECLARED: the House votes once, on the count's day, with the delegations it then holds, so the acting
+        /// president serves until a later contest's winner takes office. Writes the contest's <c>Acting</c> fields; returns the government.
+        /// </summary>
+        public static GovernmentRecord ActingGovernmentOf(Country country, Contest contest, DateTime on)
+        {
+            if (contest.Acting == null)
+            {
+                if (contest.SenateChoice.Count == 0) { ChooseVicePresident(country, contest, on); }
+                // the chosen Vice President acts; one with no name (a party off the roster) cannot be seated as a person, so the Speaker acts - and either way
+                // Acting is set here once, so the oath's government is seated once (ActingGoverns), never again each day
+                Tally vice = contest.SenateChoice.Find(t => t.Votes >= UsSenate.Members / 2 + 1);
+                if (vice != null && !string.IsNullOrEmpty(vice.Candidate) && !string.IsNullOrEmpty(vice.Party))
+                {
+                    contest.Acting = vice.Candidate; contest.ActingParty = vice.Party; contest.ActingAs = ActsAsVicePresident;
+                }
+                else
+                {
+                    string speaker = SpeakerParty(country, contest);
+                    contest.Acting = "the Speaker of the House"; contest.ActingParty = speaker; contest.ActingAs = ActsAsSpeaker;
+                }
+                contest.Line += "; " + string.Format(CultureInfo.InvariantCulture, "no one elected by {0:yyyy-MM-dd}: {1} ({2}) acts - {3}", contest.TakesOffice, contest.Acting, contest.ActingParty, contest.ActingAs);
+            }
+            string basis = string.Format(CultureInfo.InvariantCulture, "the game's own election of {0:yyyy-MM-dd} left no president elected at the oath: {1} ({2}), {3}; took office on {4:yyyy-MM-dd} - never the sitting president past noon on the 20th of January (the Twentieth Amendment §1)",
+                contest.PollingDay, contest.Acting, contest.ActingParty, contest.ActingAs, on);
+            return GovernmentRecord.OfPresidency(contest.Acting + " (" + contest.ActingParty + ")", contest.ActingParty, on, ActingOutcome, basis);
+        }
+
+        /// <summary>R-US22: the Speaker's party - the party holding a majority of the House seated in <paramref name="country"/>; else the larger side, an equal
+        /// one by a seeded draw (DECLARED).</summary>
+        private static string SpeakerParty(Country country, Contest contest)
+        {
+            int rep = 0, dem = 0, total = 0;
+            if (country?.ParliamentSeats != null)
+            {
+                foreach (KeyValuePair<string, int> kv in country.ParliamentSeats) { total += kv.Value; if (kv.Key == "REP") { rep = kv.Value; } else if (kv.Key == "DEM") { dem = kv.Value; } }
+            }
+            if (rep != dem) { return rep > dem ? "REP" : "DEM"; }
+            return ElectoralCollege.TieBreak(contest.TieSeed, contest.PollingDay.Year, "SPEAKER") == ElectoralCollege.Republican ? "REP" : "DEM";
+        }
+
+        /// <summary>
+        /// R-US22 (I6), the Twelfth Amendment's second choice: "if no person have a majority, then from the two highest numbers on the list, the Senate shall
+        /// choose the Vice President; a quorum for the purpose shall consist of two-thirds of the whole number of Senators, and a majority of the whole number
+        /// shall be necessary to a choice." Each running mate of a ticket that won electors (<see cref="UsTermLimit.RunningMateOf"/>) takes the seats of its
+        /// side in the Senate seated on <paramref name="on"/> (senators vote their party's ticket - the House's reading, DECLARED); a majority of the whole
+        /// number - the Senate's members, not those present (US-15's <see cref="UsSenate.Members"/>) - elects. The Vice President of the old Senate does not
+        /// vote: no equal division decides a choice that needs a majority of the whole number (DECLARED). The quorum is met by every Senate the model seats.
+        /// Appends its line to the contest's.
+        /// </summary>
+        public static string ChooseVicePresident(Country country, Contest contest, DateTime on)
+        {
+            contest.SenateChoice.Clear();
+            IReadOnlyDictionary<string, int> senate = country?.SecondChamberSeats;
+            int members = UsSenate.Members, majority = members / 2 + 1;
+            foreach (Tally t in contest.Electors)
+            {
+                if (t.Party == null || t.Votes <= 0) { continue; }
+                int seats = senate != null && senate.TryGetValue(t.Party, out int n) ? n : 0;
+                contest.SenateChoice.Add(new Tally { Candidate = UsTermLimit.RunningMateOf(country, contest, t.Party), Party = t.Party, Votes = seats });
+            }
+            contest.SenateChoice.Sort((a, b) => b.Votes != a.Votes ? b.Votes.CompareTo(a.Votes) : string.CompareOrdinal(a.Party, b.Party));   // stable: an equal division ordered by party key
+            Tally chosen = contest.SenateChoice.Find(t => t.Votes >= majority);
+            string line = string.Format(CultureInfo.InvariantCulture, "on {0:yyyy-MM-dd} the Senate chose the Vice President (R-US22) - {1}; a majority of the whole number, {2} senators, is {3}",
+                on, string.Join(", ", contest.SenateChoice.ConvertAll(t => t.Candidate + " (" + t.Party + ") " + t.Votes.ToString(CultureInfo.InvariantCulture))), members, majority);
+            line += chosen != null ? " - " + chosen.Candidate + " chosen" : " - no one has it: the Senate cannot choose either";
+            contest.Line += "; " + line;
+            return line;
         }
 
         // ---------------------------------------------------------------------------------------------------------------------------------------------
@@ -296,7 +417,12 @@ namespace PoliSim.Elections
 
         /// <summary>PS-6 US-28: the count with a later field's nominees named (<see cref="UsTermLimit.NomineesFor"/>; null names none) - the same count, the same
         /// shares; where a party is term-limited its line says who cannot be elected again and who stands (<see cref="UsTermLimit.ClauseOf"/>). Pure, as the other.</summary>
-        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, out ElectoralCollege.StateCall[] states, out string why)
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, out ElectoralCollege.StateCall[] states, out string why) =>
+            Count(id, pollingDay, poll, nominees, 0, out states, out why);
+
+        /// <summary>PS-6 US-8c (Elias's ruling J4): the count with its exact state and district ties drawn on <paramref name="tieSeed"/> (<see cref="TieSeedOf"/>;
+        /// the overloads without one draw on seed 0), the seed kept on the contest so that <see cref="StatesOf"/> re-derives the same calls. Pure, as the others.</summary>
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, int tieSeed, out ElectoralCollege.StateCall[] states, out string why)
         {
             states = null;
             if (!ElectsIn(id)) { why = id + " chooses no president by electors"; return null; }
@@ -316,10 +442,11 @@ namespace PoliSim.Elections
                 why = "the catalog holds no presidential election before " + pollingDay.Year.ToString(CultureInfo.InvariantCulture) + " to swing from";
                 return null;
             }
-            ElectoralCollege.Jurisdiction[] college = ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, pooled), out states, out double residual);
+            ElectoralCollege.Jurisdiction[] college = ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, pooled), tieSeed, out states, out double residual);
             string basis = string.Format(CultureInfo.InvariantCulture, "{0}; the states from {1}'s by the normalised uniform swing (worst residual {2:E1}); the electors in force in {3}{4}",
                 DayBasis, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty);
             Contest contest = FromCollege(pollingDay, basis, college, rep, dem, pooled);
+            contest.TieSeed = tieSeed;
             var othersLead = new List<string>();
             foreach (ElectoralCollege.StateCall call in states) { if (call.OthersLead) { othersLead.Add(call.State); } }
             if (othersLead.Count > 0)
@@ -413,7 +540,7 @@ namespace PoliSim.Elections
             }
             if (rep == null || dem == null || others == null || double.IsNaN(rep.Share) || double.IsNaN(dem.Share) || double.IsNaN(others.Share)) { return null; }
             if (!ElectoralCollege.TryPriorYear(contest.PollingDay.Year, out int prior) || !ElectoralCollege.TryElectorsYear(contest.PollingDay.Year, out int inForce)) { return null; }
-            ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, others), out ElectoralCollege.StateCall[] states, out double _);
+            ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, others), contest.TieSeed, out ElectoralCollege.StateCall[] states, out double _);
             return states;
         }
 
@@ -434,11 +561,20 @@ namespace PoliSim.Elections
         {
             if (country?.UsPresidentialElections == null) { why = "the country carries no list of contests"; return null; }
             if (!IsPollingDay(country, date)) { why = "not a polling day the game has still to count"; return null; }
-            IReadOnlyDictionary<string, double> counted = NoiseSigmaPp > 0.0 && poll != null ? WithNoise(poll, SimulationRandom.ElectionNoiseOn(country.Id, date.Date), NoiseSigmaPp) : poll;
-            Contest contest = Count(country.Id, date.Date, counted, UsTermLimit.NomineesFor(country, date.Date), out ElectoralCollege.StateCall[] _, out why);
+            IReadOnlyDictionary<string, double> counted = CountedPoll(country, date, poll);
+            Contest contest = Count(country.Id, date.Date, counted, UsTermLimit.NomineesFor(country, date.Date), TieSeedOf(SimulationRandom.MasterSeed, date.Year), out ElectoralCollege.StateCall[] _, out why);
             if (contest != null) { country.UsPresidentialElections.Add(contest); }
             return contest;
         }
+
+        /// <summary>The poll a polling day counts: <paramref name="poll"/> with the election's noise where a σ is set (<see cref="NoiseSigmaPp"/>, the day's
+        /// common source) - the presidential count's and, since PS-6 US-16, the House's V(T) on the same day (one poll, R-US15 (a)).</summary>
+        public static IReadOnlyDictionary<string, double> CountedPoll(Country country, DateTime date, IReadOnlyDictionary<string, double> poll) =>
+            NoiseSigmaPp > 0.0 && poll != null ? WithNoise(poll, SimulationRandom.ElectionNoiseOn(country.Id, date.Date), NoiseSigmaPp) : poll;
+
+        /// <summary>PS-6 US-8c (J4): the tie seed of the game's count in <paramref name="year"/> - the world's master seed and the year folded together, so two
+        /// elections of one game draw their ties apart (<see cref="ElectoralCollege.TieBreak"/>; CONVENTION).</summary>
+        public static int TieSeedOf(int masterSeed, int year) => unchecked(masterSeed * 31 + year);
 
         /// <summary>
         /// US-8b (R-US25 as ruled): the election-day noise on the national vote, σ in percentage points of a share - ZERO in play, DECLARED: no election noise
@@ -484,7 +620,9 @@ namespace PoliSim.Elections
             foreach (Contest c in country.UsPresidentialElections)
             {
                 if (!c.Contingent || c.Decided() || c.Delegations.Count > 0 || c.CountedOn.Date != date.Date) { continue; }
-                choice = ChooseByStates(c, DelegationsOn(date, out string house), AllStates(c.PollingDay), house, date);
+                choice = ChooseByStates(c, DelegationsOn(country, date, out string house), AllStates(c.PollingDay), house, date);
+                // PS-6 US-16 - R-US22 RULED (I6): a House that cannot choose hands the Vice President to the Senate, the same day
+                if (!c.Decided()) { choice += "; " + ChooseVicePresident(country, c, date); }
                 return c;
             }
             return null;
@@ -509,6 +647,18 @@ namespace PoliSim.Elections
         /// House of record chooses, seated as elected (a member's later vacancy or change is a deviation the record's rule never seats, §618).
         /// <paramref name="house"/> names it in the line's words.
         /// </summary>
+        public static List<(string State, int Republicans, int Democrats)> DelegationsOn(Country country, DateTime date, out string house)
+        {
+            // PS-6 US-16: the House the game elected, from the day it is seated (3 January) - its delegations as its count gave them
+            if (UsCongressElection.TryInOffice(country, date, out UsCongressElection.Contest elected))
+            {
+                house = "the House the game elected on " + elected.PollingDay.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                return elected.Delegations();
+            }
+            return DelegationsOn(date, out house);
+        }
+
+        /// <summary>The House of record on <paramref name="date"/>, by state (see the overload above) - the House the record seats that day.</summary>
         public static List<(string State, int Republicans, int Democrats)> DelegationsOn(DateTime date, out string house)
         {
             ElectionVintage seated = WorldClock.SeatedVintage(CountryId.USA, date);
@@ -533,8 +683,8 @@ namespace PoliSim.Elections
         /// votes for the nominee of the party holding more of its seats than the other's - members vote their party's nominee, as the stance model reads every
         /// vote; a tied delegation casts no vote (the ruling's own words), and a state listed with no member of either party, or not listed, none; only a
         /// nominee who won electors is eligible. A candidate with a majority of <paramref name="allStates"/> - ALL the states (<see cref="AllStates"/>), not those
-        /// listed or voting - is elected; else nothing is decided - a House that cannot choose is not modelled (R-US3 (a)), and who governs then is US-7's
-        /// reading 3, ASKED. The quorum (a member from two thirds of the states) is met by every House of record, stated. Returns the House's own line, which is
+        /// listed or voting - is elected; else nothing is decided, and since PS-6 US-16 who governs then is R-US22's order as ruled (I6): the Senate chooses the
+        /// Vice President the same day (<see cref="ChooseVicePresident"/>), who acts from the oath, else the Speaker (<see cref="ActingGovernmentOf"/>). The quorum (a member from two thirds of the states) is met by every House of record, stated. Returns the House's own line, which is
         /// also appended to the contest's.
         /// </summary>
         public static string ChooseByStates(Contest contest, IReadOnlyList<(string State, int Republicans, int Democrats)> delegations, int allStates, string house, DateTime on)
@@ -562,7 +712,7 @@ namespace PoliSim.Elections
                 absent > 0 ? ", " + absent.ToString(CultureInfo.InvariantCulture) + " with no delegation listed (no vote)" : string.Empty, states, majority);
             string choice = chosen != null
                 ? string.Format(CultureInfo.InvariantCulture, "{0} - {1} elected, the oath {2:yyyy-MM-dd}", tally, chosen.Candidate, contest.TakesOffice)
-                : tally + " - no candidate has it: the House cannot choose, which is not modelled; nothing is decided";
+                : tally + " - no candidate has it: the House cannot choose; nothing is decided";
             if (chosen != null)
             {
                 contest.Winner = chosen.Candidate;

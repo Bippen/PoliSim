@@ -289,7 +289,8 @@ namespace PoliSim.EditorTools
                             SaveGameService.SaveToFile(saveCount, SaveGameService.CreateSaveGame(sim, w, CountryId.USA, null));
                             cutCount = true;
                         }
-                        if (today == HouseDay) { houseByDate = Same(usa.ParliamentSeats, PartySystems.InitialSeats(CountryId.USA, ElectionVintage.Usa2024)); }
+                        // PS-6 US-16: the House the world's own count elected on the polling day, seated on 3 January - the record seats no House in this world from then
+                        if (today == HouseDay) { houseByDate = usa.UsCongressElections.Count == 1 && Same(usa.ParliamentSeats, usa.UsCongressElections[0].HouseSeats(CountryId.USA)) && !WorldClock.RecordSeatsChamber(usa, today); }
                         if (today == Oath)
                         {
                             sworn = usa.Government;
@@ -311,7 +312,7 @@ namespace PoliSim.EditorTools
                     F("(c) the count held once ({0} contest(s) at the end, {1} on the polling day), its log line naming the winner and the electors: \"{2}\"", usa.UsPresidentialElections.Count, contestsOnDay, line ?? "NOT LOGGED"));
                 Check(controllerPath, F("(c) the controller's own election path on the polling day (HoldElectionWithoutTheNight - the warm-up's) records that no chamber is elected and ends nothing: {0}", controllerWhat));
                 Check(recordYields, "(c) from the polling day the record seats no president in this world (the country's gate unchanged)");
-                Check(houseByDate, F("(c) the 119th House seated by the record on {0} - Congress stays the record's, by date (R-US1 (a))", Day(HouseDay)));
+                Check(houseByDate, F("(c) on {0} the House the world's own count elected on {1} is seated (US-16) - the record seats no House in this world from then", Day(HouseDay), Day(Polled)));
                 Check(played == null || !played.Decided() || oathDay,
                     F("(c) the winner sworn on {0} - {1}", Day(Oath), sworn != null ? sworn.Executive + ", \"" + sworn.Basis + "\"" : "no government"));
                 sb.Append(F("    read      (c) E1's premise: the game played from {0} on its own economy and seed vintage counts its own - {1}\n", Day(start), played?.Line ?? "no count"));
@@ -387,7 +388,7 @@ namespace PoliSim.EditorTools
                 Check(elect && oathDay, F("(d) its winner is the president-elect from that day and sworn on {0}: {1}", Day(Oath), usa.Government?.Basis));
                 card.Add(F("**R-US3's path, planted** - the record's 2024 college with Pennsylvania, Michigan and Wisconsin to the Democratic nominee and Nebraska's 2nd district to the Republican gives {0} to {1}: no candidate has a majority of the {2} electors appointed. On {3} the House elected in {4} (seated by date) chooses by states - {5} for {6}, {7} for {8}, {9} tied, casting no vote, of {10}; a majority of all the states is {11} - {12}.",
                     tie.ElectorsOf("REP"), tie.ElectorsOf("DEM"), tie.ElectorsAppointed, Long(counted), houseYear, expR, y2024.NomineeR, expD, y2024.NomineeD, expTied, expected.Count, expected.Count / 2 + 1,
-                    tie.Decided() ? tie.Winner + " elected, sworn on " + Long(Oath) : "no one elected (a House that cannot choose is not modelled)"));
+                    tie.Decided() ? tie.Winner + " elected, sworn on " + Long(Oath) : "no one elected (the Senate chooses the Vice President, who acts from the oath - R-US22)"));
                 card.Add("");
                 EnergyMarket.ResetTurnState();
             }
@@ -568,7 +569,7 @@ namespace PoliSim.EditorTools
             card.Insert(0, F("**E1's acceptance for the USA** - the reference world (US-6's: the epoch the eve of {0}, one day stepped by the game's loop) holds its own count on the poll E1's factors are fitted to, and {1}: **{2} to {3}** electors of {4}, against the record's **{5} to {6}** as appointed. Its national vote is the FEC's by construction - REP {7:0.00} %, DEM {8:0.00} %, every other candidate {9:0.00} % (the largest gap {10:0.0000} pp).",
                 Long(Polled), trump ? "elects " + y2024.NomineeR + " (REP)" : "does NOT elect the Republican nominee", countR, countD, c?.ElectorsAppointed, recR, recD, countRShare, countDShare, countOShare, nationalGap));
             card.Add("");
-            card.Add("**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Senate's choice of the Vice President; a House that cannot choose (who governs then is US-7's reading 3, asked). The per-state ballot table of the minor candidates (US-6's departure, asked) would not move an elector while the states pool them.");
+            card.Add("**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Vice President's own electoral count (the tickets are one: where the House cannot choose, the Senate chooses the Vice President, who acts from the oath - R-US22, RULED, held by PresidencyDiagnostic). The per-state ballot table of the minor candidates (US-6's departure, asked) would not move an elector while the states pool them.");
             card.Add("");
             card.Add("The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8) and R-US14 (a) (G2), each RULED; R-US11 (a), RULED, is US-26's to build.");
 

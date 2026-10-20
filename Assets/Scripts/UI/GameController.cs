@@ -6595,9 +6595,10 @@ namespace PoliSim.UI
 
         private void RunNationalElection()
         {
-            // PS-6 US-8 (R-US1 (a), RULED - F8): where the record seats the chamber by date (the USA's House, until US-16) the polling day elects no chamber.
-            // The president was counted on the day loop (SimulationManager's hook - UsPresidentialElection.Hold), and the House stays the record's: the record
-            // says so, and no prediction is counted here - this path logged "held for USA ... by NotImplemented" once the USA had a polling day (US-6's note)
+            // PS-6 US-8 (R-US1 (a), RULED - F8), and PS-6 US-16: the USA's polling day elects the president AND the House and the Senate seats up on the day loop
+            // (SimulationManager's hook - UsPresidentialElection.Hold, then UsCongressElection.Hold), seated on 3 January - so THIS path, the parliamentary
+            // chamber's, counts nothing: it records the day with no seats (the record's readers treat a NotImplemented record as no parliamentary election, which
+            // keeps the formation's rounds and the reference row off the USA - DECLARED) and its reason says where the chamber was elected
             if (PoliSim.Elections.WorldClock.RecordSeatsChamber(PlayerCountryId))
             {
                 string reason = NationalElection.NotHeldReason(PlayerCountryId);
@@ -6609,7 +6610,9 @@ namespace PoliSim.UI
                     Method = ElectionMethod.NotImplemented,
                     NotHeldReason = reason,
                 });
-                Debug.Log($"ELECTION: the chamber is not elected for {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} - {reason}");
+                Debug.Log(UsCongressElection.Held(_playerCountry, _simulationManager.CurrentDate)
+                    ? $"ELECTION: {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} - the House and the Senate seats up were elected on the day loop beside the president (the CONGRESS line), seated on 3 January; this path records the day without seats"
+                    : $"ELECTION: the chamber is not elected for {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} - {reason}");
                 return;
             }
 

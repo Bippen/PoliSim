@@ -1019,6 +1019,13 @@ namespace PoliSim.Data
         /// (format 39) - the states are not, being re-derived from the national shares each contest keeps (`UsPresidentialElection.StatesOf`).</summary>
         public List<Elections.UsPresidentialElection.Contest> UsPresidentialElections = new List<Elections.UsPresidentialElection.Contest>();
 
+        /// <summary>PS-6 US-16: the Congress elections the game held for this country, oldest first - the House by state and the Senate seats it elected
+        /// (`UsCongressElection.Contest`), each seated from the 3rd of January after its polling day (`UsCongressElection.TryInOffice`); from then the record
+        /// seats no House, and no Senate seat the game elected (`WorldClock.RecordSeatsChamber(Country, DateTime)`). Empty where the game elects no Congress; the
+        /// day loop adds one on each presidential polling day it counts (`UsCongressElection.Hold`). Saved (format 49): each state's share, delegation and
+        /// unopposed seats are the next count's base (US-11's *In play*), and the seats the game elected cannot be re-derived from the date.</summary>
+        public List<Elections.UsCongressElection.Contest> UsCongressElections = new List<Elections.UsCongressElection.Contest>();
+
         /// <summary>PS-6 US-28 (R-US6 (b)): the player's picks of the party's nominee where the party is term-limited or (US-28b, R-US26 (a)) out of
         /// the White House, one per polling day and party (`UsTermLimit.Pick`); the count reads the pick for the player's party only - an AI party takes the default. Empty where no pick
         /// was made, which is the default: additive under ruling A, so a save from before - which could hold no pick - loads to the same game (no format step).

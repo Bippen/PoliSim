@@ -27,7 +27,8 @@ namespace PoliSim.EditorTools
     /// electors' meeting, the count of 6 January and the inauguration the planted contests carry; the oath's day the rule gives equals the record's own row;</item>
     /// <item>(b) REP wins, a REP player - the long world, opened on the eve of 5 November 2024, whose own count (US-8 - E1's acceptance world) elects REP's nominee
     /// on the polling day: from the polling day the record seats no president, REP is the
-    /// PRESIDENT-ELECT (the chip and the gate's reason) and in opposition toward the sitting government; the 119th House still seated by the record on 3 January;
+    /// PRESIDENT-ELECT (the chip and the gate's reason) and in opposition toward the sitting government; since PS-6 US-16 the House the world's own count elected
+    /// that day seated on 3 January (no longer the record's);
     /// Biden to the 19th; the game's Trump on the 20th - a presidency the game elected, formed that day, not the record's - and PRESIDENT from it, REP's own
     /// arrival window opening on the oath's day; each change once; every other country untouched;</item>
     /// <item>(c) DEM wins, a DEM player: THE PRESIDENT'S PARTY before (Biden's, of record - PS-6 US-19) and PRESIDENT after (Harris takes office on the 20th) - the done-when's words; the arrival window
@@ -38,8 +39,10 @@ namespace PoliSim.EditorTools
     /// <item>(e) a contingent election, half the electors appointed each, undecided until the House chooses on 6 January (R-US3 (a)) - by US-8's count on the day
     /// loop, the delegations of the House then seated - no president-elect before it, REP's after, its winner sworn on the 20th, the government saying the House
     /// chose; the contingent contest - its flag, its delegations, its tallies' NaN shares - crosses a save whole;</item>
-    /// <item>(f) ASKED of Elias (US-7's reading 3), the code's answer pinned until he rules: a contest still undecided on the oath's day seats no one - the
-    /// sitting president stays;</item>
+    /// <item>(f) R-US22 RULED (Elias's ruling I6, `COMPLETED.md` §856 - the Twentieth Amendment's order; it moved this pin, which held US-7's reading 3, with
+    /// US-16's build): a contingent contest the House cannot choose - a House the game elected, planted with no majority of the states - hands the Vice President
+    /// to the Senate on the count's day, a majority of the whole Senate choosing, and that Vice President acts as President from the oath; where the Senate cannot
+    /// choose either, the Speaker acts (3 U.S.C. §19); never the sitting president past noon on 20 January;</item>
     /// <item>(g) scope: a world whose player is another country keeps the AI USA's president across the oath, a contest planted or not (PS-8 owns the AI row);</item>
     /// <item>(h) a save cut on the eve of the oath, loaded INTO THE GAME (the controller's own `RestoreFromSave`, §557), keeps its government and its contest as it
     /// loads, reads PRESIDENT-ELECT on the controller's own chip, and swears the game's president on its next day; (i) a save cut after the oath keeps the
@@ -88,7 +91,7 @@ namespace PoliSim.EditorTools
                     Directory.CreateDirectory(dir);
                     string Day(DateTime d) => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
                     bool Same(IReadOnlyDictionary<string, int> a, IReadOnlyDictionary<string, int> b) => a != null && b != null && a.Count == b.Count && a.All(kv => b.TryGetValue(kv.Key, out int n) && n == kv.Value);
-                    Dictionary<string, int> house119 = PartySystems.InitialSeats(CountryId.USA, ElectionVintage.Usa2024);
+
 
                     // ---- (a) the sources, and the oath's day against the record's own row
                     Check(Page(AmendmentsPage, out string amendments) && amendments.Contains(OathWords),
@@ -217,8 +220,8 @@ namespace PoliSim.EditorTools
                         bool electBudget = sim.PlayerMayIntroduce(CountryId.USA, Congress.Kind.Budget, null, out string electBudgetLock);
                         Check(electOrdinary && electOrdinaryLock == null && !electBudget && electBudgetLock == "PRESIDENT-ELECT · THE OUTGOING ADMINISTRATION PROPOSES THE BUDGET UNTIL 20 JAN 2025 · YOUR PARTY VOTES ON IT",
                             F("(b) the president-elect's party, the House's majority, may introduce an ordinary bill ({0}); the budget - \"{1}\"", electOrdinary ? "yes" : "NO", electBudgetLock));
-                        Check(WorldClock.NextOfRecord(usa, today).SequenceEqual(new[] { NextHouse }) && WorldClock.NextOfRecord(CountryId.USA, today).SequenceEqual(new[] { NextHouse, NextHead }),
-                            "(b) the record row's coming dates name the House's day and no president of record in this world; the record's own view still names its next (US-2's words)");
+                        Check(WorldClock.NextOfRecord(usa, today).Count == 0 && WorldClock.NextOfRecord(CountryId.USA, today).SequenceEqual(new[] { NextHouse, NextHead }),
+                            "(b) the record row's coming dates name neither the House of record nor a president of record in this world - the world's own count elected both that day (US-8, US-16); the record's own view still names its next (US-2's words)");
                         object seatsRef = usa.ParliamentSeats, govRef = usa.Government;
                         int seatChanges = 0, govChanges = 0;
                         DateTime seatOn = DateTime.MinValue, govOn = DateTime.MinValue;
@@ -231,7 +234,12 @@ namespace PoliSim.EditorTools
                             today = sim.CurrentDate;
                             if (!ReferenceEquals(seatsRef, usa.ParliamentSeats)) { seatChanges++; seatOn = today; seatsRef = usa.ParliamentSeats; }
                             if (!ReferenceEquals(govRef, usa.Government)) { govChanges++; govOn = today; govRef = usa.Government; }
-                            if (today == HouseDay) { houseDay = Same(usa.ParliamentSeats, house119) && ReferenceEquals(usa.Government, eveGov); }
+                            if (today == HouseDay)
+                            {
+                                // PS-6 US-16: the House the world's own count elected on the polling day, seated on 3 January - not the record's 119th
+                                houseDay = usa.UsCongressElections.Count == 1 && usa.UsCongressElections[0].PollingDay == Polled
+                                           && Same(usa.ParliamentSeats, usa.UsCongressElections[0].HouseSeats(CountryId.USA)) && !WorldClock.RecordSeatsChamber(usa, today) && ReferenceEquals(usa.Government, eveGov);
+                            }
                             if (today == Oath.AddDays(-1))
                             {
                                 eveOfOathChip = Chip(chipController, sim, usa);
@@ -248,10 +256,13 @@ namespace PoliSim.EditorTools
                             }
                             if (today == StepTo) { afterChip = Chip(chipController, sim, usa); after = ReferenceEquals(usa.Government, sworn) && afterChip == "PRESIDENT (filled)"; }
                         }
-                        Check(houseDay, F("(b) {0}: the 119th House seated by the record, as before - the chamber is still the record's; {1} still governs", Day(HouseDay), eveGov.Executive));
+                        Check(houseDay, F("(b) {0}: the House the world's own count elected on {1} seated (US-16) - the record seats no House in this world from today; {2} still governs", Day(HouseDay), Day(Polled), eveGov.Executive));
                         Check(eveOfOath, F("(b) {0}: {1} governs, the chip \"{2}\"", Day(Oath.AddDays(-1)), eveGov.Executive, eveOfOathChip));
                         Check(oathDay, F("(b) {0}: {1} takes office - a presidency the game elected (\"{2}\"), formed that day, REP's alone - and governs; the chip \"{3}\"", Day(Oath), sworn?.Executive, sworn?.Basis, oathChip));
-                        Check(seatChanges == 1 && seatOn == HouseDay && govChanges == 1 && govOn == Oath,
+                        // PS-6 US-16: the House the world elected is seated on 3 January - unless its seats equal the sitting House's (a swing near zero returns
+                        // R-US18 (b)'s base), when the seating, which compares contents, seats nothing new
+                        bool sameAsSitting = usa.UsCongressElections.Count == 1 && Same(usa.UsCongressElections[0].HouseSeats(CountryId.USA), PartySystems.InitialSeats(CountryId.USA, ElectionVintage.Usa2022));
+                        Check((seatChanges == 1 && seatOn == HouseDay || seatChanges == 0 && sameAsSitting) && govChanges == 1 && govOn == Oath,
                             F("(b) each change once: the House seated {0} time(s), on {1}; the president {2} time(s), on {3}", seatChanges, Day(seatOn), govChanges, Day(govOn)));
                         Check(windowOnOath, "(b) REP, now governing, gets its own arrival window on the oath's day - the window reset as the president installs (US-2's premise, through the same transition)");
                         Check(after, F("(b) {0}: the same government, the chip \"{1}\" - seated once, then left alone", Day(StepTo), afterChip));
@@ -373,15 +384,108 @@ namespace PoliSim.EditorTools
                         EnergyMarket.ResetTurnState();
                     }
 
-                    // ---- (f) ASKED of Elias (US-7's reading 3), the code's answer pinned until he rules: a contest undecided on the oath's day seats no one
+                    // ---- (f) R-US22 RULED (I6), the Twentieth Amendment's order: a House that cannot choose - the Senate chooses the Vice President, who acts from
+                    //      the oath; the Senate unable to choose either - the Speaker acts; never the sitting president past noon on 20 January
                     {
-                        (SimulationManager sim, World world, Country usa) = Open(OathEve, CountryId.USA, "REP");
-                        usa.UsPresidentialElections.Add(Tied());
+                        (SimulationManager sim, World world, Country usa) = Open(HouseDay.AddDays(-1), CountryId.USA, "REP");
+                        UsPresidentialElection.Contest tied = Tied();
+                        usa.UsPresidentialElections.Add(tied);
+                        // planted: a House the game elected (US-16), the record's 2024 delegations with the five first REP-majority states turned DEM - no majority of
+                        // the states for either nominee - and the Senate seats up at the record's 2024 winners' sides; seated on 3 January as the count's own is
+                        UsCongressElection.Contest planted = PlantedCongress(5);
+                        usa.UsCongressElections.Add(planted);
+                        int plantedR = planted.House.Count(s => s.Rep > s.Dem), plantedD = planted.House.Count(s => s.Dem > s.Rep);
                         GovernmentRecord eveGov = usa.Government;
-                        for (int d = 0; d < 10 && sim.CurrentDate < StepTo; d++) { Step(sim, world); }
-                        Check(ReferenceEquals(usa.Government, eveGov) && eveGov.Executive == Biden && GovernmentRecord.RoleOn(usa, "REP", sim.CurrentDate) == PlayerRole.HouseMajority && Governs(sim, usa, "DEM"),
-                            F("(f) ASKED (reading 3 - the code's answer until Elias rules among: the sitting president stays; the record's president for the date; the Speaker acts under 3 U.S.C. §19): a contest the House never decided, stepped past the oath to {0} - no one is seated and the sitting president stays ({1})", Day(sim.CurrentDate), usa.Government?.Executive));
+                        bool noChoice = false, senateChose = false, vpActs = false, after = false;
+                        string choseWhat = "not reached", actsWhat = "not reached";
+                        GovernmentRecord acting = null;
+                        for (int d = 0; d < 30 && sim.CurrentDate < StepTo; d++)
+                        {
+                            Step(sim, world);
+                            DateTime today = sim.CurrentDate;
+                            if (today == CountedOn)
+                            {
+                                noChoice = !tied.Decided() && tied.Delegations.Count == 2 && tied.Delegations.Max(t => t.Votes) < 26;
+                                UsPresidentialElection.Tally vice = tied.SenateChoice.FirstOrDefault(t => t.Votes >= UsSenate.Members / 2 + 1);
+                                int senateRep = usa.SecondChamberSeats.TryGetValue("REP", out int sr) ? sr : 0;
+                                senateChose = vice != null && vice.Party == "REP" && vice.Candidate == UsTermLimit.RunningMateOfRecord(2024, "REP") && vice.Votes == senateRep;
+                                choseWhat = F("the House REP {0} DEM {1} states of 50 (planted) - {2}", plantedR, plantedD, tied.Line);
+                            }
+                            if (today == Oath.AddDays(-1) && !ReferenceEquals(usa.Government, eveGov)) { vpActs = false; actsWhat = "the government changed before the oath"; break; }
+                            if (today == Oath)
+                            {
+                                acting = usa.Government;
+                                vpActs = acting != null && acting.Outcome == UsPresidentialElection.ActingOutcome && acting.Executive == UsTermLimit.RunningMateOfRecord(2024, "REP") + " (REP)"
+                                         && acting.FormedOn == Oath && tied.ActingAs == UsPresidentialElection.ActsAsVicePresident && acting.Executive != Biden && UsPresidentialElection.ActingGoverns(acting, tied)
+                                         && !UsPresidentialElection.TryInOffice(usa, today, out _) && UsPresidentialElection.TryActingOn(usa, today, out UsPresidentialElection.Contest servedFor) && ReferenceEquals(servedFor, tied);
+                                actsWhat = F("{0} - \"{1}\"", acting?.Executive, acting?.Basis);
+                            }
+                            if (today == StepTo) { after = ReferenceEquals(usa.Government, acting); }
+                        }
+                        Check(noChoice, F("(f) R-US22: on {0} the House the game elected cannot choose - {1}", Day(CountedOn), choseWhat));
+                        Check(senateChose, F("(f) the Senate chooses the Vice President the same day, a majority of the whole Senate - {0}", tied.SenateChoice.Count == 0 ? "no Senate choice held" : string.Join(", ", tied.SenateChoice.Select(t => t.Candidate + " (" + t.Party + ") " + t.Votes))));
+                        Check(vpActs && after, F("(f) {0}: the Vice President the Senate chose acts as President - never the sitting president ({1}); seated once - {2}", Day(Oath), Biden, actsWhat));
+                        // the second reading's M2: an acting president of the player's party is the player's - the player signs and vetoes (Congress.PresidentOn)
+                        bool vpPlayer = Congress.PresidentOn(usa, sim.CurrentDate, out string vpShown, out string vpParty, out bool vpIsPlayer) && vpIsPlayer && vpParty == "REP";
+                        Check(vpPlayer, F("(f) the acting president of the player's party (REP) is the player's on {0}: {1} ({2}) - the docket's signature and veto are the player's", Day(sim.CurrentDate), vpShown, vpParty));
+                        // the second reading's M1: an acting office is no presidency won - at the next polling day each party nominates as one out of the White House,
+                        // the acting Vice President no incumbent nominee and the player's pick open (the Vice President among the party's people)
+                        DateTime next = UsPresidentialElection.PresidentialDay(2028);
+                        List<UsTermLimit.Nominee> nextField = UsTermLimit.NomineesFor(usa, next);
+                        List<string> repChoices = UsTermLimit.EligibleFor(usa, "REP", next);
+                        string vance = UsTermLimit.RunningMateOfRecord(2024, "REP");
+                        bool picked = UsTermLimit.Pick(usa, next, "REP", vance, out string pickRefused);
+                        UsTermLimit.Nominee repNext = UsTermLimit.NomineeOf(usa, next, "REP");
+                        Check(nextField.Count == 2 && nextField.All(n => !string.IsNullOrEmpty(n.Person) && n.OutParty && !n.TermLimited) && repChoices.Contains(vance) && picked && repNext != null && repNext.Person == vance && repNext.Picked,
+                            F("(f) at the next polling day ({0}) the acting office makes no incumbent: {1}; REP's pick open ({2}) - {3} picked{4}", Day(next),
+                                string.Join("; ", nextField.Select(n => n.Party + " " + n.Person + " - " + n.Basis)), string.Join(", ", repChoices), vance, picked ? string.Empty : " - REFUSED: " + pickRefused));
+                        usa.UsNomineePicks?.RemoveAll(k => k.PollingDay.Date == next.Date);
                         EnergyMarket.ResetTurnState();
+
+                        // (f') the Senate cannot choose either - an equal division, which no Vice President decides here (a majority of the whole number) - the Speaker acts
+                        UsPresidentialElection.Contest stuck = Tied();
+                        stuck.SenateChoice.Add(new UsPresidentialElection.Tally { Candidate = UsTermLimit.RunningMateOfRecord(2024, "REP"), Party = "REP", Votes = UsSenate.Members / 2 });
+                        stuck.SenateChoice.Add(new UsPresidentialElection.Tally { Candidate = UsTermLimit.RunningMateOfRecord(2024, "DEM"), Party = "DEM", Votes = UsSenate.Members / 2 });
+                        string speakerParty = usa.ParliamentSeats["REP"] > usa.ParliamentSeats["DEM"] ? "REP" : "DEM";
+                        GovernmentRecord speaker = UsPresidentialElection.ActingGovernmentOf(usa, stuck, Oath);
+                        Check(speaker.Outcome == UsPresidentialElection.ActingOutcome && stuck.ActingAs == UsPresidentialElection.ActsAsSpeaker && stuck.ActingParty == speakerParty
+                              && speaker.PmParty == speakerParty && speaker.Executive != Biden,
+                            F("(f') a Senate equally divided ({0}) cannot choose a Vice President either: the Speaker acts - {1}, the House's majority party ({2}) - \"{3}\"",
+                                string.Join(", ", stuck.SenateChoice.Select(t => t.Party + " " + t.Votes)), speaker.Executive, Seats(usa.ParliamentSeats), speaker.Basis));
+                        // (f') seated as the oath would seat it, the player of the Speaker's party: the player's presidency (M2), and at the next polling day no title on a
+                        // ballot, no incumbent, the pick open (M1) - the world put back after
+                        var contestsWas = new List<UsPresidentialElection.Contest>(usa.UsPresidentialElections);
+                        GovernmentRecord governmentWas = usa.Government;
+                        string partyWas = usa.PlayerPartyAbbrev;
+                        try
+                        {
+                            usa.UsPresidentialElections.Clear();
+                            usa.UsPresidentialElections.Add(stuck);
+                            usa.Government = speaker;
+                            usa.PlayerPartyAbbrev = speakerParty;
+                            DateTime nextDay = UsPresidentialElection.PresidentialDay(2028);
+                            bool speakerPlayer = Congress.PresidentOn(usa, StepTo, out string spShown, out string spParty, out bool spIsPlayer) && spIsPlayer && spParty == speakerParty;
+                            List<UsTermLimit.Nominee> field = UsTermLimit.NomineesFor(usa, nextDay);
+                            List<string> choices = UsTermLimit.EligibleFor(usa, speakerParty, nextDay);
+                            List<string> people = UsTermLimit.PartyPeople(usa, speakerParty, nextDay);
+                            UsTermLimit.Nominee own = UsTermLimit.NomineeOf(usa, nextDay, speakerParty);
+                            bool noTitle = field.Count == 2 && field.All(n => !string.IsNullOrEmpty(n.Person) && !n.Person.Contains("Speaker") && n.OutParty && !n.TermLimited)
+                                           && !people.Any(p => p.Contains("Speaker")) && choices.Count > 0 && !choices.Any(p => p.Contains("Speaker"));
+                            string firstChoice = choices.Count > 0 ? choices[choices.Count - 1] : null;
+                            bool pickOpen = firstChoice != null && UsTermLimit.Pick(usa, nextDay, speakerParty, firstChoice, out string _);
+                            Check(speakerPlayer, F("(f') the Speaker acting, of the player's party ({0}), is the player's: {1} ({2})", speakerParty, spShown, spParty));
+                            Check(noTitle && pickOpen && own != null && own.OutParty,
+                                F("(f') at the next polling day ({0}) no title stands and no incumbent: {1}; {2}'s people {3}; its pick open ({4})", Day(nextDay),
+                                    string.Join("; ", field.Select(n => n.Party + " " + n.Person)), speakerParty, string.Join(", ", people), string.Join(", ", choices)));
+                            usa.UsNomineePicks?.RemoveAll(k => k.PollingDay.Date == nextDay.Date);
+                        }
+                        finally
+                        {
+                            usa.UsPresidentialElections.Clear();
+                            usa.UsPresidentialElections.AddRange(contestsWas);
+                            usa.Government = governmentWas;
+                            usa.PlayerPartyAbbrev = partyWas;
+                        }
                     }
 
                     // ---- (g) scope: a world whose player is another country keeps the AI USA's president across the oath, a contest planted or not
@@ -518,6 +622,32 @@ namespace PoliSim.EditorTools
             if (failures == 0) { Debug.Log(sb.ToString()); } else { Debug.LogError(sb.ToString()); }
             CheckExit.Finish(failures == 0 ? 0 : 1);
         }
+
+        /// <summary>PS-6 US-16, (f): a Congress contest planted as the game's count records one - the House from the record's 2024 districts with the first
+        /// <paramref name="turned"/> REP-majority states (in the catalog's order) turned DEM, the Senate seats up at the record's 2024 winners' sides (as seated on
+        /// 21 Jan 2025, every winner sworn), seated on 3 Jan 2025.</summary>
+        internal static UsCongressElection.Contest PlantedCongress(int turned)
+        {
+            DateTime polled = new DateTime(2024, 11, 5);
+            var c = new UsCongressElection.Contest { PollingDay = polled, Convenes = UsCongressElection.ConvenesAfter(polled), BaseOfRecord = true, BaseYear = 2022, SenateClass = 1, Line = "planted (PresidencyDiagnostic)" };
+            foreach (var g in PoliSim.Elections.Generated.UsPresidentialReturns.HouseDistricts.Where(x => x.Year == 2024).GroupBy(x => x.State).OrderBy(g => g.Key, StringComparer.Ordinal))
+            {
+                int r = g.Count(x => x.Winner == "R"), d = g.Count(x => x.Winner == "D");
+                if (r > d && turned > 0) { (r, d) = (d, r); turned--; }
+                c.House.Add(new UsCongressElection.StateHouse { State = g.Key, Seats = r + d, Rep = r, Dem = d, Share = double.NaN });
+                c.HouseRep += r; c.HouseDem += d;
+            }
+            UsSenate.Seating settled = UsSenate.On(new DateTime(2025, 1, 21));
+            foreach ((string state, int cls, string term) in UsCongressElection.SeatsUp(polled))
+            {
+                UsSenate.Seat holder = settled.Seats.First(s => s.State == state && s.Class == cls);
+                c.Senate.Add(new UsCongressElection.SenateSeat { State = state, Class = cls, Term = term, Parent = double.NaN, Share = double.NaN, Side = holder.Side });
+            }
+            return c;
+        }
+
+        private static string Seats(IReadOnlyDictionary<string, int> seats) =>
+            seats == null ? "none" : string.Join(", ", seats.Where(kv => kv.Value > 0).OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => kv.Key + " " + kv.Value.ToString(CultureInfo.InvariantCulture)));
 
         /// <summary>A contest as the save carries it, field by field - the dates, the electors, the delegations, the contingent flag, the winner, the line.</summary>
         internal static bool SameContest(UsPresidentialElection.Contest a, UsPresidentialElection.Contest b)

@@ -4925,14 +4925,14 @@ namespace PoliSim.Simulation
         /// from a loaded game seats the record with it (DECLARED; which of the two a shadow should be is not US-2's to decide).
         /// <para>PS-6 US-7 (`docs/specs/USA_STAGE_PLAN.md`): THE OATH, on the same dated transition. A president the game elected takes office on the oath's day -
         /// noon on the 20th of January after the polling day, the Twentieth Amendment §1 (<see cref="Elections.UsPresidentialElection.OathDayAfter"/>) - held as
-        /// state like the record: the winner of the latest decided contest whose oath has come (<see cref="Elections.UsPresidentialElection.TryInOffice"/>) is
+        /// state like the record: the winner of the latest contest whose oath has come, where it is decided (<see cref="Elections.UsPresidentialElection.TryInOffice"/>) is
         /// seated through <see cref="TakeOffice"/> wherever the government in office is not that oath's (<see cref="Elections.UsPresidentialElection.Governs"/>),
         /// as a presidency whose cabinet is the president's party (<see cref="Elections.UsPresidentialElection.GovernmentOf"/>). From the game's own polling day
         /// the record seats no president (`WorldClock.RecordSeatsExecutive(Country, DateTime)`, R-US1 (a)), so between the polling day and the oath the sitting
         /// president governs and nothing re-seats the record's; and a save cut either side of the oath is put right, or left alone, as it loads. A contest still
-        /// undecided on the oath's day seats no one and the sitting president stays, until a later contest is decided - the code's answer, ASKED of Elias
-        /// (US-7's reading 3: the sitting president stays; the record's president for the date; or the Speaker acts under 3 U.S.C. §19), since R-US3 (a)
-        /// leaves a House that cannot choose unmodelled and does not say who governs then; reachable once the game elects the House (US-16). The player's
+        /// undecided on the oath's day - PS-6 US-16, R-US22 RULED (Elias's ruling I6, the Twentieth Amendment's order): never the sitting president past noon on
+        /// 20 January; the Vice President the Senate chose acts as President, else the Speaker (<see cref="Elections.UsPresidentialElection.ActingGovernmentOf"/>),
+        /// seated through <see cref="TakeOffice"/> as a presidency labelled acting. The player's
         /// country only, as the record (PS-8 owns the rest); the contests are a country's state, so the answer is the same whoever the player is.</para>
         /// <para>PS-6 US-15 (R-US1 (a), R-US10 (a)): THE SENATE OF RECORD on the same transition, between the House and the president - <see cref="SeatTheSecondChamberOfRecord"/>.</para>
         /// </summary>
@@ -4942,7 +4942,19 @@ namespace PoliSim.Simulation
             CountryId id = PlayerCountryId.Value;
             Country country = _world?.GetCountry(id);
             if (country == null) { return; }
-            if (Elections.WorldClock.RecordSeatsChamber(id))
+            if (Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest congress))
+            {
+                // PS-6 US-16: the House the game elected, from noon on 3 January after its polling day - seated once, as the record's is, and the record seats no
+                // House in this world from then (WorldClock.RecordSeatsChamber(Country, DateTime)); each party's capital carried as at any election
+                Dictionary<string, int> won = congress.HouseSeats(id);
+                if (!SameSeats(country.ParliamentSeats, won))
+                {
+                    ParliamentSystem.SetSeatsFromElection(country, won);
+                    Elections.PartyCapital.CarryOver(country.PartyCapital, country.ParliamentSeats);
+                    Debug.Log($"CONGRESS: {id} - the House the game elected on {congress.PollingDay:yyyy-MM-dd} seated on {CurrentDate:yyyy-MM-dd}: REP {congress.HouseRep}, DEM {congress.HouseDem}");
+                }
+            }
+            else if (Elections.WorldClock.RecordSeatsChamber(id))
             {
                 ElectionVintage seated = Elections.WorldClock.SeatedVintage(id, CurrentDate);
                 Dictionary<string, int> ofRecord = PartySystems.InitialSeats(id, seated);
@@ -4954,7 +4966,13 @@ namespace PoliSim.Simulation
                 }
             }
             SeatTheSecondChamberOfRecord();
-            if (Elections.UsPresidentialElection.TryInOffice(country, CurrentDate, out Elections.UsPresidentialElection.Contest sworn))
+            if (Elections.UsPresidentialElection.TryActingOn(country, CurrentDate, out Elections.UsPresidentialElection.Contest undecided))
+            {
+                // PS-6 US-16 - R-US22 RULED (I6), the Twentieth Amendment's order: a contest still undecided at the oath - never the sitting president past noon on
+                // 20 January; the Vice President the Senate chose acts, else the Speaker - seated once, then left alone
+                if (!Elections.UsPresidentialElection.ActingGoverns(country.Government, undecided)) { TakeOffice(country, Elections.UsPresidentialElection.ActingGovernmentOf(country, undecided, CurrentDate), oath: undecided); }
+            }
+            else if (Elections.UsPresidentialElection.TryInOffice(country, CurrentDate, out Elections.UsPresidentialElection.Contest sworn))
             {
                 // PS-6 US-7: the game's president, from the oath - seated once, then left alone (the same government object on every later day and load)
                 if (!Elections.UsPresidentialElection.Governs(country.Government, sworn)) { TakeOffice(country, Elections.UsPresidentialElection.GovernmentOf(sworn, CurrentDate), oath: sworn); }
@@ -4984,12 +5002,16 @@ namespace PoliSim.Simulation
             CountryId id = PlayerCountryId.Value;
             Country country = _world?.GetCountry(id);
             if (country == null || !Elections.WorldClock.RecordSeatsSecondChamber(id)) { return; }
-            Dictionary<string, int> ofRecord = Elections.WorldClock.SecondChamberOfRecord(id, CurrentDate);
+            // PS-6 US-16: the record's seats by date with every seat the game elected over them, from its 3 January (UsCongressElection.SenateOn) - the record's
+            // alone until the game's first class is seated
+            Dictionary<string, int> ofRecord = Elections.UsCongressElection.SenateOn(country, CurrentDate);
             if (SameSeats(country.SecondChamberSeats, ofRecord)) { SeedTheFundingHorizon(country); return; }   // PS-6 US-22: once, where the Congress votes the budget
             ParliamentSystem.SeatSecondChamberOfRecord(country, ofRecord);
             var seated = new List<string>();
             foreach (KeyValuePair<string, int> kv in ofRecord) { if (kv.Value > 0) { seated.Add(kv.Key + " " + kv.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)); } }
-            Debug.Log($"RECORD: {id} - the second chamber of record seated on {CurrentDate:yyyy-MM-dd}: {string.Join(", ", seated)} - {Elections.WorldClock.SecondChamberStanding(id, CurrentDate)}");
+            Debug.Log(Elections.UsCongressElection.GameSeatsSenate(country, CurrentDate)
+                ? $"CONGRESS: {id} - the Senate seated on {CurrentDate:yyyy-MM-dd}: {string.Join(", ", seated)} - the seats the game elected, the rest of record by date"
+                : $"RECORD: {id} - the second chamber of record seated on {CurrentDate:yyyy-MM-dd}: {string.Join(", ", seated)} - {Elections.WorldClock.SecondChamberStanding(id, CurrentDate)}");
             SeedTheFundingHorizon(country);   // PS-6 US-22: once the Senate is seated - the selection's call, a load's and the day's
         }
 
@@ -5029,6 +5051,8 @@ namespace PoliSim.Simulation
             if (!IsIncomingGovernmentBudgetWindow(country.Id)) { ResetArrivalBudgetWindow(country.Id); }
             Debug.Log(oath == null
                 ? $"RECORD: {country.Id} - {formed.Executive} takes office on {CurrentDate:yyyy-MM-dd}, of record"
+                : formed.Outcome == Elections.UsPresidentialElection.ActingOutcome
+                ? $"OATH: {country.Id} - no president elected by {CurrentDate:yyyy-MM-dd}: {formed.Executive} acts - {oath.ActingAs} (R-US22)"
                 : $"OATH: {country.Id} - {formed.Executive} takes office on {CurrentDate:yyyy-MM-dd}, elected in the game on {oath.PollingDay:yyyy-MM-dd}{(oath.Contingent ? " (chosen by the House)" : string.Empty)}");
         }
 
@@ -5304,6 +5328,16 @@ namespace PoliSim.Simulation
                 return;
             }
             Debug.Log($"PRESIDENTIAL: {country.Id} - {held.Line}");
+            // PS-6 US-16: the House and the Senate class on the same day, on the same counted poll and the night's states - seated on 3 January (SeatTheRecordOnItsDate)
+            Elections.UsCongressElection.Contest congress = Elections.UsCongressElection.Hold(country, CurrentDate, Elections.UsPresidentialElection.CountedPoll(country, CurrentDate, poll), held, out string congressWhy);
+            if (congress != null) { Debug.Log($"CONGRESS: {country.Id} - {congress.Line}"); }
+            else
+            {
+                // what stays seated: the game's previous Congress where one sits (the record seats no House in this world any more), else the record's by date
+                Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest sitting)
+                    ? $"CONGRESS: {country.Id} - no Congress count on {CurrentDate:yyyy-MM-dd}: {congressWhy}; the House the game elected on {sitting.PollingDay:yyyy-MM-dd} sits on, and the Senate as seated"
+                    : $"CONGRESS: {country.Id} - no Congress count on {CurrentDate:yyyy-MM-dd}: {congressWhy}; the record's House and Senate stay seated by date");
+            }
         }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>
@@ -6781,6 +6815,8 @@ namespace PoliSim.Simulation
                 // PS-6 US-7: the US presidential contests ride beside who governs - a shared reference, for the same reason: nothing on the preview path writes them,
                 // and the oath that reads them runs on the day loop, never on a clone
                 UsPresidentialElections = country.UsPresidentialElections,
+                // PS-6 US-16: the Congress contests ride beside them - shared, for the same reason (the count and the seating run on the day loop, never on a clone)
+                UsCongressElections = country.UsCongressElections,
                 // PS-6 US-15: the second chamber rides the hand-list, COPIED - so a write on a clone never reaches the country (PreviewParityDiagnostic marks it by
                 // content, a dictionary its value marks cannot reach)
                 SecondChamberSeats = country.SecondChamberSeats == null ? null : new Dictionary<string, int>(country.SecondChamberSeats),

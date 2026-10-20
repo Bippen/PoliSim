@@ -842,8 +842,8 @@ row then needs only its gate) and the verdict lands at once; the president-elect
 | The national vote | the game's poll on the day (the live prediction, the government's record over its term shifting it - the call E1's reference world reads) × E1's factors (US-6); where the election is of record the field of record, every other column at its share of record; later fields unnamed at factor 1.0 | E1 [FITTED]; R-US2 (a) |
 | The states | the previous presidential election of record's states, moved to the national vote by §689's normalised uniform swing; Maine's and Nebraska's districts with their state, in two-party terms; the two nominees and every other candidate together, as US-4 measured it - the derivation US-4's instrument reads its (a) column from | R-US14 (a), RULED (G2); US-4's DECLARED form |
 | The electors | the statutes in force per jurisdiction (`ElectoralCollege`): winner-take-all, Maine's and Nebraska's district method; the electors in force the catalog holds for the year, carried forward from 2032 and labelled so on the Parliament page's president row | R-EL8; R-US13 (a), RULED (F8) |
-| No majority | the House seated on 6 January chooses by states - one vote a state, a majority of ALL the states to elect (from the apportionment, not from the delegations listed); a delegation votes its majority party's nominee, a tied delegation casts none; until the game elects the House, the House of record by its districts | R-US3 (a), RULED (F8) - the delegation's vote DECLARED |
-| The chamber | not elected: the House stays the record's, by date, and the polling day records that no chamber is elected | R-US1 (a), RULED (F8) |
+| No majority | the House seated on 6 January chooses by states - one vote a state, a majority of ALL the states to elect (from the apportionment, not from the delegations listed); a delegation votes its majority party's nominee, a tied delegation casts none; the House the game elected where it sits (US-16), else the House of record by its districts. A House that cannot choose hands the Vice President to the Senate the same day, a majority of the whole Senate to choose; from the oath that Vice President acts as President, else the Speaker - never the sitting president | R-US3 (a), RULED (F8) - the delegation's vote DECLARED; R-US22, RULED (I6) |
+| The chamber | elected on the same day by US-16's count (below), seated on 3 January; the controller's chamber path records that no chamber is elected through it | R-US1 (a), RULED (F8); US-16 |
 | The save | the contest rides format 39; the states are re-derived from the national shares it keeps (`UsPresidentialElection.StatesOf`), so no per-state field is saved | US-7's step for the pair |
 | A later count | swings from the record's 2024 states, not the game's own 2024 count (which the stored contest re-derives exactly) - asked of Elias: the record's states or the game's own, and whether US-26 owns the choice | R-US11 (a), RULED (the national prior and loyalty pair, US-26's to build); the state prior ASKED |
 
@@ -862,7 +862,46 @@ Its states against US-4's (a) column at the true national shares (*The readings*
 
 **A later day**, on a planted even poll: 7 Nov 2028 counts 302 to 236 - the field unnamed ("Republican Party's candidate (2028)") at E1's future factor and no minor candidate, the states from the record's 2024 - not the game's own 2024 count, which the stored contest could give (asked of Elias, with whether US-26 owns it) - the swing closing to within 5.1E-006 of the national shares (with no minor candidate to absorb the floor it closes only approximately; no call moves), the electors those in force in 2024 (the 2020 census's, by law in force for 2028; carried forward from 2032, R-US13 (a), and labelled so on the president row).
 
-**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Senate's choice of the Vice President; a House that cannot choose (who governs then is US-7's reading 3, asked). The per-state ballot table of the minor candidates (US-6's departure, asked) would not move an elector while the states pool them.
+**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Vice President's own electoral count (the tickets are one: where the House cannot choose, the Senate chooses the Vice President, who acts from the oath - R-US22, RULED, held by PresidencyDiagnostic). The per-state ballot table of the minor candidates (US-6's departure, asked) would not move an elector while the states pool them.
 
 The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8) and R-US14 (a) (G2), each RULED; R-US11 (a), RULED, is US-26's to build.
+<!-- END GENERATED -->
+
+## The Congress - US-16
+
+The game's Congress count (`docs/specs/USA_STAGE_PLAN.md`, US-16 - checkpoint 2; R-US18 (b) and R-US19 (c) over (a), ruled). On the presidential polling day the
+day loop counts the House and the Senate class whose terms expire beside the president (`UsCongressElection.Count`, on the poll the presidential count reads and
+the night's states), and seats both on 3 January; from then the record seats no House in that world, and only the Senate seats the game did not elect. The
+acceptance is `PoliSim.EditorTools.CongressElectionDiagnostic`, which writes the readings below and fails where they no longer say what it measures.
+
+| part | what it does | basis |
+|---|---|---|
+| The day | the presidential polling day; the new Congress seated at noon on the 3rd of January after it (a date) | 2 U.S.C. §§1 and 7; 3 U.S.C. §21(1); the Twentieth Amendment §2 |
+| The House | state delegations by a state swing: each state's base REP share of REP+DEM moved by the national swing in the poll (REP / (REP + DEM) on the day against the base's own-line vote), its seats anchored on the base's own; the base the record's latest House election, then the game's own last count | R-US18 (b), RULED (I1); R-US15 (a) (G2) |
+| The seats in force | the apportionment the catalog reads for the year, carried forward past the last read; the House's total asserted on every count | 2 U.S.C. 2a; R-US13 (a) |
+| The Senate | the class whose terms expire, and the specials of the day the record holds: each seat's share its state's from the presidential count that night, moved by its race's factor fitted on 2024's class only; later fields at factor 1.0; a seat at exactly a half by the block's cascade | R-US19 (c) over (a), RULED (I2); Art. I §3 cl. 2 |
+| The Senate seated | the record's seats by date, with every seat the game elected over them from its 3 January | R-US1 (a), RULED (F8); R-US10 (a) |
+| Ties | an exact state or district tie in the presidential count is a seeded draw, never in one party's favour | J4 (US-8c) - the district tie Code's reading |
+| The save | the contests ride format 49: each state's share, delegation and unopposed seats are the next count's base | US-11's *In play* |
+
+### The readings (US-16)
+
+<!-- GENERATED by PoliSim.EditorTools.CongressElectionDiagnostic.WriteReadings. DO NOT EDIT BY HAND. source-digest: fefeced4807b601c62ab1aec7fbe4e9fff68264bfb62529b0b9373e88c1aca64 -->
+**The Congress election of 5 Nov 2024** - a fresh world on its eve (the epoch 4 Nov 2024, seed 777, the USA the player's country, REP), stepped in the controller's order: its own count holds the House and the Senate class on the presidential polling day, on the poll the presidential count reads, and seats both on 3 Jan 2025.
+
+**The House** (R-US18 (b), RULED - I1): REP **216**, DEM **219** of 435, against the record's **220 / 215** - N -4. V(T) 0.4890 (the poll on the day, REP / (REP + DEM)) against 2022's own-line 0.5140, a swing of -0.0250. Delegations REP 25, DEM 22, tied 3, against the record's 30 / 18 / 2; K 44/50. Seats misplaced, G 20: AK REP 0 (record 1), AL REP 6 (record 5), CA REP 11 (record 9), CO REP 3 (record 4), FL REP 19 (record 20), MI REP 6 (record 7), MS REP 2 (record 3), NC REP 7 (record 10), NY REP 11 (record 7), OR REP 2 (record 1), PA REP 8 (record 10), TX REP 24 (record 25), WI REP 5 (record 6).
+
+At the record's own swing (2024's own-line V 0.5132) the same count gives REP 222 - US-11's C4 (b) row above reads REP 222: the game counts the rule R-US18 was measured on.
+
+**The Senate** (R-US19 (c) over (a), RULED - I2): class 1's seats and the specials of the day, 34 seats - REP **15**, DEM **19**, against the record's **15 / 19**; called wrong: none. Each seat takes its state's share from the presidential count that night, moved by its race's factor c_j, fitted on 2024's class only (34 seats seated with a factor; |c_j| mean 0.136, largest 0.532); at 2024's true national vote the factors reproduce the class by construction (none called wrong).
+
+**The 119th the world seats** from 3 Jan 2025: the House DEM 219, REP 216 (435); the Senate REP 53, DEM 47 (100) - the seats the game did not elect stay the record's, by date. The record's own 119th Senate on that day: REP 52, DEM 47, 1 vacant. The economic vote reads the government as divided - the president's party DEM, the House's largest DEM, the Senate's majority REP.
+
+**Every later election** (planted even polls, each on the game's own previous count): 2028 (class 3, from the game's 2024): the House REP 220 DEM 215 = 435, the Senate seated 3 Jan 2029 = 100; 2032 (class 2, from the game's 2028): the House REP 220 DEM 215 = 435, the Senate seated 3 Jan 2033 = 100; 2036 (class 1, from the game's 2032): the House REP 220 DEM 215 = 435, the Senate seated 3 Jan 2037 = 100.
+
+**Ties** (US-8c, Elias's ruling J4): an exact state tie in the presidential count - and, by Code's reading, a district's - is broken by a seeded draw, never in one party's favour: over 1,000 seeds Pennsylvania's tie goes REP 516 times and Nebraska's 2nd district's 500. The House count's own halves are R-US18's block's (the base winner, the half rule), and a Senate seat at exactly a half goes by R-US19's cascade.
+
+**Not modelled, stated**: third-party winners; runoffs, ranked-choice transfers and Georgia's majority rule; specials the record does not hold; party switches; a delayed oath (every winner sits from 3 January); the midterms (US-27).
+
+The rulings it runs on: R-US18 (b) (I1) and R-US19 (c) over (a) (I2), each RULED; R-US15 (a) (G2); R-US22's order (I6) where the House cannot choose.
 <!-- END GENERATED -->

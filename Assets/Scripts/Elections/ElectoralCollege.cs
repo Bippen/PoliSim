@@ -126,10 +126,18 @@ namespace PoliSim.Elections
         /// same number whatever its lines (US-4's DECLARED form, `UsStateSwingCheck`); the electors those in force in <paramref name="electorsYear"/>.
         /// This is US-4's method (a) as its instrument measured it, moved here so that the game's count and the instrument run one derivation: the
         /// instrument reads its (a) column from this. A winner is the larger of the two nominees (an exact tie goes to the Democratic nominee, as
-        /// US-4's instrument read it - a recount and the statutes' lot are not modelled). Throws where the catalog holds either year not, or where
-        /// the two years' jurisdictions or districts differ.
+        /// US-4's instrument read it - a recount and the statutes' lot are not modelled) - PS-6 US-8c REPLACES that reading: Elias's ruling J4 (2026-10-19,
+        /// `COMPLETED.md` §870): "an exact state tie is broken by a seeded draw, DECLARED, never in one party's favour", and a district's exact tie with it
+        /// (Code's reading of the ruling, reversible by Elias's word) - a fair draw (<see cref="TieBreak"/>) keyed on <paramref name="tieSeed"/>, the year and
+        /// the place, so the same count on the same seed calls the same tie the same way, and a recount from a stored contest re-derives it. Throws where the
+        /// catalog holds either year not, or where the two years' jurisdictions or districts differ.
         /// </summary>
-        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, out StateCall[] calls, out double worstResidual)
+        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, out StateCall[] calls, out double worstResidual) =>
+            FromNationalShares(priorYear, electorsYear, national, 0, out calls, out worstResidual);
+
+        /// <summary>PS-6 US-8c: <see cref="FromNationalShares(int, int, double[], out StateCall[], out double)"/> with its exact ties drawn on <paramref name="tieSeed"/>
+        /// (the overload without one draws on seed 0 - the instruments' and the planted counts'; the game's count hands it the world's master seed).</summary>
+        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, int tieSeed, out StateCall[] calls, out double worstResidual)
         {
             if (national == null || national.Length != 3) { throw new ArgumentException("three national shares: the Democratic nominee, the Republican, every other candidate"); }
             var prior = new List<(int Year, string State, int Electors, long VotesD, long VotesR, long VotesOther, long VotesTotal, int CastD, int CastR, int CastOther, string CastOtherTo)>();
@@ -157,7 +165,7 @@ namespace PoliSim.Elections
             for (int r = 0; r < prior.Count; r++)
             {
                 double[] shares = derived[r];
-                int win = shares[ShareRepublican] > shares[ShareDemocrat] ? Republican : Democrat;
+                int win = shares[ShareRepublican] > shares[ShareDemocrat] ? Republican : shares[ShareDemocrat] > shares[ShareRepublican] ? Democrat : TieBreak(tieSeed, electorsYear, prior[r].State);   // US-8c (J4): an exact tie drawn
                 var call = new StateCall
                 {
                     State = prior[r].State, Electors = inForce[r].Electors, Shares = shares, PriorShares = priorShares[r], Winner = win,
@@ -190,11 +198,41 @@ namespace PoliSim.Elections
                     double d2Next = d2 + (stateNext - statePrior);
                     call.Districts[k] = districts[k].District;
                     call.DistrictDemocraticTwoParty[k] = d2Next;
-                    call.DistrictWinners[k] = d2Next > 0.5 ? Democrat : Republican;
+                    call.DistrictWinners[k] = d2Next > 0.5 ? Democrat : d2Next < 0.5 ? Republican : TieBreak(tieSeed, electorsYear, call.State + "-" + call.Districts[k].ToString(System.Globalization.CultureInfo.InvariantCulture));   // US-8c (J4, Code's reading): a district's exact tie drawn too
                 }
                 college[r] = new Jurisdiction(call.State, call.Electors, win, call.Electors - districts.Count, call.DistrictWinners);
             }
             return college;
+        }
+
+        /// <summary>
+        /// PS-6 US-8c - Elias's ruling J4 (2026-10-19, `COMPLETED.md` §870): AN EXACT TIE BROKEN BY A SEEDED DRAW, never in one party's favour - a fair coin
+        /// (<see cref="Republican"/> or <see cref="Democrat"/>, each with probability one half over seeds) keyed on <paramref name="seed"/>, the election's
+        /// <paramref name="year"/> and the <paramref name="place"/> (a state's postal code, or a district's "ME-2"): SplitMix64's finaliser over the three,
+        /// the place's characters folded in one by one (the generator `SimulationRandom` keys its common draws by - CONVENTION, not a figure about the world).
+        /// Pure: no stream is drawn, so no count of record moves; the same seed, year and place give the same call wherever it is asked (the count, a recount
+        /// from a stored contest, a fork). DECLARED: a recount and the statutes' lot (each state's own tie rule) are not modelled - the draw stands in for both.
+        /// </summary>
+        public static int TieBreak(int seed, int year, string place)
+        {
+            unchecked
+            {
+                ulong z = Mix((ulong)(uint)seed ^ ((ulong)(uint)year << 32));
+                foreach (char ch in place ?? string.Empty) { z = Mix(z ^ ch); }
+                return (Mix(z) & 1UL) == 0UL ? Republican : Democrat;
+            }
+        }
+
+        /// <summary>SplitMix64's finaliser (Steele, Lea and Flood 2014; the constants are the published ones, as in `SimulationRandom`) - CONVENTION.</summary>
+        private static ulong Mix(ulong z)
+        {
+            unchecked
+            {
+                z += 0x9E3779B97F4A7C15UL;
+                z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+                z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+                return z ^ (z >> 31);
+            }
         }
 
         /// <summary>PS-6 US-8: the catalog's latest presidential election before <paramref name="year"/> - the prior a predicted election of that year

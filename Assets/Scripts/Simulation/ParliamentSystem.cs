@@ -90,7 +90,8 @@ namespace PoliSim.Simulation
 
         /// <summary>PS-6 US-15 (R-US1 (a)): seats the second chamber of record on its date - the sibling of <see cref="SeatChamberOfRecord"/> for
         /// `Country.SecondChamberSeats` (the USA's Senate of record, `WorldClock.SecondChamberOfRecord`), copied whole so no later read shares the caller's
-        /// dictionary. A second chamber the game elects (US-16; Italy's Senato at PS-7) seats through a sibling of its own.</summary>
+        /// dictionary. PS-6 US-16: the Senate the game elects seats through this method too - `UsCongressElection.SenateOn`, the record's seats by date with the
+        /// game's over them, is what `SimulationManager.SeatTheSecondChamberOfRecord` hands it (Italy's Senato at PS-7 may take a sibling of its own).</summary>
         public static void SeatSecondChamberOfRecord(Country country, IReadOnlyDictionary<string, int> seats)
         {
             var seated = new Dictionary<string, int>();

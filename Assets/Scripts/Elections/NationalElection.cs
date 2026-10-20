@@ -426,9 +426,11 @@ namespace PoliSim.Elections
                 case CountryId.USA:
                     // PS-6 US-8 (R-US1 (a), RULED - F8: "after that only Congress, until the game elects it"), in place of US-1's line: the polling day elects the
                     // president through the Electoral College (the day loop's count) and no chamber - Congress stays the record's, by date, until the House races
-                    // are built (US-16); PS-6 US-15: the Senate is the record's too, senator by senator on its dates, until its races are built (US-16)
-                    return "No US House election is held in this game yet: the president is elected through the Electoral College on the polling day, and " +
-                           "the House is seated as the record seats it, on its dates, until the House races are built; the Senate is the record's too, on its own dates.";
+                    // are built (US-16); PS-6 US-15: the Senate is the record's too, senator by senator on its dates, until its races are built (US-16).
+                    // PS-6 US-16: the polling day now elects the House and a Senate class too - on the day loop, beside the president (UsCongressElection), seated
+                    // on 3 January - so no chamber is elected through this path, and the words say where it is
+                    return "The president is elected through the Electoral College, and the House and the Senate seats up are elected on the same day, " +
+                           "state by state; the new Congress is seated on the third of January, and until then the House and Senate in office sit.";
                 default:
                     return "This model does not implement this country's electoral system.";
             }

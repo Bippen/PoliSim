@@ -28,7 +28,7 @@ namespace PoliSim.EditorTools
     {
         // ------------------------------------------------------------------ the block's digests and the ruling record (R-US18's THE ASK AND THE BARS)
         /// <summary>The block's SHA-256 digests, preregistered first, then one per amendment naming Elias's ruling; the block must match the last.</summary>
-        private static readonly (string Digest, string Why)[] RuleDigests =
+        internal static readonly (string Digest, string Why)[] RuleDigests =   // internal: PS-6 US-16's CongressElectionDiagnostic asserts the block current and RULED
         {
             ("b827a7f234c2a34933c0e92d506beaa190f16e7655e6b044682f7fe73280152c", "preregistered (§791)"),
             ("5c89b0cf400e50c0e64e687f3f05b8cb74f13f76384bca184773f3724673307a", "AMENDED (G1, §797): choice 4 answered - reading (vi) printed only"),
@@ -41,8 +41,8 @@ namespace PoliSim.EditorTools
         private const string RulingOutcomeOverD = "(a) + S2, S5, S4 [(ii)]";
         private const string RulingDecisiveDigest = "2df09e4c3986bda5b6030d0927929cedc273b8ba8cb3771fd405c7aa9af5d513";
         /// <summary>RULED only: the ruling's words and the option it names - one the block's THE ASK AND THE BARS says can be built.</summary>
-        private const string RulingRuled = "I1 - (b), state delegations by a state swing (S2 answered by the other method); S5 and S4 [(ii)] moot, (b) having no fallback; a map redrawn since the base enters once an election has been held on it (DECLARED)", RulingOption = "(b)";
-        private static readonly string[] BuildableOptions =
+        internal const string RulingRuled = "I1 - (b), state delegations by a state swing (S2 answered by the other method); S5 and S4 [(ii)] moot, (b) having no fallback; a map redrawn since the base enters once an election has been held on it (DECLARED)", RulingOption = "(b)";
+        internal static readonly string[] BuildableOptions =
         {
             "(a) with F-old", "(a) with F-prop", "(b)", "(b) as (b')'s curve", "(c) reconciled to (a) with F-old", "(c) reconciled to (a) with F-prop", "(c) reconciled to (b)",
         };

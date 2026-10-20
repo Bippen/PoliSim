@@ -262,8 +262,8 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// The president in office on <paramref name="date"/>: the winner of the game's latest contest sworn by then (<see cref="UsPresidentialElection.TryInOffice"/>);
-        /// else, while the record seats the office, the president of record by date; else the sitting president the country's government names (a contest the House
-        /// could not decide leaves him there). <paramref name="person"/> is who he is (<see cref="PersonOf"/>), <paramref name="shownAs"/> the name the game shows.
+        /// else, while the record seats the office, the president of record by date; else the sitting president the country's government names (since PS-6 US-16,
+        /// R-US22: under a contest the House could not decide, the one acting as President, never the sitting president past the oath). <paramref name="person"/> is who he is (<see cref="PersonOf"/>), <paramref name="shownAs"/> the name the game shows.
         /// </summary>
         public static bool TryPresidentOn(Country country, DateTime date, out string person, out string party, out string shownAs)
         {
@@ -309,7 +309,9 @@ namespace PoliSim.Elections
                 return person != null;
             }
             if (WorldClock.RecordSeatsExecutive(country, date)) { return TryVicePresidentOfRecordOn(country.Id, date, out person, out party, out basis); }
-            if (country.Government != null && country.Government.Kind == WorldClock.ExecutiveKind.Presidency)
+            // PS-6 US-16 - R-US22 (DECLARED): under an acting president no Vice President is in office - the VP the Senate chose acts as President, or the Speaker
+            // does - so none is named here, and `UsSenate.VicePresidentParty` falls back to the acting president's party for an equal Senate
+            if (country.Government != null && country.Government.Kind == WorldClock.ExecutiveKind.Presidency && country.Government.Outcome != UsPresidentialElection.ActingOutcome)
             {
                 // a sitting president of record carried past an undecided contest: the Vice President of record on the day his row opened
                 foreach (WorldClock.GovernmentOfRecord g in WorldClock.Governments(country.Id))
@@ -486,14 +488,37 @@ namespace PoliSim.Elections
             return p.HasValue ? NomineeOf(country, pollingDay, p.Value) : null;
         }
 
+        /// <summary>PS-6 US-16 - R-US22: the president in office who may stand as an incumbent - <see cref="TryPresidentOn"/>'s, but none where the office is held
+        /// by someone ACTING after an undecided contest (the Vice President the Senate chose, or the Speaker): an acting office is no presidency won, so it makes no
+        /// incumbent nominee, puts no title on a ballot and counts toward no term limit; the acting party nominates as a party out of the White House does, the
+        /// player's pick open (DECLARED). <paramref name="acting"/> is that acting party, null where none acts.</summary>
+        private static bool TryIncumbentOn(Country country, DateTime date, out string person, out string party, out string shownAs, out string acting)
+        {
+            acting = null;
+            bool held = TryPresidentOn(country, date, out person, out party, out shownAs);
+            if (held && country.Government != null && country.Government.Outcome == UsPresidentialElection.ActingOutcome && !UsPresidentialElection.TryInOffice(country, date, out _)
+                && !WorldClock.RecordSeatsExecutive(country, date))
+            {
+                acting = party;
+                person = null; party = null; shownAs = null;
+                return false;
+            }
+            return held;
+        }
+
         private static Nominee NomineeOf(Country country, DateTime pollingDay, PoliticalParty party)
         {
             string unnamed = UnnamedNominee(party, pollingDay.Year);
-            bool president = TryPresidentOn(country, pollingDay, out string incumbent, out string incumbentParty, out string shownAs);
+            bool president = TryIncumbentOn(country, pollingDay, out string incumbent, out string incumbentParty, out string shownAs, out string actingParty);
             if (!president || incumbentParty != party.Abbrev)
             {
-                // US-28b (R-US26 (a) as ruled): the out-party's default unnamed, the player's pick from its people
-                var outParty = new Nominee { Party = party.Abbrev, Person = unnamed, Default = unnamed, OutParty = true, Basis = "the party's candidate, unnamed - the party does not hold the presidency" };
+                // US-28b (R-US26 (a) as ruled): the out-party's default unnamed, the player's pick from its people; PS-6 US-16: so too a party whose acting
+                // president holds the office after an undecided contest (R-US22) - no presidency won
+                var outParty = new Nominee
+                {
+                    Party = party.Abbrev, Person = unnamed, Default = unnamed, OutParty = true,
+                    Basis = actingParty == party.Abbrev ? "the party's candidate, unnamed - the party's president only acts, no one having been elected" : "the party's candidate, unnamed - the party does not hold the presidency",
+                };
                 ApplyPick(country, pollingDay, outParty);
                 return outParty;
             }
@@ -550,7 +575,7 @@ namespace PoliSim.Elections
             if (!p.HasValue) { return people; }
             void Add(string person) { if (!string.IsNullOrEmpty(person) && !people.Contains(person)) { people.Add(person); } }
             if (TryVicePresidentOn(country, pollingDay, out string vice, out string viceParty, out string _) && viceParty == party) { Add(vice); }
-            if (TryPresidentOn(country, pollingDay, out string president, out string presidentParty, out string _) && presidentParty == party) { Add(president); }
+            if (TryIncumbentOn(country, pollingDay, out string president, out string presidentParty, out string _, out string _) && presidentParty == party) { Add(president); }   // PS-6 US-16: an acting office's holder (or title) is no person of the party's by it
             if (country.UsPresidentialElections != null)
             {
                 var held = new List<UsPresidentialElection.Contest>(country.UsPresidentialElections);
@@ -573,7 +598,7 @@ namespace PoliSim.Elections
         {
             var choices = new List<string>();
             if (country == null || !UsPresidentialElection.ElectsIn(country.Id) || FieldOfRecord(pollingDay)) { return choices; }
-            bool holds = TryPresidentOn(country, pollingDay, out string president, out string presidentParty, out string _) && presidentParty == party;
+            bool holds = TryIncumbentOn(country, pollingDay, out string president, out string presidentParty, out string _, out string _) && presidentParty == party;
             if (holds && Eligible(country, president, pollingDay)) { return choices; }
             PoliticalParty? p = PartyOf(country.Id, party);
             if (!p.HasValue) { return choices; }

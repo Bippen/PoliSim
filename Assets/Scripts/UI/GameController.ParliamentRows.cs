@@ -49,6 +49,7 @@ namespace PoliSim.UI
             DrawRecordRow(book);   // PS-6 US-2: the record by date, where the game does not elect the chamber - the president with it while the record seats the executive
             DrawPresidentRow(book);   // §770 (PS-5 item C4): the president the veto reads, and the game's own presidential election
             DrawUsPresidentRow(book);   // PS-6 US-8: the US president from the game's own count - the electors, the House's choice, the oath, the record beside it
+            DrawUsCongressRow(book);   // PS-6 US-16: the House and the Senate class the game elected on the same day - the record's 220/215 and its 119th Senate beside them
             DrawUsNomineeRow(book);   // PS-6 US-28: the term-limited party's next nominee - the Vice President by default, the player's pick
             DrawConfidence(book);   // PS-3i (§636)
             Rect tail = ReserveRowPx(1f);
@@ -457,7 +458,7 @@ namespace PoliSim.UI
         /// </summary>
         private void DrawRecordRow(PeopleSlips.Book book)
         {
-            if (_playerCountry == null || !WorldClock.RecordSeatsChamber(PlayerCountryId)) { return; }
+            if (_playerCountry == null || !WorldClock.RecordSeatsChamber(_playerCountry, _simulationManager.CurrentDate)) { return; }   // PS-6 US-16: not once the game's own House sits
             System.DateTime today = _simulationManager.CurrentDate;
             CountryId country = _playerCountry.Id;
             WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(country, today);
@@ -513,7 +514,8 @@ namespace PoliSim.UI
             // record stops naming presidents from the polling day, and the president row takes over then); the review's L2: not "until the election"
             // PS-6 US-15: and not the Senate - the record's, senator by senator on its dates
             bool upper = WorldClock.RecordSeatsSecondChamber(country);
-            slip.Add((upper ? "THE GAME DOES NOT ELECT CONGRESS YET: THE RECORD'S HOUSE AND SENATE ARE SEATED ON THE RECORD'S DATES" : "THE GAME DOES NOT ELECT THE HOUSE YET: THE RECORD'S HOUSE IS SEATED ON THE RECORD'S DATES")
+            // PS-6 US-16: the game elects the House and a Senate class on its polling day - until its Congress is seated, the record's sits
+            slip.Add((upper ? "UNTIL THE CONGRESS THE GAME ELECTS IS SEATED, THE RECORD'S HOUSE AND SENATE SIT ON THE RECORD'S DATES" : "UNTIL THE HOUSE THE GAME ELECTS IS SEATED, THE RECORD'S HOUSE SITS ON THE RECORD'S DATES")
                      + (head ? ", AND ITS PRESIDENT SERVES UNTIL THE WINNER OF THE GAME'S OWN ELECTION TAKES THE OATH" : string.Empty)
                      + "; PAST THE RECORD, THE LAST OF RECORD STANDS");
             var seated = new List<(string key, int seats)>();
@@ -704,8 +706,11 @@ namespace PoliSim.UI
             }
             Words("THE PRESIDENT", caption);
             if (!string.IsNullOrEmpty(governing.PmParty)) { Mark(governing.PmParty); }
-            Words(Surname(name).ToUpperInvariant(), caption);
-            Words(ofGame ? "ELECTED IN THE GAME" : "OF RECORD", muted);
+            // PS-6 US-16 - R-US22: the Speaker acting is named by office, not by a surname the record does not give
+            bool speakerActs = governing.Outcome == UsPresidentialElection.ActingOutcome && UsPresidentialElection.TryActingOn(_playerCountry, today, out UsPresidentialElection.Contest actingFor)
+                               && actingFor.ActingAs == UsPresidentialElection.ActsAsSpeaker;   // the contest the acting office serves for, not the latest held
+            Words(speakerActs ? "THE SPEAKER" : Surname(name).ToUpperInvariant(), caption);
+            Words(ofGame ? "ELECTED IN THE GAME" : governing.Outcome == UsPresidentialElection.ActingOutcome ? "ACTING" : "OF RECORD", muted);
             if (elect)
             {
                 Words("ELECT", muted);
@@ -732,7 +737,7 @@ namespace PoliSim.UI
             var slip = new SlipContent("THE PRESIDENT");
             slip.Add(name.ToUpperInvariant() + (string.IsNullOrEmpty(governing.PmParty) ? string.Empty : " · " + PartySystems.ShortName(country, governing.PmParty).ToUpperInvariant())
                 + " · IN OFFICE SINCE " + DeskDay(since));
-            slip.Add(ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT AT THE OATH");
+            slip.Add(ofGame ? "ELECTED IN THE GAME'S OWN ELECTION" : governing.Outcome == UsPresidentialElection.ActingOutcome ? "ACTING AS PRESIDENT - NO ONE WAS ELECTED BY THE OATH" : "OF RECORD - THE GAME'S OWN ELECTION SEATS THE NEXT AT THE OATH");
             slip.Add("POLLING DAY " + DeskDay(last.PollingDay) + " - THE TUESDAY AFTER THE FIRST MONDAY IN NOVEMBER, EVERY FOURTH YEAR");
             foreach (UsPresidentialElection.Tally t in last.Electors)
             {
@@ -752,7 +757,16 @@ namespace PoliSim.UI
                 slip.Add("NO MAJORITY OF THE " + last.ElectorsAppointed.ToString(CultureInfo.InvariantCulture) + " ELECTORS - THE HOUSE CHOOSES BY STATES, ONE VOTE A STATE (THE TWELFTH AMENDMENT)");
                 foreach (UsPresidentialElection.Tally t in last.Delegations) { slip.Add(Surname(t.Candidate).ToUpperInvariant() + " " + t.Votes.ToString(CultureInfo.InvariantCulture) + " STATES"); }
             }
-            if (undecided) { slip.Add("NO ONE IS ELECTED - A HOUSE THAT CANNOT CHOOSE IS NOT MODELLED; THE SITTING PRESIDENT STAYS"); }
+            if (undecided)
+            {
+                // PS-6 US-16 - R-US22 as ruled: the Senate chooses the Vice President, who acts as President from the oath; else the Speaker acts - never the sitting president
+                slip.Add("NO ONE IS ELECTED - THE HOUSE COULD NOT CHOOSE");
+                foreach (UsPresidentialElection.Tally t in last.SenateChoice) { slip.Add("THE SENATE, FOR VICE PRESIDENT: " + t.Candidate.ToUpperInvariant() + " (" + PartySystems.ShortName(country, t.Party).ToUpperInvariant() + ") " + t.Votes.ToString(CultureInfo.InvariantCulture) + " SENATORS"); }
+                slip.Add(last.Acting == null
+                    ? "FROM THE OATH THE VICE PRESIDENT THE SENATE CHOOSES ACTS AS PRESIDENT, OR, IF THE SENATE CANNOT CHOOSE EITHER, THE SPEAKER - NEVER THE SITTING PRESIDENT"
+                    : last.Acting.ToUpperInvariant() + " (" + PartySystems.ShortName(country, last.ActingParty).ToUpperInvariant() + ") ACTS AS PRESIDENT - THE HOUSE VOTES ONCE, SO TO THE NEXT OATH"
+                      + (last.ActingAs == UsPresidentialElection.ActsAsSpeaker ? " - THE SENATE COULD NOT CHOOSE A VICE PRESIDENT EITHER" : " - THE VICE PRESIDENT THE SENATE CHOSE"));
+            }
             // the record's reference, read once per polling day and country, not on every OnGUI event (DrawReferenceRow's cost note, the review's L11)
             if (last.PollingDay != _usReferenceFor || country != _usReferenceCountry)
             {
@@ -770,8 +784,105 @@ namespace PoliSim.UI
                 slip.Add("THE GAME'S ELECTION IS ITS OWN - THIS IS THE RECORD");
             }
             if (next && !elect && !houseAhead) { slip.Add("NEXT POLLING DAY " + DeskDay(nextDay)); }
-            slip.Add("THE HOUSE STAYS THE RECORD'S, BY DATE - THE GAME DOES NOT ELECT IT YET");
+            slip.Add(UsCongressElection.Held(_playerCountry, today) ? "THE HOUSE AND THE SENATE SEATS UP WERE ELECTED ON THE SAME DAY - SEE CONGRESS" : "THE HOUSE AND THE SENATE SEATS UP ARE ELECTED ON THE SAME DAY");
             book.Anchors["uspresident"] = slip;
+            DrawRowRule(row);
+            GUILayout.Space(StatsUnit(10f));
+        }
+
+        // the Congress row's reference, read once per polling day and country (the president row's cost note)
+        private System.DateTime _usCongressReferenceFor = System.DateTime.MinValue;
+        private CountryId _usCongressReferenceCountry;
+        private WorldClock.Reference _usCongressReference;
+
+        /// <summary>
+        /// PS-6 US-16 (the plan: "The reference shows the record's 220/215 and the 119th Senate of record"): THE CONGRESS THE GAME ELECTED - drawn once the game
+        /// has held its own Congress election (before it the record row names the House of record, <see cref="DrawRecordRow"/>). The row: CONGRESS, ELECTED IN
+        /// THE GAME; the House's majority; the Senate's majority as seated; the day the new Congress sits. The slip: the House's count (REP and DEM of 435, the
+        /// delegations by class), the Senate seats the game elected by side, the Senate as seated (the seats the game did not elect stay the record's, by date),
+        /// and the record beside it - the House elected that day and the Senate of record as the Congress opened (`WorldClock.TryReference`). Words only; D-US
+        /// composes the night.
+        /// </summary>
+        private void DrawUsCongressRow(PeopleSlips.Book book)
+        {
+            if (_playerCountry == null || !UsCongressElection.ElectsIn(PlayerCountryId)) { return; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            if (!UsCongressElection.TryLatest(_playerCountry, today, out UsCongressElection.Contest last)) { return; }
+            CountryId country = _playerCountry.Id;
+            bool seated = last.Convenes.Date <= today.Date;
+            IReadOnlyDictionary<string, int> senate = _playerCountry.SecondChamberSeats;
+            string houseMajority = last.HouseRep > last.HouseDem ? "REP" : last.HouseDem > last.HouseRep ? "DEM" : null;
+            string senateMajority = seated && senate != null ? UsSenate.MajorityOf(senate, UsSenate.VicePresidentParty(_playerCountry, today)) : null;
+
+            GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
+            GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
+            Rect row = ReserveRow(30f);
+            float x = row.x;
+            void Words(string words, GUIStyle style)
+            {
+                float w = Mathf.Ceil(style.CalcSize(new GUIContent(words)).x) + 2f;
+                PoliSimWidgets.MeasuredLabel(new Rect(x, row.y, w, row.height), words, style);
+                x += w + StatsUnit(10f);
+            }
+            void Mark(string key)
+            {
+                DrawPartyMarkSlot(new Rect(x, row.y, StatsUnit(16f), row.height), country, key);
+                x += StatsUnit(16f) + StatsUnit(8f);
+            }
+            Words("CONGRESS", caption);
+            Words("ELECTED IN THE GAME", muted);
+            Words("THE HOUSE", muted);
+            if (houseMajority != null) { Mark(houseMajority); }
+            if (seated)
+            {
+                Words("THE SENATE", muted);
+                if (senateMajority != null) { Mark(senateMajority); }
+            }
+            Words(seated ? "SEATED" : "SITS FROM", muted);
+            Rect stamp = RowChipRectFrom(x, row, DeskDay(last.Convenes), padBoard: 6f);
+            DrawRowChip(stamp, DeskDay(last.Convenes), ChipFace.Outline);
+            x = stamp.xMax + StatsUnit(10f);
+            SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "uscongress");
+
+            string Short(string key) => PartySystems.ShortName(country, key).ToUpperInvariant();
+            string N(int n) => n.ToString(CultureInfo.InvariantCulture);
+            var slip = new SlipContent("CONGRESS · ELECTED " + DeskDay(last.PollingDay));
+            int delegationsR = 0, delegationsD = 0;
+            foreach (UsCongressElection.StateHouse s in last.House) { if (s.Rep > s.Dem) { delegationsR++; } else if (s.Dem > s.Rep) { delegationsD++; } }
+            slip.Add("THE HOUSE: " + Short("REP") + " " + N(last.HouseRep) + " · " + Short("DEM") + " " + N(last.HouseDem) + " OF " + N(UsCongressElection.HouseMembers)
+                + " · STATE DELEGATIONS " + Short("REP") + " " + N(delegationsR) + " · " + Short("DEM") + " " + N(delegationsD) + " · TIED " + N(last.House.Count - delegationsR - delegationsD));
+            slip.Add("EACH STATE MOVED FROM " + (last.BaseOfRecord ? "THE RECORD'S " : "THE GAME'S OWN ") + N(last.BaseYear) + " HOUSE VOTE BY THE NATIONAL SWING IN THE POLL");
+            int specials = last.Senate.FindAll(s => s.Class != last.SenateClass).Count;
+            slip.Add("THE SENATE SEATS UP: " + Short("REP") + " " + N(last.SenateOf("REP")) + " · " + Short("DEM") + " " + N(last.SenateOf("DEM")) + " · CLASS " + N(last.SenateClass)
+                + (specials > 0 ? " AND " + N(specials) + (specials == 1 ? " SPECIAL ELECTION" : " SPECIAL ELECTIONS") : string.Empty) + " · EACH STATE'S SHARE FROM THE PRESIDENTIAL COUNT THAT NIGHT");
+            if (seated && senate != null)
+            {
+                var parts = new List<string>();
+                foreach (KeyValuePair<string, int> kv in senate) { if (kv.Value > 0) { parts.Add(Short(kv.Key) + " " + N(kv.Value)); } }
+                slip.Add("THE SENATE AS SEATED: " + string.Join(" · ", parts) + " - THE SEATS THE GAME ELECTED ON " + string.Join(", ", UsCongressElection.SeatedPollingDays(_playerCountry, today).ConvertAll(DeskDay))
+                    + "; EVERY OTHER SEAT AS THE RECORD SEATS IT, BY DATE");
+            }
+            if (last.PollingDay != _usCongressReferenceFor || country != _usCongressReferenceCountry)
+            {
+                _usCongressReferenceFor = last.PollingDay;
+                _usCongressReferenceCountry = country;
+                _usCongressReference = WorldClock.TryReference(country, last.PollingDay, out WorldClock.Reference fresh) ? fresh : null;
+            }
+            WorldClock.Reference reference = _usCongressReference;
+            if (reference != null)
+            {
+                var house = new List<string>();
+                foreach (KeyValuePair<string, int> kv in reference.Seats) { if (kv.Value > 0) { house.Add(Short(kv.Key) + " " + N(kv.Value)); } }
+                slip.Add(reference.Label + ": THE HOUSE " + string.Join(" · ", house));
+                if (reference.SecondChamber != null)
+                {
+                    var upper = new List<string>();
+                    foreach (KeyValuePair<string, int> kv in reference.SecondChamber) { if (kv.Value > 0) { upper.Add(Short(kv.Key) + " " + N(kv.Value)); } }
+                    slip.Add("THE SENATE OF RECORD ON " + DeskDay(reference.SecondChamberOn) + ": " + string.Join(" · ", upper) + (reference.SecondChamberVacant > 0 ? " · " + N(reference.SecondChamberVacant) + " VACANT" : string.Empty));
+                }
+                slip.Add("THE GAME'S ELECTION IS ITS OWN - THIS IS THE RECORD");
+            }
+            book.Anchors["uscongress"] = slip;
             DrawRowRule(row);
             GUILayout.Space(StatsUnit(10f));
         }

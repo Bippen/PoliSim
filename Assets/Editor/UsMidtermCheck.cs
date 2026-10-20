@@ -308,6 +308,7 @@ namespace PoliSim.EditorTools
             Check(w.Reached, F("the world stepped from {0:yyyy-MM-dd} to {1:yyyy-MM-dd}, one day at a time ({2} days, {3} ms)", Epoch, w.Day, w.Days, w.Ms));
             Check(houseFrom, F("the 2024 election's House seated from {0:yyyy-MM-dd} (once; the record's day {1:yyyy-MM-dd}) and holding on the polling day: {2}", w.HouseFrom, HouseDay, w.HouseHeld));
             Check(w.HouseHeld, "the House on the polling day is the one the 2024 election chose, its seats the record's");
+            Check(w.CongressSetAside != null, F("the world's own Congress count of 5 Nov 2024 (US-16) set aside the day it was held, before any seat - the block's world holds the record's (DECLARED, asked): {0}", w.CongressSetAside ?? "NO COUNT HELD"));
             Check(oath,
                 F("Trump (REP) the president from the oath, as of record - elected by the world's own count (US-8: {0}): the government changed to REP on {1:yyyy-MM-dd} (the record's {2:yyyy-MM-dd}); on the polling day {3}",
                     w.CountedLine ?? "no count held", w.OathFrom, OathDay, w.Executive));
@@ -462,6 +463,8 @@ namespace PoliSim.EditorTools
             public Dictionary<string, double> LiveShift, LiveMagnitudes;
             public WorldClock.ExecutiveKind Kind;
             public string PmParty, Executive, Largest;
+            /// <summary>PS-6 US-16: the world's own Congress count's line, set aside the day it was held (see the step loop).</summary>
+            public string CongressSetAside;
             /// <summary>The Senate seated on the polling day and its majority (<see cref="UsSenate.MajorityOf"/>, the Vice President read on that day).</summary>
             public bool SenateSeated;
             public string SenateMajority;
@@ -508,6 +511,11 @@ namespace PoliSim.EditorTools
                             sim.AdvanceTurn(none);
                         }
                         result.Days++;
+                        // PS-6 US-16 (DECLARED, asked): R-US20's block requires the world to hold the record - "the House the 2024 election chose from 3 Jan 2025"
+                        // (R-US1 (a), US-2, as the block was preregistered) - and a world now elects its own Congress on 5 Nov 2024. The staging sets that count aside
+                        // the day it is held, before anything is seated from it, so the record's 119th sits as the block requires; whether R-US20's world should read
+                        // the game's own House instead is an amendment for Elias (US-27 builds the midterm on the game's chambers)
+                        if (usa.UsCongressElections.Count > 0) { result.CongressSetAside = usa.UsCongressElections[0].Line; usa.UsCongressElections.Clear(); }
                         bool heldNow = Holds(usa.ParliamentSeats);
                         if (heldNow && !heldBefore) { result.HouseChanges++; if (result.HouseFrom == DateTime.MinValue) { result.HouseFrom = sim.CurrentDate; } }
                         heldBefore = heldNow;

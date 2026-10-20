@@ -64,9 +64,9 @@ namespace PoliSim.EditorTools
                 Check(presidentRow, "the USA's ledger carries a President row");
                 // PS-6 US-8 (in place of US-1's pin): the US start names its polling day, which the game now holds - 5 November 2024, 3 U.S.C. §21(1)'s day,
                 // the calendar's own answer (WorldClock.TryNextPollingDay), held by name. The folder card's line and the start card's mode line name the run-up;
-                // the brief's polling-day clause says what the day elects - the president, through the Electoral College - and what stays the record's: the House,
-                // seated on its record's day (the brief reads it from the record), and (PS-6 US-15) the Senate of record on its own dates; the ledger's Polling day
-                // row; the not-held reason says the House is not elected and the Senate is the record's too. The record's next president is named on none of them
+                // the brief's polling-day clause says what the day elects - the president, through the Electoral College, and (PS-6 US-16) the House and the Senate
+                // seats up, the new Congress seated on 3 January - and that the Senate of record changes on its own dates until then; the ledger's Polling day
+                // row; the not-held reason says the chamber is elected on the day loop beside the president, not through the chamber's path. The record's next president is named on none of them
                 // (the game's count decides who takes office). Each pinned whole.
                 bool electionRow = false, pollingRow = false;
                 foreach (StartBrief.Row row in StartBrief.Rows(usa))
@@ -79,9 +79,9 @@ namespace PoliSim.EditorTools
                 bool usaHeld = WorldClock.TryNextPollingDay(CountryId.USA, usa.Opens, out DateTime usaPolling);
                 bool namesRecordsNext = usaText.Contains("Donald J. Trump") || usaLine.Contains("TRUMP") || usaMode.Contains("TRUMP");
                 Check(usaHeld && usaPolling == new DateTime(2024, 11, 5) && usa.PollingDay == usaPolling
-                      && usaText.Contains("Polling day is 5 November 2024. The president is elected through the Electoral College; the House of record elected that day is seated on 3 January 2025, as the record dates it, and the Senate of record changes on its own dates.")
+                      && usaText.Contains("Polling day is 5 November 2024. The president is elected through the Electoral College; the House and the Senate seats up are elected that day, and the new Congress is seated on 3 January 2025; until then the Senate of record changes on its own dates.")
                       && usaLine == "OPENS 12 MAR 2024 · THE RUN-UP TO 5 NOV 2024" && usaMode == "RUN-UP · OPENS 12 MAR 2024"
-                      && usaReason == "No US House election is held in this game yet: the president is elected through the Electoral College on the polling day, and the House is seated as the record seats it, on its dates, until the House races are built; the Senate is the record's too, on its own dates."
+                      && usaReason == "The president is elected through the Electoral College, and the House and the Senate seats up are elected on the same day, state by state; the new Congress is seated on the third of January, and until then the House and Senate in office sit."
                       && !namesRecordsNext,
                     F("US-8, US-15: the USA's start names the polling day the game holds - the calendar's {0:yyyy-MM-dd}; the folder card \"{1}\"; the start card \"{2}\"; the not-held reason \"{3}\"; the record's next president named on none ({4})",
                         usaPolling, usaLine, usaMode, usaReason, !namesRecordsNext));

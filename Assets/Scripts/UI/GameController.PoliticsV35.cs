@@ -205,8 +205,9 @@ namespace PoliSim.UI
             if (seated <= 0) { return; }
             string name = StartBrief.SecondChamberOf(PlayerCountryId) ?? "Second chamber";
             bool ofRecord = WorldClock.RecordSeatsSecondChamber(PlayerCountryId);
+            bool gameSeats = c != null && UsCongressElection.GameSeatsSenate(c, _simulationManager.CurrentDate);   // PS-6 US-16: from its 3 January the game's first class sits
             // R-US10 (a): the chamber card says "including N independents" - at rest, beside the chamber's name (read from the record's seating for the day)
-            int independents = ofRecord ? UsSenate.On(_simulationManager.CurrentDate).Independents : 0;
+            int independents = ofRecord && !gameSeats ? UsSenate.On(_simulationManager.CurrentDate).Independents : 0;
             string label = name + " seats" + (independents > 0 ? " - including " + independents.ToString(System.Globalization.CultureInfo.InvariantCulture) + (independents == 1 ? " independent" : " independents") : string.Empty);
             float gutter = V35.Px(V35.Gutter);
             bool blocs = HemicycleRenderer.BlocsKnown(PlayerCountryId);
@@ -236,7 +237,7 @@ namespace PoliSim.UI
             {
                 System.DateTime today = _simulationManager.CurrentDate;
                 UsSenate.Seating senate = UsSenate.On(today);
-                slip.Add("SEATED" + SecondChamberSeatsWords(PlayerCountryId, seats, senate));
+                slip.Add("SEATED" + SecondChamberSeatsWords(PlayerCountryId, seats, gameSeats ? null : senate));
                 string vicePresidentParty = UsSenate.VicePresidentParty(c, today);
                 string majority = UsSenate.MajorityOf(seats, vicePresidentParty);
                 if (majority != null)
@@ -246,8 +247,16 @@ namespace PoliSim.UI
                         + " OF " + seated.ToString(System.Globalization.CultureInfo.InvariantCulture) + (UsSenate.EquallyDivided(seats) ? " - AN EQUAL DIVISION - THE VICE PRESIDENT'S PARTY" : string.Empty));
                 }
                 slip.Add("THE VICE PRESIDENT VOTES ONLY WHERE THE SENATE IS EQUALLY DIVIDED");
-                slip.Add("OF RECORD, BY DATE: " + WorldClock.SecondChamberStanding(PlayerCountryId, today));
-                slip.Add("THE GAME DOES NOT ELECT THE " + name.ToUpperInvariant() + " YET: EACH SENATOR SITS FROM THE OATH, AND A SEAT LEFT STANDS VACANT TO THE NEXT OATH");
+                if (gameSeats && UsCongressElection.TryInOffice(c, today, out UsCongressElection.Contest elected))
+                {
+                    var days = UsCongressElection.SeatedPollingDays(c, today).ConvertAll(d => d.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant());
+                    slip.Add("THE SEATS UP ON " + string.Join(", ", days) + " WERE ELECTED IN THE GAME; EVERY OTHER SEAT SITS AS THE RECORD SEATS IT, BY DATE");
+                }
+                else
+                {
+                    slip.Add("OF RECORD, BY DATE: " + WorldClock.SecondChamberStanding(PlayerCountryId, today));
+                    slip.Add("THE SEATS UP ARE ELECTED WITH THE PRESIDENT; UNTIL THE NEW " + name.ToUpperInvariant() + " SITS, EACH SENATOR OF RECORD SITS FROM THE OATH, AND A SEAT LEFT STANDS VACANT TO THE NEXT OATH");
+                }
             }
             _politicsSlipBook.Anchors["parl:second"] = slip;
             GUILayout.Space(gutter);

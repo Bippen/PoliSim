@@ -594,6 +594,14 @@ namespace PoliSim.Simulation
             if (country == null || !UsTermLimit.TryPresidentOn(country, on, out _, out party, out shownAs)) { return false; }
             playerPresident = UsPresidentialElection.TryInOffice(country, on, out UsPresidentialElection.Contest sworn) && !string.IsNullOrEmpty(sworn.WinnerParty)
                               && sworn.WinnerParty == country.PlayerPartyAbbrev;
+            // PS-6 US-16 - R-US22 (DECLARED): a president ACTING after the game's own undecided contest - the Vice President the Senate chose, or the Speaker - of
+            // the player's party is the player's too: the presidency is seated by the game's own contest, so the player signs and vetoes (R-US7)
+            if (!playerPresident && UsPresidentialElection.TryActingOn(country, on, out UsPresidentialElection.Contest undecided) && country.Government != null
+                && country.Government.Outcome == UsPresidentialElection.ActingOutcome && !string.IsNullOrEmpty(country.Government.PmParty)
+                && country.Government.PmParty == undecided.ActingParty && country.Government.PmParty == country.PlayerPartyAbbrev)
+            {
+                playerPresident = true;
+            }
             return true;
         }
 

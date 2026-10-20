@@ -173,13 +173,16 @@ namespace PoliSim.Elections
                 // PS-6 US-8 (R-US1 (a)): the polling day elects the president through the Electoral College and no chamber - the House stays the record's, seated on
                 // the record's day, named and dated from its own rows (US-2); the record's next president is not named: the game's count decides who takes office.
                 // PS-6 US-15: the Senate of record has its own clause above, so this one no longer says that none is modelled
-                string house = WorldClock.TryNextChamberOfRecord(id, opens, out WorldClock.ChamberOfRecord nextHouse)
+                // PS-6 US-16: the day elects the House and the Senate seats up too, seated on the 3rd of January after it - the game's own Congress, not the record's
+                string house = UsCongressElection.ElectsIn(id)
+                    ? "the House and the " + SecondChamberOf(id) + " seats up are elected that day, and the new Congress is seated on " + Long(UsCongressElection.ConvenesAfter(start.PollingDay))
+                    : WorldClock.TryNextChamberOfRecord(id, opens, out WorldClock.ChamberOfRecord nextHouse)
                     ? (nextHouse.ElectionDay == start.PollingDay ? "the House of record elected that day" : nextHouse.ElectionDay == DateTime.MinValue ? "the next House of record" : "the House of record elected on " + Long(nextHouse.ElectionDay))
                       + " is seated on " + Long(nextHouse.Convened) + ", as the record dates it"
                     : "the House of record stands, by its dates";
                 clauses.Add(new Clause("Polling day is " + Long(start.PollingDay) + ". The president is elected through the Electoral College; " + house
-                    + (WorldClock.RecordSeatsSecondChamber(id) ? ", and the " + SecondChamberOf(id) + " of record changes on its own dates." : "."),
-                    "StartPoints (" + start.Basis + "); WorldClock.TryNextPollingDay (3 U.S.C. §21(1)), RecordSeatsChamber (the House of record, by date)"));
+                    + (WorldClock.RecordSeatsSecondChamber(id) ? "; until then the " + SecondChamberOf(id) + " of record changes on its own dates." : "."),
+                    "StartPoints (" + start.Basis + "); WorldClock.TryNextPollingDay (3 U.S.C. §21(1)); UsCongressElection (the House and the Senate class, seated on 3 January)"));
             }
             else if (start.PollingDay != DateTime.MinValue)
             {

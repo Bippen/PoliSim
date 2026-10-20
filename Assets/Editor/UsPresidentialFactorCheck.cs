@@ -263,7 +263,10 @@ namespace PoliSim.EditorTools
             // game's own call (NationalElection.TryPredictShares, no record) against BOTH histories - the epoch's House and the House then seated, whose
             // splits differ - so a poll that followed the seated chamber would fail here; the TryHistory/TryElectorate reads beside it are by construction
             ElectionVintage laterVintage = laterChamber == DateTime.MaxValue ? atEve : WorldClock.SeatedVintage(CountryId.USA, laterChamber);
-            Dictionary<string, int> laterOfRecord = PartySystems.InitialSeats(CountryId.USA, laterVintage);
+            // PS-6 US-16: the world holds its own Congress count on 5 Nov 2024 and seats that House on the record's next chamber day - what it seats is the
+            // count's, the record's where it held none; the history the poll reads is the point here, and stays the epoch's either way
+            Dictionary<string, int> laterOfRecord = world.Country != null && world.Country.UsCongressElections.Count == 1
+                ? world.Country.UsCongressElections[0].HouseSeats(CountryId.USA) : PartySystems.InitialSeats(CountryId.USA, laterVintage);
             bool seatedLater = world.SeatsThen != null && laterOfRecord.Count == world.SeatsThen.Count && laterOfRecord.All(kv => world.SeatsThen.TryGetValue(kv.Key, out int n) && n == kv.Value);
             double thenSplit = world.PlainPollThen != null && world.PlainPollThen.ContainsKey("REP") && world.PlainPollThen.ContainsKey("DEM")
                 ? world.PlainPollThen["REP"] / (world.PlainPollThen["REP"] + world.PlainPollThen["DEM"]) : double.NaN;
@@ -272,7 +275,7 @@ namespace PoliSim.EditorTools
             bool byConstruction = atEveRow.T1 > 0 && world.HistoryThenLatest != null && world.HistoryThenLatest.SequenceEqual(UsNationalVoteCheck.HouseShares(atEveRow.T1))
                 && world.HistoryThenPrevious.SequenceEqual(UsNationalVoteCheck.HouseShares(atEveRow.T2)) && Same(world.ElectorateThen, atEveRow.Electorate);
             Check(laterChamber != DateTime.MaxValue && world.ThenDay == laterChamber && laterVintage != atEve && seatedLater && readsEpoch && byConstruction,
-                F("the same world stepped to {0:yyyy-MM-dd} seats {1} (the record by date, US-2), and its live poll that day (no record) gives REP {2:0.000000} of the two - House {3}'s split, not House {4}'s {5:0.000000}, which a poll following the seated chamber would give: the chamber moves, the history does not (DECLARED, US-6){6}",
+                F("the same world stepped to {0:yyyy-MM-dd} seats {1}'s day's House (the world's own count of 5 Nov 2024 where it held one, US-16; else the record by date, US-2), and its live poll that day (no record) gives REP {2:0.000000} of the two - House {3}'s split, not House {4}'s {5:0.000000}, which a poll following the seated chamber would give: the chamber moves, the history does not (DECLARED, US-6){6}",
                     world.ThenDay, laterVintage, thenSplit, atEveRow.T1, laterRow.T1, laterSplit, world.ThenError == null ? string.Empty : " - the steps threw: " + world.ThenError));
 
             // ---- (5) E1's factors: refit on the reference world, held against the stored

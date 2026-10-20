@@ -124,6 +124,18 @@ namespace PoliSim.Elections
         /// (`Country.SecondChamberSeats`).</summary>
         public static bool RecordSeatsSecondChamber(CountryId id) => id == CountryId.USA;
 
+        /// <summary>PS-6 US-16 (the plan: "US-2's Congress of record retires for each chamber the game now elects"): in a world, the record seats the House only
+        /// until the House the game elected is seated - from the 3rd of January after the game's polling day (`UsCongressElection.TryInOffice`); between the
+        /// polling day and then the sitting House of record stays. A world opened after a polling day it never counted (an Editor tool's) still seats the
+        /// record's, as the president's gate does (<see cref="RecordSeatsExecutive(Country, DateTime)"/>).</summary>
+        public static bool RecordSeatsChamber(Country country, DateTime date) =>
+            country != null && RecordSeatsChamber(country.Id) && !UsCongressElection.TryInOffice(country, date, out UsCongressElection.Contest _);
+
+        /// <summary>PS-6 US-16: in a world, the record seats the WHOLE Senate only until the game's first class is seated; from then the record seats only the
+        /// seats the game has not elected - its holdovers, by date (`UsCongressElection.SenateOn`).</summary>
+        public static bool RecordSeatsSecondChamber(Country country, DateTime date) =>
+            country != null && RecordSeatsSecondChamber(country.Id) && !UsCongressElection.GameSeatsSenate(country, date);
+
         /// <summary>PS-6 US-15: the second chamber of record at the end of a date, by party key - every roster party, zero where it holds no seat (the House's
         /// convention, `ParliamentSystem.SetSeatsFromElection`), an independent counted with his conference (R-US10 (a)), a vacant seat nobody's; past the record's
         /// reach, the last of record. Empty for a country whose second chamber the record does not seat (<see cref="RecordSeatsSecondChamber"/>), and before the
@@ -211,13 +223,17 @@ namespace PoliSim.Elections
         /// <summary>PS-6 US-7: the same in a world - the next president of record named only while the record still seats the president there
         /// (<see cref="RecordSeatsExecutive(Country, DateTime)"/>): once the game has held its own presidential election, the record's next president is not who
         /// takes office, and the slip does not name him. PS-6 US-8: nor while the game's own polling day comes before his day - the game's count, not the record,
-        /// decides who takes office then (a US game from its start, before 5 November 2024).</summary>
-        public static IReadOnlyList<string> NextOfRecord(Country country, DateTime date) => NextOfRecord(country.Id, date, RecordSeatsExecutive(country, date), gameVotesFirst: true);
+        /// decides who takes office then (a US game from its start, before 5 November 2024).
+        /// PS-6 US-16: and the House of record's next only while the record still seats the House there - not once the game has held its own Congress election,
+        /// nor while the game's own polling day comes before that House's day (the game's count, not the record, decides who sits then).</summary>
+        public static IReadOnlyList<string> NextOfRecord(Country country, DateTime date) => NextOfRecord(country.Id, date, RecordSeatsExecutive(country, date), gameVotesFirst: true,
+            seatsHouse: !UsCongressElection.Held(country, date));
 
-        private static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date, bool seatsExecutive, bool gameVotesFirst = false)
+        private static IReadOnlyList<string> NextOfRecord(CountryId id, DateTime date, bool seatsExecutive, bool gameVotesFirst = false, bool seatsHouse = true)
         {
             var lines = new List<string>();
-            if (RecordSeatsChamber(id) && TryNextChamberOfRecord(id, date, out ChamberOfRecord house))
+            if (seatsHouse && RecordSeatsChamber(id) && TryNextChamberOfRecord(id, date, out ChamberOfRecord house)
+                && !(gameVotesFirst && UsCongressElection.ElectsIn(id) && TryNextPollingDay(id, date, out DateTime housePolling) && housePolling < house.Convened))
             {
                 lines.Add("NEXT OF RECORD: THE HOUSE ELECTED " + ViewDay(house.ElectionDay) + " · SEATED " + ViewDay(house.Convened));
             }
@@ -732,6 +748,12 @@ namespace PoliSim.Elections
             /// all appointed; null and 0 otherwise. <see cref="Seats"/> stays the House elected that day.</summary>
             public Dictionary<string, int> Electors;
             public int ElectorsAppointed;
+            /// <summary>PS-6 US-16 (the plan: "The reference shows the record's 220/215 and the 119th Senate of record"): where the game elects Congress on the day,
+            /// the Senate of record by side on the day the Congress elected then opens (<see cref="SecondChamberOn"/>, the 3rd of January after - `UsSenate.On`,
+            /// each independent with his conference), and its vacant seats that day; null and 0 otherwise. <see cref="Seats"/> is the House of record.</summary>
+            public Dictionary<string, int> SecondChamber;
+            public int SecondChamberVacant;
+            public DateTime SecondChamberOn;
         }
 
         /// <summary>PS-6 US-8: the reference for a polling day. Where the record seats the chamber by date (the USA's House) the game elects no chamber and the
@@ -759,6 +781,18 @@ namespace PoliSim.Elections
                         if (y.Year != pollingDay.Year || UsPresidentialElection.PresidentialDay(y.Year) != pollingDay.Date) { continue; }
                         r.Electors = new Dictionary<string, int> { { "REP", y.CastR + y.OthersRSlate }, { "DEM", y.CastD + y.OthersDSlate } };
                         r.ElectorsAppointed = y.Electors;
+                    }
+                }
+                // PS-6 US-16: the Senate of record as the Congress elected that day opens - the 119th's on 3 Jan 2025, read by date
+                if (UsCongressElection.ElectsIn(id))
+                {
+                    DateTime opens = UsCongressElection.ConvenesAfter(pollingDay);
+                    UsSenate.Seating senate = UsSenate.On(opens);
+                    if (senate.Covered && senate.Read == opens.Date)
+                    {
+                        r.SecondChamber = new Dictionary<string, int>(senate.BySide);
+                        r.SecondChamberVacant = senate.Vacant;
+                        r.SecondChamberOn = opens;
                     }
                 }
                 // The government the record shows after the election: the first government of record from a day after polling day, if any.

@@ -40858,3 +40858,50 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 - the cheap bar `cheap882` 125 of 125;
 - the simulation bar `sim882` 67 of 67, the sentinel holding on **aloopsal2**;
 - the audits: `audit882ev3` (6 runs), `audit882post3` (25), and the fuzz set `audit882fz11c` / `fz30ac` / `fz30bc` (13 runs), all exit 0 with no breach.
+
+
+## 883. PS-6 US-16: THE HOUSE AND A SENATE CLASS ELECTED ON THE SAME DAY - CHECKPOINT 2; US-8c'S SEEDED TIES; R-US22'S ORDER BUILT; SAVE FORMAT 49 (2026-10-20)
+
+**What was owed** (`docs/specs/USA_STAGE_PLAN.md`, US-16): US-16 on R-US18 RULED (b) (I1), R-US19 RULED (c) over (a) (I2) and R-US22's order (I6), with J4's US-8c (§870).
+
+**Built** (an implementer on `wave/us16`, 7cfae549..227ab117: six commits, then the second reading's fixes in one):
+- **The count.** `UsCongressElection`, on the presidential day's hook (`SimulationManager.HoldUsPresidentialCount`, after `UsPresidentialElection.Hold`, on the same counted poll and the night's states):
+  - the House by R-US18 (b) - the instrument's state swing, line for line - from the record's 2022, then the game's own last count; 435 asserted on every count;
+  - the Senate class up and the day's specials of record by R-US19 (c) over (a), its race factors fitted at runtime on 2024's class only, later fields at factor 1.0; a seat at exactly a half by the block's cascade;
+  - both seated at noon on 3 January.
+- **The record steps aside chamber by chamber** (`WorldClock.RecordSeatsChamber` / `RecordSeatsSecondChamber`, per world; the Senate seat by seat): a 2024-start game elects its own 119th. The 12th Amendment reads the House the game elected; "divided" is read from the game's own chambers; the reference adds the Senate of record.
+- **R-US22's order (I6).** Never the sitting president past the oath: when the House cannot choose, the Senate chooses the Vice President the same day (a majority of the whole Senate) and that Vice President acts from the oath, else the Speaker of the House majority acts.
+- **US-8c (J4).** An exact state tie, and an exact ME/NE district tie, is a fair seeded draw (`ElectoralCollege.TieBreak`, SplitMix64 on seed, year and place), its seed kept on the contest so `StatesOf` re-derives the same calls.
+- **The UI** (IMGUI only): a Congress row on the Parliament tab (the majorities, the day the new Congress sits, a slip with the count, the delegations, the Senate seats up, the Senate as seated, the record's 220/215 and 119th Senate); new words on the record row, the president row (acting; the Speaker named by office) and the Senate card.
+- **The save.** Format 48 -> 49 (ruling A): `Country.UsCongressElections`, the contest's `TieSeed`, `SenateChoice` and `Acting*`; carried by the preview clone.
+- **The second reading's fixes** (227ab117): an acting president is no incumbent (`UsTermLimit` nominates the acting party as one out of the White House, the player's pick open, no title on a ballot, no term-limit count); an acting president of the player's party is the player's (`Congress.PresidentOn`: the docket's signature and veto); the Speaker named by office from the acting contest; the slips list the game-elected classes by day; the acting office seated once; the Senate's choice ordered stably.
+- `CongressElectionDiagnostic` (new; cheap and documents groups) writes the card's US-16 block.
+
+**Measured** (`docs/reference/US_ELECTIONS.md`, "The Congress - US-16", written by `wr883c`):
+- **The eve world** (4 Nov 2024, seed 777, the USA, REP): the poll on the day V(T) 0.4890 against 2022's own-line 0.5140, a swing of -0.0250 - the House **REP 216, DEM 219** against the record's 220/215 (N -4; delegations 25/22/3 tied against 30/18/2; 20 seats misplaced). At the record's own swing the same count gives REP 222 - US-11's C4 (b) row: the game counts the rule R-US18 was measured on.
+- **The Senate class** (class 1 and the day's specials, 34 seats): REP 15, DEM 19 against the record's 15/19, none called wrong; |c_j| mean 0.136, largest 0.532.
+- **The 119th the world seats** from 3 Jan 2025: the House DEM 219 / REP 216 (435), the Senate REP 53 / DEM 47 (100); the economic vote reads the government as divided.
+- **Every later election** (planted polls, each on the game's previous count): 2028, 2032 and 2036 each seat 435 and 100 on their 3 January.
+- **Ties:** over 1,000 seeds Pennsylvania's tie goes REP 516 times, Nebraska's 2nd district's 500.
+- **Baselines:** no family moves. A no-player world never counts; the sentinel holds on `aloopsal2` (`sim883`).
+
+**Declared:**
+- J4's district tie is read as ME/NE's elector districts; the House count's exact halves stay R-US18's block rules (the base winner, the half rule) and are not drawn (asked).
+- `UsMidtermCheck` sets the world's own count aside so R-US20's registered world ("the House the 2024 election chose", the record) holds (asked).
+- The specials are only those the catalog holds for the day; later specials are none, BILLED.
+- Every winner sits on 3 January; the House count reads no district lines.
+- R-US22: the House votes once, on the count's day, so the acting president serves to the next oath; the old Senate's Vice President does not vote; the Speaker is the House majority party, unnamed, a seeded draw deciding an equal House; senators vote their party's ticket.
+- The Senate seats the game did not elect keep the record's resignations and appointments, those following from the record's own presidential result included (Vance from 10 Jan, Rubio on 20 Jan 2025), so 435 and 100 are held on each 3 January; under an acting president no Vice President serves and the acting party decides an equal Senate.
+- The controller's chamber path still writes a NotImplemented record on the US polling day, its log saying where the chamber was elected (a new method would reach every formation reader) (asked).
+- A count that fails on the day seats the record's House on 3 January, unannounced on the record row (the first reading's finding 10).
+
+**Asked:** J4's reach to the House's halves; R-US20's world to read the game's own House (US-27 will need it); the US polling day's chamber record.
+
+**Reviewed:** two readings - `Reviews/2026-10-20_us16_congress_count.md` (findings 1, 2, 5, 7, 8, 9 and 11 fixed in 271092db; 3, 4 and 6 the integration's, done here; 10 stated) and `Reviews/2026-10-20_us16_second_reading.md` (M1, M2, L3, L4, L6, L7 fixed and L5, L8 declared in 227ab117). Review row s883 for `SimulationManager.cs`.
+
+**Bars** (tier SIMULATION + UI):
+- `wr883c` / `wr883d` (the US-16 and US-8 blocks written);
+- `n883b` 15 of 15 (CongressElection, Presidency, UsPresidentialElection, TermLimit, UsOwnNominee, StartBrief, PreviewParity, UsMidterm, the text guards, ChamberVerdictCache, DeadState, ReviewLedger);
+- `slrt883b` 12 of 12; `stage883` at format 49;
+- the cheap bar `cheap883b` 126 of 126; the documents bar `doc883c` 22 of 22; the simulation bar `sim883` 67 of 67, the sentinel holding on **aloopsal2**;
+- the dry film `drys883` USA@1280x720, 156 measured, 0 failed (scope row s883); the REAL film `realus883` at 1280 (the start card's Canvas brief; the Congress row read on its frames).

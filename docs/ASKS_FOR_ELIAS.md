@@ -328,3 +328,10 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
   - A4, targeting: should voters identified one by one earn the larger figure?
   - A5, strategy: is the cut's scope the player's "choose a strategy" text only?
   - A6, 5b's door-knock CACE: GG14's 0.6, or Cantoni & Pons' Italian 5.01 %?
+
+### US-16 the Congress elected (§883): the asks it ends in
+
+- **J4's draw and the House's exact halves.** J4's "district tie" is built as Maine's and Nebraska's elector districts. The House count's own exact halves (a state's seats at exactly a half) still go by R-US18's ruled block: the base winner, then the half rule. These favour no fixed party, but they are not a draw. Should J4 reach them too?
+- **R-US20's midterm world reads the record's House.** `UsMidtermCheck` sets the world's own Congress count aside, so that the registered world ("the House the 2024 election chose") still reads the record. Amend R-US20's world to read the game's own House? US-27 will need it.
+- **The US polling day's chamber record.** On the US polling day the controller still writes a NotImplemented election record, and its log says the chamber was elected on the day loop. A new election method would be read as a parliamentary election by every formation reader. Keep the record as it is, or have the formation readers rebuilt to take a Congress election?
+- **Stated, not asked:** if the game's count fails on the day, the record's House is seated on 3 January without an announcement on the record row.
