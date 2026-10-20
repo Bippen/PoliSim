@@ -837,6 +837,8 @@ namespace PoliSim.UI
             {
                 SaveGame save = SaveGameService.CreateSaveGame(_simulationManager, _world, PlayerCountryId, CaptureUiDrafts());
                 save.NoPolicyShadow = CarryTheShadow();   // AF-12 (q12): the counterfactual from the start travels with the game
+                save.ImpactLedgerWorlds = save.NoPolicyShadow != null && !_savingAutomatically ? CarryTheLedger() : null;   // FORK-2 (M1): and the ledger's family worlds - with the world they are read against, or not at all; not by an autosave (M5)
+                save.ImpactLedgerUnavailable = save.NoPolicyShadow != null && !_savingAutomatically ? _impactLedger?.CarryUnavailable() : null;   // the fix review's M2: and the families set aside
                 bool overwrote = System.IO.File.Exists(path);
                 SaveGameService.SaveToFile(path, save);
                 _lastPersistenceDate = _simulationManager.CurrentDate;
@@ -858,7 +860,7 @@ namespace PoliSim.UI
         /// carried leaves the save without one - the save still lands, and its load will fork, saying so.</summary>
         private string CarryTheShadow()
         {
-            try { return _shadowBaseline?.Carry(); }
+            try { return _shadowBaseline?.Carry(_simulationManager.DaysIntoTurn); }   // FORK-2: brought to today first where it holds a set-aside meeting not yet reached
             catch (System.Exception e)
             {
                 Debug.LogError($"SAVE: the no-policy world could not be carried - {e.Message}; a load of this save counts \"without your policies\" from the load.");
@@ -866,20 +868,55 @@ namespace PoliSim.UI
             }
         }
 
+        /// <summary>FORK-2 (the s871 review's M1): the impact ledger's family worlds as the save carries them (`PolicyImpactLedger.Carry`). Worlds that cannot be
+        /// carried leave the save without them - the save still lands, and its load starts the ledger empty, saying so.</summary>
+        private System.Collections.Generic.Dictionary<string, string> CarryTheLedger()
+        {
+            try { return _impactLedger?.Carry(_simulationManager); }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"SAVE: the impact ledger's worlds could not be carried - {e.Message}; a load of this save counts each line from the load.");
+                return null;
+            }
+        }
+
+        /// <summary>FORK-2 (the s871 review's M1): the impact ledger after a load - the family worlds the save carried, around the no-policy world it carried
+        /// (`PolicyImpactLedger.FromCarried`), so every line keeps its span; where the save carries none (one from before FORK-2), the no-policy world was not
+        /// carried, or they will not stand together, the ledger starts empty and each line counts from the load, as before, saying so.</summary>
+        private PolicyImpactLedger CarriedOrEmptyLedger(SaveGame save, bool shadowCarried)
+        {
+            if (shadowCarried && ((save.ImpactLedgerWorlds != null && save.ImpactLedgerWorlds.Count > 0) || (save.ImpactLedgerUnavailable != null && save.ImpactLedgerUnavailable.Count > 0)))
+            {
+                PolicyImpactLedger carried = PolicyImpactLedger.FromCarried(_shadowBaseline, save.ImpactLedgerWorlds, save.ImpactLedgerUnavailable, save.CurrentDate, out string refused);
+                if (carried != null) { return carried; }
+                Debug.LogError($"LOAD: the impact ledger's carried worlds are set aside - {refused}; each line counts from this load.");
+            }
+            else if (save.ImpactLedgerWorlds != null && save.ImpactLedgerWorlds.Count > 0)
+            {
+                Debug.LogWarning("LOAD: the impact ledger's carried worlds are set aside with the no-policy world they are read against - each line counts from this load.");   // the review's L5
+            }
+            else if (save.ImpactLedgerWorlds == null && shadowCarried)
+            {
+                Debug.Log("LOAD: this save carries no impact ledger world - no family was touched before it was saved, or it is an autosave or was written by an earlier build (then each line counts from this load).");
+            }
+            return new PolicyImpactLedger(_shadowBaseline);
+        }
+
         /// <summary>
         /// AF-12 (q12): "without your policies" after a load is the SAME world the game left - the one the save carried, restored. A save that carries none
         /// (one from before AF-12, a batch tool's) or one that will not restore, or one seating another player country, forks the loaded game instead, as
         /// every load did before AF-12, and the log says the line now counts from the load.
         /// </summary>
-        private ShadowBaseline CarriedOrForkedShadow(SaveGame save)
+        private ShadowBaseline CarriedOrForkedShadow(SaveGame save, out bool wasCarried)
         {
+            wasCarried = false;
             if (!string.IsNullOrEmpty(save.NoPolicyShadow))
             {
                 ShadowBaseline carried = null;
                 try
                 {
                     carried = ShadowBaseline.FromCarried(save.NoPolicyShadow);
-                    if (carried.PlayerCountryId == save.PlayerCountryId) { return carried; }
+                    if (carried.PlayerCountryId == save.PlayerCountryId) { wasCarried = true; return carried; }
                     Debug.LogError($"LOAD: the carried no-policy world seats {carried.PlayerCountryId?.ToString() ?? "no country"}, the save {save.PlayerCountryId} - it is set aside.");
                 }
                 catch (System.Exception e) { Debug.LogError($"LOAD: the carried no-policy world did not restore - {e.Message}"); }
@@ -961,9 +998,9 @@ namespace PoliSim.UI
             // PS-1 (§618, the review's R5): the shadow baseline and the impact ledger are never left as the world just left - a load moves the epoch under
             // them. AF-12 (q12): the shadow is the one the save carried, the same world the game left; a save carrying none forks the loaded game (C-C10's fork).
             _shadowBaseline?.Dispose();
-            _shadowBaseline = CarriedOrForkedShadow(save);
+            _shadowBaseline = CarriedOrForkedShadow(save, out bool shadowCarried);
             _impactLedger?.Dispose();
-            _impactLedger = new PolicyImpactLedger(_shadowBaseline);
+            _impactLedger = CarriedOrEmptyLedger(save, shadowCarried);   // FORK-2 (M1): the family worlds the save carried, every line's span kept
             _simulationManager.ImpactLedger = _impactLedger;   // AF-11: the ledger reads the levers the manager's verbs pull
 
             // The preview cache indexes into the OLD world's figures; the signing queue's entries
@@ -1474,16 +1511,26 @@ namespace PoliSim.UI
         private int _daysSinceAutosave;
         private int _autosaveCount;
 
+        /// <summary>FORK-2 (the review's M5; DECLARED, put to Elias): true while the day loop's autosave writes - it does not carry the impact ledger's family
+        /// worlds (each a whole world's snapshot, each brought to today first) on the frame the clock runs, so a load of an autosave counts each line from the
+        /// load, as every load did before FORK-2; the saves screen's save carries them.</summary>
+        private bool _savingAutomatically;
+
         /// <summary>MM-2: the day loop's autosave - due by the setting's cadence, into the next rotating slot, through the one save path.</summary>
         private void AutosaveIfDue()
         {
             _daysSinceAutosave++;
             if (!GameSettings.AutosaveDue(_daysSinceAutosave, GameSettings.AutosaveDays)) { return; }
             int slot = GameSettings.AutosaveSlot(_autosaveCount, GameSettings.AutosaveSlots);
-            if (SaveToPath(System.IO.Path.Combine(SaveGameService.DefaultSaveDirectory, GameSettings.AutosaveName(slot) + ".json")))
+            _savingAutomatically = true;   // FORK-2 (the review's M5): an autosave carries the no-policy world, not the family worlds - see the field
+            try
             {
-                _autosaveCount++;
+                if (SaveToPath(System.IO.Path.Combine(SaveGameService.DefaultSaveDirectory, GameSettings.AutosaveName(slot) + ".json")))
+                {
+                    _autosaveCount++;
+                }
             }
+            finally { _savingAutomatically = false; }
 
             _daysSinceAutosave = 0;
         }
@@ -6332,6 +6379,9 @@ namespace PoliSim.UI
                 // No election was held today (the record carries the reason); there is no chamber to test.
                 return;
             }
+            // FORK-2: what the election seats is the world's (`SimulationManager.SeatPlayerElection`, the same rules in the same order) - so a counterfactual world
+            // seats it too; the verdict below reads what it formed
+            _simulationManager.SeatPlayerElection(latest, out PoliSim.Elections.DeclarationReading electionReading, out GovernmentFormation.Formed government, out SejmFormation sejm);
 
             // PS-6 US-7 (the plan: "No formation and no Speaker's round run for the USA - the verdict path bypasses the formation for a presidency"): A
             // PRESIDENCY IS NOT FORMED FROM THE CHAMBER. Under the presidential rule (a fixed term, no investiture, no confidence vote) the government is the
@@ -6354,18 +6404,10 @@ namespace PoliSim.UI
                 return;
             }
 
-            // PS-2 (§619): the formation reads the declarations of the election just held - 13 September 2026 reads 2026's dated
-            // declarations (K-1f's facts), not the seated 2022 chamber's - through the one resolver the night's board reads too.
-            ElectionVintage electionVintage = PoliSim.Elections.WorldClock.VintageOfElection(PlayerCountryId, latest.Date);
-            // PS-3i-2c (ruled 2026-09-29, §653): any election reads the declarations dated at its own polling day - an extra election before the next
-            // ordinary one included (it read the previous chamber's vintage before).
-            PoliSim.Elections.DeclarationReading electionReading = PoliSim.Elections.DeclarationReading.OfElection(PlayerCountryId, latest.Date);
-            GovernmentFormation.Formed government = GovernmentFormation.Form(_playerCountry, electionReading);
-            // PS-3a (§628): the government the election formed is STORED - the player's role and whose levers move the book are read from it from now on.
-            GovernmentFormation.View formedView = GovernmentFormation.ViewOf(_playerCountry, electionReading);
-            // No government formed: the previous record stands - the verdict's own words, "you stay in office until one can" - so the AI does not take a book nobody was given.
-            // §641 (the reader): a motion's standing refusals end at the election either way - a new record starts without them, and a record that stands drops them.
-            _playerCountry.Government?.StandingRefusals.Clear();
+            // PS-2 (§619): the formation read the declarations of the election just held - 13 September 2026 reads 2026's dated
+            // declarations (K-1f's facts), not the seated 2022 chamber's - through the one resolver the night's board reads too; PS-3i-2c (§653): any
+            // election reads those dated at its own polling day. The government it formed is stored, and the motion's standing refusals ended, by the
+            // manager's seating above (§628, §641).
             // §646 (R2): where the Speaker's round runs, the night installs nothing - the round opens the day after on this election's declarations, and
             // the outgoing government serves on as a caretaker until a proposal wins its investiture. The night says who the Speaker asks first.
             if (_simulationManager.RoundsApply(PlayerCountryId))
@@ -6388,8 +6430,8 @@ namespace PoliSim.UI
                 Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the Speaker's round opens tomorrow; the order is {string.Join(", ", order)}");
                 return;
             }
-            if (_simulationManager.SejmStepsApply(PlayerCountryId)) { ResolveSejmVerdict(latest, government); return; }   // AF-8 (q8): Poland's government changes by Art. 162 and 154's steps, not tonight (GameController.SejmVerdict.cs)
-            if (formedView != null && formedView.HasGovernment) { _playerCountry.Government = PoliSim.Elections.GovernmentRecord.FromView(_playerCountry, formedView, latest.Date, world: _world); _simulationManager.ResetArrivalBudgetWindow(PlayerCountryId); }   // PS-3e (§632): a new government gets its arrival budget
+            if (_simulationManager.SejmStepsApply(PlayerCountryId)) { ResolveSejmVerdict(latest, government, sejm); return; }   // AF-8 (q8): Poland's government changes by Art. 162 and 154's steps, not tonight (GameController.SejmVerdict.cs)
+            // PS-3e (§632): a formed government was installed with its arrival budget by the manager's seating above; none formed, the previous record stands
             Debug.Log($"ROLE: after the election of {latest.Date:yyyy-MM-dd} the government is {(_playerCountry.Government != null && _playerCountry.Government.Cabinet.Count > 0 ? string.Join("+", _playerCountry.Government.Cabinet) + " led by " + _playerCountry.Government.PmParty : "none")}; the player's {_playerCountry.PlayerPartyAbbrev} is {(_playerCountry.Government?.RoleOf(_playerCountry.PlayerPartyAbbrev) ?? PoliSim.Elections.PlayerRole.None)}");
             if (!government.HasGovernment)
             {
@@ -6601,88 +6643,9 @@ namespace PoliSim.UI
 
         private void RunNationalElection()
         {
-            // PS-6 US-8 (R-US1 (a), RULED - F8), and PS-6 US-16: the USA's polling day elects the president AND the House and the Senate seats up on the day loop
-            // (SimulationManager's hook - UsPresidentialElection.Hold, then UsCongressElection.Hold), seated on 3 January - so THIS path, the parliamentary
-            // chamber's, counts nothing: it records the day with no seats (the record's readers treat a NotImplemented record as no parliamentary election, which
-            // keeps the formation's rounds and the reference row off the USA - DECLARED) and its reason says where the chamber was elected
-            if (PoliSim.Elections.WorldClock.RecordSeatsChamber(PlayerCountryId))
-            {
-                string reason = NationalElection.NotHeldReason(PlayerCountryId);
-                _playerCountry.ElectionHistory.Add(new ElectionRecord
-                {
-                    Turn = _simulationManager.CurrentTurn,
-                    Date = _simulationManager.CurrentDate,
-                    CountryId = PlayerCountryId.ToString(),
-                    Method = ElectionMethod.NotImplemented,
-                    NotHeldReason = reason,
-                });
-                Debug.Log(UsCongressElection.Held(_playerCountry, _simulationManager.CurrentDate)
-                    ? $"ELECTION: {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} - the House and the Senate seats up were elected on the day loop beside the president (the CONGRESS line), seated on 3 January; this path records the day without seats"
-                    : $"ELECTION: the chamber is not elected for {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} - {reason}");
-                return;
-            }
-
-            // C-R4b step 5 (D-21): when the player's campaign ran up to THIS boundary, election night
-            // counts the campaign's own shares - the same preference model over the same compatibility,
-            // prior and loyalty the prediction uses, moved by eight weeks of campaigning - and the
-            // regional breakdown is derived from them the same way. No campaign (another country, or
-            // no staging): the prediction, as before.
-            Dictionary<string, double> shareByParty = null;
-            CampaignRun.Result campaign = _simulationManager.PlayerCampaignResult;
-            if (campaign != null && _simulationManager.CampaignRecord != null
-                && _simulationManager.CampaignRecord.ElectionDate == _simulationManager.CurrentDate   // PS-2 (§619): the campaign that ran up to TODAY, the polling day
-                && _simulationManager.PlayerCampaign != null)
-            {
-                var keys = new string[_simulationManager.PlayerCampaign.Setup.Parties.Length];
-                for (int i = 0; i < keys.Length; i++) { keys[i] = _simulationManager.PlayerCampaign.Setup.Parties[i].Name; }
-                // D-10 (a): the tactical layer (§23) over the campaign's shares, believing the last
-                // PUBLISHED tracker - the poll the electorate saw - about who clears the threshold.
-                shareByParty = NationalElection.SharesFromCampaign(PlayerCountryId, keys, campaign.FinalShares,
-                    _simulationManager.PlayerCampaign.PublicPoll, out TacticalResult tactical, on: _simulationManager.CurrentDate);   // §707: the Länder derived on the polling day
-                Debug.Log($"ELECTION: counted the campaign's shares for {PlayerCountryId} - " + string.Join(" ", System.Array.ConvertAll(campaign.FinalShares, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
-                if (tactical != null)
-                {
-                    var flows = new System.Text.StringBuilder();
-                    foreach (TacticalFlow f in tactical.Flows)
-                    {
-                        if (f.Share < 5e-5) { continue; }
-                        flows.Append(keys[f.From]).Append(f.Rescue ? " lends " : " abandons to ").Append(keys[f.To]).Append(' ')
-                            .Append((f.Share * 100.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)).Append(" pp; ");
-                    }
-                    Debug.Log($"ELECTION: tactical layer (D-10 (a)) on the last tracker - " + (flows.Length > 0 ? flows.ToString() : "no flows") + " -> counted "
-                        + string.Join(" ", System.Array.ConvertAll(tactical.Preference, v => v.ToString("P1", System.Globalization.CultureInfo.InvariantCulture))));
-                }
-            }
-            // PS-3k (§638, ruled): with no campaign the prediction reads the government's record on polling day - over its term (§752, A1); a campaign's shares already carry it.
-            if (shareByParty == null && !NationalElection.TryPredictShares(PlayerCountryId, out shareByParty, EconomicVote.RecordOverTerm(_playerCountry, _simulationManager.CurrentDate, out _),
-                    on: _simulationManager.CurrentDate))   // PS-4 (§688): the day it is held, so Germany derives its Länder on the chamber then seated
-            {
-                _playerCountry.ElectionHistory.Add(new ElectionRecord
-                {
-                    Turn = _simulationManager.CurrentTurn,
-                    Date = _simulationManager.CurrentDate,
-                    CountryId = PlayerCountryId.ToString(),
-                    Method = ElectionMethod.NotImplemented,
-                    NotHeldReason = NationalElection.NotHeldReason(PlayerCountryId),
-                });
-                Debug.Log($"ELECTION: not held for {PlayerCountryId} at turn {_simulationManager.CurrentTurn} - {NationalElection.NotHeldReason(PlayerCountryId)}");
-                return;
-            }
-
-            ElectionRecord record = NationalElection.Run(PlayerCountryId, _simulationManager.CurrentTurn, shareByParty, _simulationManager.CurrentDate);
-            _playerCountry.ElectionHistory.Add(record);
-            Debug.Log($"ELECTION: held for {PlayerCountryId} on {_simulationManager.CurrentDate:yyyy-MM-dd} (turn {_simulationManager.CurrentTurn}) by {record.Method}" + (_simulationManager.PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)"));
-            if (record.Method != ElectionMethod.NotImplemented)
-            {
-                ParliamentSystem.SetSeatsFromElection(_playerCountry, record.Seats);
-
-                // C-D4 (§38): the result carries into each party's long-term capital. ⚠ Its rule holds no
-                // invented constant - organisational strength moves by the ratio of the party's new seat
-                // count to its own previous one, which is the election's own number. Since PS-3k (§638) the
-                // electorate moves with the government's record (EconomicVote), so two elections in one game
-                // can return different chambers and the ratio is live.
-                PartyCapital.CarryOver(_playerCountry.PartyCapital, record.Seats);
-            }
+            // FORK-2: the count and the chamber it sets are the world's (`SimulationManager.RunPlayerElection`), so every world that steps the player's day holds
+            // the same election on its polling day; the controller keeps the verdict, the night and the end of a run
+            _simulationManager.RunPlayerElection();
         }
 
         /// <summary>P2-0.2: election night's CONTINUE, and the harness's way of pressing it. Marks the board

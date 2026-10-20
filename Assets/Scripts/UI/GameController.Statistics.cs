@@ -391,7 +391,7 @@ namespace PoliSim.UI
             // C-C9 (P-G1): the counterfactual's own history, read from the shadow world's matching
             // country. Null until a shadow exists or before it has two points, and each graph draws
             // nothing extra in that case rather than a flat line at zero.
-            StatHistory shadowHistory = _shadowBaseline?.CountryFor(PlayerCountryId)?.History;
+            StatHistory shadowHistory = _shadowBaseline != null && _shadowBaseline.Faulted == null ? _shadowBaseline.CountryFor(PlayerCountryId)?.History : null;   // FORK-2 (the fix review's M4): a failed world's frozen history is drawn as nothing
 
             int pages = 1;
             foreach (StatsChart c in StatsSlips.Domestic) { pages = Mathf.Max(pages, GraphRenderer.PagesFor(c.Series(history).Quarterly)); }
@@ -515,6 +515,14 @@ namespace PoliSim.UI
             _statsCardInnerWidth = contentWidth - V35.Px(V35.CardPadX) * 2f;
             GUILayout.BeginVertical(V35CardStyle(), GUILayout.Width(contentWidth));
 
+            // FORK-2 (the fix review's M4): the world without your policies failed - every line read against it would read a frozen world, so none is drawn
+            if (_shadowBaseline?.Faulted != null)
+            {
+                DrawImpactNotice("UNAVAILABLE · THE WORLD WITHOUT YOUR POLICIES STOPPED", "policies:unavailable");
+                GUILayout.EndVertical();
+                return;
+            }
+
             if (!_impactLedger.HasAnything)
             {
                 GUIStyle dash = V35Mono(V35.Name, PoliSimTheme.TextMuted);
@@ -538,7 +546,26 @@ namespace PoliSim.UI
             // MoneyUnit literal here - a literal would be a second place that knows what the seed's
             // money is, which is how the P2 unit bug spread across 21 sites.
             DrawImpactRow("Government debt", "GovernmentDebt", PolicyWebRenderer.GetStatUnit(StatNodeId.Gdp), null);   // §725 (Elias's ruling): debt's move has no consensus direction
+            // FORK-2 (the fix review's M4): a family whose world failed has no line - its share sits in the interaction, and the card says so in one line
+            if (_impactLedger.Unavailable.Count > 0)
+            {
+                var stopped = new List<string>();
+                foreach (string family in _impactLedger.Unavailable.Keys) { stopped.Add(family.ToUpperInvariant()); }
+                stopped.Sort(System.StringComparer.Ordinal);
+                DrawImpactNotice("UNAVAILABLE · " + string.Join(" · ", stopped) + " · IN THE INTERACTION", "policies:unavailable");
+            }
             GUILayout.EndVertical();
+        }
+
+        /// <summary>FORK-2 (the fix review's M4): one muted line on the impact card, in the caption face the reasons use.</summary>
+        private void DrawImpactNotice(string text, string anchor)
+        {
+            GUIStyle face = V35SerifWrapped(V35.Floor, PoliSimTheme.TextMuted);
+            float width = Mathf.Max(1f, _statsCardInnerWidth);
+            Rect r = GUILayoutUtility.GetRect(10f, Mathf.Ceil(face.CalcHeight(new GUIContent(text), width)) + V35.Px(4f), GUILayout.ExpandWidth(true));
+            if (Event.current.type != EventType.Repaint) { return; }
+            GUI.Label(r, text, face);
+            StatsAnchor(r, anchor);
         }
 
         /// <summary>One stat's line: the divergence, then each family's share of it largest first, then

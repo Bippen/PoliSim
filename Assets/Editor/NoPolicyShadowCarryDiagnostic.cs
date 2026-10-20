@@ -35,8 +35,8 @@ namespace PoliSim.EditorTools
     /// <para>The played world steps the game's day (the day, then the player's day tick) and the world from the start is forked with the tick, as
     /// `GameController` forks it since FORK-1. The review's L5: carrying the world leaves the played world's state and draw counts as they were (cases 3, 5).</para>
     ///
-    /// <para>⚠ <b>What it does not claim, stated.</b> The harness runs no player day tick and holds no election (the controller holds the player's election; no
-    /// counterfactual world runs either - the audit's D-45), so the claim is the counterfactual's identity across a load and its cost, not an untouched game's
+    /// <para>⚠ <b>What it does not claim, stated.</b> The harness runs no player day tick and holds no election (the controller holds the player's election; since
+    /// FORK-2 a counterfactual world that steps the player's day holds it on its own polling day, so the worlds compared here hold it alike), so the claim is the counterfactual's identity across a load and its cost, not an untouched game's
     /// equality with the played one. Times are one measurement each, on the machine the run is on.</para>
     /// </summary>
     public static class NoPolicyShadowCarryDiagnostic

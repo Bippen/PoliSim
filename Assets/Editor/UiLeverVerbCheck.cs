@@ -21,6 +21,12 @@ namespace PoliSim.EditorTools
     /// lost its surface, and the row here says which), and each <see cref="PlayerLeverKind"/> is built by exactly one verb in the manager's source.
     /// (3) THE TEETH: every pattern catches a planted write and passes a planted read and a planted verb call, every run - a pattern that cannot
     /// tell them apart fails here rather than passing the scan by construction.</para>
+    ///
+    /// <para>(4) FORK-2 (the fix review's H1): EVERY MANAGER METHOD THE UI CALLS IS A LEVER'S VERB, AN ANSWER, OR DECLARED. A verb the player acts through
+    /// reaches the impact ledger's worlds only as a lever (its body pulls through `Pull`) or as an answer (its body goes through `Answered`, read one call
+    /// deep), so every `_simulationManager.X(` in `Assets/Scripts/UI` is classified from the manager's own source, and one that is neither and is not on the
+    /// declared list below (the day's own path every world runs, the start's setup, the preview's clone, or a read) is a FAULT. Planted manager and UI
+    /// source checks the classifier every run.</para>
     /// </summary>
     public static class UiLeverVerbCheck
     {
@@ -98,6 +104,121 @@ namespace PoliSim.EditorTools
 
         private static readonly Regex KindBuilt = new Regex(@"new\s+PlayerLever\s*\(\s*PlayerLeverKind\s*\.\s*(\w+)", RegexOptions.Compiled);
 
+        /// <summary>(4): a manager method called from the UI.</summary>
+        private static readonly Regex ManagerCall = new Regex(@"_simulationManager\s*\??\.\s*([A-Z]\w*)\s*\(", RegexOptions.Compiled);
+
+        /// <summary>(4) DECLARED: the manager methods the UI calls that are neither a lever nor an answer, each with why - the day's own path (every world
+        /// steps it), the start's setup (before any counterfactual exists), the preview's clone (no world of the game), or a read that writes nothing.</summary>
+        private static readonly (string Name, string Why)[] NotAnAnswer =
+        {
+            ("AdvanceDay", "the day's own path"), ("AdvanceCountryDayTick", "the day's own path"), ("AdvanceTurn", "the day's own path"),
+            ("RunPlayerElection", "the day's own path - every world that steps the player's day holds it"), ("SeatPlayerElection", "the day's own path - every world that steps the player's day holds it"),
+            ("SetWorld", "the start's setup"), ("ResetClockToEpoch", "the start's setup"), ("SeatTheSecondChamberOfRecord", "the start's setup - the seat taken before the no-policy world is forked"),
+            ("PreviewTurn", "the preview's clone"), ("PreviewTurnWithBudgetDraft", "the preview's clone"), ("PreviewTurnWithSectorDraft", "the preview's clone"),
+            ("CanOrderExtraElection", "a read"), ("CarbonFigureYieldsOn", "a read"), ("CentralBankHeadAwaitsPlayer", "a read"), ("DraftPassageYear", "a read"),
+            ("DraftProposal", "a read - the formation sheet's first draft"), ("ElectionAwaitsRound", "a read"), ("EstimateBudgetBill", "a read"), ("EstimateTradeBill", "a read"),
+            ("GetDocket", "a read"), ("GetLastEvent", "a read"), ("GetLastFiscalReport", "a read"), ("GetPendingBudgetAlternative", "a read"), ("GetPendingBudgetBill", "a read"),
+            ("GetPendingBudgetProcess", "a read"), ("GetPendingCabinetDecisions", "a read"), ("GetPendingCrimeJusticeBill", "a read"), ("GetPendingForeignPolicyMeeting", "a read"),
+            ("GetPendingLaborBill", "a read"), ("GetPendingLawBill", "a read"), ("GetPendingLawBills", "a read"), ("GetPendingMajorityReconciliation", "a read"), ("PlayerAnswersDocket", "a read"), ("GetPendingSectorBill", "a read"), ("GetPendingSwfDrawdownBill", "a read"),
+            ("GetPendingTaxProgramBills", "a read"), ("GetPendingTradeBill", "a read"), ("GetPendingWelfareProgramBills", "a read"), ("GetWageGrowthGapAtPeriodOpen", "a read"),
+            ("IsIncomingGovernmentBudgetWindow", "a read"), ("PendingPlayerScandal", "a read"), ("PlayerGoverns", "a read"), ("PlayerMayIntroduce", "a read"),
+            ("PlayerPartyIndexForCampaign", "a read"), ("PreviewFormation", "a read - the verdict before the player submits"), ("ProjectConstructiveVote", "a read"),
+            ("ProjectPersonBallot", "a read"), ("QueuedScandalResponse", "a read"), ("RoundOf", "a read"), ("RoundsApply", "a read"), ("SejmStepsApply", "a read"),
+            ("SpeakerOrder", "a read"), ("TryPassedCarbonFigure", "a read"), ("TryPlayerPollingDay", "a read"), ("TryUnansweredDocketItem", "a read"),
+        };
+
+        /// <summary>(4)'s planted source: the classifier must find each kind - an answer, a lever, an answer one call deep, and a write that is neither (its next
+        /// method an answer, so a body read past its end would pass it; a string holding a brace, so a body cut short or read long would show).</summary>
+        private const string PlantedManager =
+            "public bool PlantedAnswer(int a) { return Answered(new PlayerAnswer(\"x\", null, s => true), () => true); }\n" +
+            "public bool PlantedLever(int a) => Pull(null, null);\n" +
+            "public bool PlantedVia(int a, out string w) => PlantedInner(a, out w);\n" +
+            "private bool PlantedInner(int a, out string w) { w = \"{\"; return Answered(null, () => true); }\n" +
+            "public void PlantedWrite(int a) { _x = $\"{a}}\"; _y = '{'; }\n" +
+            "public bool PlantedNext() { return Answered(null, () => true); }\n";
+        private const string PlantedUi = "_simulationManager.PlantedWrite(1); _simulationManager?.PlantedAnswer(2); CountryId p = _simulationManager.PlayerCountryId;";
+
+        /// <summary>(4): "lever", "answer", or null - from the method's own bodies, read with string and character literals blanked, and one call deep.</summary>
+        private static string Classify(string name, string code, int depth = 0)
+        {
+            foreach (string body in BodiesOf(name, code))
+            {
+                if (body.Contains("Pull(")) { return "lever"; }
+                if (body.Contains("Answered(")) { return "answer"; }
+                if (depth > 0) { continue; }
+                foreach (Match call in Regex.Matches(body, @"\b([A-Z]\w*)\s*\("))
+                {
+                    if (call.Groups[1].Value == name) { continue; }
+                    string inner = Classify(call.Groups[1].Value, code, depth + 1);
+                    if (inner != null) { return inner; }
+                }
+            }
+            return null;
+        }
+
+        /// <summary>(4): every body declared under <paramref name="name"/> - an expression body to its first statement end, a block to its matching brace.</summary>
+        private static IEnumerable<string> BodiesOf(string name, string code)
+        {
+            foreach (Match m in Regex.Matches(code, @"\b(?:public|private|internal|protected)\s+[\w<>\[\],.?() ]*?\b" + Regex.Escape(name) + @"\s*\("))
+            {
+                int i = m.Index + m.Length, depth = 1;
+                while (i < code.Length && depth > 0) { if (code[i] == '(') { depth++; } else if (code[i] == ')') { depth--; } i++; }
+                while (i < code.Length && char.IsWhiteSpace(code[i])) { i++; }
+                if (i + 1 < code.Length && code[i] == '=' && code[i + 1] == '>') { int end = code.IndexOf(';', i); yield return code.Substring(i, (end < 0 ? code.Length : end) - i); continue; }
+                if (i >= code.Length || code[i] != '{') { continue; }
+                int start = i, braces = 0;
+                for (; i < code.Length; i++)
+                {
+                    if (code[i] == '{') { braces++; }
+                    else if (code[i] == '}' && --braces == 0) { i++; break; }
+                }
+                yield return code.Substring(start, i - start);
+            }
+        }
+
+        /// <summary>(4): the source with every string and character literal's content blanked - a brace inside one is no brace of the code - and a line
+        /// comment the comment strip kept (it keeps one on a line holding a quote) dropped. A regular string ends at its line's end at the latest, and a
+        /// character literal is one only where it closes within a few characters, so an apostrophe in prose cannot swallow the code after it.</summary>
+        private static string BlankLiterals(string code)
+        {
+            var sb = new StringBuilder(code.Length);
+            for (int i = 0; i < code.Length; i++)
+            {
+                char c = code[i];
+                if (c == '/' && i + 1 < code.Length && code[i + 1] == '/') { while (i < code.Length && code[i] != '\n') { i++; } if (i < code.Length) { sb.Append('\n'); } continue; }
+                if (c == '\'')
+                {
+                    int close = code.IndexOf('\'', i + 1);
+                    if (close > i && close - i <= 7 && code.IndexOf('\n', i + 1, close - i - 1) < 0) { sb.Append("''"); i = close; }   // 'x', '\x', '\uXXXX'
+                    else { sb.Append(c); }
+                    continue;
+                }
+                if (c != '"') { sb.Append(c); continue; }
+                bool verbatim = i > 0 && (code[i - 1] == '@' || (code[i - 1] == '$' && i > 1 && code[i - 2] == '@'));
+                sb.Append(c);
+                for (i++; i < code.Length; i++)
+                {
+                    if (!verbatim && code[i] == '\\') { i++; continue; }
+                    if (!verbatim && code[i] == '\n') { sb.Append('\n'); break; }
+                    if (code[i] == '"')
+                    {
+                        if (verbatim && i + 1 < code.Length && code[i + 1] == '"') { i++; continue; }
+                        sb.Append('"');
+                        break;
+                    }
+                    if (code[i] == '\n') { sb.Append('\n'); }
+                }
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>(4): every manager method the UI source calls, with where it is first called.</summary>
+        private static SortedDictionary<string, string> CallsIn(string code, string where, SortedDictionary<string, string> into)
+        {
+            foreach (Match m in ManagerCall.Matches(code)) { if (!into.ContainsKey(m.Groups[1].Value)) { into[m.Groups[1].Value] = where + ":" + LineOf(code, m.Index).ToString(CultureInfo.InvariantCulture); } }
+            return into;
+        }
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -172,6 +293,45 @@ namespace PoliSim.EditorTools
                 if (n != 1) { failures.Add($"the lever {kind} is built by {n} verb(s) in SimulationManager - one verb pulls each lever"); }
             }
             sb.Append("  the levers built in the manager (kind, verbs): ").Append(string.Join(" · ", kinds)).Append('\n');
+
+            // (4) FORK-2 (the fix review's H1): every manager method the UI calls is a lever's verb, an answer, or declared - the teeth first
+            string planted = BlankLiterals(PlantedManager);
+            SortedDictionary<string, string> plantedCalls = CallsIn(PlantedUi, "planted", new SortedDictionary<string, string>(StringComparer.Ordinal));
+            bool teeth = Classify("PlantedAnswer", planted) == "answer" && Classify("PlantedLever", planted) == "lever" && Classify("PlantedVia", planted) == "answer"
+                         && Classify("PlantedWrite", planted) == null && plantedCalls.Count == 2 && plantedCalls.ContainsKey("PlantedWrite") && plantedCalls.ContainsKey("PlantedAnswer");
+            if (!teeth)
+            {
+                failures.Add(string.Format(CultureInfo.InvariantCulture, "the answers' teeth: the classifier read the planted source wrong - answer {0}, lever {1}, one call deep {2}, the write {3}; the UI calls found {4}",
+                    Classify("PlantedAnswer", planted) ?? "none", Classify("PlantedLever", planted) ?? "none", Classify("PlantedVia", planted) ?? "none", Classify("PlantedWrite", planted) ?? "none", string.Join(", ", plantedCalls.Keys)));
+            }
+            var managerCode = new StringBuilder();
+            const string simulation = "Assets/Scripts/Simulation";
+            if (Directory.Exists(simulation))
+            {
+                foreach (string path in Directory.GetFiles(simulation, "SimulationManager*.cs", SearchOption.TopDirectoryOnly)) { managerCode.Append(BlankLiterals(SourceText.ReadWithoutComments(path))).Append('\n'); }
+            }
+            if (managerCode.Length == 0) { failures.Add("no SimulationManager source under " + simulation + " was read - the answers were not classified"); }
+            var uiCalls = new SortedDictionary<string, string>(StringComparer.Ordinal);
+            if (Directory.Exists(ui))
+            {
+                foreach (string path in Directory.GetFiles(ui, "*.cs", SearchOption.AllDirectories)) { CallsIn(SourceText.ReadWithoutComments(path), Path.GetFileName(path), uiCalls); }
+            }
+            var declared = new Dictionary<string, string>(StringComparer.Ordinal);
+            foreach ((string name, string why) in NotAnAnswer) { declared[name] = why; }
+            int asLever = 0, asAnswer = 0, asDeclared = 0;
+            var answers = new List<string>();
+            foreach (KeyValuePair<string, string> call in uiCalls)
+            {
+                string kind = managerCode.Length == 0 ? null : Classify(call.Key, managerCode.ToString());
+                if (kind == "lever") { asLever++; continue; }
+                if (kind == "answer") { asAnswer++; answers.Add(call.Key); continue; }
+                if (declared.ContainsKey(call.Key)) { asDeclared++; continue; }
+                failures.Add($"{call.Value} - the UI calls SimulationManager.{call.Key}, which is neither a lever's verb (Pull) nor an answer (Answered) nor declared in NotAnAnswer: the impact ledger's worlds never see it (FORK-2)");
+            }
+            var stale = new List<string>();
+            foreach ((string name, string _) in NotAnAnswer) { if (!uiCalls.ContainsKey(name)) { stale.Add(name); } }
+            sb.Append(string.Format(CultureInfo.InvariantCulture, "  the answers (FORK-2): the teeth {0}; {1} manager method(s) the UI calls - {2} lever verb(s), {3} answer(s) [{4}], {5} declared the day's path, setup, the preview or a read{6}\n",
+                teeth ? "hold" : "FAILED", uiCalls.Count, asLever, asAnswer, string.Join(", ", answers), asDeclared, stale.Count == 0 ? string.Empty : "; declared and not called (stale, reported): " + string.Join(", ", stale)));
 
             foreach (string f in failures) { sb.Append("  ⚠ FAULT  ").Append(f).Append('\n'); }
             sb.Append($"\n=== UiLeverVerbCheck: {(failures.Count == 0 ? "CLEAN" : failures.Count + " fault(s)")} ===\n");

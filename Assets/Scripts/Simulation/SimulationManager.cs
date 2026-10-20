@@ -1220,6 +1220,22 @@ namespace PoliSim.Simulation
         /// <summary>Applies the player's chosen response to one pending cabinet decision and clears it from the pending list - called once per response, from GameController.</summary>
         public void ResolveCabinetDecision(CountryId countryId, CabinetPortfolio portfolio, CabinetDecision decision, CabinetDecisionOption chosenOption)
         {
+            // FORK-2 (the review's M2): replayed by IDENTITY - the decision by its name and portfolio, the option by its place in that decision; a counterfactual
+            // holds its own objects. The ledger is told only where the option is the decision's (the review's L3)
+            string name = decision?.Name;
+            int pick = decision?.Options?.IndexOf(chosenOption) ?? -1;
+            Answered(new PlayerAnswer("a cabinet decision", countryId, sim =>
+            {
+                (CabinetPortfolio Portfolio, CabinetDecision Decision) match = sim.GetPendingCabinetDecisions(countryId).FindLast(p => p.Portfolio == portfolio && p.Decision?.Name == name);   // the fix review's L4: the newest of that name
+                if (match.Decision == null || pick < 0 || pick >= match.Decision.Options.Count) { return false; }
+                sim.ResolveCabinetDecision(countryId, portfolio, match.Decision, match.Decision.Options[pick]);
+                return true;
+            }), () => { ResolveCabinetDecisionNow(countryId, portfolio, decision, chosenOption); return pick >= 0; });
+        }
+
+        /// <summary>FORK-2: <see cref="ResolveCabinetDecision"/>'s act.</summary>
+        private void ResolveCabinetDecisionNow(CountryId countryId, CabinetPortfolio portfolio, CabinetDecision decision, CabinetDecisionOption chosenOption)
+        {
             Country country = _world.GetCountry(countryId);
             float approvalBeforeOption = country.State.ApprovalRating;
             // Step 2's third section: F1's BudgetImpact reaches the debt stock through this option
@@ -1267,6 +1283,31 @@ namespace PoliSim.Simulation
         /// <summary>Applies the player's chosen response to the pending foreign policy meeting and clears it - called once per response, from GameController.</summary>
         public void ResolveForeignPolicyMeeting(CountryId countryId, ForeignPolicyMeetingOption chosenOption)
         {
+            // FORK-2 (the s871 review's M2; the fix review's M2): replayed by IDENTITY - the meeting by its name (the day is the answer's), the option by its place in
+            // it; a counterfactual's pending meeting is its own object. No match (that world rolled another meeting, or none), the world answers its waits by
+            // the AI's rule (`ShadowBaseline`), so its slot empties. The no-policy world is handed no answer and sets its meetings aside by that rule. The
+            // ledger is told only where the option is the meeting's (the review's L3)
+            ForeignPolicyMeeting answered = GetPendingForeignPolicyMeeting(countryId);
+            string name = answered?.Name;
+            int pick = answered?.Options?.IndexOf(chosenOption) ?? -1;
+            Answered(new PlayerAnswer("a foreign-policy meeting", countryId, sim =>
+            {
+                ForeignPolicyMeeting meeting = sim.GetPendingForeignPolicyMeeting(countryId);
+                if (meeting == null || meeting.Name != name || pick < 0 || pick >= meeting.Options.Count) { return false; }
+                sim.ResolveForeignPolicyMeeting(countryId, meeting.Options[pick]);
+                return true;
+            }, answersAWait: true),
+            () => { ResolveForeignPolicyMeetingNow(countryId, chosenOption); return pick >= 0; });
+        }
+
+        /// <summary>FORK-2 (the s871 review's M2): the pending meeting cleared with no option applied - the AI's answer in a counterfactual world, where no
+        /// player answers (<see cref="AnswerWaitsAsTheAi"/>: no AI-run country holds a meeting), so the single slot empties and the meetings go on rolling there.
+        /// True where a meeting was pending.</summary>
+        public bool SetAsideForeignPolicyMeeting(CountryId countryId) => _pendingForeignPolicyMeetingByCountry.Remove(countryId);
+
+        /// <summary>FORK-2: <see cref="ResolveForeignPolicyMeeting"/>'s act.</summary>
+        private void ResolveForeignPolicyMeetingNow(CountryId countryId, ForeignPolicyMeetingOption chosenOption)
+        {
             Country country = _world.GetCountry(countryId);
             float approvalBeforeOption = country.State.ApprovalRating;
             // Step 2's third section: the meeting option's BudgetImpact is F1's second writer -
@@ -1307,6 +1348,16 @@ namespace PoliSim.Simulation
 
         /// <summary>PS-3e (§632): the player's party tables its draft as the ALTERNATIVE to the government's pending budget - the Riksdag's budget motion. False, with the reason, where none can be tabled.</summary>
         public bool TableShadowBudget(CountryId countryId, BudgetBill bill, out string refusedBecause)
+        {
+            System.Func<BudgetBill> copy = CopiesForLedger(bill);   // FORK-2: the alternative as tabled, a fresh copy for each except-world
+            string why = null;
+            bool acted = Answered(new PlayerAnswer("an alternative budget", countryId, sim => copy != null && sim.TableShadowBudget(countryId, copy(), out _)), () => TableShadowBudgetNow(countryId, bill, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="TableShadowBudget"/>'s act.</summary>
+        private bool TableShadowBudgetNow(CountryId countryId, BudgetBill bill, out string refusedBecause)
         {
             refusedBecause = null;
             Country country = _world?.GetCountry(countryId);
@@ -1797,6 +1848,31 @@ namespace PoliSim.Simulation
 
         private bool AnswerDocket(CountryId countryId, DivisionRecord passage, int answer, out string refusedBecause)
         {
+            // FORK-2 (§886's L4; the fix reviews' M2 and M1): replayed by IDENTITY - the bill by what its passage is in every world: its title, its day, the
+            // chamber it was held in and the chamber it began in. Never the division's number, which counts every division of the country and so parts the
+            // moment a world holds one more or one fewer. No match, nothing is answered there. The no-policy world is handed no answer: its docket bills
+            // become law at their term, as an unanswered bill does in the played world
+            System.DateTime passed = passage?.Date ?? System.DateTime.MinValue;
+            string title = passage?.Title;
+            int chamber = passage?.Chamber ?? -1, origin = passage?.Origin ?? -1;
+            string why = null;
+            bool acted = Answered(new PlayerAnswer(answer > 0 ? "a docket bill signed" : "a docket bill vetoed", countryId, sim =>
+            {
+                DocketItem match = sim.GetDocket(countryId).Find(item => SamePassage(item.Entry.Passage, title, passed, chamber, origin));
+                return match.Entry != null && sim.AnswerDocket(countryId, match.Entry.Passage, answer, out _);
+            }), () => AnswerDocketNow(countryId, passage, answer, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2 (the fix review's M1): whether <paramref name="passage"/> is the passage of that title, day, chamber and origin - the docket answer's
+        /// identity across worlds, which never reads the division's number.</summary>
+        public static bool SamePassage(DivisionRecord passage, string title, System.DateTime date, int chamber, int origin) =>
+            passage != null && passage.Title == title && passage.Date == date && passage.Chamber == chamber && passage.Origin == origin;
+
+        /// <summary>FORK-2: <see cref="AnswerDocket"/>'s act.</summary>
+        private bool AnswerDocketNow(CountryId countryId, DivisionRecord passage, int answer, out string refusedBecause)
+        {
             refusedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country == null || passage == null) { refusedBecause = "no such bill"; return false; }
@@ -1866,6 +1942,13 @@ namespace PoliSim.Simulation
         /// ParliamentSystem.BillDurationDays itself.
         /// </summary>
         public bool IntroduceBudgetBill(CountryId countryId, BudgetBill bill)
+        {
+            System.Func<BudgetBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a budget bill", countryId, sim => copy != null && sim.IntroduceBudgetBill(countryId, copy())), () => IntroduceBudgetBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceBudgetBill"/>'s act.</summary>
+        private bool IntroduceBudgetBillNow(CountryId countryId, BudgetBill bill)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.Budget, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingBudgetBillByCountry.ContainsKey(countryId))
@@ -2206,6 +2289,16 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool WithholdContinuingResolution(CountryId countryId, bool withhold, out string refusedBecause)
         {
+            string why = null;   // FORK-2: a withhold or a release, given again in every except-world on its day
+            bool acted = Answered(new PlayerAnswer(withhold ? "a resolution withheld" : "a resolution released", countryId, sim => sim.WithholdContinuingResolution(countryId, withhold, out _)),
+                () => WithholdContinuingResolutionNow(countryId, withhold, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="WithholdContinuingResolution"/>'s act.</summary>
+        private bool WithholdContinuingResolutionNow(CountryId countryId, bool withhold, out string refusedBecause)
+        {
             refusedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId || !UsBudgetProcedure.Applies(country)) { refusedBecause = UsBudgetProcedure.NoResolutionWords; return false; }
@@ -2304,7 +2397,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Submits a new standalone TaxProgramBill - a no-op (returns false) if one is already pending for this SAME TaxType (different TaxTypes may all have their own bill pending at once - see _pendingTaxProgramBillsByCountry's own doc comment). No mandatory pause to close - unlike IntroduceBudgetBill, this tier never blocks time in the first place.</summary>
-        public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd)
+        public bool IntroduceTaxProgramBill(CountryId countryId, TaxType type, bool isAdd) =>
+            Answered(new PlayerAnswer("a tax programme bill", countryId, sim => sim.IntroduceTaxProgramBill(countryId, type, isAdd)), () => IntroduceTaxProgramBillNow(countryId, type, isAdd));   // FORK-2
+
+        /// <summary>FORK-2: <see cref="IntroduceTaxProgramBill"/>'s act.</summary>
+        private bool IntroduceTaxProgramBillNow(CountryId countryId, TaxType type, bool isAdd)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.TaxProgram, CabinetPortfolio.FinanceTreasury, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (!_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var pending))
@@ -2374,7 +2471,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>WelfareProgramType equivalent of IntroduceTaxProgramBill - see that method's own doc comment, same pattern.</summary>
-        public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd)
+        public bool IntroduceWelfareProgramBill(CountryId countryId, WelfareProgramType type, bool isAdd) =>
+            Answered(new PlayerAnswer("a welfare programme bill", countryId, sim => sim.IntroduceWelfareProgramBill(countryId, type, isAdd)), () => IntroduceWelfareProgramBillNow(countryId, type, isAdd));   // FORK-2
+
+        /// <summary>FORK-2: <see cref="IntroduceWelfareProgramBill"/>'s act.</summary>
+        private bool IntroduceWelfareProgramBillNow(CountryId countryId, WelfareProgramType type, bool isAdd)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.WelfareProgram, CabinetPortfolio.HealthSocialAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (!_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var pending))
@@ -2443,6 +2544,13 @@ namespace PoliSim.Simulation
 
         /// <summary>Submits a new standalone LaborPolicyBill - a no-op (returns false) if one is already pending, same single-slot pattern as IntroduceBudgetBill. No mandatory pause to close - this tier never blocks time.</summary>
         public bool IntroduceLaborBill(CountryId countryId, LaborPolicyBill bill)
+        {
+            System.Func<LaborPolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a labour bill", countryId, sim => copy != null && sim.IntroduceLaborBill(countryId, copy())), () => IntroduceLaborBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceLaborBill"/>'s act.</summary>
+        private bool IntroduceLaborBillNow(CountryId countryId, LaborPolicyBill bill)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.Labor, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingLaborBillByCountry.ContainsKey(countryId))
@@ -2542,6 +2650,13 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceCrimeJusticeBill(CountryId countryId, CrimeJusticePolicyBill bill)
         {
+            System.Func<CrimeJusticePolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a crime and justice bill", countryId, sim => copy != null && sim.IntroduceCrimeJusticeBill(countryId, copy())), () => IntroduceCrimeJusticeBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceCrimeJusticeBill"/>'s act.</summary>
+        private bool IntroduceCrimeJusticeBillNow(CountryId countryId, CrimeJusticePolicyBill bill)
+        {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.CrimeJustice, CabinetPortfolio.InteriorJustice, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingCrimeJusticeBillByCountry.ContainsKey(countryId))
             {
@@ -2603,6 +2718,13 @@ namespace PoliSim.Simulation
 
         /// <summary>Submits a new law bill (enact or repeal, per bill.IsRepeal) - a no-op (returns false) if one is already pending for this SAME LawId. Mirrors IntroduceTaxProgramBill's own pattern exactly.</summary>
         public bool IntroduceLawBill(CountryId countryId, LawBill bill)
+        {
+            System.Func<LawBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a law bill", countryId, sim => copy != null && sim.IntroduceLawBill(countryId, copy())), () => IntroduceLawBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceLawBill"/>'s act.</summary>
+        private bool IntroduceLawBillNow(CountryId countryId, LawBill bill)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.Law, PortfolioOfLaw(bill), out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             // P4-C3 third category, ruling (a) (2026-09-05): a law outside the parliament's competence (a monetary-regime law in a
@@ -2929,6 +3051,13 @@ namespace PoliSim.Simulation
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceSectorBill(CountryId countryId, SectorPolicyBill bill)
         {
+            System.Func<SectorPolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a sector bill", countryId, sim => copy != null && sim.IntroduceSectorBill(countryId, copy())), () => IntroduceSectorBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceSectorBill"/>'s act.</summary>
+        private bool IntroduceSectorBillNow(CountryId countryId, SectorPolicyBill bill)
+        {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.Sector, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingSectorBillByCountry.ContainsKey(countryId))
             {
@@ -3001,6 +3130,13 @@ namespace PoliSim.Simulation
         /// control, because the player spends the wait learning nothing.
         /// </summary>
         public bool IntroduceSwfDrawdownBill(CountryId countryId, SwfDrawdownBill bill)
+        {
+            System.Func<SwfDrawdownBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a fund drawdown bill", countryId, sim => copy != null && sim.IntroduceSwfDrawdownBill(countryId, copy())), () => IntroduceSwfDrawdownBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceSwfDrawdownBill"/>'s act.</summary>
+        private bool IntroduceSwfDrawdownBillNow(CountryId countryId, SwfDrawdownBill bill)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.SwfDrawdown, null, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingSwfDrawdownBillByCountry.ContainsKey(countryId))
@@ -3108,6 +3244,13 @@ namespace PoliSim.Simulation
 
         /// <summary>See IntroduceLaborBill's own doc comment - identical pattern.</summary>
         public bool IntroduceTradeBill(CountryId countryId, TradePolicyBill bill)
+        {
+            System.Func<TradePolicyBill> copy = CopiesForLedger(bill);   // FORK-2: the bill as introduced, a fresh copy for each except-world
+            return Answered(new PlayerAnswer("a trade bill", countryId, sim => copy != null && sim.IntroduceTradeBill(countryId, copy())), () => IntroduceTradeBillNow(countryId, bill));
+        }
+
+        /// <summary>FORK-2: <see cref="IntroduceTradeBill"/>'s act.</summary>
+        private bool IntroduceTradeBillNow(CountryId countryId, TradePolicyBill bill)
         {
             if (!PlayerMayIntroduce(countryId, Congress.Kind.Trade, CabinetPortfolio.ForeignAffairs, out string lockedBecause)) { Debug.Log($"LEVERS: {countryId} - a bill was refused: {lockedBecause}"); return false; }   // PS-3c (§630): the role gate; PS-6 US-19: by the bill's kind (R-US7 (a))
             if (_pendingTradeBillByCountry.ContainsKey(countryId))
@@ -3586,10 +3729,47 @@ namespace PoliSim.Simulation
 
         private bool Pull(PlayerLever lever, Country country)
         {
-            ImpactLedger?.BeforeLever(this, lever);
+            // FORK-2: a lever pulled inside one of the player's answers is part of that answer - the answer's replay pulls it again in every except-world
+            PolicyImpactLedger ledger = _answering > 0 ? null : ImpactLedger;
+            ledger?.BeforeLever(this, lever);
             if (!lever.ApplyTo(_world, country, replay: false)) { return false; }
-            ImpactLedger?.AfterLever(this, lever);
+            ledger?.AfterLever(this, lever);
             return true;
+        }
+
+        /// <summary>FORK-2: a copier of what the player handed a verb (a bill, a proposal), for the impact ledger's replays - null where no ledger watches this
+        /// game or the answer is inside another (nothing is replayed then), and a copier yielding null where the value would not copy (the replay then refuses,
+        /// and the log says so; the player's own act is never refused for it).</summary>
+        private System.Func<T> CopiesForLedger<T>(T value) where T : class
+        {
+            if (ImpactLedger == null || _answering > 0) { return null; }
+            try { return PlayerAnswer.Copies(value); }
+            catch (System.Exception e)
+            {
+                Debug.LogWarning($"LEDGER: the player's {typeof(T).Name} could not be copied for the impact ledger's worlds ({e.GetType().Name}: {e.Message}) - they do not see it");
+                return () => null;
+            }
+        }
+
+        /// <summary>FORK-2: how many of the player's answers are being given on this manager now - an answer given inside another (a verb calling a verb) is
+        /// the outer one's, so only the outermost reaches the impact ledger.</summary>
+        private int _answering;
+
+        /// <summary>
+        /// FORK-2 (D-45's remainder; the s871 review's M2): the player's NON-LEVER answer <paramref name="answer"/>, given by <paramref name="act"/> (the verb's
+        /// own body). Where it acted, the impact ledger watching this game is told after the act (<see cref="PolicyImpactLedger.AfterAnswer"/>), and every
+        /// except-world gives the same answer on the same day - so a fork with no policy difference stays the played world. A counterfactual's manager has no
+        /// ledger, so a replay is never told again.
+        /// </summary>
+        private bool Answered(PlayerAnswer answer, System.Func<bool> act)
+        {
+            if (ImpactLedger == null || _answering > 0) { return act(); }
+            _answering++;
+            bool acted;
+            try { acted = act(); }
+            finally { _answering--; }
+            if (acted) { ImpactLedger.AfterAnswer(this, answer); }
+            return acted;
         }
 
         /// <summary>AF-11: "Set override" - the partner's rate on its goods pinned at today's (the bloc's or the base), from which only the trade bill moves
@@ -3823,6 +4003,15 @@ namespace PoliSim.Simulation
         /// </summary>
         public bool WithdrawSupport(CountryId countryId, out string refusedBecause)
         {
+            string why = null;   // FORK-2 (the review's H1): given again in every except-world on its day
+            bool acted = Answered(new PlayerAnswer("support withdrawn", countryId, sim => sim.WithdrawSupport(countryId, out _)), () => WithdrawSupportNow(countryId, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="WithdrawSupport"/>'s act.</summary>
+        private bool WithdrawSupportNow(CountryId countryId, out string refusedBecause)
+        {
             refusedBecause = null;
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
@@ -3850,6 +4039,17 @@ namespace PoliSim.Simulation
 
         /// <summary>The player's party moves no confidence in the prime minister. False, with the reason, where no motion is taken up; otherwise the vote, recorded as a division.</summary>
         public bool MoveNoConfidence(CountryId countryId, out string refusedBecause, out Elections.ConfidenceProcedure.MotionVote vote)
+        {
+            string why = null;   // FORK-2: the motion moved again in every except-world on its day - each chamber votes on it as it stands there
+            Elections.ConfidenceProcedure.MotionVote taken = null;
+            bool acted = Answered(new PlayerAnswer("a motion of no confidence", countryId, sim => sim.MoveNoConfidence(countryId, out _, out _)), () => MoveNoConfidenceNow(countryId, out why, out taken));
+            refusedBecause = why;
+            vote = taken;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="MoveNoConfidence"/>'s act.</summary>
+        private bool MoveNoConfidenceNow(CountryId countryId, out string refusedBecause, out Elections.ConfidenceProcedure.MotionVote vote)
         {
             vote = null;
             Country country = _world?.GetCountry(countryId);
@@ -3910,6 +4110,15 @@ namespace PoliSim.Simulation
         /// <summary>The player's junior partner leaves the government - struck from the cabinet, the portfolios re-apportioned among those who stay; it may then move no confidence as the opposition.</summary>
         public bool LeaveGovernment(CountryId countryId, out string refusedBecause)
         {
+            string why = null;   // FORK-2 (the review's H1): given again in every except-world on its day
+            bool acted = Answered(new PlayerAnswer("the government left", countryId, sim => sim.LeaveGovernment(countryId, out _)), () => LeaveGovernmentNow(countryId, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="LeaveGovernment"/>'s act.</summary>
+        private bool LeaveGovernmentNow(CountryId countryId, out string refusedBecause)
+        {
             Country country = _world?.GetCountry(countryId);
             if (country?.Government == null || !PlayerCountryId.HasValue || PlayerCountryId.Value != countryId) { refusedBecause = "NOT THE PLAYER'S COUNTRY"; return false; }
             if (country.PlayerHoldsPresidency) { refusedBecause = PresidentOfficeWords; return false; }   // SP-7b (I14 (2a)): the party is the AI's while the player is President
@@ -3930,6 +4139,15 @@ namespace PoliSim.Simulation
 
         /// <summary>RF 6 kap. 7 §: the player's government answers a carried motion by ordering an extra election within the week - then no discharge follows.</summary>
         public bool OrderExtraElection(CountryId countryId, out string refusedBecause)
+        {
+            string why = null;   // FORK-2: the order given again in every except-world on its day
+            bool acted = Answered(new PlayerAnswer("an extra election ordered", countryId, sim => sim.OrderExtraElection(countryId, out _)), () => OrderExtraElectionNow(countryId, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="OrderExtraElection"/>'s act.</summary>
+        private bool OrderExtraElectionNow(CountryId countryId, out string refusedBecause)
         {
             if (!CanOrderExtraElection(countryId, out refusedBecause)) { return false; }
             Country country = _world.GetCountry(countryId);
@@ -3961,6 +4179,15 @@ namespace PoliSim.Simulation
         /// as they would at the week's end. With <see cref="OrderExtraElection"/>, the two answers that end the clock's hold on a declaration.
         /// </summary>
         public bool AskToBeDischarged(CountryId countryId, out string refusedBecause)
+        {
+            string why = null;   // FORK-2 (the review's H1): given again in every except-world on its day
+            bool acted = Answered(new PlayerAnswer("a discharge asked", countryId, sim => sim.AskToBeDischarged(countryId, out _)), () => AskToBeDischargedNow(countryId, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="AskToBeDischarged"/>'s act.</summary>
+        private bool AskToBeDischargedNow(CountryId countryId, out string refusedBecause)
         {
             Country country = _world?.GetCountry(countryId);
             Elections.GovernmentRecord g = country?.Government;
@@ -5236,6 +5463,20 @@ namespace PoliSim.Simulation
         /// <summary>Premise 1: the player, asked, tables a proposal - every invited party must accept it (premise 3: revise and re-offer); tabled, the vote comes on the fourth day.</summary>
         public bool SubmitFormation(CountryId countryId, Elections.FormationProposal proposal, out Elections.ProposalVerdict verdict, out string refusedBecause)
         {
+            System.Func<Elections.FormationProposal> copy = CopiesForLedger(proposal);   // FORK-2: the proposal as made, a fresh copy for each except-world
+            string why = null;
+            Elections.ProposalVerdict given = null;
+            string asked = RoundOf(countryId)?.Asked;   // FORK-2 (the fix review's M2): the round the answer is to - the party asked
+            bool acted = Answered(new PlayerAnswer("a formation proposal", countryId, sim => copy != null && sim.RoundOf(countryId)?.Asked == asked && sim.SubmitFormation(countryId, copy(), out _, out _), answersAWait: true),
+                () => SubmitFormationNow(countryId, proposal, out given, out why));
+            verdict = given;
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="SubmitFormation"/>'s act.</summary>
+        private bool SubmitFormationNow(CountryId countryId, Elections.FormationProposal proposal, out Elections.ProposalVerdict verdict, out string refusedBecause)
+        {
             verdict = null;
             Country country = _world?.GetCountry(countryId);
             Elections.SpeakerRound round = RoundOf(countryId);
@@ -5267,6 +5508,16 @@ namespace PoliSim.Simulation
         /// <summary>R5: the player, asked, passes - the Speaker asks the next party; nothing is voted, nothing counts.</summary>
         public bool PassFormation(CountryId countryId, out string refusedBecause)
         {
+            string why = null;   // FORK-2 (the review's H1): given again in every except-world on its day
+            string asked = RoundOf(countryId)?.Asked;   // FORK-2 (the fix review's M2): the round the answer is to - the party asked
+            bool acted = Answered(new PlayerAnswer("a formation passed", countryId, sim => sim.RoundOf(countryId)?.Asked == asked && sim.PassFormation(countryId, out _), answersAWait: true), () => PassFormationNow(countryId, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="PassFormation"/>'s act.</summary>
+        private bool PassFormationNow(CountryId countryId, out string refusedBecause)
+        {
             Country country = _world?.GetCountry(countryId);
             Elections.SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null || round.Stage != Elections.RoundStage.PlayerAsked) { refusedBecause = IsBundestag(countryId) ? "THE BUNDESPRÄSIDENT HAS NOT ASKED YOUR PARTY" : "THE SPEAKER HAS NOT ASKED YOUR PARTY"; return false; }
@@ -5281,6 +5532,17 @@ namespace PoliSim.Simulation
         /// <summary>Premise 5: the player answers an offer - accepted, the proposal is tabled; declined, the party stays in opposition and the asked party
         /// proposes again without it, the Speaker moving on where nothing passes without the player's seats.</summary>
         public bool AnswerOffer(CountryId countryId, bool accept, out string refusedBecause)
+        {
+            string why = null;   // FORK-2: the answer to the offer given again in every except-world on its day
+            string asked = RoundOf(countryId)?.Asked;   // FORK-2 (the fix review's M2): the offer the answer is to - the party offering
+            bool acted = Answered(new PlayerAnswer(accept ? "an offer accepted" : "an offer declined", countryId, sim => sim.RoundOf(countryId)?.Asked == asked && sim.AnswerOffer(countryId, accept, out _), answersAWait: true),
+                () => AnswerOfferNow(countryId, accept, out why));
+            refusedBecause = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="AnswerOffer"/>'s act.</summary>
+        private bool AnswerOfferNow(CountryId countryId, bool accept, out string refusedBecause)
         {
             Country country = _world?.GetCountry(countryId);
             Elections.SpeakerRound round = RoundOf(countryId);
@@ -5703,6 +5965,15 @@ namespace PoliSim.Simulation
         /// <summary>CL-2: queue the answer to the pending story for the day the run steps next - one answer, the last pressed standing; refused with the reason when no story waits.</summary>
         public bool QueueScandalResponse(Elections.ScandalResponse response, out string refusal)
         {
+            string why = null;   // FORK-2: the answer queued again in every except-world's campaign on its day
+            bool acted = Answered(new PlayerAnswer("a story's answer", PlayerCountryId, sim => sim.QueueScandalResponse(response, out _)), () => QueueScandalResponseNow(response, out why));
+            refusal = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="QueueScandalResponse"/>'s act.</summary>
+        private bool QueueScandalResponseNow(Elections.ScandalResponse response, out string refusal)
+        {
             refusal = null;
             if (PlayerCampaign == null || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
             if (PlayerCampaign.Finished) { refusal = "the campaign is over"; return false; }
@@ -5724,6 +5995,16 @@ namespace PoliSim.Simulation
         /// without one (the picker is the plan's S-C2).
         /// </summary>
         public bool QueueCampaignDecision(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role = -1)
+        {
+            string why = null;   // FORK-2: the decision queued again in every except-world's campaign on its day
+            bool acted = Answered(new PlayerAnswer("a campaign decision", PlayerCountryId, sim => sim.QueueCampaignDecision(kind, regionIndex, issue, spend, out _, role)),
+                () => QueueCampaignDecisionNow(kind, regionIndex, issue, spend, out why, role));
+            refusal = why;
+            return acted;
+        }
+
+        /// <summary>FORK-2: <see cref="QueueCampaignDecision"/>'s act.</summary>
+        private bool QueueCampaignDecisionNow(Elections.CampaignActionKind kind, int regionIndex, Elections.IssueId? issue, double spend, out string refusal, int role)
         {
             refusal = null;
             if ((PlayerCampaign == null && PlayerPreCampaign == null) || CampaignRecord == null) { refusal = "no campaign is running"; return false; }
@@ -5750,7 +6031,11 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Empties the next day's queue - the campaign's, or (CL-1) the run-up's.</summary>
-        public void ClearCampaignQueue()
+        public void ClearCampaignQueue() =>
+            Answered(new PlayerAnswer("the campaign's day cleared", PlayerCountryId, sim => { sim.ClearCampaignQueue(); return true; }), () => { ClearCampaignQueueNow(); return true; });   // FORK-2 (the review's H1)
+
+        /// <summary>FORK-2: <see cref="ClearCampaignQueue"/>'s act.</summary>
+        private void ClearCampaignQueueNow()
         {
             if (CampaignRecord == null) { return; }
             if (PlayerCampaign != null) { int day = PlayerCampaign.Day; CampaignRecord.Queue.RemoveAll(q => q.Day == day); return; }

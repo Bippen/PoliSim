@@ -41141,3 +41141,55 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Reviewed:** `Reviews/2026-10-20_us23_review.md` (independent; no H). M1 (the stale book) is fixed: rebuilt on the vote day, rates alone from the law of the day. L1-L6 are fixed. The integrator's addendum reads `BudgetBill.RateMoves` and `Applied`. Review rows s889 cover `SimulationManager.cs`, `SimulationManager.MajorityReconciliation.cs`, `SpatialBudgetVote.cs` and `BudgetBill.cs`.
 
 **Bars** (tier SIMULATION + UI, Canvas): `n889` 17 of 18 on the first run - the one failure `UsMajorityReconciliationDiagnostic` (b)'s own expectation (it assumed a standing income tax of 37 %; the world's is 17.105 %, from which a rise to the ceiling ends nearer DEM's rate, +0.01 correctly), the case corrected at 2ed3a55e and `n889b` 1 of 1; the rest of `n889`: UsCongress, UsBudgetProcedure, UsVeto, UsDocket, ChamberVerdictCache, GovernmentBudgetBill, PreviewParity, PolishPresidentialStart, Presidency, ForkDayTick, the text guards, DeadState, Unwired, ReviewLedger, SaveMigration; `slrt889` 12 of 12; the cheap bar `cheap889` 128 of 128; the documents bar `doc889` 22 of 22; the simulation bar `sim889` 67 of 67, the sentinel holding on **aloopsal2**; the dry film `drys889` USA@1280x720, 158 measured (two new frames), 0 failed (scope row s889); the REAL films `realus889` (1280) and `realus889w` (2560) exit 0, no clip - 89k the majority's reconciliation on the desk (SIGN, VETO, LATER, "UNANSWERED, LAW ON 13 MAY 2027") and 89l its veto sustained (222 for, 290 needed), the film's staging the mirror case (a REP player-president facing a DEM majority).
+
+
+## 890. FORK-2 AND LEDGER-1: A FORK HOLDS THE PLAYER'S ELECTION, GIVES THE PLAYER'S ANSWERS AND NEVER STALLS; A LOAD KEEPS EVERY LINE'S SPAN; THE LAZY FORK SEATS WHAT THE PLAYED WORLD SEATS (2026-10-20)
+
+**What was owed** (§871's filings: D-45's remainder and the s871 review's M1/M2):
+- A fork held no player's election.
+- It replayed none of the player's non-lever answers.
+- It never answered the meetings it rolled.
+- The ledger's per-family worlds were not carried in a save.
+- LEDGER-1: `PolicyImpactLedgerDiagnostic` section 4 failed on main (`pilmain`) and was in no bar.
+
+**Built** (an implementer on `wave/fork2`: a0f324f6, then two fix rounds 76073230 and fb7784cd, rebased on §889 as d77c4c20..9273db0f, then the harness's preconditions a9a2d30a):
+- **LEDGER-1's cause.** The fork seated the save's player where the harness's played world seats none, so it ran the player's paths: `pilmain` prints three RECORD/PRESIDENTIAL lines, one per except-world. The ledger's forks now seat what the played world seats (`seatAsPlayed`, `SaveGameService.RestoreInto(..., seatsPlayer)`). Section 4 asserts the seat and names the first difference. The diagnostic is enrolled in the simulation group.
+- **The player's chamber election** moved to the manager verbatim (`SimulationManager.PlayerElection.cs`: `RunPlayerElection`, `SeatPlayerElection`, `HoldPlayerElection`). The controller keeps the verdict and the night. Every fork that steps the player's day holds it, a fork made on a polling-day boundary too (the flag restored; held once a day).
+- **Replay.**
+  - Twenty-five manager verbs report the player's answer (`Answered`), and the ledger replays each in every except-world on its day.
+  - Each answer is matched by identity: a meeting by name, a decision by name and portfolio, a docket bill by its passage's title, day, chamber and origin, a formation answer by the party asked.
+  - `UiLeverVerbCheck` (4) fails any UI-called manager method that is not a lever, an answer or declared, with planted teeth.
+- **The AI rule (DECLARED, asked).** Every ledger world answers a wait on the player that no replayed answer covers by the AI's rule for the player's party, at the start of the next day. The played clock holds on every such wait, so the player's own answer is always replayed first:
+  - asked to form, it tables the formation's draft;
+  - offered a place, it accepts where every invited party accepts;
+  - a meeting or a cabinet decision is set aside.
+- **Containment.** A fork's failure never reaches the played game: the world marks itself failed (`OnOwnGenerator`), the ledger sets its family aside as unavailable (carried in the save), and the impact card says so. A failed no-policy world draws no line.
+- **Saves.** `SaveGame.ImpactLedgerWorlds` and `ImpactLedgerUnavailable` carry the family worlds from the saves screen, brought to the played day first. An autosave carries none. Additive, no format step (ruling A).
+- **Isolation.** Every counterfactual step keeps the process-wide regional readout, and its info lines stay out of the log.
+
+**Measured** (`n890b`, ForkAnswersDiagnostic's nine cases, all ok):
+1. M leading Sweden across the 2026-09-13 polling day, 3 meetings answered, 2 bills laid and 4 formation answers given: the Trade fork EQUALS the played world, its line 0 on all six stats. The no-election control and the no-meeting-answer control each differ.
+2. The player's party asked first after the count, the pass replayed: the fork equals the played world. The control with no pass differs but does not stall: by the AI's rule it forms SD+M+KD+L led by M the next day. The no-policy world forms SD+M+KD+L led by M.
+3. The polling day as the first boundary: the Monetary fork made there holds its own election and equals the played world.
+4. A save carrying 2 family worlds (480 ms to carry; 5,431,232 bytes against 3,516,396 without) loads every family's line, equal on all six stats to a never-saved, never-carried game.
+5. The cost with every family forked (13 of 13): catch-up 1,984 ms, carry 1,090 ms, the save 17,333,834 bytes against 3,517,069 (1,062,828 a family).
+6. A question the played world never put, planted in the Trade fork: answered by the AI's rule the next day, a government formed.
+7. One extra division in the family world (passage no. 3 against 2): the docket answer still lands.
+8. A replay that misses: one line says so, and the fork still equals the played world.
+9. A planted throw: the Trade family is set aside, and the played world equals its fault-free twin.
+
+**Declared:**
+- Answers belong to no family; bills land on the interaction line. The dials ride bills in play, so no dial family is forked in a game (asked).
+- The AI's rule, the no-policy world's own election (AF-12's ask, yes provisionally) and its budget at the standing figures (asked).
+- An autosave's load counts each line from the load.
+- `UiLeverVerbCheck`'s blind spots: overloads merged, mixed bodies, aliases and setters.
+- The Fed-chair candidates' draw is residual.
+
+**Asked:** the AI rule; the no-policy world's election and budget; the bills' families; the save's size and autosaves; the unavailable line's wording.
+
+**Reviewed:**
+- `Reviews/2026-10-20_fork2_review.md` (of a0f324f6: SHIP WITH FIXES). H1-H3, M1-M5, L1-L3, L5 and L6 fixed at 76073230; L4 declared.
+- `Reviews/2026-10-20_fork2_fix_review.md` (of 76073230: SHIP WITH FIXES). H1, M1-M4, L2-L4, L6 and L7 fixed at fb7784cd; L1 and L5 declared; H2 the registration, done here.
+- Review rows s890 for `SimulationManager.cs`, `SimulationManager.PlayerElection.cs`, `PolicyImpactLedger.cs`, `PolicyImpactLedgerDiagnostic.cs` and `PlayerLeverLedgerDiagnostic.cs`.
+
+**Bars** (tier SIMULATION + UI): `n890` 15 named on the first run - 14 clean, `ForkAnswersDiagnostic`'s cases 2 and 6 with no teeth (at seed 777 the Speaker asks M first, so a case assuming S asked had nothing to test) - the harness made to plant its own preconditions at a9a2d30a, then `n890b` 1 of 1 (all nine cases); the rest of `n890`: PolicyImpactLedger, ForkDayTick, PlayerLeverLedger, NoPolicyShadowCarry, UiLeverVerbCheck, UsDocket, Presidency, PolishPresidentialStart, UsMajorityReconciliation, the text guards, ChamberVerdictCache, DeadState, ReviewLedger; `slrt890` 12 of 12; the cheap bar `cheap890` 128 of 128; the documents bar `doc890` 22 of 22; the simulation bar `sim890` 69 of 69 (PolicyImpactLedgerDiagnostic and ForkAnswersDiagnostic enrolled), the sentinel holding on **aloopsal2**; the dry film `drys890` Sweden@1280x720, 155 measured, 0 failed (scope row s890).

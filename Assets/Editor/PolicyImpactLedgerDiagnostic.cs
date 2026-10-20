@@ -48,6 +48,9 @@ namespace PoliSim.EditorTools
             var sb = new StringBuilder();
             sb.Append("=== C-C10 (P-G2): the impact ledger's proof gate ===\n");
             int failures = 0;
+            // LEDGER-1: a check in the simulation bar leaves the process as it found it - the generator's seed and counts, the market's turn state
+            int seedWas = SimulationRandom.MasterSeed;
+            Dictionary<SimulationRandom.Stream, int> drawsWas = SimulationRandom.CaptureDrawCounts();
 
             // ---- 1. the partition ----
             try
@@ -110,7 +113,10 @@ namespace PoliSim.EditorTools
             // ---- 5. the cost ----
             sb.Append(MeasureCost());
 
+            ledger.NoPolicy?.Dispose();
             ledger.Dispose();
+            SimulationRandom.RestoreState(seedWas, drawsWas);
+            EnergyMarket.ResetTurnState();
 
             sb.Append(F("\n=== PolicyImpactLedgerDiagnostic: {0} ===\n",
                 failures == 0 ? "ALL ASSERTIONS PASS" : failures + " FAILURE(S)"));
@@ -173,7 +179,7 @@ namespace PoliSim.EditorTools
             string fingerprint = Fingerprint(world);
             realCountry = world.GetCountry(Player);
 
-            if (!withLedger) { UnityEngine.Object.DestroyImmediate(go); }
+            UnityEngine.Object.DestroyImmediate(go);   // LEDGER-1: the played world's country is read from its world, which outlives its host
 
             return fingerprint;
         }
@@ -225,6 +231,9 @@ namespace PoliSim.EditorTools
             FieldInfo exceptField = typeof(PolicyImpactLedger).GetField("_except", BindingFlags.Instance | BindingFlags.NonPublic);
             var except = (Dictionary<string, ShadowBaseline>)exceptField.GetValue(ledger);
             string lazy = except.TryGetValue("Taxes", out ShadowBaseline taxes) ? Fingerprint(taxes.World) : null;
+            // LEDGER-1 (the cause, filed §871): the fork seated the save's player country while the world it copied seats none, so it ran the player's paths
+            // (the record's chamber, the player's US count) the from-the-seed world never runs - the fork must seat exactly what the played world seats
+            string seat = taxes == null ? null : taxes.PlayerCountryId?.ToString() ?? "none";
 
             ledger.Dispose();
             none.Dispose();
@@ -237,18 +246,39 @@ namespace PoliSim.EditorTools
                 return "    4. the lazy fork   ⚠ NOT EXERCISED - see the error above.\n";
             }
 
+            if (seat != "none")
+            {
+                failures++;
+                Debug.LogError($"C-C10: the Taxes world seats {seat} where the played world it was forked from seats no player - the fork is not a copy of that world.");
+            }
+
             bool exact = string.Equals(fromSeed, lazy, StringComparison.Ordinal);
             if (!exact)
             {
                 failures++;
                 Debug.LogError("C-C10: a family's except-world forked at first touch is NOT identical to one run from the seed with that "
                                + "family stripped throughout. The lazy fork is then an approximation, and every attribution built on it is "
-                               + "off by an unknown amount.");
+                               + "off by an unknown amount - first at " + FirstDifference(fromSeed, lazy));
             }
 
-            return exact
-                ? F("    4. the lazy fork   EXACT - Taxes forked at turn {0} is byte-identical to the same world run from the seed.\n", TouchTaxesAtTurn)
-                : "    4. the lazy fork   ⚠ NOT EXACT - see the error above.\n";
+            return exact && seat == "none"
+                ? F("    4. the lazy fork   EXACT - Taxes forked at turn {0} is byte-identical to the same world run from the seed, seating no player as the played world.\n", TouchTaxesAtTurn)
+                : F("    4. the lazy fork   ⚠ NOT EXACT - the fork seats {0}; see the error above.\n", seat);
+        }
+
+        /// <summary>LEDGER-1: where two fingerprints first part - the country and the field, each side's value.</summary>
+        private static string FirstDifference(string a, string b)
+        {
+            string[] x = a.Split('\n'), y = b.Split('\n');
+            for (int i = 0; i < Math.Min(x.Length, y.Length); i++)
+            {
+                if (x[i] == y[i]) { continue; }
+                string[] p = x[i].Split('|'), q = y[i].Split('|');
+                string head = x[i].Contains(":") ? x[i].Substring(0, x[i].IndexOf(':')) + " " : string.Empty;
+                for (int j = 0; j < Math.Min(p.Length, q.Length); j++) { if (p[j] != q[j]) { return F("{0}{1} (from the seed) against {2} (the lazy fork)", head, p[j], q[j]); } }
+                return F("line {0}", i);
+            }
+            return "the lengths";
         }
 
         private static string MeasureCost()

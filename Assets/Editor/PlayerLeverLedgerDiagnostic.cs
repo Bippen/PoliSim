@@ -29,7 +29,8 @@ namespace PoliSim.EditorTools
     ///
     /// <para>⚠ <b>What it does not claim, stated.</b> Since FORK-1 (J8) the harness runs the player's day tick (`AdvanceCountryDayTick`) after each day, as the
     /// game does and as the ledger's forks now do (`ForkDayTickDiagnostic` holds that a fork with no policy difference equals the played world); the claim
-    /// here is still the levers', not the bills' - a bill the player introduces after a fork is not replayed in it (D-45's remainder). It runs in the Editor,
+    /// here is still the levers' - since FORK-2 the harness holds the player's election as the controller does, and the answers' replay (a bill, a meeting)
+    /// is `ForkAnswersDiagnostic`'s claim. It runs in the Editor,
     /// where a manager's `Awake` does not run; the inside-the-turn fork's inactive host is what keeps play mode the same (<see cref="ShadowBaseline"/>).</para>
     /// </summary>
     public static class PlayerLeverLedgerDiagnostic
@@ -172,6 +173,7 @@ namespace PoliSim.EditorTools
                 {
                     sim.AdvanceDay();
                     sim.AdvanceCountryDayTick(Player);   // FORK-1 (J8): the game's day - the ledger's forks run it too
+                    if (d < SimulationManager.DaysPerTurn) { sim.HoldPlayerElection(); }   // FORK-2: the controller's election call on the player's polling day - the ledger's forks hold it too
                     PullDue(sim, game.World, t, d, skipFamily, leverFamilies, failures);
                 }
                 var decisions = new Dictionary<CountryId, PolicyDecision>();
@@ -190,6 +192,7 @@ namespace PoliSim.EditorTools
                 sim.AdvanceTurn(decisions);
                 game.None?.AdvanceTurn();
                 EnergyMarket.BeginTurn(game.World);   // the game's own call after the shadow's turn: the played world's market state stands between boundaries
+                sim.HoldPlayerElection();   // FORK-2: a polling day that is the turn's last, after the boundary, as the controller holds it
             }
             return game;
         }

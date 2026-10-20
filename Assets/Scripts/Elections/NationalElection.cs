@@ -83,6 +83,18 @@ namespace PoliSim.Elections
         /// <summary>PS-4 (§688): the party keys the regional shares' columns are in - the prediction's own order.</summary>
         public static IReadOnlyList<string> LastRegionalKeys { get; private set; }
 
+        /// <summary>FORK-2 (the review's L1): the regional readout as it stands now, and the act that puts it back - a counterfactual world's count derives its
+        /// own regions into these process-wide fields, and the readout is the played world's (election night reads it), so the count is held inside a keep.</summary>
+        public static System.Action KeepRegionalReadout()
+        {
+            double[][] shares = LastRegionalShares;
+            string[] names = LastRegionalNames;
+            double[] weights = LastRegionalWeights;
+            double worst = LastRegionalWorstAbsError;
+            IReadOnlyList<string> keys = LastRegionalKeys;
+            return () => { LastRegionalShares = shares; LastRegionalNames = names; LastRegionalWeights = weights; LastRegionalWorstAbsError = worst; LastRegionalKeys = keys; };
+        }
+
         /// <summary>SOURCED: par. 4(2) BWahlG. (The Grundmandatsklausel that survived the BVerfG's 2024 judgment turns on constituency wins, which this national path has no notion of - stated here, not silently ignored.)</summary>
         private const double GermanThreshold = 0.05;
 

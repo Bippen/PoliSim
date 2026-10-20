@@ -145,6 +145,41 @@ namespace PoliSim.Simulation
             AssertPartitionCovers();
 
             _none = noPolicy;
+            // FORK-2 (the review's H2; DECLARED, put to Elias): the world this ledger measures against is handed no answer, so it answers every wait on the
+            // player by the AI's rule for the player's party - it never stalls on the Speaker's question or an offer nobody there will answer
+            if (_none != null) { _none.AnswersWaitsAsTheAi = true; }
+        }
+
+        /// <summary>FORK-2 (the review's M3): the families whose world failed - a fork that threw, a replay that threw - each with the reason, logged once. Its
+        /// world is dropped, so its line is unavailable from that day (its share of the gap falls to the interaction line), and the family is not forked again
+        /// in this ledger: a fresh fork would count from the failure, not from the family's first touch. A counterfactual never breaks the played game.</summary>
+        public IReadOnlyDictionary<string, string> Unavailable => _unavailable;
+        private readonly Dictionary<string, string> _unavailable = new Dictionary<string, string>();
+
+        /// <summary>FORK-2 (the review's M3): the family's world set aside where it has failed (<see cref="ShadowBaseline.Faulted"/>, or <paramref name="why"/>).</summary>
+        private void RetireIfFailed(string family, string why = null)
+        {
+            _except.TryGetValue(family, out ShadowBaseline world);
+            why = why ?? world?.Faulted;
+            if (why == null) { return; }
+            if (world != null) { _except.Remove(family); world.Dispose(); }
+            if (_unavailable.ContainsKey(family)) { return; }
+            _unavailable[family] = why;
+            Debug.LogError($"LEDGER: the {family} world failed and is set aside - {why}; the {family} line is unavailable from now on, the played game untouched");
+        }
+
+        /// <summary>FORK-2 (the review's M3): every family's world checked after a call that reached them all.</summary>
+        private void RetireTheFailed()
+        {
+            foreach (string family in new List<string>(_except.Keys)) { RetireIfFailed(family); }
+        }
+
+        /// <summary>FORK-2 (the review's M3): a family's world forked, or the reason it could not be - never an exception into the played game.</summary>
+        private void Fork(string family, System.Func<ShadowBaseline> fork)
+        {
+            if (_unavailable.ContainsKey(family) || _except.ContainsKey(family)) { return; }
+            try { ShadowBaseline world = fork(); world.AnswersWaitsAsTheAi = true; _except[family] = world; }   // the fix review's H1: every ledger world answers an unanswered wait by the AI's rule
+            catch (Exception e) { RetireIfFailed(family, "the fork threw " + e.GetType().Name + ": " + e.Message); }
         }
 
         /// <summary>
@@ -163,14 +198,12 @@ namespace PoliSim.Simulation
             foreach (KeyValuePair<string, string[]> family in Families)
             {
                 bool touched = playerDecision != null && Touches(playerDecision, family.Value);
-                if (touched && !_except.ContainsKey(family.Key))
-                {
-                    _except[family.Key] = new ShadowBaseline(realSim, realWorld, _playerCountryId, dayTick: true);   // FORK-1 (J8): its days step as the played world's
-                }
+                if (touched) { Fork(family.Key, () => new ShadowBaseline(realSim, realWorld, _playerCountryId, dayTick: true, seatAsPlayed: true)); }   // FORK-1 (J8): its days step as the played world's; LEDGER-1: it seats what the played world seats
 
                 if (!_except.TryGetValue(family.Key, out ShadowBaseline world)) { continue; }
 
-                world.AdvanceTurn(Strip(decisions, family.Value));
+                world.AdvanceTurn(Strip(decisions, family.Value));   // FORK-2 (M3): a world that throws marks itself failed and returns
+                RetireIfFailed(family.Key);
             }
         }
 
@@ -183,10 +216,79 @@ namespace PoliSim.Simulation
         public void BeforeLever(SimulationManager realSim, PlayerLever lever)
         {
             string family = LeverFamilies[lever.Kind];
-            if (!_except.ContainsKey(family))
+            Fork(family, () => new ShadowBaseline(realSim, realSim.World, realSim.PlayerCountryId ?? lever.CountryId, insideTurn: true, dayTick: true, seatAsPlayed: true));   // the save's player, as the boundary's forks; FORK-1 (J8): its days step as the played world's; LEDGER-1: it seats what the played world seats
+        }
+
+        /// <summary>
+        /// FORK-2 (D-45's remainder; the s871 review's M2): **the player has answered** in the real game - a meeting, a bill, the docket, a withhold, a motion, a
+        /// formation, the campaign (<see cref="PlayerAnswer"/>). Every except-world gives the same answer on the same day of the turn
+        /// (<see cref="ShadowBaseline.Schedule(int, PlayerAnswer)"/>): an answer is no dial and no lever, so it belongs to no family and no except-world leaves it
+        /// out - and a fork with no policy difference stays the played world through it. The no-policy world is handed no answer; it answers its own waits by
+        /// the AI's rule (<see cref="ShadowBaseline.AnswersWaitsAsTheAi"/>).
+        /// ⚠ Before FORK-2 no except-world received an answer, so its effect was booked to every family forked before it (§865's M4 shape).
+        /// </summary>
+        public void AfterAnswer(SimulationManager realSim, PlayerAnswer answer)
+        {
+            int day = realSim.DaysIntoTurn;
+            foreach (KeyValuePair<string, ShadowBaseline> pair in _except) { pair.Value.Schedule(day, answer); }
+            RetireTheFailed();   // FORK-2 (M3): a replay that threw sets its world aside; the played world has acted and stays as it is
+        }
+
+        /// <summary>
+        /// FORK-2 (the s871 review's M1): **the per-family worlds as a save carries them** - each brought to the real game's day (<see cref="ShadowBaseline.CatchUp"/>)
+        /// and carried as the no-policy world is (<see cref="ShadowBaseline.Carry"/>), keyed by its family; null where there is none to carry (no family
+        /// touched, or a world with no player seat). So after a load each family's line keeps its span from the family's first touch, as the divergence keeps
+        /// its span from the start - before FORK-2 the ledger restarted empty at a load and every line counted from it.
+        /// </summary>
+        public Dictionary<string, string> Carry(SimulationManager realSim)
+        {
+            if (_except.Count == 0) { return null; }
+            var carried = new Dictionary<string, string>();
+            foreach (KeyValuePair<string, ShadowBaseline> pair in new List<KeyValuePair<string, ShadowBaseline>>(_except))
             {
-                _except[family] = new ShadowBaseline(realSim, realSim.World, realSim.PlayerCountryId ?? lever.CountryId, insideTurn: true, dayTick: true);   // the save's player, as the boundary's forks; FORK-1 (J8): its days step as the played world's
+                if (pair.Value.Faulted != null) { RetireIfFailed(pair.Key); continue; }   // FORK-2 (M3): a failed world is not carried
+                string world = pair.Value.Carry(realSim.DaysIntoTurn);
+                if (pair.Value.Faulted != null) { RetireIfFailed(pair.Key); continue; }   // a catch-up that threw
+                if (world == null) { return null; }
+                carried[pair.Key] = world;
             }
+            return carried;
+        }
+
+        /// <summary>
+        /// FORK-2 (the s871 review's M1): the ledger a save carried (<see cref="Carry"/>), around the no-policy world the same save carried - every family's world
+        /// restored as it was saved. Null, with the reason, where they cannot stand together: no worlds carried, a family the table does not name, a world that
+        /// will not restore, or one seating another player country or standing on another day than the no-policy world's turn - the caller then starts the
+        /// ledger empty, as every load did before FORK-2.
+        /// </summary>
+        public static PolicyImpactLedger FromCarried(ShadowBaseline noPolicy, Dictionary<string, string> carried, System.DateTime savedOn, out string refusedBecause) =>
+            FromCarried(noPolicy, carried, null, savedOn, out refusedBecause);
+
+        /// <summary>FORK-2 (the fix review's M2): <see cref="FromCarried(ShadowBaseline, Dictionary{string, string}, System.DateTime, out string)"/> with the
+        /// families the save carried as unavailable (<see cref="CarryUnavailable"/>) - so a load neither forks one afresh nor drops its notice.</summary>
+        public static PolicyImpactLedger FromCarried(ShadowBaseline noPolicy, Dictionary<string, string> carried, Dictionary<string, string> unavailable, System.DateTime savedOn, out string refusedBecause)
+        {
+            refusedBecause = null;
+            if ((carried == null || carried.Count == 0) && (unavailable == null || unavailable.Count == 0)) { refusedBecause = "the save carries no family's world"; return null; }
+            var ledger = new PolicyImpactLedger(noPolicy);
+            if (unavailable != null) { foreach (KeyValuePair<string, string> pair in unavailable) { if (Families.ContainsKey(pair.Key)) { ledger._unavailable[pair.Key] = pair.Value; } } }
+            carried = carried ?? new Dictionary<string, string>();
+            foreach (KeyValuePair<string, string> pair in carried)
+            {
+                if (!Families.ContainsKey(pair.Key)) { refusedBecause = $"the save carries a world for '{pair.Key}', a family this build does not have"; ledger.Dispose(); return null; }
+                ShadowBaseline world;
+                try { world = ShadowBaseline.FromCarried(pair.Value); }
+                catch (Exception e) { refusedBecause = $"the {pair.Key} world did not restore - {e.Message}"; ledger.Dispose(); return null; }
+                world.AnswersWaitsAsTheAi = true;   // the fix review's H1 (and M2: the mode needs no carrying - every ledger world has it)
+                ledger._except[pair.Key] = world;
+                if (world.PlayerCountryId != noPolicy?.PlayerCountryId || world.CurrentDate > savedOn || world.CurrentTurn != noPolicy?.CurrentTurn)
+                {
+                    refusedBecause = $"the {pair.Key} world stands on {world.CurrentDate:yyyy-MM-dd} seating {world.PlayerCountryId?.ToString() ?? "no country"} - not the saved game's turn and seat";
+                    ledger.Dispose();
+                    return null;
+                }
+            }
+            return ledger;
         }
 
         /// <summary>
@@ -204,6 +306,7 @@ namespace PoliSim.Simulation
                 if (pair.Key == family) { continue; }
                 pair.Value.Schedule(day, lever);
             }
+            RetireTheFailed();
         }
 
         /// <summary>
@@ -234,7 +337,11 @@ namespace PoliSim.Simulation
 
         /// <summary>True once at least one family has been touched — before that the ledger has nothing
         /// to explain and the screen says so rather than printing an empty table.</summary>
-        public bool HasAnything => _except.Count > 0;
+        public bool HasAnything => _except.Count > 0 || _unavailable.Count > 0;   // FORK-2 (the fix review's M4): a family whose world failed is still a family the player touched
+
+        /// <summary>FORK-2 (the fix review's M2): the families set aside as unavailable, with their reasons, as a save carries them (`SaveGame.ImpactLedgerUnavailable`)
+        /// - null where there is none.</summary>
+        public Dictionary<string, string> CarryUnavailable() => _unavailable.Count == 0 ? null : new Dictionary<string, string>(_unavailable);
 
         private static float Read(Country country, string statField)
         {

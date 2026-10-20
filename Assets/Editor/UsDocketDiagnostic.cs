@@ -267,12 +267,12 @@ namespace PoliSim.EditorTools
         }
 
         /// <summary>The day the bills introduced on 2025-02-03 are voted and presented: `ParliamentSystem.BillDurationDays` later.</summary>
-        private static DateTime PresentmentDay => UsCongressDiagnostic.Day119.AddDays(ParliamentSystem.BillDurationDays);
-        private static DateTime AnswerDay => PresentmentDay.AddDays(2);
+        internal static DateTime PresentmentDay => UsCongressDiagnostic.Day119.AddDays(ParliamentSystem.BillDurationDays);
+        internal static DateTime AnswerDay => PresentmentDay.AddDays(2);
 
         /// <summary>The 119th of record on 2025-02-03, the player REP, with a planted game-elected Trump sworn 2025-01-20 (his presidency installed as the oath
         /// installs it) - so the president of the day is the player's: the player-president.</summary>
-        private static (SimulationManager, World, Country) PlayerPresidentWorld(List<GameObject> hosts)
+        internal static (SimulationManager, World, Country) PlayerPresidentWorld(List<GameObject> hosts)
         {
             (SimulationManager s, World w, Country u) = UsCongressDiagnostic.OpenUsa(hosts, UsCongressDiagnostic.Day119, "REP");
             var trump = new UsPresidentialElection.Contest { PollingDay = new DateTime(2024, 11, 5), TakesOffice = new DateTime(2025, 1, 20), Winner = "Donald J. Trump", WinnerParty = "REP", ElectorsAppointed = 538, Line = "planted (UsDocketDiagnostic)" };
@@ -285,7 +285,7 @@ namespace PoliSim.EditorTools
 
         /// <summary>Up to <paramref name="n"/> levied taxes whose removal by REP both chambers pass on the blocs' projection (`Congress.Project` - a budget vote
         /// draws nothing, so the projection is the vote).</summary>
-        private static List<TaxType> Candidates(Country u, int n)
+        internal static List<TaxType> Candidates(Country u, int n)
         {
             var found = new List<TaxType>();
             foreach (TaxLine line in u.TaxLines.Where(t => t.IsImplemented))

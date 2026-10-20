@@ -285,7 +285,12 @@ namespace PoliSim.Persistence
         /// each carrying the list is how the list drifts). The caller still owns re-resolving its own
         /// references INTO the restored world by id (hazard 2) - see GameController.RestoreFromSave.
         /// </summary>
-        public static void RestoreInto(SimulationManager sim, SaveGame save)
+        public static void RestoreInto(SimulationManager sim, SaveGame save) => RestoreInto(sim, save, seatsPlayer: true);
+
+        /// <summary>LEDGER-1: <see cref="RestoreInto(SimulationManager, SaveGame)"/>, where <paramref name="seatsPlayer"/> false restores the world with NO player
+        /// seated - the impact ledger's fork of a world that seats none (a harness's), which must be a copy of that world: a save always names a player country
+        /// (its header's), and seated, the copy ran the player's paths (the record's chamber, the player's elections) the world it copied never ran.</summary>
+        public static void RestoreInto(SimulationManager sim, SaveGame save, bool seatsPlayer)
         {
             // §671 (SP-3): the save's created parties replace the process's, before anything reads a roster - a refused one is logged, never dropped silently
             PoliSim.Data.CreatedParties.Clear();
@@ -304,7 +309,7 @@ namespace PoliSim.Persistence
             sim.RestoreSaveState(save.World, save.CurrentTurn, save.CurrentDate, save.Sim);
             // C-R4b step 3: the campaign is REPLAYED from its record, after the streams are at the save's
             // counts (the replay rewinds three of them to the campaign's start and re-steps to here).
-            sim.PlayerCountryId = save.PlayerCountryId;
+            sim.PlayerCountryId = seatsPlayer ? save.PlayerCountryId : (CountryId?)null;
             sim.RestoreCampaign(save.PlayerCampaign, save.MasterSeed, save.RngDrawCounts);
             // PS-6 US-2: what the game does not elect is the record's on the save's date - a save cut before US-2 is put right as it loads, before any
             // screen or fork reads it; a save from a build with US-2 already holds it, and nothing moves

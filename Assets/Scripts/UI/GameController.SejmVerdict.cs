@@ -13,9 +13,10 @@ namespace PoliSim.UI
     /// </summary>
     public partial class GameController
     {
-        private void ResolveSejmVerdict(ElectionRecord latest, GovernmentFormation.Formed government)
+        private void ResolveSejmVerdict(ElectionRecord latest, GovernmentFormation.Formed government, SejmFormation f)
         {
-            SejmFormation f = _simulationManager.OpenSejmFormation(_playerCountry, latest.Date);
+            // FORK-2: the procedure `f` was opened on the outgoing government by the manager's seating (`SimulationManager.SeatPlayerElection`), which every
+            // world that holds the player's election runs
             string mine = _playerCountry.PlayerPartyAbbrev;
             string day = _pendingElectionDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture);
             if (latest.Seats != null && !string.IsNullOrEmpty(mine) && (!latest.Seats.TryGetValue(mine, out int seats) || seats <= 0))

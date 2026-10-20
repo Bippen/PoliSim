@@ -44,9 +44,9 @@ namespace PoliSim.EditorTools
     /// <item><description>SWEDEN, the Monetary dial's fork at the first boundary, compared after the second; its control is reported, not required to differ
     /// (whether that year's tick moves anything is the year's).</description></item>
     /// </list>
-    /// <para>⚠ <b>What it does not claim.</b> The controller's other daily acts are not in a fork: the chamber's election on the player's polling day
-    /// (`GameController.CheckElection`), and every answer the player gives - a bill introduced, a withhold or a release, a meeting or a cabinet decision
-    /// answered (D-45's remainder, FORK-2). The harness steps the played world by the same day path without `CheckElection`, so neither world holds the player's election: the US span holds no polling day (asserted); the Sweden spans cross 13 Sep 2026, reported, and their equality speaks for the day tick alone. No act of the player follows the fork.</para>
+    /// <para>⚠ <b>What it does not claim.</b> Since FORK-2 the harness holds the player's election of the chamber as the controller does (`SimulationManager.HoldPlayerElection`,
+    /// after the day's tick and any boundary), and a ledger's fork holds it on its own polling day: the US span holds no polling day (asserted); the Sweden spans
+    /// cross 13 Sep 2026, held by both worlds (reported). No answer of the player follows the fork - the answers' replay is `ForkAnswersDiagnostic`'s claim. The control, stepped as before J8, now differs by the election as well as the tick (the fix review's L6): it proves the tick less sharply than before, and case 1's span (no polling day) is the tick alone.</para>
     /// </summary>
     public static class ForkDayTickDiagnostic
     {
@@ -137,7 +137,7 @@ namespace PoliSim.EditorTools
 
                         // ============================================================ 2. Sweden, a lever's fork on the start's first day
                         Outcome seT = RunSweden(hosts, ticking: true, dial: false), seC = RunSweden(hosts, ticking: false, dial: false);
-                        sb.Append(F("    report    2. Sweden from its start ({0}), the player S: {1} polling day(s) of Sweden in the span - neither world holds the election (the harness steps `GameController.Update`'s day path without its `CheckElection`; the player's election in a fork is FORK-2's), so the equality below speaks for the day tick alone\n", Day(WorldClock.StartDate(CountryId.Sweden)), seT.PollingDays));
+                        sb.Append(F("    report    2. Sweden from its start ({0}), the player S: {1} polling day(s) of Sweden in the span - the election held by the played world as the controller holds it and by the ledger's fork on its own polling day (FORK-2); the control, stepped as before J8, holds none\n", Day(WorldClock.StartDate(CountryId.Sweden)), seT.PollingDays));
                         Check(seT.Real == seC.Real, "2. the played world is the same with the ledger's ticking fork beside it and with the control beside it" + (seT.Real == seC.Real ? string.Empty : FirstDifference(seT.Real, seC.Real)));
                         Check(seT.Fork == seT.Real, F("2. the ledger's {0} fork (a lever's, forked after the first day, no lever acted) EQUALS the played world after the first boundary{1}; its line {2}",
                             seT.Family, seT.Fork == seT.Real ? string.Empty : FirstDifference(seT.Real, seT.Fork), Lines(seT.Line)));
@@ -148,7 +148,7 @@ namespace PoliSim.EditorTools
                         // ============================================================ 3. Sweden, the Monetary dial's fork at the first boundary
                         Outcome dT = RunSweden(hosts, ticking: true, dial: true), dC = RunSweden(hosts, ticking: false, dial: true);
                         Check(dT.HeadSetsRate, "3. Sweden's central bank has a head, so the Monetary dial is never read (the no-policy-difference premise)" + (dT.HeadSetsRate ? string.Empty : " - NO HEAD: the dial is a policy difference here"));
-                        Check(dT.Real == dC.Real, F("3. two turns ({0} polling day(s) of Sweden, held by neither world - FORK-2's); the played world the same beside either fork{1}", dT.PollingDays, dT.Real == dC.Real ? string.Empty : FirstDifference(dT.Real, dC.Real)));
+                        Check(dT.Real == dC.Real, F("3. two turns ({0} polling day(s) of Sweden, held by the played world and the ledger's fork - FORK-2); the played world the same beside either fork{1}", dT.PollingDays, dT.Real == dC.Real ? string.Empty : FirstDifference(dT.Real, dC.Real)));
                         Check(dT.Fork == dT.Real && dT.Line.Values.All(v => v == 0f),
                             F("3. the ledger's {0} fork (a dial's, forked at the first boundary by the ledger's AdvanceTurn) EQUALS the played world after the second{1}; its line {2}",
                                 dT.Family, dT.Fork == dT.Real ? string.Empty : FirstDifference(dT.Real, dT.Fork), Lines(dT.Line)));
@@ -252,10 +252,11 @@ namespace PoliSim.EditorTools
         /// ledger's worlds (or the control fork), the played world, the no-policy shadow, the played world's market state.</summary>
         private static void Day(Game g)
         {
+            AnswerTheWaits(g);   // FORK-2 (the fix review's H1): yesterday's waits answered before today, as the held clock makes the player answer them
             bool boundary = g.Sim.AdvanceDay();
             g.Sim.AdvanceCountryDayTick(g.Player);
             if (g.Sim.PollingDayToday) { g.PollingDays++; }
-            if (!boundary) { return; }
+            if (!boundary) { g.Sim.HoldPlayerElection(); return; }   // FORK-2: the controller's election call, after the day's tick (GameController.Update's CheckElection)
 
             var decisions = new Dictionary<CountryId, PolicyDecision>();
             foreach (Country c in g.World.Countries) { decisions[c.Id] = PolicyDecision.None(); }
@@ -271,6 +272,24 @@ namespace PoliSim.EditorTools
             g.Sim.AdvanceTurn(decisions);
             g.None.AdvanceTurn();
             EnergyMarket.BeginTurn(g.World);
+            g.Sim.HoldPlayerElection();   // FORK-2: a polling day that is the turn's last is held after the boundary, as the controller holds it
+        }
+
+        /// <summary>FORK-2 (the fix review's H1): what the played clock holds on, answered as a player answers it, through the manager's verbs (the ledger
+        /// replays them): a meeting with its first option, each cabinet decision with its first, the Speaker's question passed, an offer declined. The
+        /// ledger's worlds answer a wait the played world never had by the AI's rule the next day; a harness that left the played world's waits standing would
+        /// part them from the played world on a wait it held and they did not.</summary>
+        private static void AnswerTheWaits(Game g)
+        {
+            ForeignPolicyMeeting meeting = g.Sim.GetPendingForeignPolicyMeeting(g.Player);
+            if (meeting != null && meeting.Options.Count > 0) { g.Sim.ResolveForeignPolicyMeeting(g.Player, meeting.Options[0]); }
+            foreach ((CabinetPortfolio portfolio, CabinetDecision decision) in g.Sim.GetPendingCabinetDecisions(g.Player).ToList())
+            {
+                if (decision?.Options != null && decision.Options.Count > 0) { g.Sim.ResolveCabinetDecision(g.Player, portfolio, decision, decision.Options[0]); }
+            }
+            SpeakerRound round = g.Sim.RoundOf(g.Player);
+            if (round?.Stage == RoundStage.PlayerAsked) { g.Sim.PassFormation(g.Player, out _); }
+            else if (round?.Stage == RoundStage.OfferToPlayer) { g.Sim.AnswerOffer(g.Player, false, out _); }
         }
 
         /// <summary>A lever's moment with no lever: the ledger's own fork for the family (`BeforeLever`), or the control built as it was before J8.</summary>

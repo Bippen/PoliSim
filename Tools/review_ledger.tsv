@@ -286,3 +286,8 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	f53857ec60e85ac2ca8d80c24a26
 file	Assets/Scripts/Simulation/SimulationManager.MajorityReconciliation.cs	35a4d551128581a3e8a75623f3423751c93cf8308d2c6f2a003a135847e4baae	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-
 file	Assets/Scripts/Simulation/SpatialBudgetVote.cs	fd21ca0eacfab70f7dc65a76df0a0516f8682198a2c9dd39f0b1a180fe379802	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-
 file	Assets/Scripts/Data/BudgetBill.cs	7c6b51e25e78c4d5fe6629f7ecd4768c40d4a41409fff6df4a9f49c9f7648e4e	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-
+file	Assets/Editor/PlayerLeverLedgerDiagnostic.cs	587e629cb3c4c0d79621a8f02aaedbef5e8eaafe95579ae900964bcbac3b0b54	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_review.md	-
+file	Assets/Editor/PolicyImpactLedgerDiagnostic.cs	d57efae613a69fb52f8e48075c3872076ed02941f35653ba063ee7c296bed0bd	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_review.md	-
+file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	43013923b433218ce9dde0a2a8a2b12cdf2c48220764d90658b27dfe4e701434	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_fix_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	5efd5f0fff5499b27463e044a332b884e1e8eb2fd34fbe6d79f7b356a793e34f	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_fix_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	7a98dd64f6f22a5962dfdc5afe345694211f702a5d5e47fd02c941ed7882e6a4	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_fix_review.md	-

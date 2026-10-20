@@ -67,6 +67,14 @@ namespace PoliSim.Persistence
         /// loaded game, the meaning before AF-12, and says so. Additive under ruling A - a null is what those saves mean, and no field of the played world
         /// moves (no format step).</summary>
         public string NoPolicyShadow;
+        /// <summary>FORK-2 (the s871 review's M1): the impact ledger's per-family worlds, each as `ShadowBaseline.Carry` writes it, keyed by the family's name
+        /// (`PolicyImpactLedger.Carry`) - so after a load every family's line keeps its span from the family's first touch, as the no-policy world above keeps
+        /// its span from the start. Null in a save from before FORK-2, in a batch tool's save and in a save whose no-policy world was not carried: such a load
+        /// starts the ledger empty (each line counts from the load) and says so. Additive under ruling A, as <see cref="NoPolicyShadow"/> (no format step).</summary>
+        public Dictionary<string, string> ImpactLedgerWorlds;
+        /// <summary>FORK-2 (the fix review's M2): the families whose world failed, with the reason (`PolicyImpactLedger.CarryUnavailable`), so a load keeps their
+        /// line unavailable rather than forking them afresh from the load. Null where none failed, and in every save before it. Additive under ruling A.</summary>
+        public Dictionary<string, string> ImpactLedgerUnavailable;
         /// <summary>GA-0-14 / GA-0-40 (§825): the retired challenge scenario whose progress this save carried, read from the raw file by
         /// `SaveGameService.Deserialize` so the load can name it - null for every other save, and never written.</summary>
         [Newtonsoft.Json.JsonIgnore] public string RetiredScenarioId;

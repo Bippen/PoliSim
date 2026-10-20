@@ -353,3 +353,12 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 - **Your own majority.** When your party holds both chambers it sends nothing, because there is no surface to draft a reconciliation. Build one?
 - **q16's reach.** It is read as the US Congress's budget votes, rates only: "bloc" is R-US17's party-as-bloc, and GA-2-6 asked about the US House. Extend it to other countries' budget votes?
 - **q16's scale.** It is a linear map of the dial onto `redistribution` (0 at the ceiling, 10 at the floor), [AUTHORED-DRAFT]. On it, DEM's position stands for an income tax of 43.9 % and REP's for 12.4 %. Keep it, or source one?
+
+### FORK-2 and LEDGER-1, the impact ledger's forks (§890): the asks they end in
+
+- **The AI's rule for an unanswered wait.** In a counterfactual world, when nothing you did answers a question put to your party, that world answers as an AI-run party would, the next morning. Asked to form, it tables the formation's draft. Offered a place, it accepts where every invited party accepts. A meeting or a cabinet decision is set aside. Keep this rule?
+- **The no-policy world's own elections.** It now holds its own election (AF-12's open ask, answered yes provisionally). Confirm?
+- **The no-policy world's budget.** With your party governing "with no changes", it lays no budget there, and the standing one runs on. Confirm?
+- **Which family a bill belongs to.** Answers belong to no family, so a bill's effect lands on the interaction line. And because every dial reaches the game through a bill, no dial family is ever forked in a real game. Should each kind of bill be its own family's lever (a tax bill for Taxes, the omnibus budget split by its parts)?
+- **Save size and autosaves.** Each family touched adds one world to a manual save, about 1.06 MB a family (13 families: 17.3 MB against 3.5 MB), plus about 2 s of catch-up and 1 s of carry. Keep, cap, or carry only the families with a non-zero line? Autosaves carry none, so loading one restarts every line from the load: keep that?
+- **The unavailable line's wording.** When a family's world fails, the impact card says `UNAVAILABLE · <FAMILIES> · IN THE INTERACTION`. When the no-policy world fails, it says `… THE WORLD WITHOUT YOUR POLICIES STOPPED`. Approve the wording?
