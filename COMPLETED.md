@@ -40999,3 +40999,33 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 **Reviewed:** `Reviews/2026-10-20_sp7b_review.md` (independent, of 45381a46: M1-M3, L1, L3, L5, L6 fixed at 4ff8175d; L2, L4 declared) and `Reviews/2026-10-20_sp7b_rebase_review.md` (independent, of 71c14a10: no H/M; L1-L5 and C1-C3 fixed at 2d13050c). Review rows s886 for `SimulationManager.cs`, `SimulationManager.PlayerPresident.cs` and `FinancePartner.cs`.
 
 **Bars** (tier SIMULATION + UI): `n886` 20 checks (PolishPresidentialStart, StartPoints, StartBrief, WorldClock, UsDocket, UsBudgetProcedure, UsVeto, PresidentialVeto, CabinetPressure, PresidentialElectionLive, PresidentialElection, PreviewParity, SaveMigration, the text guards, ChamberVerdictCache, Unwired, ReviewLedger): 18 clean on the first run, `UsVetoDiagnostic`'s byte-identical pin of `PresidentialVeto.cs` and the ledger's two rows owed - both answered, `n886b` 3 of 3; `slrt886` 12 of 12; `stage886` at format 50; the cheap bar `cheap886` 127 of 127; the documents bar `doc886` 22 of 22; the simulation bar `sim886` 67 of 67, the sentinel holding on **aloopsal2**; the dry film `drys886` Poland@1280x720, 149 measured, 0 failed (scope row s886, declared before the film); the REAL films `realpl886` (1280) and `realpl886w` (2560): the presidential start card (01f3), the candidate picker (01g3), the answer plate with LATER (89j), the President row's verdict (07a president_elect / president_you_won, PLANTED by the driver - its dates the harness's). The candidate picker draws over the dimmed start screen without a backdrop of its own, as the party picker (01g) does, so the brief's lines show through behind its rows: noted for J8's UI pass (UI-1).
+
+
+## 887. PS-6 US-2c: J3 (R-US21 (ii)) - A 2022 OR 2023 DATE SEATS THE CHAMBER OF RECORD FOR ITS DATE (THE 117TH OR THE 118TH), THE LATEST TABLE ONLY WHERE IT IS MISSING; THE DEBT LIMIT THE LAW IN FORCE THAT DAY; SEATINGDEVIATION REWRITTEN (2026-10-20)
+
+**What was owed** (§870, J3; the feature list's US-2c): a 2022 or 2023 start seats the chamber of record for its date where its table is on disk, and the latest table only where it is missing; the debt limit is the law in force that day; `WorldClock.SeatingDeviation` rewritten.
+
+**Measured first: the ask's premise was false about the code.** The ask said "built on the latest table, as `WorldClock.SeatingDeviation` states". But the 117th and 118th House tables have been in `PartySystems.SeatsAt` since PS-1 (§618), so:
+- `SeatedVintage` already returned the chamber of record on every 2022-2023 date, and `SeatingDeviation` returned null there;
+- the AI USA of Italy's start (2022) and of Poland's Sejm start (2023) was already seated by date;
+- the Senate of record covers dates from 2017;
+- no US start opens in 2022 or 2023;
+- `UsDebtLimitCheck`'s (ii)(a) walk already took the law in force on each start's own day.
+
+J3 confirmed the code; nothing at runtime changed.
+
+**Built** (an implementer on `wave/us2c`, b86261ea):
+- `WorldClock.SeatingDeviation` is rewritten to J3's rule: its summary; the post-record US sentence now names "the latest on disk"; the E-47 sentence is byte-identical. The class and `SeatedVintage` summaries carry J3.
+- **Pins:**
+  - `WorldClockDiagnostic`: four planted dates either side of the 118th's day (the vintage, no deviation, the House's words, the Senate of record covered); a world on every playable 2022-2023 start seats the USA's House of record for its date and its president of record (Poland's Sejm start 2023-02-19, the 118th; Italy's snap start 2022-07-21, the 117th).
+  - `CongressOfRecordDiagnostic` (j): a US game opened on a planted 2022-12-30 seats the 117th (the House DEM 222 / REP 212, the Senate 50/50) and steps into the 118th's House and Senate on 3 January 2023, once, by the day loop alone, the president unchanged.
+  - `UsDebtLimitCheck.LawByDate`: the law in force on planted dates either side of P.L. 118-5's day. That is P.L. 117-73's $31,381,463,000,000 through 2023-06-02, and P.L. 118-5 s401(a)'s suspension from 2023-06-03. It also checks each playable 2022-2023 start.
+
+**Declared:**
+- "Each start's chamber and limit read by date" is proven on the reachable 2022-2023 starts (an AI USA) and on planted dates for the US start J3 imagines.
+- The limit is (ii)(a)'s law at the start; later acts are the game's Congress's (US-24 makes it live).
+- As built and unchanged: an AI USA is seated by date at the start but not stepped after it (US-2's player-only hook), and seats no Senate (US-15).
+
+**Reviewed:** by the integrator, from the diff. The one runtime edit is a log-only literal, reachable only from 3 January 2027; the rest is comments and three diagnostics. There is no money path and no review row is owed.
+
+**Bars** (tier SIMULATION): `n887` 5 of 5 (WorldClockDiagnostic, CongressOfRecordDiagnostic, UsDebtLimitCheck, CommentClaimCheck, MetaTextCheck - every US-2c line on its first run); the cheap bar `cheap887` 127 of 127; the documents bar `doc887` 22 of 22; the simulation bar `sim887` 67 of 67, the sentinel holding on **aloopsal2**. No film: no surface at a reachable start changed. Save format unchanged (50).

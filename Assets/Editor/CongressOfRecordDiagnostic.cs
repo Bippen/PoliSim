@@ -39,7 +39,9 @@ namespace PoliSim.EditorTools
     /// <item>(g) scope: the gates are the USA's alone over every country; a non-US chamber planted off its record, and every other country's chamber and
     /// government, are untouched; a US world with no player country (the seeded shadow's, the trajectory dump's), and one whose player is another country,
     /// keep the AI USA's eve House and president;</item>
-    /// <item>(i) the row's surname: BIDEN to the oath, TRUMP from it - a generational suffix is not the surname.</item>
+    /// <item>(i) the row's surname: BIDEN to the oath, TRUMP from it - a generational suffix is not the surname;</item>
+    /// <item>(j) PS-6 US-2c (Elias's ruling J3): a US game opened on a planted 2022 date seats the 117th, the chamber of record for its date, and steps into the
+    /// 118th's House and Senate on its day by the day loop alone - the reading a 2022 or 2023 US start would take, none being offered.</item>
     /// </list>
     /// </summary>
     public static class CongressOfRecordDiagnostic
@@ -306,6 +308,31 @@ namespace PoliSim.EditorTools
                     FromSave(saveBefore, "(h) a save before US-2, holding the 118th, Biden and the 118th's capital past their days", false, false,
                         (s, u, s0, g0) => Same(u.ParliamentSeats, house119) && u.Government.Executive == "Donald J. Trump (REP)" && u.Government.FormedOn == s.CurrentDate && Carried(u),
                         "put right as it loads: the 119th, Trump, the capital carried");
+
+                    // (j) PS-6 US-2c (Elias's ruling J3 on R-US21 (ii)): a US game opened on a planted 2022 date - as a 2022 US start would open, none being
+                    // offered - seats the chamber of record for its date, the 117th, and steps by date into the 118th on its day, House and Senate, by the day loop
+                    // alone (the hook's place, as (f)); the president of record throughout. The two Senates differ, so the step is seen in both chambers
+                    DateTime eve118 = new DateTime(2022, 12, 30), day118 = new DateTime(2023, 1, 3);
+                    Dictionary<string, int> house117 = PartySystems.InitialSeats(CountryId.USA, ElectionVintage.Usa2020);
+                    Dictionary<string, int> senate117 = WorldClock.SecondChamberOfRecord(CountryId.USA, day118.AddDays(-1)), senate118 = WorldClock.SecondChamberOfRecord(CountryId.USA, day118);
+                    (SimulationManager early, World earlyWorld, Country earlyUsa) = Open(player: true, eve118);
+                    string biden = WorldClock.TryGovernmentAt(CountryId.USA, eve118, out WorldClock.GovernmentOfRecord head2022) ? head2022.President : null;
+                    bool opened117 = Same(earlyUsa.ParliamentSeats, house117) && biden != null && earlyUsa.Government?.Executive == biden;
+                    object earlySeatsRef = earlyUsa.ParliamentSeats, earlyGovRef = earlyUsa.Government;
+                    int earlySeatChanges = 0;
+                    DateTime earlyChangedOn = DateTime.MinValue;
+                    bool eveOf118 = false, on118 = false;
+                    for (int day = 0; day < 10 && early.CurrentDate < day118.AddDays(1); day++)
+                    {
+                        early.AdvanceDay();
+                        if (!ReferenceEquals(earlySeatsRef, earlyUsa.ParliamentSeats)) { earlySeatChanges++; earlyChangedOn = early.CurrentDate; earlySeatsRef = earlyUsa.ParliamentSeats; }
+                        if (early.CurrentDate == day118.AddDays(-1)) { eveOf118 = Same(earlyUsa.ParliamentSeats, house117) && Same(earlyUsa.SecondChamberSeats, senate117); }
+                        if (early.CurrentDate == day118) { on118 = Same(earlyUsa.ParliamentSeats, house118) && Same(earlyUsa.SecondChamberSeats, senate118); }
+                    }
+                    Check(opened117 && eveOf118 && on118 && !Same(senate117, senate118) && earlySeatChanges == 1 && earlyChangedOn == day118 && ReferenceEquals(earlyUsa.Government, earlyGovRef),
+                        F("(j) US-2c (J3): a US game opened on the planted {0} seats the 117th House ({1}) and {2}; on {3} the 117th's House and Senate ({4}); on {5} the 118th's ({6}; {7}) - the House seated {8} time(s), on {9}; the president of record unchanged",
+                            Day(eve118), Seats(house117), earlyUsa.Government?.Executive, Day(day118.AddDays(-1)), Seats(senate117), Day(day118), Seats(house118), Seats(senate118), earlySeatChanges, Day(earlyChangedOn)));
+                    EnergyMarket.ResetTurnState();
                 }
             }
             catch (Exception ex) { failures++; sb.Append("    FAIL      threw: ").Append(ex).Append('\n'); }

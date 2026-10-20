@@ -166,6 +166,68 @@ namespace PoliSim.EditorTools
                 sb.Append(F("    {0} Poland's presidential start opens {1:yyyy-MM-dd} (the Marshal's order, I14 (4b)), the country's start {2:yyyy-MM-dd} (the run-up, §618); the picker reads {3} ({4} seats, cabinet {5}) at the order, {6} at the default\n",
                     presidentialRule ? "ok  " : "FAIL", presidential.Opens, starts[CountryId.Poland], atOrder.Vintage, atOrder.TotalSeats, string.Join("+", atOrder.Cabinet), atDefault.Vintage));
 
+                // PS-6 US-2c (Elias's ruling J3 on R-US21 (ii), 2026-10-19): a 2022 or 2023 date seats the chamber of record for that date where its table is on
+                // disk - the USA's 117th or 118th - and the latest table only where it is missing (the 120th's case, above). No US start opens in 2022 or 2023, so
+                // the reading is pinned on planted dates either side of the 118th's day (WorldClock's answer, the House and the Senate of record), and by a world
+                // built on every playable start of any country whose day falls in those years - the AI USA of Italy's and Poland's starts
+                var plantedUs = new[]
+                {
+                    (Day: new DateTime(2022, 6, 15), Vintage: ElectionVintage.Usa2020, Congress: 117),
+                    (Day: new DateTime(2023, 1, 2), Vintage: ElectionVintage.Usa2020, Congress: 117),
+                    (Day: new DateTime(2023, 1, 3), Vintage: ElectionVintage.Usa2022, Congress: 118),
+                    (Day: new DateTime(2023, 12, 31), Vintage: ElectionVintage.Usa2022, Congress: 118),
+                };
+                foreach (var p in plantedUs)
+                {
+                    WorldClock.ChamberOfRecord ofRecord = WorldClock.ChamberAt(CountryId.USA, p.Day);
+                    Dictionary<string, int> senate = WorldClock.SecondChamberOfRecord(CountryId.USA, p.Day);
+                    int senators = 0;
+                    foreach (int n in senate.Values) { senators += n; }
+                    UsSenate.Seating seating = UsSenate.On(p.Day);
+                    string usDeviation = WorldClock.SeatingDeviation(CountryId.USA, p.Day);
+                    string houseStanding = WorldClock.RecordStanding(CountryId.USA, p.Day), senateStanding = WorldClock.SecondChamberStanding(CountryId.USA, p.Day) ?? string.Empty;
+                    bool byDate = ofRecord.Vintage == p.Vintage && PartySystems.SeatsSourced(p.Vintage) && WorldClock.SeatedVintage(CountryId.USA, p.Day) == p.Vintage
+                                  && WorldClock.ChamberSeatedOn(CountryId.USA, p.Day).Vintage == p.Vintage && usDeviation == null && !houseStanding.Contains("SO IT STANDS")
+                                  && seating.Covered && senators > 0 && senators + seating.Vacant == seating.Members && UsSenate.CongressOn(p.Day) == p.Congress
+                                  && senateStanding.StartsWith("THE " + UsSenate.Ordinal(p.Congress).ToUpperInvariant() + " CONGRESS", StringComparison.Ordinal);
+                    if (!byDate) { failures++; }
+                    sb.Append(F("    {0} US-2c (J3): on the planted {1:yyyy-MM-dd} the chamber of record is {2} and its own table is seated ({3}), no deviation ({4}); the House \"{5}\"; the Senate of record the {6}'s, {7} seated and {8} vacant of {9} - \"{10}\"\n",
+                        byDate ? "ok  " : "FAIL", p.Day, ofRecord.Vintage, WorldClock.SeatedVintage(CountryId.USA, p.Day), usDeviation ?? "none", houseStanding, UsSenate.Ordinal(UsSenate.CongressOn(p.Day)),
+                        senators, seating.Vacant, seating.Members, senateStanding));
+                }
+                bool SameSeats(IReadOnlyDictionary<string, int> a, IReadOnlyDictionary<string, int> b)
+                {
+                    if (a == null || b == null || a.Count != b.Count) { return false; }
+                    foreach (KeyValuePair<string, int> kv in a) { if (!b.TryGetValue(kv.Key, out int n) || n != kv.Value) { return false; } }
+                    return true;
+                }
+                var earlyStarts = new List<string>();
+                bool italyEarly = false, polandEarly = false;
+                foreach (CountryId id in All)
+                {
+                    foreach (StartPoints.StartPoint sp in StartPoints.For(id))
+                    {
+                        if (!sp.Playable || sp.Opens.Year < 2022 || sp.Opens.Year > 2023) { continue; }
+                        SimulationManager.SetEpoch(sp.Opens);
+                        World early = WorldFactory.CreateDefault();
+                        Country earlyUsa = early.GetCountry(CountryId.USA);
+                        ElectionVintage usVintage = WorldClock.ChamberAt(CountryId.USA, sp.Opens).Vintage;
+                        bool headOfRecord = WorldClock.TryGovernmentAt(CountryId.USA, sp.Opens, out WorldClock.GovernmentOfRecord usHead) && earlyUsa.Government != null && earlyUsa.Government.Executive == usHead.President;
+                        bool seatsOfRecord = (usVintage == ElectionVintage.Usa2020 || usVintage == ElectionVintage.Usa2022) && WorldClock.SeatedVintage(CountryId.USA, sp.Opens) == usVintage
+                                             && SameSeats(earlyUsa.ParliamentSeats, PartySystems.InitialSeats(CountryId.USA, usVintage)) && WorldClock.SeatingDeviation(CountryId.USA, sp.Opens) == null;
+                        if (!(headOfRecord && seatsOfRecord)) { failures++; }
+                        earlyStarts.Add(F("{0} {1} {2:yyyy-MM-dd}", id, sp.Kind, sp.Opens));
+                        italyEarly |= id == CountryId.Italy && sp.Opens == starts[CountryId.Italy];
+                        polandEarly |= id == CountryId.Poland && sp.Opens == starts[CountryId.Poland];
+                        sb.Append(F("    {0} US-2c (J3): a world built on {1}'s {2} start, {3:yyyy-MM-dd}, seats the USA's House of record for its date - {4} ({5}) - and its president of record, {6}\n",
+                            headOfRecord && seatsOfRecord ? "ok  " : "FAIL", id, sp.Kind, sp.Opens, usVintage,
+                            string.Join(", ", new List<string>(SeatsLine(earlyUsa.ParliamentSeats))), earlyUsa.Government?.Executive ?? "none"));
+                    }
+                }
+                if (!(italyEarly && polandEarly)) { failures++; }
+                sb.Append(F("    {0} US-2c (J3): the playable starts opening in 2022 or 2023 - {1}; Italy's and Poland's Sejm start among them (the case R-US21 (ii)'s new question named)\n",
+                    italyEarly && polandEarly ? "ok  " : "FAIL", earlyStarts.Count == 0 ? "none" : string.Join("; ", earlyStarts)));
+
                 // the default epoch keeps K-1's standing
                 SimulationManager.SetEpoch(SimulationManager.DefaultEpoch);
                 World k1 = WorldFactory.CreateDefault();
@@ -193,6 +255,14 @@ namespace PoliSim.EditorTools
 
             Debug.Log(sb.ToString());
             CheckExit.Finish(0);
+        }
+
+        private static IEnumerable<string> SeatsLine(Dictionary<string, int> seats)
+        {
+            if (seats == null) { yield break; }
+            var keys = new List<string>(seats.Keys);
+            keys.Sort(StringComparer.Ordinal);
+            foreach (string k in keys) { if (seats[k] > 0) { yield return k + " " + seats[k].ToString(CultureInfo.InvariantCulture); } }
         }
 
         private static string F(string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);

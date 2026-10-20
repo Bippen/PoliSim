@@ -171,7 +171,7 @@
 - **23, US-33.** (1) the interquartile range; (2) the party's point reverts; (3) per R-US26 (a). *If wrong:* at most a 0.03-point move in the 2028 idle poll, with the count unchanged.
 - **24, US-18 (a)-(d).** As built. *If wrong:* which chamber rule a bill kind meets.
 - **26, US-19 (A)-(G).** As built; (F) is moot. *If wrong:* the role words, and which acts stay with a US president.
-- **R-US21 (ii), the 2022/2023 start.** Asked again: does a start in 2022-2023 seat the 118th's chamber of record or the latest table? Built on the latest table, as `WorldClock.SeatingDeviation` states.
+- **R-US21 (ii), the 2022/2023 start.** Asked again: does a start in 2022-2023 seat the 118th's chamber of record or the latest table? Built on the latest table, as `WorldClock.SeatingDeviation` states. *(RULED J3; §887 found this description false: the 117th and 118th were already seated by date since §618, so J3 confirmed the code.)*
 
 ### The errands: two need a ruling, not a browser
 

@@ -2372,6 +2372,7 @@ THE ASK AND THE BARS
 US-24 is unblocked. The new question under (ii), the 2022 and 2023 starts opening over P.L. 117-73's limit, stays open under I16.
 
 **RULED (Elias's ruling J3, 2026-10-19; installed `COMPLETED.md` §870): (ii)'s new question.** A start in 2022 or 2023 seats the chamber of record for the start's date where its table is on disk (the 117th or the 118th), and the latest table only where it is missing. The debt limit is the law in force that day. This replaces the latest-table reading `WorldClock.SeatingDeviation` states. The build is US-2c.
+**Built (US-2c): `COMPLETED.md` §887** - measured first: the 117th and 118th tables were on disk since §618 and seated by date already, so the latest-table reading never applied to a 2022-2023 date; `WorldClock.SeatingDeviation` rewritten to J3's rule; pinned on planted dates and on every playable 2022-2023 start (`WorldClockDiagnostic`, `CongressOfRecordDiagnostic` (j)), and the law in force by date (`UsDebtLimitCheck`). Nothing at runtime moved.
 
 
 **R-US22 — Who governs when a contest is still undecided at the oath** *(US-7's reading 3, §845; reachable once the game elects the House, US-16)*. A contingent election the House cannot decide (no candidate at 26 delegations) leaves the contest undecided on 20 January. R-US3 (a) left "a House that cannot choose" unmodelled without saying who governs then.

@@ -445,6 +445,7 @@ namespace PoliSim.EditorTools
             sb.Append(F("    read      THE DATES. The limit by date (the record, R-US21 (ii)(b)): {0}. Spans after the reach (iii): {1} - the August projection is of Treasury's cash balance and the measures together, and the game holds no cash balance, so those two spans count days the cash bought as well. Debt subject to limit = the game's debt x {2} under (i)(a); under (i)(b) the US debt re-seeded to {3} (the seed's ratio, its comfort anchor and the ministry's memory re-read from it - the re-seed as WorldFactory's own rule would carry it).\n",
                 string.Join("; ", rec.Laws.Select(l => F("{0:yyyy-MM-dd} {1}", l.From, l.LimitUsd.HasValue ? Usd(l.LimitUsd.Value) : "suspended"))), string.Join(", ", spans.Select(s => s.Name)), Ratio(bridge.RatioDsl), Usd(rec.VintageDslUsd)));
             sb.Append("    read      CRS IF10292 v22 (21 Sep 2026, ElectionsData/usa/debt_limit.md s4): outside projections from June 2026 put debt reaching the limit in \"early to mid-2027\", the measures delaying a binding limit \"by another several months\" - the record's distance from the seed's season, beside each start's SEED-TO-LIMIT.\n");
+            LawByDate(rec, sb, Check);
             DateTime epochBefore = SimulationManager.EpochDate;
             SimulationRandom.LiveState rng = SimulationRandom.CaptureLive();
             try
@@ -459,6 +460,44 @@ namespace PoliSim.EditorTools
             }
             finally { SimulationRandom.Reinstate(rng); }
             Check(SimulationManager.EpochDate == epochBefore, F("the epoch is put back after the runs ({0:yyyy-MM-dd})", SimulationManager.EpochDate));
+        }
+
+        /// <summary>PS-6 US-2c (Elias's ruling J3 on R-US21 (ii), 2026-10-19): "The debt limit is the law in force that day" - a 2022 or 2023 start opens under
+        /// the record's limit for its own day, as (ii)(a) holds from every start (<see cref="RunStart"/>'s law at the start). Pinned on planted dates - inside
+        /// 2022, either side of the day P.L. 118-5 was approved (the document's own step), and at the end of 2023 - and printed for every playable start of any
+        /// country whose day falls in those years: P.L. 117-73's limit, or from that day P.L. 118-5's suspension.</summary>
+        private static void LawByDate(Record rec, StringBuilder sb, Action<bool, string> Check)
+        {
+            const string Pl117 = "P.L. 117-73", Pl118 = "P.L. 118-5 s401(a)";
+            Law suspension = rec.Laws.FirstOrDefault(l => l.Act.StartsWith(Pl118, StringComparison.Ordinal) && !l.LimitUsd.HasValue);
+            if (suspension == null) { Check(false, F("US-2c: the document carries no {0} suspension step - the law by date cannot be pinned", Pl118)); return; }
+            string Said(Law l) => (l.LimitUsd.HasValue ? Usd(l.LimitUsd.Value) : "suspended") + " (" + l.Act + ", from " + l.From.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + ")";
+            var planted = new[]
+            {
+                (Day: new DateTime(2022, 6, 15), Act: Pl117, Limited: true),
+                (Day: suspension.From.AddDays(-1), Act: Pl117, Limited: true),
+                (Day: suspension.From, Act: Pl118, Limited: false),
+                (Day: new DateTime(2023, 12, 31), Act: Pl118, Limited: false),
+            };
+            foreach (var p in planted)
+            {
+                Law l = InForce(rec.Laws, p.Day);
+                Check(l.Act.StartsWith(p.Act, StringComparison.Ordinal) && l.LimitUsd.HasValue == p.Limited,
+                    F("US-2c (J3): the law in force on the planted {0:yyyy-MM-dd} is {1} - {2} expected", p.Day, Said(l), p.Act + (p.Limited ? "'s limit" : "'s suspension")));
+            }
+            var early = new List<string>();
+            foreach (CountryId id in (CountryId[])Enum.GetValues(typeof(CountryId)))
+            {
+                foreach (StartPoints.StartPoint sp in StartPoints.For(id))
+                {
+                    if (!sp.Playable || sp.Opens.Year < 2022 || sp.Opens.Year > 2023) { continue; }
+                    Law l = InForce(rec.Laws, sp.Opens);
+                    early.Add(F("{0} {1} {2:yyyy-MM-dd}: {3}", id, sp.Kind, sp.Opens, Said(l)));
+                    Check(l.Act.StartsWith(Pl117, StringComparison.Ordinal) || l.Act.StartsWith(Pl118, StringComparison.Ordinal),
+                        F("US-2c (J3): {0}'s {1} start, {2:yyyy-MM-dd}, opens under the law in force that day - {3}", id, sp.Kind, sp.Opens, Said(l)));
+                }
+            }
+            sb.Append(F("    read      LAW AT A 2022-2023 START (J3): {0}\n", early.Count == 0 ? "no playable start opens in 2022 or 2023" : string.Join("; ", early)));
         }
 
         private static void RunStart(CountryId player, bool reseed, Record rec, Bridge bridge, Span[] spans, decimal latest, StringBuilder sb, Action<bool, string> Check)

@@ -19,7 +19,9 @@ namespace PoliSim.Elections
     ///
     /// <para><b>The chamber of record is seated AS ELECTED</b> - the election's lists, for every country; a mid-term club or group is a
     /// stated deviation in the record, never seated. A chamber whose per-list table is not yet sourced (Italy's 2018 Camera, France's
-    /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so.</para>
+    /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so. PS-6 US-2c (Elias's ruling J3,
+    /// 2026-10-19): a date seats the chamber of record for that date where its table is on disk - on a 2022 or 2023 date the USA's 117th or 118th House - and
+    /// the latest table only where it is missing (<see cref="SeatingDeviation"/>).</para>
     ///
     /// <para><b>Every election on a country's calendar inside a run is simulated once that country's model exists</b>; until then its chamber
     /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); §762: Poland's 15 October 2023 the same way; PS-6 US-8: the USA's presidential day, 3 U.S.C. §21(1)'s, from 5 November 2024 every fourth year; the countries before their stages offer no polling day yet.</para>
@@ -407,22 +409,28 @@ namespace PoliSim.Elections
         public static ElectionVintage Resolve(CountryId id, ElectionVintage vintage) =>
             vintage == ElectionVintage.Seated ? SeatedVintage(id, Simulation.SimulationManager.EpochDate) : vintage;
 
-        /// <summary>The vintage whose seat table the country seats on a date - the chamber of record's where that table is sourced, else the latest sourced one (the deviation is <see cref="SeatingDeviation"/>).</summary>
+        /// <summary>The vintage whose seat table the country seats on a date - the chamber of record's where that table is sourced, else the latest sourced one (the deviation is <see cref="SeatingDeviation"/>).
+        /// PS-6 US-2c: Elias's ruling J3 (R-US21 (ii)) in one line - a 2022 or 2023 date seats the USA's 117th or 118th, the chamber of record's own table.</summary>
         public static ElectionVintage SeatedVintage(CountryId id, DateTime date)
         {
             ElectionVintage ofRecord = ChamberAt(id, date).Vintage;
             return PartySystems.SeatsSourced(ofRecord) ? ofRecord : LatestSourced(id);
         }
 
-        /// <summary>Where the chamber of record's per-list table is not on disk, the sentence the view carries; null when the seated chamber is the chamber of record.</summary>
+        /// <summary>PS-6 US-2c (Elias's ruling J3 on R-US21 (ii), 2026-10-19): a date seats THE CHAMBER OF RECORD FOR THAT DATE WHERE ITS TABLE IS ON DISK, and the
+        /// latest table on disk only where it is missing (<see cref="SeatedVintage"/>). A 2022 or 2023 date is the first case for the USA - the 117th or the 118th
+        /// House, each a row of <see cref="Chambers"/> whose table is on disk (`PartySystems.SeatsAt`) - so it carries no deviation and this returns null; the House
+        /// and the Senate of record step by date from there in the player's country (`SimulationManager.SeatTheRecordOnItsDate`). The second case is the sentence
+        /// returned: a chamber elected after the record's date (the USA's 120th onward), or one whose per-list table is not yet sourced (E-47: Italy's 2018 Camera,
+        /// France's 2022 Assembly by nuance) - the latest table on disk stands in its place and the view says so.</summary>
         public static string SeatingDeviation(CountryId id, DateTime date)
         {
             ChamberOfRecord c = ChamberAt(id, date);
-            if (PartySystems.SeatsSourced(c.Vintage)) { return null; }
+            if (PartySystems.SeatsSourced(c.Vintage)) { return null; }   // J3: the chamber of record's own table - the 117th or the 118th on a 2022 or 2023 date
             if (c.ElectionDay > RecordDate)
             {
-                // PS-6 US-2: no later election day named - the row stands for every chamber elected after the record's date
-                return $"the chamber of record on {date:yyyy-MM-dd} was elected after the record's date ({RecordDate:yyyy-MM-dd}) - not on record; the {LatestSourced(id)} table stands in its place";
+                // PS-6 US-2: no later election day named - the row stands for every chamber elected after the record's date; J3: the latest table on disk only here
+                return $"the chamber of record on {date:yyyy-MM-dd} was elected after the record's date ({RecordDate:yyyy-MM-dd}) - not on record, its table not on disk; the latest on disk, the {LatestSourced(id)} table, stands in its place";
             }
             string elected = c.ElectionDay == DateTime.MinValue ? "elected in June 2022 (its polling days billed, G1)" : $"elected {c.ElectionDay:yyyy-MM-dd}";
             return $"the chamber of record on {date:yyyy-MM-dd} is the one {elected}, whose seats per list are not yet sourced (E-47); the {LatestSourced(id)} table is seated in its place";
