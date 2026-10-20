@@ -18,8 +18,8 @@ namespace PoliSim.Data
         /// <summary>The day it was presented - the day both chambers had passed it. The period counts from the day after.</summary>
         public DateTime PresentedOn;
 
-        /// <summary>The player-president's answer: 0 none yet, +1 signed, -1 vetoed - acted on at the bill's next day step, and honoured there whoever holds the
-        /// presidency by then (the answer was given in office).</summary>
+        /// <summary>The player-president's answer: 0 none yet, +1 signed, -1 vetoed - since US-21c (Elias's ruling J6 (i)) acted on the moment it is given
+        /// (`SimulationManager.SignDocketBill`), and honoured whoever holds the presidency when it is acted on (the answer was given in office).</summary>
         public int Answer;
 
         /// <summary>The day the answer was given - the president it is presented to at the step is the president of THAT day. MinValue while unanswered.</summary>
@@ -27,5 +27,11 @@ namespace PoliSim.Data
 
         /// <summary>For a US budget's act, which act it is (`UsBudgetProcedure.Act` as its number); -1 on every other bill.</summary>
         public int Act = -1;
+
+        /// <summary>PS-6 US-22c (Elias's ruling J7, 2026-10-19: "The eve's resolution goes on the Docket with the horizon as its deadline. Unanswered by then, it
+        /// is signed"): a deadline of the bill's own in place of the country's period - the last day to answer; unanswered, the bill is SIGNED at the first
+        /// day step after it, so it can still be answered on the deadline itself (`SimulationManager.UsVetoGate`; the law day `SimulationManager.DocketLawDay`). MinValue - the default, and every entry a save of an earlier build carries - is the
+        /// period's rule (`PresidentialDocket`), so the field is additive.</summary>
+        public DateTime Deadline;
     }
 }

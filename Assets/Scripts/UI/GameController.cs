@@ -3447,7 +3447,7 @@ namespace PoliSim.UI
             // all, which is exactly why they're absent below rather than merely unhandled.
             void AddBill(int? daysRemaining, string label, DocketEntry desk = null)
             {
-                if (desk != null) { Add(PresidentialDocket.LawDay(PlayerCountryId, desk.PresentedOn), $"{label} bill law unless the President answers", UiPalette.SystemArea.Political); return; }   // PS-6 US-21b: on the player-president's desk - the day it is law unanswered
+                if (desk != null) { Add(SimulationManager.DocketLawDay(PlayerCountryId, desk), $"{label} bill law unless the President answers", UiPalette.SystemArea.Political); return; }   // PS-6 US-21b: on the player-president's desk - the day it is law unanswered
                 if (daysRemaining.HasValue)
                 {
                     Add(today.AddDays(daysRemaining.Value), $"{label} bill resolves", UiPalette.SystemArea.Political);
@@ -9558,8 +9558,8 @@ namespace PoliSim.UI
         /// words, unchanged); on the player-president's docket, the day it becomes law unless he answers.</summary>
         private string ResolvesIn(int daysRemaining, DocketEntry desk) => desk == null ? $"resolves in {daysRemaining} day(s)" : "on the President's desk - law on " + DeskLawDay(desk) + " unless answered";
 
-        /// <summary>PS-6 US-21b: the day a bill on the player-president's docket becomes law unanswered (`PresidentialDocket.LawDay`), as a page prints a date.</summary>
-        private string DeskLawDay(DocketEntry desk) => PresidentialDocket.LawDay(PlayerCountryId, desk.PresentedOn).ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+        /// <summary>PS-6 US-21b: the day a bill on the player-president's docket becomes law unanswered (`SimulationManager.DocketLawDay`); US-22c: its own deadline where it carries one, as a page prints a date.</summary>
+        private string DeskLawDay(DocketEntry desk) => SimulationManager.DocketLawDay(PlayerCountryId, desk).ToString("d MMM yyyy", CultureInfo.InvariantCulture);
 
         /// <summary>PS-6 US-21b: a budget's entry on the docket - a continuing resolution's, or the first of its held acts; null where none is held.</summary>
         private static DocketEntry DeskOf(BudgetBill bill) => bill?.Docket ?? (bill?.ActsHeld != null && bill.ActsHeld.Count > 0 ? bill.ActsHeld[0] : null);

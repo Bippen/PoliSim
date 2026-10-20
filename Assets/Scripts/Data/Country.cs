@@ -962,6 +962,13 @@ namespace PoliSim.Data
         /// runs and where no profile is held.</summary>
         public System.DateTime LapseProfileQuarter;
 
+        /// <summary>PS-6 US-22c (Elias's ruling J7 (iv)): the first day of the last month whose household-survey reference week a lapse covered whole - that
+        /// month's unemployment counts the furloughed as BLS does (`UsLapse.NoteReferenceWeek`, `UsLapse.FurloughPoints`); MinValue where none. It rides the
+        /// save and the preview's clone. ADDITIVE (no format step, ruling A): a save of an earlier build carries MinValue, which is every month's value
+        /// before this build. DECLARED residue (the review's L4): a save of an earlier build cut in a month whose reference week a lapse covered whole, after
+        /// that lapse ended, loads with the month unmarked and publishes it without the furloughed; while the lapse still runs, the next funding tick marks it again.</summary>
+        public System.DateTime FurloughCountedMonth;
+
         /// <summary>
         /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own
         /// election authority uses ("S", "SD", "CDU", "PiS", "UG", "REP"...) and summing to

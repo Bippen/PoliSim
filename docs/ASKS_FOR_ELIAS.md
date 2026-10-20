@@ -335,3 +335,8 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 - **R-US20's midterm world reads the record's House.** `UsMidtermCheck` sets the world's own Congress count aside, so that the registered world ("the House the 2024 election chose") still reads the record. Amend R-US20's world to read the game's own House? US-27 will need it.
 - **The US polling day's chamber record.** On the US polling day the controller still writes a NotImplemented election record, and its log says the chamber was elected on the day loop. A new election method would be read as a parliamentary election by every formation reader. Keep the record as it is, or have the formation readers rebuilt to take a Congress election?
 - **Stated, not asked:** if the game's count fails on the day, the record's House is seated on 3 January without an announcement on the record row.
+
+### US-21c and US-22c (§884): the asks they end in
+
+- **A player-president cannot cause a lapse.** J7 says a lapse "needs the player's veto or a withhold". In this build neither can happen. Your veto of the eve's uncontested resolution is overridden on its whole seated base (US-21's rule). Your own party may not withhold, and AI parties never do. Should the eve's veto stand? Should the president's party be allowed to withhold? Or is this outcome fine?
+- **Two readings of the lapse record you may reverse.** 2019's roll 9 is counted as the president's side's measure, though it is a full-year package rather than a clean resolution. 9 February 2018 is excluded, because each caucus's majority voted for it, so there was no withholder.

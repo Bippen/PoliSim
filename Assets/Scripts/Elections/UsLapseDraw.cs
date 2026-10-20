@@ -13,14 +13,27 @@ namespace PoliSim.Elections
     /// resolution's cloture vote while funding is lapsed, for the party withholding it (REP or DEM), whose crossers move from against to for. Where it is
     /// read is `Congress.Divide` (the concern's `BillConcern.DrawsWithholders`, set by `SimulationManager.ResolveContinuingResolution` during a lapse).
     ///
-    /// <para><b>The list is the record's</b> (<see cref="Record"/>): the Senate's own roll calls (LIS XML, `ElectionsData/usa/raw/lapse/senate/`) on the
-    /// cloture motions to proceed to H.R. 5371 - the continuing resolution of record - from 1 October 2025, the lapse's first day, to its last cloture vote
-    /// before P.L. 119-37; d is the Democratic caucus's yeas (the Democrats and the independents who caucus with them, R-US10 (a)'s caucus, as the game seats
-    /// them) and m its yeas and nays. READINGS, DECLARED: the 2025 lapse alone - the lapse of record F8 names - not the lapses of 2013, January 2018 and
-    /// 2018-2019; the cloture motions TO PROCEED, one per attempt, so the cloture votes on the substitute and on the bill that followed the successful
-    /// attempt (the same senators, the agreement already made) are not counted again; the Democrats' own alternative resolutions are not the resolution
-    /// withheld and are not read. The list fitted on the Democrats of record is drawn for whichever of the two parties withholds. `UsBudgetProcedureDiagnostic`
-    /// (j) recomputes the list from the saved roll calls and fails on any difference.</para>
+    /// <para><b>The list is the record's</b> (<see cref="Record"/>): the Senate's own roll calls (LIS XML) on the lapse-period cloture votes on the funding
+    /// measure of the president's side; d is the withholding caucus's yeas and m its yeas and nays - for the Democrats, the Democrats and the independents who
+    /// caucus with them (R-US10 (a)'s caucus, as the game seats them). PS-6 US-22c (Elias's ruling J7 (iii), 2026-10-19: "add every lapse of record that has
+    /// lapse-period cloture votes and an identifiable withholder. Print n"): every such lapse since the Senate's LIS record begins (the 101st Congress, 1989),
+    /// read in `ElectionsData/usa/raw/lapse/earlier/` (its fetch log's table: which lapses join, which do not, and why) -
+    /// <list type="bullet">
+    /// <item>1-16 October 2013: roll 218, cloture on H.R. 2775 (the act that ended it), REP the withholder - the party out of the White House, whose House
+    /// majority sent the resolution back with its amendments;</item>
+    /// <item>20-22 January 2018: roll 16, cloture on concurring in H.R. 195, DEM the withholder (its caucus 5 of 49 for at the failed cloture the night
+    /// before the lapse);</item>
+    /// <item>22 December 2018 - 25 January 2019: roll 9, cloture on the amendment carrying the president's side's measure to H.R. 268, DEM the withholder;</item>
+    /// <item>1 October - 12 November 2025: the cloture motions to proceed to H.R. 5371 (`ElectionsData/usa/raw/lapse/senate/`), DEM the withholder.</item>
+    /// </list>
+    /// Not joining: the lapses of 1990 and 1995-1996 (no lapse-period cloture vote on a funding measure), 9 February 2018 (no withholder: each caucus's
+    /// majority voted for the measure), and every lapse before 1989 (BILLED - the LIS record begins in 1989). READINGS, DECLARED: one observation per
+    /// lapse-period cloture vote on the measure - for 2025 the cloture motions TO PROCEED, one per attempt, so the cloture votes on the substitute and on
+    /// the bill that followed the successful attempt (the same senators, the agreement already made) are not counted again; the withholder's own
+    /// alternatives (2019's roll 10, the Democrats' resolutions of 2025) are not the measure withheld and are not read; a measure that carried more than a
+    /// resolution at the standing figures (2013's debt limit, 2018's CHIP extension, 2019's full-year appropriations) is read as the resolution it ended or
+    /// sought to end the lapse with. The list pooled over both parties is drawn for whichever of the two withholds. `UsBudgetProcedureDiagnostic` (j)
+    /// recomputes the list from the saved roll calls and fails on any difference.</para>
     ///
     /// <para>No SimulationRandom stream is created, drawn or moved: the draw is keyed on the master seed, the day, the resolution's title and the party
     /// (<see cref="Key"/>), so a reload and a fork that vote it on the same day draw alike. Its own counter (<see cref="DrawCalls"/>) and plant
@@ -29,30 +42,36 @@ namespace PoliSim.Elections
     public static class UsLapseDraw
     {
         /// <summary>One recorded cloture vote: its identity (S | Congress | the vote's date | the Senate's roll-call number), the withholding caucus's yeas
-        /// (Defectors) and its yeas and nays (Voting).</summary>
+        /// (Defectors) and its yeas and nays (Voting), the withholding party (REP or DEM) and the lapse it fell in (its first day, yyyy-MM-dd).</summary>
         public readonly struct Vote
         {
-            public readonly string Identity;
+            public readonly string Identity, Withholder, Lapse;
             public readonly int Defectors, Voting;
-            public Vote(string identity, int defectors, int voting) { Identity = identity; Defectors = defectors; Voting = voting; }
+            public Vote(string identity, int defectors, int voting, string withholder, string lapse) { Identity = identity; Defectors = defectors; Voting = voting; Withholder = withholder; Lapse = lapse; }
         }
+
+        /// <summary>[SOURCED] the 2025 lapse's first day - the day after P.L. 119-4's "fiscal year ending September 30, 2025" (`ElectionsData/usa/raw/lapse/`).</summary>
+        private const string Lapse2025 = "2025-10-01";
 
         /// <summary>The record's lapse-period cloture votes, in date order - the drawn list. [FITTED] on the Senate's roll calls named in the summary.</summary>
         public static readonly Vote[] Record =
         {
-            new Vote("S|119|2025-10-01|537", 3, 47),
-            new Vote("S|119|2025-10-03|543", 3, 46),
-            new Vote("S|119|2025-10-06|545", 3, 44),
-            new Vote("S|119|2025-10-08|551", 3, 47),
-            new Vote("S|119|2025-10-09|558", 3, 47),
-            new Vote("S|119|2025-10-14|571", 2, 45),
-            new Vote("S|119|2025-10-15|572", 3, 46),
-            new Vote("S|119|2025-10-16|573", 3, 46),
-            new Vote("S|119|2025-10-20|576", 2, 43),
-            new Vote("S|119|2025-10-22|581", 3, 47),
-            new Vote("S|119|2025-10-28|590", 3, 47),
-            new Vote("S|119|2025-11-04|603", 3, 46),
-            new Vote("S|119|2025-11-09|610", 8, 47),
+            new Vote("S|113|2013-10-16|218", 29, 45, "REP", "2013-10-01"),
+            new Vote("S|115|2018-01-22|16", 33, 49, "DEM", "2018-01-20"),
+            new Vote("S|116|2019-01-24|9", 1, 46, "DEM", "2018-12-22"),
+            new Vote("S|119|2025-10-01|537", 3, 47, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-03|543", 3, 46, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-06|545", 3, 44, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-08|551", 3, 47, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-09|558", 3, 47, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-14|571", 2, 45, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-15|572", 3, 46, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-16|573", 3, 46, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-20|576", 2, 43, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-22|581", 3, 47, "DEM", Lapse2025),
+            new Vote("S|119|2025-10-28|590", 3, 47, "DEM", Lapse2025),
+            new Vote("S|119|2025-11-04|603", 3, 46, "DEM", Lapse2025),
+            new Vote("S|119|2025-11-09|610", 8, 47, "DEM", Lapse2025),
         };
 
         /// <summary>The list as `UsVeto` reads a cell's: (d, m) in <see cref="Record"/>'s order.</summary>
@@ -67,10 +86,36 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// THE RECORD'S SPACING (the review's M1, DECLARED): the list is fitted PER VOTE, so the game votes a lapse's resolutions as often as the record did -
-        /// the days from its first vote to its last over the intervals between them, rounded to whole days (DERIVED from <see cref="Record"/>'s dated
-        /// identities). A continuing resolution tabled while funding is lapsed takes this course instead of a bill's (`SimulationManager.TableContinuingResolution`).
+        /// within each lapse, the days from its first vote to its last, summed over the lapses, over the intervals between them, rounded to whole days (DERIVED
+        /// from <see cref="Record"/>'s dated identities; US-22c: a lapse with one vote has no interval and adds nothing). A continuing resolution tabled while
+        /// funding is lapsed takes this course instead of a bill's (`SimulationManager.TableContinuingResolution`).
         /// </summary>
-        public static int RecordSpacingDays => (int)Math.Round((DayOf(Record[Record.Length - 1]) - DayOf(Record[0])).TotalDays / (Record.Length - 1), MidpointRounding.AwayFromZero);
+        public static int RecordSpacingDays
+        {
+            get
+            {
+                double days = 0d;
+                int intervals = 0;
+                for (int i = 1; i < Record.Length; i++)
+                {
+                    if (Record[i].Lapse != Record[i - 1].Lapse) { continue; }
+                    days += (DayOf(Record[i]) - DayOf(Record[i - 1])).TotalDays;
+                    intervals++;
+                }
+                return intervals == 0 ? 0 : (int)Math.Round(days / intervals, MidpointRounding.AwayFromZero);
+            }
+        }
+
+        /// <summary>PS-6 US-22c: the lapses the list holds (each one's first day) - J7 (iii)'s n is <see cref="Record"/>'s votes over these.</summary>
+        public static int Lapses
+        {
+            get
+            {
+                var seen = new HashSet<string>();
+                foreach (Vote v in Record) { seen.Add(v.Lapse); }
+                return seen.Count;
+            }
+        }
 
         /// <summary>A recorded vote's date, read from its identity (S | Congress | yyyy-MM-dd | number).</summary>
         public static DateTime DayOf(Vote vote) => DateTime.ParseExact(vote.Identity.Split('|')[2], "yyyy-MM-dd", CultureInfo.InvariantCulture);

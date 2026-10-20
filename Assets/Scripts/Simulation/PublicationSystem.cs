@@ -150,7 +150,12 @@ namespace PoliSim.Simulation
             // simulation number any more than the rest of this file can.
             foreach (ClosingStat closing in System.Enum.GetValues(typeof(ClosingStat)))
             {
-                country.Published.PeriodClosingValues[(closing, ReleaseCalendar.GetCurrentPeriodStart(closing, date))] = ReadClosingValue(country, closing);
+                System.DateTime start = ReleaseCalendar.GetCurrentPeriodStart(closing, date);
+                float value = ReadClosingValue(country, closing);
+                // PS-6 US-22c (Elias's ruling J7 (iv)): the household survey counts the furloughed as unemployed on temporary layoff in a month whose reference
+                // week a lapse covered whole - the published rate, never the state (`UsLapse.CountedPoints`: 0 in every other month and every other country)
+                if (closing == ClosingStat.Unemployment) { value += UsLapse.CountedPoints(country, start); }
+                country.Published.PeriodClosingValues[(closing, start)] = value;
             }
 
             foreach (PublishedStat stat in System.Enum.GetValues(typeof(PublishedStat)))

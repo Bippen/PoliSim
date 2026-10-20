@@ -476,6 +476,7 @@ Art. I §7 as a US rule beside Poland's. Every bill both chambers pass goes to t
 - (ii) A law's date is the day after the tenth counted day, if a law of record that became law unsigned bears that date (one is to be cited); otherwise it is asked again.
 - (iii) Poland's terms, at SP-7b: 7 days for the budget act (Art. 224(1)) and for an urgent bill (Art. 123(3)), 21 otherwise (Art. 122(2)).
 The build of (i) and (ii) is US-21c; (iii) is SP-7b's.
+**Built (US-21c): `COMPLETED.md` §884** - the answer acts at once (`ActOnDocketAnswers`), its money on the next day step; the law's date SOURCED against P.L. 119-101 (presented 29 June 2026, law 11 July 2026). `UsDocketDiagnostic` (c), (f).
 
 
 **US-22 — The US budget procedure. Size L.** *(R-US9)*
@@ -514,6 +515,7 @@ The build of (i) and (ii) is US-21c; (iii) is SP-7b's.
 - The eve's resolution goes on the Docket with the horizon as its deadline. Unanswered by then, it is signed, so a lapse needs the player's veto or a withhold. This replaces the DECLARED signing on the day.
 - The hold rule across quarter ends: as built.
 The build of (iii), (iv) and the eve is US-22c.
+**Built (US-22c): `COMPLETED.md` §884** - (iii) FITTED n=16 over the lapses of 2013, January 2018, 2018-19 and 2025 (`raw/lapse/earlier/`); (iv) the furloughed (CBO's 650,000) counted in the published unemployment of a month whose reference week a lapse covered whole (BLS, `raw/furlough/`); the eve's resolution on the player-president's docket, deadline the horizon (its last day to answer), signed the next day if unanswered; no format step. `UsBudgetProcedureDiagnostic` (j), (k), (l). Asked: the veto of the eve's uncontested resolution is overridden, so a player-president cannot lapse.
 
 
 **US-23 — The president's pen. Size L.** *(R-US7, R-US9)*

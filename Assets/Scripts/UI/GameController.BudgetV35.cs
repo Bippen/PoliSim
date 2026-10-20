@@ -1017,7 +1017,7 @@ namespace PoliSim.UI
                             : "YOUR PARTY WOULD VOTE AGAINST IT IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT")
                         .Add(decides)
                         .Add("A RESOLUTION THAT FALLS FUNDS NOTHING - FROM 1 OCTOBER UNFUNDED, THE GOVERNMENT SHUTS DOWN, AND IT BEARS EACH ONE THAT FALLS")
-                        .Add("IN A SHUTDOWN YOUR OWN SENATORS MAY CROSS AT CLOTURE - DRAWN FROM THE 2025 LAPSE'S CLOTURE VOTES, " + PoliSim.Elections.UsLapseDraw.FittedLabel)
+                        .Add("IN A SHUTDOWN YOUR OWN SENATORS MAY CROSS AT CLOTURE - DRAWN FROM THE CLOTURE VOTES OF EVERY LAPSE OF RECORD (2013, 2018, 2018-19, 2025), " + PoliSim.Elections.UsLapseDraw.FittedLabel)   // PS-6 US-22c (J7 (iii)): the list widened past 2025 (`UsLapseDraw.Record`)
                         .Add("NO OTHER PARTY WITHHOLDS ONE");
                 }
                 else if (line != null)

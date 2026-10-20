@@ -1629,8 +1629,22 @@ namespace PoliSim.Simulation
         /// that day. An AI president answers on the day, as before. Held or decided, <paramref name="docket"/> is null again once it returns a
         /// value. THE POCKET VETO IS NOT MODELLED (the clause's "unless the Congress by their Adjournment prevent its Return"): the game models no
         /// adjournment, so an unanswered bill is always law at the period's end (DECLARED, out of scope by the ruling).</para>
+        /// <para>PS-6 US-21c (Elias's ruling J6, 2026-10-19): (i) "an answer acts at once; its money moves on the next day step, as every law's does" - the
+        /// verbs act on an answer the moment it is given (<see cref="ActOnDocketAnswers"/> brings the answered bill back here the same day), so the law, or the
+        /// veto and its override, is of the answer's day and its money flows from the next day step. (ii) The law's date, the day after the tenth day counted,
+        /// is SOURCED: P.L. 119-101 (H.R. 6644), "presented to the President of the United States on Monday, June 29, 2026", "has become law without his
+        /// signature on July 11, 2026" (the Office of the Federal Register's note on the slip law, `ElectionsData/usa/raw/unsigned/`) - Friday 10 July the
+        /// tenth day counted, Sunday 5 July excepted.</para>
+        /// <para>PS-6 US-22c (Elias's ruling J7): an entry may carry a deadline of its own (the overload carrying one, `DocketEntry.Deadline` - the eve's
+        /// continuing resolution's, the funding horizon): the deadline is the last day to answer, and unanswered at the first day step after it the bill is SIGNED
+        /// by the player-president ("Unanswered by then, it is signed") - so the player may still answer on the deadline itself (the review's M2).</para>
         /// </summary>
         private bool? UsVetoGate(Country country, DivisionRecord passage, BillConcern concern, bool passed, ref DocketEntry docket, bool amendment = false)
+            => UsVetoGate(country, passage, concern, passed, ref docket, amendment, default);   // the form the film driver and UsVetoDiagnostic resolve by reflection, by its parameter list
+
+        /// <summary>PS-6 US-22c: <see cref="UsVetoGate(Country, DivisionRecord, BillConcern, bool, ref DocketEntry, bool)"/> with a deadline of the entry's own for a
+        /// bill it puts on the docket (`DocketEntry.Deadline`; default for the period's rule).</summary>
+        private bool? UsVetoGate(Country country, DivisionRecord passage, BillConcern concern, bool passed, ref DocketEntry docket, bool amendment, System.DateTime deadline)
         {
             if (docket != null) { passage = docket.Passage; passed = passage != null; }   // PS-6 US-21b: held from an earlier day - the division it was presented on
             if (!passed || passage == null || passage.OtherChamber == null || !Elections.UsVeto.Applies(country.Id)) { docket = null; return passed; }
@@ -1647,17 +1661,26 @@ namespace PoliSim.Simulation
             }
             else if (answer == null && Congress.PresidentOn(country, CurrentDate, out string onTheDocket, out _, out bool playerPresident) && playerPresident)
             {
-                System.DateTime lastDay = Elections.PresidentialDocket.LastDay(country.Id, docket?.PresentedOn ?? CurrentDate.Date);
                 if (docket == null)
                 {
-                    docket = new DocketEntry { Passage = passage, PresentedOn = CurrentDate.Date };
-                    Debug.Log($"DOCKET: {country.Id} - presented to the President (you, {onTheDocket}) on {CurrentDate:yyyy-MM-dd}: {passage.Title} - answered by {lastDay:yyyy-MM-dd}, or it becomes law without signature ({Elections.PresidentialDocket.PeriodWords(country.Id)})");
+                    docket = new DocketEntry { Passage = passage, PresentedOn = CurrentDate.Date, Deadline = deadline.Date };
+                    Debug.Log($"DOCKET: {country.Id} - presented to the President (you, {onTheDocket}) on {CurrentDate:yyyy-MM-dd}: {passage.Title} - answered by {DocketLastDay(country.Id, docket):yyyy-MM-dd}, or it becomes law {(docket.Deadline != System.DateTime.MinValue ? "as signed" : "without signature (" + Elections.PresidentialDocket.PeriodWords(country.Id) + ")")}");
                     return null;
                 }
-                if (!Elections.PresidentialDocket.Expired(country.Id, docket.PresentedOn, CurrentDate)) { return null; }
-                Debug.Log($"DOCKET: {country.Id} - unanswered since {docket.PresentedOn:yyyy-MM-dd} ({Elections.PresidentialDocket.PeriodWords(country.Id)} ran out on {lastDay:yyyy-MM-dd}): {passage.Title} - law without the President's signature");
-                docket = null;
-                return true;
+                if (docket.Deadline != System.DateTime.MinValue)
+                {
+                    // PS-6 US-22c (J7): a deadline of its own - unanswered by then, signed: presented to the player-president as signing it, today
+                    if (CurrentDate.Date <= docket.Deadline) { return null; }   // the deadline is the last day to answer (the review's M2): signed at the first step after it
+                    Debug.Log($"DOCKET: {country.Id} - unanswered by its deadline ({docket.Deadline:yyyy-MM-dd}): {passage.Title} - signed");
+                    answer = _ => false;
+                }
+                else
+                {
+                    if (!Elections.PresidentialDocket.Expired(country.Id, docket.PresentedOn, CurrentDate)) { return null; }
+                    Debug.Log($"DOCKET: {country.Id} - unanswered since {docket.PresentedOn:yyyy-MM-dd} ({Elections.PresidentialDocket.PeriodWords(country.Id)} ran out on {DocketLastDay(country.Id, docket):yyyy-MM-dd}): {passage.Title} - law without the President's signature");
+                    docket = null;
+                    return true;
+                }
             }
             docket = null;   // answered, or unanswered and the president of the day is not the player: he answers by his own rule, today
             Congress.Veto veto = Congress.Present(country, passage, answeredOn, answer);   // the president of the answer's day; the votes on a veto are held today (RecordVeto)
@@ -1684,12 +1707,61 @@ namespace PoliSim.Simulation
         // ---------------------------------------------------------------------------------------------------------------------------------------------
         // PS-6 US-21b (Elias's ruling I12 (i), 2026-10-18): THE DOCKET - the bills presented to a player-president and not yet answered, each in its own
         // pending slot with its entry (`DocketEntry`: the division it was presented on, the day, the answer given). The verbs record the answer; the bill's
-        // own day step acts on it (the next day the game steps), so the answer, the override and the bill's application run where every bill's do.
-        // Its surface is US-23's.
+        // own day step acts on it, so the answer, the override and the bill's application run where every bill's do - since US-21c (Elias's ruling J6 (i):
+        // "an answer acts at once; its money moves on the next day step, as every law's does") the verbs run that step for the answered bill at once
+        // (`ActOnDocketAnswers`), the day's other bills untouched. Its surface is US-23's.
         // ---------------------------------------------------------------------------------------------------------------------------------------------
 
+        /// <summary>PS-6 US-21c: true while <see cref="ActOnDocketAnswers"/> runs the bill sites for the answered bills alone - every bill site skips a bill with
+        /// no answer on its docket (<see cref="SkipsForAnswers"/>, <see cref="HasDocketAnswer"/>), so no countdown moves and no bill is voted.</summary>
+        private bool _docketAnswersOnly;
+
+        /// <summary>PS-6 US-21c: whether a bill site skips this bill on the answers' run - every bill but one whose docket holds an answer.</summary>
+        private bool SkipsForAnswers(DocketEntry docket) => _docketAnswersOnly && (docket == null || docket.Answer == 0);
+
+        /// <summary>PS-6 US-21c: whether the budget slot holds an answer - its continuing resolution's, or one of its held acts'.</summary>
+        private static bool HasDocketAnswer(BudgetBill bill)
+        {
+            if (bill.Docket != null && bill.Docket.Answer != 0) { return true; }
+            if (bill.ActsHeld != null) { foreach (DocketEntry entry in bill.ActsHeld) { if (entry.Answer != 0) { return true; } } }
+            return false;
+        }
+
+        /// <summary>PS-6 US-21c (J6 (i)): the answered bills acted on at once - the country's bill sites run in the day tick's order with every unanswered bill
+        /// skipped, so a signature is law today, a veto goes to the override today, and the law's money flows from the next day step (the economy's day runs
+        /// before the bills', `AdvanceCountryDayTick`). The funding tick, the budget process and the confidence day are not run. LATENT (the review's L2,
+        /// DECLARED): a veto's override divisions written here are queued for the signing ceremony only after the next day step (the controller queues new
+        /// divisions after its day tick) - nothing calls the verbs in play yet; when US-23 wires them, its caller queues the divisions right after the answer.</summary>
+        private void ActOnDocketAnswers(CountryId countryId)
+        {
+            _docketAnswersOnly = true;
+            try
+            {
+                AdvanceBudgetBillDay(countryId);
+                AdvanceTaxProgramBillsDay(countryId);
+                AdvanceWelfareProgramBillsDay(countryId);
+                AdvanceLaborBillDay(countryId);
+                AdvanceCrimeJusticeBillDay(countryId);
+                AdvanceSectorBillDay(countryId);
+                AdvanceTradeBillDay(countryId);
+                AdvanceSwfDrawdownBillDay(countryId);
+                AdvanceLawBillsDay(countryId);
+            }
+            finally { _docketAnswersOnly = false; }
+        }
+
+        /// <summary>PS-6 US-22c: the last day to answer a bill on the docket - its own deadline where it carries one (`DocketEntry.Deadline`), else the country's
+        /// period (`PresidentialDocket.LastDay`).</summary>
+        public static System.DateTime DocketLastDay(CountryId countryId, DocketEntry entry)
+            => entry.Deadline != System.DateTime.MinValue ? entry.Deadline : Elections.PresidentialDocket.LastDay(countryId, entry.PresentedOn);
+
+        /// <summary>PS-6 US-22c: the day a bill on the docket is law unanswered - the day after its last day to answer: after its own deadline where it carries one
+        /// (signed at that day's step), else after the period's last day (`PresidentialDocket.LawDay`).</summary>
+        public static System.DateTime DocketLawDay(CountryId countryId, DocketEntry entry)
+            => entry.Deadline != System.DateTime.MinValue ? entry.Deadline.AddDays(1) : Elections.PresidentialDocket.LawDay(countryId, entry.PresentedOn);
+
         /// <summary>One bill on the docket, as a page or a check reads it: the division it was presented on, the day, the last day to answer
-        /// (`PresidentialDocket.LastDay`) and the answer recorded (0 none, +1 signed, -1 vetoed - acted on at the bill's next day step).</summary>
+        /// (<see cref="DocketLastDay"/>) and the answer recorded (0 none, +1 signed, -1 vetoed - acted on at once).</summary>
         public readonly struct DocketItem
         {
             public readonly DocketEntry Entry;
@@ -1705,17 +1777,17 @@ namespace PoliSim.Simulation
         public List<DocketItem> GetDocket(CountryId countryId)
         {
             var items = new List<DocketItem>();
-            foreach (DocketEntry entry in DocketEntries(countryId)) { items.Add(new DocketItem(entry, Elections.PresidentialDocket.LastDay(countryId, entry.PresentedOn))); }
+            foreach (DocketEntry entry in DocketEntries(countryId)) { items.Add(new DocketItem(entry, DocketLastDay(countryId, entry))); }
             return items;
         }
 
         /// <summary>PS-6 US-21b: the player-president signs a bill on his docket - <paramref name="passage"/> the division it was presented on (`DocketItem.Entry.Passage`).
         /// Refused (false, with the reason) where no such bill is held, where it is already answered, or where the president of the day is not the player.
-        /// The bill becomes law at its next day step.</summary>
+        /// US-21c (J6 (i)): the bill is law at once, on the answer's day; its money moves on the next day step.</summary>
         public bool SignDocketBill(CountryId countryId, DivisionRecord passage, out string refusedBecause) => AnswerDocket(countryId, passage, +1, out refusedBecause);
 
-        /// <summary>PS-6 US-21b: the player-president vetoes a bill on his docket. At its next day step the veto goes to the override - the chamber the bill began
-        /// in first, at two thirds on the passage's recorded sides (`Congress.Present`, `Congress.RecordVeto`). Refused as <see cref="SignDocketBill"/> is.</summary>
+        /// <summary>PS-6 US-21b: the player-president vetoes a bill on his docket. US-21c (J6 (i)): at once the veto goes to the override - the chamber the bill
+        /// began in first, at two thirds on the passage's recorded sides (`Congress.Present`, `Congress.RecordVeto`). Refused as <see cref="SignDocketBill"/> is.</summary>
         public bool VetoDocketBill(CountryId countryId, DivisionRecord passage, out string refusedBecause) => AnswerDocket(countryId, passage, -1, out refusedBecause);
 
         private bool AnswerDocket(CountryId countryId, DivisionRecord passage, int answer, out string refusedBecause)
@@ -1724,17 +1796,20 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (country == null || passage == null) { refusedBecause = "no such bill"; return false; }
             if (!Congress.PresidentOn(country, CurrentDate, out _, out _, out bool playerPresident) || !playerPresident) { refusedBecause = "you do not hold the presidency today"; return false; }
+            DocketEntry answered = null;
             foreach (DocketEntry entry in DocketEntries(countryId))
             {
                 if (!ReferenceEquals(entry.Passage, passage)) { continue; }
                 if (entry.Answer != 0) { refusedBecause = "already answered"; return false; }
-                entry.Answer = answer;
-                entry.AnsweredOn = CurrentDate.Date;
-                Debug.Log($"DOCKET: {countryId} - the President {(answer > 0 ? "signs" : "vetoes")} on {CurrentDate:yyyy-MM-dd}: {passage.Title} (acted on at the bill's next day step)");
-                return true;
+                answered = entry;
+                break;
             }
-            refusedBecause = "that bill is not on your docket";
-            return false;
+            if (answered == null) { refusedBecause = "that bill is not on your docket"; return false; }
+            answered.Answer = answer;
+            answered.AnsweredOn = CurrentDate.Date;
+            Debug.Log($"DOCKET: {countryId} - the President {(answer > 0 ? "signs" : "vetoes")} on {CurrentDate:yyyy-MM-dd}: {passage.Title} (acted on at once)");
+            ActOnDocketAnswers(countryId);   // PS-6 US-21c (J6 (i)): after the walk - acting inside it would change the slots it walks
+            return true;
         }
 
         /// <summary>Every docket entry held in the country's pending slots.</summary>
@@ -1818,6 +1893,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            if (_docketAnswersOnly && !HasDocketAnswer(bill)) { return; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
             if (bill.Docket == null && bill.ActsHeld == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
             if (bill.DaysRemaining > 0)
             {
@@ -1976,6 +2052,7 @@ namespace PoliSim.Simulation
         /// vetoes is overridden on its whole seated base, so it becomes law). Law, it funds the government; fallen - rejected, or its veto sustained - funding is
         /// not advanced, its failed vote charged where the government bears it, and while funding is lapsed the government tables another the same day.
         /// PS-6 US-21b: on the player-president's docket it keeps the slot, and is decided the day he answers or the period runs out (no fresh vote).
+        /// US-22c (J7): decided before funding lapses, its deadline on the docket is the funding horizon - signed at the next day's step if unanswered.
         /// US-22b (I13 (2)): voted while funding is lapsed, the withholding party's own senators are drawn at its cloture vote (`UsLapseDraw`, through
         /// `BillConcern.DrawsWithholders` and `Congress.Divide`) - so a lapse can end through its defectors.</summary>
         private void ResolveContinuingResolution(Country country, BudgetBill resolution)
@@ -1987,7 +2064,8 @@ namespace PoliSim.Simulation
             string title = passage?.Title ?? UsBudgetProcedure.ContinuingResolutionTitle(country, CurrentDate);
             bool passed = true;
             if (resolution.Docket == null) { passage = Congress.Divide(country, title, concern, CurrentDate, out passed, BillAxis.Fiscal, Congress.OriginOf(country, concern, CurrentDate)); }
-            bool? decided = UsVetoGate(country, passage, concern, passed, ref resolution.Docket);
+            System.DateTime deadline = country.LapseSince == System.DateTime.MinValue && country.AppropriatedThrough >= CurrentDate.Date ? country.AppropriatedThrough : default;   // PS-6 US-22c (J7): before a lapse, "the horizon as its deadline"
+            bool? decided = UsVetoGate(country, passage, concern, passed, ref resolution.Docket, false, deadline);
             if (decided == null) { _pendingBudgetBillByCountry[country.Id] = resolution; return; }   // PS-6 US-21b: on the docket - it keeps the slot
             passed = decided.Value;
             if (passed) { FundedByLaw(country, "the continuing resolution"); return; }
@@ -2007,7 +2085,9 @@ namespace PoliSim.Simulation
             country.AppropriatedThrough = UsBudgetProcedure.FundedThrough(was, CurrentDate);
             string ended = country.LapseSince == System.DateTime.MinValue ? string.Empty
                 : $"; the shutdown that began {country.LapseSince:yyyy-MM-dd} ends after {UsBudgetProcedure.LapseDays(country.LapseSince, CurrentDate)} day(s)";
+            UsLapse.NoteReferenceWeek(country, CurrentDate);   // PS-6 US-22c (J7 (iv)): the lapse's last day is one of its days - a reference week it completes is counted
             country.LapseSince = System.DateTime.MinValue;
+            country.LapseFlowDay = System.DateTime.MinValue;   // PS-6 US-22c (the review's M1): disarmed here, not only at the next funding tick - a docket answer that ends a lapse between the day steps (`ActOnDocketAnswers`) must not leave the next day's economy running one more lapsed day (on the tick's own path the flag is already spent, and the tick would disarm it the same day)
             country.ContinuingResolutionWithheldBy = null;
             Debug.Log($"BUDGET: {country.Id} - {measure} becomes law: funded through {country.AppropriatedThrough:yyyy-MM-dd} (was {was:yyyy-MM-dd}){ended}");
         }
@@ -2042,17 +2122,20 @@ namespace PoliSim.Simulation
         /// it - UNCONDITIONALLY, whatever is before Congress (the review's L1). A request still before Congress is decided on its own day after it, and its
         /// appropriation funds by `UsBudgetProcedure.FundedThrough`: law by the horizon, the resolution's year already funded, nothing moves (never further
         /// than the next year); law after it, the request's appropriation funds the NEXT fiscal year (the rule's "else the next", DECLARED). US-21b with US-22b
-        /// (the second review's N1, DECLARED and put to Elias as the meeting point of I12 (i) and I13 (3)): ONE RULE - a resolution decided here BEFORE funding
-        /// lapses (the eve's, and the release's on the horizon) is the government's own and is TAKEN AS SIGNED ON THE DAY by a player-president, never docketed:
-        /// he could not stop it (an uncontested resolution is overridden on its whole seated base), and a docket would bring back the lapse I13 (3) removes
-        /// ("nothing withheld means no lapse"). While funding is lapsed a resolution meets his docket and waits in the slot, except where another bill holds
-        /// it, when it too is taken as signed (no second slot). Also how a RELEASE ends a lapse (the review's M2, <see cref="AdvanceUsFundingDay"/>).</summary>
+        /// (the second review's N1): a resolution decided here BEFORE funding lapses was taken as signed on the day by a player-president, never docketed.
+        /// PS-6 US-22c (Elias's ruling J7, 2026-10-19, replacing N1's reading: "The eve's resolution goes on the Docket with the horizon as its deadline.
+        /// Unanswered by then, it is signed, so a lapse needs the player's veto or a withhold"): a resolution decided here before funding lapses (the eve's, and
+        /// the release's on the horizon) meets a player-president's DOCKET with the funding horizon as its deadline (`ResolveContinuingResolution`), and
+        /// unanswered by then it is signed - at the step after the horizon, in the budget tick, which runs before that day's funding tick, so the horizon has
+        /// moved before the lapse test reads it and nothing withheld still means no lapse; the player may answer on the horizon itself (the review's M2). While funding is lapsed a resolution meets his docket on the period's rule. Either way,
+        /// where another bill holds the slot it is taken as signed on the day (no second slot, DECLARED). Also how a RELEASE ends a lapse (the review's M2,
+        /// <see cref="AdvanceUsFundingDay"/>).</summary>
         private void DecideContinuingResolutionToday(Country country, string why)
         {
             BudgetBill resolution = NewContinuingResolution(country, 0);
             Debug.Log($"BUDGET: {country.Id} - {why} ({country.AppropriatedThrough:yyyy-MM-dd}): {(resolution.GovernmentBill ? "the government" : country.PlayerPartyAbbrev)} tables a continuing resolution at the standing figures, decided today at cloture");
             System.Func<DivisionRecord, bool> answer = PlayerPresidentVetoes;
-            if (answer == null && (country.LapseSince == System.DateTime.MinValue || _pendingBudgetBillByCountry.ContainsKey(country.Id))) { PlayerPresidentVetoes = _ => false; }   // N1: before a lapse, or with no second slot, the player-president's own government's resolution is signed on the day
+            if (answer == null && _pendingBudgetBillByCountry.ContainsKey(country.Id)) { PlayerPresidentVetoes = _ => false; }   // no second slot: the player-president's own government's resolution is signed on the day (US-22c keeps this half of N1)
             try { ResolveContinuingResolution(country, resolution); }
             finally { PlayerPresidentVetoes = answer; }
         }
@@ -2103,6 +2186,7 @@ namespace PoliSim.Simulation
             }
             System.DateTime flows = country.LapseSince != System.DateTime.MinValue ? CurrentDate.Date.AddDays(1) : System.DateTime.MinValue;
             if (country.LapseFlowDay != flows) { country.LapseFlowDay = flows; }
+            UsLapse.NoteReferenceWeek(country, CurrentDate);   // PS-6 US-22c (J7 (iv)): a household survey's reference week the lapse has covered whole - its month's unemployment counts the furloughed (nothing where none is lapsed)
         }
 
         /// <summary>
@@ -2241,6 +2325,7 @@ namespace PoliSim.Simulation
             var resolved = new List<TaxType>();
             foreach (TaxProgramBill bill in pending.Values)
             {
+                if (SkipsForAnswers(bill.Docket)) { continue; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
                 if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
                 if (bill.DaysRemaining > 0)
                 {
@@ -2310,6 +2395,7 @@ namespace PoliSim.Simulation
             var resolved = new List<WelfareProgramType>();
             foreach (WelfareProgramBill bill in pending.Values)
             {
+                if (SkipsForAnswers(bill.Docket)) { continue; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
                 if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
                 if (bill.DaysRemaining > 0)
                 {
@@ -2368,6 +2454,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            if (SkipsForAnswers(bill.Docket)) { return; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
             if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
             if (bill.DaysRemaining > 0)
             {
@@ -2465,6 +2552,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            if (SkipsForAnswers(bill.Docket)) { return; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
             if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
             if (bill.DaysRemaining > 0)
             {
@@ -2543,6 +2631,7 @@ namespace PoliSim.Simulation
             var resolved = new List<string>();
             foreach (LawBill bill in pending.Values)
             {
+                if (SkipsForAnswers(bill.Docket)) { continue; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
                 if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
                 if (bill.DaysRemaining > 0)
                 {
@@ -2850,6 +2939,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            if (SkipsForAnswers(bill.Docket)) { return; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
             if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
             if (bill.DaysRemaining > 0)
             {
@@ -2928,6 +3018,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            if (SkipsForAnswers(bill.Docket)) { return; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
             if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
             if (bill.DaysRemaining > 0)
             {
@@ -3028,6 +3119,7 @@ namespace PoliSim.Simulation
                 return;
             }
 
+            if (SkipsForAnswers(bill.Docket)) { return; }   // PS-6 US-21c (J6 (i)): an answer acted on at once - only a bill with an answer on its docket moves
             if (bill.Docket == null) { bill.DaysRemaining--; }   // PS-6 US-21b: a bill held on the president's docket was voted already - its days are the docket's
             if (bill.DaysRemaining > 0)
             {
@@ -6309,7 +6401,7 @@ namespace PoliSim.Simulation
         {
             BudgetBill government = GetPendingBudgetBill(countryId);
             DocketEntry desk = government?.Docket ?? (government?.ActsHeld != null && government.ActsHeld.Count > 0 ? government.ActsHeld[0] : null);
-            if (desk != null) { return Elections.PresidentialDocket.LawDay(countryId, desk.PresentedOn).Year; }   // PS-6 US-21b: voted and on the player-president's desk - law on that day at the latest (DECLARED: the year it is law unanswered)
+            if (desk != null) { return DocketLawDay(countryId, desk).Year; }   // PS-6 US-21b: voted and on the player-president's desk - law on that day at the latest (DECLARED: the year it is law unanswered); US-22c: its own deadline where it carries one
             if (government != null && government.DaysRemaining > 0) { return CurrentDate.AddDays(government.DaysRemaining).Year; }
             if (bill != null && bill.DaysRemaining > 0) { return CurrentDate.AddDays(bill.DaysRemaining).Year; }
             System.DateTime tabled = CurrentDate;
@@ -6854,6 +6946,7 @@ namespace PoliSim.Simulation
                 LapseOutputWedge = country.LapseOutputWedge,
                 LapseOutputDays = country.LapseOutputDays,
                 LapseProfileQuarter = country.LapseProfileQuarter,
+                FurloughCountedMonth = country.FurloughCountedMonth,   // PS-6 US-22c: read only by the publication of the day, which the preview never runs; a value, carried so the audit holds
                 // Step 2: a FRESH ledger, never the real country's reference - ApplyApprovalRating
                 // records into it on the clone, and sharing the reference would corrupt the real
                 // period's attribution the moment a preview ran. LastPeriod stays null: a preview

@@ -1,0 +1,3499 @@
+<?xml version="1.0" encoding="UTF-8"?><vote_summary>
+  <congress>113</congress>
+  <session>1</session>
+  <congress_year>2013</congress_year>
+  <votes>
+    <vote>
+      <vote_number>00291</vote_number>
+      <vote_date>20-Dec</vote_date>
+      <issue>PN921</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>59</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Janet L. Yellen to be Chairman of the Board of Governors of the Federal Reserve System</title>
+    </vote>
+    <vote>
+      <vote_number>00290</vote_number>
+      <vote_date>20-Dec</vote_date>
+      <issue>PN12</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>26</nays>
+      </vote_tally>
+      <title>Confirmation Brian J. Davis, of Florida, to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00289</vote_number>
+      <vote_date>20-Dec</vote_date>
+      <issue>PN12</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Brian J. Davis, to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00288</vote_number>
+      <vote_date>20-Dec</vote_date>
+      <issue>PN784</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>59</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>Confirmation John A. Koskinen, to be Commissioner of Internal Revenue</title>
+    </vote>
+    <vote>
+      <vote_number>00287</vote_number>
+      <vote_date>20-Dec</vote_date>
+      <issue>PN784</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>39</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of John A. Koskinen, to be Commissioner of Internal Revenue</title>
+    </vote>
+    <vote>
+      <vote_number>00286</vote_number>
+      <vote_date>20-Dec</vote_date>
+      <issue>PN640</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation Alejandro Nicholas Mayorkas, to be Deputy Secretary of Homeland Security</title>
+    </vote>
+    <vote>
+      <vote_number>00285</vote_number>
+      <vote_date>19-Dec</vote_date>
+      <issue>PN640</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>55</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Alejandro Nicholas Mayorkas, of the District of Columbia, to be Deputy Secretary of Homeland Security</title>
+    </vote>
+    <vote>
+      <vote_number>00284</vote_number>
+      <vote_date>19-Dec</vote_date>
+      <issue>H.R. 3304</issue>
+      <question>On the Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>84</yeas>
+        <nays>15</nays>
+      </vote_tally>
+      <title>Motion to Concur in the House Amendment to Senate Amendment to H.R. 3304; To authorize appropriations for fiscal year 2014 for military activities of the Department of Defense, for military construction, and for defense activities of the Department of Energy, to prescribe military personnel strengths for such fiscal year, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00283</vote_number>
+      <vote_date>19-Dec</vote_date>
+      <issue>H.R. 3304</issue>
+      <question>On the Motion to Table</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>55</nays>
+      </vote_tally>
+      <title>Motion to Table the Motion to Concur in the House Amendment to Senate Amendment with Amendment to H.R. 3304; To authorize appropriations for fiscal year 2014 for military activities of the Department of Defense, for military construction, and for defense activities of the Department of Energy, to prescribe military personnel strengths for such fiscal year, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00282</vote_number>
+      <vote_date>18-Dec</vote_date>
+      <issue>H.R. 3304</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>71</yeas>
+        <nays>29</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Concur in the House Amendment to the Senate Amendment to H.R. 3304; To authorize appropriations for fiscal year 2014 for military activities of the Department of Defense, for military construction, and for defense activities of the Department of Energy, to prescribe military personnel strengths for such fiscal year, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00281</vote_number>
+      <vote_date>18-Dec</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>Motion to Concur in the House Amendment to the Senate Amendment to H.J.Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00280</vote_number>
+      <vote_date>17-Dec</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Motion to Table</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Motion to Table the Motion to Concur in the House Amendment to the Senate Amendment to H.J.Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00279</vote_number>
+      <vote_date>17-Dec</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>67</yeas>
+        <nays>33</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Concur in the House Amendment to Senate Amendment to H.J.Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00278</vote_number>
+      <vote_date>16-Dec</vote_date>
+      <issue>PN784</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>55</yeas>
+        <nays>37</nays>
+      </vote_tally>
+      <title>Motion to Proceed to Executive Session</title>
+    </vote>
+    <vote>
+      <vote_number>00277</vote_number>
+      <vote_date>16-Dec</vote_date>
+      <issue>PN640</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>38</nays>
+      </vote_tally>
+      <title>Motion to Proceed to Executive Session</title>
+    </vote>
+    <vote>
+      <vote_number>00276</vote_number>
+      <vote_date>16-Dec</vote_date>
+      <issue>PN925</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>78</yeas>
+        <nays>16</nays>
+      </vote_tally>
+      <title>Confirmation Jeh Charles Johnson, of New Jersey, to be Secretary of Homeland Security</title>
+    </vote>
+    <vote>
+      <vote_number>00275</vote_number>
+      <vote_date>16-Dec</vote_date>
+      <issue>PN925</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>37</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Jeh Charles Johnson, of New Jersey, to be Secretary of Homeland Security</title>
+    </vote>
+    <vote>
+      <vote_number>00274</vote_number>
+      <vote_date>16-Dec</vote_date>
+      <issue>PN786</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>78</yeas>
+        <nays>16</nays>
+      </vote_tally>
+      <title>Confirmation Anne W. Patterson, of Virginia, to be an Assistant Secretary of State</title>
+    </vote>
+    <vote>
+      <vote_number>00273</vote_number>
+      <vote_date>13-Dec</vote_date>
+      <issue>PN786</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Anne W. Patterson, of Virginia, to be an Assistant Secretary of State</title>
+    </vote>
+    <vote>
+      <vote_number>00272</vote_number>
+      <vote_date>13-Dec</vote_date>
+      <issue>PN808</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>74</yeas>
+        <nays>17</nays>
+      </vote_tally>
+      <title>Confirmation Heather Anne Higginbottom to be Deputy Secretary of State for Management and Resources</title>
+    </vote>
+    <vote>
+      <vote_number>00271</vote_number>
+      <vote_date>13-Dec</vote_date>
+      <issue>PN808</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Heather Higginbottom to be Deputy Secretary of State</title>
+    </vote>
+    <vote>
+      <vote_number>00270</vote_number>
+      <vote_date>13-Dec</vote_date>
+      <issue>PN774</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>79</yeas>
+        <nays>6</nays>
+      </vote_tally>
+      <title>Confirmation Deborah Lee James, of Virginia, to be Secretary of the Air Force</title>
+    </vote>
+    <vote>
+      <vote_number>00269</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN774</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>58</yeas>
+        <nays>39</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Deborah Lee James, of Virginia, to be Secretary of the Air Force</title>
+    </vote>
+    <vote>
+      <vote_number>00268</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN462</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>77</yeas>
+        <nays>19</nays>
+      </vote_tally>
+      <title>Confirmation Susan P. Watters, of Montana, to be U.S. District Judge for the District of Montana</title>
+    </vote>
+    <vote>
+      <vote_number>00267</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN462</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>58</yeas>
+        <nays>39</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Susan P. Watters, of Montana, to be U.S. District Judge for the District of Montana</title>
+    </vote>
+    <vote>
+      <vote_number>00266</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN461</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>75</yeas>
+        <nays>20</nays>
+      </vote_tally>
+      <title>Confirmation Brian Morris, of Montana, to be U.S. District Judge for the District of Montana</title>
+    </vote>
+    <vote>
+      <vote_number>00265</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN461</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Brian Morris, of Montana, to be U.S. District Judge for the District of Montana</title>
+    </vote>
+    <vote>
+      <vote_number>00264</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN243</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation Patricia M. Wald, of D.C. to be a Member of the Privacy and Civil Liberties Oversight Board</title>
+    </vote>
+    <vote>
+      <vote_number>00263</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN243</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Patricia M. Wald, to be a Member of the Privacy and Civil Liberties Oversight Board</title>
+    </vote>
+    <vote>
+      <vote_number>00262</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN460</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>79</yeas>
+        <nays>19</nays>
+      </vote_tally>
+      <title>Confirmation Landya B. McCafferty, of N.H., to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00261</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN460</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>58</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Landya B. McCafferty, of N.H., to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00260</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN424</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>70</yeas>
+        <nays>29</nays>
+      </vote_tally>
+      <title>Confirmation: Elizabeth A. Wolford, of New York, to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00259</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN424</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>55</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Elizabeth A. Wolford, of N.Y., to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00258</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN507</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation Chai Rachel Feldblum, of D.C., to be a Member of the Equal Employment Opportunity Commission</title>
+    </vote>
+    <vote>
+      <vote_number>00257</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN507</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>39</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Chai Rachel Feldblum to be a Member of the Equal Employment Opportunity Commission</title>
+    </vote>
+    <vote>
+      <vote_number>00256</vote_number>
+      <vote_date>12-Dec</vote_date>
+      <issue>PN528</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Confirmation Cornelia T.L. Pillard, of the District of Columbia, to be U.S. Circuit Judge for the District of Columbia Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00255</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN528</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Upon Reconsideration, Motion to Invoke Cloture on the Nomination of Cornelia Pillard to be U.S. Circuit Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00254</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN528</issue>
+      <question>On the Motion to Reconsider</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Motion to Reconsider the Motion to Invoke Cloture on the Nomination of Cornelia Pillard to be U.S. Circuit Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00253</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN528</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Motion to Proceed to the Motion to Reconsider the Motion to Invoke Cloture on the Nomination of Cornelia Pillard</title>
+    </vote>
+    <vote>
+      <vote_number>00252</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN408</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation Melvin L. Watt, to be Director of the Federal Housing Finance Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00251</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN408</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Upon Reconsideration, Motion to Invoke Cloture on the Nomination of Melvin L. Watt, of North Carolina, to be Director of the Federal Housing Finance Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00250</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN408</issue>
+      <question>On the Decision of the Chair</question>
+      <result>Sustained</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Shall the Decision of the Chair Stand as the Judgment of the Senate? (McConnell Appeal)</title>
+    </vote>
+    <vote>
+      <vote_number>00249</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN408</issue>
+      <question>On the Motion to Reconsider</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Motion to Reconsider the Motion to Invoke Cloture on the Nomination of Melvin L. Watt to be Director of the Federal Housing Finance Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00248</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN408</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Motion to Proceed to the Motion to Reconsider the Motion to Invoke Cloture on the Nomination of Melvin Watt</title>
+    </vote>
+    <vote>
+      <vote_number>00247</vote_number>
+      <vote_date>10-Dec</vote_date>
+      <issue>PN527</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>38</nays>
+      </vote_tally>
+      <title>Confirmation Patricia Ann Millett, of Virginia, to be U.S. Circuit Judge for the District of Columbia Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00246</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>S.Con.Res. 28</issue>
+      <question>On the Concurrent Resolution</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>S. Con. Res. 28; A concurrent resolution providing for a conditional adjournment or recess of the Senate and an adjournment of the House of Representatives.</title>
+    </vote>
+    <vote>
+      <vote_number>00245</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>S. 1197</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on S. 1197; An original bill to authorize appropriations for fiscal year 2014 for military activities of the Department of Defense, for military construction, and for defense activities of the Department of Energy, to prescribe military personnel strengths for such fiscal year, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00244</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>PN527</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>55</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Upon Reconsideration Motion to Invoke Cloture on the Nomination of Patricia Ann Millett</title>
+    </vote>
+    <vote>
+      <vote_number>00243</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>PN527</issue>
+      <question>On the Decision of the Chair</question>
+      <result>Sustained</result>
+      <vote_tally>
+        <yeas>52</yeas>
+        <nays>48</nays>
+      </vote_tally>
+      <title>Shall the Decision of the Chair Stand as the Judgment of the Senate? (McConnell Appeal)</title>
+    </vote>
+    <vote>
+      <vote_number>00242</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>PN527</issue>
+      <question>On the Decision of the Chair</question>
+      <result>Not Sustained</result>
+      <vote_tally>
+        <yeas>48</yeas>
+        <nays>52</nays>
+      </vote_tally>
+      <title>Shall the Decision of the Chair Stand as the Judgment of the Senate? (Reid Appeal)</title>
+    </vote>
+    <vote>
+      <vote_number>00241</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>PN527</issue>
+      <question>On the Motion to Reconsider</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Motion to Reconsider the Motion to Invoke Cloture on the Nomination of Patricia Ann Millett</title>
+    </vote>
+    <vote>
+      <vote_number>00240</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>PN527</issue>
+      <question>On the Motion to Adjourn</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>McConnell Motion to Adjourn until 5 p.m.</title>
+    </vote>
+    <vote>
+      <vote_number>00239</vote_number>
+      <vote_date>21-Nov</vote_date>
+      <issue>PN527</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Motion to Proceed to the Motion to Reconsider the Motion to Invoke Cloture on the Nomination of Patricia A. Millett</title>
+    </vote>
+    <vote>
+      <vote_number>00238</vote_number>
+      <vote_date>19-Nov</vote_date>
+      <issue>S. 1197</issue>
+      <question>On the Amendment <measure>S.Amdt. 2175</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>52</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Levin Amdt. No. 2175; To propose an alternative to section 1033, relating to a limitation on the transfer or release of individuals detained at United States Naval Station, Guantanamo Bay, Cuba.</title>
+    </vote>
+    <vote>
+      <vote_number>00237</vote_number>
+      <vote_date>19-Nov</vote_date>
+      <issue>S. 1197</issue>
+      <question>On the Amendment <measure>S.Amdt. 2255</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>55</nays>
+      </vote_tally>
+      <title>Ayotte Amdt. No. 2255; To propose alternative requirements and limitations applicable to individuals detained at United States Naval Station, Guantanamo Bay, Cuba.</title>
+    </vote>
+    <vote>
+      <vote_number>00236</vote_number>
+      <vote_date>18-Nov</vote_date>
+      <issue>S. 1197</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>91</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 1197; An original bill to authorize appropriations for fiscal year 2014 for military activities of the Department of Defense, for military construction, and for defense activities of the Department of Energy, to prescribe military personnel strengths for such fiscal year, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00235</vote_number>
+      <vote_date>18-Nov</vote_date>
+      <issue>PN529</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>38</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Robert L. Wilkins, to be U.S. Circuit Judge for the D.C. Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00234</vote_number>
+      <vote_date>12-Nov</vote_date>
+      <issue>H.R. 3204</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>1</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to H.R. 3204; A bill to amend the Federal Food, Drug, and Cosmetic Act with respect to human drug compounding and drug supply chain security, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00233</vote_number>
+      <vote_date>12-Nov</vote_date>
+      <issue>PN528</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Cornelia T.L. Pillard, to be U.S. Circuit Judge for the D.C. Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00232</vote_number>
+      <vote_date>07-Nov</vote_date>
+      <issue>S. 815</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>32</nays>
+      </vote_tally>
+      <title>S. 815 As Amended; A bill to prohibit employment discrimination on the basis of sexual orientation or gender identity.</title>
+    </vote>
+    <vote>
+      <vote_number>00231</vote_number>
+      <vote_date>07-Nov</vote_date>
+      <issue>S. 815</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on S. 815, As Amended; A bill to prohibit employment discrimination on the basis of sexual orientation or gender identity.</title>
+    </vote>
+    <vote>
+      <vote_number>00230</vote_number>
+      <vote_date>07-Nov</vote_date>
+      <issue>S. 815</issue>
+      <question>On the Amendment <measure>S.Amdt. 2013</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>55</nays>
+      </vote_tally>
+      <title>Toomey Amdt. No. 2013; To strike the appropriate balance between protecting workers and protecting religious freedom.</title>
+    </vote>
+    <vote>
+      <vote_number>00229</vote_number>
+      <vote_date>04-Nov</vote_date>
+      <issue>S. 815</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>61</yeas>
+        <nays>30</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 815; A bill to prohibit employment discrimination on the basis of sexual orientation or gender identity.</title>
+    </vote>
+    <vote>
+      <vote_number>00228</vote_number>
+      <vote_date>04-Nov</vote_date>
+      <issue>PN422</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>90</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Debra M. Brown, of Mississippi, to be U.S. District Judge for the Northern District of Mississippi</title>
+    </vote>
+    <vote>
+      <vote_number>00227</vote_number>
+      <vote_date>31-Oct</vote_date>
+      <issue>PN527</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>55</yeas>
+        <nays>38</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Patricia Ann Millett, of Virginia, to be U.S. Circuit Judge for the District of Columbia Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00226</vote_number>
+      <vote_date>31-Oct</vote_date>
+      <issue>PN408</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Melvin L. Watt, of North Carolina, to be Director of the Federal Housing Finance Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00225</vote_number>
+      <vote_date>30-Oct</vote_date>
+      <issue>PN509</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>62</yeas>
+        <nays>35</nays>
+      </vote_tally>
+      <title>Confirmation Katherine Archuleta, of Colorado, to be Director of the Office of Personnel Management</title>
+    </vote>
+    <vote>
+      <vote_number>00224</vote_number>
+      <vote_date>30-Oct</vote_date>
+      <issue>PN509</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>81</yeas>
+        <nays>18</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Katherine Archuleta, of Colorado, to be Director of the Office of Personnel Management</title>
+    </vote>
+    <vote>
+      <vote_number>00223</vote_number>
+      <vote_date>30-Oct</vote_date>
+      <issue>PN36</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>91</yeas>
+        <nays>8</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on Nomination of Alan F. Estevez, of the District of Columbia, to be a Principal Deputy Under Secretary of Defense</title>
+    </vote>
+    <vote>
+      <vote_number>00222</vote_number>
+      <vote_date>29-Oct</vote_date>
+      <issue>PN789</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>55</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Confirmation Richard F. Griffin, Jr. to be General Counsel of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00221</vote_number>
+      <vote_date>29-Oct</vote_date>
+      <issue>PN789</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>62</yeas>
+        <nays>37</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Richard F. Griffin, Jr., of the District of Columbia, to be General Counsel of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00220</vote_number>
+      <vote_date>29-Oct</vote_date>
+      <issue>S.J.Res. 26</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Motion to Proceed to S.J.Res. 26; A joint resolution relating to the disapproval of the President's exercise of authority to suspend the debt limit, as submitted under section 1002(b) of the Continuing Appropriations Act, 2014 on October 17, 2013.</title>
+    </vote>
+    <vote>
+      <vote_number>00219</vote_number>
+      <vote_date>16-Oct</vote_date>
+      <issue>H.R. 2775</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>81</yeas>
+        <nays>18</nays>
+      </vote_tally>
+      <title>H.R. 2775 As Amended; An act making continuing appropriations for the fiscal year ending September 30, 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00218</vote_number>
+      <vote_date>16-Oct</vote_date>
+      <issue>H.R. 2775</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>83</yeas>
+        <nays>16</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on H.R. 2775 As Amended; An act making continuing appropriations for the fiscal year ending September 30, 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00217</vote_number>
+      <vote_date>14-Oct</vote_date>
+      <issue>PN409</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>90</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Madeline Hughes Haikala, of Alabama, to be U.S. District Judge for the Northern District of Alabama</title>
+    </vote>
+    <vote>
+      <vote_number>00216</vote_number>
+      <vote_date>12-Oct</vote_date>
+      <issue>S. 1569</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 1569; A bill to ensure the complete and timely payment of the obligations of the United States Government until December 31, 2014.</title>
+    </vote>
+    <vote>
+      <vote_number>00215</vote_number>
+      <vote_date>09-Oct</vote_date>
+      <issue>n/a</issue>
+      <question>On the Motion for Attendance</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>78</yeas>
+        <nays>18</nays>
+      </vote_tally>
+      <title>Motion to Instruct the Sgt. at Arms</title>
+    </vote>
+    <vote>
+      <vote_number>00214</vote_number>
+      <vote_date>08-Oct</vote_date>
+      <issue>n/a</issue>
+      <question>On the Motion for Attendance</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>84</yeas>
+        <nays>14</nays>
+      </vote_tally>
+      <title>Motion to Instruct the Sgt. at Arms</title>
+    </vote>
+    <vote>
+      <vote_number>00213</vote_number>
+      <vote_date>07-Oct</vote_date>
+      <issue>PN384</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>96</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Colin Stirling Bruce, of Illinois, to be United States District Judge for the Central District of Illinois</title>
+    </vote>
+    <vote>
+      <vote_number>00212</vote_number>
+      <vote_date>01-Oct</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Motion to Table</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Motion to Table the House Message to Accompany H.J. Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00211</vote_number>
+      <vote_date>30-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Motion to Table</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Motion to Table the House Amendment to the Senate Amendment to H.J. Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00210</vote_number>
+      <vote_date>30-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Motion to Table</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Motion to Table House Amdts. to Senate Amdt. to H.J.Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00209</vote_number>
+      <vote_date>27-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Joint Resolution</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>H.J.Res. 59 As Amended; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00208</vote_number>
+      <vote_date>27-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Amendment <measure>S.Amdt. 1974</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Reid Amdt. No. 1974; Of a perfecting nature.</title>
+    </vote>
+    <vote>
+      <vote_number>00207</vote_number>
+      <vote_date>27-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>30</nays>
+      </vote_tally>
+      <title>Motion to Waive All Applicable Budget Points of Order re: H.J. Res. 59 and Amdt. No. 1974; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00206</vote_number>
+      <vote_date>27-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>79</yeas>
+        <nays>19</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on H.J. Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00205</vote_number>
+      <vote_date>25-Sep</vote_date>
+      <issue>H.J.Res. 59</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>100</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to H.J.Res. 59; A joint resolution making continuing appropriations for fiscal year 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00204</vote_number>
+      <vote_date>24-Sep</vote_date>
+      <issue>PN134</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>98</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Todd M. Hughes, of the District of Columbia, to be U.S. Circuit Judge for the Federal Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00203</vote_number>
+      <vote_date>19-Sep</vote_date>
+      <issue>H.R. 527</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>2</nays>
+      </vote_tally>
+      <title>H.R. 527 As Amended; A bill to amend the Helium Act to complete the privatization of the Federal helium reserve in a competitive market fashion that ensures stability in the helium markets while protecting the interests of American taxpayers, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00202</vote_number>
+      <vote_date>17-Sep</vote_date>
+      <issue>PN202</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>35</nays>
+      </vote_tally>
+      <title>Confirmation Elaine D. Kaplan, of the District of Columbia, to be a Judge of the U.S. Court of Federal Claims</title>
+    </vote>
+    <vote>
+      <vote_number>00201</vote_number>
+      <vote_date>09-Sep</vote_date>
+      <issue>PN9</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>73</yeas>
+        <nays>24</nays>
+      </vote_tally>
+      <title>Confirmation Valerie E. Caproni, of the District of Columbia, to be U.S. District Judge for the Southern District of New York</title>
+    </vote>
+    <vote>
+      <vote_number>00200</vote_number>
+      <vote_date>01-Aug</vote_date>
+      <issue>PN554</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>87</yeas>
+        <nays>10</nays>
+      </vote_tally>
+      <title>Confirmation Samantha Power, of Massachusetts, to be Representative of the United States of America to the United Nations and Security Council of UN</title>
+    </vote>
+    <vote>
+      <vote_number>00199</vote_number>
+      <vote_date>01-Aug</vote_date>
+      <issue>S. 1243</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on S. 1243; An original bill making appropriations for the Departments of Transportation, and Housing and Urban Development, and related agencies for the fiscal year ending September 30, 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00198</vote_number>
+      <vote_date>01-Aug</vote_date>
+      <issue>PN133</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Raymond T. Chen, of Maryland, to be U.S. Circuit Judge for the Federal Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00197</vote_number>
+      <vote_date>31-Jul</vote_date>
+      <issue>PN120</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Confirmation Byron Todd Jones, of Minnesota, to be Director, Bureau of Alcohol, Tobacco, Firearms, and Explosives</title>
+    </vote>
+    <vote>
+      <vote_number>00196</vote_number>
+      <vote_date>31-Jul</vote_date>
+      <issue>PN120</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>60</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Byron Todd Jones, of Minnesota, to be Director, Bureau of Alcohol, Tobacco, Firearms, and Explosives</title>
+    </vote>
+    <vote>
+      <vote_number>00195</vote_number>
+      <vote_date>31-Jul</vote_date>
+      <issue>S. 1243</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 1739</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>86</yeas>
+        <nays>13</nays>
+      </vote_tally>
+      <title>Motion to Table Paul Amdt. No. 1739; To redirect certain foreign assistance to the Government of Egypt as a result of the July 3, 2013, military coup d'etat.</title>
+    </vote>
+    <vote>
+      <vote_number>00194</vote_number>
+      <vote_date>30-Jul</vote_date>
+      <issue>PN266</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>59</yeas>
+        <nays>38</nays>
+      </vote_tally>
+      <title>Confirmation Mark Gaston Pearce, of New York, to be a Member of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00193</vote_number>
+      <vote_date>30-Jul</vote_date>
+      <issue>PN266</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>69</yeas>
+        <nays>29</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Mark Gaston Pearce, of New York, to be a Member of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00192</vote_number>
+      <vote_date>30-Jul</vote_date>
+      <issue>PN680</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Confirmation Nancy Jean Schiffer, of Maryland, to be a Member of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00191</vote_number>
+      <vote_date>30-Jul</vote_date>
+      <issue>PN680</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>65</yeas>
+        <nays>33</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Nancy Jean Schiffer, of Maryland, to be a Member of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00190</vote_number>
+      <vote_date>30-Jul</vote_date>
+      <issue>PN679</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Confirmation Kent Yoshiho Hirozawa, of New York, to be a Member of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00189</vote_number>
+      <vote_date>30-Jul</vote_date>
+      <issue>PN679</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Kent Yoshiho Hirozawa, of New York, to be a Member of the National Labor Relations Board</title>
+    </vote>
+    <vote>
+      <vote_number>00188</vote_number>
+      <vote_date>29-Jul</vote_date>
+      <issue>PN586</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>93</yeas>
+        <nays>1</nays>
+      </vote_tally>
+      <title>Confirmation James B. Comey, Jr., of Connecticut, to be Director of the Federal Bureau of Investigation</title>
+    </vote>
+    <vote>
+      <vote_number>00187</vote_number>
+      <vote_date>25-Jul</vote_date>
+      <issue>S. 1243</issue>
+      <question>On the Motion to Table the Motion to Recommit</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Motion to Table the Toomey Motion to Recommit to the Committee on Appropriations; An original bill making appropriations for the Departments of Transportation, and Housing and Urban Development, and related agencies for the fiscal year ending September 30, 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00186</vote_number>
+      <vote_date>25-Jul</vote_date>
+      <issue>PN49</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>98</yeas>
+        <nays>1</nays>
+      </vote_tally>
+      <title>Derek Anthony West, of California, to be Associate Attorney General</title>
+    </vote>
+    <vote>
+      <vote_number>00185</vote_number>
+      <vote_date>24-Jul</vote_date>
+      <issue>H.R. 1911</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>81</yeas>
+        <nays>18</nays>
+      </vote_tally>
+      <title>H.R. 1911 As Amended; To amend the Higher Education Act of 1965 to establish interest rates for new loans made on or after July 1, 2013, to direct the Secretary of Education to convene the Advisory Committee on Improving Postsecondary Education Data to conduct a study on improvements to postsecondary education transparency at the Federal level, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00184</vote_number>
+      <vote_date>24-Jul</vote_date>
+      <issue>H.R. 1911</issue>
+      <question>On the Amendment <measure>S.Amdt. 1774</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>34</yeas>
+        <nays>65</nays>
+      </vote_tally>
+      <title>Sanders Amdt. No. 1774; To provide a sunset date.</title>
+    </vote>
+    <vote>
+      <vote_number>00183</vote_number>
+      <vote_date>24-Jul</vote_date>
+      <issue>H.R. 1911</issue>
+      <question>On the Amendment <measure>S.Amdt. 1778</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Reed Amdt. No. 1778; To provide for interest rate caps for certain Federal student loans.</title>
+    </vote>
+    <vote>
+      <vote_number>00182</vote_number>
+      <vote_date>23-Jul</vote_date>
+      <issue>S. 1243</issue>
+      <question>On the Amendment <measure>S.Amdt. 1744</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>99</yeas>
+        <nays>1</nays>
+      </vote_tally>
+      <title>Vitter Amdt. No. 1744; To prohibit funds to be used to provide housing assistance benefits to individuals convicted of certain felonies.</title>
+    </vote>
+    <vote>
+      <vote_number>00181</vote_number>
+      <vote_date>23-Jul</vote_date>
+      <issue>S. 1243</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>73</yeas>
+        <nays>26</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 1243; An original bill making appropriations for the Departments of Transportation, and Housing and Urban Development, and related agencies for the fiscal year ending September 30, 2014, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00180</vote_number>
+      <vote_date>18-Jul</vote_date>
+      <issue>PN192</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>59</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Confirmation Regina McCarthy, of Massachusetts, to be Administrator of the Environmental Protection Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00179</vote_number>
+      <vote_date>18-Jul</vote_date>
+      <issue>PN192</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>69</yeas>
+        <nays>31</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Confirmation of Regina McCarthy, of Massachusetts, to be Administrator of the Environmental Protection Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00178</vote_number>
+      <vote_date>18-Jul</vote_date>
+      <issue>PN205</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Confirmation Thomas Edward Perez, of Maryland, to be Secretary of Labor</title>
+    </vote>
+    <vote>
+      <vote_number>00177</vote_number>
+      <vote_date>17-Jul</vote_date>
+      <issue>PN205</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>60</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Thomas Edward Perez, of Maryland, to be Secretary of Labor</title>
+    </vote>
+    <vote>
+      <vote_number>00176</vote_number>
+      <vote_date>17-Jul</vote_date>
+      <issue>PN239</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>82</yeas>
+        <nays>17</nays>
+      </vote_tally>
+      <title>Confirmation Fred P. Hochberg, of New York, to be President of the Export-Import Bank of the United States</title>
+    </vote>
+    <vote>
+      <vote_number>00175</vote_number>
+      <vote_date>17-Jul</vote_date>
+      <issue>PN239</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>82</yeas>
+        <nays>18</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Fred P. Hochberg, of New York, to be President of the Export-Import Bank of the United States</title>
+    </vote>
+    <vote>
+      <vote_number>00174</vote_number>
+      <vote_date>16-Jul</vote_date>
+      <issue>PN157</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>66</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Confirmation Richard Cordray, of Ohio, to be Director of the Bureau of Consumer Financial Protection</title>
+    </vote>
+    <vote>
+      <vote_number>00173</vote_number>
+      <vote_date>16-Jul</vote_date>
+      <issue>PN157</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>71</yeas>
+        <nays>29</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Richard Cordray, of Ohio, to be Director of the Bureau of Consumer Financial Protection</title>
+    </vote>
+    <vote>
+      <vote_number>00172</vote_number>
+      <vote_date>15-Jul</vote_date>
+      <issue>S. 1238</issue>
+      <question>On the Motion for Attendance</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>69</yeas>
+        <nays>28</nays>
+      </vote_tally>
+      <title>Motion to Instruct the Sergeant at Arms; A bill to amend the Higher Education Act of 1965 to extend the current reduced interest rate for undergraduate Federal Direct Stafford Loans for 1 year, to modify required distribution rules for pension plans, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00171</vote_number>
+      <vote_date>10-Jul</vote_date>
+      <issue>S. 1238</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>49</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 1238; A bill to amend the Higher Education Act of 1965 to extend the current reduced interest rate for undergraduate Federal Direct Stafford Loans for 1 year, to modify required distribution rules for pension plans, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00170</vote_number>
+      <vote_date>09-Jul</vote_date>
+      <issue>PN14</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation Jennifer A. Dorsey, of Nevada, to be U.S. District Judge for the District of Nevada</title>
+    </vote>
+    <vote>
+      <vote_number>00169</vote_number>
+      <vote_date>08-Jul</vote_date>
+      <issue>PN128</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>88</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Gregory Alan Phillips, of Wyoming, to be U.S. Circuit Judge for the Tenth Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00168</vote_number>
+      <vote_date>27-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>32</nays>
+      </vote_tally>
+      <title>S. 744 As Amended; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00167</vote_number>
+      <vote_date>27-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>32</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on S. 744; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00166</vote_number>
+      <vote_date>27-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>32</nays>
+      </vote_tally>
+      <title>Committee-Reported Substitute Amendment, as Amended, to S. 744; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00165</vote_number>
+      <vote_date>27-Jun</vote_date>
+      <issue>PN406</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>100</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Anthony Renard Foxx, of North Carolina, to be Secretary of Transportation</title>
+    </vote>
+    <vote>
+      <vote_number>00164</vote_number>
+      <vote_date>26-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>67</yeas>
+        <nays>31</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Committee-Reported Substitute Amendment to S.744; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00163</vote_number>
+      <vote_date>26-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1183</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>69</yeas>
+        <nays>29</nays>
+      </vote_tally>
+      <title>Leahy Amdt. No. 1183, As Modified; To strengthen border security and enforcement.</title>
+    </vote>
+    <vote>
+      <vote_number>00162</vote_number>
+      <vote_date>26-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>30</nays>
+      </vote_tally>
+      <title>Motion to Waive All Applicable Budgetary Discipline Re: S. 744 and Amdt. No. 1183, As Modified; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00161</vote_number>
+      <vote_date>25-Jun</vote_date>
+      <issue>PN413</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>1</nays>
+      </vote_tally>
+      <title>Confirmation Penny Pritzker, of Illinois, to be Secretary of Commerce</title>
+    </vote>
+    <vote>
+      <vote_number>00160</vote_number>
+      <vote_date>24-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Cloture Motion <measure>S.Amdt. 1183</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>67</yeas>
+        <nays>27</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on Leahy Amdt. No. 1183 As Modified; To strengthen border security and enforcement.</title>
+    </vote>
+    <vote>
+      <vote_number>00159</vote_number>
+      <vote_date>20-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 1251</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Motion to Table Cornyn Amdt. No. 1251; Requiring Enforcement, Security and safety while Upgrading Lawful Trade and travel Simultaneously (RESULTS).</title>
+    </vote>
+    <vote>
+      <vote_number>00158</vote_number>
+      <vote_date>19-Jun</vote_date>
+      <issue>PN407</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>93</yeas>
+        <nays>4</nays>
+      </vote_tally>
+      <title>Confirmation Michael Froman, of New York, to be U.S. Trade Representative</title>
+    </vote>
+    <vote>
+      <vote_number>00157</vote_number>
+      <vote_date>19-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1227</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>89</yeas>
+        <nays>9</nays>
+      </vote_tally>
+      <title>Heller Amdt. No. 1227; To include a representative from the Southwestern State of Nevada on the Southern Border Security Commission.</title>
+    </vote>
+    <vote>
+      <vote_number>00156</vote_number>
+      <vote_date>19-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1208</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>39</yeas>
+        <nays>59</nays>
+      </vote_tally>
+      <title>Lee Amdt. No. 1208 As Modified; To require fast-track congressional approval when the Secretary of Homeland Security notifies Congress of the implementation of the border security strategies and certifies that the strategies are substantially operational.</title>
+    </vote>
+    <vote>
+      <vote_number>00155</vote_number>
+      <vote_date>19-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1268</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>72</yeas>
+        <nays>26</nays>
+      </vote_tally>
+      <title>Manchin Amdt. No. 1268; To provide for common sense limitations on salaries for contractor executives and employees involved in border security.</title>
+    </vote>
+    <vote>
+      <vote_number>00154</vote_number>
+      <vote_date>19-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 1200</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>61</yeas>
+        <nays>37</nays>
+      </vote_tally>
+      <title>Motion to Table Paul Amdt. No. 1200; To provide for enhanced border security, including strong border security metrics and congressional votes on border security and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00153</vote_number>
+      <vote_date>18-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1198</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>94</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Tester Amdt. No. 1198; To modify the Border Oversight Task Force to include tribal government officials.</title>
+    </vote>
+    <vote>
+      <vote_number>00152</vote_number>
+      <vote_date>18-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1228</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>36</yeas>
+        <nays>58</nays>
+      </vote_tally>
+      <title>Vitter Amdt. No. 1228; To prohibit the temporary grant of legal status to, or adjustment to citizenship status of, any individual who is unlawfully present in the United States until the Secretary of Homeland Security certifies that the US-VISIT System (a biometric border check-in and check-out system first required by Congress in 1996) has been fully implemented at every land, sea, and airport of entry and Congress passes a joint resolution, under fast track procedures, stating that such integrated entry and exit data system has been sufficiently implemented.</title>
+    </vote>
+    <vote>
+      <vote_number>00151</vote_number>
+      <vote_date>18-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Amendment <measure>S.Amdt. 1197</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>39</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Thune Amdt. No. 1197; To require the completion of the 350 miles of reinforced, double-layered fencing described in section 102(b)(1)(A) of the Illegal Immigration Reform and Immigrant Responsibility Act of 1996 before registered provisional immigrant status may be granted and to require the completion of 700 miles of such fencing before the status of registered provisional immigrants may be adjusted to permanent resident status.</title>
+    </vote>
+    <vote>
+      <vote_number>00150</vote_number>
+      <vote_date>17-Jun</vote_date>
+      <issue>PN16</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>89</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Kenneth John Gonzales, of New Mexico, to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00149</vote_number>
+      <vote_date>13-Jun</vote_date>
+      <issue>PN28</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>100</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Jeffrey L. Schmehl, of Pennsylvania, to be United States District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00148</vote_number>
+      <vote_date>13-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 1195</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Motion to Table Grassley Amdt. No. 1195; To prohibit the granting of registered provisional immigrant status until the Secretary has maintained effective control of the borders for 6 months.</title>
+    </vote>
+    <vote>
+      <vote_number>00147</vote_number>
+      <vote_date>11-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>84</yeas>
+        <nays>15</nays>
+      </vote_tally>
+      <title>Motion to Proceed to S. 744; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00146</vote_number>
+      <vote_date>11-Jun</vote_date>
+      <issue>S. 744</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>82</yeas>
+        <nays>15</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 744; A bill to provide for comprehensive immigration reform and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00145</vote_number>
+      <vote_date>10-Jun</vote_date>
+      <issue>S. 954</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>66</yeas>
+        <nays>27</nays>
+      </vote_tally>
+      <title>S. 954 As Amended; An original bill to reauthorize agricultural programs through 2018.</title>
+    </vote>
+    <vote>
+      <vote_number>00144</vote_number>
+      <vote_date>10-Jun</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 998</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>48</yeas>
+        <nays>38</nays>
+      </vote_tally>
+      <title>Leahy Amdt. No. 998; To establish a pilot program for gigabit Internet projects in rural areas.</title>
+    </vote>
+    <vote>
+      <vote_number>00143</vote_number>
+      <vote_date>06-Jun</vote_date>
+      <issue>S. 953</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 953; A bill to amend the Higher Education Act of 1965 to extend the reduced interest rate for undergraduate Federal Direct Stafford Loans, to modify required distribution rules for pension plans, to limit earnings stripping by expatriated entities, to provide for modifications related to the Oil Spill Liability Trust Fund, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00142</vote_number>
+      <vote_date>06-Jun</vote_date>
+      <issue>S. 1003</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>40</yeas>
+        <nays>57</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 1003; A bill to amend the Higher Education Act of 1965 to reset interest rates for new student loans.</title>
+    </vote>
+    <vote>
+      <vote_number>00141</vote_number>
+      <vote_date>06-Jun</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>75</yeas>
+        <nays>22</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on S. 954; An original bill to reauthorize agricultural programs through 2018.</title>
+    </vote>
+    <vote>
+      <vote_number>00140</vote_number>
+      <vote_date>03-Jun</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 987</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>72</yeas>
+        <nays>18</nays>
+      </vote_tally>
+      <title>Moran Amdt. No. 987; To require the Federal Crop Insurance Corporation to carry out research and development regarding a crop insurance program for alfalfa.</title>
+    </vote>
+    <vote>
+      <vote_number>00139</vote_number>
+      <vote_date>23-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 953</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>59</yeas>
+        <nays>33</nays>
+      </vote_tally>
+      <title>Durbin Amdt. No. 953; To limit the amount of premium subsidy provided by the Federal Crop Insurance Corporation on behalf of any person or legal entity with an average adjusted gross income in excess of $750,000, with a delayed application of the limitation until completion of a study on the effects of the limitation.</title>
+    </vote>
+    <vote>
+      <vote_number>00138</vote_number>
+      <vote_date>23-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 1031</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>94</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Hagan Amdt. No. 1031; To authorize the use of the insurance fund to reduce fraud and maintain program integrity in the crop insurance program.</title>
+    </vote>
+    <vote>
+      <vote_number>00137</vote_number>
+      <vote_date>23-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 923</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>44</yeas>
+        <nays>52</nays>
+      </vote_tally>
+      <title>Feinstein Amdt. No. 923; To prohibit the payment by the Federal Crop Insurance Corporation of any portion of the premium for a policy or plan of insurance for tobacco.</title>
+    </vote>
+    <vote>
+      <vote_number>00136</vote_number>
+      <vote_date>23-May</vote_date>
+      <issue>PN6</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Srikanth Srinivasan, of Virginia, to be U.S. Circuit Judge for D.C. Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00135</vote_number>
+      <vote_date>23-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 965</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>27</yeas>
+        <nays>71</nays>
+      </vote_tally>
+      <title>Sanders Amdt. No. 965; To permit States to require that any food, beverage, or other edible product offered for sale have a label on indicating that the food, beverage, or other edible product contains a genetically engineered ingredient.</title>
+    </vote>
+    <vote>
+      <vote_number>00134</vote_number>
+      <vote_date>22-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 925</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Shaheen Amdt. No. 925; To reform the Federal sugar program, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00133</vote_number>
+      <vote_date>22-May</vote_date>
+      <issue>S.Res. 65</issue>
+      <question>On the Resolution</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>99</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>S. Res. 65 as Amended; A resolution strongly supporting the full implementation of United States and international sanctions on Iran and urging the President to continue to strengthen enforcement of sanctions legislation.</title>
+    </vote>
+    <vote>
+      <vote_number>00132</vote_number>
+      <vote_date>22-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 960</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>36</yeas>
+        <nays>60</nays>
+      </vote_tally>
+      <title>Inhofe Amdt. No. 960; To repeal the nutrition entitlement programs and establish a nutrition assistance block grant program.</title>
+    </vote>
+    <vote>
+      <vote_number>00131</vote_number>
+      <vote_date>21-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 931</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>26</yeas>
+        <nays>70</nays>
+      </vote_tally>
+      <title>Gillibrand Amdt. No. 931; To strike a reduction in the supplemental nutrition assistance program, with an offset that limits crop insurance reimbursements to providers.</title>
+    </vote>
+    <vote>
+      <vote_number>00130</vote_number>
+      <vote_date>21-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 948</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>40</yeas>
+        <nays>58</nays>
+      </vote_tally>
+      <title>Roberts Amdt. No. 948; To improve and extend certain nutrition programs.</title>
+    </vote>
+    <vote>
+      <vote_number>00129</vote_number>
+      <vote_date>21-May</vote_date>
+      <issue>S. 954</issue>
+      <question>On the Amendment <measure>S.Amdt. 919</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>87</yeas>
+        <nays>8</nays>
+      </vote_tally>
+      <title>Cantwell Amdt. No. 919; To allow Indian tribes to participate in certain soil and water conservation programs.</title>
+    </vote>
+    <vote>
+      <vote_number>00128</vote_number>
+      <vote_date>20-May</vote_date>
+      <issue>PN10</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>90</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation: Sheri Polster Chappell, of Florida, to be United States District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00127</vote_number>
+      <vote_date>16-May</vote_date>
+      <issue>PN193</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Ernest J. Moniz, of Massachusetts, to be Secretary of Energy</title>
+    </vote>
+    <vote>
+      <vote_number>00126</vote_number>
+      <vote_date>15-May</vote_date>
+      <issue>PN138</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>91</yeas>
+        <nays>7</nays>
+      </vote_tally>
+      <title>Confirmation Marilyn B. Tavenner, of Virginia, to be Administrator of the Centers for Medicare and Medicaid Services</title>
+    </vote>
+    <vote>
+      <vote_number>00125</vote_number>
+      <vote_date>15-May</vote_date>
+      <issue>PN24</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation William H. Orrick, III, of the District of Columbia, to be U.S. District Judge for the Northern District of California</title>
+    </vote>
+    <vote>
+      <vote_number>00124</vote_number>
+      <vote_date>15-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>83</yeas>
+        <nays>14</nays>
+      </vote_tally>
+      <title>S.601, As Amended; A bill to provide for the conservation and development of water and related resources, to authorize the Secretary of the Army to construct various projects for improvements to rivers and harbors of the United States, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00123</vote_number>
+      <vote_date>15-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 866</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>60</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>Merkley Amdt. No. 866; To require the use of American iron, steel, and manufactured goods for innovative financing pilot projects.</title>
+    </vote>
+    <vote>
+      <vote_number>00122</vote_number>
+      <vote_date>15-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 816</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>35</yeas>
+        <nays>61</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 816; To remove restrictions on projects the Infrastructure Deauthorization Commission may consider.</title>
+    </vote>
+    <vote>
+      <vote_number>00121</vote_number>
+      <vote_date>15-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 815</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 815; To stop Federal subsidies for ongoing beach renourishment from being extended to 65 years.</title>
+    </vote>
+    <vote>
+      <vote_number>00120</vote_number>
+      <vote_date>14-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 889</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Sanders Amdt. No. 889; To address restoration of certain properties impacted by natural disasters, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00119</vote_number>
+      <vote_date>14-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 868</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>52</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Barrasso Amdt. No. 868; To preserve existing rights and responsibilities with respect to waters of the United States.</title>
+    </vote>
+    <vote>
+      <vote_number>00118</vote_number>
+      <vote_date>09-May</vote_date>
+      <issue>PN27</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>97</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Nelson Stephen Roman, of New York, to be United States District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00117</vote_number>
+      <vote_date>08-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 813</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>95</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Brown Amdt. No. 813 As Modified; To provide a multiagency effort to slow the spread of Asian carp in the Upper Mississippi and Ohio River basins and tributaries.</title>
+    </vote>
+    <vote>
+      <vote_number>00116</vote_number>
+      <vote_date>08-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 803</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>67</yeas>
+        <nays>32</nays>
+      </vote_tally>
+      <title>Whitehouse Amdt. No. 803; To create the National Endowment for the Oceans to promote the protection and conservation of United States ocean, coastal, and Great Lakes ecosystems.</title>
+    </vote>
+    <vote>
+      <vote_number>00115</vote_number>
+      <vote_date>08-May</vote_date>
+      <issue>S. 601</issue>
+      <question>On the Amendment <measure>S.Amdt. 805</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 805; To protect the right of individuals to bear arms at water resources development projects administered by the Secretary of the Army.</title>
+    </vote>
+    <vote>
+      <vote_number>00114</vote_number>
+      <vote_date>07-May</vote_date>
+      <issue>PN50</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Confirmation David Medine, of Maryland, to be Chairman and Member of the Privacy and Civil Liberties Oversight Board</title>
+    </vote>
+    <vote>
+      <vote_number>00113</vote_number>
+      <vote_date>06-May</vote_date>
+      <issue>S. 743</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>69</yeas>
+        <nays>27</nays>
+      </vote_tally>
+      <title>S. 743, as amended; A bill to restore States' sovereign rights to enforce State and local sales and use tax laws, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00112</vote_number>
+      <vote_date>06-May</vote_date>
+      <issue>S. 743</issue>
+      <question>On the Amendment <measure>S.Amdt. 741</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>70</yeas>
+        <nays>24</nays>
+      </vote_tally>
+      <title>Enzi Amdt. No. 741; Of a perfecting nature.</title>
+    </vote>
+    <vote>
+      <vote_number>00111</vote_number>
+      <vote_date>25-Apr</vote_date>
+      <issue>S. 743</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>63</yeas>
+        <nays>30</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on S.743; A bill to restore States' sovereign rights to enforce State and local sales and use tax laws, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00110</vote_number>
+      <vote_date>24-Apr</vote_date>
+      <issue>S. 743</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>74</yeas>
+        <nays>23</nays>
+      </vote_tally>
+      <title>Motion to Proceed to S. 743; A bill to restore States' sovereign rights to enforce State and local sales and use tax laws, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00109</vote_number>
+      <vote_date>24-Apr</vote_date>
+      <issue>PN188</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>96</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Sylvia Mathews Burwell, of West Virginia, to be Director of the Office of Management and Budget</title>
+    </vote>
+    <vote>
+      <vote_number>00108</vote_number>
+      <vote_date>24-Apr</vote_date>
+      <issue>PN127</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>96</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Jane Kelly, of Iowa, to be U.S. Circuit Judge for the Eighth Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00107</vote_number>
+      <vote_date>22-Apr</vote_date>
+      <issue>S. 743</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>74</yeas>
+        <nays>20</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S. 743; A bill to restore States' sovereign rights to enforce State and local sales and use tax laws, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00106</vote_number>
+      <vote_date>18-Apr</vote_date>
+      <issue>PN31</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>94</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Derrick Kahala Watson, of Hawaii, to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00105</vote_number>
+      <vote_date>18-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 730</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>95</yeas>
+        <nays>2</nays>
+      </vote_tally>
+      <title>Harkin Amdt. No. 730; To reauthorize and improve programs related to mental health and substance use disorders.</title>
+    </vote>
+    <vote>
+      <vote_number>00104</vote_number>
+      <vote_date>18-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 717</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>67</yeas>
+        <nays>30</nays>
+      </vote_tally>
+      <title>Barrasso Amdt. No. 717; To withhold 5 percent of Community Oriented Policing Services program Federal funding from States and local governments that release sensitive and confidential information on law-abiding gun owners and victims of domestic violence.</title>
+    </vote>
+    <vote>
+      <vote_number>00103</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 714</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Lautenberg Amdt. No. 714; To regulate large capacity ammunition feeding devices.</title>
+    </vote>
+    <vote>
+      <vote_number>00102</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 720</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Burr Amdt. No. 720; To protect the Second Amendment rights of veterans and their families.</title>
+    </vote>
+    <vote>
+      <vote_number>00101</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 711</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>40</yeas>
+        <nays>60</nays>
+      </vote_tally>
+      <title>Feinstein Amdt. No. 711; To regulate assault weapons, to ensure that the right to keep and bear arms is not unlimited, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00100</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 719</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>57</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Cornyn Amdt. No. 719; To allow reciprocity for the carrying of certain concealed firearms.</title>
+    </vote>
+    <vote>
+      <vote_number>00099</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 713</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>58</yeas>
+        <nays>42</nays>
+      </vote_tally>
+      <title>Leahy Amdt. No. 713; To increase public safety by punishing and deterring firearms trafficking.</title>
+    </vote>
+    <vote>
+      <vote_number>00098</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 725</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>52</yeas>
+        <nays>48</nays>
+      </vote_tally>
+      <title>Grassley Amdt. No. 725; To address gun violence, improve the availability of records to the National Instant Criminal Background Check System, address mental illness in the criminal justice system, and end straw purchases and trafficking of illegal firearms, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00097</vote_number>
+      <vote_date>17-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On the Amendment <measure>S.Amdt. 715</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Manchin Amdt. No. 715; To protect Second Amendment rights, ensure that all individuals who should be prohibited from buying a firearm are listed in the National Instant Criminal Background Check System, and provide a responsible and consistent background check process.</title>
+    </vote>
+    <vote>
+      <vote_number>00096</vote_number>
+      <vote_date>15-Apr</vote_date>
+      <issue>PN23</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>92</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Nomination: Beverly Reid O'Connell of California, to be U.S. District Judge for the Central District of California</title>
+    </vote>
+    <vote>
+      <vote_number>00095</vote_number>
+      <vote_date>11-Apr</vote_date>
+      <issue>S. 649</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>31</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S.649; A bill to ensure that all individuals who should be prohibited from buying a firearm are listed in the national instant criminal background check system and require a background check for every firearm sale, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00094</vote_number>
+      <vote_date>10-Apr</vote_date>
+      <issue>PN135</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>87</yeas>
+        <nays>11</nays>
+      </vote_tally>
+      <title>Confirmation Sarah Jewell, of Washington, to be Secretary of the Interior</title>
+    </vote>
+    <vote>
+      <vote_number>00093</vote_number>
+      <vote_date>09-Apr</vote_date>
+      <issue>PN5</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Confirmation Patty Shwartz, of New Jersey, to be U.S. Circuit Judge for the Third Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00092</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Resolution</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>50</yeas>
+        <nays>49</nays>
+      </vote_tally>
+      <title>S. Con. Res. 8; An original concurrent resolution setting forth the congressional budget for the United States Government for fiscal year 2014, revising the appropriate budgetary levels for fiscal year 2013, and setting forth the appropriate budgetary levels for fiscal years 2015 through 2023.</title>
+    </vote>
+    <vote>
+      <vote_number>00091</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 139</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Inhofe Amdt. No. 139; To uphold Second Amendment rights and prevent the United States from entering into the United Nations Arms Trade Treaty.</title>
+    </vote>
+    <vote>
+      <vote_number>00090</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 154</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>48</nays>
+      </vote_tally>
+      <title>Portman Amdt. No. 154; To require the Congressional Budget Office to include macroeconomic feedback scoring of tax legislation.</title>
+    </vote>
+    <vote>
+      <vote_number>00089</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 709</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>62</yeas>
+        <nays>37</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 709; To eliminate program duplication, fragmentation, and overlap within the 15 "financial literacy" programs under 13 departments and agencies identified by the 2012 report of the Government Accountability Office, entitled "Opportunities to Reduce Duplication, Overlap and Fragmentation, Achieve Savings, and Enhance Revenue".</title>
+    </vote>
+    <vote>
+      <vote_number>00088</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 416</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>56</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 416; To establish a deficit-neutral reserve fund to eliminate non-defense related spending by the Department of Defense.</title>
+    </vote>
+    <vote>
+      <vote_number>00087</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Motion <measure>S.Amdt. 673</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>50</yeas>
+        <nays>49</nays>
+      </vote_tally>
+      <title>Motion to Waive CBA Re: Lee Amdt. No. 673; To create a point of order against legislation that would further restrict the right of law-abiding Americans to own a firearm.</title>
+    </vote>
+    <vote>
+      <vote_number>00086</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 702</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>38</yeas>
+        <nays>61</nays>
+      </vote_tally>
+      <title>Cruz Amdt. No. 702; To create a point of order against any legislation that would provide taxpayer funds to the United Nations while any member nation forces citizens or residents of that nation to undergo involuntary abortions.</title>
+    </vote>
+    <vote>
+      <vote_number>00085</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 471</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>25</yeas>
+        <nays>74</nays>
+      </vote_tally>
+      <title>Cruz Amdt. No. 471; To establish a deficit-neutral reserve fund to reduce foreign assistance to Egypt and increase funding for an east coast missile defense shield.</title>
+    </vote>
+    <vote>
+      <vote_number>00084</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 338</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Vitter Amdt. No. 338; To end the mobile phone welfare program.</title>
+    </vote>
+    <vote>
+      <vote_number>00083</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 526</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>44</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Vitter Amdt. No. 526; To establish a deficit-neutral reserve fund to ensure election integrity by requiring a valid government-issued photographic ID for voting in federal elections.</title>
+    </vote>
+    <vote>
+      <vote_number>00082</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 382</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>26</yeas>
+        <nays>72</nays>
+      </vote_tally>
+      <title>Paul Amdt. No. 382; To provide funding to the Department of Transportation for interstate bridge infrastructure projects and to reduce the Federal deficit by decreasing the amounts available for foreign assistance and loan guarantee programs administered by the Department of Energy.</title>
+    </vote>
+    <vote>
+      <vote_number>00081</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 318</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>47</yeas>
+        <nays>52</nays>
+      </vote_tally>
+      <title>Crapo Amdt. No. 318; To amend the reconciliation instructions to include instructions to the Committee on Finance to achieve the Budget's stated goal of $275 billion in mandatory health care savings.</title>
+    </vote>
+    <vote>
+      <vote_number>00080</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 136</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>94</yeas>
+        <nays>5</nays>
+      </vote_tally>
+      <title>Ayotte Amdt. No. 136; To establish a deficit-neutral reserve fund for the prohibition on funding of the Medium Extended Air Defense System.</title>
+    </vote>
+    <vote>
+      <vote_number>00079</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 340</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>47</yeas>
+        <nays>52</nays>
+      </vote_tally>
+      <title>Shelby Amdt. No. 340; To establish a deficit-neutral reserve fund for legislation that requires financial regulators to conduct rigorous cost-benefit analyses on all proposed rules.</title>
+    </vote>
+    <vote>
+      <vote_number>00078</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 152</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>56</nays>
+      </vote_tally>
+      <title>Portman Amdt. No. 152; To provide reconciliation instructions to reduce the deficit by $63,860,000,000 for the period of fiscal years 2014 through 2023.</title>
+    </vote>
+    <vote>
+      <vote_number>00077</vote_number>
+      <vote_date>23-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 614</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>56</nays>
+      </vote_tally>
+      <title>Sessions Amdt. No. 614; To establish a deficit-neutral reserve fund to achieve savings by prohibiting illegal immigrants or illegal immigrants granted legal status from qualifying for federally subsidized health care.</title>
+    </vote>
+    <vote>
+      <vote_number>00076</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 359</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>47</yeas>
+        <nays>52</nays>
+      </vote_tally>
+      <title>Inhofe Amdt. No. 359; To reduce spending and decrease the risk of drastic energy price increases by prohibiting further greenhouse gas regulations for the purposes of addressing climate change.</title>
+    </vote>
+    <vote>
+      <vote_number>00075</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 597</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>56</nays>
+      </vote_tally>
+      <title>Scott Amdt. No. 597; To establish a deficit-neutral reserve fund relating to the prohibition of taxpayer dollars and resources being used to automatically deduct union dues from the pay of Federal employees.</title>
+    </vote>
+    <vote>
+      <vote_number>00074</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 213</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Johnson (WI) Amdt. No. 213; To force Congress to ensure the solvency of the Social Security and Medicare programs.</title>
+    </vote>
+    <vote>
+      <vote_number>00073</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 373</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Lee Amdt. No. 373; To provide a point of order against budgets spending more on net interest payments on the debt than on national defense, and to ensure the United States government funds its military at higher levels than the militaries of foreign holders of its debt.</title>
+    </vote>
+    <vote>
+      <vote_number>00072</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 514</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Coats Amdt. No. 514; To establish a deficit-neutral reserve fund to enable prompt action relating to the Presidential exemption for the rule of the Environmental Protection Agency commonly known as the Mercury and Air Toxins Standard for affected electric utility steam generating units that need additional time to install the major emissions control equipment, construct replacement generation, or implement other mitigation measures in order to ensure the reliability of the grid.</title>
+    </vote>
+    <vote>
+      <vote_number>00071</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 535</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Toomey Amdt. No. 535; To repeal the tax increase on catastrophic medical expenses created by Obamacare.</title>
+    </vote>
+    <vote>
+      <vote_number>00070</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 689</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>99</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Vitter Amdt. No. 689; To end "Too Big To Fail" subsidies or funding advantage for Wall Street mega-banks (over $500 billion in total assets).</title>
+    </vote>
+    <vote>
+      <vote_number>00069</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 263</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>18</yeas>
+        <nays>81</nays>
+      </vote_tally>
+      <title>Paul Amdt. No. 263; In the nature of a substitute.</title>
+    </vote>
+    <vote>
+      <vote_number>00068</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Motion <measure>S.Amdt. 697</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Motion to Waive CBA Re: Burr Amdt. No. 697; To create a point of order against legislation that would raise taxes on veterans, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00067</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 307</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Thune Amdt. No. 307; To establish a deficit-neutral reserve fund to permanently eliminate the Federal estate tax.</title>
+    </vote>
+    <vote>
+      <vote_number>00066</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 693</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>80</yeas>
+        <nays>19</nays>
+      </vote_tally>
+      <title>Warner Amdt. No. 693; To repeal or reduce the estate tax, but only if done in a fiscally responsible way.</title>
+    </vote>
+    <vote>
+      <vote_number>00065</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 138</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>31</nays>
+      </vote_tally>
+      <title>Isakson Amdt. No. 138; To establish a deficit-neutral reserve fund relating to establishing a biennial budget and appropriations process.</title>
+    </vote>
+    <vote>
+      <vote_number>00064</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Motion <measure>S.Amdt. 292</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>48</yeas>
+        <nays>51</nays>
+      </vote_tally>
+      <title>Motion to Waive CBA Re: Rubio Amdt. No. 292; To express the sense of the Senate to enact Child Interstate Abortion Notification Act.</title>
+    </vote>
+    <vote>
+      <vote_number>00063</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 515</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>39</yeas>
+        <nays>60</nays>
+      </vote_tally>
+      <title>Alexander Amdt. No. 515; To establish a deficit-neutral reserve fund related to the education of low-income children, which may include allowing funding under the Elementary and Secondary Education Act of 1965 to follow children from low-income families to the school children attend.</title>
+    </vote>
+    <vote>
+      <vote_number>00062</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 656</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>75</yeas>
+        <nays>24</nays>
+      </vote_tally>
+      <title>Enzi Amdt. No. 656; Of a perfecting nature.</title>
+    </vote>
+    <vote>
+      <vote_number>00061</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 494</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>62</yeas>
+        <nays>37</nays>
+      </vote_tally>
+      <title>Hoeven Amdt. No. 494; To establish a deficit-neutral reserve fund to promote investment and job growth in United States manufacturing, oil and gas production, and refining sectors through the construction of the Keystone XL Pipeline.</title>
+    </vote>
+    <vote>
+      <vote_number>00060</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 622</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>33</yeas>
+        <nays>66</nays>
+      </vote_tally>
+      <title>Boxer Amdt. No. 622; To establish a deficit-neutral reserve fund relating to protecting the interests of the United States in making a decision relating to the Keystone XL pipeline.</title>
+    </vote>
+    <vote>
+      <vote_number>00059</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Motion <measure>S.Amdt. 261</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Motion to Waive CBA Re: Blunt Amdt. No. 261; To create a point of order against legislation that would create a Federal tax or fee on carbon emissions.</title>
+    </vote>
+    <vote>
+      <vote_number>00058</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 646</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>41</yeas>
+        <nays>58</nays>
+      </vote_tally>
+      <title>Whitehouse Amdt. No. 646; To establish a deficit-neutral reserve fund relating to ensuring that all revenue from a fee on carbon pollution is returned to the American people.</title>
+    </vote>
+    <vote>
+      <vote_number>00057</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 409</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>68</yeas>
+        <nays>31</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 409; To establish a deficit-neutral reserve fund to sunset the provision of Patient Protection and Affordable Care Act that increases payments to hospitals in a few States by reducing payments to the majority of States through the Medicare hospital wage index.</title>
+    </vote>
+    <vote>
+      <vote_number>00056</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 651</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>49</yeas>
+        <nays>50</nays>
+      </vote_tally>
+      <title>Menendez Amdt. No. 651; To call for a comprehensive approach for wage index reform.</title>
+    </vote>
+    <vote>
+      <vote_number>00055</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 630</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>44</yeas>
+        <nays>55</nays>
+      </vote_tally>
+      <title>Fischer Amdt. No. 630; To establish a deficit-neutral reserve fund to protect women's access to health care, including primary and preventive care, in a manner consistent with protecting rights of conscience.</title>
+    </vote>
+    <vote>
+      <vote_number>00054</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 438</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>56</yeas>
+        <nays>43</nays>
+      </vote_tally>
+      <title>Shaheen Amdt. No. 438; To establish a deficit-neutral reserve fund to protect women's access to health care, including primary and preventative health care, family planning and birth control, and employer-provided contraceptive coverage, such as was provided under the Affordable Care Act (PL 111-148).</title>
+    </vote>
+    <vote>
+      <vote_number>00053</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 222</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Crapo Amdt. No. 222; To establish a deficit neutral reserve fund to repeal the tax increases enacted under the Patient Protection and Affordable Care Act that were imposed on low- and middle-income Americans.</title>
+    </vote>
+    <vote>
+      <vote_number>00052</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 439</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>99</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Murray Amdt. No. 439; To amend the deficit-neutral reserve fund for tax relief to provide tax relief for low and middle income families.</title>
+    </vote>
+    <vote>
+      <vote_number>00051</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 202</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Cruz Amdt. No. 202; To establish a deficit-neutral reserve fund to provide for the repeal of the Patient Protection and Affordable Care Act and the Health Care and Education Reconciliation Act of 2010 and to encourage patient-centered reforms to improve health outcomes and reduce health care costs, promoting economic growth.</title>
+    </vote>
+    <vote>
+      <vote_number>00050</vote_number>
+      <vote_date>22-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 158</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Ayotte Amdt. No. 158; To prohibit the consideration of a budget resolution that includes revenue increases while the civilian unemployment rate is above 5.5 percent, the administration's prediction for the unemployment rate without the stimulus.</title>
+    </vote>
+    <vote>
+      <vote_number>00049</vote_number>
+      <vote_date>21-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 156</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Grassley Amdt. No. 156; To protect Americans from a $1,000,000,000,000 tax increase and provide for pro-growth revenue-neutral comprehensive tax reform.</title>
+    </vote>
+    <vote>
+      <vote_number>00048</vote_number>
+      <vote_date>21-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 432</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>96</yeas>
+        <nays>3</nays>
+      </vote_tally>
+      <title>Stabenow Amdt. No. 432; To establish a deficit-neutral reserve fund to protect Medicare's guaranteed benefits and to prohibit replacing guaranteed benefits with the House passed budget plan to turn Medicare into a voucher program.</title>
+    </vote>
+    <vote>
+      <vote_number>00047</vote_number>
+      <vote_date>21-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 297</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>79</yeas>
+        <nays>20</nays>
+      </vote_tally>
+      <title>Hatch Amdt. No. 297; To promote innovation, preserve high-paying jobs, and encourage economic growth for manufacturers of lifesaving medical devices and cutting edge medical therapies.</title>
+    </vote>
+    <vote>
+      <vote_number>00046</vote_number>
+      <vote_date>21-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Amendment <measure>S.Amdt. 433</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>40</yeas>
+        <nays>59</nays>
+      </vote_tally>
+      <title>Murray Amdt. No. 433; To amend the resolution.</title>
+    </vote>
+    <vote>
+      <vote_number>00045</vote_number>
+      <vote_date>21-Mar</vote_date>
+      <issue>S.Con.Res. 8</issue>
+      <question>On the Motion to Recommit</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Sessions Motion to Recommit S.Con.Res. 8 to the Committee on the Budget; An original concurrent resolution setting forth the congressional budget for the United States Government for fiscal year 2014, revising the appropriate budgetary levels for fiscal year 2013, and setting forth the appropriate budgetary levels for fiscal years 2015 through 2023.</title>
+    </vote>
+    <vote>
+      <vote_number>00044</vote_number>
+      <vote_date>20-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>73</yeas>
+        <nays>26</nays>
+      </vote_tally>
+      <title>H.R. 933 As Amended; "An Act making consolidated appropriations and further continuing appropriations for the fiscal year ending September 30, 2013."</title>
+    </vote>
+    <vote>
+      <vote_number>00043</vote_number>
+      <vote_date>20-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>63</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on H.R. 933; "An Act making consolidated appropriations and further continuing appropriations for the fiscal year ending September 30, 2013."</title>
+    </vote>
+    <vote>
+      <vote_number>00042</vote_number>
+      <vote_date>20-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 26</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>70</yeas>
+        <nays>29</nays>
+      </vote_tally>
+      <title>Mikulski Amdt. No. 26 As Modified, As Amended; In the nature of a substitute.</title>
+    </vote>
+    <vote>
+      <vote_number>00041</vote_number>
+      <vote_date>20-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 115</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>40</yeas>
+        <nays>59</nays>
+      </vote_tally>
+      <title>Toomey Amdt. No. 115 As Modified; To increase by $25,000,000 the amount appropriated for Operation and Maintenance for the Department of Defense for programs, projects, and activities in the continental United States, and to provide an offset.</title>
+    </vote>
+    <vote>
+      <vote_number>00040</vote_number>
+      <vote_date>20-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 93</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 93; To transfer appropriations from the National Heritage Partnership Program to fund the resumption of public tours of the White House and visitor services and maintenance at national parks and monuments.</title>
+    </vote>
+    <vote>
+      <vote_number>00039</vote_number>
+      <vote_date>20-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 69</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>48</yeas>
+        <nays>51</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 69; To prohibit Urban Area Security Initiative grant recipients from funding projects that do not improve homeland security.</title>
+    </vote>
+    <vote>
+      <vote_number>00038</vote_number>
+      <vote_date>18-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Cloture Motion <measure>S.Amdt. 26</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>63</yeas>
+        <nays>35</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Mikulski Amdt. No. 26; In the nature of a substitute.</title>
+    </vote>
+    <vote>
+      <vote_number>00037</vote_number>
+      <vote_date>14-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 66</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>54</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 66; To temporarily freeze the hiring of nonessential Federal employees.</title>
+    </vote>
+    <vote>
+      <vote_number>00036</vote_number>
+      <vote_date>14-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 53</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Harkin Amdt. No. 53; Of a perfecting nature.</title>
+    </vote>
+    <vote>
+      <vote_number>00035</vote_number>
+      <vote_date>13-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 33</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>48</yeas>
+        <nays>50</nays>
+      </vote_tally>
+      <title>Motion to Table McCain Amdt. No. 33; To strike certain authorities relating to the use for grants of funds of the Office of Economic Assistance of the Department of Defense.</title>
+    </vote>
+    <vote>
+      <vote_number>00034</vote_number>
+      <vote_date>13-Mar</vote_date>
+      <issue>H.R. 933</issue>
+      <question>On the Amendment <measure>S.Amdt. 30</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>45</yeas>
+        <nays>52</nays>
+      </vote_tally>
+      <title>Cruz Amdt. No. 30; To prohibit the use of funds to carry out the Patient Protection and Affordable Care Act.</title>
+    </vote>
+    <vote>
+      <vote_number>00033</vote_number>
+      <vote_date>11-Mar</vote_date>
+      <issue>PN7</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>91</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Richard Gary Taranto, of Maryland, to be U.S. Circuit Judge for the Federal Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00032</vote_number>
+      <vote_date>07-Mar</vote_date>
+      <issue>PN48</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>63</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>Confirmation John Owen Brennan, of Virginia, to be Director of the Central Intelligence Agency</title>
+    </vote>
+    <vote>
+      <vote_number>00031</vote_number>
+      <vote_date>07-Mar</vote_date>
+      <issue>PN48</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>81</yeas>
+        <nays>16</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of John Owen Brennan, of Virginia, to be Director of the CIA</title>
+    </vote>
+    <vote>
+      <vote_number>00030</vote_number>
+      <vote_date>06-Mar</vote_date>
+      <issue>PN2</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Caitlin Joan Halligan, of New York, to be U.S. Circuit Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00029</vote_number>
+      <vote_date>05-Mar</vote_date>
+      <issue>S.Res. 64</issue>
+      <question>On the Amendment <measure>S.Amdt. 25</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>44</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Paul Amdt. No. 25; To strike supplemental staff funding available only to a limited number of Senators in a time of sequestration.</title>
+    </vote>
+    <vote>
+      <vote_number>00028</vote_number>
+      <vote_date>04-Mar</vote_date>
+      <issue>PN15</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>91</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Katherine Polk Failla, of New York, to be U.S. District Judge</title>
+    </vote>
+    <vote>
+      <vote_number>00027</vote_number>
+      <vote_date>28-Feb</vote_date>
+      <issue>S. 388</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>51</yeas>
+        <nays>49</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S.388; A bill to appropriately limit sequestration, to eliminate tax loopholes, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00026</vote_number>
+      <vote_date>28-Feb</vote_date>
+      <issue>S. 16</issue>
+      <question>On Cloture on the Motion to Proceed</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>38</yeas>
+        <nays>62</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Motion to Proceed to S.16; A bill to provide for a sequester replacement.</title>
+    </vote>
+    <vote>
+      <vote_number>00025</vote_number>
+      <vote_date>27-Feb</vote_date>
+      <issue>PN40</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>71</yeas>
+        <nays>26</nays>
+      </vote_tally>
+      <title>Confirmation Jacob J. Lew, of New York, to be Secretary of the Treasury</title>
+    </vote>
+    <vote>
+      <vote_number>00024</vote_number>
+      <vote_date>26-Feb</vote_date>
+      <issue>PN34</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>58</yeas>
+        <nays>41</nays>
+      </vote_tally>
+      <title>Confirmation Charles Timothy Hagel, of Nebraska, to be Secretary of Defense</title>
+    </vote>
+    <vote>
+      <vote_number>00023</vote_number>
+      <vote_date>26-Feb</vote_date>
+      <issue>PN34</issue>
+      <question>On the Cloture Motion</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>71</yeas>
+        <nays>27</nays>
+      </vote_tally>
+      <title>Upon Reconsideration Motion to Invoke Cloture on the Nomination of Charles T. Hagel, of Nebraska, to be Secretary of Defense</title>
+    </vote>
+    <vote>
+      <vote_number>00022</vote_number>
+      <vote_date>25-Feb</vote_date>
+      <issue>PN1</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>93</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Confirmation Robert E. Bacharach, of Oklahoma, to be U.S. Circuit Judge for the Tenth District</title>
+    </vote>
+    <vote>
+      <vote_number>00021</vote_number>
+      <vote_date>14-Feb</vote_date>
+      <issue>PN34</issue>
+      <question>On the Cloture Motion</question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>58</yeas>
+        <nays>40</nays>
+      </vote_tally>
+      <title>Motion to Invoke Cloture on the Nomination of Charles Timothy Hagel, of Nebraska, to be Secretary of Defense</title>
+    </vote>
+    <vote>
+      <vote_number>00020</vote_number>
+      <vote_date>13-Feb</vote_date>
+      <issue>PN3</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>88</yeas>
+        <nays>12</nays>
+      </vote_tally>
+      <title>Confirmation William J. Kayatta, Jr., of Maine, to be United States Circuit Judge for the First Circuit</title>
+    </vote>
+    <vote>
+      <vote_number>00019</vote_number>
+      <vote_date>12-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>78</yeas>
+        <nays>22</nays>
+      </vote_tally>
+      <title>S. 47 As Amended; A bill to reauthorize the Violence Against Women Act of 1994.</title>
+    </vote>
+    <vote>
+      <vote_number>00018</vote_number>
+      <vote_date>12-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Amendment <measure>S.Amdt. 16</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>43</yeas>
+        <nays>57</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 16; To amend the requirements for speedy notice to victims and to require a report to Congress.</title>
+    </vote>
+    <vote>
+      <vote_number>00017</vote_number>
+      <vote_date>12-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Amendment <measure>S.Amdt. 15</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>46</yeas>
+        <nays>53</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 15; To more quickly resolve rape cases and reduce the deficit by consolidating unnecessary duplication within the Department of Justice.</title>
+    </vote>
+    <vote>
+      <vote_number>00016</vote_number>
+      <vote_date>12-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Amendment <measure>S.Amdt. 10</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>100</yeas>
+        <nays>0</nays>
+      </vote_tally>
+      <title>Portman Amdt. No. 10; To clarify that child victims of sex trafficking are eligible to receive assistance under grants provided to enhance the safety of youth and children.</title>
+    </vote>
+    <vote>
+      <vote_number>00015</vote_number>
+      <vote_date>12-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Amendment <measure>S.Amdt. 21</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>93</yeas>
+        <nays>5</nays>
+      </vote_tally>
+      <title>Leahy Amdt. No. 21 as Modified; To authorize appropriations for fiscal years 2014 through 2017 for the Trafficking Victims Protection Act of 2000, to enhance measures to combat trafficking in persons, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00014</vote_number>
+      <vote_date>11-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Amendment <measure>S.Amdt. 13</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>31</yeas>
+        <nays>59</nays>
+      </vote_tally>
+      <title>Coburn Amdt. No. 13; To reaffirm the inalienable rights of every American citizen guaranteed by the Constitution of the United States.</title>
+    </vote>
+    <vote>
+      <vote_number>00013</vote_number>
+      <vote_date>07-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Amendment <measure>S.Amdt. 14</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>34</yeas>
+        <nays>65</nays>
+      </vote_tally>
+      <title>Grassley Amdt. No. 14; In the nature of a substitute.</title>
+    </vote>
+    <vote>
+      <vote_number>00012</vote_number>
+      <vote_date>04-Feb</vote_date>
+      <issue>S. 47</issue>
+      <question>On the Motion to Proceed</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>85</yeas>
+        <nays>8</nays>
+      </vote_tally>
+      <title>Motion to Proceed to Consider S. 47; A bill to reauthorize the Violence Against Women Act of 1994.</title>
+    </vote>
+    <vote>
+      <vote_number>00011</vote_number>
+      <vote_date>31-Jan</vote_date>
+      <issue>H.R. 325</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>64</yeas>
+        <nays>34</nays>
+      </vote_tally>
+      <title>H.R. 325; A bill to ensure the complete and timely payment of the obligations of the United States Government until May 19, 2013, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00010</vote_number>
+      <vote_date>31-Jan</vote_date>
+      <issue>H.R. 325</issue>
+      <question>On the Motion to Table</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Motion to Table Vitter Motion to Commit H.R. 325 to the Committee on Finance; A bill to ensure the complete and timely payment of the obligations of the United States Government until May 19, 2013, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00009</vote_number>
+      <vote_date>31-Jan</vote_date>
+      <issue>H.R. 325</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 9</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>79</yeas>
+        <nays>19</nays>
+      </vote_tally>
+      <title>Motion to Table Paul Amdt. No. 9; To prohibit the sale, lease, transfer, retransfer, or delivery of F-16 aircraft, M1 tanks, or certain other defense articles or services to the Government of Egypt.</title>
+    </vote>
+    <vote>
+      <vote_number>00008</vote_number>
+      <vote_date>31-Jan</vote_date>
+      <issue>H.R. 325</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 8</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>53</yeas>
+        <nays>45</nays>
+      </vote_tally>
+      <title>Motion to Table Toomey Amdt. No. 8; To protect Social Security benefits and military pay and require that the United States Government prioritize all obligations on the debt held by the public in the event that the debt limit is reached.</title>
+    </vote>
+    <vote>
+      <vote_number>00007</vote_number>
+      <vote_date>31-Jan</vote_date>
+      <issue>H.R. 325</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 7</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>52</yeas>
+        <nays>46</nays>
+      </vote_tally>
+      <title>Motion to Table Portman Amdt. No. 7; To amend title 31, United States Code, to provide for automatic continuing resolutions.</title>
+    </vote>
+    <vote>
+      <vote_number>00006</vote_number>
+      <vote_date>31-Jan</vote_date>
+      <issue>H.R. 325</issue>
+      <question>On the Motion to Table <measure>S.Amdt. 6</measure></question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>54</yeas>
+        <nays>44</nays>
+      </vote_tally>
+      <title>Motion to Table Portman Amdt. No. 6; To require that any debt limit increase be balanced by equal spending cuts over the next decade.</title>
+    </vote>
+    <vote>
+      <vote_number>00005</vote_number>
+      <vote_date>29-Jan</vote_date>
+      <issue>PN42</issue>
+      <question>On the Nomination</question>
+      <result>Confirmed</result>
+      <vote_tally>
+        <yeas>94</yeas>
+        <nays>3</nays>
+      </vote_tally>
+      <title>Confirmation John Forbes Kerry, of Massachusetts, to be Secretary of State</title>
+    </vote>
+    <vote>
+      <vote_number>00004</vote_number>
+      <vote_date>28-Jan</vote_date>
+      <issue>H.R. 152</issue>
+      <question>On Passage of the Bill</question>
+      <result>Passed</result>
+      <vote_tally>
+        <yeas>62</yeas>
+        <nays>36</nays>
+      </vote_tally>
+      <title>H.R. 152; Making supplemental appropriations for the fiscalyear ending September 30, 2013, to improve andstreamline disaster assistance for HurricaneSandy, and for other purposes.</title>
+    </vote>
+    <vote>
+      <vote_number>00003</vote_number>
+      <vote_date>28-Jan</vote_date>
+      <issue>H.R. 152</issue>
+      <question>On the Amendment <measure>S.Amdt. 4</measure></question>
+      <result>Rejected</result>
+      <vote_tally>
+        <yeas>35</yeas>
+        <nays>62</nays>
+      </vote_tally>
+      <title>Lee Amdt. No. 4; To offset the cost of the bill with rescissions and discretionary cap reductions.</title>
+    </vote>
+    <vote>
+      <vote_number>00002</vote_number>
+      <vote_date>24-Jan</vote_date>
+      <issue>S.Res. 16</issue>
+      <question>On the Resolution</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>86</yeas>
+        <nays>9</nays>
+      </vote_tally>
+      <title>S. Res. 16; A resolution amending the Standing Rules of the Senate.</title>
+    </vote>
+    <vote>
+      <vote_number>00001</vote_number>
+      <vote_date>24-Jan</vote_date>
+      <issue>S.Res. 15</issue>
+      <question>On the Resolution</question>
+      <result>Agreed to</result>
+      <vote_tally>
+        <yeas>78</yeas>
+        <nays>16</nays>
+      </vote_tally>
+      <title>S. Res. 15; A resolution to improve procedures for the consideration of legislation and nominations in the Senate.</title>
+    </vote>
+  </votes>
+</vote_summary>

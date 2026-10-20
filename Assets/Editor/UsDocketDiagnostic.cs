@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using PoliSim.Data;
 using PoliSim.Elections;
 using PoliSim.Persistence;
@@ -24,10 +25,13 @@ namespace PoliSim.EditorTools
     /// in the USA alone (`UsVeto.Applies`) - so NO POLISH PATH REACHES THE DOCKET YET (Poland has no player-president until SP-7b);</item>
     /// <item>(c) a planted game-elected Trump, the player REP - the player-president: three REP tax-programme bills and a REP rates budget (its appropriation
     /// and its reconciliation) pass both chambers on one day and are HELD on his docket, nothing applied; unanswered, a bill is still held on its last day
-    /// and is LAW THE DAY AFTER (a Sunday inside the span); signed, it is law the day after the answer; vetoed, the veto goes to the override - the House
-    /// sustains it at two thirds of the passage's sides, the bill falls and his own party's day is lost; the budget's acts, unanswered, apply once at the
-    /// period's end and fund the government; the verbs refuse a second answer and a bill not on the docket; and an answer given on the eve of a change of
-    /// presidency stands - signed by the player-president, law the next day under a successor whose rule (a) would veto it;</item>
+    /// and is LAW THE DAY AFTER (a Sunday inside the span); US-21c (Elias's ruling J6 (i)): signed, it is law AT ONCE, on the answer's day, no money moved
+    /// by the answer itself; vetoed, the veto goes to the override at once - the House sustains it at two thirds of the passage's sides, the bill falls and
+    /// his own party's day is lost that day; the budget's acts, unanswered, apply once at the period's end and fund the government; the verbs refuse a second
+    /// answer and a bill not on the docket; and an answer given on the eve of a change of presidency is law that day, before the successor whose rule (a)
+    /// would veto it takes office;</item>
+    /// <item>(f) US-21c (Elias's ruling J6 (ii)): the law's date against a law of record that became law unsigned - P.L. 119-101's slip law (the Office of the
+    /// Federal Register's note) and its BILLSTATUS, held to their SHA-256: presented 29 June 2026, law without signature 11 July 2026, the day the rule gives;</item>
     /// <item>(d) the AI president unchanged: under Trump of record the same bill is signed by rule (a) on the day it passes, nothing held, and the verbs
     /// refuse a player who does not hold the presidency;</item>
     /// <item>(e) the save, cut mid-docket: the held bills, their passages and their presentment day ride it (the format unchanged - additive), and loaded INTO
@@ -46,11 +50,16 @@ namespace PoliSim.EditorTools
         };
         private const string KonstytucjaWords = "Prezydent Rzeczypospolitej podpisuje ustawę w ciągu 21 dni od dnia przedstawienia";
         private const int Seed = 777;
+        /// <summary>US-21c (J6 (ii)): the law of record that became law unsigned - its slip law and its BILLSTATUS (`ElectionsData/usa/raw/unsigned/`).</summary>
+        private const string UnsignedLaw = "ElectionsData/usa/raw/unsigned/govinfo_PLAW-119publ101.htm";
+        private const string UnsignedStatus = "ElectionsData/usa/raw/unsigned/govinfo_BILLSTATUS-119hr6644.xml";
+        /// <summary>[SOURCED] the slip law's note by the Office of the Federal Register, its whitespace closed up.</summary>
+        private const string UnsignedNote = "having been presented to the President of the United States on Monday, June 29, 2026, and not having been returned by him to the House of Congress in which it originated within the time prescribed by the Constitution of the United States, has become law without his signature on July 11, 2026.";
 
         public static void Run()
         {
             CheckExit.ArmLogFold();
-            var sb = new StringBuilder("=== UsDocketDiagnostic (PS-6 US-21b): the player-president's docket - the ten days, Sundays excepted ===\n");
+            var sb = new StringBuilder("=== UsDocketDiagnostic (PS-6 US-21b, US-21c): the player-president's docket - the ten days, Sundays excepted; an answer acts at once ===\n");
             int failures = 0;
             void Check(bool ok, string what) { if (!ok) { failures++; } sb.Append(ok ? "    ok        " : "    FAIL      ").Append(what).Append('\n'); }
             var hosts = new List<GameObject>();
@@ -63,6 +72,19 @@ namespace PoliSim.EditorTools
                     F("(a) Art. I §7 cl. 2 (archives_constitution_transcript.html) held to its SHA-256, holding \"{0}\" - the adjournment clause is the pocket veto, NOT MODELLED (out of scope by the ruling)", string.Join("\" ... \"", ConstitutionWords)));
                 Check(PresidencyDiagnostic.Page(KonstytucjaPage, out string konstytucja) && konstytucja.Contains(KonstytucjaWords),
                     F("(a) Konstytucja Art. 122 ust. 2 (trybunal_konstytucja.html) held to its SHA-256, holding \"{0}\"", KonstytucjaWords));
+
+                // ================================================================ (f) US-21c (J6 (ii)): the law's date against a law of record that became law unsigned
+                bool slipHeld = PresidencyDiagnostic.Page(UnsignedLaw, out string slip);
+                bool statusHeld = PresidencyDiagnostic.Page(UnsignedStatus, out string status);
+                List<string> actionItems = statusHeld ? status.Split(new[] { "<item>" }, StringSplitOptions.None).ToList() : new List<string>();
+                bool presentedOfRecord = actionItems.Any(i => i.Contains("<actionDate>2026-06-29</actionDate>") && i.Contains("Presented to President."));
+                bool lawOfRecord = actionItems.Any(i => i.Contains("<actionDate>2026-07-11</actionDate>") && i.Contains("Became Public Law No: 119-101."));
+                DateTime unsignedPresented = new DateTime(2026, 6, 29), unsignedLaw = new DateTime(2026, 7, 11);
+                Check(slipHeld && Regex.Replace(slip, "\\s+", " ").Contains(UnsignedNote) && statusHeld && presentedOfRecord && lawOfRecord
+                      && PresidentialDocket.LastDay(CountryId.USA, unsignedPresented) == new DateTime(2026, 7, 10) && PresidentialDocket.LawDay(CountryId.USA, unsignedPresented) == unsignedLaw
+                      && SimulationManager.DocketLawDay(CountryId.USA, new DocketEntry { PresentedOn = unsignedPresented }) == unsignedLaw,
+                    F("(f) J6 (ii), the law's date SOURCED: P.L. 119-101 (H.R. 6644), its slip law held to its SHA-256 - \"{0}\" - and its BILLSTATUS, \"Presented to President.\" on 2026-06-29 and \"Became Public Law No: 119-101.\" on 2026-07-11, each an action item of its own; the rule gives the last day {1} (Tue 30 Jun day 1, Sunday 5 Jul not counted, Fri 10 Jul day 10) and the law day {2} - THE RECORD'S DATE",
+                        UnsignedNote, Day(PresidentialDocket.LastDay(CountryId.USA, unsignedPresented)), Day(PresidentialDocket.LawDay(CountryId.USA, unsignedPresented))));
 
                 // ================================================================ (b) the period's arithmetic, DERIVED by hand
                 var cases = new (CountryId Country, DateTime Presented, DateTime Last, string Why)[]
@@ -122,27 +144,34 @@ namespace PoliSim.EditorTools
                             Step(s, w, new DateTime(2025, 2, 25));
                             string json = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s, w, CountryId.USA, null));
 
-                            // the verbs: sign one, veto one, on 2025-02-26
+                            // the verbs: sign one, veto one, on 2025-02-26, between that day's step and the next - US-21c (J6 (i)): each acts at once
                             Step(s, w, AnswerDay);
                             DivisionRecord signedPassage = PassageOf(s, signed), vetoedPassage = PassageOf(s, vetoed);
-                            bool signs = s.SignDocketBill(CountryId.USA, signedPassage, out string signWhy);
-                            bool vetoes = s.VetoDocketBill(CountryId.USA, vetoedPassage, out string vetoWhy);
-                            bool again = s.SignDocketBill(CountryId.USA, signedPassage, out string againWhy);
-                            bool stranger = s.SignDocketBill(CountryId.USA, new DivisionRecord { Title = "not on the docket" }, out string strangerWhy);
-                            Check(signs && vetoes && !again && againWhy == "already answered" && !stranger && strangerWhy == "that bill is not on your docket" && Implemented(u, signed) && Implemented(u, vetoed),
-                                F("(c) on {0} the player-president signs \"{1}\" and vetoes \"{2}\" through the manager's verbs ({3}; {4}) - nothing acted on until the bills' next day step; a second answer is refused (\"{5}\"), and a bill not on the docket (\"{6}\")",
-                                    Day(AnswerDay), signedPassage?.Title, vetoedPassage?.Title, signWhy ?? "accepted", vetoWhy ?? "accepted", againWhy, strangerWhy));
                             int seen = Last(u);
                             u.BillLostOn = DateTime.MinValue;
-                            Step(s, w, AnswerDay.AddDays(1));
+                            float debtBefore = u.State.GovernmentDebt, outputBefore = u.State.NominalGdp;
+                            bool signs = s.SignDocketBill(CountryId.USA, signedPassage, out string signWhy);
+                            bool signedAtOnce = !Implemented(u, signed) && PassageOf(s, signed) == null;
+                            bool vetoes = s.VetoDocketBill(CountryId.USA, vetoedPassage, out string vetoWhy);
+                            bool noMoneyMoved = u.State.GovernmentDebt == debtBefore && u.State.NominalGdp == outputBefore;
                             List<DivisionRecord> onAnswer = u.Divisions.Entries.Where(r => r.Number > seen).ToList();
                             DivisionRecord sustained = onAnswer.FirstOrDefault(r => r.Title.StartsWith("Vetoed by the President (you, ", StringComparison.Ordinal));
-                            Check(!Implemented(u, signed) && !onAnswer.Any(r => r.Title.StartsWith("Vetoed", StringComparison.Ordinal) && r.Title.Contains(": Remove " + signed + " - ")) && PassageOf(s, signed) == null,
-                                F("(c) SIGNED: on {0}, the day after the answer, \"Remove {1}\" is law - the tax no longer levied, the bill out of its slot, no vote on a veto written", Day(AnswerDay.AddDays(1)), signed));
+                            bool again = s.SignDocketBill(CountryId.USA, signedPassage, out string againWhy);
+                            bool stranger = s.SignDocketBill(CountryId.USA, new DivisionRecord { Title = "not on the docket" }, out string strangerWhy);
+                            Check(signs && vetoes && !again && againWhy == "that bill is not on your docket" && !stranger && strangerWhy == "that bill is not on your docket" && s.GetDocket(CountryId.USA).Count == 3,
+                                F("(c) on {0} the player-president signs \"{1}\" and vetoes \"{2}\" through the manager's verbs ({3}; {4}); a second answer is refused - the bill is no longer on the docket (\"{5}\") - and so is a bill never on it (\"{6}\"); the unanswered bill and the budget's two acts still held",
+                                    Day(AnswerDay), signedPassage?.Title, vetoedPassage?.Title, signWhy ?? "accepted", vetoWhy ?? "accepted", againWhy, strangerWhy));
+                            Check(signedAtOnce && noMoneyMoved && !onAnswer.Any(r => r.Title.StartsWith("Vetoed", StringComparison.Ordinal) && r.Title.Contains(": Remove " + signed + " - ")),
+                                F("(c) SIGNED, AT ONCE (J6 (i)): on {0}, the answer's day, \"Remove {1}\" is law the moment it is signed - the tax no longer levied, the bill out of its slot, no vote on a veto written; the answer moves no money itself (the debt {2} and nominal output {3} bit for bit as before it), so the law's money flows from the next day step, as every law's does",
+                                    Day(AnswerDay), signed, Num(u.State.GovernmentDebt), Num(u.State.NominalGdp)));
                             Check(sustained != null && !sustained.Passed && sustained.Required > 0 && !sustained.Cloture && sustained.Chamber == Congress.House && sustained.Title.Contains(": Remove " + vetoed + " - ") && sustained.Title.Contains("the veto stands")
-                                  && Implemented(u, vetoed) && PassageOf(s, vetoed) == null && u.BillLostOn == AnswerDay.AddDays(1),
-                                F("(c) VETOED: on {0} the veto goes to the override, the chamber the bill began in first - \"{1}\"; the bill falls (the tax still levied), and as his own party's bill the day is the government's loss (Congress.RecordLost)",
-                                    Day(AnswerDay.AddDays(1)), sustained?.Title));
+                                  && sustained.Date == AnswerDay && Implemented(u, vetoed) && PassageOf(s, vetoed) == null && u.BillLostOn == AnswerDay,
+                                F("(c) VETOED, AT ONCE (J6 (i)): on {0}, the answer's day, the veto goes to the override, the chamber the bill began in first - \"{1}\"; the bill falls (the tax still levied), and as his own party's bill the day is the government's loss (Congress.RecordLost)",
+                                    Day(AnswerDay), sustained?.Title));
+                            int afterAnswers = Last(u);
+                            Step(s, w, AnswerDay.AddDays(1));
+                            Check(!u.Divisions.Entries.Where(r => r.Number > afterAnswers).Any(r => r.Title.Contains(": Remove " + signed + " - ") || r.Title.Contains(": Remove " + vetoed + " - ")) && !Implemented(u, signed) && Implemented(u, vetoed),
+                                F("(c) the next day step, {0}, acts on neither again - nothing written for either bill", Day(AnswerDay.AddDays(1))));
 
                             // unanswered: held on its last day, law the day after
                             Step(s, w, new DateTime(2025, 3, 7));
@@ -154,12 +183,13 @@ namespace PoliSim.EditorTools
                                 F("(c) the budget's acts, unanswered: held through 2025-03-07, both law on 2025-03-08 and applied once - {0} from {1} to {2}; the appropriation funds the government through {3}; the slot empty",
                                     rateLine.Type, Num(rateWas), Num(rateLine.Rate), Day(u.AppropriatedThrough)));
 
-                            // the review of 0c669fe6, M1: an answer given on the eve of a change of presidency stands - presented as of the day it was given
+                            // the review of 0c669fe6, M1: an answer given on the eve of a change of presidency stands - US-21c (J6 (i)): law that very day, before the oath
                             bool reIntroduced = s.IntroduceTaxProgramBill(CountryId.USA, vetoed, false);
                             DateTime evePresented = new DateTime(2025, 3, 8).AddDays(ParliamentSystem.BillDurationDays), eve = evePresented.AddDays(1), oath = eve.AddDays(1);
                             Step(s, w, eve);
                             DivisionRecord evePassage = PassageOf(s, vetoed);
                             bool signedOnEve = s.SignDocketBill(CountryId.USA, evePassage, out string eveWhy);
+                            bool lawOnEve = !Implemented(u, vetoed) && PassageOf(s, vetoed) == null;
                             var harris = new UsPresidentialElection.Contest { PollingDay = new DateTime(2024, 11, 5), TakesOffice = oath, Winner = "Kamala D. Harris", WinnerParty = "DEM", ElectorsAppointed = 538, Line = "planted (UsDocketDiagnostic, the eve of a change of presidency)" };
                             harris.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Kamala D. Harris", Party = "DEM", Votes = 270 });
                             harris.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Donald J. Trump", Party = "REP", Votes = 268 });
@@ -169,9 +199,9 @@ namespace PoliSim.EditorTools
                             bool successor = Congress.PresidentOn(u, oath, out string successorName, out string successorParty, out bool successorPlayer) && !successorPlayer && successorParty == "DEM";
                             DivisionRecord eveHouse = evePassage?.Chamber == Congress.House ? evePassage : evePassage?.OtherChamber;
                             int demSeats = eveHouse?.Sides.Where(x => x.Abbrev == "DEM").Sum(x => x.Seats) ?? 0, demNays = eveHouse?.Sides.Where(x => x.Abbrev == "DEM" && x.Side < 0).Sum(x => x.Seats) ?? 0;
-                            Check(reIntroduced && evePassage != null && signedOnEve && successor && UsVeto.NamedByA(demSeats, demNays) && !Implemented(u, vetoed) && PassageOf(s, vetoed) == null
+                            Check(reIntroduced && evePassage != null && signedOnEve && lawOnEve && successor && UsVeto.NamedByA(demSeats, demNays) && !Implemented(u, vetoed) && PassageOf(s, vetoed) == null
                                   && !u.Divisions.Entries.Where(r => r.Number > eveSeen).Any(r => r.Title.StartsWith("Vetoed", StringComparison.Ordinal)),
-                                F("(c) AN ANSWER STANDS ACROSS A CHANGE OF PRESIDENCY: \"Remove {0}\" presented {1}, signed {2} by the player-president ({3}); acted on {4}, the day {5} ({6}) takes office - whose rule (a) would veto it ({7} of DEM's {8} House members against) - it is law, no veto written",
+                                F("(c) AN ANSWER STANDS ACROSS A CHANGE OF PRESIDENCY: \"Remove {0}\" presented {1}, signed {2} by the player-president ({3}) - law THAT DAY (J6 (i)), so on {4}, the day {5} ({6}) takes office - whose rule (a) would veto it ({7} of DEM's {8} House members against) - nothing is left to decide and no veto is written",
                                     vetoed, Day(evePresented), Day(eve), eveWhy ?? "accepted", Day(oath), successorName, successorParty, demNays, demSeats));
 
                             // ======================================================== (e) the save, loaded into the game
@@ -229,7 +259,7 @@ namespace PoliSim.EditorTools
                 UsVeto.ResetDrawCalls();
             }
 
-            sb.Append(failures == 0 ? "=== UsDocketDiagnostic: the docket holds - unanswered law after the ten days (Sundays excepted), signed, vetoed to the override, the AI president unchanged, the save mid-docket ===\n"
+            sb.Append(failures == 0 ? "=== UsDocketDiagnostic: the docket holds - unanswered law after the ten days (Sundays excepted) on the date P.L. 119-101 bears, signed and vetoed to the override at once, the AI president unchanged, the save mid-docket ===\n"
                                     : F("=== UsDocketDiagnostic: {0} FAILURE(S) ===\n", failures));
             if (failures == 0) { Debug.Log(sb.ToString()); CheckExit.Finish(0); }
             else { Debug.LogError(sb.ToString()); CheckExit.Finish(1); }

@@ -166,6 +166,51 @@ namespace PoliSim.Simulation
             country.LapseOutputWedge = before - state.GDP;
         }
 
+        // ---------------------------------------------------------------------------------------------------------------------------------------------
+        // PS-6 US-22c (Elias's ruling J7 (iv), 2026-10-19: "Furloughs reach unemployment as BLS counts them (unemployed on temporary layoff, in the household
+        // survey), with the headcount from CBO"). BLS's treatment (`ElectionsData/usa/raw/furlough/`, the box notes of the October 2013 and January 2019
+        // Employment Situation): "Workers who indicate[d] that they were not working during the entire survey reference week and expected to be recalled to
+        // their jobs should be classified ... as unemployed on temporary layoff"; "the reference period is generally the calendar week that includes the 12th
+        // of the month". So a month's unemployment counts the furloughed where a lapse covered that month's reference week whole, and only then - the PUBLISHED
+        // rate (`PublicationSystem`'s closing value for the month), which is what the household survey is; the macro block's unemployment, which Okun, the
+        // Phillips curve and the benefits read, is not touched (the furloughed are paid in full when funding returns, 31 U.S.C. 1341(c)). READINGS, DECLARED:
+        // (i) the reference week is always the Sunday-to-Saturday week holding the 12th (BLS's "generally"); (ii) the lapse's last day, the day its law is
+        // enacted, is one of its days (its count, `UsBudgetProcedure.LapseDays`); (iii) every furloughed worker is counted as BLS's definition classifies him -
+        // both box notes report some recorded instead as employed but absent, a misclassification BLS leaves as recorded, which the game does not reproduce;
+        // (iv) the headcount is CBO's average for the 2025 lapse, the only one it estimates, held for every lapse; (v) the labour force is the model's
+        // (`PotentialOutput.LabourForce`, ages 15 and over, where the household survey's is 16 and over).
+        // ---------------------------------------------------------------------------------------------------------------------------------------------
+
+        /// <summary>[SOURCED] CBO 61823 (`ElectionsData/usa/debt_limit.md`, section 10, the letter's own words): "650,000 employees will be furloughed, on average"
+        /// - in millions of persons.</summary>
+        public const float FurloughedMillions = 0.65f;
+
+        /// <summary>The household survey's reference week for the month <paramref name="day"/> falls in: its Sunday (the calendar week holding the 12th).</summary>
+        public static DateTime ReferenceWeekStart(DateTime day)
+        {
+            var twelfth = new DateTime(day.Year, day.Month, 12);
+            return twelfth.AddDays(-(int)twelfth.DayOfWeek);
+        }
+
+        /// <summary>The funding tick's note, each lapsed day and the day a lapse ends: where the lapse has covered this month's reference week whole (it began on
+        /// or before the week's Sunday and <paramref name="today"/> is the week's Saturday or later), the month is marked (`Country.FurloughCountedMonth`).
+        /// Nothing where no lapse runs.</summary>
+        public static void NoteReferenceWeek(Country country, DateTime today)
+        {
+            if (country.LapseSince == DateTime.MinValue) { return; }
+            DateTime sunday = ReferenceWeekStart(today);
+            if (country.LapseSince.Date > sunday || today.Date < sunday.AddDays(6)) { return; }
+            var month = new DateTime(today.Year, today.Month, 1);
+            if (country.FurloughCountedMonth != month) { country.FurloughCountedMonth = month; }
+        }
+
+        /// <summary>DERIVED: the furloughed as points of the unemployment rate - CBO's headcount over the model's labour force (millions, as `PotentialOutput.LabourForce`).</summary>
+        public static float FurloughPoints(Country country) => 100f * FurloughedMillions / Mathf.Max(PotentialOutput.LabourForce(country), 1f);
+
+        /// <summary>The points a month's published unemployment counts for the furloughed: <see cref="FurloughPoints"/> for the month marked, 0 for every other -
+        /// so a world that never lapses records exactly what it did.</summary>
+        public static float CountedPoints(Country country, DateTime periodStart) => country.FurloughCountedMonth == periodStart ? FurloughPoints(country) : 0f;
+
         /// <summary>The lapse's economics in a page's words.</summary>
         public const string StopWords = "NON-EXCEPTED OUTLAYS STOP AND ARE PAID IN FULL WHEN FUNDING RETURNS · OUTPUT FALLS AND MOSTLY RECOVERS (CBO, 29 OCT 2025)";
     }

@@ -40,10 +40,19 @@ namespace PoliSim.EditorTools
     /// <item>(h) scope: an AI USA votes nothing and is never seeded; the procedures enumerated;</item>
     /// <item>(i) the save: a mid-lapse save round-trips into the game at the current format (42 at US-22b), the lapse's economics with it (US-22b); a save of the format before it is refused;</item>
     /// <item>(j) US-22b (I13 (2)): the withholder's list recomputed from the Senate's saved roll calls, its label, its pooled share and interval, and the chance
-    /// it carries cloture in the 119th;</item>
+    /// it carries cloture in the 119th; US-22c (Elias's ruling J7 (iii)): every lapse of record with lapse-period cloture votes and an identifiable withholder
+    /// joins it - 2013, January 2018 and 2018-2019 beside 2025, recomputed from their own rolls, the excluded votes held to the readings that exclude them, the
+    /// earlier lapses' bounding laws and the Senate's session lists held to their pages - and n is printed;</item>
     /// <item>(k) US-22b (I13 (3)): a governing player who tables no budget does not lapse; the review's L2 - a resolution in the slot on the request day is
-    /// withdrawn and the request is tabled.</item>
+    /// withdrawn and the request is tabled; US-22c (J7): the eve's resolution on a player-president's docket with the horizon as its deadline, answerable on
+    /// the horizon itself and signed unanswered at the next day's budget tick, before its funding tick (no lapse); a save cut on the eve carrying the
+    /// deadline; the eve's resolution vetoed at once on the horizon, overridden on its whole seated base; and (the review's M1) a lapse ended by a docket
+    /// answer between the day steps runs the next day funded - its lapsed flow disarmed with it;</item>
+    /// <item>(l) US-22c (J7 (iv)): furloughs reach the published unemployment as BLS counts them - CBO's headcount in the month whose reference week the lapse
+    /// covered whole, and only there.</item>
     /// </list>
+    /// Since US-22c the runs that need a lapse to run on plant the first index whose draw does not carry cloture (`HoldIndex`): the widened list's index 0 is
+    /// 2013's, which carries.
     /// The random streams are restored after, the epoch by its scope, the draw counters and every host.
     /// </summary>
     public static class UsBudgetProcedureDiagnostic
@@ -79,6 +88,51 @@ namespace PoliSim.EditorTools
         };
         private static readonly string[] DigestOnly = { Lapse + "crs_R48832.2.pdf", Lapse + "house_arrington_61823_quantitative_effects_of_a_shutdown.pdf", Lapse + "wayback_20251029174958_cbo_61823-Shutdown.pdf" };
         private const string Rolls = Lapse + "senate/";
+        /// <summary>US-22c (J7 (iv)): BLS's Employment Situation for October 2013 and January 2019 (`ElectionsData/usa/raw/furlough/`).</summary>
+        private const string Furlough = "ElectionsData/usa/raw/furlough/";
+        /// <summary>[SOURCED] BLS's words in each release (whitespace and the box notes' frames closed up): its classification and its reference week.</summary>
+        private static readonly (string In2013, string In2019)[] FurloughWords =
+        {
+            ("Workers who indicate that they were not working during the entire survey reference week and expected to be recalled to their jobs should be classified in the household survey as unemployed on temporary layoff.",
+             "Workers who indicated that they were not working during the entire survey reference week and expected to be recalled to their jobs should be classified as unemployed on temporary layoff."),
+            ("In the household survey, the reference period is generally the calendar week that includes the 12th of the month.",
+             "In the household survey, the reference period is generally the calendar week that includes the 12th of the month."),
+        };
+        /// <summary>US-22c (J7 (iii)): the earlier lapses' Senate lists, roll calls and bounding laws (`ElectionsData/usa/raw/lapse/earlier/`, its fetch log's table).</summary>
+        private const string Earlier = Lapse + "earlier/";
+        /// <summary>The earlier lapses' counted votes as the fetch log reads them: the roll's identity, its question as the LIS file states it, the withholder and the lapse's first day.</summary>
+        private static readonly (string Identity, string Question, string Withholder, string Lapse)[] EarlierCounted =
+        {
+            ("S|113|2013-10-16|218", "On the Cloture Motion H.R. 2775", "REP", "2013-10-01"),
+            ("S|115|2018-01-22|16", "On the Cloture Motion H.R. 195", "DEM", "2018-01-20"),
+            ("S|116|2019-01-24|9", "On the Cloture Motion S.Amdt. 5 to H.R. 268 (Supplemental Appropriations Act, 2019)", "DEM", "2018-12-22"),
+        };
+        /// <summary>The laws that bound the earlier lapses, each with the words that date it (whitespace closed up).</summary>
+        private static readonly (string Page, string[] Words)[] EarlierLaws =
+        {
+            ("govinfo_PLAW-113publ46.htm", new[] { "considered to have begun on October 1, 2013", "Approved October 17, 2013." }),
+            ("govinfo_PLAW-115publ96.htm", new[] { "January 19, 2018", "Approved December 22, 2017." }),
+            ("govinfo_PLAW-115publ120.htm", new[] { "February 8, 2018", "Approved January 22, 2018." }),
+            ("govinfo_PLAW-115publ123.htm", new[] { "Approved February 9, 2018." }),
+            ("govinfo_PLAW-115publ298.htm", new[] { "December 21, 2018", "Approved December 7, 2018." }),
+            ("govinfo_PLAW-116publ5.htm", new[] { "Approved January 25, 2019." }),
+        };
+        /// <summary>Each earlier lapse's window in its session's list, and every cloture vote the list holds in it (number and issue, ascending) as the fetch log reads them.</summary>
+        private static readonly (string Menu, DateTime From, DateTime To, string Clotures)[] EarlierWindows =
+        {
+            ("vote_menu_101_2.xml", new DateTime(1990, 10, 1), new DateTime(1990, 10, 11), "none"),
+            ("vote_menu_104_1.xml", new DateTime(1995, 11, 1), new DateTime(1995, 12, 31), "none"),
+            ("vote_menu_104_2.xml", new DateTime(1996, 1, 1), new DateTime(1996, 1, 31), "none"),
+            ("vote_menu_113_1.xml", new DateTime(2013, 10, 1), new DateTime(2013, 10, 16), "216 S. 1569, 218 H.R. 2775"),
+            ("vote_menu_115_2.xml", new DateTime(2018, 1, 20), new DateTime(2018, 1, 22), "16 H.R. 195"),
+            ("vote_menu_115_2.xml", new DateTime(2018, 2, 9), new DateTime(2018, 2, 9), "30 H.R. 1892"),
+            ("vote_menu_115_2.xml", new DateTime(2018, 12, 22), new DateTime(2018, 12, 31), "none"),
+            ("vote_menu_116_1.xml", new DateTime(2019, 1, 1), new DateTime(2019, 1, 25), "1 S. 1, 2 S. 1, 3 S. 1, 6 S.J.Res. 2, 7 S. 109, 9 H.R. 268, 10 H.R. 268"),
+        };
+
+        /// <summary>US-22c: the first index of the withholder's list whose draw does not carry cloture in the 119th Senate (REP 53, DEM 47 withholding) - the
+        /// plant for the runs that need a lapse to run on (before J7 (iii) widened the list, index 0 was one; it is now 2013's, which carries).</summary>
+        private static int HoldIndex => Enumerable.Range(0, UsLapseDraw.List.Count).First(i => 53 + UsVeto.Crossers(47, UsLapseDraw.List[i].Defectors, UsLapseDraw.List[i].Voting) < Congress.ClotureLine(100));
 
         private static readonly DateTime LapseOpens = new DateTime(2025, 10, 1), LapseEnds = new DateTime(2025, 11, 12);
         private const int Seed = 777;
@@ -132,17 +186,66 @@ namespace PoliSim.EditorTools
                         string.Join(" / ", levels.Select(l => l.ToString("+0.000;-0.000", CultureInfo.InvariantCulture))), string.Join(" / ", points.Select(p => p.ToString("+0.00;-0.00", CultureInfo.InvariantCulture))),
                         string.Join(" / ", cboPoints.Select(p => p.ToString("+0.0;-0.0", CultureInfo.InvariantCulture))), -UsLapse.QuarterEffectsBillions.Sum()));
 
-                // ================================================================ (j) US-22b: the withholder's list, recomputed from the Senate's saved roll calls (I13 (2))
-                List<(string Identity, int Defectors, int Voting, string Question)> rolls = SenateRolls(out List<string> unheld);
-                List<(string Identity, int Defectors, int Voting, string Question)> counted = rolls
-                    .Where(r => r.Question == "On Cloture on the Motion to Proceed H.R. 5371" && string.CompareOrdinal(r.Identity.Substring(6, 10), "2025-10-01") >= 0 && string.CompareOrdinal(r.Identity.Substring(6, 10), "2025-11-12") <= 0)
-                    .OrderBy(r => r.Identity.Substring(6, 10), StringComparer.Ordinal).ToList();
-                bool listHeld = unheld.Count == 0 && counted.Count == UsLapseDraw.Record.Length
-                                && counted.Select((r, i) => r.Identity == UsLapseDraw.Record[i].Identity && r.Defectors == UsLapseDraw.Record[i].Defectors && r.Voting == UsLapseDraw.Record[i].Voting).All(x => x);
-                Check(listHeld, F("(j) the withholder's list (`UsLapseDraw.Record`) equals the Senate's own roll calls, each held to its SHA-256: of {0} saved votes on H.R. 5371, the cloture motions to proceed from 2025-10-01 to 2025-11-12, the Democratic caucus's yeas of its yeas and nays - {1}{2}",
-                    rolls.Count, string.Join(", ", counted.Select(r => r.Identity.Substring(6) + " " + r.Defectors + "/" + r.Voting)), unheld.Count == 0 ? string.Empty : " - NOT HELD: " + string.Join(", ", unheld)));
-                Check(rolls.Any(r => r.Question.StartsWith("On the Cloture Motion", StringComparison.Ordinal)) && !counted.Any(r => r.Question.StartsWith("On the Cloture Motion", StringComparison.Ordinal)),
-                    "(j) the cloture votes on the substitute and on the bill that followed the successful attempt are saved and not counted (one observation per attempt, DECLARED)");
+                // ================================================================ (j) US-22b: the withholder's list, recomputed from the Senate's saved roll calls (I13 (2));
+                // US-22c (J7 (iii)): every lapse of record with lapse-period cloture votes and an identifiable withholder - the earlier lapses' rolls, lists and laws
+                List<Roll> rolls = SenateRolls(Rolls, "vote_119_1_*.xml", out List<string> unheld);
+                List<Roll> earlier = SenateRolls(Earlier, "vote_1*_*_*.xml", out List<string> unheldEarlier);
+                var counted = rolls
+                    .Where(r => r.Question == "On Cloture on the Motion to Proceed H.R. 5371" && r.Day >= LapseOpens && r.Day <= LapseEnds)
+                    .Select(r => (r.Identity, Defectors: r.DemYeas, Voting: r.DemYeas + r.DemNays, Withholder: "DEM", Lapse: Day(LapseOpens))).ToList();
+                var earlierMissing = new List<string>();
+                foreach ((string identity, string question, string withholder, string lapse) in EarlierCounted)
+                {
+                    Roll r = earlier.FirstOrDefault(x => x.Identity == identity);
+                    if (r == null || r.Question != question) { earlierMissing.Add(identity); continue; }
+                    counted.Add((r.Identity, withholder == "REP" ? r.RepYeas : r.DemYeas, withholder == "REP" ? r.RepYeas + r.RepNays : r.DemYeas + r.DemNays, withholder, lapse));
+                }
+                counted = counted.OrderBy(c => c.Identity.Substring(6, 10), StringComparer.Ordinal).ThenBy(c => c.Identity, StringComparer.Ordinal).ToList();
+                bool listHeld = unheld.Count == 0 && unheldEarlier.Count == 0 && earlierMissing.Count == 0 && counted.Count == UsLapseDraw.Record.Length
+                                && counted.Select((c, i) => c.Identity == UsLapseDraw.Record[i].Identity && c.Defectors == UsLapseDraw.Record[i].Defectors && c.Voting == UsLapseDraw.Record[i].Voting
+                                                            && c.Withholder == UsLapseDraw.Record[i].Withholder && c.Lapse == UsLapseDraw.Record[i].Lapse).All(x => x);
+                Check(listHeld, F("(j) the withholder's list (`UsLapseDraw.Record`) equals the Senate's own roll calls, each held to its SHA-256 ({0} saved votes on H.R. 5371, {1} from the earlier lapses): the withholding caucus's yeas of its yeas and nays, by lapse - {2}{3}",
+                    rolls.Count, earlier.Count, string.Join(", ", counted.Select(c => c.Identity.Substring(2) + " " + c.Withholder + " " + c.Defectors + "/" + c.Voting)),
+                    unheld.Count + unheldEarlier.Count + earlierMissing.Count == 0 ? string.Empty : " - NOT HELD OR NOT AS READ: " + string.Join(", ", unheld.Concat(unheldEarlier).Concat(earlierMissing))));
+                Check(rolls.Any(r => r.Question.StartsWith("On the Cloture Motion", StringComparison.Ordinal)) && !counted.Any(c => rolls.Any(r => r.Identity == c.Identity && r.Question.StartsWith("On the Cloture Motion", StringComparison.Ordinal))),
+                    "(j) the 2025 cloture votes on the substitute and on the bill that followed the successful attempt are saved and not counted (one observation per attempt, DECLARED)");
+                Roll debt2013 = earlier.FirstOrDefault(r => r.Identity == "S|113|2013-10-12|216"), eve2018 = earlier.FirstOrDefault(r => r.Identity == "S|115|2018-01-19|14");
+                Roll feb2018 = earlier.FirstOrDefault(r => r.Identity == "S|115|2018-02-09|30"), alt2019 = earlier.FirstOrDefault(r => r.Identity == "S|116|2019-01-24|10");
+                Roll gov2019 = earlier.FirstOrDefault(r => r.Identity == "S|116|2019-01-24|9");
+                bool excludedAsRead = debt2013 != null && debt2013.Question == "On Cloture on the Motion to Proceed S. 1569"
+                                      && eve2018 != null && eve2018.Day < new DateTime(2018, 1, 20) && eve2018.DemNays > eve2018.DemYeas && eve2018.RepYeas > eve2018.RepNays
+                                      && feb2018 != null && feb2018.DemYeas > feb2018.DemNays && feb2018.RepYeas > feb2018.RepNays
+                                      && alt2019 != null && alt2019.DemYeas > alt2019.DemNays && alt2019.RepNays > alt2019.RepYeas
+                                      && gov2019 != null && gov2019.RepYeas > gov2019.RepNays && gov2019.DemNays > gov2019.DemYeas
+                                      && earlier.All(r => counted.Any(c => c.Identity == r.Identity) || r == debt2013 || r == eve2018 || r == feb2018 || r == alt2019);
+                Check(excludedAsRead,
+                    F("(j) J7 (iii)'s readings on the saved rolls (DECLARED): 2013's roll 216 is S. 1569, the debt limit, not a funding measure; 2018's roll 14 ({0} - before the lapse, the day P.L. 115-96's horizon ends) is not counted but names DEM the withholder (its caucus {1} of {2} for, REP {3} of {4}); 9 Feb 2018's roll 30 has NO WITHHOLDER - each caucus's majority voted for it (DEM {5} of {6}, REP {7} of {8}); 2019's roll 10 is the out-party's own alternative (DEM {9} of {10} for, REP {11} of {12}) and is not read, roll 9 the measure of the president's side (REP {13} of {14} for) that DEM withheld",
+                        eve2018 == null ? "unread" : Day(eve2018.Day), eve2018?.DemYeas, eve2018?.DemYeas + eve2018?.DemNays, eve2018?.RepYeas, eve2018?.RepYeas + eve2018?.RepNays,
+                        feb2018?.DemYeas, feb2018?.DemYeas + feb2018?.DemNays, feb2018?.RepYeas, feb2018?.RepYeas + feb2018?.RepNays,
+                        alt2019?.DemYeas, alt2019?.DemYeas + alt2019?.DemNays, alt2019?.RepYeas, alt2019?.RepYeas + alt2019?.RepNays, gov2019?.RepYeas, gov2019?.RepYeas + gov2019?.RepNays));
+                var lawsMissing = new List<string>();
+                foreach ((string page, string[] words) in EarlierLaws)
+                {
+                    if (!PresidencyDiagnostic.Page(Earlier + page, out string lawText) || !words.All(Regex.Replace(lawText, "\\s+", " ").Contains)) { lawsMissing.Add(page); }
+                }
+                Check(lawsMissing.Count == 0,
+                    F("(j) the earlier lapses' bounds, the laws held to their SHA-256 and holding their dates: {0}{1}", string.Join("; ", EarlierLaws.Select(l => l.Page.Replace("govinfo_PLAW-", "P.L. ").Replace(".htm", string.Empty) + " \"" + string.Join("\", \"", l.Words) + "\"")),
+                        lawsMissing.Count == 0 ? string.Empty : " - NOT HELD: " + string.Join(", ", lawsMissing)));
+                var windowsWrong = new List<string>();
+                var windowLines = new List<string>();
+                foreach ((string menu, DateTime from, DateTime to, string expected) in EarlierWindows)
+                {
+                    List<string> clotures = MenuClotures(Earlier + menu, from, to, out bool menuHeld);
+                    string found = clotures.Count == 0 ? "none" : string.Join(", ", clotures);
+                    windowLines.Add(F("{0} to {1}: {2}", Day(from), Day(to), found));
+                    if (!menuHeld || found != expected) { windowsWrong.Add(menu + " " + Day(from) + " (" + (menuHeld ? found : "not held") + ")"); }
+                }
+                Check(windowsWrong.Count == 0,
+                    F("(j) the Senate's own lists, held to their SHA-256 - every cloture vote in each lapse's window (the 1990 and 1995-1996 windows as commonly dated, widened to whole months; their laws not read): {0} - so 1990 and 1995-1996 have no lapse-period cloture vote, 2013's are S. 1569 and H.R. 2775, 2019's on H.R. 268 are rolls 9 and 10 (the rest are S. 1, S.J.Res. 2 and S. 109){1}",
+                        string.Join("; ", windowLines), windowsWrong.Count == 0 ? string.Empty : " - NOT AS READ: " + string.Join(", ", windowsWrong)));
+                Check(UsLapseDraw.Lapses == 4 && UsLapseDraw.RecordSpacingDays == 3,
+                    F("(j) J7 (iii): \"Print n\" - {0}, over {1} lapses (2013, January 2018, 2018-2019, 2025); the lapses before 1989 BILLED (the Senate's LIS record begins with the 101st Congress); the record's spacing within a lapse {2} days, unchanged (2025's alone has more than one vote)",
+                        UsLapseDraw.FittedLabel, UsLapseDraw.Lapses, UsLapseDraw.RecordSpacingDays));
                 (int pooledD, int pooledM) = UsLapseDraw.Pooled();
                 (double low, double high) = UsLapseDraw.Wilson(pooledD, pooledM);
                 int demSeats = 47, repSeats = 53, line = Congress.ClotureLine(demSeats + repSeats);
@@ -226,11 +329,11 @@ namespace PoliSim.EditorTools
                                 cr1.LastOrDefault()?.Title, Day(u1.AppropriatedThrough)));
 
                         // ============================================================ (c) W2: the DEM player withholds against the AI government's budget
-                        // US-22b: run several ways - the withholder's draw planted where it does not carry cloture (index 0), planted where it does (the last index),
+                        // US-22b: run several ways - the withholder's draw planted where it does not carry cloture (`HoldIndex`, US-22c), planted where it does (the last index),
                         // keyed as play draws it, and released mid-lapse and after the eve's fall (the review's M2); a lapse's resolutions on the record's spacing (M1)
                         int spacing = UsLapseDraw.RecordSpacingDays;
                         DateTime released = new DateTime(2025, 11, 11);
-                        W2Run held = RunW2(hosts, 0, released, new DateTime(2026, 10, 2));
+                        W2Run held = RunW2(hosts, HoldIndex, released, new DateTime(2026, 10, 2));
                         Check(held.GovernmentBothChambers,
                             "(c) W2 opened 2025-07-29: the DEM player does not govern; the AI government's budget (Transportation -10 %, planted with its day on 2025-08-19) goes through both chambers - US-18's owed line closed");
                         DivisionRecord appS2 = Find(held.All, "Appropriation: ", Congress.Senate);
@@ -246,17 +349,17 @@ namespace PoliSim.EditorTools
                         List<DateTime> lapseVotes = crSenates.Where(r => r.Date > LapseOpens && r.Date < LapseEnds).Select(r => r.Date).ToList();
                         bool onSpacing = lapseVotes.Count > 0 && lapseVotes[0] == LapseOpens.AddDays(spacing) && lapseVotes.Zip(lapseVotes.Skip(1), (a, b) => (b - a).Days == spacing).All(x => x);
                         Check(held.LapseOpened == LapseOpens && held.Retabled1001 && onSpacing && crSenates.Where(r => r.Date > LapseOpens && r.Date < LapseEnds).All(r => !r.Passed && r.Cloture && !r.Sides.Any(x => x.Defectors))
-                              && held.LapseDraws == lapseVotes.Count && held.LapseIndices.All(j => j == 0),
-                            F("(c) W2 (the draw planted at index 0, {0}): funding lapses on {1}, the day after P.L. 119-4's horizon, and the government tables a resolution that day on the record's spacing, {2} days (DECLARED from the dated votes, the review's M1); still withheld, the resolutions fall at cloture on {3} - {4} votes, DEM's own senators drawn at each, {5} crosser(s), short of the line, each re-tabled the same day",
-                                UsLapseDraw.Record[0].Identity, Day(held.LapseOpened), spacing, string.Join(", ", lapseVotes.Select(Day)), lapseVotes.Count,
-                                UsVeto.Crossers(47, UsLapseDraw.Record[0].Defectors, UsLapseDraw.Record[0].Voting)));
+                              && held.LapseDraws == lapseVotes.Count && held.LapseIndices.All(j => j == HoldIndex),
+                            F("(c) W2 (the draw planted at index {6}, {0}, the first that does not carry cloture): funding lapses on {1}, the day after P.L. 119-4's horizon, and the government tables a resolution that day on the record's spacing, {2} days (DECLARED from the dated votes, the review's M1); still withheld, the resolutions fall at cloture on {3} - {4} votes, DEM's own senators drawn at each, {5} crosser(s), short of the line, each re-tabled the same day",
+                                UsLapseDraw.Record[HoldIndex].Identity, Day(held.LapseOpened), spacing, string.Join(", ", lapseVotes.Select(Day)), lapseVotes.Count,
+                                UsVeto.Crossers(47, UsLapseDraw.Record[HoldIndex].Defectors, UsLapseDraw.Record[HoldIndex].Voting), HoldIndex));
                         DivisionRecord nov12 = crSenates.FirstOrDefault(r => r.Date == LapseEnds);
                         Check(held.Released && nov12 != null && nov12.Passed && nov12.Sides.Count == 0 && held.LapseEnded == LapseEnds && held.EndedDays == 43 && held.FundedAfter == new DateTime(2026, 9, 30) && held.WithheldAfter == null,
                             F("(c) W2: released on 2025-11-11, the resolution before Congress passes both chambers uncontested on 2025-11-12 (\"{0}\") - THE SHUTDOWN ENDS AFTER {1} DAYS, beside the record's 43 (CRS R48832's gap 1 Oct to 12 Nov; P.L. 119-37 of 12 Nov) - by the procedure's arithmetic, not fitted; funded through {2}",
                                 nov12?.Title, held.EndedDays, Day(held.FundedAfter)));
                         Check(held.Charges.Count == 1 + lapseVotes.Count && held.Charges.All(c => c.Contains("-1.50") && c.EndsWith(" marked", StringComparison.Ordinal)),
                             F("(c) W2: every failed resolution is the government's (its own bill, `Congress.GovernmentBears`) - each of the {0} charged the failed vote's cost and its day marked lost while the player withholds (a consequence, stated)", held.Charges.Count));
-                        sb.Append("    printed   W2's resolutions (index 0 planted): ").Append(string.Join(" | ", held.CrSides)).Append('\n');
+                        sb.Append("    printed   W2's resolutions (index " + HoldIndex + " planted): ").Append(string.Join(" | ", held.CrSides)).Append('\n');
                         bool aSigns = held.All.Any(r => r.Passed && r.Chamber == Congress.Senate) && !held.All.Any(v => v.Title.StartsWith("Vetoed", StringComparison.Ordinal));
                         Check(aSigns, "(d) rule (a) never fires on the government's own acts: under Trump of record (an AI president) every act and resolution both chambers sent was signed - the president's party votes for its own government's bills");
 
@@ -298,14 +401,41 @@ namespace PoliSim.EditorTools
                             F("(c) W2 with the draw planted at the last index ({0}): on {1}, the lapse's first vote, DEM draws {2} crosser(s) at cloture and the resolution carries ({3}) - the lapse ends THROUGH ITS DEFECTORS on day {4} (I13 (3)); the stopped outlays paid on {5}",
                                 UsLapseDraw.Record[UsLapseDraw.Record.Length - 1].Identity, Day(firstVote), kLast, Describe(crossedVote), crossed.EndedDays, Day(crossed.PaidOn)));
 
+                        // ============================================================ (l) US-22c (J7 (iv)): furloughs reach unemployment as BLS counts them - W2's held run,
+                        // the lapse 1 Oct to 12 Nov 2025: October's reference week (the week holding the 12th) lies wholly inside it, November's does not
+                        bool page2013 = PresidencyDiagnostic.Page(Furlough + "wayback_empsit_11082013.htm", out string bls2013), page2019 = PresidencyDiagnostic.Page(Furlough + "wayback_empsit_02012019.htm", out string bls2019);
+                        string box2013 = Regex.Replace(bls2013, "[\\s|]+", " "), box2019 = Regex.Replace(bls2019, "[\\s|]+", " ");   // the box notes' frames closed up with the whitespace
+                        bool furloughPages = page2013 && page2019 && FurloughWords.All(w => box2013.Contains(w.In2013) && box2019.Contains(w.In2019));
+                        DateTime october = new DateTime(2025, 10, 1), september = new DateTime(2025, 9, 1), november = new DateTime(2025, 11, 1);
+                        DateTime octWeek = UsLapse.ReferenceWeekStart(october), novWeek = UsLapse.ReferenceWeekStart(november);
+                        string ClosingLine(DateTime month, bool counted, out bool ok)
+                        {
+                            DateTime sampled = month.AddMonths(1).AddDays(-2);   // the closing value is recorded at the start of the month's last day, from the day before
+                            bool has = held.U.Published.PeriodClosingValues.TryGetValue((ClosingStat.Unemployment, month), out float closing);
+                            bool day = held.Jobless.TryGetValue(sampled, out (float Unemployment, float Furloughed) state);
+                            float expected = counted ? state.Unemployment + state.Furloughed : state.Unemployment;
+                            ok = has && day && Math.Abs(closing - expected) < 1e-5f;
+                            return F("{0} closing {1} (the state {2} on {3}{4}){5}", Day(month).Substring(0, 7), has ? Num(closing) : "MISSING", day ? Num(state.Unemployment) : "MISSING", Day(sampled),
+                                counted ? " + " + Num(state.Furloughed) + " furloughed" : string.Empty, ok ? string.Empty : " NOT HELD");
+                        }
+                        string sepLine = ClosingLine(september, false, out bool sepOk), octLine = ClosingLine(october, true, out bool octOk), novLine = ClosingLine(november, false, out bool novOk);
+                        PublishedEntry octPublished = held.U.Published.GetOrCreate(PublishedStat.Unemployment).Entries.FirstOrDefault(e => e.ReferencePeriodStart == october);
+                        held.U.Published.PeriodClosingValues.TryGetValue((ClosingStat.Unemployment, october), out float octClosing);
+                        float octFurloughed = held.Jobless.TryGetValue(new DateTime(2025, 10, 30), out (float Unemployment, float Furloughed) octState) ? octState.Furloughed : float.NaN;
+                        Check(furloughPages && octWeek == new DateTime(2025, 10, 12) && novWeek == new DateTime(2025, 11, 9) && sepOk && octOk && novOk
+                              && octPublished != null && octPublished.Value == octClosing && held.U.FurloughCountedMonth == october && crossed.U.FurloughCountedMonth == DateTime.MinValue,
+                            F("(l) J7 (iv), furloughs AS BLS COUNTS THEM - BLS's box notes held to their SHA-256 (October 2013 and January 2019: \"{0}\"; \"{1}\"): CBO's {2} million furloughed ({3} points of the model's labour force on 2025-10-30) count as unemployed in a month whose reference week the lapse covered whole - October's, {4} to {5}, inside 1 Oct to 12 Nov; November's, {6} to {7}, not (the lapse ends on the 12th). The PUBLISHED rate: {8}; {9}; {10}; October's release ({11}, {12}) carries it, the state's own unemployment untouched. The run whose lapse ends at its first vote (2025-10-04) counts no month",
+                                FurloughWords[0].In2019, FurloughWords[1].In2019, Num(UsLapse.FurloughedMillions), Num(octFurloughed), Day(octWeek), Day(octWeek.AddDays(6)), Day(novWeek), Day(novWeek.AddDays(6)),
+                                sepLine, octLine, novLine, octPublished == null ? "NOT PUBLISHED" : Day(octPublished.PublicationDate), octPublished == null ? "-" : Num(octPublished.Value)));
+
                         // (c) the review's M2: "on release" ends the lapse - released mid-lapse, an uncontested resolution is decided on the next funding tick
                         DateTime midRelease = new DateTime(2025, 10, 20);
-                        W2Run releasedRun = RunW2(hosts, 0, midRelease, midRelease.AddDays(3));
+                        W2Run releasedRun = RunW2(hosts, HoldIndex, midRelease, midRelease.AddDays(3));
                         Check(releasedRun.Released && releasedRun.LapseEnded == midRelease.AddDays(1) && releasedRun.EndedDays == UsBudgetProcedure.LapseDays(LapseOpens, midRelease.AddDays(1)) && releasedRun.FundedAfter == new DateTime(2026, 9, 30)
                               && releasedRun.PendingAtEnd == null && releasedRun.HorizonAtEnd == new DateTime(2026, 9, 30),
                             F("(c) the review's M2: released on {0} with a resolution mid-course before Congress, the resolution is withdrawn and an uncontested one is decided on the next tick - the lapse ENDS ON RELEASE, on {1}, day {2}; nothing left in the slot, funded through {3} once",
                                 Day(midRelease), Day(releasedRun.LapseEnded), releasedRun.EndedDays, Day(releasedRun.HorizonAtEnd)));
-                        W2Run eveReleased = RunW2(hosts, 0, new DateTime(2025, 9, 29), LapseOpens.AddDays(2));
+                        W2Run eveReleased = RunW2(hosts, HoldIndex, new DateTime(2025, 9, 29), LapseOpens.AddDays(2));
                         Check(eveReleased.Released && eveReleased.LapseOpened == DateTime.MinValue && eveReleased.EverLapsed == false && eveReleased.HorizonAtEnd == new DateTime(2026, 9, 30) && eveReleased.Charges.Count == 1,
                             F("(c) the review's M2, before the horizon: the eve's resolution falls on 2025-09-29 (withheld); released that day, an uncontested one is decided on the horizon itself, 2025-09-30, and is law - funding never lapses (funded through {0})",
                                 Day(eveReleased.HorizonAtEnd)));
@@ -327,8 +457,8 @@ namespace PoliSim.EditorTools
                         ((Dictionary<CountryId, BudgetBill>)SlotField.GetValue(s3))[CountryId.USA] = w3Bill;
                         bool held3;
                         string why3;
-                        // the draw planted at index 0, as W2's held run: by the play key (seed 777) cloture carries on 2025-10-10, before the cut
-                        using (UsLapseDraw.PlantIndex(0))
+                        // the draw planted where it does not carry cloture, as W2's held run: the play key (seed 777) may carry it before the cut
+                        using (UsLapseDraw.PlantIndex(HoldIndex))
                         {
                             Step(s3, w3, new DateTime(2025, 9, 23));
                             held3 = s3.WithholdContinuingResolution(CountryId.USA, true, out why3);
@@ -468,27 +598,92 @@ namespace PoliSim.EditorTools
                             F("(k) L2 gone: a withheld resolution planted before Congress during a lapse on 2026-02-01, on its course (the record's spacing) past the request day; on {0} (1105(a)'s first Monday) it is withdrawn and the president's request is tabled in its place (\"the request is tabled on its day whatever is before Congress\") - the government's bill ({1}); the lapse runs on, its flows armed",
                                 Day(requestDay), SimulationManager.DescribeBudgetBill(request)));
 
-                        // (k) US-21b with US-22b: the eve's resolution, the government's own, signed on the day by a player-president (the second review's N1)
-                        (SimulationManager s8, World w8, Country u8) = UsCongressDiagnostic.OpenUsa(hosts, new DateTime(2025, 9, 27), "REP");
-                        var trump8 = new UsPresidentialElection.Contest { PollingDay = new DateTime(2024, 11, 5), TakesOffice = new DateTime(2025, 1, 20), Winner = "Donald J. Trump", WinnerParty = "REP", ElectorsAppointed = 538, Line = "planted (UsBudgetProcedureDiagnostic, k)" };
-                        trump8.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Donald J. Trump", Party = "REP", Votes = 312 });
-                        trump8.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Kamala D. Harris", Party = "DEM", Votes = 226 });
-                        u8.UsPresidentialElections.Add(trump8);
-                        u8.Government = UsPresidentialElection.GovernmentOf(trump8, trump8.TakesOffice);
-                        DateTime eve8 = new DateTime(2025, 9, 29);
-                        bool docketed8 = true, lapsed8 = false;
+                        // (k) US-22c (Elias's ruling J7, replacing the second review's N1): the eve's resolution goes on a player-president's docket with the horizon
+                        // as its deadline, and unanswered by then it is signed
+                        (SimulationManager, World, Country) PlayerPresident(DateTime opens)
+                        {
+                            (SimulationManager sp, World wp, Country up) = UsCongressDiagnostic.OpenUsa(hosts, opens, "REP");
+                            var trumpP = new UsPresidentialElection.Contest { PollingDay = new DateTime(2024, 11, 5), TakesOffice = new DateTime(2025, 1, 20), Winner = "Donald J. Trump", WinnerParty = "REP", ElectorsAppointed = 538, Line = "planted (UsBudgetProcedureDiagnostic, k)" };
+                            trumpP.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Donald J. Trump", Party = "REP", Votes = 312 });
+                            trumpP.Electors.Add(new UsPresidentialElection.Tally { Candidate = "Kamala D. Harris", Party = "DEM", Votes = 226 });
+                            up.UsPresidentialElections.Add(trumpP);
+                            up.Government = UsPresidentialElection.GovernmentOf(trumpP, trumpP.TakesOffice);
+                            return (sp, wp, up);
+                        }
+                        (SimulationManager s8, World w8, Country u8) = PlayerPresident(new DateTime(2025, 9, 27));
+                        DateTime eve8 = new DateTime(2025, 9, 29), horizon8 = new DateTime(2025, 9, 30);
+                        bool docketed8 = false, heldOnHorizonEve = false, heldOnHorizon = false, lapsed8 = false, armed8 = false;
+                        DateTime lastDay8 = DateTime.MinValue, lawDay8 = DateTime.MinValue, fundedOn8 = DateTime.MinValue;
+                        string json8 = null;
                         int seen8 = Last(u8);
                         Step(s8, w8, LapseOpens.AddDays(2), d =>
                         {
                             BudgetBill p8 = s8.GetPendingBudgetBill(CountryId.USA);
-                            if (d == eve8) { docketed8 = p8 != null && p8.Docket != null; }
+                            if (d == eve8)
+                            {
+                                List<SimulationManager.DocketItem> docket8 = s8.GetDocket(CountryId.USA);
+                                docketed8 = p8 != null && p8.ContinuingResolution && p8.Docket != null && p8.Docket.Deadline == horizon8 && docket8.Count == 1;
+                                lastDay8 = docket8.Count == 1 ? docket8[0].LastDay : DateTime.MinValue;
+                                lawDay8 = p8?.Docket != null ? SimulationManager.DocketLawDay(CountryId.USA, p8.Docket) : DateTime.MinValue;
+                                heldOnHorizonEve = u8.AppropriatedThrough == horizon8;
+                                json8 = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s8, w8, CountryId.USA, null));
+                            }
+                            if (d == horizon8) { heldOnHorizon = p8 != null && p8.ContinuingResolution && p8.Docket != null && s8.GetDocket(CountryId.USA).Count == 1 && u8.AppropriatedThrough == horizon8; }
+                            if (fundedOn8 == DateTime.MinValue && u8.AppropriatedThrough == new DateTime(2026, 9, 30)) { fundedOn8 = d; }
                             if (u8.LapseSince != DateTime.MinValue) { lapsed8 = true; }
+                            if (u8.LapseFlowDay != DateTime.MinValue) { armed8 = true; }
                         });
                         List<DivisionRecord> cr8 = u8.Divisions.Entries.Where(r => r.Number > seen8 && r.Title.StartsWith(UsBudgetProcedure.ContinuingResolutionWords, StringComparison.Ordinal)).ToList();
-                        Check(Congress.PresidentOn(u8, eve8, out _, out _, out bool player8) && player8 && !docketed8 && !lapsed8 && cr8.Count == 2 && cr8.All(r => r.Passed && r.Date == eve8)
+                        Check(Congress.PresidentOn(u8, eve8, out _, out _, out bool player8) && player8 && docketed8 && heldOnHorizonEve && heldOnHorizon && lastDay8 == horizon8 && lawDay8 == horizon8.AddDays(1)
+                              && fundedOn8 == horizon8.AddDays(1) && !lapsed8 && !armed8 && u8.LapseDeferredOutlays == 0f && u8.LapseOutputDays == 0
+                              && cr8.Count == 2 && cr8.All(r => r.Passed && r.Date == eve8) && !u8.Divisions.Entries.Any(r => r.Number > seen8 && r.Title.StartsWith("Vetoed", StringComparison.Ordinal))
                               && s8.GetPendingBudgetBill(CountryId.USA) == null && s8.GetDocket(CountryId.USA).Count == 0 && u8.AppropriatedThrough == new DateTime(2026, 9, 30),
-                            F("(k) the second review's N1 (DECLARED, put to Elias): a planted game-elected Trump, the player REP - the eve's resolution passes both chambers uncontested on {0} and, the government's own resolution decided before any lapse, is TAKEN AS SIGNED ON THE DAY by the player-president, never docketed; funded through {1} and NO LAPSE OPENS (nothing withheld means no lapse); resolutions voted while lapsed still meet his docket",
-                                Day(eve8), Day(u8.AppropriatedThrough)));
+                            F("(k) J7, THE EVE'S RESOLUTION DOCKETED (replacing the second review's N1): a planted game-elected Trump, the player REP - the eve's resolution passes both chambers uncontested on {0} and goes ON THE PLAYER-PRESIDENT'S DOCKET with the horizon as its deadline (the last day to answer {1}, still held after that day's step; law on {2}); unanswered, it is SIGNED in the budget tick of {3}, before that day's funding tick - funded through {4}, NO LAPSE OPENS and no lapsed flow is ever armed (nothing withheld means no lapse)",
+                                Day(eve8), Day(lastDay8), Day(lawDay8), Day(fundedOn8), Day(u8.AppropriatedThrough)));
+                        SaveGame cut8 = json8 == null ? null : SaveGameService.Deserialize(json8);
+                        BudgetBill saved8 = cut8 != null && cut8.Sim.PendingBudgetBills.TryGetValue(CountryId.USA, out BudgetBill sb8) ? sb8 : null;
+                        Check(cut8 != null && cut8.SaveVersion == SaveGameService.CurrentSaveVersion && saved8 != null && saved8.ContinuingResolution && saved8.Docket != null && saved8.Docket.Deadline == horizon8 && saved8.Docket.PresentedOn == eve8,
+                            F("(k) a save cut on {0} carries the docketed resolution with its deadline ({1}) at format {2} - `DocketEntry.Deadline` additive, no format step (ruling A)",
+                                Day(eve8), saved8?.Docket == null ? "none" : Day(saved8.Docket.Deadline), cut8?.SaveVersion));
+
+                        // (k) the eve's resolution vetoed at once (J6 (i)) ON THE HORIZON, its last day to answer (the review's M2): uncontested, the override carries it on
+                        // the whole seated base - funded, no lapse (a consequence, stated and asked)
+                        (SimulationManager s9, World w9, Country u9) = PlayerPresident(new DateTime(2025, 9, 27));
+                        Step(s9, w9, horizon8);
+                        BudgetBill eveResolution9 = s9.GetPendingBudgetBill(CountryId.USA);
+                        int seen9 = Last(u9);
+                        bool vetoed9 = eveResolution9?.Docket != null && s9.VetoDocketBill(CountryId.USA, eveResolution9.Docket.Passage, out _);
+                        DivisionRecord override9 = u9.Divisions.Entries.LastOrDefault(r => r.Number > seen9 && r.Title.StartsWith("Vetoed", StringComparison.Ordinal));
+                        bool lapsed9 = false;
+                        Step(s9, w9, LapseOpens.AddDays(2), d => { if (u9.LapseSince != DateTime.MinValue) { lapsed9 = true; } });
+                        Check(vetoed9 && override9 != null && override9.Passed && override9.Date == horizon8 && override9.Sworn == Congress.Sworn(u9.SecondChamberSeats) && !lapsed9 && u9.AppropriatedThrough == new DateTime(2026, 9, 30),
+                            F("(k) the eve's resolution, still on the docket after the horizon's step, VETOED by the player-president on {0} - its last day to answer - goes to the override at once and, uncontested, is OVERRIDDEN ON ITS WHOLE SEATED BASE (US-21's rule) - \"{1}\" - funded through {2}, NO LAPSE: in this build a player-president's veto of the eve's resolution cannot open one, and his own party cannot withhold it (ASKED of Elias with J7's \"a lapse needs the player's veto or a withhold\")",
+                                Day(horizon8), override9?.Title, Day(u9.AppropriatedThrough)));
+
+                        // (k) the review's M1: a lapse ended by a docket answer between the day steps - the next day runs FUNDED. A planted lapse under a player-president
+                        // (the horizon planted at 2025-09-30 in a world opened on 2025-10-01): the government's resolution, tabled on the lapse's first tick on the
+                        // record's spacing, passes uncontested and is held on his docket (the period's rule while lapsed); signed after that day's step
+                        (SimulationManager s10, World w10, Country u10) = PlayerPresident(LapseOpens);
+                        ((HashSet<CountryId>)UsedField.GetValue(s10)).Add(CountryId.USA);   // the arrival window spent (staging)
+                        u10.AppropriatedThrough = new DateTime(2025, 9, 30);   // planted: unfunded from 1 October
+                        for (int i = 0; i < 15; i++)
+                        {
+                            BudgetBill pending10 = s10.GetPendingBudgetBill(CountryId.USA);
+                            if (pending10 != null && pending10.ContinuingResolution && pending10.Docket != null) { break; }
+                            Step(s10, w10, s10.CurrentDate.AddDays(1));
+                        }
+                        BudgetBill held10 = s10.GetPendingBudgetBill(CountryId.USA);
+                        DateTime answerDay10 = s10.CurrentDate.Date, lapse10 = u10.LapseSince;
+                        bool armedBefore10 = u10.LapseFlowDay == answerDay10.AddDays(1);
+                        float owed10 = u10.LapseDeferredOutlays;
+                        bool signed10 = held10?.Docket != null && lapse10 != DateTime.MinValue && s10.SignDocketBill(CountryId.USA, held10.Docket.Passage, out _);
+                        bool endedAtOnce10 = u10.LapseSince == DateTime.MinValue && u10.LapseFlowDay == DateTime.MinValue && u10.AppropriatedThrough == new DateTime(2026, 9, 30);
+                        int outputDays10 = u10.LapseOutputDays;
+                        Step(s10, w10, answerDay10.AddDays(1));
+                        Check(signed10 && armedBefore10 && owed10 > 0f && endedAtOnce10 && outputDays10 == UsBudgetProcedure.LapseDays(lapse10, answerDay10) - 1 && u10.LapseOutputDays == outputDays10
+                              && u10.LapseDeferredOutlays == 0f && !UsLapse.Lapsed(u10, answerDay10.AddDays(1)),
+                            F("(k) the review's M1: a lapse opened {0}, its resolution on the player-president's docket, SIGNED on {1} after that day's step - funding returns at once and the next day's lapsed flow, armed by {1}'s tick, is disarmed with it; {2} runs FUNDED: the {3} deferred is paid in full that day, and the lapse's flow days stay {4} (its {5} counted days less one) - no extra lapsed day",
+                                Day(lapse10), Day(answerDay10), Day(answerDay10.AddDays(1)), Num(owed10), u10.LapseOutputDays, lapse10 == DateTime.MinValue ? -1 : UsBudgetProcedure.LapseDays(lapse10, answerDay10)));
 
                         // ============================================================ (h) scope: an AI USA in a Sweden player's world
                         SimulationRandom.Seed(Seed);
@@ -518,7 +713,7 @@ namespace PoliSim.EditorTools
                 UsLapseDraw.ResetDrawCalls();
             }
 
-            sb.Append(failures == 0 ? "=== UsBudgetProcedureDiagnostic: the US budget procedure holds - the acts, the continuing resolution, the lapse and its 43 days, its book and output by CBO 61823, the withholder's draw, the cadence, the vetoes, N1 ===\n"
+            sb.Append(failures == 0 ? "=== UsBudgetProcedureDiagnostic: the US budget procedure holds - the acts, the continuing resolution, the lapse and its 43 days, its book and output by CBO 61823, the furloughed as BLS counts them, the withholder's draw over every lapse of record, the cadence, the eve's resolution on the docket, the vetoes, N1 ===\n"
                                     : F("=== UsBudgetProcedureDiagnostic: {0} FAILURE(S) ===\n", failures));
             if (failures == 0) { Debug.Log(sb.ToString()); CheckExit.Finish(0); }
             else { Debug.LogError(sb.ToString()); CheckExit.Finish(1); }
@@ -604,6 +799,8 @@ namespace PoliSim.EditorTools
             public BudgetBill PendingAtEnd;
             /// <summary>Each day's real GDP as the day left it and the overlay on it - the state the next day's closing value records.</summary>
             public Dictionary<DateTime, (float Gdp, float Wedge)> Days = new Dictionary<DateTime, (float Gdp, float Wedge)>();
+            /// <summary>US-22c: each day's unemployment as the day left it and the furloughed's points then - the state the next day's closing value records.</summary>
+            public Dictionary<DateTime, (float Unemployment, float Furloughed)> Jobless = new Dictionary<DateTime, (float Unemployment, float Furloughed)>();
         }
 
         /// <summary>W2 staged as the US-22 record staged it - opened 2025-07-29 with the DEM player in opposition, the arrival window spent, the government's
@@ -659,6 +856,7 @@ namespace PoliSim.EditorTools
                     double wedge = u2.LapseOutputWedge;
                     run.TotalShare += wedge / ((double)u2.State.GDP + wedge);
                     run.Days[d] = (u2.State.GDP, u2.LapseOutputWedge);
+                    run.Jobless[d] = (u2.State.Unemployment, UsLapse.FurloughPoints(u2));   // US-22c (J7 (iv))
                     lapseWas = u2.LapseSince;   // read by the next day's divisions and its end-of-lapse test
                 }, (d, approvalBefore, approvalAfter, written) =>
                 {
@@ -685,19 +883,27 @@ namespace PoliSim.EditorTools
         }
 
         // ------------------------------------------------------------------ (j)'s reader: the Senate's saved roll calls
-        /// <summary>Every saved Senate roll call under `raw/lapse/senate/`, each held to its SHA-256 (a file not held is named in <paramref name="unheld"/> and
-        /// not read) and read as the Senate's LIS XML - decompressed where the archive served it gzip-encoded: its identity (S | 119 | its date | its number),
-        /// the Democratic caucus's yeas (D and I, R-US10 (a)'s caucus) and its yeas and nays, and its question.</summary>
-        private static List<(string Identity, int Defectors, int Voting, string Question)> SenateRolls(out List<string> unheld)
+        /// <summary>One saved roll call as (j) reads it: its identity (S | Congress | its date | its number), its date, its question, and the yeas and nays of the
+        /// Democratic caucus (D and I, R-US10 (a)'s caucus) and of the Republicans.</summary>
+        private sealed class Roll
+        {
+            public string Identity, Question;
+            public DateTime Day;
+            public int DemYeas, DemNays, RepYeas, RepNays;
+        }
+
+        /// <summary>Every saved Senate roll call in <paramref name="folder"/> matching <paramref name="pattern"/>, each held to its SHA-256 (a file not held is
+        /// named in <paramref name="unheld"/> and not read) and read as the Senate's LIS XML - decompressed where the archive served it gzip-encoded.</summary>
+        private static List<Roll> SenateRolls(string folder, string pattern, out List<string> unheld)
         {
             unheld = new List<string>();
-            var rolls = new List<(string Identity, int Defectors, int Voting, string Question)>();
-            string dir = Path.Combine(Directory.GetCurrentDirectory(), Rolls);
-            if (!Directory.Exists(dir)) { unheld.Add(Rolls); return rolls; }
-            foreach (string path in Directory.GetFiles(dir, "vote_119_1_*.xml").OrderBy(p => p, StringComparer.Ordinal))
+            var rolls = new List<Roll>();
+            string dir = Path.Combine(Directory.GetCurrentDirectory(), folder);
+            if (!Directory.Exists(dir)) { unheld.Add(folder); return rolls; }
+            foreach (string path in Directory.GetFiles(dir, pattern).OrderBy(p => p, StringComparer.Ordinal))
             {
                 string name = Path.GetFileName(path);
-                if (!PresidencyDiagnostic.Page(Rolls + name, out _)) { unheld.Add(name); continue; }
+                if (!PresidencyDiagnostic.Page(folder + name, out _)) { unheld.Add(name); continue; }
                 byte[] bytes = File.ReadAllBytes(path);
                 string xml;
                 if (bytes.Length > 2 && bytes[0] == 0x1f && bytes[1] == 0x8b)
@@ -709,18 +915,41 @@ namespace PoliSim.EditorTools
                 string number = Regex.Match(xml, "<vote_number>0*(\\d+)<").Groups[1].Value;
                 string date = Regex.Match(xml, "<vote_date>([A-Za-z]+ \\d+, \\d{4})").Groups[1].Value;
                 string question = Regex.Match(xml, "<vote_question_text>([^<]*)<").Groups[1].Value.Trim();
-                if (number.Length == 0 || !DateTime.TryParseExact(date, "MMMM d, yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime day)) { unheld.Add(name + " (unread)"); continue; }
-                int yeas = 0, nays = 0;
+                string congress = Regex.Match(xml, "<congress>(\\d+)<").Groups[1].Value;
+                if (number.Length == 0 || congress.Length == 0 || !DateTime.TryParseExact(date, "MMMM d, yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime day)) { unheld.Add(name + " (unread)"); continue; }
+                var roll = new Roll { Identity = "S|" + congress + "|" + Day(day) + "|" + number, Question = question, Day = day };
                 foreach (Match member in Regex.Matches(xml, "<member>(.*?)</member>", RegexOptions.Singleline))
                 {
                     string party = Regex.Match(member.Groups[1].Value, "<party>([A-Z])<").Groups[1].Value;
                     string cast = Regex.Match(member.Groups[1].Value, "<vote_cast>([^<]*)<").Groups[1].Value;
-                    if (party != "D" && party != "I") { continue; }
-                    if (cast == "Yea") { yeas++; } else if (cast == "Nay") { nays++; }
+                    bool dem = party == "D" || party == "I";
+                    if (!dem && party != "R") { continue; }
+                    if (cast == "Yea") { if (dem) { roll.DemYeas++; } else { roll.RepYeas++; } }
+                    else if (cast == "Nay") { if (dem) { roll.DemNays++; } else { roll.RepNays++; } }
                 }
-                rolls.Add(("S|119|" + Day(day) + "|" + number, yeas, yeas + nays, question));
+                rolls.Add(roll);
             }
             return rolls;
+        }
+
+        /// <summary>US-22c: every cloture vote a session's list (`vote_menu_*.xml`, held to its SHA-256) holds from <paramref name="from"/> to <paramref name="to"/>
+        /// - its number and its issue, ascending by number; <paramref name="held"/> false where the list is not held.</summary>
+        private static List<string> MenuClotures(string relative, DateTime from, DateTime to, out bool held)
+        {
+            var found = new List<(int Number, string Issue)>();
+            held = PresidencyDiagnostic.Page(relative, out string xml);
+            if (!held) { return new List<string>(); }
+            string year = Regex.Match(xml, "<congress_year>(\\d{4})<").Groups[1].Value;
+            foreach (Match vote in Regex.Matches(xml, "<vote>(.*?)</vote>", RegexOptions.Singleline))
+            {
+                string body = vote.Groups[1].Value;
+                string question = Regex.Match(body, "<question>(.*?)</question>", RegexOptions.Singleline).Groups[1].Value;
+                if (!question.Contains("Cloture")) { continue; }
+                if (!DateTime.TryParseExact(Regex.Match(body, "<vote_date>([^<]*)<").Groups[1].Value.Trim() + "-" + year, "dd-MMM-yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime day)) { continue; }
+                if (day < from || day > to) { continue; }
+                found.Add((int.Parse(Regex.Match(body, "<vote_number>(\\d+)<").Groups[1].Value, CultureInfo.InvariantCulture), Regex.Match(body, "<issue>([^<]*)<").Groups[1].Value.Trim()));
+            }
+            return found.OrderBy(f => f.Number).Select(f => f.Number.ToString(CultureInfo.InvariantCulture) + " " + f.Issue).ToList();
         }
 
         // ------------------------------------------------------------------ small readers

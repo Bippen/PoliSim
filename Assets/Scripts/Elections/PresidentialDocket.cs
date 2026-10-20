@@ -62,7 +62,8 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The day a bill presented on <paramref name="presentedOn"/> becomes law unanswered - the day after <see cref="LastDay"/>. MinValue for a country
-        /// with no docket.</summary>
+        /// with no docket. PS-6 US-21c (Elias's ruling J6 (ii)): the USA's is SOURCED - P.L. 119-101, presented Monday 29 June 2026, "has become law without
+        /// his signature on July 11, 2026" (`ElectionsData/usa/raw/unsigned/`), the day after Friday 10 July, the tenth day counted.</summary>
         public static DateTime LawDay(CountryId country, DateTime presentedOn)
         {
             DateTime last = LastDay(country, presentedOn);
