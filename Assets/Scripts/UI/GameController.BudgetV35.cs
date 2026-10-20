@@ -326,7 +326,7 @@ namespace PoliSim.UI
             float set = DrawDialRow("Fiscal stance", asked, asked, -FinancePartner.PlayerTargetLimit, FinancePartner.PlayerTargetLimit, "F2", " pp", "pp of GDP",
                 new Rect(row.x, row.y, tileWidth, rowHeight), new V35DialFace
                 {
-                    Icon = "coins", Title = mine ? "Your fiscal stance" : who + "'s fiscal stance", Area = UiPalette.SystemArea.Fiscal,
+                    Icon = "coins", Title = mine ? "Your fiscal stance" : UiFormat.Possessive(who, false, true) + " fiscal stance", Area = UiPalette.SystemArea.Fiscal,
                     Figure = v => Signed(v) + " pp of GDP",
                     EndLeft = "Tighten", EndRight = "Expand",
                     Census = (mine ? "YOU HOLD FINANCE AS A PARTNER · YOU ACT THROUGH THE STANCE ONLY" : "THE FINANCE MINISTER (" + who.ToUpperInvariant() + ") ACTS THROUGH THE STANCE ONLY · THE HEAD OF GOVERNMENT KEEPS EVERY OTHER LEVER")

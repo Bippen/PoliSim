@@ -391,7 +391,7 @@ namespace PoliSim.Elections
         {
             if (incumbent.Name != null && incumbent.BackingParty == party.Abbrev && TermsServed(country, incumbent.Name) < rule.MaxTerms) { return incumbent.Name; }
             if (party.Leaders != null && party.Leaders.Length > 0) { return party.Leaders[0].Name; }
-            return PartySystems.ShortName(country.Id, party.Abbrev) + "'s candidate (" + firstVote.Year.ToString(CultureInfo.InvariantCulture) + ")";
+            return PoliSim.Wording.EnglishText.Possessive(PartySystems.ShortName(country.Id, party.Abbrev), false, true) + " candidate (" + firstVote.Year.ToString(CultureInfo.InvariantCulture) + ")";
         }
 
         /// <summary>The terms a person has served: the game's elections won, and the record's presidencies that began before the game's first.</summary>

@@ -245,7 +245,7 @@ namespace PoliSim.UI
             {
                 bool clear = InkClear(d.Country, step, out string nearest, out float distance);
                 book.Anchors["ink/" + step] = new SlipContent(clear ? "INK" : "INK - REFUSED")
-                    .Add(nearest == null ? "No real party's ink to measure against." : string.Format(CultureInfo.InvariantCulture, "{0:0.000} from {1}'s drawn ink; the fence asks {2:0.00}.", distance, nearest, PoliSimTheme.NudgeTolerance))
+                    .Add(nearest == null ? "No real party's ink to measure against." : string.Format(CultureInfo.InvariantCulture, "{0:0.000} from {1} drawn ink; the fence asks {2:0.00}.", distance, UiFormat.Possessive(nearest, false, true), PoliSimTheme.NudgeTolerance))
                     .Add(clear ? "Clear of every real party's ink." : "Too close to read as a second party at dot size.");
             }
             foreach (UiPalette.SystemArea area in Issues) { book.Anchors["issue/" + area] = new SlipContent("ISSUE").Add(area.ToString()).Add("Raised salience with the voters who care about it - not yet in the vote."); }

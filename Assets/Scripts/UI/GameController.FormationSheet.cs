@@ -145,7 +145,7 @@ namespace PoliSim.UI
                         }
                     };
                 }
-                var slip = new SlipContent(Name(key) + " · " + seats.ToString(CultureInfo.InvariantCulture) + " SEATS")
+                var slip = new SlipContent(Name(key) + " · " + UiFormat.Seats(seats).ToUpperInvariant())
                     .Add(formateur ? (round.Bundestag ? "THE FORMATEUR - THE CHANCELLOR'S PARTY" : "THE FORMATEUR - THE PRIME MINISTER'S PARTY") : inCabinet ? "INVITED INTO THE CABINET" : "NOT INVITED");
                 if (inCabinet)
                 {
@@ -193,7 +193,7 @@ namespace PoliSim.UI
                     };
                 }
                 SlipAnchor(Shifted(row, leftShift), "support/" + key);
-                book.Anchors["support/" + key] = new SlipContent(Name(key) + " · " + seats.ToString(CultureInfo.InvariantCulture) + " SEATS")
+                book.Anchors["support/" + key] = new SlipContent(Name(key) + " · " + UiFormat.Seats(seats).ToUpperInvariant())
                     .Add(supports ? "ASKED TO CARRY THE CABINET FROM OUTSIDE, ON AN AGREEMENT" : "NOT ASKED TO SUPPORT")
                     .Add("A SUPPORTER TABLES ITS DEMANDS; REFUSE MORE THAN IT TOLERATES AND IT REFUSES");
                 DrawRowRule(row);

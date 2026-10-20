@@ -252,7 +252,7 @@ namespace PoliSim.Data
                 case PensionMarkState.Complete:
                     return new[] { ("—", 2), ("SCHEDULE COMPLETE " + Y(end.Year), 1), ("THE STANDING AGE IS ALREADY " + Format(end.Age), 3) };
                 case PensionMarkState.Carried:
-                    return new[] { ("—", 2), (Y(UndatedMarkYear(id, year).Value) + " NOT PUBLISHED", 1), ("THE KNOB CARRIES " + Y(r.DatedTo) + "'s FIGURE", 3) };
+                    return new[] { ("—", 2), (Y(UndatedMarkYear(id, year).Value) + " NOT PUBLISHED", 1), ("THE KNOB CARRIES " + Wording.EnglishText.Possessive(Y(r.DatedTo), true) + " FIGURE", 3) };
                 default:
                     return new[] { ("—", 2), ("THE LAW DOES NOT MOVE IT", 1), ("ONLY A BILL MOVES THIS DIAL", 3) };
             }

@@ -440,7 +440,7 @@ namespace PoliSim.UI
                 }
                 // 24a's "IN SH · EXEMPT" wrapped beside the SSW's figures in the 1280 column; the rule above it says what the exemption is
                 string tag = partyNames[p] == "CSU" ? " IN BY" : exempt ? " · EXEMPT" : string.Empty;
-                string seats = state.Complete ? state.SeatsOnCounted[p].ToString(CultureInfo.InvariantCulture) + (state.SeatsOnCounted[p] == 1 ? " seat" : " seats") : "owed";   // the heading says "SEATS OWED UNTIL 16 OF 16"; the row's word is the short one, so the SSW's row holds one line
+                string seats = state.Complete ? UiFormat.Seats(state.SeatsOnCounted[p]) : "owed";   // the heading says "SEATS OWED UNTIL 16 OF 16"; the row's word is the short one, so the SSW's row holds one line
                 if (state.Complete) { seatsShown += state.SeatsOnCounted[p]; }
                 string sw = swing == null ? string.Empty : hasBase[p] ? string.Format(CultureInfo.InvariantCulture, "  {0:+0.00;−0.00;0.00} pp", swing[p]) : counted[p] ? "  ABSENT" : "  —";   // ABSENT is a list with no 2021 base; a list with no vote yet where it stands (the CSU before Bayern) is not yet
                 Row(parent, PartySystems.ShortName(CountryId.Germany, partyNames[p]).ToUpperInvariant() + tag, string.Format(CultureInfo.InvariantCulture, "{0:N0}  {1:P2}  {2}{3}", state.CountedVotes[p], share, seats, sw), 12, PoliSimTheme.TextPrimary, nameWidth: 34f);
@@ -837,7 +837,7 @@ namespace PoliSim.UI
             art.AddComponent<RectTransform>().sizeDelta = new Vector2(0f, 88f);
             LayoutElement element = art.AddComponent<LayoutElement>();
             element.minHeight = 70f;
-            element.preferredHeight = 88f;   // PF-16 (§609): at 110 the column's texts were compressed at 1280; the plate yields first, its floor (70) unchanged
+            element.preferredHeight = 84f;   // PF-16 (§609): at 110 the column's texts were compressed at 1280; the plate yields first, its floor (70) unchanged. UI-1 (§888): 88 clipped 88n's Figures by 0.5 px at 1280 with the state pins (realse888) - the plate yields 4 more
             Texture2D texture = CanvasPaint.Arrows(420, 120, arrows, PoliSimTheme.Hex(0xF2EADB));
             Image image = art.AddComponent<Image>();
             image.sprite = Sprite.Create(texture, new Rect(0f, 0f, texture.width, texture.height), new Vector2(0.5f, 0.5f), 100f);
@@ -964,8 +964,8 @@ namespace PoliSim.UI
             foreach (int p in order)
             {
                 seatsShown += state.SeatsOnCounted[p];
-                string figure = string.Format(CultureInfo.InvariantCulture, "{0:N0}  {1:P2}  {2} seats",
-                    state.CountedVotes[p], state.CountedShare(p), state.SeatsOnCounted[p]);
+                string figure = string.Format(CultureInfo.InvariantCulture, "{0:N0}  {1:P2}  {2}",
+                    state.CountedVotes[p], state.CountedShare(p), UiFormat.Seats(state.SeatsOnCounted[p]));
                 if (seatChange)
                 {
                     figure += string.Format(CultureInfo.InvariantCulture, " ({0:+0;-0;±0})", state.SeatsOnCounted[p] - previous.Seats[p]);
@@ -1170,7 +1170,7 @@ namespace PoliSim.UI
                 CanvasRows.FixedCell(row, real.ToString(CultureInfo.InvariantCulture), figW, 12, PoliSimTheme.TextMuted);
                 CanvasRows.FixedCell(row, diff > 0 ? "+" + diff.ToString(CultureInfo.InvariantCulture) : diff < 0 ? "−" + (-diff).ToString(CultureInfo.InvariantCulture) : "0", figW, 12, PoliSimTheme.TextPrimary);
                 CanvasRows.Slip(row.gameObject, null, PartySystems.ShortName(country, partyNames[p]),
-                    new[] { string.Format(CultureInfo.InvariantCulture, "PLAYED {0} SEATS · THE REAL RESULT {1}", played, real), "THE DIFFERENCE IS PLAYED LESS REAL" });
+                    new[] { string.Format(CultureInfo.InvariantCulture, "PLAYED {0} · THE REAL RESULT {1}", UiFormat.Seats(played).ToUpperInvariant(), real), "THE DIFFERENCE IS PLAYED LESS REAL" });
             }
 
             if (!string.IsNullOrEmpty(reference.HeadParty))

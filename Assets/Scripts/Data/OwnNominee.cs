@@ -124,7 +124,7 @@ namespace PoliSim.Data
             string name = Elections.UsTermLimit.FoldName(n.Name);   // the review's L1: one space between words, a straight apostrophe - the unnamed form's ’ is its '
             if (string.IsNullOrEmpty(name)) { return "the nominee has no name"; }
             if (name.Length > MaxNameLength) { return "the name is longer than " + MaxNameLength.ToString(CultureInfo.InvariantCulture) + " characters"; }
-            if (name.IndexOf("'s candidate", StringComparison.OrdinalIgnoreCase) >= 0) { return "the name is the form of a party's unnamed candidate"; }
+            if (Elections.UsTermLimit.IsUnnamedLabel(name)) { return "the name is the form of a party's unnamed candidate"; }
             if (Elections.UsTermLimit.TryPersonOfRecord(name, out string ofRecord))
             {
                 return (string.Equals(name, ofRecord, StringComparison.OrdinalIgnoreCase) ? name + " is a person of record" : name + " reads as " + ofRecord + ", a person of record")

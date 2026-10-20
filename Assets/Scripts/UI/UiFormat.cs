@@ -163,14 +163,13 @@ namespace PoliSim.UI
         public static string Seats(int count) => count.ToString(CultureInfo.InvariantCulture) + (count == 1 ? " seat" : " seats");
 
         /// <summary>A name's possessive in the name's own case: "SWEDEN'S", "Sweden's", and a name ending in s takes the apostrophe alone ("UNITED STATES'",
-        /// "United States'") - never "STATES'S".</summary>
-        public static string Possessive(string name)
-        {
-            if (string.IsNullOrEmpty(name)) { return name; }
-            char last = name[name.Length - 1];
-            if (last == 's' || last == 'S') { return name + "'"; }
-            return name + (char.IsUpper(last) ? "'S" : "'s");
-        }
+        /// "United States'") - never "STATES'S". UI-1 (J8, Elias's ruling of 2026-10-19: one possessive helper): every possessive the game builds on a name
+        /// it does not know at compile time goes through here or through the overload below; MetaTextCheck fails on one built by hand. The rule itself is
+        /// <see cref="PoliSim.Wording.EnglishText"/>'s, where the model's layers call it; an absent name gives the empty string.</summary>
+        public static string Possessive(string name) => PoliSim.Wording.EnglishText.Possessive(name);
+
+        /// <summary>UI-1: the possessive in the SENTENCE's case, and a party's key always with 's - <see cref="PoliSim.Wording.EnglishText.Possessive(string, bool, bool)"/>.</summary>
+        public static string Possessive(string name, bool upper, bool abbreviation = false) => PoliSim.Wording.EnglishText.Possessive(name, upper, abbreviation);
 
         /// <summary>§718: a small count as the captions spell it - ZERO to TWELVE in words, the figure past it (the Policy Web's own rule, lifted
         /// here so the captions that name a count from data share it).</summary>

@@ -369,7 +369,7 @@ namespace PoliSim.UI
                     return $"chamber {x.Chamber}: {x.For} for, {x.Against} against, {x.Abstaining} abstaining, line {x.Required} of {x.Sworn}, vice president {x.VicePresidentParty} {x.VicePresidentVote}, passed {x.Passed} cached against {y.For}, {y.Against}, {y.Abstaining}, {y.Required} of {y.Sworn}, {y.VicePresidentParty} {y.VicePresidentVote}, {y.Passed}";
                 }
                 string stances = Difference(x.Stances, y.Stances);
-                if (stances != null) { return $"chamber {x.Chamber}'s stances: {stances}"; }
+                if (stances != null) { return $"chamber {UiFormat.Possessive(x.Chamber.ToString(CultureInfo.InvariantCulture), false, true)} stances: {stances}"; }
             }
             return null;
         }
@@ -385,12 +385,12 @@ namespace PoliSim.UI
                 if (x.Seats != y.Seats) { return $"{x.Party.Abbrev} holds {x.Seats} seats cached against {y.Seats}"; }
                 if (x.Side != y.Side) { return $"{x.Party.Abbrev} votes {x.Side} cached against {y.Side}"; }
                 if (x.Measured != y.Measured) { return $"{x.Party.Abbrev} measured {x.Measured} cached against {y.Measured}"; }
-                if (x.Alignment != y.Alignment) { return $"{x.Party.Abbrev}'s alignment {x.Alignment:R} cached against {y.Alignment:R}"; }
+                if (x.Alignment != y.Alignment) { return $"{UiFormat.Possessive(x.Party.Abbrev, false, true)} alignment {x.Alignment:R} cached against {y.Alignment:R}"; }
                 int reasons = x.Reasons?.Count ?? 0;
                 if (reasons != (y.Reasons?.Count ?? 0)) { return $"{x.Party.Abbrev} gives {reasons} reasons cached against {y.Reasons?.Count ?? 0}"; }
                 for (int r = 0; r < reasons; r++)
                 {
-                    if (x.Reasons[r] != y.Reasons[r]) { return $"{x.Party.Abbrev}'s reason {r} \"{x.Reasons[r]}\" cached against \"{y.Reasons[r]}\""; }
+                    if (x.Reasons[r] != y.Reasons[r]) { return $"{UiFormat.Possessive(x.Party.Abbrev, false, true)} reason {r} \"{x.Reasons[r]}\" cached against \"{y.Reasons[r]}\""; }
                 }
             }
 

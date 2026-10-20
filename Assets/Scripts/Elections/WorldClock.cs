@@ -295,7 +295,7 @@ namespace PoliSim.Elections
         /// an unnamed candidate ("KO's candidate (2030)") whole.</summary>
         public static string SurnameOf(string name)
         {
-            if (string.IsNullOrEmpty(name) || name.Contains("'s candidate")) { return name ?? string.Empty; }
+            if (string.IsNullOrEmpty(name) || UsTermLimit.IsUnnamedLabel(name)) { return name ?? string.Empty; }
             string[] words = name.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (words.Length == 0) { return string.Empty; }
             int last = words.Length - 1;

@@ -253,7 +253,7 @@ namespace PoliSim.UI
             GUIStyle head = DeskCaption(8.5f, PoliSimTheme.TextSecondary);
             GUIStyle under = DeskCaption(8.5f, PoliSimTheme.TextMuted);
             float capH = Mathf.Ceil(DeskCaptionHeight(head));
-            string caption = PartySystems.ShortName(d.Country, d.Party).ToUpperInvariant() + "'S POLL HERE";
+            string caption = UiFormat.Possessive(PartySystems.ShortName(d.Country, d.Party).ToUpperInvariant(), true, true) + " POLL HERE";
             var cr = new Rect(r.x, r.y, r.width, capH);
             if (Event.current.type == EventType.Repaint) { PoliSimWidgets.MeasuredLabel(cr, caption, head); }
             float y = r.y + capH + StatStep(4f);

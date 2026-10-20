@@ -278,3 +278,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	4886ca046b1841095790f17333fc
 file	Assets/Scripts/Simulation/SimulationManager.cs	d488e506ecee401e1f5e50af85237e80e5e514f22214a7207994eccabc3cb027	reviewed	2026-10-20	s886	Reviews/2026-10-20_sp7b_rebase_review.md	-
 file	Assets/Scripts/Simulation/FinancePartner.cs	4fe48689db968e6ecb719b9eeedddf93905fff7f81e652e40cfa25d4a5008191	reviewed	2026-10-20	s886	Reviews/2026-10-20_sp7b_rebase_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerPresident.cs	1b20c5d2e68eb06afbdc04e753c1c909f0c62942d357ad9a685b49a52b9eee6b	reviewed	2026-10-20	s886	Reviews/2026-10-20_sp7b_rebase_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	ab1de932ddf06f1272f3dee75fa428cdd9fadc5acaaefd7581c6c24e523f393f	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	c4375fee31feb824071278d07e7890f4cb7870f7c55d0c459d3fa5b76ebaa329	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-
+file	Assets/Scripts/Data/PensionAgeStatute.cs	85ca9aa68e41a13547abd496fb785c9c08adfcecf0e377733c7ba024c82a5e20	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-
+file	Assets/Editor/PensionAgeDiagnostic.cs	8eeeeff09df5b32c1d81360b973f3f60ebb197fa12fac4c682504c366151c9a0	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-

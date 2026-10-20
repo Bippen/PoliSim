@@ -47,7 +47,7 @@ namespace PoliSim.Simulation
                 {
                     // Art. 162 ust. 1 and 3: the cabinet resigns at the first sitting and carries on until a new one is appointed
                     g.Discharge(CurrentDate);
-                    f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the new Sejm's first sitting - {g.PmParty}'s cabinet resigns and carries on until a new one is appointed (Art. 162 ust. 1, 3)");
+                    f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the new Sejm's first sitting - {PoliSim.Wording.EnglishText.Possessive(g.PmParty, false, true)} cabinet resigns and carries on until a new one is appointed (Art. 162 ust. 1, 3)");
                     // Art. 154 ust. 1: the President designates - the record's designee where the record names one, else the formation's projection (DECLARED)
                     if (ofRecord && Elections.WorldClock.TryGovernmentAt(country.Id, record.Appointed, out Elections.WorldClock.GovernmentOfRecord designee) && designee.Cabinet != null)
                     {
@@ -66,7 +66,7 @@ namespace PoliSim.Simulation
                             return;
                         }
                         SetDesignee(f, Keys(view.Cabinet), Keys(view.Support), Elections.GovernmentRecord.FromView(country, view, CurrentDate, world: _world).PmParty);
-                        f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the President designates {f.PmParty}'s candidate for {string.Join("+", f.Cabinet)} - the formation's projection on the new Sejm (DECLARED: no record names the designee) (Art. 154 ust. 1)");
+                        f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the President designates {PoliSim.Wording.EnglishText.Possessive(f.PmParty, false, true)} candidate for {string.Join("+", f.Cabinet)} - the formation's projection on the new Sejm (DECLARED: no record names the designee) (Art. 154 ust. 1)");
                     }
                     f.Stage = Elections.SejmStage.Designated;
                     f.NextOn = ofRecord ? record.Appointed : CurrentDate.AddDays(Elections.SejmFormation.StepWindowDays);
@@ -76,7 +76,7 @@ namespace PoliSim.Simulation
                 {
                     // Art. 154 ust. 1: the President appoints the designated cabinet
                     if (SameCabinet(g, f)) { g.Reappoint(CurrentDate); }
-                    else { InstallSejmCabinet(country, f, $"appointed by the President on the designation of {f.PmParty}'s candidate (Konstytucja Art. 154 ust. 1), the Sejm's confidence to follow (ust. 2)"); }
+                    else { InstallSejmCabinet(country, f, $"appointed by the President on the designation of {PoliSim.Wording.EnglishText.Possessive(f.PmParty, false, true)} candidate (Konstytucja Art. 154 ust. 1), the Sejm's confidence to follow (ust. 2)"); }
                     f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the President appoints {string.Join("+", f.Cabinet)} led by {f.PmParty} (Art. 154 ust. 1){(ofRecord ? " - the record's day (M.P. 2023 poz. 1287, 1288)" : string.Empty)}");
                     f.Stage = Elections.SejmStage.AwaitingConfidence;
                     f.NextOn = ofRecord ? record.ConfidenceVote : CurrentDate.AddDays(Elections.SejmFormation.StepWindowDays);
@@ -122,14 +122,14 @@ namespace PoliSim.Simulation
                         return;
                     }
                     SetDesignee(f, Keys(view.Cabinet), Keys(view.Support), Elections.GovernmentRecord.FromView(country, view, CurrentDate, world: _world).PmParty);
-                    f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Sejm elects {f.PmParty}'s candidate prime minister and {string.Join("+", f.Cabinet)}, {view.SupportedSeats} of {view.TotalSeats} members (Art. 154 ust. 3){(ofRecord ? " - the record's day (M.P. 2023 poz. 1380)" : string.Empty)}");
+                    f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Sejm elects {PoliSim.Wording.EnglishText.Possessive(f.PmParty, false, true)} candidate prime minister and {string.Join("+", f.Cabinet)}, {view.SupportedSeats} of {view.TotalSeats} members (Art. 154 ust. 3){(ofRecord ? " - the record's day (M.P. 2023 poz. 1380)" : string.Empty)}");
                     f.Stage = Elections.SejmStage.AwaitingAppointment;
                     f.NextOn = ofRecord ? record.SejmAppointed : CurrentDate.AddDays(Elections.SejmFormation.AppointmentAfterSejmElectionDays);
                     return;
                 }
                 case Elections.SejmStage.AwaitingAppointment:
                 {
-                    Elections.GovernmentRecord formed = InstallSejmCabinet(country, f, $"elected by the Sejm, {f.PmParty}'s candidate and the cabinet he proposed, and appointed by the President (Konstytucja Art. 154 ust. 3)");
+                    Elections.GovernmentRecord formed = InstallSejmCabinet(country, f, $"elected by the Sejm, {PoliSim.Wording.EnglishText.Possessive(f.PmParty, false, true)} candidate and the cabinet he proposed, and appointed by the President (Konstytucja Art. 154 ust. 3)");
                     f.Log.Add($"{CurrentDate:yyyy-MM-dd}: the President appoints the cabinet the Sejm elected - {string.Join("+", formed.Cabinet)} led by {formed.PmParty} takes office (Art. 154 ust. 3){(ofRecord ? " - the record's day (M.P. 2023 poz. 1382, 1383)" : string.Empty)}");
                     Conclude(f, "the cabinet the Sejm elected governs");
                     return;

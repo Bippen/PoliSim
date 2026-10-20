@@ -330,7 +330,7 @@ namespace PoliSim.UI
                     // SP-7b (I14 (2a)): the office beside the party - who holds the party, what the office does, which party governs
                     slip.Add("YOU HOLD THE PRESIDENCY · YOUR PARTY IS THE AI'S WHILE YOU SERVE");
                     slip.Add("YOU SIGN OR VETO EACH STATUTE THE SEJM PASSES · THE SEJM OVERRIDES A VETO BY 3/5 OF THOSE VOTING");
-                    if (!string.IsNullOrEmpty(g.PmParty)) { slip.Add("THE GOVERNMENT IS " + (PartySystems.ShortName(_playerCountry.Id, g.PmParty) ?? g.PmParty).ToUpperInvariant() + "'S"); }   // the review's L3: no head party, no line
+                    if (!string.IsNullOrEmpty(g.PmParty)) { slip.Add("THE GOVERNMENT IS " + UiFormat.Possessive((PartySystems.ShortName(_playerCountry.Id, g.PmParty) ?? g.PmParty).ToUpperInvariant(), true, true)); }   // the review's L3: no head party, no line
                     break;
                 case "PRESIDENT": slip.Add("YOUR PARTY HOLDS THE PRESIDENCY"); CongressSlipLine(slip); break;   // PS-6 US-7
                 case "THE PRESIDENT'S PARTY":

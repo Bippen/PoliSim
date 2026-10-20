@@ -2084,13 +2084,13 @@ namespace PoliSim.Testing
                 bool governmentParty = role == PoliSim.Elections.PlayerRole.PrimeMinister || role == PoliSim.Elections.PlayerRole.JuniorPartner || role == PoliSim.Elections.PlayerRole.Support;
                 int side = governmentParty ? 1 : party.Abbrev == alternativeBy || party.Abbrev == "V" || party.Abbrev == "MP" ? -1 : 0;
                 if (side > 0) { forG += seats; } else if (side < 0) { forA += seats; } else { abst += seats; }
-                string why = governmentParty ? "the government's own party - carries its frames" : side < 0 ? alternativeBy + "'s frames (+0.40) over the government's (+0.00)" : "abstains - aligned with neither";
+                string why = governmentParty ? "the government's own party - carries its frames" : side < 0 ? PoliSim.Wording.EnglishText.Possessive(alternativeBy, false, true) + " frames (+0.40) over the government's (+0.00)" : "abstains - aligned with neither";
                 sides.Add(new DivisionSide { Abbrev = party.Abbrev, ShortName = party.ShortName, Seats = seats, Side = side, Alignment = side < 0 ? 0.4f : 0f, Reason = why });
             }
             bool governmentAdopted = forG >= forA;
-            string title = governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternativeBy}'s alternative" : $"Annual budget: {alternativeBy}'s alternative frames adopted, {forA} to {forG}, over the government's";
+            string title = governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {PoliSim.Wording.EnglishText.Possessive(alternativeBy, false, true)} alternative" : $"Annual budget: {PoliSim.Wording.EnglishText.Possessive(alternativeBy, false, true)} alternative frames adopted, {forA} to {forG}, over the government's";
             player.Divisions.Append(title, sim.CurrentDate, 0f, true, 0f, (int)BillAxis.Fiscal, sides);
-            player.Divisions.Entries[player.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternativeBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abst, AlternativeAdopted = !governmentAdopted };
+            player.Divisions.Entries[player.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = PoliSim.Wording.EnglishText.Possessive(alternativeBy, true, true) + " ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abst, AlternativeAdopted = !governmentAdopted };
             Debug.Log($"SHOT: staged the budget contest division - {title}");
         }
 

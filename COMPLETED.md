@@ -41029,3 +41029,61 @@ J3 confirmed the code; nothing at runtime changed.
 **Reviewed:** by the integrator, from the diff. The one runtime edit is a log-only literal, reachable only from 3 January 2027; the rest is comments and three diagnostics. There is no money path and no review row is owed.
 
 **Bars** (tier SIMULATION): `n887` 5 of 5 (WorldClockDiagnostic, CongressOfRecordDiagnostic, UsDebtLimitCheck, CommentClaimCheck, MetaTextCheck - every US-2c line on its first run); the cheap bar `cheap887` 127 of 127; the documents bar `doc887` 22 of 22; the simulation bar `sim887` 67 of 67, the sentinel holding on **aloopsal2**. No film: no surface at a reachable start changed. Save format unchanged (50).
+
+
+## 888. UI-1, J8'S UI PASS: ONE POSSESSIVE HELPER FOR EVERY NAME, AND METATEXTCHECK FAILS ON ONE BUILT BY HAND; THE PICKERS' OWN BACKDROP; ONE SEAT ON THE NIGHT, THE FORMATION SLIPS AND THE BLOC HEADERS; 88n ON THE -shotstates FILM (2026-10-20)
+
+**What was owed** (J8, `docs/RULINGS_2026-10-19.md`, §868; SP-7b's film, §886):
+- one possessive helper for every name, including the "'S" sites §858 left in `GameController.LawsV35.cs` and `GameController.cs`;
+- "1 SEAT", Sweden's K-1 line and the compass re-checked on film;
+- 88n filmed;
+- the candidate picker and the party picker given a backdrop of their own.
+
+**Built** (an implementer on `wave/ui1`: 8c5420e4, then the review's fixes e4037a23):
+- **The rule.** It lives in `PoliSim.Wording.EnglishText.Possessive` (`Assets/Scripts/Data/EnglishText.cs`), so the model's layers do not reach into the UI. `UiFormat.Possessive` forwards to it.
+  - §858's rule is kept: a name ending in s takes the apostrophe alone ("UNITED STATES'").
+  - The sentence's case is a parameter.
+  - A party key or short name always takes 's ("S's", "PiS's").
+  - An absent name gives the empty string.
+- **Every possessive the game builds on a name goes through it:**
+  - the UI's sites: Laws' partner lines, the Fed page's governor and own reading, the fiscal stance, the polling note, the desk, the nominee forms, the proposal, the drawn ink, the signing alternative, ChamberVerdicts' diffs;
+  - the start brief, the declared red lines and the confidence procedure;
+  - the formation, budget and division lines in `SimulationManager` and `SimulationManager.Sejm`;
+  - the US nominee forms and the film driver's staged division.
+  - Every party-key string reads byte-identically. The text that changes is a name ending in s, the polling note's casing, and "tariffs' schedule".
+- **`MetaTextCheck`'s possessive pass.** It runs its own lexer over every runtime source except the film harness:
+  - interpolation holes are lexed, `\u` escapes decoded and char literals skipped;
+  - a literal is exempt by its diagnostic call (log, assert, throw), not by its line;
+  - a join counts after `+`, `+=`, a ternary arm, `Append`, `Concat` or `Insert`;
+  - an allow-list entry matches one literal that holds one possessive;
+  - its teeth are 11 planted forms caught, 9 clean forms passed, the allow-list 3 of 3, and the helper 12 of 12;
+  - what stays out of its reach is declared in the class.
+  - On the tree before UI-1 it finds 64 hand-built possessives on a value.
+- **One unnamed-label predicate,** `UsTermLimit.IsUnnamedLabel`, for the nominee guard, `WorldClock.SurnameOf` and the President row. It covers both the "'s candidate" and the "' candidate" forms.
+- **`CountrySelectorScreen.PickerBackdrop`:** an opaque desk plate with a brass edge under both pickers' column.
+- **`UiFormat.Seats`** ("1 seat" / "1 SEAT") on the night's party rows and its played-against-real slip, the formation sheet's slips, and the hemicycle's bloc headers.
+- **`PensionAgeStatute`'s carried year** reads "2025'S FIGURE" in its capitals line, the defect the pass found; `PensionAgeDiagnostic` pins the new text.
+- **88n** was already staged in the state-pins pass. It needs `-shotstates`, which no film had run since dry825.
+
+**Measured:** `n888` - MetaTextCheck's possessive line: "320 runtime files, 0 hand-built on a value, 4 allowed by literal (a year); planted 11 of 11 caught and 0 of 9 clean flagged; the allow-list 3 of 3; the harness excluded (1 held there); the helper 12 of 12".
+
+**Declared:**
+- a party key's 's;
+- the sentence-case parameter;
+- years allowed by their literal;
+- diagnostic calls exempt;
+- the film harness outside the scan;
+- the backdrop's colour and its 24-unit margin;
+- "1 seat" extended to the night, the slips and the bloc headers.
+
+**Reviewed:** `Reviews/2026-10-20_ui1_review.md` (independent; no H):
+- M1, the night's seat nouns, fixed;
+- L1, the one predicate, fixed;
+- L2/L3, the lexer, fixed;
+- L4, the rule moved to a neutral namespace, fixed;
+- L5, an absent name, fixed;
+- the integrator's addendum reads the fix round's pension edits.
+
+Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `PensionAgeStatute.cs` and `PensionAgeDiagnostic.cs`.
+
+**Bars** (tier SIMULATION + UI, Canvas): `n888` 11 of 11 (MetaTextCheck, PensionAgeDiagnostic, CommentClaim, CommentImmunity, UsOwnNominee, Presidency, StartBrief, ChamberVerdictCache, CongressElection, ReviewLedger, DeadState); the cheap bar `cheap888` 127 of 127; the documents bar `doc888` 22 of 22; the simulation bar `sim888` 67 of 67, the sentinel holding on **aloopsal2**; `slrt888` 12 of 12; the dry film `drys888` over Sweden, Germany, the USA, Italy and Poland at 1280x720 (155 / 147 / 156 / 141 / 149 measured, 0 failed; scope row s888, declared before the film); the REAL films at 1280 - `realpl888`, `realus888`, `realde888`, `realit888` exit 0 - and Sweden with `-shotstates`: `realse888` FAILED one guard, 88n's `Governs/Figures` clipped by 0.5 px (preferred 60.9 against 60.4) - not UI-1's text but the night's column, unfilmed with the state pins since dry825; fixed by letting the arrows plate yield 4 more (`ElectionNightScreen`, preferred 88 -> 84, its floor 70 unchanged, PF-16's own remedy), then `realse888b` (1280) and `realse888bw` (2560) exit 0 with no clip. Read on film: 88n at both widths, the candidate picker on its own plate (01g3, the brief no longer showing through), the compass (07b).

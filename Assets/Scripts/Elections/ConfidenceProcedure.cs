@@ -84,8 +84,8 @@ namespace PoliSim.Elections
             public List<DivisionSide> Sides = new List<DivisionSide>();
 
             public string Title() => Constructive
-                ? string.Format(CultureInfo.InvariantCulture, "Constructive vote of no confidence in the chancellor ({0}): {1}'s candidate {2}, {3} of {4} members for, {5} needed (Art. 67 GG)",
-                    PmParty, Mover, Carried ? "elected" : "not elected", For, Members, Needed)
+                ? string.Format(CultureInfo.InvariantCulture, "Constructive vote of no confidence in the chancellor ({0}): {1} candidate {2}, {3} of {4} members for, {5} needed (Art. 67 GG)",
+                    PmParty, PoliSim.Wording.EnglishText.Possessive(Mover, false, true), Carried ? "elected" : "not elected", For, Members, Needed)
                 : string.Format(CultureInfo.InvariantCulture, "Motion of no confidence in the prime minister ({0}): {1}, {2} of {3} members for it, {4} needed",
                     PmParty, Carried ? "carried" : "not carried", For, Members, Needed);
         }
@@ -178,7 +178,7 @@ namespace PoliSim.Elections
                 bool sittingCabinet = government != null && government.Cabinet.Contains(key);
                 int side; string reason;
                 if (key == mover) { side = 1; reason = "moved it - its candidate"; }
-                else if (Smaller(key) && GroupPartner(key) is string larger && cast.ContainsKey(larger)) { side = cast[larger].Side; reason = "votes with its parliamentary group, as one (" + larger + "'s side) - the game's premise: a group votes and governs as one"; }
+                else if (Smaller(key) && GroupPartner(key) is string larger && cast.ContainsKey(larger)) { side = cast[larger].Side; reason = "votes with its parliamentary group, as one (" + PoliSim.Wording.EnglishText.Possessive(larger, false, true) + " side) - the game's premise: a group votes and governs as one"; }
                 else if (key == pm) { side = -1; reason = "the sitting chancellor is its own - it does not elect his successor"; }
                 else if (bound) { side = 1; reason = sittingCabinet ? "leaves the sitting government for the successor's - votes for its candidate (the coalition's word)" : "accepted the successor's government - votes for its candidate (the coalition's word)"; }
                 // the review's defect 1: a sitting cabinet partner elects only where it is bound to a successor's government that HOLDS (above); drafted into one

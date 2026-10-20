@@ -127,7 +127,7 @@ namespace PoliSim.Elections
                 {
                     int cabinetSeats = 0;
                     foreach (string abbrev in government.Cabinet) { if (seats.TryGetValue(abbrev, out int n)) { cabinetSeats += n; } }
-                    clauses.Add(new Clause(government.Head + "'s government (" + string.Join("+", government.Cabinet) + ") has governed since " + Long(government.From)
+                    clauses.Add(new Clause(PoliSim.Wording.EnglishText.Possessive(government.Head) + " government (" + string.Join("+", government.Cabinet) + ") has governed since " + Long(government.From)
                         + ", with " + cabinetSeats.ToString(CultureInfo.InvariantCulture) + " of " + size.ToString(CultureInfo.InvariantCulture) + " seats"
                         + (government.Support != null && government.Support.Length > 0 ? " and the support of " + string.Join("+", government.Support) : string.Empty)
                         + (government.President != null ? ", under the president " + government.President : string.Empty) + ".",
@@ -164,7 +164,7 @@ namespace PoliSim.Elections
                 // what holds instead, in Italy's words: the Camera and the government seated at the start (nothing seats Italy's record by its dates - Meloni's
                 // government and the XIX Camera's sitting are PS-7's or PS-8's), the government the formation's stand-in for the caretaker's cabinet, which the
                 // record does not name (SeatedGovernment: PROVISIONAL); the caretaker named from the record
-                string caretaker = WorldClock.TryGovernmentAt(id, opens, out WorldClock.GovernmentOfRecord ofRecord) ? WorldClock.SurnameOf(ofRecord.Head) + "'s" : "the";
+                string caretaker = WorldClock.TryGovernmentAt(id, opens, out WorldClock.GovernmentOfRecord ofRecord) ? PoliSim.Wording.EnglishText.Possessive(WorldClock.SurnameOf(ofRecord.Head)) : "the";
                 clauses.Add(new Clause("No election is held in this game yet - the Camera and the government seated at the start hold, the government a stand-in for "
                     + caretaker + " caretaker cabinet; no Senato is modelled.", "WorldClock.NoElectionYet, TryNextPollingDay - none for Italy; SeatedGovernment - provisional (PS-7-interim)"));
             }
@@ -261,7 +261,7 @@ namespace PoliSim.Elections
         public static Clause? NomineeClause(StartPoints.StartPoint start, OwnNominee nominee)
         {
             if (nominee == null || nominee.Country != start.Country || !StartPoints.OffersOwnNominee(start) || string.IsNullOrWhiteSpace(nominee.Name)) { return null; }
-            return new Clause("Your own nominee, " + nominee.Name.Trim() + ", heads the " + PartyNameOf(start.Country, nominee.Party) + "'s ticket in place of its nominee of record; the party's poll reads the nominee's position.",
+            return new Clause("Your own nominee, " + nominee.Name.Trim() + ", heads the " + PoliSim.Wording.EnglishText.Possessive(PartyNameOf(start.Country, nominee.Party)) + " ticket in place of its nominee of record; the party's poll reads the nominee's position.",
                 "OwnNominees (the player's own nominee, inside the party's range - the middle half of the Global Party Survey 2019's experts, UsGps2019); StartPoints.OffersOwnNominee (" + start.Basis + ")");
         }
 

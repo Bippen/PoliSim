@@ -140,12 +140,18 @@ namespace PoliSim.Elections
         /// game's to name, and the field stands as US-6 built it.</summary>
         public static bool FieldOfRecord(DateTime pollingDay) => PresidencyOfRecord.CandidatesOf(CountryId.USA, pollingDay.Year + 1).Count > 0;
 
+        /// <summary>UI-1 (the review's L1): whether a name is an unnamed candidate's label - "KO's candidate (2030)", "Democratic Party's candidate (2028)", or
+        /// the apostrophe-alone form a party name ending in s takes through the possessive helper ("Libertarians' candidate (2028)"). Every reader that keeps
+        /// the label whole, and the guard that refuses a nominee named like one, asks here.</summary>
+        public static bool IsUnnamedLabel(string name) => !string.IsNullOrEmpty(name)
+            && (name.IndexOf("'s candidate", StringComparison.OrdinalIgnoreCase) >= 0 || name.IndexOf("' candidate", StringComparison.OrdinalIgnoreCase) >= 0);
+
         /// <summary>A party's candidate unnamed - the label US-8's later field gives, its year in it (two of a party's are never one person).</summary>
-        public static string UnnamedNominee(PoliticalParty party, int year) => party.Name + "'s candidate (" + year.ToString(CultureInfo.InvariantCulture) + ")";
+        public static string UnnamedNominee(PoliticalParty party, int year) => PoliSim.Wording.EnglishText.Possessive(party.Name) + " candidate (" + year.ToString(CultureInfo.InvariantCulture) + ")";
 
         /// <summary>The running mate of a ticket the game makes - the party's own, unnamed and dated, DECLARED until a ticket is modelled. Worded as a candidate
         /// so every reader that keeps an unnamed candidate's label whole (`WorldClock.SurnameOf`) keeps this one whole.</summary>
-        public static string UnnamedRunningMate(PoliticalParty party, int year) => party.Name + "'s candidate for Vice President (" + year.ToString(CultureInfo.InvariantCulture) + ")";
+        public static string UnnamedRunningMate(PoliticalParty party, int year) => PoliSim.Wording.EnglishText.Possessive(party.Name) + " candidate for Vice President (" + year.ToString(CultureInfo.InvariantCulture) + ")";
 
         /// <summary>The person a contest's tally names: for an election whose field is the record's, the nominee NARA names for the ticket (the catalog's year row),
         /// whatever label the count gave; otherwise the tally's own name.</summary>

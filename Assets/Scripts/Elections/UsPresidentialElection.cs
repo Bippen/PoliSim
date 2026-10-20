@@ -371,7 +371,7 @@ namespace PoliSim.Elections
                     }
                     else if (c.BackingParty != null)
                     {
-                        if (double.IsNaN(c.Factor)) { why = name + "'s factor (" + c.BackingParty + ") is not fitted - the factors are NaN until the fit is patched in (Tools/us_factor_patch.pl)"; field.Clear(); return false; }
+                        if (double.IsNaN(c.Factor)) { why = PoliSim.Wording.EnglishText.Possessive(name) + " factor (" + c.BackingParty + ") is not fitted - the factors are NaN until the fit is patched in (Tools/us_factor_patch.pl)"; field.Clear(); return false; }
                         s = poll.TryGetValue(c.BackingParty, out double p) && !double.IsNaN(p) && p > 0.0 ? p * c.Factor : 0.0;
                     }
                     else { s = PresidencyOfRecord.ShareOfRecord(id, pollingDay.Year, c.Surname); }

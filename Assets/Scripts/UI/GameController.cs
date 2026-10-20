@@ -3949,14 +3949,14 @@ namespace PoliSim.UI
                     // control). Superseded the original country-selection Part 1 framing, which
                     // described this as fully read-only before this mechanic existed.
                     GUILayout.Label(
-                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As {_playerCountry.Name}'s governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
+                        $"{_playerCountry.Name} shares the Eurozone's single currency and interest rate with {GetOtherEurozoneMemberNames()}. Each member's own Taylor Rule reading pulls the shared rate toward its own inflation and labour-market situation (its unemployment against its structural rate), weighted by its share of the three countries' household spending at current prices - the basis Eurostat weights the euro area's inflation index on. As {UiFormat.Possessive(_playerCountry.Name)} governor you get a modest, bounded push on top of that blend - real influence, not unilateral control, the same way no single member state sets the ECB's rate alone.",
                         _labelStyle);
                     // Pass 4 (2026-08-26): the blend and this member's own reading, so the push has a
                     // visible reference. Omnibus 2026-08-28: three rows of the row family (blend, own
                     // reading, the shared rate), same fixed ordinals ahead of and after the slider.
                     DrawDerivedStatRow("Blended rule reading this year", -1f,
                         $"{EurozoneRateSystem.GetBlendedSuggestedRate(_world, _playerCountry):F2}%", "weighted by household spending", politicalInk);
-                    DrawDerivedStatRow($"{_playerCountry.Name}'s own reading", -1f,
+                    DrawDerivedStatRow($"{UiFormat.Possessive(_playerCountry.Name)} own reading", -1f,
                         $"{TaylorRule.GetSuggestedInterestRate(_playerCountry):F2}%",
                         $"inflation {_playerCountry.State.Inflation:F1}%, unemployment {_playerCountry.State.Unemployment:F1}% vs NAIRU {_playerCountry.EffectiveNaturalUnemploymentRate:F1}%", politicalInk);
                     // P5-1 (board 6a): the rate push as a ledger row of the family.
@@ -4272,7 +4272,7 @@ namespace PoliSim.UI
             // AF-7 (the review's L2): the term is the statute's, the appointment is not - the statute names its own appointer (the Riksbank's General Council,
             // the Sejm on the President's motion, the President with the Senate), and the game hands the choice to the player's government (PS-3c, §630). Said so.
             CentralBankTerms.Statute statute = CentralBankTerms.For(PlayerCountryId);
-            GUILayout.Label($"The {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}'s {statute.TermYears}-year term has ended ({statute.PageCitation}). The statute gives the appointment to {statute.Appointer}; this game hands the choice to your government - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
+            GUILayout.Label($"The {UiFormat.Possessive(GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant())} {statute.TermYears}-year term has ended ({statute.PageCitation}). The statute gives the appointment to {statute.Appointer}; this game hands the choice to your government - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
             foreach (FedChair candidate in _fedChairCandidates)
             {
                 DrawFedChairCandidateButton(candidate);

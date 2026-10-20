@@ -187,7 +187,7 @@ namespace PoliSim.EditorTools
                         : state == PensionMarkState.RisingWindow ? "PUBLISHED TO " + Y(r.DatedTo) + " · " + Y(r.DatedTo + 1) + " NO FIGURE YET"
                         : state == PensionMarkState.ClosedSchedule ? "SCHEDULE ENDS AT " + PensionAgeStatute.Format(end.Age)
                         : state == PensionMarkState.Complete ? "SCHEDULE COMPLETE " + Y(end.Year)
-                        : state == PensionMarkState.Carried ? Y(year) + " NOT PUBLISHED · THE KNOB CARRIES " + Y(r.DatedTo) + "'s FIGURE"
+                        : state == PensionMarkState.Carried ? Y(year) + " NOT PUBLISHED · THE KNOB CARRIES " + Y(r.DatedTo) + "'S FIGURE"
                         : "THE LAW DOES NOT MOVE IT";
                     if (!sentence.Contains(must)) { ok = false; Debug.LogError($"PENSION AGE: {id} in {year} ({state}) - the caption \"{sentence}\" does not say \"{must}\"."); }
                     bool axis = sentence.Contains(PensionAgeStatute.AxisNote);

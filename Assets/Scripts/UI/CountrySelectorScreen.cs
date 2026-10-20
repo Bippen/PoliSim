@@ -228,6 +228,7 @@ namespace PoliSim.UI
             Image dim = panel.AddComponent<Image>();
             dim.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 0.94f);
             dim.raycastTarget = true;
+            PickerBackdrop(panel.transform);   // UI-1: the picker's own ground - nothing beneath reads through a row
 
             var column = new GameObject("Column");
             column.transform.SetParent(panel.transform, false);
@@ -236,7 +237,7 @@ namespace PoliSim.UI
             columnRect.anchorMax = new Vector2(0.5f, 0.5f);
             columnRect.pivot = new Vector2(0.5f, 0.5f);
             columnRect.anchoredPosition = Vector2.zero;
-            columnRect.sizeDelta = new Vector2(1200f, 800f);
+            columnRect.sizeDelta = PickerColumnSize;
             VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
             // P6-A2: the rows carry a face now, so they are taller than the lines they replace; the spacing
@@ -365,6 +366,7 @@ namespace PoliSim.UI
             Image dim = panel.AddComponent<Image>();
             dim.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 0.94f);
             dim.raycastTarget = true;
+            PickerBackdrop(panel.transform);   // UI-1: the picker's own ground - nothing beneath reads through a row
 
             var column = new GameObject("Column");
             column.transform.SetParent(panel.transform, false);
@@ -373,7 +375,7 @@ namespace PoliSim.UI
             columnRect.anchorMax = new Vector2(0.5f, 0.5f);
             columnRect.pivot = new Vector2(0.5f, 0.5f);
             columnRect.anchoredPosition = Vector2.zero;
-            columnRect.sizeDelta = new Vector2(1200f, 800f);
+            columnRect.sizeDelta = PickerColumnSize;
             VerticalLayoutGroup layout = column.AddComponent<VerticalLayoutGroup>();
             layout.childAlignment = TextAnchor.MiddleCenter;
             layout.spacing = 6f;
@@ -952,6 +954,12 @@ namespace PoliSim.UI
         /// <summary>See <see cref="PartyRowWidth"/>.</summary>
         private const float PartyRowHeight = 30f;
 
+        /// <summary>The pickers' column (the party picker's and the candidate picker's), centred on the canvas, in canvas units at the board basis.</summary>
+        private static readonly Vector2 PickerColumnSize = new Vector2(1200f, 800f);
+
+        /// <summary>UI-1: the picker's plate stands this far outside its column on every side.</summary>
+        private const float PickerBackdropMargin = 24f;
+
         /// <summary>§566: the party mark on a picker row - a square the row's own height less its padding, inset from the face's left edge by the same padding.</summary>
         private const float PartyMarkSize = 22f;
 
@@ -1117,6 +1125,27 @@ namespace PoliSim.UI
             ruleImage.color = PoliSimTheme.Hex(0x6B5F4A);
             ruleImage.raycastTarget = false;
             rule.GetComponent<RectTransform>().sizeDelta = new Vector2(280f, 1f);
+        }
+
+        /// <summary>UI-1 (§886's film: the start brief's lines showed through the dim ground behind the candidate picker's rows, as behind the party
+        /// picker's): a picker's own ground - an opaque plate in the desk's colour with a brass edge, the column's size and a margin, drawn under the
+        /// column so nothing beneath it reads through a row. The dim ground around it and the column's own layout are as they were.</summary>
+        private static void PickerBackdrop(Transform panel)
+        {
+            var plate = new GameObject("Backdrop");
+            plate.transform.SetParent(panel, false);
+            var rect = plate.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0.5f);
+            rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.anchoredPosition = Vector2.zero;
+            rect.sizeDelta = PickerColumnSize + new Vector2(2f * PickerBackdropMargin, 2f * PickerBackdropMargin);
+            Image ground = plate.AddComponent<Image>();
+            ground.color = new Color(PoliSimTheme.Desk.r, PoliSimTheme.Desk.g, PoliSimTheme.Desk.b, 1f);
+            ground.raycastTarget = false;
+            Outline edge = plate.AddComponent<Outline>();
+            edge.effectColor = PoliSimTheme.BrassBorder;
+            edge.effectDistance = new Vector2(1f, -1f);
         }
 
         private static void Stretch(RectTransform rect)

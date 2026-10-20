@@ -546,7 +546,7 @@ namespace PoliSim.UI
             if (string.IsNullOrEmpty(recorded)) { return string.Empty; }
             if (recorded == "THE GOVERNMENT'S FRAMES") { return "The government's frames"; }
             const string alternative = "'S ALTERNATIVE";
-            return recorded.EndsWith(alternative, StringComparison.Ordinal) ? recorded.Substring(0, recorded.Length - alternative.Length) + "'s alternative" : recorded;
+            return recorded.EndsWith(alternative, StringComparison.Ordinal) ? UiFormat.Possessive(recorded.Substring(0, recorded.Length - alternative.Length), false, true) + " alternative" : recorded;
         }
 
         /// <summary>The bar of the votes cast - the left side's share, the right's - with the line that carries it at the middle and its figure under it.</summary>

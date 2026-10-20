@@ -572,8 +572,8 @@ namespace PoliSim.UI
                 {
                     // A header per group: the bloc's name and its seats, from the same dictionary the dots read.
                     if (lastRank >= 0) { GUILayout.Space(4f); }
-                    string header = string.Format(CultureInfo.InvariantCulture, "{0} · {1} SEATS",
-                        NationalElection.BlocName(bloc).ToUpperInvariant(), seatsByRank[rank]);
+                    string header = string.Format(CultureInfo.InvariantCulture, "{0} · {1}",
+                        NationalElection.BlocName(bloc).ToUpperInvariant(), UiFormat.Seats(seatsByRank[rank]).ToUpperInvariant());
                     GUILayout.Label(header, caption);
                     if (Event.current.type == EventType.Repaint)
                     {

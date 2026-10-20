@@ -291,7 +291,7 @@ namespace PoliSim.UI
                     Words("· THE CHAMBER VOTES", muted);
                     DateStamp(round.VoteOn);
                     SlipAnchor(row, "round/stage");
-                    book.Anchors["round/stage"] = new SlipContent(Name(round.Proposal.Formateur) + "'S PROPOSAL")
+                    book.Anchors["round/stage"] = new SlipContent(UiFormat.Possessive(Name(round.Proposal.Formateur), true, true) + " PROPOSAL")
                         .Add("THE CABINET " + string.Join("+", round.Proposal.CabinetParties.ConvertAll(Name)))
                         .Add(round.Proposal.Supporters.Count > 0 ? "SUPPORTED BY " + string.Join("+", round.Proposal.Supporters.ConvertAll(Name)) : "NO SUPPORT FROM OUTSIDE")
                         .Add("THE CHAMBER VOTES ON " + DeskDay(round.VoteOn));
@@ -630,7 +630,7 @@ namespace PoliSim.UI
                 foreach (PresidentialElection.Candidate c in last.Field)
                 {
                     string who = Surname(c.Name).ToUpperInvariant();
-                    bool unnamed = c.Name != null && c.Name.Contains("'s candidate");   // the label already names the party
+                    bool unnamed = UsTermLimit.IsUnnamedLabel(c.Name);   // the label already names the party
                     // §772 (E1): a candidate of record no roster party backs (Braun, Zandberg, Stanowski ...) has no party to name
                     string party = unnamed || c.Party == null ? string.Empty : " (" + PartySystems.ShortName(country, c.Party).ToUpperInvariant() + ")";
                     slip.Add(who + party + " " + c.Share.ToString("0.00", CultureInfo.InvariantCulture) + " %");

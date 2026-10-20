@@ -202,8 +202,8 @@ namespace PoliSim.Elections
                     int b = IndexOf(parties, declared[j].Abbrev);
                     if (j == i || b < 0) { continue; }
                     lines.Add(new RedLine(a, b, RedLineKind.Declared, blocksSupport: true, oneWay: true,
-                        basis: CandidacyPrefix + declared[i].Abbrev + "'s own leader " + declared[i].Candidate + " is its prime-ministerial candidate ("
-                               + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + declared[j].Abbrev + "'s is "
+                        basis: CandidacyPrefix + PoliSim.Wording.EnglishText.Possessive(declared[i].Abbrev, false, true) + " own leader " + declared[i].Candidate + " is its prime-ministerial candidate ("
+                               + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + PoliSim.Wording.EnglishText.Possessive(declared[j].Abbrev, false, true) + " is "
                                + declared[j].Candidate + " (" + declared[j].Basis + ")."));
                 }
             }
@@ -529,8 +529,8 @@ namespace PoliSim.Elections
                     int b = IndexOf(parties, declared[j].Abbrev);
                     if (j == i || b < 0) { continue; }
                     lines.Add(new RedLine(a, b, RedLineKind.Declared, blocksSupport: true, oneWay: true,
-                        basis: CandidacyPrefix + declared[i].Abbrev + "'s own leader " + declared[i].Candidate + " is its prime-ministerial candidate ("
-                               + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + declared[j].Abbrev + "'s is "
+                        basis: CandidacyPrefix + PoliSim.Wording.EnglishText.Possessive(declared[i].Abbrev, false, true) + " own leader " + declared[i].Candidate + " is its prime-ministerial candidate ("
+                               + declared[i].Basis + "); it refuses any cabinet led by another party's candidate - " + PoliSim.Wording.EnglishText.Possessive(declared[j].Abbrev, false, true) + " is "
                                + declared[j].Candidate + " (" + declared[j].Basis + ")."));
                 }
             }
@@ -587,7 +587,7 @@ namespace PoliSim.Elections
             foreach (CreatedParty c in CreatedParties.Of(country))
             {
                 if (string.IsNullOrEmpty(c.BacksCandidateOf) || c.BacksCandidateOf != c.Key) { continue; }
-                all.Add((c.Key, string.IsNullOrEmpty(c.LeaderName) ? c.Key + "'s leader" : c.LeaderName, CreatedPrefix + c.Name + " named its own leader for prime minister"));
+                all.Add((c.Key, string.IsNullOrEmpty(c.LeaderName) ? PoliSim.Wording.EnglishText.Possessive(c.Key, false, true) + " leader" : c.LeaderName, CreatedPrefix + c.Name + " named its own leader for prime minister"));
             }
             return all;
         }
@@ -616,7 +616,7 @@ namespace PoliSim.Elections
                         int o = IndexOf(parties, abbrev);
                         if (o < 0 || o == me || abbrev == c.BacksCandidateOf) { continue; }
                         lines.Add(new RedLine(me, o, RedLineKind.Declared, blocksSupport: true, oneWay: true,
-                            basis: CandidacyPrefix + CreatedPrefix + c.Name + " backs " + c.BacksCandidateOf + "'s candidate; it refuses any cabinet led by " + abbrev + "'s, " + candidate));
+                            basis: CandidacyPrefix + CreatedPrefix + c.Name + " backs " + PoliSim.Wording.EnglishText.Possessive(c.BacksCandidateOf, false, true) + " candidate; it refuses any cabinet led by " + PoliSim.Wording.EnglishText.Possessive(abbrev, false, true) + ", " + candidate));
                     }
                 }
             }

@@ -1364,21 +1364,21 @@ namespace PoliSim.Simulation
                     bool governmentParty = role == Elections.PlayerRole.PrimeMinister || role == Elections.PlayerRole.JuniorPartner || (role == Elections.PlayerRole.Support && !ownAlternative);
                     int side = governmentParty ? 1 : ownAlternative ? -1 : g.Alignment >= a ? (g.Alignment > 0f ? 1 : 0) : (a > 0f ? -1 : 0);
                     if (side > 0) { forG += g.Seats; } else if (side < 0) { forA += g.Seats; } else { abstaining += g.Seats; }
-                    string why = governmentParty ? "the government's own party - carries its frames" : ownAlternative ? (role == Elections.PlayerRole.Support ? "its own alternative over the frames of the government it supports - a break with the government" : "its own alternative") : side > 0 ? $"the government's frames ({g.Alignment:+0.00;-0.00}) over {alternative.TabledBy}'s ({a:+0.00;-0.00})" : side < 0 ? $"{alternative.TabledBy}'s frames ({a:+0.00;-0.00}) over the government's ({g.Alignment:+0.00;-0.00})" : "abstains - aligned with neither";
+                    string why = governmentParty ? "the government's own party - carries its frames" : ownAlternative ? (role == Elections.PlayerRole.Support ? "its own alternative over the frames of the government it supports - a break with the government" : "its own alternative") : side > 0 ? $"the government's frames ({g.Alignment:+0.00;-0.00}) over {PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} ({a:+0.00;-0.00})" : side < 0 ? $"{PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} frames ({a:+0.00;-0.00}) over the government's ({g.Alignment:+0.00;-0.00})" : "abstains - aligned with neither";
                     sides.Add(new DivisionSide { Abbrev = g.Party.Abbrev, ShortName = g.Party.ShortName, Seats = g.Seats, Side = side, Alignment = side > 0 ? g.Alignment : side < 0 ? a : 0f, Reason = why });
                 }
                 bool governmentAdopted = forG >= forA;   // a tie keeps the government's frames - the tie rule of the statute is sourced in the record and applied there when it lands
                 BudgetBill adopted = governmentAdopted ? government : alternative;
-                country.Divisions.Append(governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {alternative.TabledBy}'s alternative" : $"Annual budget: {alternative.TabledBy}'s alternative frames adopted, {forA} to {forG}, over the government's",
+                country.Divisions.Append(governmentAdopted ? $"Annual budget: the government's frames adopted, {forG} to {forA}, over {PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} alternative" : $"Annual budget: {PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} alternative frames adopted, {forA} to {forG}, over the government's",
                     CurrentDate, ParliamentSystem.GetSeatWeightedAlignment(country, concernG), true, concernG.Direction, (int)BillAxis.Fiscal, sides);   // PASSED either way: the chamber adopted a budget - the title says whose
                 string breakBy = alternative.TabledBy != null && country.Government != null && country.Government.RoleOf(alternative.TabledBy) == Elections.PlayerRole.Support ? alternative.TabledBy : null;
-                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = alternative.TabledBy + "'S ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
+                country.Divisions.Entries[country.Divisions.Entries.Count - 1].Contest = new DivisionContest { ProposalFor = "THE GOVERNMENT'S FRAMES", ProposalAgainst = PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, true, true) + " ALTERNATIVE", VotesFor = forG, VotesAgainst = forA, Abstentions = abstaining, AlternativeAdopted = !governmentAdopted, BreakBy = breakBy };   // PS-3f (§633): the two proposals on the record
                 if (breakBy != null) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {breakBy} voted its own alternative budget against the government's frames"); Debug.Log($"BUDGET: {country.Id} - {breakBy}, a support party, broke with the government on its budget"); }
-                if (!governmentAdopted) { country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government lost its budget - {alternative.TabledBy}'s frames adopted; it governs on the adopted frames (sweden/budget_procedure.md [BA-3]); the constitution requires no resignation, and the AI government offers none (a premise, PS-3i §636)"); }
+                if (!governmentAdopted) { country.Government?.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the government lost its budget - {PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} frames adopted; it governs on the adopted frames (sweden/budget_procedure.md [BA-3]); the constitution requires no resignation, and the AI government offers none (a premise, PS-3i §636)"); }
                 ParliamentSystem.ApplyBillResult(country, adopted, true, ApplyBudgetBillSpendingAndSwf, CurrentDate.Year, governmentAdopted);   // A-LOOP q37 (review 878b's L-5): an alternative adopted over the government's frames is no move of the government's - its rates charge it nothing and enter no net
                 if (governmentAdopted) { FinancePartner.CreditAdopted(country, government); }   // §755: the partner's step counted only where its bill was adopted
-                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{alternative.TabledBy}'s alternative budget adopted", country.State.ApprovalRating - approvalBefore);
-                Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {alternative.TabledBy}'s alternative {forA}; {(governmentAdopted ? "the government's" : alternative.TabledBy + "'s")} frames adopted");
+                ApprovalLedgerRecorder.RecordEvent(country, CurrentDate, governmentAdopted ? "The government's budget adopted" : $"{PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} alternative budget adopted", country.State.ApprovalRating - approvalBefore);
+                Debug.Log($"BUDGET: {country.Id} - the frame decision: the government's {forG} seats, {PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true)} alternative {forA}; {(governmentAdopted ? "the government's" : PoliSim.Wording.EnglishText.Possessive(alternative.TabledBy, false, true))} frames adopted");
                 return;
             }
             // The government's bill alone (no alternative tabled, or a chamber that weighs none - WeighsAlternative, US-20): for or against; a failed budget leaves the old one standing, stated.
@@ -1550,7 +1550,7 @@ namespace PoliSim.Simulation
                 {
                     differs = kv.Value[i] >= 0f && (standing?.BracketRates == null || i >= standing.BracketRates.Length || System.Math.Abs(kv.Value[i] - standing.BracketRates[i]) > 1e-6f);
                 }
-                if (differs) { parts.Add(TaxWords(kv.Key) + "'s schedule"); }
+                if (differs) { parts.Add(PoliSim.Wording.EnglishText.Possessive(TaxWords(kv.Key), false) + " schedule"); }
             }
             return ActWords(BudgetBill.StatutePart.Rates) + ": " + (parts.Count > 0 ? string.Join(", ", parts) : "the standing rates");
         }
@@ -3883,7 +3883,7 @@ namespace PoliSim.Simulation
                 country.Divisions.Append(vote.Title(), CurrentDate, vote.Carried ? 1f : -1f, vote.Carried, 0f, (int)BillAxis.Fiscal, vote.Sides);
                 country.Divisions.Entries[country.Divisions.Entries.Count - 1].Motion = true;
                 if (vote.Carried && successor != null) { InstallSuccessor(country, successor, verdict, vote); }
-                else if (vote.Carried) { Debug.Log($"CONFIDENCE: {countryId} - {country.PlayerPartyAbbrev}'s candidate is elected and no government can be drawn on its party; none installed"); }   // latent (§754)
+                else if (vote.Carried) { Debug.Log($"CONFIDENCE: {countryId} - {PoliSim.Wording.EnglishText.Possessive(country.PlayerPartyAbbrev, false, true)} candidate is elected and no government can be drawn on its party; none installed"); }   // latent (§754)
                 Debug.Log($"CONFIDENCE: {countryId} - {vote.Title()}{(vote.Refusal != null ? " - refused by " + vote.Refusal : string.Empty)}");
                 return true;
             }
@@ -4169,10 +4169,10 @@ namespace PoliSim.Simulation
             var supporters = new List<string>();
             foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.InCabinet && answer.Accepts && !vote.Refusers.Contains(answer.Party)) { supporters.Add(answer.Party); } }   // a refusing supporter carries nothing
             Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromProposal(country, proposal, supporters, verdict.Investiture.Kind, CurrentDate,
-                $"the constructive vote of no confidence: the Bundestag elected {proposal.Formateur}'s candidate chancellor, {vote.For} of {vote.Members} members (Art. 67 GG)",
+                $"the constructive vote of no confidence: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor, {vote.For} of {vote.Members} members (Art. 67 GG)",
                 g.Kind, g.Executive, g.StandingRefusals, _world);
-            formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {proposal.Formateur}'s candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {g.PmParty}'s chancellor dismissed (Art. 67 GG)");
-            if (vote.SeatedByGroup) { formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} sits in {proposal.Formateur}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }   // §754
+            formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: the Bundestag elected {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} candidate chancellor by the constructive vote, {vote.For} of {vote.Members} members; {PoliSim.Wording.EnglishText.Possessive(g.PmParty, false, true)} chancellor dismissed (Art. 67 GG)");
+            if (vote.SeatedByGroup) { formed.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} sits in {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }   // §754
             country.Government = formed;
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);
@@ -4437,7 +4437,7 @@ namespace PoliSim.Simulation
         private string CandidateOf(Country country, Elections.SpeakerRound round, string party)
         {
             foreach ((string abbrev, string candidate, string _) in RoundReading(country, round).Candidacies(country.Id)) { if (abbrev == party) { return candidate + " (" + party + ")"; } }
-            return party + "'s candidate";
+            return PoliSim.Wording.EnglishText.Possessive(party, false, true) + " candidate";
         }
 
         private void AskNext(Country country, Elections.SpeakerRound round)
@@ -4554,13 +4554,13 @@ namespace PoliSim.Simulation
         {
             if (IsBundestagRound(round)) { PersonBallot(country, g, round); return; }   // §712-§713: the Bundestag votes on persons, in every phase
             Elections.ProposalVerdict verdict = Elections.Formateur.Answer(country, round.Proposal, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
-            string title = $"Investiture: {round.Proposal.Formateur}'s proposal, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "approved" : "rejected")}";
+            string title = $"Investiture: {PoliSim.Wording.EnglishText.Possessive(round.Proposal.Formateur, false, true)} proposal, {string.Join("+", round.Proposal.CabinetParties)} - {(verdict.Passes ? "approved" : "rejected")}";
             RecordInvestiture(country, verdict, title, verdict.Passes);
             if (verdict.Passes) { Install(country, g, round, verdict); return; }
             round.Rejections++;
             var refusals = new List<string>();
             foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.Accepts) { refusals.Add(answer.Party + " " + answer.Reason); } }
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {round.Proposal.Formateur}'s proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: the Riksdag rejects {PoliSim.Wording.EnglishText.Possessive(round.Proposal.Formateur, false, true)} proposal ({verdict.Reason}{(refusals.Count > 0 ? ": " + string.Join("; ", refusals) : string.Empty)}); {round.Rejections} of {Elections.SpeakerRound.ProposalLimit} rejected (RF 6 kap. 5 §)");
             Debug.Log($"SPEAKER: {country.Id} - {title}; {round.Rejections} rejected{(refusals.Count > 0 ? " - " + string.Join("; ", refusals) : string.Empty)}");
             if (round.Rejections >= Elections.SpeakerRound.ProposalLimit) { BreakOff(country, g, round); return; }
             AskNext(country, round);
@@ -4650,7 +4650,7 @@ namespace PoliSim.Simulation
                 {
                     round.Proposal = government;
                     Install(country, g, round, verdict, $"the chancellor's election {round.Occasion}: {CandidateOf(country, round, leader)} elected {(firstPhase ? "on the Bundespräsident's proposal" : "in the fourteen days")} with a majority of the members, {votes[leader]} (Art. 63 {abs} GG)");
-                    if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {CandidateOf(country, round, leader)}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
+                    if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {PoliSim.Wording.EnglishText.Possessive(CandidateOf(country, round, leader), false)} cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
                     return;
                 }
                 round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {CandidateOf(country, round, leader)} is elected, and no government can be drawn on its party; the round goes on");
@@ -4760,7 +4760,7 @@ namespace PoliSim.Simulation
             if (SeatedGroupPartner(country, winner) is string winnerPartner)
             {
                 government.CabinetParties.Add(winnerPartner);
-                if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {CandidateOf(country, round, winner)}'s cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
+                if (winnerPartner == player) { round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {player}, the player's party, sits in {PoliSim.Wording.EnglishText.Possessive(CandidateOf(country, round, winner), false)} cabinet as its parliamentary group's partner - a group governs as one (the game's premise)"); seatedByGroup = true; }
             }
             foreach (KeyValuePair<string, List<CabinetPortfolio>> kv in Elections.GovernmentRecord.GamsonPosts(country, government.CabinetParties, winner, CurrentDate)) { government.Posts[kv.Key] = new List<CabinetPortfolio>(kv.Value); }
             government.FreezeTabled(country, CurrentDate, _world);
@@ -4850,7 +4850,7 @@ namespace PoliSim.Simulation
                 ? $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, a majority of the members (Art. 63 Abs. 4 Satz 2 GG)"
                 : $"the chancellor's election {round.Occasion}: {candidate} elected with the most votes, {votes[winner]}, short of a majority, and appointed within the seven days rather than the Bundestag dissolved - the premise for the Bundespräsident's choice, stated (Art. 63 Abs. 4 Satz 3 GG)");
             // the review's fourth pass (E): the rule that seated the player's party is on the government it sits in, where the desk reads it
-            if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {candidate}'s cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
+            if (seatedByGroup) { country.Government.Breaks.Add($"{CurrentDate:yyyy-MM-dd}: {player} sits in {PoliSim.Wording.EnglishText.Possessive(candidate, false)} cabinet as its parliamentary group's partner - a group votes and governs as one (the game's premise)"); }
         }
 
         /// <summary>
@@ -4884,7 +4884,7 @@ namespace PoliSim.Simulation
                 if (IsSmallerGroupMember(country, key) && partner != null && chose.ContainsKey(partner))
                 {
                     choice = chose[partner];
-                    reason = "votes with its parliamentary group, as one (" + partner + "'s side) - the game's premise: a group votes and governs as one";   // the review's fourth pass (E): the premise on the division the player reads
+                    reason = "votes with its parliamentary group, as one (" + PoliSim.Wording.EnglishText.Possessive(partner, false, true) + " side) - the game's premise: a group votes and governs as one";   // the review's fourth pass (E): the premise on the division the player reads
                     chose[key] = choice;
                     if (choice != null) { votes[choice] += chamber.Seats[p]; }
                     cast.Add((key, choice, reason));
@@ -4895,7 +4895,7 @@ namespace PoliSim.Simulation
                     // §712 (the review's defect 1): a party that accepted a tabled government votes for its candidate - the coalition's word; without it a
                     // coalition every partner accepted could fail its own ballot
                     choice = partnerOf;
-                    reason = "accepted " + partnerOf + "'s government - votes for its candidate (the coalition's word, the game's premise)";
+                    reason = "accepted " + PoliSim.Wording.EnglishText.Possessive(partnerOf, false, true) + " government - votes for its candidate (the coalition's word, the game's premise)";
                 }
                 else if (choice != null) { reason = "its own candidate"; }
                 else if (!parties[p].HasPosition) { reason = "holds no surveyed position to be near to - abstains (the game's premise)"; }   // the SSW: compatibility 0 everywhere would hand its vote to the order's first
@@ -5166,13 +5166,13 @@ namespace PoliSim.Simulation
             foreach (Elections.PartyAnswer answer in verdict.Answers) { if (!answer.InCabinet && answer.Accepts) { supporters.Add(answer.Party); } }
             basis ??= bundestag
                 ? $"the chancellor's election {round.Occasion}: {CandidateOf(country, round, proposal.Formateur)} elected by a majority of the Bundestag's members (Art. 63 Abs. {(round.Phase <= 1 ? 2 : 3)} GG)"
-                : $"the Speaker's round {round.Occasion}: {proposal.Formateur}'s proposal won its investiture";
+                : $"the Speaker's round {round.Occasion}: {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} proposal won its investiture";
             Elections.GovernmentRecord formed = Elections.GovernmentRecord.FromProposal(country, proposal, supporters, verdict.Investiture.Kind, CurrentDate,
                 basis, g.Kind, g.Executive, round.Refusals, _world);
             round.Stage = Elections.RoundStage.Concluded;
             round.Log.Add(bundestag
                 ? $"{CurrentDate:yyyy-MM-dd}: the Bundestag elects {CandidateOf(country, round, proposal.Formateur)}; the Bundespräsident appoints, and {string.Join("+", formed.Cabinet)} takes office"
-                : $"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {proposal.Formateur}'s proposal; {string.Join("+", formed.Cabinet)} takes office");
+                : $"{CurrentDate:yyyy-MM-dd}: the Riksdag approves {PoliSim.Wording.EnglishText.Possessive(proposal.Formateur, false, true)} proposal; {string.Join("+", formed.Cabinet)} takes office");
             country.Government = formed;
             ResetArrivalBudgetWindow(country.Id);
             CloseBudgetWindowIfNotGoverning(country);   // §698 (the review's defect 2, the same gap here)
@@ -5283,19 +5283,19 @@ namespace PoliSim.Simulation
             refusedBecause = null;
             if (accept)
             {
-                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} accepts {round.Asked}'s offer");
+                round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} accepts {PoliSim.Wording.EnglishText.Possessive(round.Asked, false, true)} offer");
                 TableAndVote(country, round, round.Proposal);
                 return true;
             }
             round.Declines.Add(country.PlayerPartyAbbrev + ">" + round.Asked);
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} declines {round.Asked}'s offer and stays in opposition");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {country.PlayerPartyAbbrev} declines {PoliSim.Wording.EnglishText.Possessive(round.Asked, false, true)} offer and stays in opposition");
             Elections.FormationProposal without = DraftProposal(country, round, round.Asked);
             Elections.ProposalVerdict verdict = Involves(without, country.PlayerPartyAbbrev) ? null : Elections.Formateur.Answer(country, without, CurrentDate, _world, RoundReading(country, round), RoundLines(country, round), country.PlayerPartyAbbrev);
             // §712 (the review's defect 2): in the fourteen days the ballot decides, not the investiture - the government without the player is tabled
             // where every invited party accepts it and it splits no group, and its candidate meets the nominations standing
             bool personBallot = IsBundestagRound(round);   // §713: every phase
             if (verdict != null && (personBallot ? verdict.AllAccept && verdict.Investiture != null && !verdict.Investiture.SplitsJointGroup : verdict.Passes)) { TableAndVote(country, round, without); return true; }
-            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {country.PlayerPartyAbbrev}'s seats - {(IsBundestagRound(round) ? (round.Phase <= 1 ? "the Bundespräsident proposes the next party's candidate" : "the next nomination standing is asked") : "the Speaker moves on")}");
+            round.Log.Add($"{CurrentDate:yyyy-MM-dd}: {round.Asked} cannot form without {PoliSim.Wording.EnglishText.Possessive(country.PlayerPartyAbbrev, false, true)} seats - {(IsBundestagRound(round) ? (round.Phase <= 1 ? "the Bundespräsident proposes the next party's candidate" : "the next nomination standing is asked") : "the Speaker moves on")}");
             if (IsBundestagRound(round) && round.Phase >= 2 && !round.StoodInPhase2.Contains(round.Asked)) { round.StoodInPhase2.Add(round.Asked); }   // §706: its nomination has had its turn
             AskNext(country, round);
             return true;
@@ -5319,7 +5319,7 @@ namespace PoliSim.Simulation
             }
             // §646 (R2): the Speaker's round, dated, on the sitting chamber's declarations - it installs what wins its investiture, or breaks off at
             // RF 6:5's limit to an extra election (§636's single round was the four proposals' answer at once).
-            OpenSpeakerRound(country, Elections.GovernmentFormation.SittingVintage(country), $"after the discharge of {fallen.PmParty}'s government", refusals, midTerm: true);   // §653: the mid-term reading
+            OpenSpeakerRound(country, Elections.GovernmentFormation.SittingVintage(country), $"after the discharge of {PoliSim.Wording.EnglishText.Possessive(fallen.PmParty, false, true)} government", refusals, midTerm: true);   // §653: the mid-term reading
         }
 
         /// <summary>PS-3k (§638): a record's shift by party key as one per the setup's parties, or null where none is stored (an older campaign replays as it ran).</summary>

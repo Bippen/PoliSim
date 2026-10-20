@@ -284,12 +284,12 @@ namespace PoliSim.UI
 
             GUIStyle note = DeskCaptionWrapped(8.5f, PoliSimTheme.TextMuted);
             string noteText = Invariant(
-                "± QUOTED AT {0}'s {1:F1} % — A POLL'S MARGIN DEPENDS ON THE SHARE MEASURED, SO IT IS "
+                "± QUOTED AT {0} {1:F1} % — A POLL'S MARGIN DEPENDS ON THE SHARE MEASURED, SO IT IS "
                 + "NOT ONE NUMBER FOR THE WHOLE POLL. PRECISION IMPROVES WITH THE SQUARE ROOT OF THE "
                 + "SAMPLE, SO EACH POINT COSTS MORE THAN THE LAST. REGIONAL, DEMOGRAPHIC AND TURNOUT "
                 + "DEPTH ARE DIFFERENT KINDS OF ANSWER, NOT NARROWER ONES, AND ARE DELIBERATELY NOT "
                 + "PRICED PER POINT. SAMPLE SIZES AND PRICES ARE ILLUSTRATIVE; THE ± FIGURES "
-                + "FOLLOW FROM THE SAMPLE SIZES.", s.QuotedPartyName, s.QuotedShare * 100.0);
+                + "FOLLOW FROM THE SAMPLE SIZES.", UiFormat.Possessive(s.QuotedPartyName, true, true), s.QuotedShare * 100.0);
             float noteHeight = Mathf.Ceil(note.CalcHeight(new GUIContent(noteText), r.width));
             var noteRect = new Rect(r.x, y, r.width, noteHeight);
             if (Event.current.type == EventType.Repaint)

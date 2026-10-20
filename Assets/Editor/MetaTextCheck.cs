@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using PoliSim.UI;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -54,6 +55,18 @@ namespace PoliSim.EditorTools
     /// <c>DERIVED</c> / <c>DECLARED</c> edge idiom (R-C6 — the player's own reading of where an
     /// edge comes from); <c>PROVISIONAL</c> on the day-one government while the real one is not on record
     /// (K-1, 2026-09-24 - a standing of the world, like PRELIMINARY of a figure). Anything else with these words is a hit.</para>
+    ///
+    /// <para><b>THE POSSESSIVE (UI-1; J8, Elias's ruling of 2026-10-19: one possessive helper).</b> Every runtime source under <c>Assets/Scripts</c> but the
+    /// film harness, read by a lexer of its own: a possessive built BY HAND on a value - an apostrophe-s (straight, curly, or the curly one escaped; either
+    /// case) straight after an interpolation hole or a format placeholder, or a literal that OPENS with one and is joined to a value (after <c>+</c>,
+    /// <c>+=</c>, a ternary's <c>?</c> or <c>:</c>, or as an argument of Append, Concat or Insert) - is a hit, in a hole's nested literals too; the value's
+    /// possessive goes through <see cref="UiFormat.Possessive(string)"/> or its sentence-case overload, which writes "UNITED STATES'" where the hand wrote
+    /// "STATES'S". Fixed prose whose noun is in the literal ("the government's") is never a hit, and neither is a literal inside a diagnostic CALL (Unity's
+    /// log, an exception's constructor, an assertion) - by the call, not the line. A year's possessive is allowed by its literal, while that literal holds
+    /// it alone. THE TEETH, every run: a planted form per class caught, planted clean forms not flagged, the allow-list both ways, the harness shown to
+    /// hold what the walk excludes, and the helper's battery. ⚠ OUT OF REACH, by design: the apostrophe alone built by hand (<c>name + "' "</c> - the
+    /// same characters close a quotation, <c>'{x}'</c>); a log's words built in a local first (judged where the literal stands, so a hit); a literal joined to a literal (<c>"the government" + "'s"</c>, flagged as built by hand); a hole's nested verbatim or interpolated
+    /// string holding a brace or a quote (the hole skipper reads them as plain strings); escaped braces in a format string that is not interpolated.</para>
     /// </summary>
     public static class MetaTextCheck
     {
@@ -192,6 +205,46 @@ namespace PoliSim.EditorTools
             ("RangeCaptions.cs", ""),
         };
 
+        /// <summary>UI-1: an apostrophe-s closing an interpolation hole (marked \u0001 by the possessive lexer), not followed by a letter.</summary>
+        private static readonly Regex HolePossessive = new Regex(@"\u0001['’][sS](?!\p{L})");
+
+        /// <summary>UI-1: an apostrophe-s closing a format placeholder ("{0}'s") in a literal that is not interpolated.</summary>
+        private static readonly Regex PlaceholderPossessive = new Regex(@"\}['’][sS](?!\p{L})");
+
+        /// <summary>UI-1: a literal that opens with an apostrophe-s, not followed by a letter - a hand-built possessive when it is joined to a value.</summary>
+        private static readonly Regex LeadingPossessive = new Regex(@"^['’][sS](?!\p{L})");
+
+        /// <summary>UI-1 (the review's L2): a call whose literals are developer text - Unity's log, an exception's constructor, an assertion, the console. By the
+        /// CALL a literal sits in, not by its line: a player-visible call sharing a line with a log is still read, and Math.Log is not a log.</summary>
+        private static readonly Regex DiagnosticCallee = new Regex(@"^(?:(?:UnityEngine\.)?Debug\.(?:Log\w*|Assert\w*)|(?:System\.)?\w*Exception|(?:\w+\.)?Assert\.\w+|(?:System\.)?Console\.Write(?:Line)?)$");
+
+        /// <summary>UI-1: a call that joins its arguments into one string - a literal opening with 's passed to it is joined to a value.</summary>
+        private static readonly Regex JoiningCallee = new Regex(@"(?:^|\.)(?:Append|Concat|Insert)$");
+
+        /// <summary>UI-1: (file suffix, literal substring, reason) - a possessive on a value that is not a name, allowed by its LITERAL and only while that
+        /// literal holds exactly one possessive (the review's L3: a second one added to an allowed literal is a hit).</summary>
+        private static readonly (string File, string LiteralContains, string Reason)[] AllowPossessive =
+        {
+            ("EnergyConnectionQueue.cs", "'S VOLUME, BY CONVENTION)", "a year's volume - a year is not a name"),
+            ("PresidentialElection.cs", "{2}'s {3:N0} valid votes", "the gate year's valid votes - a year is not a name"),
+            ("UsCongressElection.cs", "{5}'s {6:0.0000}", "the base year's vote - a year is not a name"),
+            ("UsPresidentialElection.cs", "{1}'s by the normalised uniform swing", "the prior election year's states - a year is not a name"),
+        };
+
+        /// <summary>UI-1: one string literal as the possessive pass reads it - its text with escapes decoded and every interpolation hole marked \u0001, its
+        /// line, whether it is interpolated, whether a diagnostic call holds it, the innermost call it is an argument of, and the two code characters
+        /// before it (past its $ and @).</summary>
+        private struct PossessiveLiteral
+        {
+            public string Marked;
+            public int Line;
+            public bool Interpolated;
+            public bool Diagnostic;
+            public string Callee;
+            public char Before;
+            public char BeforeThat;
+        }
+
         public static void Run()
         {
             CheckExit.ArmLogFold();
@@ -256,8 +309,11 @@ namespace PoliSim.EditorTools
                 }
             }
 
+            string possessiveReport = PossessivePass(projectRoot, hits);
+
             var sb = new StringBuilder();
             sb.Append($"=== MetaTextCheck: {files.Count} files, {literals} string literals scanned, {hits.Count} hit(s) ===\n");
+            sb.Append(possessiveReport);
             if (hits.Count > 0)
             {
                 sb.Append("  hits:\n");
@@ -277,6 +333,243 @@ namespace PoliSim.EditorTools
             sb.Append($"\n=== MetaTextCheck: {(hits.Count == 0 ? "CLEAN - no developer-facing text on a player surface" : hits.Count + " hit(s) - developer text on a player surface")} ===\n");
             Debug.Log(sb.ToString());
             CheckExit.Finish(hits.Count == 0 ? 0 : 1);
+        }
+
+        /// <summary>UI-1: the possessive pass - the runtime sources scanned, the teeth run, every finding added to <paramref name="hits"/>; returns the report's lines.</summary>
+        private static string PossessivePass(string projectRoot, List<string> hits)
+        {
+            var report = new StringBuilder();
+            int files = 0, found = 0, allowed = 0;
+            foreach (string file in Directory.GetFiles(Path.Combine(projectRoot, "Assets/Scripts"), "*.cs", SearchOption.AllDirectories))
+            {
+                string rel = file.Substring(projectRoot.Length + 1).Replace('\\', '/');
+                if (IsHarness(rel)) { continue; }   // the film harness stages and logs; its words are not the game's
+                if (rel == HelperFile) { continue; }   // the helper is where the possessive is built - once, by its rule
+                files++;
+                foreach (PossessiveLiteral lit in HandBuiltPossessives(StripComments(SourceText.Read(file))))
+                {
+                    if (IsAllowedPossessive(rel, lit.Marked)) { allowed++; continue; }
+                    found++;
+                    hits.Add($"  {rel}:{lit.Line}  [possessive by hand - UiFormat.Possessive]  \"{Truncate(lit.Marked.Replace('\u0001', '#'), 110)}\"");
+                }
+            }
+
+            // THE TEETH: each planted form's right answer is known, both directions - one per class the pass reads.
+            (string Code, bool Hit)[] planted =
+            {
+                ("class A { string F(string n) => $\"{n}'s cabinet\"; }", true),
+                ("class A { string F(string n) => n.ToUpperInvariant() + \"'S GOODS\"; }", true),
+                ("class A { string F(string n) => string.Format(\"{0}'s candidate\", n); }", true),
+                ("class A { string F(string n) => n +\n    \"\u2019s\"; }", true),
+                ("class A { string F(string n) => n + \"\\u2019s\"; }", true),   // the curly form written as an escape in the source
+                ("class A { string F(string a, string k, bool c) => $\"{(c ? a : k + \"'s\")} frames\"; }", true),   // nested in a hole
+                ("class A { void F(string n) { Debug.Log(\"x\"); Breaks.Add($\"{n}'s cabinet\"); } }", true),   // shares its line with a log
+                ("class A { string F(string n) { double v = Math.Log(2.0); return $\"{n}'s\"; } }", true),   // Math.Log is not a log
+                ("class A { void F(string s) { s += \"'s\"; } }", true),
+                ("class A { void F(StringBuilder sb) { sb.Append(\"'s\"); } }", true),
+                ("class A { string F(string n, bool c) => n + (c ? \"'S\" : \"\"); }", true),   // a ternary arm
+                ("class A { string F() => \"the government's frames\"; }", false),
+                ("class A { string F(string n) => UiFormat.Possessive(n) + \" cabinet\"; }", false),
+                ("class A { void F(string n) { Debug.Log($\"{n}'s chamber\"); } }", false),
+                ("class A { void F(string n) {\n    Debug.LogError(\n        $\"{n}'s chamber\"); } }", false),   // a log's literal on its continuation line
+                ("class A { void F(string n) { throw new ArgumentException($\"{n}'s chamber\"); } }", false),
+                ("class A { bool F(string n) => n.IndexOf(\"'s candidate\") >= 0; }", false),
+                ("class A { string F() => $\"{{n}}'s\"; }", false),   // escaped braces are text, not a hole
+                ("class A { void F(string n, bool c) { Debug.Log($\"{(c ? n + \"'s\" : n)} x\"); } }", false),   // nested in a log's hole
+                ("class A { char Q() => '\"'; string F(string n) => n.IndexOf(\"'s\") > 0 ? \"x\" : \"y\"; }", false),   // a char literal holding a quote
+            };
+            int caught = 0, plantedHits = 0, clean = 0, cleanFlagged = 0;
+            foreach ((string code, bool hit) in planted)
+            {
+                bool got = false;
+                foreach (PossessiveLiteral _ in HandBuiltPossessives(code)) { got = true; }
+                if (hit) { plantedHits++; if (got) { caught++; } else { hits.Add("  [possessive teeth] a planted hand-built form was NOT caught: " + code); } }
+                else { clean++; if (got) { cleanFlagged++; hits.Add("  [possessive teeth] a planted clean form WAS flagged: " + code); } }
+            }
+
+            // THE ALLOW-LIST'S TEETH: a row allows its own literal in its own file, and nothing with a second possessive or elsewhere.
+            (string File, string Marked, bool Allowed)[] allowCases =
+            {
+                ("Assets/Scripts/Simulation/EnergyConnectionQueue.cs", "'S VOLUME, BY CONVENTION)", true),
+                ("Assets/Scripts/Simulation/EnergyConnectionQueue.cs", "'S VOLUME, BY CONVENTION) OVER \u0001'S", false),
+                ("Assets/Scripts/UI/GameController.cs", "'S VOLUME, BY CONVENTION)", false),
+            };
+            int allowRight = 0;
+            foreach ((string file, string marked, bool want) in allowCases)
+            {
+                if (IsAllowedPossessive(file, marked) == want) { allowRight++; }
+                else { hits.Add($"  [possessive teeth] the allow-list answers {!want} for \"{marked.Replace('\u0001', '#')}\" in {file}"); }
+            }
+
+            // THE HARNESS EXCLUSION'S TEETH: the film driver does hold hand-built possessives (strings it builds before it logs them), so the exclusion is what keeps them out.
+            int harnessHeld = 0;
+            string driver = Path.Combine(projectRoot, "Assets/Scripts/Testing/UiScreenshotDriver.cs");
+            if (File.Exists(driver)) { foreach (PossessiveLiteral _ in HandBuiltPossessives(StripComments(SourceText.Read(driver)))) { harnessHeld++; } }
+            if (harnessHeld == 0) { hits.Add("  [possessive teeth] the film driver holds no hand-built possessive, so the harness exclusion is shown excluding nothing"); }
+
+            // THE HELPER'S BATTERY: the ruling's words, the sentence's case, a party's key, an absent name.
+            (string Got, string Want)[] battery =
+            {
+                (UiFormat.Possessive("UNITED STATES"), "UNITED STATES'"),
+                (UiFormat.Possessive("United States"), "United States'"),
+                (UiFormat.Possessive("SWEDEN"), "SWEDEN'S"),
+                (UiFormat.Possessive("Sweden"), "Sweden's"),
+                (UiFormat.Possessive("Harris", false), "Harris'"),
+                (UiFormat.Possessive("KD", false, true), "KD's"),
+                (UiFormat.Possessive("S", false, true), "S's"),
+                (UiFormat.Possessive("S", true, true), "S'S"),
+                (UiFormat.Possessive("PiS", false, true), "PiS's"),
+                (UiFormat.Possessive("2025", true), "2025'S"),
+                (UiFormat.Possessive(null), string.Empty),
+                (UiFormat.Possessive(string.Empty, true, true), string.Empty),
+            };
+            int answered = 0;
+            foreach ((string got, string want) in battery)
+            {
+                if (got == want) { answered++; } else { hits.Add($"  [possessive helper] reads \"{got}\" where \"{want}\" is owed"); }
+            }
+
+            report.Append($"  the possessive (UI-1): {files} runtime files, {found} hand-built on a value, {allowed} allowed by literal (a year); "
+                + $"planted {caught} of {plantedHits} caught and {cleanFlagged} of {clean} clean flagged; the allow-list {allowRight} of {allowCases.Length}; "
+                + $"the harness excluded ({harnessHeld} held there); the helper {answered} of {battery.Length}\n");
+            return report.ToString();
+        }
+
+        private static bool IsHarness(string rel) => rel.StartsWith("Assets/Scripts/Testing/", StringComparison.Ordinal);
+
+        /// <summary>UI-1: the one file that builds a possessive by hand, by the rule every other site calls.</summary>
+        private const string HelperFile = "Assets/Scripts/Data/EnglishText.cs";
+
+        /// <summary>UI-1: a possessive the allow-list holds - its file and its literal named by a row, and the literal holding that one possessive alone.</summary>
+        private static bool IsAllowedPossessive(string rel, string marked)
+        {
+            int count = HolePossessive.Matches(marked).Count + PlaceholderPossessive.Matches(marked).Count + (LeadingPossessive.IsMatch(marked) ? 1 : 0);
+            if (count != 1) { return false; }
+            foreach ((string f, string contains, string _) in AllowPossessive)
+            {
+                if (rel.EndsWith(f, StringComparison.Ordinal) && marked.Contains(contains)) { return true; }
+            }
+
+            return false;
+        }
+
+        /// <summary>UI-1: every literal in <paramref name="code"/> (comments already stripped) that builds a possessive by hand on a value - an apostrophe-s
+        /// after a hole or a placeholder, or a literal opening with one and joined to a value (after +, +=, a ternary's ? or :, or as an argument of
+        /// Append, Concat or Insert) - outside a diagnostic call.</summary>
+        private static IEnumerable<PossessiveLiteral> HandBuiltPossessives(string code)
+        {
+            var all = new List<PossessiveLiteral>();
+            LexPossessive(code, 1, false, all);
+            foreach (PossessiveLiteral lit in all)
+            {
+                if (lit.Diagnostic) { continue; }
+                bool hole = lit.Interpolated ? HolePossessive.IsMatch(lit.Marked) : PlaceholderPossessive.IsMatch(lit.Marked);
+                bool joined = LeadingPossessive.IsMatch(lit.Marked)
+                    && (lit.Before == '+' || (lit.Before == '=' && lit.BeforeThat == '+') || lit.Before == '?' || lit.Before == ':'
+                        || ((lit.Before == '(' || lit.Before == ',') && JoiningCallee.IsMatch(lit.Callee)));
+                if (hole || joined) { yield return lit; }
+            }
+        }
+
+        /// <summary>UI-1: the possessive pass's own lexer - string literals (plain, verbatim, interpolated, their escapes decoded), char literals skipped,
+        /// and a stack of the calls open at each point (the name before each open parenthesis), so a literal knows the call it is an argument of. An
+        /// interpolation hole is code: it is lexed again, inheriting whether a diagnostic call holds it.</summary>
+        private static void LexPossessive(string code, int line, bool inDiagnostic, List<PossessiveLiteral> found)
+        {
+            var calls = new List<string>();
+            int i = 0;
+            while (i < code.Length)
+            {
+                char c = code[i];
+                if (c == '\n') { line++; i++; continue; }
+                if (c == '\'')
+                {
+                    int q = i + 1;
+                    if (q < code.Length && code[q] == '\\') { q++; }
+                    q++;
+                    while (q < code.Length && code[q] != '\'' && code[q] != '\n') { q++; }
+                    i = q + 1;
+                    continue;
+                }
+
+                if (c == '(') { calls.Add(CalleeBefore(code, i)); i++; continue; }
+                if (c == ')') { if (calls.Count > 0) { calls.RemoveAt(calls.Count - 1); } i++; continue; }
+                if (c != '"') { i++; continue; }
+
+                int p = i - 1;
+                bool verbatim = false, interpolated = false;
+                while (p >= 0 && (code[p] == '$' || code[p] == '@')) { if (code[p] == '$') { interpolated = true; } else { verbatim = true; } p--; }
+                while (p >= 0 && char.IsWhiteSpace(code[p])) { p--; }
+                char before = p >= 0 ? code[p] : '\0';
+                char beforeThat = p >= 1 ? code[p - 1] : '\0';
+
+                var marked = new StringBuilder();
+                var holes = new List<string>();
+                int start = line;
+                int j = i + 1;
+                while (j < code.Length)
+                {
+                    char d = code[j];
+                    if (verbatim && d == '"' && j + 1 < code.Length && code[j + 1] == '"') { marked.Append('"'); j += 2; continue; }
+                    if (!verbatim && d == '\\' && j + 1 < code.Length)
+                    {
+                        if (code[j + 1] == 'u' && j + 5 < code.Length && int.TryParse(code.Substring(j + 2, 4), System.Globalization.NumberStyles.HexNumber, null, out int unit))
+                        {
+                            marked.Append((char)unit);
+                            j += 6;
+                            continue;
+                        }
+                        marked.Append(code[j + 1]);
+                        j += 2;
+                        continue;
+                    }
+                    if (interpolated && (d == '{' || d == '}') && j + 1 < code.Length && code[j + 1] == d) { marked.Append(d); j += 2; continue; }
+                    if (interpolated && d == '{')
+                    {
+                        int depth = 0;
+                        int k = j;
+                        while (k < code.Length)
+                        {
+                            char h = code[k];
+                            if (h == '"') { k++; while (k < code.Length && code[k] != '"') { if (code[k] == '\\') { k++; } k++; } k++; continue; }
+                            if (h == '{') { depth++; }
+                            else if (h == '}') { depth--; if (depth == 0) { break; } }
+                            else if (h == '\n') { line++; }
+                            k++;
+                        }
+
+                        holes.Add(code.Substring(j + 1, Math.Max(0, Math.Min(k, code.Length) - j - 1)));
+                        marked.Append('\u0001');
+                        j = k + 1;
+                        continue;
+                    }
+
+                    if (d == '"') { break; }
+                    if (d == '\n') { line++; }
+                    marked.Append(d);
+                    j++;
+                }
+
+                bool diagnostic = inDiagnostic;
+                foreach (string call in calls) { if (DiagnosticCallee.IsMatch(call)) { diagnostic = true; break; } }
+                found.Add(new PossessiveLiteral
+                {
+                    Marked = marked.ToString(), Line = start, Interpolated = interpolated, Diagnostic = diagnostic,
+                    Callee = calls.Count > 0 ? calls[calls.Count - 1] : string.Empty, Before = before, BeforeThat = beforeThat,
+                });
+                foreach (string hole in holes) { LexPossessive(hole, start, diagnostic, found); }
+                i = j + 1;
+            }
+        }
+
+        /// <summary>UI-1: the dotted name before an open parenthesis ("sb.Append", "Debug.Log", "ArgumentException"); empty where none stands there.</summary>
+        private static string CalleeBefore(string code, int open)
+        {
+            int e = open - 1;
+            while (e >= 0 && char.IsWhiteSpace(code[e])) { e--; }
+            int b = e;
+            while (b >= 0 && (char.IsLetterOrDigit(code[b]) || code[b] == '_' || code[b] == '.')) { b--; }
+            return e > b ? code.Substring(b + 1, e - b) : string.Empty;
         }
 
         private static bool IsAllowedWidenedLine(string pattern, string file, string lineText)

@@ -836,8 +836,8 @@ namespace PoliSim.UI
             float standing = hasOverride ? link.PlayerTariffOverride : tariffOnOurImports;
             string tag = MapRenderer.TagOf(partner.Id);
             string census = (hasOverride
-                    ? "OUR OVERRIDE ON " + partner.Name.ToUpperInvariant() + "'S GOODS - ITS RATE MOVES ONLY THROUGH THE TRADE BILL; RESET RETURNS THE DRAFT TO IT"
-                    : "NO OVERRIDE - TODAY'S RATE ON " + partner.Name.ToUpperInvariant() + "'S GOODS IS THE BLOC'S OR THE BASE · SET ONE AND IT STARTS HERE, CHANGING NOTHING UNTIL A TRADE BILL MOVES IT")
+                    ? "OUR OVERRIDE ON " + UiFormat.Possessive(partner.Name.ToUpperInvariant()) + " GOODS - ITS RATE MOVES ONLY THROUGH THE TRADE BILL; RESET RETURNS THE DRAFT TO IT"
+                    : "NO OVERRIDE - TODAY'S RATE ON " + UiFormat.Possessive(partner.Name.ToUpperInvariant()) + " GOODS IS THE BLOC'S OR THE BASE · SET ONE AND IT STARTS HERE, CHANGING NOTHING UNTIL A TRADE BILL MOVES IT")
                 + " · THEY CHARGE " + UiFormat.Number(tariffOnOurExports, 2) + " % ON OURS"
                 + (retaliation > 0f ? " (" + UiFormat.Number(retaliation, 2) + " OF IT MIRRORS OUR OVERRIDE, FROM THE NEXT BOUNDARY)" : string.Empty);
             float newRate = DrawDialRow("Override rate",
