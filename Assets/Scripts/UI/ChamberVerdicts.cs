@@ -299,6 +299,12 @@ namespace PoliSim.UI
             if (concern.BudgetVote) { sb.Append("B|"); }   // PS-6 US-21: a budget vote draws no defector - the veto projection reads it
             if (concern.Unpresented) { sb.Append("U|"); }   // PS-6 US-21: an act not presented to the president, drawn on by no one - the veto projection reads it
             if (concern.WithheldBy != null) { sb.Append("W=").Append(concern.WithheldBy).Append('|'); }   // PS-6 US-22: a withheld continuing resolution's fixed sides - the stances read it
+            if (concern.Spatial != null)
+            {
+                // q16 (with PS-6 US-23): the rates' places against the standing law - the same moves from another standing rate are another question
+                foreach (SpatialRate r in concern.Spatial) { sb.Append("S=").Append(r.Type).Append(':').Append(r.StandingAt.ToString("R", CultureInfo.InvariantCulture)).Append('>').Append(r.BillAt.ToString("R", CultureInfo.InvariantCulture)).Append(';'); }
+                sb.Append('|');
+            }
             sb.Append(concern.Direction.ToString("R", CultureInfo.InvariantCulture)).Append('|');
             foreach (KeyValuePair<StanceAxis, float> move in concern.Moves)
             {

@@ -345,3 +345,11 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 
 - **No President-ELECT chip.** Between the run-off and the oath, the player's party keeps its own chip on the desk; PRESIDENT shows only from the oath on 6 August. Keep it that way, or show PRESIDENT-ELECT in between? It is words only.
 - **Read for Poland, declared (reverse if wrong).** Your J6 (i) rule, that an answer acts at once, is applied to Poland's docket as well: one docket, one rule. A signed statute is law that day, and a veto goes to the Sejm's 3/5 vote that day.
+
+### US-23 the president's pen, with q16 (§889): the asks it ends in
+
+- **The book.** The ministry has no party stance of its own, so the out-party majority's reconciliation is the ministry's household instrument: income tax and VAT, moved by the Finance partner's yearly step toward the rate the party's own position stands for, and never past it. Keep this reading? The alternatives: the partner's own direction rule (a REP majority would then raise taxes); include benefit levels; or size the bill from a sourced reconciliation score.
+- **The yearly step.** Each fiscal year's bill is one step from the standing law, so a lasting divided Congress steps every year. Is that right?
+- **Your own majority.** When your party holds both chambers it sends nothing, because there is no surface to draft a reconciliation. Build one?
+- **q16's reach.** It is read as the US Congress's budget votes, rates only: "bloc" is R-US17's party-as-bloc, and GA-2-6 asked about the US House. Extend it to other countries' budget votes?
+- **q16's scale.** It is a linear map of the dial onto `redistribution` (0 at the ceiling, 10 at the floor), [AUTHORED-DRAFT]. On it, DEM's position stands for an income tax of 43.9 % and REP's for 12.4 %. Keep it, or source one?

@@ -64,6 +64,10 @@ namespace PoliSim.Data
         /// (`TaxLine.PassedForYear`, `ParliamentSystem.ApplyBillResult`). A line whose figure is the statute's carries nothing. Rides the save with the
         /// pending budget; empty in an older one.</summary>
         public List<TaxType> CarriedTaxLines = new List<TaxType>();
+        /// <summary>PS-6 US-23 (the review's M1): a congressional majority's reconciliation's MOVES - per rate, the points from the law of the day it was voted
+        /// on (`UsMajorityReconciliation.MovesOf`) - applied from the law of the day it becomes law (`UsMajorityReconciliation.Applied`), so a rate law passed
+        /// while it waits is kept and the move stays the step. Null on every other bill. Rides the save with the slot (additive).</summary>
+        public Dictionary<TaxType, float> RateMoves;
         /// <summary>F4-4 (2026-09-13): the requested rate per sub-row of a statute's schedule (`TaxLine.BracketRates`' shape) - −1 where the line's figure stands (no change); only the income tax carries one. GA-2-12 (2026-10-14): the statute's own figure where the line carries a rate of its own puts the statute back (`ParliamentSystem.MergedBracketRates`).</summary>
         public Dictionary<TaxType, float[]> BracketRates = new Dictionary<TaxType, float[]>();
         public Dictionary<SpendingCategory, float> SpendingPercentChanges = new Dictionary<SpendingCategory, float>();

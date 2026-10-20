@@ -969,6 +969,11 @@ namespace PoliSim.Data
         /// that lapse ended, loads with the month unmarked and publishes it without the furloughed; while the lapse still runs, the next funding tick marks it again.</summary>
         public System.DateTime FurloughCountedMonth;
 
+        /// <summary>PS-6 US-23 (R-US7 (a), F8): the year of the 1 October before which the out-party majority's reconciliation was last tabled
+        /// (`UsMajorityReconciliation.YearOf`) - once a fiscal year; 0 where none was. It rides the save and the preview's clone. ADDITIVE (no format step,
+        /// ruling A): no earlier build tabled one, so 0 is an earlier save's true state.</summary>
+        public int MajorityReconciliationYear;
+
         /// <summary>
         /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own
         /// election authority uses ("S", "SD", "CDU", "PiS", "UG", "REP"...) and summing to

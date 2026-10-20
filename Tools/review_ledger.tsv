@@ -282,3 +282,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	ab1de932ddf06f1272f3dee75fa4
 file	Assets/Scripts/Simulation/SimulationManager.Sejm.cs	c4375fee31feb824071278d07e7890f4cb7870f7c55d0c459d3fa5b76ebaa329	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-
 file	Assets/Scripts/Data/PensionAgeStatute.cs	85ca9aa68e41a13547abd496fb785c9c08adfcecf0e377733c7ba024c82a5e20	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-
 file	Assets/Editor/PensionAgeDiagnostic.cs	8eeeeff09df5b32c1d81360b973f3f60ebb197fa12fac4c682504c366151c9a0	reviewed	2026-10-20	s888	Reviews/2026-10-20_ui1_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	f53857ec60e85ac2ca8d80c24a267bbcc1f3b2447e381fb5f421c7e548c5282e	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.MajorityReconciliation.cs	35a4d551128581a3e8a75623f3423751c93cf8308d2c6f2a003a135847e4baae	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-
+file	Assets/Scripts/Simulation/SpatialBudgetVote.cs	fd21ca0eacfab70f7dc65a76df0a0516f8682198a2c9dd39f0b1a180fe379802	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-
+file	Assets/Scripts/Data/BudgetBill.cs	7c6b51e25e78c4d5fe6629f7ecd4768c40d4a41409fff6df4a9f49c9f7648e4e	reviewed	2026-10-20	s889	Reviews/2026-10-20_us23_review.md	-

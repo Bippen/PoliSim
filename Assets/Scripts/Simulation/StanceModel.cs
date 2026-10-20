@@ -75,6 +75,11 @@ namespace PoliSim.Simulation
         /// by `SimulationManager.ResolveContinuingResolution` while funding is lapsed; no stance reads it, only the gate (`Congress.Divide`). False everywhere
         /// else, so nothing else is drawn.</summary>
         public bool DrawsWithholders;
+        /// <summary>q16 (Elias's ruling of 2026-10-18, built with PS-6 US-23): the RATES a US budget vote moves, each placed on the `redistribution` scale - where
+        /// the standing law has it and where the bill would put it (`SpatialBudgetVote`). Where set, term 1 reads that axis spatially - how much nearer the bill
+        /// brings the rates to the party's position than the standing law holds them - in place of the axis midpoint. Set only by the budget's concern builder
+        /// for the US Congress (`SpatialBudgetVote.Applies`) on a bill moving no tax sub-row; null on every other concern, so nothing else reads differently.</summary>
+        public List<SpatialRate> Spatial;
 
         public IReadOnlyDictionary<StanceAxis, float> Moves => _moves;
 
@@ -88,17 +93,41 @@ namespace PoliSim.Simulation
         }
 
         /// <summary>Nothing asked: no axis moved - and, PS-6 US-22, no continuing resolution withheld (<see cref="WithheldBy"/>, null on every other concern).</summary>
-        public bool IsEmpty => _moves.Count == 0 && WithheldBy == null;
+        public bool IsEmpty => _moves.Count == 0 && WithheldBy == null && (Spatial == null || Spatial.Count == 0);   // PS-6 US-23 (the review's L3): rates moved in opposite directions ask something though their net move is nothing
 
         /// <summary>The loaded axes with the end each move points at (0 or 10) and the share of the bill's movement it carries.</summary>
         public IEnumerable<(StanceAxis Axis, int End, float Weight)> Loaded()
         {
+            if (Spatial != null && Spatial.Count > 0) { foreach ((StanceAxis Axis, int End, float Weight) axis in LoadedSpatial()) { yield return axis; } yield break; }
             float total = 0f;
             foreach (KeyValuePair<StanceAxis, float> kv in _moves) { total += Mathf.Abs(kv.Value); }
             if (total <= 0f) { yield break; }
             foreach (KeyValuePair<StanceAxis, float> kv in _moves)
             {
                 yield return (kv.Key, kv.Value > 0f ? 10 : 0, Mathf.Abs(kv.Value) / total);
+            }
+        }
+
+        /// <summary>q16 with PS-6 US-23 (the review's L3): <see cref="Loaded"/> where the rates are read spatially - the `redistribution` axis weighs the rates' own
+        /// sizes, m_redistribution = sum over k of |points_k| (`SpatialBudgetVote.Size`), every other axis its net move |m_a| as before, each axis's weight
+        /// m_a / sum of m; its end is the net move's (the rates' summed move where the net is nothing).</summary>
+        private IEnumerable<(StanceAxis Axis, int End, float Weight)> LoadedSpatial()
+        {
+            float spatial = SpatialBudgetVote.Size(Spatial);
+            float total = spatial;
+            foreach (KeyValuePair<StanceAxis, float> kv in _moves) { if (kv.Key != StanceAxis.Redistribution) { total += Mathf.Abs(kv.Value); } }
+            if (total <= 0f) { yield break; }
+            bool seen = false;
+            foreach (KeyValuePair<StanceAxis, float> kv in _moves)
+            {
+                if (kv.Key == StanceAxis.Redistribution) { seen = true; yield return (kv.Key, kv.Value > 0f ? 10 : 0, spatial / total); continue; }
+                yield return (kv.Key, kv.Value > 0f ? 10 : 0, Mathf.Abs(kv.Value) / total);
+            }
+            if (!seen && spatial > 0f)
+            {
+                float net = 0f;
+                foreach (SpatialRate r in Spatial) { net -= r.Points; }   // a rise moves toward 0, as the concern builder adds it
+                yield return (StanceAxis.Redistribution, net > 0f ? 10 : 0, spatial / total);
             }
         }
 
@@ -294,7 +323,8 @@ namespace PoliSim.Simulation
             var loaded = new List<(StanceAxis Axis, int End, float Weight)>(concern.Loaded());
 
             // The government context (term 2): the formed cabinet and its support, and whether this is a government bill.
-            bool governmentBill = government && (concern.GovernmentAuthored || (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && cabinet.Contains(country.PlayerPartyAbbrev)));   // PS-3e (§632): the author, not the player's seat, makes a government bill
+            bool governmentBill = government && (concern.GovernmentAuthored || (!string.IsNullOrEmpty(country.PlayerPartyAbbrev) && cabinet.Contains(country.PlayerPartyAbbrev)
+                && (string.IsNullOrEmpty(concern.Author) || concern.Author == country.PlayerPartyAbbrev)));   // PS-3e (§632): the author, not the player's seat, makes a government bill; PS-6 US-23: a bill another party tabled (a congressional majority's reconciliation) is not the government's because the player's party sits in the cabinet
             float[] cabinetPosition = governmentBill ? CabinetPositions(country, PartySystems.For(country.Id), cabinet, loaded, opennessAvailable) : null;
             // P4-A3: the government's bloc is the bloc of its largest cabinet party (the seat map's own blocs, NationalElection.BlocOf).
             int governmentBloc = -1;
@@ -333,11 +363,18 @@ namespace PoliSim.Simulation
                         reasons.Add($"no published {AxisName(loaded[i].Axis)} position");
                         continue;
                     }
-                    float a = (loaded[i].End == 10 ? p - 5f : 5f - p) / 5f;
+                    bool spatial = loaded[i].Axis == StanceAxis.Redistribution && concern.Spatial != null && concern.Spatial.Count > 0;   // q16 (with PS-6 US-23): the rates against the standing law, not the axis midpoint
+                    float a = spatial ? SpatialBudgetVote.Alignment(p, concern.Spatial) : (loaded[i].End == 10 ? p - 5f : 5f - p) / 5f;
                     alignment += loaded[i].Weight * a;
                     measuredWeight += loaded[i].Weight;
                     reasons.Add(string.Format(CultureInfo.InvariantCulture, "{0} {1:0.0} on the {2} axis, the bill toward its {3} end: {4:+0.00;-0.00}",
                         party.Abbrev, p, AxisName(loaded[i].Axis), loaded[i].End, a));
+                    if (spatial)
+                    {
+                        (float standingAt, float billAt) = SpatialBudgetVote.MeanPlaces(concern.Spatial);
+                        reasons.Add(string.Format(CultureInfo.InvariantCulture, "spatial, against the standing law: the rates it moves stand at {0:0.0} on that scale and the bill puts them at {1:0.0}",
+                            standingAt, billAt));
+                    }
                 }
                 if (loaded.Count == 0 || measuredWeight <= 0f)
                 {

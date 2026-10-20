@@ -85,8 +85,18 @@ namespace PoliSim.UI
                 DrawDocketItem(key, "bell", PoliSimTheme.Bad, "Minister alert · " + cabinetEvent.Text, null, holdsTime: false, action: null);
             }
 
-            // ---- SP-7b: the statutes on Poland's player-president's desk, each answerable here (after LATER, or after a load) ----
+            // ---- SP-7b: the statutes on Poland's player-president's desk, each answerable here (after LATER, or after a load) - PS-6 US-23: the US President's too ----
             if (DrawPresidentDeskItems()) { anyPending = true; }
+
+            // ---- PS-6 US-23: the out-party majority's reconciliation before Congress - once voted it is the President's (the desk's card above, or his rule) ----
+            BudgetBill majorityBill = _simulationManager.GetPendingMajorityReconciliation(PlayerCountryId);
+            string majorityWords = PoliSim.Simulation.UsMajorityReconciliation.PendingWords(_playerCountry, majorityBill, _simulationManager.CurrentDate);
+            if (majorityWords != null)
+            {
+                _docketSlipBook.Anchors["docket:majority"] = new SlipContent("BEFORE CONGRESS").Add(majorityWords);
+                DrawDocketItem("majority", "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), "Before Congress · the " + PartySystems.ShortName(PlayerCountryId, majorityBill.TabledBy) + " majority's reconciliation",
+                    "Voted " + DeskDay(_simulationManager.CurrentDate.AddDays(System.Math.Max(0, majorityBill.DaysRemaining))) + " · then to the President", holdsTime: false, action: null);
+            }
 
             // ---- the budget process, the fourth thing that holds the clock ----
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))

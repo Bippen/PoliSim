@@ -41087,3 +41087,57 @@ J3 confirmed the code; nothing at runtime changed.
 Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `PensionAgeStatute.cs` and `PensionAgeDiagnostic.cs`.
 
 **Bars** (tier SIMULATION + UI, Canvas): `n888` 11 of 11 (MetaTextCheck, PensionAgeDiagnostic, CommentClaim, CommentImmunity, UsOwnNominee, Presidency, StartBrief, ChamberVerdictCache, CongressElection, ReviewLedger, DeadState); the cheap bar `cheap888` 127 of 127; the documents bar `doc888` 22 of 22; the simulation bar `sim888` 67 of 67, the sentinel holding on **aloopsal2**; `slrt888` 12 of 12; the dry film `drys888` over Sweden, Germany, the USA, Italy and Poland at 1280x720 (155 / 147 / 156 / 141 / 149 measured, 0 failed; scope row s888, declared before the film); the REAL films at 1280 - `realpl888`, `realus888`, `realde888`, `realit888` exit 0 - and Sweden with `-shotstates`: `realse888` FAILED one guard, 88n's `Governs/Figures` clipped by 0.5 px (preferred 60.9 against 60.4) - not UI-1's text but the night's column, unfilmed with the state pins since dry825; fixed by letting the arrows plate yield 4 more (`ElectionNightScreen`, preferred 88 -> 84, its floor 70 unchanged, PF-16's own remedy), then `realse888b` (1280) and `realse888bw` (2560) exit 0 with no clip. Read on film: 88n at both widths, the candidate picker on its own plate (01g3, the brief no longer showing through), the compass (07b).
+
+
+## 889. PS-6 US-23: THE PRESIDENT'S PEN - THE OUT-PARTY MAJORITY'S RECONCILIATION ON THE PLAYER-PRESIDENT'S DESK, ONCE BEFORE EACH 1 OCTOBER; THE US DOCKET ON SP-7b'S PLATE; q16'S SPATIAL BUDGET VOTE FOR THE US CONGRESS (2026-10-20)
+
+**What was owed:** `docs/specs/USA_STAGE_PLAN.md` US-23 (R-US7 (a), R-US9 as ruled), a hostile Congress's bill on a player-president's desk; and q16's spatial budget vote with it (feature-list row "4. US-16 →").
+
+**Built** (an implementer on `wave/us23`: e24f0777 US-23 with q16, 42724e65 US-21b's review items P2-L2 and P2-L3, 5dee7baa the review's fixes, rebased on §888 as 46520495..f175b657, then 2ed3a55e a diagnostic case corrected):
+
+**The majority's reconciliation** (`UsMajorityReconciliation`, `SimulationManager.MajorityReconciliation.cs`):
+- **Who tables it:** the party out of the White House, when it holds both chambers and is not the player's party.
+- **When:** once a fiscal year, from 1105(a)'s request day, and tabled no later than 1 October less its course, so it is voted and presented by 30 September (`Country.MajorityReconciliationYear`).
+- **Its book:** the ministry's household instrument (income tax and VAT) at the Finance partner's yearly step, moved toward the rate the party's own position stands for and never past it. It is rebuilt on the vote day against that day's law.
+- **The vote and the desk:** it is voted by reconciliation in both chambers and presented through `UsVetoGate`. On a player-president's desk it is held, and signed or vetoed at once (US-21c). A veto goes to the override.
+- **On becoming law:** only its rates apply, each by its voted move from the law of the day it becomes law (`UsMajorityReconciliation.Applied`, `BudgetBill.RateMoves`). It touches no spending line or fund term, and the president bears nothing.
+- It has its own slot and is saved additively (no format step).
+
+**q16** (`SpatialBudgetVote`):
+- Applies to the US Congress's budget votes (`Congress.Applies`). Each rate a bill moves is placed on the `redistribution` scale (the dial mapped linearly from 0 at its ceiling to 10 at its floor, [AUTHORED-DRAFT]).
+- Term 1 is (distance from the standing law − distance from the bill) ÷ the move.
+- The axis is weighed by the rates' own sizes. Every other country's votes are unchanged.
+- `BillConcern.Spatial`; `ChamberVerdicts.ConcernKey` keys on it.
+
+**The US docket on SP-7b's plate:** SIGN / VETO / LATER and the Docket page's answer row, gated by `SimulationManager.PlayerAnswersDocket` (Poland's office, or the US president of the day, R-US22's acting president included). US-21c's latent L2 is now wired: an answer's ceremony is queued that day. The Docket page also gains a before-Congress card, the Congress pending list a card, and the status line a clause.
+
+**`StanceModel`'s author rule:** a bill another party tabled is no longer read as the government's bill because the player's party sits in cabinet. No existing concern moves.
+
+**Measured** (`n889` / `n889b`, the first runs in Unity):
+- **The window for 1 October 2025:** it opens 2025-02-03 (1105(a)'s request day) and closes 2025-09-09.
+- **The case:** a planted game-elected Harris (DEM) faces the REP 119th of record. REP's book takes the income tax from 17.105 % to 16.646 %:
+  - it is tabled 2025-02-04 and reaches the desk 2025-02-25 (the House 220 for, 215 against; the Senate by reconciliation);
+  - **signed,** it becomes law at once, and a rate law planted while it waited (20.105 %) is kept with the move applied from it (19.646 %);
+  - **vetoed,** the House sustains the veto (220 for, 290 needed) and the standing rates hold;
+  - once a fiscal year; none for a president whose party holds Congress; the save carries the bill and the load answers it.
+- **q16's cases:**
+  - a 2-point cut toward REP's position reads +1.00 for REP and −1.00 for DEM;
+  - a rise to the ceiling from the standing 17.105 % ends nearer DEM's 43.89 % (+0.01, for), and from a planted 56.945 % it moves away (−1.00, against), where the old axis midpoint read +0.25 for both;
+  - GA-2-6's shape, every levied rate at its ceiling, reads REP −0.88 against and DEM −0.10.
+- **Every US diagnostic that could move from q16 holds:** UsCongress, UsBudgetProcedure, UsVeto, UsDocket, ChamberVerdictCache, GovernmentBudgetBill.
+
+**Declared:**
+1. The book is the ministry's household instrument at the partner's step, toward the party's own rate. The partner's own direction rule would have a REP majority raise taxes.
+2. Each fiscal year's bill is one step from the standing law.
+3. The player's own majority sends nothing (there is no surface to draft one).
+4. The president bears nothing for the majority's bill.
+5. q16's reach is the US Congress's budget votes, rates only.
+6. q16's scale is a linear map of the dial, [AUTHORED-DRAFT].
+7. Unanswered US bills read "law on".
+8. A rebuilt book that moves nothing on its vote day is withdrawn unvoted, its year spent.
+
+**Asked:** the book's reading; the yearly step; a surface for the player's own majority; q16's reach to other countries; q16's scale.
+
+**Reviewed:** `Reviews/2026-10-20_us23_review.md` (independent; no H). M1 (the stale book) is fixed: rebuilt on the vote day, rates alone from the law of the day. L1-L6 are fixed. The integrator's addendum reads `BudgetBill.RateMoves` and `Applied`. Review rows s889 cover `SimulationManager.cs`, `SimulationManager.MajorityReconciliation.cs`, `SpatialBudgetVote.cs` and `BudgetBill.cs`.
+
+**Bars** (tier SIMULATION + UI, Canvas): `n889` 17 of 18 on the first run - the one failure `UsMajorityReconciliationDiagnostic` (b)'s own expectation (it assumed a standing income tax of 37 %; the world's is 17.105 %, from which a rise to the ceiling ends nearer DEM's rate, +0.01 correctly), the case corrected at 2ed3a55e and `n889b` 1 of 1; the rest of `n889`: UsCongress, UsBudgetProcedure, UsVeto, UsDocket, ChamberVerdictCache, GovernmentBudgetBill, PreviewParity, PolishPresidentialStart, Presidency, ForkDayTick, the text guards, DeadState, Unwired, ReviewLedger, SaveMigration; `slrt889` 12 of 12; the cheap bar `cheap889` 128 of 128; the documents bar `doc889` 22 of 22; the simulation bar `sim889` 67 of 67, the sentinel holding on **aloopsal2**; the dry film `drys889` USA@1280x720, 158 measured (two new frames), 0 failed (scope row s889); the REAL films `realus889` (1280) and `realus889w` (2560) exit 0, no clip - 89k the majority's reconciliation on the desk (SIGN, VETO, LATER, "UNANSWERED, LAW ON 13 MAY 2027") and 89l its veto sustained (222 for, 290 needed), the film's staging the mirror case (a REP player-president facing a DEM majority).

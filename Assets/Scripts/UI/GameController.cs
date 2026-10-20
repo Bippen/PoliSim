@@ -9085,7 +9085,14 @@ namespace PoliSim.UI
                     }
                 }
             }
-            else if (budgetBill != null)
+            // PS-6 US-23 (the review's L1): the out-party majority's reconciliation - its own card with its projected verdict, as the president's budget's acts have
+            BudgetBill majorityBill = usActs ? _simulationManager.GetPendingMajorityReconciliation(PlayerCountryId) : null;
+            if (majorityBill != null)
+            {
+                string majorityLabel = $"Reconciliation by the {PartySystems.ShortName(PlayerCountryId, majorityBill.TabledBy)} majority, by a majority - {ResolvesIn(majorityBill.DaysRemaining, majorityBill.Docket)}.";
+                pending.Add((majorityLabel, UsMajorityReconciliation.ConcernOf(_playerCountry, majorityBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, majorityBill.DaysRemaining));
+            }
+            if (budgetBill != null && !usActs)
             {
                 string budgetLabel = $"Annual budget bill - {ResolvesIn(budgetBill.DaysRemaining, budgetBill.Docket)}.";
                 pending.Add((budgetLabel,
@@ -9531,7 +9538,14 @@ namespace PoliSim.UI
         private string BudgetBillStatusCore()
         {
             BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
-            if (UsBudgetProcedure.Applies(_playerCountry)) { return UsBudgetStatusText(pendingBill); }   // PS-6 US-22: the US Congress's procedure, its request day and its funding
+            if (UsBudgetProcedure.Applies(_playerCountry))
+            {
+                // PS-6 US-22: the US Congress's procedure, its request day and its funding; PS-6 US-23 (the review's L1): the out-party majority's reconciliation after it
+                BudgetBill majority = _simulationManager.GetPendingMajorityReconciliation(PlayerCountryId);
+                string majorityWords = majority == null ? null
+                    : UsMajorityReconciliation.StatusWords(_playerCountry, majority, _simulationManager.CurrentDate, majority.Docket != null ? SimulationManager.DocketLawDay(PlayerCountryId, majority.Docket) : System.DateTime.MinValue);
+                return UsBudgetStatusText(pendingBill, majority != null) + (majorityWords != null ? " " + majorityWords : string.Empty);
+            }
             // PS-3e (§632): the government's budget named first - what it moves and when the chamber decides - and the draft below as the alternative it can be set against.
             if (pendingBill != null && pendingBill.GovernmentBill)
             {
@@ -9558,8 +9572,6 @@ namespace PoliSim.UI
                 : "No budget bill currently before " + Legislature + ". The annual process opens on your country's own fiscal-year date.";
         }
 
-        /// <summary>PS-6 US-22: the bill-status line where the US Congress votes the budget as its acts - what is before Congress (a continuing resolution, the
-        /// president's budget, the player's), when the annual process opens (the president's request day), and the funding: its horizon, or the shutdown's day.</summary>
         /// <summary>PS-6 US-21b: a pending bill's countdown in a label's words - "resolves in N day(s)" while it is before the legislature (every country's
         /// words, unchanged); on the player-president's docket, the day it becomes law unless he answers.</summary>
         private string ResolvesIn(int daysRemaining, DocketEntry desk) => desk == null ? $"resolves in {daysRemaining} day(s)" : "on the President's desk - law on " + DeskLawDay(desk) + " unless answered";
@@ -9573,7 +9585,9 @@ namespace PoliSim.UI
         private static DocketEntry DeskOf(BudgetBill bill) => bill?.Docket ?? (bill?.ActsHeld != null && bill.ActsHeld.Count > 0
             ? bill.ActsHeld.Find(e => e.Bill != (int)PresidentialDocket.Bill.BudgetAct) ?? bill.ActsHeld[0] : null);
 
-        private string UsBudgetStatusText(BudgetBill pendingBill)
+        /// <summary>PS-6 US-22: the bill-status line where the US Congress votes the budget as its acts - what is before Congress (a continuing resolution, the
+        /// president's budget, the player's), when the annual process opens (the president's request day), and the funding: its horizon, or the shutdown's day.</summary>
+        private string UsBudgetStatusText(BudgetBill pendingBill, bool majorityPending)
         {
             System.DateTime today = _simulationManager.CurrentDate;
             string funding = _playerCountry.LapseSince != System.DateTime.MinValue
@@ -9582,7 +9596,7 @@ namespace PoliSim.UI
                 : _playerCountry.AppropriatedThrough != System.DateTime.MinValue ? " The government is funded through " + _playerCountry.AppropriatedThrough.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + "." : string.Empty;
             if (DeskOf(pendingBill) is DocketEntry desk)   // PS-6 US-21b: voted, awaiting the player-president's answer
             {
-                return (pendingBill.ContinuingResolution ? "A continuing resolution passed Congress and is" : "Your budget's acts passed Congress and are") + " on the President's desk - law on " + DeskLawDay(desk) + " unless answered." + funding;
+                return (pendingBill.ContinuingResolution ? "A continuing resolution passed Congress and is" : pendingBill.GovernmentBill ? "The budget's acts passed Congress and are" : "Your budget's acts passed Congress and are") + " on the President's desk - law on " + DeskLawDay(desk) + " unless answered." + funding;   // US-21b's review, P2-L3: an AI government's budget voted after the player's oath is not "yours"
             }
             if (pendingBill != null && pendingBill.ContinuingResolution)
             {
@@ -9601,7 +9615,7 @@ namespace PoliSim.UI
             }
             return (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _) ? "The budget is the president's to propose - your party votes on it."
                 : _simulationManager.GetPendingBudgetProcess(PlayerCountryId) ? "The annual budget process is open - introduce your current draft as a bill below to continue."
-                : "No budget bill currently before Congress. The annual process opens on " + RequestDay + ".") + funding;
+                : (majorityPending ? "The president's budget is not before Congress." : "No budget bill currently before Congress.") + " The annual process opens on " + RequestDay + ".") + funding;
         }
 
         /// <summary>Everything about a draft that could move its estimate, as one string — so the

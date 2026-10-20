@@ -1105,6 +1105,14 @@ namespace PoliSim.Simulation
             concern.Add(StanceAxis.SpendVsTax, fundContribution);
             concern.Add(StanceAxis.SpendVsTax, -fundDissolved);
             if (bill.ContinuingResolution) { concern.WithheldBy = country.ContinuingResolutionWithheldBy; }   // PS-6 US-22 (Ask 2's (P), PROVISIONAL): a continuing resolution is asked nothing unless the player's party withholds it
+            if (SpatialBudgetVote.Applies(country))
+            {
+                // q16 (Elias's ruling of 2026-10-18, built with PS-6 US-23): the US Congress weighs the rates against the standing law (`SpatialBudgetVote`) - read
+                // apart from the moves above, which stand as they were; a sub-row's move has no place on the scale, so a bill moving one keeps the axis midpoint
+                bool subRowsMove = false;
+                foreach (KeyValuePair<TaxType, float[]> kvp in bill.BracketRates) { if (!Mathf.Approximately(BracketRateMove(country, bill, FindTaxLine(country, kvp.Key)), 0f)) { subRowsMove = true; } }
+                if (!subRowsMove) { concern.Spatial = SpatialBudgetVote.RatesOf(country, bill); }
+            }
             return Authored(country, concern, bill.GovernmentBill);
         }
 

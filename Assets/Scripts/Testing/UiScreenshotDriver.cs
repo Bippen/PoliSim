@@ -1903,6 +1903,45 @@ namespace PoliSim.Testing
                     yield return WaitForCanvasSettle(controller, wantActive: false);
                     yield return Settle();
                 }
+
+                // (c3b) PS-6 US-23: THE PRESIDENT'S PEN - the out-party majority's reconciliation on the player-president's desk, and his veto put to the
+                // override. Staged on the film's own world through the game's own path (the majority's book, both chambers, the US veto gate's docket, the
+                // verb): 89k the answer plate (SIGN, VETO, LATER) on the bill the desk holds, 89l the House's vote on his veto. Filmed real: the surface is Canvas.
+                DivisionRecord deskPassage = null;
+                Action restoreDesk = null;
+                try
+                {
+                    if (!StageUsDeskReconciliation(player, sim, out deskPassage, out restoreDesk)) { Debug.LogError("SHOT: 89k_signing_us_desk could not be staged - 89k and 89l are MISSING, not clean."); }
+                    else
+                    {
+                        InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+                        yield return WaitForCanvasSettle(controller, wantActive: true);
+                        yield return Settle();
+                        Claim("signing");
+                        yield return Capture("89k_signing_us_desk");
+                        RecordCanvasTextAssert("89k_signing_us_desk", controller);
+                        InvokeNoArg(controller, "AnswerLater");   // LATER: nothing recorded, the bill stays on the desk - the veto below is the verb's own
+                        yield return WaitForCanvasSettle(controller, wantActive: false);
+                        yield return Settle();
+                        if (!sim.VetoDocketBill(player.Id, deskPassage, out string vetoWhy)) { Debug.LogError($"SHOT: 89l_signing_us_desk_veto - the veto was refused ({vetoWhy}) - MISSING, not clean."); }
+                        else
+                        {
+                            DivisionRecord vote = player.Divisions.Entries[player.Divisions.Entries.Count - 1];
+                            Debug.Log($"SHOT: 89l - the player-president's veto put to the override: No. {vote.Number}: {vote.Title} ({(vote.Passed ? "overridden" : "the veto stands")})");
+                            if (vote.Passed) { Debug.LogError("SHOT: 89l_signing_us_desk_veto - the staged veto was OVERRIDDEN, not the asked frame (the veto standing); the rates the law moved are restored after."); }
+                            InvokeNoArg(controller, "TriggerSigningForNewestDivision");
+                            yield return WaitForCanvasSettle(controller, wantActive: true);
+                            yield return Settle();
+                            Claim("signing");
+                            yield return Capture("89l_signing_us_desk_veto");
+                            RecordCanvasTextAssert("89l_signing_us_desk_veto", controller);
+                            InvokeNoArg(controller, "SignPendingDivision");
+                            yield return WaitForCanvasSettle(controller, wantActive: false);
+                            yield return Settle();
+                        }
+                    }
+                }
+                finally { restoreDesk?.Invoke(); }
             }
 
             // (d) PS-3f (§633, ruled): a BUDGET division is a contest of two proposals - the signing screen names each with its votes, the abstentions,
@@ -1976,6 +2015,67 @@ namespace PoliSim.Testing
                 return StageUsVetoOn(player, sim, overridden, day, president, pp, op);
             }
             finally { player.PlayerPartyAbbrev = mine; player.ParliamentSeats = house0; player.SecondChamberSeats = senate0; }
+        }
+
+        /// <summary>
+        /// PS-6 US-23: THE MAJORITY'S RECONCILIATION ON THE PLAYER-PRESIDENT'S DESK, staged through the game's own path. The player is made the president of the day
+        /// as the oath makes one (a contest of the game's own won by the player's party, sworn on the day before the film's day - `Congress.PresidentOn` reads the
+        /// game's latest sworn contest - and its government installed); the other major party holds both chambers - as seated, or, where it does not, the two
+        /// parties' seats swapped for this staging alone (said in the log); its book is tabled in the manager's slot on its last day of course and the manager's
+        /// own day step votes and presents it (`SimulationManager.ResolveMajorityReconciliationDay`): both chambers send it and the player-president's desk holds it.
+        /// <paramref name="restore"/> puts back the contests, the government, the seats, the tax rates (an override that carried would have moved them - the review's L4), the slot and the year's mark (the divisions stay, as every staging's do).
+        /// </summary>
+        private static bool StageUsDeskReconciliation(Country player, SimulationManager sim, out DivisionRecord passage, out Action restore)
+        {
+            passage = null;
+            restore = null;
+            DateTime day = sim.CurrentDate;
+            string pp = player.PlayerPartyAbbrev;
+            if (!Congress.Applies(player) || (pp != "REP" && pp != "DEM")) { Debug.Log($"SHOT: 89k - no Congress seated, or the player's party ({pp}) is neither REP nor DEM - not staged."); return false; }
+            string op = pp == "REP" ? "DEM" : "REP";
+            FieldInfo slotField = typeof(SimulationManager).GetField("_pendingMajorityReconciliationByCountry", BindingFlags.Instance | BindingFlags.NonPublic);
+            MethodInfo resolve = typeof(SimulationManager).GetMethod("ResolveMajorityReconciliationDay", BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(Country), typeof(BudgetBill) }, null);
+            if (slotField == null || resolve == null || !(slotField.GetValue(sim) is Dictionary<CountryId, BudgetBill> slot)) { Debug.LogError("SHOT: SimulationManager's majority reconciliation slot or day step not found - 89k is MISSING, not clean."); return false; }
+            GovernmentRecord government0 = player.Government;
+            var rates0 = new List<(TaxLine Line, float Rate)>();
+            foreach (TaxLine line in player.TaxLines) { rates0.Add((line, line.Rate)); }   // the review's L4: an override that carries writes the book's rates - put back in every outcome
+            Dictionary<string, int> house0 = player.ParliamentSeats, senate0 = player.SecondChamberSeats;
+            int year0 = player.MajorityReconciliationYear;
+            slot.TryGetValue(player.Id, out BudgetBill slot0);
+            var contest = new UsPresidentialElection.Contest { PollingDay = day.AddDays(-76), TakesOffice = day.AddDays(-1), Winner = pp == "DEM" ? "Kamala D. Harris" : "Donald J. Trump", WinnerParty = pp, ElectorsAppointed = 538, Line = "staged (the film's desk, US-23)" };
+            contest.Electors.Add(new UsPresidentialElection.Tally { Candidate = contest.Winner, Party = pp, Votes = 270 });
+            contest.Electors.Add(new UsPresidentialElection.Tally { Candidate = op == "DEM" ? "Kamala D. Harris" : "Donald J. Trump", Party = op, Votes = 268 });
+            player.UsPresidentialElections.Add(contest);
+            player.Government = UsPresidentialElection.GovernmentOf(contest, contest.TakesOffice);
+            restore = () =>
+            {
+                player.UsPresidentialElections.Remove(contest);
+                player.Government = government0;
+                player.ParliamentSeats = house0;
+                player.SecondChamberSeats = senate0;
+                player.MajorityReconciliationYear = year0;
+                foreach ((TaxLine line, float rate) in rates0) { line.Rate = rate; }
+                if (slot0 != null) { slot[player.Id] = slot0; } else { slot.Remove(player.Id); }
+            };
+            if (!UsMajorityReconciliation.TryOutPartyMajority(player, day, out string majority, out _) || majority != op)
+            {
+                player.ParliamentSeats = SwappedSeats(house0, pp, op);
+                player.SecondChamberSeats = SwappedSeats(senate0, pp, op);
+                Debug.Log($"SHOT: 89k - {op} does not hold both chambers on the film's world; {pp}'s and {op}'s seats swapped in both chambers for this staging alone, restored after.");
+            }
+            if (!Congress.PresidentOn(player, day, out string president, out _, out bool playerPresident) || !playerPresident || !UsMajorityReconciliation.TryOutPartyMajority(player, day, out majority, out _) || majority != op)
+            {
+                Debug.LogError($"SHOT: 89k - the staging did not give a player-president ({president}) facing a {op} Congress - MISSING, not clean.");
+                return false;
+            }
+            BudgetBill bill = UsMajorityReconciliation.Book(player, op, out string why);
+            if (bill == null) { Debug.LogError($"SHOT: 89k - {op}'s book moves nothing ({why}) - MISSING, not clean."); return false; }
+            bill.DaysRemaining = 1;   // its last day of course: the day step below votes it
+            slot[player.Id] = bill;
+            resolve.Invoke(sim, new object[] { player, bill });
+            passage = slot.TryGetValue(player.Id, out BudgetBill held) ? held.Docket?.Passage : null;   // the day step builds the book again on the vote day (the review's M1): the slot holds the bill it voted
+            Debug.Log($"SHOT: staged {op}'s reconciliation on the desk of the player-president ({president}, {pp}) through the manager's own day step: {(passage != null ? "held - No. " + passage.Number + ": " + passage.Title : "NOT HELD")}");
+            return passage != null && sim.TryUnansweredDocketItem(player.Id, passage, out _);
         }
 
         /// <summary>PS-6 US-21: two parties' seats swapped in a copy of a chamber's seating.</summary>

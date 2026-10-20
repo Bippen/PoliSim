@@ -344,6 +344,7 @@ namespace PoliSim.Simulation
             if (PlayerMayIntroduce(countryId, CabinetPortfolio.ForeignAffairs, out _)) { TryRollForeignPolicyMeeting(countryId); }   // PS-3c (§630): a meeting is the government's - none rolls for a player country the AI governs
             AdvanceBudgetBillDay(countryId);
             AdvanceUsFundingDay(countryId);   // PS-6 US-22: the US funding horizon - a lapse opens the day after it (a no-op wherever the US Congress votes no budget)
+            AdvanceMajorityReconciliationDay(countryId);   // PS-6 US-23: the out-party majority's reconciliation - tabled, voted, on the president's desk (a no-op wherever the US Congress votes no budget)
             AdvanceTaxProgramBillsDay(countryId);
             AdvanceWelfareProgramBillsDay(countryId);
             AdvanceLaborBillDay(countryId);
@@ -1455,6 +1456,7 @@ namespace PoliSim.Simulation
             // PS-6 US-22: the US reconciliation and a continuing resolution are no standing budget either (the US pension act's title is Poland's word, above;
             // the appropriation is the standing one) - neither prefix begins any title outside the USA
             return title.StartsWith(UsBudgetProcedure.ActWords(UsBudgetProcedure.Act.Reconciliation) + ": ", System.StringComparison.Ordinal)
+                || title.StartsWith(UsBudgetProcedure.ActWords(UsBudgetProcedure.Act.Reconciliation) + " (", System.StringComparison.Ordinal)   // PS-6 US-23 (the review's L2): a congressional majority's reconciliation (`UsMajorityReconciliation.TitleOf`) is no standing budget either
                 || title.StartsWith(UsBudgetProcedure.ContinuingResolutionWords + ": ", System.StringComparison.Ordinal);
         }
 
@@ -1709,7 +1711,8 @@ namespace PoliSim.Simulation
         // pending slot with its entry (`DocketEntry`: the division it was presented on, the day, the answer given). The verbs record the answer; the bill's
         // own day step acts on it, so the answer, the override and the bill's application run where every bill's do - since US-21c (Elias's ruling J6 (i):
         // "an answer acts at once; its money moves on the next day step, as every law's does") the verbs run that step for the answered bill at once
-        // (`ActOnDocketAnswers`), the day's other bills untouched. Its surface is US-23's.
+        // (`ActOnDocketAnswers`), the day's other bills untouched. Its surface (PS-6 US-23) is SP-7b's plate and Docket card, one for both countries
+        // (`GameController.PresidentialStart.cs`).
         // ---------------------------------------------------------------------------------------------------------------------------------------------
 
         /// <summary>PS-6 US-21c: true while <see cref="ActOnDocketAnswers"/> runs the bill sites for the answered bills alone - every bill site skips a bill with
@@ -1730,15 +1733,15 @@ namespace PoliSim.Simulation
         /// <summary>PS-6 US-21c (J6 (i)): the answered bills acted on at once - the country's bill sites run in the day tick's order with every unanswered bill
         /// skipped, so a signature is law today, a veto goes to the override today, and the law's money flows from the next day step (the economy's day runs
         /// before the bills', `AdvanceCountryDayTick`). The funding tick, the budget process and the confidence day are not run. The review's L2: a veto's
-        /// override divisions written here reach the signing ceremony only when the caller queues them - SP-7b's Polish callers (the answer plate and the Docket
-        /// page, `GameController.PresidentialStart.cs`) queue them right after the answer, on the answer's day; the US verbs have no caller in play until US-23
-        /// wires them, and its caller queues them the same way.</summary>
+        /// override divisions written here reach the signing ceremony only when the caller queues them - the callers in play (the answer plate and the Docket
+        /// page, `GameController.PresidentialStart.cs`: SP-7b's for Poland, wired for the USA by PS-6 US-23) queue them right after the answer, on the answer's day.</summary>
         private void ActOnDocketAnswers(CountryId countryId)
         {
             _docketAnswersOnly = true;
             try
             {
                 AdvanceBudgetBillDay(countryId);
+                AdvanceMajorityReconciliationDay(countryId);   // PS-6 US-23: the out-party majority's reconciliation, in the day tick's order
                 AdvanceTaxProgramBillsDay(countryId);
                 AdvanceWelfareProgramBillsDay(countryId);
                 AdvanceLaborBillDay(countryId);
@@ -1823,6 +1826,7 @@ namespace PoliSim.Simulation
                 if (budget.ActsHeld != null) { foreach (DocketEntry e in budget.ActsHeld) { yield return e; } }
                 if (budget.Docket != null) { yield return budget.Docket; }
             }
+            if (_pendingMajorityReconciliationByCountry.TryGetValue(countryId, out BudgetBill majority) && majority.Docket != null) { yield return majority.Docket; }   // PS-6 US-23
             if (_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var taxes)) { foreach (TaxProgramBill b in taxes.Values) { if (b.Docket != null) { yield return b.Docket; } } }
             if (_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var welfare)) { foreach (WelfareProgramBill b in welfare.Values) { if (b.Docket != null) { yield return b.Docket; } } }
             if (_pendingLaborBillByCountry.TryGetValue(countryId, out LaborPolicyBill labor) && labor.Docket != null) { yield return labor.Docket; }
@@ -3308,6 +3312,7 @@ namespace PoliSim.Simulation
                 IncomingBudgetWindowOpenNow = new List<CountryId>(_incomingBudgetWindowOpenNow),   // PS-6 US-7 (format 39): which open process is the arrival window
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
                 PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>(_pendingBudgetAlternativeByCountry),   // PS-3e (§632)
+                PendingMajorityReconciliations = new Dictionary<CountryId, BudgetBill>(_pendingMajorityReconciliationByCountry),   // PS-6 US-23 (additive)
                 ExtraElectionDate = _extraElectionDate, ExtraElectionOrderedOn = _extraElectionOrderedOn,   // PS-3i (§636)
                 PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
                 PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
@@ -5869,6 +5874,7 @@ namespace PoliSim.Simulation
             _incomingBudgetWindowUsed.Clear();
             _incomingBudgetWindowOpenNow.Clear();
             _pendingBudgetBillByCountry.Clear();
+            _pendingMajorityReconciliationByCountry.Clear();   // PS-6 US-23
             _pendingTaxProgramBillsByCountry.Clear();
             _pendingWelfareProgramBillsByCountry.Clear();
             _pendingLaborBillByCountry.Clear();
@@ -5918,6 +5924,7 @@ namespace PoliSim.Simulation
             }
 
             CopyInto(state.PendingBudgetBills, _pendingBudgetBillByCountry);
+            CopyInto(state.PendingMajorityReconciliations, _pendingMajorityReconciliationByCountry);   // PS-6 US-23: null or empty on an older save - none was ever tabled there
             _pendingBudgetAlternativeByCountry.Clear(); CopyInto(state.PendingBudgetAlternatives, _pendingBudgetAlternativeByCountry);   // PS-3e (§632): cleared first - a v29 save carries its own, an older none
             _extraElectionDate = state.ExtraElectionDate; _extraElectionOrderedOn = state.ExtraElectionOrderedOn;   // PS-3i (§636)
             CopyInto(state.PendingLaborBills, _pendingLaborBillByCountry);
@@ -6963,6 +6970,7 @@ namespace PoliSim.Simulation
                 LapseOutputDays = country.LapseOutputDays,
                 LapseProfileQuarter = country.LapseProfileQuarter,
                 FurloughCountedMonth = country.FurloughCountedMonth,   // PS-6 US-22c: read only by the publication of the day, which the preview never runs; a value, carried so the audit holds
+                MajorityReconciliationYear = country.MajorityReconciliationYear,   // PS-6 US-23: read only by the day tick, which the preview never runs; a value, carried so the audit holds
                 // Step 2: a FRESH ledger, never the real country's reference - ApplyApprovalRating
                 // records into it on the clone, and sharing the reference would corrupt the real
                 // period's attribution the moment a preview ran. LastPeriod stays null: a preview

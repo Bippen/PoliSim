@@ -50,8 +50,10 @@ namespace PoliSim.UI
         }
 
         /// <summary>SP-7b: the plate for a division - its answers where it is a statute held on Poland's player-president's docket and not yet answered (the
-        /// plan's §6 step 3; the US docket's surface is US-23's), else the ceremony as built. The plate can be put off (LATER): the statute stays held and is
-        /// answered on the Docket page (<see cref="DrawPresidentDeskItems"/>) - the one surface that reaches it after a load, or after a ceremony was dropped.</summary>
+        /// plan's §6 step 3), else the ceremony as built. PS-6 US-23: the US player-president's docket on the same plate - every bill both chambers sent and his
+        /// desk holds, the out-party majority's reconciliation among them (one surface for both countries, not a second). The plate can be put off (LATER): the
+        /// statute stays held and is answered on the Docket page (<see cref="DrawPresidentDeskItems"/>) - the one surface that reaches it after a load, or after a
+        /// ceremony was dropped.</summary>
         private SigningScreen BuildSigningOrAnswer(DivisionRecord signing)
         {
             _answering = null;
@@ -60,33 +62,43 @@ namespace PoliSim.UI
                 // the capture driver's staging (TriggerAnswerPlateForNewestDivision): the plate's answers on the newest division, its line the 21 days from
                 // today - nothing is held, so an answer writes nothing and the beat alone closes it
                 _answerPlateStaged = false;
-                string staged = DeskLine(true, PresidentialDocket.Bill.Ordinary, PresidentialDocket.LawDay(CountryId.Poland, _simulationManager.CurrentDate, PresidentialDocket.Bill.Ordinary));
+                string staged = DeskLine(true, PresidentialDocket.Bill.Ordinary, "UNANSWERED, SIGNED ON " + DeskDay(PresidentialDocket.LawDay(CountryId.Poland, _simulationManager.CurrentDate, PresidentialDocket.Bill.Ordinary)));
                 return SigningScreen.BuildAnswer(_playerCountry, signing, staged, AnswerSign, AnswerVeto, AnswerLater);
             }
-            if (_playerCountry != null && PresidentialVeto.Applies(_playerCountry.Id) && _simulationManager.TryUnansweredDocketItem(_playerCountry.Id, signing, out SimulationManager.DocketItem item))
+            if (_playerCountry != null && _simulationManager.PlayerAnswersDocket(_playerCountry.Id) && _simulationManager.TryUnansweredDocketItem(_playerCountry.Id, signing, out SimulationManager.DocketItem item))   // PS-6 US-23: the US desk too - one gate with the Docket page's (the review's L5)
             {
                 _answering = signing;
                 bool mayVeto = SimulationManager.MayVetoDocketEntry(item.Entry);
-                return SigningScreen.BuildAnswer(_playerCountry, signing, DeskLine(mayVeto, (PresidentialDocket.Bill)item.Entry.Bill, SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry)), AnswerSign,
+                return SigningScreen.BuildAnswer(_playerCountry, signing, DeskLine(mayVeto, (PresidentialDocket.Bill)item.Entry.Bill, UnansweredLine(item.Entry)), AnswerSign,
                     mayVeto ? AnswerVeto : (System.Action)null, AnswerLater);
             }
             return SigningScreen.Build(_playerCountry, signing, SignPendingDivision);
         }
 
-        /// <summary>SP-7b: the answer plate's line - on the desk, the answers it takes, that LATER keeps it on the Docket page, and the day it is signed unanswered.</summary>
-        private static string DeskLine(bool mayVeto, PresidentialDocket.Bill bill, System.DateTime signedOn) =>
+        /// <summary>SP-7b: the answer plate's line - on the desk, the answers it takes, that LATER keeps it on the Docket page, and what an unanswered bill becomes
+        /// (<see cref="UnansweredLine"/>).</summary>
+        private static string DeskLine(bool mayVeto, PresidentialDocket.Bill bill, string unanswered) =>
             (mayVeto ? "ON YOUR DESK · SIGN OR VETO, OR ANSWER LATER ON THE DOCKET" : bill == PresidentialDocket.Bill.BudgetAct ? "ON YOUR DESK · THE BUDGET ACT TAKES NO VETO · SIGN, OR LATER ON THE DOCKET"
-                : "ON YOUR DESK · AN AMENDMENT TAKES NO VETO · SIGN, OR LATER ON THE DOCKET") + " · UNANSWERED, SIGNED ON " + DeskDay(signedOn);
+                : "ON YOUR DESK · AN AMENDMENT TAKES NO VETO · SIGN, OR LATER ON THE DOCKET") + " · " + unanswered;
+
+        /// <summary>PS-6 US-23: what a bill on the desk becomes unanswered, and on which day (`SimulationManager.DocketLawDay`): a Polish statute is signed (SP-7b);
+        /// a US bill is law without the President's signature after the ten days (Art. I §7), save one with a deadline of its own - the eve's continuing
+        /// resolution, signed (J7).</summary>
+        private string UnansweredLine(DocketEntry entry) => UnansweredWords(entry).ToUpperInvariant() + " " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, entry));
+
+        /// <summary>PS-6 US-23: <see cref="UnansweredLine"/>'s words before its day, as a card prints them.</summary>
+        private string UnansweredWords(DocketEntry entry) => UsVeto.Applies(_playerCountry.Id) && entry.Deadline == System.DateTime.MinValue ? "unanswered, law on" : "unanswered, signed on";
 
         /// <summary>
         /// SP-7b (the review's M1): THE PRESIDENT'S DESK ON THE DOCKET PAGE - one card per statute held for the player-president, its answer on the card: the
         /// title, the day it is signed unanswered, and ANSWER, which opens SIGN and VETO (SIGN alone for the budget act and an amendment). An answer acts at once
-        /// (J6 (i)'s rule) and the decided entry leaves its slot, so only unanswered statutes are drawn. Drawn where the player is Poland's President; it is how a statute stays
-        /// answerable after a load (the plate is raised only for a division newer than the load) or after LATER. Returns whether any card was drawn.
+        /// (J6 (i)'s rule) and the decided entry leaves its slot, so only unanswered statutes are drawn. Drawn where the player is Poland's President - PS-6 US-23:
+        /// or the US President of the day (`SimulationManager.PlayerAnswersDocket`); it is how a statute stays answerable after a load (the plate is raised only
+        /// for a division newer than the load) or after LATER. Returns whether any card was drawn.
         /// </summary>
         private bool DrawPresidentDeskItems()
         {
-            if (_playerCountry == null || !_playerCountry.PlayerHoldsPresidency || !PresidentialVeto.Applies(_playerCountry.Id)) { return false; }
+            if (_playerCountry == null || !_simulationManager.PlayerAnswersDocket(_playerCountry.Id)) { return false; }
             bool any = false;
             foreach (SimulationManager.DocketItem item in _simulationManager.GetDocket(_playerCountry.Id))
             {
@@ -97,8 +109,8 @@ namespace PoliSim.UI
                 string title = "On your desk · " + passage.Title;
                 if (item.Answer != 0) { continue; }   // never held past the answer (it acts at once) - nothing to draw
                 bool mayVeto = SimulationManager.MayVetoDocketEntry(item.Entry);
-                string line = (mayVeto ? "Sign or veto" : "Sign - it takes no veto") + " · unanswered, signed on " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry));
-                _docketSlipBook.Anchors["docket:" + key] = new SlipContent("ON YOUR DESK").Add(passage.Title.ToUpperInvariant()).Add("PRESENTED " + DeskDay(item.PresentedOn) + " · UNANSWERED, SIGNED ON " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry)));
+                string line = (mayVeto ? "Sign or veto" : "Sign - it takes no veto") + " · " + UnansweredWords(item.Entry) + " " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry));
+                _docketSlipBook.Anchors["docket:" + key] = new SlipContent("ON YOUR DESK").Add(passage.Title.ToUpperInvariant()).Add("PRESENTED " + DeskDay(item.PresentedOn) + " · " + UnansweredLine(item.Entry));
                 if (DrawDocketItem(key, "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), title, line, holdsTime: false, action: "Answer"))
                 {
                     DrawDocketBody(() =>
