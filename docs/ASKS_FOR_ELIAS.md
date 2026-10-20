@@ -50,7 +50,7 @@
 10. **US-32 (§837).**
     - Installing V9 would cast REP Populist (8.13, +3.13 over the cut). It is held.
     - V8 or 10 − V19 for people-versus-elite? The codebook marks V19 as CHES's counterpart.
-11. **US-6 (§844), a departure.** Minor candidates stand nationally, not "only where the FEC shows them on the ballot". Measured: Kennedy has votes in 31 of 51 jurisdictions, Stein 41, Oliver 49. Under US-8 the count pools minors per state, so a per-state table would move no elector.
+11. **US-6 (§844), a departure.** *(RULED J3: reversed - built §885, each minor candidate only where on the ballot of record.)* Minor candidates stand nationally, not "only where the FEC shows them on the ballot". Measured: Kennedy has votes in 31 of 51 jurisdictions, Stein 41, Oliver 49. Under US-8 the count pools minors per state, so a per-state table would move no elector.
 12. **Italy, E-47's display (§841).** The card's stamp and caption say 25 SEP 2022; the ledger's 400 seats are 2022's table beside "ELECTED 4 MAR 2018".
     - (a) leave it until E-47 is answered;
     - (b) say the seated table stands in;
@@ -155,7 +155,7 @@
 ### The open items (I16): each ask, the recommendation built meanwhile (PROVISIONAL), and what changes if it is wrong
 
 - **10, US-32.** People-versus-elite as 10 − V19; V9 stays held. *If wrong:* the US parties' populist axis moves, and nothing else.
-- **11, US-6's departure.** Accept it: minor candidates stand nationally. *If wrong:* the minor candidates' votes are restricted to the states the FEC lists, a change confined to the count.
+- **11, US-6's departure.** *(RULED J3: reversed, built §885.)* Accept it: minor candidates stand nationally. *If wrong:* the minor candidates' votes are restricted to the states the FEC lists, a change confined to the count.
 - **12, E-47's display.** (b): say that the seated table stands in. *If wrong:* one caption on Italy's card.
 - **14, PS-3-F1.** §714 closes it. *If wrong:* it is reopened as a feature row.
 - **15, the Design channel.** Re-send D-CP against v3.5. D-PL night needs your LOOKED AT on boards 28a-28d. *If wrong:* D-CP waits.

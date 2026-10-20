@@ -158,17 +158,32 @@ case_ "returns_2024.md's House section renamed" "returns_2024.md: no 'National r
 case_ "returns_2024.md's President section renamed" "returns_2024.md: no 'National result - President' section" h27
 case_ "a District of Columbia row on the Clerk's 2024 House page" "clerk_statistics2024.pdf: a row 'District of Columbia', no state" h28
 
+# --- the ballot of record (US-6c): the 2024 workbook's note, "Italics indicate Write-In Votes", read off the cells' fonts - a cell's style poked to
+# another of the sheet's own (s="33" roman, s="35" italic: Alabama's row), the note's cell pointed at another string
+b01() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="AD2" s="35"><v>8738</v>' '<c r="AD2" s="33"><v>8738</v>'; resum $f; }
+b02() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="M2" s="33"><v>772412</v>' '<c r="M2" s="35"><v>772412</v>'; resum $f; }
+b03() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="B62" s="9" t="s"><v>94</v>' '<c r="B62" s="9" t="s"><v>95</v>'; resum $f; }
+case_ "a scattered write-in cell made roman (Alabama)" "fec_2024presgeresults.xlsx AL: a cell of 'WRITE-INS (SCATTERED)' not in italics" b01
+case_ "a nominee's cell made italic (Harris, Alabama)" "fec_2024presgeresults.xlsx AL: the nominee's cell ('HARRIS') in italics" b02
+b04() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="H37" s="38"><v>12805</v>' '<c r="H37" s="42"><v>12805</v>'; resum $f; }   # Duncan's one listing (Ohio) - s="42" is the italic style of the sheet's rows
+case_ "the workbook's note on italics gone" "fec_2024presgeresults.xlsx: no note that italics indicate write-in votes" b03
+case_ "a candidate's one roman cell made italic (Duncan, Ohio)" "fec_2024presgeresults.xlsx: the note counts 24 candidates on at least one state ballot, the fonts 23" b04
+b05() { local f=ElectionsData/usa/raw/returns/fec_2024presgeresults.xlsx; perl "$POKE" $f '<c r="U2" s="33"><v>4319</v>' '<c r="U2" s="35"><v>4319</v>'; resum $f; }   # Stein's Alabama listing made a write-in
+case_ "one of Stein's listings made italic (Alabama)" "fec_2024presgeresults.xlsx: STEIN listed on 36 ballots, the reading's first run 37" b05
+
 # --- the tool's own copy
 t07() { sed -i "s/my %typo = ('2020 R' => 'Trunp');/my %typo = ();/" Tools/us_returns_prep.pl; }
 t12() { wrap 's/^Congressional District 1\b/Congressional District X/; s/^Congressional District 2\b/Congressional District 1/; s/^Congressional District X/Congressional District 2/'; }
 t15() { perl -i -pe 's/my %typed = \$year == 2012 \? map \{ \$_ => 1 \} 4 \.\. 7 : \(\);/my %typed = ();/' Tools/us_returns_prep.pl; }
 t16() { perl -i -pe 's/\$row\{\$p\} = \$r if index\(\$a, "\$nara\{2012\}\{name\}\{\$p\} \("\) == 0;/\$row{\$p eq q(D) ? q(R) : q(D)} = \$r if index(\$a, "\$nara{2012}{name}{\$p} (") == 0;/' Tools/us_returns_prep.pl; }
 t20() { wrap 's/\f//g'; }
+t21() { perl -i -pe 's/\? \(1, \$1\) : \(0, undef\);/? (0, undef) : (0, undef);/' Tools/us_returns_prep.pl; }   # the strict reader blinded: no font read as italic
 case_ "TOOL: the declared misprint withdrawn" "heads 'Trunp (R)'" t07
 case_ "TOOL: Nebraska's district headings 1 and 2 exchanged by the text extractor (the 2020 and 2024 books)" "2020 NE-1: NARA's note gives it to R" t12
 case_ "TOOL: 2012's formula Total cells without their typed counterpart" "is a formula, with no typed national figure" t15
 case_ "TOOL: Table 1's nominee rows crossed" "Table 1 types" t16
 case_ "TOOL: a text extractor printing no page breaks" "carries no page breaks" t20
+case_ "TOOL: the italic reader blinded (the looser mark still seen)" "fec_2024presgeresults.xlsx AL: the cell of 'WRITE-INS (SCATTERED)' in a font marked italic that the reader did not read as italic" t21
 
 echo "caught $caught, missed or broken $bad"
 [ $bad -eq 0 ]

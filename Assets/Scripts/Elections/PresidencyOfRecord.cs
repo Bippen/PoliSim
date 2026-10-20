@@ -115,12 +115,11 @@ namespace PoliSim.Elections
         /// (<see cref="Generated.UsPresidentialReturns.Candidates"/>), so nothing of it is typed. The two nominees NARA names (Trump, REP; Harris, DEM) stand
         /// for their parties, at their parties' positions, carrying <see cref="Usa2024Factors"/>; every other column - Stein, Kennedy, Oliver, the rest,
         /// and the two ballot lines that are not candidates (Nevada's None of These Candidates, the scattered write-ins) - carries its national share of
-        /// record as its base (<see cref="CandidateOfRecord.Factor"/> NaN), so the field sums to the FEC's total. A DEPARTURE (US-6) from the plan's words,
-        /// "the minor candidates standing only where the FEC shows them on the ballot", put to Elias: each stands NATIONALLY, at its national share - the
-        /// prediction is national, so its shares are the same either way; where the FEC shows a candidate on no ballot (Kennedy, withdrawn, stood on
-        /// some) is a state's matter (`Tools/us_ballot_standing.pl` prints where the workbook shows each with votes). PS-6 US-8's count reads the states
-        /// with every minor candidate pooled per state (US-4's form, on which R-US14 was ruled), so a per-state table would move no elector - it stays
-        /// US-6's ask.
+        /// record as its base (<see cref="CandidateOfRecord.Factor"/> NaN), so the field sums to the FEC's total. The prediction is national, so it reads
+        /// the base whole. PS-6 US-6c (Elias's ruling J3, 2026-10-19, `COMPLETED.md` §870: "a minor candidate stands only where on the ballot of record (the
+        /// FEC's states), as US-30 already requires" - §844's national standing reversed): in the count's states each column stands only where
+        /// <see cref="StandingOfRecord"/> puts it, its national share spread over those jurisdictions in the record's own pattern (`ElectoralCollege.FromNationalShares`, the overload with the
+        /// standing).
         /// </summary>
         private static readonly CandidateOfRecord[] Usa2024 = Usa2024Field();
 
@@ -135,7 +134,7 @@ namespace PoliSim.Elections
                 foreach (var f in Usa2024Factors) { if (f.Ticket == c.Ticket) { party = f.Party; factor = f.Factor; } }
                 field.Add(new CandidateOfRecord(c.Candidate, party, party, factor, party != null
                     ? "the nominee of record NARA names [" + c.Ticket + "], at the party's position"
-                    : "no roster party backs the column - at its national share of record as base (the FEC's workbook), standing nationally (a departure from the plan, put to Elias - US-6)"));
+                    : "no roster party backs the column - its national share of record as base (the FEC's workbook), standing only where on the ballot of record"));
             }
             return field.ToArray();
         }
@@ -256,6 +255,33 @@ namespace PoliSim.Elections
                 if (v.Year == year && v.Round == 1 && valid > 0 && v.Candidate.Split(' ')[0] == surname) { return (double)v.Votes / valid; }
             }
             return double.NaN;
+        }
+
+        /// <summary>
+        /// PS-6 US-6c (Elias's ruling J3, 2026-10-19: "a minor candidate stands only where on the ballot of record (the FEC's states)"): where a column of
+        /// the field of record stands, and with what weight - each jurisdiction whose ballot of record listed it (read from the FEC's workbook by its own note
+        /// that italics indicate write-in votes: <see cref="Generated.UsPresidentialReturns.CandidateStates"/>, its rows Listed), with the column's share of
+        /// record of that jurisdiction's vote (its votes there over the jurisdiction's total, the catalog's). DECLARED: the count spreads the column's
+        /// national share over these jurisdictions in proportion to these shares (`ElectoralCollege.FromNationalShares`, the overload with the standing) -
+        /// the record's own pattern where it stood, not a uniform spread. A write-in count where the column was not listed gives it no standing; those votes
+        /// stay in the column's national share, so they are spread over where it does stand. One column was on no ballot - the scattered write-ins, no
+        /// candidacy - and it stands where the workbook reports such votes, with their shares (DECLARED). Empty for a nominee (who stands everywhere - the
+        /// count's own two columns), a column the year does not hold, and every country but the USA.
+        /// </summary>
+        public static Dictionary<string, double> StandingOfRecord(CountryId id, int year, string surname)
+        {
+            var listed = new Dictionary<string, double>(StringComparer.Ordinal);
+            var reported = new Dictionary<string, double>(StringComparer.Ordinal);
+            if (id != CountryId.USA) { return listed; }
+            foreach (var b in Generated.UsPresidentialReturns.CandidateStates)
+            {
+                if (b.Year != year || b.Candidate != surname) { continue; }
+                long total = 0;
+                foreach (var s in Generated.UsPresidentialReturns.States) { if (s.Year == year && s.State == b.State) { total = s.VotesTotal; } }
+                if (total <= 0) { continue; }
+                (b.Listed ? listed : reported)[b.State] = (double)b.Votes / total;
+            }
+            return listed.Count > 0 ? listed : reported;
         }
 
         /// <summary>The president of record on <paramref name="date"/>; false before the first the record holds, or where none is held.</summary>

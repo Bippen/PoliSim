@@ -20,7 +20,7 @@ namespace PoliSim.EditorTools
     /// <list type="bullet">
     /// <item>(a) §689's normalised uniform swing - <see cref="RegionalVoteModel.RegionalSharesByUniformSwing"/>, unchanged: re-solved until the
     /// states give the national shares back. RULED (R-US14 (a), G2) - and since PS-6 US-8 read here from the runtime's derivation, the one the
-    /// game's count runs (<see cref="ElectoralCollege.FromNationalShares"/>, the districts with it), so one derivation is measured and played; the
+    /// game's count runs (<see cref="ElectoralCollege.FromNationalShares(int, int, double[], out ElectoralCollege.StateCall[], out double)"/>, the districts with it), so one derivation is measured and played; the
     /// check holds that the runtime's college allocates as this check's own construction does;</item>
     /// <item>(b) proportional swing - each party's share scaled by its national ratio, each state renormalised, not re-solved;</item>
     /// <item>(c) plain additive swing - Poland's okręg form (<see cref="PolishSejmAllocation"/>): each party's national change added, floored at

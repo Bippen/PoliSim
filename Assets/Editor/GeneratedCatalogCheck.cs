@@ -527,7 +527,8 @@ namespace PoliSim.EditorTools
         /// <see cref="PoliSim.Elections.ElectoralCollege.FromCatalog"/> over each year, through the statute's allocator, gives the record's split
         /// exactly - NARA's table, each nominee's electoral votes plus those the nominee's own electors cast for other persons. And what US-5's
         /// instrument leans on: a year's candidates sum to its jurisdictions' votes, each nominee's row to its ticket's; each House year holds the
-        /// 50 states once, and no House election is missing between the first and the last.
+        /// 50 states once, and no House election is missing between the first and the last. And what US-6c's standing leans on: 2024's every other
+        /// column by jurisdiction sums to each column's national row and to each jurisdiction's others, no cell a nominee's or there twice.
         /// </summary>
         private static int CheckUsPresidentialReturns(StringBuilder sb)
         {
@@ -587,6 +588,53 @@ namespace PoliSim.EditorTools
                 var c = UsPresidentialReturns.Candidates[i];
                 if (!SameRow(candidates[i], c.Year, c.Candidate, c.Ticket, c.Votes)) { wrong.Add("candidate row " + i + " (" + c.Year + " " + c.Candidate + ") differs"); }
             }
+
+            // US-6c: 2024's every other column by jurisdiction - row for row; each column's rows sum to its national row and each jurisdiction's to its
+            // others; no row is a nominee's, none names a jurisdiction its year does not hold, none is there twice; some column is on some ballot
+            List<string[]> ballot = ReadUsCsv(usa, "president_by_candidate_state.csv", UsPresidentialReturns.CandidateStateSourceDigest, "year,candidate,state,votes,listed", wrong);
+            if (ballot.Count != UsPresidentialReturns.CandidateStates.Length) { wrong.Add("candidates by jurisdiction: " + ballot.Count + " CSV rows, " + UsPresidentialReturns.CandidateStates.Length + " in the catalog"); }
+            for (int i = 0; i < Math.Min(ballot.Count, UsPresidentialReturns.CandidateStates.Length) && wrong.Count < 12; i++)
+            {
+                var b = UsPresidentialReturns.CandidateStates[i];
+                if (!SameRow(ballot[i], b.Year, b.Candidate, b.State, b.Votes, b.Listed ? "ballot" : "write-in")) { wrong.Add("candidate-by-jurisdiction row " + i + " (" + b.Year + " " + b.Candidate + " " + b.State + ") differs"); }
+            }
+
+            var jurisdictions = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var s in UsPresidentialReturns.States) { jurisdictions.Add(s.Year + " " + s.State); }
+            var nomineeColumns = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var c in UsPresidentialReturns.Candidates) { if (c.Ticket != "-") { nomineeColumns.Add(c.Year + " " + c.Candidate); } }
+            var byColumn = new Dictionary<string, long>(StringComparer.Ordinal);
+            var byJurisdiction = new Dictionary<string, long>(StringComparer.Ordinal);
+            var ballotYears = new HashSet<int>();
+            var cellsSeen = new HashSet<string>(StringComparer.Ordinal);
+            int listedRows = 0;
+            foreach (var b in UsPresidentialReturns.CandidateStates)
+            {
+                string column = b.Year + " " + b.Candidate, at = b.Year + " " + b.State, cell = column + " " + b.State;
+                ballotYears.Add(b.Year);
+                if (!cellsSeen.Add(cell)) { wrong.Add(cell + ": twice among the candidates by jurisdiction"); }
+                if (!jurisdictions.Contains(at)) { wrong.Add(cell + ": no jurisdiction of " + b.Year); }
+                if (nomineeColumns.Contains(column)) { wrong.Add(cell + ": a nominee's cell among every other column's"); }
+                byColumn[column] = (byColumn.TryGetValue(column, out long v) ? v : 0L) + b.Votes;
+                byJurisdiction[at] = (byJurisdiction.TryGetValue(at, out long w) ? w : 0L) + b.Votes;
+                if (b.Listed) { listedRows++; }
+            }
+
+            foreach (var c in UsPresidentialReturns.Candidates)
+            {
+                if (c.Ticket != "-" || !ballotYears.Contains(c.Year)) { continue; }
+                long sum = byColumn.TryGetValue(c.Year + " " + c.Candidate, out long s) ? s : 0L;
+                if (sum != c.Votes) { wrong.Add(F("{0} {1}: its jurisdictions sum to {2}, its national row {3}", c.Year, c.Candidate, sum, c.Votes)); }
+            }
+
+            foreach (var s in UsPresidentialReturns.States)
+            {
+                if (!ballotYears.Contains(s.Year)) { continue; }
+                long sum = byJurisdiction.TryGetValue(s.Year + " " + s.State, out long o) ? o : 0L;
+                if (sum != s.VotesOther) { wrong.Add(F("{0} {1}: every other column's cells sum to {2}, its others {3}", s.Year, s.State, sum, s.VotesOther)); }
+            }
+
+            if (UsPresidentialReturns.CandidateStates.Length > 0 && listedRows == 0) { wrong.Add("no column is listed on any ballot - every other candidate would stand nowhere"); }
 
             if (house.Count != UsPresidentialReturns.House.Length) { wrong.Add("House: " + house.Count + " CSV rows, " + UsPresidentialReturns.House.Length + " in the catalog"); }
             for (int i = 0; i < Math.Min(house.Count, UsPresidentialReturns.House.Length) && wrong.Count < 12; i++)
@@ -662,9 +710,10 @@ namespace PoliSim.EditorTools
             }
 
             sb.Append(F("    UsPresidentialReturns: {0} page(s) and the READ transcription the bytes the run read; {1} year(s), {2} jurisdiction row(s), "
-                        + "{3} district row(s), {4} candidate row(s) (their sum the jurisdictions'), {5} House row(s) (50 a year, {6} years), every figure the CSVs'; "
-                        + "the allocator over the catalog gives the record's split: {7}\n",
-                UsPresidentialReturns.RawSources.Length, years.Count, states.Count, districts.Count, candidates.Count, house.Count, houseYears.Count, string.Join(", ", splits.ToArray())));
+                        + "{3} district row(s), {4} candidate row(s) (their sum the jurisdictions'), {8} candidate-by-jurisdiction row(s), {9} on a ballot (their sums the columns' and the jurisdictions' others), "
+                        + "{5} House row(s) (50 a year, {6} years), every figure the CSVs'; the allocator over the catalog gives the record's split: {7}\n",
+                UsPresidentialReturns.RawSources.Length, years.Count, states.Count, districts.Count, candidates.Count, house.Count, houseYears.Count, string.Join(", ", splits.ToArray()),
+                ballot.Count, listedRows));
             return 0;
         }
 

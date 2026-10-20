@@ -19,7 +19,7 @@ namespace PoliSim.Elections
     /// <item><description><b>The count</b> (US-8; <see cref="Count"/>, a pure function of its inputs, callable for any world - R-US5 (a): PS-8 then needs only its
     /// gate). On the polling day of 3 U.S.C. §21(1) (<see cref="PresidentialDay"/>) the game's poll × E1's factors (US-6, <see cref="PresidencyOfRecord.CandidatesOf"/>)
     /// gives the national vote; the states follow from the previous presidential election's by §689's normalised uniform swing (R-US14 (a), RULED - G2) and
-    /// the electors by the statutes in force (<see cref="ElectoralCollege.FromNationalShares"/>); with no one at a majority of the electors appointed the House
+    /// the electors by the statutes in force (<see cref="ElectoralCollege.FromNationalShares(int, int, double[], int, IReadOnlyList{ElectoralCollege.Standing}, out ElectoralCollege.StateCall[], out double)"/>); with no one at a majority of the electors appointed the House
     /// chooses by states on the count's day under the Twelfth Amendment (R-US3 (a), RULED - F8; <see cref="HoldHouseChoice"/>). The verdict lands at once: no
     /// night until D-US is built.</description></item>
     /// <item><description><b>The oath.</b> The winner takes office at noon on the 20th of January after the polling day - the Twentieth Amendment, Section 1
@@ -329,8 +329,8 @@ namespace PoliSim.Elections
         /// <summary>
         /// The field's national vote on <paramref name="pollingDay"/>, from the party <paramref name="poll"/> (the game's prediction that day, by party key) -
         /// E1's rule as US-6 built it: where the election is of record (2024, the term ending 20 January 2025), the field of record - each nominee NARA names at
-        /// the party's poll × the nominee's [FITTED] factor, every other column at its national share of record as its base (a DEPARTURE put to Elias by US-6:
-        /// standing nationally); otherwise each roster party's candidate at the party's poll × E1's future factor (<see cref="PresidentialElection.FutureFactor"/>),
+        /// the party's poll × the nominee's [FITTED] factor, every other column at its national share of record as its base (in the states, standing only
+        /// where on the ballot of record - US-6c, <see cref="Count"/>); otherwise each roster party's candidate at the party's poll × E1's future factor (<see cref="PresidentialElection.FutureFactor"/>),
         /// unnamed ("Republican Party's candidate (2028)") unless a nominee is given (US-28, below) and with no minor candidate (no field of record holds one). Normalised; each
         /// share in %. The nominees are named by NARA's name for the year's ticket (<see cref="PresidencyOfRecord.NameOfRecord"/>) - DECLARED: the count names
         /// the two as its certificates do, after the count, while US-6's naming by date (<see cref="PresidencyOfRecord.NomineeName"/> - R-US23 as ruled: even-handed, neither named until both conventions
@@ -409,7 +409,7 @@ namespace PoliSim.Elections
         /// THE COUNT of <paramref name="pollingDay"/> on <paramref name="poll"/> - pure: nothing is written, nothing drawn. The field's national vote
         /// (<see cref="TryField"/>) pooled as the states pool it - the Republican nominee, the Democratic nominee, <see cref="OtherCandidates"/> - the states
         /// derived from the catalog's latest presidential election before the day (R-US14 (a); the record's, never the game's - a 2028 count swings from the record's 2024 states even after the game's own 2024 count, which <see cref="StatesOf"/> could give: ASKED of Elias, with whether US-26 owns it) and the electors
-        /// those in force that year or carried forward (R-US13 (a)), by <see cref="ElectoralCollege.FromNationalShares"/>; then <see cref="FromCollege"/>.
+        /// those in force that year or carried forward (R-US13 (a)), by <see cref="ElectoralCollege.FromNationalShares(int, int, double[], int, IReadOnlyList{ElectoralCollege.Standing}, out ElectoralCollege.StateCall[], out double)"/>; then <see cref="FromCollege"/>.
         /// <paramref name="states"/> is every jurisdiction's call. Null, with the reason, where no count can be made.
         /// </summary>
         public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, out ElectoralCollege.StateCall[] states, out string why) =>
@@ -442,9 +442,11 @@ namespace PoliSim.Elections
                 why = "the catalog holds no presidential election before " + pollingDay.Year.ToString(CultureInfo.InvariantCulture) + " to swing from";
                 return null;
             }
-            ElectoralCollege.Jurisdiction[] college = ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, pooled), tieSeed, out states, out double residual);
-            string basis = string.Format(CultureInfo.InvariantCulture, "{0}; the states from {1}'s by the normalised uniform swing (worst residual {2:E1}); the electors in force in {3}{4}",
-                DayBasis, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty);
+            IReadOnlyList<ElectoralCollege.Standing> onBallots = OthersOnTheBallots(id, pollingDay.Year, pooled.Share);
+            ElectoralCollege.Jurisdiction[] college = ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, pooled), tieSeed, onBallots, out states, out double residual);
+            string basis = string.Format(CultureInfo.InvariantCulture, "{0}; the states from {1}'s by the normalised uniform swing{5} (worst residual {2:E1}); the electors in force in {3}{4}",
+                DayBasis, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty,
+                onBallots != null ? ", every other candidate standing only where on the ballot of record" : string.Empty);
             Contest contest = FromCollege(pollingDay, basis, college, rep, dem, pooled);
             contest.TieSeed = tieSeed;
             var othersLead = new List<string>();
@@ -540,8 +542,40 @@ namespace PoliSim.Elections
             }
             if (rep == null || dem == null || others == null || double.IsNaN(rep.Share) || double.IsNaN(dem.Share) || double.IsNaN(others.Share)) { return null; }
             if (!ElectoralCollege.TryPriorYear(contest.PollingDay.Year, out int prior) || !ElectoralCollege.TryElectorsYear(contest.PollingDay.Year, out int inForce)) { return null; }
-            ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, others), contest.TieSeed, out ElectoralCollege.StateCall[] states, out double _);
+            ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, others), contest.TieSeed, OthersOnTheBallots(CountryId.USA, contest.PollingDay.Year, others.Share), out ElectoralCollege.StateCall[] states, out double _);
             return states;
+        }
+
+        /// <summary>
+        /// PS-6 US-6c (Elias's ruling J3, 2026-10-19, `COMPLETED.md` §870: "a minor candidate stands only where on the ballot of record (the FEC's states)"):
+        /// every other candidate of a field of record as the states hold it - each column of the field that no roster party backs, at its part of
+        /// <paramref name="othersPercent"/> (the count's <see cref="OtherCandidates"/> tally, %) in proportion to its national share of record (the base
+        /// <see cref="TryField"/> gives it, so each is its own share of the field), standing where `PresidencyOfRecord.StandingOfRecord` puts it, in the record's own pattern there. A pure function of
+        /// the year and the pooled share, so <see cref="StatesOf"/> re-derives the count's states from a stored contest. Null where the election holds no field
+        /// of record - a later field has no minor candidate, and the states take US-8's form, every other candidate swung from the prior election's.
+        /// DECLARED (no format step): a 2024 contest saved by a build before US-6c re-derives its states by this standing, not by the pooled form its electors
+        /// were counted on; until US-26 reads the game's own states, only the diagnostics read them.
+        /// </summary>
+        private static IReadOnlyList<ElectoralCollege.Standing> OthersOnTheBallots(CountryId id, int year, double othersPercent)
+        {
+            IReadOnlyList<PresidencyOfRecord.CandidateOfRecord> ofRecord = PresidencyOfRecord.CandidatesOf(id, year + 1);
+            var columns = new List<(string Surname, double Base)>();
+            double bases = 0.0;
+            foreach (PresidencyOfRecord.CandidateOfRecord c in ofRecord)
+            {
+                if (c.BackingParty != null) { continue; }
+                double b = PresidencyOfRecord.ShareOfRecord(id, year, c.Surname);
+                if (double.IsNaN(b) || b <= 0.0) { continue; }   // TryField's own filter: a column with no base is not in the field
+                columns.Add((c.Surname, b));
+                bases += b;
+            }
+            if (columns.Count == 0 || bases <= 0.0) { return null; }
+            var standing = new List<ElectoralCollege.Standing>();
+            foreach ((string surname, double b) in columns)
+            {
+                standing.Add(new ElectoralCollege.Standing(surname, othersPercent / 100.0 * b / bases, PresidencyOfRecord.StandingOfRecord(id, year, surname)));
+            }
+            return standing;
         }
 
         /// <summary>Whether <paramref name="date"/> is the country's presidential polling day (`WorldClock.TryNextPollingDay`) and the game has not counted it yet.</summary>

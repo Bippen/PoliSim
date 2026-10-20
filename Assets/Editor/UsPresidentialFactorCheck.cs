@@ -32,6 +32,9 @@ namespace PoliSim.EditorTools
     /// `Tools/us_factor_patch.pl` to patch in from the log. The field, at the stored factors, reproduces the FEC's national shares on that world - BY
     /// CONSTRUCTION, which the card says in words: the acceptance rests on the states (US-4) and on the out-of-sample case (US-5's 2020 from 2016).
     /// A later field holds no candidate of record (E1's factor 1.0).</description></item>
+    /// <item><description><b>The standing</b> (US-6c, Elias's ruling J3): every other column stands only where on the ballot of record - the jurisdictions
+    /// `PresidencyOfRecord.StandingOfRecord` gives are the catalog's listed cells (the FEC's roman cells), the scattered write-ins, on no ballot, where they
+    /// are reported; a nominee holds no ballot row. The national field reads each column's share whole, so the standing moves no factor.</description></item>
     /// <item><description><b>The naming</b> (R-US2 (a)): each convention's date of record held to its saved page's bytes (SHA-256)
     /// and date words - the DNC's; the RNC's BILLED - and, R-US23 as ruled (even-handed), neither nominee named before both are dated, then both by NARA's names.</description></item>
     /// </list>
@@ -319,6 +322,27 @@ namespace PoliSim.EditorTools
             }
             Check(worst < ReproductionTolerance, F("by construction: the field at the stored factors gives the FEC's national shares on the reference world - the largest miss {0:0.0000} pp ({1})", worst, worstName ?? "none"));
 
+            // ---- (6b) US-6c (Elias's ruling J3): every other column stands only where on the ballot of record - the jurisdictions whose cell of the FEC's
+            // workbook is roman (its note: italics indicate write-in votes); the one column on no ballot, the scattered write-ins, where the workbook reports them
+            var standingWrong = new List<string>();
+            var onNoBallot = new List<string>();
+            var listedCount = new Dictionary<string, int>();
+            foreach (PresidencyOfRecord.CandidateOfRecord c in field)
+            {
+                Dictionary<string, double> standing = PresidencyOfRecord.StandingOfRecord(CountryId.USA, vote.Year, c.Surname);
+                var cells = UsPresidentialReturns.CandidateStates.Where(b => b.Year == vote.Year && b.Candidate == c.Surname).ToList();
+                var listed = cells.Where(b => b.Listed).Select(b => b.State).ToList();
+                if (c.BackingParty != null) { if (standing.Count != 0 || cells.Count != 0) { standingWrong.Add(c.Surname + " (a nominee) holds a ballot row"); } continue; }
+                if (listed.Count == 0) { onNoBallot.Add(PresidencyOfRecord.NameOfRecord(CountryId.USA, vote.Year, c.Surname)); }
+                var expectedWhere = listed.Count > 0 ? listed : cells.Select(b => b.State).ToList();
+                if (expectedWhere.Count == 0 || !standing.Keys.OrderBy(s => s, StringComparer.Ordinal).SequenceEqual(expectedWhere.OrderBy(s => s, StringComparer.Ordinal))) { standingWrong.Add(F("{0} stands in {1}, its ballots of record list {2}", c.Surname, standing.Count, expectedWhere.Count)); }
+                listedCount[c.Surname] = listed.Count;
+            }
+            int Listed(string surname) => listedCount.TryGetValue(surname, out int n) ? n : -1;
+            Check(standingWrong.Count == 0 && onNoBallot.Count == 1,
+                standingWrong.Count == 0 ? F("every other column stands only where on the ballot of record (J3): Stein {0}, Kennedy {1}, Oliver {2} of 51 jurisdictions; on no ballot only {3}, standing where the workbook reports it", Listed("STEIN"), Listed("KENNEDY"), Listed("OLIVER"), string.Join(", ", onNoBallot))
+                    : "the standing is NOT the ballots of record - " + string.Join("; ", standingWrong));
+
             // ---- (7) a later field: no candidate of record, every share at E1's future factor
             Check(PresidencyOfRecord.CandidatesOf(CountryId.USA, 2029).Count == 0 && PresidentialElection.FutureFactor == 1.0,
                 F("a later field holds no candidate of record - its candidates start at factor {0:0.0} (E1, PresidentialElection.FutureFactor)", PresidentialElection.FutureFactor));
@@ -392,7 +416,7 @@ namespace PoliSim.EditorTools
             card.Add(F("**The reference world** (`PresidentialReferenceWorld`, generalised by country): the epoch set to {0:d MMM yyyy}, the eve of the general election of {1:d MMM yyyy}, before the world is created - as a new game builds one - and one day stepped by the game's loop. It seats {2} and the House elected in {3}; its poll is REP {4}, DEM {5}, the record over the term shifting DEM {6:+0.00;-0.00} pp ({7}).",
                 eve, vote, ofRecord.Head ?? "-", WorldClock.ElectionDayOf(CountryId.USA, atEve).Year, poll != null ? Pct(poll["REP"]) : "-", poll != null ? Pct(poll["DEM"]) : "-", 100.0 * shiftDem, EconomicVote.Describe(world.Term)));
             card.Add("");
-            card.Add(F("**The factors** (R-US2 (a): the November nominees of record carry them from the start): each nominee's share of the FEC's national total ÷ the party's poll on that world - {0} {1:0.000000}, {2} {3:0.000000}. Every other column of the FEC's workbook stands at its national share of record as its base: {4}, the rest {5} (every other candidate, None of These Candidates and the scattered write-ins). A later field starts at factor {6:0.0} (E1).",
+            card.Add(F("**The factors** (R-US2 (a): the November nominees of record carry them from the start): each nominee's share of the FEC's national total ÷ the party's poll on that world - {0} {1:0.000000}, {2} {3:0.000000}. Every other column of the FEC's workbook carries its national share of record as its base, standing only where on the ballot of record (below): {4}, the rest {5} (every other candidate, None of These Candidates and the scattered write-ins). A later field starts at factor {6:0.0} (E1).",
                 PresidencyOfRecord.NameOfRecord(CountryId.USA, vote.Year, nomineeR ?? string.Empty), fits.TryGetValue(nomineeR ?? string.Empty, out double fR) ? fR : double.NaN,
                 harris, fits.TryGetValue(nomineeD ?? string.Empty, out double fD) ? fD : double.NaN, string.Join(", ", named.Select(Base)), Pct(restShare), PresidentialElection.FutureFactor));
             card.Add("");
@@ -413,10 +437,11 @@ namespace PoliSim.EditorTools
                     ? F("The Republican convention's date is BILLED - gop.com refuses this machine (G13); Elias saves the RNC's page for the roll call of 15 July 2024 by browser - so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names \"{0}\" and \"{1}\" on every day before the count, to a player of either party as to anyone.", demOnVote, repOnVote)
                     : F("The Republican convention's date is {0:d MMM yyyy} (its saved page held to its SHA-256 and its date), so the naming table (`PresidencyOfRecord.NomineeName`, which no screen reads yet) names {1} and {2} from {3:d MMM yyyy}.", repFrom, harris, trump, later)));
             card.Add("");
-            card.Add("**A DEPARTURE, put to Elias** (as US-5's House basis was): the plan's words are \"the minor candidates standing only where the FEC shows them on the ballot\"; US-6 stands every minor column nationally, at its national share of record. The prediction is national, so its shares are the same either way; where the FEC's workbook shows each minor candidate with votes, jurisdiction by jurisdiction, is printed by `Tools/us_ballot_standing.pl` (a vote in a cell is an upper bound on a ballot listing - write-ins land there too). US-8's count reads the states with every minor candidate pooled per state (*The count - US-8*), so a per-state table would move no elector - it stays the ask.");
+            card.Add(F("**Every other candidate stands only where on the ballot of record** (Elias's ruling J3, 2026-10-19, reversing US-6's national standing; built as US-6c): a column stands in the jurisdictions whose ballot listed it - the FEC's workbook prints write-in votes in italics, by its own note, so a roman cell is a listing (`PresidencyOfRecord.StandingOfRecord`; `Tools/us_ballot_standing.pl` prints each column's) - Stein in {0}, Kennedy in {1}, Oliver in {2} of the 51 jurisdictions; {3}, on no ballot, stands where the workbook reports it. The prediction is national and reads each column's national share whole, its write-in votes included, so the factors are the same as with national standing; the count's states spread each column's share over where it stands, in the record's own pattern there (*The count - US-8*).",
+                Listed("STEIN"), Listed("KENNEDY"), Listed("OLIVER"), string.Join(", ", onNoBallot)));
 
             // the stamp: the catalog's digests, the positions, the spreads, the weight, the stored factors and the dated page
-            var stamp = new StringBuilder(UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.HouseSourceDigest + UsPresidentialReturns.YearSourceDigest + pageDigest + rncDigest);
+            var stamp = new StringBuilder(UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.CandidateStateSourceDigest + UsPresidentialReturns.HouseSourceDigest + UsPresidentialReturns.YearSourceDigest + pageDigest + rncDigest);
             foreach (CountryId id in PartySystems.UsSpreadFrom) { PartySystems.TryElectorate(id, out VoteModel.Electorate e, out double _); stamp.Append(id).Append(e); }
             stamp.Append(string.Join(",", points.Select(p => F("{0}:{1:R}:{2:R}", p.Name, p.Econ, p.Soc)))).Append(w.ToString("R", CultureInfo.InvariantCulture));
             foreach (PresidencyOfRecord.CandidateOfRecord c in backed) { stamp.Append(c.Surname).Append(c.Factor.ToString("R", CultureInfo.InvariantCulture)); }

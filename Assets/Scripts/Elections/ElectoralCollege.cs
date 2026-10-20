@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using PoliSim.Elections.Generated;
 
 namespace PoliSim.Elections
@@ -10,7 +11,7 @@ namespace PoliSim.Elections
     /// method — implemented from the statutes, to the standard the other five countries' rules
     /// were held to. PURE FUNCTIONS. Two inputs: <see cref="FromCatalog"/> hands it any election
     /// the generated catalog holds (<see cref="UsPresidentialReturns.Years"/>; since PS-6 US-3,
-    /// `COMPLETED.md` §786) - the backtests' and US-4's; and, since PS-6 US-8, <see cref="FromNationalShares"/>
+    /// `COMPLETED.md` §786) - the backtests' and US-4's; and, since PS-6 US-8, <see cref="FromNationalShares(int, int, double[], out StateCall[], out double)"/>
     /// hands it a predicted election - the states derived from a national vote by R-US14 (a), which
     /// is how the game's own count reaches it (<see cref="UsPresidentialElection"/>, on the day loop's
     /// polling day). US-4's instrument (`UsStateSwingCheck`) reads its method (a) from the same
@@ -92,7 +93,7 @@ namespace PoliSim.Elections
             return jurisdictions.ToArray();
         }
 
-        /// <summary>The order of a state's shares in <see cref="FromNationalShares"/> (and of the national shares it is handed): the Democratic nominee,
+        /// <summary>The order of a state's shares in <see cref="FromNationalShares(int, int, double[], out StateCall[], out double)"/> (and of the national shares it is handed): the Democratic nominee,
         /// the Republican nominee, every other candidate together - US-4's order, a party with one swing each.</summary>
         public const int ShareDemocrat = 0, ShareRepublican = 1, ShareOthers = 2;
 
@@ -133,11 +134,42 @@ namespace PoliSim.Elections
         /// catalog holds either year not, or where the two years' jurisdictions or districts differ.
         /// </summary>
         public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, out StateCall[] calls, out double worstResidual) =>
-            FromNationalShares(priorYear, electorsYear, national, 0, out calls, out worstResidual);
+            FromNationalShares(priorYear, electorsYear, national, 0, null, out calls, out worstResidual);
 
         /// <summary>PS-6 US-8c: <see cref="FromNationalShares(int, int, double[], out StateCall[], out double)"/> with its exact ties drawn on <paramref name="tieSeed"/>
         /// (the overload without one draws on seed 0 - the instruments' and the planted counts'; the game's count hands it the world's master seed).</summary>
-        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, int tieSeed, out StateCall[] calls, out double worstResidual)
+        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, int tieSeed, out StateCall[] calls, out double worstResidual) =>
+            FromNationalShares(priorYear, electorsYear, national, tieSeed, null, out calls, out worstResidual);
+
+        /// <summary>PS-6 US-6c: one of every other candidate on the ballots of record - its national share (a fraction of all votes), and where it stands:
+        /// each jurisdiction where it stands with the candidate's own weight there (`PresidencyOfRecord.StandingOfRecord` - its share of record of that
+        /// jurisdiction's vote); a jurisdiction it is absent from, it does not stand in. Every other candidate together must stay below the whole of every
+        /// jurisdiction (the college throws where they reach it, so the nominees' part is never zero or negative).</summary>
+        public readonly struct Standing
+        {
+            public readonly string Candidate;
+            public readonly double Share;
+            public readonly IReadOnlyDictionary<string, double> Where;
+            public Standing(string candidate, double share, IReadOnlyDictionary<string, double> where) { Candidate = candidate; Share = share; Where = where; }
+        }
+
+        /// <summary>
+        /// PS-6 US-6c (Elias's ruling J3, 2026-10-19, `COMPLETED.md` §870: "a minor candidate stands only where on the ballot of record (the FEC's states)"): the
+        /// college above with every other candidate standing only where it is on a ballot of record (<paramref name="others"/>; null: the form above, every
+        /// other candidate pooled and swung from the prior election's). Each of them takes, in each jurisdiction where it stands, a share in proportion to
+        /// its weight there (<see cref="Standing.Where"/>), scaled so that the jurisdictions, each weighing what it cast in the prior election, give its
+        /// national share back - its share where it stands renormalised, nothing elsewhere; so every other candidate's share of a jurisdiction is fixed by
+        /// the ballots and sums to the national share exactly. The two nominees share what is left by §689's normalised uniform swing on the two of them (the same
+        /// <see cref="RegionalVoteModel.RegionalSharesByUniformSwing"/>, its prior each jurisdiction's two-party split of the prior election - the Democratic
+        /// nominee's and the Republican's share of their two votes, so the prior's other candidates are left out, not handed back), each jurisdiction
+        /// weighing its prior votes cast less what every other candidate takes there - its nominees' part of the vote - so the jurisdictions give the
+        /// national shares back; the worst residual, measured over the three columns, handed back. Throws where a candidate stands nowhere, where
+        /// <paramref name="others"/> do not sum to the national share of every other candidate, or where every other candidate together reaches the whole of
+        /// a jurisdiction - as the form above throws on a catalog it cannot read; the catalog check (`GeneratedCatalogCheck`, each column's rows summing to its
+        /// national row) rules the first out for the shipped catalog, and the count's day loop does not catch it (DECLARED, as the form above). An exact state or district tie is drawn on <paramref name="tieSeed"/>
+        /// (<see cref="TieBreak"/>), as in the form above.
+        /// </summary>
+        public static Jurisdiction[] FromNationalShares(int priorYear, int electorsYear, double[] national, int tieSeed, IReadOnlyList<Standing> others, out StateCall[] calls, out double worstResidual)
         {
             if (national == null || national.Length != 3) { throw new ArgumentException("three national shares: the Democratic nominee, the Republican, every other candidate"); }
             var prior = new List<(int Year, string State, int Electors, long VotesD, long VotesR, long VotesOther, long VotesTotal, int CastD, int CastR, int CastOther, string CastOtherTo)>();
@@ -158,7 +190,9 @@ namespace PoliSim.Elections
                 regions[r] = new RegionalVoteModel.RegionInput(prior[r].State, prior[r].VotesTotal, null);
                 priorShares[r] = new[] { (double)prior[r].VotesD / prior[r].VotesTotal, (double)prior[r].VotesR / prior[r].VotesTotal, (double)prior[r].VotesOther / prior[r].VotesTotal };
             }
-            double[][] derived = RegionalVoteModel.RegionalSharesByUniformSwing(national, regions, priorShares, out worstResidual);
+            double[][] derived;
+            if (others == null) { derived = RegionalVoteModel.RegionalSharesByUniformSwing(national, regions, priorShares, out worstResidual); }
+            else { derived = OnTheBallots(national, regions, priorShares, others, out worstResidual); }
 
             calls = new StateCall[prior.Count];
             var college = new Jurisdiction[prior.Count];
@@ -233,6 +267,65 @@ namespace PoliSim.Elections
                 z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
                 return z ^ (z >> 31);
             }
+        }
+
+        /// <summary>PS-6 US-6c: each jurisdiction's shares, in <see cref="ShareDemocrat"/>'s order, with every other candidate standing only where it is on a
+        /// ballot of record and the two nominees swung over the rest (<see cref="FromNationalShares(int, int, double[], int, IReadOnlyList{Standing}, out StateCall[], out double)"/>).</summary>
+        private static double[][] OnTheBallots(double[] national, RegionalVoteModel.RegionInput[] regions, double[][] priorShares, IReadOnlyList<Standing> others, out double worstResidual)
+        {
+            int n = regions.Length;
+            double total = 0.0;
+            foreach (RegionalVoteModel.RegionInput region in regions) { total += region.ElectorateWeight; }
+            var othersAt = new double[n];
+            double pooled = 0.0;
+            foreach (Standing c in others)
+            {
+                var weight = new double[n];
+                double standing = 0.0;
+                for (int r = 0; r < n; r++)
+                {
+                    if (c.Where != null && c.Where.TryGetValue(regions[r].Name, out double v) && v > 0.0) { weight[r] = v; standing += v * regions[r].ElectorateWeight; }
+                }
+                if (standing <= 0.0) { throw new ArgumentException($"{c.Candidate} stands in no jurisdiction the prior election holds"); }
+                for (int r = 0; r < n; r++) { othersAt[r] += c.Share * total * weight[r] / standing; }
+                pooled += c.Share;
+            }
+            if (Math.Abs(pooled - national[ShareOthers]) > 1e-9)
+            {
+                throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "every other candidate's shares sum to {0:R}, the national share of every other candidate is {1:R}", pooled, national[ShareOthers]));
+            }
+            for (int r = 0; r < n; r++)
+            {
+                if (othersAt[r] >= 1.0) { throw new ArgumentException(string.Format(CultureInfo.InvariantCulture, "every other candidate together takes {0:R} of {1} - the nominees would have no part of it", othersAt[r], regions[r].Name)); }
+            }
+
+            // the two nominees by the normalised uniform swing on the two of them - the prior each jurisdiction's two-party split - each jurisdiction
+            // weighing its nominees' part of the vote
+            double nominees = national[ShareDemocrat] + national[ShareRepublican];
+            var nomineeRegions = new RegionalVoteModel.RegionInput[n];
+            var nomineePrior = new double[n][];
+            for (int r = 0; r < n; r++)
+            {
+                nomineeRegions[r] = new RegionalVoteModel.RegionInput(regions[r].Name, regions[r].ElectorateWeight * (1.0 - othersAt[r]), null);
+                double priorNominees = priorShares[r][ShareDemocrat] + priorShares[r][ShareRepublican];
+                nomineePrior[r] = new[] { priorShares[r][ShareDemocrat] / priorNominees, priorShares[r][ShareRepublican] / priorNominees };
+            }
+            double[][] two = RegionalVoteModel.RegionalSharesByUniformSwing(new[] { national[ShareDemocrat] / nominees, national[ShareRepublican] / nominees }, nomineeRegions, nomineePrior, out double _);
+
+            var derived = new double[n][];
+            var rebuilt = new double[3];
+            for (int r = 0; r < n; r++)
+            {
+                double left = 1.0 - othersAt[r];
+                derived[r] = new double[3];
+                derived[r][ShareDemocrat] = two[r][0] * left;
+                derived[r][ShareRepublican] = two[r][1] * left;
+                derived[r][ShareOthers] = othersAt[r];
+                for (int p = 0; p < 3; p++) { rebuilt[p] += derived[r][p] * regions[r].ElectorateWeight; }
+            }
+            worstResidual = 0.0;
+            for (int p = 0; p < 3; p++) { worstResidual = Math.Max(worstResidual, Math.Abs(rebuilt[p] / total - national[p])); }
+            return derived;
         }
 
         /// <summary>PS-6 US-8: the catalog's latest presidential election before <paramref name="year"/> - the prior a predicted election of that year

@@ -25,7 +25,8 @@ namespace PoliSim.EditorTools
     /// Amendment (the House's choice) held to their saved pages (SHA-256 in SHA256SUMS.txt) by their words; the rules give NARA's key dates for 2024;</item>
     /// <item>(b) E1's acceptance for the USA: the reference world (US-6's - the epoch the eve of 5 Nov 2024, one day stepped) holds its own count on its
     /// polling day, on the poll E1's factors are fitted to, and elects the Republican nominee - its electors set against the record's 312-226, every state
-    /// and district called wrong, its national vote against the FEC's, its states against US-4's (a) column - written to the card; the stored contest
+    /// and district called wrong, its national vote against the FEC's, its states against US-4's (a) column (no call apart), every other candidate's share
+    /// of each jurisdiction the ballots of record's (US-6c, recomputed from the catalog) and against the record's 2024 - written to the card; the stored contest
     /// re-derives the count's own states (<see cref="UsPresidentialElection.StatesOf"/>, the reason no per-state field rides the save);</item>
     /// <item>(c) a US game played from its start (12 Mar 2024) past 5 Nov 2024 to the day after the oath, in the controller's order: the polling day raised once,
     /// no run-up or campaign staged, the count held once with its log line naming the winner and the electors, the controller's own election path (the
@@ -227,17 +228,55 @@ namespace PoliSim.EditorTools
                 countRShare, countDShare, countOShare, 100.0 * fec[ElectoralCollege.ShareRepublican], 100.0 * fec[ElectoralCollege.ShareDemocrat], 100.0 * fec[ElectoralCollege.ShareOthers], nationalGap));
             ElectoralCollege.FromNationalShares(2020, 2024, fec, out ElectoralCollege.StateCall[] us4, out double _);
             double widest = 0.0;
+            string widestAt = "-";
             int callsApart = 0;
             if (states != null)
             {
                 for (int r = 0; r < states.Length; r++)
                 {
                     double m = 100.0 * ((states[r].Shares[ElectoralCollege.ShareRepublican] - states[r].Shares[ElectoralCollege.ShareDemocrat]) - (us4[r].Shares[ElectoralCollege.ShareRepublican] - us4[r].Shares[ElectoralCollege.ShareDemocrat]));
-                    widest = Math.Max(widest, Math.Abs(m));
+                    if (Math.Abs(m) > widest) { widest = Math.Abs(m); widestAt = states[r].State; }
                     if (states[r].Winner != us4[r].Winner || !states[r].DistrictWinners.SequenceEqual(us4[r].DistrictWinners)) { callsApart++; }
                 }
             }
-            Check(states != null && widest < 0.01 && callsApart == 0, F("(b) its states against US-4's (a) column at the true national shares: the largest margin difference {0:0.000000} pp, {1} calls apart", widest, callsApart));
+            // US-6c: US-4's (a) swings all three columns - the two nominees and every other candidate, pooled - from 2020's states; the count stands every
+            // other candidate only where on the ballot of record and swings the two nominees on their two-party split over the rest - so the margins differ
+            // by that form, and no call may
+            Check(states != null && callsApart == 0, F("(b) its states against US-4's (a) column at the true national shares: {0} calls apart; the largest margin difference {1:0.000000} pp ({2}) - the count's form on the ballots of record (US-6c: every other candidate where listed, the nominees on their two-party split), where (a) swings all three from 2020's", callsApart, widest, widestAt));
+            // US-6c (J3): every other candidate stands only where on the ballot of record - each jurisdiction's share of every other candidate recomputed here
+            // from the catalog alone (each column of 2024 but the nominees', its part of the count's pooled share by its national vote, spread over the
+            // jurisdictions whose cell is roman by its share of record there; the scattered write-ins, on no ballot, where the workbook reports them), on the
+            // count's own weights (2020's votes cast) - against the count's states; and against the record's 2024 shares
+            double ballotGap = double.PositiveInfinity, recordWorst = 0.0, recordMean = 0.0;
+            string recordWorstAt = "-";
+            var standingCounts = new List<string>();
+            if (states != null && !double.IsNaN(countOShare))
+            {
+                var prior2020 = UsPresidentialReturns.States.Where(s => s.Year == 2020).ToDictionary(s => s.State, s => (double)s.VotesTotal);
+                var total2024 = UsPresidentialReturns.States.Where(s => s.Year == 2024).ToDictionary(s => s.State, s => s);
+                double weightAll = prior2020.Values.Sum();
+                var columns = UsPresidentialReturns.Candidates.Where(k => k.Year == 2024 && k.Ticket == "-" && k.Votes > 0).ToList();
+                double votesAll = columns.Sum(k => (double)k.Votes);
+                var onBallots = states.ToDictionary(s => s.State, s => 0.0);
+                foreach (var k in columns)
+                {
+                    var cells = UsPresidentialReturns.CandidateStates.Where(b => b.Year == 2024 && b.Candidate == k.Candidate).ToList();
+                    var where = cells.Any(b => b.Listed) ? cells.Where(b => b.Listed).ToList() : cells;
+                    double under = where.Sum(b => prior2020[b.State] * b.Votes / (double)total2024[b.State].VotesTotal);
+                    foreach (var b in where) { onBallots[b.State] += countOShare / 100.0 * k.Votes / votesAll * weightAll * (b.Votes / (double)total2024[b.State].VotesTotal) / under; }
+                    if (k.Candidate == "STEIN" || k.Candidate == "KENNEDY" || k.Candidate == "OLIVER") { standingCounts.Add(F("{0} {1}", PresidencyOfRecord.NameOfRecord(CountryId.USA, 2024, k.Candidate), where.Count)); }
+                }
+                ballotGap = states.Max(s => Math.Abs(s.Shares[ElectoralCollege.ShareOthers] - onBallots[s.State]));
+                foreach (ElectoralCollege.StateCall s in states)
+                {
+                    var rec = total2024[s.State];
+                    double gap = 100.0 * Math.Abs(s.Shares[ElectoralCollege.ShareOthers] - (double)rec.VotesOther / rec.VotesTotal);
+                    recordMean += gap / states.Length;
+                    if (gap > recordWorst) { recordWorst = gap; recordWorstAt = s.State; }
+                }
+            }
+            Check(ballotGap < 1e-12, F("(b) every other candidate stands only where on the ballot of record (J3, US-6c): each jurisdiction's share of them is the ballots', recomputed from the catalog - the largest gap {0:E1}; jurisdictions listing {1}; against the record's 2024 shares the largest gap {2:0.000} pp ({3}), the mean {4:0.000} pp",
+                ballotGap, string.Join(", ", standingCounts), recordWorst, recordWorstAt, recordMean));
             ElectoralCollege.StateCall[] restated = c != null ? UsPresidentialElection.StatesOf(c) : null;
             bool reDerived = restated != null && states != null && restated.Length == states.Length
                              && restated.Zip(states, (a, b) => a.State == b.State && a.Winner == b.Winner && a.Shares.SequenceEqual(b.Shares) && a.DistrictWinners.SequenceEqual(b.DistrictWinners)).All(same => same);
@@ -561,20 +600,23 @@ namespace PoliSim.EditorTools
             card.Insert(0, F("**The dates**: the polling day {0} (3 U.S.C. §21(1)), the electors meet {1} (§7), Congress counts {2} (§15(a)), the oath {3} (the Twentieth Amendment §1) - NARA's key dates for 2024.",
                 Long(Polled), Long(meet), Long(counted), Long(oath)));
             card.Insert(0, "");
-            card.Insert(0, F("Its states against US-4's (a) column at the true national shares (*The readings*, above): the largest margin difference {0:0.000000} pp, {1} calls apart - the per-state misses that table lists for 2020 → 2024 under (a) are the count's own. The stored contest re-derives these states exactly from the national shares it keeps, so the save carries no per-state field (format 39, the step US-7 took for the pair).",
-                widest, callsApart));
+            card.Insert(0, F("**Every other candidate stands only where on the ballot of record** (Elias's ruling J3, 2026-10-19; US-6c): each column of the FEC's workbook but the nominees' takes its part of the count's share of every other candidate (by its national vote) only in the jurisdictions whose ballot listed it - the workbook's roman cells, by its note that italics indicate write-in votes - spread over them in the record's own pattern there (its share of record of each one's vote, renormalised to its national share on the count's weights, 2020's votes cast); a write-in count gives no standing, and its votes go where the column stands; the scattered write-ins, on no ballot, stand where the workbook reports them. Jurisdictions listing {0}. The two nominees share the rest of each jurisdiction by the normalised uniform swing on their two-party split of 2020 (R-US14 (a)), each jurisdiction weighing its 2020 votes cast less every other candidate's part. Against the record's 2024 shares of every other candidate the largest gap is {1:0.000} pp ({2}), the mean {3:0.000} pp.",
+                string.Join(", ", standingCounts), recordWorst, recordWorstAt, recordMean));
+            card.Insert(0, "");
+            card.Insert(0, F("Its states against US-4's (a) column at the true national shares (*The readings*, above): {1} calls apart, the largest margin difference {0:0.000000} pp ({2}) - the difference is the count's form on the ballots of record: (a) swings all three columns, every other candidate pooled, from 2020's states, where the count stands every other candidate only where listed (below) and swings the two nominees on their two-party split over the rest. The stored contest re-derives these states exactly from the national shares it keeps, so the save carries no per-state field (format 39, the step US-7 took for the pair).",
+                widest, callsApart, widestAt));
             card.Insert(0, "");
             card.Insert(0, F("States called wrong: {0}. Districts called wrong: {1}.", wrongStateText, wrongDistrictText));
             card.Insert(0, "");
             card.Insert(0, F("**E1's acceptance for the USA** - the reference world (US-6's: the epoch the eve of {0}, one day stepped by the game's loop) holds its own count on the poll E1's factors are fitted to, and {1}: **{2} to {3}** electors of {4}, against the record's **{5} to {6}** as appointed. Its national vote is the FEC's by construction - REP {7:0.00} %, DEM {8:0.00} %, every other candidate {9:0.00} % (the largest gap {10:0.0000} pp).",
                 Long(Polled), trump ? "elects " + y2024.NomineeR + " (REP)" : "does NOT elect the Republican nominee", countR, countD, c?.ElectorsAppointed, recR, recD, countRShare, countDShare, countOShare, nationalGap));
             card.Add("");
-            card.Add("**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Vice President's own electoral count (the tickets are one: where the House cannot choose, the Senate chooses the Vice President, who acts from the oath - R-US22, RULED, held by PresidencyDiagnostic). The per-state ballot table of the minor candidates (US-6's departure, asked) would not move an elector while the states pool them.");
+            card.Add("**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Vice President's own electoral count (the tickets are one: where the House cannot choose, the Senate chooses the Vice President, who acts from the oath - R-US22, RULED, held by PresidencyDiagnostic).; a minor candidate's own swing (every other candidate stands at the record's pattern where on the ballot of record, scaled with the field).");
             card.Add("");
-            card.Add("The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8) and R-US14 (a) (G2), each RULED; R-US11 (a), RULED, is US-26's to build.");
+            card.Add("The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8), R-US14 (a) (G2) and J3's minor candidates on the ballot of record, each RULED; R-US11 (a), RULED, is US-26's to build.");
 
-            // the stamp: the catalog's digests (states, districts, years, candidates, House districts) and the stored factors
-            var stamp = new StringBuilder(UsPresidentialReturns.YearSourceDigest + UsPresidentialReturns.StateSourceDigest + UsPresidentialReturns.DistrictSourceDigest + UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.HouseDistrictSourceDigest);
+            // the stamp: the catalog's digests (states, districts, years, candidates and their jurisdictions, House districts) and the stored factors
+            var stamp = new StringBuilder(UsPresidentialReturns.YearSourceDigest + UsPresidentialReturns.StateSourceDigest + UsPresidentialReturns.DistrictSourceDigest + UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.CandidateStateSourceDigest + UsPresidentialReturns.HouseDistrictSourceDigest);
             foreach (PresidencyOfRecord.CandidateOfRecord candidate in PresidencyOfRecord.CandidatesOf(CountryId.USA, 2025)) { if (candidate.BackingParty != null) { stamp.Append(candidate.Surname).Append(candidate.Factor.ToString("R", CultureInfo.InvariantCulture)); } }
             return Digest(stamp.ToString());
         }

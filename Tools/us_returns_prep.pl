@@ -20,6 +20,9 @@
 #   ElectionsData/usa/president_by_state.csv      a row a jurisdiction a year: its electors, its popular vote, its electoral votes as cast
 #   ElectionsData/usa/president_by_district.csv   a row a congressional district of Maine and Nebraska a year: the two nominees' votes
 #   ElectionsData/usa/president_by_candidate.csv  (US-5) a row a candidate column of the 2024 workbook: the national vote
+#   ElectionsData/usa/president_by_candidate_state.csv  (US-6c) a row a cell of the 2024 workbook's every other column (all but the two nominees') that
+#                       holds a count: the jurisdiction, the votes, and whether the column was on that jurisdiction's ballot - the workbook's own note,
+#                       "Italics indicate Write-In Votes", read off each cell's font (president_returns.md reading 15)
 #   ElectionsData/usa/house_by_state.csv          (US-5) a row a state a year, 2016-2024: the House vote by the Clerk's recapitulation
 #   Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs   the CSVs as C# literals, each CSV's SHA-256 and the SHA-256 of every page
 #                                                                 the run read or relied on (RawSources)
@@ -61,6 +64,11 @@
 #     the 2024 rows give it;
 #   - (US-5) a candidate column of the 2024 workbook whose typed Total-row figure is not its state rows' sum, or the columns' national figures
 #     not summing to TOTAL VOTES; a column's label holding a comma, a quote, a backslash or a control character;
+#   - (US-6c) the 2024 workbook without its note that italics indicate write-in votes; a nominee's cell in italics; a cell of the scattered
+#     write-ins not in italics (the reading of the fonts held to the two columns whose standing the workbook does not leave to the font); the
+#     candidates with a roman cell (every column but None of These Candidates and the scattered write-ins) not as many as the note's "candidates
+#     who appeared on at least one state ballot"; a count cell whose font carries an italic mark the reader did not classify as italic (an
+#     <i></i>, an attribute it does not read); Stein's, Kennedy's or Oliver's ballots not the reading's first run's (37, 31, 47);
 #   - (US-5) the Clerk's House recapitulation not on exactly one page, titled for another election, or headed by anything but nine columns
 #     ending Total with Republican and Democratic among them (read by their names - the order differs from year to year); a state row whose
 #     columns do not sum to its own Total, a row naming no state, a state missing or twice, a column of the states not summing to the Total row;
@@ -72,7 +80,7 @@
 #   - (US-5) 2024's House line (Republican, Democratic, the total) or the three presidential rows of returns_2024.md not the pages' figures;
 #   - a perl warning during the checks (an undefined value reaching one), or a name bound for a C# literal holding a quote or backslash;
 #   - a certificate's text layer without page breaks (the cited pages cannot then be checked - the extractor is named, not the transcription).
-# All six outputs are built and tested before the first is written; a write that fails dies.
+# All seven outputs are built and tested before the first is written; a write that fails dies.
 # Usage: perl Tools/us_returns_prep.pl   (from the project root, Git for Windows' perl; pdftotext at /mingw64/bin or on PATH)
 # ASCII only.
 use strict;
@@ -114,6 +122,8 @@ sub page {
 }
 
 # ---------------------------------------------------------------- readers: a sheet as { row => { col => value } }, rows and columns from 1
+my %italic_at;    # US-6c: "<page>|<sheet>" => { "row,col" => 1 } for every cell whose font is italic (styles.xml: the cell's s, its xf's fontId, the font's <i/>)
+my %italic_mark_at;   # US-6c: the same cells by a looser reading - any <i ...> element in the font not set to 0 or false; a cell here and not above is a mismatch
 my %formula_at;   # "<page>|<sheet>" => { "row,col" => 1 } for every cell a formula fills - its cached value is read like any other, so a check that
                   # needs a TYPED figure asks here (2012's Table 2 fills two Total-row cells by formula: All Others over its state rows, Total Vote
                   # over that row's own vote cells)
@@ -137,10 +147,20 @@ sub xlsx_sheet {   # an Office Open XML workbook: the shared strings, the sheet 
     $path =~ s{^/?xl/}{};
     my $xml = $part{"xl/$path"} // die "$what: no part $path\n";
     utf8::decode($xml);
+    my @xf_italic;   # US-6c: a cell style's font is italic - <i/>, or <i val="1"/>; <i val="0"/> is not
+    my @xf_mark;     # US-6c: the looser reading of the same - any <i> element, its value not 0 or false
+    if (my $st = $part{'xl/styles.xml'}) {
+        my (@font_italic, @font_mark);
+        if ($st =~ m{<fonts\b[^>]*>(.*?)</fonts>}s) { my $fs = $1; while ($fs =~ m{<font\b[^>]*?(?:/>|>(.*?)</font>)}gs) { my $fb = $1 // ''; my ($i, $v) = $fb =~ m{<i(?:\s+val="(\w+)")?\s*/>} ? (1, $1) : (0, undef); push @font_italic, $i && !(defined $v && $v =~ /^(?:0|false)$/) ? 1 : 0; push @font_mark, $fb =~ m{<i\b([^>]*)>} && $1 !~ /val\s*=\s*["'](?:0|false)["']/ ? 1 : 0; } }
+        if ($st =~ m{<cellXfs\b[^>]*>(.*?)</cellXfs>}s) { my $xs = $1; while ($xs =~ m{<xf\b([^>]*?)(?:/>|>.*?</xf>)}gs) { my ($fid) = $1 =~ /fontId="(\d+)"/; push @xf_italic, $font_italic[$fid // 0] // 0; push @xf_mark, $font_mark[$fid // 0] // 0; } }
+    }
     my %cells;
     while ($xml =~ m{<c r="([A-Z]+)(\d+)"([^>]*?)(?:/>|>(.*?)</c>)}gs) {
         my ($col, $row, $attr, $body) = ($1, $2, $3, $4 // '');
         $formula_at{"$what|$want"}{"$row," . colnum($col)} = 1 if $body =~ m{<f[\s>/]};
+        my $xf = $attr =~ /\bs="(\d+)"/ ? $1 : 0;   # a cell without a style takes the first
+        if ($xf_italic[$xf]) { $italic_at{"$what|$want"}{"$row," . colnum($col)} = 1; }
+        if ($xf_mark[$xf]) { $italic_mark_at{"$what|$want"}{"$row," . colnum($col)} = 1; }
         my $v = $body =~ m{<v>(.*?)</v>}s ? $1 : ($body =~ m{<is>.*?<t[^>]*>(.*?)</t>}s ? $1 : undef);
         next unless defined $v;
         $cells{$row}{colnum($col)} = $attr =~ /t="s"/ ? $ss[$v] : ent($v);
@@ -464,6 +484,7 @@ for my $spec ([2012, 'returns/fec_federalelections2012.xls', 'Table 2. Electoral
     }
 }
 my @candidates;   # US-5: [year, the column's label, the ticket (R, D, or - for neither nominee), the national vote] - 2024's workbook, a column a candidate
+my @ballot;       # US-6c: [year, the column's label, the jurisdiction, the votes, listed (1) or written in (0)] - a row a cell of every other column holding a count
 {   # 2024: one wide sheet - the electors (B), the electoral vote by party (C, D), a column a candidate by surname, the total (last)
     my $file = 'returns/fec_2024presgeresults.xlsx';
     my $c = xlsx_sheet(page($file), 'OFFICIAL 2024 PRES GE RESULTS', $file);
@@ -488,6 +509,17 @@ my @candidates;   # US-5: [year, the column's label, the ticket (R, D, or - for 
         my ($d, $re, $t) = (count($c->{$r}{$vD}, "$file $st"), count($c->{$r}{$vR}, "$file $st"), count($c->{$r}{$vT}, "$file $st"));
         my $all = 0;
         for my $k (@cand) { my $v = count($c->{$r}{$k}, "$file $st col $k"); $all += $v; $csum{$k} += $v; }
+        # US-6c: the workbook's note - "Italics indicate Write-In Votes" - read off each cell's font: a nominee's cell never in italics, a cell of the
+        # scattered write-ins always (they are write-in votes by their name); every other column's cell holding a count is a row, listed where roman
+        for my $k (@cand) {
+            next if trim($c->{$r}{$k}) eq '';
+            my $label = trim($c->{1}{$k});
+            my $italic = $italic_at{"$file|OFFICIAL 2024 PRES GE RESULTS"}{"$r,$k"} ? 1 : 0;
+            problem("$file $st: the cell of '$label' in a font marked italic that the reader did not read as italic") if $italic_mark_at{"$file|OFFICIAL 2024 PRES GE RESULTS"}{"$r,$k"} && !$italic;
+            if ($k == $vR || $k == $vD) { problem("$file $st: the nominee's cell ('$label') in italics - a write-in, by the workbook's note") if $italic; next; }
+            problem("$file $st: a cell of '$label' not in italics - the scattered write-ins are write-in votes by their name") if $label =~ /^WRITE-INS\b/ && !$italic;
+            push @ballot, [2024, $label, $st, count($c->{$r}{$k}, "$file $st col $k"), $italic ? 0 : 1, $k];
+        }
         problem("$file $st: its candidate columns sum to $all, its total is $t") unless $all == $t;
         problem("$file $st: the workbook's electors " . count($c->{$r}{$cE}, "$file $st") . ", the apportionment's " . electors(2024, $st)) unless count($c->{$r}{$cE}, "$file $st") == electors(2024, $st);
         $y{2024}{st}{$st} = { evR => count($c->{$r}{$evR}, "$file $st"), evD => count($c->{$r}{$evD}, "$file $st"), vD => $d, vR => $re, other => $t - $d - $re, total => $t };
@@ -507,6 +539,26 @@ my @candidates;   # US-5: [year, the column's label, the ticket (R, D, or - for 
         push @candidates, [2024, $label, $k == $vR ? 'R' : $k == $vD ? 'D' : '-', $ctot{$k} // 0];
     }
     problem("$file: the candidate columns' national figures sum to $call, its TOTAL VOTES to $tot{total}") unless %tot && $call == $tot{total};
+    # US-6c: the reading of the fonts rests on the workbook's own note, so the note must be on the sheet
+    my ($note) = grep { /Italics indicate Write-In Votes/ } map { my $row = $_; map { $c->{$row}{$_} // '' } keys %{$c->{$row}} } keys %$c;
+    problem("$file: no note that italics indicate write-in votes - the ballot of record is read off the fonts by that note") unless defined $note;
+    # the note counts the candidates "who appeared on at least one state ballot" (its number ends its first cell, "... for the 24"): as many columns,
+    # Nevada's line and the scattered write-ins aside (no candidates), must hold a roman cell - the nominees' every cell, the others' listed rows
+    if (defined $note) {
+        my ($said) = $note =~ /for the (\d+)\s*$/;
+        my %roman = map { $_->[1] => 1 } grep { $_->[4] } @ballot;
+        my $on = 2 + grep { $roman{$_} && $_ ne 'NONE OF THESE CANDIDATES' && $_ !~ /^WRITE-INS\b/ } keys %roman;
+        problem("$file: the note counts " . ($said // 'no number of') . " candidates on at least one state ballot, the fonts $on") unless defined $said && $said == $on;
+    }
+    # three columns' ballots pinned at the reading's first run (2026-10-20, president_returns.md reading 15): a partial misread of the fonts that
+    # keeps every column on some ballot moves these
+    my %pinned = (STEIN => 37, KENNEDY => 31, OLIVER => 47);
+    for my $p (sort keys %pinned) {
+        my $on = grep { $_->[1] eq $p && $_->[4] } @ballot;
+        problem("$file: $p listed on $on ballots, the reading's first run $pinned{$p}") unless $on == $pinned{$p};
+    }
+    my %rank; @rank{@order} = 0 .. $#order;
+    @ballot = map { [@$_[0 .. 4]] } sort { $a->[5] <=> $b->[5] || $rank{$a->[2]} <=> $rank{$b->[2]} } @ballot;   # by column, then by jurisdiction
 }
 
 # ---------------------------------------------------------------- the electors in force, the votes as cast and for other persons: three sources held together
@@ -952,13 +1004,18 @@ my $csv_c = $gen . "# US-5: a row a candidate column of the FEC's Official 2024 
     . "# to the column's state rows. ticket: R or D for the nominee NARA names; - for every other column, None of These Candidates and the write-ins among them.\n"
     . "year,candidate,ticket,votes\n";
 $csv_c .= join(',', @$_) . "\n" for @candidates;
-my ($dy, $ds, $dd, $dh, $dc) = map { sha256_hex($_) } ($csv_y, $csv_s, $csv_d, $csv_h, $csv_c);
+my $csv_b = $gen . "# US-6c: a row a cell of the FEC's Official 2024 Presidential General Election Results workbook that holds a count, in every column but the\n"
+    . "# two nominees' (None of These Candidates and the scattered write-ins among them): the jurisdiction and the votes. listed: ballot where the cell is\n"
+    . "# roman, write-in where it is in italics - the workbook's note, \"Italics indicate Write-In Votes\" (president_returns.md reading 15).\n"
+    . "year,candidate,state,votes,listed\n";
+$csv_b .= join(',', @$_[0 .. 3], $_->[4] ? 'ballot' : 'write-in') . "\n" for @ballot;
+my ($dy, $ds, $dd, $dh, $dc, $db) = map { sha256_hex($_) } ($csv_y, $csv_s, $csv_d, $csv_h, $csv_c, $csv_b);
 my $years_said = join(', ', @years[0 .. $#years - 1]) . " and $years[-1]";
 my $house_said = join(', ', @house_years[0 .. $#house_years - 1]) . " and $house_years[-1]";
 
 my $cs = "// GENERATED by Tools/us_returns_prep.pl. DO NOT EDIT BY HAND.\n//\n"
-    . "// Sources: ElectionsData/usa/president_by_year.csv, president_by_state.csv, president_by_district.csv, president_by_candidate.csv and\n"
-    . "// house_by_state.csv (their SHA-256 below), written by the same run from the saved pages listed in RawSources. GeneratedCatalogCheck re-reads\n"
+    . "// Sources: ElectionsData/usa/president_by_year.csv, president_by_state.csv, president_by_district.csv, president_by_candidate.csv,\n"
+    . "// president_by_candidate_state.csv and house_by_state.csv (their SHA-256 below), written by the same run from the saved pages listed in RawSources. GeneratedCatalogCheck re-reads\n"
     . "// the CSVs and compares every figure, and re-hashes every page RawSources lists.\n\nnamespace PoliSim.Elections.Generated\n{\n"
     . "    /// <summary>PS-6 US-3 (COMPLETED.md s786): the United States' presidential elections of $years_said by jurisdiction - SOURCED (the FEC,\n"
     . "    /// NARA, the Census Bureau's apportionment, Maine's and Nebraska's canvasses; `ElectionsData/usa/president_returns.md`). Beside them (US-5,\n"
@@ -967,7 +1024,7 @@ my $cs = "// GENERATED by Tools/us_returns_prep.pl. DO NOT EDIT BY HAND.\n//\n"
     . "    /// by Tools/us_house_prep.pl.</summary>\n"
     . "    public static partial class UsPresidentialReturns\n    {\n"
     . "        public const string YearSourceDigest = \"$dy\";\n        public const string StateSourceDigest = \"$ds\";\n        public const string DistrictSourceDigest = \"$dd\";\n"
-    . "        public const string CandidateSourceDigest = \"$dc\";\n        public const string HouseSourceDigest = \"$dh\";\n"
+    . "        public const string CandidateSourceDigest = \"$dc\";\n        public const string CandidateStateSourceDigest = \"$db\";\n        public const string HouseSourceDigest = \"$dh\";\n"
     . "        public const string ReadTranscriptionDigest = \"$read_digest\";\n\n"
     . "        /// <summary>Every saved page the run read or relied on, by its path under `ElectionsData/usa/`, with its SHA-256.</summary>\n"
     . "        public static readonly (string Path, string Sha256)[] RawSources =\n        {\n"
@@ -990,6 +1047,11 @@ $cs .= "        };\n\n"
     . "        /// them). No quote in this comment: a source reader keeps a commented line that holds one.</summary>\n"
     . "        public static readonly (int Year, string Candidate, string Ticket, long Votes)[] Candidates =\n        {\n"
     . join('', map { "            ($_->[0], \"$_->[1]\", \"$_->[2]\", $_->[3]L),\n" } @candidates) . "        };\n\n"
+    . "        /// <summary>US-6c: 2024's every other column by jurisdiction - a row a cell of the FEC's workbook that holds a count, in every column but the two\n"
+    . "        /// nominees' (Nevada's none-of-these line and the scattered write-ins among them). Listed: the column was on that jurisdiction's ballot - the\n"
+    . "        /// cell is roman; a cell in italics holds write-in votes, by the workbook's own note. Each column's rows sum to its national row above.</summary>\n"
+    . "        public static readonly (int Year, string Candidate, string State, long Votes, bool Listed)[] CandidateStates =\n        {\n"
+    . join('', map { "            ($_->[0], \"$_->[1]\", \"$_->[2]\", $_->[3]L, " . ($_->[4] ? 'true' : 'false') . "),\n" } @ballot) . "        };\n\n"
     . "        /// <summary>US-5: the House of Representatives, a row a state a year, by the Clerk of the House's recapitulation - each party's own ballot\n"
     . "        /// line, each race as the Clerk prints it (Louisiana's runoff districts the finalists' December vote beside the others' November vote,\n"
     . "        /// Maine's finalists at their last ranked-choice round - in 2022 an eliminated candidate's first-round vote beside them - Alaska's first\n"
@@ -1000,7 +1062,7 @@ for my $year (@house_years) { for my $s (@house_states) { my $e = $house{$year}{
 $cs .= "        };\n    }\n}\n";
 $cs =~ s/\n/\r\n/g;
 write_all("$usa/president_by_year.csv" => $csv_y, "$usa/president_by_state.csv" => $csv_s, "$usa/president_by_district.csv" => $csv_d,
-          "$usa/president_by_candidate.csv" => $csv_c, "$usa/house_by_state.csv" => $csv_h, 'Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs' => $cs);
+          "$usa/president_by_candidate.csv" => $csv_c, "$usa/president_by_candidate_state.csv" => $csv_b, "$usa/house_by_state.csv" => $csv_h, 'Assets/Scripts/Elections/Generated/UsPresidentialReturns.cs' => $cs);
 
 for my $year (@years) {
     my $n = $nara{$year};
@@ -1012,6 +1074,11 @@ for my $year (@years) {
         $n->{name}{$w}, $w, $n->{wn}, $n->{name}{$o}, $o, $n->{on}, $pledged{$year}{$w}, $pledged{$year}{$o}, (@to ? ' (for other persons: ' . join('; ', @to) . ')' : ''), $v{D}, $v{R}, $v{O}, $v{T};
 }
 printf "2024's candidates: %s\n", join('; ', map { "$_->[1]" . ($_->[2] ne '-' ? " ($_->[2])" : '') . " $_->[3]" } @candidates);
+{   # US-6c: where each of the other columns stood - on how many ballots, written in where
+    my (%on, %wi, @seen);
+    for my $b (@ballot) { push @seen, $b->[1] unless $on{$b->[1]} || $wi{$b->[1]}; if ($b->[4]) { $on{$b->[1]}++ } else { push @{$wi{$b->[1]}}, $b->[2] } }
+    printf "2024's ballots: %s\n", join('; ', map { "$_ on " . ($on{$_} // 0) . ($wi{$_} ? ', written in ' . join(' ', @{$wi{$_}}) : '') } @seen);
+}
 for my $year (@house_years) {
     my $k = $house_tot{$year};
     my $line = sprintf "House %d by the Clerk: R %d D %d others %d total %d, two-party R %.4f%%", $year, $k->{R}, $k->{D}, $k->{total} - $k->{R} - $k->{D}, $k->{total}, 100 * $k->{R} / ($k->{R} + $k->{D});
@@ -1025,5 +1092,5 @@ for my $year (@house_years) {
     print "$line\n";
 }
 my ($extractor) = qx("$pdftotext" -v 2>&1) =~ /^(pdftotext version \S+)/m;
-printf "%d pages read and held to their sums (text by %s); %d state rows, %d district rows, %d candidate rows, %d House rows; wrote president_by_year.csv, president_by_state.csv, president_by_district.csv, president_by_candidate.csv, house_by_state.csv, UsPresidentialReturns.cs\n",
-    scalar(keys %read), $extractor // "$pdftotext, version unread", 51 * @years, scalar(@drows), scalar(@candidates), 50 * @house_years;
+printf "%d pages read and held to their sums (text by %s); %d state rows, %d district rows, %d candidate rows, %d ballot rows, %d House rows; wrote president_by_year.csv, president_by_state.csv, president_by_district.csv, president_by_candidate.csv, president_by_candidate_state.csv, house_by_state.csv, UsPresidentialReturns.cs\n",
+    scalar(keys %read), $extractor // "$pdftotext, version unread", 51 * @years, scalar(@drows), scalar(@candidates), scalar(@ballot), 50 * @house_years;

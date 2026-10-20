@@ -40932,3 +40932,32 @@ GA-2-12 measured the result: the restore of Sweden's floor bill took approval fr
 **Reviewed:** `Reviews/2026-10-20_us21c_us22c_review.md` (independent; M1, M2, L1 fixed, L2, L4 declared, L3 the ask). Review row s884 for `SimulationManager.cs`.
 
 **Bars** (tier SIMULATION + UI): `n884` 12 of 12 (UsDocket, UsBudgetProcedure, ForkDayTick, PreviewParity, UsVeto, CongressElection, Presidency, the text guards, DeadState, ReviewLedger); `slrt884` 12 of 12; the cheap bar `cheap884` 126 of 126; the simulation bar `sim884` 67 of 67, the sentinel holding on **aloopsal2**; the dry film `drys884` USA@1280x720, 156 measured, 0 failed (scope row s884); the REAL film `realus884` at 1280. The withhold slip's longer line is on no frame (a hover slip, its lines wrapped by `SlipWrapped`).
+
+
+## 885. PS-6 US-6c: A MINOR CANDIDATE STANDS ONLY WHERE ON THE BALLOT OF RECORD (J3) - THE FEC WORKBOOK'S BALLOT READ OFF ITS FONTS, THE COUNT'S STATES BY IT (2026-10-20)
+
+**What was owed** (feature list "4. US-6c"; Elias's J3, §870): §844's national standing reversed - the count's minor candidates per state from the FEC's ballot states; `UsPresidentialFactorCheck` refit; the card says so.
+
+**Built** (an implementer on `wave/us6c`: f9032eef, the review's fixes 7f6524c1, rebased on §883 as 6e4e554c..b7158316):
+- **The generator.** `Tools/us_returns_prep.pl` reads each 2024 cell's font - the workbook's own note: "Italics indicate Write-In Votes … for the 24 candidates who appeared on at least one state ballot" - and writes `ElectionsData/usa/president_by_candidate_state.csv` and `UsPresidentialReturns.CandidateStates` (every non-nominee cell holding a count, `ballot` or `write-in`).
+- **What holds the reading:** no nominee cell is italic, every scattered write-in cell is; the columns with a roman cell are the note's 24; a looser second reading of the fonts finds no count cell the main reader missed; Stein 37, Kennedy 31 and Oliver 47 listings pinned. Six new mutations; 63 of 63 caught, the control passing.
+- **The runtime.** `PresidencyOfRecord.StandingOfRecord`; `ElectoralCollege.FromNationalShares` with the standing: every other candidate stands only where listed, in the record's own pattern there, renormalised to its national share on the count's weights; the two nominees swung on their 2020 two-party split over what the others leave; a throw where the others together reach a jurisdiction's whole. One worker overload carries US-8c's seeded tie draw for both paths. `UsPresidentialElection.Count` and `StatesOf` use it for the 2024 field (`StatesOf` with the contest's `TieSeed`); a later field keeps US-8's pooled form.
+- **Checks and documents:** `GeneratedCatalogCheck` (the new table row for row, each column summing to its national row, each jurisdiction to its others); `UsPresidentialFactorCheck` (6b) and `UsPresidentialElectionDiagnostic` (b), with their cards; `Tools/us_ballot_standing.pl`; `president_returns.md` reading 15; the card's hand rows "The field" and "The states".
+
+**Measured:**
+- Outside Unity (the runtime DLL in a console probe, rebased): at the FEC shares 312-226, nothing called wrong, residual 5.6E-17; against US-4's (a) 0 calls apart, the widest margin move 0.58 pp (DC); other-candidate shares against 2024's record mean 0.102 pp, worst 0.778 pp (NY) (a uniform spread 0.667 / 2.115 pp, the old pooled form 0.418 pp mean); at §847's from-start shares 329-209, 0 calls apart; 2028 302-236, unchanged; `StatesOf` exact.
+- In Unity: `GeneratedCatalogCheck` - 321 candidate-by-jurisdiction rows, 199 on a ballot, every sum the columns' and the jurisdictions' others; `UsPresidentialFactorCheck` (6b) - Stein 37, Kennedy 31, Oliver 47 of 51 jurisdictions, on no ballot only the scattered write-ins; the FIT lines equal the stored factors (Trump 1.0183908285859777, Harris 0.94561954699236783), so no refit patch is owed; `UsPresidentialElectionDiagnostic` (b) - 0 calls apart from US-4's (a), the largest margin difference 0.580597 pp (DC); each jurisdiction's share of the others the ballots' recomputed from the catalog (largest gap 6.9E-18), against the record's 2024 shares 0.778 pp worst (NY), 0.102 pp mean. No baseline moves.
+
+**Declared:**
+1. The record's own pattern where a column stands.
+2. A roman cell is a ballot listing, by the workbook's own note (the FEC's per-state ballot listings are not saved as their own page).
+3. Write-in votes give no standing but stay in the column's national share, so the national field and E1's factors are unchanged.
+4. The scattered write-ins stand where the workbook reports them.
+5. The nominees are swung on their two-party split, each jurisdiction weighted by its 2020 votes cast less the other candidates' part.
+6. A later field (2028 on) has no minor candidate and keeps US-8's pooled form.
+7. A 2024 contest saved before this build re-derives its states by the new standing; no format step, and only the diagnostics read those states until US-26 (review L2).
+8. The count's throws are not caught by the day loop, as with the old form; `GeneratedCatalogCheck` rules them out for the shipped catalog (review L6).
+
+**Reviewed:** `Reviews/2026-10-20_us6c_review.md` (independent): M1 (the nominees' priors - most of DC's 2.13 pp was the three-way prior, not the ballots) and L1, L3, L4, L5 fixed; L2, L6 declared. No money path; the sentinel holds, so no review row is owed.
+
+**Bars** (tier SIMULATION): `wr885a` / `wr885b` (the US-6 and US-8 blocks written); `n885` 12 of 12 (GeneratedCatalog, UsPresidentialFactor, UsPresidentialElection, TermLimit, UsOwnNominee, Presidency, UsStateSwing, CongressElection, the text guards, ReviewLedger); `slrt885` 12 of 12; the cheap bar `cheap885` 126 of 126; the documents bar `doc885` 22 of 22; the simulation bar `sim885` 67 of 67, the sentinel holding on **aloopsal2**. No film: no UI path.
