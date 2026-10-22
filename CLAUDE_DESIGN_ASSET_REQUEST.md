@@ -2,6 +2,22 @@
 
 > **This file holds the LIVE ask and what stands beside it** - the current status, D21, the notice to Design, the count rule, what is costed and not yet requestable (§4), the standing conventions (§5), and the generated asset inventory. **Every answered ask moved VERBATIM on 2026-09-23 to `docs/archive/DESIGN_REQUESTS.md`** (`COMPLETED.md` §582): the earlier STATUS heads this one stacked, the ninth to eleventh requests with their annexes, §0's hand-derived delivered set, §E5, and D9 to D20 with D18's prose. Their request rows went with them, and `DesignNotificationCheck` reads the rows from both files.
 
+## ⭐ D-US PART TWO — THE ASK (2026-10-22): CONGRESS AT WORK - THE CONGRESS VIEW, A BILL'S PATH AND THE VETO, THE PRESIDENT'S DESK, THE DEBT LIMIT (`COMPLETED.md` §899; sent over the channel as `uploads/D-US2_ask/`)
+
+**Read this the D19 way: against the built surfaces.** US-15 to US-24 and US-29 run in the game and are filmed (the frames in the folder: the Congress tab, the veto and the override on the signing plate, the president's desk, the Desk's role chips, a lapse, the start card, the debt-limit slip - its frame's state the film warm-up's, which takes no player day tick and so tables no raise). The ask's full text is `uploads/D-US2_ask/ASK.md`; the local copy is `PoliSim-captures/design/D-US2_ask/`; a chat in the project's panel announces it.
+
+**The eight questions, in short:**
+1. the Congress view (the Senate by class, the independents, cloture at three fifths of those sworn, the override lines, the Vice President's vote, the record's or the game's chamber);
+2. a bill's path House to Senate to president to override on the signing plate, the Docket's ten days, the pocket veto stated as not modelled;
+3. the president's desk;
+4. the debt-limit slip's states (below; held by the measures; binding with the cut; a raise before Congress or on the desk);
+5. the role words;
+6. divided government's mark and the lame duck;
+7. a lapse's line;
+8. the start card's Senate beside its House.
+
+Part one (the night) stays open beside it. Part one's question 9 stands: REP and DEM have no ink (the plan's "inks exist" was wrong, corrected with this ask).
+
 ## ⭐ D-US PART ONE — THE ASK (2026-10-22): THE USA'S ELECTION NIGHT, THE ELECTORAL COLLEGE'S MAP WITH THE HOUSE AND THE SENATE CLASS ON THE SAME NIGHT (`COMPLETED.md` §895; sent over the channel as `uploads/D-US_ask/`)
 
 **Read this the D19 way: against the built count.** The game counts the President by the Electoral College, the whole House by state delegations and the Senate class of the day, all on the presidential polling day (US-8, US-16, US-30), and the verdict lands with no night. The ask's full text, the 51 jurisdictions as a generated table (`Tools/us_states_table.pl`) and the frames are in `uploads/D-US_ask/` (`ASK.md`, `D-US_ask.zip` with its `MANIFEST.sha256`, the frames loose); the local copy is `PoliSim-captures/design/D-US_ask/`. A chat in the project's panel announces it (posted by Code).

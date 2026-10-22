@@ -41294,3 +41294,11 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Asked:** offices, the regional noise, the carry into the next prior and the midterm Senate, format 54, the popular vote against the states (`docs/ASKS_FOR_ELIAS.md`).
 
 **Commit:** this one.
+
+## 899. PS-6 US-25: D-US PART TWO ASKED - CONGRESS AT WORK, SENT BY CODE OVER THE CHANNEL; CHECKPOINT 3 (2026-10-22)
+
+**What changed:** D-US part two written against the surfaces as filmed that day (`PoliSim-captures/design/D-US2_ask/ASK.md`): what the game holds behind the Congress view, a bill's path, the president's desk, the debt limit, the roles, a lapse; eight questions (the plan's §5 list). Eleven REAL frames from `real893` and `real897`, zipped with their manifest by `Tools/ask_zip.pl` (checked inside the zip before sending). The debt-limit slip's frame is stated for what it is: the film's warm-up takes no player day tick, so no raise is tabled and the frame shows the limit binding with no raise. The plan's §5 line that REP and DEM inks exist corrected: the theme carries Sweden's and Germany's inks alone, so part one's question 9 stands. Installed at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`; the D-US row reads part two ASKED. The PS-6 row carries checkpoint 3: playable as either party's nominee, what stays owed and the item that pays each.
+
+**Evidence:** `DesignSync` finalize_plan + write_files (14 files) into `uploads/D-US2_ask/`; the claude-design listing returns all fourteen at the local sizes (ASK.md 6297, the zip 2552878, the manifest 1182). A chat "D-US part two - Congress at work (from Code, 2026-10-22)" posted in the project's panel. Design's files unchanged since part one was sent (no board yet). `doc899` for the documents.
+
+**Commit:** this one.
