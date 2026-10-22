@@ -140,10 +140,15 @@ namespace PoliSim.Elections
         /// The country's staged campaign, or false with the reason when none is staged. Sweden and, since §697, Germany.
         /// <paramref name="scandals"/> is the caller's staging (the harness stages one; a game passes none
         /// until §17's dynamic generation exists).
+        /// PS-6 US-26 (R-US11 (a)): <paramref name="played"/> - the game's country - stages the prior and the loyalty on its history rolled forward to the
+        /// calendar's polling day (`PartySystems.OwnCounts`), as the prediction reads them; none handed, the record's pair (every harness). DECLARED (no format step): a save cut
+        /// mid-campaign by a build before US-26, the game's first count already held, replays its campaign on the rolled history rather than the record's pair it was
+        /// stepped on - its replay can land off the saved stream counts (the replay's own assertion compares draw counts only, so a replay whose counts happen
+        /// to match differs with no line in the log).
         /// </summary>
         public static bool TryFor(CountryId country, (int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
             bool onVoteModelCompatibility = false, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
-            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, Country played = null)
         {
             if (country == CountryId.Sweden || country == CountryId.Germany)   // §697: Germany's campaign on the Länder, its own staging
             {
@@ -168,8 +173,8 @@ namespace PoliSim.Elections
                     }
                 }
                 setup = country == CountryId.Sweden
-                    ? Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate)
-                    : Germany(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate);
+                    ? Sweden(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played: played)
+                    : Germany(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played);
                 return true;
             }
             setup = default;
@@ -191,17 +196,20 @@ namespace PoliSim.Elections
         /// </summary>
         public static CampaignRun.Setup Germany((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
             double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
-            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0)
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, Country played = null)
         {
             CampaignCalendar cal = calendar ?? CampaignCalendar.FromWorldStart(WorldClock.LatestElectionDay(CountryId.Germany), WorldClock.StartDate(CountryId.Germany));
             DateTime opening = cal.CampaignStart;
             ElectionVintage seated = WorldClock.SeatedVintage(CountryId.Germany, opening);
-            if (!PartySystems.TryHistory(CountryId.Germany, out double[] latestShares, out double[] previousShares, seated))
+            // PS-6 US-26 (R-US11 (a)): the played country's own counts before the polling day roll the pair forward; none, the seated chamber's pair as before
+            if (!PartySystems.TryHistory(CountryId.Germany, played, cal.ElectionDate, out double[] latestShares, out double[] previousShares, out int ownCounts, seated))
             {
                 throw new InvalidOperationException("PartySystems carries no two-election history for Germany's seated chamber");
             }
             bool snap = seated == ElectionVintage.Germany2021;
             string latestYear = snap ? "2021" : "2025", previousYear = snap ? "2017" : "2021";
+            bool epochSnap = WorldClock.Resolve(CountryId.Germany, ElectionVintage.Seated) == ElectionVintage.Germany2021;
+            string history = HistoryPhrase("Germany", played, cal.ElectionDate, ownCounts, latestYear, previousYear, epochSnap ? "2021" : "2025");
             var sb = new StringBuilder();
             double[] prior = Normalised(latestShares);
             // §704: a party the survey does not place (the SSW) keeps its prior - its 2017 absence gave it no loyalty and its missing position no
@@ -261,7 +269,7 @@ namespace PoliSim.Elections
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[cast.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[cast.Length], isInternal: true);
-            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on Germany " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear + ":\n    ");
+            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on " + history + ":\n    ");
             for (int p = 0; p < parties.Length; p++)
             {
                 int where = 0;
@@ -287,15 +295,19 @@ namespace PoliSim.Elections
         public static CampaignRun.Setup Sweden((int Day, int Party, Scandal Scandal)[] scandals, out string note, CampaignCalendar? calendar = null,
             double[] compatibilityOverride = null, int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
             Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, ElectionVintage vintage = ElectionVintage.Seated,
-            AiPersonality[] castOverride = null)
+            AiPersonality[] castOverride = null, Country played = null)
         {
             vintage = WorldClock.Resolve(CountryId.Sweden, vintage);   // PS-1 (§618): the seated chamber's election at the world's epoch
-            if (!PartySystems.TryHistory(CountryId.Sweden, out double[] latestShares, out double[] previousShares, vintage))
+            // PS-6 US-26 (R-US11 (a)): the played country's own counts before the polling day roll the pair forward; none, the seated chamber's pair as before
+            DateTime electionDay = (calendar ?? CampaignCalendar.Sweden2026).ElectionDate;
+            if (!PartySystems.TryHistory(CountryId.Sweden, played, electionDay, out double[] latestShares, out double[] previousShares, out int ownCounts, vintage))
             {
                 throw new InvalidOperationException("PartySystems carries no two-election history for Sweden");
             }
             bool pinned2022 = vintage == ElectionVintage.Sweden2022;
             string latestYear = pinned2022 ? "2022" : "2026", previousYear = pinned2022 ? "2018" : "2022";
+            string history = HistoryPhrase("Sweden", played, electionDay, ownCounts, latestYear, previousYear,
+                WorldClock.Resolve(CountryId.Sweden, ElectionVintage.Seated) == ElectionVintage.Sweden2022 ? "2022" : "2026");
             var sb = new StringBuilder();
             double[] prior = Normalised(latestShares);
             double[] loyalty = LoyaltyModel.PartyLoyalties(latestShares, previousShares);
@@ -344,7 +356,7 @@ namespace PoliSim.Elections
             }
             var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[cast.Length]);
             var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[cast.Length], isInternal: true);
-            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on Sweden " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear + " (W-A1):\n    ");
+            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on " + history + " (W-A1):\n    ");
             for (int p = 0; p < parties.Length; p++)
             {
                 sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}  ", cast[p], loyalty[p], compatibility[p]));
@@ -461,6 +473,19 @@ namespace PoliSim.Elections
             var result = new double[shares.Length];
             for (int i = 0; i < shares.Length; i++) { result[i] = sum > 0.0 ? shares[i] / sum : 0.0; }
             return result;
+        }
+
+        /// <summary>PS-6 US-26: the staging note's words for the pair the history read - with no count of the game's own before the polling day, the seated
+        /// election's years as they always read ("Sweden 2026 (SOURCED prior), loyalty derived from 2022->2026"); otherwise the game's counts by year, the earlier
+        /// of the pair the record's last election at the epoch (<paramref name="epochLatest"/>) until the game has held two ("Sweden, the game count of 2030
+        /// (the history rolled forward), loyalty derived from the record of 2026 to 2030").</summary>
+        private static string HistoryPhrase(string country, Country played, DateTime before, int ownCounts, string latestYear, string previousYear, string epochLatest)
+        {
+            if (ownCounts == 0) { return country + " " + latestYear + " (SOURCED prior), loyalty derived from " + previousYear + "->" + latestYear; }
+            List<(DateTime Day, double[] Shares)> own = PartySystems.OwnCounts(played, before);
+            string latest = own[own.Count - 1].Day.Year.ToString(CultureInfo.InvariantCulture);
+            string from = ownCounts > 1 ? "the game count of " + own[own.Count - 2].Day.Year.ToString(CultureInfo.InvariantCulture) : "the record of " + epochLatest;
+            return country + ", the game count of " + latest + " (the history rolled forward), loyalty derived from " + from + " to " + latest;
         }
     }
 }

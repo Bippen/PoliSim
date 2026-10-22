@@ -147,7 +147,7 @@ namespace PoliSim.Simulation
             }
             // PS-3k (§638, ruled): with no campaign the prediction reads the government's record on polling day - over its term (§752, A1); a campaign's shares already carry it.
             if (shareByParty == null && !NationalElection.TryPredictShares(id, out shareByParty, EconomicVote.RecordOverTerm(country, CurrentDate, out _),
-                    on: CurrentDate))   // PS-4 (§688): the day it is held, so Germany derives its Länder on the chamber then seated
+                    on: CurrentDate, played: country))   // PS-4 (§688): the day it is held, so Germany derives its Länder on the chamber then seated; PS-6 US-26: on this world's own country's history rolled forward - a fork reads the fork's own counts
             {
                 var notHeld = new ElectionRecord
                 {

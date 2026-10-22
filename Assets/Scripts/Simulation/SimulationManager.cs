@@ -5656,7 +5656,7 @@ namespace PoliSim.Simulation
             Country country = _world.GetCountry(PlayerCountryId.Value);
             if (country == null || !Elections.PresidentialElection.IsRoundDay(country, CurrentDate, out bool runOff)) { return; }
             Dictionary<string, double> predicted = null;
-            if (!runOff && !Elections.NationalElection.TryPredictShares(country.Id, out predicted, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate))
+            if (!runOff && !Elections.NationalElection.TryPredictShares(country.Id, out predicted, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the chamber's poll on its history rolled forward
             {
                 predicted = null;
                 Debug.LogWarning("PRESIDENTIAL: no prediction could be made on the first vote's day - nothing is held, and the office stands as it is");
@@ -5685,7 +5685,7 @@ namespace PoliSim.Simulation
             Elections.UsPresidentialElection.Contest chosen = Elections.UsPresidentialElection.HoldHouseChoice(country, CurrentDate, out string choice);
             if (chosen != null) { Debug.Log($"PRESIDENTIAL: {country.Id} - the House's choice: {choice}"); }   // its own line only - the count's was logged on its polling day
             if (!Elections.UsPresidentialElection.IsPollingDay(country, CurrentDate)) { return; }
-            if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate))
+            if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the House history rolled forward - the game's own counts before the day
             {
                 Debug.LogWarning($"PRESIDENTIAL: {country.Id} - no prediction could be made on the polling day {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's president stays seated by date");
                 return;
@@ -5781,7 +5781,7 @@ namespace PoliSim.Simulation
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                         out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
                         playerParty: PlayerPartyIndexForCampaign(), playerScript: PlayerScriptOver(record), playerOutcome: brought,
-                        playerScandalScript: PlayerScandalScriptOver(record), liveScandalRate: Elections.Scandals.LiveRatePerPartyDay))
+                        playerScandalScript: PlayerScandalScriptOver(record), liveScandalRate: Elections.Scandals.LiveRatePerPartyDay, played: _world.GetCountry(PlayerCountryId.Value)))   // PS-6 US-26: staged on the history rolled forward
                 {
                     return;   // no campaign staged for this country - LiveCampaignSetup says why
                 }
@@ -5833,7 +5833,7 @@ namespace PoliSim.Simulation
                 int me = PlayerPartyIndexForCampaign();
                 if (me < 0) { return; }
                 if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
-                        out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me))
+                        out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me, played: _world.GetCountry(PlayerCountryId.Value)))   // PS-6 US-26: staged on the history rolled forward
                 {
                     return;
                 }
@@ -6064,7 +6064,7 @@ namespace PoliSim.Simulation
             Elections.PreCampaignRun.Outcome? brought = null;
             if (record.PreCampaignDays > 0 && record.PreCampaignDaysStepped > 0 && me >= 0
                 && Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
-                    out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me))
+                    out Elections.CampaignRun.Setup staged, out _, onVoteModelCompatibility: true, playerParty: me, played: _world.GetCountry(PlayerCountryId.Value)))   // PS-6 US-26: staged on the history rolled forward
             {
                 EventSalience.ApplyToCampaign(record.SalienceShift, staged.TrueSalience);   // A-LOOP q5: the salience the record's window opened on, replayed
                 var preRewound = new System.Collections.Generic.Dictionary<SimulationRandom.Stream, int>(savedCounts);
@@ -6086,7 +6086,7 @@ namespace PoliSim.Simulation
             if (!Elections.LiveCampaignSetup.TryFor(PlayerCountryId.Value, new (int, int, Elections.Scandal)[0], calendar,
                     out Elections.CampaignRun.Setup setup, out _, onVoteModelCompatibility: true,
                     playerParty: me, playerScript: PlayerScriptOver(record), playerOutcome: brought,
-                    playerScandalScript: PlayerScandalScriptOver(record), liveScandalRate: Elections.Scandals.LiveRatePerPartyDay))
+                    playerScandalScript: PlayerScandalScriptOver(record), liveScandalRate: Elections.Scandals.LiveRatePerPartyDay, played: _world.GetCountry(PlayerCountryId.Value)))   // PS-6 US-26: staged on the history rolled forward
             {
                 return;
             }

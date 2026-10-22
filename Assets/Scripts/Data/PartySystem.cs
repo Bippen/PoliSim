@@ -580,6 +580,96 @@ namespace PoliSim.Data
             return true;
         }
 
+        /// <summary>
+        /// PS-6 US-26 (R-US11 (a), RULED - F8: "US-26 rolls history forward for every modelled country, Poland's standing history gap (§767) included"):
+        /// THE HISTORY ROLLED FORWARD. The game's own counts in <paramref name="played"/> held before <paramref name="before"/> (every one, where it is null)
+        /// follow the record's pair, and the last two of that sequence are the next election's prior and loyalty pair: a game's first election reads the
+        /// record's pair as before, its second its own first count against the record's last election, its third its own two - W-G1's gap, "two elections in one
+        /// game read the same history", closed for Sweden, Germany, Poland and the USA alike. The counts are <see cref="OwnCounts"/>'s.
+        /// <para>DECLARED, the base: with a count of the game's own, the record's pair is the one seated at the world's epoch, whatever vintage a caller names - a
+        /// chamber the record seats after the epoch was elected in this world by the game itself. With none, the very arrays <paramref name="vintage"/>'s history
+        /// gives, so a world that has held no election reads exactly what it read before (numerically inert, proved by the dump).</para>
+        /// <para>DECLARED, the scale: a count's shares are fractions of the roster's vote, the record's of every vote cast, and <see cref="LoyaltyModel"/> reads a
+        /// pair on one scale - so a count is read at the record's last roster total (the vote off the roster held where the epoch's last election left it).</para>
+        /// <para>DECLARED, what does not roll: the regional and district bases (Sweden's valkretsar, Germany's Länder, Poland's okręgi) stay the record's - the
+        /// uniform swing measures its swing against the base's own national position, so the record's base swung to the new national shares is the rolled chain
+        /// exactly wherever no zero floor bit; and each country's electorate (the USA's solved per seated vintage) stays its own.</para>
+        /// <paramref name="ownCounts"/>: how many of the pair are the game's own (0, 1 or 2). False where the record holds no pair for the country.
+        /// </summary>
+        public static bool TryHistory(CountryId id, Country played, DateTime? before, out double[] latest, out double[] previous, out int ownCounts,
+            ElectionVintage vintage = ElectionVintage.Seated)
+        {
+            ownCounts = 0;
+            List<(DateTime Day, double[] Shares)> own = played != null && played.Id == id ? OwnCounts(played, before) : null;
+            if (own == null || own.Count == 0) { return TryHistory(id, out latest, out previous, vintage); }
+            if (!TryHistory(id, out double[] recordLatest, out double[] recordPrevious)) { latest = null; previous = null; return false; }
+            double scale = 0.0;
+            foreach (double s in recordLatest) { scale += s; }
+            var sequence = new List<double[]> { recordPrevious, recordLatest };
+            foreach ((DateTime _, double[] shares) in own)
+            {
+                if (shares.Length != recordLatest.Length) { throw new InvalidOperationException($"{id}: a count of the game's own carries {shares.Length} parties against the roster's {recordLatest.Length}"); }
+                var onScale = new double[shares.Length];
+                for (int i = 0; i < shares.Length; i++) { onScale[i] = shares[i] * scale; }
+                sequence.Add(onScale);
+            }
+            latest = sequence[sequence.Count - 1];
+            previous = sequence[sequence.Count - 2];
+            ownCounts = Math.Min(2, own.Count);
+            return true;
+        }
+
+        /// <summary>
+        /// PS-6 US-26: the game's own chamber counts in <paramref name="played"/> polled before <paramref name="before"/> (all of them where it is null), oldest
+        /// first, each as shares of the roster's vote in <see cref="For"/>'s order (a party the count did not carry at zero). A country's counts are the national
+        /// shares of each election record that counted (<see cref="Country.ElectionHistory"/>, its method not NotImplemented); the USA's chamber path counts
+        /// nothing, and its own counts are the House the game elected (<see cref="Country.UsCongressElections"/>): REP at the contest's V and DEM at one less V
+        /// (R-US15 (a): the poll is the House vote; V is the poll the count read, REP over REP and DEM). The presidential counts are not a chamber's: Poland's
+        /// first vote reads the chamber's poll (which rolls), and the US electoral count's states roll by R-US24 (b) on their own.
+        /// Oldest first BY DATE, whatever order the lists hold them in (a stable sort - two counts of one day keep the lists' order). A record with no date (the
+        /// Editor's turn-labelled runs) is never before a given day, so an election never reads a count that may be its own; with no day given it is read, first.
+        /// </summary>
+        public static List<(DateTime Day, double[] Shares)> OwnCounts(Country played, DateTime? before)
+        {
+            List<(DateTime Day, double[] Shares)> listed = OwnCountsAsListed(played, before);
+            var order = new List<int>(listed.Count);
+            for (int i = 0; i < listed.Count; i++) { order.Add(i); }
+            order.Sort((a, b) => { int byDay = listed[a].Day.CompareTo(listed[b].Day); return byDay != 0 ? byDay : a.CompareTo(b); });
+            var counts = new List<(DateTime Day, double[] Shares)>(listed.Count);
+            foreach (int i in order) { counts.Add(listed[i]); }
+            return counts;
+        }
+
+        private static List<(DateTime Day, double[] Shares)> OwnCountsAsListed(Country played, DateTime? before)
+        {
+            var counts = new List<(DateTime, double[])>();
+            if (played == null) { return counts; }
+            IReadOnlyList<PoliticalParty> roster = For(played.Id);
+            if (UsCongressElection.ElectsIn(played.Id))
+            {
+                if (played.UsCongressElections == null) { return counts; }
+                foreach (UsCongressElection.Contest c in played.UsCongressElections)
+                {
+                    if (before.HasValue && c.PollingDay.Date >= before.Value.Date) { continue; }
+                    if (double.IsNaN(c.V)) { continue; }
+                    var v = new double[roster.Count];
+                    for (int i = 0; i < roster.Count; i++) { v[i] = roster[i].Abbrev == "REP" ? c.V : roster[i].Abbrev == "DEM" ? 1.0 - c.V : 0.0; }
+                    counts.Add((c.PollingDay.Date, v));
+                }
+                return counts;
+            }
+            if (played.ElectionHistory == null) { return counts; }
+            foreach (ElectionRecord e in played.ElectionHistory)
+            {
+                if (e == null || e.Method == ElectionMethod.NotImplemented || e.Shares == null || e.Shares.Count == 0) { continue; }
+                if (before.HasValue && (e.Date == DateTime.MinValue || e.Date.Date >= before.Value.Date)) { continue; }   // undated: never before a day
+                var shares = new double[roster.Count];
+                for (int i = 0; i < roster.Count; i++) { shares[i] = e.Shares.TryGetValue(roster[i].Abbrev, out double s) ? s : 0.0; }
+                counts.Add((e.Date.Date, shares));
+            }
+            return counts;
+        }
+
         private static bool TryRealHistory(CountryId id, out double[] latest, out double[] previous, ElectionVintage vintage)
         {
             vintage = Elections.WorldClock.Resolve(id, vintage);   // PS-1 (§618): the seated chamber's election, at the world's epoch

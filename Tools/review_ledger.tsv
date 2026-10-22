@@ -292,3 +292,5 @@ file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	43013923b433218ce9dde0a2a8a
 file	Assets/Scripts/Simulation/SimulationManager.cs	5efd5f0fff5499b27463e044a332b884e1e8eb2fd34fbe6d79f7b356a793e34f	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_fix_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	7a98dd64f6f22a5962dfdc5afe345694211f702a5d5e47fd02c941ed7882e6a4	reviewed	2026-10-20	s890	Reviews/2026-10-20_fork2_fix_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	0969233c905cc62a196a8ab7684d21c822a824d7dfbe0c28598cc79c32ed9452	reviewed	2026-10-20	s891	Reviews/2026-10-20_us20_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	7f54d4fc7882cc2bf2d2931186adcafaf332f9a55b6bc978c85ed68936b1552b	reviewed	2026-10-22	s892	Reviews/2026-10-22_us26_fix_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	1dfbccac0f99e5f7188f736bd379cef9cc7a8f0d24034dba02f9648f8a459c77	reviewed	2026-10-22	s892	Reviews/2026-10-22_us26_fix_review.md	-

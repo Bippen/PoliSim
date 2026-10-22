@@ -408,7 +408,8 @@ namespace PoliSim.Elections
         /// <summary>
         /// THE COUNT of <paramref name="pollingDay"/> on <paramref name="poll"/> - pure: nothing is written, nothing drawn. The field's national vote
         /// (<see cref="TryField"/>) pooled as the states pool it - the Republican nominee, the Democratic nominee, <see cref="OtherCandidates"/> - the states
-        /// derived from the catalog's latest presidential election before the day (R-US14 (a); the record's, never the game's - a 2028 count swings from the record's 2024 states even after the game's own 2024 count, which <see cref="StatesOf"/> could give: ASKED of Elias, with whether US-26 owns it) and the electors
+        /// derived from the catalog's latest presidential election before the day (R-US14 (a); in a game that has counted before, the game's own previous count's
+        /// states - R-US24 (b), RULED, US-26's: the overload that takes the previous count) and the electors
         /// those in force that year or carried forward (R-US13 (a)), by <see cref="ElectoralCollege.FromNationalShares(int, int, double[], int, IReadOnlyList{ElectoralCollege.Standing}, out ElectoralCollege.StateCall[], out double)"/>; then <see cref="FromCollege"/>.
         /// <paramref name="states"/> is every jurisdiction's call. Null, with the reason, where no count can be made.
         /// </summary>
@@ -422,7 +423,15 @@ namespace PoliSim.Elections
 
         /// <summary>PS-6 US-8c (Elias's ruling J4): the count with its exact state and district ties drawn on <paramref name="tieSeed"/> (<see cref="TieSeedOf"/>;
         /// the overloads without one draw on seed 0), the seed kept on the contest so that <see cref="StatesOf"/> re-derives the same calls. Pure, as the others.</summary>
-        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, int tieSeed, out ElectoralCollege.StateCall[] states, out string why)
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, int tieSeed, out ElectoralCollege.StateCall[] states, out string why) =>
+            Count(id, pollingDay, poll, nominees, tieSeed, null, null, out states, out why);
+
+        /// <summary>PS-6 US-26 - R-US24 (b), RULED (Elias's ruling I8, §856): the count of a game that has counted before - its states swung from the game's
+        /// own previous count (<paramref name="previous"/>, its states <paramref name="previousStates"/> as <see cref="StatesOf(Country, Contest)"/> re-derives
+        /// them) by <see cref="ElectoralCollege.FromGameStates"/>, not from the record's; none handed, or a field of record (its minor candidates standing on the
+        /// ballots of record), the record's states as before. Pure, as the others.</summary>
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, int tieSeed,
+            Contest previous, ElectoralCollege.StateCall[] previousStates, out ElectoralCollege.StateCall[] states, out string why)
         {
             states = null;
             if (!ElectsIn(id)) { why = id + " chooses no president by electors"; return null; }
@@ -443,10 +452,13 @@ namespace PoliSim.Elections
                 return null;
             }
             IReadOnlyList<ElectoralCollege.Standing> onBallots = OthersOnTheBallots(id, pollingDay.Year, pooled.Share);
-            ElectoralCollege.Jurisdiction[] college = ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, pooled), tieSeed, onBallots, out states, out double residual);
-            string basis = string.Format(CultureInfo.InvariantCulture, "{0}; the states from {1}'s by the normalised uniform swing{5} (worst residual {2:E1}); the electors in force in {3}{4}",
-                DayBasis, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty,
-                onBallots != null ? ", every other candidate standing only where on the ballot of record" : string.Empty);
+            ElectoralCollege.Jurisdiction[] college = CollegeOf(prior, inForce, National(rep, dem, pooled), tieSeed, onBallots, previous != null ? previousStates : null, out states, out double residual, out bool fromGame);
+            string basis = fromGame
+                ? string.Format(CultureInfo.InvariantCulture, "{0}; " + GameStatesBasis + "{1:yyyy-MM-dd} by the normalised uniform swing, each jurisdiction weighing its votes cast of record in {2} (worst residual {3:E1}); the electors in force in {4}{5}",
+                    DayBasis, previous.PollingDay, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty)
+                : string.Format(CultureInfo.InvariantCulture, "{0}; the states from {1}'s by the normalised uniform swing{5} (worst residual {2:E1}); the electors in force in {3}{4}",
+                    DayBasis, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty,
+                    onBallots != null ? ", every other candidate standing only where on the ballot of record" : string.Empty);
             Contest contest = FromCollege(pollingDay, basis, college, rep, dem, pooled);
             contest.TieSeed = tieSeed;
             var othersLead = new List<string>();
@@ -531,9 +543,70 @@ namespace PoliSim.Elections
         /// <summary>
         /// The states a stored contest's count called, re-derived from the national shares its tallies carry (the two nominees and <see cref="OtherCandidates"/>)
         /// on the catalog's prior and electors for its year - the same function on the same doubles as <see cref="Count"/>, so the calls are the count's own and
-        /// the save needs no per-state field. Null where the contest carries no such tallies (a planted one).
+        /// the save needs no per-state field. Null where the contest carries no such tallies (a planted one). PS-6 US-26: THE RECORD FORM ONLY - right for a
+        /// count made on the record's states (every first count, every planted night, every count of a build before US-26) and wrong for one made on the game's
+        /// own; a reader of a game's contest takes <see cref="StatesOf(Country, Contest)"/>, which picks the form the contest was counted in.
         /// </summary>
-        public static ElectoralCollege.StateCall[] StatesOf(Contest contest)
+        public static ElectoralCollege.StateCall[] StatesOnRecord(Contest contest) => StatesOn(contest, null, null);
+
+        /// <summary>PS-6 US-26 (R-US24 (b)): the words a count made on the game's own previous states writes into its basis (<see cref="Contest.DayBasis"/>),
+        /// followed by that previous count's polling day (yyyy-MM-dd) - read back by <see cref="StatesOf(Country, Contest)"/>, so a stored contest is re-derived
+        /// in the form it was COUNTED in, never by what the list holds today. CONVENTION.</summary>
+        public const string GameStatesBasis = "the states from the game's own count of ";
+
+        /// <summary>
+        /// PS-6 US-26 - R-US24 (b), RULED (Elias's ruling I8, §856; "re-derived exactly from the stored contest, with no save step"): the states a stored contest
+        /// called, in the form it was counted in, read from its own basis (<see cref="GameStatesBasis"/>): a contest counted on the game's own previous states is
+        /// re-derived on that count's states - the contest of the day its basis names, in <paramref name="country"/>'s list, itself re-derived the same way back
+        /// to the game's first count - so the chain telescopes from the stored national shares alone, whatever order the list holds the contests in; any other
+        /// contest (a first count, a planted night, a count saved by a build before US-26, which swung from the record's) on the record's states
+        /// (<see cref="StatesOnRecord"/>), as it was counted. DECLARED: a game-form contest whose named previous count is no longer in the list re-derives on
+        /// the record's states - the nearest reading, not the count's own (no path of the game removes a contest).
+        /// </summary>
+        public static ElectoralCollege.StateCall[] StatesOf(Country country, Contest contest)
+        {
+            if (contest == null) { return null; }
+            if (country?.UsPresidentialElections == null || !TryCountedOnGameStates(contest, out DateTime previousDay)) { return StatesOnRecord(contest); }
+            Contest previous = null;
+            foreach (Contest c in country.UsPresidentialElections) { if (!ReferenceEquals(c, contest) && c.PollingDay.Date == previousDay && previousDay < contest.PollingDay.Date) { previous = c; break; } }
+            ElectoralCollege.StateCall[] previousStates = previous != null ? StatesOf(country, previous) : null;
+            return previousStates != null ? StatesOn(contest, previous, previousStates) : StatesOnRecord(contest);
+        }
+
+        /// <summary>Whether a stored contest was counted on the game's own previous states - its basis carries <see cref="GameStatesBasis"/> - and that count's day.</summary>
+        public static bool TryCountedOnGameStates(Contest contest, out DateTime previousDay)
+        {
+            previousDay = DateTime.MinValue;
+            if (contest?.DayBasis == null) { return false; }
+            int at = contest.DayBasis.IndexOf(GameStatesBasis, StringComparison.Ordinal);
+            if (at < 0 || at + GameStatesBasis.Length + 10 > contest.DayBasis.Length) { return false; }
+            return DateTime.TryParseExact(contest.DayBasis.Substring(at + GameStatesBasis.Length, 10), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out previousDay);
+        }
+
+        /// <summary>PS-6 US-26: the game's own presidential count before <paramref name="pollingDay"/> - the latest in the country's list polled before it; null
+        /// where the game has held none (its first count swings from the record's states).</summary>
+        public static Contest PreviousCount(Country country, DateTime pollingDay)
+        {
+            Contest previous = null;
+            if (country?.UsPresidentialElections == null) { return null; }
+            foreach (Contest c in country.UsPresidentialElections) { if (c.PollingDay.Date < pollingDay.Date && (previous == null || c.PollingDay > previous.PollingDay)) { previous = c; } }
+            return previous;
+        }
+
+        /// <summary>PS-6 US-26: the college a count stands on - on the game's own previous states (<see cref="ElectoralCollege.FromGameStates"/>) where they are
+        /// handed and the field holds no candidate of record standing on the ballots of record, else on the record's prior election (US-8's and US-6c's forms,
+        /// the very call as before). <paramref name="fromGame"/> says which.</summary>
+        private static ElectoralCollege.Jurisdiction[] CollegeOf(int prior, int inForce, double[] national, int tieSeed, IReadOnlyList<ElectoralCollege.Standing> onBallots,
+            ElectoralCollege.StateCall[] previousStates, out ElectoralCollege.StateCall[] states, out double residual, out bool fromGame)
+        {
+            fromGame = previousStates != null && onBallots == null;
+            return fromGame
+                ? ElectoralCollege.FromGameStates(previousStates, prior, inForce, national, tieSeed, out states, out residual)
+                : ElectoralCollege.FromNationalShares(prior, inForce, national, tieSeed, onBallots, out states, out residual);
+        }
+
+        /// <summary>The states a contest called on the previous count's states where they are handed (<see cref="CollegeOf"/>), the record's otherwise.</summary>
+        private static ElectoralCollege.StateCall[] StatesOn(Contest contest, Contest previous, ElectoralCollege.StateCall[] previousStates)
         {
             Tally rep = null, dem = null, others = null;
             foreach (Tally t in contest.Electors)
@@ -542,7 +615,8 @@ namespace PoliSim.Elections
             }
             if (rep == null || dem == null || others == null || double.IsNaN(rep.Share) || double.IsNaN(dem.Share) || double.IsNaN(others.Share)) { return null; }
             if (!ElectoralCollege.TryPriorYear(contest.PollingDay.Year, out int prior) || !ElectoralCollege.TryElectorsYear(contest.PollingDay.Year, out int inForce)) { return null; }
-            ElectoralCollege.FromNationalShares(prior, inForce, National(rep, dem, others), contest.TieSeed, OthersOnTheBallots(CountryId.USA, contest.PollingDay.Year, others.Share), out ElectoralCollege.StateCall[] states, out double _);
+            CollegeOf(prior, inForce, National(rep, dem, others), contest.TieSeed, OthersOnTheBallots(CountryId.USA, contest.PollingDay.Year, others.Share),
+                previous != null ? previousStates : null, out ElectoralCollege.StateCall[] states, out double _, out bool _);
             return states;
         }
 
@@ -554,7 +628,7 @@ namespace PoliSim.Elections
         /// the year and the pooled share, so <see cref="StatesOf"/> re-derives the count's states from a stored contest. Null where the election holds no field
         /// of record - a later field has no minor candidate, and the states take US-8's form, every other candidate swung from the prior election's.
         /// DECLARED (no format step): a 2024 contest saved by a build before US-6c re-derives its states by this standing, not by the pooled form its electors
-        /// were counted on; until US-26 reads the game's own states, only the diagnostics read them.
+        /// were counted on; since US-26 the game's next count swings from them (R-US24 (b), <see cref="StatesOf(Country, Contest)"/>).
         /// </summary>
         private static IReadOnlyList<ElectoralCollege.Standing> OthersOnTheBallots(CountryId id, int year, double othersPercent)
         {
@@ -596,7 +670,10 @@ namespace PoliSim.Elections
             if (country?.UsPresidentialElections == null) { why = "the country carries no list of contests"; return null; }
             if (!IsPollingDay(country, date)) { why = "not a polling day the game has still to count"; return null; }
             IReadOnlyDictionary<string, double> counted = CountedPoll(country, date, poll);
-            Contest contest = Count(country.Id, date.Date, counted, UsTermLimit.NomineesFor(country, date.Date), TieSeedOf(SimulationRandom.MasterSeed, date.Year), out ElectoralCollege.StateCall[] _, out why);
+            // PS-6 US-26 (R-US24 (b)): a game that has counted before swings its states from its own previous count's, re-derived from the stored contest
+            Contest previous = PreviousCount(country, date.Date);
+            Contest contest = Count(country.Id, date.Date, counted, UsTermLimit.NomineesFor(country, date.Date), TieSeedOf(SimulationRandom.MasterSeed, date.Year),
+                previous, previous != null ? StatesOf(country, previous) : null, out ElectoralCollege.StateCall[] _, out why);
             if (contest != null) { country.UsPresidentialElections.Add(contest); }
             return contest;
         }

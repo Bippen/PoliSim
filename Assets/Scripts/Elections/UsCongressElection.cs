@@ -466,7 +466,7 @@ namespace PoliSim.Elections
 
         /// <summary>
         /// THE CONGRESS COUNT of <paramref name="pollingDay"/>: the House by R-US18 (b) at the poll's V and the Senate class (and the day's specials) by R-US19 (c)
-        /// over (a) on the presidential count's states (<paramref name="presidential"/>, re-derived exactly by <see cref="UsPresidentialElection.StatesOf"/>). Pure
+        /// over (a) on the presidential count's states (<paramref name="presidential"/>, re-derived exactly by <see cref="UsPresidentialElection.StatesOf(Country, UsPresidentialElection.Contest)"/> - on the game's own previous count's states after its first, PS-6 US-26). Pure
         /// but for the Senate cascade's reads of the country. Null, with the reason, where it cannot be made.
         /// </summary>
         public static Contest Count(Country country, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, UsPresidentialElection.Contest presidential, out string why)
@@ -478,7 +478,7 @@ namespace PoliSim.Elections
             if (country.UsCongressElections != null) { foreach (Contest c in country.UsCongressElections) { if (c.PollingDay < pollingDay.Date && (prior == null || c.PollingDay > prior.PollingDay)) { prior = c; } } }
             List<StateHouse> house = CountHouse(pollingDay.Date, v, prior, out int baseYear, out double vBase, out bool baseOfRecord, out why);
             if (house == null) { return null; }
-            List<SenateSeat> senate = CountSenate(country, pollingDay.Date, UsPresidentialElection.StatesOf(presidential), presidential.TieSeed, out why);
+            List<SenateSeat> senate = CountSenate(country, pollingDay.Date, UsPresidentialElection.StatesOf(country, presidential), presidential.TieSeed, out why);   // PS-6 US-26: the night's states as the count called them - a later count's on the game's own previous states
             if (senate == null) { return null; }
             var contest = new Contest
             {

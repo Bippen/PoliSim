@@ -240,6 +240,79 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
+        /// PS-6 US-26 - R-US24 (b), RULED (Elias's ruling I8, 2026-10-18, `COMPLETED.md` §856: "the game's own 2024 states, and US-26 owns it"): A LATER
+        /// COUNT'S COLLEGE ON THE GAME'S OWN PREVIOUS STATES. The form of <see cref="FromNationalShares(int, int, double[], int, out StateCall[], out double)"/>
+        /// with every other candidate pooled (a later field has no minor candidate) - §689's normalised uniform swing to <paramref name="national"/> - but each
+        /// jurisdiction's prior is the game's previous count's call for it (<paramref name="prior"/>, re-derived exactly from the stored contest), its shares and,
+        /// for Maine's and Nebraska's districts, each district's derived Democratic two-party share, moved by its state's as US-4's DECLARED form moves them.
+        /// DECLARED, the weights: the game draws no turnout, so each jurisdiction weighs what it cast in the catalog's presidential election of
+        /// <paramref name="weightsYear"/> (the record's latest in or before the previous count's year). The electors those in force in
+        /// <paramref name="electorsYear"/>; an exact tie drawn on <paramref name="tieSeed"/> (<see cref="TieBreak"/>). Throws where a jurisdiction in force has no
+        /// call in <paramref name="prior"/> or no row of <paramref name="weightsYear"/>, or where its districts in force differ in number from the prior's.
+        /// </summary>
+        public static Jurisdiction[] FromGameStates(StateCall[] prior, int weightsYear, int electorsYear, double[] national, int tieSeed, out StateCall[] calls, out double worstResidual)
+        {
+            if (national == null || national.Length != 3) { throw new ArgumentException("three national shares: the Democratic nominee, the Republican, every other candidate"); }
+            if (prior == null || prior.Length == 0) { throw new ArgumentException("no previous count's states to swing from"); }
+            var byState = new Dictionary<string, StateCall>(StringComparer.Ordinal);
+            foreach (StateCall c in prior) { byState[c.State] = c; }
+            var weights = new Dictionary<string, long>(StringComparer.Ordinal);
+            var inForce = new List<(string State, int Electors)>();
+            foreach (var state in UsPresidentialReturns.States)
+            {
+                if (state.Year == weightsYear) { weights[state.State] = state.VotesTotal; }
+                if (state.Year == electorsYear) { inForce.Add((state.State, state.Electors)); }
+            }
+            if (inForce.Count == 0) { throw new ArgumentException($"the catalog holds no electors for {electorsYear}"); }
+
+            var regions = new RegionalVoteModel.RegionInput[inForce.Count];
+            var priorShares = new double[inForce.Count][];
+            var previous = new StateCall[inForce.Count];
+            for (int r = 0; r < inForce.Count; r++)
+            {
+                if (!byState.TryGetValue(inForce[r].State, out previous[r])) { throw new ArgumentException($"{inForce[r].State} has no call in the previous count"); }
+                if (!weights.TryGetValue(inForce[r].State, out long cast)) { throw new ArgumentException($"{inForce[r].State} has no votes cast of record in {weightsYear}"); }
+                regions[r] = new RegionalVoteModel.RegionInput(inForce[r].State, cast, null);
+                priorShares[r] = (double[])previous[r].Shares.Clone();
+            }
+            double[][] derived = RegionalVoteModel.RegionalSharesByUniformSwing(national, regions, priorShares, out worstResidual);
+
+            calls = new StateCall[inForce.Count];
+            var college = new Jurisdiction[inForce.Count];
+            for (int r = 0; r < inForce.Count; r++)
+            {
+                double[] shares = derived[r];
+                string state = inForce[r].State;
+                int win = shares[ShareRepublican] > shares[ShareDemocrat] ? Republican : shares[ShareDemocrat] > shares[ShareRepublican] ? Democrat : TieBreak(tieSeed, electorsYear, state);
+                var call = new StateCall
+                {
+                    State = state, Electors = inForce[r].Electors, Shares = shares, PriorShares = priorShares[r], Winner = win,
+                    OthersLead = shares[ShareOthers] > Math.Max(shares[ShareDemocrat], shares[ShareRepublican]),
+                };
+                calls[r] = call;
+                int[] districts = previous[r].Districts ?? new int[0];
+                if (districts.Length == 0) { college[r] = new Jurisdiction(state, call.Electors, win); continue; }
+                int districtsInForce = 0;
+                foreach (var d in UsPresidentialReturns.Districts) { if (d.State == state && d.Year == electorsYear) { districtsInForce++; } }
+                if (districtsInForce > 0 && districtsInForce != districts.Length) { throw new ArgumentException($"{state}: {districts.Length} districts in the previous count, {districtsInForce} in {electorsYear}"); }
+                // US-4's DECLARED form, on the previous count's districts: the state's change in its Democratic two-party share added to each district's own
+                double statePrior = priorShares[r][ShareDemocrat] / (priorShares[r][ShareDemocrat] + priorShares[r][ShareRepublican]);
+                double stateNext = shares[ShareDemocrat] / (shares[ShareDemocrat] + shares[ShareRepublican]);
+                call.Districts = (int[])districts.Clone();
+                call.DistrictDemocraticTwoParty = new double[districts.Length];
+                call.DistrictWinners = new int[districts.Length];
+                for (int k = 0; k < districts.Length; k++)
+                {
+                    double d2Next = previous[r].DistrictDemocraticTwoParty[k] + (stateNext - statePrior);
+                    call.DistrictDemocraticTwoParty[k] = d2Next;
+                    call.DistrictWinners[k] = d2Next > 0.5 ? Democrat : d2Next < 0.5 ? Republican : TieBreak(tieSeed, electorsYear, state + "-" + districts[k].ToString(CultureInfo.InvariantCulture));
+                }
+                college[r] = new Jurisdiction(state, call.Electors, win, call.Electors - districts.Length, call.DistrictWinners);
+            }
+            return college;
+        }
+
+        /// <summary>
         /// PS-6 US-8c - Elias's ruling J4 (2026-10-19, `COMPLETED.md` §870): AN EXACT TIE BROKEN BY A SEEDED DRAW, never in one party's favour - a fair coin
         /// (<see cref="Republican"/> or <see cref="Democrat"/>, each with probability one half over seeds) keyed on <paramref name="seed"/>, the election's
         /// <paramref name="year"/> and the <paramref name="place"/> (a state's postal code, or a district's "ME-2"): SplitMix64's finaliser over the three,

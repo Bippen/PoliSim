@@ -277,10 +277,10 @@ namespace PoliSim.EditorTools
             }
             Check(ballotGap < 1e-12, F("(b) every other candidate stands only where on the ballot of record (J3, US-6c): each jurisdiction's share of them is the ballots', recomputed from the catalog - the largest gap {0:E1}; jurisdictions listing {1}; against the record's 2024 shares the largest gap {2:0.000} pp ({3}), the mean {4:0.000} pp",
                 ballotGap, string.Join(", ", standingCounts), recordWorst, recordWorstAt, recordMean));
-            ElectoralCollege.StateCall[] restated = c != null ? UsPresidentialElection.StatesOf(c) : null;
+            ElectoralCollege.StateCall[] restated = c != null ? UsPresidentialElection.StatesOnRecord(c) : null;   // a first count: counted on the record's states (PS-6 US-26: the record form, by name)
             bool reDerived = restated != null && states != null && restated.Length == states.Length
                              && restated.Zip(states, (a, b) => a.State == b.State && a.Winner == b.Winner && a.Shares.SequenceEqual(b.Shares) && a.DistrictWinners.SequenceEqual(b.DistrictWinners)).All(same => same);
-            Check(reDerived, "(b) the stored contest re-derives the count's own states exactly (UsPresidentialElection.StatesOf) - the save carries the states through the national shares, so format 39 needs no per-state field");
+            Check(reDerived, "(b) the stored contest re-derives the count's own states exactly (UsPresidentialElection.StatesOnRecord, a first count's form) - the save carries the states through the national shares, so format 39 needs no per-state field");
             Check(c != null && c.ElectorsMeet == meet && c.CountedOn == counted && c.TakesOffice == oath, F("(b) its dates: the electors meet {0}, Congress counts {1}, the oath {2}", c != null ? Day(c.ElectorsMeet) : "-", c != null ? Day(c.CountedOn) : "-", c != null ? Day(c.TakesOffice) : "-"));
 
             // ---- (c) a US game played from its start past the count to the day after the oath, in the controller's order
@@ -470,7 +470,7 @@ namespace PoliSim.EditorTools
                 bool laterField = later != null && later.Electors.Any(t => t.Party == "REP" && t.Candidate == "Republican Party's candidate (2028)") && later.Electors.Any(t => t.Party == "DEM" && t.Candidate == "Democratic Party's candidate (2028)")
                                   && later.Electors.First(t => t.Party == null).Share == 0.0 && later.DayBasis.Contains("the states from 2024's") && later.DayBasis.Contains("the electors in force in 2024") && !later.DayBasis.Contains("carried forward")
                                   && later.TakesOffice == new DateTime(2029, 1, 20);
-                Check(laterField, F("(f) a later day (7 Nov 2028): the field unnamed at E1's future factor and no minor candidate, the record's 2024 states as the prior (asked of Elias: the record's or the game's own), the 2020 census's electors in force - {0}", later?.Line ?? laterWhy));
+                Check(laterField, F("(f) a later day (7 Nov 2028): the field unnamed at E1's future factor and no minor candidate, the record's 2024 states as the prior (a planted count with no game behind it; a game's own later count swings from its own, R-US24 (b)), the 2020 census's electors in force - {0}", later?.Line ?? laterWhy));
                 // the review's L7: with no minor candidate the swing closes only approximately (no third column to absorb the floor) - the residual, printed
                 double laterResidual = double.NaN;
                 if (later != null)
@@ -482,7 +482,7 @@ namespace PoliSim.EditorTools
                 bool carried2032 = UsPresidentialElection.ElectorsCarriedForward(new DateTime(2032, 11, 2), out int carriedYear);
                 Check(carried2032 && carriedYear == 2024 && !UsPresidentialElection.ElectorsCarriedForward(Polled, out int _) && !UsPresidentialElection.ElectorsCarriedForward(new DateTime(2028, 11, 7), out int _),
                     F("(f) the electors carried forward, from the year alone (the president row's label): not in 2024 or 2028, from 2032 - the {0} electors carried", carriedYear));
-                card.Add(F("**A later day**, on a planted even poll: 7 Nov 2028 counts {0} - the field unnamed (\"Republican Party's candidate (2028)\") at E1's future factor and no minor candidate, the states from the record's 2024 - not the game's own 2024 count, which the stored contest could give (asked of Elias, with whether US-26 owns it) - the swing closing to within {1:E1} of the national shares (with no minor candidate to absorb the floor it closes only approximately; no call moves), the electors those in force in 2024 (the 2020 census's, by law in force for 2028; carried forward from 2032, R-US13 (a), and labelled so on the president row).",
+                card.Add(F("**A later day**, on a planted even poll: 7 Nov 2028 counts {0} - the field unnamed (\"Republican Party's candidate (2028)\") at E1's future factor and no minor candidate, the states from the record's 2024 - a planted count with no game behind it (a game's own later count swings from the game's own 2024 states, R-US24 (b), US-26) - the swing closing to within {1:E1} of the national shares (with no minor candidate to absorb the floor it closes only approximately; no call moves), the electors those in force in 2024 (the 2020 census's, by law in force for 2028; carried forward from 2032, R-US13 (a), and labelled so on the president row).",
                     later != null ? later.Electors[0].Votes.ToString(CultureInfo.InvariantCulture) + " to " + later.Electors[1].Votes.ToString(CultureInfo.InvariantCulture) : "nothing", laterResidual));
             }
 
@@ -613,7 +613,7 @@ namespace PoliSim.EditorTools
             card.Add("");
             card.Add("**Not modelled, stated**: faithless electors; Maine's ranked-choice count; a single minor candidate's win of a state (the states pool every other candidate - the count names a state where they lead together); the Vice President's own electoral count (the tickets are one: where the House cannot choose, the Senate chooses the Vice President, who acts from the oath - R-US22, RULED, held by PresidencyDiagnostic).; a minor candidate's own swing (every other candidate stands at the record's pattern where on the ballot of record, scaled with the field).");
             card.Add("");
-            card.Add("The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8), R-US14 (a) (G2) and J3's minor candidates on the ballot of record, each RULED; R-US11 (a), RULED, is US-26's to build.");
+            card.Add("The rulings it runs on: R-US1 (a), R-US3 (a) and R-US13 (a) (Elias's ruling F8), R-US14 (a) (G2) and J3's minor candidates on the ballot of record, each RULED; R-US11 (a) and R-US24 (b), RULED, are US-26's, built: a game's own later count swings its states from its own previous count's (HistoryRolledForwardDiagnostic (d)).");
 
             // the stamp: the catalog's digests (states, districts, years, candidates and their jurisdictions, House districts) and the stored factors
             var stamp = new StringBuilder(UsPresidentialReturns.YearSourceDigest + UsPresidentialReturns.StateSourceDigest + UsPresidentialReturns.DistrictSourceDigest + UsPresidentialReturns.CandidateSourceDigest + UsPresidentialReturns.CandidateStateSourceDigest + UsPresidentialReturns.HouseDistrictSourceDigest);

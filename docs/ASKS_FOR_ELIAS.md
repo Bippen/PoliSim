@@ -362,3 +362,7 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 - **Which family a bill belongs to.** Answers belong to no family, so a bill's effect lands on the interaction line. And because every dial reaches the game through a bill, no dial family is ever forked in a real game. Should each kind of bill be its own family's lever (a tax bill for Taxes, the omnibus budget split by its parts)?
 - **Save size and autosaves.** Each family touched adds one world to a manual save, about 1.06 MB a family (13 families: 17.3 MB against 3.5 MB), plus about 2 s of catch-up and 1 s of carry. Keep, cap, or carry only the families with a non-zero line? Autosaves carry none, so loading one restarts every line from the load: keep that?
 - **The unavailable line's wording.** When a family's world fails, the impact card says `UNAVAILABLE · <FAMILIES> · IN THE INTERACTION`. When the no-policy world fails, it says `… THE WORLD WITHOUT YOUR POLICIES STOPPED`. Approve the wording?
+
+### US-26 the history rolled forward (§892): the ask it ends in
+
+- **No save-format step.** A save cut in the middle of a second campaign by a build from before US-26 now replays that campaign on the game's own history rather than the record's pair it was played on, so the replayed polls can differ from what you saw. This is declared, not migrated. Format 47 took a step for a case of this kind. Take one here too (a v50 save in a second campaign would restart the campaign), or keep it declared?

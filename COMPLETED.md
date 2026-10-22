@@ -41201,3 +41201,16 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Evidence:** `Reviews/2026-10-20_us20_review.md` (the integrator's reading, no defect), ledger row s891; `n891` 7 of 7 named; `cheap891` suite exiting 0 (375 s); `sim891` simulation group exiting 0 (1011 s, the sentinel at aloopsal2); `drys891` Poland dry film exiting 0; `doc891` the document batch for the plan and feature-list lines. The bars ran on 2026-10-20 on the staged tree, untouched until this commit.
 
 **Commit:** this one.
+
+## 892. PS-6 US-26: THE HISTORY ROLLED FORWARD - A GAME'S OWN COUNTS BECOME THE NEXT ELECTION'S PRIOR AND LOYALTY PAIR (SWEDEN, GERMANY, POLAND, THE US HOUSE); R-US24 (b), THE NEXT PRESIDENTIAL COUNT SWINGS FROM THE GAME'S OWN STATES (2026-10-22)
+
+**What changed** (an implementer on `wave/us26`: 064ce8fe, 098f3dbf, 512e7402, the first review's fix round bdecca3d, rebased on §890; squash-merged on §891):
+- `PartySystems.TryHistory(id, played, before, ...)` and `OwnCounts`: the game's own counts strictly before the day, in date order, follow the epoch's pair; none, and the call is the one made before. The prediction (`NationalElection.TryPredictShares`), the staged campaigns (`LiveCampaignSetup.TryFor`) and the player's election in the manager (`SimulationManager.PlayerElection.cs`) pass the world's own country.
+- R-US24 (b): `ElectoralCollege.FromGameStates`; `UsPresidentialElection.Count` swings from the game's previous count; a stored contest re-derives in the form its basis names (`GameStatesBasis`; `StatesOnRecord` the record form).
+- `HistoryRolledForwardDiagnostic` (new, cheap bar). The integrator registered it and made two comment fixes from the second review (the no-step declaration's replay sentence; the diagnostic's `Step` summary).
+
+**Evidence:** `Reviews/2026-10-20_us26_review.md` (first review: M1, M2, L1-L4, all closed by bdecca3d and the registration); `Reviews/2026-10-22_us26_fix_review.md` (the fix round, the rebase onto FORK-2 and the integration: no H or M; L1-L3 below); ledger rows s892 (SimulationManager.cs, SimulationManager.PlayerElection.cs). `n892` 12 of 12 named, ForkAnswersDiagnostic among them; `HistoryRolledForwardDiagnostic` (a) bit for bit the record's pair in all four countries with no own count, (b) Sweden's 2030, Germany's 2029 probe and Poland's 2027 read the game's own count, (c) the US 2026 poll reads the game's 2024 House, (d) the 2028 count swings from the game's 2024 states. `elec892` against `elec863`: no report line moved. Bars: see the commit.
+
+**Declared / filed:** no save-format step: a save cut mid-campaign by a build before US-26 replays on the rolled history (whether format 47's precedent should bind instead is ASKED). Filed from the second review: its L1 (the diagnostic's list-order case proves nothing against the old code; the earlier-dated contest between two counts is not exercised) and L2 (no check runs the manager's own election path with `played:`; part (b) copies the count by hand).
+
+**Commit:** this one.

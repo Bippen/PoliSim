@@ -139,12 +139,18 @@ namespace PoliSim.Elections
         /// three arrays), and a campaign moves it: that is what makes the campaign's result election
         /// night's result rather than a second opinion beside it. False for the countries with no
         /// fitted electorate or no two-election history.
+        /// PS-6 US-26 (R-US11 (a)): handed the played country, the prior and the loyalty are its history
+        /// rolled forward - its own counts before <paramref name="before"/> after the record's pair
+        /// (<see cref="PartySystems.OwnCounts"/>); the compatibility reads no history.
         /// </summary>
-        public static bool TryCompatibility(CountryId country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)
+        public static bool TryCompatibility(CountryId country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty,
+            Country played = null, System.DateTime? before = null)
         {
             keys = null; compatibility = null; prior = null; loyalty = null;
             if (!PartySystems.TryElectorate(country, out VoteModel.Electorate electorate, out double economicWeight)) { return false; }
-            if (!PartySystems.TryHistory(country, out double[] latest, out double[] previous)) { return false; }
+            // PS-6 US-26 (R-US11 (a)): the history rolled forward - the played country's own counts before the day follow the record's pair; no country
+            // handed, or none held, the record's pair as before
+            if (!PartySystems.TryHistory(country, played, before, out double[] latest, out double[] previous, out int _)) { return false; }
 
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(country);
             var points = new List<VoteModel.PartyPoint>();
@@ -216,10 +222,12 @@ namespace PoliSim.Elections
             return a;
         }
 
-        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares, IReadOnlyDictionary<string, double> recordShift = null, System.DateTime? on = null)
+        public static bool TryPredictShares(CountryId country, out Dictionary<string, double> shares, IReadOnlyDictionary<string, double> recordShift = null, System.DateTime? on = null,
+            Country played = null)
         {
             shares = null;
-            if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty)) { return false; }
+            // PS-6 US-26: the played country's own counts before the day (every one, where no day is given) are the history the prediction reads
+            if (!TryCompatibility(country, out string[] keys, out double[] compatibility, out double[] prior, out double[] loyalty, played, on)) { return false; }
             double[] preference = PreferenceModel.Preference(compatibility, prior, loyalty);
             preference = EntrantLayer.ApplyFor(preference, prior, country, keys, EntrantAwareness(country, keys));   // §681: an entrant's reach and where it draws from; none, the very array
             preference = EconomicVote.ApplyRecordShift(keys, preference, recordShift);   // PS-3k (§638): the government's record, before the regions are derived; none given, none applied
