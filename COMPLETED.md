@@ -41241,3 +41241,13 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Asked / filed:** asked - format 51's refusal (or a declared no-step), the US-9 card re-cut to play's CVAP and August 2024 inputs, sourcing the US price table (FEC), and the count landing at once with no election night until US-34. Filed: the rebase review's L2 (no check plants an in-window Congress contest or counts a campaign on top of a previous game count). Observed on film: Campaign HQ's poll column is mostly empty with two parties (a Design note, not a defect).
 
 **Commit:** this one.
+
+## 895. PS-6 US-17: D-US PART ONE ASKED - THE USA'S ELECTION NIGHT, SENT BY CODE OVER THE CHANNEL (2026-10-22)
+
+**What changed:** Elias asked Code to connect to Design directly (2026-10-22); US-17 was sent from this session, not handed to him. `Tools/us_states_table.pl` (new, on `Tools/pl_districts_table.pl`'s pattern) generates the 51 jurisdictions (electors, House seats, the Senate races of the day, the record's calls) and Maine's and Nebraska's districts from the catalog, asserting 51, 538 and 435, and writes the table into the ask. The ask (`PoliSim-captures/design/D-US_ask/ASK.md`): the night's three contests asked together, the data Code holds and does not, nine questions. Zipped by `Tools/ask_zip.pl` (the manifest checked inside the zip before sending). Installed at the head of `CLAUDE_DESIGN_ASSET_REQUEST.md`; the D-US row reads ASKED.
+
+**Evidence:** `DesignSync` finalize_plan + write_files (10 files) into `uploads/D-US_ask/`; the claude-design listing returns all ten at the local sizes (ASK.md 10662, the zip 1591499, the manifest 775, the CSVs 1778 and 390, the PNGs byte-sized as sent). A chat "D-US part one - the USA's election night (from Code, 2026-10-22)" posted in the project's panel. One fact corrected before sending: six at-large states, not seven (read off the generated table). `doc895` for the documents.
+
+**What stays manual:** Design's model answers when prompted in the app; the connector writes files and a chat, it cannot start Design's turn. The return is pulled by Code from the project.
+
+**Commit:** this one.
