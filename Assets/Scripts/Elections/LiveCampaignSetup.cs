@@ -257,6 +257,8 @@ namespace PoliSim.Elections
                 if (!WorldClock.TryNextPollingDay(CountryId.USA, start, out DateTime polling)) { note = "no campaign is staged for the USA: no polling day follows its start"; return false; }
                 cal = CampaignCalendar.FromWorldStart(polling, start);
             }
+            // PS-6 US-27 (DECLARED, the conservative reading, asked): the staged campaign is the presidential one; a midterm stages none
+            if (UsCongressElection.IsMidterm(cal.ElectionDate)) { note = "no campaign is staged for a US midterm: the campaign staged is the presidential one"; return false; }
             if (!NationalElection.TryCompatibility(CountryId.USA, out string[] modelKeys, out double[] modelCompatibility, out double[] modelPrior, out double[] modelLoyalty, played, cal.ElectionDate))   // PS-6 US-26: the history rolled forward to the polling day, as the count's prediction reads it
             {
                 note = "no campaign is staged for the USA on the vote model: it has no fitted electorate or no two-election history";

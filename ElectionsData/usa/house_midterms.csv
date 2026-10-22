@@ -5,7 +5,8 @@
 # initial election results (seats_vacant: the vacancies its footnote puts in the row's total; seats_total: the row's own). clerk_*: the Clerk
 # of the House's recapitulation, its Total row - each party's own ballot line, and the row's Total - where the statistics carry text, else -.
 # vs_*: SECONDARY (Vital Statistics on Congress, Table 2-2), each party's percentage of all votes and the change of the major-party vote
-# from the last election with its direction, as printed; never read by R-US20's rule. senate_*: the Senate SITTING on the election's day
+# from the last election with its direction, as printed; never read by R-US20's rule - but since US-27 (2026-10-22) the data R-US20 (b)'s
+# live midterm term is fitted on (Tools/us_midterm_fit.pl; PROVISIONAL, asked). senate_*: the Senate SITTING on the election's day
 # (senate_day, 2 U.S.C. 7) - the Congress the election two years before chose (senate_congress), by [SEN-DIV]'s line for it, or the line
 # holding the day where the page prints the Congress in periods (senate_period, from..to, else -): its Democrats, Republicans, other parties
 # and seats, and its majority party as printed (senate_majority), held to the line's counts (senate_how: seats - more seats; seats-with-caucus -

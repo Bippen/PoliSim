@@ -515,7 +515,9 @@ namespace PoliSim.EditorTools
                         // (R-US1 (a), US-2, as the block was preregistered) - and a world now elects its own Congress on 5 Nov 2024. The staging sets that count aside
                         // the day it is held, before anything is seated from it, so the record's 119th sits as the block requires; whether R-US20's world should read
                         // the game's own House instead is an amendment for Elias (US-27 builds the midterm on the game's chambers)
-                        if (usa.UsCongressElections.Count > 0) { result.CongressSetAside = usa.UsCongressElections[0].Line; usa.UsCongressElections.Clear(); }
+                        // PS-6 US-27: the world's own midterm count on 3 Nov 2026 (its last day) is set aside the same way - the block reads the poll it builds itself,
+                        // never the game's count - and the line kept is 5 Nov 2024's, the first count set aside
+                        if (usa.UsCongressElections.Count > 0) { result.CongressSetAside ??= usa.UsCongressElections[0].Line; usa.UsCongressElections.Clear(); }
                         bool heldNow = Holds(usa.ParliamentSeats);
                         if (heldNow && !heldBefore) { result.HouseChanges++; if (result.HouseFrom == DateTime.MinValue) { result.HouseFrom = sim.CurrentDate; } }
                         heldBefore = heldNow;

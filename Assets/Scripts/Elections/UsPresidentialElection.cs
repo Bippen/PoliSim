@@ -134,12 +134,33 @@ namespace PoliSim.Elections
         public static DateTime OathDayAfter(DateTime pollingDay) => new DateTime(pollingDay.Year + 1, 1, 20);
 
         /// <summary>PS-6 US-8 - 3 U.S.C. §21(1) (<see cref="DayBasis"/>): the presidential polling day of <paramref name="year"/>, the Tuesday next after the first
-        /// Monday in November. Which years hold one - every fourth from the election of record - is `WorldClock.TryNextPollingDay`'s.</summary>
+        /// Monday in November. Which years hold one - every fourth from the election of record - is <see cref="IsPresidentialYear"/>'s; PS-6 US-27: the same
+        /// Tuesday of every even year is the House's (2 U.S.C. §7, [USC-7]), which `WorldClock.TryNextPollingDay` offers.</summary>
         public static DateTime PresidentialDay(int year)
         {
             var first = new DateTime(year, 11, 1);
             int toMonday = ((int)DayOfWeek.Monday - (int)first.DayOfWeek + 7) % 7;
             return first.AddDays(toMonday + 1);
+        }
+
+        /// <summary>PS-6 US-27: whether <paramref name="year"/> elects a president - 3 U.S.C. §21(1)'s "every fourth year succeeding every election of a President",
+        /// the cycle anchored on the election of record (`WorldClock.LatestElectionDay`, NARA's [EC-DATES]) in both directions. The other even years are the
+        /// midterms (`UsCongressElection.IsMidterm`).</summary>
+        public static bool IsPresidentialYear(int year) => ((year - WorldClock.LatestElectionDay(CountryId.USA).Year) % 4 + 4) % 4 == 0;
+
+        /// <summary>PS-6 US-27: the next presidential polling day on or after <paramref name="onOrAfter"/> - the country's polling days (`WorldClock.TryNextPollingDay`,
+        /// every even year since US-27) less the midterms; false where the country elects no president by electors.</summary>
+        public static bool TryNextPresidentialDay(CountryId id, DateTime onOrAfter, out DateTime day)
+        {
+            day = DateTime.MinValue;
+            if (!ElectsIn(id)) { return false; }
+            DateTime from = onOrAfter.Date;
+            for (int guard = 0; guard < 4 && WorldClock.TryNextPollingDay(id, from, out DateTime next); guard++)
+            {
+                if (IsPresidentialYear(next.Year)) { day = next; return true; }
+                from = next.AddDays(1);
+            }
+            return false;
         }
 
         /// <summary>PS-6 US-8 - 3 U.S.C. §7 (`govinfo_uscode_3_7.html`): the electors "shall meet and give their votes on the first Tuesday after the second Wednesday
@@ -652,10 +673,11 @@ namespace PoliSim.Elections
             return standing;
         }
 
-        /// <summary>Whether <paramref name="date"/> is the country's presidential polling day (`WorldClock.TryNextPollingDay`) and the game has not counted it yet.</summary>
+        /// <summary>Whether <paramref name="date"/> is the country's presidential polling day (`WorldClock.TryNextPollingDay` in a presidential year - PS-6 US-27: a
+        /// midterm's day counts no president) and the game has not counted it yet.</summary>
         public static bool IsPollingDay(Country country, DateTime date)
         {
-            if (country?.UsPresidentialElections == null || !ElectsIn(country.Id) || !WorldClock.TryNextPollingDay(country.Id, date, out DateTime day) || day != date.Date) { return false; }
+            if (country?.UsPresidentialElections == null || !ElectsIn(country.Id) || !WorldClock.TryNextPollingDay(country.Id, date, out DateTime day) || day != date.Date || !IsPresidentialYear(day.Year)) { return false; }
             foreach (Contest c in country.UsPresidentialElections) { if (c.PollingDay.Date == date.Date) { return false; } }
             return true;
         }

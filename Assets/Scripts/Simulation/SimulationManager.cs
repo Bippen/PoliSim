@@ -5727,6 +5727,7 @@ namespace PoliSim.Simulation
             if (country == null) { return; }
             Elections.UsPresidentialElection.Contest chosen = Elections.UsPresidentialElection.HoldHouseChoice(country, CurrentDate, out string choice);
             if (chosen != null) { Debug.Log($"PRESIDENTIAL: {country.Id} - the House's choice: {choice}"); }   // its own line only - the count's was logged on its polling day
+            if (Elections.UsCongressElection.IsMidterm(CurrentDate)) { HoldUsMidtermCount(country); return; }   // PS-6 US-27: a midterm counts no president
             if (!Elections.UsPresidentialElection.IsPollingDay(country, CurrentDate)) { return; }
             if (TryPlayerCampaignShares(out Dictionary<string, double> poll))
             {
@@ -5759,6 +5760,38 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>
+        /// PS-6 US-27 (`docs/specs/USA_STAGE_PLAN.md` US-27; 2 U.S.C. §7): THE MIDTERM COUNT on the day loop - on a midterm polling day, not yet counted, the House
+        /// and the Senate class whose terms expire, with no presidential count (<see cref="Elections.UsCongressElection.HoldMidterm"/>; R-US20 (b)'s fitted term on
+        /// the president's party), seated on 3 January (<see cref="SeatTheRecordOnItsDate"/>). No campaign runs for a midterm (DECLARED, the conservative reading -
+        /// <see cref="CurrentCampaignCalendar"/>), so the count reads the live prediction as the presidential count does with no campaign: the government's record
+        /// over its term shifting it (§752), on the history rolled forward (US-26), the day's counted poll (<see cref="Elections.UsPresidentialElection.CountedPoll"/>).
+        /// The player's country alone, as every US count; the forks reach it through the same day loop. A day it cannot be made holds nothing and says so.
+        /// </summary>
+        private void HoldUsMidtermCount(Country country)
+        {
+            if (!Elections.UsCongressElection.IsPollingDay(country, CurrentDate)) { return; }
+            // the second review's M1 (measurement only; before the count's own prediction, so the regional readout left is the count's): the record's components in V
+            // beside the fitted term - the overlap I4's revisit clause governs
+            string recordWords = IsCounterfactual ? null : Elections.UsCongressElection.RecordInVWords(country, CurrentDate, Elections.UsCongressElection.PresidentsPartyOn(country), Elections.UsCongressElection.MidtermTermPoints);
+            if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))
+            {
+                Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest standing)
+                    ? $"CONGRESS: {country.Id} - no prediction could be made on the midterm {CurrentDate:yyyy-MM-dd}; nothing is counted, and the House the game elected on {standing.PollingDay:yyyy-MM-dd} sits on"
+                    : $"CONGRESS: {country.Id} - no prediction could be made on the midterm {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's House and Senate stay seated by date");
+                return;
+            }
+            Elections.UsCongressElection.Contest midterm = Elections.UsCongressElection.HoldMidterm(country, CurrentDate, Elections.UsPresidentialElection.CountedPoll(country, CurrentDate, poll),
+                Elections.UsPresidentialElection.TieSeedOf(SimulationRandom.MasterSeed, CurrentDate.Year), out string why);
+            if (midterm != null) { Debug.Log($"CONGRESS: {country.Id} - {midterm.Line}" + (recordWords != null ? "; " + recordWords : string.Empty)); }
+            else
+            {
+                Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest sitting)
+                    ? $"CONGRESS: {country.Id} - no midterm count on {CurrentDate:yyyy-MM-dd}: {why}; the House the game elected on {sitting.PollingDay:yyyy-MM-dd} sits on, and the Senate as seated"
+                    : $"CONGRESS: {country.Id} - no midterm count on {CurrentDate:yyyy-MM-dd}: {why}; the record's House and Senate stay seated by date");
+            }
+        }
+
         /// <summary>PS-6 US-30: the player's finished campaign's final shares by party key, where the campaign ran up to TODAY's polling day (the election
         /// controller's own condition for a parliamentary count: the record dated today, the run still held); false otherwise. The shares are the run's own,
         /// in its setup's party order - the vote model's keys for a staged country.</summary>
@@ -5784,10 +5817,13 @@ namespace PoliSim.Simulation
             return ordinary;
         }
 
-        /// <summary>The campaign window and calendar for the current day: the run-up and the eight weeks before the player's country's next polling day, or null where none is modelled.</summary>
+        /// <summary>The campaign window and calendar for the current day: the run-up and the eight weeks before the player's country's next polling day, or null where none is modelled.
+        /// PS-6 US-27 (DECLARED, the conservative reading, asked): none for a US midterm - US-30 staged the presidential campaign on the 51 jurisdictions, and nothing
+        /// rules a campaign for the House and a Senate class, so a midterm runs no run-up and no campaign and is counted on the prediction.</summary>
         private Elections.CampaignCalendar? CurrentCampaignCalendar()
         {
             if (!TryPlayerPollingDay(out System.DateTime pollingDay)) { return null; }
+            if (PlayerCountryId.HasValue && Elections.UsCongressElection.ElectsIn(PlayerCountryId.Value) && Elections.UsCongressElection.IsMidterm(pollingDay)) { return null; }
             // PS-3i (§636): an extra election's campaign runs from its decision to its polling day - no run-up, the campaign proper at most eight weeks (a premise).
             if (pollingDay == _extraElectionDate)
             {

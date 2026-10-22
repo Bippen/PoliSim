@@ -16,7 +16,8 @@ namespace PoliSim.EditorTools
     /// any date is the right one; Germany's snap (§697) is on record with nothing after it, Poland's 2023 day then each term's by Art. 98 ust. 2's
     /// window (§767, Elias's ruling D3 - the rule held against the record's 2015, 2019 and 2023 from the Sejm's own term dates), the USA's presidential day
     /// of 3 U.S.C. §21(1) every fourth year from 5 November 2024 (PS-6 US-8 - the assertion inverted as §697's was for Germany; the US count's own path is
-    /// `UsPresidentialElectionDiagnostic`'s), and the countries before their stages offer none (their chambers hold as of record, §618's ruling 4); an election on a polling
+    /// `UsPresidentialElectionDiagnostic`'s) and, since PS-6 US-27, the midterm days of 2 U.S.C. §7 between them - every even year (the midterm's own path is
+    /// `UsMidtermDiagnostic`'s), and the countries before their stages offer none (their chambers hold as of record, §618's ruling 4); an election on a polling
     /// day reads that election's declarations; the reference for 13 September 2026 is K-1's sourced result and for 2030 there is none. Then the
     /// game's own path: a manager opened on Sweden's start reads the run-up's first day at once, its run-up begins, its campaign runs up to polling
     /// day, and `PollingDayToday` is raised on 2026-09-13 - the 238th day - and on no other day of the first year. The epoch is restored afterwards.
@@ -82,13 +83,25 @@ namespace PoliSim.EditorTools
                     "Poland's basis cites the PKW's notice [PKW-SEN-2023], Art. 98 ust. 2's window, the 10th term's sitting [API-TERM] and the first-sitting day, ruled (E2, §773)");
                 // PS-6 US-8 (inverted, as §697 did for Germany): the USA's presidential day of 3 U.S.C. §21(1) - the Tuesday next after the first Monday in
                 // November, every fourth year from the election of record - held against the record's own two days (2024's, NARA's; 2020's, the House's
-                // row, the same Tuesday by 2 U.S.C. §7); the midterm days are US-27's, so 2026 is not one of the game's
+                // row, the same Tuesday by 2 U.S.C. §7). PS-6 US-27 MOVED THESE EXPECTATIONS (legitimately: the plan's US-27 adds every even year, 2 U.S.C. §7
+                // [USC-7]): the day after 2024's is now the 2026 midterm, and after 2028 the 2030 midterm; the presidential days alone are held by
+                // UsPresidentialElection.TryNextPresidentialDay just below
                 Next(CountryId.USA, WorldClock.StartDate(CountryId.USA), new DateTime(2024, 11, 5), "the USA's start");
                 Next(CountryId.USA, new DateTime(2024, 11, 5), new DateTime(2024, 11, 5), "the USA's polling day itself");
-                Next(CountryId.USA, new DateTime(2024, 11, 6), new DateTime(2028, 11, 7), "the day after - 1 Nov 2028 is a Wednesday, so the first Monday is the 6th");
-                Next(CountryId.USA, new DateTime(2026, 1, 18), new DateTime(2028, 11, 7), "2026 - its midterm is not the game's polling day (US-27's)");
-                Next(CountryId.USA, new DateTime(2028, 11, 8), new DateTime(2032, 11, 2), "after 2028 - 1 Nov 2032 is a Monday, so the Tuesday after it is the 2nd");
+                Next(CountryId.USA, new DateTime(2024, 11, 6), new DateTime(2026, 11, 3), "the day after - the 2026 midterm (US-27; 1 Nov 2026 is a Sunday, so the first Monday is the 2nd)");
+                Next(CountryId.USA, new DateTime(2026, 1, 18), new DateTime(2026, 11, 3), "2026 - its midterm is the game's polling day (US-27)");
+                Next(CountryId.USA, new DateTime(2026, 11, 4), new DateTime(2028, 11, 7), "after the midterm - 1 Nov 2028 is a Wednesday, so the first Monday is the 6th");
+                Next(CountryId.USA, new DateTime(2028, 11, 8), new DateTime(2030, 11, 5), "after 2028 - the 2030 midterm (US-27)");
                 Next(CountryId.USA, new DateTime(2020, 1, 1), new DateTime(2020, 11, 3), "an earlier date reads the same cycle");
+                Next(CountryId.USA, new DateTime(2021, 1, 1), new DateTime(2022, 11, 8), "an earlier midterm reads the same cycle (2022's, the House's day of record)");
+                bool hasNext = UsPresidentialElection.TryNextPresidentialDay(CountryId.USA, new DateTime(2024, 11, 6), out DateTime nextPresident);
+                bool hasAfter = UsPresidentialElection.TryNextPresidentialDay(CountryId.USA, new DateTime(2028, 11, 8), out DateTime afterThat);   // both read before the message, which prints them
+                Check(hasNext && nextPresident == new DateTime(2028, 11, 7)
+                      && hasAfter && afterThat == new DateTime(2032, 11, 2)
+                      && UsCongressElection.IsMidterm(new DateTime(2026, 11, 3)) && !UsCongressElection.IsMidterm(new DateTime(2028, 11, 7)),
+                    F("the USA's presidential days alone: after 5 Nov 2024 {0:yyyy-MM-dd}, after 2028 {1:yyyy-MM-dd} (1 Nov 2032 is a Monday, so the Tuesday after it is the 2nd); 2026 a midterm, 2028 not", nextPresident, afterThat));
+                Check(WorldClock.ElectionDayOf(CountryId.USA, ElectionVintage.Usa2022) == new DateTime(2022, 11, 8) && WorldClock.PollingDayBasis(CountryId.USA).Contains("[USC-7]"),
+                    "the midterm rule against the record: 2022's House election of record fell on 8 Nov 2022, the rule's day; the basis quotes 2 U.S.C. §7 [USC-7]");
                 Check(UsPresidentialElection.PresidentialDay(2024) == WorldClock.LatestElectionDay(CountryId.USA) && UsPresidentialElection.PresidentialDay(2020) == WorldClock.ElectionDayOf(CountryId.USA, ElectionVintage.Usa2020),
                     F("the USA's rule against the record: {0:yyyy-MM-dd} (NARA's [EC-DATES] {1:yyyy-MM-dd}) and {2:yyyy-MM-dd} (the 2020 election of record, {3:yyyy-MM-dd})", UsPresidentialElection.PresidentialDay(2024),
                         WorldClock.LatestElectionDay(CountryId.USA), UsPresidentialElection.PresidentialDay(2020), WorldClock.ElectionDayOf(CountryId.USA, ElectionVintage.Usa2020)));

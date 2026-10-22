@@ -41251,3 +41251,18 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **What stays manual:** Design's model answers when prompted in the app; the connector writes files and a chat, it cannot start Design's turn. The return is pulled by Code from the project.
 
 **Commit:** this one.
+
+## 896. PS-6 US-27: MIDTERMS - EVERY EVEN YEAR ON THE USA'S CALENDAR, THE HOUSE AND THE SENATE CLASS COUNTED WITH R-US20 (b)'S FITTED TERM, THE GAME'S 120TH SEATED ON 3 JAN 2027 (2026-10-22)
+
+**What changed** (an implementer on `wave/us27`: df2acb7f, 986afc63, its subagent review's fixes bb1b04a0, the second review's fixes c6cdd7ac; squash-merged on §895):
+- `WorldClock.TryNextPollingDay` steps the USA every two years (2 U.S.C. §7); `UsPresidentialElection.IsPresidentialYear` / `TryNextPresidentialDay`; the nominee pick and the president's next-of-record moved to the presidential day.
+- `UsCongressElection.CountMidterm` / `HoldMidterm` on the day loop: the House by R-US18 (b) at the poll's V plus R-US20 (b)'s fitted term on the president's party (`Tools/us_midterm_fit.pl`, `Generated.UsMidtermTerm`, `UsMidtermFitCheck`: n 20, 1946-2022, mean -3.755 pp, 95 % [-4.966, -2.544], PROVISIONAL on Vital Statistics), its base the game's own last House count; the Senate's class 2 on the presidential derivation at that vote; the 120th seated 3 January. No midterm campaign (DECLARED). The 2026 reference BILLED.
+- The record's components in the midterm's poll printed beside the term on the CONGRESS line (measurement only, the second review's M1, for I4's revisit).
+- IMGUI: the president, nominee and Congress rows read their own next votes; the desk calendar names what is counted. Save format 52 (a v51 save refused).
+- The integrator: the checks registered (`UsMidtermFitCheck` cheap and documents, `UsMidtermDiagnostic` simulation), `PollingDayDiagnostic` made to compile (CS0165: a local assigned inside a short-circuit read in the message - the branch's gate had not caught it), two hand-built possessives on a value reworded (MetaTextCheck), the US card's midterm and Congress blocks regenerated.
+
+**Evidence:** `Reviews/2026-10-22_us27_midterm_review.md` (the implementer's subagent), `Reviews/2026-10-22_us27_review2.md` (independent: no H; M1, M2 asked; L1, L4 fixed in c6cdd7ac), `Reviews/2026-10-22_us27_round2_reading.md` (the integrator's reading of c6cdd7ac: measurement only, skipped in counterfactuals, the count's readout left last); ledger rows s896. `UsMidtermDiagnostic` PASS: polling days 2024-11-05, 2026-11-03, 2028-11-07, 2030-11-05; the midterm House of 2026-11-03 REP 222 DEM 213 at V 0.5112 (the poll's 0.5488 with the term -3.755 on REP, against the game's 2024 0.5080); class 2 REP 21 DEM 12; the 120th seated 2027-01-03; THE MIDTERM'S SWING +0.33 points (+4.08 without the term), seats 222 -> 222; the record in the poll economy +0.6133, approval -0.0100, fiscal +3.4699, together +4.0732. `UsMidtermFitCheck` PASS. `n896` 22 of 23 (MetaTextCheck red: the two possessives) then `n896b` 5 of 5 after the rewording; `slrt896` 12 scenarios clean; `sim896` 71 of 71 (the sentinel at aloopsal2: no dump moves); `stage896` the play saves at format 52; the bars re-run on the reworded tree: see the commit.
+
+**Asked:** I4's revisit (with the measured components), the fit's data, the term on the Senate too, no midterm campaign, the president's party, the 2026 Ohio and Florida specials (`docs/ASKS_FOR_ELIAS.md`).
+
+**Commit:** this one.

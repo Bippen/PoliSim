@@ -379,3 +379,12 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 - **The US-9 card.** The card measures on the University of Florida's eligible-voter counts and July 2026 salience, while play stages on the Census Bureau's CVAP and Gallup's August 2024 wave. Re-cut the card to play's inputs?
 - **The war chest in dollars.** The price table stays the model's one table, BILLED. Source it (FEC spending), or keep it for now?
 - **No election night.** The USA's count lands at once until US-34 builds a night. Acceptable meanwhile?
+
+### US-27 midterms (§896): the asks it ends in
+
+- **I4's revisit clause has fired.** I4 said "revisit against (c) once approval reaches the vote", and approval reached the vote at §879. Measured on the first US game's 2026 midterm: the government's record moves the poll +4.07 points toward the president's party (economy +0.61, approval -0.01, fiscal +3.47), and the fitted midterm term (-3.76) almost cancels it, so the House stays 222-213. Because the term is the record's average midterm swing, it may count part of what the live record already counts. Keep it as built, hold the approval term at zero on a midterm, or move to R-US20 (c)?
+- **The fit's data.** The term is fitted on Vital Statistics' vote swings, 1946-2022 (n 20, mean -3.76 points), because the Clerk's text starts in 2002. The Clerk alone gives n 6, mean -3.98. Keep the 1946 series (PROVISIONAL), switch to the Clerk's, or have the Clerk's 1944-1996 page images transcribed?
+- **The term moves the Senate class too**, as one national vote. Or the House only?
+- **No campaign in a midterm year.** Only presidential years stage the US campaign. Should a midterm get one?
+- **The president's party** is the party of whoever holds the presidency on polling day. The record's rule uses the last presidential winner; the two differ only after a successor of the other party.
+- **Ohio's and Florida's 2026 Senate specials** are not in the catalog, so their appointees simply stay. Source them?

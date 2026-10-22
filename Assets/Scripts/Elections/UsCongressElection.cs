@@ -40,10 +40,20 @@ namespace PoliSim.Elections
     /// rest) and the game's Senate seats replace the record's for the seats it elected; the seats it did not elect stay the record's, by date (R-US1 (a):
     /// "whatever the game does not elect is seated on its record's dates") - so US-2's Congress of record retires chamber by chamber, seat by seat in the
     /// Senate, as the game elects them (`WorldClock.RecordSeatsChamber(Country, DateTime)`).</description></item>
+    /// <item><description><b>PS-6 US-27 - the midterms</b> (`docs/specs/USA_STAGE_PLAN.md` US-27; 2 U.S.C. §7, [USC-7]: "The Tuesday next after the 1st Monday
+    /// in November, in every even numbered year"): on a polling day between two presidential years (<see cref="IsMidterm"/>) the day loop counts the House and
+    /// the class whose terms expire, and no president (<see cref="CountMidterm"/>). The midterm is R-US20 RULED (b) (Elias's ruling I4, `COMPLETED.md` §856):
+    /// a FITTED term on the president's party (<see cref="MidtermTermPoints"/>, `Generated.UsMidtermTerm` - the mean midterm swing of the record since 1946
+    /// with n and its interval), added to the poll's two-party V before R-US18 (b)'s count, so its seat change is the count's own; the base the House swings
+    /// from as on every count (the game's own latest House count, else the record's latest). DECLARED (put to Elias): the term moves the day's one national
+    /// vote, so the Senate class reads it too - each state's share derived from the presidential derivation at that vote (R-US19 (a)'s "presidential-derived
+    /// share", with no presidential count that night: the game's own previous presidential states where it has counted one, R-US24 (b)'s form, else the
+    /// record's latest); the president's party is the party of the president governing on the polling day. The midterm's own result is BILLED until the
+    /// Clerk's statistics of its year are saved - never estimated.</description></item>
     /// </list>
     /// Not modelled, stated: third-party winners (two sides, R-US10 (a)); runoffs, ranked-choice transfers and Georgia's majority rule; specials the record
-    /// does not hold; party switches; a delayed oath (every winner sits from 3 January, R-US18's NY-22 convention); the Senate's own vacancies after the record's
-    /// reach.
+    /// does not hold (2026's Ohio and Florida specials for the seats vacated in January 2025 are not in the catalog - their appointees of record stand, G6);
+    /// party switches; a delayed oath (every winner sits from 3 January, R-US18's NY-22 convention); the Senate's own vacancies after the record's reach.
     /// </summary>
     public static class UsCongressElection
     {
@@ -82,15 +92,24 @@ namespace PoliSim.Elections
             public string Cascade;
         }
 
-        /// <summary>One Congress election the game held - kept with the country (<see cref="Country.UsCongressElections"/>), so a save carries it (format 49).</summary>
+        /// <summary>One Congress election the game held - kept with the country (<see cref="Country.UsCongressElections"/>), so a save carries it (format 49;
+        /// PS-6 US-27's fields, format 52).</summary>
         public sealed class Contest
         {
-            /// <summary>The polling day - the presidential day (3 U.S.C. §21(1); 2 U.S.C. §§1 and 7).</summary>
+            /// <summary>The polling day - every even year's (2 U.S.C. §§1 and 7), a presidential year's the presidential day (3 U.S.C. §21(1)) too.</summary>
             public DateTime PollingDay;
             /// <summary>The day the new Congress is seated: noon on the 3rd of January after the polling day (the Twentieth Amendment §2).</summary>
             public DateTime Convenes;
-            /// <summary>V(T): the poll's REP share of REP+DEM on the day, before E1's factors (R-US15 (a)).</summary>
+            /// <summary>V(T): the REP share of REP+DEM the House count stood on, before E1's factors (R-US15 (a)) - the poll's in a presidential year; PS-6 US-27: in
+            /// a midterm the poll's moved by the midterm term (<see cref="PollV"/>, <see cref="TermPoints"/>). The next count's base and the history rolled
+            /// forward read it (US-26).</summary>
             public double V;
+            /// <summary>PS-6 US-27: the poll's own REP share of REP+DEM on the day, before the midterm term (equal to <see cref="V"/> in a presidential year).</summary>
+            public double PollV;
+            /// <summary>PS-6 US-27: the midterm term applied, in points of the two-party vote on the president's party (<see cref="MidtermTermPoints"/> on the day;
+            /// 0 in a presidential year), and that party (null in a presidential year, or where no president governed).</summary>
+            public double TermPoints;
+            public string PresidentsParty;
             /// <summary>V(B) and B: the base House election swung from - the record's (US-5's own-line vote of its year) or the game's own count.</summary>
             public double VBase;
             public int BaseYear;
@@ -137,6 +156,65 @@ namespace PoliSim.Elections
         /// <summary>The Twentieth Amendment §2 (`archives_amendments_11-27.html`, [EX-AM]): "such meeting shall begin at noon on the 3d day of January" - the
         /// Congress elected on <paramref name="pollingDay"/> is seated on the 3rd of January after it (US-2's House of record convenes on the same day).</summary>
         public static DateTime ConvenesAfter(DateTime pollingDay) => new DateTime(pollingDay.Year + 1, 1, 3);
+
+        /// <summary>PS-6 US-27: whether <paramref name="day"/> is a midterm polling day - 2 U.S.C. §7's Tuesday of an even year that elects no president
+        /// (<see cref="UsPresidentialElection.IsPresidentialYear"/>).</summary>
+        public static bool IsMidterm(DateTime day) =>
+            day.Year % 2 == 0 && !UsPresidentialElection.IsPresidentialYear(day.Year) && UsPresidentialElection.PresidentialDay(day.Year) == day.Date;
+
+        /// <summary>PS-6 US-27 - R-US20 RULED (b) (Elias's ruling I4): the midterm term on the president's party, in points of the two-party House vote - FITTED,
+        /// `Generated.UsMidtermTerm`'s mean (written by `Tools/us_midterm_fit.pl` from US-13's record; `UsMidtermFitCheck` refits it), never typed.</summary>
+        public static double MidtermTermPoints => Generated.UsMidtermTerm.MeanPoints;
+
+        /// <summary>PS-6 US-27 (DECLARED): the president's party on a polling day - the party of the presidency governing that day (the record's or the game's
+        /// president, an acting one included); null where no presidency governs.</summary>
+        public static string PresidentsPartyOn(Country country) =>
+            country?.Government != null && country.Government.Kind == WorldClock.ExecutiveKind.Presidency ? country.Government.PmParty : null;
+
+        /// <summary>PS-6 US-27: a REP share of REP+DEM <paramref name="v"/> moved by <paramref name="termPoints"/> points on <paramref name="presidentsParty"/>
+        /// (its own share up by the term, the other's down by it); unmoved where that party is neither REP nor DEM.</summary>
+        public static double WithMidtermTerm(double v, string presidentsParty, double termPoints) =>
+            presidentsParty == "REP" ? v + termPoints / 100.0 : presidentsParty == "DEM" ? v - termPoints / 100.0 : v;
+
+        /// <summary>PS-6 US-27: what a US polling day counts, in the view's words - the president, the House and the Senate class in a presidential year; the House
+        /// and the class in a midterm, no president.</summary>
+        public static string ContestsWords(DateTime pollingDay)
+        {
+            int cls = ClassUp(pollingDay.Year);
+            string senate = cls > 0 ? "THE SENATE'S CLASS " + cls.ToString(CultureInfo.InvariantCulture) : "A SENATE CLASS";
+            return IsMidterm(pollingDay) ? "A MIDTERM: THE HOUSE AND " + senate + ", NO PRESIDENT" : "THE PRESIDENT, THE HOUSE AND " + senate;
+        }
+
+        /// <summary>
+        /// PS-6 US-27 (the second review's M1; MEASUREMENT ONLY - nothing counted reads it): the government's record in the midterm's poll split by component, in
+        /// points of V (REP's share of REP+DEM) - each component alone against the poll with no record: the economic vote, q15's approval term and q13's fiscal
+        /// term (`EconomicVote.RecordPartsOverTerm`), and all three together (the poll the count reads, before the fitted term). Printed beside the fitted term so
+        /// the overlap I4's revisit clause governs ("Revisit against (c) once approval reaches the vote") is measured on every run. False where no prediction can be made.
+        /// </summary>
+        public static bool TryRecordInV(Country country, DateTime day, out double economy, out double approval, out double fiscal, out double total)
+        {
+            economy = approval = fiscal = total = double.NaN;
+            if (country == null) { return false; }
+            EconomicVote.RecordParts parts = EconomicVote.RecordPartsOverTerm(country, day);
+            double V(IReadOnlyDictionary<string, double> shift) =>
+                NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, shift, on: day, played: country) ? TwoPartyV(poll) : double.NaN;
+            double none = V(null);
+            if (double.IsNaN(none)) { return false; }
+            economy = 100.0 * (V(parts.Economy) - none);
+            approval = 100.0 * (V(parts.Approval) - none);
+            fiscal = 100.0 * (V(parts.Fiscal) - none);
+            total = 100.0 * (V(parts.Total) - none);
+            return true;
+        }
+
+        /// <summary>The words of <see cref="TryRecordInV"/> beside the fitted term, for the midterm's CONGRESS line and the diagnostic.</summary>
+        public static string RecordInVWords(Country country, DateTime day, string presidentsParty, double termPoints)
+        {
+            if (!TryRecordInV(country, day, out double e, out double a, out double f, out double t)) { return "the record's components in the poll: no prediction"; }
+            return string.Format(CultureInfo.InvariantCulture,
+                "the record in the poll, in points of REP's two-party V: economy {0:+0.0000;-0.0000}, approval {1:+0.0000;-0.0000}, fiscal {2:+0.0000;-0.0000}, together {3:+0.0000;-0.0000}; beside the fitted term {4:+0.0000;-0.0000} on {5} (I4's revisit clause: the term is the record's unconditional mean swing)",
+                e, a, f, t, presidentsParty == "DEM" ? -termPoints : termPoints, presidentsParty ?? "no president's party");
+        }
 
         /// <summary>Whether the game has held a Congress election in this country on or before <paramref name="date"/>.</summary>
         public static bool Held(Country country, DateTime date)
@@ -484,6 +562,7 @@ namespace PoliSim.Elections
             {
                 PollingDay = pollingDay.Date, Convenes = ConvenesAfter(pollingDay), V = v, VBase = vBase, BaseYear = baseYear, BaseOfRecord = baseOfRecord,
                 House = house, SenateClass = ClassUp(pollingDay.Year), Senate = senate,
+                PollV = v, TermPoints = 0.0,   // PS-6 US-27: a presidential year carries no midterm term
             };
             foreach (StateHouse s in house) { contest.HouseRep += s.Rep; contest.HouseDem += s.Dem; }
             int delegationsR = 0, delegationsD = 0;
@@ -495,14 +574,112 @@ namespace PoliSim.Elections
             return contest;
         }
 
-        /// <summary>Whether <paramref name="date"/> is a Congress polling day the game has still to count in this country - the presidential day (US-16: the
-        /// midterms are US-27's).</summary>
+        /// <summary>
+        /// PS-6 US-27: the national vote a midterm counts, in <see cref="ElectoralCollege.ShareDemocrat"/>'s order as fractions of the poll's whole: every other
+        /// party's share as the poll gives it, and REP's and DEM's two-party split at <paramref name="v"/> (the poll's V moved by the midterm term). Null where
+        /// the poll gives no positive REP and DEM share.
+        /// </summary>
+        public static double[] MidtermNational(IReadOnlyDictionary<string, double> poll, double v)
+        {
+            if (poll == null || double.IsNaN(v) || !poll.TryGetValue("REP", out double r) || !poll.TryGetValue("DEM", out double d) || double.IsNaN(r) || double.IsNaN(d) || r <= 0.0 || d <= 0.0) { return null; }
+            double total = 0.0;
+            foreach (KeyValuePair<string, double> kv in poll) { if (!double.IsNaN(kv.Value) && kv.Value > 0.0) { total += kv.Value; } }
+            double two = (r + d) / total;
+            return new[] { two * (1.0 - v), two * v, 1.0 - two };
+        }
+
+        /// <summary>
+        /// PS-6 US-27 (DECLARED): the states a midterm's Senate class reads - R-US19 (a)'s presidential-derived share with no presidential count that night: the
+        /// presidential derivation at the midterm's national vote <paramref name="national"/>, on the game's own previous presidential count's states where it has
+        /// counted one (<see cref="ElectoralCollege.FromGameStates"/>, R-US24 (b)'s form, the states re-derived from the stored contest), else on the catalog's
+        /// latest presidential election before the day (<see cref="ElectoralCollege.FromNationalShares(int, int, double[], int, out ElectoralCollege.StateCall[], out double)"/>,
+        /// R-US14 (a)); the electors those in force, as a count of that day would read them. Null, with the reason, where the catalog holds no election to swing
+        /// from. <paramref name="basis"/> names the states' source.
+        /// </summary>
+        public static ElectoralCollege.StateCall[] MidtermStates(Country country, DateTime pollingDay, double[] national, int tieSeed, out string basis, out string why)
+        {
+            basis = null;
+            why = null;
+            if (national == null) { why = "the poll gives no national vote to derive the states from"; return null; }
+            if (!ElectoralCollege.TryPriorYear(pollingDay.Year, out int prior) || !ElectoralCollege.TryElectorsYear(pollingDay.Year, out int inForce))
+            {
+                why = "the catalog holds no presidential election before " + pollingDay.Year.ToString(CultureInfo.InvariantCulture) + " to derive the states from";
+                return null;
+            }
+            UsPresidentialElection.Contest previous = UsPresidentialElection.PreviousCount(country, pollingDay.Date);
+            ElectoralCollege.StateCall[] previousStates = previous != null ? UsPresidentialElection.StatesOf(country, previous) : null;
+            ElectoralCollege.StateCall[] states;
+            if (previousStates != null)
+            {
+                ElectoralCollege.FromGameStates(previousStates, prior, inForce, national, tieSeed, out states, out double _);
+                basis = string.Format(CultureInfo.InvariantCulture, "each state's share derived from the game's own presidential count of {0:yyyy-MM-dd}", previous.PollingDay);
+            }
+            else
+            {
+                ElectoralCollege.FromNationalShares(prior, inForce, national, tieSeed, out states, out double _);
+                basis = string.Format(CultureInfo.InvariantCulture, "each state's share derived from the presidential election of record of {0}", prior);
+            }
+            return states;
+        }
+
+        /// <summary>
+        /// PS-6 US-27 - THE MIDTERM COUNT of <paramref name="pollingDay"/> (2 U.S.C. §7): no presidential count; the House by R-US18 (b) and the class whose terms
+        /// expire (and the day's specials of record) by R-US19 (c) over (a), both at the poll's V moved by R-US20 (b)'s fitted term on the president's party
+        /// (<see cref="MidtermTermPoints"/>, <see cref="WithMidtermTerm"/>), the Senate on <see cref="MidtermStates"/>. The House's base is every count's - the
+        /// game's own latest House count, else the record's latest House election. Pure but for the Senate cascade's reads of the country and the president's
+        /// party read from it. Null, with the reason, where it cannot be made.
+        /// </summary>
+        public static Contest CountMidterm(Country country, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, int tieSeed, out string why)
+        {
+            if (country == null || !ElectsIn(country.Id)) { why = "the game elects no Congress there"; return null; }
+            if (!IsMidterm(pollingDay)) { why = "not a midterm polling day"; return null; }
+            double pollV = TwoPartyV(poll);
+            string party = PresidentsPartyOn(country);
+            double term = party == "REP" || party == "DEM" ? MidtermTermPoints : 0.0;
+            double v = WithMidtermTerm(pollV, party, term);
+            Contest prior = null;
+            if (country.UsCongressElections != null) { foreach (Contest c in country.UsCongressElections) { if (c.PollingDay < pollingDay.Date && (prior == null || c.PollingDay > prior.PollingDay)) { prior = c; } } }
+            List<StateHouse> house = CountHouse(pollingDay.Date, v, prior, out int baseYear, out double vBase, out bool baseOfRecord, out why);
+            if (house == null) { return null; }
+            ElectoralCollege.StateCall[] states = MidtermStates(country, pollingDay.Date, MidtermNational(poll, v), tieSeed, out string statesBasis, out why);
+            if (states == null) { return null; }
+            List<SenateSeat> senate = CountSenate(country, pollingDay.Date, states, tieSeed, out why);
+            if (senate == null) { return null; }
+            var contest = new Contest
+            {
+                PollingDay = pollingDay.Date, Convenes = ConvenesAfter(pollingDay), V = v, VBase = vBase, BaseYear = baseYear, BaseOfRecord = baseOfRecord,
+                House = house, SenateClass = ClassUp(pollingDay.Year), Senate = senate, PollV = pollV, TermPoints = term, PresidentsParty = party,
+            };
+            foreach (StateHouse s in house) { contest.HouseRep += s.Rep; contest.HouseDem += s.Dem; }
+            int delegationsR = 0, delegationsD = 0;
+            foreach (StateHouse s in house) { if (s.Rep > s.Dem) { delegationsR++; } else if (s.Dem > s.Rep) { delegationsD++; } }
+            contest.Line = string.Format(CultureInfo.InvariantCulture,
+                "the midterm House of {0:yyyy-MM-dd}: REP {1}, DEM {2} of {3} (R-US18 (b), V {4:0.0000} - the poll's {5:0.0000} with the midterm term {6:+0.0000;-0.0000} pp on {7} (R-US20 (b), FITTED, n {8}) - against the {10:0.0000} of {9}, {11}); delegations REP {12}, DEM {13}, tied {14}; the Senate's class {15} and {16} special(s): REP {17}, DEM {18} (R-US19 (c) over (a), {19}); no presidential count; seated {20:yyyy-MM-dd}",
+                contest.PollingDay, contest.HouseRep, contest.HouseDem, HouseMembers, v, pollV, term, party ?? "no president's party", Generated.UsMidtermTerm.N, baseYear, vBase, baseOfRecord ? "of record" : "the game's own",
+                delegationsR, delegationsD, house.Count - delegationsR - delegationsD, contest.SenateClass, senate.FindAll(s => s.Class != contest.SenateClass).Count, contest.SenateOf("REP"), contest.SenateOf("DEM"),
+                statesBasis, contest.Convenes);
+            return contest;
+        }
+
+        /// <summary>Whether <paramref name="date"/> is a Congress polling day the game has still to count in this country - every even year's (2 U.S.C. §7,
+        /// `WorldClock.TryNextPollingDay`; PS-6 US-27: the midterms with the presidential years).</summary>
         public static bool IsPollingDay(Country country, DateTime date)
         {
             if (country?.UsCongressElections == null || !ElectsIn(country.Id)) { return false; }
-            if (UsPresidentialElection.PresidentialDay(date.Year) != date.Date) { return false; }
+            if (!WorldClock.TryNextPollingDay(country.Id, date.Date, out DateTime day) || day != date.Date) { return false; }
             foreach (Contest c in country.UsCongressElections) { if (c.PollingDay.Date == date.Date) { return false; } }
             return true;
+        }
+
+        /// <summary>PS-6 US-27: the day loop's midterm count - on a midterm polling day, once, on <paramref name="poll"/> (the day's counted poll) with the day's
+        /// tie seed; the contest added to the country and returned, null otherwise with the reason.</summary>
+        public static Contest HoldMidterm(Country country, DateTime date, IReadOnlyDictionary<string, double> poll, int tieSeed, out string why)
+        {
+            if (country?.UsCongressElections == null) { why = "the country carries no list of Congress elections"; return null; }
+            if (!IsPollingDay(country, date) || !IsMidterm(date)) { why = "not a midterm polling day the game has still to count"; return null; }
+            Contest contest = CountMidterm(country, date.Date, poll, tieSeed, out why);
+            if (contest != null) { country.UsCongressElections.Add(contest); }
+            return contest;
         }
 
         /// <summary>The day loop's count: on the presidential polling day, once, after the presidential count <paramref name="presidential"/> of the same day,

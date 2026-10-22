@@ -684,7 +684,7 @@ namespace PoliSim.UI
             bool elect = UsPresidentialElection.TryPresidentElect(_playerCountry, today, out UsPresidentialElection.Contest electContest);
             bool houseAhead = last.Contingent && !last.Decided() && last.Delegations.Count == 0 && last.CountedOn.Date >= today.Date;
             bool undecided = !last.Decided() && !houseAhead;
-            bool next = WorldClock.TryNextPollingDay(country, today.AddDays(1), out System.DateTime nextDay);
+            bool next = UsPresidentialElection.TryNextPresidentialDay(country, today.AddDays(1), out System.DateTime nextDay);   // PS-6 US-27: the president's next vote, never a midterm's
 
             GUIStyle caption = DeskCaption(9.5f, PoliSimTheme.TextPrimary);
             GUIStyle muted = DeskCaption(9.5f, PoliSimTheme.TextMuted);
@@ -786,7 +786,7 @@ namespace PoliSim.UI
                 slip.Add(record.ToString());
                 slip.Add("THE GAME'S ELECTION IS ITS OWN - THIS IS THE RECORD");
             }
-            if (next && !elect && !houseAhead) { slip.Add("NEXT POLLING DAY " + DeskDay(nextDay)); }
+            if (next && !elect && !houseAhead) { slip.Add("NEXT PRESIDENTIAL POLLING DAY " + DeskDay(nextDay)); }   // PS-6 US-27: a midterm comes between
             slip.Add(UsCongressElection.Held(_playerCountry, today) ? "THE HOUSE AND THE SENATE SEATS UP WERE ELECTED ON THE SAME DAY - SEE CONGRESS" : "THE HOUSE AND THE SENATE SEATS UP ARE ELECTED ON THE SAME DAY");
             book.Anchors["uspresident"] = slip;
             DrawRowRule(row);
@@ -845,19 +845,39 @@ namespace PoliSim.UI
             Rect stamp = RowChipRectFrom(x, row, DeskDay(last.Convenes), padBoard: 6f);
             DrawRowChip(stamp, DeskDay(last.Convenes), ChipFace.Outline);
             x = stamp.xMax + StatsUnit(10f);
+            // PS-6 US-27: once the Congress sits, the next Congress vote - every even year's, a midterm's included (2 U.S.C. §7)
+            System.DateTime nextDay = System.DateTime.MinValue;
+            bool nextVote = seated && WorldClock.TryNextPollingDay(country, today.AddDays(1), out nextDay);
+            if (nextVote)
+            {
+                Words("NEXT VOTE", muted);
+                Rect nextStamp = RowChipRectFrom(x, row, DeskDay(nextDay), padBoard: 6f);
+                DrawRowChip(nextStamp, DeskDay(nextDay), ChipFace.Outline);
+                x = nextStamp.xMax + StatsUnit(10f);
+            }
             SlipAnchor(new Rect(row.x, row.y, x - row.x, row.height), "uscongress");
 
             string Short(string key) => PartySystems.ShortName(country, key).ToUpperInvariant();
             string N(int n) => n.ToString(CultureInfo.InvariantCulture);
-            var slip = new SlipContent("CONGRESS · ELECTED " + DeskDay(last.PollingDay));
+            bool midterm = UsCongressElection.IsMidterm(last.PollingDay);   // PS-6 US-27
+            var slip = new SlipContent("CONGRESS · ELECTED " + DeskDay(last.PollingDay) + (midterm ? " · A MIDTERM" : string.Empty));
             int delegationsR = 0, delegationsD = 0;
             foreach (UsCongressElection.StateHouse s in last.House) { if (s.Rep > s.Dem) { delegationsR++; } else if (s.Dem > s.Rep) { delegationsD++; } }
             slip.Add("THE HOUSE: " + Short("REP") + " " + N(last.HouseRep) + " · " + Short("DEM") + " " + N(last.HouseDem) + " OF " + N(UsCongressElection.HouseMembers)
                 + " · STATE DELEGATIONS " + Short("REP") + " " + N(delegationsR) + " · " + Short("DEM") + " " + N(delegationsD) + " · TIED " + N(last.House.Count - delegationsR - delegationsD));
             slip.Add("EACH STATE MOVED FROM " + (last.BaseOfRecord ? "THE RECORD'S " : "THE GAME'S OWN ") + N(last.BaseYear) + " HOUSE VOTE BY THE NATIONAL SWING IN THE POLL");
+            if (midterm && !string.IsNullOrEmpty(last.PresidentsParty))
+            {
+                // PS-6 US-27 - R-US20 (b): the fitted term, with its n and its interval, as the ruling asks them printed
+                slip.Add("THE MIDTERM: " + UiFormat.Number((float)last.TermPoints, 2) + " POINTS ON THE PRESIDENT'S PARTY, " + Short(last.PresidentsParty)
+                    + " - THE RECORD'S MEAN MIDTERM SWING, " + N(PoliSim.Elections.Generated.UsMidtermTerm.From) + "-" + N(PoliSim.Elections.Generated.UsMidtermTerm.To)
+                    + " (" + N(PoliSim.Elections.Generated.UsMidtermTerm.N) + " MIDTERMS, 95 % INTERVAL " + UiFormat.Number((float)PoliSim.Elections.Generated.UsMidtermTerm.LowerPoints, 2)
+                    + " TO " + UiFormat.Number((float)PoliSim.Elections.Generated.UsMidtermTerm.UpperPoints, 2) + ")");
+            }
             int specials = last.Senate.FindAll(s => s.Class != last.SenateClass).Count;
             slip.Add("THE SENATE SEATS UP: " + Short("REP") + " " + N(last.SenateOf("REP")) + " · " + Short("DEM") + " " + N(last.SenateOf("DEM")) + " · CLASS " + N(last.SenateClass)
-                + (specials > 0 ? " AND " + N(specials) + (specials == 1 ? " SPECIAL ELECTION" : " SPECIAL ELECTIONS") : string.Empty) + " · EACH STATE'S SHARE FROM THE PRESIDENTIAL COUNT THAT NIGHT");
+                + (specials > 0 ? " AND " + N(specials) + (specials == 1 ? " SPECIAL ELECTION" : " SPECIAL ELECTIONS") : string.Empty)
+                + (midterm ? " · EACH STATE'S SHARE DERIVED FROM THE NATIONAL VOTE - NO PRESIDENT IS ELECTED AT A MIDTERM" : " · EACH STATE'S SHARE FROM THE PRESIDENTIAL COUNT THAT NIGHT"));
             if (seated && senate != null)
             {
                 var parts = new List<string>();
@@ -885,6 +905,8 @@ namespace PoliSim.UI
                 }
                 slip.Add("THE GAME'S ELECTION IS ITS OWN - THIS IS THE RECORD");
             }
+            else if (last.PollingDay > WorldClock.RecordDate && System.Linq.Enumerable.Any(WorldClock.Chambers(country), c => c.ElectionDay == last.PollingDay.Date)) { slip.Add("THE RECORD HOLDS NO RESULT OF THIS ELECTION - ITS RETURNS ARE NOT YET CERTIFIED"); }   // PS-6 US-27: the 2026 reference is billed, never estimated
+            if (nextVote) { slip.Add("NEXT VOTE " + DeskDay(nextDay) + " - " + UsCongressElection.ContestsWords(nextDay)); }
             book.Anchors["uscongress"] = slip;
             DrawRowRule(row);
             GUILayout.Space(StatsUnit(10f));
@@ -929,7 +951,7 @@ namespace PoliSim.UI
                 _usNomineePicks = picks;
                 _usNominee = null;
                 _usNomineeChoices = null;
-                if (WorldClock.TryNextPollingDay(country, today.AddDays(1), out System.DateTime next))
+                if (UsPresidentialElection.TryNextPresidentialDay(country, today.AddDays(1), out System.DateTime next))   // PS-6 US-27: a nominee stands on a presidential day
                 {
                     _usNomineeDay = next;
                     _usNominee = UsTermLimit.NomineeOf(_playerCountry, next, party);

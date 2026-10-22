@@ -638,7 +638,7 @@ namespace PoliSim.Elections
             refused = null;
             if (country == null || !UsPresidentialElection.ElectsIn(country.Id)) { refused = "the country chooses no president by electors"; return false; }
             if (string.IsNullOrEmpty(party) || party != country.PlayerPartyAbbrev) { refused = "only the player's party picks its nominee - an AI party fields its default"; return false; }
-            if (!WorldClock.TryNextPollingDay(country.Id, pollingDay.Date, out DateTime day) || day != pollingDay.Date) { refused = "that day is not a presidential polling day"; return false; }
+            if (!UsPresidentialElection.TryNextPresidentialDay(country.Id, pollingDay.Date, out DateTime day) || day != pollingDay.Date) { refused = "that day is not a presidential polling day"; return false; }   // PS-6 US-27: a midterm's day is not one
             if (country.UsPresidentialElections != null && country.UsPresidentialElections.Exists(c => c.PollingDay.Date == pollingDay.Date)) { refused = "that polling day is counted"; return false; }
             Nominee nominee = NomineeOf(country, pollingDay, party);
             if (nominee == null) { refused = "the field of that day is the record's"; return false; }

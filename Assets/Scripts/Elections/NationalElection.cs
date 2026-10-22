@@ -432,6 +432,13 @@ namespace PoliSim.Elections
                     return record;
             }
         }
+        /// <summary>PS-6 US-27: <see cref="NotHeldReason(CountryId)"/> for a polling day - a US midterm's own words (no president is elected that day); every other
+        /// day and country the reason as before.</summary>
+        public static string NotHeldReasonOn(CountryId country, System.DateTime pollingDay) =>
+            country == CountryId.USA && UsCongressElection.IsMidterm(pollingDay)
+                ? "No president is elected at a midterm: the House and the Senate seats up are elected state by state; the new Congress is seated on the third of January, and until then the House and Senate in office sit."
+                : NotHeldReason(country);
+
         /// <summary>Plain English, per country, for a screen. Never a shrug.</summary>
         public static string NotHeldReason(CountryId country)
         {

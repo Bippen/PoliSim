@@ -92,7 +92,7 @@ namespace PoliSim.Simulation
             // keeps the formation's rounds and the reference row off the USA - DECLARED) and its reason says where the chamber was elected
             if (WorldClock.RecordSeatsChamber(id))
             {
-                string reason = NationalElection.NotHeldReason(id);
+                string reason = NationalElection.NotHeldReasonOn(id, CurrentDate);   // PS-6 US-27: a midterm's own words
                 var notCounted = new ElectionRecord
                 {
                     Turn = CurrentTurn,
@@ -104,8 +104,9 @@ namespace PoliSim.Simulation
                 country.ElectionHistory.Add(notCounted);
                 if (!IsCounterfactual)
                 {
-                    Debug.Log(UsCongressElection.Held(country, CurrentDate)
-                        ? $"ELECTION: {id} on {CurrentDate:yyyy-MM-dd} - the House and the Senate seats up were elected on the day loop beside the president (the CONGRESS line), seated on 3 January; this path records the day without seats"
+                    Debug.Log(country.UsCongressElections != null && country.UsCongressElections.Exists(c => c.PollingDay.Date == CurrentDate.Date)   // PS-6 US-27: a count of TODAY, not any count held before
+                        ? $"ELECTION: {id} on {CurrentDate:yyyy-MM-dd} - the House and the Senate seats up were elected on the day loop " + (UsCongressElection.IsMidterm(CurrentDate) ? "at the midterm, with no presidential count" : "beside the president")   // PS-6 US-27
+                          + " (the CONGRESS line), seated on 3 January; this path records the day without seats"
                         : $"ELECTION: the chamber is not elected for {id} on {CurrentDate:yyyy-MM-dd} - {reason}");
                 }
                 return notCounted;

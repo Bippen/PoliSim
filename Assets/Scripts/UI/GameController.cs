@@ -3526,7 +3526,11 @@ namespace PoliSim.UI
             // only the most recently resolved one is ever held (transiently, cleared on dismissal).
             if (_simulationManager.TryPlayerPollingDay(out System.DateTime pollingDay))
             {
-                Add(pollingDay, "Polling day", UiPalette.SystemArea.Political);
+                // PS-6 US-27: a US polling day says what it counts - the midterm the House and a Senate class, a presidential year the president with them
+                string counted = UsCongressElection.ElectsIn(PlayerCountryId) && pollingDay != _simulationManager.ExtraElectionDate
+                    ? (UsCongressElection.IsMidterm(pollingDay) ? " - midterm: the House and a Senate class" : " - the president, the House and a Senate class")
+                    : string.Empty;
+                Add(pollingDay, "Polling day" + counted, UiPalette.SystemArea.Political);
             }
             // §770 (PS-5 item C4): the presidential rounds - the next first vote, and a run-off a first vote has called
             if (_playerCountry != null && PresidentialElection.TryNextFirstVote(_playerCountry, _simulationManager.CurrentDate, out System.DateTime firstVote, out _, out _))

@@ -24,7 +24,7 @@ namespace PoliSim.Elections
     /// the latest table only where it is missing (<see cref="SeatingDeviation"/>).</para>
     ///
     /// <para><b>Every election on a country's calendar inside a run is simulated once that country's model exists</b>; until then its chamber
-    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); §762: Poland's 15 October 2023 the same way; PS-6 US-8: the USA's presidential day, 3 U.S.C. §21(1)'s, from 5 November 2024 every fourth year; the countries before their stages offer no polling day yet.</para>
+    /// and head of state hold as of record, and its view says so. PS-2 / CL-4 (§619): Sweden's calendar is modelled - `TryNextPollingDay`, the statute's second Sunday of September every fourth year - and the game votes on it. §697: Germany's snap polling day, 23 February 2025, is on it too (and nothing after it); §762: Poland's 15 October 2023 the same way; PS-6 US-8: the USA's presidential day, 3 U.S.C. §21(1)'s, from 5 November 2024 every fourth year, and since PS-6 US-27 the midterm days between (2 U.S.C. §7, every even year); the countries before their stages offer no polling day yet.</para>
     /// </summary>
     public static class WorldClock
     {
@@ -240,7 +240,7 @@ namespace PoliSim.Elections
                 lines.Add("NEXT OF RECORD: THE HOUSE ELECTED " + ViewDay(house.ElectionDay) + " · SEATED " + ViewDay(house.Convened));
             }
             if (seatsExecutive && TryNextGovernmentOfRecord(id, date, out GovernmentOfRecord head) && TryPresidentOfRecord(id, head.From, out string name, out _)
-                && !(gameVotesFirst && UsPresidentialElection.ElectsIn(id) && TryNextPollingDay(id, date, out DateTime polling) && polling < head.From))
+                && !(gameVotesFirst && UsPresidentialElection.TryNextPresidentialDay(id, date, out DateTime polling) && polling < head.From))   // PS-6 US-27: the president's day, not a midterm's
             {
                 string party = head.Cabinet != null && head.Cabinet.Length > 0 ? " · " + PartySystems.ShortName(id, head.Cabinet[0]).ToUpperInvariant() : string.Empty;
                 lines.Add("NEXT OF RECORD: " + name.ToUpperInvariant() + party + " · TAKES OFFICE " + ViewDay(head.From));
@@ -628,7 +628,7 @@ namespace PoliSim.Elections
         public static string PollingDayBasis(CountryId id) =>
             id == CountryId.Sweden ? "regeringsformen 3 kap. 3 § - every fourth year [RF-3-3]; vallagen 1 kap. 3 § - the second Sunday of September [VL-1-3] (sweden/election_calendar.md)"
             : id == CountryId.Germany ? "the snap election's day, 23 Feb 2025, set with the dissolution of 27 Dec 2024 - BGBl. 2024 I Nr. 435 [BWL-WT25] (germany/records_by_date.md); no later polling day on record"   // §697
-            : id == CountryId.USA ? "3 U.S.C. §21(1) as the Electoral Count Reform Act of 2022 wrote it - \"election day\" means \"the Tuesday next after the first Monday in November, in every fourth year succeeding every election of a President and Vice President\" (GPO, govinfo_uscode_3_21.html; usa/president_returns.md) - 5 Nov 2024 the latest of record [EC-DATES], the presidential days only: the midterm days are not yet the game's"   // PS-6 US-8 (the midterm days are US-27's)
+            : id == CountryId.USA ? "3 U.S.C. §21(1) as the Electoral Count Reform Act of 2022 wrote it - \"election day\" means \"the Tuesday next after the first Monday in November, in every fourth year succeeding every election of a President and Vice President\" (GPO, govinfo_uscode_3_21.html; usa/president_returns.md) - 5 Nov 2024 the latest of record [EC-DATES]; and 2 U.S.C. §7 - \"The Tuesday next after the 1st Monday in November, in every even numbered year\" (GPO, govinfo_uscode_2_7_election_day.html) [USC-7] (usa/records_by_date.md): every even year elects the House and a Senate class, a presidential year the president with them, a midterm no president"   // PS-6 US-8; PS-6 US-27 the midterm days
             : id == CountryId.Poland ? "the 10th Sejm's election day, 15 Oct 2023 - the PKW's notices (Dz.U. 2023 poz. 2234; the Senate's poz. 2235, held: \"przeprowadzonych w dniu 15 października 2023 r.\") [PKW-SEN-2023] (poland/records_by_date.md); then Konstytucja Art. 98 ust. 2 - a non-working day within the 30 days before the fourth anniversary of the term's first sitting [TK-KONST] - its first Sunday, Elias's ruling D3 (2019 and 2023 took it; 2015 the exception, on record); the 10th term first sat on 13 Nov 2023 [API-TERM], so 17 Oct 2027; a term the game elects first sits on the 30th day after its polling day (Art. 109 ust. 2's last day - ruled, E2); the principle for both of Poland's votes, ruled with it: the most recent practice"   // §762, §767, §773
             : null;
 
@@ -659,8 +659,10 @@ namespace PoliSim.Elections
         /// sitting of record, 13 Nov 2023 (17 Oct 2027), every later one from the first sitting its own election gives (<see cref="PolandFirstSittingAfterDays"/>).
         /// Premise, stated: every term runs its four years - a shortened term (Art. 98 ust. 3-5) is not modelled. PS-6 US-8: <b>the USA's</b> - the
         /// presidential day of 3 U.S.C. §21(1) (<see cref="UsPresidentialElection.PresidentialDay"/>), the cycle anchored on the election of record, 5 November
-        /// 2024 (<see cref="LatestElectionDay"/>, NARA's [EC-DATES]), every fourth year in both directions as Sweden's; the midterm days join at US-27, so a
-        /// US game votes on its presidential days only - the House stays the record's, by date (R-US1 (a)).
+        /// 2024 (<see cref="LatestElectionDay"/>, NARA's [EC-DATES]), every fourth year in both directions as Sweden's. PS-6 US-27: and the midterm days - 2 U.S.C.
+        /// §7's same Tuesday "in every even numbered year" ([USC-7]), the House's and a Senate class's - so a US game votes every second year from the same anchor:
+        /// a presidential year (<see cref="UsPresidentialElection.IsPresidentialYear"/>) counts the president, the House and the class on one day, a midterm the
+        /// House and the class (`UsCongressElection.IsMidterm`); the next presidential day alone is <see cref="UsPresidentialElection.TryNextPresidentialDay"/>.
         /// </summary>
         public static bool TryNextPollingDay(CountryId id, DateTime onOrAfter, out DateTime pollingDay)
         {
@@ -668,8 +670,8 @@ namespace PoliSim.Elections
             if (id == CountryId.USA)
             {
                 int every = LatestElectionDay(id).Year;
-                while (UsPresidentialElection.PresidentialDay(every) < onOrAfter.Date) { every += 4; }
-                while (every - 4 >= 1 && UsPresidentialElection.PresidentialDay(every - 4) >= onOrAfter.Date) { every -= 4; }
+                while (UsPresidentialElection.PresidentialDay(every) < onOrAfter.Date) { every += 2; }
+                while (every - 2 >= 1 && UsPresidentialElection.PresidentialDay(every - 2) >= onOrAfter.Date) { every -= 2; }
                 pollingDay = UsPresidentialElection.PresidentialDay(every);
                 return true;
             }
