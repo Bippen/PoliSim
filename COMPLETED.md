@@ -41193,3 +41193,11 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 - Review rows s890 for `SimulationManager.cs`, `SimulationManager.PlayerElection.cs`, `PolicyImpactLedger.cs`, `PolicyImpactLedgerDiagnostic.cs` and `PlayerLeverLedgerDiagnostic.cs`.
 
 **Bars** (tier SIMULATION + UI): `n890` 15 named on the first run - 14 clean, `ForkAnswersDiagnostic`'s cases 2 and 6 with no teeth (at seed 777 the Speaker asks M first, so a case assuming S asked had nothing to test) - the harness made to plant its own preconditions at a9a2d30a, then `n890b` 1 of 1 (all nine cases); the rest of `n890`: PolicyImpactLedger, ForkDayTick, PlayerLeverLedger, NoPolicyShadowCarry, UiLeverVerbCheck, UsDocket, Presidency, PolishPresidentialStart, UsMajorityReconciliation, the text guards, ChamberVerdictCache, DeadState, ReviewLedger; `slrt890` 12 of 12; the cheap bar `cheap890` 128 of 128; the documents bar `doc890` 22 of 22; the simulation bar `sim890` 69 of 69 (PolicyImpactLedgerDiagnostic and ForkAnswersDiagnostic enrolled), the sentinel holding on **aloopsal2**; the dry film `drys890` Sweden@1280x720, 155 measured, 0 failed (scope row s890).
+
+## 891. PS-6 US-20, FINISHED AFTER SP-7b: THE HELD POLISH BUDGET'S YEAR KEYED ON POLAND'S PROCEDURE, NOT ITS VETO (2026-10-20, COMMITTED 2026-10-22)
+
+**What changed** (an implementer on `wave/us20`, bc93cd3a, applied on §890 with no conflict): `SimulationManager.PassageYear`'s held-budget branch reads `WorldClock.StatutePartsAreActs` in place of `PresidentialVeto.Applies`, as SP-7b's hold and finish already did; `WorldClock.StatutePartsAreActs`'s summary names SP-7b's readers and what stays on the veto; `GovernmentBudgetBillDiagnostic` pins that the two predicates select the same countries. Behaviour-neutral by construction: both select Poland alone. The plan's Built line and the feature row ("4. US-16 →") updated.
+
+**Evidence:** `Reviews/2026-10-20_us20_review.md` (the integrator's reading, no defect), ledger row s891; `n891` 7 of 7 named; `cheap891` suite exiting 0 (375 s); `sim891` simulation group exiting 0 (1011 s, the sentinel at aloopsal2); `drys891` Poland dry film exiting 0; `doc891` the document batch for the plan and feature-list lines. The bars ran on 2026-10-20 on the staged tree, untouched until this commit.
+
+**Commit:** this one.

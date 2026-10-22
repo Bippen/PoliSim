@@ -6704,7 +6704,7 @@ namespace PoliSim.Simulation
         {
             BudgetBill government = GetPendingBudgetBill(countryId);
             DocketEntry desk = government?.Docket ?? (government?.ActsHeld != null && government.ActsHeld.Count > 0 ? government.ActsHeld[0] : null);
-            if (desk != null) { return Elections.PresidentialVeto.Applies(countryId) ? desk.PresentedOn.Year : DocketLawDay(countryId, desk).Year; }   // SP-7b (the review's L1): a held Polish budget applies with its adoption year (FinishPolishBudget);   // PS-6 US-21b: voted and on the player-president's desk - law on that day at the latest (DECLARED: the year it is law unanswered); US-22c: its own deadline where it carries one
+            if (desk != null) { return Elections.WorldClock.StatutePartsAreActs(countryId) ? desk.PresentedOn.Year : DocketLawDay(countryId, desk).Year; }   // SP-7b (the review's L1): a held Polish budget applies with its adoption year (FinishPolishBudget) - US-20: keyed on Poland's procedure, as the held budget's day is, not on its veto;   // PS-6 US-21b: voted and on the player-president's desk - law on that day at the latest (DECLARED: the year it is law unanswered); US-22c: its own deadline where it carries one
             if (government != null && government.DaysRemaining > 0) { return CurrentDate.AddDays(government.DaysRemaining).Year; }
             if (bill != null && bill.DaysRemaining > 0) { return CurrentDate.AddDays(bill.DaysRemaining).Year; }
             System.DateTime tabled = CurrentDate;

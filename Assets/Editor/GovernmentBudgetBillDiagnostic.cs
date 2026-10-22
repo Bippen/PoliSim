@@ -104,12 +104,17 @@ namespace PoliSim.EditorTools
                 Check(WorldClock.BudgetProcedureOf(CountryId.USA) == WorldClock.BudgetProcedure.UsCongress && WorldClock.CongressActs(CountryId.USA) && !WorldClock.StatutePartsAreActs(CountryId.USA),
                     "PS-6 US-22: the USA's procedure is the US Congress's - its budget voted as Congress's acts, in no Polish act");
                 var actsWhere = new System.Collections.Generic.List<string>(); var weighsWhere = new System.Collections.Generic.List<string>(); var congressWhere = new System.Collections.Generic.List<string>();
+                var vetoWhere = new System.Collections.Generic.List<string>();
                 foreach (CountryId c in (CountryId[])Enum.GetValues(typeof(CountryId)))
                 {
                     if (WorldClock.StatutePartsAreActs(c)) { actsWhere.Add(c.ToString()); Check(PresidentialVeto.Applies(c), F("{0}: its statute acts go to a President whose veto the game runs", c)); }
                     if (WorldClock.WeighsAlternative(c)) { weighsWhere.Add(c.ToString()); }
                     if (WorldClock.CongressActs(c)) { congressWhere.Add(c.ToString()); }
+                    if (PresidentialVeto.Applies(c)) { vetoWhere.Add(c.ToString()); }
                 }
+                // US-20 (SP-7b's held budget and its year re-keyed too): every reader moved off the veto selects the countries it selected - no change in play
+                Check(string.Join(",", vetoWhere) == string.Join(",", actsWhere),
+                    F("US-20: the split's readers select the countries Poland's veto rule did - statute acts in {0}, the rule in {1}", string.Join(",", actsWhere), string.Join(",", vetoWhere)));
                 Check(string.Join(",", actsWhere) == "Poland" && string.Join(",", weighsWhere) == "Sweden" && string.Join(",", congressWhere) == "USA",
                     F("statute acts in {0}; an alternative weighed in {1}; US acts in {2}", string.Join(",", actsWhere), string.Join(",", weighsWhere), string.Join(",", congressWhere)));
                 // Poland's own behaviour, unchanged: its government's budget before the chamber, an alternative refused in the words it always had

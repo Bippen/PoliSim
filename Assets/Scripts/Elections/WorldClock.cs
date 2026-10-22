@@ -469,8 +469,9 @@ namespace PoliSim.Elections
         public static bool CongressActs(CountryId id) => BudgetProcedureOf(id) == BudgetProcedure.UsCongress;
 
         /// <summary>US-20: a budget's statute parts travel as acts of their own (Poland's procedure). Every reader of the split keys on this - the budget act,
-        /// the statute acts, the Finance partner's tax act, the Budget page, the pending cards, the film's staging - never on the President's veto, which is
-        /// <see cref="PresidentialVeto.Applies"/>'s alone.</summary>
+        /// the statute acts, the Finance partner's tax act, the Budget page, the pending cards, the film's staging, and (SP-7b) a budget held on the
+        /// player-president's docket, its finish and its year - never on the President's veto, which is <see cref="PresidentialVeto.Applies"/>'s alone (the
+        /// draw, the docket's own rule, `ChamberVerdicts.Veto`).</summary>
         public static bool StatutePartsAreActs(CountryId id) => BudgetProcedureOf(id) == BudgetProcedure.SejmBudgetActAndStatutes;
 
         /// <summary>US-20: the chamber weighs a tabled alternative against the government's budget (Sweden's frame decision); everywhere else an alternative
