@@ -189,17 +189,26 @@ namespace PoliSim.Elections
         public static double[] NegotiatingPower(int[] seats)
         {
             int n = seats.Length;
-            if (n > 20) { throw new ArgumentException("the pivotality sweep is 2^n - not for a chamber of parties this size"); }
+            // SEAT-1 review M1: the sweep runs over the SEATED parties only, a seatless one taking 0. Exact, not an approximation: a party with no seat is
+            // never pivotal, and for every other party it doubles the pivot count and the total alike, so each share (a * 2^k) / (b * 2^k) = a / b - the
+            // counts are integers far below 2^53 and a power-of-two scale divides out exactly in IEEE doubles, so every share is bit-identical to the full
+            // sweep's. The cap counts the seated parties, the ones the sweep walks.
+            var seated = new List<int>(n);
+            for (int p = 0; p < n; p++) { if (seats[p] != 0) { seated.Add(p); } }
+            int m = seated.Count;
+            if (m > 20) { throw new ArgumentException("the pivotality sweep is 2^n over the seated parties - not for a chamber of this many"); }
             int majority = Majority(seats);
             var swings = new double[n];
+            var held = new int[m];
+            for (int i = 0; i < m; i++) { held[i] = seats[seated[i]]; }
             double total = 0.0;
-            for (int p = 0; p < n; p++)
+            for (int i = 0; i < m; i++)
             {
-                int othersMask = ((1 << n) - 1) & ~(1 << p);
+                int othersMask = ((1 << m) - 1) & ~(1 << i);
                 for (int sub = othersMask; ; sub = (sub - 1) & othersMask)
                 {
-                    int without = Seats(seats, sub);
-                    if (without < majority && without + seats[p] >= majority) { swings[p] += 1.0; total += 1.0; }
+                    int without = Seats(held, sub);
+                    if (without < majority && without + held[i] >= majority) { swings[seated[i]] += 1.0; total += 1.0; }
                     if (sub == 0) { break; }
                 }
             }
@@ -429,9 +438,12 @@ namespace PoliSim.Elections
             // who supports whom; that is what lets pass 2 ask "would this party rather have a
             // different government?" without the question chasing its own tail.
             var baseScore = new double[all + 1];
-            for (int cabinet = 1; cabinet <= all; cabinet++)
+            // §683: a party with no seat is not a candidate at all - neither admissible nor "blocked". SEAT-1 review M1: so only the subsets of the seated
+            // parties are walked, in ascending mask order (the next submask of `seatedMask` above c is (c - seatedMask) & seatedMask) - exactly the masks
+            // the old walk over 1..all kept past its seatless test, in the same order, which the later unstable sort of the cabinets reads.
+            int seatedMask = all & ~seatless;
+            for (int cabinet = (0 - seatedMask) & seatedMask; cabinet != 0; cabinet = (cabinet - seatedMask) & seatedMask)
             {
-                if ((cabinet & seatless) != 0) { continue; }   // §683: not a candidate at all - neither admissible nor "blocked"
                 if (SplitsJoint(cabinet, joint)) { continue; }   // §705: one parliamentary group sits whole or not at all - never a candidate split
                 int cabinetSeats = CoalitionMath.Seats(seats, cabinet);
                 if (TryFindInternalRedLine(cabinet, n, lines, out RedLine broken))

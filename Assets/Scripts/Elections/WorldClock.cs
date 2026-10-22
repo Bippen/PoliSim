@@ -18,8 +18,10 @@ namespace PoliSim.Elections
     /// sitting, with the government then in office.</para>
     ///
     /// <para><b>The chamber of record is seated AS ELECTED</b> - the election's lists, for every country; a mid-term club or group is a
-    /// stated deviation in the record, never seated. A chamber whose per-list table is not yet sourced (Italy's 2018 Camera, France's
-    /// 2022 Assembly by nuance - E-47) is reported as such: the country seats its latest sourced table and its view says so. PS-6 US-2c (Elias's ruling J3,
+    /// stated deviation in the record, never seated. A chamber whose table is not on disk is reported as such: the country seats its latest sourced
+    /// table and its view says so (<see cref="SeatingDeviation"/>). SEAT-1 (Elias's ruling J2, §869) retired E-47's two: Italy's 2018 Camera is seated by its
+    /// groups at first constitution, DECLARED (no official source assigns its single-seat winners to lists; <see cref="SeatingDeclaration"/>), and France's
+    /// 2022 Assembly by the Ministry's nuances. PS-6 US-2c (Elias's ruling J3,
     /// 2026-10-19): a date seats the chamber of record for that date where its table is on disk - on a 2022 or 2023 date the USA's 117th or 118th House - and
     /// the latest table only where it is missing (<see cref="SeatingDeviation"/>).</para>
     ///
@@ -366,7 +368,7 @@ namespace PoliSim.Elections
                 case CountryId.Italy:
                     return new[]
                     {
-                        new ChamberOfRecord(ElectionVintage.Italy2018, D(2018, 3, 4), D(2018, 3, 23), D(2022, 10, 13), "[ST-18] [GV-LEG]; per-list seats NOT SOURCED (E-47; by group at formation they are, returns_2022.md's re-verification)"),
+                        new ChamberOfRecord(ElectionVintage.Italy2018, D(2018, 3, 4), D(2018, 3, 23), D(2022, 10, 13), "[ST-18] [GV-LEG]; SEAT-1 (J2): by its groups at first constitution, 20 Apr 2018, DECLARED - dati.camera.it's adhesions, storia.camera.it's mixed-group components (PartySystems.ItalyCamera2018)"),
                         new ChamberOfRecord(ElectionVintage.Italy2022, D(2022, 9, 25), D(2022, 10, 13), Open, "returns_2022.md [ALLOCATION PROVISIONAL]; DPR 97/2022 [DPR-97]; the first sitting 2022-10-13 [CAM-S1]"),
                     };
                 case CountryId.USA:
@@ -386,7 +388,7 @@ namespace PoliSim.Elections
                     {
                         // ⚠ The XVIe's polling days are on no fetched page (france records, G1) - the election day is left UNSET rather than typed; it ends with the
                         // dissolution of 2024-06-09 [EL-DIS], and from that evening to the XVIIe's first sitting there is NO chamber of record (the record's own row).
-                        new ChamberOfRecord(ElectionVintage.France2022, DateTime.MinValue, D(2022, 6, 28), D(2024, 6, 9), "[AN-S28] [AN-CAL16]; polling days billed (G1); seats by nuance NOT SOURCED (E-47); dissolved 2024-06-09 [EL-DIS]"),
+                        new ChamberOfRecord(ElectionVintage.France2022, DateTime.MinValue, D(2022, 6, 28), D(2024, 6, 9), "[AN-S28] [AN-CAL16]; polling days billed (G1); seats by nuance from the Ministry's FE page (SEAT-1, E-47 (b): PartySystems.FranceAssembly2022); dissolved 2024-06-09 [EL-DIS]"),
                         new ChamberOfRecord(ElectionVintage.France2024, D(2024, 7, 7), D(2024, 7, 18), Open, "returns_2024.md; [EL-DIS]; the first sitting 2024-07-18 [AN-S18] [AN-CAL17]"),
                     };
                 default:
@@ -421,8 +423,9 @@ namespace PoliSim.Elections
         /// latest table on disk only where it is missing (<see cref="SeatedVintage"/>). A 2022 or 2023 date is the first case for the USA - the 117th or the 118th
         /// House, each a row of <see cref="Chambers"/> whose table is on disk (`PartySystems.SeatsAt`) - so it carries no deviation and this returns null; the House
         /// and the Senate of record step by date from there in the player's country (`SimulationManager.SeatTheRecordOnItsDate`). The second case is the sentence
-        /// returned: a chamber elected after the record's date (the USA's 120th onward), or one whose per-list table is not yet sourced (E-47: Italy's 2018 Camera,
-        /// France's 2022 Assembly by nuance) - the latest table on disk stands in its place and the view says so.</summary>
+        /// returned: a chamber elected after the record's date (the USA's 120th onward), or one whose table is not yet on disk (SEAT-1 retired E-47's two, Italy's
+        /// 2018 Camera and France's 2022 Assembly by nuance) - the latest table on disk stands in its place and the view says so. A table on disk that carries a
+        /// DECLARED reading (Italy's 2018 Camera by its groups) is no deviation from the record's chamber: its words are <see cref="SeatingDeclaration"/>'s.</summary>
         public static string SeatingDeviation(CountryId id, DateTime date)
         {
             ChamberOfRecord c = ChamberAt(id, date);
@@ -435,6 +438,11 @@ namespace PoliSim.Elections
             string elected = c.ElectionDay == DateTime.MinValue ? "elected in June 2022 (its polling days billed, G1)" : $"elected {c.ElectionDay:yyyy-MM-dd}";
             return $"the chamber of record on {date:yyyy-MM-dd} is the one {elected}, whose seats per list are not yet sourced (E-47); the {LatestSourced(id)} table is seated in its place";
         }
+
+        /// <summary>SEAT-1 (Elias's ruling J2, §869: "DECLARED as a deviation"): the declared reading of the table seated on a date, in the brief's words - Italy's
+        /// 2018 Camera by its groups at first constitution (`PartySystems.SeatingDeclaration`); null where the seated table is the election's own lists. Beside
+        /// <see cref="SeatingDeviation"/>, which says when a later table stands in for one not on disk.</summary>
+        public static string SeatingDeclaration(CountryId id, DateTime date) => PartySystems.SeatingDeclaration(SeatedVintage(id, date));
 
         private static ElectionVintage LatestSourced(CountryId id)
         {

@@ -418,3 +418,12 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **What carries forward.** Each state's ground-game effect and noise carries into the next presidential prior (US-26's "the game's own states") and into a midterm Senate's states. The House base takes it out. Keep the carry, or take it out there too?
 - **Save format 54.** A save from before US-31, cut inside a US campaign, is refused rather than replayed through the new targeting. Or declare no step?
 - **The popular vote and the states.** The contest's national tallies stay the derived (pre-ground-game) shares, so the popular vote differs slightly from the sum of the counted states. Stated, not asked: say if it should be re-summed.
+
+### SEAT-1 Italy's chambers by their groups (§900): the asks it ends in
+
+- **Which components sit as which list.** J2 says each named component of the mixed group sits as its list. Read as: a component that bears a 2022 list's name sits as that list (+Europa-Centro Democratico as +Europa; MAIE-Sogno Italia as MAIE, though five of its six deputies came in on the M5S list), and the Minoranze linguistiche sit as SVP (they were the SVP-PATT list's deputies). Is that your reading?
+- **Noi con l'Italia.** Should it sit as the 2022 Noi Moderati list (its lineage), or stay its own unit as now?
+- **The one member in no component** (Sangregorio, shown as MIS) is a playable seated unit under the seated-unit rule. Keep it playable?
+- **The Senato.** The XIX Senato's groups are on record, but nothing seats them until PS-7. J2 pairs the 2018 Camera with the 2022 Senato, and no start falls inside both. Is "on record, seated at PS-7" what you meant?
+- **An Italian game stays on the 2018 Camera** for its whole run, because no Italian election is held yet (PS-7). Acceptable until then?
+- **France's 2022 polling days** are now on a fetched page (the FE page's header, "12 et 19 juin 2022"). Use them for France's calendar (G1)?

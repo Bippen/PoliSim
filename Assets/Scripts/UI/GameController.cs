@@ -2207,7 +2207,8 @@ namespace PoliSim.UI
             _seamHitchPending = true;   // the frame that rebuilt the world is longer than the seam's cover; its next phase starts after it
             string deviation = PoliSim.Elections.WorldClock.SeatingDeviation(countryId, start);
             Debug.Log($"WORLD CLOCK: {countryId} opens {start:yyyy-MM-dd} - the chamber of record {PoliSim.Elections.WorldClock.ChamberAt(countryId, start).Vintage}"
-                      + (deviation != null ? $"; DEVIATION: {deviation}" : string.Empty));
+                      + (deviation != null ? $"; DEVIATION: {deviation}" : string.Empty)
+                      + (PoliSim.Elections.WorldClock.SeatingDeclaration(countryId, start) is string declared ? $"; DECLARED (SEAT-1): {declared}" : string.Empty));
             Debug.Log($"WORLD CLOCK: {countryId} - {PoliSim.Elections.WorldClock.SeedVintageLine(countryId, start)}");   // SP-7b: from the start's own day
         }
 
@@ -5774,7 +5775,7 @@ namespace PoliSim.UI
                         // the instrument).
                         Rect r = cursor.Place(640f, 330f, captionHeight);
                         GUILayout.BeginArea(r);
-                        _hemicycleRenderer.Draw(string.Empty, PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle);
+                        _hemicycleRenderer.Draw(string.Empty, PlayerCountryId, _playerCountry.ParliamentSeats, _labelStyle, PartySystems.DeclaredSize(_playerCountry, _simulationManager.CurrentDate));
                         GUILayout.EndArea();
                         LadderCaption(r, "rings chosen for the width so every mandate is a distinct dot (P2-3.1)", captionHeight);
                     }

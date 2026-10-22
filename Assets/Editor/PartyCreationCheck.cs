@@ -44,7 +44,11 @@ namespace PoliSim.EditorTools
                 var all = new List<string>();
                 foreach (string fill in PartyCreationFlow.Fills) { foreach (string cut in PartyCreationFlow.Cuts) { foreach (string s in PartyCreationFlow.Silhouettes) { all.Add($"mark_cell_{s}_{cut}_{fill}"); } } }
                 var expected = all.Where(c => !spent.Contains(c)).OrderBy(c => c, StringComparer.Ordinal).ToList();
-                Check(expected.SequenceEqual(cells.OrderBy(c => c, StringComparer.Ordinal)) && cells.Count == 35,
+                // SEAT-1: the count is derived, never typed - the 50 cells less the ones the runtime's assignment spends (`PartyCreationFlow.SeedCells`, which
+                // D18MarkAssignment.Build reads too): no cell both assigned and offered
+                int runtimeSpent = PartyCreationFlow.SeedCells().Select(r => r.Cell).Distinct().Count();
+                Check(expected.SequenceEqual(cells.OrderBy(c => c, StringComparer.Ordinal)) && spent.Count == runtimeSpent && cells.Count == all.Count - runtimeSpent
+                      && !cells.Any(spent.Contains),
                     F("the mark picker offers exactly the cells D18's assignment does not spend: {0} of the {1} ({2} spent)", cells.Count, all.Count, spent.Count));
                 int loaded = cells.Count(c => IconLibrary.GetPartyMark(c) != null);
                 Check(loaded == cells.Count, F("every offered cell is installed and loads through IconLibrary.GetPartyMark: {0} of {1}", loaded, cells.Count));

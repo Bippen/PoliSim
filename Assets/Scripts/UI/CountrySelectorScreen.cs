@@ -865,7 +865,10 @@ namespace PoliSim.UI
             string upper = StartBrief.TrySecondChamberMajority(id, opens, out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out _, out _)
                 ? $" · THE {StartBrief.SecondChamberOf(id).ToUpperInvariant()}: {PartySystems.ShortName(id, upperParty)} {upperSeats} OF {upperMembers}" + (upperIndependents > 0 ? $" ({upperIndependents} IND.)" : string.Empty)
                 : string.Empty;
-            Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}{upper}",
+            // SEAT-1 (Elias's ruling J2): a table seated by a DECLARED reading says so after its size - Italy's XVIII Camera "BY ITS GROUPS OF 20 APR 2018"
+            string declared = PartySystems.SeatingTag(start.Vintage);
+            declared = declared != null ? " · " + declared : string.Empty;
+            Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}{declared}{upper}",
                 PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
             captionText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
         }

@@ -485,7 +485,35 @@ namespace PoliSim.Data
             new PoliticalParty("ECO", "Écologistes",                                 2.30f, 1.70f,   1, "mark_party_fr_eco", euPosition: 6.20f, lrGen: 2.30f, environment: 2.00f, regions: 2.33f, spendVsTax: 1.33f, immigratePolicy: 1.60f, deregulation: 1.29f, redistribution: 1.40f, peopleVsElite: 5.33f, antiEliteSalience: 5.00f, civLibLawOrder: 2.17f, nationalism: 0.67f),
             new PoliticalParty("DIV", "Divers",                                      float.NaN, float.NaN,  1, "mark_party_fr_div"),
             new PoliticalParty("EXD", "Extrême droite",                              float.NaN, float.NaN,  1, "mark_party_fr_exd"),
+            // SEAT-1 (Elias's ruling J2, §869; E-47 (b)): the XVIe's nuances that are not the XVIIe's - seated where the chamber of record is the Assembly
+            // elected in June 2022 (`SeatsAt(France2022)`, the Ministry's FE page). Zero seats at the 2024 election, no CHES position, no mark: the 2022
+            // nuances' own keys, never a mapping onto 2024's (Poland's 2019 lists, §618). NUP is the NUPES joint candidacy, which the Ministry does not
+            // split, as it does not split UG.
+            new PoliticalParty("NUP", "Nouvelle union populaire écologique et sociale (NUPES joint candidacies)", float.NaN, float.NaN, 0),
+            new PoliticalParty("DSV", "Droite souverainiste",                        float.NaN, float.NaN,  0),
         };
+
+        /// <summary>SEAT-1 (Elias's ruling J2 on E-48, §869): AVS's two member parties as CHES 2024 scores them (Italy's rows `SI` and `EV`, country 8), typed
+        /// as every roster row is - members of the joint list, never seated units of their own. Declared before the roster, which reads it (static
+        /// initializers run in textual order). `ItalySeatingDiagnostic` holds each to its CHES row on every field.</summary>
+        public static readonly PoliticalParty[] ItalyAvsMembers =
+        {
+            new PoliticalParty("SI", "Sinistra Italiana", 1.38f, 1.69f, 0, euPosition: 4.85f, lrGen: 1.23f, environment: 1.00f, regions: 6.08f, spendVsTax: 0.25f, immigratePolicy: 0.77f, deregulation: 1.44f, redistribution: 0.92f, peopleVsElite: 5.00f, antiEliteSalience: 4.25f, civLibLawOrder: 1.75f, nationalism: 0.86f),   // [SOURCED] CHES_2024_final_v2.csv, party_id 838
+            new PoliticalParty("EV", "Europa Verde", 2.21f, 1.71f, 0, euPosition: 5.71f, lrGen: 2.14f, environment: 0.14f, regions: 6.50f, spendVsTax: 0.33f, immigratePolicy: 1.31f, deregulation: 2.11f, redistribution: 2.17f, peopleVsElite: 5.00f, antiEliteSalience: 2.25f, civLibLawOrder: 1.50f, nationalism: 0.88f),   // [SOURCED] CHES_2024_final_v2.csv, party_id 850
+        };
+
+        /// <summary>
+        /// SEAT-1 (Elias's ruling J2 on E-48, §869: "AVS takes the equal-weight mean of SI's and EV's CHES positions, DECLARED: there is no primary split of
+        /// its seats ... A primary split, if one is ever found, replaces it"): §621's joint-list rule with every member weighted alike - <see cref="JointList"/>
+        /// on a weight of one each, so a field a member does not publish is averaged over the members that do, as there. A primary split, once on disk,
+        /// replaces the call with <see cref="JointList"/> on the members' seats.
+        /// </summary>
+        public static PoliticalParty EqualWeightList(string abbrev, string name, int seedSeats, string markName, PoliticalParty[] members)
+        {
+            var weighted = new (PoliticalParty Member, int Seats)[members.Length];
+            for (int i = 0; i < members.Length; i++) { weighted[i] = (members[i], 1); }   // DECLARED (J2): equal weight - no split of the list's seats is on record
+            return JointList(abbrev, name, seedSeats, markName, weighted);
+        }
 
         // ---- Italy: Camera dei deputati 2022. Units are the LISTS Eligendo reports. Sums to 400.
         // EVERY per-list seat total in the returns file on disk is [UNCONFIRMED] - Italy elects on a
@@ -500,7 +528,7 @@ namespace PoliSim.Data
             new PoliticalParty("M5S",   "Movimento 5 Stelle",              2.87f, 3.27f,  52, "mark_party_it_m5s", euPosition: 4.07f, lrGen: 3.33f, environment: 1.50f, regions: 6.45f, spendVsTax: 2.00f, immigratePolicy: 4.87f, deregulation: 3.40f, redistribution: 1.64f, peopleVsElite: 7.12f, antiEliteSalience: 7.50f, civLibLawOrder: 4.33f, nationalism: 4.38f),
             new PoliticalParty("FI",    "Forza Italia",                    7.40f, 6.07f,  45, "mark_party_it_fi", euPosition: 5.33f, lrGen: 6.73f, environment: 7.00f, regions: 5.08f, spendVsTax: 8.50f, immigratePolicy: 6.47f, deregulation: 7.80f, redistribution: 8.21f, peopleVsElite: 4.75f, antiEliteSalience: 3.00f, civLibLawOrder: 6.33f, nationalism: 6.62f),
             new PoliticalParty("AzIV",  "Azione - Italia Viva",            5.21f, 3.46f,  21, "mark_party_it_aziv", euPosition: 6.79f, lrGen: 4.43f, environment: 4.14f, regions: 4.50f, spendVsTax: 4.33f, immigratePolicy: 3.77f, deregulation: 5.90f, redistribution: 4.77f, peopleVsElite: 2.43f, antiEliteSalience: 1.60f, civLibLawOrder: 2.83f, nationalism: 2.50f),
-            new PoliticalParty("AVS",   "Alleanza Verdi e Sinistra",       float.NaN, float.NaN, 12, "mark_party_it_avs"),
+            EqualWeightList("AVS",     "Alleanza Verdi e Sinistra",       12, "mark_party_it_avs", ItalyAvsMembers),   // SEAT-1 (J2, E-48): SI's and EV's equal-weight mean, DECLARED
             new PoliticalParty("NM",    "Noi Moderati",                    float.NaN, float.NaN,  7, "mark_party_it_nm"),
             new PoliticalParty("SVP",   "Südtiroler Volkspartei - PATT",   float.NaN, float.NaN,  3, "mark_party_it_svp"),
             new PoliticalParty("PlusE", "Più Europa",                      float.NaN, float.NaN,  2, "mark_party_it_pluse"),
@@ -513,6 +541,17 @@ namespace PoliSim.Data
             // have been inventing seats to make a total come out.
             new PoliticalParty("MAIE",  "MAIE (circoscrizione Estero)",    float.NaN, float.NaN,  1, "mark_party_it_maie"),
             new PoliticalParty("UV",    "Union Valdôtaine (VdA college)",  float.NaN, float.NaN,  1, "mark_party_it_uv"),
+            // SEAT-1 (Elias's ruling J2, §869): the XVIII Camera's units that are not 2022's lists - seated where the chamber of record is the Camera elected
+            // 4 March 2018 (`SeatsAt(Italy2018)`), by its groups at first constitution and the mixed group's named components, DECLARED. Zero seats at the
+            // 2022 election, no CHES position, no mark - their own keys, never a mapping onto 2022's (§618's precedent). J2: "seat each component as its list" -
+            // read (`ItalyCamera2018`): a group or component sits as the roster's list whose deputies it gathers or whose name it bears (M5S, Lega, PD, FI and FdI;
+            // Minoranze linguistiche, the SVP-PATT list's deputies, as SVP; "+Europa-Centro Democratico" as PlusE; "MAIE-Sogno Italia" as MAIE), the rest as their own.
+            new PoliticalParty("LeU",     "Liberi e Uguali (group, from 10 Apr 2018)",                  float.NaN, float.NaN, 0),
+            new PoliticalParty("CP",      "Civica Popolare-AP-PSI-Area Civica (mixed-group component)", float.NaN, float.NaN, 0),
+            new PoliticalParty("NcI",     "Noi con l'Italia (mixed-group component)",                  float.NaN, float.NaN, 0),
+            // the remainder's display abbreviation is three letters (the film: "Misto" overflowed the 16-unit chip at 8 px and the signing plate's mark box at
+            // 2560, where M5S and FdI fit); the key stays "Misto" (records, D18's row, the diagnostic), the full name the slips' and the brief's
+            new PoliticalParty("Misto",   "Gruppo misto, in no component",                             float.NaN, float.NaN, 0, shortName: "MIS"),
         };
 
         // ---- USA: House of Representatives, 119th Congress (2024). Sums to 435.
@@ -946,14 +985,12 @@ namespace PoliSim.Data
             return seats;
         }
 
-        /// <summary>True when a vintage's per-list seat table is on disk and in <see cref="SeatsAt"/>; false for the chambers billed as E-47 (Italy 2018, France 2022 by nuance).</summary>
+        /// <summary>True when a vintage's seat table is on disk and in <see cref="SeatsAt"/>. SEAT-1 (Elias's ruling J2, §869) retired E-47's two: Italy's 2018 Camera
+        /// is seated by its groups at first constitution (DECLARED - <see cref="SeatingDeclaration"/>), France's 2022 Assembly by the Ministry's nuances (its FE page).</summary>
         public static bool SeatsSourced(ElectionVintage vintage)
         {
             switch (vintage)
             {
-                case ElectionVintage.Italy2018:
-                case ElectionVintage.France2022:
-                    return false;
                 case ElectionVintage.Usa2026:
                     return false;   // PS-6 US-2: elected after the record's date - not on record; the latest sourced table stands (`WorldClock.SeatedVintage`)
                 case ElectionVintage.Seated:
@@ -967,7 +1004,7 @@ namespace PoliSim.Data
         /// PS-1 (§618): THE SEAT TABLES BY ELECTION, each a chamber as elected - its lists - from the country's returns file or its
         /// `records_by_date.md` (the source ids in brackets are that record's register). The latest election's table is the roster's
         /// own `SeedSeats` and is listed here too, so every vintage reads through one path. Null for a chamber whose per-list table
-        /// is not on disk (E-47): the caller seats the latest sourced one and says so.
+        /// is not on disk: the caller seats the latest sourced one and says so (SEAT-1 retired E-47's two; the USA's 120th, elected after the record's date, remains).
         /// </summary>
         public static IReadOnlyList<(string Abbrev, int Seats)> SeatsAt(ElectionVintage vintage)
         {
@@ -984,18 +1021,18 @@ namespace PoliSim.Data
                 // Poland - the PKW. 2019: Dz.U. 2019 poz. 1955 [PKW-2019] (poland/records_by_date.md §1): the 2019 committees' own keys - SLD, PSL, MN. 2023: returns_2023.md.
                 case ElectionVintage.Poland2019: return new[] { ("PiS", 235), ("KO", 134), ("SLD", 49), ("PSL", 30), ("Konf", 11), ("MN", 1), ("NL", 0), ("TD", 0) };
                 case ElectionVintage.Poland2023: return Roster(CountryId.Poland);
-                // Italy - 2022: returns_2022.md (its per-list totals carry the file's own flag). 2018: per-list seats NOT SOURCED (E-47).
+                // Italy - 2022: returns_2022.md (its per-list totals carry the file's own flag). 2018: SEAT-1 (J2) - by its groups at first constitution, DECLARED (`ItalyCamera2018`).
                 case ElectionVintage.Italy2022: return Roster(CountryId.Italy);
-                case ElectionVintage.Italy2018: return null;
+                case ElectionVintage.Italy2018: return ItalyCamera2018;
                 // USA - history.house.gov's party divisions, election-day figures ([HH-DIV]; usa/records_by_date.md §1 - not opening-day sworn counts).
                 // ⚠ The 117th's figures sum to 434 of 435: the source's own footnote 6 ([HH-DIV], in the saved page) says New York had not certified
                 // the 22nd district before the 117th opened, so the seat stays unassigned rather than given to a party (ChamberSizeAt says 434).
                 case ElectionVintage.Usa2020: return new[] { ("DEM", 222), ("REP", 212) };
                 case ElectionVintage.Usa2022: return new[] { ("REP", 222), ("DEM", 213) };
                 case ElectionVintage.Usa2024: return Roster(CountryId.USA);
-                // France - 2024: returns_2024.md (the Ministry's nuances). 2022: seats by nuance NOT SOURCED (E-47; the record holds the groups at opening, another unit).
+                // France - 2024: returns_2024.md (the Ministry's nuances). 2022: SEAT-1 (E-47 (b)) - the Ministry's FE page by nuance (`FranceAssembly2022`).
                 case ElectionVintage.France2024: return Roster(CountryId.France);
-                case ElectionVintage.France2022: return null;
+                case ElectionVintage.France2022: return FranceAssembly2022;
                 default: return null;
             }
         }
@@ -1008,8 +1045,125 @@ namespace PoliSim.Data
             {
                 case ElectionVintage.Germany2021: return 736;
                 case ElectionVintage.Usa2020: return 434;
+                case ElectionVintage.Italy2018: return ItalyCamera2018Size;   // SEAT-1: the XVIII Camera, before the 2020 reform's 400
                 default: return ChamberSeats(id);
             }
+        }
+
+        // =============================================================================================================================================
+        // SEAT-1 (Elias's ruling J2, 2026-10-19, §869): THE CHAMBERS OF RECORD THAT NO LIST TABLE SEATS - Italy's XVIII Camera and XIX Senato by their
+        // groups at first constitution, DECLARED, and France's XVIe Assembly by the Ministry's nuances (E-47 (b)). Every figure below is re-derived from
+        // the stored pages by `ItalySeatingDiagnostic`, which fails while one of them differs.
+        // =============================================================================================================================================
+
+        /// <summary>SEAT-1 [SOURCED]: the XVIII Camera's size - 630, every deputy in a group on 27 Mar 2018 (`italy/raw/reseat_2022/dati_camera_leg18_adesioni_gruppi.csv`)
+        /// and camera.it's own total for the legislature (`italy/raw/records/camera_leg18_46_gruppi.html`, "Totale 630"). <see cref="ChamberSeats"/>' 400 is the
+        /// 2020 reform's, first applied in 2022.</summary>
+        public const int ItalyCamera2018Size = 630;
+
+        /// <summary>SEAT-1: the day the XVIII Camera is read at - DECLARED, 20 April 2018, the day the last of the first constitution's mixed-group components
+        /// (MAIE-Sogno Italia) was formed (its page in `italy/raw/camera2018/`). The groups were declared on 27 March 2018, Liberi e Uguali's on 10 April; the
+        /// table reads the same on every day from 20 April to 7 May 2018 (Fedriga left the Lega group on 8 May, and Sangregorio joined Noi con l'Italia).</summary>
+        public static readonly System.DateTime ItalyCamera2018Read = new System.DateTime(2018, 4, 20);
+
+        /// <summary>
+        /// SEAT-1 (Elias's ruling J2 on E-46 and E-47 (a): "seat both chambers by their groups at first constitution (the Senato's of 18 Oct 2022, the
+        /// Camera's of April 2018), DECLARED as a deviation, since no official source assigns the single-seat winners to lists. Where the chamber's page
+        /// names the mixed group's components, seat each component as its list"): <b>THE XVIII CAMERA</b>, 630 deputies, as its groups and the mixed group's
+        /// components stood on <see cref="ItalyCamera2018Read"/> [SOURCED]. The groups are the Camera's open data (`italy/raw/reseat_2022/dati_camera_leg18_adesioni_gruppi.csv`,
+        /// each deputy's adhesion with its dates); the components are the Camera's historical portal (`italy/raw/camera2018/`: the MISTO group's page names them,
+        /// and each component's page dates its members). J2's "seat each component as its list", READ (DECLARED): a group or component sits as the roster's list
+        /// whose deputies it gathers or whose name it bears - the five groups; Minoranze linguistiche (Gebhard, Plangger, Rossini, Schullian - the SVP-PATT list's
+        /// deputies) as SVP; "+Europa-Centro Democratico" (Magi, Fusacchia, Tabacci) as PlusE; "MAIE-Movimento Associativo Italiani all'Estero-Sogno Italia" (six
+        /// deputies) as MAIE. The others are units of their own (the roster's SEAT-1 rows; Noi con l'Italia's lineage to the 2022 Noi Moderati list is asked, not
+        /// read by name). One mixed-group member sat in no component that day (Sangregorio): Misto.
+        /// </summary>
+        public static readonly (string Abbrev, int Seats)[] ItalyCamera2018 =
+        {
+            ("M5S", 222), ("Lega", 125), ("PD", 111), ("FI", 105), ("FdI", 32), ("LeU", 14),
+            ("MAIE", 6), ("SVP", 4), ("CP", 4), ("PlusE", 3), ("NcI", 3), ("Misto", 1),
+        };
+
+        /// <summary>SEAT-1 [SOURCED]: the XIX Senato's elected seats - 200 (Constitution art. 57, as amended in 2020), and 200 mandates "elettivo" from
+        /// 13 Oct 2022 in the Senato's open data (`italy/raw/reseat_2022/dati_senato_leg19_mandati.csv`).</summary>
+        public const int ItalySenato2022Elected = 200;
+
+        /// <summary>SEAT-1 [SOURCED]: the senators for life sitting on 18 Oct 2022 - six (the same file: one "di diritto e a vita", five "a vita, di nomina del
+        /// Presidente della Repubblica"). Five were in a group that day (the groups page's 205 is 200 + 5); none is seated: the chamber of record is seated as
+        /// ELECTED (CLAUDE.md's world clock), and no list elected them.</summary>
+        public const int ItalySenato2022ForLife = 6;
+
+        /// <summary>
+        /// SEAT-1 (Elias's ruling J2 on E-46): <b>THE XIX SENATO BY ITS GROUPS AT FIRST CONSTITUTION, 18 OCT 2022</b> [SOURCED] - the groups page as the Internet
+        /// Archive captured it that day (`italy/raw/senato2022/wayback_senato_grp_20221018194007.html`, its "Composizione dei Gruppi parlamentari", each group's
+        /// total with the senators for life), split into elected and for-life by the Senato's open data (`italy/raw/reseat_2022/dati_senato_leg19_adesioni_gruppi.csv`
+        /// and `dati_senato_leg19_mandati.csv`). Each row: the group's key, its name on the page, the 2022 list it sits as (a group bearing a list's name, as the
+        /// Camera's - DECLARED), null for a group that is no list's, its elected senators and its senators for life. The page names no component of the Misto
+        /// group, so the Misto sits whole (J2: components only "where the chamber's page names" them). <b>Nothing seats it yet</b>: no Italian start falls inside the
+        /// XIX, nothing seats Italy's record by its dates, and the Senato is modelled at PS-7, which reads this table.
+        /// </summary>
+        public static readonly (string Group, string Name, string List, int Elected, int ForLife)[] ItalySenato2022 =
+        {
+            ("FdI",   "Fratelli d'Italia",                                                                                  "FdI",  63, 0),
+            ("PD",    "Partito Democratico - Italia Democratica e Progressista",                                            "PD",   38, 0),
+            ("Lega",  "Lega Salvini Premier - Partito Sardo d'Azione",                                                       "Lega", 29, 0),
+            ("M5S",   "MoVimento 5 Stelle",                                                                                 "M5S",  28, 0),
+            ("FI",    "Forza Italia Berlusconi Presidente",                                                                 "FI",   18, 0),
+            ("AzIV",  "Azione-ItaliaViva-RenewEurope",                                                                      "AzIV",  9, 0),
+            ("CdI",   "Civici d'Italia - Noi Moderati (UDC - Coraggio Italia - Noi con l'Italia - Italia al Centro) - MAIE", null,    6, 0),
+            ("Aut",   "Per le Autonomie (SVP-Patt, Campobase, Sud Chiama Nord)",                                            null,    5, 2),
+            ("Misto", "Misto",                                                                                              null,    4, 3),
+        };
+
+        /// <summary>SEAT-1: a chamber of record's second chamber by its groups - Italy's XIX Senato (<see cref="ItalySenato2022"/>); null for every other vintage.</summary>
+        public static IReadOnlyList<(string Group, string Name, string List, int Elected, int ForLife)> SecondChamberGroupsAt(ElectionVintage vintage) =>
+            vintage == ElectionVintage.Italy2022 ? ItalySenato2022 : null;
+
+        /// <summary>
+        /// SEAT-1 (Elias's ruling J2 on E-47 (b): "France's FE page is fetched ... Reading it into the record is Code's work"): <b>THE XVIe ASSEMBLY BY THE
+        /// MINISTRY'S NUANCES</b> [SOURCED] - the Interior Ministry's "France entière" page of the 2022 legislative elections, its seats ("Nb Sieges") by
+        /// nuance after both rounds (`france/raw/legislatives2022/wayback_interieur_FE_20220705224641.html.gz`, the Internet Archive's raw capture of 5 July
+        /// 2022, the stored gzip body held to its SHA256SUMS). 577. The page's five nuances that seated nobody (extreme left, the PRG, the Écologistes,
+        /// Reconquête, extreme right) are left out; ECO is a roster unit and holds zero. A 2022 nuance with a 2024 nuance's label is that key (DECLARED);
+        /// NUP and DSV are the 2022 nuances' own.
+        /// </summary>
+        public static readonly (string Abbrev, int Seats)[] FranceAssembly2022 =
+        {
+            ("ENS", 245), ("NUP", 131), ("RN", 89), ("LR", 61), ("DVG", 22), ("DVD", 10), ("REG", 10), ("DVC", 4), ("UDI", 3), ("DIV", 1), ("DSV", 1),
+        };
+
+        /// <summary>SEAT-1 (J2: "DECLARED as a deviation"): the declared reading a vintage's table carries, in the brief's words - Italy's XVIII Camera by its
+        /// groups; null where the table is the election's own lists.</summary>
+        public static string SeatingDeclaration(ElectionVintage vintage) => vintage == ElectionVintage.Italy2018
+            ? "it is seated by its parliamentary groups as first constituted, on 20 April 2018, and each mixed-group component the Camera's page names is seated as its list"
+              + " - DECLARED, since no official source assigns its single-seat winners to lists; a component's list is read as the one whose deputies it gathers or whose name it bears"
+              + " (Minoranze linguistiche as SVP-PATT), and a component that is neither sits as its own"
+            : null;
+
+        /// <summary>SEAT-1 (the review's L1): the declared reading a country's positions carry, in the brief's words - Italy's AVS at SI's and EV's equal-weight
+        /// mean (J2 on E-48), whose runtime point the vote model's fit did not use; null elsewhere. Said, not reconciled: the backtests keep their typed point.</summary>
+        public static string PositionDeclaration(CountryId id) => id == CountryId.Italy
+            ? "AVS stands at the equal-weight mean of SI's and EV's positions (lrecon 1.795, galtan 1.70) - DECLARED, no split of its seats being on record; Italy's vote model was fitted on the typed 1.80 and 1.70, the same mean rounded"
+            : null;
+
+        /// <summary>SEAT-1 (the review's L3): a key that is a group's remainder, not a party or a list - the XVIII Camera's mixed-group members in no component -
+        /// which the brief counts apart from the parties.</summary>
+        public static bool IsGroupRemainder(CountryId id, string abbrev) => id == CountryId.Italy && abbrev == "Misto";
+
+        /// <summary>SEAT-1: the same, as the start card's caption carries it - one clause after the chamber's size; null where none is declared.</summary>
+        public static string SeatingTag(ElectionVintage vintage) => vintage == ElectionVintage.Italy2018 ? "BY ITS GROUPS OF 20 APR 2018" : null;
+
+        /// <summary>SEAT-1 (the review's M2): the size the seated chamber declares on a date - keyed on the vintage SEATED, never on the seats it is checked
+        /// against: once the game has held an election of its own in the country, the chamber's statutory size (<see cref="ChamberSeats"/>); before it, the
+        /// size of record of the chamber the record seats - by its own dates where the record seats the chamber by date (the USA's House), else the one
+        /// seated at the world's start, which holds until the game counts (Italy's XVIII Camera, 630, past the XIX's first sitting; the 20th Bundestag's
+        /// 736). The views compare the seats drawn with it, so a chamber seated at a size its vintage does not carry fails the film's guard.</summary>
+        public static int DeclaredSize(Country country, System.DateTime date)
+        {
+            if (country == null) { return 0; }
+            if (Elections.SeatedGovernment.HeldElection(country)) { return ChamberSeats(country.Id); }
+            System.DateTime seatedOn = Elections.WorldClock.RecordSeatsChamber(country.Id) ? date : Simulation.SimulationManager.EpochDate;
+            return ChamberSizeAt(country.Id, Elections.WorldClock.SeatedVintage(country.Id, seatedOn));
         }
 
         private static IReadOnlyList<(string Abbrev, int Seats)> Roster(CountryId id)

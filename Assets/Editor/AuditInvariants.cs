@@ -134,7 +134,10 @@ namespace PoliSim.EditorTools
             // Counted when the game has held an election of its own - dated on or after the world's start - so a run resumed after the count
             // (whose own start sees the count already in the history) is held to the statutory chamber as the run that counted was.
             bool counted = c.ElectionHistory.Count > _electionsAtStart || c.ElectionHistory.Any(r => r.Date >= SimulationManager.EpochDate);
-            int expected = counted ? PartySystems.ChamberSeats(c.Id) : PartySystems.ChamberSizeAt(c.Id, WorldClock.SeatedVintage(c.Id, date));
+            // SEAT-1: where the record does not seat the chamber by its dates (every country but the USA), the chamber seated at the start holds until the
+            // game counts - Italy's XVIII Camera (630) stands past the XIX's first sitting of 13 Oct 2022, which nothing seats in an Italian game (PS-7)
+            DateTime seatedOn = WorldClock.RecordSeatsChamber(c.Id) ? date : SimulationManager.EpochDate;
+            int expected = counted ? PartySystems.ChamberSeats(c.Id) : PartySystems.ChamberSizeAt(c.Id, WorldClock.SeatedVintage(c.Id, seatedOn));
             if (sum != expected)
             {
                 Breach("SEATS", c.Id + "|" + sum + "|" + expected, day, date,

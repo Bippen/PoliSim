@@ -245,7 +245,7 @@ namespace PoliSim.UI
             }
             SlipAnchor(keyRect, "key");
 
-            // the mark: the 35 unspent cells, in the chosen ink
+            // the mark: the unspent cells (PartyCreationFlow.UnspentCells), in the chosen ink
             float y = PcPlateHead(new Rect(left.x, left.y + fieldH + StatStep(12f), left.width, 0f), "MARK");
             List<string> cells = PartyCreationFlow.UnspentCells();
             const int columns = 7;

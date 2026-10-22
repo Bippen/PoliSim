@@ -110,8 +110,13 @@ namespace PoliSim.Elections
             WorldClock.ChamberOfRecord chamber = WorldClock.ChamberAt(id, opens);
             ElectionVintage seated = WorldClock.SeatedVintage(id, opens);
             Dictionary<string, int> seats = PartySystems.InitialSeats(id, seated);
-            int size = 0, partiesSeated = 0;
-            foreach (KeyValuePair<string, int> kv in seats) { size += kv.Value; if (kv.Value > 0) { partiesSeated++; } }
+            int size = 0, partiesSeated = 0, remainder = 0;
+            foreach (KeyValuePair<string, int> kv in seats)
+            {
+                size += kv.Value;
+                if (kv.Value <= 0) { continue; }
+                if (PartySystems.IsGroupRemainder(id, kv.Key)) { remainder += kv.Value; } else { partiesSeated++; }   // SEAT-1 (L3): a group's remainder is no party
+            }
 
             if (WorldClock.TryGovernmentAt(id, opens, out WorldClock.GovernmentOfRecord government))
             {
@@ -195,8 +200,13 @@ namespace PoliSim.Elections
 
             string chamberName = ChamberName.TryGetValue(id, out string name) ? name : "chamber";
             string deviation = WorldClock.SeatingDeviation(id, opens);
-            clauses.Add(new Clause(partiesSeated.ToString(CultureInfo.InvariantCulture) + " parties sit in the " + chamberName + " (" + size.ToString(CultureInfo.InvariantCulture) + " seats, the election of "
-                + Long(chamber.ElectionDay == DateTime.MinValue ? chamber.Convened : chamber.ElectionDay) + ")" + (deviation != null ? " - " + deviation : string.Empty) + ".",
+            string declared = WorldClock.SeatingDeclaration(id, opens);   // SEAT-1 (J2): Italy's XVIII Camera by its groups, DECLARED - said where it is seated
+            string positions = declared != null ? PartySystems.PositionDeclaration(id) : null;   // SEAT-1 (L1): AVS's runtime point beside the fit's
+            clauses.Add(new Clause(partiesSeated.ToString(CultureInfo.InvariantCulture) + " parties sit in the " + chamberName
+                + (remainder > 0 ? ", with " + remainder.ToString(CultureInfo.InvariantCulture) + (remainder == 1 ? " member" : " members") + " of its mixed group in no component" : string.Empty)
+                + " (" + size.ToString(CultureInfo.InvariantCulture) + " seats, the election of "
+                + Long(chamber.ElectionDay == DateTime.MinValue ? chamber.Convened : chamber.ElectionDay) + ")" + (deviation != null ? " - " + deviation : string.Empty)
+                + (declared != null ? "; " + declared : string.Empty) + (positions != null ? ". " + positions : string.Empty) + ".",
                 "PartySystems.InitialSeats(" + seated + "); " + chamber.Basis));
             // PS-6 US-33 (SP-6a): the player's own nominee, where one is registered for the start's country - a clause of its own, last; none registered, none said
             if (OwnNominees.TryOf(id, out OwnNominee own) && NomineeClause(start, own) is Clause nominee) { clauses.Add(nominee); }
@@ -302,7 +312,7 @@ namespace PoliSim.Elections
             ElectionVintage seated = WorldClock.SeatedVintage(id, opens);
             Dictionary<string, int> seats = PartySystems.InitialSeats(id, seated);
             int size = 0, partiesSeated = 0;
-            foreach (KeyValuePair<string, int> kv in seats) { size += kv.Value; if (kv.Value > 0) { partiesSeated++; } }
+            foreach (KeyValuePair<string, int> kv in seats) { size += kv.Value; if (kv.Value > 0 && !PartySystems.IsGroupRemainder(id, kv.Key)) { partiesSeated++; } }   // SEAT-1 (L3)
 
             if (WorldClock.TryGovernmentAt(id, opens, out WorldClock.GovernmentOfRecord government))
             {

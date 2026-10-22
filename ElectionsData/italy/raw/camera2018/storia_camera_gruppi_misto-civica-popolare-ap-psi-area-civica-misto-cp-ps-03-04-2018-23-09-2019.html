@@ -1,0 +1,456 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	
+<!--<script type="text/javascript" id="cookiebanner"  src="/res/js/cookiebanner.js"> </script>-->
+<!--<script type="text/javascript" id="cookiebanner" src="http://www.camera.it/javascripts/cookiebanner.js"> </script>-->
+
+
+	<title>XVIII Legislatura della Repubblica italiana / MISTO-CIVICA POPOLARE-AP-PSI-AREA CIVICA / Gruppi /  Camera dei deputati - Portale storico</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta charset="utf-8">
+<meta name="language" content="IT"> 
+<meta name="description" content="Con questo portale la Camera dei deputati si è dotata di una piattaforma di pubblicazione unica, stabile e condivisa della documentazione e delle informazioni sulla sua attività, a partire dalla I Legislatura del Parlamento sabaudo del 1848 fino alla legislatura che precede quella in corso. In occasione del 150° anniversario dell'Unità d'Italia è stato avviato un intervento complessivo di organizzazione, sistemazione e standardizzazione dei materiali digitali della Camera; è stato realizzato, quindi, uno strumento di raccolta e pubblicazione sul Web, che consenta: di offrire la ricerca integrata di tutto il materiale documentario disponibile e l'accesso immediato alle relative risorse digitali, attraverso un'intuitiva navigazione a faccette; di recepire i documenti che si renderanno disponibili negli anni a venire, a seguito di nuove iniziative di digitalizzazione o in relazione allo svolgimento dell'attività degli organi parlamentari. L'infrastruttura tecnica del portale poggia su un unico repository dati in formato aperto RDF-XML, strutturato sulla base di una ontologia generale, che descrive il dominio Camera attraverso le diverse articolazioni dei suoi organi e i documenti prodotti nel corso della sua attività. L'approccio scelto garantisce la persistenza nel tempo e l'intelligibilità dei dati raccolti, indipendentemente dallo strumento tecnico utilizzato per generarli. L'uso degli standards del Semantic Web e l'adesione ai principi dei Linked Data (dati accessibili da una molteplicità di applicazioni, integrabili con dati provenienti da fonti diverse, facilmente aggiornabili e incrementabili) garantiscono che l'intero patrimonio o specifiche sezioni di esso possano essere riutilizzati in diversi contesti applicativi, anche da una pluralità di soggetti. Per questo motivo al Portale storico è stata affiancata la pubblicazione di un portale dati.camera.it, che consente l'accesso, lo scarico e il riuso di tutti i dati pubblicati, per un totale di oltre un milione di schede e documenti. Questo insieme di risorse è descritto da un unico data model, identificato da uno specifico namespace, OCD (Ontologia Camera dei Deputati), una ontologia OWL (Ontology Web Language) espressa in triple RDF: una tripla è un'asserzione (statement), l'unità informativa minima, articolata in soggetto (subject), relazione (predicate) e oggetto (object). Tutti i dati del portale sono, così, disponibili come Linked Open Data, un patrimonio informativo costituito da oltre 13,4 milioni di triple.">
+<meta name="abstract" content="Portale Storico della Camera de Deputati">
+<meta name="keywords" content="Legislature,Presidenti,Regolamenti,Montecitorio,Amministrazione,Norme fondamentali e leggi,Biblioteca digitale,Bibliografia del Parlamento italiano e delle leggi elettorali,Le inchieste,I palazzi,Deputati,Lavori parlamentari,Atti e documenti,Archivio audiovisivo,Archivio fotografico,La collezione dei busti,Linked Open Data,OCD (Ontologia Camera dei Deputati),I progetti di legge,Atti di indirizzo e controllo,Cronologia storica">
+<meta name="author" content="Camera dei deputati">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="google-site-verification" content="rU0W6OorBeKi1yVNTxgTDOi63nS66Ji_6JNP9PUlYZs" />
+
+<link href="/res/css/struttura.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/stile.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/colonna.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/ie.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/stileVideo.css" rel="stylesheet" type="text/css" />
+<link href="/res/css/shadowbox.css" rel="stylesheet" type="text/css" />
+
+<script type="text/javascript" src="/res/js/jquery.js" ></script>
+<script type="text/javascript" src="/res/js/global.js" ></script>
+<script type="text/javascript" src="/res/js/jquery.cycle.all.min.js" ></script>
+<script type="text/javascript" src="/res/js/cycle.js" ></script>
+<script type="text/javascript" src="/res/js/shadowbox.js" ></script>
+<script type="text/javascript" src="/res/js/jwplayer.js" ></script>
+
+<link href="/res/css/cycle.css" rel="stylesheet" type="text/css" />
+
+
+<!-- Matomo -->
+<script>
+  var _paq = window._paq = window._paq || [];
+  /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+  _paq.push(['trackPageView']);
+  _paq.push(['enableLinkTracking']);
+  (function() {
+    var u="//webanalytics.camera.it/";
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', '8']);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=u+'matomo.js'; s.parentNode.insertBefore(g,s);
+  })();
+</script>
+<!-- End Matomo Code -->
+
+<script type="text/javascript"> 
+//<![CDATA[
+$(function(){
+    $('.grigliaOnOff').toggle(function(){ 
+    	$("body").append("<div class=\"grigliona\"></div>");
+    },function(){ 
+    	$("body").find(".grigliona").remove();
+    });
+	
+	$('.forHideByJavascript').hide();
+	
+	newPage($("body"));
+	addNavi($("body"));
+	addNaviga($("div#colonnaDx"));
+	addNaviNoClickClass($(document));
+	addTooltipHelp();
+	$('.descriptionsHidden').hide();
+	$('a').each(function(){
+		var href = $(this).attr("href");
+		if(href && href.indexOf("http:")==-1 && href.indexOf("#")==-1 && href.indexOf(".pdf")==-1 && href.indexOf("jpg")==-1 ){
+			$(this).attr("href",href+"#nav");
+		}
+	});
+	
+	$('.contBoxMultimediaShadow').css("position", "absolute");
+	
+var exTextCrono = "";
+	$('ul.cronologia li').hover(function(){
+		var text = $(this).find(" span ").html();
+		exTextCrono = $('div.txtCronologia').html();
+		$('div.txtCronologia').html(text);
+		return false;
+	}, function(){
+		$('div.txtCronologia').html(exTextCrono);
+		return false;
+	});
+	
+	
+
+	
+	$('.tooltipTime').hover(function(){
+		$(this).find(" a ").attr("title", "");
+		var value = $(this).find(" span.hideDiv ").html();
+		if(jQuery.browser.msie && jQuery.browser.version <= 7.0){
+		tooltip='\
+			<div class="tooltipBigTime">\
+        		<img id="arrow" src="/res/img/arrowNeroUp.gif" style="position:absolute; margin-top:-10px; margin-right:6px;">\
+        		<span>'+value+'</span>\
+        	</div>\
+        	'    
+		}else{
+			tooltip='\
+    			<div class="tooltipBigTime" style="position:absolute;left:'+($(this).position().left-82)+'px;top:'+($(this).position().top+20)+'px;">\
+            		<img id="arrow" src="/res/img/arrowNeroUp.gif" style="float:left; margin-top:-10px; margin-left:82px;"  >\
+            		<span>'+value+'</span>\
+            	</div>\
+           	'
+	 	}
+	$(' body ').append(tooltip)},
+	function(){$(' body ').find('.tooltipBigTime').remove()})
+ 	
+	addTooltip($('#colonnaDx'));
+	
+});
+//]]> 
+</script>
+
+
+</head>
+<body><div id="upperMenu">
+	<a class="logo_parlamento"  href="http://www.parlamento.it/" rel="newpage" title="Vai al sito parlamento.it"><img  alt="Vai al sito parlamento.it" src="/res/img/logo_parlamento.jpg" /></a>
+	<a class="logo_camera"  rel="newpage"  href="http://www.camera.it" title="Vai al sito camera.it"><img alt="Vai al sito camera.it" src="/res/img/logo_camera.gif" /></a>
+</div>
+<div id="wrapper">
+<div id="mainTestata"><h1>Portale storico della Camera dei deputati</h1>
+<ul class="menu">
+	<li><a href="			/
+	" title="home">Home</a></li>
+	<li><a href="			/legislature
+	" title="legislature">Legislature</a></li>
+	<li><a href="			/presidenti
+	" title="presidenti">Presidenti</a></li>
+	<li><a href="			/regolamenti
+	" title="regolamenti">Regolamenti</a></li>
+	<li><a href="			/montecitorio
+	" title="Montecitorio">Montecitorio</a></li>
+	<li><a href="			/amministrazione
+	" title="amministrazione">Amministrazione</a></li>
+	<li><a href="			/norme-fondamentali-e-leggi
+	" title="leggi">Norme fondamentali e leggi</a></li>
+<li><a href="			/digital
+	" title="Biblioteca digitale">Biblioteca digitale</a></li>
+	<li><a href="			/bpr
+	" title="bibliografia del Parlamento">Bibliografia del Parlamento</a></li>
+</ul>
+<div id="testata">
+    <div class="linkHomePage"><a href="			/
+	#nav" title="Torna all'Home page"><span>Home page del portale</span></a></div>
+	<div class="boxLinkTestata"><a href="http://dati.camera.it" title="dati.camera.it"><img src="/res/img/datiCamera.jpg" alt="dati.camera.it" /></a>
+		<div id="ricerca">
+			<form action="			/faccette/all
+	">
+    			<input type="text" value="cerca" onclick="this.value=''" class="ricercaInput" name="q" /> 
+    			<input type="submit" class="bottoneCerca" name="" value="" />
+			</form>
+		</div>
+	</div>
+</div></div>
+<a name="nav"></a>
+<div id="navBoxs"><div class="box1close">
+		<ul>   
+			<li class="titoloBox1"><a href="			/deputati
+	" class="linkFutura  deputati " title="  Accedi al canale dei  deputati">Deputati</a></li>
+		</ul>
+	</div>
+	<div class="box2close">
+		<ul>
+			<li class="titoloBox1"><a href="			/lavori
+	" class="linkFutura  lavori " title="  Accedi al canale dei  lavori parlamentari">Lavori parlamentari</a></li>
+		</ul>
+	</div>
+	<div class="box1close">
+		<ul>
+			<li class="titoloBox1"><a  href="			/documenti
+	" class="linkFutura  documenti " title="  Accedi al canale dei  documenti della Camera">Atti e documenti</a></li>
+		</ul>
+	</div>
+</div>
+<div id="breadcrumb">
+<div class="briciole"><strong>sei in: </strong><a href="/legislature">Legislature</a> / <a href="/legislature/leg-repubblica-XVIII">XVIII Legislatura della Repubblica italiana</a> / MISTO-CIVICA POPOLARE-AP-PSI-AREA CIVICA</div>
+<div class="azioni">
+<ul>
+	<li>
+		<span class="stampa">&nbsp;</span>
+			</li>
+
+		<li><a href="			/condividi?title=
+	XVIII%20Legislatura%20della%20Repubblica%20italiana%20%2F%20MISTO%2DCIVICA%20POPOLARE%2DAP%2DPSI%2DAREA%20CIVICA%20%2F%20Gruppi%20%2F%20" title="condividi" class="condividi"><span class="ico"></span>condividi</a></li>
+	<li><a href="			/segnala?title=
+	XVIII%20Legislatura%20della%20Repubblica%20italiana%20%2F%20MISTO%2DCIVICA%20POPOLARE%2DAP%2DPSI%2DAREA%20CIVICA%20%2F%20Gruppi%20%2F%20" title="segnala" class="invia"><span class="ico"></span>segnala</a></li>
+	
+			<li><a rel="newpage" href="http://dati.camera.it/ocd/componenteGruppoMisto.rdf/cgm3059" title="scarica rdf" class="scarica"><span class="ico"></span>scarica rdf</a></li>
+		
+</ul> </div>
+</div>
+<div id="colonnaSx"><a name="contenuto"></a>
+    
+	<div class="boxA gruppiOrgani">
+	<h2 class="hideDiv">Gruppi del 													XVIII Legislatura della Repubblica italiana
+            			 </h2>
+   <h3>MISTO-CIVICA POPOLARE-AP-PSI-AREA CIVICA</h3>
+		<br />	<br />
+     	
+		
+		<div class="txtVerdana">
+							Dal 3 aprile 2018 al  23 settembre 2019<br />
+	                    													XVIII Legislatura della Repubblica italiana
+            			 <br />
+			
+									<br />
+        </div>
+		
+				
+		        							<div class="presidenteGruppo">
+					<div class="titGruppo">
+						<a name="Altri membri"></a>
+													altri membri
+													
+                    </div>
+					 
+											<ul class="rigaGruppo navi">
+							<li class="imgGruppo" title="accedi alla scheda di: Gabriele Toccafondi">
+																	<a name="Membro-Gabriele Toccafondi">
+                                    </a>
+															<a href="			/deputato/gabriele-toccafondi-19720415
+	" title="accedi alla scheda di GABRIELE TOCCAFONDI (03.04.2018-19.09.2019)" class="nomeDeputato">
+									<img src="/img-repo/thumb/persona/18/p302872.jpg" alt="" />								</a>
+                            </li>
+							<li class="nomeGruppo">
+                                <a href="			/deputato/gabriele-toccafondi-19720415
+	" title="accedi alla scheda di GABRIELE TOCCAFONDI (03.04.2018-19.09.2019)" class="nomeDeputato">
+                                    Gabriele Toccafondi
+                                </a>
+							</li>
+							<li class="txtGruppo">
+																	dal 03.04.2018																			 al  19.09.2019																		<br />
+																                            </li>
+						</ul>
+											<ul class="rigaGruppo navi">
+							<li class="imgGruppo" title="accedi alla scheda di: Fausto Longo">
+																	<a name="Membro-Fausto Longo">
+                                    </a>
+															<a href="			/deputato/fausto-guilherme-longo-19520722
+	" title="accedi alla scheda di FAUSTO GUILHERME LONGO (03.04.2018-23.09.2019)" class="nomeDeputato">
+									<img src="/img-repo/thumb/persona/18/p306425.jpg" alt="" />								</a>
+                            </li>
+							<li class="nomeGruppo">
+                                <a href="			/deputato/fausto-guilherme-longo-19520722
+	" title="accedi alla scheda di FAUSTO GUILHERME LONGO (03.04.2018-23.09.2019)" class="nomeDeputato">
+                                    Fausto Longo
+                                </a>
+							</li>
+							<li class="txtGruppo">
+																	dal 03.04.2018																			 al  23.09.2019																		<br />
+																                            </li>
+						</ul>
+											<ul class="rigaGruppo navi">
+							<li class="imgGruppo" title="accedi alla scheda di: Beatrice Lorenzin">
+																	<a name="Membro-Beatrice Lorenzin">
+                                    </a>
+															<a href="			/deputato/beatrice-lorenzin-19711014
+	" title="accedi alla scheda di BEATRICE LORENZIN (03.04.2018-23.09.2019)" class="nomeDeputato">
+									<img src="/img-repo/thumb/persona/18/p302783.jpg" alt="" />								</a>
+                            </li>
+							<li class="nomeGruppo">
+                                <a href="			/deputato/beatrice-lorenzin-19711014
+	" title="accedi alla scheda di BEATRICE LORENZIN (03.04.2018-23.09.2019)" class="nomeDeputato">
+                                    Beatrice Lorenzin
+                                </a>
+							</li>
+							<li class="txtGruppo">
+																	dal 03.04.2018																			 al  23.09.2019																		<br />
+																                            </li>
+						</ul>
+											<ul class="rigaGruppo navi">
+							<li class="imgGruppo" title="accedi alla scheda di: Serse Soverini">
+																	<a name="Membro-Serse Soverini">
+                                    </a>
+															<a href="			/deputato/serse-soverini-19620418
+	" title="accedi alla scheda di SERSE SOVERINI (03.04.2018-23.09.2019)" class="nomeDeputato">
+									<img src="/img-repo/thumb/persona/18/p307276.jpg" alt="" />								</a>
+                            </li>
+							<li class="nomeGruppo">
+                                <a href="			/deputato/serse-soverini-19620418
+	" title="accedi alla scheda di SERSE SOVERINI (03.04.2018-23.09.2019)" class="nomeDeputato">
+                                    Serse Soverini
+                                </a>
+							</li>
+							<li class="txtGruppo">
+																	dal 03.04.2018																			 al  23.09.2019																		<br />
+																                            </li>
+						</ul>
+									</div>
+			        </div>
+
+<!-- chiudo boxA -->
+<!-- chiudo boxA --></div>
+<!-- chiudo colonnaSx -->
+
+
+<div id="colonnaDx">
+				
+
+                   
+		<div class="boxMultimedia">
+                    <div class="topMultimedia">
+                        <img src="/res/img/topMultimedia.jpg" alt="" />
+                    </div>
+					<div class="separatoreVuoto mt7">&nbsp;</div>
+					             <div class="contRicerca"  >
+									<label >cerca
+                                    </label>
+                                    <form  action='			/deputati/faccette/all
+	#nav' >
+                                        <input type="text" value="cerca un deputato..." onclick="this.value=''" onblur="this.value==''?this.value='cerca un deputato...':void(0)" class="ricercaInput2" name="q" />
+                                        <button type="submit"  class="bottoneCerca" ></button>
+                                    </form>
+                                </div>
+								<div class="separatoreRiga mt14 mb14">&nbsp;</div>
+				<div class="nuovoBoxFiltri">
+					<strong>Componente del gruppo</strong>
+						<div class="separatoreVuoto mt14">&nbsp;</div>
+										<ul class="filtri1riga">
+						<li>
+						<a class="frecciaNera" title="accedi al gruppo MISTO" href="			/gruppi/misto-misto-23-03-2018
+	">
+							<span class="ico">
+                            </span>
+							MISTO</a>
+                                        </li></ul>
+                </div>
+				</div>
+				
+			
+						
+
+
+
+ 
+<div class="boxB nuovoBoxArancio">
+	<div class="contTopAraNew">
+		<div class="titBoxAraNew">Storia
+        </div>
+    </div>
+    <div class="fl100 mt14">
+		<ul class="listaUniformeOrange">
+        <li>
+							<a class="cerchioPieno" title="stai visualizzando la composizione storica del gruppo MISTO-CIVICA POPOLARE-AP-PSI-AREA CIVICA" href="#noNav">
+			                <span class="ico"></span>Composizione storica</a>
+		
+		</li></ul>
+		</div>
+	<ul class="timeline">
+    																<li class="dataTimeline">
+					03.04.2018                    </li>
+									
+																	
+																																																    					<li class="bacchetteTimeline">
+							
+							<ul>
+																																																		<li class="bacchetta3 tooltipTime ">
+												<a title="visualizza la composizione storica del gruppo MISTO-CIVICA POPOLARE-AP-PSI-AREA CIVICA dal 20180403 al 20190918" href="			/gruppi/misto-civica-popolare-ap-psi-area-civica-misto-cp-ps-03-04-2018-23-09-2019/
+	dal:20180403,al:20190918"> &nbsp;  </a>																							<span class="hideDiv">Aderiscono 4 membri</span>
+																						</li>
+																									    						    					</ul>
+    				</li>
+						</ul>
+	<ul class="timeline" >
+																					<li class="dataTimeline">
+					19.09.2019                    </li>
+									
+																	
+																																																    					<li class="bacchetteTimeline">
+							
+							<ul>
+																					    																																			<li class="bacchetta3 tooltipTime ">
+												<a title="visualizza la composizione storica del gruppo MISTO-CIVICA POPOLARE-AP-PSI-AREA CIVICA dal 20190919 al 20190922" href="			/gruppi/misto-civica-popolare-ap-psi-area-civica-misto-cp-ps-03-04-2018-23-09-2019/
+	dal:20190919,al:20190922"> &nbsp;  </a>																							<span class="hideDiv">Cessa 1 membro</span>
+																						</li>
+																									    					</ul>
+    				</li>
+																			
+						    </ul>
+</div> 
+
+             </div>
+          <div class="footer">
+		<div class="footerSx">
+			<ul>
+			<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">Parlamento.it</li>
+						<li><a class="frecciaNera" href="http://parlamento18.camera.it/13"><span class=""></span>Parlamento in seduta comune</a> </li>
+						<li><a class="frecciaNera" href="http://www.parlamento.it/1210?legislatura_numero=18"><span class=""></span>Organismi bicamerali</a></li>
+						<li><a class="frecciaNera" href="http://www.parlamento.it/798"><span class=""></span>Rapporti internazionali</a></li>
+						<li><a class="frecciaNera" href="http://www.parlamento.it/806"><span class=""></span>Polo bibliotecario parlamentare</a></li>
+						<li><a class="frecciaNera" href="http://www.normattiva.it"><span class=""></span>Normattiva: il portale della legge vigente</a></li>
+						
+					</ul>
+				</li>
+					<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">La Camera</li>
+						<li><a class="frecciaNera" href="https://webtv.camera.it/" title="WebTv"><span class=""></span>WebTv</a></li>
+						<li><a class="frecciaNera" href="http://www.youtube.com/cameradeideputati" title="YouTube"><span class=""></span>YouTube</a></li>
+						<li><a class="frecciaNera" href="https://webtv.camera.it/conferenze_stampa" title="Diretta conferenze stampa"><span class=""></span>Diretta conferenze stampa</a></li>
+						<li><a class="frecciaNera" href="http://camera.archivioluce.com/archivioluce/camera" title="Portale Luce - Camera"><span class=""></span>Portale Luce - Camera</a></li>
+						<li><a class="frecciaNera" href="http://legislature.camera.it/" title="Legislature precedenti"><span class=""></span>Legislature precedenti</a></li>
+					</ul>
+				</li>
+				<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">dati.camera</li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/dati/" title="Dati"><span class=""></span>Dati</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/apps/" title="Apps"><span class=""></span>Apps</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/linked-data/" title="Linked-Data"><span class=""></span>Linked-Data</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/risorse/" title="Risorse"><span class=""></span>Risorse</a></li>
+						<li><a class="frecciaNera" href="http://dati.camera.it/it/progetto.html" title="Progetto"><span class=""></span>Progetto</a></li>
+					</ul>
+				</li>
+				<li>
+					<ul class="listaFooter">
+						<li class="titoloListaFooter">Questo portale</li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale#nav" title="Portale storico"><span class=""></span>Portale storico</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=deputati#nav" title="Portale storico"><span class=""></span>Deputati</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=lavori#nav" title="Lavori"><span class=""></span>Lavori</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=atti_e_documenti#nav" title="Atti e documenti"><span class=""></span>Atti e documenti</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=percorsi#nav" title="Percorsi"><span class=""></span>Percorsi</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=strumenti#nav" title="Strumenti"><span class=""></span>Strumenti</a></li>
+						<li><a class="frecciaNera" href="/notizie/questo-portale?contenuto=nota_sulle_fonti&sottocontenuto=multimedia#nav" title="Area multimediale"><span class=""></span>Area multimediale</a></li>
+						
+					
+					</ul>
+				</li>
+			</ul><!-- chiudo ul del footerDx -->
+		</div><!-- chiudo footerDx -->
+		<div class="footerDx">
+			<div>
+				<a rel="license" href="https://creativecommons.org/licenses/by/4.0/">
+				<img alt="Creative Commons License" style="float: left; margin-right:10px;" src="https://i.creativecommons.org/l/by/4.0/88x31.png"></a>
+				<ul class="listaFooter">
+				<li><span style="font-size: 11px;text-align: left; margin-top: 86px;"><a class="frecciaNera" href="http://www.camera.it/leg18/69?testostrumenti=2" target="_blank">privacy</a></span></li>
+				<li><span style="font-size: 11px;text-align: left; margin-top: 100px;"><a class="frecciaNera" href="https://www.camera.it/cookiepolicy" target="_blank">cookie policy</a></span></li>
+				<li><span style="font-size: 11px;text-align: left;">per segnalazioni e commenti: <br />assistenza-dati@camera.it</span></li>
+				</ul>
+				
+			</div>
+		</div>
+</div>    </div>
+<!-- chiudo wrapper --></div>
+</body>
+</html>

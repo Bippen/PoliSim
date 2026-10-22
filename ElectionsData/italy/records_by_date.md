@@ -334,3 +334,98 @@ Fetched and not kept (all in the fetch log): `storia.camera.it/legislature/leg-r
 under `raw/records/` whose names begin `archives_`, `bidenwhitehouse_`, `constitution_a`, `history_`, `senate_` or
 `whitehouse_` were written there by a sibling agent's USA pass during this session, are not this file's, and are not
 in `SHA256SUMS.txt`.)*
+
+## SEAT-1 (Elias's ruling J2, 2026-10-19; built 2026-10-22): THE TWO CHAMBERS BY THEIR GROUPS AT FIRST CONSTITUTION
+
+J2, verbatim (`docs/RULINGS_2026-10-19.md`): "seat both chambers by their groups at first constitution (the Senato's of 18 Oct
+2022, the Camera's of April 2018), DECLARED as a deviation, since no official source assigns the single-seat winners to
+lists. Where the chamber's page names the mixed group's components, seat each component as its list." G3 and G4 above are
+answered by this ruling, not by a per-list source: none was found. The code is `PartySystems.ItalyCamera2018` and
+`PartySystems.ItalySenato2022`; `ItalySeatingDiagnostic` re-derives both from the files below and fails while they differ.
+
+### The XVIII Camera, 630 seats, as it stood on 20 April 2018 (DECLARED day)
+
+- **The groups** are the Camera's open data, `raw/reseat_2022/dati_camera_leg18_adesioni_gruppi.csv` [DATI-C18] (each deputy's
+  adhesion with its start and end dates). On 27 March 2018 every one of the 630 deputies is in a group: M5S 222, LEGA - SALVINI
+  PREMIER 125, PARTITO DEMOCRATICO 111, FORZA ITALIA - BERLUSCONI PRESIDENTE 104, MISTO 36, FRATELLI D'ITALIA 32. LIBERI E UGUALI
+  formed on 10 April 2018 (14 deputies, from the MISTO); Enrico Costa moved from the MISTO to Forza Italia on 18 April.
+- **The mixed group's components** are the Camera's historical portal, `raw/camera2018/` [ST-MISTO] and the component pages
+  [ST-CMP]: the MISTO group's page names eighteen components by link, each component's page dates its members. Five had members
+  on 20 April 2018: Minoranze linguistiche (Gebhard, Plangger, Rossini, Schullian; from 28 Mar), Noi con l'Italia (Colucci, Lupi,
+  Tondo; Costa left 18 Apr), +Europa-Centro Democratico (Magi, Fusacchia, Tabacci; from 3 Apr - the component's name then, "MISTO-
+  +EUROPA-CENTRO DEMOCRATICO ... fino a 21.11.2019"), Civica Popolare-AP-PSI-Area Civica (Toccafondi, Longo, Lorenzin, Soverini;
+  from 3 Apr), MAIE-Movimento Associativo Italiani all'Estero-Sogno Italia (Benedetti, Borghese, Caiata, Cecconi, Tasso, Vitiello;
+  from 20 Apr). Eugenio Sangregorio was in the MISTO and in no component (he joined Noi con l'Italia on 8 May 2018).
+- **The day, DECLARED: 20 April 2018**, the day the last component of the first constitution was formed. The table is the same on
+  every day from 20 April to 7 May 2018; on 8 May Fedriga left the Lega group and Sangregorio joined Noi con l'Italia.
+- **The keys, DECLARED** (J2: "seat each component as its list", read): a group or component sits as the roster's list whose deputies it gathers or whose name it bears - Minoranze linguistiche (the SVP-PATT list's deputies) as SVP; the rest are units of their own. Noi con l'Italia's lineage to the 2022 Noi Moderati list is asked of Elias, not read by name.
+
+| group or component (the source's name) | key | seats |
+|---|---|---|
+| MOVIMENTO 5 STELLE | M5S | 222 |
+| LEGA - SALVINI PREMIER | Lega | 125 |
+| PARTITO DEMOCRATICO | PD | 111 |
+| FORZA ITALIA - BERLUSCONI PRESIDENTE | FI | 105 |
+| FRATELLI D'ITALIA | FdI | 32 |
+| LIBERI E UGUALI | LeU | 14 |
+| MISTO - MAIE-Movimento Associativo Italiani all'Estero-Sogno Italia | MAIE | 6 |
+| MISTO - Minoranze linguistiche | SVP | 4 |
+| MISTO - Civica Popolare-AP-PSI-Area Civica | CP | 4 |
+| MISTO - +Europa-Centro Democratico | PlusE | 3 |
+| MISTO - Noi con l'Italia | NcI | 3 |
+| MISTO, in no component | Misto | 1 |
+
+**DERIVED:** 222+125+111+105+32+14+6+4+4+3+3+1 = 630.
+
+### The XIX Senato, 200 elected seats, as its groups stood on 18 October 2022
+
+- **The groups** are the groups page the Internet Archive captured that day, `raw/senato2022/wayback_senato_grp_20221018194007.html`
+  [SEN-GRP22] ("Composizione dei Gruppi parlamentari", "Totale 205"). Its totals include the senators for life.
+- **Elected and for life** are split by the Senato's open data, `raw/reseat_2022/dati_senato_leg19_adesioni_gruppi.csv` and
+  `dati_senato_leg19_mandati.csv` [DATI-S19]: 200 mandates "elettivo" and six for life from 13 October 2022 (Napolitano "di diritto
+  e a vita"; Cattaneo, Monti, Piano, Rubbia, Segre "a vita, di nomina del Presidente della Repubblica"); five of the six were in a
+  group on 18 October. The senators for life are not seated: the chamber of record is seated as elected.
+- **The page names no component of the Misto group**, so the Misto sits whole (J2: components only "where the chamber's page names"
+  them). The Senato's own Misto page is behind the WAF (BILLED, `raw/camera2018/fetch_log.txt`).
+
+| group (the page's name) | key | sits as | elected | for life | page total |
+|---|---|---|---|---|---|
+| Fratelli d'Italia | FdI | FdI | 63 | 0 | 63 |
+| Partito Democratico - Italia Democratica e Progressista | PD | PD | 38 | 0 | 38 |
+| Lega Salvini Premier - Partito Sardo d'Azione | Lega | Lega | 29 | 0 | 29 |
+| MoVimento 5 Stelle | M5S | M5S | 28 | 0 | 28 |
+| Forza Italia Berlusconi Presidente | FI | FI | 18 | 0 | 18 |
+| Azione-ItaliaViva-RenewEurope | AzIV | AzIV | 9 | 0 | 9 |
+| Civici d'Italia - Noi Moderati (UDC - Coraggio Italia - Noi con l'Italia - Italia al Centro) - MAIE | CdI | — | 6 | 0 | 6 |
+| Per le Autonomie (SVP-Patt, Campobase, Sud Chiama Nord) | Aut | — | 5 | 2 | 7 |
+| Misto | Misto | — | 4 | 3 | 7 |
+
+**DERIVED:** 200 elected + 5 for life = the page's 205. Nothing seats this table yet: no Italian start falls inside the XIX and
+the Senato is modelled at PS-7.
+
+### AVS's position (J2 on E-48)
+
+AVS takes the equal-weight mean of SI's and EV's CHES 2024 rows (`ElectionsData/positions/raw/CHES_2024_final_v2.csv`, country 8,
+party_id 838 and 850), DECLARED: lrecon (1.38 + 2.21) / 2 = 1.795, galtan (1.69 + 1.71) / 2 = 1.70, and so on for every field.
+A primary split of the list's seats, if one is ever found, replaces it (the seat-weighted rule of §621).
+
+### Register of the new ids
+
+(accessed 2026-10-22; `raw/camera2018/<file>`, sizes and SHA-256 as in `raw/camera2018/SHA256SUMS.txt`; the fetch log beside them)
+
+| id | URL | publisher | page's own date | file | bytes |
+|---|---|---|---|---|---|
+| [ST-MISTO] | https://storia.camera.it/gruppi/misto-misto-23-03-2018 | Camera dei deputati, Portale storico | the MISTO of the XVIII, its officers and components dated | `storia_camera_gruppi_misto-misto-23-03-2018.html` | 302046 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-minoranze-linguistiche-misto-min-ling-29-03-2018 | as above | members "dal 28.03.2018" | `storia_camera_gruppi_misto-minoranze-linguistiche-misto-min-ling-29-03-2018.html` | 21597 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-noi-l-italia-usei-rinascimento-adc-m-nci-usei-r-ac-29-03-2018 | as above | "Composizione storica 28.03.2018" | `storia_camera_gruppi_misto-noi-l-italia-usei-rinascimento-adc-m-nci-usei-r-ac-29-03-2018.html` | 38917 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-centro-democratico-misto-cd-03-04-2018 | as above | "Composizione storica 03.04.2018" | `storia_camera_gruppi_misto-centro-democratico-misto-cd-03-04-2018.html` | 44299 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-civica-popolare-ap-psi-area-civica-misto-cp-ps-03-04-2018-23-09-2019 | as above | "Dal 3 aprile 2018 al 23 settembre 2019" | `storia_camera_gruppi_misto-civica-popolare-ap-psi-area-civica-misto-cp-ps-03-04-2018-23-09-2019.html` | 24002 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-maie-movimento-associativo-italiani-all-estero-sogno-italia-misto-maie-si-20-04-2018-18-02-2019 | as above | "Dal 20 aprile 2018 al 18 febbraio 2019" | `storia_camera_gruppi_misto-maie-movimento-associativo-italiani-all-estero-sogno-italia-misto-maie-si-20-04-2018-18-02-2019.html` | 25527 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-manifesta-potere-al-popolo-partito-della-rifondazione-comunista-sinistra-europea-misto-m-pp | as above | members from 08.02.2022 (read to date a component whose slug carries no date) | `storia_camera_gruppi_misto-manifesta-potere-al-popolo-partito-della-rifondazione-comunista-sinistra-europea-misto-m-pp.html` | 21895 |
+| [ST-CMP] | https://storia.camera.it/gruppi/misto-popolo-protagonista-alternativa-popolare-ap-partito-socialista-italiano-psi-misto-pp-ap-psi-06 | as above | members from 06.05.2020 (the same reason) | `storia_camera_gruppi_misto-popolo-protagonista-alternativa-popolare-ap-partito-socialista-italiano-psi-misto-pp-ap-psi-06.html` | 26447 |
+| [DATI-C18] | dati.camera.it SPARQL (the query in `raw/reseat_2022/fetch_log.txt`) | Camera dei deputati, open data | — | `raw/reseat_2022/dati_camera_leg18_adesioni_gruppi.csv` | 192342 |
+| [DATI-S19] | dati.senato.it SPARQL (the queries in `raw/reseat_2022/fetch_log.txt`) | Senato della Repubblica, open data | — | `raw/reseat_2022/dati_senato_leg19_adesioni_gruppi.csv`, `dati_senato_leg19_mandati.csv` | 35567, 42907 |
+| [SEN-GRP22] | the Internet Archive's raw capture of the Senato's groups page, 18 Oct 2022 (`raw/senato2022/SHA256SUMS.txt`) | Senato della Repubblica | "XIX Legislatura (dal 13 ottobre 2022)" | `raw/senato2022/wayback_senato_grp_20221018194007.html` | 39239 |
+
+BILLED on 2026-10-22 (the fetch log): the Internet Archive answered "Temporarily Offline" (HTTP 503) to its index - the April 2018
+captures of camera.it/leg18/46 were wanted as a second witness; the Senato's Misto page answered its WAF challenge (HTTP 202).

@@ -34,21 +34,45 @@ namespace PoliSim.UI
         public static readonly string[] Cuts = { "none", "bar", "notch", "split", "spine" };
         public static readonly string[] Fills = { "solid", "hatched" };
 
-        /// <summary>The cuts D18's ladder spends on the real parties (solid only) - the largest chamber needs three. `PartyCreationCheck` asserts this
-        /// against `D18MarkAssignment.Build`'s own rows, so the two cannot part.</summary>
-        public const int SpentCuts = 3;
+        /// <summary>D18's batch (board 11b's scope): the four chambers with no sourced ink, whose marks are the neutral cell vocabulary. Sweden's and the
+        /// USA's are drawn art, outside it.</summary>
+        public static readonly CountryId[] MarkBatchChambers = { CountryId.France, CountryId.Italy, CountryId.Germany, CountryId.Poland };
 
-        /// <summary>The cells a created party may wear: every cell the seeds do not (the 25 hatched, and the split and spine cuts solid) - so a created
-        /// party never wears a real party's mark. Installed under `Resources/Art/UI/Cells/`, loaded by `IconLibrary.GetPartyMark`.</summary>
+        /// <summary>
+        /// SEAT-1 (the film's PartyCreationCheck failure, 2026-10-22): THE CELLS THE SEEDS SPEND - D18's assignment rule, the ONE source both the
+        /// assignment (`D18MarkAssignment.Build`, Editor) and the picker (<see cref="UnspentCells"/>) read, so no cell is ever both assigned and offered.
+        /// In each batch chamber the roster's parties by seed seats, largest first (the seed's order breaking ties); rank k takes silhouette k mod 5 and
+        /// cut k / 5, solid. A rank past the ladder takes nothing (`D18MarkAssignment` reports it). Before SEAT-1 the picker reserved the first three solid
+        /// cuts whole; the XVIII Camera's units took Italy's roster to 18, so its ranks 15-17 spend three cells of the fourth cut, which the picker no longer offers.
+        /// </summary>
+        public static List<(CountryId Country, PoliticalParty Party, string Silhouette, string Cut, string Cell)> SeedCells()
+        {
+            var rows = new List<(CountryId, PoliticalParty, string, string, string)>();
+            foreach (CountryId country in MarkBatchChambers)
+            {
+                var pending = new List<PoliticalParty>(PartySystems.For(country));
+                pending.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));   // the very call D18's assignment made, so every existing rank stands
+                for (int k = 0; k < pending.Count && k / Silhouettes.Length < Cuts.Length; k++)
+                {
+                    string silhouette = Silhouettes[k % Silhouettes.Length], cut = Cuts[k / Silhouettes.Length];
+                    rows.Add((country, pending[k], silhouette, cut, $"mark_cell_{silhouette}_{cut}_solid"));
+                }
+            }
+            return rows;
+        }
+
+        /// <summary>The cells a created party may wear: every cell the seeds do not spend (<see cref="SeedCells"/>) - so a created party never wears a real
+        /// party's mark. Installed under `Resources/Art/UI/Cells/`, loaded by `IconLibrary.GetPartyMark`.</summary>
         public static List<string> UnspentCells()
         {
+            var spent = new HashSet<string>();
+            foreach ((CountryId _, PoliticalParty _, string _, string _, string cell) in SeedCells()) { spent.Add(cell); }
             var cells = new List<string>();
             foreach (string fill in Fills)
             {
-                for (int c = 0; c < Cuts.Length; c++)
+                foreach (string cut in Cuts)
                 {
-                    if (fill == "solid" && c < SpentCuts) { continue; }
-                    foreach (string s in Silhouettes) { cells.Add($"mark_cell_{s}_{Cuts[c]}_{fill}"); }
+                    foreach (string s in Silhouettes) { string cell = $"mark_cell_{s}_{cut}_{fill}"; if (!spent.Contains(cell)) { cells.Add(cell); } }
                 }
             }
             return cells;

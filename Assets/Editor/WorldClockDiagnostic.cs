@@ -14,7 +14,8 @@ namespace PoliSim.EditorTools
     /// PS-1 (2026-09-25, §618): THE WORLD CLOCK, ASSERTED. For every country: its start follows the ruled rule (the standard run-up before
     /// its polling day, or the snap trigger's day); the chamber of record on that date is one of the records' and its seat table sums to
     /// the chamber's size with every key in the roster; a world built on that start seats exactly that table and is governed by the
-    /// government of record where its cabinet is sourced; the two chambers billed as E-47 are reported as deviations, not seated silently;
+    /// government of record where its cabinet is sourced; a chamber whose table is not on disk is reported as a deviation, not seated silently (SEAT-1
+    /// retired E-47's two; Italy's 2018 Camera by its groups prints its declaration - `ItalySeatingDiagnostic` holds it);
     /// no other start falls inside France's window without a chamber (2024-06-09 to 2024-07-18, ruled); the default epoch keeps K-1's
     /// standing (Sweden's 2026 chamber, its government PROVISIONAL). The epoch is restored to the default afterwards, whatever happens.
     /// </summary>
@@ -142,7 +143,8 @@ namespace PoliSim.EditorTools
 
                     sb.Append(F("    {0,-8} opens {1:yyyy-MM-dd} ({2}); chamber of record {3} (elected {4:yyyy-MM-dd}, convened {5:yyyy-MM-dd}); seated {6}{7}; government {8}\n",
                         id, start, WorldClock.GoverningModeOnly(id) ? "governing mode" : WorldClock.IsSnapStart(id) ? "snap trigger" : "standard run-up",
-                        chamber.Vintage, chamber.ElectionDay, chamber.Convened, seatedVintage, deviation != null ? " - DEVIATION: " + deviation : "", government));
+                        chamber.Vintage, chamber.ElectionDay, chamber.Convened, seatedVintage, (deviation != null ? " - DEVIATION: " + deviation : "")
+                        + (WorldClock.SeatingDeclaration(id, start) is string declared ? " - DECLARED (SEAT-1): " + declared : ""), government));
                 }
 
                 // France's window: no other start inside 2024-06-09 .. 2024-07-18

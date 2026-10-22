@@ -674,3 +674,33 @@ between 26 February 2026 and the sitemap's serving; with [IG-COMP] on 9 Septembe
 
 *(Filed 2026-09-25 by the executive sourcing pass. Nothing outside `ElectionsData/france/records_by_date.md` and
 `ElectionsData/france/raw/executive/` was written. No code was touched, Unity was not run, nothing was committed.)*
+
+## Table 1b — THE XVIe BY THE MINISTRY'S NUANCES (SEAT-1, E-47 (b); built 2026-10-22)
+
+The Interior Ministry's "France entière" page of the 2022 legislative elections [MI-FE22], `raw/legislatives2022/wayback_interieur_FE_20220705224641.html.gz`
+(the Internet Archive's raw capture of 5 July 2022, the stored gzip body, held to `raw/legislatives2022/SHA256SUMS.txt`; the
+folder carries no fetch log, so the captured URL is not on record), headed "12 et 19 juin 2022", "France Entière", table
+"Sièges par nuance de candidats", its column "Nb Sieges". Read into the code as `PartySystems.FranceAssembly2022`; the XVIe is
+seated by it on a date inside 28 June 2022 - 9 June 2024 (Italy's, Poland's Sejm and the USA's starts); `ItalySeatingDiagnostic`
+re-reads the page and fails while the table differs.
+
+| nuance (the page's label) | key | seats |
+|---|---|---|
+| Ensemble ! (Majorité présidentielle) | ENS | 245 |
+| Nouvelle union populaire écologique et sociale | NUP | 131 |
+| Rassemblement National | RN | 89 |
+| Les Républicains | LR | 61 |
+| Divers gauche | DVG | 22 |
+| Divers droite | DVD | 10 |
+| Régionaliste | REG | 10 |
+| Divers centre | DVC | 4 |
+| Union des Démocrates et des Indépendants | UDI | 3 |
+| Divers | DIV | 1 |
+| Droite souverainiste | DSV | 1 |
+| Divers extrême gauche, Parti radical de gauche, Ecologistes, Reconquête !, Divers extrême droite | — | 0 each |
+
+**DERIVED:** 245+131+89+61+22+10+10+4+3+1+1 = 577. **The keys, DECLARED:** a 2022 nuance with a 2024 nuance's label is that key;
+NUP (the NUPES joint candidacy, unsplit by the Ministry, as UG in 2024) and DSV are the 2022 nuances' own, with no CHES position.
+
+**A finding for G1, not acted on:** the page's own header reads "12 et 19 juin 2022" - the XVIe's two polling days are on a fetched
+page now. The chamber of record's election day stays unset in code (`WorldClock.Chambers`) until that is ruled or re-read.

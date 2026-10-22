@@ -113,7 +113,9 @@ namespace PoliSim.UI
         /// <summary>Board 10d's unit: 1 at the 17 px label the 1280 sheet carries, and it grows with the type.</summary>
         private static float BoardUnit(GUIStyle labelStyle) => labelStyle.fontSize / BoardUnitFontSize;
 
-        public void Draw(string title, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle labelStyle)
+        /// <param name="declaredSeats">SEAT-1 (the review's M2): the size the chamber declares (`PartySystems.DeclaredSize`), read by the film's chamber
+        /// guard; 0 for the chamber's statutory size.</param>
+        public void Draw(string title, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle labelStyle, int declaredSeats = 0)
         {
             EnsureTexture();
             if (!string.IsNullOrEmpty(title)) { GUILayout.Label(title, labelStyle); }
@@ -156,7 +158,7 @@ namespace PoliSim.UI
                 DrawArc(area, seatColors, seatParty, seatBloc, blocsKnown, labelStyle);
                 LastDotsDrawn = seatColors.Count;
                 LastChamberSeats = totalSeats;
-                LastDeclaredSeats = PartySystems.ChamberSeats(country);
+                LastDeclaredSeats = declaredSeats > 0 ? declaredSeats : PartySystems.ChamberSeats(country);   // SEAT-1: the seated vintage's size (Italy's XVIII Camera, 630)
             }
 
             if (!string.IsNullOrEmpty(LastMajorityReading))
@@ -414,7 +416,7 @@ namespace PoliSim.UI
         /// chamber the page counts, the first; and it passes <paramref name="majorityTick"/> false - the House's tick (half the seats filled, plus one) is not the
         /// Senate's carrying number (Art. I §3 cl. 4: an equal division is the vice president's).
         /// </summary>
-        public static void DrawSeatBar(Rect rect, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle caption, GUIStyle abbrev, Color paper, bool recordsTheChamber = true, bool majorityTick = true)
+        public static void DrawSeatBar(Rect rect, CountryId country, IReadOnlyDictionary<string, int> seats, GUIStyle caption, GUIStyle abbrev, Color paper, bool recordsTheChamber = true, bool majorityTick = true, int declaredSeats = 0)
         {
             int total = 0;
             foreach (KeyValuePair<string, int> kvp in seats) { total += Mathf.Max(0, kvp.Value); }
@@ -501,7 +503,7 @@ namespace PoliSim.UI
             if (!recordsTheChamber) { return; }
             LastDotsDrawn = seatBloc.Count;
             LastChamberSeats = total;
-            LastDeclaredSeats = PartySystems.ChamberSeats(country);
+            LastDeclaredSeats = declaredSeats > 0 ? declaredSeats : PartySystems.ChamberSeats(country);   // SEAT-1: the seated vintage's size (Italy's XVIII Camera, 630)
             LastRows = 1;
         }
 

@@ -63,11 +63,9 @@ namespace PoliSim.EditorTools
         /// definition was empty the moment the cells landed, and a check that reports it verified nothing
         /// is worse than no check. These four are the chambers with **no sourced ink** - board 11b's own
         /// scope - so their marks are the neutral cell vocabulary. Sweden's eight and the USA's two are
-        /// drawn art under rule 9a, carry their own seated colour, and are not in this batch.</summary>
-        private static readonly CountryId[] BatchChambers =
-        {
-            CountryId.France, CountryId.Italy, CountryId.Germany, CountryId.Poland,
-        };
+        /// drawn art under rule 9a, carry their own seated colour, and are not in this batch.
+        /// SEAT-1: the runtime's list (`PartyCreationFlow.MarkBatchChambers`), which the picker reads too.</summary>
+        private static readonly CountryId[] BatchChambers = PoliSim.UI.PartyCreationFlow.MarkBatchChambers;
 
         public readonly struct Row
         {
@@ -110,12 +108,8 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                // ⚠ A STABLE sort, not OrderByDescending on a fresh list: four Italian parties hold one
-                // seat each and three French ones do, and the seed's order is the only tie-break that
-                // exists. An unstable sort would produce a different assignment on a different runtime
-                // for the same repo, which is the one thing a seed table may not do.
-                pending.Sort((a, b) => b.SeedSeats.CompareTo(a.SeedSeats));
-
+                // ⚠ The ranks and cells are the RUNTIME's (`PartyCreationFlow.SeedCells`, SEAT-1): the very sort and ladder this check used to run itself,
+                // moved so the mark picker reads the same cells it must not offer. The seed's order is the only tie-break between equal seats.
                 string iso = Iso2(country);
                 if (iso == null)
                 {
@@ -123,22 +117,17 @@ namespace PoliSim.EditorTools
                     continue;
                 }
 
-                for (int k = 0; k < pending.Count; k++)
+                if (pending.Count > Silhouettes.Length * Cuts.Length)
                 {
-                    string silhouette = Silhouettes[k % Silhouettes.Length];
-                    int cutIndex = k / Silhouettes.Length;
-                    if (cutIndex >= Cuts.Length)
-                    {
-                        faults.Add($"{country} needs {pending.Count} marks and the vocabulary offers "
-                                   + $"{Silhouettes.Length * Cuts.Length} solid cells - the ladder is spent");
-                        break;
-                    }
+                    faults.Add($"{country} needs {pending.Count} marks and the vocabulary offers "
+                               + $"{Silhouettes.Length * Cuts.Length} solid cells - the ladder is spent");
+                }
 
-                    string cut = Cuts[cutIndex];
-                    rows.Add(new Row(country, pending[k].Abbrev, pending[k].Name, pending[k].SeedSeats,
-                        silhouette, cut,
-                        $"mark_cell_{silhouette}_{cut}_{Fill}",
-                        $"mark_party_{iso}_{Slug(pending[k].Abbrev)}"));
+                foreach ((CountryId c, PoliticalParty party, string silhouette, string cut, string cell) in PoliSim.UI.PartyCreationFlow.SeedCells())
+                {
+                    if (c != country) { continue; }
+                    if (cell != $"mark_cell_{silhouette}_{cut}_{Fill}") { faults.Add($"{country} {party.Abbrev}: the runtime's cell {cell} is not the {Fill} cell of {silhouette} · {cut}"); }
+                    rows.Add(new Row(country, party.Abbrev, party.Name, party.SeedSeats, silhouette, cut, cell, $"mark_party_{iso}_{Slug(party.Abbrev)}"));
                 }
             }
 
@@ -156,10 +145,18 @@ namespace PoliSim.EditorTools
             (CountryId.Poland, "SLD", "the 2019 Sejm's Sojusz Lewicy Demokratycznej list (49 seats), seated as elected at a start before 2023-11-13; asked of Design with the next send"),
             (CountryId.Poland, "PSL", "the 2019 Sejm's own PSL list (30 seats), seated as elected at a start before 2023-11-13; asked of Design with the next send"),
             (CountryId.Poland, "MN", "the 2019 Sejm's Mniejszość Niemiecka list (1 seat), seated as elected at a start before 2023-11-13; asked of Design with the next send"),
+            // SEAT-1 (Elias's ruling J2, §869): the XVIII Camera's units that are not 2022's lists, seated by its groups at a start before 2022-10-13
+            (CountryId.Italy, "LeU", "the XVIII Camera's Liberi e Uguali group (14 seats), seated by its groups at a start before 2022-10-13 (SEAT-1); asked of Design with the next send"),
+            (CountryId.Italy, "CP", "the XVIII Camera's mixed-group component Civica Popolare-AP-PSI-Area Civica (4 seats), seated at a start before 2022-10-13 (SEAT-1); asked of Design with the next send"),
+            (CountryId.Italy, "NcI", "the XVIII Camera's mixed-group component Noi con l'Italia (3 seats), seated at a start before 2022-10-13 (SEAT-1); asked of Design with the next send"),
+            (CountryId.Italy, "Misto", "the XVIII Camera's mixed group outside any component (1 seat), seated at a start before 2022-10-13 (SEAT-1); asked of Design with the next send"),
+            // SEAT-1 (E-47 (b)): the XVIe's nuances that are not the XVIIe's, seated by nuance at a start between 2022-06-28 and 2024-06-09
+            (CountryId.France, "NUP", "the XVIe Assembly's NUPES nuance (131 seats), seated by the Ministry's nuances at a start before 2024-06-09 (SEAT-1); asked of Design with the next send"),
+            (CountryId.France, "DSV", "the XVIe Assembly's Droite souverainiste nuance (1 seat), seated at a start before 2024-06-09 (SEAT-1); asked of Design with the next send"),
         };
 
-        /// <summary>Lower it as the three marks land; never raise it without a row above.</summary>
-        private const int AwaitingArtCeiling = 3;
+        /// <summary>Lower it as the marks land; never raise it without a row above. SEAT-1 raised it with its rows above.</summary>
+        private const int AwaitingArtCeiling = 9;
 
         private static string AwaitingArtReason(CountryId country, string abbrev)
         {

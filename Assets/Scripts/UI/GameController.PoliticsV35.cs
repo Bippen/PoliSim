@@ -143,13 +143,14 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(head.x + side + V35.Px(12f) + fw + V35.Px(8f), head.y, head.width * 0.5f, headH), chamber + " seats", V35Serif(V35.Name, PoliSimTheme.TextPrimary));
             }
             var barRect = new Rect(inner.x, head.yMax + V35.Px(8f), inner.width, barBand);
-            HemicycleRenderer.DrawSeatBar(barRect, PlayerCountryId, seats, captionFace, abbrevFace, V35.CardPaper);
+            int declaredSize = PartySystems.DeclaredSize(_playerCountry, _simulationManager.CurrentDate);   // SEAT-1 (M2): the seated vintage's size, never the count's
+            HemicycleRenderer.DrawSeatBar(barRect, PlayerCountryId, seats, captionFace, abbrevFace, V35.CardPaper, declaredSeats: declaredSize);
             SlipAnchor(new Rect(inner.x, inner.y, inner.width, inner.height), "parl:chamber");
             var chamberSlip = new SlipContent(UiFormat.Seats(total).ToUpperInvariant() + " · THE " + chamber.ToUpperInvariant())
                 .Add("THE PARTIES IN THE CHAMBER'S OWN ORDER - " + (blocs ? "THE LEFT BLOC, THE UNAFFILIATED, THE RIGHT BLOC, BY SEATS WITHIN EACH" : "BY SEATS; THE MODEL RECORDS NO BLOCS FOR THIS CHAMBER"))
                 .Add("THE TICK: THE SEAT THAT CARRIES THE CHAMBER - " + HemicycleRenderer.LastMajoritySeat + " OF " + total);
             if (!string.IsNullOrEmpty(HemicycleRenderer.LastMajorityReading)) { chamberSlip.Add(HemicycleRenderer.LastMajorityReading.ToUpperInvariant()); }
-            if (total != PartySystems.ChamberSeats(PlayerCountryId)) { chamberSlip.Add("THE CHAMBER DECLARES " + PartySystems.ChamberSeats(PlayerCountryId) + " SEATS"); }
+            if (total != declaredSize) { chamberSlip.Add("THE CHAMBER DECLARES " + declaredSize + " SEATS"); }
             _politicsSlipBook.Anchors["parl:chamber"] = chamberSlip;
             GUILayout.Space(gutter);
 
