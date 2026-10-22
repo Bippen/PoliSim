@@ -29,7 +29,7 @@ namespace PoliSim.EditorTools
     /// of each jurisdiction the ballots of record's (US-6c, recomputed from the catalog) and against the record's 2024 - written to the card; the stored contest
     /// re-derives the count's own states (<see cref="UsPresidentialElection.StatesOf"/>, the reason no per-state field rides the save);</item>
     /// <item>(c) a US game played from its start (12 Mar 2024) past 5 Nov 2024 to the day after the oath, in the controller's order: the polling day raised once,
-    /// no run-up or campaign staged, the count held once with its log line naming the winner and the electors, the controller's own election path (the
+    /// the run-up and the campaign staged and the count reading its final shares (PS-6 US-30), the count held once with its log line naming the winner and the electors, the controller's own election path (the
     /// warm-up's `HoldElectionWithoutTheNight`) recording that no chamber is elected, the record yielding from the polling day, the 119th House by date, the
     /// winner sworn on the oath's day; saves cut across the count and across the oath loaded INTO THE GAME (the controller's `RestoreFromSave`, §557) and
     /// stepped - the contest whole, nothing counted twice, the president kept;</item>
@@ -296,7 +296,7 @@ namespace PoliSim.EditorTools
                 var controller = BindController(hosts, sim, usa);
                 int raised = 0, contestsOnDay = -1;
                 DateTime raisedOn = DateTime.MinValue;
-                bool staged = false, controllerPath = false, recordYields = false, houseByDate = false, oathDay = false, cutCount = false, cutOath = false;
+                bool staged = false, campaignCounted = false, controllerPath = false, recordYields = false, houseByDate = false, oathDay = false, cutCount = false, cutOath = false;
                 string controllerWhat = "not reached", lineOnDay = null;
                 Application.logMessageReceived += Listen;
                 try
@@ -312,6 +312,7 @@ namespace PoliSim.EditorTools
                             contestsOnDay = usa.UsPresidentialElections.Count;
                             played = contestsOnDay == 1 ? usa.UsPresidentialElections[0] : null;
                             lineOnDay = played?.Line;   // the count's own line - a House choice on 6 January would append to it
+                            campaignCounted = sim.TryPlayerCampaignShares(out Dictionary<string, double> _) && logged.Any(l => l.StartsWith("PRESIDENTIAL: USA - the campaign ran to the polling day", StringComparison.Ordinal));   // PS-6 US-30: the campaign's final shares counted
                             // the controller's election path on the day - the warm-up's HoldElectionWithoutTheNight, as the film driver calls it
                             int before = usa.ElectionHistory.Count;
                             MethodInfo hold = typeof(PoliSim.UI.GameController).GetMethod("HoldElectionWithoutTheNight", BindingFlags.Instance | BindingFlags.NonPublic);
@@ -344,7 +345,7 @@ namespace PoliSim.EditorTools
                 }
                 finally { Application.logMessageReceived -= Listen; }
                 Check(raised == 1 && raisedOn == Polled, F("(c) a game from the USA's start ({0}) raises its polling day {1} time(s) on the way to {2} - on {3}", Day(start), raised, Day(Oath.AddDays(1)), Day(raisedOn)));
-                Check(!staged, "(c) no run-up and no campaign are staged for the USA on the way (LiveCampaignSetup stages Sweden's and Germany's; its stated reason stands) - the count reads the prediction");
+                Check(staged && campaignCounted, "(c) the run-up and the campaign are staged for the USA on the way (PS-6 US-30, LiveCampaignSetup.TryUsa) - the count reads the campaign's final shares, as its log line says");
                 string line = lineOnDay == null ? null : logged.FirstOrDefault(l => l.Contains(lineOnDay));
                 Check(played != null && usa.UsPresidentialElections.Count == 1 && line != null && logged.Count(l => l.StartsWith("PRESIDENTIAL: USA - the count of ", StringComparison.Ordinal)) == 1
                       && line.Contains(played.Electors[0].Candidate) && line.Contains(played.Electors[0].Votes.ToString(CultureInfo.InvariantCulture)) && line.Contains(played.Electors[1].Votes.ToString(CultureInfo.InvariantCulture)),

@@ -18,7 +18,7 @@ namespace PoliSim.EditorTools
     /// Germany's and Poland's second elections reading their own" - and R-US24's line: "a US game's second presidential count swings its states from the game's
     /// own previous count, its states printed beside the record's 2024 map".
     /// <list type="bullet">
-    /// <item>(a) inertness: a world on each of the four starts holds no count of its own, and its history, its prediction and (Sweden, Germany) its staged
+    /// <item>(a) inertness: a world on each of the four starts holds no count of its own, and its history, its prediction and (Sweden, Germany, the USA) its staged
     /// campaign handed the played country are bit for bit what they are without it - the reason the dump cannot move (it holds no election; the integrator's
     /// dump diff proves it);</item>
     /// <item>(b) Sweden, Germany and Poland, each on its own start: the game's first count (the prediction on its polling day counted by the country's own
@@ -111,7 +111,7 @@ namespace PoliSim.EditorTools
                 bool predicted1 = NationalElection.TryPredictShares(id, out Dictionary<string, double> s1, null, probe, country);
                 bool sameStaging = true;
                 string staging = string.Empty;
-                if (id == CountryId.Sweden || id == CountryId.Germany)
+                if (id == CountryId.Sweden || id == CountryId.Germany || id == CountryId.USA)   // PS-6 US-30: the USA's campaign is staged too (LiveCampaignSetup.TryUsa), on the same calendar
                 {
                     CampaignCalendar cal = CampaignCalendar.FromWorldStart(NextAfter(id, start, probe), start);
                     bool a = LiveCampaignSetup.TryFor(id, new (int, int, Scandal)[0], cal, out CampaignRun.Setup u0, out string n0, onVoteModelCompatibility: true);

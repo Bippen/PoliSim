@@ -372,3 +372,10 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 - **The holdover.** When the Senate confirms no successor, the sitting chair serves on. That is the game's DECLARED reading; 12 U.S.C. 242's "continue to serve" covers the Board's members, not the chair's designation. Keep it, or have the Vice Chair act (section 244, as in the chair pro tempore of 2022)? Ruling the second way means fetching section 244 and the 2022 record.
 - **A player-president under a hostile Senate.** As built, you cannot nominate when the count would refuse; the bank page and the Docket say so, and the chair holds over. Or should you be able to nominate anyway and see the Senate refuse your nominee as a played event?
 - **The count rule.** The Senate votes as party blocs (DECLARED). That reproduces Yellen 2014 but not Powell 2018, when the other party voted for him. The reviewer recommends a crossing rule fitted on the full record of Fed-chair confirmation roll calls. Keep the blocs, or source and fit the crossing?
+
+### US-30 the campaign on the 51 jurisdictions (§894): the asks it ends in
+
+- **Save format 51.** A save from before US-30, cut inside a US campaign window, carries no campaign, so this build refuses it (the plain message, as for format 47). Or should it declare no step and start the campaign at the load?
+- **The US-9 card.** The card measures on the University of Florida's eligible-voter counts and July 2026 salience, while play stages on the Census Bureau's CVAP and Gallup's August 2024 wave. Re-cut the card to play's inputs?
+- **The war chest in dollars.** The price table stays the model's one table, BILLED. Source it (FEC spending), or keep it for now?
+- **No election night.** The USA's count lands at once until US-34 builds a night. Acceptable meanwhile?

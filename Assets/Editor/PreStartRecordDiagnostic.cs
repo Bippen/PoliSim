@@ -112,8 +112,7 @@ namespace PoliSim.EditorTools
                                 id, start, opens == DateTime.MinValue ? "(no election of record before it)" : opens.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
                                 after.SeededUnemployment, after.SeededInflation, after.FirstLast));
                         sb.Append(F("    read      {0} AT ITS START {1:yyyy-MM-dd}: BEFORE {2} - AFTER {3}\n", id, start, Describe(before.AtStart, before.LatestAtStart), Describe(after.AtStart, after.LatestAtStart)));
-                        if (id == CountryId.USA) { sb.Append(F("    read      {0}: no campaign is staged, so no opening is judged - the count judges the record on its polling day ((d) US-8)\n", id)); }
-                        else if (after.Opening != DateTime.MinValue)
+                        if (after.Opening != DateTime.MinValue)   // PS-6 US-30: the USA's campaign is staged, so its opening is judged as every other country's
                         {
                             sb.Append(F("    read      {0} AT ITS CAMPAIGN'S OPENING {1:yyyy-MM-dd} (where the record is judged): BEFORE {2} -> {3} - AFTER {4} -> {5}\n", id, after.Opening,
                                 Describe(before.AtOpening, before.LatestAtOpening), Shifts(before.Shift), Describe(after.AtOpening, after.LatestAtOpening), Shifts(after.Shift)));
@@ -127,7 +126,7 @@ namespace PoliSim.EditorTools
                 foreach (CountryId id in order)
                 {
                     Measured m = measuredAfter[id];
-                    if (m.Opening == DateTime.MinValue || id == CountryId.USA) { continue; }   // the USA's record over the term is judged on the polling day, (d) US-8
+                    if (m.Opening == DateTime.MinValue) { continue; }
                     sb.Append(F("    read      {0} (A1) AT ITS CAMPAIGN'S OPENING {1:yyyy-MM-dd}: {2} -> {3}\n", id, m.Opening, EconomicVote.Describe(m.TermAtOpening), Shifts(m.TermShiftOpening)));
                     sb.Append(F("    read      {0} (A1) FOR THE COUNT {1:yyyy-MM-dd}: {2} -> {3}\n", id, m.CountDay, EconomicVote.Describe(m.TermAtCount), Shifts(m.TermShiftCount)));
                 }
@@ -136,9 +135,9 @@ namespace PoliSim.EditorTools
                 Check(measuredAfter[CountryId.Sweden].TookOffice == new DateTime(2022, 10, 18),
                     F("(d) Sweden's government took office {0:yyyy-MM-dd} - Kristersson's, 2022-10-18", measuredAfter[CountryId.Sweden].TookOffice));
                 // PS-6 US-8 (the plan's risk 16, a first use): §709's US pre-start record JUDGED FOR THE FIRST TIME, on the count's own day - the day loop's count
-                // reads the record over the term on the polling day itself (SimulationManager's hook, RecordOverTerm(country, the polling day)), and no campaign is
-                // staged for the USA, so no record is judged at an opening (the (b) lines above print the campaign calendar's days, which play does not read for the
-                // USA). Here: a world on the USA's start, the pre-start record seeded and the publication calendar stepped through the polling day, the record
+                // reads the record over the term on the polling day itself where no campaign ran (SimulationManager's hook, RecordOverTerm(country, the polling day));
+                // since PS-6 US-30 a US campaign is staged, so play judges the record at its opening and, for the count, on the eve (§752) - the lines above print
+                // both. Here: a world on the USA's start, the pre-start record seeded and the publication calendar stepped through the polling day, the record
                 // judged that day - Biden's term from his oath, the shift on the president's party alone (the presidential row); nothing tuned (the review's L4)
                 DateTime usPolled = new DateTime(2024, 11, 5);
                 DateTime? usTook;

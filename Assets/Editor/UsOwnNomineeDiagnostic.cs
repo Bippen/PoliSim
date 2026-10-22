@@ -36,7 +36,7 @@ namespace PoliSim.EditorTools
     /// marked, at the party's poll × 1.0 against the other nominee's fitted factor; with no own nominee the count is the same contest whichever empty list it is
     /// handed - the default game's.</item>
     /// <item>(e) A US GAME STARTED WITH ITS OWN NOMINEE (12 Mar 2024), stepped by the game's loop through the count to the day after the oath: the count held once,
-    /// fielding the nominee, its shares exactly the field of the poll the day loop read - a poll that reads the nominee's position (it differs from the poll at
+    /// fielding the nominee, its shares exactly the field of the shares the day loop counted - the campaign's final shares since PS-6 US-30, staged on a vote model that reads the nominee's position (it differs from the poll at
     /// the party's own point); ONE AUTHORITY - with the player re-seated in DEM, REP's nominee still heads the field and REP's point is still its; the
     /// winner sworn as the person the count names.</item>
     /// <item>(f) THE PERSON THE TERM LIMIT READS (planted counts): the nominee elected in 2024 is the president within the limit in 2028 (one election, the game's),
@@ -334,7 +334,7 @@ namespace PoliSim.EditorTools
                 bool refusedPick = !UsTermLimit.Pick(usa, Polled2024, "REP", Vance, out string pickWhy);
                 Check(refusedPick && pickWhy.StartsWith("the player's own nominee stands that day", StringComparison.Ordinal) && usa.UsNomineePicks.Count == 0,
                     F("(e) the term limit's pick does not reach the own nominee's day: \"{0}\"", pickWhy));
-                Dictionary<string, double> pollRead = null, pollAtParty = null;
+                Dictionary<string, double> pollRead = null, pollAtParty = null, pollCounted = null;
                 int held = 0;
                 for (int d = 0; d < 400 && sim.CurrentDate < Oath2025.AddDays(1); d++)
                 {
@@ -344,6 +344,7 @@ namespace PoliSim.EditorTools
                         // the polling day, the day loop's own order: the count is the last thing AdvanceDay does, so the poll read right after it is the poll it read
                         bool boundary = sim.AdvanceDay();
                         if (UsPresidentialElection.Held(usa, sim.CurrentDate)) { held++; }
+                        sim.TryPlayerCampaignShares(out pollCounted);   // PS-6 US-30: the campaign ran to the day, and the count read its final shares
                         PoliticalParty roster = RosterParty("REP");
                         using (OwnNominees.Preview(Nominee("REP", Hale, roster.LrEcon, roster.Galtan)))
                         {
@@ -359,12 +360,12 @@ namespace PoliSim.EditorTools
                 }
                 UsPresidentialElection.Contest played = usa.UsPresidentialElections.FirstOrDefault(c => c.PollingDay == Polled2024);
                 UsPresidentialElection.Tally playedRep = played?.Electors.FirstOrDefault(t => t.Party == "REP"), playedDem = played?.Electors.FirstOrDefault(t => t.Party == "DEM");
-                UsPresidentialElection.TryField(CountryId.USA, Polled2024, pollRead, UsTermLimit.NomineesFor(usa, Polled2024), out List<UsPresidentialElection.Tally> field, out string _);
+                UsPresidentialElection.TryField(CountryId.USA, Polled2024, pollCounted ?? pollRead, UsTermLimit.NomineesFor(usa, Polled2024), out List<UsPresidentialElection.Tally> field, out string _);
                 UsPresidentialElection.Tally fieldRep = field.FirstOrDefault(t => t.Party == "REP"), fieldDem = field.FirstOrDefault(t => t.Party == "DEM");
-                Check(held == 1 && usa.UsPresidentialElections.Count == 1 && playedRep != null && playedRep.Candidate == Hale && playedRep.OwnNominee
+                Check(held == 1 && pollCounted != null && usa.UsPresidentialElections.Count == 1 && playedRep != null && playedRep.Candidate == Hale && playedRep.OwnNominee
                       && fieldRep != null && fieldDem != null && playedRep.Share.Equals(fieldRep.Share) && playedDem.Share.Equals(fieldDem.Share),
-                    F("(e) the count held once on {0}, fielding {1} for REP at {2:0.000000} % - exactly the field of the poll the day loop read (REP {3:0.000000} %, DEM {4:0.000000} % of the poll): \"{5}\"",
-                        Day(Polled2024), playedRep?.Candidate, playedRep?.Share ?? double.NaN, 100.0 * (pollRead?["REP"] ?? double.NaN), 100.0 * (pollRead?["DEM"] ?? double.NaN), played?.Line ?? "no count"));
+                    F("(e) the count held once on {0}, fielding {1} for REP at {2:0.000000} % - exactly the field of the shares the day loop counted - the campaign's final shares (PS-6 US-30; REP {3:0.000000} %, DEM {4:0.000000} %): \"{5}\"",
+                        Day(Polled2024), playedRep?.Candidate, playedRep?.Share ?? double.NaN, 100.0 * ((pollCounted ?? pollRead)?["REP"] ?? double.NaN), 100.0 * ((pollCounted ?? pollRead)?["DEM"] ?? double.NaN), played?.Line ?? "no count"));
                 Check(pollRead != null && pollAtParty != null && !pollRead["REP"].Equals(pollAtParty["REP"]),
                     F("(e) the 2024 count read the nominee's position through the poll: REP of the two {0:0.000000} % with the nominee at ({1:0.00}, {2:0.00}), {3:0.000000} % at the party's own point the same day",
                         pollRead != null ? RepOfTwo(pollRead) : double.NaN, hale.LrEcon, hale.Galtan, pollAtParty != null ? RepOfTwo(pollAtParty) : double.NaN));
@@ -458,6 +459,7 @@ namespace PoliSim.EditorTools
                     string json = File.ReadAllText(saveEve);
                     string stripped = Regex.Replace(Regex.Replace(json, ",\\s*\"OwnNominees\"\\s*:\\s*\\[[^\\]]*\\]", string.Empty), ",\\s*\"OwnNominee\"\\s*:\\s*(true|false)", string.Empty);
                     SaveGame older = SaveGameService.Deserialize(stripped);
+                    older.PlayerCampaign = null;   // PS-6 US-30: a save from before US-33 predates the US campaign too - kept, its replay would restage on the roster's point, not the nominee's it was stepped on
                     OwnNominees.TryRegister(Nominee("REP", Hale, 8.0f, 7.5f), out string _);   // a process holding one - the load must replace it with the save's none
                     (SimulationManager olderSim, PoliSim.UI.GameController _) = PresidencyDiagnostic.Adopt(older, hosts, out string olderError);
                     if (olderSim == null) { Check(false, F("(g) the stripped save: {0}", olderError)); }

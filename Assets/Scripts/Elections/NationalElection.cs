@@ -127,7 +127,8 @@ namespace PoliSim.Elections
         /// a country without a live path — and the caller holds no election. PS-6 US-6: the USA
         /// predicts (its poll is R-US15's, `PartySystems.TryElectorate`) and still has no seat path:
         /// <see cref="Run"/> records why. PS-6 US-8: its presidential count reads this prediction on the
-        /// polling day (<see cref="UsPresidentialElection.Count"/>, from the day loop).
+        /// polling day (<see cref="UsPresidentialElection.Count"/>, from the day loop) where no campaign ran - since PS-6 US-30 a campaign staged on this
+        /// prediction's inputs is counted by its final shares.
         /// </summary>
         /// <summary>
         /// C-R4b step 5 (2026-09-02, D-21): the three inputs the live prediction is made of - each

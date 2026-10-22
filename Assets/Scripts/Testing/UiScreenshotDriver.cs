@@ -5354,6 +5354,19 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "CheckElection");
             if (walkSpeed != null) { walkSpeedField.SetValue(controller, walkSpeed); }   // §657: the walk's pause lifted once the election is called
             FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (nightField?.GetValue(controller) == null && _countryId == CountryId.USA)
+            {
+                // PS-6 US-30: the USA's campaign is staged and its HQ filmed above; its night is US-34's (D-US), so the film ends at the count the day loop held
+                Country counted = sim.World?.GetCountry(CountryId.USA);
+                UsPresidentialElection.Contest contest = counted != null && counted.UsPresidentialElections.Count > 0 ? counted.UsPresidentialElections[counted.UsPresidentialElections.Count - 1] : null;
+                Debug.Log($"SHOT: -shotinterrupts - the USA shows no election night until US-34 builds one; the film ends at the count of {sim.CurrentDate:yyyy-MM-dd}: {contest?.Line ?? "NO COUNT"}.");
+                if (contest == null) { Debug.LogError("SHOT: -shotinterrupts - the USA reached its polling day and the day loop held no count."); _failed++; }
+                Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
+                Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
+                Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
+                Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+                yield break;
+            }
             if (nightField?.GetValue(controller) == null)
             {
                 Debug.LogError($"SHOT: -shotinterrupts - {_countryId} reached its election and NO election night was shown. The controller logs why (ELECTION: / CANVAS: lines above); a Sweden game must show one.");
@@ -6453,6 +6466,12 @@ namespace PoliSim.Testing
         /// rows are the timeline's facts standing on the day (`DeclaredRedLines.StandingOn`), logged beside the frame so the film is read against them.</summary>
         private IEnumerator FilmDeclared(GameController controller, SimulationManager sim, string frame)
         {
+            if (!DeclaredRedLines.HasTimeline(_countryId))
+            {
+                // PS-6 US-30: a staged campaign with no dated declarations (the USA's) offers no DECLARED chip - nothing to film, and nothing failed
+                Debug.Log($"SHOT: {frame} - {_countryId} carries no dated declarations; the HQ offers no DECLARED page, and the frame is not filmed.");
+                yield break;
+            }
             InvokeNoArg(controller, "OpenLiveDeclared");
             FieldInfo open = controller.GetType().GetField("_liveDeclaredOpen", BindingFlags.Instance | BindingFlags.NonPublic);
             if (!(open?.GetValue(controller) is bool isOpen && isOpen))

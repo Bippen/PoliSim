@@ -30,8 +30,8 @@ namespace PoliSim.Elections
     /// war chest (D-1 (c): equal, 2 400 000 kr), the volunteers, the flat issue-match and credibility.
     /// Moving them here changes nothing about their provenance; it changes who can call them.
     /// Sweden's was the first staged campaign - the spec's own first case (§3's calendar is
-    /// `CampaignCalendar.Sweden2026`); §697 staged Germany's on the Länder (<see cref="Germany"/>), and
-    /// <see cref="TryFor"/> says so for the other four rather than inventing one.
+    /// `CampaignCalendar.Sweden2026`); §697 staged Germany's on the Länder (<see cref="Germany"/>), PS-6 US-30 the USA's on its 51
+    /// jurisdictions (<see cref="TryUsa"/>), and <see cref="TryFor"/> says so for the other three rather than inventing one.
     ///
     /// **Proven by the harness's own digest:** `CampaignAiHarness.BuildSetup` now delegates here, and
     /// its decision digest under seed 777 is the one it had before the move.
@@ -137,7 +137,8 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// The country's staged campaign, or false with the reason when none is staged. Sweden and, since §697, Germany.
+        /// The country's staged campaign, or false with the reason when none is staged. Sweden and, since §697, Germany; since PS-6 US-30 the USA
+        /// (<see cref="TryUsa"/>, staged on the vote model whatever <paramref name="onVoteModelCompatibility"/> says).
         /// <paramref name="scandals"/> is the caller's staging (the harness stages one; a game passes none
         /// until §17's dynamic generation exists).
         /// PS-6 US-26 (R-US11 (a)): <paramref name="played"/> - the game's country - stages the prior and the loyalty on its history rolled forward to the
@@ -177,9 +178,144 @@ namespace PoliSim.Elections
                     : Germany(scandals, out note, calendar, compatibilityOverride, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played);
                 return true;
             }
+            if (country == CountryId.USA)   // PS-6 US-30: the USA's campaign on the jurisdictions, its own staging - always on the vote model (the prediction's only inputs)
+            {
+                return TryUsa(scandals, calendar, out setup, out note, playerParty, playerScript, playerOutcome, playerScandalScript, liveScandalRate, played);
+            }
             setup = default;
-            note = $"no campaign is staged for {country}: the calendar, the regions and the personality cast exist for Sweden and Germany only; staging another country is its own item, not a copy of theirs";
+            note = $"no campaign is staged for {country}: the calendar, the regions and the personality cast exist for Sweden, Germany and the USA only; staging another country is its own item, not a copy of theirs";
             return false;
+        }
+
+        /// <summary>[SOURCED] PS-6 US-30: Gallup's "Most Important Problem", August 2024 - the newest wave fielded before the 2024 campaign opened: immigration
+        /// 19 % (`ElectionsData/usa/raw/salience/gallup_mip_vEKjO_47_dataset.csv`, held by <c>UsCampaignDiagnostic</c>).</summary>
+        public const double GallupAugust2024Immigration = 0.19;
+
+        /// <summary>[SOURCED] PS-6 US-30: the same wave's economy - "Economy in general" 18 % against "High cost of living/Inflation" 15 %, the larger standing
+        /// where two items map to one slot (`StanceModel`'s convention). "The government/Poor leadership" (16 %) has no slot and is dropped, as in the seed.</summary>
+        public const double GallupAugust2024Economy = 0.18;
+
+        /// <summary>[SOURCED] the first day after the month the August 2024 wave was fielded in: a campaign opening on or after it reads that wave.</summary>
+        private static readonly DateTime GallupAugust2024Published = new DateTime(2024, 9, 1);
+
+        /// <summary>[SOURCED] the first day after the month of Gallup's July 2026 column - the USA's salience seed (`StanceModel`, `ElectionsData/salience/issue_salience.md`):
+        /// a campaign opening on or after it reads the seed, the newest wave on disk.</summary>
+        private static readonly DateTime GallupJuly2026Published = new DateTime(2026, 8, 1);
+
+        /// <summary>PS-6 US-30: the salience a US campaign opening on <paramref name="campaignStart"/> reads - the newest Gallup wave on disk fielded before it
+        /// (DECLARED: "before the campaign" as before the campaign proper's opening; the run-up stages on the same calendar, so it reads the same wave):
+        /// the July 2026 seed from its month's end, August 2024 before that. A campaign opening before September 2024 - none in the game - reads August 2024
+        /// all the same, and its note says the wave postdates it.</summary>
+        public static double[] UsSalience(DateTime campaignStart, out string label)
+        {
+            var salience = new double[IssueVector.IssueCount];
+            for (int i = 0; i < salience.Length; i++) { salience[i] = double.NaN; }
+            if (campaignStart >= GallupJuly2026Published)
+            {
+                var parts = new List<string>();
+                foreach (IssueId issue in Enum.GetValues(typeof(IssueId)))
+                {
+                    float seed = PoliSim.Simulation.StanceModel.SalienceOf(CountryId.USA, issue, out bool measured);
+                    if (!measured) { continue; }
+                    salience[(int)issue] = Math.Round(seed, 2);   // DECLARED: Gallup's figures are whole per cents; the seed's float read back to them
+                    parts.Add(issue.ToString().ToLowerInvariant() + " " + salience[(int)issue].ToString("0.00", CultureInfo.InvariantCulture));
+                }
+                label = "Gallup MIP July 2026 (the seed): " + string.Join(", ", parts);
+                return salience;
+            }
+            salience[(int)IssueId.Immigration] = GallupAugust2024Immigration;
+            salience[(int)IssueId.Economy] = GallupAugust2024Economy;
+            label = string.Format(CultureInfo.InvariantCulture, "Gallup MIP August 2024: immigration {0:0.00}, economy {1:0.00}{2}", GallupAugust2024Immigration, GallupAugust2024Economy,
+                campaignStart >= GallupAugust2024Published ? string.Empty : " - fielded after this campaign opened, no earlier wave on disk");
+            return salience;
+        }
+
+        /// <summary>
+        /// PS-6 US-30: <b>THE USA'S CAMPAIGN ON THE JURISDICTIONS</b> - its own staging, not a copy of Germany's. The 51 jurisdictions are its regions
+        /// (<see cref="UsRegions"/>: each one's valid presidential votes at the previous election the audience a local act can reach, its citizen voting-age
+        /// population the electorate a ground game can mobilise); every party stands where its candidate is on the ballot of record (§699 - the two major
+        /// nominees everywhere). Staged on the vote model the prediction is made of (<see cref="NationalElection.TryCompatibility"/>: US-6's compatibility,
+        /// its prior and its loyalty, mapped by key), so an idle campaign reproduces the day's prediction and a campaign moves it; the count reads the run's
+        /// final shares, then the states (R-US14), then the electors (`SimulationManager`'s US count). The casts are the CHES rule's (§695, GPS 2019 for the
+        /// USA); the salience the newest Gallup wave fielded before the campaign (<see cref="UsSalience"/>). ⚠ The price table - the war chest, every action's
+        /// cost - is the model's one, as the HQ prints it in the player's currency: a US table in dollars is BILLED, not invented (Germany's is billed too).
+        /// PS-6 US-26 (R-US11 (a)): <paramref name="played"/> - the game's country - stages the prior and the loyalty on its history rolled forward to the
+        /// calendar's polling day, the very call the count's prediction makes on that day (`NationalElection.TryCompatibility` with the country and the day), so a
+        /// campaign of a later cycle stages on the game's own House counts and its idle run still reproduces the day's prediction; none handed, the record's pair.
+        /// False, with the reason, where the vote model or the regions cannot be read.
+        /// </summary>
+        public static bool TryUsa((int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
+            int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
+            Func<int, ScandalResponse?> playerScandalScript = null, double liveScandalRate = 0.0, Country played = null)
+        {
+            setup = default;
+            CampaignCalendar cal;
+            if (calendar.HasValue) { cal = calendar.Value; }
+            else
+            {
+                DateTime start = WorldClock.StartDate(CountryId.USA);
+                if (!WorldClock.TryNextPollingDay(CountryId.USA, start, out DateTime polling)) { note = "no campaign is staged for the USA: no polling day follows its start"; return false; }
+                cal = CampaignCalendar.FromWorldStart(polling, start);
+            }
+            if (!NationalElection.TryCompatibility(CountryId.USA, out string[] modelKeys, out double[] modelCompatibility, out double[] modelPrior, out double[] modelLoyalty, played, cal.ElectionDate))   // PS-6 US-26: the history rolled forward to the polling day, as the count's prediction reads it
+            {
+                note = "no campaign is staged for the USA on the vote model: it has no fitted electorate or no two-election history";
+                return false;
+            }
+            RegionAudience[] regions = UsRegions.Regions(cal.ElectionDate, out double national, out int priorYear, out string regionsWhy);
+            if (regions.Length == 0) { note = "no campaign is staged for the USA: " + regionsWhy; return false; }
+            string[] cast = Keys(CountryId.USA);
+            var compatibility = new double[cast.Length];
+            var prior = new double[cast.Length];
+            var loyalty = new double[cast.Length];
+            for (int p = 0; p < cast.Length; p++)
+            {
+                int k = Array.IndexOf(modelKeys, cast[p]);   // mapped by key, never by position
+                compatibility[p] = k >= 0 ? modelCompatibility[k] : 0.0;
+                prior[p] = k >= 0 ? modelPrior[k] : 0.0;
+                loyalty[p] = k >= 0 ? modelLoyalty[k] : NationalElection.UnplacedLoyalty;
+            }
+            bool[][] stands = UsRegions.Stands(cast, regions, cal.ElectionDate);
+            double[] salience = UsSalience(cal.CampaignStart, out string salienceLabel);
+            var parties = new CampaignRun.PartySetup[cast.Length];
+            for (int p = 0; p < parties.Length; p++)
+            {
+                var match = new double[IssueVector.IssueCount];
+                for (int i = 0; i < match.Length; i++) { match[i] = double.IsNaN(salience[i]) ? double.NaN : FlatIssueMatch; }
+                AiPersonality personality = PersonalityOf(CountryId.USA, cast[p]);
+                PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
+                parties[p] = new CampaignRun.PartySetup(cast[p], personality, FlatCredibility,
+                    brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
+                    CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions, stands[p]), OfficeOperationsPerDay,
+                    brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
+                    p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
+            }
+            var publicHouse = new PollingHouse("Public tracker", 600, 40_000, new double[cast.Length]);
+            var internalHouse = new PollingHouse("Standard commission", 1_200, 120_000, new double[cast.Length], isInternal: true);
+            double eligible = 0.0;
+            foreach (RegionAudience r in regions) { eligible += r.Eligible; }
+            List<(DateTime Day, double[] Shares)> own = played?.Id == CountryId.USA ? PartySystems.OwnCounts(played, cal.ElectionDate) : new List<(DateTime Day, double[] Shares)>();   // PS-6 US-26: the game's own House counts the pair rolled forward on, for the note - the USA's only, as TryHistory reads them
+            string rolled = own.Count == 0 ? string.Empty
+                : own.Count == 1 ? ", on the history rolled forward - the game's House count of " + own[0].Day.Year.ToString(CultureInfo.InvariantCulture) + " against the record's last"
+                : ", on the history rolled forward - the game's House counts of " + own[own.Count - 2].Day.Year.ToString(CultureInfo.InvariantCulture) + " and " + own[own.Count - 1].Day.Year.ToString(CultureInfo.InvariantCulture);
+            var sb = new StringBuilder();
+            sb.Append("\n  staging: " + cast.Length.ToString(CultureInfo.InvariantCulture) + " parties on the USA's vote model (US-6: compatibility, prior and loyalty as the prediction reads them" + rolled + "):\n    ");
+            for (int p = 0; p < parties.Length; p++)
+            {
+                int where = 0;
+                foreach (bool s in stands[p]) { if (s) { where++; } }
+                sb.Append(string.Format(CultureInfo.InvariantCulture, "{0} L{1:F0}/C{2:F1}/{3}J  ", cast[p], loyalty[p], compatibility[p], where));
+            }
+            sb.Append(string.Format(CultureInfo.InvariantCulture,
+                "\n    {0} jurisdictions (SOURCED {1} valid presidential votes, US-3's catalog; the Census Bureau's CVAP 2020-2024), national audience {2:N0}, electorate {3:N0}; salience {4}\n" +
+                "    each party only where it is on the ballot (/nJ above); [AUTHORED-DRAFT] issue-match {5:F2} flat, credibility {6:F2} flat, war chest {7:N0} each - the model's one price table, a US one in dollars BILLED\n",
+                regions.Length, priorYear, national, eligible, salienceLabel, FlatIssueMatch, FlatCredibility, WarChest));
+            note = sb.ToString();
+            setup = new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
+                national, regions, publicHouse, PublicPollEveryDays, internalHouse, LoyaltyModel.WeightedMeanLoyalty(loyalty, prior), null, null, scandals, liveScandalRate,
+                null, PartyFamilies.For(CountryId.USA, cast), NationalElection.EntrantAwareness(CountryId.USA, cast), EntrantLayer.GroupingOf(CountryId.USA, cast), EntrantSimilarity.For(CountryId.USA, cast),
+                stands);
+            return true;
         }
 
         /// <summary>

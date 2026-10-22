@@ -41227,3 +41227,17 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Declared / asked / filed:** asked - the holdover (the sitting chair serves on, or the Vice Chair acts under section 244), the player-president nominating under a hostile Senate as a played refusal, and the count rule (bloc as built; the reviewer recommends a crossing rule fitted on the Fed-chair confirmation roll calls). Filed from the second review: L4 (a US session whose player is not the president skips the 90h/90i frames with a warning) and L6 (`PlayerFedChairBarred` rebuilds the manager's appointment gate). The plan's 2017-precedent wording corrected (first review L5).
 
 **Commit:** this one.
+
+## 894. PS-6 US-30: THE USA'S CAMPAIGN STAGED ON THE 51 JURISDICTIONS - THE COUNT READS THE RUN'S FINAL SHARES; STAGED ON US-26'S HISTORY ROLLED FORWARD; SAVE FORMAT 51 (2026-10-22)
+
+**What changed** (an implementer on `wave/us30`: 41b8e84e sources, 8876a60e staging, 66dd43b6 film, 0f4865fe its review's fixes; rebased on §892 as 31b85b8f..7092ce2b, composing with US-26; a8e25007 the rebase review's fixes; squash-merged on §893):
+- `LiveCampaignSetup.TryUsa` and `UsRegions`: the USA's campaign on the 51 jurisdictions, from the Census Bureau's CVAP 2020-2024 and Gallup's August 2024 most-important-problem wave (both stored byte-exact with their digests); staged on the prediction's own inputs with the world's own country (`played`), so a later cycle stages on the history rolled forward.
+- `SimulationManager.HoldUsPresidentialCount`: the campaign's final shares first (`TryPlayerCampaignShares`, only a finished run dated today), the prediction with `played:` where no campaign ran; the House and Senate count on the same poll.
+- Save format 51: a v50 save is refused with the plain message (ruling A, as §881's step 47), because a v50 US save inside a window carries no campaign. The play saves re-staged at 51.
+- `UsCampaignDiagnostic` (new, the simulation bar); `HistoryRolledForwardDiagnostic` (a) extended to the USA's staging.
+
+**Evidence:** `Reviews/2026-10-20_us30_review.md` (the first review: no H; M1 fixed); `Reviews/2026-10-22_us30_rebase_review.md` (the rebase: SHIP, L1/L3/L4 fixed in a8e25007, L2 filed); `Reviews/2026-10-22_us30_integration_reading.md` (the merge onto §893: the branch's own lines, disjoint from US-29's); ledger row s894. `n894` 18 of 18 named - `UsCampaignDiagnostic` (h) THE DONE-WHEN: the game's staging replayed idle ends on the day's prediction within 0.0e+0; (j) the 2028 staging on the game's own 2024 House, its idle run on the 2028 prediction within 0.0e+0; `ForkAnswersDiagnostic` ALL ASSERTIONS PASS. `slrt894` 12 scenarios round-trip clean; `cheap894` 130 of 130 (387 s); `sim894` 70 of 70 (1035 s, the sentinel at aloopsal2); `drys894` USA `-shotinterrupts` exiting 0; `real894` the run-up and Campaign HQ frames written, the film ending at the count of 2024-11-05 (Trump 327-211 on the campaign's shares); `stage894` the play saves at format 51; `doc894` for the plan and feature-list lines.
+
+**Asked / filed:** asked - format 51's refusal (or a declared no-step), the US-9 card re-cut to play's CVAP and August 2024 inputs, sourcing the US price table (FEC), and the count landing at once with no election night until US-34. Filed: the rebase review's L2 (no check plants an in-window Congress contest or counts a campaign on top of a previous game count). Observed on film: Campaign HQ's poll column is mostly empty with two parties (a Design note, not a defect).
+
+**Commit:** this one.

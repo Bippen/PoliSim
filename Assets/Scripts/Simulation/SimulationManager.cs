@@ -5711,10 +5711,12 @@ namespace PoliSim.Simulation
         /// PS-6 US-8 (`docs/specs/USA_STAGE_PLAN.md`): THE US PRESIDENTIAL COUNT, on the day loop - the player's country's alone, as the record is (R-US5 (a): the
         /// count is a pure function of the world, <see cref="Elections.UsPresidentialElection.Count"/>; PS-8 gives an AI USA its gate). On the count's day of a
         /// contest no one won outright, the House chooses by states first (R-US3 (a), <see cref="Elections.UsPresidentialElection.HoldHouseChoice"/>). On the
-        /// polling day (3 U.S.C. §21(1)), not yet counted, the count reads the live prediction as Poland's first vote does - the government's record over its term
+        /// polling day (3 U.S.C. §21(1)), not yet counted, with no campaign run the count reads the live prediction as Poland's first vote does - the government's record over its term
         /// shifting it (§752), the same call E1's reference world reads its poll by, so the factors meet the poll they were fitted on - and the contest is added to
         /// the country: the president-elect takes office at the oath (<see cref="SeatTheRecordOnItsDate"/>), and from the polling day the record seats no president.
-        /// No campaign is staged for the USA (`LiveCampaignSetup.TryFor` - its stated reason stands, as Poland's does), so no campaign's shares are read. A day the
+        /// PS-6 US-30: where the player's campaign ran up to this polling day (`LiveCampaignSetup.TryUsa`, on the jurisdictions), the count reads the run's final
+        /// shares (<see cref="TryPlayerCampaignShares"/>) - the vote model the prediction is made of, moved by the campaign, the government's record judged for
+        /// the count on its last day (§752) - then the states (R-US14), then the electors; with no campaign, the prediction as before. A day the
         /// count cannot be made (no prediction; E1's factors not fitted) holds nothing and says so: the record's president stays seated by date. The count draws
         /// no random number, so no stream moves. Nothing here is shown as a night: the verdict lands at once (D-US builds the night).
         /// </summary>
@@ -5726,7 +5728,13 @@ namespace PoliSim.Simulation
             Elections.UsPresidentialElection.Contest chosen = Elections.UsPresidentialElection.HoldHouseChoice(country, CurrentDate, out string choice);
             if (chosen != null) { Debug.Log($"PRESIDENTIAL: {country.Id} - the House's choice: {choice}"); }   // its own line only - the count's was logged on its polling day
             if (!Elections.UsPresidentialElection.IsPollingDay(country, CurrentDate)) { return; }
-            if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the House history rolled forward - the game's own counts before the day
+            if (TryPlayerCampaignShares(out Dictionary<string, double> poll))
+            {
+                var counted = new System.Text.StringBuilder();
+                foreach (KeyValuePair<string, double> kv in poll) { counted.Append(' ').Append(kv.Key).Append(' ').Append((100.0 * kv.Value).ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)).Append(" %"); }
+                Debug.Log($"PRESIDENTIAL: {country.Id} - the campaign ran to the polling day, and its final shares are counted:{counted}");
+            }
+            else if (!Elections.NationalElection.TryPredictShares(country.Id, out poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the House history rolled forward - the game's own counts before the day
             {
                 Debug.LogWarning($"PRESIDENTIAL: {country.Id} - no prediction could be made on the polling day {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's president stays seated by date");
                 return;
@@ -5749,6 +5757,21 @@ namespace PoliSim.Simulation
                     ? $"CONGRESS: {country.Id} - no Congress count on {CurrentDate:yyyy-MM-dd}: {congressWhy}; the House the game elected on {sitting.PollingDay:yyyy-MM-dd} sits on, and the Senate as seated"
                     : $"CONGRESS: {country.Id} - no Congress count on {CurrentDate:yyyy-MM-dd}: {congressWhy}; the record's House and Senate stay seated by date");
             }
+        }
+
+        /// <summary>PS-6 US-30: the player's finished campaign's final shares by party key, where the campaign ran up to TODAY's polling day (the election
+        /// controller's own condition for a parliamentary count: the record dated today, the run still held); false otherwise. The shares are the run's own,
+        /// in its setup's party order - the vote model's keys for a staged country.</summary>
+        public bool TryPlayerCampaignShares(out Dictionary<string, double> shares)
+        {
+            shares = null;
+            Elections.CampaignRun.Result result = PlayerCampaignResult;
+            if (result == null || PlayerCampaign == null || CampaignRecord == null || CampaignRecord.ElectionDate != CurrentDate) { return false; }
+            Elections.CampaignRun.PartySetup[] parties = PlayerCampaign.Setup.Parties;
+            if (parties == null || result.FinalShares == null || result.FinalShares.Length != parties.Length) { return false; }
+            shares = new Dictionary<string, double>();
+            for (int i = 0; i < parties.Length; i++) { shares[parties[i].Name] = result.FinalShares[i]; }
+            return true;
         }
 
         /// <summary>The player's country's next polling day on or after today, false where its election calendar is not modelled.</summary>

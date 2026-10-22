@@ -38,7 +38,7 @@ namespace PoliSim.EditorTools
     /// the player's;</item>
     /// <item>(d2) THE WINDOW AT THE OATH (the review's M3; the same save loaded again, the win forced): the arrival window open and unused on the eve is closed on
     /// the oath's day, and on the next request day (1 Jan 2026) the AI government tables its budget;</item>
-    /// <item>(e) THE SAVE ACROSS THE OATH (cut 12 Aug, mid-docket, format 50): the candidate, the start's key, the office and the held statutes ride it; loaded
+    /// <item>(e) THE SAVE ACROSS THE OATH (cut 12 Aug, mid-docket, this build's format): the candidate, the start's key, the office and the held statutes ride it; loaded
     /// into the game the player is President, the docket as cut; a held statute is STILL ANSWERABLE (the review's M1) - vetoed after the load through the Docket
     /// page's answer (the controller's AnswerDocketItem), the Sejm votes on the veto at once; stepped with no other answer, every other held statute is
     /// signed on 1 Sep - while the budget, voted on 19 Aug in that world too, still waits on its tax act's 21 days.</item>
