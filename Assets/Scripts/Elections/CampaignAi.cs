@@ -132,6 +132,48 @@ namespace PoliSim.Elections
     }
 
     /// <summary>
+    /// PS-6 US-31: a staging's DECLARED rule for where an AI weighs its local acts, in place of the largest audiences - a weight per region read off a
+    /// PUBLISHED poll and the staging's public facts, nothing true (the USA's: <see cref="UsGroundGame.TargetingFor"/>). A staging without one (Sweden,
+    /// Germany, every harness) keeps the largest audiences. The last poll's order is kept, so a day's several views read one derivation.
+    /// </summary>
+    public sealed class RegionTargeting
+    {
+        /// <summary>The rule in words, for the record.</summary>
+        public readonly string Rule;
+        private readonly Func<Poll, double[]> _weightsOf;
+        private double[] _lastShares;
+        private int[] _lastOrder;
+
+        public RegionTargeting(string rule, Func<Poll, double[]> weightsOf)
+        {
+            Rule = rule;
+            _weightsOf = weightsOf ?? throw new ArgumentNullException(nameof(weightsOf));
+        }
+
+        /// <summary>Each region's weight on <paramref name="poll"/>.</summary>
+        public double[] WeightsOn(Poll poll) => _weightsOf(poll);
+
+        /// <summary>The regions the rule contests on <paramref name="poll"/>, heaviest first, ties in region order; a region of no weight is not contested.</summary>
+        public int[] OrderOn(Poll poll)
+        {
+            double[] shares = poll.Shares();
+            if (_lastOrder != null && _lastShares != null && _lastShares.Length == shares.Length)
+            {
+                bool same = true;
+                for (int i = 0; i < shares.Length && same; i++) { same = _lastShares[i].Equals(shares[i]); }
+                if (same) { return _lastOrder; }
+            }
+            double[] weights = _weightsOf(poll);
+            var order = new List<int>();
+            for (int r = 0; r < weights.Length; r++) { if (weights[r] > 0.0) { order.Add(r); } }
+            order.Sort((a, b) => weights[b] != weights[a] ? weights[b].CompareTo(weights[a]) : a.CompareTo(b));
+            _lastShares = shares;
+            _lastOrder = order.ToArray();
+            return _lastOrder;
+        }
+    }
+
+    /// <summary>
     /// Everything an AI party is allowed to know when it decides. **No truth can be expressed
     /// here**: the race is a <see cref="Poll"/>, the issues are <see cref="IssueMeasurement"/>s,
     /// and the rest is public (the calendar, the party's own books, the electorate's size, its own
@@ -191,6 +233,9 @@ namespace PoliSim.Elections
         public readonly double[] OwnExposureByClass;
         /// <summary>q24 5a (review 881b's N3): the party's own Σ exposure × relevance × credibility so far per contact class - with <see cref="OwnExposureByClass"/>, the run's pooled-quality tally, so the AI values a contact by the run's own class-effect difference. DECLARED: the quality of the party's PAST contacts is the run's (the chain resolved on the truth), a reading of its own books the AI could only have estimated; null = none yet.</summary>
         public readonly double[] OwnQualityByClass;
+        /// <summary>PS-6 US-31: the regions the staging's declared targeting rule contests on the last PUBLISHED poll, heaviest first (<see cref="RegionTargeting"/>) -
+        /// the candidate regions of a local act in place of the largest audiences; null = no rule (the largest audiences, as before).</summary>
+        public readonly int[] RuleRegions;
 
         public double AttacksOnMe
         {
@@ -204,8 +249,9 @@ namespace PoliSim.Elections
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
             double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0,
-            double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null)
+            double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null, int[] ruleRegions = null)
         {
+            RuleRegions = ruleRegions;
             PersuasionNorm = persuasionNorm;
             OwnExposureByClass = ownExposureByClass;
             OwnQualityByClass = ownQualityByClass;
@@ -479,7 +525,7 @@ namespace PoliSim.Elections
         /// <summary>[AUTHORED-DRAFT] §9 gives no hour cost for commissioning a poll; one hour of a campaign day.</summary>
         public const double PollingHours = 1.0;
 
-        /// <summary>[AUTHORED-DRAFT] how many of the largest regions a local action is evaluated in (the rest are not considered — a bound on evaluation, not a rule of the world).</summary>
+        /// <summary>[AUTHORED-DRAFT] how many of the largest regions a local action is evaluated in (the rest are not considered — a bound on evaluation, not a rule of the world); PS-6 US-31: of a staging's declared targeting rule's first, where it declares one.</summary>
         public const int LocalCandidateRegions = 4;
 
         /// <summary>[AUTHORED-DRAFT] how many of the highest-measured-salience issues a non-focused personality considers, beside the general message.</summary>
@@ -571,9 +617,11 @@ namespace PoliSim.Elections
                 for (int i = 0; i < issueOrder.Count && i < IssueCandidates; i++) { issueChoices.Add((IssueId)issueOrder[i]); }
             }
 
-            // Region candidates for local actions: the largest few, by public audience - and, for a
-            // personality that looks (W-C2), the regions its opponents are visibly working.
-            List<int> regionChoices = LargestRegions(view, LocalCandidateRegions);
+            // Region candidates for local actions: the largest few, by public audience - PS-6 US-31: or, where the staging
+            // declares a targeting rule, the rule's first few on the last published poll - and, for a personality that
+            // looks (W-C2), the regions its opponents are visibly working.
+            List<int> regionChoices = view.RuleRegions != null ? RuleRegionsOf(view, LocalCandidateRegions) : null;
+            if (regionChoices == null || regionChoices.Count == 0) { regionChoices = LargestRegions(view, LocalCandidateRegions); }   // no rule, or a rule that contests nothing where the party stands: the largest audiences, as before (CampaignRun counts the fallback's days)
             if (profile.Reactivity > 0.0 && view.RegionPressure != null)
             {
                 foreach (int region in MostPressuredRegions(view, PressuredRegions))
@@ -990,6 +1038,18 @@ namespace PoliSim.Elections
             for (int i = 0; i < view.RegionPressure.Length; i++) { if (view.RegionPressure[i] > 0.0 && (view.Regions == null || i >= view.Regions.Length || view.Regions[i].Stands)) { order.Add(i); } }   // §697: pressure where the party stands
             order.Sort((a, b) => view.RegionPressure[b].CompareTo(view.RegionPressure[a]));
             if (order.Count > count) { order.RemoveRange(count, order.Count - count); }
+            return order;
+        }
+
+        /// <summary>PS-6 US-31: the staging's rule's first <paramref name="count"/> regions where the party stands, in the rule's order.</summary>
+        private static List<int> RuleRegionsOf(AiView view, int count)
+        {
+            var order = new List<int>();
+            foreach (int r in view.RuleRegions)
+            {
+                if (order.Count >= count) { break; }
+                if (view.Regions != null && r >= 0 && r < view.Regions.Length && view.Regions[r].Stands) { order.Add(r); }   // §697: only where the party stands
+            }
             return order;
         }
 

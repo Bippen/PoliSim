@@ -242,7 +242,9 @@ namespace PoliSim.Elections
         /// PS-6 US-26 (R-US11 (a)): <paramref name="played"/> - the game's country - stages the prior and the loyalty on its history rolled forward to the
         /// calendar's polling day, the very call the count's prediction makes on that day (`NationalElection.TryCompatibility` with the country and the day), so a
         /// campaign of a later cycle stages on the game's own House counts and its idle run still reproduces the day's prediction; none handed, the record's pair.
-        /// False, with the reason, where the vote model or the regions cannot be read.
+        /// PS-6 US-31 (R-US16 (b)): the staging declares where every AI weighs its local acts (<see cref="UsGroundGame.TargetingFor"/>, [AUTHORED-DRAFT]) in
+        /// place of the largest audiences. DECLARED (asked): the day-0 offices are placed by audience (<see cref="OfficesFor"/>), as in every staging - only
+        /// the local acts follow the targeting rule. False, with the reason, where the vote model or the regions cannot be read.
         /// </summary>
         public static bool TryUsa((int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
             int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
@@ -312,11 +314,12 @@ namespace PoliSim.Elections
                 "\n    {0} jurisdictions (SOURCED {1} valid presidential votes, US-3's catalog; the Census Bureau's CVAP 2020-2024), national audience {2:N0}, electorate {3:N0}; salience {4}\n" +
                 "    each party only where it is on the ballot (/nJ above); [AUTHORED-DRAFT] issue-match {5:F2} flat, credibility {6:F2} flat, war chest {7:N0} each - the model's one price table, a US one in dollars BILLED\n",
                 regions.Length, priorYear, national, eligible, salienceLabel, FlatIssueMatch, FlatCredibility, WarChest));
+            sb.Append("    [AUTHORED-DRAFT] targeting: every AI weighs its local acts where electors x the swing index of the margin derived from the last published poll are largest; the count counts each state with the ground game and the declared regional noise (R-US16 (b))\n");
             note = sb.ToString();
             setup = new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, LoyaltyModel.WeightedMeanLoyalty(loyalty, prior), null, null, scandals, liveScandalRate,
                 null, PartyFamilies.For(CountryId.USA, cast), NationalElection.EntrantAwareness(CountryId.USA, cast), EntrantLayer.GroupingOf(CountryId.USA, cast), EntrantSimilarity.For(CountryId.USA, cast),
-                stands);
+                stands, UsGroundGame.TargetingFor(cal.ElectionDate, cast, regions, played));   // PS-6 US-31: the AI weighs its local acts where the declared rule says (R-US16 (b))
             return true;
         }
 
@@ -548,7 +551,7 @@ namespace PoliSim.Elections
         public static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions) => OfficesFor(personality, regions, null);
 
         /// <summary>§697: the same plan among the regions where the party stands (<paramref name="stands"/>; null everywhere) - the CSU's offices are Bavarian,
-        /// and a party standing in fewer regions than its personality's count opens one in each.</summary>
+        /// and a party standing in fewer regions than its personality's count opens one in each. PS-6 US-31 (DECLARED, asked): the USA's offices too are placed by audience - only the local acts follow the targeting rule.</summary>
         public static int[] OfficesFor(AiPersonality personality, RegionAudience[] regions, bool[] stands)
         {
             int count;

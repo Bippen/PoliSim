@@ -300,7 +300,7 @@ namespace PoliSim.EditorTools
             foreach (AiPersonality personality in PersonalityCatalog.TheFive) { runs.Add(("both " + personality, Enumerable.Repeat(personality, keys.Length).ToArray())); }
             card.Add("### (a) Where the AI's local acts land");
             card.Add("");
-            card.Add(F("The AI weighs a local act only in its candidate regions - the {0} largest audiences (`CampaignAi.LocalCandidateRegions`, [AUTHORED-DRAFT]), and, for a reactive personality, the regions it sees an opponent working. Each run below is the whole campaign ({1:d MMM} to {2:d MMM yyyy}, seed {3}), every party an AI; its local acts (rally, town hall, door-to-door) counted by jurisdiction. \"The rule's {0}\" are the jurisdictions R-US16 (b)'s declared rule would pick on that run's last published poll (below).",
+            card.Add(F("The AI weighs a local act only in its candidate regions - the {0} largest audiences (`CampaignAi.LocalCandidateRegions`, [AUTHORED-DRAFT]), and, for a reactive personality, the regions it sees an opponent working. Each run below is the whole campaign ({1:d MMM} to {2:d MMM yyyy}, seed {3}), every party an AI; its local acts (rally, town hall, door-to-door) counted by jurisdiction. \"The rule's {0}\" are the jurisdictions R-US16 (b)'s declared rule would pick on that run's last published poll (below). This is US-9's staging, which declares no targeting rule; since US-31 the game's US staging declares one and every AI weighs its local acts where it says (`UsCampaignDiagnostic` measures it).",
                 k, calendar.CampaignStart, calendar.ElectionDate.AddDays(-1), Seed));
             card.Add("");
             card.Add(F("The {0} largest {1} audiences: {2}. The {0} closest {1} states: {3}.", k, PriorYear, Names(largest), Names(closest)));
@@ -346,9 +346,22 @@ namespace PoliSim.EditorTools
             }
 
             // ---- (b) A LOCAL ACT REACHES A STATE ONLY THROUGH THE NATIONAL TOTAL
-            Check(!CountIsWired(out string wiredAt), wiredAt == null
-                ? "W-D1's per-region count is wired to nothing: no runtime file calls ElectionDay.Count - the count reads the national shares alone, and the derivation spreads them"
-                : "W-D1's per-region count is now called from " + wiredAt + " - the premise of (b) has moved: re-measure it against the live count");
+            // PS-6 US-31 (R-US16 (b), I3): the US count now reads W-D1's per-region count where a campaign ran - from its own file alone; any other runtime
+            // caller would carry the ground game into a count R-US16 (c) has not ruled (Sweden's, Germany's)
+            List<string> callers = CountCallers(@"\bElectionDay\s*\.\s*Count\b", "Elections/ElectionDay.cs", out int _);
+            // the review's L4: the ground game's own entry points stay on the US path - its effects read by the US count alone, a campaign's ground game
+            // read (and built) by the day loop's US count alone, once
+            List<string> effectCallers = CountCallers(@"\bUsGroundGame\s*\.\s*(Effects|NoiseSeedOf)\b", "Elections/UsGroundGame.cs", out int _);
+            List<string> campaignReaders = CountCallers(@"\bUsGroundGame\s*\.\s*Of\b|new\s+(UsGroundGame\s*\.\s*)?Campaign\b", "Elections/UsGroundGame.cs", out int campaignReads);
+            bool pathOnly = effectCallers.Count == 1 && effectCallers[0] == "Assets/Scripts/Elections/UsPresidentialElection.cs"
+                            && campaignReaders.Count == 1 && campaignReaders[0] == "Assets/Scripts/Simulation/SimulationManager.cs" && campaignReads == 1;
+            Check(pathOnly, pathOnly
+                ? "the ground game is reached on the US path alone: its effects (UsGroundGame.Effects, NoiseSeedOf) from UsPresidentialElection.cs, a campaign's ground game read once, from SimulationManager.cs's US count"
+                : F("the ground game is reached beyond the US path - its effects from {0}; a campaign's ground game from {1} ({2} reads)", effectCallers.Count == 0 ? "nowhere" : string.Join(", ", effectCallers), campaignReaders.Count == 0 ? "nowhere" : string.Join(", ", campaignReaders), campaignReads));
+            bool usOnly = callers.Count == 1 && callers[0] == UsCountFile;
+            Check(usOnly, usOnly
+                ? "W-D1's per-region count is called from the US count alone (" + UsCountFile + ", PS-6 US-31 - where a campaign ran, R-US16 (b)): no other runtime file calls ElectionDay.Count, so every other country's count reads the national shares and the derivation spreads them (R-US16 (c) not ruled); the (b) table below is the count as US-9 measured it, before US-31"
+                : "W-D1's per-region count is called from " + (callers.Count == 0 ? "no runtime file - the US count no longer reads it" : string.Join(", ", callers)) + " - the premise of R-US16 (b) as built has moved: re-measure");
             CampaignActions.ActionSpec act = CampaignActions.Spec(ProgramAct);
             int perDay = (int)Math.Floor(CampaignEconomy.HoursPerCampaignDay / act.Hours);
             int x = closest[0], y = largest[0];
@@ -421,7 +434,7 @@ namespace PoliSim.EditorTools
                 }
             }
             card.Add("");
-            card.Add(F("Under the count as built ((a)'s columns) the worked jurisdiction moved by what the nation moved to within {0:0.0e+0} points, and every jurisdiction to within {1:0.0e+0}: the derivation is a function of the national shares and the prior alone (R-US14 (a)'s uniform swing gives every jurisdiction one move, re-solved only where a floor binds), so working a state moves it as much as every state it was not worked in. The ground game's turnout - the mobilisation the program built - reaches no count at all: W-D1's per-region count, its one reader, is wired to nothing. (b)'s columns are that count, the derived shares as its preferences (below).",
+            card.Add(F("Under the count as built ((a)'s columns) the worked jurisdiction moved by what the nation moved to within {0:0.0e+0} points, and every jurisdiction to within {1:0.0e+0}: the derivation is a function of the national shares and the prior alone (R-US14 (a)'s uniform swing gives every jurisdiction one move, re-solved only where a floor binds), so working a state moves it as much as every state it was not worked in. Under the count US-9 measured, the ground game's turnout - the mobilisation the program built - reached no count at all: W-D1's per-region count, its one reader, was wired to nothing. (b)'s columns are that count, the derived shares as its preferences (below) - since US-31 the count the game makes where a campaign ran (R-US16 (b)), here without its regional noise.",
                 ownDeparture, widestDeparture));
             Check(boundBreaches == 0, F("A-LOOP q24 5a (4)(b): in all {0} runs every party's campaign effect lies inside its sourced bound (the widest effect {1:0.000} pp; {2} breaches)", programRuns, widestEffect, boundBreaches));
             Check(observedBreaches == 0, F("A-LOOP q24 5a (4)(b)/(c), independent: in all {0} runs every party's OBSERVED move from its no-campaign share is the move its tally implies under the sourced CACEs ({1} run(s) breaching)", programRuns, observedBreaches));
@@ -598,19 +611,25 @@ namespace PoliSim.EditorTools
             return same;
         }
 
-        /// <summary>Whether a runtime file calls <see cref="ElectionDay.Count"/> - comments stripped, the capture driver's folder aside as `UnwiredSubsystemCheck` sets it.</summary>
-        private static bool CountIsWired(out string where)
+        /// <summary>PS-6 US-31: the one runtime file R-US16 (b) licenses to call W-D1's per-region count - the US count's ground game.</summary>
+        private const string UsCountFile = "Assets/Scripts/Elections/UsGroundGame.cs";
+
+        /// <summary>Every runtime file naming <paramref name="pattern"/> (a call or a method group) but <paramref name="own"/> - comments stripped, the capture
+        /// driver's folder aside as `UnwiredSubsystemCheck` sets it; <paramref name="hits"/> the matches in all of them.</summary>
+        private static List<string> CountCallers(string pattern, string own, out int hits)
         {
-            where = null;
+            var callers = new List<string>();
+            hits = 0;
             string scripts = Path.Combine(Path.GetFullPath(Path.Combine(Application.dataPath, "..")), "Assets", "Scripts");
-            var calls = new System.Text.RegularExpressions.Regex(@"\bElectionDay\s*\.\s*Count\s*\(");
+            var calls = new System.Text.RegularExpressions.Regex(pattern);
             foreach (string file in Directory.GetFiles(scripts, "*.cs", SearchOption.AllDirectories).OrderBy(f => f, StringComparer.Ordinal))
             {
                 string relative = file.Substring(scripts.Length + 1).Replace('\\', '/');
-                if (relative.StartsWith("Testing/", StringComparison.Ordinal) || relative == "Elections/ElectionDay.cs") { continue; }
-                if (calls.IsMatch(SourceText.ReadWithoutComments(file))) { where = "Assets/Scripts/" + relative; return true; }
+                if (relative.StartsWith("Testing/", StringComparison.Ordinal) || relative == own) { continue; }
+                int n = calls.Matches(SourceText.ReadWithoutComments(file)).Count;
+                if (n > 0) { callers.Add("Assets/Scripts/" + relative); hits += n; }
             }
-            return false;
+            return callers;
         }
 
         // ---- the runs

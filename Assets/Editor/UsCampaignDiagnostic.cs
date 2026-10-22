@@ -30,6 +30,16 @@ namespace PoliSim.EditorTools
     /// the day's prediction exactly, on the record the count was judged on; (i) a save cut mid-campaign, loaded into the game, replays the campaign and
     /// counts the same contest; (j) PS-6 US-26 composed: that game's next campaign (2028) stages its prior and its loyalty on the history rolled forward -
     /// the game's own 2024 House count - exactly as the 2028 prediction reads them, and run idle ends on that prediction.
+    /// <para><b>PS-6 US-31</b> (R-US16 (b), RULED - I3; the plan's done-when "the campaign diagnostic shows the AI's local acts concentrated where the rule
+    /// says, and a player's ground game in one state moving it by US-9's measured amount, able to flip it"): (k) the USA's staging declares the AI's
+    /// targeting rule, its weights recomputed off planted polls; (l) every local act of a party that never looks lands in the rule's regions of its day, and
+    /// the planted tooth (the rule stripped) lands outside them; (m) the US count's ground game at US-9's maximal ground game on US-9's own map gives US-9's
+    /// measured amount as its card prints it (PLAN_PREREG, <see cref="Us9CardReading"/>), the same on the game's staging read, the trailing party's ceiling in
+    /// the closest state flipping it through the count's own path and nothing else, US-9's scripted program read, the planted tooth (no ground game) below
+    /// the range; (n) the regional noise keyed - the same count bit for bit, another master seed other numbers, no counted stream drawn; (h) the game's own
+    /// polling day counting each state with its ground game, the stored contest re-deriving it (its effects cleared, the derived states - the tooth), the
+    /// House swing and the Senate's states carrying it (I3's "alike"); (i) the mid-campaign save counting the same effects; (o) Sweden's and Germany's
+    /// stagings declaring no rule.</para>
     /// </summary>
     public static class UsCampaignDiagnostic
     {
@@ -195,6 +205,10 @@ namespace PoliSim.EditorTools
             Check(offAtStart < 1e-12 && idleAtStart.Parties.Sum(l => l.TotalActions) == 0,
                 F("(g) an idle campaign (no act, no debate, no story) on the start's staging ends on the start's prediction: {0} - within {1:0.0e+0}", Shares(keys, idleAtStart.FinalShares), offAtStart));
 
+            // ---- (k)-(n) PS-6 US-31: the AI's targeting, the ground game in one state, the keyed noise - on the start's staging
+            MeasureTargeting(sb, Check, setup, keys);
+            MeasureGroundGame(sb, Check, setup, keys, polled, atStart, idleAtStart);
+
             // ---- (h) A US GAME'S OWN DAY PATH - the REP the player's party, stepped from the start through the polling day as the game steps it
             string saveMid = Path.Combine(dir, "mid_campaign.json");
             UsPresidentialElection.Contest played = null;
@@ -203,6 +217,10 @@ namespace PoliSim.EditorTools
             DateTime? runUpSeen = null, campaignSeen = null, pollingDaySeen = null;
             int regionsSeen = 0, playerIndex = -1;
             bool cut = false, droppedAfter = false, resultAfter = false, recount = false;
+            UsGroundGame.Campaign groundCampaign = null;   // PS-6 US-31: what the polling day's count read of the campaign
+            ElectoralCollege.StateCall[] derivedStates = null;
+            string derivedLine = null;
+            UsCongressElection.Contest congressOnDay = null;
             string recountWhat = "not reached", predictedLine = "not reached";
             {
                 (SimulationManager sim, World w, Country usa) = Open(hosts);
@@ -223,11 +241,17 @@ namespace PoliSim.EditorTools
                             liveSetup = sim.PlayerCampaign.Setup;
                             countShift = sim.CampaignRecord.CountRecordShift;
                             UsPresidentialElection.Contest previous = UsPresidentialElection.PreviousCount(usa, today);   // PS-6 US-26: a game that has counted before swings from its own states, as Hold does
+                            groundCampaign = UsGroundGame.Of(sim.PlayerCampaign.Setup, sim.PlayerCampaignResult);   // PS-6 US-31: the count reads the campaign's ground game
                             UsPresidentialElection.Contest again = UsPresidentialElection.Count(CountryId.USA, today, counted, UsTermLimit.NomineesFor(usa, today),
                                 UsPresidentialElection.TieSeedOf(SimulationRandom.MasterSeed, today.Year), previous,
-                                previous != null ? UsPresidentialElection.StatesOf(usa, previous) : null, out ElectoralCollege.StateCall[] _, out string whyAgain);
+                                previous != null ? UsPresidentialElection.StatesOf(usa, previous) : null, groundCampaign, UsGroundGame.NoiseSeedOf(CountryId.USA, today), out ElectoralCollege.StateCall[] _, out string whyAgain);
                             recount = again != null && PresidencyDiagnostic.SameContest(again, played);
                             recountWhat = again?.Line ?? whyAgain;
+                            UsPresidentialElection.Contest derivedOnly = UsPresidentialElection.Count(CountryId.USA, today, counted, UsTermLimit.NomineesFor(usa, today),
+                                UsPresidentialElection.TieSeedOf(SimulationRandom.MasterSeed, today.Year), previous,
+                                previous != null ? UsPresidentialElection.StatesOf(usa, previous) : null, out derivedStates, out string _);
+                            derivedLine = derivedOnly?.Line;
+                            congressOnDay = usa.UsCongressElections.FirstOrDefault(c => c.PollingDay == today);
                         }
                         dayShift = EconomicVote.RecordOverTerm(usa, today, out _);
                         if (NationalElection.TryPredictShares(CountryId.USA, out predicted, countShift, on: today, played: usa))   // PS-6 US-26: the history rolled forward, as the game's staging reads it
@@ -248,6 +272,7 @@ namespace PoliSim.EditorTools
                         pollingDaySeen.HasValue ? pollingDaySeen.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "NEVER", counted == null ? "none" : Shares(keys, keys.Select(k => counted[k]).ToArray()), recountWhat));
                 ElectoralCollege.StateCall[] states = played != null ? UsPresidentialElection.StatesOf(usa, played) : null;   // PS-6 US-26: in the form it was counted in
                 Check(states != null && states.Length == 51, F("(h) the stored contest re-derives its {0} jurisdictions' calls from the shares it keeps (UsPresidentialElection.StatesOf)", states?.Length ?? 0));
+                MeasureGameCount(sb, Check, usa, played, states, derivedStates, derivedLine, groundCampaign, congressOnDay, polled);
                 Check(droppedAfter && resultAfter, F("(h) on {0:yyyy-MM-dd} the finished run is dropped ({1}) and its result kept ({2})", polled.AddDays(1), droppedAfter, resultAfter));
                 CampaignRun.Result result = sim.PlayerCampaignResult;
                 if (result != null)
@@ -321,13 +346,404 @@ namespace PoliSim.EditorTools
                 int replayedDays = adopted.PlayerCampaign?.Day ?? -1;
                 for (int d = 0; d < 60 && adopted.CurrentDate < polled; d++) { Step(adopted, adopted.World); }
                 UsPresidentialElection.Contest loadedCount = u.UsPresidentialElections.FirstOrDefault(c => c.PollingDay == polled);
-                Check(replayed && loadedCount != null && played != null && PresidencyDiagnostic.SameContest(loadedCount, played),
-                    F("(i) the save cut {0:yyyy-MM-dd} (format {1}) loads into the game with its campaign replayed ({2} day(s)); stepped to the polling day it counts the same contest: \"{3}\"",
-                        CutOn, save.SaveVersion, replayedDays, loadedCount?.Line ?? "no count"));
+                Check(replayed && loadedCount != null && played != null && PresidencyDiagnostic.SameContest(loadedCount, played) && loadedCount.GroundGame.Count == played.GroundGame.Count && played.GroundGame.Count > 0,
+                    F("(i) the save cut {0:yyyy-MM-dd} (format {1}) loads into the game with its campaign replayed ({2} day(s)); stepped to the polling day it counts the same contest - PS-6 US-31: its {4} states' ground-game effects, the regional noise among them, to the last bit (the noise keyed, not counted): \"{3}\"",
+                        CutOn, save.SaveVersion, replayedDays, loadedCount?.Line ?? "no count", loadedCount?.GroundGame.Count ?? 0));
             }
             finally { EnergyMarket.ResetTurnState(); }
 
+            // ---- (o) PS-6 US-31: USA-gated - Sweden's and Germany's stagings declare no targeting rule (R-US16 (c) is not ruled)
+            MeasureGate(sb, Check);
+
             sb.Append("    note      ").Append(note.Replace("\n", "\n              ").Trim()).Append('\n');
+        }
+
+        // ================================================================== PS-6 US-31: the state-by-state count and the AI's targeting
+
+        /// <summary>DECLARED (US-9's, §846): the maximal ground game - weighted contacts per eligible voter in the one state, past where
+        /// `GotvModel.Mobilization` reaches its ceiling in double precision (asserted: it reads exactly 100). No budget buys more.</summary>
+        private const double CeilingEffort = 40.0;
+
+        /// <summary>CONVENTION: half the last printed digit of the card's two-decimal range - its own rounding, not a tolerance on the model.</summary>
+        private const double CardRoundingPp = 0.005;
+
+        /// <summary>CONVENTION: an unworked state's margin moves only by the count's rounding to whole votes (US-9: below 1e-5 of a share) - in points.</summary>
+        private const double UnworkedPp = 1e-3;
+
+        /// <summary>The program US-9's (b) scripted (DECLARED there): door-to-door in the one state, as many a day as the candidate's day holds, the party's one
+        /// office there from day 0.</summary>
+        private const CampaignActionKind ProgramAct = CampaignActionKind.DoorToDoor;
+
+        /// <summary>DECLARED: the state the scripted program works - US-9's, the closest 2020 state its (b) worked.</summary>
+        private const string ProgramState = "GA";
+
+        private static double Margin(double[] shares) => 100.0 * (shares[ElectoralCollege.ShareRepublican] - shares[ElectoralCollege.ShareDemocrat]);
+
+        /// <summary>(k) and (l): the rule declared on the USA's staging and read off a poll, and where the AI's local acts land - every one of a party that
+        /// never looks (Chaotic, W-C2's reactivity 0) inside the rule's regions of its day; the planted tooth, the same staging with the rule stripped, lands
+        /// outside them.</summary>
+        private static void MeasureTargeting(StringBuilder sb, Action<bool, string> Check, CampaignRun.Setup setup, string[] keys)
+        {
+            RegionTargeting rule = setup.Targeting;
+            Check(rule != null, F("(k) US-31: the USA's staging declares the AI's targeting rule ([AUTHORED-DRAFT], the play-calibration list): {0}", rule?.Rule ?? "NONE"));
+            if (rule == null) { return; }
+            string[] names = setup.Regions.Select(r => r.Name).ToArray();
+            DateTime polled = setup.Calendar.ElectionDate;
+
+            // (k) the rule read off a poll, recomputed here: electors x the swing index of the margin the count derives from the poll's shares
+            bool Recomputed(double[] shares, out int[] order, out string top)
+            {
+                var poll = new Poll(setup.Calendar.CampaignStart, 600, "planted", shares, new double[shares.Length]);
+                double[] weights = rule.WeightsOn(poll);
+                var dict = new Dictionary<string, double>();
+                for (int i = 0; i < keys.Length; i++) { dict[keys[i]] = shares[i]; }
+                UsPresidentialElection.Count(CountryId.USA, polled, dict, null, 0, null, null, out ElectoralCollege.StateCall[] states, out string _);
+                bool same = states != null && weights.Length == names.Length;
+                for (int r = 0; same && r < names.Length; r++)
+                {
+                    ElectoralCollege.StateCall c = states.First(s => s.State == names[r]);
+                    same = weights[r] == c.Electors * SwingRegions.Index(Margin(c.Shares));
+                }
+                order = rule.OrderOn(poll);
+                int[] o = order;
+                top = string.Join(", ", o.Take(CampaignAi.LocalCandidateRegions).Select(r => F("{0} ({1:0})", names[r], weights[r])));
+                return same;
+            }
+            double[] even = keys.Select(k => k == "REP" || k == "DEM" ? 0.5 : 0.0).ToArray();
+            double[] landslide = keys.Select(k => k == "REP" ? 0.65 : k == "DEM" ? 0.35 : 0.0).ToArray();
+            bool evenSame = Recomputed(even, out int[] evenOrder, out string evenTop);
+            bool slideSame = Recomputed(landslide, out int[] slideOrder, out string slideTop);
+            Check(evenSame && slideSame && !evenOrder.SequenceEqual(slideOrder) && evenOrder.Length >= CampaignAi.LocalCandidateRegions,
+                F("(k) the rule's weights are electors x the swing index of the margin the count derives from the poll, recomputed here state by state; on a planted even poll it contests {0} states (first {1}), on a planted REP 65 % it contests {2} (first {3}) - another order: it reads the poll",
+                    evenOrder.Length, evenTop, slideOrder.Length, slideOrder.Length == 0 ? "none" : slideTop));
+
+            // (l) where the AI's local acts land, the rule against its planted absence
+            int fallbackDays = 0;
+            (int Acts, int Inside, string Where) Land(CampaignRun.Setup s)
+            {
+                SimulationRandom.Seed(Seed);
+                CampaignRun.State st = CampaignRun.Begin(s, SimulationRandom.For(SimulationRandom.Stream.CampaignAi), SimulationRandom.For(SimulationRandom.Stream.Debate), SimulationRandom.For(SimulationRandom.Stream.Scandal));
+                var picks = new List<HashSet<int>>();
+                while (!st.Finished)
+                {
+                    CampaignRun.StepDay(st);
+                    picks.Add(st.PublicPoll.HasValue ? new HashSet<int>(rule.OrderOn(st.PublicPoll.Value).Where(r => setup.StandsIn(0, r)).Take(CampaignAi.LocalCandidateRegions)) : new HashSet<int>());
+                }
+                CampaignRun.Result run = CampaignRun.Finish(st);
+                fallbackDays = run.Parties.Sum(l => l.RuleFallbackDays);
+                int acts = 0, inside = 0;
+                var by = new Dictionary<string, int>();
+                foreach (CampaignRun.PartyLedger ledger in run.Parties)
+                {
+                    foreach (CampaignRun.DecisionRecord d in ledger.Log)
+                    {
+                        if (Array.IndexOf(CampaignActions.TheEight, d.Kind) < 0 || !CampaignActions.Spec(d.Kind).IsLocal) { continue; }
+                        int r = Array.IndexOf(names, d.Target.Split(new[] { " / " }, StringSplitOptions.None)[0]);
+                        acts++;
+                        if (r >= 0 && d.Day >= 0 && d.Day < picks.Count && picks[d.Day].Contains(r)) { inside++; }
+                        string at = r >= 0 ? names[r] : "?";
+                        by[at] = by.TryGetValue(at, out int n) ? n + 1 : 1;
+                    }
+                }
+                return (acts, inside, by.Count == 0 ? "none" : string.Join(", ", by.OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).Take(6).Select(kv => kv.Key + " " + kv.Value)));
+            }
+            (int acts, int inside, string where) = Land(Cast(setup, AiPersonality.Chaotic, rule));
+            int ruleFallback = fallbackDays;
+            Check(acts > 0 && inside == acts && ruleFallback == 0,
+                F("(l) THE DONE-WHEN, the AI's local acts where the rule says: both parties Chaotic (it never looks - W-C2's reactivity 0, so its candidate regions are the rule's alone), seed {0}: {1} local acts, {2} in the rule's {3} of their day; by state {4}", Seed, acts, inside, CampaignAi.LocalCandidateRegions, where));
+            (int oldActs, int oldInside, string oldWhere) = Land(Cast(setup, AiPersonality.Chaotic, null));
+            Check(oldActs > 0 && oldInside < oldActs,
+                F("(l) the planted tooth - the same staging with the rule stripped: {0} local acts, only {1} in the rule's regions of their day (the largest audiences instead: {2}) - the assertion above bites", oldActs, oldInside, oldWhere));
+            // the second review's L3: a rule that contests nothing falls back to the largest audiences, every day, for every party - counted, not logged
+            var nothing = new RegionTargeting("planted: contests nothing", poll => new double[setup.Regions.Length]);
+            (int noneActs, int _, string noneWhere) = Land(Cast(setup, AiPersonality.Chaotic, nothing));
+            int noneFallback = fallbackDays, days = (int)(setup.Calendar.ElectionDate - setup.Calendar.CampaignStart).TotalDays;
+            Check(noneActs > 0 && noneFallback > 0 && noneFallback % setup.Parties.Length == 0 && ruleFallback == 0,
+                F("(l) the second review's L3: a planted rule that contests nothing leaves no party without local acts - {0} acts, by state {1} (the largest audiences); the fallback counted on {2} party-days of the campaign's {3} days x {4} parties, none under the real rule", noneActs, noneWhere, noneFallback, days, setup.Parties.Length));
+            (int castActs, int castInside, string castWhere) = Land(setup);
+            sb.Append(F("    read      (l) the rule's cast ({0}): {1} local acts, {2} in the rule's regions of their day (a reactive personality also weighs where it sees an opponent working); by state {3}\n",
+                string.Join(", ", setup.Parties.Select(p => p.Name + " " + p.Personality)), castActs, castInside, castWhere));
+        }
+
+        /// <summary>The staging with every party cast as <paramref name="personality"/> - its candidate, offices, staff and buys the staging's for that cast - and
+        /// <paramref name="rule"/> as its targeting (null strips it, the planted tooth).</summary>
+        private static CampaignRun.Setup Cast(CampaignRun.Setup s, AiPersonality personality, RegionTargeting rule)
+        {
+            var parties = s.Parties.Select((p, i) => new CampaignRun.PartySetup(p.Name, personality, p.Credibility, p.StartingMoney, p.TrueIssueMatch, p.Volunteers,
+                LiveCampaignSetup.CandidateFor(personality, p.Name), LiveCampaignSetup.OfficesFor(personality, s.Regions, s.Stands?[i]), p.OfficeOperationsPerDay,
+                LiveCampaignSetup.StaffFor(personality), LiveCampaignSetup.TelevisionBuysFor(personality), null, null)).ToArray();
+            return WithParties(s, parties, rule);
+        }
+
+        private static CampaignRun.Setup WithParties(CampaignRun.Setup s, CampaignRun.PartySetup[] parties, RegionTargeting rule) =>
+            new CampaignRun.Setup(s.Calendar, parties, s.PriorShares, s.LoyaltyPerParty, s.Compatibility, s.TrueSalience, s.NationalAudience, s.Regions, s.PublicHouse,
+                s.PublicPollEveryDays, s.InternalHouse, s.ElectorateLoyalty, s.Outlets, s.DebateDays, s.Scandals, s.LiveScandalRatePerPartyDay, s.RecordShift, s.Families, s.AwarenessStart,
+                s.Grouping, s.Positions, s.Stands, rule);
+
+        private static UsGroundGame.Campaign Copy(UsGroundGame.Campaign c) => new UsGroundGame.Campaign
+        {
+            Regions = (string[])c.Regions.Clone(), Eligible = (double[])c.Eligible.Clone(), DemocratContacts = (double[])c.DemocratContacts.Clone(),
+            RepublicanContacts = (double[])c.RepublicanContacts.Clone(), BaseTurnout = c.BaseTurnout,
+        };
+
+        /// <summary>(m) and (n): a ground game in one state through the US count - the ceiling in every state moving it by US-9's measured amount (PLAN_PREREG),
+        /// the worked state alone; the trailing party's ceiling in the closest state flipping it, its electors and nothing else; US-9's scripted program read;
+        /// the noise keyed - the same seed the same count, no counted stream drawn.</summary>
+        private static void MeasureGroundGame(StringBuilder sb, Action<bool, string> Check, CampaignRun.Setup setup, string[] keys, DateTime polled,
+            Dictionary<string, double> atStart, CampaignRun.Result idleAtStart)
+        {
+            SimulationRandom.Seed(Seed);
+            int tieSeed = UsPresidentialElection.TieSeedOf(SimulationRandom.MasterSeed, polled.Year);
+            UsPresidentialElection.Contest idleCount = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, out ElectoralCollege.StateCall[] derived, out string why);
+            UsGroundGame.Campaign none = UsGroundGame.Of(setup, idleAtStart);
+            bool empty = none != null && none.DemocratContacts.All(c => c == 0.0) && none.RepublicanContacts.All(c => c == 0.0);
+            Check(idleCount != null && derived != null && derived.Length == 51 && empty && none.Regions.SequenceEqual(setup.Regions.Select(r => r.Name)),
+                F("(m) US-31: the count's frame on the start's staging - the idle run's ground game read by UsGroundGame.Of ({0} jurisdictions, no contact), base turnout {1:0.0000} (votes cast over the electorate), the derived states the prediction's count{2}",
+                    none?.Regions.Length ?? 0, none?.BaseTurnout ?? double.NaN, idleCount == null ? " - NO COUNT: " + why : string.Empty));
+            if (idleCount == null || none == null) { return; }
+
+            // the maximal ground game in one state, either party, noise off, through the US count's own function - on US-9's own map, then on this staging's
+            (double Low, double High, double Stray, List<string> Flippable, int FlippableElectors, int NotAt100, string Why) Sweep(ElectoralCollege.StateCall[] map)
+            {
+                double lo = double.MaxValue, hi = 0.0, stray = 0.0;
+                var flippable = new List<string>();
+                int electors = 0, not100 = 0;
+                for (int r = 0; r < none.Regions.Length; r++)
+                {
+                    var move = new double[2];
+                    foreach (bool rep in new[] { false, true })
+                    {
+                        UsGroundGame.Campaign c = Copy(none);
+                        double contacts = Math.Ceiling(CeilingEffort * c.Eligible[r]);
+                        if (GotvModel.Mobilization(contacts, c.Eligible[r]) != 100.0) { not100++; }
+                        if (rep) { c.RepublicanContacts[r] = contacts; } else { c.DemocratContacts[r] = contacts; }
+                        List<UsGroundGame.StateEffect> e = UsGroundGame.Effects(map, c, 0, 0.0, out string whyCeiling);
+                        if (e == null) { return (double.NaN, double.NaN, double.NaN, flippable, 0, not100, none.Regions[r] + " not counted: " + whyCeiling); }
+                        move[rep ? 1 : 0] = 100.0 * (e[r].Republican - e[r].Democrat);
+                        for (int o = 0; o < e.Count; o++) { if (o != r) { stray = Math.Max(stray, Math.Abs(100.0 * (e[o].Republican - e[o].Democrat))); } }
+                        lo = Math.Min(lo, Math.Abs(move[rep ? 1 : 0])); hi = Math.Max(hi, Math.Abs(move[rep ? 1 : 0]));
+                    }
+                    ElectoralCollege.StateCall call = map.First(s => s.State == none.Regions[r]);
+                    double m = Margin(call.Shares);
+                    if (m > 0 ? m + move[0] < 0 : m + move[1] > 0) { flippable.Add(call.State); electors += call.Electors; }   // US-9's (c) reading: the trailing party's ceiling
+                }
+                return (lo, hi, stray, flippable, electors, not100, null);
+            }
+            var prev2020 = UsPresidentialReturns.States.Where(s => s.Year == 2020).ToArray();
+            var rows2024 = UsPresidentialReturns.States.Where(s => s.Year == 2024).ToArray();
+            double cast2024 = rows2024.Sum(s => (double)s.VotesTotal);
+            double[] national2024 = { rows2024.Sum(s => (double)s.VotesD) / cast2024, rows2024.Sum(s => (double)s.VotesR) / cast2024, rows2024.Sum(s => (double)s.VotesOther) / cast2024 };
+            ElectoralCollege.FromNationalShares(2020, 2024, national2024, out ElectoralCollege.StateCall[] us9Map, out double _);   // US-9's idle map: US-4's (a) row, 2024's national shares on 2020's states
+            var us9 = Sweep(us9Map);
+            bool cardRead = Us9CardReading(out double cardLow, out double cardHigh, out int cardFlips, out int cardElectors, out string cardList, out string cardWhy);
+            bool asUs9 = cardRead && us9.Why == null && us9.NotAt100 == 0 && Math.Abs(us9.Low - cardLow) <= CardRoundingPp + UnworkedPp && Math.Abs(us9.High - cardHigh) <= CardRoundingPp + UnworkedPp
+                         && us9.Flippable.Count == cardFlips && us9.FlippableElectors == cardElectors && string.Join(", ", us9.Flippable.OrderBy(x => x, StringComparer.Ordinal)) == cardList
+                         && us9.Stray < UnworkedPp && prev2020.Length == us9Map.Length;
+            Check(asUs9,
+                F("(m) THE DONE-WHEN, US-9's measured amount (PLAN_PREREG): the US count's ground game (UsGroundGame.Effects, the count's own function) at US-9's maximal ground game on US-9's own map moves one state's margin {0:0.000} to {1:0.000} points, either party - the card's US-9 block {2:0.00} to {3:0.00} (within its rounding {4}) - and could flip {5} calls, {6} electors ({7}), the card's {8}, {9} ({10}); every unworked state by at most {11:0.0e+0} points{12}",
+                    us9.Low, us9.High, cardLow, cardHigh, CardRoundingPp, us9.Flippable.Count, us9.FlippableElectors, string.Join(", ", us9.Flippable), cardFlips, cardElectors, cardList, us9.Stray,
+                    cardRead ? (us9.Why == null ? string.Empty : " - " + us9.Why) : " - THE CARD: " + cardWhy));
+            var live = Sweep(derived);
+            Check(live.Why == null && live.NotAt100 == 0 && live.Stray < UnworkedPp,
+                F("(m) on the game's own staging (its map the prediction's count, its electorate the CVAP) the same ceiling moves one state's margin {0:0.000} to {1:0.000} points and could flip {2} calls, {3} electors ({4}); every unworked state by at most {5:0.0e+0} points{6}",
+                    live.Low, live.High, live.Flippable.Count, live.FlippableElectors, string.Join(", ", live.Flippable), live.Stray, live.Why == null ? string.Empty : " - " + live.Why));
+            // the planted tooth: no ground game, and no state moves by US-9's amount
+            List<UsGroundGame.StateEffect> idleEffects = UsGroundGame.Effects(derived, none, 0, 0.0, out string _);
+            double idleMost = idleEffects == null ? double.NaN : idleEffects.Max(x => Math.Abs(100.0 * (x.Republican - x.Democrat)));
+            Check(idleEffects != null && idleMost < cardLow - CardRoundingPp,
+                F("(m) the planted tooth - no ground game anywhere: the widest move {0:0.0e+0} points, below US-9's range, so the assertion above bites", idleMost));
+
+            // able to flip it: the trailing party's ceiling in the closest winner-take-all state, through the count's own path with its keyed noise
+            int noiseSeed = UsGroundGame.NoiseSeedOf(CountryId.USA, polled);
+            UsPresidentialElection.Contest noiseOnly = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, none, noiseSeed, out ElectoralCollege.StateCall[] noisy, out string whyNoise);
+            if (noiseOnly == null || noisy == null) { Check(false, "(m) no count with the declared noise: " + whyNoise); return; }
+            int t = Enumerable.Range(0, noisy.Length).Where(i => noisy[i].Districts.Length == 0).OrderBy(i => Math.Abs(Margin(noisy[i].Shares))).ThenBy(i => i).First();
+            bool trailingRep = noisy[t].Winner == ElectoralCollege.Democrat;
+            int at = Array.IndexOf(none.Regions, noisy[t].State);
+            UsGroundGame.Campaign worked = Copy(none);
+            if (trailingRep) { worked.RepublicanContacts[at] = Math.Ceiling(CeilingEffort * worked.Eligible[at]); } else { worked.DemocratContacts[at] = Math.Ceiling(CeilingEffort * worked.Eligible[at]); }
+            UsPresidentialElection.Contest flipped = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, worked, noiseSeed, out ElectoralCollege.StateCall[] after, out string _);
+            string party = trailingRep ? "REP" : "DEM";
+            bool othersSame = after != null && Enumerable.Range(0, noisy.Length).All(i => i == t || (after[i].Winner == noisy[i].Winner && after[i].Shares.SequenceEqual(noisy[i].Shares)));
+            bool flips = after != null && after[t].Winner != noisy[t].Winner;
+            int gained = flipped != null ? flipped.ElectorsOf(party) - noiseOnly.ElectorsOf(party) : -1;
+            Check(flips && othersSame && gained == noisy[t].Electors && flipped.GroundGame.Count == noisy.Length,
+                F("(m) THE DONE-WHEN, able to flip it: the closest winner-take-all state on the count with the declared noise (seed keyed on {0:yyyy-MM-dd}), {1} at {2:+0.00;-0.00}, worked at the ceiling by the trailing {3}: its margin {2:+0.00;-0.00} -> {4:+0.00;-0.00}, the call {5}; every other state's shares bit for bit the same; {3} gains its {6} electors ({7} -> {8})",
+                    polled, noisy[t].State, Margin(noisy[t].Shares), party, after != null ? Margin(after[t].Shares) : double.NaN, flips ? "FLIPS" : "DOES NOT FLIP", noisy[t].Electors,
+                    noiseOnly.ElectorsOf(party), flipped?.ElectorsOf(party) ?? -1));
+
+            // the second review's L2: no noise votes for a column that stands nowhere in a state (US-6c, J3) - every state planted with no other candidate on
+            // its ballot (its others' share given to the Democratic nominee), counted with the declared noise: every other candidate stays at 0 in every state
+            {
+                ElectoralCollege.StateCall[] bare = derived.Select(c => new ElectoralCollege.StateCall
+                {
+                    State = c.State, Electors = c.Electors, PriorShares = c.PriorShares, Winner = c.Winner, Districts = c.Districts, DistrictDemocraticTwoParty = c.DistrictDemocraticTwoParty, DistrictWinners = c.DistrictWinners,
+                    Shares = new[] { c.Shares[ElectoralCollege.ShareDemocrat] + c.Shares[ElectoralCollege.ShareOthers], c.Shares[ElectoralCollege.ShareRepublican], 0.0 },
+                }).ToArray();
+                List<UsGroundGame.StateEffect> bareEffects = UsGroundGame.Effects(bare, none, noiseSeed, UsGroundGame.NoiseSigmaPp, out string whyBare);
+                int othersGiven = bareEffects == null ? -1 : bareEffects.Count(e => e.Others != 0.0);
+                double bareMove = bareEffects == null ? double.NaN : bareEffects.Max(e => Math.Abs(100.0 * (e.Republican - e.Democrat)));
+                int givenInDerived = derived.Count(c => c.Shares[ElectoralCollege.ShareOthers] == 0.0);
+                Check(bareEffects != null && othersGiven == 0 && bareMove > 0.0,
+                    F("(n) the second review's L2: with no other candidate on any ballot (planted), the declared noise gives every other candidate no vote in any of the {0} states ({1} given one) while it still moves the nominees (widest {2:0.00} points); on the game's own map {3} state(s) list no other candidate{4}",
+                        bare.Length, othersGiven, bareMove, givenInDerived, bareEffects == null ? " - NOT COUNTED: " + whyBare : string.Empty));
+            }
+
+            // the noise: keyed (the same seed, the same count; another master seed, another), and no counted stream drawn
+            Dictionary<SimulationRandom.Stream, int> drawsBefore = SimulationRandom.CaptureDrawCounts();
+            UsPresidentialElection.Contest again = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, none, UsGroundGame.NoiseSeedOf(CountryId.USA, polled), out ElectoralCollege.StateCall[] _, out string _);
+            Dictionary<SimulationRandom.Stream, int> drawsAfter = SimulationRandom.CaptureDrawCounts();
+            bool streamsStill = drawsBefore.Count == drawsAfter.Count && drawsBefore.All(kv => drawsAfter.TryGetValue(kv.Key, out int n) && n == kv.Value);
+            SimulationRandom.Seed(Seed + 1);
+            int otherSeed = UsGroundGame.NoiseSeedOf(CountryId.USA, polled);
+            UsPresidentialElection.Contest otherGame = UsPresidentialElection.Count(CountryId.USA, polled, atStart, null, tieSeed, null, null, none, otherSeed, out ElectoralCollege.StateCall[] _, out string _);
+            SimulationRandom.Seed(Seed);
+            bool keyed = again != null && PresidencyDiagnostic.SameContest(again, noiseOnly) && UsGroundGame.NoiseSeedOf(CountryId.USA, polled) == noiseSeed;
+            bool drawn = otherGame != null && otherSeed != noiseSeed && !otherGame.GroundGame.Zip(noiseOnly.GroundGame, (a, b) => a.Democrat == b.Democrat && a.Republican == b.Republican).All(same => same);
+            double noiseMost = noiseOnly.GroundGame.Max(x => Math.Abs(100.0 * (x.Republican - x.Democrat)));
+            Check(keyed && drawn && streamsStill,
+                F("(n) the regional noise is keyed, never counted: the same master seed and day give the same count bit for bit; master seed {0} draws other numbers; no counted stream moved ({1} streams held); the noise alone moves a margin by at most {2:0.00} points (sigma {3:0.0} a share)",
+                    Seed + 1, drawsBefore.Count, noiseMost, UsGroundGame.NoiseSigmaPp));
+
+            // US-9's scripted program (read): the REP works GA - its one office there, door-to-door every day - its own ground game's move there
+            int ga = Array.IndexOf(none.Regions, ProgramState);
+            int repIndex = Array.IndexOf(keys, "REP");
+            CampaignActions.ActionSpec act = CampaignActions.Spec(ProgramAct);
+            int perDay = (int)Math.Floor(CampaignEconomy.HoursPerCampaignDay / act.Hours);
+            Func<int, AiDecision[]> program = day => Enumerable.Repeat(new AiDecision(ProgramAct, new CampaignActions.ActionTarget(ga, -1, null), ProgramState, act.MoneyCost, act.Hours, 0.0, false), perDay).ToArray();
+            CampaignRun.PartySetup[] programmed = setup.Parties.Select((p, i) => i != repIndex ? p : new CampaignRun.PartySetup(p.Name, p.Personality, p.Credibility, p.StartingMoney, p.TrueIssueMatch, p.Volunteers,
+                p.Candidate, new[] { ga }, p.OfficeOperationsPerDay, p.Staff, p.TelevisionBuys, program, null)).ToArray();
+            CampaignRun.Result programRun = CampaignAiHarness.RunSeeded(WithParties(setup, programmed, setup.Targeting), Seed);
+            var programShares = new Dictionary<string, double>();
+            for (int i = 0; i < keys.Length; i++) { programShares[keys[i]] = programRun.FinalShares[i]; }
+            UsPresidentialElection.Count(CountryId.USA, polled, programShares, null, tieSeed, null, null, out ElectoralCollege.StateCall[] programDerived, out string _);
+            UsGroundGame.Campaign repOnly = UsGroundGame.Of(setup, programRun);
+            if (repOnly != null) { repOnly = Copy(repOnly); for (int r = 0; r < repOnly.DemocratContacts.Length; r++) { repOnly.DemocratContacts[r] = 0.0; } }
+            List<UsGroundGame.StateEffect> programEffects = programDerived != null && repOnly != null ? UsGroundGame.Effects(programDerived, repOnly, 0, 0.0, out string _) : null;
+            int made = programRun.Parties[repIndex].ActionCount[CampaignAi.IndexOfAction(ProgramAct)];
+            double gaMove = programEffects != null ? 100.0 * (programEffects[ga].Republican - programEffects[ga].Democrat) : double.NaN;
+            int widest = programEffects == null ? -1 : Enumerable.Range(0, programEffects.Count).OrderByDescending(r => Math.Abs(programEffects[r].Republican - programEffects[r].Democrat)).ThenBy(r => r).First();
+            Check(made > 0 && gaMove > 0.0 && widest == ga,
+                F("(m) a player's ground game through the count: US-9's scripted program (the REP's one office in {0} and {1} door-to-door a day there; {2} acts made, the other party an AI at its cast) moves {0}'s margin {3:+0.000;-0.000} points by the REP's own contacts - the widest move of any state (US-9's (b) measured the same program on its own staging: the card's US-9 block)",
+                    ProgramState, perDay, made, gaMove));
+        }
+
+        /// <summary>
+        /// PLAN_PREREG (US-31, fixed before the first run): "US-9's measured amount" is US-9's (c) as the US model card's US-9 block prints it
+        /// (`docs/reference/US_ELECTIONS.md`, written by `UsCampaignGeographyCheck`; `COMPLETED.md` §846) - the maximal ground game moves one jurisdiction's margin
+        /// by its range of points (two decimals) and could flip its list of calls and electors. The US count's own ground-game function, at US-9's maximal
+        /// ground game on US-9's own map, must give that range to within half the card's last digit (<see cref="CardRoundingPp"/>) plus the count's whole-vote rounding (<see cref="UnworkedPp"/> - US-9's baseline
+        /// is a count with no ground game, this one the derived shares) and the same calls and
+        /// electors exactly; the game's own staging's range is read beside it, with no tolerance. Read from the card, never retyped, so a re-measured card
+        /// carries the figure; a card this cannot read fails by name.
+        /// </summary>
+        private static bool Us9CardReading(out double low, out double high, out int flips, out int electors, out string list, out string why)
+        {
+            low = high = double.NaN; flips = electors = -1; list = null; why = null;
+            string path = Path.Combine(Path.GetFullPath(Path.Combine(Application.dataPath, "..")), "docs", "reference", "US_ELECTIONS.md");
+            if (!File.Exists(path)) { why = "docs/reference/US_ELECTIONS.md not found"; return false; }
+            System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(File.ReadAllText(path, Encoding.UTF8),
+                @"\*\*The ceiling moves one jurisdiction's margin by ([0-9]+\.[0-9]+) to ([0-9]+\.[0-9]+) points\*\*.*?could flip ([0-9]+) of the idle map's calls - ([0-9]+) electors: ([A-Z]{2}(?:, [A-Z]{2})*)\.");
+            if (!m.Success) { why = "the US-9 block's ceiling sentence is not on the card"; return false; }
+            low = double.Parse(m.Groups[1].Value, CultureInfo.InvariantCulture);
+            high = double.Parse(m.Groups[2].Value, CultureInfo.InvariantCulture);
+            flips = int.Parse(m.Groups[3].Value, CultureInfo.InvariantCulture);
+            electors = int.Parse(m.Groups[4].Value, CultureInfo.InvariantCulture);
+            list = string.Join(", ", m.Groups[5].Value.Split(new[] { ", " }, StringSplitOptions.None).OrderBy(x => x, StringComparer.Ordinal));
+            return true;
+        }
+
+        /// <summary>(h), PS-6 US-31: the game's own polling day - the count kept each state's ground game; the stored contest re-derives the counted states
+        /// (the derived plus the effect) and, with its effect cleared (the planted tooth), the derived ones; the House swing and the Senate's states carry it.</summary>
+        private static void MeasureGameCount(StringBuilder sb, Action<bool, string> Check, Country usa, UsPresidentialElection.Contest played, ElectoralCollege.StateCall[] states,
+            ElectoralCollege.StateCall[] derivedStates, string derivedLine, UsGroundGame.Campaign groundCampaign, UsCongressElection.Contest congress, DateTime polled)
+        {
+            if (played == null || states == null || derivedStates == null || groundCampaign == null)
+            {
+                Check(false, "(h) US-31: no campaign count, its derived states or its ground game on the polling day - nothing to compare");
+                return;
+            }
+            ElectoralCollege.TryElectorsYear(polled.Year, out int inForce);
+            UsGroundGame.Apply(derivedStates, played.GroundGame, inForce, played.TieSeed, out ElectoralCollege.StateCall[] rebuilt);
+            bool asCounted = rebuilt.Length == states.Length && rebuilt.Zip(states, (a, b) => a.State == b.State && a.Winner == b.Winner && a.Shares.SequenceEqual(b.Shares) && a.DistrictWinners.SequenceEqual(b.DistrictWinners)).All(same => same);
+            bool moved = states.Zip(derivedStates, (a, b) => !a.Shares.SequenceEqual(b.Shares)).Count(x => x) == states.Length;
+            List<UsGroundGame.StateEffect> kept = played.GroundGame;
+            ElectoralCollege.StateCall[] cleared;
+            try
+            {
+                played.GroundGame = new List<UsGroundGame.StateEffect>();
+                cleared = UsPresidentialElection.StatesOf(usa, played);
+            }
+            finally { played.GroundGame = kept; }
+            bool tooth = cleared != null && cleared.Zip(derivedStates, (a, b) => a.Shares.SequenceEqual(b.Shares) && a.Winner == b.Winner).All(same => same);
+            Check(played.GroundGame.Count == states.Length && asCounted && moved && tooth && played.Line.Contains("each state counted with the campaign ground game"),
+                F("(h) US-31: the polling day counts each of the {0} states with the campaign ground game and the declared noise - the stored contest re-derives the counted states (the derived plus each kept effect) bit for bit, every state moved off its derived shares; the planted tooth, its effects cleared, re-derives the derived states: \"{1}\"",
+                    played.GroundGame.Count, played.Line));
+            int changed = states.Zip(derivedStates, (a, b) => a.Winner != b.Winner).Count(x => x);
+            sb.Append(F("    read      (h) the same shares counted without the ground game: {0}; calls apart {1}\n", derivedLine ?? "no count", changed));
+
+            if (congress == null) { Check(false, "(h) US-31: no Congress count on the polling day"); return; }
+            Dictionary<string, double> swing = UsGroundGame.TwoPartySwing(played.GroundGame);
+            List<UsCongressElection.StateHouse> with = UsCongressElection.CountHouse(polled, congress.V, null, swing, out int _, out double _, out bool _, out string _);
+            List<UsCongressElection.StateHouse> without = UsCongressElection.CountHouse(polled, congress.V, null, null, out int _, out double _, out bool _, out string _);
+            bool houseAsCounted = with != null && with.Count == congress.House.Count && with.Zip(congress.House, (a, b) => a.State == b.State && a.Share == b.Share && a.Rep == b.Rep).All(same => same);
+            bool houseMoved = with != null && without != null && with.Zip(without, (a, b) => a.Share != b.Share).Any(x => x);
+            int seatsApart = with != null && without != null ? with.Zip(without, (a, b) => Math.Abs(a.Rep - b.Rep)).Sum() : -1;
+            var senateWrong = new List<string>();
+            int senateMoved = 0;
+            foreach (UsCongressElection.SenateSeat seat in congress.Senate)
+            {
+                ElectoralCollege.StateCall c = states.FirstOrDefault(s => s.State == seat.State), d = derivedStates.FirstOrDefault(s => s.State == seat.State);
+                if (c == null || d == null) { senateWrong.Add(seat.State + " none"); continue; }
+                double parent = c.Shares[ElectoralCollege.ShareRepublican] / (c.Shares[ElectoralCollege.ShareRepublican] + c.Shares[ElectoralCollege.ShareDemocrat]);
+                double parentDerived = d.Shares[ElectoralCollege.ShareRepublican] / (d.Shares[ElectoralCollege.ShareRepublican] + d.Shares[ElectoralCollege.ShareDemocrat]);
+                if (seat.Parent != parent) { senateWrong.Add(seat.State); }
+                if (parent != parentDerived) { senateMoved++; }
+            }
+            Check(houseAsCounted && houseMoved && senateWrong.Count == 0 && senateMoved == congress.Senate.Count && congress.Senate.Count > 0 && congress.Line.Contains("carry the ground game"),
+                F("(h) US-31, I3's \"alike\": the House swing carries each state's ground game (R-US18 (b) recounted with it gives the stored House bit for bit; without it {0} seat(s) apart), and every one of the {1} Senate seats reads its state's counted share, none its derived one{2}",
+                    seatsApart, congress.Senate.Count, senateWrong.Count == 0 ? string.Empty : " - WRONG: " + string.Join(", ", senateWrong)));
+
+            // the second review's M1: two cycles - the ground-game count, then a midterm with no campaign (2 U.S.C. §7), on the poll's V and either side of it:
+            // its House is the one a base counted with no ground game gives, share for share and seat for seat, so no cycle's ground game compounds
+            if (without == null) { return; }
+            var midterm = new DateTime(polled.Year + 2, 11, 1);
+            while (midterm.DayOfWeek != DayOfWeek.Tuesday || midterm.Day == 1) { midterm = midterm.AddDays(1); }
+            var noGround = new UsCongressElection.Contest { PollingDay = congress.PollingDay, V = congress.V, House = without };
+            var buggy = new UsCongressElection.Contest
+            {
+                PollingDay = congress.PollingDay, V = congress.V,
+                House = congress.House.Select(h => new UsCongressElection.StateHouse { State = h.State, Seats = h.Seats, Rep = h.Rep, Dem = h.Dem, Share = h.ShareWithoutGround, UnopposedRep = h.UnopposedRep, UnopposedDem = h.UnopposedDem }).ToList(),
+            };
+            bool twoCycles = true;
+            int buggyApart = 0, groundSeats = congress.House.Sum(h => Math.Abs(h.GroundSeats));
+            foreach (double v2 in new[] { congress.V - 0.01, congress.V, congress.V + 0.01 })
+            {
+                List<UsCongressElection.StateHouse> a = UsCongressElection.CountHouse(midterm, v2, congress, out int _, out double _, out bool _, out string _);
+                List<UsCongressElection.StateHouse> b = UsCongressElection.CountHouse(midterm, v2, noGround, out int _, out double _, out bool _, out string _);
+                List<UsCongressElection.StateHouse> bug = UsCongressElection.CountHouse(midterm, v2, buggy, out int _, out double _, out bool _, out string _);
+                twoCycles &= a != null && b != null && a.Count == b.Count && a.Zip(b, (x, y) => x.State == y.State && x.Rep == y.Rep && x.Share == y.Share).All(same => same);
+                if (a != null && bug != null) { buggyApart += a.Zip(bug, (x, y) => Math.Abs(x.Rep - y.Rep)).Sum(); }
+            }
+            Check(twoCycles && (groundSeats == 0 || buggyApart > 0),
+                F("(h) US-31, the second review's M1 - two cycles: a midterm on {0:yyyy-MM-dd} (no campaign) swung from the ground-game count gives, at V {1:0.0000} and a point either side, the House a base counted with no ground game gives, share for share and seat for seat; the ground game moved {2} seat(s) in 2024, and the planted tooth (the base keeping those seats) is {3} seat(s) apart{4}",
+                    midterm, congress.V, groundSeats, buggyApart, groundSeats == 0 ? " - no seat moved by the ground game this run, so the tooth cannot bite (read)" : string.Empty));
+        }
+
+        /// <summary>(o): R-US16 (c) is not ruled - Sweden's and Germany's stagings declare no targeting rule, so their AI weighs the largest audiences as before
+        /// (their counts read no ground game: `UsCampaignGeographyCheck` holds that no other runtime file calls W-D1's count).</summary>
+        private static void MeasureGate(StringBuilder sb, Action<bool, string> Check)
+        {
+            foreach (CountryId country in new[] { CountryId.Sweden, CountryId.Germany })
+            {
+                using (SimulationManager.EpochScope())
+                {
+                    WorldClock.ApplyStart(country);
+                    CampaignCalendar cal = CampaignCalendar.FromWorldStart(WorldClock.LatestElectionDay(country), WorldClock.StartDate(country));
+                    bool staged = LiveCampaignSetup.TryFor(country, new (int, int, Scandal)[0], cal, out CampaignRun.Setup s, out string _, onVoteModelCompatibility: true);
+                    Check(staged && s.Targeting == null, F("(o) US-31 is the USA's alone: {0}'s staging declares no targeting rule{1}", country, staged ? string.Empty : " - NOT STAGED"));
+                }
+            }
         }
 
         /// <summary>The setup with every party idle - no office, no act, no hire, no buy, no debate, no story - and everything else as staged.</summary>

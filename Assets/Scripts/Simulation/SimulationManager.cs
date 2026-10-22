@@ -5732,8 +5732,11 @@ namespace PoliSim.Simulation
         /// PS-6 US-30: where the player's campaign ran up to this polling day (`LiveCampaignSetup.TryUsa`, on the jurisdictions), the count reads the run's final
         /// shares (<see cref="TryPlayerCampaignShares"/>) - the vote model the prediction is made of, moved by the campaign, the government's record judged for
         /// the count on its last day (§752) - then the states (R-US14), then the electors; with no campaign, the prediction as before. A day the
-        /// count cannot be made (no prediction; E1's factors not fitted) holds nothing and says so: the record's president stays seated by date. The count draws
-        /// no random number, so no stream moves. Nothing here is shown as a night: the verdict lands at once (D-US builds the night).
+        /// count cannot be made (no prediction; E1's factors not fitted) holds nothing and says so: the record's president stays seated by date. PS-6 US-31
+        /// (R-US16 (b), I3): where the campaign ran, each state is counted with its ground game and the declared regional noise, and the state effect enters
+        /// the electors, the Senate's states and the House swing alike (<see cref="Elections.UsGroundGame"/>). The count draws no number from a counted stream
+        /// (the regional noise is keyed by the master seed, the country and the day), so no stream moves. Nothing here is shown as a night: the verdict lands at
+        /// once (D-US builds the night).
         /// </summary>
         private void HoldUsPresidentialCount()
         {
@@ -5744,18 +5747,21 @@ namespace PoliSim.Simulation
             if (chosen != null) { Debug.Log($"PRESIDENTIAL: {country.Id} - the House's choice: {choice}"); }   // its own line only - the count's was logged on its polling day
             if (Elections.UsCongressElection.IsMidterm(CurrentDate)) { HoldUsMidtermCount(country); return; }   // PS-6 US-27: a midterm counts no president
             if (!Elections.UsPresidentialElection.IsPollingDay(country, CurrentDate)) { return; }
+            Elections.UsGroundGame.Campaign groundGame = null;   // PS-6 US-31: the campaign's ground game, counted state by state where it ran (R-US16 (b), I3)
             if (TryPlayerCampaignShares(out Dictionary<string, double> poll))
             {
                 var counted = new System.Text.StringBuilder();
                 foreach (KeyValuePair<string, double> kv in poll) { counted.Append(' ').Append(kv.Key).Append(' ').Append((100.0 * kv.Value).ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)).Append(" %"); }
                 Debug.Log($"PRESIDENTIAL: {country.Id} - the campaign ran to the polling day, and its final shares are counted:{counted}");
+                groundGame = Elections.UsGroundGame.Of(PlayerCampaign.Setup, PlayerCampaignResult);
+                if (groundGame == null) { Debug.LogWarning($"PRESIDENTIAL: {country.Id} - the campaign ground game could not be read (no REP or DEM staged, or its mobilization does not match the jurisdictions); the states are counted as derived"); }
             }
             else if (!Elections.NationalElection.TryPredictShares(country.Id, out poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the House history rolled forward - the game's own counts before the day
             {
                 Debug.LogWarning($"PRESIDENTIAL: {country.Id} - no prediction could be made on the polling day {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's president stays seated by date");
                 return;
             }
-            Elections.UsPresidentialElection.Contest held = Elections.UsPresidentialElection.Hold(country, CurrentDate, poll, out string why);
+            Elections.UsPresidentialElection.Contest held = Elections.UsPresidentialElection.Hold(country, CurrentDate, poll, groundGame, out string why);
             if (held == null)
             {
                 // its own prefix: a reader that picks count lines by "the count of" (the diagnostics' filters over what their listeners collect) never takes a failure for a count

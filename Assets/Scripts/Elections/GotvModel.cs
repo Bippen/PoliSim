@@ -141,6 +141,10 @@ namespace PoliSim.Elections
             return contacts;
         }
 
+        /// <summary>PS-6 US-31: weighted contacts carried in as another mobilization holds them (the US count's columns read the campaign's parties' own) -
+        /// no operation is run and nothing is spent.</summary>
+        public void Carry(int region, int party, double weightedContacts) { _weightedContacts[region][party] += weightedContacts; }
+
         public double Mobilization(int region, int party) => GotvModel.Mobilization(_weightedContacts[region][party], _eligible[region]);
 
         /// <summary>A party's supporters' turnout in a region: §26 through `TurnoutModel`, with this party's mobilization there.</summary>

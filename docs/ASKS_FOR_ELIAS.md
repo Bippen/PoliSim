@@ -410,3 +410,11 @@ Each is built one way, DECLARED, and reversible by your word.
 16. **Three smaller behaviours:** the budget preview never shows the cut; a fallen raise is tabled again the next day and voted 21 days later; a raise tabled during the measures still passes if the debt has fallen back below the limit by its vote.
 
 Also measured with it, not this item's to fix: in the world without anyone's policies, the USA's debt at turn 100 is about eight to nine times its GDP (it was already eight before US-24). An AI-run USA has no fiscal response once the sequester is retired, and the cut arms only for a player. Worth a ruling when the model families come up (step 7).
+
+### US-31 the state-by-state count and the AI's targeting (§898): the asks it ends in
+
+- **The AI's offices.** The AI's rallies and local acts now go where electors × closeness is largest. Its campaign offices still open in the largest states, and their door-knocking counts. Should offices follow the targeting rule too?
+- **The regional noise.** W-D1's state-level noise (σ 1.2 points a share) is now on in a US count where a campaign ran, while national election noise stays 0 in play. Keep it, or hold it until the audit's q2?
+- **What carries forward.** Each state's ground-game effect and noise carries into the next presidential prior (US-26's "the game's own states") and into a midterm Senate's states. The House base takes it out. Keep the carry, or take it out there too?
+- **Save format 54.** A save from before US-31, cut inside a US campaign, is refused rather than replayed through the new targeting. Or declare no step?
+- **The popular vote and the states.** The contest's national tallies stay the derived (pre-ground-game) shares, so the popular vote differs slightly from the sum of the counted states. Stated, not asked: say if it should be re-summed.

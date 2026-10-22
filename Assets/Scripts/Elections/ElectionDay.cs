@@ -6,8 +6,9 @@ namespace PoliSim.Elections
 {
     /// <summary>
     /// W-D1 / SPEC §27 — election day: every region counted independently, then aggregated, with
-    /// controlled uncertainty on `SimulationRandom`'s `ElectionNoise` stream. PURE, WIRED TO
-    /// NOTHING (R-N2): the harness is the only caller; nothing here touches a `World`.
+    /// controlled uncertainty from the generator the caller passes. PURE: nothing here touches a
+    /// `World`. PS-6 US-31: the US count reads it through `UsGroundGame.Effects` where a
+    /// campaign ran (R-US16 (b), I3); Sweden's and Germany's counts do not (R-US16 (c) is not ruled).
     ///
     /// §27, per region: population × eligible × turnout × preference, aggregated over groups —
     /// here `RegionalMobilization.RegionVotes` (W-B11: eligible × preference × each party's

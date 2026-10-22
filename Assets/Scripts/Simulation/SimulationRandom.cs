@@ -277,6 +277,28 @@ namespace PoliSim.Simulation
             }
         }
 
+        /// <summary>CONVENTION: the salt that keeps a count's regional noise (<see cref="RegionalElectionNoiseSeedOn"/>) apart from its national noise
+        /// (<see cref="ElectionNoiseOn"/>) on the same key - a label, not a figure about the world.</summary>
+        private const ulong RegionalNoiseSalt = 0x52454749554E4CUL;
+
+        /// <summary>
+        /// PS-6 US-31: THE SEED OF A COUNT'S REGIONAL NOISE, COMMON TO EVERY WORLD OF ONE GAME - <see cref="ElectionNoiseOn"/>'s key (the master seed, the
+        /// <see cref="Stream.ElectionNoise"/> stream's offset, the country and the polling day) with its own salt, so the per-state count's noise is drawn apart
+        /// from the national vote's and never off a counted stream: the played world, a load of its save and every fork draw the same numbers for the same
+        /// count. Not counted and not saved, as the national key.
+        /// </summary>
+        public static int RegionalElectionNoiseSeedOn(PoliSim.Data.CountryId country, System.DateTime pollingDay)
+        {
+            unchecked
+            {
+                ulong key = Mix((ulong)(uint)MasterSeed ^ ((ulong)(uint)((int)Stream.ElectionNoise * 7919) << 32));
+                key = Mix(key ^ RegionalNoiseSalt);
+                key = Mix(key ^ (ulong)(uint)(int)country);
+                key = Mix(key ^ (ulong)pollingDay.Date.Ticks);
+                return (int)(key ^ (key >> 32));
+            }
+        }
+
         /// <summary>
         /// AF-7 (q10): A CENTRAL BANK'S SHORTLIST AT A TERM'S END, COMMON TO EVERY WORLD OF ONE GAME - <see cref="ElectionNoiseOn"/>'s key on the
         /// <see cref="Stream.FederalReserve"/> stream's offset, the bank and the day its term ends: an AI appointer draws the same names in the played world,

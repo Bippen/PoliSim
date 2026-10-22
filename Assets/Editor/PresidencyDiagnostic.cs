@@ -649,14 +649,18 @@ namespace PoliSim.EditorTools
         private static string Seats(IReadOnlyDictionary<string, int> seats) =>
             seats == null ? "none" : string.Join(", ", seats.Where(kv => kv.Value > 0).OrderByDescending(kv => kv.Value).ThenBy(kv => kv.Key, StringComparer.Ordinal).Select(kv => kv.Key + " " + kv.Value.ToString(CultureInfo.InvariantCulture)));
 
-        /// <summary>A contest as the save carries it, field by field - the dates, the electors, the delegations, the contingent flag, the winner, the line.</summary>
+        /// <summary>A contest as the save carries it, field by field - the dates, the electors, the delegations, the contingent flag, the winner, the line,
+        /// and (PS-6 US-31) each state's ground-game effect to the last bit.</summary>
         internal static bool SameContest(UsPresidentialElection.Contest a, UsPresidentialElection.Contest b)
         {
             bool Tallies(List<UsPresidentialElection.Tally> x, List<UsPresidentialElection.Tally> y) =>
                 x.Count == y.Count && x.Zip(y, (p, q) => p.Candidate == q.Candidate && p.Party == q.Party && p.Votes == q.Votes && p.Share.Equals(q.Share) && p.OwnNominee == q.OwnNominee).All(same => same);
+            bool Ground(List<UsGroundGame.StateEffect> x, List<UsGroundGame.StateEffect> y) =>
+                (x?.Count ?? 0) == (y?.Count ?? 0) && (x == null || y == null || x.Zip(y, (p, q) => p.State == q.State && p.Democrat.Equals(q.Democrat) && p.Republican.Equals(q.Republican)
+                    && p.Others.Equals(q.Others) && p.RepublicanTwoParty.Equals(q.RepublicanTwoParty)).All(same => same));
             return a.PollingDay == b.PollingDay && a.DayBasis == b.DayBasis && a.ElectorsMeet == b.ElectorsMeet && a.CountedOn == b.CountedOn && a.TakesOffice == b.TakesOffice
                    && a.ElectorsAppointed == b.ElectorsAppointed && a.Contingent == b.Contingent && a.Winner == b.Winner && a.WinnerParty == b.WinnerParty && a.Line == b.Line
-                   && Tallies(a.Electors, b.Electors) && Tallies(a.Delegations, b.Delegations);
+                   && Tallies(a.Electors, b.Electors) && Tallies(a.Delegations, b.Delegations) && Ground(a.GroundGame, b.GroundGame);
         }
 
         internal static FieldInfo ControllerField(string name) => typeof(PoliSim.UI.GameController).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);

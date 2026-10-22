@@ -15,7 +15,8 @@ namespace PoliSim.Elections
     /// contingent choice (R-US3), the winner and the oath's day. US-7 built it so that the pair's intent - one save step for US-7 and US-8 (format 39) - would
     /// hold for the 2024 count, and it does: the contest stores no per-state result and needs none, because the states are a pure function of the national
     /// shares it stores and of the catalog (<see cref="StatesOf"/> re-derives them exactly as the count made them), and before US-26 a later count swings from
-    /// the record's states, not the game's (R-US11 (a), RULED, is US-26's to build - the standing W-G1 gap, stated).</description></item>
+    /// the record's states, not the game's (R-US11 (a), RULED, is US-26's to build - the standing W-G1 gap, stated). PS-6 US-31: a count made with the
+    /// campaign's ground game also keeps each state's effect (<see cref="Contest.GroundGame"/>), which no later run can re-draw.</description></item>
     /// <item><description><b>The count</b> (US-8; <see cref="Count"/>, a pure function of its inputs, callable for any world - R-US5 (a): PS-8 then needs only its
     /// gate). On the polling day of 3 U.S.C. §21(1) (<see cref="PresidentialDay"/>) the game's poll × E1's factors (US-6, <see cref="PresidencyOfRecord.CandidatesOf"/>)
     /// gives the national vote; the states follow from the previous presidential election's by §689's normalised uniform swing (R-US14 (a), RULED - G2) and
@@ -114,6 +115,11 @@ namespace PoliSim.Elections
             public string Acting;
             public string ActingParty;
             public string ActingAs;
+            /// <summary>PS-6 US-31 - R-US16 (b), RULED (I3): each state's ground-game effect where the player's campaign ran to the polling day - the counted
+            /// shares less the derived (<see cref="UsGroundGame.StateEffect"/>), added back wherever the stored contest re-derives its states
+            /// (<see cref="StatesOf(Country, Contest)"/>), so the electors, the Senate's states and the next count's prior are the count's own. Empty where
+            /// no campaign ran (the count as before, and every contest of a build before US-31). Saved (format 54).</summary>
+            public List<UsGroundGame.StateEffect> GroundGame = new List<UsGroundGame.StateEffect>();
 
             public bool Decided() => Winner != null;
 
@@ -452,7 +458,15 @@ namespace PoliSim.Elections
         /// them) by <see cref="ElectoralCollege.FromGameStates"/>, not from the record's; none handed, or a field of record (its minor candidates standing on the
         /// ballots of record), the record's states as before. Pure, as the others.</summary>
         public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, int tieSeed,
-            Contest previous, ElectoralCollege.StateCall[] previousStates, out ElectoralCollege.StateCall[] states, out string why)
+            Contest previous, ElectoralCollege.StateCall[] previousStates, out ElectoralCollege.StateCall[] states, out string why) =>
+            Count(id, pollingDay, poll, nominees, tieSeed, previous, previousStates, null, 0, out states, out why);
+
+        /// <summary>PS-6 US-31 - R-US16 (b), RULED (Elias's ruling I3): the count with the campaign's ground game - each state's derived shares counted by
+        /// W-D1 over <paramref name="groundGame"/>'s mobilization with the declared regional noise drawn on <paramref name="noiseSeed"/>
+        /// (<see cref="UsGroundGame.Effects"/>), the electors those of the counted states and each state's effect kept on the contest; none handed, the count
+        /// as before. Where the ground game cannot be counted the count stands on the derived states and its line says why. Pure, as the others.</summary>
+        public static Contest Count(CountryId id, DateTime pollingDay, IReadOnlyDictionary<string, double> poll, IReadOnlyList<UsTermLimit.Nominee> nominees, int tieSeed,
+            Contest previous, ElectoralCollege.StateCall[] previousStates, UsGroundGame.Campaign groundGame, int noiseSeed, out ElectoralCollege.StateCall[] states, out string why)
         {
             states = null;
             if (!ElectsIn(id)) { why = id + " chooses no president by electors"; return null; }
@@ -480,8 +494,24 @@ namespace PoliSim.Elections
                 : string.Format(CultureInfo.InvariantCulture, "{0}; the states from {1}'s by the normalised uniform swing{5} (worst residual {2:E1}); the electors in force in {3}{4}",
                     DayBasis, prior, residual, inForce, ElectorsCarriedForward(pollingDay, out int _) ? " - carried forward, no later apportionment being on record" : string.Empty,
                     onBallots != null ? ", every other candidate standing only where on the ballot of record" : string.Empty);
+            // PS-6 US-31 (I3): the ground game counted state by state on the derived shares - the electors are the counted states'
+            List<UsGroundGame.StateEffect> ground = null;
+            string groundWords = null;
+            if (groundGame != null)
+            {
+                ground = UsGroundGame.Effects(states, groundGame, noiseSeed, UsGroundGame.NoiseSigmaPp, out string groundWhy);
+                if (ground != null)
+                {
+                    ElectoralCollege.StateCall[] derivedStates = states;
+                    college = UsGroundGame.Apply(derivedStates, ground, inForce, tieSeed, out states);
+                    groundWords = UsGroundGame.LineOf(derivedStates, states);
+                }
+                else { groundWords = "the ground game could not be counted state by state (" + groundWhy + "), so the states stand as derived"; }
+            }
             Contest contest = FromCollege(pollingDay, basis, college, rep, dem, pooled);
             contest.TieSeed = tieSeed;
+            if (ground != null) { contest.GroundGame = ground; }
+            if (groundWords != null) { contest.Line += "; " + groundWords; }
             var othersLead = new List<string>();
             foreach (ElectoralCollege.StateCall call in states) { if (call.OthersLead) { othersLead.Add(call.State); } }
             if (othersLead.Count > 0)
@@ -638,6 +668,8 @@ namespace PoliSim.Elections
             if (!ElectoralCollege.TryPriorYear(contest.PollingDay.Year, out int prior) || !ElectoralCollege.TryElectorsYear(contest.PollingDay.Year, out int inForce)) { return null; }
             CollegeOf(prior, inForce, National(rep, dem, others), contest.TieSeed, OthersOnTheBallots(CountryId.USA, contest.PollingDay.Year, others.Share),
                 previous != null ? previousStates : null, out ElectoralCollege.StateCall[] states, out double _, out bool _);
+            // PS-6 US-31: the ground game's state effect the count kept, added back as the count added it
+            if (contest.GroundGame != null && contest.GroundGame.Count > 0) { UsGroundGame.Apply(states, contest.GroundGame, inForce, contest.TieSeed, out states); }
             return states;
         }
 
@@ -687,7 +719,12 @@ namespace PoliSim.Elections
         /// (<see cref="UsTermLimit.NomineesFor"/> - read from its contests, the record and the player's pick; none for the field of record). US-8b (R-US25 as
         /// ruled): the poll carries the election's noise where a σ is set (<see cref="NoiseSigmaPp"/>), drawn from the day's common source
         /// (<see cref="SimulationRandom.ElectionNoiseOn"/>), so every fork of the game counts its own election on the live game's noise.</summary>
-        public static Contest Hold(Country country, DateTime date, IReadOnlyDictionary<string, double> poll, out string why)
+        public static Contest Hold(Country country, DateTime date, IReadOnlyDictionary<string, double> poll, out string why) => Hold(country, date, poll, null, out why);
+
+        /// <summary>PS-6 US-31 (R-US16 (b), I3): the day loop's count with the player's campaign's ground game (<paramref name="groundGame"/>, null where no
+        /// campaign ran), its regional noise drawn on the count's keyed seed (<see cref="UsGroundGame.NoiseSeedOf"/>) - the live game's, a load's and every
+        /// fork's the same numbers.</summary>
+        public static Contest Hold(Country country, DateTime date, IReadOnlyDictionary<string, double> poll, UsGroundGame.Campaign groundGame, out string why)
         {
             if (country?.UsPresidentialElections == null) { why = "the country carries no list of contests"; return null; }
             if (!IsPollingDay(country, date)) { why = "not a polling day the game has still to count"; return null; }
@@ -695,7 +732,7 @@ namespace PoliSim.Elections
             // PS-6 US-26 (R-US24 (b)): a game that has counted before swings its states from its own previous count's, re-derived from the stored contest
             Contest previous = PreviousCount(country, date.Date);
             Contest contest = Count(country.Id, date.Date, counted, UsTermLimit.NomineesFor(country, date.Date), TieSeedOf(SimulationRandom.MasterSeed, date.Year),
-                previous, previous != null ? StatesOf(country, previous) : null, out ElectoralCollege.StateCall[] _, out why);
+                previous, previous != null ? StatesOf(country, previous) : null, groundGame, groundGame != null ? UsGroundGame.NoiseSeedOf(country.Id, date.Date) : 0, out ElectoralCollege.StateCall[] _, out why);
             if (contest != null) { country.UsPresidentialElections.Add(contest); }
             return contest;
         }

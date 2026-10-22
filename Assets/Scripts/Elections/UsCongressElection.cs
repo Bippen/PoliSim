@@ -75,6 +75,13 @@ namespace PoliSim.Elections
             public double Share;
             public int UnopposedRep;
             public int UnopposedDem;
+            /// <summary>PS-6 US-31: the ground-game swing <see cref="Share"/> carries (0 where no campaign ran), the share the same count gives without it, and
+            /// the Republican seats it moved (<see cref="Rep"/> less the seats at the share without it). The next count's base is the count without the ground
+            /// game - that share and those seats, exactly - so a cycle's ground game and its noise move that cycle's seats and never compound into a later House
+            /// count (the base's V, the poll's, carries none). Saved (format 54).</summary>
+            public double Ground;
+            public double ShareWithoutGround;
+            public int GroundSeats;
         }
 
         /// <summary>One Senate seat the game elected: the state, the class, the term ("full", or "unexpired" for a special), the night's state share (the
@@ -321,8 +328,8 @@ namespace PoliSim.Elections
             {
                 bases[s.State] = new StateBase
                 {
-                    U = s.Share, UR = s.UnopposedRep, UD = s.UnopposedDem, MB = s.Seats, RB = s.Rep, DB = s.Dem,
-                    OneSeatRep = s.Seats == 1 ? s.Rep == 1 : s.Rep * 2 > s.Seats,
+                    U = s.Ground != 0.0 ? s.ShareWithoutGround : s.Share, UR = s.UnopposedRep, UD = s.UnopposedDem, MB = s.Seats, RB = s.Rep - s.GroundSeats, DB = s.Dem + s.GroundSeats,   // PS-6 US-31: the base without the ground game
+                    OneSeatRep = s.Seats == 1 ? s.Rep - s.GroundSeats == 1 : (s.Rep - s.GroundSeats) * 2 > s.Seats,
                 };
             }
             return bases;
@@ -344,7 +351,14 @@ namespace PoliSim.Elections
         /// latest House count) where one is handed, else the record's latest House election before the day. Null, with the reason, where no count can be made;
         /// otherwise each state's count, in the catalog's state order, with the base named.
         /// </summary>
-        public static List<StateHouse> CountHouse(DateTime pollingDay, double vT, Contest gameBase, out int baseYear, out double vBase, out bool baseOfRecord, out string why)
+        public static List<StateHouse> CountHouse(DateTime pollingDay, double vT, Contest gameBase, out int baseYear, out double vBase, out bool baseOfRecord, out string why) =>
+            CountHouse(pollingDay, vT, gameBase, null, out baseYear, out vBase, out baseOfRecord, out why);
+
+        /// <summary>PS-6 US-31 - R-US16 (b), RULED (I3: "the ground game's state effect enters ... R-US18 (b)'s House swing alike"): the House count with each
+        /// state's ground-game swing (<paramref name="stateSwing"/>, the Republican share of the two nominees' vote, counted less derived - the presidential
+        /// count's own, <see cref="UsGroundGame.TwoPartySwing"/>) added to the national swing in that state; null, or a state it does not name, as before.</summary>
+        public static List<StateHouse> CountHouse(DateTime pollingDay, double vT, Contest gameBase, IReadOnlyDictionary<string, double> stateSwing,
+            out int baseYear, out double vBase, out bool baseOfRecord, out string why)
         {
             why = null;
             baseOfRecord = gameBase == null;
@@ -363,7 +377,8 @@ namespace PoliSim.Elections
             {
                 if (!bases.TryGetValue(kv.Key, out StateBase b) || b.MB == 0) { why = kv.Key + " has no decided seat in the base (" + baseYear.ToString(CultureInfo.InvariantCulture) + ")"; return null; }
                 int nT = kv.Value;
-                double uhat = b.U + delta;
+                double ground = stateSwing != null && stateSwing.TryGetValue(kv.Key, out double g) ? g : 0.0;
+                double uhat = stateSwing != null && stateSwing.ContainsKey(kv.Key) ? b.U + delta + ground : b.U + delta;   // PS-6 US-31: the state's ground game, where a campaign ran
                 bool half = b.RB != b.DB ? b.RB > b.DB : nationalR > nationalD;   // the half rule: the state's base seats, then the national base majority
                 int rep;
                 if (nT == 1) { rep = uhat > 0.5 ? 1 : uhat < 0.5 ? 0 : (b.OneSeatRep ? 1 : 0); }
@@ -372,7 +387,20 @@ namespace PoliSim.Elections
                     int cB = b.MB - b.UR - b.UD, cT = nT - b.UR - b.UD;
                     rep = Math.Min(nT - b.UD, Math.Max(b.UR, b.RB + P(cT, uhat, half) - P(cB, b.U, half)));
                 }
-                counted.Add(new StateHouse { State = kv.Key, Seats = nT, Rep = rep, Dem = nT - rep, Share = uhat, UnopposedRep = b.UR, UnopposedDem = b.UD });
+                // PS-6 US-31: the seats the same count gives at the share without the ground game - the next base's (no compounding)
+                int repWithout = rep;
+                double without = uhat;
+                if (stateSwing != null && stateSwing.ContainsKey(kv.Key))
+                {
+                    without = b.U + delta;
+                    if (nT == 1) { repWithout = without > 0.5 ? 1 : without < 0.5 ? 0 : (b.OneSeatRep ? 1 : 0); }
+                    else
+                    {
+                        int cB = b.MB - b.UR - b.UD, cT = nT - b.UR - b.UD;
+                        repWithout = Math.Min(nT - b.UD, Math.Max(b.UR, b.RB + P(cT, without, half) - P(cB, b.U, half)));
+                    }
+                }
+                counted.Add(new StateHouse { State = kv.Key, Seats = nT, Rep = rep, Dem = nT - rep, Share = uhat, UnopposedRep = b.UR, UnopposedDem = b.UD, Ground = ground, ShareWithoutGround = without, GroundSeats = rep - repWithout });
                 total += nT;
             }
             if (total != HouseMembers) { throw new InvalidOperationException($"the House in force for {pollingDay.Year} seats {total} members across {inForce.Count} states, not {HouseMembers} (2 U.S.C. 2a)"); }
@@ -554,9 +582,11 @@ namespace PoliSim.Elections
             double v = TwoPartyV(poll);
             Contest prior = null;
             if (country.UsCongressElections != null) { foreach (Contest c in country.UsCongressElections) { if (c.PollingDay < pollingDay.Date && (prior == null || c.PollingDay > prior.PollingDay)) { prior = c; } } }
-            List<StateHouse> house = CountHouse(pollingDay.Date, v, prior, out int baseYear, out double vBase, out bool baseOfRecord, out why);
+            // PS-6 US-31 (I3): the presidential count's ground game in each state enters the House swing; the Senate reads it through the night's states
+            Dictionary<string, double> groundSwing = UsGroundGame.TwoPartySwing(presidential.GroundGame);
+            List<StateHouse> house = CountHouse(pollingDay.Date, v, prior, groundSwing, out int baseYear, out double vBase, out bool baseOfRecord, out why);
             if (house == null) { return null; }
-            List<SenateSeat> senate = CountSenate(country, pollingDay.Date, UsPresidentialElection.StatesOf(country, presidential), presidential.TieSeed, out why);   // PS-6 US-26: the night's states as the count called them - a later count's on the game's own previous states
+            List<SenateSeat> senate = CountSenate(country, pollingDay.Date, UsPresidentialElection.StatesOf(country, presidential), presidential.TieSeed, out why);   // PS-6 US-26: the night's states as the count called them - a later count's on the game's own previous states; PS-6 US-31: with each state's ground game
             if (senate == null) { return null; }
             var contest = new Contest
             {
@@ -571,6 +601,7 @@ namespace PoliSim.Elections
                 "the House of {0:yyyy-MM-dd}: REP {1}, DEM {2} of {3} (R-US18 (b), V {4:0.0000} against {5}'s {6:0.0000} {7}); delegations REP {8}, DEM {9}, tied {10}; the Senate's class {11} and {12} special(s): REP {13}, DEM {14} (R-US19 (c) over (a)); seated {15:yyyy-MM-dd}",
                 contest.PollingDay, contest.HouseRep, contest.HouseDem, HouseMembers, v, baseYear, vBase, baseOfRecord ? "of record" : "the game's own", delegationsR, delegationsD, house.Count - delegationsR - delegationsD,
                 contest.SenateClass, senate.FindAll(s => s.Class != contest.SenateClass).Count, contest.SenateOf("REP"), contest.SenateOf("DEM"), contest.Convenes);
+            if (groundSwing != null) { contest.Line += "; the House swing and the Senate states carry the ground game of each state in the presidential count"; }
             return contest;
         }
 
