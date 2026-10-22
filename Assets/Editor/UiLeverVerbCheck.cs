@@ -119,7 +119,7 @@ namespace PoliSim.EditorTools
             ("DraftProposal", "a read - the formation sheet's first draft"), ("ElectionAwaitsRound", "a read"), ("EstimateBudgetBill", "a read"), ("EstimateTradeBill", "a read"),
             ("GetDocket", "a read"), ("GetLastEvent", "a read"), ("GetLastFiscalReport", "a read"), ("GetPendingBudgetAlternative", "a read"), ("GetPendingBudgetBill", "a read"),
             ("GetPendingBudgetProcess", "a read"), ("GetPendingCabinetDecisions", "a read"), ("GetPendingCrimeJusticeBill", "a read"), ("GetPendingForeignPolicyMeeting", "a read"),
-            ("GetPendingLaborBill", "a read"), ("GetPendingLawBill", "a read"), ("GetPendingLawBills", "a read"), ("GetPendingMajorityReconciliation", "a read"), ("PlayerAnswersDocket", "a read"), ("GetPendingSectorBill", "a read"), ("GetPendingSwfDrawdownBill", "a read"),
+            ("GetPendingLaborBill", "a read"), ("GetPendingLawBill", "a read"), ("GetPendingLawBills", "a read"), ("GetPendingMajorityReconciliation", "a read"), ("GetPendingDebtLimitBill", "a read"), ("PlayerAnswersDocket", "a read"), ("GetPendingSectorBill", "a read"), ("GetPendingSwfDrawdownBill", "a read"),
             ("GetPendingTaxProgramBills", "a read"), ("GetPendingTradeBill", "a read"), ("GetPendingWelfareProgramBills", "a read"), ("GetWageGrowthGapAtPeriodOpen", "a read"),
             ("IsIncomingGovernmentBudgetWindow", "a read"), ("PendingPlayerScandal", "a read"), ("PlayerGoverns", "a read"), ("PlayerMayIntroduce", "a read"),
             ("PlayerPartyIndexForCampaign", "a read"), ("PreviewFormation", "a read - the verdict before the player submits"), ("ProjectConstructiveVote", "a read"),

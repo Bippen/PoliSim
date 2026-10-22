@@ -119,6 +119,9 @@ namespace PoliSim.Persistence
         /// <summary>PS-6 US-23: the out-party majority's reconciliation before Congress or on the president's desk (its `BudgetBill.Docket`). ADDITIVE (no format
         /// step, ruling A): no earlier build tabled one, so an older save restores none, its true state.</summary>
         public Dictionary<CountryId, BudgetBill> PendingMajorityReconciliations = new Dictionary<CountryId, BudgetBill>();
+        /// <summary>PS-6 US-24: the debt-limit raise before Congress or on the president's desk (its `BudgetBill.Docket`), format 53 with the limit's own fields
+        /// on the country.</summary>
+        public Dictionary<CountryId, BudgetBill> PendingDebtLimitBills = new Dictionary<CountryId, BudgetBill>();
         /// <summary>PS-3i (§636): an ordered extra election's polling day and decision day (MinValue for none).</summary>
         public System.DateTime ExtraElectionDate = System.DateTime.MinValue;
         public System.DateTime ExtraElectionOrderedOn = System.DateTime.MinValue;

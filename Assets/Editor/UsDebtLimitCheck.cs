@@ -15,8 +15,9 @@ using Object = UnityEngine.Object;
 namespace PoliSim.EditorTools
 {
     /// <summary>
-    /// PS-6 US-14 (`docs/specs/USA_STAGE_PLAN.md`): **THE DEBT LIMIT MEASURED BEFORE IT RUNS.** Nothing here is live - no dollar limit binds in play
-    /// until US-24, on R-US21's ruling; this check measures what the ruling must decide and prints it in a form the ask can quote.
+    /// PS-6 US-14 (`docs/specs/USA_STAGE_PLAN.md`): **THE DEBT LIMIT MEASURED BEFORE IT RUNS.** The measurement R-US21 was asked on, kept as the record's
+    /// instrument: its walk of the dates is its own, apart from the live limit US-24 built on the ruling (`UsDebtLimit`; `UsDebtLimitLiveDiagnostic` holds the
+    /// live bookkeeping to the same arithmetic), and its ministry line reads the ratio-trend trigger R-US21 (v) retired.
     ///
     /// <para><b>(1) The document.</b> `docs/generated/US_DEBT_LIMIT.md` is what `Tools/us_debt_limit_prep.pl` writes from Treasury's tables and the
     /// acts: its stamp must carry every input's digest as it stands and the digest of its body (a hand edit anywhere above the engine block fails);
@@ -36,7 +37,7 @@ namespace PoliSim.EditorTools
     /// against the dated limit under each reading of R-US21 (ii): the day the debt subject to limit REACHES the limit, and the day it BINDS after
     /// each reading of the measures' span (iii). Beside them: the days from the seed's state to the limit in force since 4 July 2025 (CRS IF10292's
     /// "early to mid-2027" is from the same state's season), the pro-rata cut a binding limit would ask (iv), and the AI ministry's ratio-trend
-    /// trigger and its borrowed sequester against the dollar limit (v). Printed, not asserted: R-US21 rules on them.</para>
+    /// trigger against the dollar limit (v) - since R-US21 (v) as ruled a retired rule, reconstructed from the ministry's memory. Printed, not asserted.</para>
     /// </summary>
     public static class UsDebtLimitCheck
     {
@@ -545,12 +546,12 @@ namespace PoliSim.EditorTools
                         new Walk { Law = "(ii)(b)", LawAtStart = atStart.LimitUsd.HasValue ? Usd(atStart.LimitUsd.Value) + " (" + atStart.Act + ")" : "suspended (" + atStart.Act + ")", Binds = new DateTime?[spans.Length] },
                     };
                     // (ii)(a): the law in force at the start, later acts the game's Congress's (none passes on this path); a suspended start is reinstated on the
-                    // statute's day at the game's own debt subject to limit at the end of the previous day, plus the headroom s401(b) carried
+                    // statute's day at the game's own debt subject to limit at the end of the previous day - R-US21 (ii)'s words, the game's rule (`UsDebtLimit.Track`)
                     double? LimitA(DateTime d, double dslYesterday, Walk w)
                     {
                         if (atStart.LimitUsd.HasValue) { return (double)atStart.LimitUsd.Value; }
                         if (reinstatement == null || d < reinstatement.From) { return null; }
-                        if (!w.ReinstatedUsd.HasValue) { w.ReinstatedUsd = dslYesterday + (double)rec.HeadroomUsd; }
+                        if (!w.ReinstatedUsd.HasValue) { w.ReinstatedUsd = dslYesterday; }
                         return w.ReinstatedUsd;
                     }
                     double? LimitB(DateTime d) { Law l = InForce(rec.Laws, d); return l.LimitUsd.HasValue ? (double?)(double)l.LimitUsd.Value : null; }
@@ -591,14 +592,9 @@ namespace PoliSim.EditorTools
                     {
                         for (int day = 1; day < SimulationManager.DaysPerTurn; day++) { sim.AdvanceDay(); Evaluate(sim.CurrentDate); }
                         sim.AdvanceDay();
-                        // (v) the ministry's rule on the boundary's eve, and whether its trigger fired, read from its own two-year memory after the turn
-                        float seedRatio = usa.DebtRatioSeed, lastBefore = usa.DebtRatioLastReport, beforeBefore = usa.DebtRatioReportBefore, eveRatio = usa.State.DebtToGdpRatio;
-                        float sequesterEve = 0f;
-                        if (!usaIsPlayer && AiFinanceMinistry.UsTriggered(usa, eveRatio))
-                        {
-                            PolicyDecision eve = AiFinanceMinistry.Decide(usa, sim.GetLastFiscalReport(CountryId.USA));
-                            foreach (SpendingLine line in usa.SpendingLines) { if (eve.SpendingLineChanges.TryGetValue(line.Category, out float pct) && pct < 0f) { sequesterEve += line.Amount * -pct / 100f; } }
-                        }
+                        // (v) whether the ministry's ratio-trend trigger fired, read from its own two-year memory after the turn - since US-24 (R-US21 (v) as ruled) a
+                        // RETIRED rule: the ministry writes nothing for the USA, so the trigger is reconstructed here from the memory, as the ask measured it
+                        float seedRatio = usa.DebtRatioSeed, lastBefore = usa.DebtRatioLastReport, beforeBefore = usa.DebtRatioReportBefore;
                         DateTime boundary = sim.CurrentDate;
                         decisions[player] = PolicyDecision.None();
                         sim.AdvanceTurn(decisions);
@@ -610,7 +606,7 @@ namespace PoliSim.EditorTools
                         if (!usaIsPlayer)
                         {
                             double? limitThen = LimitB(boundary);
-                            ministry.Add(F("{0:yyyy-MM-dd} {1:F1}%{2}", boundary, newLast, fired ? F(" FIRES (on the eve: sequester {0} = {1:F2}% of GDP; the limit of record (ii)(b) less the debt {2})", Tn(sequesterEve * 1e9), sequesterEve / usa.State.NominalGdp * 100f, limitThen.HasValue ? Tn(limitThen.Value - Dsl()) : "suspended") : string.Empty));
+                            ministry.Add(F("{0:yyyy-MM-dd} {1:F1}%{2}", boundary, newLast, fired ? F(" FIRES - the retired trigger, which no longer sequesters (R-US21 (v)); the limit of record (ii)(b) less the debt {0}", limitThen.HasValue ? Tn(limitThen.Value - Dsl()) : "suspended") : string.Empty));
                             if (fired && firstFired == null) { firstFired = boundary.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture); }
                         }
                         bool resolved = walks.All(w => w.Resolved) && seedToLimit.HasValue;

@@ -974,6 +974,34 @@ namespace PoliSim.Data
         /// ruling A): no earlier build tabled one, so 0 is an earlier save's true state.</summary>
         public int MajorityReconciliationYear;
 
+        /// <summary>PS-6 US-24 (R-US21, I5): THE FEDERAL DEBT LIMIT IN FORCE in the game, nominal USD - the record's at the start (`UsDebtLimit.ReadLaw`), the
+        /// game's own debt at a reinstatement, raised by the game's acts after (`UsDebtLimit.Raise`). 0 while suspended or before the law is read. It rides the
+        /// save (format 53) and the preview's clone.</summary>
+        public double DebtLimitUsd;
+
+        /// <summary>PS-6 US-24: the day the limit in force took effect (or the suspension began); MinValue until the day's bookkeeping reads the law at the start
+        /// (`UsDebtLimit.Track`) - and in every country but the USA.</summary>
+        public System.DateTime DebtLimitSince;
+
+        /// <summary>PS-6 US-24: the last day of a suspension in force (P.L. 118-5 s401(a)'s "through January 1, 2025" for a start inside it); MinValue where the
+        /// limit is not suspended.</summary>
+        public System.DateTime DebtLimitSuspendedThrough;
+
+        /// <summary>PS-6 US-24 (R-US21 (iii)): the day the debt subject to limit reached the limit - extraordinary measures from it for
+        /// `UsDebtLimit.MeasuresSpanDays`, then the limit binds; MinValue where it is not reached (or a raise closed the episode).</summary>
+        public System.DateTime DebtLimitReachedOn;
+
+        /// <summary>PS-6 US-24 (R-US21 (iv)): the day whose flows are cut to revenue - armed by the day tick for the next day while the limit binds and no raise
+        /// is law (`UsDebtLimit.CutToday`), MinValue otherwise.</summary>
+        public System.DateTime DebtLimitCutFlowDay;
+
+        /// <summary>PS-6 US-24: the non-interest outlays the cut has taken since the measures ran out, NOMINAL billions - the slip's figure; 0 again when a raise
+        /// becomes law.</summary>
+        public float DebtLimitCutBillions;
+
+        /// <summary>PS-6 US-24: the raises the game has made - by Congress's act or, where no Congress of the game votes, the AI-governed USA's (R-US21 (vi)).</summary>
+        public int DebtLimitRaises;
+
         /// <summary>
         /// This country's chamber, seats per REAL party, keyed by the abbreviation that country's own
         /// election authority uses ("S", "SD", "CDU", "PiS", "UG", "REP"...) and summing to

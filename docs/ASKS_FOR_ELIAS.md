@@ -388,3 +388,25 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 - **No campaign in a midterm year.** Only presidential years stage the US campaign. Should a midterm get one?
 - **The president's party** is the party of whoever holds the presidency on polling day. The record's rule uses the last presidential winner; the two differ only after a successor of the other party.
 - **Ohio's and Florida's 2026 Senate specials** are not in the catalog, so their appointees simply stay. Source them?
+
+### US-24 the federal debt limit live (§897): the asks it ends in
+
+Each is built one way, DECLARED, and reversible by your word.
+1. **The raise's size.** The record's last increase, +$5.0 tn, for the AI's raise and for Congress's. Or a share of the limit, or a suspension?
+2. **Raise only.** The game never suspends the limit. Should it?
+3. **The cut moves only the book.** When the limit binds, spending is cut to revenue less interest, with no effect on output, benefits or approval. Should a source be read for that effect?
+4. **The vehicle.** Reconciliation carries the raise (a simple majority in both chambers, no filibuster). Or a bill at cloture?
+5. **Who tables it.** The government of the day tables the raise automatically, for a player-president too. Should a player-president have a verb of their own, with an amount or a suspension?
+6. **Withholding.** No party can withhold the raise, as one can the continuing resolution, so the cut is practically unreachable. Add withholding?
+7. **Timing.** The raise is voted on the day the extraordinary measures run out. The record's 2025 act came on day 164 of 192.
+8. **The measures' accounting.** During the measures the model keeps borrowing past the limit (their room is not booked), so a raise leaves less room than in the record.
+9. **Interest is always paid.** Where revenue falls short of interest, the rest is borrowed; no default is modelled.
+10. **The CRS window.** "Early to mid-2027" is read as 1 January to 30 June 2027. A Sweden start's AI USA reaches the limit about 35 days before it.
+11. **The world without your policies.** A raise on a player-president's desk waits out the ten days there, the cut armed meanwhile, because that world gives no answer. Should it sign at once?
+12. **Back pay.** A shutdown's back pay stays owed through a binding day and is paid once a raise is law.
+13. **The 2022 and 2023 starts** open about $7.9 tn over the limit; one $5 tn raise leaves them over, so a second episode follows 192 days later. Should the first raise cover the excess?
+14. **The FRA cap.** Retiring the AI ministry's US rule also retired the FRA 2023 §101 cap excess it carried. Confirm?
+15. **The reinstatement** on 2 Jan 2025 is at the game's own debt, with no extra headroom. Confirm?
+16. **Three smaller behaviours:** the budget preview never shows the cut; a fallen raise is tabled again the next day and voted 21 days later; a raise tabled during the measures still passes if the debt has fallen back below the limit by its vote.
+
+Also measured with it, not this item's to fix: in the world without anyone's policies, the USA's debt at turn 100 is about eight to nine times its GDP (it was already eight before US-24). An AI-run USA has no fiscal response once the sequester is retired, and the cut arms only for a player. Worth a ruling when the model families come up (step 7).

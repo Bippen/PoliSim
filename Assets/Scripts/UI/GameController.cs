@@ -7131,7 +7131,7 @@ namespace PoliSim.UI
                 // 19b: the sheet's slips - the book built from the model each frame, the one StatsSlipReachabilityCheck reads - drawn last, over the sheet
                 FiscalTurnReport closed = _simulationManager.GetLastFiscalReport(PlayerCountryId);
                 PeopleSlips.Book book = StatsSlips.Build(_playerCountry, _world, PairPartner(), _statsSeriesSection.PageFromEnd, _statsTradeSection.PageFromEnd,
-                    closed?.TariffPassThroughPp, DerivedStats.DeficitPercentOfGdp(_playerCountry, closed), closed);
+                    closed?.TariffPassThroughPp, DerivedStats.DeficitPercentOfGdp(_playerCountry, closed), closed, _simulationManager.CurrentDate);   // PS-6 US-24 (L6): the day, for the live US note
                 DrawSlips(book, sheet);
             }
         }
@@ -9097,6 +9097,14 @@ namespace PoliSim.UI
             {
                 string majorityLabel = $"Reconciliation by the {PartySystems.ShortName(PlayerCountryId, majorityBill.TabledBy)} majority, by a majority - {ResolvesIn(majorityBill.DaysRemaining, majorityBill.Docket)}.";
                 pending.Add((majorityLabel, UsMajorityReconciliation.ConcernOf(_playerCountry, majorityBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, majorityBill.DaysRemaining));
+            }
+            // PS-6 US-24 (the review's L5): the debt-limit raise - its own card, as the majority's reconciliation has
+            BudgetBill limitBill = usActs ? _simulationManager.GetPendingDebtLimitBill(PlayerCountryId) : null;
+            if (limitBill != null)
+            {
+                string limitLabel = $"Debt limit raise, by reconciliation - {ResolvesIn(limitBill.DaysRemaining, limitBill.Docket)}.";
+                pending.Add((limitLabel, UsDebtLimit.ConcernOf(_playerCountry, limitBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, limitBill.DaysRemaining));
+                uncontestedWords[limitLabel] = "Unopposed - it moves no rate, line or benefit, and no party withholds it";
             }
             if (budgetBill != null && !usActs)
             {

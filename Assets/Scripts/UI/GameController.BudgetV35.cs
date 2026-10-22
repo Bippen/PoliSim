@@ -189,7 +189,7 @@ namespace PoliSim.UI
             }
             balanceSlip
                 .Add("A CHANGE IN THE BALANCE HAS NO DIRECTION MOST AGREE ON - ITS ARROW IN THE NEUTRAL INK; THE WARNING IS A LEVEL'S, PAST THE COUNTRY'S RULE")
-                .Add(FiscalRules.NationalNote(PlayerCountryId));
+                .Add(FiscalRules.NationalNote(_playerCountry, _simulationManager.CurrentDate));   // PS-6 US-24: the US note live - the limit, the debt subject to it, the measures' days left
 
             // the debt
             var debt = new V35TileData { Icon = "debt", IconInk = area, Name = "Government debt", Figure = UiFormat.Money(state.GovernmentDebt, MoneyUnit.Billions), FigurePx = V35.FigureSmall };
@@ -197,6 +197,7 @@ namespace PoliSim.UI
             var debtSlip = new SlipContent("GOVERNMENT DEBT · " + debt.Figure).Add(UiFormat.Number(state.DebtToGdpRatio, 1) + "% OF GDP");
             if (debtRule != null) { debtSlip.Add(debtRule); }
             if (FiscalRules.Notice(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio) is string debtNotice) { debtSlip.Add(debtNotice.ToUpperInvariant()); }   // §758 (ruling B6): a notice, neutral ink
+            foreach (string limitLine in FiscalRules.DebtLimitLines(_playerCountry, _simulationManager.CurrentDate, _simulationManager.GetPendingDebtLimitBill(PlayerCountryId))) { debtSlip.Add(limitLine); }   // PS-6 US-24: the federal debt limit, live (nothing where the game holds no limit)
             debtSlip.Add("THE STOCK KEEPS NO YEARLY HISTORY - NO CHANGE IS DRAWN RATHER THAN ONE INVENTED");
 
             // last year's revenue and spending
@@ -864,6 +865,7 @@ namespace PoliSim.UI
                 rows.Add(("Unemployment", UiFormat.Money(report.UnemploymentBenefitCost, MoneyUnit.Billions), "BENEFITS", neutral));
                 rows.Add(("Interest", UiFormat.Money(report.InterestOnDebt, MoneyUnit.Billions), "ON DEBT, AUTOMATIC", neutral));
                 rows.Add(("Welfare", UiFormat.Money(report.WelfareCost, MoneyUnit.Billions), "PROGRAMMES", neutral));
+                if (report.DebtLimitCut != 0f) { rows.Add(("Debt-limit cut", UiFormat.MoneyDelta(-report.DebtLimitCut, MoneyUnit.Billions), "OUTLAYS CUT TO REVENUE", neutral)); }   // PS-6 US-24 (the review's M4): the cut's own line, so the lines add to the year's spending
                 rows.Add(("Tariffs", UiFormat.Money(report.TariffRevenue, MoneyUnit.Billions), "AT THE STATED RATES", neutral));
                 if (report.ElectricityTaxRevenue != 0f) { rows.Add(("Electricity tax", UiFormat.MoneyDelta(report.ElectricityTaxRevenue, MoneyUnit.Billions), "VS THE 2023 STATUTE", neutral)); }   // EN-7b
                 // AF-17 (q17): the year's one-offs itemised, each its own named line - they count in the balance below, so the debt's change is the deficit

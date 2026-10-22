@@ -298,3 +298,9 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	effa2cc4de504c7bae13b170cb49
 file	Assets/Scripts/Simulation/SimulationManager.cs	e8b2e191264b752dcdd29e3037f466b6c69e03a6dc733aa11d65c8b1a9303a05	reviewed	2026-10-22	s894	Reviews/2026-10-22_us30_integration_reading.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	7f0d332d9be3027e488593d1e7365fa170437c5ea3f59766beb534d60356e9e6	reviewed	2026-10-22	s896	Reviews/2026-10-22_us27_round2_reading.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	0afb5ec951df4a56a372d057740da1cb64b149ed0d7e25be4fc5db4dbede1f71	reviewed	2026-10-22	s896	Reviews/2026-10-22_us27_round2_reading.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	62f73a7171c05c656ae581354919e49c5c953556c596c8b25292d350cdf6a331	reviewed	2026-10-22	s897	Reviews/2026-10-22_us24_round2_reading.md	-
+file	Assets/Scripts/Simulation/SimulationManager.DebtLimit.cs	ad0998da61064124c4f2c28ed969a594e5e632edbe7b2f9ce07fcd3c05eded15	reviewed	2026-10-22	s897	Reviews/2026-10-22_us24_round2_reading.md	-
+file	Assets/Scripts/Simulation/UsDebtLimit.cs	c57f1cfffc82c9939f4b5a4f102b89908f70384bfdb0d3d49f9d63560ea3b9df	reviewed	2026-10-22	s897	Reviews/2026-10-22_us24_round2_reading.md	-
+file	Assets/Scripts/Simulation/AiFinanceMinistry.cs	bc12ddbe0aba279abf11dcc83009e0b7ef36fb414640b6a1eed0fdc9498f0ad4	reviewed	2026-10-22	s897	Reviews/2026-10-22_us24_round2_reading.md	-
+baseline	777	b7b901c25e3f349afff0891587e1694138590236e679c1e45910371d2f4d0259	reviewed	2026-10-22	s897	Reviews/2026-10-22_us24_round2_reading.md	-
+baseline	424242	78fca53f78f05de1980954612ebac0c187007eeef62f6dc84d2fdbbf5b0b0112	reviewed	2026-10-22	s897	Reviews/2026-10-22_us24_round2_reading.md	-

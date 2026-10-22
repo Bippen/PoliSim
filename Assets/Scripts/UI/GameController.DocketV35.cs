@@ -108,6 +108,15 @@ namespace PoliSim.UI
                     "Voted " + DeskDay(_simulationManager.CurrentDate.AddDays(System.Math.Max(0, majorityBill.DaysRemaining))) + " · then to the President", holdsTime: false, action: null);
             }
 
+            // ---- PS-6 US-24 (the review's L5): the debt-limit raise before Congress - once voted it is the President's (the desk's card above, or his rule) ----
+            BudgetBill limitBill = _simulationManager.GetPendingDebtLimitBill(PlayerCountryId);
+            if (limitBill != null && limitBill.Docket == null)
+            {
+                string voted = DeskDay(_simulationManager.CurrentDate.AddDays(System.Math.Max(0, limitBill.DaysRemaining)));
+                _docketSlipBook.Anchors["docket:limit"] = new SlipContent("BEFORE CONGRESS").Add("THE DEBT LIMIT RAISE IS BEFORE CONGRESS · VOTED " + voted.ToUpperInvariant() + " · BY A MAJORITY IN BOTH CHAMBERS, THEN TO THE PRESIDENT");
+                DrawDocketItem("limit", "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), "Before Congress · the debt limit raise", "Voted " + voted + " · then to the President", holdsTime: false, action: null);
+            }
+
             // ---- the budget process, the fourth thing that holds the clock ----
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {

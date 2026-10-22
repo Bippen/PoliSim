@@ -79,5 +79,81 @@ namespace PoliSim.UI
                 default: return null;
             }
         }
+
+        /// <summary>
+        /// PS-6 US-24 (the plan: "`FiscalRules`' US note made live (the limit, the debt subject to it, the measures' days left)"): the national rule's line read on
+        /// the day - for the USA, once the game holds its limit (`UsDebtLimit.IsRead`), the limit in force, the debt subject to it and where the episode stands;
+        /// every other country's, and a US game before its first day, the fixed line (<see cref="NationalNote(CountryId)"/>).
+        /// </summary>
+        public static string NationalNote(Country country, System.DateTime today)
+        {
+            if (country == null) { return null; }
+            if (!UsDebtLimit.IsRead(country)) { return NationalNote(country.Id); }
+            string debt = country.DebtLimitReachedOn != System.DateTime.MinValue && !UsDebtLimit.Suspended(country, today) ? "debt subject to it held at the limit"   // the review's L3: the measures hold it there
+                : "debt subject to it " + UiFormat.Money(Billions(UsDebtLimit.SubjectToLimitUsd(country)), MoneyUnit.Billions);
+            string law = UsDebtLimit.Suspended(country, today)
+                ? "the federal debt limit (31 U.S.C. 3101(b)), a dollar ceiling, is suspended through " + Day(country.DebtLimitSuspendedThrough) + " - " + debt
+                : "the federal debt limit (31 U.S.C. 3101(b)) is a dollar ceiling of " + UiFormat.Money(Billions(country.DebtLimitUsd), MoneyUnit.Billions) + " - " + debt;
+            int left = UsDebtLimit.MeasuresDaysLeft(country, today);
+            string episode = left < 0 ? string.Empty
+                : UsDebtLimit.Binding(country, today) ? "; the extraordinary measures have run out, and spending is cut to revenue until a raise is law"
+                : "; at the limit, extraordinary measures last " + DaysWords(left) + " more";
+            return "No statutory ratio rule: " + law + episode;
+        }
+
+        /// <summary>
+        /// PS-6 US-24: THE DEBT LIMIT'S LINES for the debt tile's slip - the law in force, the debt subject to it against the limit, the measures' days left or the
+        /// cut in force, and a raise before Congress (<paramref name="pendingRaise"/>, `SimulationManager.GetPendingDebtLimitBill`). Empty where the game holds no
+        /// limit for the country.
+        /// </summary>
+        public static System.Collections.Generic.List<string> DebtLimitLines(Country country, System.DateTime today, BudgetBill pendingRaise)
+        {
+            var lines = new System.Collections.Generic.List<string>();
+            if (!UsDebtLimit.IsRead(country)) { return lines; }
+            double subject = UsDebtLimit.SubjectToLimitUsd(country);
+            string subjectWords = "DEBT SUBJECT TO THE LIMIT " + UiFormat.Money(Billions(subject), MoneyUnit.Billions);
+            if (UsDebtLimit.Suspended(country, today))
+            {
+                lines.Add("THE FEDERAL DEBT LIMIT IS SUSPENDED THROUGH " + Day(country.DebtLimitSuspendedThrough) + " · REINSTATED THE NEXT DAY AT THE DEBT SUBJECT TO IT THEN");
+                lines.Add(subjectWords);
+            }
+            else
+            {
+                lines.Add("THE FEDERAL DEBT LIMIT " + UiFormat.Money(Billions(country.DebtLimitUsd), MoneyUnit.Billions) + " · IN FORCE SINCE " + Day(country.DebtLimitSince));
+                double below = country.DebtLimitUsd - subject;
+                // the review's L3, and the second review's L1: while the measures run they hold the debt subject to the limit AT it - what the model has borrowed
+                // since is the measures' room, named as such, with their days left; once they have run out the limit BINDS, and what stands above it is what the
+                // measures carried to their last day and, since, the interest the cut does not cover - never "held by the measures"
+                string above = UiFormat.Money(Billions(System.Math.Max(0d, -below)), MoneyUnit.Billions);
+                if (country.DebtLimitReachedOn == System.DateTime.MinValue) { lines.Add(subjectWords + " · " + UiFormat.Money(Billions(below), MoneyUnit.Billions) + " BELOW IT"); }
+                else if (!UsDebtLimit.Binding(country, today))
+                {
+                    lines.Add("DEBT SUBJECT TO THE LIMIT HELD AT IT BY EXTRAORDINARY MEASURES SINCE " + Day(country.DebtLimitReachedOn) + " · " + above + " BORROWED THROUGH THEM · "
+                        + DaysWords(UsDebtLimit.MeasuresDaysLeft(country, today)).ToUpperInvariant() + " LEFT, TO " + Day(UsDebtLimit.BindsOn(country)));
+                }
+                else
+                {
+                    lines.Add("DEBT SUBJECT TO THE LIMIT " + above + " ABOVE IT · BORROWED THROUGH THE MEASURES TO " + Day(UsDebtLimit.BindsOn(country))
+                        + " AND, SINCE, ONLY FOR INTEREST THE CUT DOES NOT COVER - INTEREST IS ALWAYS PAID");
+                }
+            }
+            if (!UsDebtLimit.Suspended(country, today) && UsDebtLimit.Binding(country, today))
+            {
+                lines.Add("THE EXTRAORDINARY MEASURES RAN OUT ON " + Day(UsDebtLimit.BindsOn(country)) + " · UNTIL A RAISE IS LAW, SPENDING OTHER THAN INTEREST IS CUT TO WHAT REVENUE LEAVES AFTER INTEREST"
+                    + (country.DebtLimitCutBillions > 0f ? " · " + UiFormat.Money(country.DebtLimitCutBillions, MoneyUnit.Billions) + " CUT SO FAR" : string.Empty));
+            }
+            if (pendingRaise != null)
+            {
+                string raise = "A RAISE OF " + UiFormat.Money(Billions(UsDebtLimit.RaiseUsd), MoneyUnit.Billions);
+                lines.Add(pendingRaise.Docket != null ? raise + " HAS PASSED CONGRESS AND IS ON THE PRESIDENT'S DESK"
+                    : raise + " IS BEFORE CONGRESS · VOTED " + Day(today.AddDays(System.Math.Max(0, pendingRaise.DaysRemaining))) + " BY A MAJORITY IN BOTH CHAMBERS, THEN TO THE PRESIDENT");
+            }
+            lines.Add("DEBT SUBJECT TO LIMIT IS TREASURY'S MEASURE: THE DEBT ABOVE TIMES " + UiFormat.Number((float)UsDebtLimit.BridgeRatio, 3) + " - TREASURY'S DEBT SUBJECT TO LIMIT OVER THE GAME'S OPENING DEBT, IN THE SAME MONTH");
+            return lines;
+        }
+
+        private static float Billions(double usd) => (float)(usd / 1e9);
+        private static string Day(System.DateTime d) => d.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant();
+        private static string DaysWords(int days) => days.ToString(CultureInfo.InvariantCulture) + (days == 1 ? " day" : " days");
     }
 }

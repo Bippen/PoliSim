@@ -53,6 +53,9 @@ namespace PoliSim.Simulation
         /// a surface showing it as "of which" says so.
         /// </summary>
         public float TotalSpending;
+        /// <summary>PS-6 US-24 (the review's M4): the non-interest outlays a binding debt limit cut in the period (`UsDebtLimit.CutToday`), NOMINAL billions -
+        /// its own named line, so the parts less it are <see cref="TotalSpending"/>; 0 in every period the limit never bound.</summary>
+        public float DebtLimitCut;
         /// <summary>
         /// ⚠ AF-17 (Elias's ruling q17, 2026-10-18): THE YEAR THE PLAYER READS - the period's accrued daily balances PLUS its one-time settlements
         /// (<see cref="OneOffs"/>), so the closed year's deficit IS the debt's own change (the audit protocol's identity; GA-2-9). §220 built it as the
@@ -345,6 +348,7 @@ namespace PoliSim.Simulation
             AdvanceBudgetBillDay(countryId);
             AdvanceUsFundingDay(countryId);   // PS-6 US-22: the US funding horizon - a lapse opens the day after it (a no-op wherever the US Congress votes no budget)
             AdvanceMajorityReconciliationDay(countryId);   // PS-6 US-23: the out-party majority's reconciliation - tabled, voted, on the president's desk (a no-op wherever the US Congress votes no budget)
+            AdvanceDebtLimitDay(countryId);   // PS-6 US-24: the debt limit's raise before Congress, and the cut armed while the limit binds (a no-op wherever the US Congress votes no budget)
             AdvanceTaxProgramBillsDay(countryId);
             AdvanceWelfareProgramBillsDay(countryId);
             AdvanceLaborBillDay(countryId);
@@ -478,6 +482,7 @@ namespace PoliSim.Simulation
                     // system has finished with, and reads the same GDP the rest of the day did.
                     AccrueDailyFiscalFlows(country);
                     Elections.FiscalVote.NoteDay(country, GetOrSeedFiscalPeriod(country).AccruedBudgetBalance);   // A-LOOP q13 (§4 (2)): the open year's flow to date mirrored for the vote - reads the period, writes only the vote's book
+                    UsDebtLimit.Track(country, CurrentDate, EpochDate, UsBudgetProcedure.Applies(country));   // PS-6 US-24: the debt limit's day, after the day's flows - the law read, a suspension's end, the reach, the AI-governed USA's raise where no Congress of the game votes; writes only the limit's fields (nothing where the country is not the USA)
 
                     // CONTINUOUS TIME PHASE 5 (2026-08-16): the core macro engine, daily - the last
                     // and riskiest conversion, deliberately last. Order preserved from AdvanceTurn's
@@ -1010,6 +1015,8 @@ namespace PoliSim.Simulation
             public float AccruedSwfReturns;
             public float AccruedTotalSpending;
             public float AccruedBudgetBalance;
+            /// <summary>PS-6 US-24 (the review's M4): the period's debt-limit cut, booked as its own line (inside AccruedTotalSpending, net).</summary>
+            public float AccruedDebtLimitCut;
             /// <summary>Pass 5: the tariff portion of AccruedRevenue, kept separately so the
             /// FiscalTurnReport can show "of which tariffs" as a true reading of what accrued.</summary>
             public float AccruedTariffRevenue;
@@ -1027,12 +1034,17 @@ namespace PoliSim.Simulation
                 AccruedSwfReturns = 0f;
                 AccruedTotalSpending = 0f;
                 AccruedBudgetBalance = 0f;
+                AccruedDebtLimitCut = 0f;
                 AccruedTariffRevenue = 0f;
                 AccruedElectricityTaxRevenue = 0f;
             }
         }
 
         private readonly Dictionary<CountryId, FiscalPeriod> _fiscalPeriods = new Dictionary<CountryId, FiscalPeriod>();
+
+        /// <summary>PS-6 US-24 (the review's M4): the debt-limit cut the last ApplyRevenueAndSpending call took - the daily accrual books it as its own line. Not
+        /// saved: written and read inside one day's step.</summary>
+        private float _debtLimitCutToday;
 
         /// <summary>
         /// Political Systems Overhaul Part A: cabinet decisions rolled but not yet resolved by a
@@ -1793,6 +1805,7 @@ namespace PoliSim.Simulation
             {
                 AdvanceBudgetBillDay(countryId);
                 AdvanceMajorityReconciliationDay(countryId);   // PS-6 US-23: the out-party majority's reconciliation, in the day tick's order
+                AdvanceDebtLimitDay(countryId);   // PS-6 US-24: the debt limit's raise, in the day tick's order
                 AdvanceTaxProgramBillsDay(countryId);
                 AdvanceWelfareProgramBillsDay(countryId);
                 AdvanceLaborBillDay(countryId);
@@ -1903,6 +1916,7 @@ namespace PoliSim.Simulation
                 if (budget.Docket != null) { yield return budget.Docket; }
             }
             if (_pendingMajorityReconciliationByCountry.TryGetValue(countryId, out BudgetBill majority) && majority.Docket != null) { yield return majority.Docket; }   // PS-6 US-23
+            if (_pendingDebtLimitBillByCountry.TryGetValue(countryId, out BudgetBill limit) && limit.Docket != null) { yield return limit.Docket; }   // PS-6 US-24
             if (_pendingTaxProgramBillsByCountry.TryGetValue(countryId, out var taxes)) { foreach (TaxProgramBill b in taxes.Values) { if (b.Docket != null) { yield return b.Docket; } } }
             if (_pendingWelfareProgramBillsByCountry.TryGetValue(countryId, out var welfare)) { foreach (WelfareProgramBill b in welfare.Values) { if (b.Docket != null) { yield return b.Docket; } } }
             if (_pendingLaborBillByCountry.TryGetValue(countryId, out LaborPolicyBill labor) && labor.Docket != null) { yield return labor.Docket; }
@@ -3456,6 +3470,7 @@ namespace PoliSim.Simulation
                 PendingBudgetBills = new Dictionary<CountryId, BudgetBill>(_pendingBudgetBillByCountry),
                 PendingBudgetAlternatives = new Dictionary<CountryId, BudgetBill>(_pendingBudgetAlternativeByCountry),   // PS-3e (§632)
                 PendingMajorityReconciliations = new Dictionary<CountryId, BudgetBill>(_pendingMajorityReconciliationByCountry),   // PS-6 US-23 (additive)
+                PendingDebtLimitBills = new Dictionary<CountryId, BudgetBill>(_pendingDebtLimitBillByCountry),   // PS-6 US-24 (format 53)
                 ExtraElectionDate = _extraElectionDate, ExtraElectionOrderedOn = _extraElectionOrderedOn,   // PS-3i (§636)
                 PendingLaborBills = new Dictionary<CountryId, LaborPolicyBill>(_pendingLaborBillByCountry),
                 PendingCrimeJusticeBills = new Dictionary<CountryId, CrimeJusticePolicyBill>(_pendingCrimeJusticeBillByCountry),
@@ -6260,6 +6275,7 @@ namespace PoliSim.Simulation
             _incomingBudgetWindowOpenNow.Clear();
             _pendingBudgetBillByCountry.Clear();
             _pendingMajorityReconciliationByCountry.Clear();   // PS-6 US-23
+            _pendingDebtLimitBillByCountry.Clear();   // PS-6 US-24
             _pendingTaxProgramBillsByCountry.Clear();
             _pendingWelfareProgramBillsByCountry.Clear();
             _pendingLaborBillByCountry.Clear();
@@ -6310,6 +6326,7 @@ namespace PoliSim.Simulation
 
             CopyInto(state.PendingBudgetBills, _pendingBudgetBillByCountry);
             CopyInto(state.PendingMajorityReconciliations, _pendingMajorityReconciliationByCountry);   // PS-6 US-23: null or empty on an older save - none was ever tabled there
+            CopyInto(state.PendingDebtLimitBills, _pendingDebtLimitBillByCountry);   // PS-6 US-24 (format 53; an older save is refused)
             _pendingBudgetAlternativeByCountry.Clear(); CopyInto(state.PendingBudgetAlternatives, _pendingBudgetAlternativeByCountry);   // PS-3e (§632): cleared first - a v29 save carries its own, an older none
             _extraElectionDate = state.ExtraElectionDate; _extraElectionOrderedOn = state.ExtraElectionOrderedOn;   // PS-3i (§636)
             CopyInto(state.PendingLaborBills, _pendingLaborBillByCountry);
@@ -6453,10 +6470,10 @@ namespace PoliSim.Simulation
 
                 // THE AI FINANCE MINISTRY (2026-09-07, §387 the page, §388 the build): a country the player does not govern answers last year's closed
                 // balance and its debt ratio with the player's own levers under its sourced rule (AiFinanceMinistry) - written into the decision it was
-                // handed where that decision carries nothing of its own for a line or a tax, then observed for the US trigger's two-year memory.
+                // handed where that decision carries nothing of its own for a line or a tax, then observed for the debt-ratio memory (the EU rule's fall).
                 bool aiGovernment = AiFinanceMinistryEnabled && !PlayerGoverns(country);   // PS-3a (§628): the test is the player's ROLE, not the country
                 // PS-3e (§632): for THE PLAYER'S country the ministry's rule goes to the chamber as the government's budget bill (TableGovernmentBudget) and
-                // applies on the day the chamber adopts it - not into the boundary's decision. Observe still runs (the US trigger's two-year memory).
+                // applies on the day the chamber adopts it - not into the boundary's decision. Observe still runs (the debt-ratio memory).
                 bool ministryByBill = aiGovernment && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id;
                 AiFinanceMinistry.Written ministryWrote = null;
                 if (aiGovernment)
@@ -6611,6 +6628,7 @@ namespace PoliSim.Simulation
                 SwfContribution = period.AccruedSwfContribution,
                 SwfReturns = period.AccruedSwfReturns,
                 TotalSpending = period.AccruedTotalSpending,
+                DebtLimitCut = period.AccruedDebtLimitCut,   // PS-6 US-24 (M4): the cut's own line
                 BudgetBalance = period.AccruedBudgetBalance + oneOffs,
                 FlowBalance = period.AccruedBudgetBalance,   // AF-17 (M2): the pre-AF-17 store, unchanged - the rules read it
                 OneOffs = oneOffs,
@@ -7356,6 +7374,13 @@ namespace PoliSim.Simulation
                 LapseProfileQuarter = country.LapseProfileQuarter,
                 FurloughCountedMonth = country.FurloughCountedMonth,   // PS-6 US-22c: read only by the publication of the day, which the preview never runs; a value, carried so the audit holds
                 MajorityReconciliationYear = country.MajorityReconciliationYear,   // PS-6 US-23: read only by the day tick, which the preview never runs; a value, carried so the audit holds
+                DebtLimitUsd = country.DebtLimitUsd,   // PS-6 US-24: the debt limit - written by the day's bookkeeping and the day tick, which the preview never runs; values, carried so the audit holds
+                DebtLimitSince = country.DebtLimitSince,
+                DebtLimitSuspendedThrough = country.DebtLimitSuspendedThrough,
+                DebtLimitReachedOn = country.DebtLimitReachedOn,
+                DebtLimitCutFlowDay = country.DebtLimitCutFlowDay,   // read by the turn-form flows only on the day it is armed for, which the preview's own date is not (it runs on the day the tick armed the next)
+                DebtLimitCutBillions = country.DebtLimitCutBillions,
+                DebtLimitRaises = country.DebtLimitRaises,
                 // Step 2: a FRESH ledger, never the real country's reference - ApplyApprovalRating
                 // records into it on the clone, and sharing the reference would corrupt the real
                 // period's attribution the moment a preview ran. LastPeriod stays null: a preview
@@ -8729,6 +8754,7 @@ namespace PoliSim.Simulation
             else { period.AccruedSwfReturns += swfReturns - swfReturnUnearned; }   // AF-35: what the fund earned
             period.AccruedTotalSpending += totalSpending;
             period.AccruedBudgetBalance += budgetBalance;
+            period.AccruedDebtLimitCut += _debtLimitCutToday;   // PS-6 US-24 (the review's M4): the day's cut as its own line - 0 on every day the limit does not bind
 
             // The erosion factor is the ONE recomputation - the same expression as the stock
             // update's, on the same state - and the ledger's twin-drift detector is what keeps it
@@ -8890,7 +8916,11 @@ namespace PoliSim.Simulation
             // expression, the flow always summed (0 at no law): a ternary over the two expressions - and even a dead if-block writing actualRevenue a second
             // time - moved the no-policy budget by a float's last digit on turn 1 (the sentinel caught both, 2026-09-15; §402's class)
             float actualRevenue = (theoreticalRevenue * effectiveCollectionEfficiency + swfReturns + tariffRevenue + electricityTaxRevenue) * fiscalReactionMultiplier;
-            totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution;
+            // PS-6 US-24 (R-US21 (iv)): on a day the binding debt limit's cut is armed, the non-interest outlays are cut pro rata to what revenue leaves after
+            // interest (UsDebtLimit.CutToday) - 0 on every other day and in every other country, and summed in one expression (§501: x - 0 is exact)
+            float debtLimitCut = UsDebtLimit.CutToday(country, CurrentDate, actualRevenue, interestOnDebt, governmentSpending + mandatorySpending + unemploymentBenefitCost + welfareCost + swfContribution);
+            totalSpending = governmentSpending + mandatorySpending + unemploymentBenefitCost + interestOnDebt + welfareCost + swfContribution - debtLimitCut;
+            _debtLimitCutToday = debtLimitCut;   // the review's M4: read by the daily accrual right after this call, to book the cut as its own line
             budgetBalance = actualRevenue - totalSpending;
 
             state.Budget += budgetBalance;

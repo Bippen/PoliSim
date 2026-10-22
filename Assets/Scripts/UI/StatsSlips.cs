@@ -78,7 +78,10 @@ namespace PoliSim.UI
         /// <summary>The book for the sheet as it stands: <paramref name="partner"/> the pair page's partner (null with no other country),
         /// <paramref name="seriesPage"/> and <paramref name="tradePage"/> the two sections' pages, <paramref name="passThroughPp"/> the last closed
         /// year's tariff pass-through (null before one closed); <paramref name="deficitPercentOfGdp"/> the closed year's deficit (§725's rule test, null before one closed).</summary>
-        public static PeopleSlips.Book Build(Country home, World world, Country partner, int seriesPage, int tradePage, float? passThroughPp, float? deficitPercentOfGdp = null, FiscalTurnReport closedYear = null)
+        /// <summary>PS-6 US-24 (the review's L6): the national rule's line as the Budget page reads it - live on the day where one is given, else the fixed line.</summary>
+        private static string National(Country home, DateTime? today) => today.HasValue ? FiscalRules.NationalNote(home, today.Value) : FiscalRules.NationalNote(home.Id);
+
+        public static PeopleSlips.Book Build(Country home, World world, Country partner, int seriesPage, int tradePage, float? passThroughPp, float? deficitPercentOfGdp = null, FiscalTurnReport closedYear = null, DateTime? today = null)
         {
             var book = new PeopleSlips.Book();
             StatHistory history = home.History;
@@ -113,7 +116,7 @@ namespace PoliSim.UI
             {
                 SlipContent warning = new SlipContent(SymbolRegistry.Word(Symbol.Bad))
                     .Add("DEFICIT " + deficitPercentOfGdp.Value.ToString("0.0", CultureInfo.InvariantCulture) + "% OF GDP · " + deficitRule.ToUpperInvariant());
-                string national = FiscalRules.NationalNote(home.Id);
+                string national = National(home, today);   // PS-6 US-24 (the review's L6): the live note
                 if (national != null) { warning.Add(national.ToUpperInvariant()); }
                 string ofWhich = OneOffsLine(closedYear);
                 if (ofWhich != null) { warning.Add(ofWhich); }   // AF-17 (the review's L1): the rule's slip names the one-offs the figure counts
@@ -141,7 +144,7 @@ namespace PoliSim.UI
             int pages = 1;
             foreach (StatsChart c in Domestic) { pages = Math.Max(pages, GraphRenderer.PagesFor(history == null ? null : c.Series(history).Quarterly)); }
             book.Anchors["series:pager"] = Pager(pages, seriesPage, history?.Gdp, "THE SIX CHARTS MOVE TOGETHER");
-            foreach (StatsChart c in Domestic) { AddChart(book, c, history == null ? null : c.Series(history), seriesPage, home.Id); }
+            foreach (StatsChart c in Domestic) { AddChart(book, c, history == null ? null : c.Series(history), seriesPage, home, today); }
             book.Anchors["chart:gdp/name"] = new SlipContent("REAL GDP").Add("AT THE PRICES THE GAME OPENED ON").Add("THE CARD ABOVE IS NOMINAL - IN TODAY'S PRICES");
             book.Anchors["chart:unemployment/nairu"] = new SlipContent("NAIRU").Add("THE RATE UNEMPLOYMENT SETTLES AT WITH INFLATION STEADY").Add("THE MODEL'S OWN, READ ON THE LABOUR FORCE TODAY");
             book.Anchors["chart:debt/comfortable"] = new SlipContent("COMFORTABLE").Add("THE DEBT RATIO THIS COUNTRY CARRIES WITHOUT A RATING'S PRESSURE");
@@ -222,7 +225,7 @@ namespace PoliSim.UI
                 ? new SlipContent("TARIFF PASS-THROUGH").Add("TARIFF PASS-THROUGH TO PRICES").Add("PP OF INFLATION, THE LAST CLOSED YEAR")
                 : new SlipContent(SymbolRegistry.Word(Symbol.Absent)).Add("TARIFF PASS-THROUGH TO PRICES").Add("ADVANCE A YEAR - NO YEAR HAS CLOSED");
             book.Anchors["trade:pager"] = Pager(GraphRenderer.PagesFor(history?.TradeBalance.Quarterly), tradePage, history?.TradeBalance, "ONE CHART, ITS OWN PAGER");
-            AddChart(book, Trade, history?.TradeBalance, tradePage, home.Id);
+            AddChart(book, Trade, history?.TradeBalance, tradePage, home, today);
             return book;
         }
 
@@ -282,8 +285,9 @@ namespace PoliSim.UI
         }
 
         /// <summary>A chart's slips: its Δ, its verdict glyph, its dated head and its held seed - each the head's own figures, from the same window arithmetic.</summary>
-        private static void AddChart(PeopleSlips.Book book, StatsChart chart, MultiResolutionSeries series, int page, CountryId country)
+        private static void AddChart(PeopleSlips.Book book, StatsChart chart, MultiResolutionSeries series, int page, Country home, DateTime? today)
         {
+            CountryId country = home.Id;
             string id = "chart:" + chart.Id;
             book.Anchors[id + "/delta"] = new SlipContent("Δ CHANGE").Add("Δ = LAST − FIRST IN WINDOW").Add(chart.Unit == ReadingUnit.Money
                 ? "IN THE READING'S OWN UNIT · MONEY IN ITS MONEY, NEVER %" : "IN THE READING'S OWN UNIT · NEVER %");
@@ -313,7 +317,7 @@ namespace PoliSim.UI
             if (breach != null)
             {
                 SlipContent warning = new SlipContent(SymbolRegistry.Word(Symbol.Bad)).Add(lastText + " · " + breach.ToUpperInvariant());
-                string national = FiscalRules.NationalNote(country);
+                string national = National(home, today);   // PS-6 US-24 (the review's L6): the live note
                 if (national != null) { warning.Add(national.ToUpperInvariant()); }
                 book.Anchors[id + "/verdict"] = warning;
             }

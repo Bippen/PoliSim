@@ -85,6 +85,11 @@ namespace PoliSim.Data
         /// comment documents; it is used in the constructor call below and nowhere else in this class.</summary>
         public const float UsaSeedGdp = 29000f;
 
+        /// <summary>The USA seed's government debt, in the game's billions (nominal) - the seed's ~124 % of GDP the class comment documents, stated ONCE so the
+        /// debt limit's bridge to Treasury's debt subject to limit (`UsDebtLimit.SeedDebtUsd`, PS-6 US-24) reads it rather than transcribing it. The same
+        /// constant expression the constructor call below always carried, folded by the compiler.</summary>
+        public const float UsaSeedDebt = UsaSeedGdp * 1.24f;
+
         public static World CreateDefault()
         {
             var eurozone = new CurrencyZone("Eurozone", 2.25f);
@@ -128,7 +133,7 @@ namespace PoliSim.Data
             var usa = new Country(
                 CountryId.USA, "United States",
                 new EconomyState(gdp: UsaSeedGdp, inflation: 2.7f, unemployment: 4.5f, approvalRating: 50f, budget: 0f,
-                    potentialGdp: 33260f, governmentDebt: 29000f * 1.24f, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f,
+                    potentialGdp: 33260f, governmentDebt: UsaSeedDebt, povertyRate: 18f, laborForceParticipationRate: 62.5f, crimeIndex: 45f, prisonPopulationRate: 531f, organizedCrimeIndex: 35f, corruptionIndex: 31f,
                     population: 341.8f, birthRate: 10.6f, deathRate: 9.1f, netMigrationRate: 3.7f, dependencyRatio: 28f),
                 usDollarZone, baseTariffRate: 3f,
                 naturalUnemploymentRate: 4.0f, potentialGrowthRate: 1.613f, governmentSpendingRate: 17f, benefitRatePerUnemployed: 0.10f);

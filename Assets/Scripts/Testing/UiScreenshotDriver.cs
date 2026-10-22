@@ -697,6 +697,25 @@ namespace PoliSim.Testing
             SetEnumField(controller, "_consolidatedTab", "Budget");
             yield return Settle();
             yield return Capture("05r_budget_rest");
+            // PS-6 US-24: the debt tile's slip pinned in a US game - the federal debt limit as the game holds it on the day (the law in force, the debt subject
+            // to it, the measures' days left or the cut, a raise before Congress), then let go
+            if (_countryId == CountryId.USA)
+            {
+                MethodInfo pinLimit = controller.GetType().GetMethod("PinSlipOnAnchorForFilm", BindingFlags.Instance | BindingFlags.NonPublic);
+                FieldInfo limitPins = controller.GetType().GetField("_slipPins", BindingFlags.Instance | BindingFlags.NonPublic);
+                Country usLimit = (controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager)?.World?.GetCountry(CountryId.USA);
+                if (pinLimit != null && limitPins != null && usLimit != null)
+                {
+                    pinLimit.Invoke(controller, new object[] { "budget:debt", new Vector2(UiScreen.Width * 0.58f, UiScreen.Height * 0.40f) });
+                    yield return Settle();
+                    yield return Settle();
+                    yield return Capture("05r_budget_us_debt_limit_slip");
+                    Debug.Log($"SHOT: 05r_budget_us_debt_limit_slip - the debt tile's slip pinned: the limit {(UsDebtLimit.IsRead(usLimit) ? UsDebtLimit.LawWords(usLimit) : "not yet read")}, reached {(usLimit.DebtLimitReachedOn == DateTime.MinValue ? "no" : usLimit.DebtLimitReachedOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))}");
+                    (limitPins.GetValue(controller) as IList)?.Clear();
+                    yield return Settle();
+                }
+                else { Debug.LogError("SHOT: PS-6 US-24 - the controller has no PinSlipOnAnchorForFilm / _slipPins / manager; 05r_budget_us_debt_limit_slip NOT written."); _failed++; }
+            }
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
 

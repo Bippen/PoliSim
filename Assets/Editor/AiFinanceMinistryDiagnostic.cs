@@ -11,8 +11,8 @@ namespace PoliSim.EditorTools
     /// the next turn would read it: (1) an EU country owing nothing writes nothing; (2) one owing an adjustment writes cuts (every percentage negative, inside
     /// the ranges) and, where the ranges bind, a rise in the income-tax and VAT rates by one number of points; (3) one at or below 60 % in surplus writes
     /// RESTORES sized to the surplus (the Fiscal Compact's release), one at or below 60 % beyond the 1 % deficit limit writes cuts back to it; (4) the United
-    /// States writes nothing while its debt ratio has not risen two years running above its seed and, when it has, cuts only its discretionary lines and no
-    /// tax; (5) both directions on a clone of France - a 1 % surplus at 50 % debt restores 1 % of GDP, balance writes nothing, a 2 % deficit at 50 % closes
+    /// States writes nothing - PS-6 US-24 (R-US21 (v) as ruled): its rule is the debt limit (`UsDebtLimit`), the ratio-trend trigger and its borrowed
+    /// sequester retired, so after six turns of a rising ratio it still writes no cut, no restore and no tax; (5) both directions on a clone of France - a 1 % surplus at 50 % debt restores 1 % of GDP, balance writes nothing, a 2 % deficit at 50 % closes
     /// 1 % of GDP, a 4 % deficit takes the 0.5 % EDP adjustment; (6) THE DECISION OBJECTS THE CALLER HANDED IN CARRY NOTHING AFTER SIX TURNS - the ministry
     /// withdraws what it wrote, or a reused object re-applies one year's cuts forever (the defect the first three builds carried); (7) with Sweden the player,
     /// Sweden's rates are untouched after six turns and the ministry never observed it. The century is the trajectory family's (§388).
@@ -67,12 +67,10 @@ namespace PoliSim.EditorTools
                     }
                     else
                     {
-                        bool triggered = AiFinanceMinistry.UsTriggered(c, debt);
-                        if (!triggered && (cuts > 0 || restores > 0 || raises > 0)) { Debug.LogError($"FINMIN: the United States wrote {cuts} cuts, {restores} restores, {raises} raises without its trigger (debt {debt:F1}, last {c.DebtRatioLastReport:F1}, before {c.DebtRatioReportBefore:F1}, seed {c.DebtRatioSeed:F1})."); ok = false; }
-                        if (triggered && cuts == 0) { Debug.LogError("FINMIN: the United States is triggered and wrote no cut."); ok = false; }
-                        if (raises > 0 || restores > 0) { Debug.LogError("FINMIN: the United States wrote a tax rise or a restore - its statutes are spending-side and one-sided."); ok = false; }
-                        foreach (var kv in d.SpendingLineChanges) { foreach (SpendingLine line in c.SpendingLines) { if (line.Category == kv.Key && line.IsMandatory) { Debug.LogError($"FINMIN: the United States sequestered a mandatory line ({kv.Key}) - exempt under 2 U.S.C. § 902."); ok = false; } } }
-                        report.Add($"USA: debt {debt:F1} % (seed {c.DebtRatioSeed:F1}, last {c.DebtRatioLastReport:F1}, before {c.DebtRatioReportBefore:F1}), balance {balance:F2} % → {(triggered ? "trigger" : "no trigger")}, {cuts} discretionary cut(s), worst {worst:F2} %");
+                        // PS-6 US-24 (R-US21 (v)): the retired ratio-trend trigger, reconstructed from the memory, only to say whether it would have fired here
+                        bool wouldHaveFired = c.DebtRatioSeed > 0f && debt > c.DebtRatioSeed && c.DebtRatioLastReport > 0f && debt > c.DebtRatioLastReport && c.DebtRatioReportBefore > 0f && c.DebtRatioLastReport > c.DebtRatioReportBefore;
+                        if (cuts > 0 || restores > 0 || raises > 0) { Debug.LogError($"FINMIN: the United States wrote {cuts} cuts, {restores} restores, {raises} raises - since R-US21 (v) the ministry writes nothing for it (its rule is the debt limit)."); ok = false; }
+                        report.Add($"USA: debt {debt:F1} % (seed {c.DebtRatioSeed:F1}, last {c.DebtRatioLastReport:F1}, before {c.DebtRatioReportBefore:F1}), balance {balance:F2} % → nothing written (R-US21 (v): the debt limit is its rule; the retired ratio-trend trigger {(wouldHaveFired ? "would have fired" : "would not have fired")})");
                     }
                 }
                 if (!sawCuts) { Debug.LogError("FINMIN: no EU country owing an adjustment wrote a cut - the corrective direction was not exercised."); ok = false; }

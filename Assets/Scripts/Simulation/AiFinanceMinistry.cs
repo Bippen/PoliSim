@@ -7,8 +7,8 @@ namespace PoliSim.Simulation
     /// <summary>
     /// THE AI FINANCE MINISTRY (2026-09-07, COMPLETED.md §387 the page, §388 the build). A country the player does not govern answers its own closed balance
     /// and its debt ratio with the player's own levers - a percentage on each spending line (PolicyDecision.SpendingLineChanges, clamped by the model's own
-    /// ranges) and a tax rate (TaxRateOverrides, within the line's range) - under a sourced rule, one for the five EU Member States and one for the United
-    /// States. Nothing here can do what the player cannot; nothing here reads the player's country.
+    /// ranges) and a tax rate (TaxRateOverrides, within the line's range) - under a sourced rule - the Union's for the five EU Member States; for the United States
+    /// the debt limit, which is not this class's (below). Nothing here can do what the player cannot; nothing here reads the player's country.
     ///
     /// <para><b>The five (TFEU Art. 126 binds every Member State):</b> the reference values of Protocol No 12 - a deficit of 3 % of GDP, a debt of 60 % - and the
     /// 2024 reform (Regulation (EU) 2024/1263, read in the European Parliament's Fact Sheet <i>The EU framework for fiscal policies</i>): net expenditure as the
@@ -17,11 +17,12 @@ namespace PoliSim.Simulation
     /// while the deficit exceeds 3 %. Below the 60 % reference the Fiscal Compact (TSCG Art. 3, in the same Fact Sheet) is the rule: a balanced budget, the
     /// structural deficit no worse than 1 % of GDP where the debt is below 60 % - a surplus is given back to the lines, a deficit beyond the limit is closed to it.</para>
     ///
-    /// <para><b>The United States:</b> no deficit or debt ratio is a reference value in force; what is in force is the spending-side pair of the Fiscal
-    /// Responsibility Act of 2023 § 101 (discretionary spending limits - FY2024 $886.349 bn security / $703.651 bn nonsecurity, FY2025 $895.212 / $710.688 bn,
-    /// a one per cent rise) and sequestration under 2 U.S.C. §§ 901a and 902 (a uniform percentage reduction across non-exempt accounts; Social Security and
-    /// the mandatory programmes exempt). The trigger here is the debt-limit logic - the ratio above its seed and rising two years running - and the sequester's
-    /// SIZE is the EU benchmark's 0.5 % of GDP, stated as borrowed (§387). The US rule has no release side: the statutes have none.</para>
+    /// <para><b>The United States</b> (PS-6 US-24; R-US21 (v) as ruled, I5: "the dollar limit replaces the AI ministry's ratio-trend logic and its borrowed
+    /// sequester for the USA"): the ministry writes nothing for the USA. Its rule is the federal debt limit (`UsDebtLimit`) - an AI-governed USA raises it when
+    /// its extraordinary measures run out (R-US21 (vi)), and where a raise is not law the game's cut of spending to revenue is the day's flows'
+    /// (`UsDebtLimit.CutToday`), not a decision's. Retired with it: the ratio-trend trigger (the ratio above its seed and rising two years running), the
+    /// Fiscal Responsibility Act of 2023 § 101 cap-growth excess it carried, and the sequester's size borrowed from the EU benchmark (§387, §390) - the
+    /// measurement R-US21 was asked on reconstructs the trigger from the memory below (`UsDebtLimitCheck`).</para>
     ///
     /// <para><b>Three corrections from the first measurements (§388):</b> the law asks that the debt ratio FALL at the safeguard's pace, so a state already
     /// falling that fast owes nothing more that year; a cut to a line is a level the indexation never gives back, so the golden rule's release is the other
@@ -51,10 +52,6 @@ namespace PoliSim.Simulation
         public const float EuReleaseTargetBalancePercent = 0f;
         /// <summary>SOURCED - TSCG Art. 3: the lower limit on the structural deficit where the debt is below 60 % of GDP (1 %; 0.5 % otherwise), % of GDP - a deficit beyond it is closed back to it.</summary>
         public const float EuLowDebtDeficitLimitPercent = 1.0f;
-        /// <summary>SOURCED - Fiscal Responsibility Act of 2023 § 101: the discretionary limits' FY2024 → FY2025 step, per cent a year.</summary>
-        public const float UsDiscretionaryCapGrowthPercent = 1.0f;
-        /// <summary>[AUTHORED-DRAFT] - a BORROWED CALIBRATION, ruled to stay (2026-09-07 night, §390): the sequester's size, % of GDP a year, is the EU corrective benchmark's figure, since 2 U.S.C. § 902 sizes a sequester to the breach of a cap this model has no cap to breach. To be STRUCK on a US source - a statutory or CBO figure for a sequester's size as a share of GDP - the day one is read.</summary>
-        public const float UsSequesterPercentOfGdp = 0.5f;
         /// <summary>CONVENTION - a rate rise below this many points is not written (noise).</summary>
         private const float MinRatePoints = 0.01f;
 
@@ -69,7 +66,8 @@ namespace PoliSim.Simulation
         /// <summary>TFEU Art. 126 binds every Member State; of the six, only the United States is outside the Union.</summary>
         public static bool IsEuMember(CountryId id) => id != CountryId.USA;
 
-        /// <summary>The debt-ratio memory: shift last year's ratio into the year before and record today's. Called once per turn for an AI country, AFTER Decide.</summary>
+        /// <summary>The debt-ratio memory: shift last year's ratio into the year before and record today's. Called once per turn for an AI country, AFTER Decide
+        /// (the EU rule reads the year's fall from it; for the USA it is kept, and read only by the measurement R-US21 was asked on).</summary>
         public static void Observe(Country country)
         {
             if (country.DebtRatioSeed <= 0f) { country.DebtRatioSeed = country.State.DebtToGdpRatio; }   // a save from before the ministry: its seed is the first ratio it sees
@@ -145,8 +143,7 @@ namespace PoliSim.Simulation
             float balancePercent = lastReport.FlowBalance / nominalGdp * 100f;   // negative = deficit, nominal over nominal (P5-B6); AF-17 (M2): the flow, net of the year's one-offs - a rule judges the standing position
             float debtPercent = country.State.DebtToGdpRatio;
             float fall = country.DebtRatioLastReport > 0f ? country.DebtRatioLastReport - debtPercent : 0f;
-            if (IsEuMember(country.Id)) { ApplyEuRule(country, balancePercent, debtPercent, fall, nominalGdp, decision, written); }
-            else { ApplyUsRule(country, debtPercent, nominalGdp, decision, written); }
+            if (IsEuMember(country.Id)) { ApplyEuRule(country, balancePercent, debtPercent, fall, nominalGdp, decision, written); }   // PS-6 US-24 (R-US21 (v)): the USA writes nothing - its rule is the debt limit (`UsDebtLimit`)
             return written;
         }
 
@@ -175,26 +172,6 @@ namespace PoliSim.Simulation
             if (toTake <= 0f) { return; }
             float shortfall = CutLinesUniformly(country, toTake, linesNow, includeMandatory: true, decision, written);
             if (shortfall > 0f) { RaiseHouseholdRates(country, shortfall, decision, written); }
-        }
-
-        /// <summary>The US trigger: the debt ratio above its seed and risen two years running (the debt-limit logic).</summary>
-        public static bool UsTriggered(Country country, float debtPercent)
-        {
-            return country.DebtRatioSeed > 0f && debtPercent > country.DebtRatioSeed
-                   && country.DebtRatioLastReport > 0f && debtPercent > country.DebtRatioLastReport
-                   && country.DebtRatioReportBefore > 0f && country.DebtRatioLastReport > country.DebtRatioReportBefore;
-        }
-
-        private static void ApplyUsRule(Country country, float debtPercent, float nominalGdp, PolicyDecision decision, Written written)
-        {
-            if (!UsTriggered(country, debtPercent)) { return; }
-            float discNow = 0f, discLastYear = 0f, discNowPaired = 0f;
-            foreach (SpendingLine line in country.SpendingLines) { if (line.IsMandatory) { continue; } discNow += line.Amount; if (line.LastYearAmount > 0f) { discLastYear += line.LastYearAmount; discNowPaired += line.Amount; } }
-            if (discNow <= 0f) { return; }
-            float observedGrowth = discLastYear > 0f ? discNowPaired / discLastYear - 1f : 0f;
-            float excess = Mathf.Max(0f, observedGrowth - UsDiscretionaryCapGrowthPercent / 100f);
-            float toTake = excess * discNow + UsSequesterPercentOfGdp / 100f * nominalGdp;
-            CutLinesUniformly(country, toTake, discNow, includeMandatory: false, decision, written);   // the shortfall is not made up: the statutes are spending-side
         }
 
         /// <summary>One uniform percentage across the lines in scope, clamped as the applier will clamp it; returns the nominal amount the clamps leave untaken.</summary>

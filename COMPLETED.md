@@ -41266,3 +41266,17 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Asked:** I4's revisit (with the measured components), the fit's data, the term on the Senate too, no midterm campaign, the president's party, the 2026 Ohio and Florida specials (`docs/ASKS_FOR_ELIAS.md`).
 
 **Commit:** this one.
+
+## 897. PS-6 US-24: THE FEDERAL DEBT LIMIT LIVE (B7) - THE DATED STATUTE THROUGH US-14'S BRIDGE, EXTRAORDINARY MEASURES, CONGRESS'S RAISE OR THE CUT TO REVENUE; THE AI MINISTRY'S US RULE RETIRED; THE FAMILY us24dl; SAVE FORMAT 53 (2026-10-22)
+
+**What changed** (an implementer on `wave/us24`: f4814fdf, the adversarial review's fixes 09f6ae0a, the second review's fixes df998671, rebased on §896 with 794ca243 taking format 53; squash-merged on §896):
+- `UsDebtLimit` (new): the bridge (MSPD's vintage over the engine's seed, read not copied), the law by start day (J3), `Track` daily in every world (the reach, the reinstatement on 2 Jan 2025 at the game's own debt, relief), 192 days of measures, the raise (+$5.0 tn, DECLARED), the cut (non-interest outlays pro rata to revenue less interest, armed by the day tick, `- debtLimitCut` in the day's spending, exact when 0).
+- `SimulationManager.DebtLimit.cs` (new): the government of the day tables the raise by reconciliation in both chambers and presents it (the Docket for a player-president); an AI-governed USA where no Senate of the game sits raises by act. Its title is world-independent (FORK-2's identity).
+- `AiFinanceMinistry`: the US rule retired (R-US21 (v)); the EU rule alone. `FiscalRules`' live US note and the debt slip's lines; the raise's pending card and Docket item; the cut a named line of the fiscal report; a lapse's back pay held through a binding day.
+- `UsDebtLimitLiveDiagnostic` (new, the simulation bar). Save format 53 (a v52 save refused). The sentinel re-based to `us24dl`.
+
+**Evidence:** `Reviews/2026-10-22_us24_review.md` (adversarial: NOT READY - H1, M1-M4, L1-L9), `Reviews/2026-10-22_us24_fix_review.md` (READY WITH FIXES - M1, L1-L4), `Reviews/2026-10-22_us24_round2_reading.md` (the integrator's reading of the second round and the rebase, with the family's dump diff); ledger rows s897 for SimulationManager.cs, SimulationManager.DebtLimit.cs, UsDebtLimit.cs, AiFinanceMinistry.cs and both baseline digests. `dump897` (label `us24dl`) against `aloopsal2`: turns 1-2 byte-identical everywhere; the USA first at turn 3 (t100 debt +20.6 % at 777, +27.5 % at 424242; GDP +7.6 %, +10.0 %); Poland and Sweden from turn 4 through CurrencyStrength and TradeBalance (t100 GDP under 0.01 %); France, Germany, Italy identical at every turn on both seeds. `sent897` failed on the digests alone (bounds pass holding) before the re-base: 777 b7b901c2..., 424242 78fca53f.... The bars on the re-based tree: see the commit.
+
+**Asked:** sixteen readings (`docs/ASKS_FOR_ELIAS.md`, US-24's section), and a note on the no-policy USA's century debt.
+
+**Commit:** this one.

@@ -102,6 +102,9 @@ namespace PoliSim.Simulation
                 return -stopped;
             }
             if (country.LapseDeferredOutlays <= 0f) { return 0f; }
+            // PS-6 US-24 (the review's M3, DECLARED): on a day a binding debt limit's cut is armed the back pay stays OWED - a deferred obligation is still owed
+            // (31 U.S.C. 1341(c)) and is paid in full on the first day the cut is not armed (a raise law), never absorbed into the cut's base (`UsDebtLimit.CutToday`)
+            if (country.DebtLimitCutFlowDay == today) { return 0f; }
             float owed = country.LapseDeferredOutlays;
             country.LapseDeferredOutlays = 0f;
             return owed;
