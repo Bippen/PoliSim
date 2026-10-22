@@ -3838,6 +3838,32 @@ namespace PoliSim.UI
             return _fedChairCandidates != null && _fedChairCandidates.Count > 0;
         }
 
+        /// <summary>
+        /// PS-6 US-29 (the review of 2026-10-22, M2): the count that bars the player-president's nominee. Where the player's government appoints (the role gate,
+        /// `SimulationManager.PlayerMayIntroduce`) and the chair's term has ended with no hold raised, the Senate of the day would refuse any name he sent (the
+        /// party-line count, DECLARED, `UsFedConsent`), so no candidates are drawn, NOMINATE stays shut and the chair holds over: the bank page and the Docket
+        /// say why in his own terms. Null in every other state - a hold raised, a term not ended, an AI president's nominee (whose refusal is a real count), or
+        /// no count to hold.
+        /// </summary>
+        private UsFedConsent.Count PlayerFedChairBarred(FedChair chair)
+        {
+            if (!UsFedConsent.Applies(_playerCountry) || (_fedChairCandidates != null && _fedChairCandidates.Count > 0)) { return null; }
+            if (!CentralBankTerms.Ended(chair, _simulationManager.CurrentDate) || !_simulationManager.PlayerMayIntroduce(PlayerCountryId, out _)) { return null; }
+            UsFedConsent.Count count = UsFedConsent.Vote(_playerCountry, _simulationManager.CurrentDate);
+            return count != null && !count.Confirms ? count : null;
+        }
+
+        /// <summary>The review's M2: the barred count in the player's own terms - his party's seats of the Senate's sworn seats (vacancies out, as the count
+        /// holds them), the Vice President named where he decides an equal division, and that no nominee of his can be confirmed while the chair holds over.
+        /// Computed from the day's count, never written in; <paramref name="upper"/> for a page's capitals, else the Docket's sentence case.</summary>
+        private static string PlayerFedChairBarredWords(UsFedConsent.Count count, bool upper)
+        {
+            string words = "Your party holds " + UiFormat.Seats(count.For) + " of " + UiFormat.Possessive("the Senate") + " " + UiFormat.Number(count.For + count.Against, 0)
+                           + (count.VicePresidentParty != null ? ", the Vice President deciding its equal division" : string.Empty)
+                           + " · no nominee of yours can be confirmed while the chair holds over";
+            return upper ? words.ToUpperInvariant() : words;
+        }
+
         /// <summary>AF-7: the head's term as a page prints it - the day it ends and the statute that sets it.</summary>
         private static string CentralBankTermWords(FedChair head, CountryId countryId)
         {
@@ -4143,7 +4169,12 @@ namespace PoliSim.UI
             GUILayout.BeginVertical(GUILayout.Width(StatsUnit(300f)));
             GUILayout.Label("THE APPOINTMENT LEVER", DeskCaption(8.5f, PoliSimTheme.TextSecondary, true));
             bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
-            GUILayout.Label($"{CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant()} · {FederalReserveSystem.PoolSize} IN THE POOL", DeskCaption(8f, PoliSimTheme.TextMuted));   // AF-7: the statute's date, where the turn cadence's label stood (US-29: the turn label goes)
+            string heldOver = pending ? null : UsFedConsent.HoldoverWords(_playerCountry, chair, _simulationManager.CurrentDate);   // PS-6 US-29: no successor confirmed - the chair serves on
+            UsFedConsent.Count barred = heldOver != null ? PlayerFedChairBarred(chair) : null;   // the review's M2: the player-president's own words, never a refusal nobody was sent
+            if (barred != null) { heldOver = "THE TERM ENDED " + chair.TermEnds.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + " · " + PlayerFedChairBarredWords(barred, upper: true); }
+            GUIStyle termFace = DeskCaption(8f, PoliSimTheme.TextMuted);
+            termFace.wordWrap = heldOver != null;   // the holdover runs long: it wraps in the lever's column
+            GUILayout.Label(heldOver ?? $"{CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant()} · {FederalReserveSystem.PoolSize} IN THE POOL", termFace);   // AF-7: the statute's date, where the turn cadence's label stood (US-29: the turn label goes)
             GUI.enabled = pending;
             if (PoliSimWidgets.Button("NOMINATE ›", _neutralActionButtonStyle, GUILayout.Width(StatsUnit(140f))))
             {
@@ -4151,7 +4182,7 @@ namespace PoliSim.UI
             }
             GUI.enabled = true;
             // §5.4: the paragraph became a STATE LINE, under the button it describes.
-            GUILayout.Label(pending ? "A NAME IS ON THE DESK · CANDIDATES BELOW" : "NO NOMINEE · ESTIMATE DRAWS ON THE DOCKET", DeskCaption(7f, PoliSimTheme.TextMuted));
+            GUILayout.Label(pending ? "A NAME IS ON THE DESK · CANDIDATES BELOW" : barred != null ? "NO NOMINATION OPEN · THE SITTING CHAIR SERVES ON" : "NO NOMINEE · ESTIMATE DRAWS ON THE DOCKET", DeskCaption(7f, PoliSimTheme.TextMuted));
             GUILayout.EndVertical();
             GUILayout.EndHorizontal();
         }
@@ -4319,7 +4350,15 @@ namespace PoliSim.UI
             // AF-7 (the review's L2): the term is the statute's, the appointment is not - the statute names its own appointer (the Riksbank's General Council,
             // the Sejm on the President's motion, the President with the Senate), and the game hands the choice to the player's government (PS-3c, §630). Said so.
             CentralBankTerms.Statute statute = CentralBankTerms.For(PlayerCountryId);
-            GUILayout.Label($"The {UiFormat.Possessive(GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant())} {statute.TermYears}-year term has ended ({statute.PageCitation}). The statute gives the appointment to {statute.Appointer}; this game hands the choice to your government - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
+            if (UsFedConsent.Applies(_playerCountry))
+            {
+                // PS-6 US-29 (R-US12 (a)): the President nominates and the Senate confirms by a majority (its precedent of 21 Nov 2013) - the player is the President here
+                GUILayout.Label($"The {UiFormat.Possessive(GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant())} {statute.TermYears}-year term has ended ({statute.PageCitation}). The President nominates and the Senate confirms by a majority; today {UsFedConsent.CountSentence(UsFedConsent.Vote(_playerCountry, _simulationManager.CurrentDate))} - nominate the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
+            }
+            else
+            {
+                GUILayout.Label($"The {UiFormat.Possessive(GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant())} {statute.TermYears}-year term has ended ({statute.PageCitation}). The statute gives the appointment to {statute.Appointer}; this game hands the choice to your government - choose the next {GetCentralBankName(PlayerCountryId)} {GetCentralBankHeadTitle(PlayerCountryId).ToLowerInvariant()}:", _labelStyle);
+            }
             foreach (FedChair candidate in _fedChairCandidates)
             {
                 DrawFedChairCandidateButton(candidate);

@@ -1,0 +1,27 @@
+2026-10-20T05:58:20Z	200	4483132	(not kept)	https://www.govinfo.gov/metadata/pkg/CREC-2013-11-21/mods.xml - the issue's granule index, read to find the Senate's precedent of 21 Nov 2013; not kept (4.4 MB, an index only)
+2026-10-20T05:58:58Z	200	43679	crec_2013-11-21_PgS8413-5.htm	https://www.govinfo.gov/content/pkg/CREC-2013-11-21/html/CREC-2013-11-21-pt1-PgS8413-5.htm
+2026-10-20T05:58:20Z	200	1425669	(not kept)	https://www.govinfo.gov/metadata/pkg/CREC-2017-04-06/mods.xml - the issue's granule index: it lists the Daily Digest, the House and the Extensions, and NO Senate granule (the Digest names the Senate's pages S2383-S2433)
+2026-10-20T05:59:40Z	404	0	(none)	https://www.govinfo.gov/content/pkg/CREC-2017-04-06/html/CREC-2017-04-06-pt1-PgS2383.htm ... PgS2395 (with the -2, -3, -4 suffixes) - none answered 200
+2026-10-20T05:59:40Z	302	0	(none)	https://www.govinfo.gov/content/pkg/CREC-2017-04-06/pdf/CREC-2017-04-06-senate.pdf
+2026-10-20T05:59:55Z	403	0	(none)	https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_113_2.xml (senate.gov refuses directly, as at US-12)
+2026-10-20T05:59:56Z	200	162738	wayback_senate_vote_menu_113_2_20201210095437.xml	https://web.archive.org/web/2020id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_113_2.xml (capture 20201210095437)
+2026-10-20T05:59:57Z	403	0	(none)	https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_115_2.xml
+2026-10-20T05:59:58Z	200	133081	wayback_senate_vote_menu_115_2_20201210013442.xml	https://web.archive.org/web/2020id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_115_2.xml (capture 20201210013442)
+2026-10-20T06:00:30Z	200	28835	wayback_senate_vote_113_2_00001_20201214112740.xml	https://web.archive.org/web/2020id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1132/vote_113_2_00001.xml (capture 20201214112740)
+2026-10-20T06:00:31Z	200	28775	wayback_senate_vote_115_2_00019_20201213202810.xml	https://web.archive.org/web/2020id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00019.xml (capture 20201213202810)
+2026-10-20T06:00:32Z	200	28801	wayback_senate_vote_115_2_00018_20201213202812.xml	https://web.archive.org/web/2020id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1152/vote_115_2_00018.xml (capture 20201213202812)
+# NOTE 2026-10-20 (PS-6 US-29): what each file is read for.
+#  crec_2013-11-21_PgS8413-5 (Congressional Record, 21 Nov 2013, S8417-S8418): Mr. Reid's point of order "that the vote on cloture under rule XXII for all
+#    nominations other than for the Supreme Court of the United States is by majority vote"; the Chair's ruling not sustained on appeal, 48-52 (Rollcall
+#    Vote No. 242 Ex.); and the Chair's ruling after it: "Under the precedent set by the Senate today, November 21, 2013, the threshold for cloture on
+#    nominations, not including those to the Supreme Court of the United States, is now a majority." - sustained 52-48 (No. 243 Ex.). The Fed chair is an
+#    executive nomination, so this precedent alone makes his confirmation a majority's.
+#  The 2017 precedent (6 Apr 2017, the Supreme Court's nominations) is BILLED: govinfo's issue of that day carries no Senate granule (above) and senate.gov
+#    refuses; it is not needed for the Fed chair, whose nomination the 2013 precedent already covers.
+#  vote menus 113_2 and 115_2: the Senate's list of the session's roll calls, to find the two confirmations: 113_2 No. 1 (6 Jan 2014, PN921, "Confirmation
+#    Janet L. Yellen, to be Chairman of the Board of Governors", 56-26) and 115_2 No. 19 (23 Jan 2018, PN1353, "Confirmation Jerome H. Powell, of Maryland,
+#    to be Chairman", 84-13); No. 18 is Powell's cloture the same day (agreed to).
+#  The two confirmation votes by party, counted from the members' <party> and <vote_cast> in the saved XML: Yellen (a DEM president's nominee) D Yea 45,
+#    I Not Voting 2, D Not Voting 8, R Yea 11, R Nay 26, R Not Voting 8; Powell (a REP president's nominee) R Yea 44, R Nay 4, R Not Voting 3, D Yea 39,
+#    D Nay 8, I Yea 1, I Nay 1. The president's party's senators who voted were for the nominee in both (45-0, 44-4); the other party's majority was against
+#    Yellen (11-26) and for Powell (40-9). They are read for the vote rule's DECLARED reading in `UsFedConsent` and its ask, not fitted.

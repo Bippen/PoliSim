@@ -294,3 +294,4 @@ file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	7a98dd64f6f22
 file	Assets/Scripts/Simulation/SimulationManager.cs	0969233c905cc62a196a8ab7684d21c822a824d7dfbe0c28598cc79c32ed9452	reviewed	2026-10-20	s891	Reviews/2026-10-20_us20_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	7f54d4fc7882cc2bf2d2931186adcafaf332f9a55b6bc978c85ed68936b1552b	reviewed	2026-10-22	s892	Reviews/2026-10-22_us26_fix_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	1dfbccac0f99e5f7188f736bd379cef9cc7a8f0d24034dba02f9648f8a459c77	reviewed	2026-10-22	s892	Reviews/2026-10-22_us26_fix_review.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	effa2cc4de504c7bae13b170cb4974911ad389244d0fe3b4d4ef135c0395baaa	reviewed	2026-10-22	s893	Reviews/2026-10-22_us29_round2_reading.md	-

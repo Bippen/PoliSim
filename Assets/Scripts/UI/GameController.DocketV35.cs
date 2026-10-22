@@ -45,9 +45,19 @@ namespace PoliSim.UI
             if (_fedChairCandidates != null && _fedChairCandidates.Count > 0)
             {
                 string bank = GetCentralBankName(PlayerCountryId);
-                DrawDocketItem(null, "bank", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), "Next " + bank + " " + CentralBankHeadWord(), "Choose who sets the policy rate", holdsTime: true, action: null);
+                DrawDocketItem(null, "bank", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), "Next " + bank + " " + CentralBankHeadWord(), PoliSim.Simulation.UsFedConsent.Applies(_playerCountry) ? "Nominate who sets the policy rate - the Senate confirms" : "Choose who sets the policy rate", holdsTime: true, action: null);
                 DrawDocketCandidates(_fedChairCandidates);
                 anyPending = true;
+            }
+            else if (_playerCountry.CurrentFedChair != null && PlayerFedChairBarred(_playerCountry.CurrentFedChair) is PoliSim.Simulation.UsFedConsent.Count barred)
+            {
+                // PS-6 US-29 (the review of 2026-10-22, M2): the player-president's chair holds over under a Senate that would refuse any name of his - said here,
+                // and it does not hold the clock (no choice is open)
+                string bank = GetCentralBankName(PlayerCountryId);
+                _docketSlipBook.Anchors["docket:bankholdover"] = new SlipContent("THE " + bank.ToUpperInvariant() + " " + CentralBankHeadWord().ToUpperInvariant() + " HOLDS OVER")
+                    .Add(PlayerFedChairBarredWords(barred, upper: true));
+                DrawDocketItem("bankholdover", "bank", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), "The " + bank + " " + CentralBankHeadWord() + " holds over",
+                    PlayerFedChairBarredWords(barred, upper: false), holdsTime: false, action: null);
             }
 
             // ---- a foreign-policy meeting ----

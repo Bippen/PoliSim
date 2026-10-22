@@ -41214,3 +41214,16 @@ Review rows s888 cover `SimulationManager.cs`, `SimulationManager.Sejm.cs`, `Pen
 **Declared / filed:** no save-format step: a save cut mid-campaign by a build before US-26 replays on the rolled history (whether format 47's precedent should bind instead is ASKED). Filed from the second review: its L1 (the diagnostic's list-order case proves nothing against the old code; the earlier-dated contest between two counts is not exercised) and L2 (no check runs the manager's own election path with `played:`; part (b) copies the count by hand).
 
 **Commit:** this one.
+
+## 893. PS-6 US-29: THE FED CHAIR BY STATUTE - THE PRESIDENT NOMINATES, THE SENATE CONFIRMS BY MAJORITY, A REFUSED NOMINEE LEAVES THE CHAIR HOLDING OVER; BYTE-INERT ON BOTH SEEDS (2026-10-22)
+
+**What changed** (an implementer on `wave/us29`: c63902a4, then two fix rounds b399da17 and 6a441c8c; squash-merged on §892):
+- `UsFedConsent`: the Senate's count on a Fed nominee - a party-line bloc count (DECLARED, asked), vacancies out, independents with their caucus, the Vice President deciding a tie; the AI president's keyed nominee on the term's day; a refusal leaves the sitting chair serving on (a DECLARED reading, asked) and is logged on the term's day, every 3 January and every 20 January.
+- The player-president's hold rises only where the count would confirm; under a hostile Senate the bank page and an informational Docket item (not holding the clock) give the party's seats of the Senate's and that no nominee of the player's can be confirmed. No player-facing text cites 12 U.S.C. 242 for the holdover.
+- `FedChairConsentDiagnostic` (new, cheap bar): the sources held to their pages, the two confirmations of record recounted, the refusal and the tie, the role gate (e2), and (f) every chair term day of the century confirmed in every start with no player. The film driver stages 90h/90i by turning the seated Senate over and asserts the day, the hold and the Senate returned.
+
+**Evidence:** reviews `Reviews/2026-10-22_us29_review.md` (M1-M4, L1-L5), `Reviews/2026-10-22_us29_fix_review.md` (MERGE, Lows only; L1-L3, L5 fixed in 6a441c8c), `Reviews/2026-10-22_us29_round2_reading.md` (the integrator's reading of 6a441c8c); ledger row s893. `dump893` (label `us29`) byte-identical to `aloopsal2` on seeds 777 and 424242 - no family. `n893` 9 of 9; `cheap893` 130 of 130 (467 s); `sim893` 69 of 69 (1073 s); `drys893` USA exiting 0; `real893` and `real893w` (1280, 2560) exiting 0 with 90h_bank_holdover, 90h_bank_holdover_lever, 90i_bank_holdover_president and 90i_docket_holdover_president written and "90h/90i restored" with the day, the hold and the Senate as found; `doc893` for the plan and feature-list lines.
+
+**Declared / asked / filed:** asked - the holdover (the sitting chair serves on, or the Vice Chair acts under section 244), the player-president nominating under a hostile Senate as a played refusal, and the count rule (bloc as built; the reviewer recommends a crossing rule fitted on the Fed-chair confirmation roll calls). Filed from the second review: L4 (a US session whose player is not the president skips the 90h/90i frames with a warning) and L6 (`PlayerFedChairBarred` rebuilds the manager's appointment gate). The plan's 2017-precedent wording corrected (first review L5).
+
+**Commit:** this one.

@@ -2522,7 +2522,7 @@ namespace PoliSim.Testing
             object candidatesWas = candidatesField.GetValue(controller), forTurnWas = forTurnField.GetValue(controller), speedWas = speedField.GetValue(controller), timerWas = timerField.GetValue(controller);
             int candidatesBefore = (candidatesWas as ICollection)?.Count ?? 0;
             string mine = player.PlayerPartyAbbrev, withheldWas = player.ContinuingResolutionWithheldBy;
-            DateTime lapseWas = player.LapseSince, fundedWas = player.AppropriatedThrough;
+            DateTime lapseWas = player.LapseSince, fundedWas = player.AppropriatedThrough, dayWas = sim.CurrentDate; bool holdWas = sim.CentralBankHeadAwaitsPlayer(player.Id);   // the second review's L1: the date and the hold, asserted after
             timerField.SetValue(controller, -ClockHoldSeconds);
             try
             {
@@ -2588,7 +2588,7 @@ namespace PoliSim.Testing
             int candidatesAfter = (candidatesField.GetValue(controller) as ICollection)?.Count ?? 0;
             object speedAfter = speedField.GetValue(controller);
             string restored = $"SHOT: 93a-93c restored - {mine} seated again, the funding horizon {player.AppropriatedThrough:yyyy-MM-dd} and the lapse {(player.LapseSince == DateTime.MinValue ? "none" : player.LapseSince.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))} as found; the Fed chair's candidates {candidatesAfter} (before {candidatesBefore}), the speed {speedAfter} (before {speedWas})";
-            if (candidatesAfter != candidatesBefore || !Equals(speedAfter, speedWas) || player.PlayerPartyAbbrev != mine) { Debug.LogError(restored + " - THE HOLD DID NOT RETURN."); _failed++; }
+            if (candidatesAfter != candidatesBefore || !Equals(speedAfter, speedWas) || player.PlayerPartyAbbrev != mine || sim.CurrentDate != dayWas || sim.CentralBankHeadAwaitsPlayer(player.Id) != holdWas) { Debug.LogError(restored + $" - THE HOLD DID NOT RETURN (the day {sim.CurrentDate:yyyy-MM-dd}, before {dayWas:yyyy-MM-dd}; the hold {sim.CentralBankHeadAwaitsPlayer(player.Id)}, before {holdWas})."); _failed++; }
             else { Debug.Log(restored + "."); }
         }
 
@@ -3843,7 +3843,10 @@ namespace PoliSim.Testing
             int guard = 0;
             // AF-7 (q7): the head's term ends on its STATUTE's date (`CentralBankTerms`), where the turn cadence stood until AF-7 removed it - so
             // the HELD state is reached on the day the player's bank's head awaits the player's pick.
-            while (!sim.CentralBankHeadAwaitsPlayer(_countryId) && guard < MaxHeldSearchDays)
+            // PS-6 US-29: the Fed's hold rises only where the Senate of the day would confirm the player-president's nominee - a term that ends under a Senate
+            // his party does not hold raises none (the chair serves on), so the search stops there too rather than stepping on for years
+            Country held = sim.World.GetCountry(_countryId);
+            while (!sim.CentralBankHeadAwaitsPlayer(_countryId) && UsFedConsent.HoldoverWords(held, held.CurrentFedChair, sim.CurrentDate) == null && guard < MaxHeldSearchDays)
             {
                 if (sim.AdvanceDay())
                 {
@@ -3851,6 +3854,14 @@ namespace PoliSim.Testing
                 }
 
                 guard++;
+            }
+
+            string heldOver = UsFedConsent.HoldoverWords(held, held.CurrentFedChair, sim.CurrentDate);
+            if (!sim.CentralBankHeadAwaitsPlayer(_countryId) && heldOver != null)
+            {
+                Debug.LogWarning($"SHOT: {_countryId} - {heldOver} - no hold is raised, so the HELD banner will NOT be in this capture set.");
+                yield return CaptureFedHoldover(controller, sim, held);   // the review of 2026-10-22, M3: the holdover is filmed before the HELD frames are given up
+                yield break;
             }
 
             if (!sim.CentralBankHeadAwaitsPlayer(_countryId))
@@ -3882,6 +3893,142 @@ namespace PoliSim.Testing
             ResetScrolls(controller);
             yield return Settle();
             yield return Capture("91_interrupt_held_budget");
+
+            // PS-6 US-29 (the review of 2026-10-22, M3): the Fed's hold rose, so the holdover is staged from here - the seated Senate turned over
+            if (UsFedConsent.Applies(held)) { yield return CaptureFedHoldover(controller, sim, held); }
+        }
+
+        /// <summary>
+        /// PS-6 US-29 (the review of 2026-10-22, M3): <b>THE FED CHAIR HOLDING OVER</b> on the bank tab (Politics › the bank), reached as
+        /// `FedChairConsentDiagnostic` reaches it - on a day the chair's term has ended, the seated Senate turned over (the president's party's and the other
+        /// major party's seats swapped with US-21's <see cref="SwappedSeats"/>, the Senate of record by date where the world seats none) wherever the Senate as
+        /// seated would confirm. Two states, each verified before its frames are named: <b>90h</b> the AI president's nominee refused by the count - the other
+        /// major party seated in the player's place, so the president is not the player's and the AI nominates - the governor block at the page's top
+        /// (`90h_bank_holdover`), then the lever's column at the page's foot where the holdover wraps (`90h_bank_holdover_lever`); <b>90i</b> the
+        /// player-president under that Senate (the review's M2: his party's seats of the Senate's, no nominee of his confirmable, NOMINATE shut) - the lever's
+        /// column (`90i_bank_holdover_president`), then the Docket's item that does not hold the clock (`90i_docket_holdover_president`). No day passes: play's
+        /// clock is held, the selection's candidates are set aside for the frames, and the seats, the party, the candidates, the tab and the clock are put
+        /// back after (US-22's 93a-93c idiom); a hold that does not come back fails the run.
+        /// </summary>
+        private IEnumerator CaptureFedHoldover(GameController controller, SimulationManager sim, Country player)
+        {
+            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+            FieldInfo candidatesField = controller.GetType().GetField("_fedChairCandidates", Own), forTurnField = controller.GetType().GetField("_fedChairCandidatesForTurn", Own);
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", Own), timerField = controller.GetType().GetField("_daySpeedTimer", Own);
+            FieldInfo tabField = controller.GetType().GetField("_consolidatedTab", Own), categoryField = controller.GetType().GetField("_politicsCategory", Own);
+            FieldInfo onDeskField = controller.GetType().GetField("_onDesk", Own), openItemField = controller.GetType().GetField("_docketOpenItem", Own);   // the second review's L2: written by the frames, so put back
+            if (candidatesField == null || forTurnField == null || speedField == null || timerField == null || tabField == null || categoryField == null || onDeskField == null || openItemField == null)
+            {
+                Debug.LogError("SHOT: the Fed holdover frames could not snapshot the selection, the clock or the tab (_fedChairCandidates/_fedChairCandidatesForTurn/_gameSpeed/_daySpeedTimer/_consolidatedTab/_politicsCategory/_onDesk/_docketOpenItem not found) - 90h/90i are MISSING, not clean.");
+                _failed++;
+                yield break;
+            }
+            DateTime day = sim.CurrentDate;
+            if (!CentralBankTerms.Ended(player.CurrentFedChair, day) || !Congress.PresidentOn(player, day, out string president, out string pp, out _) || (pp != "REP" && pp != "DEM"))
+            {
+                Debug.LogError($"SHOT: 90h/90i - the Fed chair's term has not ended on {day:yyyy-MM-dd}, or no president of REP or DEM is found that day - MISSING, not clean.");
+                _failed++;
+                yield break;
+            }
+            string op = pp == "REP" ? "DEM" : "REP";
+            object candidatesWas = candidatesField.GetValue(controller), forTurnWas = forTurnField.GetValue(controller), speedWas = speedField.GetValue(controller), timerWas = timerField.GetValue(controller);
+            object tabWas = tabField.GetValue(controller), categoryWas = categoryField.GetValue(controller), onDeskWas = onDeskField.GetValue(controller), openItemWas = openItemField.GetValue(controller);
+            int candidatesBefore = (candidatesWas as ICollection)?.Count ?? 0;
+            string mine = player.PlayerPartyAbbrev;
+            Dictionary<string, int> senate0 = player.SecondChamberSeats;
+            bool holdWas = sim.CentralBankHeadAwaitsPlayer(player.Id);   // the second review's L1: the hold, the day and the Senate's reference, asserted after the staging
+            timerField.SetValue(controller, -ClockHoldSeconds);
+            try
+            {
+                Dictionary<string, int> senate = Congress.Sworn(senate0) > 0 ? senate0 : WorldClock.SecondChamberOfRecord(CountryId.USA, day);
+                player.SecondChamberSeats = senate;
+                if (UsFedConsent.Confirms(player, day))
+                {
+                    player.SecondChamberSeats = SwappedSeats(senate, pp, op);
+                    Debug.Log($"SHOT: 90h/90i - the Senate as seated confirms {president}'s ({pp}) nominee; {pp}'s and {op}'s seats swapped for these frames alone, restored after.");
+                    if (UsFedConsent.Confirms(player, day))
+                    {
+                        // the second review's L3: an equal division swaps to itself, and the president's Vice President still decides it - one more seat moved
+                        var moved = new Dictionary<string, int>(player.SecondChamberSeats);
+                        moved.TryGetValue(pp, out int ppSeats);
+                        moved.TryGetValue(op, out int opSeats);
+                        moved[pp] = ppSeats - 1;
+                        moved[op] = opSeats + 1;
+                        player.SecondChamberSeats = moved;
+                        Debug.Log($"SHOT: 90h/90i - the swapped Senate still confirms (an equal division the president's Vice President decides); one more seat moved from {pp} to {op} ({ppSeats - 1}-{opSeats + 1}) for these frames alone, restored after.");
+                    }
+                }
+                SetPrivateField(controller, "_onDesk", false);
+
+                // ---- 90h: the AI president's nominee refused - the other major party in the player's place ----
+                player.PlayerPartyAbbrev = op;
+                candidatesField.SetValue(controller, null);
+                UsFedConsent.Count refused = UsFedConsent.Vote(player, day);
+                string words = UsFedConsent.HoldoverWords(player, player.CurrentFedChair, day);
+                if (refused == null || refused.Confirms || words == null || sim.PlayerMayIntroduce(player.Id, out _) || sim.CentralBankHeadAwaitsPlayer(player.Id))
+                {
+                    Debug.LogError($"SHOT: 90h - the staging did not give an AI president's nominee refused by the count ({UsFedConsent.CountWords(refused)}; the player {op} introduces: {sim.PlayerMayIntroduce(player.Id, out _)}) - MISSING, not clean.");
+                    _failed++;
+                }
+                else
+                {
+                    SetEnumField(controller, "_consolidatedTab", "Politics");
+                    SetEnumField(controller, "_politicsCategory", "FederalReserve");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    Debug.Log($"SHOT: 90h_bank_holdover - staged: {op} in the player's place, {president} ({pp}) nominates on {day:yyyy-MM-dd}: {words}");
+                    yield return Capture("90h_bank_holdover");
+                    SetScrolls(controller, UiScreen.Height * 20f);   // past the page's foot - the scroll view clamps there, and the political half (the lever's column) is the page's last block
+                    yield return Settle();
+                    yield return Capture("90h_bank_holdover_lever");
+                }
+
+                // ---- 90i: the player-president under the same Senate - no hold, NOMINATE shut, his own words ----
+                player.PlayerPartyAbbrev = pp;
+                candidatesField.SetValue(controller, null);
+                UsFedConsent.Count barred = UsFedConsent.Vote(player, day);
+                bool introduces = sim.PlayerMayIntroduce(player.Id, out string locked);
+                if (barred == null || barred.Confirms || !introduces || sim.CentralBankHeadAwaitsPlayer(player.Id))
+                {
+                    Debug.LogError($"SHOT: 90i - the staging did not give a player-president ({pp}) whose nominee the Senate would refuse ({UsFedConsent.CountWords(barred)}; locked: {locked ?? "no"}) - MISSING, not clean.");
+                    _failed++;
+                }
+                else
+                {
+                    SetEnumField(controller, "_consolidatedTab", "Politics");
+                    SetEnumField(controller, "_politicsCategory", "FederalReserve");
+                    SetScrolls(controller, UiScreen.Height * 20f);
+                    yield return Settle();
+                    Debug.Log($"SHOT: 90i_bank_holdover_president - staged: {pp} the player's party and the president's, {UsFedConsent.CountWords(barred)} on any name of his");
+                    yield return Capture("90i_bank_holdover_president");
+                    SetEnumField(controller, "_consolidatedTab", "Decisions");
+                    SetPrivateField(controller, "_docketOpenItem", null);
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    yield return Capture("90i_docket_holdover_president");
+                }
+            }
+            finally
+            {
+                player.PlayerPartyAbbrev = mine;
+                player.SecondChamberSeats = senate0;
+                candidatesField.SetValue(controller, candidatesWas);
+                forTurnField.SetValue(controller, forTurnWas);
+                speedField.SetValue(controller, speedWas);
+                timerField.SetValue(controller, timerWas);
+                tabField.SetValue(controller, tabWas);
+                categoryField.SetValue(controller, categoryWas);
+                onDeskField.SetValue(controller, onDeskWas);
+                openItemField.SetValue(controller, openItemWas);
+                ResetScrolls(controller);
+            }
+            yield return Settle();
+            int candidatesAfter = (candidatesField.GetValue(controller) as ICollection)?.Count ?? 0;
+            object speedAfter = speedField.GetValue(controller);
+            bool holdAfter = sim.CentralBankHeadAwaitsPlayer(player.Id);
+            string restored = $"SHOT: 90h/90i restored - {mine} seated again, the Senate as found; the Fed chair's candidates {candidatesAfter} (before {candidatesBefore}), the speed {speedAfter} (before {speedWas}), the day {sim.CurrentDate:yyyy-MM-dd} (before {day:yyyy-MM-dd}), the hold {holdAfter} (before {holdWas})";
+            if (candidatesAfter != candidatesBefore || !Equals(speedAfter, speedWas) || player.PlayerPartyAbbrev != mine || sim.CurrentDate != day || holdAfter != holdWas || !ReferenceEquals(player.SecondChamberSeats, senate0)) { Debug.LogError(restored + " - THE HOLD DID NOT RETURN."); _failed++; }
+            else { Debug.Log(restored + "."); }
         }
 
         /// <summary>Bound on each state search (budget pause, decision/meeting rolls). Generous — four sim years — but a bound, per this harness's standing rule that an unbounded wait is a hang with no log line.</summary>

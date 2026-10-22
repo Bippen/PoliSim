@@ -366,3 +366,9 @@ Each absent action has its sourced effect, the source's digest and a proposed BU
 ### US-26 the history rolled forward (§892): the ask it ends in
 
 - **No save-format step.** A save cut in the middle of a second campaign by a build from before US-26 now replays that campaign on the game's own history rather than the record's pair it was played on, so the replayed polls can differ from what you saw. This is declared, not migrated. Format 47 took a step for a case of this kind. Take one here too (a v50 save in a second campaign would restart the campaign), or keep it declared?
+
+### US-29 the Fed chair by statute (§893): the asks it ends in
+
+- **The holdover.** When the Senate confirms no successor, the sitting chair serves on. That is the game's DECLARED reading; 12 U.S.C. 242's "continue to serve" covers the Board's members, not the chair's designation. Keep it, or have the Vice Chair act (section 244, as in the chair pro tempore of 2022)? Ruling the second way means fetching section 244 and the 2022 record.
+- **A player-president under a hostile Senate.** As built, you cannot nominate when the count would refuse; the bank page and the Docket say so, and the chair holds over. Or should you be able to nominate anyway and see the Senate refuse your nominee as a played event?
+- **The count rule.** The Senate votes as party blocs (DECLARED). That reproduces Yellen 2014 but not Powell 2018, when the other party voted for him. The reviewer recommends a crossing rule fitted on the full record of Fed-chair confirmation roll calls. Keep the blocs, or source and fit the crossing?

@@ -17,8 +17,7 @@ namespace PoliSim.Simulation
     /// members' bank is always AI-run.</para>
     ///
     /// <para><b>Not modelled, stated:</b> re-appointment and its limits (the Riksbank's once, the NBP's two consecutive terms, the ECB's none) - every
-    /// appointment draws a fresh shortlist; the US Senate's consent to the President's designation (US-29's to build on R-US12 (a)); removal before
-    /// the term's end.</para>
+    /// appointment draws a fresh shortlist; removal before the term's end. The US Senate's consent to the President's designation is US-29's (`UsFedConsent`).</para>
     /// </summary>
     public static class CentralBankTerms
     {
@@ -125,7 +124,11 @@ namespace PoliSim.Simulation
         /// first on a tie) - the no-lean choice the seed's heads already are (DECLARED: the AI's appointer has no sourced preference over the lean), seated
         /// for a full term from <paramref name="today"/>.
         /// </summary>
-        public static FedChair AiAppointment(Statute statute, FedChair outgoing, DateTime today)
+        public static FedChair AiAppointment(Statute statute, FedChair outgoing, DateTime today) => Seat(AiNominee(statute, outgoing, today), statute, today);
+
+        /// <summary>PS-6 US-29: the AI's pick unseated - the nominee an AI president sends to the Senate (`UsFedConsent`). The shortlist is keyed on the outgoing
+        /// head's term's end (else <paramref name="today"/>), so every day of a holdover names the same nominee.</summary>
+        public static FedChair AiNominee(Statute statute, FedChair outgoing, DateTime today)
         {
             List<FedChair> shortlist = AiShortlist(statute, outgoing != null && outgoing.HasTerm() ? outgoing.TermEnds : today.Date);
             FedChair pick = null;
@@ -133,7 +136,7 @@ namespace PoliSim.Simulation
             {
                 if (pick == null || Math.Abs(c.RateBias) < Math.Abs(pick.RateBias)) { pick = c; }
             }
-            return Seat(pick, statute, today);
+            return pick;
         }
     }
 }
