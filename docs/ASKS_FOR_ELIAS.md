@@ -442,3 +442,5 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 
 - **MN now takes seats.** Kept in okręg 21, MN wins a seat there at about 1.5 times its 2023 share (0.19 %); the old swing never gave it one. The film's own game, at MN 0.2 %, seats PiS 199, KO 124, TD 77, NL 45, Konf 14 and MN 1.
 - **Past about 2.23 %**, MN's votes in okręg 21 exceed that okręg's whole 2023 vote. Nothing caps them; MN then takes all 12 seats there. A cap would be your ruling.
+
+**Ruled 2026-10-23 in ask mode:** the q4 table and every ask of §892-§900 above (US-26, US-29, US-30, US-27, US-24, US-31, SEAT-1) - see `docs/RULINGS_2026-10-23.md`, K1-K33.
