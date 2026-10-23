@@ -89,7 +89,11 @@ namespace PoliSim.UI
         private void DrawWhoGoverns(UsCongressView.View v, float width)
         {
             float h = V35.Px(54f), gap = V35.Px(10f);
-            Rect row = GUILayoutUtility.GetRect(width, h, GUILayout.Width(width), GUILayout.Height(h));
+            // K39 (Elias, 2026-10-23): YOUR NOMINEE's row is retired under the view and its action moves here - a line under the three cards where the row would stand
+            bool nominee = TryUsNomineeToday(out UsTermLimit.Nominee pick, out List<string> choices, out System.DateTime pollingDay, out bool own, out bool outParty);
+            float nomineeH = nominee ? V35.Px(8f) + V35.Px(26f) : 0f;
+            Rect row = GUILayoutUtility.GetRect(width, h + nomineeH, GUILayout.Width(width), GUILayout.Height(h + nomineeH));
+            if (nominee) { DrawWhoGovernsNominee(new Rect(row.x + V35.Px(96f) + gap, row.y + h + V35.Px(8f), row.width - V35.Px(96f) - gap, V35.Px(26f)), pick, choices, pollingDay, own, outParty); }
             float labelW = V35.Px(96f), dividedW = v.Divided ? V35.Px(220f) : 0f;
             float cardW = (row.width - labelW - gap * (v.Divided ? 4f : 3f) - dividedW) / 3f;
             if (Event.current.type == EventType.Repaint)
@@ -164,6 +168,61 @@ namespace PoliSim.UI
         }
 
         // ------------------------------------------------------------------ the House
+
+        /// <summary>
+        /// K39 (Elias, 2026-10-23: "YOUR NOMINEE's action moves into the who-governs strip"): THE NOMINEE'S LINE under the strip's three cards, in the next
+        /// vote's grammar - YOUR NOMINEE, the party's mark, the person who stands and why (YOUR OWN, YOUR PICK, THE VICE PRESIDENT, THE PARTY'S OWN), the polling
+        /// day in its outlined chip, and NEXT CHOICE at the right where the party has people to step through. The row it replaces stands only where no Congress
+        /// view is drawn (`DrawUsNomineeRow`); the reading, the step and the slips are the row's own.
+        /// </summary>
+        private void DrawWhoGovernsNominee(Rect r, UsTermLimit.Nominee nominee, List<string> choices, System.DateTime day, bool own, bool outParty)
+        {
+            string party = _playerCountry.PlayerPartyAbbrev;
+            bool stepping = !own && choices != null && choices.Count > 1;
+            GUIStyle label = V35Serif(V35.Floor, PoliSimTheme.TextMuted);
+            GUIStyle nameFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true);
+            GUIStyle chipFace = V35Mono(V35.Floor, PoliSimTheme.TextPrimary, bold: true, anchor: TextAnchor.MiddleCenter);
+            const string next = "NEXT CHOICE";
+            float nextW = stepping ? Mathf.Ceil(chipFace.CalcSize(new GUIContent(next)).x) + V35.Px(20f) : 0f;
+            var nextChip = new Rect(r.xMax - nextW, r.y, nextW, r.height);
+            float x = r.x;
+            string tag = UsNomineeTag(nominee, own);
+            string dayText = CongressDay(day).ToUpperInvariant();
+            float lw = Mathf.Ceil(label.CalcSize(new GUIContent("YOUR NOMINEE")).x) + V35.Px(10f);
+            float side = V35.Px(20f);
+            float dayW = Mathf.Ceil(chipFace.CalcSize(new GUIContent(dayText)).x) + V35.Px(12f);
+            float tagW = Mathf.Ceil(label.CalcSize(new GUIContent(tag)).x) + V35.Px(10f);
+            float limit = stepping ? nextChip.x - V35.Px(10f) : r.xMax;
+            float nameBudget = Mathf.Max(V35.Px(16f), limit - x - lw - side - V35.Px(8f) - tagW - dayW - V35.Px(10f));
+            string name = V35Fit(Surname(nominee.Person).ToUpperInvariant(), nameFace, nameBudget, out bool _);
+            float nameW = Mathf.Min(nameBudget, Mathf.Ceil(nameFace.CalcSize(new GUIContent(name)).x) + V35.Px(10f));
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(x, r.y, lw, r.height), "YOUR NOMINEE", label);
+            }
+            x += lw;
+            DrawPartyMarkSlot(new Rect(x, r.y + Mathf.Round((r.height - side) * 0.5f), side, side), CountryId.USA, party);
+            x += side + V35.Px(8f);
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimWidgets.MeasuredLabel(new Rect(x, r.y, nameW, r.height), name, nameFace);
+                PoliSimWidgets.MeasuredLabel(new Rect(x + nameW, r.y, tagW, r.height), tag, label);
+                var chip = new Rect(x + nameW + tagW, r.y + V35.Px(2f), dayW, r.height - V35.Px(4f));
+                CongressOutline(chip, PoliSimTheme.TextPrimary, 1.5f);
+                PoliSimWidgets.MeasuredLabel(chip, dayText, chipFace);
+            }
+            SlipAnchor(new Rect(r.x, r.y, Mathf.Max(1f, x + nameW + tagW + dayW - r.x), r.height), "congress:nominee");
+            _politicsSlipBook.Anchors["congress:nominee"] = UsNomineeSlip(nominee, choices, day, own, outParty);
+            if (!stepping) { return; }
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.RoundedCard(nextChip, PoliSimTheme.StockOff, PoliSimTheme.HairlineStrong, 0f);
+                PoliSimWidgets.MeasuredLabel(nextChip, next, chipFace);
+            }
+            if (PoliSimWidgets.Button(nextChip, GUIContent.none, GUIStyle.none)) { StepUsNominee(nominee, choices, day, party); }
+            SlipAnchor(nextChip, "congress:nominee:next");
+            _politicsSlipBook.Anchors["congress:nominee:next"] = UsNomineeNextSlip(day);
+        }
 
         private float CongressHouseHeight() => V35.Px(V35.CardPadY) * 2f + V35.Px(V35.CardIcon) + V35.Px(8f) + V35.Px(56f);
 

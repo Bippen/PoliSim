@@ -357,6 +357,9 @@ namespace PoliSim.EditorTools
                         Check(held.Released && nov12 != null && nov12.Passed && nov12.Sides.Count == 0 && held.LapseEnded == LapseEnds && held.EndedDays == 43 && held.FundedAfter == new DateTime(2026, 9, 30) && held.WithheldAfter == null,
                             F("(c) W2: released on 2025-11-11, the resolution before Congress passes both chambers uncontested on 2025-11-12 (\"{0}\") - THE SHUTDOWN ENDS AFTER {1} DAYS, beside the record's 43 (CRS R48832's gap 1 Oct to 12 Nov; P.L. 119-37 of 12 Nov) - by the procedure's arithmetic, not fitted; funded through {2}",
                                 nov12?.Title, held.EndedDays, Day(held.FundedAfter)));
+                        Check(held.RestoredBefore == DateTime.MinValue && held.RestoredOn == LapseEnds && held.RestoredReadOnDay && !held.RestoredReadNextDay,
+                            F("(c) K42: no restoration is held before the lapse ({0}); the day it ends the model saves it, Country.LapseRestoredOn {1}; the restoration's window holds that day ({2}) and has closed the day after its last ({3})",
+                                Day(held.RestoredBefore), Day(held.RestoredOn), held.RestoredReadOnDay, held.RestoredReadNextDay));
                         Check(held.Charges.Count == 1 + lapseVotes.Count && held.Charges.All(c => c.Contains("-1.50") && c.EndsWith(" marked", StringComparison.Ordinal)),
                             F("(c) W2: every failed resolution is the government's (its own bill, `Congress.GovernmentBears`) - each of the {0} charged the failed vote's cost and its day marked lost while the player withholds (a consequence, stated)", held.Charges.Count));
                         sb.Append("    printed   W2's resolutions (index " + HoldIndex + " planted): ").Append(string.Join(" | ", held.CrSides)).Append('\n');
@@ -788,6 +791,9 @@ namespace PoliSim.EditorTools
             public List<string> CrSides = new List<string>(), Charges = new List<string>();
             public bool GovernmentBothChambers, Withheld, NothingAfterFall, Released, Retabled1001, StopsNearShare = true, EverLapsed;
             public DateTime LapseOpened = DateTime.MinValue, LapseEnded = DateTime.MinValue, FundedAfter = DateTime.MinValue, FirstArmed = DateTime.MinValue, LastArmed = DateTime.MinValue, PaidOn = DateTime.MinValue;
+            /// <summary>K42: the saved day funding was restored as the lapse ended, whether the chip's reading held on that day and not on the next, and the field before the lapse.</summary>
+            public DateTime RestoredOn = DateTime.MinValue, RestoredBefore = DateTime.MaxValue;
+            public bool RestoredReadOnDay, RestoredReadNextDay = true;
             public DateTime HorizonAtEnd, ProfileAtEnd;
             public string WithheldAfter = "unset";
             public int EndedDays, ArmedDays, OutputDaysAtEnd;
@@ -837,7 +843,10 @@ namespace PoliSim.EditorTools
                     if (lapseWas != DateTime.MinValue && u2.LapseSince == DateTime.MinValue && run.LapseEnded == DateTime.MinValue)
                     {
                         run.LapseEnded = d; run.EndedDays = UsBudgetProcedure.LapseDays(lapseWas, d); run.FundedAfter = u2.AppropriatedThrough; run.WithheldAfter = u2.ContinuingResolutionWithheldBy;
+                        run.RestoredOn = u2.LapseRestoredOn; run.RestoredReadOnDay = UsBudgetProcedure.RestoredWithin(u2, d);
                     }
+                    if (run.LapseEnded != DateTime.MinValue && d == run.LapseEnded.AddDays(UsBudgetProcedure.RestoredWindowDays + 1)) { run.RestoredReadNextDay = UsBudgetProcedure.RestoredWithin(u2, d); }
+                    if (d == LapseOpens) { run.RestoredBefore = u2.LapseRestoredOn; }
                     // the book: the stopped outlays - each armed day's stop near the share of the day's nominal output (the accrual read the level before the
                     // day's overlay) - and the payment
                     float stock = u2.LapseDeferredOutlays;

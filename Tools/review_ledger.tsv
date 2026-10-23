@@ -307,3 +307,6 @@ baseline	424242	78fca53f78f05de1980954612ebac0c187007eeef62f6dc84d2fdbbf5b0b0112
 file	Assets/Scripts/Simulation/SimulationManager.cs	e0c5e6062f70e5773cbbfbc1e8dafee6a69d01479e5d080d95005661c6b64eee	reviewed	2026-10-22	s898	Reviews/2026-10-22_us31_review2.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	6ec9227c990c975ae08258c36c1a0751d454c1e8482bb582bf64fb9973e51b56	reviewed	2026-10-23	s903	Reviews/2026-10-23_gate18a_review2.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	e26b268d5d7c71d4312a3e732860ab4311e7282ddc461602164afe57e1fffe04	reviewed	2026-10-23	s903	Reviews/2026-10-23_gate18a_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	dab6f87cf4126301dd14c8399c111f3580ba5fd16fa4bffadc416af95d6d55c8	reviewed	2026-10-23	s906	Reviews/2026-10-23_usf_review.md	-
+file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	8f596ff7bacdc180a39b89ba8f32aac67c8404f7346013e13bdcde1c0e114812	reviewed	2026-10-23	s906	Reviews/2026-10-23_usf_integrator_delta.md	-
+file	Assets/Scripts/Simulation/UsBudgetProcedure.cs	980630aee40382b6e1ac094a0e40783bf0c671feba1a7df3eda04d97843eb1f6	reviewed	2026-10-23	s906	Reviews/2026-10-23_usf_integrator_delta.md	-

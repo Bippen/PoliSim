@@ -896,16 +896,19 @@ namespace PoliSim.Simulation
         /// origin's, then the other's only where the origin overrode, the second carrying the first (`DivisionRecord.OtherChamber`, so the plate shows both).
         /// Each copies its chamber's passage sides (the override is voted by the passage's recorded sides, the crossers where they entered, no fresh draw), its
         /// line the two thirds (`DivisionRecord.Required`, never at cloture), its base the members (`DivisionRecord.Sworn`), passed where it overrode. Returns the
-        /// record that carries the ceremony - the last written.
+        /// record that carries the ceremony - the last written. K41 (Elias, 2026-10-23): each carries the day the bill was presented (<paramref name="presentedOn"/>,
+        /// `DivisionRecord.PresentedOn`), so the vetoed plate draws the ten days it was answered inside.
         /// </summary>
-        public static DivisionRecord RecordVeto(Country country, DivisionRecord passage, Veto veto, DateTime date)
+        public static DivisionRecord RecordVeto(Country country, DivisionRecord passage, Veto veto, DateTime date, DateTime presentedOn = default)
         {
             passage.Motion = true;
             DivisionRecord first = RecordOverride(country, passage, veto, veto.First, null, date);
+            first.PresentedOn = presentedOn.Date;
             if (veto.Second == null) { return first; }
             first.Motion = true;
             DivisionRecord second = RecordOverride(country, passage, veto, veto.Second, veto.First, date);
             second.OtherChamber = first;
+            second.PresentedOn = presentedOn.Date;
             return second;
         }
 

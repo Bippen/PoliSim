@@ -32,6 +32,8 @@ namespace PoliSim.EditorTools
     /// can reach 270; the delegations tonight's House gives, by state.</item>
     /// <item>(e) The inks: REP and DEM drawn in board 29b's hexes, unmoved by the nudge; and the night is available for the USA and is never the regional
     /// readout's.</item>
+    /// <item>(f) K38: the Docket's dates to the oath (`UsNight.DatesToTheOath`) on a planted 2028 night and a 2026 midterm - none on the eve, the four from the
+    /// night in date order, each until its day has passed, the new Congress alone at a midterm.</item>
     /// </list>
     /// The random streams are restored after, the epoch by its scope, and every host destroyed.
     /// </summary>
@@ -390,6 +392,22 @@ namespace PoliSim.EditorTools
             foreach (var c in chamber) { UsNight.Call got = UsNight.MajorityCallOf(c.Rep, c.Dem, c.ToCome, c.Seats); if (got != c.Want) { bad.Add(F("{0}-{1}, {2} to come, of {3}: {4} not {5}", c.Rep, c.Dem, c.ToCome, c.Seats, got, c.Want)); } }
             Check(bad.Count == 0, F("(b) the call rules on {0} cases worked by hand (a majority, no majority at 269-269, a 50-50 Senate tied, an odd Senate with a vacancy, the House at 218){1}",
                 college.Length + chamber.Length, bad.Count == 0 ? string.Empty : " - " + string.Join("; ", bad)));
+
+            // K38 (Elias, 2026-10-23): the Docket's dates to the oath, read from planted contests by the statute days the contests carry - from the night on, each
+            // until it has passed; a midterm's the new Congress alone; none before the night or after the oath
+            var polling = new DateTime(2028, 11, 7);
+            var planted = new Country { Id = CountryId.USA };
+            planted.UsPresidentialElections.Add(new UsPresidentialElection.Contest { PollingDay = polling, ElectorsMeet = UsPresidentialElection.ElectorsMeetAfter(polling), CountedOn = UsPresidentialElection.CountedOnAfter(polling), TakesOffice = UsPresidentialElection.OathDayAfter(polling) });
+            planted.UsCongressElections.Add(new UsCongressElection.Contest { PollingDay = polling, Convenes = UsCongressElection.ConvenesAfter(polling) });
+            string Keys(DateTime on) => string.Join(",", UsNight.DatesToTheOath(planted, on).Select(d => d.Key + "@" + d.Day.ToString("MM-dd", CultureInfo.InvariantCulture)));
+            string eve = Keys(polling.AddDays(-1)), night = Keys(polling), afterElectors = Keys(UsPresidentialElection.ElectorsMeetAfter(polling).AddDays(1)), onOath = Keys(new DateTime(2029, 1, 20)), afterOath = Keys(new DateTime(2029, 1, 21));
+            string meet = UsPresidentialElection.ElectorsMeetAfter(polling).ToString("MM-dd", CultureInfo.InvariantCulture);
+            var midterm = new Country { Id = CountryId.USA };
+            midterm.UsCongressElections.Add(new UsCongressElection.Contest { PollingDay = new DateTime(2026, 11, 3), Convenes = UsCongressElection.ConvenesAfter(new DateTime(2026, 11, 3)) });
+            string mid = string.Join(",", UsNight.DatesToTheOath(midterm, new DateTime(2026, 11, 3)).Select(d => d.Key + "@" + d.Day.ToString("MM-dd", CultureInfo.InvariantCulture)));
+            Check(eve.Length == 0 && night == "electors@" + meet + ",congress@01-03,count@01-06,oath@01-20" && afterElectors == "congress@01-03,count@01-06,oath@01-20" && onOath == "oath@01-20" && afterOath.Length == 0 && mid == "congress@01-03",
+                F("(f) K38 the Docket's dates to the oath (a planted 2028 night): the eve \"{0}\"; the night \"{1}\"; after the electors \"{2}\"; on the oath \"{3}\"; after it \"{4}\"; a 2026 midterm's night \"{5}\"",
+                    eve, night, afterElectors, onOath, afterOath, mid));
         }
 
         private static string Summary(UsNight.State n) => n == null ? "no night" : F("{0}the House REP {1} DEM {2}, the Senate REP {3} DEM {4} of {5} (tonight {6}-{7})",

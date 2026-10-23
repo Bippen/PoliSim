@@ -1747,6 +1747,7 @@ namespace PoliSim.Simulation
                     return true;
                 }
             }
+            System.DateTime presentedOn = docket != null ? docket.PresentedOn : CurrentDate.Date;   // K41: the day it was presented - the docket's, or today's for an answer on the day
             docket = null;   // answered, or unanswered and the president of the day is not the player: he answers by his own rule, today
             Congress.Veto veto = Congress.Present(country, passage, answeredOn, answer);   // the president of the answer's day; the votes on a veto are held today (RecordVeto)
             if (veto == null)
@@ -1755,7 +1756,7 @@ namespace PoliSim.Simulation
                 return passed;
             }
             if (!veto.Vetoed) { Debug.Log($"VETO: {country.Id} - signed by the President ({veto.President}): {passage.Title} - {veto.Why}"); return true; }
-            DivisionRecord ceremony = Congress.RecordVeto(country, passage, veto, CurrentDate);
+            DivisionRecord ceremony = Congress.RecordVeto(country, passage, veto, CurrentDate, presentedOn);
             if (!veto.Overridden) { Congress.RecordLost(country, concern, CurrentDate); }   // Elias's ruling F5: a veto that stands is a bill lost that day - the writer a chamber's rejection uses
             Debug.Log($"VETO: {country.Id} - {ceremony.Title} ({veto.Why})");
             return veto.Overridden;
@@ -2192,6 +2193,7 @@ namespace PoliSim.Simulation
             string ended = country.LapseSince == System.DateTime.MinValue ? string.Empty
                 : $"; the shutdown that began {country.LapseSince:yyyy-MM-dd} ends after {UsBudgetProcedure.LapseDays(country.LapseSince, CurrentDate)} day(s)";
             UsLapse.NoteReferenceWeek(country, CurrentDate);   // PS-6 US-22c (J7 (iv)): the lapse's last day is one of its days - a reference week it completes is counted
+            if (country.LapseSince != System.DateTime.MinValue) { country.LapseRestoredOn = CurrentDate.Date; }   // K42: the day funding was restored, saved - the Desk's chip reads it
             country.LapseSince = System.DateTime.MinValue;
             country.LapseFlowDay = System.DateTime.MinValue;   // PS-6 US-22c (the review's M1): disarmed here, not only at the next funding tick - a docket answer that ends a lapse between the day steps (`ActOnDocketAnswers`) must not leave the next day's economy running one more lapsed day (on the tick's own path the flag is already spent, and the tick would disarm it the same day)
             country.ContinuingResolutionWithheldBy = null;
@@ -7379,6 +7381,7 @@ namespace PoliSim.Simulation
                 BillLostOn = country.BillLostOn,   // F5 (§779): the day's loss - nothing on the preview path reads it; a value, so a write on the clone never reaches the country
                 AppropriatedThrough = country.AppropriatedThrough,   // PS-6 US-22: the funding horizon, the lapse and the withheld resolution - nothing on the preview path reads them; values, carried so the audit holds
                 LapseSince = country.LapseSince,
+                LapseRestoredOn = country.LapseRestoredOn,   // K42: read only by the Desk's chip, never on the preview path; a value, carried so the audit holds
                 ContinuingResolutionWithheldBy = country.ContinuingResolutionWithheldBy,
                 LapseFlowDay = country.LapseFlowDay,   // PS-6 US-22b: the lapse's economics (UsLapse) - read only on the daily path, which the preview never runs; values, carried so the audit holds
                 LapseDeferredOutlays = country.LapseDeferredOutlays,

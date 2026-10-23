@@ -51,7 +51,12 @@ namespace PoliSim.UI
         }
 
         /// <summary>Called at the head of a page that carries slips: a repaint re-registers every anchor.</summary>
-        private void BeginSlipAnchors() { if (Event.current.type == EventType.Repaint) { _slipAnchors.Clear(); } }
+        // K40: the top masthead's anchors (drawn above every page, before it) are put back with the page's, so its slips open over any page that draws slips
+        private void BeginSlipAnchors() { if (Event.current.type == EventType.Repaint) { _slipAnchors.Clear(); _slipAnchors.AddRange(_mastheadAnchors); } }
+
+        /// <summary>K40: a slip by its anchor - the page's book first, then the top masthead's.</summary>
+        private bool TrySlipOf(PeopleSlips.Book book, string anchor, out SlipContent slip) =>
+            book.Anchors.TryGetValue(anchor, out slip) || _mastheadSlipBook.Anchors.TryGetValue(anchor, out slip);
 
         /// <summary>An anchor: the rect a slip opens from, registered on the repaint that draws it.</summary>
         private void SlipAnchor(Rect r, string id) { if (Event.current.type == EventType.Repaint && r.width > 0f && r.height > 0f) { _slipAnchors.Add((id, r)); } }
@@ -84,13 +89,13 @@ namespace PoliSim.UI
                 foreach ((string anchor, string _, Vector2 at, int number) in _slipPins)
                 {
                     Rect? on = AnchorRectOf(anchor, at);
-                    if (on.HasValue && book.Anchors.ContainsKey(anchor)) { DrawSlipBadge(on.Value, number, bounds); }
+                    if (on.HasValue && TrySlipOf(book, anchor, out SlipContent _)) { DrawSlipBadge(on.Value, number, bounds); }
                 }
             }
             for (int i = _slipPins.Count - 1; i >= 0; i--)
             {
                 (string anchor, string term, Vector2 at, int number) = _slipPins[i];
-                if (!book.Anchors.TryGetValue(anchor, out SlipContent pinned)) { continue; }
+                if (!TrySlipOf(book, anchor, out SlipContent pinned)) { continue; }
                 Rect box = SlipBox(pinned, at, bounds, number, out Rect head, out List<(Rect Rect, string Term)> _, AnchorRectOf(anchor, at), null);
                 if (term != null && book.Terms.TryGetValue(term, out SlipContent pinnedTerm)) { SlipBox(pinnedTerm, at, bounds, 0, out Rect _, out List<(Rect Rect, string Term)> _, null, box); }
                 if (e.type == EventType.MouseDown && head.Contains(mouse)) { _slipPins.RemoveAt(i); e.Use(); return; }
@@ -110,7 +115,7 @@ namespace PoliSim.UI
                 if (hovered == null) { _slipOpenId = null; _slipTermOpen = null; _slipTermHover = null; }
                 else if (now - _slipHoverSince >= SlipDelay && hovered != _slipOpenId) { _slipOpenId = hovered; _slipOpenAt = mouse; _slipTermOpen = null; _slipTermHover = null; }
             }
-            if (_slipOpenId == null || !book.Anchors.TryGetValue(_slipOpenId, out SlipContent open)) { return; }
+            if (_slipOpenId == null || !TrySlipOf(book, _slipOpenId, out SlipContent open)) { return; }
 
             _slipOpenRect = SlipBox(open, _slipOpenAt, bounds, 0, out Rect openHead, out List<(Rect Rect, string Term)> terms, AnchorRectOf(_slipOpenId, _slipOpenAt), null);
             // Level 2: a marked term under the pointer, after the delay; kept while the pointer is on that term or on the level-2 slip.

@@ -130,6 +130,19 @@ namespace PoliSim.EditorTools
                         bool plantedWin = decided && held.Elected != trzaskowski;
                         if (plantedWin) { held.Elected = trzaskowski; held.ElectedParty = "KO"; held.Line += " - PLANTED by PolishPresidentialStartDiagnostic: the player's win forced"; }
                         Check(held != null && held.PlayerWon(), F("(c) THE WIN, {0}: the player's candidate elected, taking office {1}", plantedWin ? "PLANTED (the model elected " + elected + ")" : "as the model counted it", Day(held?.TakesOffice ?? DateTime.MinValue)));
+                        // K44 (Elias, 2026-10-23): the Desk's role chip reads PRESIDENT-ELECT from the deciding vote to the oath's eve, by PresidentialElection.PlayerElectOn
+                        bool electSpan = held != null && PresidentialElection.PlayerElectOn(pl, RunOff.AddDays(-1)) == null && PresidentialElection.PlayerElectOn(pl, RunOff) == held
+                                         && PresidentialElection.PlayerElectOn(pl, Oath.AddDays(-1)) == held && PresidentialElection.PlayerElectOn(pl, Oath) == null;
+                        Check(electSpan, F("(c) K44 PRESIDENT-ELECT: none on {0}, the player's on the run-off {1} and on the oath's eve {2}, none on the oath {3} (the office's PRESIDENT from it)",
+                            Day(RunOff.AddDays(-1)), Day(RunOff), Day(Oath.AddDays(-1)), Day(Oath)));
+                        // the review of wave/usf, L3: a first vote won outright - PRESIDENT-ELECT from the first vote itself, no run-off held (a planted contest)
+                        var outright = new Country { Id = CountryId.Poland };
+                        var outrightWin = new PresidentialElection.Contest { FirstVote = FirstVote, PlayerCandidate = trzaskowski, Elected = trzaskowski, ElectedParty = "KO", RunOffHeld = false, TakesOffice = Oath };
+                        outright.PresidentialElections.Add(outrightWin);
+                        bool outrightSpan = PresidentialElection.PlayerElectOn(outright, FirstVote.AddDays(-1)) == null && PresidentialElection.PlayerElectOn(outright, FirstVote) == outrightWin
+                                            && PresidentialElection.PlayerElectOn(outright, Oath.AddDays(-1)) == outrightWin && PresidentialElection.PlayerElectOn(outright, Oath) == null;
+                        Check(outrightSpan, F("(c) K44 an outright first-round win (planted): none on {0}, the player's from the first vote {1} to the oath's eve, none on the oath {2}",
+                            Day(FirstVote.AddDays(-1)), Day(FirstVote), Day(Oath)));
 
                         // the statutes and the budget, introduced while the party still governs
                         Step(s, w, BillsIn);
@@ -141,9 +154,26 @@ namespace PoliSim.EditorTools
                         bool budgetIn = budget != null && BudgetBillHarness.Introduce(s, CountryId.Poland, budget);
                         Check(billsIn && budgetIn, F("(c) while the party governs: four removals introduced on {0} ({1}), a budget moving {2} to {3} on {4}", Day(BillsIn), string.Join(", ", taxes.Take(4)), budgetTax, Num(budgetRateTo), Day(BudgetIn)));
 
+                        // K44: the Desk's role chip, read through the controller's own RoleChip (a controller in edit mode, the manager and the player's country handed to it)
+                        var chipHost = new GameObject("PolishPresidentialStartDiagnostic.Chip"); hosts.Add(chipHost);
+                        chipHost.AddComponent<SimulationManager>();
+                        var chipController = chipHost.AddComponent<PoliSim.UI.GameController>();
+                        string Chip()
+                        {
+                            const BindingFlags Own = BindingFlags.Instance | BindingFlags.NonPublic;
+                            typeof(PoliSim.UI.GameController).GetField("_simulationManager", Own)?.SetValue(chipController, s);
+                            typeof(PoliSim.UI.GameController).GetField("_playerCountry", Own)?.SetValue(chipController, pl);
+                            object read = typeof(PoliSim.UI.GameController).GetMethod("RoleChip", Own)?.Invoke(chipController, null);
+                            return read is ValueTuple<string, bool> chip ? chip.Item1 + (chip.Item2 ? " (filled)" : " (outlined)") : "NO CHIP";
+                        }
+                        string chipOnRunOff = Chip();
                         Step(s, w, Oath.AddDays(-1));
                         bool eve = s.PlayerGoverns(pl) && !pl.PlayerHoldsPresidency && s.PlayerMayIntroduce(CountryId.Poland, out _);
+                        string chipOnEve = Chip();
                         Step(s, w, Oath);
+                        string chipOnOath = Chip();
+                        Check(chipOnRunOff == "PRESIDENT-ELECT (outlined)" && chipOnEve == "PRESIDENT-ELECT (outlined)" && chipOnOath == "PRESIDENT (filled)",
+                            F("(c) K44 the Desk's role chip: after the run-off \"{0}\", on the oath's eve \"{1}\" (words only - the party still governs), on the oath \"{2}\"", chipOnRunOff, chipOnEve, chipOnOath));
                         bool office = pl.PlayerHoldsPresidency && !s.PlayerGoverns(pl) && !s.PlayerMayIntroduce(CountryId.Poland, out string gate) && gate == SimulationManager.PresidentOfficeWords
                                       && !s.PlayerMayIntroduce(CountryId.Poland, CabinetPortfolio.FinanceTreasury, out _) && !CabinetSystem.ChairIsThePlayers(pl, CabinetPortfolio.FinanceTreasury)
                                       && !FinancePartner.PlayerHolds(pl) && PresidentialElection.PlayerHoldsOffice(pl, Oath, out string sworn) && sworn == trzaskowski;

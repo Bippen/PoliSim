@@ -146,6 +146,15 @@ namespace PoliSim.Elections
             return last;
         }
 
+        /// <summary>K44 (Elias, 2026-10-23): the contest the player's candidate WON whose oath is still ahead on <paramref name="date"/> - the player is the
+        /// President-elect from the deciding vote (the run-off, or a first vote won outright) to the day before the oath; null where none. Words only: the role
+        /// gate reads the office from the oath (`PlayerHoldsOffice`), as before.</summary>
+        public static Contest PlayerElectOn(Country country, DateTime date)
+        {
+            Contest c = PlayerContestOn(country, date);
+            return c != null && c.PlayerWon() && (c.RunOffHeld ? c.RunOffOn : c.FirstVote).Date <= date.Date && c.TakesOffice.Date > date.Date ? c : null;   // decided by its day, sworn after it
+        }
+
         /// <summary>A candidate's position in the sovereignty space: CHES galtan and nationalism (0-10) and the EU position (1-7).</summary>
         public readonly struct Point
         {

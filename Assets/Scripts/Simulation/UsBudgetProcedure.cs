@@ -171,6 +171,17 @@ namespace PoliSim.Simulation
         /// <summary>A lapse's days on <paramref name="today"/>: the first day counted (the record's count, F8: 1 Oct to 12 Nov 2025 is 43 days).</summary>
         public static int LapseDays(DateTime since, DateTime today) => (today.Date - since.Date).Days + 1;
 
+        /// <summary>K42: the days after the restoration within which the Desk may still first show FUNDING RESTORED (the review of wave/usf, L2: a frame at speed
+        /// may step past the day itself). DECLARED - the memo it replaced held the same three.</summary>
+        public const int RestoredWindowDays = 3;   // [AUTHORED-DRAFT] a screen's window, no source: the retired memo's three days
+
+        /// <summary>K42 (Elias, 2026-10-23): whether <paramref name="today"/> lies in the restoration's window - from the saved day the last lapse ended
+        /// (`Country.LapseRestoredOn`) to `RestoredWindowDays` after it, with no lapse since. The Desk shows the chip on the first day it is drawn in the
+        /// window, that day only (`GameController.RestoredChipToday`).</summary>
+        public static bool RestoredWithin(Country country, DateTime today) =>
+            country != null && country.LapseSince == DateTime.MinValue && country.LapseRestoredOn != DateTime.MinValue
+            && today.Date >= country.LapseRestoredOn.Date && (today.Date - country.LapseRestoredOn.Date).Days <= RestoredWindowDays;
+
         /// <summary>The lapse in a page's words - its day, the day funding lapsed, how it ends, and what it does (US-22b, `UsLapse`); null where funding has not
         /// lapsed.</summary>
         public static string LapseWords(Country country, DateTime today)

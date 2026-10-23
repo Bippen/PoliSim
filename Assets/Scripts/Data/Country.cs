@@ -937,6 +937,11 @@ namespace PoliSim.Data
         /// and to output is US-22b's (`UsLapse`), read through <see cref="LapseFlowDay"/>.</summary>
         public System.DateTime LapseSince;
 
+        /// <summary>K42 (Elias, 2026-10-23: "Funding restored becomes a saved field"): the day the last lapse ended - the day an appropriation or a continuing
+        /// resolution became law while funding was lapsed (`SimulationManager.FundedByLaw`) - which the Desk's lapse chip reads as FUNDING RESTORED on that day
+        /// (`UsBudgetProcedure.RestoredWithin`, first drawn in its window). MinValue where no lapse has ended. Saved (format 57), so a game loaded on the day shows it.</summary>
+        public System.DateTime LapseRestoredOn;
+
         /// <summary>PS-6 US-22 (Ask 2's reading (P), PROVISIONAL; it stands, Elias's ruling I13 (2)): the party withholding the continuing resolution - the
         /// player's verb (`SimulationManager.WithholdContinuingResolution`), standing until released or until funding is restored; null for none. An AI party
         /// never withholds.</summary>

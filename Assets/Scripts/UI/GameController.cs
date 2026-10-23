@@ -5902,6 +5902,7 @@ namespace PoliSim.UI
             // §648 (PF-11; Design's part-C reading 2; board 1m's C27): HELD is ONE mono line - the lamp, TIME PAUSED, and each thing waited
             // on as a chip naming the rail cell it is answered at, a click taking the player there. No sentence and no speed hint (the rail's
             // chip says PAUSE/RUN). On the Budget ledger its own pause is left out - it states that status itself. Game over keeps its line.
+            if (Event.current.type == EventType.Repaint) { _mastheadAnchors.Clear(); }   // K40: the top masthead re-registers its own below, where it is drawn
             if (_isGameOver)
             {
                 string over = $"GAME OVER - {_gameOverReason}";
@@ -5912,14 +5913,14 @@ namespace PoliSim.UI
 
             // Read on the Layout event and held for the frame: a rail click moving to or from the Budget mid-event would otherwise change
             // the chip count between Layout and the event that draws it (the second reading, §648).
-            if (Event.current.type == EventType.Layout) { _bannerIncludesBudget = _onDesk || _consolidatedTab != ConsolidatedTab.Budget; }
+            if (Event.current.type == EventType.Layout) { _bannerIncludesBudget = _onDesk || _consolidatedTab != ConsolidatedTab.Budget; _bannerIsMasthead = MastheadStripApplies(); }
             List<(string Label, HoldCell Cell)> holds = CollectHolds(includeBudgetProcess: _bannerIncludesBudget);
-            if (holds.Count == 0)
+            if (holds.Count == 0 && !_bannerIsMasthead)
             {
                 return 0f;
             }
 
-            float height = DrawHoldChips(holds, columnWidth);
+            float height = DrawHoldChips(holds, columnWidth, _bannerIsMasthead);
             GUILayout.Space(4f);
             return height + 4f;
         }
@@ -5986,13 +5987,18 @@ namespace PoliSim.UI
         private GUIStyle _holdChipStyle;
         private int _holdChipSize = -1;
         private bool _bannerIncludesBudget = true;
+        /// <summary>K40: whether this frame's banner is the top masthead (`MastheadStripApplies`), read on the Layout event and held for the frame.</summary>
+        private bool _bannerIsMasthead;
 
         /// <summary>
         /// §648: the HELD line - the plate, the lamp in its left padding, TIME PAUSED in mono, then one chip per hold: CELL · WHAT, a click
         /// opening the cell (a hold with no cell - election night - is a plain chip). Chips that do not fit the width fold into "+N MORE", so
         /// the line never wraps and never pushes the page down by more than its one line. Returns the height it takes.
+        /// K40 (Elias, 2026-10-23; board 30c's masthead): with <paramref name="masthead"/> the line is the TOP MASTHEAD and is drawn whether or not anything
+        /// holds - Paused and its holds at the left (nothing there while the clock runs), the lapse's chip beside them, the role chip at the right end, both
+        /// reserved before the holds so a long hold folds into "+N MORE" rather than under them.
         /// </summary>
-        private float DrawHoldChips(List<(string Label, HoldCell Cell)> holds, float width)
+        private float DrawHoldChips(List<(string Label, HoldCell Cell)> holds, float width, bool masthead = false)
         {
             GUIStyle line = DeskCaption(9.5f, PoliSimTheme.TextOnDesk);
             if (_holdChipStyle == null || _holdChipSize != line.fontSize)
@@ -6013,29 +6019,62 @@ namespace PoliSim.UI
             float chipHeight = Mathf.Ceil(_holdChipStyle.CalcSize(new GUIContent("Ag")).y);
             float inner = Mathf.Max(chipHeight, Mathf.Ceil(line.CalcSize(new GUIContent("Ag")).y));
 
-            GUILayout.BeginHorizontal(_holdBannerStyle, GUILayout.Width(width), GUILayout.Height(inner + _holdBannerStyle.padding.vertical));
-            const string head = "TIME PAUSED";
-            GUILayout.Label(head, line, GUILayout.Height(inner));
-            float used = _holdBannerStyle.padding.horizontal + line.CalcSize(new GUIContent(head)).x;
-            float moreWidth = _holdChipStyle.CalcSize(new GUIContent("+9 MORE")).x + _holdChipStyle.margin.horizontal;
-            int shown = 0;
-            for (int i = 0; i < holds.Count; i++)
+            // K40: the masthead's two chips, measured first - the role's (its words and tag, the Desk's own) and the lapse's
+            (string Words, bool InOffice)? role = null;
+            string roleTag = null;
+            (string Words, Color Ground, Color Ink, Color Dot)? lapse = null;
+            float roleWidth = 0f, lapseWidth = 0f, chipGap = 0f, mastChipHeight = 0f;
+            if (masthead)
             {
-                string caption = HoldCellCaption(holds[i].Cell);
-                string text = caption == null ? holds[i].Label : caption + " · " + holds[i].Label;
-                float w = _holdChipStyle.CalcSize(new GUIContent(text)).x + _holdChipStyle.margin.horizontal;
-                bool last = i == holds.Count - 1;
-                if (used + w + (last ? 0f : moreWidth) > width) { break; }
-                if (holds[i].Cell == HoldCell.None) { GUILayout.Label(text, _holdChipStyle, GUILayout.Height(inner)); }
-                else if (PoliSimWidgets.Button(text, _holdChipStyle, GUILayout.Height(inner))) { GoToHoldCell(holds[i].Cell); }
-                used += w;
-                shown++;
+                _mastheadSlipBook = new PeopleSlips.Book();
+                role = RoleChip();
+                roleTag = role.HasValue ? RoleTag(role.Value.Words) : null;
+                roleWidth = role.HasValue ? RoleChipWidth(role.Value.Words, roleTag) : 0f;
+                lapse = LapseChip(_simulationManager.CurrentDate);
+                lapseWidth = lapse.HasValue ? LapseChipWidth(lapse.Value.Words) : 0f;
+                chipGap = StatsUnit(10f);
+                mastChipHeight = StatsUnit(20f);
+                inner = Mathf.Max(inner, mastChipHeight);
             }
-            if (shown < holds.Count) { GUILayout.Label($"+{holds.Count - shown} MORE", _holdChipStyle, GUILayout.Height(inner)); }
+
+            GUILayout.BeginHorizontal(_holdBannerStyle, GUILayout.Width(width), GUILayout.Height(inner + _holdBannerStyle.padding.vertical));
+            float used = _holdBannerStyle.padding.horizontal + (roleWidth > 0f ? roleWidth + chipGap : 0f) + (lapseWidth > 0f ? lapseWidth + chipGap : 0f);
+            if (holds.Count > 0)
+            {
+                const string head = "TIME PAUSED";
+                GUILayout.Label(head, line, GUILayout.Height(inner));
+                used += line.CalcSize(new GUIContent(head)).x;
+                float moreWidth = _holdChipStyle.CalcSize(new GUIContent("+9 MORE")).x + _holdChipStyle.margin.horizontal;
+                int shown = 0;
+                for (int i = 0; i < holds.Count; i++)
+                {
+                    string caption = HoldCellCaption(holds[i].Cell);
+                    string text = caption == null ? holds[i].Label : caption + " · " + holds[i].Label;
+                    float w = _holdChipStyle.CalcSize(new GUIContent(text)).x + _holdChipStyle.margin.horizontal;
+                    bool last = i == holds.Count - 1;
+                    if (used + w + (last ? 0f : moreWidth) > width) { break; }
+                    if (holds[i].Cell == HoldCell.None) { GUILayout.Label(text, _holdChipStyle, GUILayout.Height(inner)); }
+                    else if (PoliSimWidgets.Button(text, _holdChipStyle, GUILayout.Height(inner))) { GoToHoldCell(holds[i].Cell); }
+                    used += w;
+                    shown++;
+                }
+                if (shown < holds.Count) { GUILayout.Label($"+{holds.Count - shown} MORE", _holdChipStyle, GUILayout.Height(inner)); }
+            }
+            if (lapse.HasValue)
+            {
+                if (holds.Count > 0) { GUILayout.Space(chipGap); }
+                Rect slot = GUILayoutUtility.GetRect(lapseWidth, inner, GUILayout.Width(lapseWidth), GUILayout.Height(inner));
+                DrawLapseChip(new Rect(slot.x, slot.y + Mathf.Round((slot.height - mastChipHeight) * 0.5f), lapseWidth, mastChipHeight), lapse.Value, onStrip: true);
+            }
             GUILayout.FlexibleSpace();
+            if (role.HasValue)
+            {
+                Rect slot = GUILayoutUtility.GetRect(roleWidth, inner, GUILayout.Width(roleWidth), GUILayout.Height(inner));
+                DrawRoleChip(new Rect(slot.x, slot.y + Mathf.Round((slot.height - mastChipHeight) * 0.5f), roleWidth, mastChipHeight), role.Value.Words, role.Value.InOffice, roleTag, onStrip: true);
+            }
             GUILayout.EndHorizontal();
 
-            if (Event.current.type == EventType.Repaint && _holdBannerStyle.normal.background != null)
+            if (holds.Count > 0 && Event.current.type == EventType.Repaint && _holdBannerStyle.normal.background != null)
             {
                 Rect plate = GUILayoutUtility.GetLastRect();
                 float lamp = HoldBannerLampSize();

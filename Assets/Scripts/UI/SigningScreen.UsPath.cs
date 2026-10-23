@@ -17,9 +17,10 @@ namespace PoliSim.UI
     /// Sunday narrow and unnumbered, and the day it is law unanswered (`UsBillPath.TenDays`, `PresidentialDocket`'s own count); and <b>the pocket veto</b>, one
     /// line in the ABSENT frame - not modelled, Congress held in session. On the desk the third column opens with <b>your answer</b>: each verb and its
     /// consequence - Sign, law today; Veto, the override at once and the lines it needs, never predicted; Later, the Docket and the law's day unanswered.
-    /// <para><b>Declared departures from 30b:</b> the stations' third line (the board's sub) is each station's slip, and the ten days are drawn only on the
-    /// desk (a vetoed bill's record keeps no presentment day), so the plate keeps its height at 16:9; on a vote on a veto the pocket veto's line stays on the
-    /// count's slip, where §853 put it, as the strip takes the room.</para>
+    /// <para><b>Declared departures from 30b:</b> the stations' third line (the board's sub) is each station's slip, so the plate keeps its height at 16:9; on a
+    /// vote on a veto the pocket veto's line stays on the count's slip, where §853 put it, as the strip takes the room. K41 (Elias, 2026-10-23): a vetoed plate
+    /// draws the ten days dimmed, from the presentment day its record keeps (`DivisionRecord.PresentedOn`) - as a thin strip along the President station's foot
+    /// that takes no height (a row of its own overfilled the plate on the real films), the board's "answered on day N" on that station's slip.</para>
     /// </summary>
     public partial class SigningScreen
     {
@@ -34,7 +35,7 @@ namespace PoliSim.UI
             public bool CountsTenDays = true;
         }
 
-        private const float StationHeight = 54f, ArrowWidth = 33f, DayHeight = 48f, PocketHeight = 30f;
+        private const float StationHeight = 54f + 2f * StationRowHeadroom, ArrowWidth = 33f, DayHeight = 48f, PocketHeight = 30f;
 
         private static Color StationInk(UsBillPath.Mark m) =>
             m == UsBillPath.Mark.Now ? PoliSimTheme.Caution : m == UsBillPath.Mark.Failed ? PoliSimTheme.Bad : m == UsBillPath.Mark.Passed ? PoliSimTheme.Good
@@ -55,6 +56,22 @@ namespace PoliSim.UI
             v.childForceExpandWidth = true;
             v.childForceExpandHeight = false;
             bool onVeto = UsBillPath.OnVeto(record);
+            // K41 (Elias, 2026-10-23): a vetoed plate shows the ten days dimmed - the record keeps the day the bill was presented (`DivisionRecord.PresentedOn`),
+            // the veto's day is the answer's; a vote on a veto recorded before format 57 holds none and draws none. The real films (real906/real906w, 89i) found
+            // a row of its own too tall for the plate: the days are a thin dimmed strip inside the President's station, taking no height, and their words are
+            // that station's slip
+            DeskContext answered = desk == null && onVeto ? VetoedDays(country, record) : null;
+            if (answered != null)
+            {
+                int on = AnsweredOnDay(country, answered);
+                foreach (UsBillPath.Station s in path)
+                {
+                    if (s.Label != "The President") { continue; }
+                    s.Sub += " · the ten days, Sundays excepted: presented " + answered.PresentedOn.ToString("d MMM", CultureInfo.InvariantCulture)
+                             + (on == 0 ? ", answered the day it came" : ", answered on day " + on.ToString(CultureInfo.InvariantCulture) + " of 10")
+                             + " · unanswered it would have been law on " + answered.LawDay.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+                }
+            }
             float height = StationHeight + (desk != null && desk.CountsTenDays ? 6f + DayHeight : 0f) + (onVeto ? 0f : 6f + PocketHeight);
             LayoutElement size = block.AddComponent<LayoutElement>();
             size.minHeight = size.preferredHeight = height;
@@ -74,6 +91,7 @@ namespace PoliSim.UI
                 }
                 BuildStation(strip, path[i], overlay);
             }
+            if (answered != null && strip.Find("Station The President") is Transform president) { BuildVetoedDayStrip(president, country, answered); }
 
             // the ten days, on the desk
             if (desk != null && desk.CountsTenDays) { BuildTenDays(block.transform, country, desk, overlay); }
@@ -119,14 +137,69 @@ namespace PoliSim.UI
             v.childForceExpandWidth = true;
             v.childForceExpandHeight = false;
             Text label = CanvasChrome.MakeTextRealWeight(cell.transform, "Label", s.Label.ToUpperInvariant(), PoliSimTheme.Body, 18, Muted, TextAnchor.MiddleLeft);
-            label.gameObject.AddComponent<LayoutElement>().minHeight = 22f;
+            label.gameObject.AddComponent<LayoutElement>().minHeight = 22f + StationRowHeadroom;
             Text status = CanvasChrome.MakeTextRealWeight(cell.transform, "Status", s.Status, PoliSimTheme.Document, Figure, StationInk(s.Mark), TextAnchor.MiddleLeft, FontStyle.Bold);
-            status.gameObject.AddComponent<LayoutElement>().minHeight = 24f;
+            status.gameObject.AddComponent<LayoutElement>().minHeight = 24f + StationRowHeadroom;
             CanvasGroup fade = cell.AddComponent<CanvasGroup>();
             fade.alpha = s.Mark == UsBillPath.Mark.Off ? 0.5f : 1f;
             fade.interactable = false;
             fade.blocksRaycasts = true;
             CanvasRows.Slip(cell, overlay, s.Label.ToUpperInvariant() + " · " + s.Status, new[] { s.Sub.ToUpperInvariant() });
+        }
+
+        /// <summary>K41: the ten days a vetoed bill was answered inside, as the desk's context reads them - presented on the record's day, answered (its "today") on
+        /// the veto's - or null where the record keeps no presentment day or the country counts no period.</summary>
+        private static DeskContext VetoedDays(Country country, DivisionRecord record)
+        {
+            if (record == null || record.PresentedOn == DateTime.MinValue || PresidentialDocket.LastDay(country.Id, record.PresentedOn) == DateTime.MinValue) { return null; }
+            return new DeskContext { PresentedOn = record.PresentedOn, LawDay = PresidentialDocket.LawDay(country.Id, record.PresentedOn), Today = record.Date, MayVeto = true };
+        }
+
+        /// <summary>K41: the counted day of the ten a vetoed bill was answered on - 0 the day it came (every AI president's answer, DECLARED: the review of
+        /// wave/usf, L4, words it "the day it came", never "day 0").</summary>
+        private static int AnsweredOnDay(Country country, DeskContext answered)
+        {
+            int on = 0;
+            foreach (UsBillPath.Day d in UsBillPath.TenDays(country.Id, answered.PresentedOn)) { if (d.Number > 0 && d.Date <= answered.Today.Date) { on = d.Number; } }
+            return on;
+        }
+
+        /// <summary>K41 (the real films' fit): the ten days on a vetoed plate as a THIN STRIP along the President station's foot, in its bottom padding and out
+        /// of the layout (no height taken, no text drawn) - the presentment day, each counted day and each Sunday narrower, those up to the answer's day inked
+        /// and the rest a hairline, the whole dimmed at board 30b's 0.45. The words are the station's slip.</summary>
+        private static void BuildVetoedDayStrip(Transform station, Country country, DeskContext answered)
+        {
+            var strip = new GameObject("TenDaysStrip");
+            strip.transform.SetParent(station, false);
+            var rect = strip.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0f, 0f);
+            rect.anchorMax = new Vector2(1f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.offsetMin = new Vector2(12f, 1f);
+            rect.offsetMax = new Vector2(-8f, 4f);
+            strip.AddComponent<LayoutElement>().ignoreLayout = true;
+            CanvasGroup dim = strip.AddComponent<CanvasGroup>();
+            dim.alpha = 0.45f;
+            dim.interactable = false;
+            dim.blocksRaycasts = false;
+            HorizontalLayoutGroup h = strip.AddComponent<HorizontalLayoutGroup>();
+            h.spacing = 2f;
+            h.childControlWidth = true;
+            h.childControlHeight = true;
+            h.childForceExpandWidth = false;
+            h.childForceExpandHeight = true;
+            foreach (UsBillPath.Day d in UsBillPath.TenDays(country.Id, answered.PresentedOn))
+            {
+                var tick = new GameObject("Day " + (d.Sunday ? "Su" : d.Number.ToString(CultureInfo.InvariantCulture)));
+                tick.transform.SetParent(strip.transform, false);
+                tick.AddComponent<RectTransform>();
+                Image ink = tick.AddComponent<Image>();
+                ink.raycastTarget = false;
+                ink.color = d.Date <= answered.Today.Date ? PoliSimTheme.TextPrimary : PoliSimTheme.Hex(0xB7A98C);
+                LayoutElement w = tick.AddComponent<LayoutElement>();
+                w.flexibleWidth = d.Sunday ? 0.4f : 1f;
+                w.preferredWidth = 0f;
+            }
         }
 
         /// <summary>PS-6 US-35: the ten days, Sundays excepted - the label, the presentment day, each day (a Sunday narrow and unnumbered), and the law's day.</summary>
@@ -136,7 +209,8 @@ namespace PoliSim.UI
             row.GetComponent<HorizontalLayoutGroup>().childForceExpandHeight = true;
             Text head = CanvasChrome.MakeTextRealWeight(row, "Head", "THE TEN DAYS\nSUNDAYS EXCEPTED", PoliSimTheme.Body, 18, Muted, TextAnchor.MiddleLeft);
             LayoutElement headSize = head.gameObject.AddComponent<LayoutElement>();
-            headSize.minWidth = headSize.preferredWidth = 200f;
+            // M1: the head sized from its own measured text (the longest line in the real-weight face), never below the desk's 200
+            headSize.minWidth = headSize.preferredWidth = Mathf.Max(200f, Mathf.Ceil(head.preferredWidth) + 6f);
             string D(DateTime d) => d.ToString("d MMM", CultureInfo.InvariantCulture);
             List<UsBillPath.Day> days = UsBillPath.TenDays(country.Id, desk.PresentedOn);
             int counted = 0;

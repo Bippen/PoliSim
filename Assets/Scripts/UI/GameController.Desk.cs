@@ -285,6 +285,9 @@ namespace PoliSim.UI
             PoliSim.Elections.GovernmentRecord g = _playerCountry?.Government;
             if (g == null) { return null; }
             if (_playerCountry.PlayerHoldsPresidency) { return ("PRESIDENT", true); }   // SP-7b (I14 (2a)): Poland's player-president - the office, filled; the party is the AI's while he serves
+            // K44 (Elias, 2026-10-23): Poland's player-candidate elected and the oath ahead - PRESIDENT-ELECT, outlined (not yet in office), as the USA's chip reads;
+            // words only: the role gate still reads the party's role until the oath
+            if (PoliSim.Elections.PresidentialElection.PlayerElectOn(_playerCountry, _simulationManager.CurrentDate) != null) { return ("PRESIDENT-ELECT", false); }
             PoliSim.Elections.PlayerRole role = PoliSim.Elections.GovernmentRecord.RoleOn(_playerCountry, _playerCountry.PlayerPartyAbbrev, _simulationManager.CurrentDate);
             switch (role)
             {
@@ -358,12 +361,14 @@ namespace PoliSim.UI
 
         /// <summary>Draws the role chip in <paramref name="r"/> and hangs its slip on <see cref="_deskSlipBook"/>. PS-6 US-35: in a Congress the mark sits on its
         /// party's ink (board 30c), and <paramref name="tag"/> - DIVIDED or the lame duck's date - follows the word, outlined.</summary>
-        private void DrawRoleChip(Rect r, string words, bool inOffice, string tag = null)
+        private void DrawRoleChip(Rect r, string words, bool inOffice, string tag = null, bool onStrip = false)
         {
             PoliSim.Elections.GovernmentRecord g = _playerCountry.Government;
             string you = _playerCountry.PlayerPartyAbbrev;
             bool congress = Congress.Applies(_playerCountry);
-            DrawRowChip(r, string.Empty, inOffice ? ChipFace.Filled : ChipFace.Outline);
+            // K40: on the top masthead's dark strip the chip is paper whatever the role (board 30c draws no filled face there), a state and not a control
+            if (onStrip) { inOffice = false; DrawRowChip(r, string.Empty, ChipFace.Paper, control: false); }
+            else { DrawRowChip(r, string.Empty, inOffice ? ChipFace.Filled : ChipFace.Outline); }
             float side = StatsUnit(16f);
             var markRect = new Rect(r.x + StatsUnit(6f), r.y + Mathf.Round((r.height - side) * 0.5f), side, side);
             if (congress) { DrawRoleMarkOnInk(markRect, _playerCountry.Id, you); }
@@ -420,6 +425,13 @@ namespace PoliSim.UI
                     {
                         slip.Add("YOUR CANDIDATE " + elect.Winner.ToUpperInvariant() + " TAKES OFFICE " + DeskDay(elect.TakesOffice));
                     }
+                    // K44: Poland's - the candidate the player stood, the oath's day, and the party the player plays until it
+                    PoliSim.Elections.PresidentialElection.Contest won = PoliSim.Elections.PresidentialElection.PlayerElectOn(_playerCountry, _simulationManager.CurrentDate);
+                    if (won != null)
+                    {
+                        slip.Add("YOUR CANDIDATE " + won.Elected.ToUpperInvariant() + " TAKES OFFICE " + DeskDay(won.TakesOffice));
+                        slip.Add("UNTIL THE OATH YOU PLAY AS YOUR PARTY · FROM IT YOUR PARTY IS THE AI'S WHILE YOU HOLD THE OFFICE");
+                    }
                     break;
                 }
                 case "JUNIOR PARTNER": slip.Add("IN THE CABINET · YOUR PORTFOLIOS: " + g.PortfoliosOf(you)); break;
@@ -446,8 +458,8 @@ namespace PoliSim.UI
             System.DateTime since = words == "CARETAKER" ? g.CaretakerSince : g.FormedOn;
             bool outOfOffice = words == "PRESIDENT-ELECT" || words == "HOUSE MAJORITY" || words == "SENATE MAJORITY" || words == "MINORITY";
             if (since > System.DateTime.MinValue && !outOfOffice) { slip.Add("SINCE " + DeskDay(since)); }   // PS-6 US-7, US-19: the sitting government's day is not the president-elect's, nor a chamber's majority's
-            SlipAnchor(r, "role");
-            _deskSlipBook.Anchors["role"] = slip;
+            if (onStrip) { MastheadAnchor(r, "role"); _mastheadSlipBook.Anchors["role"] = slip; }
+            else { SlipAnchor(r, "role"); _deskSlipBook.Anchors["role"] = slip; }
         }
 
         /// <summary>PS-6 US-19: who holds each chamber of Congress, on the role chip's slip - the House's majority and the Senate's on the day, by short name
@@ -479,7 +491,9 @@ namespace PoliSim.UI
             string titleText = $"{_playerCountry.Name.ToUpperInvariant()} · YEAR {_simulationManager.CurrentTurn}";
             float titleTextWidth = title.CalcSize(new GUIContent(titleText)).x + 4f;
             // PS-3a (§628), board 21e (§685): the player's role as a chip beside the year, reserved with the title so the LIVE caption keeps its place.
-            (string Words, bool InOffice)? role = RoleChip();
+            // K40 (Elias, 2026-10-23): in a Congress the chip is the top masthead's (`DrawHoldChips`'s strip), as v3.5 places it - the Desk keeps it elsewhere
+            bool strip = MastheadStripApplies();
+            (string Words, bool InOffice)? role = strip ? null : RoleChip();
             string roleTag = role.HasValue ? RoleTag(role.Value.Words) : null;   // PS-6 US-35: DIVIDED, or the lame duck's date
             float roleGap = StatsUnit(10f);
             float roleWidth = role.HasValue ? RoleChipWidth(role.Value.Words, roleTag) : 0f;
@@ -553,25 +567,17 @@ namespace PoliSim.UI
 
             // PS-6 US-35 (board 30c, answer 7): a lapse's chip in place of the live caption, in three states - funded to a horizon about to be decided
             // (amber), funding lapsed and its day (the red ground), funding restored (green, for its day); "SHUTDOWN · DAY N" in capitals goes
-            (string Words, Color Ground, Color Ink, Color Dot)? lapse = LapseChip(_simulationManager.CurrentDate);
+            // K40 (Elias, 2026-10-23): in a Congress the lapse's chip stands beside Paused on the top masthead (`DrawHoldChips`'s strip), and the live caption is back
+            (string Words, Color Ground, Color Ink, Color Dot)? lapse = strip ? null : LapseChip(_simulationManager.CurrentDate);
             GUIStyle live = DeskCaption(10f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
             string liveText = "DESK READINGS · LIVE";
             float liveRight = x - Mathf.Round(14f * ux);
             if (lapse.HasValue)
             {
-                GUIStyle lapseFace = DeskCaption(9.5f, lapse.Value.Ink, true, TextAnchor.MiddleLeft);
-                float dot = StatsUnit(8f), pad = StatsUnit(8f);
-                float lw = Mathf.Ceil(lapseFace.CalcSize(new GUIContent(lapse.Value.Words)).x) + dot + pad * 2f + StatsUnit(6f);
+                float lw = LapseChipWidth(lapse.Value.Words);
                 float lh = Mathf.Min(r.height, StatsUnit(20f));
                 var chip = new Rect(liveRight - lw, r.y + Mathf.Round((r.height - lh) * 0.5f), lw, lh);
-                if (Event.current.type == EventType.Repaint)
-                {
-                    PoliSimTheme.RoundedCard(chip, lapse.Value.Ground, PoliSimTheme.HairlineStrong, 0f);
-                    PoliSimTheme.Rule(new Rect(chip.x + pad, chip.y + Mathf.Round((lh - dot) * 0.5f), dot, dot), lapse.Value.Dot);
-                    PoliSimWidgets.MeasuredLabel(new Rect(chip.x + pad + dot + StatsUnit(6f), chip.y, Mathf.Max(1f, chip.width - pad * 2f - dot - StatsUnit(6f)), lh), lapse.Value.Words, lapseFace);
-                }
-                SlipAnchor(chip, "lapse");
-                _deskSlipBook.Anchors["lapse"] = LapseSlip(_simulationManager.CurrentDate);
+                DrawLapseChip(chip, lapse.Value, onStrip: false);
                 liveRight = chip.x - gap;
                 liveText = string.Empty;
             }
@@ -587,14 +593,65 @@ namespace PoliSim.UI
             if (liveText.Length > 0) { PoliSimWidgets.MeasuredLabel(new Rect(liveLeft, r.y, Mathf.Max(1f, liveRight - liveLeft), r.height), liveText, live); }
         }
 
-        /// <summary>PS-6 US-35: the lapse chip's memo of the days it saw (the review's M4: keyed on the country object the desk draws, so a load, a new game or a
-        /// switch of country starts it afresh). Not saved: a game loaded on the restoration's day shows no restored chip (DECLARED).</summary>
-        private readonly LapseMemo _lapseMemo = new LapseMemo();
+        /// <summary>
+        /// K40 (Elias, 2026-10-23: "the role chip moves to the top masthead and the lapse chip beside Paused, v3.5's places"; board 30c): whether the frame's
+        /// banner is drawn as the TOP MASTHEAD on every page - Paused and what holds the clock at its left, the lapse's chip beside them, the role chip at its
+        /// right. A Congress's alone (the USA's, where the board drew it); every other country keeps its role chip in the Desk's masthead beside the year, and
+        /// the banner only while something holds the clock. Never at game over, whose line is its own.
+        /// </summary>
+        private bool MastheadStripApplies() => _playerCountry != null && !_isGameOver && Congress.Applies(_playerCountry);
+
+        /// <summary>K40: the top masthead's slips (the role's and the lapse's), rebuilt on every pass of the strip, and its anchors - kept apart from the page's,
+        /// which a page clears at its head (`BeginSlipAnchors` puts them back), so the strip's slips open over whatever page is below it.</summary>
+        private PeopleSlips.Book _mastheadSlipBook = new PeopleSlips.Book();
+        private readonly List<(string Id, Rect Rect)> _mastheadAnchors = new List<(string Id, Rect Rect)>();
+
+        private void MastheadAnchor(Rect r, string id) { if (Event.current.type == EventType.Repaint && r.width > 0f && r.height > 0f) { _mastheadAnchors.Add((id, r)); } }
+
+        /// <summary>The lapse chip's width for its words: the dot, the words in the chip caption, the pads.</summary>
+        private float LapseChipWidth(string words) =>
+            Mathf.Ceil(DeskCaption(9.5f, PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft).CalcSize(new GUIContent(words)).x) + StatsUnit(8f) + StatsUnit(8f) * 2f + StatsUnit(6f);
+
+        /// <summary>PS-6 US-35 (board 30c, answer 7): the lapse's chip in <paramref name="chip"/> - its ground, its dot and its words - and its slip, on the
+        /// Desk's book or (K40) the top masthead's.</summary>
+        private void DrawLapseChip(Rect chip, (string Words, Color Ground, Color Ink, Color Dot) lapse, bool onStrip)
+        {
+            GUIStyle lapseFace = DeskCaption(9.5f, lapse.Ink, true, TextAnchor.MiddleLeft);
+            float dot = StatsUnit(8f), pad = StatsUnit(8f);
+            if (Event.current.type == EventType.Repaint)
+            {
+                PoliSimTheme.RoundedCard(chip, lapse.Ground, PoliSimTheme.HairlineStrong, 0f);
+                PoliSimTheme.Rule(new Rect(chip.x + pad, chip.y + Mathf.Round((chip.height - dot) * 0.5f), dot, dot), lapse.Dot);
+                PoliSimWidgets.MeasuredLabel(new Rect(chip.x + pad + dot + StatsUnit(6f), chip.y, Mathf.Max(1f, chip.width - pad * 2f - dot - StatsUnit(6f)), chip.height), lapse.Words, lapseFace);
+            }
+            if (onStrip) { MastheadAnchor(chip, "lapse"); _mastheadSlipBook.Anchors["lapse"] = LapseSlip(_simulationManager.CurrentDate); }
+            else { SlipAnchor(chip, "lapse"); _deskSlipBook.Anchors["lapse"] = LapseSlip(_simulationManager.CurrentDate); }
+        }
+
+        /// <summary>K42 (the review of wave/usf, L2): the first day the Desk is drawn inside the restoration's window, per country object and restoration - a frame
+        /// at speed that steps past the day itself still shows the chip once, on the first day drawn; a load (a new country object) inside the window shows it on
+        /// its own first day. Not saved: which day the player saw is the screen's, not the model's.</summary>
+        private object _restoredSeenCountry;
+        private System.DateTime _restoredSeenFor, _restoredSeenOn;
+
+        /// <summary>K42: whether the Desk shows FUNDING RESTORED today - in the window (`UsBudgetProcedure.RestoredWithin`) and the first day drawn in it.</summary>
+        private bool RestoredChipToday(Country c, System.DateTime today)
+        {
+            if (!UsBudgetProcedure.RestoredWithin(c, today)) { return false; }
+            if (!ReferenceEquals(_restoredSeenCountry, c) || _restoredSeenFor != c.LapseRestoredOn.Date)
+            {
+                _restoredSeenCountry = c;
+                _restoredSeenFor = c.LapseRestoredOn.Date;
+                _restoredSeenOn = today.Date;
+            }
+            return _restoredSeenOn == today.Date;
+        }
 
         /// <summary>
         /// PS-6 US-35 (board 30c, answer 7): THE LAPSE'S CHIP, in three states, or null - <b>funded to</b> the horizon on its eve and its day while no appropriation
         /// for the coming year is law (the day a continuing resolution is decided, `UsBudgetProcedure.HorizonEve`), amber; <b>funding lapsed</b> and the lapse's
-        /// day, on the red ground; <b>funding restored</b> on the day funding came back, green, with the back pay paid or still owed (`Country.LapseDeferredOutlays`,
+        /// day, on the red ground; <b>funding restored</b> on the first day the Desk is drawn in the restoration's window (K42: the saved `Country.LapseRestoredOn`,
+        /// `UsBudgetProcedure.RestoredWithin`, `RestoredChipToday` - so a game loaded in the window shows it), green, with the back pay paid or still owed (`Country.LapseDeferredOutlays`,
         /// US-22c - owed while a binding debt limit's cut holds it). The model does not tell a continuing resolution's horizon from an appropriation's (both
         /// fund to a fiscal year's end), so the first state says "funded to", not "a CR to".
         /// </summary>
@@ -602,7 +659,7 @@ namespace PoliSim.UI
         {
             if (_playerCountry == null || !UsBudgetProcedure.Applies(_playerCountry)) { return null; }
             Country c = _playerCountry;
-            bool restoredToday = _lapseMemo.Observe(c, today, c.LapseSince != System.DateTime.MinValue);
+            bool restoredToday = RestoredChipToday(c, today);
             if (c.LapseSince != System.DateTime.MinValue)
             {
                 return ("Funding lapsed · day " + UsBudgetProcedure.LapseDays(c.LapseSince, today).ToString(CultureInfo.InvariantCulture), PoliSimTheme.Bad, PoliSimTheme.Card, PoliSimTheme.Card);
@@ -635,7 +692,7 @@ namespace PoliSim.UI
                 if (c.LapseDeferredOutlays > 0f) { slip.Add("OWED SO FAR " + UiFormat.Money(c.LapseDeferredOutlays, MoneyUnit.Billions)); }
                 return slip;
             }
-            if (_lapseMemo.RestoredOn == today.Date)
+            if (RestoredChipToday(c, today))
             {
                 return new SlipContent("FUNDING RESTORED · " + DeskDay(today))
                     .Add(c.LapseDeferredOutlays > 0f ? "THE BACK PAY, " + UiFormat.Money(c.LapseDeferredOutlays, MoneyUnit.Billions) + ", IS OWED - A BINDING DEBT LIMIT'S CUT HOLDS IT UNTIL A RAISE IS LAW"

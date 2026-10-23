@@ -169,6 +169,11 @@ namespace PoliSim.EditorTools
                                   && sustained.Date == AnswerDay && Implemented(u, vetoed) && PassageOf(s, vetoed) == null && u.BillLostOn == AnswerDay,
                                 F("(c) VETOED, AT ONCE (J6 (i)): on {0}, the answer's day, the veto goes to the override, the chamber the bill began in first - \"{1}\"; the bill falls (the tax still levied), and as his own party's bill the day is the government's loss (Congress.RecordLost)",
                                     Day(AnswerDay), sustained?.Title));
+                            // K41 (Elias, 2026-10-23): the vote on the veto keeps the day the bill was presented - the docket's, days before the answer - so the vetoed plate
+                            // draws its ten days (UsBillPath.TenDays from it), and counts the answer's day inside them
+                            int answeredOn = sustained == null ? -1 : UsBillPath.TenDays(CountryId.USA, sustained.PresentedOn).Where(d => d.Number > 0 && d.Date <= AnswerDay).Select(d => d.Number).DefaultIfEmpty(0).Max();
+                            Check(sustained != null && sustained.PresentedOn == PresentmentDay && sustained.PresentedOn < sustained.Date && answeredOn == 10 - UsBillPath.CountedDaysLeft(CountryId.USA, PresentmentDay, AnswerDay) && answeredOn > 0,
+                                F("(c) K41: the vote on the veto keeps the presentment day {0} (its own day {1}) - the plate's ten days answered on day {2} of 10", Day(sustained?.PresentedOn ?? DateTime.MinValue), Day(sustained?.Date ?? DateTime.MinValue), answeredOn));
                             int afterAnswers = Last(u);
                             Step(s, w, AnswerDay.AddDays(1));
                             Check(!u.Divisions.Entries.Where(r => r.Number > afterAnswers).Any(r => r.Title.Contains(": Remove " + signed + " - ") || r.Title.Contains(": Remove " + vetoed + " - ")) && !Implemented(u, signed) && Implemented(u, vetoed),

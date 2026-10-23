@@ -273,6 +273,49 @@ namespace PoliSim.Elections
             return night;
         }
 
+        /// <summary>One of the dates between a night and the oath, as the Docket lists it: the day, its kind and the words the item and its slip say.</summary>
+        public readonly struct OathDate
+        {
+            public readonly DateTime Day;
+            public readonly string Key;
+            public readonly string Name;
+            public readonly string Line;
+
+            public OathDate(DateTime day, string key, string name, string line) { Day = day; Key = key; Name = name; Line = line; }
+        }
+
+        /// <summary>
+        /// K38 (Elias, 2026-10-23: "the four oath dates become informational Docket items"; board 29b's ask): THE DATES BETWEEN THE NIGHT AND THE OATH still to
+        /// come on <paramref name="today"/>, in date order - the electors' meeting, the new Congress seated, the count before Congress (the House's choice, one
+        /// vote a state, where the College had no majority) and the oath - each read from the contest the game held, as the night's "Until the oath" reads them
+        /// (`UsPresidentialElection.Contest`'s ElectorsMeet, CountedOn and TakesOffice; `UsCongressElection.Contest.Convenes`), never typed. From the polling
+        /// day (the night) until each day has passed, the day itself included. A midterm's night lists the new Congress alone (the night's own "Until the new
+        /// Congress"). Information only: none of them holds the clock. Empty where the game has held no US count, or every date has passed.
+        /// </summary>
+        public static List<OathDate> DatesToTheOath(Country country, DateTime today)
+        {
+            var dates = new List<OathDate>();
+            if (country == null) { return dates; }
+            DateTime day = today.Date;
+            if (UsPresidentialElection.TryLatest(country, day, out UsPresidentialElection.Contest p) && p.TakesOffice != DateTime.MinValue && p.TakesOffice.Date >= day)
+            {
+                if (p.ElectorsMeet != DateTime.MinValue && p.ElectorsMeet.Date >= day) { dates.Add(new OathDate(p.ElectorsMeet.Date, "electors", "The electors vote", "In their states · the College's votes are cast")); }
+                if (p.CountedOn != DateTime.MinValue && p.CountedOn.Date >= day)
+                {
+                    dates.Add(p.Contingent
+                        ? new OathDate(p.CountedOn.Date, "count", "The House chooses the President", "No College majority · one vote a state")
+                        : new OathDate(p.CountedOn.Date, "count", "Congress counts the electoral votes", "A joint session · the count declared"));
+                }
+                if (p.TakesOffice.Date >= day) { dates.Add(new OathDate(p.TakesOffice.Date, "oath", "The oath", "Noon · the President's term begins")); }
+            }
+            if (UsCongressElection.TryLatest(country, day, out UsCongressElection.Contest c) && c.Convenes != DateTime.MinValue && c.Convenes.Date >= day)
+            {
+                dates.Add(new OathDate(c.Convenes.Date, "congress", "The new Congress is seated", "The House and the Senate class elected on " + c.PollingDay.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)));
+            }
+            dates.Sort((a, b) => a.Day.CompareTo(b.Day));
+            return dates;
+        }
+
         /// <summary>The College's call on what has declared: a side at a majority of the electors; no majority once neither can reach it with every elector to
         /// come; else open (the Twelfth Amendment's "a majority of the whole number of Electors appointed").</summary>
         public static Call CollegeCallOf(int rep, int dem, int toCome, int majority) =>

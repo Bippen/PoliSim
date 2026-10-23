@@ -120,6 +120,18 @@ namespace PoliSim.UI
                 DrawDocketItem("limit", "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), "Before Congress · the debt limit raise", "Voted " + voted + " · then to the President", holdsTime: false, action: null);
             }
 
+            // ---- K38 (Elias, 2026-10-23; board 29b's ask): the dates between the US night and the oath, each from the night on until it has passed - read from the
+            // contests the game held (`UsNight.DatesToTheOath`, the night's own "Until the oath"); information, never holding the clock ----
+            foreach (PoliSim.Elections.UsNight.OathDate date in PoliSim.Elections.UsNight.DatesToTheOath(_playerCountry, _simulationManager.CurrentDate))
+            {
+                string key = "oath:" + date.Key;
+                bool today = date.Day == _simulationManager.CurrentDate.Date;
+                _docketSlipBook.Anchors["docket:" + key] = new SlipContent(date.Name.ToUpperInvariant() + " · " + DeskDay(date.Day))
+                    .Add(date.Line.ToUpperInvariant())
+                    .Add("FOR INFORMATION · IT DOES NOT HOLD THE CLOCK · LISTED UNTIL THE DAY HAS PASSED");
+                DrawDocketItem(key, "cal", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), date.Name + " · " + (today ? "today" : DeskDay(date.Day)), date.Line, holdsTime: false, action: null, stampWords: "Information");
+            }
+
             // ---- the budget process, the fourth thing that holds the clock ----
             if (_simulationManager.GetPendingBudgetProcess(PlayerCountryId))
             {
@@ -167,7 +179,7 @@ namespace PoliSim.UI
         /// One docket item's card: the stripe in <paramref name="stripe"/>, the icon, the name and its muted line, the stamp, the action. Returns
         /// whether the item's body is open (its action toggles it; one item open at a time). An item with no key has no body and no action.
         /// </summary>
-        private bool DrawDocketItem(string key, string icon, Color stripe, string title, string line, bool holdsTime, string action)
+        private bool DrawDocketItem(string key, string icon, Color stripe, string title, string line, bool holdsTime, string action, string stampWords = null)
         {
             V35.FloorGuarded = true;
             float h = V35.Px(string.IsNullOrEmpty(line) ? 52f : 64f);
@@ -195,7 +207,7 @@ namespace PoliSim.UI
                 if (PoliSimWidgets.Button(button, GUIContent.none, GUIStyle.none)) { _docketOpenItem = open ? null : key; open = !open; }
                 x = button.x - V35.Px(14f);
             }
-            string stamp = holdsTime ? "Holds time" : "Can wait";
+            string stamp = stampWords ?? (holdsTime ? "Holds time" : "Can wait");   // K38: an item that is information says so
             GUIStyle stampFace = V35Mono(V35.Floor, holdsTime ? PoliSimTheme.Caution : PoliSimTheme.TextSecondary, bold: true, TextAnchor.MiddleCenter);
             float sw = Mathf.Ceil(stampFace.CalcSize(new GUIContent(stamp)).x) + V35.Px(14f);
             var stampRect = new Rect(x - sw, r.y + Mathf.Round((h - V35.Px(26f)) * 0.5f), sw, V35.Px(26f));

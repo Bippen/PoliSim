@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using PoliSim.Data;
 using PoliSim.Elections;
@@ -31,8 +32,8 @@ namespace PoliSim.EditorTools
     /// veto); a bill stopped in the second chamber (nothing after it reached); a Senate-first bill's stations in the Senate's order.</item>
     /// <item>(d) THE DEBT TILE'S CHIP on planted limits: below (no chip, the headroom line), at the limit with the measures' days, a raise before Congress, a raise
     /// on the desk, binding with the cut in force, binding with the raise on the desk, suspended.</item>
-    /// <item>(e) THE LAPSE CHIP'S MEMO (`LapseMemo`; the review's M4): restored only on the day after a lapse was seen, for the same game; a load of another game, a lapse
-    /// lifted on its own day and a return seen days late are none. The review's M1-M3, L2 and L6 add cases to (a) and (c): the chamber that sustained a split
+    /// <item>(e) FUNDING RESTORED, A SAVED DAY (K42, replacing the review's M4 memo): `UsBudgetProcedure.RestoredWithin` reads `Country.LapseRestoredOn` and its window,
+    /// never for a country that never lapsed or has lapsed again; the Desk shows it on the first day drawn in the window. The review's M1-M3, L2 and L6 add cases to (a) and (c): the chamber that sustained a split
     /// override with its own votes, the yeas an uncontested passage holds, the Docket's countdown on the last day, an equal Senate held, a deadline's own desk line.</item>
     /// </list>
     /// The random streams are restored after, the epoch by its scope, and every host destroyed.
@@ -248,21 +249,77 @@ namespace PoliSim.EditorTools
                     finally { EnergyMarket.ResetTurnState(); }
                 }
 
-                // ============================================================ (e) the lapse chip's memo (the review's M4)
+                // ============================================================ (e) K42: funding restored, a saved day (it replaced the controller's memo)
                 {
-                    var d1 = new DateTime(2025, 10, 1);
-                    object gameA = new object(), gameB = new object(), gameC = new object();
-                    var memo = new LapseMemo();
-                    bool a1 = memo.Observe(gameA, d1, true), a2 = memo.Observe(gameA, d1.AddDays(1), false), a2again = memo.Observe(gameA, d1.AddDays(1), false), a3 = memo.Observe(gameA, d1.AddDays(2), false);
-                    memo.Observe(gameA, d1, true);
-                    bool loaded = memo.Observe(gameB, d1.AddDays(1), false);   // another game loaded the next day, funding never lapsed in it
-                    memo.Observe(gameC, d1, true);
-                    bool planted = memo.Observe(gameC, d1, false);              // a lapse planted and lifted on one day (the film's 93c)
-                    memo.Observe(gameC, d1, true);
-                    bool late = memo.Observe(gameC, d1.AddDays(9), false);      // seen again only days later: not read as today's restoration
-                    Check(!a1 && a2 && a2again && !a3 && !loaded && !planted && !late,
-                        F("(e) the memo: lapsed then funded the next day reads restored that day only ({0}, {1}, then {2}); a load of another game the next day {3}; a lapse lifted the same day {4}; a return seen nine days on {5}",
-                            a2, a2again, a3, loaded, planted, late));
+                    var d1 = new DateTime(2025, 11, 12);
+                    var restored = new Country { Id = CountryId.USA, LapseRestoredOn = d1 };
+                    var neverLapsed = new Country { Id = CountryId.USA };
+                    var lapsedAgain = new Country { Id = CountryId.USA, LapseRestoredOn = d1, LapseSince = d1.AddDays(1) };
+                    int w = UsBudgetProcedure.RestoredWindowDays;
+                    bool onDay = UsBudgetProcedure.RestoredWithin(restored, d1), dayBefore = UsBudgetProcedure.RestoredWithin(restored, d1.AddDays(-1)),
+                         lastDay = UsBudgetProcedure.RestoredWithin(restored, d1.AddDays(w)), pastWindow = UsBudgetProcedure.RestoredWithin(restored, d1.AddDays(w + 1));
+                    bool never = UsBudgetProcedure.RestoredWithin(neverLapsed, d1), again = UsBudgetProcedure.RestoredWithin(lapsedAgain, d1.AddDays(1));
+                    Check(onDay && !dayBefore && lastDay && !pastWindow && !never && !again,
+                        F("(e) K42: the restoration's window reads the saved day {0} to {1} days after it ({2}; the day before {3}, the last day {4}, past it {5}); a country that never lapsed {6}; lapsed again since {7} (UsBudgetProcedureDiagnostic (c) holds the model writing it)",
+                            Day(d1), w, onDay, dayBefore, lastDay, pastWindow, never, again));
+                    // the review's L2: the Desk shows it once, on the first day drawn in the window - read through the controller's own RestoredChipToday
+                    var chipHost = new GameObject("UsCongressViewDiagnostic.Restored"); hosts.Add(chipHost);
+                    var controller = chipHost.AddComponent<GameController>();
+                    MethodInfo shows = typeof(GameController).GetMethod("RestoredChipToday", BindingFlags.Instance | BindingFlags.NonPublic);
+                    bool Shows(Country c, DateTime on) => shows != null && (bool)shows.Invoke(controller, new object[] { c, on });
+                    bool skipped = Shows(restored, d1.AddDays(2)), skippedAgain = Shows(restored, d1.AddDays(2)), nextDay = Shows(restored, d1.AddDays(3));
+                    var loadedCopy = new Country { Id = CountryId.USA, LapseRestoredOn = d1 };   // a load inside the window: a new country object
+                    bool onLoad = Shows(loadedCopy, d1.AddDays(3)), pastOnLoad = Shows(new Country { Id = CountryId.USA, LapseRestoredOn = d1 }, d1.AddDays(w + 1));
+                    Check(shows != null && skipped && skippedAgain && !nextDay && onLoad && !pastOnLoad,
+                        F("(e) K42 (L2): a frame that steps past the day shows the chip on the first day drawn, {0} ({1}, again that day {2}), not the day after ({3}); a game loaded on {4} shows it that day ({5}), none past the window ({6})",
+                            Day(d1.AddDays(2)), skipped, skippedAgain, nextDay, Day(d1.AddDays(3)), onLoad, pastOnLoad));
+                }
+
+                // ============================================================ (f) K40 by behaviour; K39 and the review's H1 pinned on the drawing code's shape (no IMGUI pass runs in batch)
+                {
+                    // K40: the masthead's predicate, read through the controller's own MastheadStripApplies on planted countries
+                    var mastHost = new GameObject("UsCongressViewDiagnostic.Masthead"); hosts.Add(mastHost);
+                    var mast = mastHost.AddComponent<GameController>();
+                    const BindingFlags OwnFlags = BindingFlags.Instance | BindingFlags.NonPublic;
+                    MethodInfo applies = typeof(GameController).GetMethod("MastheadStripApplies", OwnFlags);
+                    FieldInfo playerField = typeof(GameController).GetField("_playerCountry", OwnFlags), overField = typeof(GameController).GetField("_isGameOver", OwnFlags);
+                    bool Mast(Country c, bool over)
+                    {
+                        if (applies == null || playerField == null || overField == null) { return false; }
+                        playerField.SetValue(mast, c); overField.SetValue(mast, over);
+                        return (bool)applies.Invoke(mast, null);
+                    }
+                    var usaSeated = new Country { Id = CountryId.USA, SecondChamberSeats = new Dictionary<string, int> { { "REP", 53 }, { "DEM", 47 } } };
+                    var usaNoSenate = new Country { Id = CountryId.USA };
+                    var sweden = new Country { Id = CountryId.Sweden, SecondChamberSeats = new Dictionary<string, int> { { "S", 10 } } };
+                    bool inCongress = Mast(usaSeated, false), atGameOver = Mast(usaSeated, true), noSenate = Mast(usaNoSenate, false), swedish = Mast(sweden, false);
+                    Check(applies != null && inCongress && !atGameOver && !noSenate && !swedish,
+                        F("(f) K40: the top masthead carries the role and lapse chips in a Congress ({0}) - not at game over ({1}), not for a US world with no Senate seated ({2}), not for Sweden ({3}), whose role chip stays beside the year",
+                            inCongress, atGameOver, noSenate, swedish));
+                    string rows = SourceText.ReadWithoutComments("Assets/Scripts/UI/GameController.ParliamentRows.cs");
+                    string view = SourceText.ReadWithoutComments("Assets/Scripts/UI/GameController.CongressV35.cs");
+                    string desk = SourceText.ReadWithoutComments("Assets/Scripts/UI/GameController.Desk.cs");
+                    string frame = SourceText.ReadWithoutComments("Assets/Scripts/UI/GameController.cs");
+                    string Flat(string s) => System.Text.RegularExpressions.Regex.Replace(s ?? string.Empty, "\\s+", " ");
+                    string flatRows = Flat(rows);
+                    bool gated = flatRows.Contains("bool congressView = PoliSim.Simulation.UsCongressView.Applies(_playerCountry);")
+                                 && flatRows.Contains("if (!congressView) { DrawRecordRow(book); }")
+                                 && flatRows.Contains("if (!congressView) { DrawUsPresidentRow(book); DrawUsCongressRow(book); DrawUsNomineeRow(book); }");
+                    int calls = System.Text.RegularExpressions.Regex.Matches(flatRows, "Draw(Record|UsPresident|UsCongress|UsNominee)Row\\(book\\);").Count;
+                    bool strip = Flat(view).Contains("if (nominee) { DrawWhoGovernsNominee(") && Flat(view).Contains("StepUsNominee(nominee, choices, day, party)");
+                    Check(gated && calls == 4 && strip,
+                        F("(f) K39, A PIN ON THE CODE'S SHAPE (the film shows the surface): the dated rows (the record's, THE PRESIDENT, CONGRESS, YOUR NOMINEE) are drawn only where no Congress view stands ({0}, {1} call sites), and the nominee's line with its NEXT CHOICE is the who-governs strip's ({2})",
+                            gated, calls, strip));
+                    // the review's H1: the blocks under the view put their slips on the page's book and leave its anchors alone - one DrawSlips pass judges the page
+                    System.Text.RegularExpressions.Match blocks = System.Text.RegularExpressions.Regex.Match(flatRows, "private void DrawParliamentPoliticalBlocks\\(\\) \\{(.*?) private ");
+                    bool onePass = blocks.Success && !blocks.Groups[1].Value.Contains("BeginSlipAnchors") && !blocks.Groups[1].Value.Contains("DrawSlips(")
+                                   && blocks.Groups[1].Value.Contains("PeopleSlips.Book book = _politicsSlipBook;");
+                    Check(onePass, F("(f) H1, A PIN ON THE CODE'S SHAPE: the Parliament blocks clear no anchor and run no slip pass of their own - their slips are the Politics page's, judged once ({0})", onePass));
+                    string flatDesk = Flat(desk), flatFrame = Flat(frame);
+                    bool deskYields = flatDesk.Contains("(string Words, bool InOffice)? role = strip ? null : RoleChip();") && flatDesk.Contains("lapse = strip ? null : LapseChip(_simulationManager.CurrentDate);");
+                    bool frameCarries = flatFrame.Contains("_bannerIsMasthead = MastheadStripApplies();") && flatFrame.Contains("DrawHoldChips(holds, columnWidth, _bannerIsMasthead)");
+                    Check(deskYields && frameCarries,
+                        F("(f) K40, A PIN ON THE CODE'S SHAPE: the predicate above decides both the Desk's masthead ({0}) and the frame's top masthead ({1})", deskYields, frameCarries));
                 }
             }
             catch (Exception e) { failures++; sb.Append("    FAIL      threw - ").Append(e.GetType().Name).Append(": ").Append(e.Message).Append('\n').Append(e.StackTrace).Append('\n'); }

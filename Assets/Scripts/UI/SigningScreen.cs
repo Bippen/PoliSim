@@ -62,6 +62,10 @@ namespace PoliSim.UI
         private const float PaperTop = 62f / 720f, PaperBottom = 44f / 720f;
         private const float PadX = 48f, PadY = 33f, Gap = 21f;
         private const float HeadHeight = 60f;
+        /// <summary>The real films (real906/real906w, 89i): the plate's title clipped 1.5 px and the path's station statuses 0.9 px at their fixed heights - fixed
+        /// headroom on those rows, never a flexible height and never a measured one (a measurement between the layout passes read unsettled widths, real906b/c).</summary>
+        private const float TitleHeadroom = 4f;   // [AUTHORED-DRAFT] headroom for the font's line gap at both scales
+        private const float StationRowHeadroom = 2f;   // [AUTHORED-DRAFT] headroom for the font's line gap at both scales, per station row
         private const float DivisionWidth = 450f, StancesWidth = 495f, ColumnGap = 45f;
         private const float RowHeight = 42f, MinStanceRow = 33f;
         /// <summary>The stance rows' share of the column at 16:9 - eight parties take their 42 each, a fourteen-party chamber closes them up toward 33.</summary>
@@ -325,7 +329,7 @@ namespace PoliSim.UI
             // The bill's own title: not in the composition, kept so the plate says what is signed (asked).
             Text title = CanvasChrome.MakeTextRealWeight(parent, "Title", record.Title, PoliSimTheme.Body, 26, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
             title.horizontalOverflow = HorizontalWrapMode.Wrap;
-            title.gameObject.AddComponent<LayoutElement>().minHeight = 39f;
+            title.gameObject.AddComponent<LayoutElement>().minHeight = 39f + TitleHeadroom;   // the minimum only: a wrapped title keeps its own preferred height
 
             Rule(parent, "HeadRule", 1.5f, PoliSimTheme.Hex(0x2B2620));
         }

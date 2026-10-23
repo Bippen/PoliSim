@@ -1,0 +1,13 @@
+# wave/usf: the integrator's reading of the money-path delta after the review (2026-10-23)
+
+**Why this exists.** `Reviews/2026-10-23_usf_review.md` (independent, NOT READY on H1 - the Congress page's slips - with the money paths and the format step clean) reviewed `wave/usf` at 2cd72aff. The fix round (0878b659, ef94aa5a, 65cb50b6, 56dd14b3) and the 89i plate fix (3670040c) followed. Of the two money-path files the review read, `SimulationManager.cs` is unchanged after 2cd72aff; `UsBudgetProcedure.cs` changed in ef94aa5a (the review's L2). The recipe asks the integrator to read that delta before the ledger row is written.
+
+**Files reviewed:** `Assets/Scripts/Simulation/UsBudgetProcedure.cs` (the delta 2cd72aff..3670040c, lines ~171-183), `Assets/Scripts/Simulation/SimulationManager.cs` (no delta after 2cd72aff - confirmed by `git diff --stat 2cd72aff..3670040c -- Assets/Scripts/Simulation/`, one file listed), `Assets/Scripts/UI/GameController.Desk.cs` (the caller `RestoredChipToday`), `Assets/Editor/UsCongressViewDiagnostic.cs` (case (e)), `Assets/Editor/UsBudgetProcedureDiagnostic.cs` (case (c)).
+
+**What the delta does.** `RestoredToday(country, today)` becomes `RestoredWithin(country, today)`: true from the saved restoration day (`Country.LapseRestoredOn`) to `RestoredWindowDays` (3, DECLARED, the retired memo's own tolerance) after it, while no lapse has begun since (`LapseSince == MinValue`). It is a pure predicate on two saved dates and today. It writes nothing, books nothing, draws no random number and is read only by the Desk's chip (`GameController.RestoredChipToday`, which shows the chip on the first day the Desk is drawn inside the window, keyed on the country object and the restoration day) and by two diagnostics. No figure the simulation computes reads it, so the no-policy trajectory cannot move through it; the dump `dump906` (label `usf`) was byte-identical to `us24dl` on both seeds on the reviewed state, and this delta adds no path the day loop reaches.
+
+**Risks.** (1) A load inside the window shows the chip on its own first day: intended (L2's reason). (2) A second lapse inside the window closes it at once (`LapseSince` set): covered by case (e)'s "lapsed again" line. (3) The constant carries its DECLARED provenance.
+
+**Verdict:** the delta implements the review's L2 as declared, touches no money figure; READY subject to the named run and the bars on the merged tree.
+
+**Addendum (58407fac):** the file changed once more after this reading - a provenance comment on `RestoredWindowDays` (`// [AUTHORED-DRAFT] a screen's window, no source: the retired memo's three days`), comment only; the code is the code read above.

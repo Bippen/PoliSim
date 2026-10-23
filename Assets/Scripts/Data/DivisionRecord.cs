@@ -77,6 +77,10 @@ namespace PoliSim.Data
         /// <summary>US-18: on the second chamber's division, the first chamber's on the same bill (marked a motion: this one carries the bill's ceremony, and the
         /// plate shows both) - PS-6 US-21: and on the second chamber's vote on a president's veto, the first chamber's vote; null on every other division. Saved by reference (the save's PreserveReferencesHandling), the log entry it was itself.</summary>
         public DivisionRecord OtherChamber;
+        /// <summary>K41 (Elias, 2026-10-23: "a bill's presentment day is kept on its record"): on a US chamber's vote on the President's veto, the day the bill
+        /// was presented to the President - the day its two chambers sent it, or the day it went onto the player-president's docket - so a vetoed plate draws
+        /// the ten days it was answered inside (`UsBillPath.TenDays`). MinValue on every other division and on a vote on a veto written before format 57.</summary>
+        public DateTime PresentedOn;
     }
 
     /// <summary>PS-3f (§633): the two proposals of a budget division and how the chamber decided between them (Riksdagsordningen 11 kap. 10 § - the main proposal against the counter-proposal).</summary>

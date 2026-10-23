@@ -465,3 +465,7 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **After a fallen or withheld raise** (board 30d, For Code 5, with K22): may the player propose again, and is it voted at once past the deadline?
 
 **Ruled 2026-10-23 in ask mode (second pass):** every remaining open ask above, from §872 to §905 - see `docs/RULINGS_2026-10-23.md`, K37-K76.
+
+### K38-K44, the US surfaces' follow-ons (§906): the ask it ends in
+
+- **The top masthead for every country?** K40 moved the role and lapse chips to a top masthead strip for the USA only (where a Congress sits); every other country keeps its role chip beside the year on the Desk. Move every country's chips to the strip too?
