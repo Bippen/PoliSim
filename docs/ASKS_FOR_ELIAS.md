@@ -463,3 +463,5 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **The ten days on a vetoed plate.** Drawn on the desk only, because a vetoed record keeps no presentment day. Keep the day on the record so a vetoed plate can show them dimmed?
 - **"Funding restored" as a saved field.** It is a controller memo today, so a game loaded on the restoration's day shows no chip. Save it (additive)?
 - **After a fallen or withheld raise** (board 30d, For Code 5, with K22): may the player propose again, and is it voted at once past the deadline?
+
+**Ruled 2026-10-23 in ask mode (second pass):** every remaining open ask above, from §872 to §905 - see `docs/RULINGS_2026-10-23.md`, K37-K76.
