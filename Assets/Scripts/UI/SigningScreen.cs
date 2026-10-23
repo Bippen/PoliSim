@@ -42,7 +42,7 @@ namespace PoliSim.UI
     /// **Declared deviations:** V-S1, the drop shadow is a single dark plate (no blurred shadow is delivered); V-S3, the
     /// pen-scratch beat is absent (no audio asset).
     /// </summary>
-    public class SigningScreen
+    public partial class SigningScreen
     {
         public GameObject Root { get; private set; }
 
@@ -86,7 +86,11 @@ namespace PoliSim.UI
         /// </summary>
         public static SigningScreen BuildAnswer(Country country, DivisionRecord record, string answerLine, Action onSign, Action onVeto, Action onLater) => Build(country, record, onSign, onVeto, onLater, answerLine ?? string.Empty);
 
-        private static SigningScreen Build(Country country, DivisionRecord record, Action onSign, Action onVeto, Action onLater, string answerLine)
+        /// <summary>PS-6 US-35 (board 30b): the answer plate for a bill on the US player-president's desk - the same plate, with the bill's path, the ten days
+        /// (<paramref name="desk"/>'s presentment and law days) and each verb's consequence.</summary>
+        public static SigningScreen BuildAnswer(Country country, DivisionRecord record, string answerLine, Action onSign, Action onVeto, Action onLater, DeskContext desk) => Build(country, record, onSign, onVeto, onLater, answerLine ?? string.Empty, desk);
+
+        private static SigningScreen Build(Country country, DivisionRecord record, Action onSign, Action onVeto, Action onLater, string answerLine, DeskContext desk = null)
         {
             if (country == null || record == null)
             {
@@ -160,7 +164,8 @@ namespace PoliSim.UI
             layout.childForceExpandHeight = false;
 
             BuildHead(content.transform, country, record, root.transform);
-            BuildColumns(content.transform, country, record, root.transform);
+            BuildUsPath(content.transform, country, record, desk, root.transform);   // PS-6 US-35 (board 30b): a Congress bill's path, the ten days on the desk, the pocket veto
+            BuildColumns(content.transform, country, record, root.transform, desk);
 
             // The sign row: the button at the right, the seal's landing beside it.
             var signRow = new GameObject("SignRow");
@@ -223,7 +228,7 @@ namespace PoliSim.UI
             screen._seal = sealBeat.AddComponent<SealDrop>();
             sealBeat.SetActive(false);
 
-            CanvasGroup controls = answerLine == null ? BuildSignButton(signRow.transform, onSign, record.Passed) : BuildAnswerButtons(signRow.transform, onSign, onVeto, onLater);   // SP-7b: the plate's answers
+            CanvasGroup controls = answerLine == null ? BuildSignButton(signRow.transform, onSign, record.Passed, UsBillPath.Applies(country, record) && UsBillPath.OnVeto(record)) : BuildAnswerButtons(signRow.transform, onSign, onVeto, onLater);   // SP-7b: the plate's answers
 
             // §A.13's two rows that had no implementation (re-derived against the seam 2026-08-28,
             // omnibus roadmap item 4): row 4, the document rises 24px and settles −0.6° → 0° over
@@ -326,7 +331,7 @@ namespace PoliSim.UI
         }
 
         /// <summary>§749: the three columns - the division, the stances, the estimated impact.</summary>
-        private static void BuildColumns(Transform parent, Country country, DivisionRecord record, Transform overlay)
+        private static void BuildColumns(Transform parent, Country country, DivisionRecord record, Transform overlay, DeskContext desk = null)
         {
             var grid = new GameObject("Columns");
             grid.transform.SetParent(parent, false);
@@ -344,7 +349,9 @@ namespace PoliSim.UI
 
             BuildDivision(Column(grid.transform, "Division", DivisionWidth, 0f), country, record, overlay);
             BuildStances(Column(grid.transform, "Stances", StancesWidth, 0f), country, record, overlay);
-            BuildImpact(Column(grid.transform, "Impact", 0f, 1f), record, overlay);
+            Transform impact = Column(grid.transform, "Impact", 0f, 1f);
+            if (desk != null && UsBillPath.Applies(country, record)) { BuildUsAnswers(impact, country, record, desk, overlay); }   // PS-6 US-35 (board 30b): your answer, each verb's consequence
+            BuildImpact(impact, record, overlay);
         }
 
         /// <summary>
@@ -909,12 +916,12 @@ namespace PoliSim.UI
         }
 
         /// <summary>The canvas brass button pattern: uGUI Button + SpriteSwap over the delivered per-state strips. The label reads "Sign" only for a passed division - "File" for a lost one, matching the plate's own LOST stamp rather than claiming an enactment that did not happen. Returns the button's CanvasGroup - §A.13 row 6's fade handle (the controls fade in last).</summary>
-        private static CanvasGroup BuildSignButton(Transform parent, Action onSign, bool passed)
+        private static CanvasGroup BuildSignButton(Transform parent, Action onSign, bool passed, bool congressVeto = false)
         {
             // P6-A2: the face, its states and its degradation live in `CanvasChrome.FacedButton` now - this
             // method was the pattern the other Canvas screens copied, and a copied pattern is what let the
             // selector's controls end up with no face at all.
-            Button control = CanvasChrome.FacedButton(parent, "SignButton", passed ? "Sign" : "File",
+            Button control = CanvasChrome.FacedButton(parent, "SignButton", passed && !congressVeto ? "Sign" : "File",   // PS-6 US-35 (board 30b, For Code 7): an overridden bill asks no signature - File
                 PoliSimTheme.Body, 27, PoliSimTheme.TextPrimary, new Vector2(300f, 60f), CanvasChrome.Face.Brass, FontStyle.Normal);   // §749: the composition's 200 x 40, the word in the body face
             control.onClick.AddListener(() => onSign());
 

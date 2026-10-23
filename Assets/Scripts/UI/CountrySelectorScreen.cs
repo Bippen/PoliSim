@@ -735,7 +735,11 @@ namespace PoliSim.UI
             // House (divided government is the presidency's central constraint); Poland's and France's presidential cards follow the rule when they unlock.
             if (playable)
             {
-                BuildSeatBar(content.transform, country.Id, point.Opens);   // SP-7b: the chamber seated at THIS start's date - Poland's presidential card the 10th Sejm
+                // PS-6 US-35 (board 30c, answer 8): where the record seats a second chamber at the start (the USA's Senate), it stands beside the House - two equal blocks
+                if (!BuildChamberPair(content.transform, country.Id, point))
+                {
+                    BuildSeatBar(content.transform, country.Id, point.Opens);   // SP-7b: the chamber seated at THIS start's date - Poland's presidential card the 10th Sejm
+                }
             }
             else if (!playable)
             {
@@ -871,6 +875,150 @@ namespace PoliSim.UI
             Text captionText = CanvasChrome.MakeText(parent, "ChamberCaption", $"THE {StartBrief.ChamberOf(id).ToUpperInvariant()} OF {when} · {total}{declared}{upper}",
                 PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
             captionText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+        }
+
+        /// <summary>
+        /// PS-6 US-35 (D-US part two's board 30c, answer 8: "yes, the Senate goes beside the House - two equal blocks, each a bar with its majority tick; the Senate's
+        /// block names the class up on polling day"): THE TWO CHAMBERS OF RECORD AT THE START, side by side - each its name and size, its seats as one bar in the
+        /// parties' laddered inks (an independent in the Neutral beside the caucus he sits with, never in its ink), its majority's tick, who holds it, and when it
+        /// was elected or which class is up on the start's polling day. Read from the record by date (`WorldClock.PickerViewOf`, `UsSenate.On`, the majority by
+        /// `StartBrief.TrySecondChamberMajority`), never typed. False, drawing nothing, where the record seats no second chamber at the start.
+        /// </summary>
+        private static bool BuildChamberPair(Transform parent, CountryId id, StartPoints.StartPoint point)
+        {
+            if (!StartBrief.TrySecondChamberMajority(id, point.Opens, out string upperParty, out int upperSeats, out int upperIndependents, out int upperMembers, out _, out bool byVicePresident)) { return false; }
+            WorldClock.PickerView start = WorldClock.PickerViewOf(id, point.Opens);
+            int total = start.TotalSeats;
+            if (total <= 0) { return false; }
+            string Day(DateTime d) => d.ToString("d MMM", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant();
+            string N(int n) => n.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            const float pairGap = 24f;
+            float blockWidth = (SheetCardWidth - 2f * CardPadding - SpineWidth - pairGap) * 0.5f;
+
+            var pair = new GameObject("Chambers");
+            pair.transform.SetParent(parent, false);
+            pair.AddComponent<RectTransform>();
+            HorizontalLayoutGroup pairLayout = pair.AddComponent<HorizontalLayoutGroup>();
+            pairLayout.spacing = pairGap;
+            pairLayout.childControlWidth = true;
+            pairLayout.childControlHeight = true;
+            pairLayout.childForceExpandWidth = false;
+            pairLayout.childForceExpandHeight = false;
+
+            // the House of record
+            List<PoliticalParty> parties = PartiesBySeats(id, start.Seats);
+            var houseSegs = new List<(string Code, Color Ink, int Seats)>();
+            string houseMajority = null;
+            foreach (PoliticalParty p in parties)
+            {
+                int s = Seats(start.Seats, p);
+                if (s <= 0) { continue; }
+                houseSegs.Add((p.ShortName + " " + N(s), PoliSimTheme.PartyLaddered(id, p.Abbrev), s));
+                if (2 * s > total) { houseMajority = p.ShortName; }
+            }
+            DateTime electionDay = WorldClock.ElectionDayOf(id, start.Vintage);
+            ChamberBlock(pair.transform, "House", "THE " + StartBrief.ChamberOf(id).ToUpperInvariant() + " · " + N(total), houseSegs, total, total / 2 + 1, blockWidth,
+                N(total / 2 + 1) + " A MAJORITY · " + (houseMajority != null ? houseMajority.ToUpperInvariant() + " HOLDS IT" : "NONE HOLDS IT"),
+                (electionDay != DateTime.MinValue ? "ELECTED " + electionDay.ToString("d MMM yyyy", System.Globalization.CultureInfo.InvariantCulture).ToUpperInvariant() : "OF RECORD") + " · UP " + Day(point.PollingDay));
+
+            // the Senate of record: the majority's party, its independents beside it, the other side's independents, the other side
+            UsSenate.Seating senate = UsSenate.On(point.Opens);
+            var senateSegs = new List<(string Code, Color Ink, int Seats)>();
+            string other = null;
+            foreach (KeyValuePair<string, int> kv in senate.BySide) { if (kv.Key != upperParty && kv.Value > 0) { other = kv.Key; } }
+            int otherIndependents = other != null && senate.IndependentsBySide.TryGetValue(other, out int oi) ? oi : 0;
+            senateSegs.Add((PartySystems.ShortName(id, upperParty) + " " + N(upperSeats - upperIndependents), PoliSimTheme.PartyLaddered(id, upperParty), upperSeats - upperIndependents));
+            if (upperIndependents > 0) { senateSegs.Add((string.Empty, PoliSimTheme.Neutral, upperIndependents)); }
+            if (other != null)
+            {
+                if (otherIndependents > 0) { senateSegs.Add((string.Empty, PoliSimTheme.Neutral, otherIndependents)); }
+                int otherSeats = senate.BySide[other] - otherIndependents;
+                senateSegs.Add((PartySystems.ShortName(id, other) + " " + N(otherSeats), PoliSimTheme.PartyLaddered(id, other), otherSeats));
+            }
+            int cls = UsCongressElection.ClassUp(point.PollingDay.Year);
+            int d = 0, r = 0, i = 0;
+            foreach (UsSenate.Seat s in senate.Seats)
+            {
+                if (s.Class != cls) { continue; }
+                if (s.Party == "I") { i++; } else if (s.Side == "DEM") { d++; } else if (s.Side == "REP") { r++; }
+            }
+            int line = upperMembers / 2 + 1;
+            ChamberBlock(pair.transform, "Senate", "THE " + (StartBrief.SecondChamberOf(id) ?? "Senate").ToUpperInvariant() + " · " + N(upperMembers), senateSegs, Math.Max(1, senate.Seats.Count), line, blockWidth,
+                (byVicePresident ? N(upperMembers / 2) + " AND THE VP · " : N(line) + " · ") + PartySystems.ShortName(id, upperParty).ToUpperInvariant() + (upperIndependents > 0 ? " CAUCUS HOLDS IT" : " HOLDS IT"),
+                cls > 0 ? "CLASS " + N(cls) + " UP " + Day(point.PollingDay) + ": " + N(d) + " D " + (i > 0 ? N(i) + " I " : string.Empty) + N(r) + " R" : "UP " + Day(point.PollingDay));
+            return true;
+        }
+
+        /// <summary>PS-6 US-35: one chamber's block on the start card - its name and size, its bar with the majority's tick, who holds it, and its dates.</summary>
+        private static void ChamberBlock(Transform parent, string name, string head, List<(string Code, Color Ink, int Seats)> segs, int seated, int majority, float width, string holds, string when)
+        {
+            var block = new GameObject(name);
+            block.transform.SetParent(parent, false);
+            block.AddComponent<RectTransform>();
+            VerticalLayoutGroup v = block.AddComponent<VerticalLayoutGroup>();
+            v.spacing = 4f;
+            v.childControlWidth = true;
+            v.childControlHeight = true;
+            v.childForceExpandWidth = true;
+            v.childForceExpandHeight = false;
+            LayoutElement size = block.AddComponent<LayoutElement>();
+            size.minWidth = size.preferredWidth = width;
+            size.flexibleWidth = 0f;
+
+            Text headText = CanvasChrome.MakeText(block.transform, "Head", head, PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft, FontStyle.Bold);
+            headText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+
+            var bar = new GameObject("Bar");
+            bar.transform.SetParent(block.transform, false);
+            bar.AddComponent<RectTransform>();
+            LayoutElement barSize = bar.AddComponent<LayoutElement>();
+            barSize.minHeight = barSize.preferredHeight = SeatBarHeight;
+            var segRow = new GameObject("Segments");
+            segRow.transform.SetParent(bar.transform, false);
+            Stretch(segRow.AddComponent<RectTransform>());
+            HorizontalLayoutGroup segLayout = segRow.AddComponent<HorizontalLayoutGroup>();
+            segLayout.spacing = 1f;
+            segLayout.childControlWidth = true;
+            segLayout.childControlHeight = true;
+            segLayout.childForceExpandWidth = true;
+            segLayout.childForceExpandHeight = true;
+            float minLabelUnits = 18f / Mathf.Max(0.01f, CanvasChrome.ScaleFactor());
+            foreach ((string code, Color ink, int seats) in segs)
+            {
+                if (seats <= 0) { continue; }
+                var seg = new GameObject("Seg " + (code.Length > 0 ? code : "IND"));
+                seg.transform.SetParent(segRow.transform, false);
+                seg.AddComponent<RectTransform>();
+                Image image = seg.AddComponent<Image>();
+                image.color = ink;
+                image.raycastTarget = false;
+                LayoutElement segSize = seg.AddComponent<LayoutElement>();
+                segSize.flexibleWidth = seats;
+                segSize.preferredWidth = 0f;
+                float segWidth = width * seats / Mathf.Max(1, seated);
+                if (code.Length > 0 && segWidth >= minLabelUnits)
+                {
+                    Text label = CanvasChrome.MakeText(seg.transform, "Code", code, PoliSimTheme.Document, 11, PoliSimTheme.Card, TextAnchor.MiddleCenter, FontStyle.Bold);
+                    label.horizontalOverflow = HorizontalWrapMode.Overflow;
+                    // §707: one line or none - a code wider than its segment is not drawn
+                    if (label.preferredWidth > segWidth - 2f) { label.gameObject.SetActive(false); }
+                    else { Stretch((RectTransform)label.transform); }
+                }
+            }
+            var tick = new GameObject("MajorityTick");
+            tick.transform.SetParent(bar.transform, false);
+            var tickRect = tick.AddComponent<RectTransform>();
+            float at = Mathf.Clamp01((float)majority / Mathf.Max(1, seated));
+            tickRect.anchorMin = tickRect.anchorMax = new Vector2(at, 0.5f);
+            tickRect.sizeDelta = new Vector2(3f, SeatBarHeight + 8f);
+            Image tickImage = tick.AddComponent<Image>();
+            tickImage.color = PoliSimTheme.TextPrimary;
+            tickImage.raycastTarget = false;
+
+            Text holdsText = CanvasChrome.MakeText(block.transform, "Holds", holds, PoliSimTheme.Document, 12, PoliSimTheme.TextPrimary, TextAnchor.MiddleLeft);
+            holdsText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
+            Text whenText = CanvasChrome.MakeText(block.transform, "When", when, PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleLeft);
+            whenText.gameObject.AddComponent<LayoutElement>().minHeight = 16f;
         }
 
         /// <summary>18a: the brief as a ledger - the head, then one row per slot: the name lane in serif 13, the figure lane bold.</summary>

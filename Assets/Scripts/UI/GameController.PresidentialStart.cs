@@ -63,14 +63,24 @@ namespace PoliSim.UI
                 // today - nothing is held, so an answer writes nothing and the beat alone closes it
                 _answerPlateStaged = false;
                 string staged = DeskLine(true, PresidentialDocket.Bill.Ordinary, "UNANSWERED, SIGNED ON " + DeskDay(PresidentialDocket.LawDay(CountryId.Poland, _simulationManager.CurrentDate, PresidentialDocket.Bill.Ordinary)));
-                return SigningScreen.BuildAnswer(_playerCountry, signing, staged, AnswerSign, AnswerVeto, AnswerLater);
+                // PS-6 US-35 (the review's L8): a US plate staged for the film is a bill on the desk too - presented today, its law day the ten days' - so its path
+                // reads ON YOUR DESK, never SIGNED
+                SigningScreen.DeskContext stagedDesk = UsVeto.Applies(_playerCountry.Id)
+                    ? new SigningScreen.DeskContext { PresentedOn = _simulationManager.CurrentDate, LawDay = PresidentialDocket.LawDay(_playerCountry.Id, _simulationManager.CurrentDate), Today = _simulationManager.CurrentDate, MayVeto = true }
+                    : null;
+                return SigningScreen.BuildAnswer(_playerCountry, signing, staged, AnswerSign, AnswerVeto, AnswerLater, stagedDesk);
             }
             if (_playerCountry != null && _simulationManager.PlayerAnswersDocket(_playerCountry.Id) && _simulationManager.TryUnansweredDocketItem(_playerCountry.Id, signing, out SimulationManager.DocketItem item))   // PS-6 US-23: the US desk too - one gate with the Docket page's (the review's L5)
             {
                 _answering = signing;
                 bool mayVeto = SimulationManager.MayVetoDocketEntry(item.Entry);
+                // PS-6 US-35 (board 30b): on the US desk the plate carries the bill's path, the ten days and each verb's consequence
+                SigningScreen.DeskContext desk = UsVeto.Applies(_playerCountry.Id)
+                    ? new SigningScreen.DeskContext { PresentedOn = item.PresentedOn, LawDay = SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry), Today = _simulationManager.CurrentDate,
+                        MayVeto = mayVeto, CountsTenDays = item.Entry.Deadline == System.DateTime.MinValue }
+                    : null;
                 return SigningScreen.BuildAnswer(_playerCountry, signing, DeskLine(mayVeto, (PresidentialDocket.Bill)item.Entry.Bill, UnansweredLine(item.Entry)), AnswerSign,
-                    mayVeto ? AnswerVeto : (System.Action)null, AnswerLater);
+                    mayVeto ? AnswerVeto : (System.Action)null, AnswerLater, desk);
             }
             return SigningScreen.Build(_playerCountry, signing, SignPendingDivision);
         }
@@ -110,6 +120,13 @@ namespace PoliSim.UI
                 if (item.Answer != 0) { continue; }   // never held past the answer (it acts at once) - nothing to draw
                 bool mayVeto = SimulationManager.MayVetoDocketEntry(item.Entry);
                 string line = (mayVeto ? "Sign or veto" : "Sign - it takes no veto") + " · " + UnansweredWords(item.Entry) + " " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry));
+                if (UsVeto.Applies(_playerCountry.Id) && item.Entry.Deadline == System.DateTime.MinValue)
+                {
+                    // PS-6 US-35 (board 30b, the Docket's row): the ten days counting down - LAW UNSIGNED IN N DAYS, the counted days still to run (Sundays excepted)
+                    // the review's M3: TOMORROW on the period's last day, never "in 0 days"
+                    line = (mayVeto ? "Sign or veto" : "Sign - it takes no veto") + " · " + UsBillPath.UnsignedWords(_playerCountry.Id, item.PresentedOn, _simulationManager.CurrentDate)
+                           + " · " + UnansweredWords(item.Entry) + " " + DeskDay(SimulationManager.DocketLawDay(_playerCountry.Id, item.Entry));
+                }
                 _docketSlipBook.Anchors["docket:" + key] = new SlipContent("ON YOUR DESK").Add(passage.Title.ToUpperInvariant()).Add("PRESENTED " + DeskDay(item.PresentedOn) + " · " + UnansweredLine(item.Entry));
                 if (DrawDocketItem(key, "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), title, line, holdsTime: false, action: "Answer"))
                 {

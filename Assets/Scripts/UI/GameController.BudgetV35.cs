@@ -197,7 +197,13 @@ namespace PoliSim.UI
             var debtSlip = new SlipContent("GOVERNMENT DEBT · " + debt.Figure).Add(UiFormat.Number(state.DebtToGdpRatio, 1) + "% OF GDP");
             if (debtRule != null) { debtSlip.Add(debtRule); }
             if (FiscalRules.Notice(PlayerCountryId, FiscalRules.Measure.Debt, state.DebtToGdpRatio) is string debtNotice) { debtSlip.Add(debtNotice.ToUpperInvariant()); }   // §758 (ruling B6): a notice, neutral ink
-            foreach (string limitLine in FiscalRules.DebtLimitLines(_playerCountry, _simulationManager.CurrentDate, _simulationManager.GetPendingDebtLimitBill(PlayerCountryId))) { debtSlip.Add(limitLine); }   // PS-6 US-24: the federal debt limit, live (nothing where the game holds no limit)
+            BudgetBill pendingRaise = _simulationManager.GetPendingDebtLimitBill(PlayerCountryId);
+            List<string> limitLines = FiscalRules.DebtLimitLines(_playerCountry, _simulationManager.CurrentDate, pendingRaise);
+            if (limitLines.Count > 0) { debtSlip.Add("THE FEDERAL DEBT LIMIT"); }   // PS-6 US-35 (board 30c): the slip's section, its lines in sentence case
+            foreach (string limitLine in limitLines) { debtSlip.Add(limitLine); }   // PS-6 US-24: the federal debt limit, live (nothing where the game holds no limit)
+            // PS-6 US-35 (board 30c, answer 4): the tile keeps its figure, and one chip under the name gives the limit's state - or, below it, a muted line
+            debt.Chip = FiscalRules.DebtLimitChip(_playerCountry, _simulationManager.CurrentDate, pendingRaise, out FiscalRules.DebtLimitInk limitInk, out debt.Sub);
+            debt.ChipGround = limitInk == FiscalRules.DebtLimitInk.Cut ? PoliSimTheme.Bad : limitInk == FiscalRules.DebtLimitInk.SetAside ? PoliSimTheme.Neutral : PoliSimTheme.Caution;
             debtSlip.Add("THE STOCK KEEPS NO YEARLY HISTORY - NO CHANGE IS DRAWN RATHER THAN ONE INVENTED");
 
             // last year's revenue and spending

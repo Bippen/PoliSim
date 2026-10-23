@@ -250,6 +250,11 @@ namespace PoliSim.UI
             public string Mark;
             /// <summary>§734: the figure's ink - the draft's Caution where the figure is drafted, the warning past a statutory rule; the primary ink otherwise.</summary>
             public Color FigureInk = PoliSimTheme.TextPrimary;
+            /// <summary>PS-6 US-35 (board 30c): a state's chip under the head, in its ground (amber a clock running, red a cut in force, the Neutral a limit set aside); null for none.</summary>
+            public string Chip;
+            public Color ChipGround = PoliSimTheme.Neutral;
+            /// <summary>PS-6 US-35: a muted line under the head where no chip stands (the debt's limit and headroom); null for none.</summary>
+            public string Sub;
         }
 
         /// <summary>A tile's height for its content - the head (the icon, or the figure over the name), and the gauge's band under it where it has one.</summary>
@@ -259,6 +264,7 @@ namespace PoliSim.UI
             float name = Mathf.Ceil(V35Serif(V35.Name, PoliSimTheme.TextPrimary).CalcSize(new GUIContent("Ag")).y);
             float head = Mathf.Max(V35.Px(V35.CardIcon), figure + 2f + name);
             float below = t.Fill >= 0f ? V35.Px(10f) + V35.Px(8f) : t.Spark != null && t.SparkBelow ? V35.Px(8f) + V35.Px(24f) : 0f;
+            if (!string.IsNullOrEmpty(t.Chip) || !string.IsNullOrEmpty(t.Sub)) { below += V35.Px(6f) + V35.Px(20f); }   // PS-6 US-35: the state's band
             return V35.Px(V35.CardPadY) * 2f + head + below;
         }
 
@@ -330,6 +336,21 @@ namespace PoliSim.UI
                 else { UiOverflowGuard.Check(t.Change, new Vector2(cw, figureHeight), new Vector2(Mathf.Max(1f, right - fx), figureHeight), changeFace.fontSize); }
             }
             PoliSimWidgets.MeasuredLabel(new Rect(x, y + figureHeight + 2f, nameWidth, nameHeight), V35Fit(t.Name, nameFace, nameWidth, out _), nameFace);
+
+            // PS-6 US-35 (board 30c): the state's chip, or the muted line, under the head
+            if (!string.IsNullOrEmpty(t.Chip))
+            {
+                GUIStyle chipFace = V35Mono(V35.Floor, V35.OnDataDark, bold: true, anchor: TextAnchor.MiddleCenter);
+                float cw = Mathf.Min(inner.width, Mathf.Ceil(chipFace.CalcSize(new GUIContent(t.Chip)).x) + V35.Px(12f));
+                var chip = new Rect(inner.x, head.yMax + V35.Px(6f), cw, V35.Px(20f));
+                PoliSimTheme.Rule(chip, t.ChipGround);
+                PoliSimWidgets.MeasuredLabel(chip, t.Chip, chipFace);
+            }
+            else if (!string.IsNullOrEmpty(t.Sub))
+            {
+                GUIStyle subFace = V35Mono(V35.Floor, PoliSimTheme.TextMuted);
+                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, head.yMax + V35.Px(6f), inner.width, V35.Px(20f)), V35Fit(t.Sub, subFace, inner.width, out _), subFace);
+            }
 
             if (t.Spark != null)
             {

@@ -455,3 +455,11 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 
 - **The oath dates on the Docket.** Board 29b asks for the four dates between the night and the oath (17 Dec, 3 Jan, 6 Jan, 20 Jan) as Docket deadlines. They are drawn on the night; the Docket items are not built. Build them, or keep them on the night only?
 - **Party creation for the USA, when it comes.** With the REP and DEM inks installed, a created US party would be refused 8 of the 24 hues as too close to them. Creation is Sweden-only today, so nothing changes now; noted so the refusals are expected when the USA offers creation.
+
+### US-35 Congress at work (§905): the asks it ends in
+
+- **The dated rows.** THE PRESIDENT, CONGRESS and YOUR NOMINEE stay under the new Congress view (board 30a would retire them). YOUR NOMINEE carries an action. Retire them, or keep them?
+- **The chips' places.** The role chip stays in the Desk's masthead beside the year, and the lapse chip in the LIVE caption's place; v3.5 would put the role in the top masthead and the lapse beside Paused. Move them?
+- **The ten days on a vetoed plate.** Drawn on the desk only, because a vetoed record keeps no presentment day. Keep the day on the record so a vetoed plate can show them dimmed?
+- **"Funding restored" as a saved field.** It is a controller memo today, so a game loaded on the restoration's day shows no chip. Save it (additive)?
+- **After a fallen or withheld raise** (board 30d, For Code 5, with K22): may the player propose again, and is it voted at once past the deadline?

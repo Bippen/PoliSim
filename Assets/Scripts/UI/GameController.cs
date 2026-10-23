@@ -3478,7 +3478,10 @@ namespace PoliSim.UI
             if (requestApart) { Add(requestDay, "The president's budget request due - budget process opens", UiPalette.SystemArea.Fiscal); }
             if (UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue)
             {
-                Add(today, "Shutdown - day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " - funding lapsed, non-excepted outlays stopped until it returns", UiPalette.SystemArea.Fiscal);   // PS-6 US-22
+                // PS-6 US-22; US-35 (board 30c, answer 7): the month's line names the cause in words - who withheld, or that no measure became law by the horizon
+                string cause = string.IsNullOrEmpty(_playerCountry.ContinuingResolutionWithheldBy) ? "no funding measure law by the horizon"
+                    : PartySystems.ShortName(_playerCountry.Id, _playerCountry.ContinuingResolutionWithheldBy) + " withholds a continuing resolution";
+                Add(today, "Funding lapse · day " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, today).ToString(CultureInfo.InvariantCulture) + " · " + cause + " · non-excepted outlays stopped until it returns", UiPalette.SystemArea.Fiscal);
             }
             // AF-36 (Elias's ruling q36, 2026-10-18): the day a passed carbon figure yields to its statute - the boundary the statute's step meets it at
             if (_simulationManager.TryPassedCarbonFigure(PlayerCountryId, out TaxLine passedCarbon, out System.DateTime carbonYields))

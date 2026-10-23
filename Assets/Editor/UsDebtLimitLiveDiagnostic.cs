@@ -238,9 +238,14 @@ namespace PoliSim.EditorTools
                                 Usd(1e9), Day(armedFor), armedDay, unarmedDay, cut));
                         List<string> lines = FiscalRules.DebtLimitLines(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA));
                         string note = FiscalRules.NationalNote(u, s.CurrentDate);
-                        Check(!lines.Any(l => l.Contains("BORROWED THROUGH THEM") || l.Contains("HELD AT IT BY EXTRAORDINARY MEASURES")) && lines.Any(l => l.Contains("ABOVE IT · BORROWED THROUGH THE MEASURES TO")) && lines.Any(l => l.Contains("CUT SO FAR")) && lines.Any(l => l.Contains("IS BEFORE CONGRESS")) && lines.Any(l => l.StartsWith("THE FEDERAL DEBT LIMIT ", StringComparison.Ordinal)) && note.Contains("cut to revenue")
+                        // PS-6 US-35 (board 30c): the slip in sentence case - binding, never "held at the limit by the measures" nor "borrowed through them"; the tile's chip its state
+                        string chip = FiscalRules.DebtLimitChip(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA), out FiscalRules.DebtLimitInk chipInk, out string chipSub);
+                        Check(!lines.Any(l => l.Contains("borrowed through them") || l.Contains("Extraordinary measures hold the debt at the limit")) && lines.Any(l => l.StartsWith("Debt subject to it ", StringComparison.Ordinal) && l.EndsWith(" above.", StringComparison.Ordinal))
+                              && lines.Any(l => l.StartsWith("The extraordinary measures ran out on ", StringComparison.Ordinal)) && lines.Any(l => l.Contains("cut so far")) && lines.Any(l => l.Contains(" is before Congress, voted on "))
+                              && lines.Any(l => l.StartsWith("Limit ", StringComparison.Ordinal)) && note.Contains("cut to revenue")
+                              && chip == "LIMIT BINDS · CUT IN FORCE" && chipInk == FiscalRules.DebtLimitInk.Cut && chipSub == null
                               && FiscalRules.NationalNote(ws.GetCountry(CountryId.Germany), s.CurrentDate) == FiscalRules.NationalNote(CountryId.Germany),
-                            F("(e) the slip says so - \"{0}\"; the national note: \"{1}\"; every other country's note unchanged", string.Join(" | ", lines), note));
+                            F("(e) the slip says so - \"{0}\"; the tile's chip \"{1}\" ({2}); the national note: \"{3}\"; every other country's note unchanged", string.Join(" | ", lines), chip, chipInk, note));
 
                         // ============================================================ (f) the save
                         string json = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s, w, CountryId.USA, null));

@@ -304,22 +304,89 @@ namespace PoliSim.UI
             }
         }
 
-        private float RoleChipWidth(string words) =>
-            StatsUnit(6f) + StatsUnit(16f) + StatsUnit(6f) + Mathf.Ceil(RowChipCaption(PoliSimTheme.TextPrimary).CalcSize(new GUIContent(words)).x) + StatsUnit(8f);
+        private float RoleChipWidth(string words, string tag = null) =>
+            StatsUnit(6f) + StatsUnit(16f) + StatsUnit(6f) + Mathf.Ceil(RowChipCaption(PoliSimTheme.TextPrimary).CalcSize(new GUIContent(words)).x) + StatsUnit(8f)
+            + (string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag) + StatsUnit(6f));
 
-        /// <summary>Draws the role chip in <paramref name="r"/> and hangs its slip on <see cref="_deskSlipBook"/>.</summary>
-        private void DrawRoleChip(Rect r, string words, bool inOffice)
+        private float RoleTagWidth(string tag) => Mathf.Ceil(DeskCaption(9f, PoliSimTheme.TextPrimary, true).CalcSize(new GUIContent(tag)).x) + StatsUnit(10f);
+
+        /// <summary>
+        /// PS-6 US-35 (board 30c, answers 5 and 6): THE ROLE CHIP'S TAG - one mark, a date or DIVIDED, outlined after the word. The lame duck is a date, not a
+        /// mark: the President's chip reads LEAVES and the oath's day from the night a successor was elected to the oath, the President-elect's TAKES OFFICE and
+        /// the same day; otherwise DIVIDED wherever the presidency's party holds fewer than both chambers (`UsCongressView` reads the same). Null outside a
+        /// Congress, and where neither holds.
+        /// </summary>
+        private string RoleTag(string words)
+        {
+            if (_playerCountry == null || !Congress.Applies(_playerCountry)) { return null; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            string Day(System.DateTime d) => d.ToString("d MMM", CultureInfo.InvariantCulture).ToUpperInvariant();
+            bool elect = PoliSim.Elections.UsPresidentialElection.TryPresidentElect(_playerCountry, today, out PoliSim.Elections.UsPresidentialElection.Contest next);
+            if (elect && words == "PRESIDENT-ELECT") { return "TAKES OFFICE " + Day(next.TakesOffice); }
+            if (elect && (words == "PRESIDENT" || words == "THE PRESIDENT'S PARTY") && PoliSim.Elections.UsTermLimit.TryPresidentOn(_playerCountry, today, out string sitting, out _, out _)
+                && PoliSim.Elections.UsTermLimit.WinnerOf(next) != null && PoliSim.Elections.UsTermLimit.WinnerOf(next) != sitting
+                && next.WinnerParty != _playerCountry.PlayerPartyAbbrev)   // the review's L7: a successor of the same party keeps the party's role - the person leaves, the role does not
+            {
+                return "LEAVES " + Day(next.TakesOffice);
+            }
+            return UsCongressDivided(today) ? "DIVIDED" : null;
+        }
+
+        /// <summary>PS-6 US-35: whether the presidency's party holds fewer than both chambers on <paramref name="today"/>.</summary>
+        private bool UsCongressDivided(System.DateTime today)
+        {
+            if (!Congress.PresidentOn(_playerCountry, today, out _, out string pp, out _) || string.IsNullOrEmpty(pp)) { return false; }
+            string house = Congress.HouseMajority(_playerCountry), senate = Congress.SenateMajority(_playerCountry, today);
+            return (house != null && house != pp) || (senate != null && senate != pp);
+        }
+
+        /// <summary>PS-6 US-35 (board 30c, answer 5): every congressional role the player's party holds on the day, in the chip's order of precedence - President,
+        /// President-elect, The President's party, House majority, Senate majority, Minority; the chip shows the first (`GovernmentRecord.RoleOn`'s), the slip
+        /// lists them all.</summary>
+        private List<string> UsRolesHeld(string words)
+        {
+            var held = new List<string>();
+            if (_playerCountry == null || !Congress.Applies(_playerCountry)) { return held; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            string you = _playerCountry.PlayerPartyAbbrev;
+            if (words == "PRESIDENT" || words == "PRESIDENT-ELECT" || words == "THE PRESIDENT'S PARTY") { held.Add(words); }
+            if (Congress.HoldsHouse(_playerCountry, you)) { held.Add("HOUSE MAJORITY"); }
+            if (Congress.HoldsSenate(_playerCountry, you, today)) { held.Add("SENATE MAJORITY"); }
+            if (held.Count == 0) { held.Add("MINORITY"); }
+            return held;
+        }
+
+        /// <summary>Draws the role chip in <paramref name="r"/> and hangs its slip on <see cref="_deskSlipBook"/>. PS-6 US-35: in a Congress the mark sits on its
+        /// party's ink (board 30c), and <paramref name="tag"/> - DIVIDED or the lame duck's date - follows the word, outlined.</summary>
+        private void DrawRoleChip(Rect r, string words, bool inOffice, string tag = null)
         {
             PoliSim.Elections.GovernmentRecord g = _playerCountry.Government;
             string you = _playerCountry.PlayerPartyAbbrev;
+            bool congress = Congress.Applies(_playerCountry);
             DrawRowChip(r, string.Empty, inOffice ? ChipFace.Filled : ChipFace.Outline);
             float side = StatsUnit(16f);
             var markRect = new Rect(r.x + StatsUnit(6f), r.y + Mathf.Round((r.height - side) * 0.5f), side, side);
-            if (inOffice && Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(markRect, PoliSimTheme.Card); }   // the mark's own ground on the dark fill
-            DrawPartyMarkSlot(markRect, _playerCountry.Id, you);
+            if (congress) { DrawRoleMarkOnInk(markRect, _playerCountry.Id, you); }
+            else
+            {
+                if (inOffice && Event.current.type == EventType.Repaint) { PoliSimTheme.Rule(markRect, PoliSimTheme.Card); }   // the mark's own ground on the dark fill
+                DrawPartyMarkSlot(markRect, _playerCountry.Id, you);
+            }
             float wx = markRect.xMax + StatsUnit(6f);
-            PoliSimWidgets.MeasuredLabel(new Rect(wx, r.y, Mathf.Max(1f, r.xMax - wx - StatsUnit(4f)), r.height), words,
+            float tagW = string.IsNullOrEmpty(tag) ? 0f : RoleTagWidth(tag);
+            PoliSimWidgets.MeasuredLabel(new Rect(wx, r.y, Mathf.Max(1f, r.xMax - wx - StatsUnit(4f) - (tagW > 0f ? tagW + StatsUnit(6f) : 0f)), r.height), words,
                 DeskCaption(9.5f, inOffice ? PoliSimTheme.Card : PoliSimTheme.TextPrimary, true, TextAnchor.MiddleLeft));
+            if (tagW > 0f && Event.current.type == EventType.Repaint)
+            {
+                Color ink = inOffice ? PoliSimTheme.Card : PoliSimTheme.TextPrimary;
+                float th = Mathf.Round(r.height * 0.72f);
+                var tagRect = new Rect(r.xMax - StatsUnit(4f) - tagW, r.y + Mathf.Round((r.height - th) * 0.5f), tagW, th);
+                PoliSimTheme.Rule(new Rect(tagRect.x, tagRect.y, tagRect.width, 1.5f), ink);
+                PoliSimTheme.Rule(new Rect(tagRect.x, tagRect.yMax - 1.5f, tagRect.width, 1.5f), ink);
+                PoliSimTheme.Rule(new Rect(tagRect.x, tagRect.y, 1.5f, tagRect.height), ink);
+                PoliSimTheme.Rule(new Rect(tagRect.xMax - 1.5f, tagRect.y, 1.5f, tagRect.height), ink);
+                PoliSimWidgets.MeasuredLabel(tagRect, tag, DeskCaption(9f, ink, true, TextAnchor.MiddleCenter));
+            }
 
             var slip = new SlipContent(PartySystems.ShortName(_playerCountry.Id, you) + " " + words);
             switch (words)
@@ -365,6 +432,12 @@ namespace PoliSim.UI
                 }
                 default: slip.Add("THE GOVERNMENT IS THE AI'S"); break;
             }
+            // PS-6 US-35 (board 30c, answers 5 and 6): every role held, in the chip's order (the chip shows the first); the tag's meaning
+            List<string> roles = UsRolesHeld(words);
+            if (roles.Count > 1) { slip.Add("YOUR ROLES, IN ORDER: " + string.Join(" · ", roles)); }
+            if (tag == "DIVIDED") { slip.Add("DIVIDED GOVERNMENT - THE PRESIDENCY'S PARTY HOLDS FEWER THAN BOTH CHAMBERS"); }
+            else if (!string.IsNullOrEmpty(tag) && tag.StartsWith("LEAVES", System.StringComparison.Ordinal)) { slip.Add("A SUCCESSOR IS ELECTED · THE PRESIDENT " + tag + ", THE OATH'S DAY"); }
+            else if (!string.IsNullOrEmpty(tag) && tag.StartsWith("TAKES OFFICE", System.StringComparison.Ordinal)) { slip.Add("THE OUTGOING ADMINISTRATION GOVERNS TO THE OATH"); }
             if (!_simulationManager.PlayerMayIntroduce(PlayerCountryId, out string locked) && !string.IsNullOrEmpty(locked))
             {
                 int cut = locked.IndexOf(" · ", System.StringComparison.Ordinal);
@@ -407,8 +480,9 @@ namespace PoliSim.UI
             float titleTextWidth = title.CalcSize(new GUIContent(titleText)).x + 4f;
             // PS-3a (§628), board 21e (§685): the player's role as a chip beside the year, reserved with the title so the LIVE caption keeps its place.
             (string Words, bool InOffice)? role = RoleChip();
+            string roleTag = role.HasValue ? RoleTag(role.Value.Words) : null;   // PS-6 US-35: DIVIDED, or the lame duck's date
             float roleGap = StatsUnit(10f);
-            float roleWidth = role.HasValue ? RoleChipWidth(role.Value.Words) : 0f;
+            float roleWidth = role.HasValue ? RoleChipWidth(role.Value.Words, roleTag) : 0f;
             float titleWidth = titleTextWidth + (role.HasValue ? roleGap + roleWidth : 0f);
 
             // The cluster (board 1m-r2: mono 9 on bordered chips, the active one brass with
@@ -477,22 +551,100 @@ namespace PoliSim.UI
                 }
             }
 
-            // PS-6 US-22: while US funding has lapsed, the live caption says the shutdown's day instead, in the bad ink (its whole words: the Budget page and the pending cards)
-            string shutdown = UsBudgetProcedure.Applies(_playerCountry) && _playerCountry.LapseSince != System.DateTime.MinValue
-                ? "SHUTDOWN · DAY " + UsBudgetProcedure.LapseDays(_playerCountry.LapseSince, _simulationManager.CurrentDate).ToString(CultureInfo.InvariantCulture) : null;
-            GUIStyle live = DeskCaption(10f, shutdown != null ? PoliSimTheme.Bad : PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
-            string liveText = shutdown ?? "DESK READINGS · LIVE";
-            float liveWidth = live.CalcSize(new GUIContent(liveText)).x + 4f;
+            // PS-6 US-35 (board 30c, answer 7): a lapse's chip in place of the live caption, in three states - funded to a horizon about to be decided
+            // (amber), funding lapsed and its day (the red ground), funding restored (green, for its day); "SHUTDOWN · DAY N" in capitals goes
+            (string Words, Color Ground, Color Ink, Color Dot)? lapse = LapseChip(_simulationManager.CurrentDate);
+            GUIStyle live = DeskCaption(10f, PoliSimTheme.TextSecondary, false, TextAnchor.MiddleRight);
+            string liveText = "DESK READINGS · LIVE";
             float liveRight = x - Mathf.Round(14f * ux);
+            if (lapse.HasValue)
+            {
+                GUIStyle lapseFace = DeskCaption(9.5f, lapse.Value.Ink, true, TextAnchor.MiddleLeft);
+                float dot = StatsUnit(8f), pad = StatsUnit(8f);
+                float lw = Mathf.Ceil(lapseFace.CalcSize(new GUIContent(lapse.Value.Words)).x) + dot + pad * 2f + StatsUnit(6f);
+                float lh = Mathf.Min(r.height, StatsUnit(20f));
+                var chip = new Rect(liveRight - lw, r.y + Mathf.Round((r.height - lh) * 0.5f), lw, lh);
+                if (Event.current.type == EventType.Repaint)
+                {
+                    PoliSimTheme.RoundedCard(chip, lapse.Value.Ground, PoliSimTheme.HairlineStrong, 0f);
+                    PoliSimTheme.Rule(new Rect(chip.x + pad, chip.y + Mathf.Round((lh - dot) * 0.5f), dot, dot), lapse.Value.Dot);
+                    PoliSimWidgets.MeasuredLabel(new Rect(chip.x + pad + dot + StatsUnit(6f), chip.y, Mathf.Max(1f, chip.width - pad * 2f - dot - StatsUnit(6f)), lh), lapse.Value.Words, lapseFace);
+                }
+                SlipAnchor(chip, "lapse");
+                _deskSlipBook.Anchors["lapse"] = LapseSlip(_simulationManager.CurrentDate);
+                liveRight = chip.x - gap;
+                liveText = string.Empty;
+            }
+            float liveWidth = live.CalcSize(new GUIContent(liveText)).x + 4f;
             float titleLeft = flagRect.xMax + Mathf.Round(10f * ux);
             float liveLeft = Mathf.Max(titleLeft + titleWidth + gap, liveRight - liveWidth);
             PoliSimWidgets.MeasuredLabel(new Rect(titleLeft, r.y, Mathf.Max(1f, Mathf.Min(titleTextWidth, liveLeft - gap - titleLeft)), r.height), titleText, title);
             if (role.HasValue)
             {
                 float chipH = Mathf.Min(r.height, StatsUnit(20f));
-                DrawRoleChip(new Rect(titleLeft + titleTextWidth + roleGap, r.y + Mathf.Round((r.height - chipH) * 0.5f), roleWidth, chipH), role.Value.Words, role.Value.InOffice);
+                DrawRoleChip(new Rect(titleLeft + titleTextWidth + roleGap, r.y + Mathf.Round((r.height - chipH) * 0.5f), roleWidth, chipH), role.Value.Words, role.Value.InOffice, roleTag);
             }
-            PoliSimWidgets.MeasuredLabel(new Rect(liveLeft, r.y, Mathf.Max(1f, liveRight - liveLeft), r.height), liveText, live);
+            if (liveText.Length > 0) { PoliSimWidgets.MeasuredLabel(new Rect(liveLeft, r.y, Mathf.Max(1f, liveRight - liveLeft), r.height), liveText, live); }
+        }
+
+        /// <summary>PS-6 US-35: the lapse chip's memo of the days it saw (the review's M4: keyed on the country object the desk draws, so a load, a new game or a
+        /// switch of country starts it afresh). Not saved: a game loaded on the restoration's day shows no restored chip (DECLARED).</summary>
+        private readonly LapseMemo _lapseMemo = new LapseMemo();
+
+        /// <summary>
+        /// PS-6 US-35 (board 30c, answer 7): THE LAPSE'S CHIP, in three states, or null - <b>funded to</b> the horizon on its eve and its day while no appropriation
+        /// for the coming year is law (the day a continuing resolution is decided, `UsBudgetProcedure.HorizonEve`), amber; <b>funding lapsed</b> and the lapse's
+        /// day, on the red ground; <b>funding restored</b> on the day funding came back, green, with the back pay paid or still owed (`Country.LapseDeferredOutlays`,
+        /// US-22c - owed while a binding debt limit's cut holds it). The model does not tell a continuing resolution's horizon from an appropriation's (both
+        /// fund to a fiscal year's end), so the first state says "funded to", not "a CR to".
+        /// </summary>
+        private (string Words, Color Ground, Color Ink, Color Dot)? LapseChip(System.DateTime today)
+        {
+            if (_playerCountry == null || !UsBudgetProcedure.Applies(_playerCountry)) { return null; }
+            Country c = _playerCountry;
+            bool restoredToday = _lapseMemo.Observe(c, today, c.LapseSince != System.DateTime.MinValue);
+            if (c.LapseSince != System.DateTime.MinValue)
+            {
+                return ("Funding lapsed · day " + UsBudgetProcedure.LapseDays(c.LapseSince, today).ToString(CultureInfo.InvariantCulture), PoliSimTheme.Bad, PoliSimTheme.Card, PoliSimTheme.Card);
+            }
+            if (restoredToday)
+            {
+                return ("Funding restored · back pay " + (c.LapseDeferredOutlays > 0f ? "owed" : "paid"), PoliSimTheme.StockOff, PoliSimTheme.TextPrimary, PoliSimTheme.Good);
+            }
+            System.DateTime horizon = c.AppropriatedThrough;
+            if (horizon != System.DateTime.MinValue && horizon == UsBudgetProcedure.FiscalYearEnd(today) && today.Date >= UsBudgetProcedure.HorizonEve(horizon) && today.Date <= horizon)
+            {
+                int days = (horizon.Date - today.Date).Days;
+                return ("Funded to " + horizon.ToString("d MMM", CultureInfo.InvariantCulture) + " · " + days.ToString(CultureInfo.InvariantCulture) + (days == 1 ? " day" : " days"), PoliSimTheme.StockOff, PoliSimTheme.TextPrimary, PoliSimTheme.Caution);
+            }
+            return null;
+        }
+
+        /// <summary>PS-6 US-35: the lapse chip's slip - the horizon, the lapse's first day and who withheld, what stops, and the back pay on return (US-22c).</summary>
+        private SlipContent LapseSlip(System.DateTime today)
+        {
+            Country c = _playerCountry;
+            if (c.LapseSince != System.DateTime.MinValue)
+            {
+                var slip = new SlipContent("A FUNDING LAPSE · DAY " + UsBudgetProcedure.LapseDays(c.LapseSince, today).ToString(CultureInfo.InvariantCulture))
+                    .Add("SINCE " + DeskDay(c.LapseSince) + (string.IsNullOrEmpty(c.ContinuingResolutionWithheldBy)
+                        ? " · NO APPROPRIATION OR CONTINUING RESOLUTION BECAME LAW BY THE HORIZON"
+                        : " · " + PartySystems.ShortName(c.Id, c.ContinuingResolutionWithheldBy) + " WITHHOLDS THE CONTINUING RESOLUTION"))
+                    .Add(UsLapse.StopWords)
+                    .Add("IT ENDS THE DAY AN APPROPRIATION OR A CONTINUING RESOLUTION BECOMES LAW · THE BACK PAY IS PAID IN FULL ON RETURN");
+                if (c.LapseDeferredOutlays > 0f) { slip.Add("OWED SO FAR " + UiFormat.Money(c.LapseDeferredOutlays, MoneyUnit.Billions)); }
+                return slip;
+            }
+            if (_lapseMemo.RestoredOn == today.Date)
+            {
+                return new SlipContent("FUNDING RESTORED · " + DeskDay(today))
+                    .Add(c.LapseDeferredOutlays > 0f ? "THE BACK PAY, " + UiFormat.Money(c.LapseDeferredOutlays, MoneyUnit.Billions) + ", IS OWED - A BINDING DEBT LIMIT'S CUT HOLDS IT UNTIL A RAISE IS LAW"
+                        : "THE BACK PAY IS PAID IN FULL (31 U.S.C. 1341(c))")
+                    .Add(UsBudgetProcedure.FundedWords(c) ?? string.Empty);
+            }
+            return new SlipContent("FUNDED TO " + DeskDay(c.AppropriatedThrough))
+                .Add("NO APPROPRIATION FOR THE COMING FISCAL YEAR IS LAW · A CONTINUING RESOLUTION IS DECIDED THE DAY BEFORE THE HORIZON")
+                .Add("IF NONE BECOMES LAW, FUNDING LAPSES THE DAY AFTER IT");
         }
 
         /// <summary>

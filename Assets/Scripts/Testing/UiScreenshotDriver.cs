@@ -521,7 +521,7 @@ namespace PoliSim.Testing
                     bool staged = SetEnumField(controller, "_consolidatedTab", "Politics") && SetEnumField(controller, "_politicsCategory", "Parliament");
                     ResetScrolls(controller);
                     yield return Settle();
-                    ScrollBy(controller, 900f);
+                    ScrollBy(controller, CongressRowsScroll(controller, 900f));   // PS-6 US-35: the Congress view stands taller - scrolled to the rows by their top
                     yield return Settle();
                     Claim("imgui");
                     yield return Capture("01n6_nominee_parliament_rows");
@@ -1481,7 +1481,7 @@ namespace PoliSim.Testing
                     // density - which on Spending's 29 categories was the entire question D3 was about.
                     // Scrolling far enough to put rows on screen is the only way to see whether a
                     // treatment that reads well at 13 rows survives at 29.
-                    ScrollBy(controller, 900f);
+                    ScrollBy(controller, stem == "07a_politics_parliament" ? CongressRowsScroll(controller, 900f) : 900f);   // PS-6 US-35: the USA's rows by their top
                     yield return Settle();
                     yield return Capture(stem + "_rows");
 
@@ -6910,6 +6910,24 @@ namespace PoliSim.Testing
         private static void ResetScrolls(object target) => SetScrolls(target, 0f);
 
         private static void ScrollBy(object target, float y) => SetScrolls(target, y);
+
+        /// <summary>PS-6 US-35: where the Parliament tab's rows are filmed - for a country whose Congress view draws (the USA), a little above the rows' own top
+        /// as the last repaint measured it (`_parliamentRowsTop`), so the bills, the dated rows and the divisions are in frame however tall the view stands;
+        /// every other country keeps <paramref name="fallback"/>, so no other film moves. Logged as a SHOT line.</summary>
+        private float CongressRowsScroll(object controller, float fallback)
+        {
+            if (_countryId != CountryId.USA) { return fallback; }
+            object top = controller.GetType().GetField("_parliamentRowsTop", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+            if (!(top is float rowsTop) || rowsTop <= 0f)
+            {
+                Debug.LogError("SHOT: PS-6 US-35 - the controller has no _parliamentRowsTop (or it is unmeasured); the rows frame scrolls to the old fixed 900.");
+                _failed++;
+                return fallback;
+            }
+            float y = Mathf.Max(0f, rowsTop - 60f);
+            Debug.Log($"SHOT: PS-6 US-35 - the Parliament tab's rows at {rowsTop:0} in the scroll; filmed from {y:0} (the Congress view above them)");
+            return y;
+        }
 
         /// <summary>P4-C2: every public float on the country, its state and its sectors, as raw bits - the snapshot the
         /// repeal assertion compares. Order is reflection order, the same on both sides of the comparison.</summary>

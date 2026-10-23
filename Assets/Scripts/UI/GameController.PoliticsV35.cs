@@ -123,6 +123,10 @@ namespace PoliSim.UI
             float gutter = V35.Px(V35.Gutter);
             V35.FloorGuarded = true;
 
+            // ---- PS-6 US-35 (board 30a): the USA's Congress view - who governs, the House, the Senate by class, the lines, what is before the Senate - in place
+            // of the chamber card and the second chamber's; the parties and the kept blocks follow as for every chamber
+            if (DrawCongressV35(width)) { DrawParliamentKept(width, seats, total, gutter); return; }
+
             // ---- the chamber ----
             bool blocs = HemicycleRenderer.BlocsKnown(PlayerCountryId);
             GUIStyle captionFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
@@ -156,7 +160,16 @@ namespace PoliSim.UI
 
             // ---- the second chamber (PS-6 US-15), where the country seats one ----
             DrawSecondChamberV35(width);
+            DrawParliamentKept(width, seats, total, gutter);
+        }
 
+        /// <summary>PS-6 US-35: the top of the kept blocks (the bills before the chamber, the dated rows, the divisions) in the tab's scroll, read by the film.</summary>
+        private float _parliamentRowsTop;
+
+        /// <summary>§743: the Parliament tab under its chamber card(s) - the parties as tiles, then the blocks kept as built. PS-6 US-35: split out so the
+        /// USA's Congress view draws them under it too.</summary>
+        private void DrawParliamentKept(float width, IReadOnlyDictionary<string, int> seats, int total, float gutter)
+        {
             // ---- the parties ----
             DrawPoliticsSectionHead("Parties", "parl:parties", width);
             var parties = new List<PoliticalParty>();
@@ -180,7 +193,9 @@ namespace PoliSim.UI
             V35.FloorGuarded = false;
 
             // ---- kept as built (not in the composition; asked) ----
-            GUILayout.Space(V35.Px(6f));
+            // PS-6 US-35: the gap's rect is kept, so the film can scroll to the rows by their top (the Congress view stands taller than a chamber card)
+            Rect keptTop = GUILayoutUtility.GetRect(width, V35.Px(6f), GUILayout.Width(width), GUILayout.Height(V35.Px(6f)));
+            if (Event.current.type == EventType.Repaint) { _parliamentRowsTop = keptTop.y; }
             DrawPendingLegislation();
             GUILayout.Space(10f);
             DrawParliamentPoliticalBlocks();   // PS-3h (§635), the caretaker line, §646's round, PS-3i (§636) - board 21b's rows (§685)

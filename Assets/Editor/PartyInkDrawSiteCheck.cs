@@ -91,6 +91,13 @@ namespace PoliSim.EditorTools
              "§676 (SP-4, 2026-09-29): the creation flow CHOOSES a party identity - its ink is picked against the real parties' drawn inks and "
              + "its mark placed among theirs on the compass, so party identity is the whole subject, the chamber's argument. The file draws "
              + "NO area accent: the single-issue party's area icons are tinted in plain text ink, never the area's own (clause 2 by construction)."),
+            ("GameController.CongressV35.cs",
+             "PS-6 US-35 (2026-10-23, D-US part two's board 30a and answer 5): the Congress view draws WHO GOVERNS - the President, the House and the "
+             + "Senate each as its party's code on its ink - the two chambers as seat bars in the parties' inks, and the Senate's three classes one cell "
+             + "a senator in his side's ink (an independent in the Neutral beside his caucus, never in its ink): party identity is the whole subject, the "
+             + "chamber's own argument. The role chip's mark on its party's ink square (board 30c, answer 5: the party mark in its ink, then the word) "
+             + "is drawn here too, called from the Desk's masthead, because whose role it is IS the chip's subject. The file draws NO area accent "
+             + "(clause 2 by construction): the page's political accent is drawn by GameController.PoliticsV35.cs and the Desk's by its own files."),
             ("GameController.OwnNominee.cs",
              "PS-6 US-33 (SP-6a, 2026-10-17): the creation flow's US form CHOOSES which party's ticket the player's own nominee heads - the tickets "
              + "are the parties' own marks in their own inks, and the compass places the nominee, in its party's mark, inside the party's range "

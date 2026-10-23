@@ -612,6 +612,7 @@ Once D-US part one's boards are stamped LOOKED AT (§707): `ElectionNightFromMod
 Board by board, once stamped LOOKED AT: the Congress view, the signing plate's veto and override, the president's desk, the debt-limit slip, the role chips, and the start card with both chambers.
 *Needs:* US-25 answered and stamped.
 *Done when:* REAL films of the signing plate and the start card at 1280 and 2560; the dry film; the cheap bar.
+**Built: `COMPLETED.md` §905** - from Code's boards 30a-30d drawn through the Design channel (PROPOSAL, unstamped; Elias's K36): the Congress view read from the chambers (who governs, DIVIDED, both bars with their lines, the Senate's three dated classes with the independents apart, the lines card as arithmetic, the nomination as the model holds it), the plate's path with the ten days and each verb's consequence (File on an overridden bill), the debt tile's state chip and sentence-case slip, the role chip's precedence and tag, the lapse chip, the start card's Senate beside the House; the model's owed parts (K14-K17, K21-K23, K26) listed in the record.
 
 **US-36 — PS-6 closed. Size M.**
 Every Canvas surface filmed REAL at 1280 and 2560: the start card, the signing and veto plates, the night. A US game is filmed from 12 Mar 2024 through the 2024 count, the oath, a bill through both chambers, a veto, the first budget, the debt limit's episode and the 2026 midterm; the driver stages each outcome (a DEM win, a REP win) as `-shotformation` stages a formation. An ultrareview is suggested to Elias and gates nothing (§649).
