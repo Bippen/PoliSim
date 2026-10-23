@@ -80,6 +80,7 @@ namespace PoliSim.UI
                     break;
             }
             DrawBudgetAction(leftWidth, draft, changes);
+            DrawUsCongressVerbs(leftWidth);   // PS-6 K22, K23, K75: the debt limit's verbs and a player-president's own withhold - nothing outside the US Congress
             DrawBudgetKeptReadings(leftWidth);
             GUILayout.EndVertical();
             GUILayout.Space(gutter);
@@ -1059,6 +1060,145 @@ namespace PoliSim.UI
             GUILayout.Space(V35.Px(V35.Gutter));
         }
 
+        /// <summary>
+        /// PS-6 K22, K23 and K75 (Elias's rulings of 2026-10-23, `docs/RULINGS_2026-10-23.md`): THE US CONGRESS'S VERBS under the budget's action, drawn only where
+        /// the game's Congress votes. A player-president's own party may withhold or release the continuing resolution (K75 - an opposition player's verb stays in
+        /// the action row above). While the debt limit is reached, a player-president proposes the raise - at P.L. 117-73's or P.L. 119-21's size, the two increases of record
+        /// sizes, each added to the excess (K77) - or a suspension through 1 January of the next year or the year after (P.L. 118-5's form), voted at the
+        /// deadline (K25) or, past it, the day it is tabled (K43); a party holding a chamber against the presidency withholds or releases the raise (K22). Each
+        /// button's slip says what follows. The debt tile's slip states the limit; these are its actions (board 30c's verb card, drawn as the page's buttons).
+        /// </summary>
+        private void DrawUsCongressVerbs(float width)
+        {
+            // the Unity run's real907 (GUILayout: Mismatched LayoutGroup.repaint, every US Budget page blank): the offer is computed ONCE a frame, so the Layout
+            // event and the events after it draw the same rows; the rows are planned on the page's width, which both passes know (a GetRect in the Layout
+            // event is a placeholder); and a click is a REQUEST, acted on in the next Update, so nothing drawn changes mid-frame
+            if (_usCongressVerbsFrame != Time.frameCount || _usCongressVerbs == null)
+            {
+                _usCongressVerbs = BuildUsCongressVerbs();
+                _usCongressVerbsFrame = Time.frameCount;
+            }
+            List<(string Label, string Id, SlipContent Slip, System.Action Act)> verbs = _usCongressVerbs;
+            if (verbs.Count == 0) { return; }
+
+            // the buttons, the page's one form, as many to a row as fit the page's width
+            float h = V35.Px(34f), gap = V35.Px(8f);
+            var rows = new List<List<int>>();
+            float used = 0f;
+            for (int k = 0; k < verbs.Count; k++)
+            {
+                float w = BudgetButtonWidth(verbs[k].Label, null);
+                if (rows.Count == 0 || (rows[rows.Count - 1].Count > 0 && used + w > width)) { rows.Add(new List<int>()); used = 0f; }
+                rows[rows.Count - 1].Add(k);
+                used += w + gap;
+            }
+            foreach (List<int> line in rows)
+            {
+                GUILayout.Space(V35.Px(4f));
+                Rect row = GUILayoutUtility.GetRect(width, h, GUILayout.Width(width), GUILayout.Height(h));
+                float x = row.x;
+                foreach (int k in line)
+                {
+                    float w = BudgetButtonWidth(verbs[k].Label, null);
+                    var cell = new Rect(x, row.y, Mathf.Min(w, Mathf.Max(1f, row.xMax - x)), h);
+                    if (DrawBudgetButton(cell, verbs[k].Label, null, true)) { _usCongressVerbRequested = verbs[k].Act; }   // acted on in the next Update
+                    SlipAnchor(cell, verbs[k].Id);
+                    _budgetSlipBook.Anchors[verbs[k].Id] = verbs[k].Slip;
+                    x += w + gap;
+                }
+            }
+            GUILayout.Space(V35.Px(V35.Gutter));
+        }
+
+        /// <summary>The US Congress's verbs as the page offers them this frame (`DrawUsCongressVerbs`, computed once a frame).</summary>
+        private List<(string Label, string Id, SlipContent Slip, System.Action Act)> _usCongressVerbs;
+        private int _usCongressVerbsFrame = -1;
+
+        /// <summary>A verb the player clicked on the Budget page, acted on at the top of the next `Update` (so no drawn state changes mid-frame).</summary>
+        private System.Action _usCongressVerbRequested;
+
+        /// <summary>The verbs `DrawUsCongressVerbs` draws: their labels, slips and acts, read from the model once a frame.</summary>
+        private List<(string Label, string Id, SlipContent Slip, System.Action Act)> BuildUsCongressVerbs()
+        {
+            var verbs = new List<(string Label, string Id, SlipContent Slip, System.Action Act)>();
+            if (_playerCountry == null || !UsBudgetProcedure.Applies(_playerCountry)) { return verbs; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            bool governs = _simulationManager.PlayerMayIntroduce(PlayerCountryId, out _);
+            string mine = _playerCountry.PlayerPartyAbbrev;
+
+            // K75: the player-president's own party and the continuing resolution
+            BudgetBill pendingBill = _simulationManager.GetPendingBudgetBill(PlayerCountryId);
+            bool ownWithheld = !string.IsNullOrEmpty(mine) && _playerCountry.ContinuingResolutionWithheldBy == mine;
+            if (governs && (ownWithheld || ((pendingBill == null || pendingBill.ContinuingResolution) && UsBudgetProcedure.MayWithhold(_playerCountry, pendingBill, today, out _))))
+            {
+                verbs.Add((ownWithheld ? "Release the continuing resolution" : "Withhold the continuing resolution", "budget:uscr",
+                    new SlipContent(ownWithheld ? "RELEASE THE CONTINUING RESOLUTION" : "WITHHOLD THE CONTINUING RESOLUTION")
+                        .Add(ownWithheld ? "YOUR PARTY VOTES AGAINST ITS OWN GOVERNMENT'S RESOLUTION IN BOTH CHAMBERS · RELEASED, ONE IS ASKED NOTHING AND PASSES UNCONTESTED"
+                            : "YOUR PARTY WOULD VOTE AGAINST ITS OWN GOVERNMENT'S RESOLUTION IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT")
+                        .Add("A RESOLUTION THAT FALLS FUNDS NOTHING - UNFUNDED, THE GOVERNMENT SHUTS DOWN, AND IT BEARS EACH ONE THAT FALLS")
+                        .Add("IN A SHUTDOWN YOUR OWN SENATORS MAY CROSS AT CLOTURE - DRAWN FROM THE CLOTURE VOTES OF EVERY LAPSE OF RECORD, " + PoliSim.Elections.UsLapseDraw.FittedLabel),
+                    () => { if (!_simulationManager.WithholdContinuingResolution(PlayerCountryId, !ownWithheld, out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the continuing resolution's verb was refused - {refused}"); } }));
+            }
+
+            // K23: the player-president's raise or suspension
+            BudgetBill pendingRaise = _simulationManager.GetPendingDebtLimitBill(PlayerCountryId);
+            bool president = governs && !string.IsNullOrEmpty(mine) && _playerCountry.Government != null && _playerCountry.Government.RoleOf(mine) == PoliSim.Elections.PlayerRole.PrimeMinister;
+            if (UsDebtLimit.MayPropose(_playerCountry, president, true, pendingRaise, today, UsDebtLimit.RaiseUsd, System.DateTime.MinValue, out _))
+            {
+                double excess = UsDebtLimit.ExcessUsd(_playerCountry);
+                var sizes = new List<double>(UsDebtLimit.ProposalSizesUsd);   // K77: each size is added to the excess on the day the raise is law
+                string when = UsDebtLimit.VotedTheDayTabled(_playerCountry, today) ? "BOTH CHAMBERS VOTE IT TODAY - THE MEASURES HAVE RUN OUT"
+                    : "BOTH CHAMBERS VOTE IT ON " + UsDebtLimit.BindsOn(_playerCountry).ToString("d MMMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() + ", WHEN THE MEASURES RUN OUT";
+                foreach (double size in sizes)
+                {
+                    double tabled = size;
+                    string money = UiFormat.Money((float)(tabled / 1e9), MoneyUnit.Billions);
+                    verbs.Add(("Raise by the excess and " + money, "budget:uslimit:" + verbs.Count.ToString(CultureInfo.InvariantCulture),
+                        new SlipContent("PROPOSE A RAISE OF THE EXCESS AND " + money)
+                            .Add("THE LIMIT UP BY THE DEBT'S EXCESS OVER IT ON THE DAY IT IS LAW, AND " + money + " MORE - THE ROOM IT LEAVES · THE EXCESS TODAY " + UiFormat.Money((float)(excess / 1e9), MoneyUnit.Billions))
+                            .Add("BY RECONCILIATION - A MAJORITY IN BOTH CHAMBERS, THE HOUSE FIRST · " + when)
+                            .Add("THEN TO YOUR DESK, SIGNED OR VETOED AS ANY BILL"),
+                        () => { if (!_simulationManager.ProposeDebtLimitRaise(PlayerCountryId, tabled, System.DateTime.MinValue, out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the debt-limit raise was refused - {refused}"); } }));
+                }
+                System.DateTime voteDay = UsDebtLimit.VoteDayOf(_playerCountry, today);   // the review's M2: a suspension's day after its vote's
+                for (int ahead = 1; ahead <= 2; ahead++)
+                {
+                    var through = new System.DateTime(voteDay.Year + ahead, 1, 1);
+                    string day = through.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+                    verbs.Add(("Suspend to " + day, "budget:uslimit:" + verbs.Count.ToString(CultureInfo.InvariantCulture),
+                        new SlipContent("PROPOSE A SUSPENSION THROUGH " + day.ToUpperInvariant())
+                            .Add("NO LIMIT APPLIES UNTIL THEN · THE DAY AFTER, IT RETURNS AT THE DEBT SUBJECT TO IT THAT DAY")
+                            .Add("BY RECONCILIATION - A MAJORITY IN BOTH CHAMBERS, THE HOUSE FIRST · " + when)
+                            .Add("THEN TO YOUR DESK, SIGNED OR VETOED AS ANY BILL"),
+                        () => { if (!_simulationManager.ProposeDebtLimitRaise(PlayerCountryId, 0d, through, out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the debt-limit suspension was refused - {refused}"); } }));
+                }
+            }
+
+            // K90: the President answers the binding limit's hold by letting it bind - the cut bites until he proposes later
+            if (_simulationManager.DebtLimitAwaitsPresident(PlayerCountryId))
+            {
+                verbs.Add(("Let the limit bind", "budget:uslimitbind",
+                    new SlipContent("LET THE LIMIT BIND")
+                        .Add("THE CLOCK RUNS ON WITH NO RAISE BEFORE CONGRESS: SPENDING OTHER THAN INTEREST IS CUT TO REVENUE LESS INTEREST UNTIL YOU PROPOSE ONE")
+                        .Add("YOU ARE ASKED AGAIN WHEN SOMETHING CHANGES: A RAISE THAT FALLS OR IS VETOED, OR A MAJORITY RELEASING ITS WITHHOLD"),
+                    () => { if (!_simulationManager.LetDebtLimitBind(PlayerCountryId, out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: letting the debt limit bind was refused - {refused}"); } }));
+            }
+
+            // K22: a party holding a chamber against the presidency withholds or releases the raise
+            bool raiseWithheld = !string.IsNullOrEmpty(mine) && _playerCountry.DebtLimitWithheldBy == mine;
+            if (raiseWithheld || UsDebtLimit.MayWithhold(_playerCountry, true, today, out _))
+            {
+                verbs.Add((raiseWithheld ? "Release the debt-limit raise" : "Withhold the debt-limit raise", "budget:uslimitwithhold",
+                    new SlipContent(raiseWithheld ? "RELEASE THE DEBT-LIMIT RAISE" : "WITHHOLD THE DEBT-LIMIT RAISE")
+                        .Add(raiseWithheld ? "YOUR PARTY VOTES AGAINST EVERY RAISE IN BOTH CHAMBERS · RELEASED, THE NEXT IS ASKED NOTHING AND PASSES UNCONTESTED"
+                            : "YOUR PARTY WOULD VOTE AGAINST EVERY RAISE IN BOTH CHAMBERS AND EVERY OTHER PARTY FOR IT - A CHAMBER YOUR PARTY HOLDS STOPS IT")
+                        .Add("ONCE THE MEASURES RUN OUT WITH NO RAISE LAW, SPENDING OTHER THAN INTEREST IS CUT TO REVENUE LESS INTEREST, AND THE GOVERNMENT BEARS EACH RAISE THAT FALLS")
+                        .Add("NO OTHER PARTY WITHHOLDS ONE"),
+                    () => { if (!_simulationManager.WithholdDebtLimitRaise(PlayerCountryId, !raiseWithheld, out string refused)) { NoteBudgetRefusal(refused); Debug.Log($"BUDGET: the debt-limit verb was refused - {refused}"); } }));
+            }
+            return verbs;
+        }
+
         /// <summary>The page's button (the composition's): brass and its edge where it acts, the paper and a muted edge where it cannot; the count in a chip
         /// inside it. One control on every frame, enabled or not.</summary>
         /// <summary>§737: the button's width for its label and count - what <see cref="DrawBudgetButton"/> draws, for a caller placing something beside it.</summary>
@@ -1293,6 +1433,11 @@ namespace PoliSim.UI
             }
             _budgetSlipBook.Anchors["ifpassed:revenue"] = new SlipContent("REVENUE · " + BudgetSignedFigure(_cachedBudgetImpact.RevenueDelta)).Add("THE YEAR'S REVENUE WITH THE DRAFT AGAINST WITHOUT").Add("NO DIRECTION MOST AGREE ON - THE NEUTRAL INK");
             _budgetSlipBook.Anchors["ifpassed:spending"] = new SlipContent("SPENDING · " + BudgetSignedFigure(_cachedBudgetImpact.SpendingDelta)).Add("THE YEAR'S SPENDING WITH THE DRAFT AGAINST WITHOUT").Add("NO DIRECTION MOST AGREE ON - THE NEUTRAL INK");
+            if (_cachedPreview != null && _cachedPreview.DebtLimitCut > 0f)   // PS-6 K26 (Elias's ruling of 2026-10-23): while the debt limit binds the preview's year is cut, and says so
+            {
+                _budgetSlipBook.Anchors["ifpassed:spending"].Add("THE DEBT LIMIT BINDS: THE YEAR'S BOOK CUTS " + UiFormat.Money(_cachedPreview.DebtLimitCut, MoneyUnit.Billions) + " OF SPENDING OTHER THAN INTEREST TO REVENUE LESS INTEREST, UNTIL A RAISE IS LAW")
+                    .Add("THE CUT MOVES THE BOOK ONLY - OUTPUT, BENEFITS AND APPROVAL ARE NOT MOVED BY IT");
+            }
             var balanceSlip = new SlipContent("BALANCE · " + BudgetSignedFigure(_cachedBudgetImpact.NetDelta)).Add("THE YEAR'S BALANCE WITH THE DRAFT AGAINST WITHOUT");
             balanceSlip.Add(rule ?? "WITHIN THE COUNTRY'S RULE WITH THE DRAFT - THE NEUTRAL INK (ELIAS'S RULING: THE WARNING IS A BREACH'S)");
             _budgetSlipBook.Anchors["ifpassed:balance"] = balanceSlip;

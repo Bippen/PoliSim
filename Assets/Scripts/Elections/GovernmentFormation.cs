@@ -301,7 +301,7 @@ namespace PoliSim.Elections
         public static ElectionVintage SittingVintage(Country country)
         {
             DateTime latest = DateTime.MinValue;
-            if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (held.Method != ElectionMethod.NotImplemented && held.Date > latest) { latest = held.Date; } } }
+            if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (NationalElection.CountsParliament(held.Method) && held.Date > latest) { latest = held.Date; } } }
             return latest == DateTime.MinValue ? ElectionVintage.Seated : WorldClock.VintageOfElection(country.Id, latest);
         }
 
@@ -309,7 +309,7 @@ namespace PoliSim.Elections
         public static DateTime SittingPollingDay(Country country)
         {
             DateTime latest = DateTime.MinValue;
-            if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (held.Method != ElectionMethod.NotImplemented && held.Date > latest) { latest = held.Date; } } }
+            if (country?.ElectionHistory != null) { foreach (ElectionRecord held in country.ElectionHistory) { if (NationalElection.CountsParliament(held.Method) && held.Date > latest) { latest = held.Date; } } }
             return latest != DateTime.MinValue ? latest : WorldClock.ElectionDayOf(country.Id, WorldClock.Resolve(country.Id, SittingVintage(country)));   // the seated sentinel resolved to its chamber of record (the reading)
         }
 

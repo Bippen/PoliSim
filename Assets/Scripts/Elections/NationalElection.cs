@@ -14,6 +14,11 @@ namespace PoliSim.Elections
         GermanyNationalProportional,
         /// <summary>§762 (PS-5): Poland's 41 districts, d'Hondt in each, the 5 % and 8 % thresholds, the minority exempt - `PolishSejmAllocation`.</summary>
         PolandDistricts,
+        /// <summary>PS-6 K74 (Elias's ruling of 2026-10-23, `docs/RULINGS_2026-10-23.md`: "a US election method is added to the chamber record"): the USA's
+        /// House elected on the day loop by R-US18 (b)'s state delegations (`UsCongressElection`), with the Senate seats up - its seats the House the count
+        /// elected, by party; seated on 3 January by the day loop, never by the chamber path. No parliamentary formation, round or night reads it
+        /// (`NationalElection.CountsParliament`). Appended last, so every stored value keeps its number.</summary>
+        UsCongress,
     }
 
     /// <summary>
@@ -423,6 +428,11 @@ namespace PoliSim.Elections
 
             return scaled;
         }
+        /// <summary>PS-6 K74: whether a record of <paramref name="method"/> counted a PARLIAMENTARY chamber - the one every formation, Speaker's round, extra-election
+        /// window, election night and reference row reads: every method but `NotImplemented` (nothing counted) and
+        /// `UsCongress` (the US Congress, elected and seated on the day loop, where no parliamentary formation follows).</summary>
+        public static bool CountsParliament(ElectionMethod method) => method != ElectionMethod.NotImplemented && method != ElectionMethod.UsCongress;
+
         /// <summary>Runs the country's own procedure on a set of national vote shares, or reports that the model does not implement it.</summary>
         public static ElectionRecord Run(CountryId country, int turn, IReadOnlyDictionary<string, double> shares, System.DateTime date = default)
         {

@@ -26,7 +26,7 @@ namespace PoliSim.EditorTools
     /// the midterm scores), stepped day by day in the controller's order (the day, the player's day tick, the turn at its boundary, the player's election where
     /// the day is the polling day) to 3 Jan 2027: the polling-day flag raised on 5 Nov 2024 and 3 Nov 2026 and no other day; one presidential count (5 Nov 2024)
     /// and two Congress counts; no run-up and no campaign open for the midterm (DECLARED, the conservative reading); the midterm counted with no president, the
-    /// fitted term on the party of the president governing that day, swung from the game's own 2024 House, the Senate's class 2; the game's 120th Congress
+    /// fitted term on the last presidential winner's party (K13), swung from the game's own 2024 House, the Senate's class 2; the game's 120th Congress
     /// seated on 3 Jan 2027 - the House the midterm elected;</item>
     /// <item>(c) the swing printed against US-13's record: the president's party's two-party change from the game's 2024 count to its midterm, with the term and
     /// without it, beside the record's band (the Clerk's midterms 2002-2022), the fit's interval and the SECONDARY range since 1946; the seat change beside the
@@ -34,7 +34,10 @@ namespace PoliSim.EditorTools
     /// <item>(d) FORK-2: a world restored from a save cut on the evening of 2 Nov 2026 (the snapshot a fork is made of, `ShadowBaseline`) holds the same midterm
     /// on its own day loop - the same count, line for line - and a world restored from a save cut on 3 Nov after the count holds it once;</item>
     /// <item>(e) THE TEETH, planted: a presidential day refused by the midterm count, a midterm refused by the presidential count, the term's sign on each party,
-    /// and the term reaching the count (the same day's House counted without it differs).</item>
+    /// and the term reaching the count (the same day's House counted without it differs);</item>
+    /// <item>(f) PS-6 K13 (Elias's ruling of 2026-10-23): the president's party at a midterm is the last presidential winner's - the game's own 2024 count's in the
+    /// world, and, planted, the record's winner where the game has counted none (not the presidency governing on the start's day), a game count's winner and an
+    /// undecided count's acting party read before it.</item>
     /// </list>
     /// Opens its worlds under <see cref="SimulationManager.EpochScope"/> and restores the random streams and the regional readout. Writes nothing.
     /// Prints `US MIDTERM: PASS` and exits 0 when every check holds.
@@ -145,6 +148,21 @@ namespace PoliSim.EditorTools
                 F("(e) planted: the midterm count refuses a presidential day ({0})", refused));
             Check(!UsPresidentialElection.IsPollingDay(usa, Midterm2026) && UsCongressElection.IsPollingDay(usa, Midterm2026),
                 "(e) planted: on 3 Nov 2026 the presidential count has no polling day and the Congress count has one");
+            // (f) PS-6 K13 (Elias's ruling of 2026-10-23: "the president's party at a midterm is the last presidential winner's"), planted: on the start's world
+            // the presidency governing is the record's of 12 Mar 2024 (Biden, DEM) - the rule it replaced read that - while the last presidential winner before
+            // 3 Nov 2026 is the record's 2024 winner (REP, the oath of 20 Jan 2025); a game's own count, decided or with an acting president, is read before the record
+            string governing = UsCongressElection.PresidentsPartyOn(usa);
+            string ofRecord = UsCongressElection.MidtermPresidentsParty(usa, Midterm2026);
+            string ofRecord2022 = UsCongressElection.MidtermPresidentsParty(usa, new DateTime(2022, 11, 8));
+            var plantedCount = new UsPresidentialElection.Contest { PollingDay = Presidential2024, Winner = "planted", WinnerParty = "DEM" };
+            usa.UsPresidentialElections.Add(plantedCount);
+            string ofGame = UsCongressElection.MidtermPresidentsParty(usa, Midterm2026);
+            plantedCount.Winner = null; plantedCount.WinnerParty = null; plantedCount.ActingParty = "REP";
+            string ofActing = UsCongressElection.MidtermPresidentsParty(usa, Midterm2026);
+            usa.UsPresidentialElections.Remove(plantedCount);
+            Check(governing == "DEM" && ofRecord == "REP" && ofRecord2022 == "DEM" && ofGame == "DEM" && ofActing == "REP",
+                F("(f) K13 planted: governing on the start's day {0}; the midterm of 2026 reads the record's 2024 winner {1}, of 2022 the record's 2020 winner {2}; a planted game count won by DEM gives {3}, one undecided with REP acting {4} - the rule reads the winner, not the presidency on the day",
+                    governing ?? "none", ofRecord ?? "none", ofRecord2022 ?? "none", ofGame ?? "none", ofActing ?? "none"));
             double[] national = UsCongressElection.MidtermNational(poll, 0.5);
             Check(national != null && Math.Abs(national[0] - 0.475) < 1e-12 && Math.Abs(national[1] - 0.475) < 1e-12 && Math.Abs(national[2] - 0.05) < 1e-12,
                 F("(e) planted: the midterm's national vote keeps the others' share and splits the two parties' at V ({0})", national == null ? "none" : string.Join(" ", national.Select(v => v.ToString("0.000", CultureInfo.InvariantCulture)))));
@@ -181,7 +199,7 @@ namespace PoliSim.EditorTools
                 if (sim.CurrentDate == new DateTime(2025, 1, 3)) { houseOn2025 = new Dictionary<string, int>(usa.ParliamentSeats); }
                 if (sim.CurrentDate == Midterm2026.AddDays(-1))
                 {
-                    partyOnMidterm = UsCongressElection.PresidentsPartyOn(usa);
+                    partyOnMidterm = UsCongressElection.MidtermPresidentsParty(usa, Midterm2026);   // PS-6 K13: the last presidential winner's
                     json2Nov = SaveGameService.Serialize(SaveGameService.CreateSaveGame(sim, w, CountryId.USA, null));
                 }
                 // the second review's M1: the record's components in the midterm's poll, read on the polling day itself (the history before the day, so the
@@ -190,6 +208,7 @@ namespace PoliSim.EditorTools
             }
             Check(sim.CurrentDate == Seated2027, F("(b) the USA's start {0} (seed {1}, the USA the player's country, {2}) stepped to {3}", Day(WorldClock.StartDate(CountryId.USA)), Seed, PlayerParty, Day(sim.CurrentDate)));
             Check(flagged.SequenceEqual(new[] { Presidential2024, Midterm2026 }), F("(b) the polling-day flag was raised on {0} - the presidential day and the midterm, no other day", string.Join(", ", flagged.Select(Day))));
+            string first2024Winner = usa.UsPresidentialElections.Count > 0 ? usa.UsPresidentialElections[0].WinnerParty : null;
             Check(usa.UsPresidentialElections.Count == 1 && usa.UsPresidentialElections[0].PollingDay == Presidential2024, F("(b) one presidential count, of {0} - none at the midterm", usa.UsPresidentialElections.Count > 0 ? Day(usa.UsPresidentialElections[0].PollingDay) : "NONE"));
             Check(!campaignForMidterm, "(b) no run-up and no campaign opened for the midterm (DECLARED: the campaign staged is the presidential one)");
             UsCongressElection.Contest first = usa.UsCongressElections.FirstOrDefault(c => c.PollingDay == Presidential2024);
@@ -197,6 +216,8 @@ namespace PoliSim.EditorTools
             Check(usa.UsCongressElections.Count == 2 && first != null && midterm != null, F("(b) two Congress counts - {0}", string.Join("; ", usa.UsCongressElections.Select(c => Day(c.PollingDay)))));
             if (first == null || midterm == null) { return; }
             sb.Append("      the 2024 count: " + first.Line + "\n      the midterm:    " + midterm.Line + "\n");
+            Check(partyOnMidterm != null && partyOnMidterm == first2024Winner,
+                F("(f) PS-6 K13: the president's party at the midterm is the last presidential winner's - the game's own count of 5 Nov 2024 elected {0}, and the midterm reads {1}", first2024Winner ?? "NO WINNER", partyOnMidterm ?? "none"));
             Check(partyOnMidterm != null && midterm.PresidentsParty == partyOnMidterm && midterm.TermPoints == UsMidtermTerm.MeanPoints
                   && midterm.V == UsCongressElection.WithMidtermTerm(midterm.PollV, midterm.PresidentsParty, midterm.TermPoints) && midterm.V != midterm.PollV,
                 F("(b) the midterm's V {0:F4} is the poll's {1:F4} with the fitted term {2:F4} pp on the president's party {3} (FITTED, n {4}, {5}-{6}, 95 % interval {7:F2} to {8:F2})",

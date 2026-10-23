@@ -162,8 +162,10 @@ namespace PoliSim.EditorTools
             _exercised.Add("ELECTION");
             // PS-6 US-8 (R-US1 (a)): a polling day that elects no chamber - the USA's, whose House the record seats by date until US-16 - is recorded as not held
             // with its reason (the president is counted on the day loop); it carries no shares and no seats by design, so only its date and its reason are held
-            if (r.Method == ElectionMethod.NotImplemented && WorldClock.RecordSeatsChamber(c.Id))
+            if ((r.Method == ElectionMethod.NotImplemented || r.Method == ElectionMethod.UsCongress) && WorldClock.RecordSeatsChamber(c.Id))
             {
+                // PS-6 K74: the US method's record carries the House the day loop elected - its seats the whole House, no shares
+                if (r.Method == ElectionMethod.UsCongress && (r.Seats == null || r.Seats.Values.Sum() != UsCongressElection.HouseMembers)) { Breach("SHARES", c.Id + "|house|" + r.Date.Ticks, day, date, $"{c.Id} the polling day of {r.Date:yyyy-MM-dd} records a House of {r.Seats?.Values.Sum() ?? 0} seats, not {UsCongressElection.HouseMembers}"); }
                 if (string.IsNullOrEmpty(r.NotHeldReason)) { Breach("SHARES", c.Id + "|reason|" + r.Date.Ticks, day, date, $"{c.Id} the polling day of {r.Date:yyyy-MM-dd} elected no chamber and carries no reason"); }
                 string dayWhy = LegalDate(c.Id, r.Date);
                 if (dayWhy != null) { Breach("DATES", c.Id + "|" + r.Date.Ticks, day, date, $"{c.Id} the polling day of {r.Date:yyyy-MM-dd}: {dayWhy}"); }

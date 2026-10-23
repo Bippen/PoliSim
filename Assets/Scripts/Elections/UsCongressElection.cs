@@ -178,6 +178,28 @@ namespace PoliSim.Elections
         public static string PresidentsPartyOn(Country country) =>
             country?.Government != null && country.Government.Kind == WorldClock.ExecutiveKind.Presidency ? country.Government.PmParty : null;
 
+        /// <summary>
+        /// PS-6 K13 (Elias's ruling of 2026-10-23, `docs/RULINGS_2026-10-23.md`: "the president's party at a midterm is the last presidential winner's - the
+        /// record's rule - changed from who holds the presidency on polling day"; R-US20's block: "the party of the winner of the last presidential election
+        /// before it ... Truman, Johnson and Ford each keep their predecessor's party"): the party the midterm term of <paramref name="pollingDay"/> is applied to -
+        /// the winner's party of the game's own last presidential count before the day (`UsPresidentialElection.PreviousCount`); a count the House has not
+        /// decided, the party of whoever acts from its oath (DECLARED - such a count has no winner yet); where the game has counted none, the record's: the
+        /// presidency of record on the oath day after the last presidential polling day before it (`WorldClock.TryGovernmentAt` - the record's presidents in the
+        /// game's window are each that election's winner, DECLARED). Null where none is read.
+        /// </summary>
+        public static string MidtermPresidentsParty(Country country, DateTime pollingDay)
+        {
+            if (country == null) { return null; }
+            UsPresidentialElection.Contest last = UsPresidentialElection.PreviousCount(country, pollingDay.Date);
+            if (last != null) { return last.Decided() ? last.WinnerParty : last.ActingParty; }
+            int year = pollingDay.Year - 1;
+            while (year > pollingDay.Year - 5 && !UsPresidentialElection.IsPresidentialYear(year)) { year--; }
+            if (!UsPresidentialElection.IsPresidentialYear(year)) { return null; }
+            DateTime oath = UsPresidentialElection.OathDayAfter(UsPresidentialElection.PresidentialDay(year));
+            return WorldClock.TryGovernmentAt(country.Id, oath, out WorldClock.GovernmentOfRecord g) && g.Kind == WorldClock.ExecutiveKind.Presidency && g.Cabinet != null && g.Cabinet.Length > 0
+                ? g.Cabinet[0] : null;
+        }
+
         /// <summary>PS-6 US-27: a REP share of REP+DEM <paramref name="v"/> moved by <paramref name="termPoints"/> points on <paramref name="presidentsParty"/>
         /// (its own share up by the term, the other's down by it); unmoved where that party is neither REP nor DEM.</summary>
         public static double WithMidtermTerm(double v, string presidentsParty, double termPoints) =>
@@ -665,7 +687,7 @@ namespace PoliSim.Elections
             if (country == null || !ElectsIn(country.Id)) { why = "the game elects no Congress there"; return null; }
             if (!IsMidterm(pollingDay)) { why = "not a midterm polling day"; return null; }
             double pollV = TwoPartyV(poll);
-            string party = PresidentsPartyOn(country);
+            string party = MidtermPresidentsParty(country, pollingDay);   // PS-6 K13: the last presidential winner's, the record's rule
             double term = party == "REP" || party == "DEM" ? MidtermTermPoints : 0.0;
             double v = WithMidtermTerm(pollV, party, term);
             Contest prior = null;

@@ -134,7 +134,7 @@ namespace PoliSim.UI
                 for (int i = country.ElectionHistory.Count - 1; i >= 0; i--)
                 {
                     ElectionRecord e = country.ElectionHistory[i];
-                    if (e.Method != ElectionMethod.NotImplemented && e.Date < pollingDay.Date) { earlier = e; break; }
+                    if (NationalElection.CountsParliament(e.Method) && e.Date < pollingDay.Date) { earlier = e; break; }
                 }
             }
             if (earlier != null)

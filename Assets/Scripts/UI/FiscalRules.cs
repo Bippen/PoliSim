@@ -146,13 +146,34 @@ namespace PoliSim.UI
                 }
             }
             bool binding = !UsDebtLimit.Suspended(country, today) && UsDebtLimit.Binding(country, today);
-            string raise = "A raise of " + UiFormat.Money(Billions(UsDebtLimit.RaiseUsd), MoneyUnit.Billions);
+            // PS-6 K21-K23 (Elias's rulings of 2026-10-23): the bill's own act - a suspension to its day, a proposed raise by its size, the government's by the
+            // standard size - every raise the day's excess and its size (K77); the cause where it binds (withheld, fallen, or no proposal of the President's)
+            bool suspension = pendingRaise != null && pendingRaise.DebtLimitSuspendThrough != System.DateTime.MinValue;
+            string raise = suspension ? "A suspension through " + Day(pendingRaise.DebtLimitSuspendThrough)
+                : "A raise of the excess and " + UiFormat.Money(Billions(pendingRaise != null && pendingRaise.DebtLimitRaiseUsd > 0d ? pendingRaise.DebtLimitRaiseUsd : UsDebtLimit.RaiseUsd), MoneyUnit.Billions);
+            bool playerPresident = !string.IsNullOrEmpty(country.PlayerPartyAbbrev) && country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == PoliSim.Elections.PlayerRole.PrimeMinister;
+            string withheld = country.DebtLimitWithheldBy == null ? null : "The raise is withheld by " + PartySystems.ShortName(country.Id, country.DebtLimitWithheldBy) + ": it votes against it in both chambers, and a chamber it holds stops it.";
             if (pendingRaise != null)
             {
                 lines.Add(pendingRaise.Docket != null ? raise + " passed both chambers and waits on the President's desk: signed, it is law at once."
                     : raise + " is before Congress, voted on " + Day(today.AddDays(System.Math.Max(0, pendingRaise.DaysRemaining))) + " in both chambers by reconciliation, then to the President.");
+                if (!suspension) { lines.Add("Law, its size is added to the debt's excess over the limit that day: it clears the excess and leaves that much room."); }
             }
-            else if (binding) { lines.Add("No raise is before Congress: the last fell, and another is tabled the next day while the limit binds."); }
+            else if (binding)
+            {
+                lines.Add(playerPresident ? (country.DebtLimitLetBind ? "You let the limit bind: no raise is before Congress until you propose one, voted the day it is tabled."   // PS-6 K90
+                        : "No raise is before Congress. Propose one, or a suspension, or let it bind: past the deadline a proposal is voted the day it is tabled.")
+                    : "No raise is before Congress: the last fell, and another is tabled the next day while the limit binds.");
+            }
+            else if (playerPresident && country.DebtLimitReachedOn != System.DateTime.MinValue && !UsDebtLimit.Suspended(country, today))
+            {
+                lines.Add("No raise is before Congress. Propose one, or a suspension: it is voted on " + Day(UsDebtLimit.BindsOn(country)) + ", when the measures run out.");
+            }
+            if (withheld != null) { lines.Add(withheld); }
+            if (withheld != null && country.DebtLimitWithheldBy != country.PlayerPartyAbbrev && !UsDebtLimit.Suspended(country, today) && country.DebtLimitReachedOn != System.DateTime.MinValue)
+            {
+                lines.Add("It is released on " + Day(UsDebtLimit.AiReleaseDay(country)) + ", " + DaysWords(UsDebtLimit.AiHoldDaysPastDeadline) + " after the measures run out: a raise voted before then falls, and the cut binds meanwhile.");   // PS-6 K78, K89
+            }
             if (binding)
             {
                 lines.Add("Until a raise is law, spending other than interest is cut to revenue less interest. Interest is always paid.");
@@ -169,8 +190,9 @@ namespace PoliSim.UI
         /// PS-6 US-35 (board 30c, answer 4): THE DEBT TILE'S STATE in a few words, for the chip under its name - null where the game holds no limit, or the debt is
         /// below it (then <paramref name="sub"/> is the muted line: the limit and the headroom). The states the model reaches: AT THE LIMIT with the measures'
         /// days (a clock running); RAISE BEFORE CONGRESS and RAISE ON YOUR DESK while the measures run (a clock); LIMIT BINDS · CUT IN FORCE and BINDS · RAISE ON
-        /// YOUR DESK once they have run out (the cut in force); SUSPENDED TO a day (the limit set aside - the record's P.L. 118-5 at a start inside it; the
-        /// game's own suspension is K22's, owed). A withheld raise (K22) is owed: no chamber withholds it in the model.
+        /// YOUR DESK once they have run out (the cut in force); SUSPENDED TO a day (the limit set aside - the record's P.L. 118-5 at a start inside it, or the
+        /// game's own suspension, K22). A withheld raise (K22) keeps the board's chip - RAISE BEFORE CONGRESS while the measures run, LIMIT BINDS · CUT IN FORCE
+        /// once it has fallen - and the slip names the cause (`DebtLimitLines`).
         /// </summary>
         public static string DebtLimitChip(Country country, System.DateTime today, BudgetBill pendingRaise, out DebtLimitInk ink, out string sub)
         {

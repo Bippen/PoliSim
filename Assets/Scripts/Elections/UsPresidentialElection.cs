@@ -71,6 +71,15 @@ namespace PoliSim.Elections
             /// <summary>PS-6 US-33: the player's own nominee stood on this line in place of the nominee of record (`OwnNominees`) - the person is the line's own name
             /// (`UsTermLimit.PersonOf`). Additive under ruling A: false in a save from before, which held no own nominee.</summary>
             public bool OwnNominee;
+            /// <summary>PS-6 K29 (Elias's ruling of 2026-10-23: "the carry stays; the popular vote is re-summed from the counted states, so the two always agree"):
+            /// the line's national share of the popular vote (%) re-summed from the counted states - each state's counted share weighed by what it cast in the
+            /// derivation's year of record (`ResummedShares`); NaN where the count carries none (a planted contest, every count of a build before K29). The
+            /// derivation keeps `Share` (the states re-derive from it, the carry), and every reader of the popular vote reads `Popular()`. Saved
+            /// (format 57).</summary>
+            public double Counted = double.NaN;
+
+            /// <summary>PS-6 K29: the popular vote as the night and the pages print it - the re-summed share where the count made one, else the derived.</summary>
+            public double Popular() => double.IsNaN(Counted) ? Share : Counted;
         }
 
         /// <summary>One presidential election the game held - kept with the country (<see cref="Country.UsPresidentialElections"/>), so a save carries it (format 39).
@@ -512,6 +521,20 @@ namespace PoliSim.Elections
             contest.TieSeed = tieSeed;
             if (ground != null) { contest.GroundGame = ground; }
             if (groundWords != null) { contest.Line += "; " + groundWords; }
+            // PS-6 K29: the popular vote re-summed from the counted states (the ground game's and the noise's among them), so the nation's vote and the states agree
+            double[] resummed = ResummedShares(states, prior);
+            if (resummed != null)
+            {
+                foreach (Tally t in contest.Electors)
+                {
+                    t.Counted = 100.0 * (t.Party == "REP" ? resummed[ElectoralCollege.ShareRepublican] : t.Party == "DEM" ? resummed[ElectoralCollege.ShareDemocrat] : resummed[ElectoralCollege.ShareOthers]);
+                }
+                if (ground != null)
+                {
+                    contest.Line += string.Format(CultureInfo.InvariantCulture, "; the popular vote re-summed from the counted states: {0} {1:0.00} %, {2} {3:0.00} %, {4} {5:0.00} %",
+                        rep.Candidate, 100.0 * resummed[ElectoralCollege.ShareRepublican], dem.Candidate, 100.0 * resummed[ElectoralCollege.ShareDemocrat], OtherCandidates, 100.0 * resummed[ElectoralCollege.ShareOthers]);
+                }
+            }
             var othersLead = new List<string>();
             foreach (ElectoralCollege.StateCall call in states) { if (call.OthersLead) { othersLead.Add(call.State); } }
             if (othersLead.Count > 0)
@@ -529,6 +552,27 @@ namespace PoliSim.Elections
                     own.Candidate, own.Party, n != null && !string.IsNullOrEmpty(n.Default) ? ", " + n.Default : string.Empty, PresidentialElection.FutureFactor);
             }
             return contest;
+        }
+
+        /// <summary>PS-6 K29: the national shares (fractions, in `ElectoralCollege.ShareDemocrat`'s order) re-summed from <paramref name="states"/> - each
+        /// jurisdiction's shares weighed by its votes cast of record in <paramref name="weightsYear"/>, the derivation's own weights (both of the college's forms
+        /// weigh the prior year's votes cast, DECLARED: the game draws no turnout); null where a jurisdiction has no row of that year.</summary>
+        public static double[] ResummedShares(ElectoralCollege.StateCall[] states, int weightsYear)
+        {
+            if (states == null || states.Length == 0) { return null; }
+            var weights = new Dictionary<string, long>(StringComparer.Ordinal);
+            foreach (var state in Generated.UsPresidentialReturns.States) { if (state.Year == weightsYear) { weights[state.State] = state.VotesTotal; } }
+            var sum = new double[3];
+            double total = 0.0;
+            foreach (ElectoralCollege.StateCall c in states)
+            {
+                if (c?.Shares == null || c.Shares.Length < 3 || !weights.TryGetValue(c.State, out long w) || w <= 0) { return null; }
+                for (int k = 0; k < 3; k++) { sum[k] += w * c.Shares[k]; }
+                total += w;
+            }
+            if (total <= 0.0) { return null; }
+            for (int k = 0; k < 3; k++) { sum[k] /= total; }
+            return sum;
         }
 
         /// <summary>The census whose apportionment a presidential election of <paramref name="year"/> is held on: the Representatives a census apportions are

@@ -661,7 +661,7 @@ namespace PoliSim.Data
         /// <summary>
         /// PS-6 US-26: the game's own chamber counts in <paramref name="played"/> polled before <paramref name="before"/> (all of them where it is null), oldest
         /// first, each as shares of the roster's vote in <see cref="For"/>'s order (a party the count did not carry at zero). A country's counts are the national
-        /// shares of each election record that counted (<see cref="Country.ElectionHistory"/>, its method not NotImplemented); the USA's chamber path counts
+        /// shares of each election record that counted (`Country.ElectionHistory`, a parliamentary count - `NationalElection.CountsParliament`, PS-6 K74); the USA's chamber path counts
         /// nothing, and its own counts are the House the game elected (<see cref="Country.UsCongressElections"/>): REP at the contest's V and DEM at one less V
         /// (R-US15 (a): the poll is the House vote; V is the poll the count read, REP over REP and DEM). The presidential counts are not a chamber's: Poland's
         /// first vote reads the chamber's poll (which rolls), and the US electoral count's states roll by R-US24 (b) on their own.
@@ -700,7 +700,7 @@ namespace PoliSim.Data
             if (played.ElectionHistory == null) { return counts; }
             foreach (ElectionRecord e in played.ElectionHistory)
             {
-                if (e == null || e.Method == ElectionMethod.NotImplemented || e.Shares == null || e.Shares.Count == 0) { continue; }
+                if (e == null || !NationalElection.CountsParliament(e.Method) || e.Shares == null || e.Shares.Count == 0) { continue; }
                 if (before.HasValue && (e.Date == DateTime.MinValue || e.Date.Date >= before.Value.Date)) { continue; }   // undated: never before a day
                 var shares = new double[roster.Count];
                 for (int i = 0; i < roster.Count; i++) { shares[i] = e.Shares.TryGetValue(roster[i].Abbrev, out double s) ? s : 0.0; }

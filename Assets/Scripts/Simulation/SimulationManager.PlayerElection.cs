@@ -46,6 +46,7 @@ namespace PoliSim.Simulation
             bool answered = SetAsideForeignPolicyMeeting(countryId);
             if (_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> decisions) && decisions.Count > 0) { decisions.Clear(); answered = true; }
             Country country = _world?.GetCountry(countryId);
+            if (AnswerDebtLimitAsTheAi(country)) { answered = true; }   // PS-6 K23 with K49: a binding debt limit with no raise before Congress - the AI's rule tables it
             SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null) { return answered; }
             if (round.Stage == RoundStage.PlayerAsked)
@@ -90,17 +91,22 @@ namespace PoliSim.Simulation
             // (HoldUsPresidentialCount - UsPresidentialElection.Hold, then UsCongressElection.Hold), seated on 3 January - so THIS path, the parliamentary
             // chamber's, counts nothing: it records the day with no seats (the record's readers treat a NotImplemented record as no parliamentary election, which
             // keeps the formation's rounds and the reference row off the USA - DECLARED) and its reason says where the chamber was elected
+            // PS-6 K74 (Elias's ruling of 2026-10-23: "a US election method is added to the chamber record"): where the day loop counted the House today the record
+            // carries the method (UsCongress) and the House it elected, by party; no shares (the House vote is the contest's V); every parliamentary reader reads
+            // NationalElection.CountsParliament, so no formation, round, night or reference row reads it. A day whose count failed keeps the NotImplemented record.
             if (WorldClock.RecordSeatsChamber(id))
             {
                 string reason = NationalElection.NotHeldReasonOn(id, CurrentDate);   // PS-6 US-27: a midterm's own words
+                UsCongressElection.Contest countedToday = country.UsCongressElections?.Find(c => c.PollingDay.Date == CurrentDate.Date);
                 var notCounted = new ElectionRecord
                 {
                     Turn = CurrentTurn,
                     Date = CurrentDate,
                     CountryId = id.ToString(),
-                    Method = ElectionMethod.NotImplemented,
+                    Method = countedToday != null ? ElectionMethod.UsCongress : ElectionMethod.NotImplemented,
                     NotHeldReason = reason,
                 };
+                if (countedToday != null) { foreach (KeyValuePair<string, int> kv in countedToday.HouseSeats(id)) { notCounted.Seats[kv.Key] = kv.Value; } }
                 country.ElectionHistory.Add(notCounted);
                 if (!IsCounterfactual)
                 {
@@ -176,7 +182,7 @@ namespace PoliSim.Simulation
             ElectionRecord record = NationalElection.Run(id, CurrentTurn, shareByParty, CurrentDate);
             country.ElectionHistory.Add(record);
             if (!IsCounterfactual) { Debug.Log($"ELECTION: held for {id} on {CurrentDate:yyyy-MM-dd} (turn {CurrentTurn}) by {record.Method}" + (PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)")); }
-            if (record.Method != ElectionMethod.NotImplemented)
+            if (NationalElection.CountsParliament(record.Method))   // PS-6 K74: the parliamentary methods
             {
                 ParliamentSystem.SetSeatsFromElection(country, record.Seats);
 
@@ -202,7 +208,7 @@ namespace PoliSim.Simulation
             reading = default;
             government = default;
             sejm = null;
-            if (!PlayerCountryId.HasValue || latest == null || latest.Date != CurrentDate || latest.Method == ElectionMethod.NotImplemented) { return false; }
+            if (!PlayerCountryId.HasValue || latest == null || latest.Date != CurrentDate || !NationalElection.CountsParliament(latest.Method)) { return false; }
             CountryId id = PlayerCountryId.Value;
             Country country = _world?.GetCountry(id);
             if (country == null) { return false; }

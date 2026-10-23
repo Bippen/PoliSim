@@ -916,6 +916,18 @@ namespace PoliSim.EditorTools
                 if (TableBudget(c, "HOLD")) { return true; }
             }
 
+            if ((bool)Call("DebtLimitHolds"))
+            {
+                // PS-6 K85/K90 (the second review's H2): the binding limit's hold answered as the Budget page's verbs answer it - the President proposes the
+                // standard raise (voted at once past the deadline, K43), or, while an AI majority withholds it (K89), lets the limit bind until something changes
+                bool aiWithholds = c.DebtLimitWithheldBy != null && c.DebtLimitWithheldBy != c.PlayerPartyAbbrev;
+                string refused;
+                bool ok = aiWithholds ? _sm.LetDebtLimitBind(id, out refused) : _sm.ProposeDebtLimitRaise(id, UsDebtLimit.RaiseUsd, DateTime.MinValue, out refused);
+                Count(aiWithholds ? "answer debt limit let bind" : "answer debt limit raise");
+                Event($"HOLD debt limit binds on {_lastDate:yyyy-MM-dd}: {(aiWithholds ? "LET IT BIND (LetDebtLimitBind) - " + c.DebtLimitWithheldBy + " withholds the raise" : "RAISE PROPOSED (ProposeDebtLimitRaise, the standard size)")} {(ok ? "done" : "REFUSED - " + refused)}");
+                return true;
+            }
+
             if ((bool)Call("DeclarationHolds"))
             {
                 bool extra = _spec.Style == "fuzz" ? Rng("hold").Next(2) == 0 : false;
@@ -1147,7 +1159,7 @@ namespace PoliSim.EditorTools
         private string HoldState(Country c) =>
             $"night {(Get("_electionNight") != null ? 1 : 0)}, canvasLive {Get("_canvasLive")}, phase {Get("_canvasPhase")}, signing {((ICollection)Get("_signingQueue")).Count}, speed {Get("_gameSpeed")}, "
             + $"budget process {_sm.GetPendingBudgetProcess(c.Id)} (bill {(_sm.GetPendingBudgetBill(c.Id) != null ? 1 : 0)}, player may introduce {_sm.PlayerMayIntroduce(c.Id, out _)}), round {_sm.RoundOf(c.Id)?.Stage.ToString() ?? "none"}, "
-            + $"cabinet decisions {_sm.GetPendingCabinetDecisions(c.Id).Count}, meeting {(_sm.GetPendingForeignPolicyMeeting(c.Id) != null ? 1 : 0)}, declaration {Call("DeclarationHolds")}, campaign opening {Call("HasPendingCampaignOpening")}, scandal {Call("HasPendingScandalAnswer")}";
+            + $"cabinet decisions {_sm.GetPendingCabinetDecisions(c.Id).Count}, meeting {(_sm.GetPendingForeignPolicyMeeting(c.Id) != null ? 1 : 0)}, declaration {Call("DeclarationHolds")}, campaign opening {Call("HasPendingCampaignOpening")}, scandal {Call("HasPendingScandalAnswer")}, debt limit {Call("DebtLimitHolds")}";
 
         private void Count(string what) => _answers[what] = (_answers.TryGetValue(what, out int n) ? n : 0) + 1;
 

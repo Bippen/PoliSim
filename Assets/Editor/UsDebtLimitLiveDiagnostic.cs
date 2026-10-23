@@ -27,12 +27,20 @@ namespace PoliSim.EditorTools
     /// any boundary (R-US21 (v)); and the reach and the binding day beside CRS IF10292's "early to mid-2027", the miss stated.</item>
     /// <item>(d) A US GAME (the USA's own start, stepped in the controller's order): the suspension reinstated on 2 January 2025 at the game's own debt subject to
     /// limit at the end of 1 January (R-US21 (ii)'s words, no headroom - the review's L2), P.L. 119-21's increase NOT applied on 4 July 2025 (later raises are the game's Congress's acts),
-    /// the limit reached that day, the raise tabled a bill's course before the measures run out and law on the day they do, both chambers by reconciliation.</item>
-    /// <item>(e) THE CUT, planted on the US world: the limit binding with no raise law - the day tick tables the raise and arms the next day's flows, whose
-    /// non-interest outlays are cut to revenue less interest (the debt held), the slip's lines and the national note saying so.</item>
-    /// <item>(f) THE SAVE: format 53 carries the limit's fields and the pending raise; a save of the format before is refused (ruling A).</item>
+    /// the limit reached that day; PS-6 K23: the player-president's government tables nothing by itself - the President proposes the raise a bill's course
+    /// before the measures run out, voted at the deadline (K25) and law on the day they run out, both chambers by reconciliation.</item>
+    /// <item>(e) THE CUT, planted on the US world: the limit binding with no raise law - the day tick arms the next day's flows (and tables nothing for a
+    /// player-president), whose non-interest outlays are cut to revenue less interest (the debt held), the slip's lines and the national note saying so;
+    /// (e3) PS-6 K26: the budget preview's year cut while it binds, and not with nothing armed.</item>
+    /// <item>(f) THE SAVE: the current format carries the limit's fields; a save of the format before is refused (ruling A). (e2) PS-6 K43: a raise proposed past
+    /// the deadline is voted the day it is tabled.</item>
+    /// <item>(h) PS-6 K22 and K43: the president's own party may not withhold the raise; a planted withholder holding a chamber stops one, the slip naming the
+    /// cause; its withhold lapses with the presidency; proposed again, the raise is law that day. (j) K23/K25: a suspension proposed while the measures run is
+    /// saved with its fields and voted at the deadline; (i) K22: law, no limit applies to its day, and the day after the limit returns at that day's debt.
+    /// (m) PS-6 K75: the player-president's own party may withhold the continuing resolution, and its withhold stands.</item>
     /// <item>(g) THE TEETH, every run: a planted limit moves this walk's reach (so the comparison in (c) can fail); the AI's raise is not taken a day early, nor
-    /// where Congress votes; the cut is 0 off its armed day, never more than the outlays, and nothing where revenue covers them; the reinstatement on its day only.</item>
+    /// where Congress votes; the cut is 0 off its armed day, never more than the outlays, and nothing where revenue covers them; the reinstatement on its day only;
+    /// PS-6 K77: the AI's raise the excess and its size; PS-6 K22: who may withhold (a party holding a chamber against the presidency).</item>
     /// </list>
     /// </summary>
     public static class UsDebtLimitLiveDiagnostic
@@ -41,7 +49,7 @@ namespace PoliSim.EditorTools
         private const int Seed = 777;
 
         /// <summary>The raise's division title, exactly (the second review's L4) - its figure the UI's own rendering of the raise, which (g) holds equal.</summary>
-        private const string RaiseTitle = "Reconciliation (the debt limit): the limit raised by US$5.00T";
+        private const string RaiseTitle = "Reconciliation (the debt limit): the limit raised by the excess and US$5.00T";   // PS-6 K77: the size added to the excess
 
         /// <summary>DECLARED - CRS IF10292 v22 (21 Sep 2026): outside projections put debt reaching the limit in "early to mid-2027" - read as 1 January to 30 June 2027.</summary>
         private static readonly DateTime CrsOpens = new DateTime(2027, 1, 1);
@@ -91,6 +99,46 @@ namespace PoliSim.EditorTools
                 Check(seedUsd == UsDebtLimit.SeedDebtUsd && docSeedUsd == seedUsd && Math.Abs(UsDebtLimit.BridgeRatio - engineRatio) < 5e-7 && Math.Abs(docRatio - UsDebtLimit.BridgeRatio) < 1e-12,
                     F("(a) the seed {0} is a fresh world's US debt, read from the seed's own constant, and the engine block's printed seed ({1}); the bridge {2:0.000000000} is the engine block's {3} and the document's vintage over its seed", Usd(seedUsd), engineSeed.Success ? Usd(docSeedUsd) : "NOT FOUND", UsDebtLimit.BridgeRatio, engine.Success ? engine.Groups[1].Value : "NOT FOUND"));
 
+                // ================================================================ (a2) PS-6 K78: the hostile-majority episodes held to their files
+                {
+                    string root = Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+                    string dir = Path.Combine(root, "ElectionsData/usa/raw/debtlimit_episodes");
+                    string Text(string file) => File.ReadAllText(Path.Combine(dir, file), Encoding.UTF8);
+                    int unheld = 0;
+                    foreach (string line in File.ReadAllLines(Path.Combine(dir, "SHA256SUMS.txt")))
+                    {
+                        Match m = Regex.Match(line, @"^([0-9a-f]{64}) \*(.+)$");
+                        if (!m.Success) { continue; }
+                        using (var sha = System.Security.Cryptography.SHA256.Create())
+                        {
+                            string got = BitConverter.ToString(sha.ComputeHash(File.ReadAllBytes(Path.Combine(dir, m.Groups[2].Value)))).Replace("-", string.Empty).ToLowerInvariant();
+                            if (got != m.Groups[1].Value) { unheld++; }
+                        }
+                    }
+                    string crs = Regex.Replace(Regex.Replace(Text("secondary_everycrsreport_R43389.html"), "<[^>]+>", " ").Replace("&nbsp;", " "), @"\s+", " ");
+                    string reading = File.ReadAllText(Path.Combine(root, "ElectionsData/usa/debt_limit.md"), Encoding.UTF8);
+                    bool Roll(string file, DateTime day, string result) => Text(file).Contains("<action-date>" + day.ToString("d-MMM-yyyy", CultureInfo.InvariantCulture) + "</action-date>") && Text(file).Contains("<vote-result>" + result + "</vote-result>");
+                    bool Approved(string file, DateTime day) => Text(file).Contains("Approved " + day.ToString("MMMM d, yyyy", CultureInfo.InvariantCulture) + ".");
+                    UsDebtLimit.HostileEpisode e11 = UsDebtLimit.HostileEpisodes[0], e13 = UsDebtLimit.HostileEpisodes[1], e23 = UsDebtLimit.HostileEpisodes[2];
+                    bool held11 = crs.Contains("On May 16, 2011, U.S. Treasury Secretary Timothy Geithner announced that the federal debt had reached its statutory limit") && e11.Reached == new DateTime(2011, 5, 16)
+                                  && crs.Contains("its borrowing authority would be exhausted on August 2") && e11.XDate == new DateTime(2011, 8, 2)
+                                  && Roll("clerk_roll_2011_379.xml", e11.FirstRefused, "Failed") && Approved("govinfo_PLAW-112publ25.htm", e11.Law);
+                    bool held13 = crs.Contains("May 18, 2013 16,699 May 20, 2013") && e13.Reached == new DateTime(2013, 5, 20) && Text("govinfo_PLAW-113publ3.htm").Contains("ending on May 18, 2013")
+                                  && crs.Contains("exhaust its borrowing capacity no later than October 17") && e13.XDate == new DateTime(2013, 10, 17)
+                                  && e13.FirstRefused == DateTime.MinValue && Approved("govinfo_PLAW-113publ46.htm", e13.Law);
+                    bool held23 = reading.Contains("beginning on January 19, the outstanding debt of the United States was projected to reach the statutory limit") && e23.Reached == new DateTime(2023, 1, 19)
+                                  && reading.Contains("if Congress has not raised or suspended the debt limit by June 5") && e23.XDate == new DateTime(2023, 6, 5)
+                                  && Roll("clerk_roll_2023_199.xml", e23.FirstRefused, "Passed") && Approved("govinfo_PLAW-118publ5.htm", e23.Law);
+                    bool no2021 = crs.Contains("On September 27, 2021, the Senate declined to close further debate on the bill") && Approved("govinfo_PLAW-117publ50.htm", new DateTime(2021, 10, 14))
+                                  && UsDebtLimit.HostileEpisodes.All(x => x.Name != "2021");
+                    Check(unheld == 0 && held11 && held13 && held23 && no2021 && UsDebtLimit.HostileEpisodes.Length == 3,
+                        F("(a2) PS-6 K78: the hostile-majority episodes held to their files (every file of raw/debtlimit_episodes/ to its digest - {0} not): 2011 {1}, 2013 {2}, 2023 {3}; 2021 left out (a Senate minority's filibuster, no hostile majority) {4}",
+                            unheld, held11 ? "held" : "NOT HELD", held13 ? "held" : "NOT HELD", held23 ? "held" : "NOT HELD", no2021 ? "as read" : "NOT AS READ"));
+                    Check(UsDebtLimit.HostileEpisodes.Select(x => x.LeadDays).SequenceEqual(new[] { 0, 0, 2 }) && UsDebtLimit.AiHoldDaysPastDeadline == 2,
+                        F("(a2) K78's rule as K89 amends it, [AUTHORED-DRAFT] on n = {0}: the leads (X-date less law) {1} days, their largest {2} - the AI's hostile majority holds that many days past the day the measures run out, so the cut binds them, and releases before that day's vote",
+                            UsDebtLimit.HostileEpisodes.Length, string.Join(", ", UsDebtLimit.HostileEpisodes.Select(x => x.Name + " " + x.LeadDays)), UsDebtLimit.AiHoldDaysPastDeadline));
+                }
+
                 // ================================================================ (b) the law at the start
                 var planted = new (DateTime Day, double Limit, bool Suspended, DateTime Since)[]
                 {
@@ -136,6 +184,7 @@ namespace PoliSim.EditorTools
                         foreach (Country k in ws.Countries) { none[k.Id] = PolicyDecision.None(); }
                         var series = new List<(DateTime Day, double Dsl)>();
                         DateTime liveReach = DateTime.MinValue, liveRaise = DateTime.MinValue;
+                        double dslAtRaise = double.NaN;
                         bool armed = false, ministryWrote = false;
                         int boundaries = 0;
                         DateTime stopBy = opens.AddYears(3);
@@ -144,7 +193,7 @@ namespace PoliSim.EditorTools
                             bool boundary = ss.AdvanceDay();
                             series.Add((ss.CurrentDate, (double)au.State.GovernmentDebt * 1e9 * docRatio));   // this diagnostic's own bridge: the document's vintage over the document's printed seed
                             if (liveReach == DateTime.MinValue && au.DebtLimitReachedOn != DateTime.MinValue) { liveReach = au.DebtLimitReachedOn; }
-                            if (liveRaise == DateTime.MinValue && au.DebtLimitRaises > 0) { liveRaise = au.DebtLimitSince; }
+                            if (liveRaise == DateTime.MinValue && au.DebtLimitRaises > 0) { liveRaise = au.DebtLimitSince; dslAtRaise = UsDebtLimit.SubjectToLimitUsd(au); }   // the day's close the raise was made on
                             armed |= au.DebtLimitCutFlowDay != DateTime.MinValue || au.DebtLimitCutBillions != 0f;
                             if (boundary)
                             {
@@ -167,9 +216,9 @@ namespace PoliSim.EditorTools
                         Check(UsDebtLimit.IsRead(au) && opens > UsDebtLimit.Pl119From && walkReach != DateTime.MinValue && liveReach == walkReach,
                             F("(c) SWEDEN'S START ({0}, the USA AI-governed, no Congress of the game seated - {1}): the law in force at the start is P.L. 119-21's {2}; the debt subject to limit reaches it on {3} by this diagnostic's own walk, and the live bookkeeping reached it on {4}",
                                 Iso(opens), UsBudgetProcedure.Applies(au) ? "a Congress votes - WRONG" : "none votes", Usd(UsDebtLimit.Pl119LimitUsd), Day(walkReach), Day(liveReach)));
-                        Check(liveRaise == walkRaise && au.DebtLimitRaises == 1 && au.DebtLimitUsd == UsDebtLimit.Pl119LimitUsd + UsDebtLimit.RaiseUsd && !armed,
+                        Check(liveRaise == walkRaise && au.DebtLimitRaises == 1 && Math.Abs(au.DebtLimitUsd - (dslAtRaise + UsDebtLimit.RaiseUsd)) < 1d && dslAtRaise > UsDebtLimit.Pl119LimitUsd && !armed,
                             F("(c) the measures run {0} days to {1}, and that day the AI-governed USA raises the limit by act (R-US21 (vi)) by {2} to {3} - live: raised on {4}, {5} raise(s), the limit {6}; no cut was ever armed",
-                                spanFrom, Day(walkRaise), Usd(UsDebtLimit.RaiseUsd), Usd(UsDebtLimit.Pl119LimitUsd + UsDebtLimit.RaiseUsd), Day(liveRaise), au.DebtLimitRaises, Usd(au.DebtLimitUsd)));
+                                spanFrom, Day(walkRaise), "the excess and " + Usd(UsDebtLimit.RaiseUsd) + " (K77)", Usd(dslAtRaise + UsDebtLimit.RaiseUsd), Day(liveRaise), au.DebtLimitRaises, Usd(au.DebtLimitUsd)));
                         Check(!ministryWrote && boundaries > 0, F("(c) R-US21 (v): at each of the {0} boundaries crossed the AI ministry writes nothing for the USA (no line, no rate) - the dollar limit is its rule", boundaries));
                         int seedDays = walkReach == DateTime.MinValue ? -1 : (walkReach - opens).Days;
                         DateTime vintageDay = DateTime.ParseExact(data["vintage.date"], "yyyy-MM-dd", CultureInfo.InvariantCulture);
@@ -194,12 +243,21 @@ namespace PoliSim.EditorTools
                                 Iso(usStart), Iso(jan1), Day(u.DebtLimitSince), Usd(dslJan1), Usd(u.DebtLimitUsd), Usd(UsDebtLimit.Pl118ReinstatedUsd)));
                         double reinstated = u.DebtLimitUsd;
                         Check(u.DebtLimitReachedOn == jan2, F("(d) the limit is reached on {0} - the day's deficit takes the debt over it - and the measures run {1} days, to {2}", Day(u.DebtLimitReachedOn), UsDebtLimit.MeasuresSpanDays, Day(UsDebtLimit.BindsOn(u))));
-                        DateTime bindsOn = UsDebtLimit.BindsOn(u), tabled = DateTime.MinValue;
+                        DateTime bindsOn = UsDebtLimit.BindsOn(u), tabled = DateTime.MinValue, proposedOn = DateTime.MinValue;
                         double onTheFifth = double.NaN;
-                        bool armedBefore = false;
+                        bool armedBefore = false, tabledByItself = false, proposed = false;
+                        string proposeWhy = null;
                         while (s.CurrentDate < bindsOn && u.DebtLimitRaises == 0)
                         {
                             StepOne(s, w);
+                            // PS-6 K23: the player-president's government tables nothing by itself - he proposes, here a bill's course before the deadline (the day the
+                            // government's own tabling used to come), at the standard size; K25: it is voted on the day the measures run out
+                            if (proposedOn == DateTime.MinValue) { tabledByItself |= s.GetPendingDebtLimitBill(CountryId.USA) != null; }
+                            if (proposedOn == DateTime.MinValue && s.CurrentDate == bindsOn.AddDays(-ParliamentSystem.BillDurationDays))
+                            {
+                                proposed = s.ProposeDebtLimitRaise(CountryId.USA, UsDebtLimit.RaiseUsd, DateTime.MinValue, out proposeWhy);
+                                proposedOn = s.CurrentDate;
+                            }
                             if (tabled == DateTime.MinValue && s.GetPendingDebtLimitBill(CountryId.USA) != null) { tabled = s.CurrentDate; }
                             if (s.CurrentDate == UsDebtLimit.Pl119From.AddDays(1)) { onTheFifth = u.DebtLimitUsd; }
                             armedBefore |= u.DebtLimitCutFlowDay != DateTime.MinValue;
@@ -207,9 +265,12 @@ namespace PoliSim.EditorTools
                         Check(onTheFifth == reinstated, F("(d) R-US21 (ii)(a): on {0} the limit is still the game's {1} - P.L. 119-21's increase of 4 July 2025 is the record's, and later raises are the game's Congress's acts", Iso(UsDebtLimit.Pl119From.AddDays(1)), Usd(onTheFifth)));
                         DivisionRecord senate = u.Divisions.Entries.LastOrDefault(d => d.Title != null && d.Title.StartsWith("Reconciliation (the debt limit)", StringComparison.Ordinal) && d.Chamber == Congress.Senate);
                         DivisionRecord house = u.Divisions.Entries.LastOrDefault(d => d.Title != null && d.Title.StartsWith("Reconciliation (the debt limit)", StringComparison.Ordinal) && d.Chamber == Congress.House);
-                        Check(tabled == bindsOn.AddDays(-ParliamentSystem.BillDurationDays) && u.DebtLimitRaises == 1 && u.DebtLimitSince == bindsOn && u.DebtLimitUsd == reinstated + UsDebtLimit.RaiseUsd && !armedBefore
+                        Check(proposed && !tabledByItself && proposedOn == tabled,
+                            F("(d) PS-6 K23: the player-president's government tabled nothing by itself through {0} (AI governments keep the automatic tabling); the President proposed the raise on {1} ({2})",
+                                Day(proposedOn), Day(proposedOn), proposed ? "tabled" : "REFUSED: " + proposeWhy));
+                        Check(tabled == bindsOn.AddDays(-ParliamentSystem.BillDurationDays) && u.DebtLimitRaises == 1 && u.DebtLimitSince == bindsOn && Math.Abs(u.DebtLimitUsd - UsDebtLimit.SubjectToLimitUsd(u) - UsDebtLimit.RaiseUsd) < 1d && u.DebtLimitUsd > reinstated + UsDebtLimit.RaiseUsd && !armedBefore
                               && senate != null && house != null && senate.Passed && house.Passed && senate.Reconciliation && !senate.Cloture && s.GetPendingDebtLimitBill(CountryId.USA) == null && senate.Title == RaiseTitle && house.Title == RaiseTitle,
-                            F("(d) the raise tabled {0} by the government of the day, a bill's course ({1} days) before the measures run out; voted on {2} - the House {3}, the Senate {4} by reconciliation (no cloture), titled \"{6}\" in both (no world's own figure - FORK-2's identity, the review's M2) - and law that day: the limit {5}; no cut armed",
+                            F("(d) the raise tabled {0} by the President, a bill's course ({1} days) before the measures run out; voted at the deadline (K25) on {2} - the House {3}, the Senate {4} by reconciliation (no cloture), titled \"{6}\" in both (no world's own figure - FORK-2's identity, the review's M2) - and law that day: the limit {5}; no cut armed",
                                 Day(tabled), ParliamentSystem.BillDurationDays, Day(u.DebtLimitSince), house?.Passed == true ? "passed" : "FAILED", senate?.Passed == true ? "passed" : "FAILED", Usd(u.DebtLimitUsd), senate?.Title));
 
                         // ============================================================ (e) the cut, planted
@@ -219,7 +280,7 @@ namespace PoliSim.EditorTools
                         float unarmedDay = u.State.GovernmentDebt - debtA;
                         u.DebtLimitUsd = UsDebtLimit.SubjectToLimitUsd(u) - 1e9;
                         u.DebtLimitReachedOn = s.CurrentDate.AddDays(-UsDebtLimit.MeasuresSpanDays);
-                        StepOne(s, w);   // the bookkeeping sees the limit binding; the day tick tables the raise and arms the next day's flows
+                        StepOne(s, w);   // the bookkeeping sees the limit binding; the day tick arms the next day's flows - and tables nothing for a player-president (K23)
                         DateTime armedFor = u.DebtLimitCutFlowDay;
                         BudgetBill pendingRaise = s.GetPendingDebtLimitBill(CountryId.USA);
                         float debtB = u.State.GovernmentDebt;
@@ -233,19 +294,30 @@ namespace PoliSim.EditorTools
                         float lineAfter = periods != null && periods.TryGetValue(CountryId.USA, out SimulationManager.FiscalPeriod p1) ? p1.AccruedDebtLimitCut : float.NaN;
                         Check(u.LapseDeferredOutlays == BackPay && Mathf.Abs((lineAfter - lineBefore) - cut) < 1e-3f * Mathf.Max(1f, cut),
                             F("(e) the back pay owed ({0} bn) stays owed on the armed day ({1} bn after) - paid in full the first day the cut is not armed (the review's M3); the period books the day's cut as its own line ({2:0.000} bn; the review's M4)", BackPay, u.LapseDeferredOutlays, lineAfter - lineBefore));
-                        Check(armedFor == s.CurrentDate && pendingRaise != null && unarmedDay > 1f && Mathf.Abs(armedDay) < 0.05f * unarmedDay && cut > 0.5f * unarmedDay && cut < 2f * unarmedDay,
-                            F("(e) THE CUT (planted: the limit {0} under the debt, the measures run out): the day tick tables the raise and arms {1}; that day the debt moves {2:0.000} bn where the day before, unarmed, it moved {3:0.000} bn - the day's non-interest outlays cut by {4:0.000} bn to what revenue leaves after interest (R-US21 (iv))",
+                        Check(armedFor == s.CurrentDate && pendingRaise == null && unarmedDay > 1f && Mathf.Abs(armedDay) < 0.05f * unarmedDay && cut > 0.5f * unarmedDay && cut < 2f * unarmedDay,
+                            F("(e) THE CUT (planted: the limit {0} under the debt, the measures run out): the day tick arms {1} and tables nothing - the President has proposed none (K23); that day the debt moves {2:0.000} bn where the day before, unarmed, it moved {3:0.000} bn - the day's non-interest outlays cut by {4:0.000} bn to what revenue leaves after interest (R-US21 (iv))",
                                 Usd(1e9), Day(armedFor), armedDay, unarmedDay, cut));
                         List<string> lines = FiscalRules.DebtLimitLines(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA));
                         string note = FiscalRules.NationalNote(u, s.CurrentDate);
                         // PS-6 US-35 (board 30c): the slip in sentence case - binding, never "held at the limit by the measures" nor "borrowed through them"; the tile's chip its state
                         string chip = FiscalRules.DebtLimitChip(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA), out FiscalRules.DebtLimitInk chipInk, out string chipSub);
                         Check(!lines.Any(l => l.Contains("borrowed through them") || l.Contains("Extraordinary measures hold the debt at the limit")) && lines.Any(l => l.StartsWith("Debt subject to it ", StringComparison.Ordinal) && l.EndsWith(" above.", StringComparison.Ordinal))
-                              && lines.Any(l => l.StartsWith("The extraordinary measures ran out on ", StringComparison.Ordinal)) && lines.Any(l => l.Contains("cut so far")) && lines.Any(l => l.Contains(" is before Congress, voted on "))
+                              && lines.Any(l => l.StartsWith("The extraordinary measures ran out on ", StringComparison.Ordinal)) && lines.Any(l => l.Contains("cut so far")) && lines.Any(l => l.StartsWith("No raise is before Congress. Propose one", StringComparison.Ordinal))
                               && lines.Any(l => l.StartsWith("Limit ", StringComparison.Ordinal)) && note.Contains("cut to revenue")
                               && chip == "LIMIT BINDS · CUT IN FORCE" && chipInk == FiscalRules.DebtLimitInk.Cut && chipSub == null
                               && FiscalRules.NationalNote(ws.GetCountry(CountryId.Germany), s.CurrentDate) == FiscalRules.NationalNote(CountryId.Germany),
                             F("(e) the slip says so - \"{0}\"; the tile's chip \"{1}\" ({2}); the national note: \"{3}\"; every other country's note unchanged", string.Join(" | ", lines), chip, chipInk, note));
+
+                        // ============================================================ (e3) PS-6 K26: the budget preview shows the cut while the limit binds
+                        PolicyPreview cutPreview = s.PreviewTurn(CountryId.USA, PolicyDecision.None());
+                        DateTime armedNow = u.DebtLimitCutFlowDay;
+                        u.DebtLimitCutFlowDay = DateTime.MinValue;   // the planted tooth: the same day with nothing armed
+                        PolicyPreview plainPreview = s.PreviewTurn(CountryId.USA, PolicyDecision.None());
+                        u.DebtLimitCutFlowDay = armedNow;
+                        Check(armedNow != DateTime.MinValue && cutPreview.DebtLimitCut > 0f && plainPreview.DebtLimitCut == 0f && cutPreview.SpendingEstimate < plainPreview.SpendingEstimate
+                              && Mathf.Abs((plainPreview.SpendingEstimate - cutPreview.SpendingEstimate) - cutPreview.DebtLimitCut) < 1e-3f * Mathf.Max(1f, cutPreview.DebtLimitCut),
+                            F("(e3) PS-6 K26: while the limit binds the preview's year is cut - {0:0.000} bn of spending other than interest, its spending {1:0.000} bn against {2:0.000} bn with nothing armed (the planted tooth), the difference the cut",
+                                cutPreview.DebtLimitCut, cutPreview.SpendingEstimate, plainPreview.SpendingEstimate));
 
                         // ============================================================ (f) the save
                         string json = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s, w, CountryId.USA, null));
@@ -253,8 +325,9 @@ namespace PoliSim.EditorTools
                         Country su = saved.World.GetCountry(CountryId.USA);
                         Check(saved.SaveVersion == SaveGameService.CurrentSaveVersion && saved.SaveVersion >= 53 && su.DebtLimitUsd == u.DebtLimitUsd && su.DebtLimitSince == u.DebtLimitSince && su.DebtLimitReachedOn == u.DebtLimitReachedOn
                               && su.DebtLimitCutFlowDay == u.DebtLimitCutFlowDay && su.DebtLimitCutBillions == u.DebtLimitCutBillions && su.DebtLimitRaises == u.DebtLimitRaises
-                              && saved.Sim?.PendingDebtLimitBills != null && saved.Sim.PendingDebtLimitBills.TryGetValue(CountryId.USA, out BudgetBill savedRaise) && savedRaise.DaysRemaining == pendingRaise.DaysRemaining,
-                            F("(f) a save cut on {0} carries format {1}, the limit's fields and the raise before Congress ({2} day(s) to its vote)", Day(s.CurrentDate), saved.SaveVersion, pendingRaise.DaysRemaining));
+                              && su.DebtLimitWithheldBy == u.DebtLimitWithheldBy && su.ContinuingResolutionWithheldOn == u.ContinuingResolutionWithheldOn
+                              && saved.Sim?.PendingDebtLimitBills != null && !saved.Sim.PendingDebtLimitBills.ContainsKey(CountryId.USA),
+                            F("(f) a save cut on {0} carries format {1} and the limit's fields, nothing before Congress (the President has proposed none); a pending proposal's own fields in (j)", Day(s.CurrentDate), saved.SaveVersion));
                         string older = json.Replace("\"SaveVersion\": " + SaveGameService.CurrentSaveVersion.ToString(CultureInfo.InvariantCulture), "\"SaveVersion\": " + (SaveGameService.CurrentSaveVersion - 1).ToString(CultureInfo.InvariantCulture));
                         bool refused = false; string why = null;
                         try { SaveGameService.Deserialize(older); } catch (SaveLoadException e) { refused = true; why = e.Message; }
@@ -263,17 +336,169 @@ namespace PoliSim.EditorTools
                         // ============================================================ (e2) the back pay carried through the raise, on the day path (the second review's L4)
                         string firstTitle = senate?.Title;
                         double limitBefore = u.DebtLimitUsd;
-                        int raisesBefore = u.DebtLimitRaises, guard = 0;
-                        while (u.DebtLimitRaises == raisesBefore && guard++ < ParliamentSystem.BillDurationDays + 12) { StepOne(s, w); }
+                        int raisesBefore = u.DebtLimitRaises;
+                        DateTime proposedLate = s.CurrentDate;
+                        bool waitsBefore = s.DebtLimitAwaitsPresident(CountryId.USA);   // PS-6 K85: the binding limit, nothing proposed - the played clock holds on it
+                        bool proposedPast = s.ProposeDebtLimitRaise(CountryId.USA, UsDebtLimit.RaiseUsd, DateTime.MinValue, out string latePropose);
+                        Check(waitsBefore && !s.DebtLimitAwaitsPresident(CountryId.USA),
+                            F("(e2) PS-6 K85: the binding limit with nothing proposed waits on the President ({0}) - the clock holds on it - and waits no more once the raise is proposed and law", waitsBefore ? "it waits" : "NO WAIT"));   // K43: past the deadline it is voted the day it is tabled
+                        Check(proposedPast && u.DebtLimitRaises == raisesBefore + 1 && u.DebtLimitSince == proposedLate && s.GetPendingDebtLimitBill(CountryId.USA) == null,
+                            F("(e2) PS-6 K43: proposed on {0}, past the deadline, the raise is voted that day in both chambers and signed - law on {1} ({2})", Day(proposedLate), Day(u.DebtLimitSince), proposedPast ? "tabled" : "REFUSED: " + latePropose));
                         bool owedOnRaiseDay = u.LapseDeferredOutlays == BackPay && u.DebtLimitCutFlowDay == DateTime.MinValue;
                         float debtC = u.State.GovernmentDebt;
                         StepOne(s, w);   // the first day the cut is not armed: the back pay is paid in full
                         float paidDay = u.State.GovernmentDebt - debtC;
                         DivisionRecord secondSenate = u.Divisions.Entries.LastOrDefault(d => d.Title != null && d.Title.StartsWith("Reconciliation (the debt limit)", StringComparison.Ordinal) && d.Chamber == Congress.Senate);
                         Check(u.DebtLimitRaises == raisesBefore + 1 && owedOnRaiseDay && u.LapseDeferredOutlays == 0f && paidDay - unarmedDay > 0.5f * BackPay && paidDay - unarmedDay < 1.5f * BackPay,
-                            F("(e2) the planted binding's raise becomes law on {0} by Congress's act; the back pay ({1} bn) is still owed that day, and the first unarmed day pays it in full - the debt moves {2:0.000} bn against an unarmed day's {3:0.000} bn", Day(u.DebtLimitSince), BackPay, paidDay, unarmedDay));
+                            F("(e2) the planted binding's raise becomes law on {0} by Congress's act, the day the President proposed it; the back pay ({1} bn) is still owed that day, and the first unarmed day pays it in full - the debt moves {2:0.000} bn against an unarmed day's {3:0.000} bn", Day(u.DebtLimitSince), BackPay, paidDay, unarmedDay));
                         Check(secondSenate != null && !ReferenceEquals(secondSenate, senate) && secondSenate.Title == firstTitle && firstTitle == RaiseTitle && u.DebtLimitUsd != limitBefore && limitBefore != reinstated,
                             F("(e2) the two raises' divisions, voted on limits {0} and {1}, carry one title, the exact \"{2}\" - no world's figure (FORK-2's identity)", Usd(reinstated), Usd(limitBefore), RaiseTitle));
+
+                        // ============================================================ (h) PS-6 K22 and K43: a withheld raise falls, the cause named; proposed again, it is law
+                        StepOne(s, w);
+                        u.DebtLimitUsd = UsDebtLimit.SubjectToLimitUsd(u) - 1e9;
+                        u.DebtLimitReachedOn = s.CurrentDate.AddDays(-UsDebtLimit.MeasuresSpanDays);
+                        StepOne(s, w);   // binding again: the flows armed, nothing tabled
+                        bool refusedOwn = !UsDebtLimit.MayWithhold(u, true, s.CurrentDate, out string ownWhy) && ownWhy != null && ownWhy.Contains("YOUR OWN GOVERNMENT");
+                        bool verbRefused = !s.WithholdDebtLimitRaise(CountryId.USA, true, out string verbWhy);
+                        u.DebtLimitWithheldBy = "REP";   // planted: the party holding the Senate withholds (a state the verb refuses the president's party - the tooth that a withhold reaches the vote)
+                        int raisesH = u.DebtLimitRaises;
+                        bool tabledH = s.ProposeDebtLimitRaise(CountryId.USA, UsDebtLimit.RaiseUsd, DateTime.MinValue, out string whyH);
+                        DivisionRecord fell = u.Divisions.Entries.LastOrDefault(d => d.Title == RaiseTitle && d.Date == s.CurrentDate && !d.Passed);   // the chamber the withholder holds
+                        List<string> withheldLines = FiscalRules.DebtLimitLines(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA));
+                        string withheldChip = FiscalRules.DebtLimitChip(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA), out FiscalRules.DebtLimitInk withheldInk, out string _);
+                        Check(refusedOwn && verbRefused && tabledH && u.DebtLimitRaises == raisesH && s.GetPendingDebtLimitBill(CountryId.USA) == null && UsDebtLimit.Binding(u, s.CurrentDate)
+                              && fell != null && fell.Date == s.CurrentDate && !fell.Passed && withheldLines.Any(l => l.StartsWith("The raise is withheld by REP: ", StringComparison.Ordinal))
+                              && withheldLines.Any(l => l.StartsWith("No raise is before Congress. Propose one", StringComparison.Ordinal)) && withheldChip == "LIMIT BINDS · CUT IN FORCE" && withheldInk == FiscalRules.DebtLimitInk.Cut,
+                            F("(h) PS-6 K22: the president's own party may not withhold (\"{0}\"; the verb: \"{1}\"); planted, a withholder holding a chamber stops the raise the President proposed past the deadline - voted that day, it {2}; the limit binds, the chip \"{3}\", the slip naming the cause: \"{4}\" ({5})",
+                                ownWhy, verbWhy, fell == null ? "PASSED OR NOT VOTED" : "fails in the " + (fell.Chamber == Congress.Senate ? "Senate" : "House"), withheldChip, string.Join(" | ", withheldLines.Where(l => l.Contains("withheld") || l.StartsWith("No raise", StringComparison.Ordinal))), tabledH ? "tabled" : "REFUSED: " + whyH));
+                        StepOne(s, w);   // the next tick: the withholding party holds the presidency - its withhold lapses (the raise is its own government's)
+                        bool withholdLapsed = u.DebtLimitWithheldBy == null;
+                        bool again = s.ProposeDebtLimitRaise(CountryId.USA, UsDebtLimit.RaiseUsd, DateTime.MinValue, out string againWhy);
+                        Check(withholdLapsed && again && u.DebtLimitRaises == raisesH + 1 && u.DebtLimitSince == s.CurrentDate && u.DebtLimitWithheldBy == null && u.DebtLimitCutFlowDay == DateTime.MinValue,
+                            F("(h) PS-6 K43: after the fallen raise the withhold lapsed with the presidency on the next tick; proposed again on {0}, the raise is voted that day and law ({1})", Day(s.CurrentDate), again ? "tabled" : "REFUSED: " + againWhy));
+
+                        // ============================================================ (j) PS-6 K23/K25: a suspension proposed while the measures run - saved, voted at the deadline; (i) K22: law, then the limit returns
+                        StepOne(s, w);
+                        u.DebtLimitUsd = UsDebtLimit.SubjectToLimitUsd(u) - 1e9;
+                        u.DebtLimitReachedOn = s.CurrentDate.AddDays(-10);   // planted: the measures running, ten days in
+                        StepOne(s, w);
+                        DateTime deadline = UsDebtLimit.BindsOn(u), through = deadline.AddDays(30);
+                        bool earlyRefused = !s.ProposeDebtLimitRaise(CountryId.USA, 0d, deadline, out string earlyWhy) && s.GetPendingDebtLimitBill(CountryId.USA) == null
+                                            && UsDebtLimit.VoteDayOf(u, s.CurrentDate) == deadline;   // the review's M2: a last day on the vote's own day is refused
+                        Check(earlyRefused, F("(j) the review's M2: a suspension through {0}, the day it would be voted, is refused (\"{1}\") - its last day must come after its vote", Day(deadline), earlyWhy));
+                        bool tabledJ = s.ProposeDebtLimitRaise(CountryId.USA, 0d, through, out string whyJ);
+                        BudgetBill heldJ = s.GetPendingDebtLimitBill(CountryId.USA);
+                        string jsonJ = SaveGameService.Serialize(SaveGameService.CreateSaveGame(s, w, CountryId.USA, null));
+                        SaveGame savedJ = SaveGameService.Deserialize(jsonJ);
+                        bool carriedJ = heldJ != null && savedJ.Sim?.PendingDebtLimitBills != null && savedJ.Sim.PendingDebtLimitBills.TryGetValue(CountryId.USA, out BudgetBill savedHeld)
+                                        && savedHeld.DebtLimitSuspendThrough == through && savedHeld.DebtLimitRaiseUsd == 0d && savedHeld.DaysRemaining == heldJ.DaysRemaining;
+                        string chipJ = FiscalRules.DebtLimitChip(u, s.CurrentDate, heldJ, out FiscalRules.DebtLimitInk inkJ, out string _);
+                        List<string> linesJ = FiscalRules.DebtLimitLines(u, s.CurrentDate, heldJ);
+                        Check(tabledJ && heldJ != null && heldJ.DaysRemaining == (deadline - s.CurrentDate).Days && carriedJ && chipJ == "RAISE BEFORE CONGRESS" && inkJ == FiscalRules.DebtLimitInk.Clock
+                              && linesJ.Any(l => l.StartsWith("A suspension through ", StringComparison.Ordinal) && l.Contains(" is before Congress, voted on " + deadline.ToString("d MMM yyyy", CultureInfo.InvariantCulture))),
+                            F("(j) PS-6 K23/K25: the President proposes a suspension through {0} on {1}, the measures running - voted on {2}, the day they run out ({3} day(s)); a save cut that day carries it (format {4}: its last day, its course); the chip \"{5}\" ({6})",
+                                Day(through), Day(s.CurrentDate), Day(deadline), heldJ?.DaysRemaining ?? -1, savedJ.SaveVersion, chipJ, tabledJ ? "tabled" : "REFUSED: " + whyJ));
+                        int guardJ = 0;
+                        while (s.CurrentDate < deadline && guardJ++ < 400) { StepOne(s, w); }
+                        DivisionRecord suspended = u.Divisions.Entries.LastOrDefault(d => d.Title != null && d.Title.StartsWith("Reconciliation (the debt limit): the limit suspended through ", StringComparison.Ordinal) && d.Chamber == Congress.Senate);
+                        string chipS = FiscalRules.DebtLimitChip(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA), out FiscalRules.DebtLimitInk inkS, out string _);
+                        Check(UsDebtLimit.Suspended(u, s.CurrentDate) && u.DebtLimitSuspendedThrough == through && u.DebtLimitUsd == 0d && u.DebtLimitReachedOn == DateTime.MinValue && u.DebtLimitCutFlowDay == DateTime.MinValue
+                              && suspended != null && suspended.Passed && suspended.Date == deadline && chipS == "SUSPENDED TO " + through.ToString("d MMM yyyy", CultureInfo.InvariantCulture).ToUpperInvariant() && inkS == FiscalRules.DebtLimitInk.SetAside,
+                            F("(i) PS-6 K22: the suspension voted on {0} by reconciliation and law that day - \"{1}\"; no limit applies through {2}, the chip \"{3}\" ({4})", Day(deadline), suspended?.Title ?? "NOT VOTED", Day(through), chipS, inkS));
+                        double dslThrough = double.NaN;
+                        int guardI = 0;
+                        while (s.CurrentDate < through.AddDays(1) && guardI++ < 400)
+                        {
+                            bool boundaryI = s.AdvanceDay();
+                            if (s.CurrentDate == through) { dslThrough = UsDebtLimit.SubjectToLimitUsd(u); }   // the day's close, as the bookkeeping read it
+                            s.AdvanceCountryDayTick(CountryId.USA);
+                            if (boundaryI) { Turn(s, w); }
+                        }
+                        Check(!UsDebtLimit.Suspended(u, s.CurrentDate) && u.DebtLimitSince == through.AddDays(1) && Math.Abs(u.DebtLimitUsd - dslThrough) < 1d,
+                            F("(i) the day after the suspension, {0}, the limit returns at the debt subject to it at the close of {1}, {2} (P.L. 118-5 s401(b)'s form) - the limit {3}", Day(through.AddDays(1)), Day(through), Usd(dslThrough), Usd(u.DebtLimitUsd)));
+
+                        // ============================================================ (m) PS-6 K75: the player-president's own party may withhold the continuing resolution
+                        DateTime horizonWas = u.AppropriatedThrough;
+                        string crWithheldWas = u.ContinuingResolutionWithheldBy;
+                        DateTime crOnWas = u.ContinuingResolutionWithheldOn;
+                        bool crInOfficeWas = u.ContinuingResolutionWithheldInOffice;
+                        try
+                        {
+                            u.AppropriatedThrough = UsBudgetProcedure.FiscalYearEnd(s.CurrentDate);   // planted: no appropriation for the coming year law, so the next resolution is due
+                            bool mayOwn = UsBudgetProcedure.MayWithhold(u, null, s.CurrentDate, out string mayWhy);
+                            u.ContinuingResolutionWithheldBy = "REP";
+                            u.ContinuingResolutionWithheldOn = s.CurrentDate;
+                            u.ContinuingResolutionWithheldInOffice = true;   // given in office, as the verb records it
+                            bool stands = !UsBudgetProcedure.WithholdLapsesWithPresidency(u);
+                            BillConcern cr = ParliamentSystem.GetBudgetBillConcern(u, new BudgetBill { ContinuingResolution = true });
+                            Congress.Verdict crVerdict = Congress.Project(u, cr, s.CurrentDate);
+                            UsBudgetProcedure.NoteWithholderInOffice(u);
+                            bool reElected = !UsBudgetProcedure.WithholdLapsesWithPresidency(u) && u.ContinuingResolutionWithheldInOffice;   // the review's L1: the party never left office - a second oath keeps it
+                            u.ContinuingResolutionWithheldInOffice = false;   // planted: withheld out of office (or left it since)
+                            bool lapsesWithChange = UsBudgetProcedure.WithholdLapsesWithPresidency(u) && reElected;
+                            Check(mayOwn && stands && cr.WithheldBy == "REP" && crVerdict != null && !crVerdict.Passed && lapsesWithChange,
+                                F("(m) PS-6 K75: the President's own party (REP) may withhold its government's continuing resolution ({0}); withheld while it holds the presidency the withhold stands, and the resolution is stopped ({1}); one withheld before the party took the presidency lapses with it as before",
+                                    mayOwn ? "offered" : "REFUSED: " + mayWhy, crVerdict == null ? "no verdict" : crVerdict.Passed ? "PASSES" : "falls"));
+                        }
+                        finally { u.AppropriatedThrough = horizonWas; u.ContinuingResolutionWithheldBy = crWithheldWas; u.ContinuingResolutionWithheldOn = crOnWas; u.ContinuingResolutionWithheldInOffice = crInOfficeWas; }
+
+                        // ============================================================ (n) PS-6 K78: the AI's hostile majority withholds from the reach and releases at the deadline
+                        Dictionary<string, int> houseWas = new Dictionary<string, int>(u.ParliamentSeats);
+                        string limitWithheldWas = u.DebtLimitWithheldBy;
+                        try
+                        {
+                            u.DebtLimitWithheldBy = null;
+                            u.ParliamentSeats = new Dictionary<string, int> { { "DEM", 220 }, { "REP", 215 } };   // planted: a DEM House against the REP President (the player's party)
+                            StepPlanted(s, w, u);
+                            u.DebtLimitUsd = UsDebtLimit.SubjectToLimitUsd(u) - 1e9;
+                            u.DebtLimitReachedOn = s.CurrentDate.AddDays(-10);   // planted: the measures running, ten days in
+                            StepPlanted(s, w, u);   // the tick: the AI's hostile majority withholds
+                            bool aiWithheld = u.DebtLimitWithheldBy == "DEM" && UsDebtLimit.AiWithholder(u, s.CurrentDate) == "DEM";
+                            bool playerCannotRelease = !s.WithholdDebtLimitRaise(CountryId.USA, false, out string releaseWhy) && u.DebtLimitWithheldBy == "DEM";
+                            List<string> aiLines = FiscalRules.DebtLimitLines(u, s.CurrentDate, s.GetPendingDebtLimitBill(CountryId.USA));
+                            bool slipSays = aiLines.Any(l => l.StartsWith("The raise is withheld by DEM: ", StringComparison.Ordinal)) && aiLines.Any(l => l.StartsWith("It is released on ", StringComparison.Ordinal));
+                            DateTime withheldOn = s.CurrentDate;
+                            StepPlanted(s, w, u);
+                            bool stillWithheld = u.DebtLimitWithheldBy == "DEM";
+                            // K89: the withhold holds through the deadline - planted: tomorrow the measures run out
+                            u.DebtLimitReachedOn = s.CurrentDate.AddDays(1 - UsDebtLimit.MeasuresSpanDays);
+                            StepPlanted(s, w, u);   // the deadline's tick: still withheld, the cut armed
+                            DateTime deadlineN = s.CurrentDate;
+                            int raisesN = u.DebtLimitRaises;
+                            bool proposedN = s.ProposeDebtLimitRaise(CountryId.USA, UsDebtLimit.RaiseUsd, DateTime.MinValue, out string proposeNWhy);   // voted at once, withheld: it falls
+                            bool fellN = proposedN && u.DebtLimitRaises == raisesN && UsDebtLimit.Binding(u, s.CurrentDate) && u.DebtLimitWithheldBy == "DEM";
+                            bool holdsAgain = s.DebtLimitAwaitsPresident(CountryId.USA);   // K85: the fallen raise - the hold returns
+                            // K90: the President lets it bind - the hold released, and it stays released the next day
+                            bool letBind = s.LetDebtLimitBind(CountryId.USA, out string letWhy) && !s.DebtLimitAwaitsPresident(CountryId.USA);
+                            float cutBeforeN = u.DebtLimitCutBillions;
+                            StepPlanted(s, w, u);   // the day after the deadline: still withheld (K89), the cut bites, no hold (K90)
+                            bool bitesN = u.DebtLimitWithheldBy == "DEM" && u.DebtLimitCutBillions > cutBeforeN && !s.DebtLimitAwaitsPresident(CountryId.USA) && u.DebtLimitLetBind;
+                            StepPlanted(s, w, u);   // the release day: AiReleaseDay
+                            DateTime releasedOn = s.CurrentDate;
+                            bool released = u.DebtLimitWithheldBy == null && releasedOn == UsDebtLimit.AiReleaseDay(u) && releasedOn == deadlineN.AddDays(UsDebtLimit.AiHoldDaysPastDeadline)
+                                            && !u.DebtLimitLetBind && s.DebtLimitAwaitsPresident(CountryId.USA);   // K90: the release is a change - the President is asked again
+                            u.DebtLimitWithheldBy = "DEM";   // planted again, a withholder now holding neither chamber
+                            u.ParliamentSeats = new Dictionary<string, int> { { "DEM", 215 }, { "REP", 220 } };   // planted: DEM loses the House (the Senate REP's)
+                            bool outlived = UsDebtLimit.WithholdOutlived(u, s.CurrentDate) && UsDebtLimit.AiWithholder(u, s.CurrentDate) == null;
+                            u.ParliamentSeats = new Dictionary<string, int> { { "DEM", 220 }, { "REP", 215 } };
+                            outlived &= !UsDebtLimit.WithholdOutlived(u, s.CurrentDate);   // the tooth: holding the House, it bites
+                            u.DebtLimitWithheldBy = null;
+                            Check(outlived, "(n) the review's L2: a withhold whose party holds neither chamber is read as outlived (the tick then lapses it)");
+                            int raisesR = u.DebtLimitRaises;
+                            bool passes = s.ProposeDebtLimitRaise(CountryId.USA, UsDebtLimit.RaiseUsd, DateTime.MinValue, out string passWhy) && u.DebtLimitRaises == raisesR + 1;
+                            Check(aiWithheld && playerCannotRelease && slipSays && stillWithheld,
+                                F("(n) PS-6 K78: a DEM House against the REP President (planted) withholds the raise by the AI's rule on {0}, the measures running ({1}; the player may not release it: \"{2}\"; the slip: \"{3}\"); it stands the next day ({4})",
+                                    Day(withheldOn), aiWithheld ? "withheld" : "NEVER WITHHELD", releaseWhy, string.Join(" | ", aiLines.Where(l => l.Contains("withheld") || l.StartsWith("It is released", StringComparison.Ordinal))),
+                                    stillWithheld ? "withheld" : "RELEASED EARLY"));
+                            Check(fellN && holdsAgain && bitesN && released && passes,
+                                F("(n) PS-6 K89: withheld through the deadline {0} - the President's raise voted that day falls ({1}), the hold returns ({2}); the day after, still withheld, the cut bites ({3}); released on {4}, {5} day(s) past the deadline ({6}); the raise proposed that day is law ({7})",
+                                    Day(deadlineN), fellN ? "fell" : "DID NOT FALL - " + proposeNWhy, holdsAgain ? "it holds" : "NO HOLD", bitesN ? "it bites" : "NO BITE", Day(releasedOn), UsDebtLimit.AiHoldDaysPastDeadline,
+                                    released ? "released" : "NEVER RELEASED OR EARLY", passes ? "passed" : "FAILED: " + passWhy));
+                            Check(letBind && bitesN && released,
+                                F("(n) PS-6 K90: the President answers the hold with LET IT BIND ({0}) - no hold the next day while the cut bites; the AI's release is a change, and the hold returns that day", letBind ? "the hold released" : "REFUSED: " + letWhy));
+                        }
+                        finally { u.ParliamentSeats = houseWas; u.DebtLimitWithheldBy = limitWithheldWas; }
                     }
                     finally { EnergyMarket.ResetTurnState(); }
                 }
@@ -292,8 +517,35 @@ namespace PoliSim.EditorTools
                     UsDebtLimit.Track(t, d0.AddDays(1), d0, true);
                     bool congressHeld = t.DebtLimitRaises == 0;
                     UsDebtLimit.Track(t, d0.AddDays(1), d0, false);
-                    Check(earlyHeld && congressHeld && t.DebtLimitRaises == 1 && t.DebtLimitUsd == 1e12 + UsDebtLimit.RaiseUsd && t.DebtLimitReachedOn == DateTime.MinValue,
+                    Check(earlyHeld && congressHeld && t.DebtLimitRaises == 1 && Math.Abs(t.DebtLimitUsd - (UsDebtLimit.SubjectToLimitUsd(t) + UsDebtLimit.RaiseUsd)) < 1d && t.DebtLimitReachedOn == DateTime.MinValue,
                         "(g) the AI's raise is not taken the day before the measures run out, nor where a Congress of the game votes; it is taken on the day, and closes the episode");
+                    // PS-6 K77: the excess plus the size - an AI raise by act where the debt stands $6.0 tn over the limit lands it $5.0 tn above the day's debt, where
+                    // K21's floor landed it on the debt and the old fixed raise left it $1.0 tn over (the planted tooth's arithmetic); RaiseOf adds every size to the excess
+                    var floor = new Country(CountryId.USA, "floor", new EconomyState(gdp: 30000f, inflation: 2f, unemployment: 4f, approvalRating: 50f, budget: 0f, governmentDebt: 40000f), null, 0f);
+                    floor.DebtLimitSince = new DateTime(2029, 1, 1);
+                    double dslFloor = UsDebtLimit.SubjectToLimitUsd(floor);
+                    floor.DebtLimitUsd = dslFloor - 6e12;
+                    floor.DebtLimitReachedOn = d0.AddDays(-UsDebtLimit.MeasuresSpanDays);
+                    double excessFloor = UsDebtLimit.ExcessUsd(floor);
+                    UsDebtLimit.Track(floor, d0, d0, false);
+                    Check(Math.Abs(excessFloor - 6e12) < 1d && floor.DebtLimitRaises == 1 && Math.Abs(floor.DebtLimitUsd - (dslFloor + UsDebtLimit.RaiseUsd)) < 1d && dslFloor - 6e12 + UsDebtLimit.RaiseUsd < dslFloor
+                          && UsDebtLimit.RaiseOf(floor, 0d) == UsDebtLimit.ExcessUsd(floor) + UsDebtLimit.RaiseUsd && UsDebtLimit.RaiseOf(t, 0d) == UsDebtLimit.ExcessUsd(t) + UsDebtLimit.RaiseUsd
+                          && UsDebtLimit.RaiseOf(t, 2.5e12) == UsDebtLimit.ExcessUsd(t) + 2.5e12,
+                        F("(g) PS-6 K77: the debt {0} over the limit - the AI's raise by act is the excess and {1}, landing the limit {1} above the day's debt {2} (K21's floor landed it on the debt; the old fixed raise left {3} over); RaiseOf adds every size to the excess",
+                            Usd(excessFloor), Usd(UsDebtLimit.RaiseUsd), Usd(dslFloor), Usd(6e12 - UsDebtLimit.RaiseUsd)));
+                    // PS-6 K22: who may withhold - a party holding a chamber against the presidency; not one holding neither
+                    var hostile = new Country(CountryId.USA, "hostile", new EconomyState(gdp: 30000f, inflation: 2f, unemployment: 4f, approvalRating: 50f, budget: 0f, governmentDebt: 40000f), null, 0f);
+                    hostile.DebtLimitSince = new DateTime(2029, 1, 1); hostile.DebtLimitUsd = 1e12; hostile.DebtLimitReachedOn = d0.AddDays(-5);
+                    hostile.PlayerPartyAbbrev = "DEM";
+                    hostile.ParliamentSeats = new Dictionary<string, int> { { "DEM", 220 }, { "REP", 215 } };
+                    bool holdsHouse = UsDebtLimit.MayWithhold(hostile, true, d0, out string _);
+                    hostile.ParliamentSeats = new Dictionary<string, int> { { "DEM", 215 }, { "REP", 220 } };
+                    bool holdsNeither = !UsDebtLimit.MayWithhold(hostile, true, d0, out string neitherWhy);
+                    hostile.DebtLimitReachedOn = DateTime.MinValue;
+                    hostile.ParliamentSeats = new Dictionary<string, int> { { "DEM", 220 }, { "REP", 215 } };
+                    bool belowRefused = !UsDebtLimit.MayWithhold(hostile, true, d0, out string belowWhy);
+                    Check(holdsHouse && holdsNeither && belowRefused && !UsDebtLimit.MayWithhold(hostile, false, d0, out string _),
+                        F("(g) PS-6 K22: a party holding the House against the presidency may withhold the raise; holding neither chamber it may not (\"{0}\"); below the limit nothing is due (\"{1}\"); nor where no Congress of the game votes", neitherWhy, belowWhy));
                     t.DebtLimitCutFlowDay = d0;
                     float off = UsDebtLimit.CutToday(t, d0.AddDays(1), 1f, 0f, 10f), under = UsDebtLimit.CutToday(t, d0, 1f, 3f, 10f), covered = UsDebtLimit.CutToday(t, d0, 20f, 3f, 10f), part = UsDebtLimit.CutToday(t, d0, 8f, 3f, 10f);
                     Check(off == 0f && under == 10f && covered == 0f && part == 5f,
@@ -330,6 +582,17 @@ namespace PoliSim.EditorTools
         private static void StepOne(SimulationManager s, World w)
         {
             bool boundary = s.AdvanceDay();
+            s.AdvanceCountryDayTick(CountryId.USA);
+            if (boundary) { Turn(s, w); }
+        }
+
+        /// <summary>K78's (n) (the Unity run n907): one day in the controller's order with the planted House kept - the day loop re-seats the House in office every
+        /// day (`SimulationManager.SeatTheRecordOnItsDate`), so the plant is laid again after the day and before the player's day tick reads it.</summary>
+        private static void StepPlanted(SimulationManager s, World w, Country u)
+        {
+            var planted = new Dictionary<string, int>(u.ParliamentSeats);
+            bool boundary = s.AdvanceDay();
+            u.ParliamentSeats = new Dictionary<string, int>(planted);
             s.AdvanceCountryDayTick(CountryId.USA);
             if (boundary) { Turn(s, w); }
         }

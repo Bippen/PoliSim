@@ -43,6 +43,13 @@ namespace PoliSim.Data
         public bool ContinuingResolution;
         /// <summary>PS-6 US-21b: a continuing resolution on the player-president's docket (`DocketEntry`); null otherwise. A request's acts are held apart, below.</summary>
         public DocketEntry Docket;
+        /// <summary>PS-6 K23 (Elias's ruling of 2026-10-23: "a player-president gets a verb: propose the raise, its amount or a suspension"): a debt-limit
+        /// raise's amount as proposed, nominal USD, floored at the debt's excess over the limit on the day it was proposed (K21); 0 on the raise the government
+        /// tables by itself, which is `UsDebtLimit.RaiseUsd` floored at the excess on the day it becomes law. It rides the save with the pending raise (format 57).</summary>
+        public double DebtLimitRaiseUsd;
+        /// <summary>PS-6 K22/K23: a proposed SUSPENSION of the debt limit - its last day (the record's form, P.L. 118-5 s401(a)'s "through January 1, 2025");
+        /// MinValue on a raise. Law, the limit returns the day after at that day's debt subject to limit (`UsDebtLimit.Track`, s401(b)'s reinstatement).</summary>
+        public System.DateTime DebtLimitSuspendThrough;
         /// <summary>PS-6 US-21b: the request's acts on the player-president's docket, each entry naming its act; null where none is held - and then
         /// <see cref="ActsLaw"/> and <see cref="ActsFallen"/> are null too. While any is held the bill keeps its slot and nothing of it is applied: the
         /// acts decided on the vote's day are kept here (law, or fallen and already charged), and the bill completes the day the last held act is decided.</summary>

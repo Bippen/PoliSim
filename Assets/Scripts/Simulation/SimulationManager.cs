@@ -166,6 +166,9 @@ namespace PoliSim.Simulation
         /// </summary>
         public float RevenueEstimate;
         public float SpendingEstimate;
+        /// <summary>PS-6 K26 (Elias's ruling of 2026-10-23: "the budget preview shows the cut when the limit binds"): the non-interest outlays the binding debt
+        /// limit cuts in the previewed year, NOMINAL billions - inside `SpendingEstimate` already; 0 wherever the day tick has not armed the cut.</summary>
+        public float DebtLimitCut;
         /// <summary>
         /// P2-3.4 (2026-09-02): the previewed year's end readings the Taylor rule reads, and the rule's reading on
         /// them - so the Riksbank panel's projected path is the rule evaluated on this projection and nothing
@@ -2164,7 +2167,7 @@ namespace PoliSim.Simulation
         /// `BillConcern.DrawsWithholders` and `Congress.Divide`) - so a lapse can end through its defectors.</summary>
         private void ResolveContinuingResolution(Country country, BudgetBill resolution)
         {
-            if (country.ContinuingResolutionWithheldBy != null && country.Government != null && country.Government.RoleOf(country.ContinuingResolutionWithheldBy) == Elections.PlayerRole.PrimeMinister) { country.ContinuingResolutionWithheldBy = null; }   // the withholding party now holds the presidency: the resolution is its own government's, so the withhold lapses
+            if (UsBudgetProcedure.WithholdLapsesWithPresidency(country)) { country.ContinuingResolutionWithheldBy = null; country.ContinuingResolutionWithheldOn = System.DateTime.MinValue; }   // the withholding party now holds the presidency: the resolution is its own government's, so the withhold lapses
             BillConcern concern = ParliamentSystem.GetBudgetBillConcern(country, resolution);
             concern.DrawsWithholders = country.LapseSince != System.DateTime.MinValue;   // PS-6 US-22b (I13 (2)): "on each resolution's cloture vote during a lapse"
             DivisionRecord passage = resolution.Docket?.Passage;   // PS-6 US-21b: held, it was voted on an earlier day
@@ -2197,6 +2200,7 @@ namespace PoliSim.Simulation
             country.LapseSince = System.DateTime.MinValue;
             country.LapseFlowDay = System.DateTime.MinValue;   // PS-6 US-22c (the review's M1): disarmed here, not only at the next funding tick - a docket answer that ends a lapse between the day steps (`ActOnDocketAnswers`) must not leave the next day's economy running one more lapsed day (on the tick's own path the flag is already spent, and the tick would disarm it the same day)
             country.ContinuingResolutionWithheldBy = null;
+            country.ContinuingResolutionWithheldOn = System.DateTime.MinValue;   // PS-6 K75
             Debug.Log($"BUDGET: {country.Id} - {measure} becomes law: funded through {country.AppropriatedThrough:yyyy-MM-dd} (was {was:yyyy-MM-dd}){ended}");
         }
 
@@ -2220,7 +2224,7 @@ namespace PoliSim.Simulation
         /// party now holds the presidency (the resolution is its own government's).</summary>
         private BudgetBill NewContinuingResolution(Country country, int days)
         {
-            if (country.ContinuingResolutionWithheldBy != null && country.Government != null && country.Government.RoleOf(country.ContinuingResolutionWithheldBy) == Elections.PlayerRole.PrimeMinister) { country.ContinuingResolutionWithheldBy = null; }   // the withholding party now holds the presidency: the resolution is its own government's, so the withhold lapses
+            if (UsBudgetProcedure.WithholdLapsesWithPresidency(country)) { country.ContinuingResolutionWithheldBy = null; country.ContinuingResolutionWithheldOn = System.DateTime.MinValue; }   // the withholding party now holds the presidency: the resolution is its own government's, so the withhold lapses
             return new BudgetBill { ContinuingResolution = true, GovernmentBill = !PlayerGoverns(country), DaysRemaining = days };
         }
 
@@ -2272,7 +2276,8 @@ namespace PoliSim.Simulation
             Country country = _world?.GetCountry(countryId);
             if (!UsBudgetProcedure.Applies(country) || country.AppropriatedThrough == System.DateTime.MinValue) { return; }
             bool lapsed = country.LapseSince != System.DateTime.MinValue;
-            if (country.ContinuingResolutionWithheldBy != null && country.Government != null && country.Government.RoleOf(country.ContinuingResolutionWithheldBy) == Elections.PlayerRole.PrimeMinister) { country.ContinuingResolutionWithheldBy = null; }   // the review's L6: the withholding party now holds the presidency - the withhold lapses here too, so the release below decides a resolution on this tick whatever else is before Congress
+            UsBudgetProcedure.NoteWithholderInOffice(country);   // PS-6 K75 (the review's L1): the withholding party out of the presidency today is marked out of it
+            if (UsBudgetProcedure.WithholdLapsesWithPresidency(country)) { country.ContinuingResolutionWithheldBy = null; country.ContinuingResolutionWithheldOn = System.DateTime.MinValue; }   // the review's L6: the withholding party now holds the presidency - the withhold lapses here too, so the release below decides a resolution on this tick whatever else is before Congress
             if (!lapsed && CurrentDate.Date == UsBudgetProcedure.HorizonEve(country.AppropriatedThrough))
             {
                 DecideContinuingResolutionToday(country, "no appropriation for the coming year is law on the day before the horizon");
@@ -2301,7 +2306,7 @@ namespace PoliSim.Simulation
         /// PS-6 US-22 (Ask 2's reading (P), PROVISIONAL - Elias's to rule): THE PLAYER'S PARTY WITHHOLDS (or releases) THE CONTINUING RESOLUTION. Withheld, it
         /// stands AGAINST the resolution in both chambers and every other party FOR (`StanceModel`'s fixed sides); it stands until released or until funding
         /// is restored. Only while a resolution is before Congress or due (US-22b: the one decided the day before the horizon is withheld in advance -
-        /// `UsBudgetProcedure.MayWithhold`), never by the president's party (the resolution is its own government's), always releasable. False with the reason where refused. An AI party never withholds (DECLARED, §636's precedent).
+        /// `UsBudgetProcedure.MayWithhold`) - PS-6 K75: by the president's own party too (Elias's ruling of 2026-10-23), its withhold lapsing with the presidency only where its party took the presidency after it (`UsBudgetProcedure.WithholdLapsesWithPresidency`) - always releasable. False with the reason where refused. An AI party never withholds (DECLARED, §636's precedent).
         /// </summary>
         public bool WithholdContinuingResolution(CountryId countryId, bool withhold, out string refusedBecause)
         {
@@ -2321,11 +2326,14 @@ namespace PoliSim.Simulation
             if (!withhold)
             {
                 country.ContinuingResolutionWithheldBy = null;
+                country.ContinuingResolutionWithheldOn = System.DateTime.MinValue;   // PS-6 K75
                 Debug.Log($"BUDGET: {countryId} - {country.PlayerPartyAbbrev} releases the continuing resolution");
                 return true;
             }
             if (!UsBudgetProcedure.MayWithhold(country, GetPendingBudgetBill(countryId), CurrentDate, out refusedBecause)) { return false; }
             country.ContinuingResolutionWithheldBy = country.PlayerPartyAbbrev;
+            country.ContinuingResolutionWithheldOn = CurrentDate.Date;   // PS-6 K75: the day it was given
+            country.ContinuingResolutionWithheldInOffice = UsBudgetProcedure.HoldsPresidency(country, country.PlayerPartyAbbrev);   // the review's L1: given in office, it stands while the party never leaves it
             Debug.Log($"BUDGET: {countryId} - {country.PlayerPartyAbbrev} withholds the continuing resolution: it votes against it in both chambers");
             return true;
         }
@@ -4224,7 +4232,7 @@ namespace PoliSim.Simulation
             // [RF-R:3:11]: not within three months of a new Riksdag's first sitting - the chamber of record's first sitting, or the game's own last polling day where
             // the game has held one (its first sitting is not modelled; the polling day is the earlier bound, stated).
             System.DateTime sat = Elections.WorldClock.ChamberAt(countryId, CurrentDate).Convened;
-            if (country.ElectionHistory != null) { foreach (Elections.ElectionRecord held in country.ElectionHistory) { if (held.Method != Elections.ElectionMethod.NotImplemented && held.Date > sat) { sat = held.Date; } } }
+            if (country.ElectionHistory != null) { foreach (Elections.ElectionRecord held in country.ElectionHistory) { if (Elections.NationalElection.CountsParliament(held.Method) && held.Date > sat) { sat = held.Date; } } }
             if (CurrentDate < sat.AddMonths(Elections.ConfidenceProcedure.ExtraElectionMonths)) { refusedBecause = "NO EXTRA ELECTION WITHIN THREE MONTHS OF THE NEW RIKSDAG'S FIRST SITTING"; return false; }
             if (g.NoConfidenceOn == System.DateTime.MinValue || CurrentDate >= g.NoConfidenceOn.AddDays(Elections.ConfidenceProcedure.ExtraElectionWindowDays)) { refusedBecause = "NO DECLARATION OF NO CONFIDENCE IS WITHIN ITS WEEK"; return false; }
             refusedBecause = null;
@@ -4716,7 +4724,7 @@ namespace PoliSim.Simulation
         {
             if (!RoundsApply(country.Id) || country.ElectionHistory == null) { return false; }
             System.DateTime held = System.DateTime.MinValue;
-            foreach (Elections.ElectionRecord e in country.ElectionHistory) { if (e.Method != Elections.ElectionMethod.NotImplemented && e.Date <= CurrentDate && e.Date > held) { held = e.Date; } }
+            foreach (Elections.ElectionRecord e in country.ElectionHistory) { if (Elections.NationalElection.CountsParliament(e.Method) && e.Date <= CurrentDate && e.Date > held) { held = e.Date; } }
             return held != System.DateTime.MinValue && held > g.FormedOn && held > g.ProcedureResumedAfter;
         }
 
@@ -5489,7 +5497,7 @@ namespace PoliSim.Simulation
             System.DateTime held = System.DateTime.MinValue;
             if (country.ElectionHistory != null)
             {
-                foreach (Elections.ElectionRecord e in country.ElectionHistory) { if (e.Method != Elections.ElectionMethod.NotImplemented && e.Date < CurrentDate && e.Date > held) { held = e.Date; } }
+                foreach (Elections.ElectionRecord e in country.ElectionHistory) { if (Elections.NationalElection.CountsParliament(e.Method) && e.Date < CurrentDate && e.Date > held) { held = e.Date; } }
             }
             if (_extraElectionDate != System.DateTime.MinValue && _extraElectionDate >= CurrentDate)
             {
@@ -5803,7 +5811,7 @@ namespace PoliSim.Simulation
             if (!Elections.UsCongressElection.IsPollingDay(country, CurrentDate)) { return; }
             // the second review's M1 (measurement only; before the count's own prediction, so the regional readout left is the count's): the record's components in V
             // beside the fitted term - the overlap I4's revisit clause governs
-            string recordWords = IsCounterfactual ? null : Elections.UsCongressElection.RecordInVWords(country, CurrentDate, Elections.UsCongressElection.PresidentsPartyOn(country), Elections.UsCongressElection.MidtermTermPoints);
+            string recordWords = IsCounterfactual ? null : Elections.UsCongressElection.RecordInVWords(country, CurrentDate, Elections.UsCongressElection.MidtermPresidentsParty(country, CurrentDate), Elections.UsCongressElection.MidtermTermPoints);   // PS-6 K13: the party the count's term is applied to
             if (!Elections.NationalElection.TryPredictShares(country.Id, out Dictionary<string, double> poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))
             {
                 Debug.LogWarning(Elections.UsCongressElection.TryInOffice(country, CurrentDate, out Elections.UsCongressElection.Contest standing)
@@ -6936,6 +6944,12 @@ namespace PoliSim.Simulation
         private PolicyPreview PreviewTurnOnClone(Country previewCountry, CountryId countryId, PolicyDecision decision)
         {
             EconomyState state = previewCountry.State;
+            // PS-6 K26 (Elias's ruling of 2026-10-23: "the budget preview shows the cut when the limit binds"): where the day tick has armed the played country's
+            // cut (the limit binds, no raise law), the clone's year is cut as its days will be - its flows armed for the date the preview's flows read
+            // (UsDebtLimit.CutToday); everywhere else nothing is armed and the preview is as before
+            Country armedFor = _world?.GetCountry(countryId);
+            if (armedFor != null && armedFor.DebtLimitCutFlowDay != System.DateTime.MinValue) { previewCountry.DebtLimitCutFlowDay = CurrentDate; }
+            float debtLimitCutBefore = previewCountry.DebtLimitCutBillions;
 
             float gdpBeforeThisTurn = state.GDP;
             float unemploymentBefore = state.Unemployment;
@@ -7107,6 +7121,7 @@ namespace PoliSim.Simulation
                 NetBudgetImpact = state.Budget - budgetBefore,
                 RevenueEstimate = previewRevenue,
                 SpendingEstimate = previewSpending,
+                DebtLimitCut = previewCountry.DebtLimitCutBillions - debtLimitCutBefore,   // PS-6 K26: the year's cut on the clone, inside the spending above
                 PovertyRateChange = state.PovertyRate - povertyBefore,
                 LaborForceParticipationRateChange = state.LaborForceParticipationRate - laborForceParticipationBefore,
                 CrimeIndexChange = state.CrimeIndex - crimeIndexBefore,
@@ -7383,6 +7398,8 @@ namespace PoliSim.Simulation
                 LapseSince = country.LapseSince,
                 LapseRestoredOn = country.LapseRestoredOn,   // K42: read only by the Desk's chip, never on the preview path; a value, carried so the audit holds
                 ContinuingResolutionWithheldBy = country.ContinuingResolutionWithheldBy,
+                ContinuingResolutionWithheldOn = country.ContinuingResolutionWithheldOn,   // PS-6 K75: read only by the day tick, which the preview never runs; a value, carried so the audit holds
+                ContinuingResolutionWithheldInOffice = country.ContinuingResolutionWithheldInOffice,   // PS-6 K75 (the review's L1): read only by the day tick; a value, carried so the audit holds
                 LapseFlowDay = country.LapseFlowDay,   // PS-6 US-22b: the lapse's economics (UsLapse) - read only on the daily path, which the preview never runs; values, carried so the audit holds
                 LapseDeferredOutlays = country.LapseDeferredOutlays,
                 LapseOutputWedge = country.LapseOutputWedge,
@@ -7397,6 +7414,8 @@ namespace PoliSim.Simulation
                 DebtLimitCutFlowDay = country.DebtLimitCutFlowDay,   // read by the turn-form flows only on the day it is armed for, which the preview's own date is not (it runs on the day the tick armed the next)
                 DebtLimitCutBillions = country.DebtLimitCutBillions,
                 DebtLimitRaises = country.DebtLimitRaises,
+                DebtLimitWithheldBy = country.DebtLimitWithheldBy,   // PS-6 K22: read only by the day tick's vote, which the preview never runs; a value, carried so the audit holds
+                DebtLimitLetBind = country.DebtLimitLetBind,   // PS-6 K90: read only by the day tick and the hold, which the preview never runs; a value, carried so the audit holds
                 // Step 2: a FRESH ledger, never the real country's reference - ApplyApprovalRating
                 // records into it on the clone, and sharing the reference would corrupt the real
                 // period's attribution the moment a preview ran. LastPeriod stays null: a preview

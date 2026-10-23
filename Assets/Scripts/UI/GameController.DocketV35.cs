@@ -116,8 +116,8 @@ namespace PoliSim.UI
             if (limitBill != null && limitBill.Docket == null)
             {
                 string voted = DeskDay(_simulationManager.CurrentDate.AddDays(System.Math.Max(0, limitBill.DaysRemaining)));
-                _docketSlipBook.Anchors["docket:limit"] = new SlipContent("BEFORE CONGRESS").Add("THE DEBT LIMIT RAISE IS BEFORE CONGRESS · VOTED " + voted.ToUpperInvariant() + " · BY A MAJORITY IN BOTH CHAMBERS, THEN TO THE PRESIDENT");
-                DrawDocketItem("limit", "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), "Before Congress · the debt limit raise", "Voted " + voted + " · then to the President", holdsTime: false, action: null);
+                _docketSlipBook.Anchors["docket:limit"] = new SlipContent("BEFORE CONGRESS").Add((limitBill.DebtLimitSuspendThrough != System.DateTime.MinValue ? "THE DEBT LIMIT SUSPENSION" : "THE DEBT LIMIT RAISE") + " IS BEFORE CONGRESS · VOTED " + voted.ToUpperInvariant() + " · BY A MAJORITY IN BOTH CHAMBERS, THEN TO THE PRESIDENT");
+                DrawDocketItem("limit", "brief", UiPalette.GetAreaColor(UiPalette.SystemArea.Fiscal), limitBill.DebtLimitSuspendThrough != System.DateTime.MinValue ? "Before Congress · the debt limit suspension" : "Before Congress · the debt limit raise", "Voted " + voted + " · then to the President", holdsTime: false, action: null);
             }
 
             // ---- K38 (Elias, 2026-10-23; board 29b's ask): the dates between the US night and the oath, each from the night on until it has passed - read from the

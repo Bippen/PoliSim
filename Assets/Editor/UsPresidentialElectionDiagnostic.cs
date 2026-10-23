@@ -319,9 +319,16 @@ namespace PoliSim.EditorTools
                             if (hold != null) { hold.Invoke(controller, null); }
                             ElectionRecord last = usa.ElectionHistory.Count > before ? usa.ElectionHistory[usa.ElectionHistory.Count - 1] : null;
                             bool over = PresidencyDiagnostic.ControllerField("_isGameOver")?.GetValue(controller) is bool b && b;
-                            controllerPath = hold != null && usa.ElectionHistory.Count == before + 1 && last.Date == today && last.Method == ElectionMethod.NotImplemented
+                            // PS-6 K74 (Elias's ruling of 2026-10-23): the record carries the US method and the House the day loop elected today, by party - no
+                            // parliamentary reader reads it (NationalElection.CountsParliament)
+                            UsCongressElection.Contest houseToday = usa.UsCongressElections.Find(c => c.PollingDay.Date == today.Date);
+                            bool seatsAsCounted = houseToday != null && last != null && last.Seats.Count > 0 && last.Seats.Values.Sum() == UsCongressElection.HouseMembers
+                                                  && houseToday.HouseSeats(CountryId.USA).All(kv => last.Seats.TryGetValue(kv.Key, out int n) && n == kv.Value);
+                            controllerPath = hold != null && usa.ElectionHistory.Count == before + 1 && last.Date == today && last.Method == ElectionMethod.UsCongress && seatsAsCounted
+                                             && !NationalElection.CountsParliament(last.Method) && NationalElection.CountsParliament(ElectionMethod.SwedenTwoTier)
                                              && last.NotHeldReason == NationalElection.NotHeldReason(CountryId.USA) && !over && usa.UsPresidentialElections.Count == 1;
-                            controllerWhat = last == null ? "no record added" : F("{0} on {1}: \"{2}\"; game over {3}", last.Method, Day(last.Date), last.NotHeldReason, over);
+                            controllerWhat = last == null ? "no record added" : F("{0} on {1} (seats {2}; the day loop's House {3}): \"{4}\"; game over {5}", last.Method, Day(last.Date),
+                                string.Join(" ", last.Seats.Select(kv => kv.Key + " " + kv.Value)), houseToday == null ? "NONE" : houseToday.HouseRep + "/" + houseToday.HouseDem, last.NotHeldReason, over);
                         }
                         if (today == Polled.AddDays(1))
                         {
@@ -350,7 +357,7 @@ namespace PoliSim.EditorTools
                 Check(played != null && usa.UsPresidentialElections.Count == 1 && line != null && logged.Count(l => l.StartsWith("PRESIDENTIAL: USA - the count of ", StringComparison.Ordinal)) == 1
                       && line.Contains(played.Electors[0].Candidate) && line.Contains(played.Electors[0].Votes.ToString(CultureInfo.InvariantCulture)) && line.Contains(played.Electors[1].Votes.ToString(CultureInfo.InvariantCulture)),
                     F("(c) the count held once ({0} contest(s) at the end, {1} on the polling day), its log line naming the winner and the electors: \"{2}\"", usa.UsPresidentialElections.Count, contestsOnDay, line ?? "NOT LOGGED"));
-                Check(controllerPath, F("(c) the controller's own election path on the polling day (HoldElectionWithoutTheNight - the warm-up's) records that no chamber is elected and ends nothing: {0}", controllerWhat));
+                Check(controllerPath, F("(c) the controller's own election path on the polling day (HoldElectionWithoutTheNight - the warm-up's) records the day by the US method (K74) with the House the day loop elected, no parliamentary chamber counted, and ends nothing: {0}", controllerWhat));
                 Check(recordYields, "(c) from the polling day the record seats no president in this world (the country's gate unchanged)");
                 Check(houseByDate, F("(c) on {0} the House the world's own count elected on {1} is seated (US-16) - the record seats no House in this world from then", Day(HouseDay), Day(Polled)));
                 Check(played == null || !played.Decided() || oathDay,

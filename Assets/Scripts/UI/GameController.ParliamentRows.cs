@@ -382,7 +382,7 @@ namespace PoliSim.UI
             System.DateTime held = System.DateTime.MinValue;
             foreach (ElectionRecord e in _playerCountry.ElectionHistory)
             {
-                if (e.Method != ElectionMethod.NotImplemented && e.Date <= _simulationManager.CurrentDate && e.Date > held) { held = e.Date; }
+                if (NationalElection.CountsParliament(e.Method) && e.Date <= _simulationManager.CurrentDate && e.Date > held) { held = e.Date; }
             }
             if (held == System.DateTime.MinValue) { return; }
             if (held != _referenceHeld || _referenceCountry != PlayerCountryId)
@@ -749,7 +749,7 @@ namespace PoliSim.UI
             slip.Add("POLLING DAY " + DeskDay(last.PollingDay) + " - THE TUESDAY AFTER THE FIRST MONDAY IN NOVEMBER, EVERY FOURTH YEAR");
             foreach (UsPresidentialElection.Tally t in last.Electors)
             {
-                string share = double.IsNaN(t.Share) ? string.Empty : " · " + t.Share.ToString("0.00", CultureInfo.InvariantCulture) + " % OF THE VOTE";
+                string share = double.IsNaN(t.Popular()) ? string.Empty : " · " + t.Popular().ToString("0.00", CultureInfo.InvariantCulture) + " % OF THE VOTE";   // PS-6 K29: the popular vote re-summed from the counted states
                 slip.Add(t.Party == null
                     ? t.Candidate.ToUpperInvariant() + share
                     : Surname(t.Candidate).ToUpperInvariant() + " (" + PartySystems.ShortName(country, t.Party).ToUpperInvariant() + ") " + t.Votes.ToString(CultureInfo.InvariantCulture) + " ELECTORS" + share);

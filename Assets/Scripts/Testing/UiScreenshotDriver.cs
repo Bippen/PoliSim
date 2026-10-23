@@ -715,6 +715,37 @@ namespace PoliSim.Testing
                     yield return Settle();
                 }
                 else { Debug.LogError("SHOT: PS-6 US-24 - the controller has no PinSlipOnAnchorForFilm / _slipPins / manager; 05r_budget_us_debt_limit_slip NOT written."); _failed++; }
+                // PS-6 K22/K23/K75 (the review's M3): the US Congress's verbs row under the budget's action, STAGED - the limit reached ten days ago with the
+                // debt over it, so a player-president is offered the raises and the suspensions and a party holding a chamber against the presidency the withhold;
+                // the page scrolled to its foot so the row is in frame; every planted field put back after
+                SimulationManager verbSim = controller.GetType().GetField("_simulationManager", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) as SimulationManager;
+                if (usLimit != null && verbSim != null && UsDebtLimit.IsRead(usLimit) && !UsDebtLimit.Suspended(usLimit, verbSim.CurrentDate))
+                {
+                    double limitWas = usLimit.DebtLimitUsd;
+                    DateTime reachedWas = usLimit.DebtLimitReachedOn;
+                    object scrollWas = controller.GetType().GetField("_budgetProcessCenterScrollPosition", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                    try
+                    {
+                        usLimit.DebtLimitUsd = UsDebtLimit.SubjectToLimitUsd(usLimit) - 1e9;
+                        usLimit.DebtLimitReachedOn = verbSim.CurrentDate.AddDays(-10);
+                        SetPrivateField(controller, "_budgetProcessCenterScrollPosition", new Vector2(0f, 100000f));
+                        yield return Settle();
+                        yield return Settle();
+                        yield return Capture("05s_budget_us_congress_verbs");
+                        bool president = verbSim.PlayerGoverns(usLimit) && usLimit.Government != null && !string.IsNullOrEmpty(usLimit.PlayerPartyAbbrev) && usLimit.Government.RoleOf(usLimit.PlayerPartyAbbrev) == PoliSim.Elections.PlayerRole.PrimeMinister;
+                        bool raises = UsDebtLimit.MayPropose(usLimit, president, UsBudgetProcedure.Applies(usLimit), verbSim.GetPendingDebtLimitBill(CountryId.USA), verbSim.CurrentDate, UsDebtLimit.RaiseUsd, DateTime.MinValue, out string raiseWhy);
+                        bool withhold = UsDebtLimit.MayWithhold(usLimit, UsBudgetProcedure.Applies(usLimit), verbSim.CurrentDate, out string withholdWhy);
+                        Debug.Log($"SHOT: 05s_budget_us_congress_verbs - the verbs row staged (the limit reached {usLimit.DebtLimitReachedOn:yyyy-MM-dd}, the debt over it): the raises and suspensions {(raises ? "offered" : "not offered - " + raiseWhy)}; the withhold {(withhold ? "offered" : "not offered - " + withholdWhy)}");
+                    }
+                    finally
+                    {
+                        usLimit.DebtLimitUsd = limitWas;
+                        usLimit.DebtLimitReachedOn = reachedWas;
+                        if (scrollWas != null) { SetPrivateField(controller, "_budgetProcessCenterScrollPosition", scrollWas); }
+                    }
+                    yield return Settle();
+                }
+                else { Debug.LogError("SHOT: 05s_budget_us_congress_verbs NOT staged - the limit is not read, or is suspended, on the film's day"); _failed++; }   // the second review's L6: a skipped frame fails
             }
             SetPrivateField(controller, "_onDesk", true);
             yield return Settle();
@@ -3675,6 +3706,26 @@ namespace PoliSim.Testing
                     bool over = overField?.GetValue(controller) is bool b && b;
                     Debug.Log($"SHOT: warm-up held {playerCountry}'s election on {sim.CurrentDate:yyyy-MM-dd} (day {days} / turn {turns}) as play would, without the night{(over ? " - and the run ENDED on its verdict; the warm-up stops here" : string.Empty)}.");
                     if (over) { return; }
+                }
+
+                // PS-6 K85/K90 (the second review's L2): A WARM-UP ANSWERS THE BINDING LIMIT'S HOLD AS PLAY WOULD - play's clock holds on it, so a REP
+                // player-president never runs months under a binding limit nobody answered. The President proposes the standard raise and signs it (voted at once
+                // past the deadline, K43); where an AI majority withholds it (K89) he lets the limit bind. Said in the log.
+                if (sim.DebtLimitAwaitsPresident(playerCountry))
+                {
+                    Country limitCountry = sim.World.GetCountry(playerCountry);
+                    bool aiWithholds = limitCountry.DebtLimitWithheldBy != null && limitCountry.DebtLimitWithheldBy != limitCountry.PlayerPartyAbbrev;
+                    string limitRefused;
+                    bool limitOk;
+                    if (aiWithholds) { limitOk = sim.LetDebtLimitBind(playerCountry, out limitRefused); }
+                    else
+                    {
+                        System.Func<DivisionRecord, bool> answerWas = sim.PlayerPresidentVetoes;
+                        sim.PlayerPresidentVetoes = _ => false;   // the President signs his own raise on the day, as play's desk would
+                        try { limitOk = sim.ProposeDebtLimitRaise(playerCountry, UsDebtLimit.RaiseUsd, DateTime.MinValue, out limitRefused); }
+                        finally { sim.PlayerPresidentVetoes = answerWas; }
+                    }
+                    Debug.Log($"SHOT: warm-up answered the binding debt limit on {sim.CurrentDate:yyyy-MM-dd} as play would: {(aiWithholds ? "LET IT BIND" : "the standard raise proposed and signed")} - {(limitOk ? "done" : "REFUSED: " + limitRefused)}");
                 }
 
 

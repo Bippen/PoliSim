@@ -947,6 +947,30 @@ namespace PoliSim.Data
         /// never withholds.</summary>
         public string ContinuingResolutionWithheldBy;
 
+        /// <summary>PS-6 K75 (Elias's ruling of 2026-10-23, `docs/RULINGS_2026-10-23.md`: "a player-president's own party may withhold the continuing
+        /// resolution"): the day the standing withhold was given (`SimulationManager.WithholdContinuingResolution`), MinValue where none stands - for the record
+        /// and the log; whether it lapses with the presidency is `ContinuingResolutionWithheldInOffice`'s (the review's L1). It rides the save (format 57) and the
+        /// preview's clone.</summary>
+        public System.DateTime ContinuingResolutionWithheldOn;
+
+        /// <summary>PS-6 K75 (the review's L1): true where the standing withhold was given while its party held the presidency and the party has not left it since
+        /// (`UsBudgetProcedure.NoteWithholderInOffice`) - such a withhold stands through a re-election's second oath; false otherwise, and a withholding party that
+        /// takes the presidency lapses its withhold. It rides the save (format 57, additive: false is an earlier build's true state - only an out-party withheld)
+        /// and the preview's clone.</summary>
+        public bool ContinuingResolutionWithheldInOffice;
+
+        /// <summary>PS-6 K22 (Elias's ruling of 2026-10-23: "a hostile chamber can withhold the raise, as with the CR"): the party withholding the debt-limit
+        /// raise - the player's verb (`SimulationManager.WithholdDebtLimitRaise`), offered where the player's party holds a chamber the presidency's party does
+        /// not; standing until released, until a raise or a suspension is law, or until the withholding party holds the presidency; null for none. PS-6 K78: or
+        /// an AI party holding a chamber against the presidency, by the record's episodes' rule (`SimulationManager.AiWithholdDay`). It rides the save (format 57)
+        /// and the preview's clone.</summary>
+        public string DebtLimitWithheldBy;
+
+        /// <summary>PS-6 K90 (Elias's ruling of 2026-10-24): true where the player-president answered the binding limit's hold with "let it bind"
+        /// (`SimulationManager.LetDebtLimitBind`) - the hold stays released in the episode until something changes (a raise that falls or is vetoed, the AI's
+        /// withhold released, the episode closed). It rides the save (additive: false is an earlier build's state) and the preview's clone.</summary>
+        public bool DebtLimitLetBind;
+
         /// <summary>PS-6 US-22b (I13 (1)): the day whose flows run lapsed - armed by the funding tick for the next day while funding is lapsed (`UsLapse.Lapsed`),
         /// MinValue otherwise. World state: it rides the save (format 42) and the preview's clone.</summary>
         public System.DateTime LapseFlowDay;

@@ -243,8 +243,10 @@ namespace PoliSim.Elections
         /// calendar's polling day, the very call the count's prediction makes on that day (`NationalElection.TryCompatibility` with the country and the day), so a
         /// campaign of a later cycle stages on the game's own House counts and its idle run still reproduces the day's prediction; none handed, the record's pair.
         /// PS-6 US-31 (R-US16 (b)): the staging declares where every AI weighs its local acts (<see cref="UsGroundGame.TargetingFor"/>, [AUTHORED-DRAFT]) in
-        /// place of the largest audiences. DECLARED (asked): the day-0 offices are placed by audience (<see cref="OfficesFor"/>), as in every staging - only
-        /// the local acts follow the targeting rule. False, with the reason, where the vote model or the regions cannot be read.
+        /// place of the largest audiences. PS-6 K27 (Elias's ruling of 2026-10-23: "the AI's offices follow the targeting rule (electors x closeness)"): every AI
+        /// party's day-0 offices open where the same rule weighs most (`OfficesByTargeting`), read on the staging's opening shares - the poll an idle campaign
+        /// opens on, since no poll is published before day 0 (DECLARED); the player's party's offices are its own (the run-up's, or by audience where it brings
+        /// none). False, with the reason, where the vote model or the regions cannot be read.
         /// </summary>
         public static bool TryUsa((int Day, int Party, Scandal Scandal)[] scandals, CampaignCalendar? calendar, out CampaignRun.Setup setup, out string note,
             int playerParty = -1, Func<int, AiDecision[]> playerScript = null, PreCampaignRun.Outcome? playerOutcome = null,
@@ -281,6 +283,9 @@ namespace PoliSim.Elections
             }
             bool[][] stands = UsRegions.Stands(cast, regions, cal.ElectionDate);
             double[] salience = UsSalience(cal.CampaignStart, out string salienceLabel);
+            // PS-6 K27: the targeting rule, read once on the staging's opening shares for the AI's day-0 offices, and handed to the run for its local acts
+            RegionTargeting targeting = UsGroundGame.TargetingFor(cal.ElectionDate, cast, regions, played);
+            int[] officeOrder = OpeningOrder(targeting, cal.CampaignStart, compatibility, prior, loyalty);
             var parties = new CampaignRun.PartySetup[cast.Length];
             for (int p = 0; p < parties.Length; p++)
             {
@@ -290,7 +295,7 @@ namespace PoliSim.Elections
                 PreCampaignRun.Outcome? brought = p == playerParty ? playerOutcome : null;
                 parties[p] = new CampaignRun.PartySetup(cast[p], personality, FlatCredibility,
                     brought.HasValue ? brought.Value.Money : WarChest, match, brought.HasValue ? brought.Value.Volunteers : Volunteers,
-                    CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : OfficesFor(personality, regions, stands[p]), OfficeOperationsPerDay,
+                    CandidateFor(personality, cast[p]), brought.HasValue ? brought.Value.Offices : p == playerParty ? OfficesFor(personality, regions, stands[p]) : OfficesByTargeting(personality, regions, stands[p], officeOrder), OfficeOperationsPerDay,
                     brought.HasValue ? brought.Value.Staff : StaffFor(personality), brought.HasValue ? brought.Value.TelevisionBuys : TelevisionBuysFor(personality),
                     p == playerParty ? playerScript : null, p == playerParty ? playerScandalScript : null);
             }
@@ -314,12 +319,12 @@ namespace PoliSim.Elections
                 "\n    {0} jurisdictions (SOURCED {1} valid presidential votes, US-3's catalog; the Census Bureau's CVAP 2020-2024), national audience {2:N0}, electorate {3:N0}; salience {4}\n" +
                 "    each party only where it is on the ballot (/nJ above); [AUTHORED-DRAFT] issue-match {5:F2} flat, credibility {6:F2} flat, war chest {7:N0} each - the model's one price table, a US one in dollars BILLED\n",
                 regions.Length, priorYear, national, eligible, salienceLabel, FlatIssueMatch, FlatCredibility, WarChest));
-            sb.Append("    [AUTHORED-DRAFT] targeting: every AI weighs its local acts where electors x the swing index of the margin derived from the last published poll are largest; the count counts each state with the ground game and the declared regional noise (R-US16 (b))\n");
+            sb.Append("    [AUTHORED-DRAFT] targeting: every AI weighs its local acts where electors x the swing index of the margin derived from the last published poll are largest, and opens its day-0 offices where the same rule weighs most on the staging's opening shares (K27); the count counts each state with the ground game and the declared regional noise (R-US16 (b))\n");
             note = sb.ToString();
             setup = new CampaignRun.Setup(cal, parties, prior, loyalty, compatibility, salience,
                 national, regions, publicHouse, PublicPollEveryDays, internalHouse, LoyaltyModel.WeightedMeanLoyalty(loyalty, prior), null, null, scandals, liveScandalRate,
                 null, PartyFamilies.For(CountryId.USA, cast), NationalElection.EntrantAwareness(CountryId.USA, cast), EntrantLayer.GroupingOf(CountryId.USA, cast), EntrantSimilarity.For(CountryId.USA, cast),
-                stands, UsGroundGame.TargetingFor(cal.ElectionDate, cast, regions, played));   // PS-6 US-31: the AI weighs its local acts where the declared rule says (R-US16 (b))
+                stands, targeting);   // PS-6 US-31: the AI weighs its local acts where the declared rule says (R-US16 (b))
             return true;
         }
 
@@ -567,6 +572,34 @@ namespace PoliSim.Elections
             var order = new List<int>();
             for (int r = 0; r < regions.Length; r++) { if (stands == null || stands[r]) { order.Add(r); } }
             order.Sort((a, b) => regions[b].Audience.CompareTo(regions[a].Audience));
+            return order.GetRange(0, Math.Min(count, order.Count)).ToArray();
+        }
+
+        /// <summary>PS-6 K27: the order the targeting rule <paramref name="targeting"/> contests the regions in on the staging's opening shares - the preference
+        /// model's own reading of <paramref name="compatibility"/>, <paramref name="prior"/> and <paramref name="loyalty"/>, the shares an idle campaign opens on, as a
+        /// poll with no error fielded on <paramref name="opens"/>; null where no rule is declared.</summary>
+        public static int[] OpeningOrder(RegionTargeting targeting, DateTime opens, double[] compatibility, double[] prior, double[] loyalty)
+        {
+            if (targeting == null) { return null; }
+            double[] opening = PreferenceModel.Preference(compatibility, prior, loyalty);
+            return targeting.OrderOn(new Poll(opens, 0, "the staging's opening shares", opening, new double[opening.Length]));
+        }
+
+        /// <summary>PS-6 K27 (Elias's ruling of 2026-10-23: "the AI's offices follow the targeting rule (electors x closeness)"): the personality's office count
+        /// (W-B4's, `OfficesFor`) opened in the regions <paramref name="targeted"/> contests first, heaviest
+        /// first, among those where the party stands; where the rule contests fewer than the count, the rest by audience as before (the local acts' own
+        /// fallback). No rule handed, the audience's plan whole.</summary>
+        public static int[] OfficesByTargeting(AiPersonality personality, RegionAudience[] regions, bool[] stands, int[] targeted)
+        {
+            int[] byAudience = OfficesFor(personality, regions, stands);
+            if (targeted == null) { return byAudience; }
+            int count = OfficesFor(personality, regions, null).Length;
+            var order = new List<int>();
+            foreach (int r in targeted) { if (r >= 0 && r < regions.Length && (stands == null || stands[r]) && !order.Contains(r)) { order.Add(r); } }
+            var rest = new List<int>();
+            for (int r = 0; r < regions.Length; r++) { if ((stands == null || stands[r]) && !order.Contains(r)) { rest.Add(r); } }
+            rest.Sort((a, b) => regions[b].Audience.CompareTo(regions[a].Audience));
+            order.AddRange(rest);
             return order.GetRange(0, Math.Min(count, order.Count)).ToArray();
         }
 

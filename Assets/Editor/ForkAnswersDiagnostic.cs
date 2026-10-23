@@ -300,7 +300,7 @@ namespace PoliSim.EditorTools
             o.Bills = g.Bills;
             o.Formations = g.Formations;
             o.PlayerAskedFirst = g.PlayerAskedFirst;
-            o.ElectionHeld = me.ElectionHistory.Count > electionsBefore && me.ElectionHistory[me.ElectionHistory.Count - 1].Method != ElectionMethod.NotImplemented;
+            o.ElectionHeld = me.ElectionHistory.Count > electionsBefore && NationalElection.CountsParliament(me.ElectionHistory[me.ElectionHistory.Count - 1].Method);   // PS-6 K74 (the review's L3)
 
             Dictionary<SimulationRandom.Stream, int> realDraws = SimulationRandom.CaptureDrawCounts();
             o.Real = Fingerprint(g.Sim, g.World, realDraws);

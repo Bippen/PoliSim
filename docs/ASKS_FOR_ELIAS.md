@@ -469,3 +469,9 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 ### K38-K44, the US surfaces' follow-ons (§906): the ask it ends in
 
 - **The top masthead for every country?** K40 moved the role and lapse chips to a top masthead strip for the USA only (where a Congress sits); every other country keeps its role chip beside the year on the Desk. Move every country's chips to the strip too?
+
+### The US model's rulings (§907): for your information
+
+- **K89 as built.** Your option said the AI releases "2 days before the X-date". In the model every raise is voted on the deadline or later, so that release would never stop a vote, which contradicts the bite you chose. It is built to hold through the deadline and release 2 days after it (the record's largest lead): a raise voted on the deadline or the day after falls, and the cut binds for those days. Say if you meant otherwise; it is a one-line change.
+- **K90's rule.** Once the President lets the limit bind, the hold does not return in that episode until something changes: a raise falls or its veto stands, the AI releases its withhold, or the episode closes.
+- **A finding, no ask:** the AI never withholds the continuing resolution; only a player's party can (K75).

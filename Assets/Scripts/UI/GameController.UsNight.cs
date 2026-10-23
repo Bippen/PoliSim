@@ -55,9 +55,9 @@ namespace PoliSim.UI
                 board.SittingUntil = president.TakesOffice;
                 foreach (UsPresidentialElection.Tally t in president.Electors)
                 {
-                    if (t.Party == "REP") { board.RepNominee = UsTermLimit.PersonOf(president, t); board.RepRunningMate = UsTermLimit.RunningMateOf(country, president, "REP"); board.RepShare = t.Share; }
-                    else if (t.Party == "DEM") { board.DemNominee = UsTermLimit.PersonOf(president, t); board.DemRunningMate = UsTermLimit.RunningMateOf(country, president, "DEM"); board.DemShare = t.Share; }
-                    else if (t.Candidate == UsPresidentialElection.OtherCandidates) { board.OtherShare = t.Share; }
+                    if (t.Party == "REP") { board.RepNominee = UsTermLimit.PersonOf(president, t); board.RepRunningMate = UsTermLimit.RunningMateOf(country, president, "REP"); board.RepShare = t.Popular(); }
+                    else if (t.Party == "DEM") { board.DemNominee = UsTermLimit.PersonOf(president, t); board.DemRunningMate = UsTermLimit.RunningMateOf(country, president, "DEM"); board.DemShare = t.Popular(); }
+                    else if (t.Candidate == UsPresidentialElection.OtherCandidates) { board.OtherShare = t.Popular(); }
                 }
                 // the base each slip compares with at 51 of 51: the game's own previous count, else the record's election of the same year
                 UsPresidentialElection.Contest previous = UsPresidentialElection.PreviousCount(country, day);

@@ -390,6 +390,27 @@ namespace PoliSim.EditorTools
             string[] names = setup.Regions.Select(r => r.Name).ToArray();
             DateTime polled = setup.Calendar.ElectionDate;
 
+            // (p) PS-6 K27 (Elias's ruling of 2026-10-23: "the AI's offices follow the targeting rule (electors x closeness)"): every AI party's day-0 offices are
+            // the rule's on the staging's opening shares, recomputed here; the planted tooth - the audience's plan - differs, so the assertion bites
+            int[] opening = LiveCampaignSetup.OpeningOrder(rule, setup.Calendar.CampaignStart, setup.Compatibility, setup.PriorShares, setup.LoyaltyPerParty);
+            var officeWrong = new List<string>();
+            var officeLines = new List<string>();
+            bool audienceDiffers = false;
+            for (int p = 0; p < setup.Parties.Length; p++)
+            {
+                CampaignRun.PartySetup party = setup.Parties[p];
+                int[] expected = LiveCampaignSetup.OfficesByTargeting(party.Personality, setup.Regions, setup.Stands?[p], opening);
+                int[] byAudience = LiveCampaignSetup.OfficesFor(party.Personality, setup.Regions, setup.Stands?[p]);
+                if (!party.Offices.SequenceEqual(expected)) { officeWrong.Add(party.Name); }
+                if (!byAudience.SequenceEqual(expected)) { audienceDiffers = true; }
+                officeLines.Add(F("{0} {1} (the audience's plan {2})", party.Name, string.Join("/", party.Offices.Select(r => names[r])), string.Join("/", byAudience.Select(r => names[r]))));
+            }
+            bool contested = opening != null && setup.Parties.All(party => party.Offices.Take(Math.Min(party.Offices.Length, opening.Length)).All(r => Array.IndexOf(opening, r) >= 0));
+            Check(opening != null && officeWrong.Count == 0 && audienceDiffers && contested,
+                F("(p) PS-6 K27: every AI party's day-0 offices open where the targeting rule weighs most on the staging's opening shares ({0} states contested, first {1}): {2}{3}",
+                    opening?.Length ?? 0, opening == null ? "none" : string.Join(", ", opening.Take(6).Select(r => names[r])), string.Join("; ", officeLines),
+                    officeWrong.Count == 0 ? string.Empty : " - NOT THE RULE'S: " + string.Join(", ", officeWrong)));
+
             // (k) the rule read off a poll, recomputed here: electors x the swing index of the margin the count derives from the poll's shares
             bool Recomputed(double[] shares, out int[] order, out string top)
             {
@@ -680,6 +701,20 @@ namespace PoliSim.EditorTools
                 F("(h) US-31: the polling day counts each of the {0} states with the campaign ground game and the declared noise - the stored contest re-derives the counted states (the derived plus each kept effect) bit for bit, every state moved off its derived shares; the planted tooth, its effects cleared, re-derives the derived states: \"{1}\"",
                     played.GroundGame.Count, played.Line));
             int changed = states.Zip(derivedStates, (a, b) => a.Winner != b.Winner).Count(x => x);
+            // (q) PS-6 K29 (Elias's ruling of 2026-10-23: "the carry stays; the popular vote is re-summed from the counted states"): each tally's popular vote is the
+            // counted states re-summed on the derivation's weights, recomputed here; the derived states re-summed give the derivation's own shares (the carry kept)
+            ElectoralCollege.TryPriorYear(polled.Year, out int priorYear);
+            double[] resum = UsPresidentialElection.ResummedShares(states, priorYear), resumDerived = UsPresidentialElection.ResummedShares(derivedStates, priorYear);
+            UsPresidentialElection.Tally repT = played.Electors.FirstOrDefault(t => t.Party == "REP"), demT = played.Electors.FirstOrDefault(t => t.Party == "DEM");
+            UsPresidentialElection.Tally othT = played.Electors.FirstOrDefault(t => t.Candidate == UsPresidentialElection.OtherCandidates);
+            bool popularAgrees = resum != null && repT != null && demT != null && othT != null
+                                 && repT.Counted == 100.0 * resum[ElectoralCollege.ShareRepublican] && demT.Counted == 100.0 * resum[ElectoralCollege.ShareDemocrat] && othT.Counted == 100.0 * resum[ElectoralCollege.ShareOthers]
+                                 && repT.Popular() == repT.Counted && Math.Abs(repT.Counted + demT.Counted + othT.Counted - 100.0) < 1e-9;
+            bool carryKept = resumDerived != null && repT != null && demT != null
+                             && Math.Abs(100.0 * resumDerived[ElectoralCollege.ShareRepublican] - repT.Share) < 1e-3 && Math.Abs(100.0 * resumDerived[ElectoralCollege.ShareDemocrat] - demT.Share) < 1e-3;   // within the derivation's own residual, points
+            Check(popularAgrees && carryKept && repT.Counted != repT.Share && played.Line.Contains("the popular vote re-summed from the counted states"),
+                F("(q) PS-6 K29: the popular vote re-summed from the {0} counted states (weighed by {1}'s votes cast, the derivation's): REP {2:0.0000} %, DEM {3:0.0000} %, others {4:0.0000} % - against the derived {5:0.0000} / {6:0.0000} %, which the derived states re-sum to (the carry kept: the states still re-derive from it)",
+                    states.Length, priorYear, repT?.Counted ?? double.NaN, demT?.Counted ?? double.NaN, othT?.Counted ?? double.NaN, repT?.Share ?? double.NaN, demT?.Share ?? double.NaN));
             sb.Append(F("    read      (h) the same shares counted without the ground game: {0}; calls apart {1}\n", derivedLine ?? "no count", changed));
 
             if (congress == null) { Check(false, "(h) US-31: no Congress count on the polling day"); return; }

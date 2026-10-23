@@ -117,16 +117,34 @@ namespace PoliSim.Simulation
         /// <summary>
         /// Ask 2's reading (P), PROVISIONAL (it stands, Elias's ruling I13 (2)): may the player's party withhold the continuing resolution? One before Congress
         /// (<paramref name="pending"/>), or - US-22b (I13 (3)) - one DUE (<see cref="ResolutionDue"/>: the one decided on the day before the horizon is withheld in
-        /// advance, as no day passes between its tabling and its vote), by a party seated and not the president's (the resolution is its own government's). False
-        /// with <paramref name="why"/>, in a page's words, where not.
+        /// advance, as no day passes between its tabling and its vote), by a party seated - PS-6 K75 (Elias's ruling of 2026-10-23: "a player-president's own
+        /// party may withhold the continuing resolution"): the president's own party too, its own government's resolution though it is. False with
+        /// <paramref name="why"/>, in a page's words, where not.
         /// </summary>
         public static bool MayWithhold(Country country, BudgetBill pending, DateTime today, out string why)
         {
             why = null;
             if ((pending == null || !pending.ContinuingResolution) && !ResolutionDue(country, pending, today)) { why = "NO CONTINUING RESOLUTION IS BEFORE CONGRESS OR DUE"; return false; }
             if (string.IsNullOrEmpty(country.PlayerPartyAbbrev)) { why = "NO PARTY OF YOURS IS SEATED"; return false; }
-            if (country.Government != null && country.Government.RoleOf(country.PlayerPartyAbbrev) == PlayerRole.PrimeMinister) { why = "THE CONTINUING RESOLUTION IS YOUR OWN GOVERNMENT'S"; return false; }
             return true;
+        }
+
+        /// <summary>PS-6 K75: whether a standing withhold of the continuing resolution lapses with the presidency - its party TOOK the presidency after it withheld
+        /// (it was out of office when it withheld, or left office since: `Country.ContinuingResolutionWithheldInOffice` false), so the next resolution is its own
+        /// new government's. A president's own party's withhold, given in office, stands until released or until funding is restored - a re-election's second
+        /// oath included (the review's L1: a new government is formed at every oath, so the day the government formed is not read).</summary>
+        public static bool WithholdLapsesWithPresidency(Country country)
+            => country?.ContinuingResolutionWithheldBy != null && HoldsPresidency(country, country.ContinuingResolutionWithheldBy) && !country.ContinuingResolutionWithheldInOffice;
+
+        /// <summary>Whether <paramref name="party"/> holds the presidency (the government's head party).</summary>
+        public static bool HoldsPresidency(Country country, string party) => country?.Government != null && !string.IsNullOrEmpty(party) && country.Government.RoleOf(party) == PlayerRole.PrimeMinister;
+
+        /// <summary>PS-6 K75 (the review's L1): a withhold given while its party held the presidency stays the president's own party's only while the party
+        /// never leaves office - a re-election's second oath forms a new government but keeps it; the day the party is out of the presidency it is marked out,
+        /// so a later return lapses the withhold.</summary>
+        public static void NoteWithholderInOffice(Country country)
+        {
+            if (country?.ContinuingResolutionWithheldBy != null && !HoldsPresidency(country, country.ContinuingResolutionWithheldBy)) { country.ContinuingResolutionWithheldInOffice = false; }
         }
 
         // ------------------------------------------------------------------------------------------------------------------------------------------------

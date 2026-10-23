@@ -78,7 +78,7 @@ namespace PoliSim.Elections
         public static bool HeldElection(Country country)
         {
             if (country?.ElectionHistory == null) { return false; }
-            foreach (ElectionRecord record in country.ElectionHistory) { if (record.Method != ElectionMethod.NotImplemented) { return true; } }
+            foreach (ElectionRecord record in country.ElectionHistory) { if (NationalElection.CountsParliament(record.Method)) { return true; } }
             return false;
         }
 

@@ -691,6 +691,8 @@ namespace PoliSim.UI
         /// </summary>
         private void Update()
         {
+            // PS-6 K22/K23/K75: a Budget-page verb clicked last frame, acted on here so the page's layout never changes mid-frame (GameController.BudgetV35's DrawUsCongressVerbs)
+            if (_usCongressVerbRequested != null) { System.Action requested = _usCongressVerbRequested; _usCongressVerbRequested = null; requested(); }
             // SAVE/LOAD (item 8): the TEMPORARY debug entry point - F5 saves, F9 loads, both logged
             // loudly. Deliberately ahead of the game-over/election gates (a finished game should
             // still be saveable and a load should rescue it) but behind country selection and the
@@ -757,7 +759,7 @@ namespace PoliSim.UI
             // MM-2: the campaign's opening and the budget window hold the clock only while their settings say so.
             if (UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer() || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                 || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                || BudgetWindowHolds() || DeclarationHolds() || FormationHolds())
+                || BudgetWindowHolds() || DeclarationHolds() || FormationHolds() || DebtLimitHolds())
             {
                 return;
             }
@@ -807,7 +809,7 @@ namespace PoliSim.UI
                     || UpdateFedChairSelectionState() || CampaignOpeningHolds() || HasPendingScandalAnswer()
                     || _simulationManager.GetPendingCabinetDecisions(PlayerCountryId).Count > 0
                     || _simulationManager.GetPendingForeignPolicyMeeting(PlayerCountryId) != null
-                    || BudgetWindowHolds() || DeclarationHolds() || FormationHolds())
+                    || BudgetWindowHolds() || DeclarationHolds() || FormationHolds() || DebtLimitHolds())
                 {
                     break;
                 }
@@ -1507,6 +1509,10 @@ namespace PoliSim.UI
                 && PoliSim.Elections.ConfidenceProcedure.TakesMotions(PlayerCountryId)   // the block that draws the answers is drawn only then (PS-6 US-7: never for a presidency)
                 && _simulationManager.PlayerGoverns(_playerCountry);
         }
+
+        /// <summary>PS-6 K85 (Elias's ruling of 2026-10-23): a binding debt limit with nothing proposed holds the clock for a player-president, like the other waits,
+        /// until a raise or a suspension is proposed on the Budget page (or the limit stops binding).</summary>
+        private bool DebtLimitHolds() => _simulationManager != null && _simulationManager.DebtLimitAwaitsPresident(PlayerCountryId);
 
         /// <summary>§646 (R5, premise 5): the Speaker's round waits on the player - asked to form a government, or holding an offer - and the clock waits with it.</summary>
         private bool FormationHolds()
@@ -2694,7 +2700,7 @@ namespace PoliSim.UI
             // and its persisted overrides were deleted in v3.1 Phase B (COMPLETED.md section 45). The
             // interrupt banner the Budget tab once re-surfaced is the frame's banner on every screen
             // (DrawFoldedInterruptBanner); the instant frame is the calendar's own ruling - nothing tweens.
-            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds() || FormationHolds();
+            bool isTimePaused = hasPendingFedChairSelection || hasPendingCabinetDecisions || hasPendingForeignPolicyMeeting || hasPendingBudgetProcess || hasPendingCampaignOpening || DeclarationHolds() || FormationHolds() || DebtLimitHolds();
             if (isTimePaused && !_wasTimePausedLastFrame && Event.current.type == EventType.Repaint) { AudioDirector.Fire(AudioCue.InterruptRaised); }   // P4-2: the hold's rising edge
             RefreshHeldCells();   // §648: the rail's HELD marks read the banner's own list
             if (Event.current.type == EventType.Repaint) { _wasTimePausedLastFrame = isTimePaused; }
@@ -5966,6 +5972,7 @@ namespace PoliSim.UI
                 holds.Add((_simulationManager.RoundOf(PlayerCountryId).Stage == PoliSim.Elections.RoundStage.PlayerAsked
                     ? RoundAsker(_simulationManager.RoundOf(PlayerCountryId)) + " ASKS YOUR PARTY TO FORM A GOVERNMENT" : "AN OFFER FROM THE PARTY " + RoundAsker(_simulationManager.RoundOf(PlayerCountryId)) + " ASKED", HoldCell.Politics));
             }
+            if (DebtLimitHolds()) { holds.Add(("THE DEBT LIMIT BINDS - PROPOSE A RAISE OR A SUSPENSION, OR LET IT BIND", HoldCell.Budget)); }   // PS-6 K85, K90
             if (includeBudgetProcess && BudgetWindowHolds())
             {
                 holds.Add((_simulationManager.IsIncomingGovernmentBudgetWindow(PlayerCountryId) ? "YOUR INCOMING GOVERNMENT'S FIRST BUDGET" : "THE ANNUAL BUDGET BILL", HoldCell.Budget));
@@ -6468,7 +6475,7 @@ namespace PoliSim.UI
             ElectionRecord latest = _playerCountry.ElectionHistory.Count > 0
                 ? _playerCountry.ElectionHistory[_playerCountry.ElectionHistory.Count - 1]
                 : null;
-            if (latest == null || latest.Date != _simulationManager.CurrentDate || latest.Method == ElectionMethod.NotImplemented)
+            if (latest == null || latest.Date != _simulationManager.CurrentDate || !NationalElection.CountsParliament(latest.Method))
             {
                 // No election was held today (the record carries the reason); there is no chamber to test.
                 return;
@@ -6651,7 +6658,7 @@ namespace PoliSim.UI
                 ElectionRecord earlier = null;
                 for (int i = _playerCountry.ElectionHistory.Count - 2; i >= 0; i--)
                 {
-                    if (_playerCountry.ElectionHistory[i].Method != ElectionMethod.NotImplemented) { earlier = _playerCountry.ElectionHistory[i]; break; }
+                    if (NationalElection.CountsParliament(_playerCountry.ElectionHistory[i].Method)) { earlier = _playerCountry.ElectionHistory[i]; break; }
                 }
                 long[][] previousByConstituency = null;
                 double[] previousShares = null;
@@ -9155,7 +9162,7 @@ namespace PoliSim.UI
             BudgetBill limitBill = usActs ? _simulationManager.GetPendingDebtLimitBill(PlayerCountryId) : null;
             if (limitBill != null)
             {
-                string limitLabel = $"Debt limit raise, by reconciliation - {ResolvesIn(limitBill.DaysRemaining, limitBill.Docket)}.";
+                string limitLabel = $"Debt limit {(limitBill.DebtLimitSuspendThrough != System.DateTime.MinValue ? "suspension" : "raise")}, by reconciliation - {ResolvesIn(limitBill.DaysRemaining, limitBill.Docket)}.";
                 pending.Add((limitLabel, UsDebtLimit.ConcernOf(_playerCountry, limitBill), UiPalette.SystemArea.Fiscal, PoliSim.Elections.PresidentialVeto.Act.OrdinaryStatute, limitBill.DaysRemaining));
                 uncontestedWords[limitLabel] = "Unopposed - it moves no rate, line or benefit, and no party withholds it";
             }
