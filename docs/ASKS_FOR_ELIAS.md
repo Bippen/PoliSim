@@ -450,3 +450,8 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - The three asks the piece ended in were answered in ask mode the same day: Cantoni & Pons's transfer was already K7; the noise's form is K34 (scaled by √(s(1−s))); the noise applies at every election in every country, K35.
 - **Measured under K34:** a 0.5 % party's mean bias in Sweden is +0.002 points (it was +0.262); the largest one-day move of a national share by the noise is 0.26 points in Sweden, 0.31 in Germany, 0.22 in Poland (it was 0.66, 1.04, 0.29). The BSW at 4.98 % of the 2025 vote still lands above the 5 % line in 42.7 % of draws: its noise is wider than its distance to the line.
 - **Still open, no ruling needed now:** US midterms draw no noise (no state count exists at a midterm); a grassroots AI now values a door's share point up to 1.6 times an establishment AI (play-calibration).
+
+### US-34 the USA's election night (§904): the asks it ends in
+
+- **The oath dates on the Docket.** Board 29b asks for the four dates between the night and the oath (17 Dec, 3 Jan, 6 Jan, 20 Jan) as Docket deadlines. They are drawn on the night; the Docket items are not built. Build them, or keep them on the night only?
+- **Party creation for the USA, when it comes.** With the REP and DEM inks installed, a created US party would be refused 8 of the 24 hues as too close to them. Creation is Sweden-only today, so nothing changes now; noted so the refusals are expected when the USA offers creation.

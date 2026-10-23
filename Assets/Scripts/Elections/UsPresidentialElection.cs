@@ -21,8 +21,8 @@ namespace PoliSim.Elections
     /// gate). On the polling day of 3 U.S.C. §21(1) (<see cref="PresidentialDay"/>) the game's poll × E1's factors (US-6, <see cref="PresidencyOfRecord.CandidatesOf"/>)
     /// gives the national vote; the states follow from the previous presidential election's by §689's normalised uniform swing (R-US14 (a), RULED - G2) and
     /// the electors by the statutes in force (<see cref="ElectoralCollege.FromNationalShares(int, int, double[], int, IReadOnlyList{ElectoralCollege.Standing}, out ElectoralCollege.StateCall[], out double)"/>); with no one at a majority of the electors appointed the House
-    /// chooses by states on the count's day under the Twelfth Amendment (R-US3 (a), RULED - F8; <see cref="HoldHouseChoice"/>). The verdict lands at once: no
-    /// night until D-US is built.</description></item>
+    /// chooses by states on the count's day under the Twelfth Amendment (R-US3 (a), RULED - F8; <see cref="HoldHouseChoice"/>). The verdict lands at once; since
+    /// PS-6 US-34 the night declares it state by state (`UsNight`), a presentation of this count that computes nothing of its own.</description></item>
     /// <item><description><b>The oath.</b> The winner takes office at noon on the 20th of January after the polling day - the Twentieth Amendment, Section 1
     /// (`ElectionsData/usa/records_by_date.md` §5, [EX-AM]): "The terms of the President and Vice President shall end at noon on the 20th day of January
     /// ... and the terms of their successors shall then begin" - through US-2's dated transition (`SimulationManager.SeatTheRecordOnItsDate`), as a

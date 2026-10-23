@@ -5379,19 +5379,8 @@ namespace PoliSim.Testing
             InvokeNoArg(controller, "CheckElection");
             if (walkSpeed != null) { walkSpeedField.SetValue(controller, walkSpeed); }   // §657: the walk's pause lifted once the election is called
             FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
-            if (nightField?.GetValue(controller) == null && _countryId == CountryId.USA)
-            {
-                // PS-6 US-30: the USA's campaign is staged and its HQ filmed above; its night is US-34's (D-US), so the film ends at the count the day loop held
-                Country counted = sim.World?.GetCountry(CountryId.USA);
-                UsPresidentialElection.Contest contest = counted != null && counted.UsPresidentialElections.Count > 0 ? counted.UsPresidentialElections[counted.UsPresidentialElections.Count - 1] : null;
-                Debug.Log($"SHOT: -shotinterrupts - the USA shows no election night until US-34 builds one; the film ends at the count of {sim.CurrentDate:yyyy-MM-dd}: {contest?.Line ?? "NO COUNT"}.");
-                if (contest == null) { Debug.LogError("SHOT: -shotinterrupts - the USA reached its polling day and the day loop held no count."); _failed++; }
-                Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
-                Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
-                Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
-                Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
-                yield break;
-            }
+            // PS-6 US-34: the USA's night is built (D-US) - its campaign staged and its HQ filmed above, the night is filmed here as every country's; one not
+            // shown is the failure below, as anywhere
             if (nightField?.GetValue(controller) == null)
             {
                 Debug.LogError($"SHOT: -shotinterrupts - {_countryId} reached its election and NO election night was shown. The controller logs why (ELECTION: / CANVAS: lines above); a Sweden game must show one.");
@@ -5422,6 +5411,10 @@ namespace PoliSim.Testing
             {
                 yield return CaptureGermanNightPartial(controller, sim);
             }
+            if (_countryId == CountryId.USA)
+            {
+                yield return CaptureUsNightStaged(controller, sim);   // US-34: the night part-way, the Congress lens, a College with no majority and the House's choice - each STAGED
+            }
 
             if (Formation && !over && sim.RoundsApply(_countryId))
             {
@@ -5437,6 +5430,131 @@ namespace PoliSim.Testing
             Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
             Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
             Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>
+        /// PS-6 US-34 (D-US, boards 29a-29b): THE US NIGHT STAGED, after the night the film just played (e7c) - built from that night's own contests, each
+        /// in a screen of its own, filmed with the Canvas guard and destroyed; the game is not touched. (1) Part-way, at 30 of 51 declared (e7e): the states
+        /// not yet in dashed, the bars' middles to come, the calls where they stand. (2) The same instant under the Congress lens (e7f): the senators not up
+        /// hatched, the District dotted. (3) A College with no majority (e7g, 29a's 269-269 pick): the closest states called the other way
+        /// (`UsNight.FlipsToTie`), NO MAJORITY · TO THE HOUSE, the Delegations lens, the 6 JAN chip amber. (4) The House's choice on 6 January (e7h) on that
+        /// staged College, the votes by tonight's delegations (the House that sits from 3 January) - and the Senate's Vice President where it cannot choose.
+        /// Each is STAGED and named so: the live night opens at its last declaration, and a College with no majority is not this game's count.
+        /// </summary>
+        private IEnumerator CaptureUsNightStaged(GameController controller, SimulationManager sim)
+        {
+            Country usa = sim.World?.GetCountry(CountryId.USA);
+            // real904: the night is dismissed and the day has moved on - the count is read by the polling day its contest carries (the latest presidential count held)
+            UsPresidentialElection.Contest latest = null;
+            if (usa?.UsPresidentialElections != null) { foreach (UsPresidentialElection.Contest c in usa.UsPresidentialElections) { if (c.PollingDay.Date <= sim.CurrentDate.Date && (latest == null || c.PollingDay > latest.PollingDay)) { latest = c; } } }
+            DateTime polled = latest != null ? latest.PollingDay.Date : sim.CurrentDate.Date;
+            UsCongressElection.Contest congress = usa?.UsCongressElections?.Find(c => c.PollingDay.Date == polled);
+            UsPresidentialElection.Contest president = usa?.UsPresidentialElections?.Find(c => c.PollingDay.Date == polled);
+            if (congress == null || president == null)
+            {
+                Debug.LogError($"SHOT: US-34 - no count of {polled:yyyy-MM-dd} in hand, so the night part-way is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            SetPrivateField(controller, "_canvasLive", true);
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+
+            // (1) and (2): part-way, then the Congress lens
+            UsNight.State partial = UsNight.At(30, usa, president, congress);
+            ElectionNightScreen staged = partial != null ? ElectionNightScreen.BuildUsa(GameController.UsNightInputs(usa, partial, president, congress), null) : null;
+            if (staged == null) { Debug.LogError("SHOT: US-34 - the board did not build for the night part-way; nothing filmed."); _failed++; }
+            else
+            {
+                yield return Settle();
+                Claim("electionnight");
+                yield return Capture("e7e_election_night_partial_staged");
+                RecordCanvasTextAssert("e7e_election_night_partial_staged", controller);
+                Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: US-34 - the night staged part-way: {0} of {1} declared; the College REP {2} DEM {3} ({4} to come, {5}); the House REP {6} DEM {7} ({8}); the Senate REP {9} DEM {10} ({11} to come, {12}); cells {13} inked / {14} not yet.",
+                    partial.Declared, partial.Total, partial.ElectorsRep, partial.ElectorsDem, partial.ElectorsToCome, partial.College, partial.HouseRep, partial.HouseDem, partial.House,
+                    partial.SenateRep, partial.SenateDem, partial.UpToCome, partial.Senate, staged.UsTiles?.LastInked ?? -1, staged.UsTiles?.LastNotYet ?? -1));
+                if (staged.SetUsLens(UsTileView.Lens.Congress))
+                {
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e7f_election_night_congress_lens_staged");
+                    RecordCanvasTextAssert("e7f_election_night_congress_lens_staged", controller);
+                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: US-34 - the Congress lens on the night part-way: cells {0} inked / {1} hatched / {2} dotted / {3} not yet.",
+                        staged.UsTiles.LastInked, staged.UsTiles.LastHatched, staged.UsTiles.LastDotted, staged.UsTiles.LastNotYet));
+                }
+                else { Debug.LogError("SHOT: US-34 - the night part-way would not take the Congress lens; e7f is NOT filmed."); _failed++; }
+                if (staged.Root != null) { UnityEngine.Object.Destroy(staged.Root); }
+                yield return Settle();
+            }
+
+            // (3): a College with no majority, staged
+            ElectoralCollege.StateCall[] states = UsPresidentialElection.StatesOf(usa, president);
+            string[] flips = UsNight.FlipsToTie(states);
+            UsPresidentialElection.Contest tied = null;
+            if (flips == null) { Debug.LogError("SHOT: US-34 - no set of states called the other way leaves the College equal; e7g and e7h are NOT filmed."); _failed++; }
+            else
+            {
+                Dictionary<(string, int), string> notUp = UsNight.NotUp(usa, congress, out int independents);
+                UsNight.State tie = UsNight.Of(int.MaxValue, polled, UsNight.Flipped(states, flips), congress, notUp, independents);
+                ElectionNightScreen.UsNightBoard tieBoard = GameController.UsNightInputs(usa, tie, president, congress);
+                tieBoard.HasReference = false;   // the review's L4: a staged College is no played count to set beside the record
+                ElectionNightScreen none = ElectionNightScreen.BuildUsa(tieBoard, null, UsTileView.Lens.Delegations);
+                if (none == null) { Debug.LogError("SHOT: US-34 - the board did not build for the College with no majority; nothing filmed."); _failed++; }
+                else
+                {
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e7g_election_night_no_majority_staged");
+                    RecordCanvasTextAssert("e7g_election_night_no_majority_staged", controller);
+                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: US-34 - the College staged with no majority ({0} called the other way): REP {1} DEM {2}, {3} at {4} of {5}; tonight's delegations REP {6} DEM {7} tied {8}; the lens {9}.",
+                        string.Join(", ", flips), tie.ElectorsRep, tie.ElectorsDem, tie.College, tie.CollegeAt, tie.Total, tie.DelegationsRep, tie.DelegationsDem, tie.DelegationsTied, none.UsTiles?.Current));
+                    if (none.Root != null) { UnityEngine.Object.Destroy(none.Root); }
+                    yield return Settle();
+                }
+
+                // (4): the House's choice on that staged College - a copy of the contest, never the game's
+                tied = new UsPresidentialElection.Contest
+                {
+                    PollingDay = president.PollingDay, DayBasis = president.DayBasis, ElectorsMeet = president.ElectorsMeet, CountedOn = president.CountedOn, TakesOffice = president.TakesOffice,
+                    ElectorsAppointed = president.ElectorsAppointed, Contingent = true, TieSeed = president.TieSeed, Line = "staged",
+                };
+                foreach (UsPresidentialElection.Tally t in president.Electors)
+                {
+                    int votes = t.Party == "REP" ? tie.ElectorsRep : t.Party == "DEM" ? tie.ElectorsDem : 0;
+                    tied.Electors.Add(new UsPresidentialElection.Tally { Candidate = t.Candidate, Party = t.Party, Votes = votes, Share = t.Share, OwnNominee = t.OwnNominee });
+                }
+                int allStates = UsPresidentialElection.AllStates(polled);
+                string choice = UsPresidentialElection.ChooseByStates(tied, congress.Delegations(), allStates, "the House elected tonight", tied.CountedOn);
+                if (!tied.Decided())
+                {
+                    // the review's L4: the Senate that chooses on 6 January is the one seated on 3 January (tonight's seats over the record's) - the game's
+                    // own choice reads the Senate seated on its day; the polling day's country still seats the outgoing one, so the staged tallies are made here
+                    Dictionary<string, int> sits = UsCongressElection.SenateOn(usa, congress.Convenes);
+                    int needed = UsSenate.Members / 2 + 1;
+                    foreach (UsPresidentialElection.Tally t in tied.Electors)
+                    {
+                        if (t.Party == null || t.Votes <= 0) { continue; }
+                        tied.SenateChoice.Add(new UsPresidentialElection.Tally { Candidate = UsTermLimit.RunningMateOf(usa, tied, t.Party), Party = t.Party, Votes = sits.TryGetValue(t.Party, out int n) ? n : 0 });
+                    }
+                    tied.SenateChoice.Sort((a, b) => b.Votes.CompareTo(a.Votes));
+                    UsPresidentialElection.Tally vp = tied.SenateChoice.Find(x => x.Votes >= needed);
+                    choice += string.Format(CultureInfo.InvariantCulture, "; the Senate seated {0:yyyy-MM-dd} chooses the Vice President - {1}; {2}", congress.Convenes,
+                        string.Join(", ", tied.SenateChoice.ConvertAll(x => x.Party + " " + x.Votes.ToString(CultureInfo.InvariantCulture))), vp != null ? vp.Candidate + " chosen" : "no one has " + needed.ToString(CultureInfo.InvariantCulture));
+                }
+                ElectionNightScreen house = ElectionNightScreen.BuildUsHouseChoice(tied, allStates, null);
+                if (house == null) { Debug.LogError("SHOT: US-34 - the board did not build for the House's choice; nothing filmed."); _failed++; }
+                else
+                {
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e7h_house_choice_staged");
+                    RecordCanvasTextAssert("e7h_house_choice_staged", controller);
+                    Debug.Log("SHOT: US-34 - the House's choice staged on 6 January: " + choice);
+                    if (house.Root != null) { UnityEngine.Object.Destroy(house.Root); }
+                }
+            }
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+            SetPrivateField(controller, "_canvasLive", false);
+            yield return Settle();
         }
 
         /// <summary>

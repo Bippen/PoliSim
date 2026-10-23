@@ -976,6 +976,9 @@ namespace PoliSim.UI
             if (_text == null) { _text = GetComponent<Text>(); }
             if (_text == null || Word == null) { return; }
             if (_width < 0f) { _text.text = Word; _width = _text.preferredWidth; }
+            // real904c (US e7e/e7f): a block narrower than its word's inset leaves the text a rect of negative width, which can never hold it - the word's
+            // object is set aside, so no empty text stands in a rect it escapes (the board is rebuilt for every state it shows)
+            if (_text.rectTransform.rect.width <= 0f) { gameObject.SetActive(false); return; }
             string shown = _width <= _text.rectTransform.rect.width + 0.5f ? Word : string.Empty;
             if (_text.text != shown) { _text.text = shown; }
         }

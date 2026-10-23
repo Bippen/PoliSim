@@ -280,6 +280,12 @@ namespace PoliSim.UI
             { "Poland/TD",     Hex(0x407437) },
             { "Poland/NL",     Hex(0x753862) },
             { "Poland/Konf",   Hex(0x242C5D) },
+            // PS-6 US-34 (board 29b's answer 9, a PROPOSAL drawn by Code through the Design channel, built on Elias's go-ahead of 2026-10-23) -
+            // [AUTHORED-REFERENCE]: the USA had no inks. The board seats each party's brand hue (Wikipedia's party colours, the source 28b took for
+            // Konfederacja: REP red #E81B23, DEM blue #3333FF) at the desk's S 0.52 · V 0.46, darkening in L only until the tile text clears 4.5:1 -
+            // neither needed it - so its hexes are taken as drawn, as Poland's were. The independents (who sit with DEM) are given none: the Neutral.
+            { "USA/REP",       Hex(0x75383B) },
+            { "USA/DEM",       Hex(0x383875) },
         };
 
         /// <summary>

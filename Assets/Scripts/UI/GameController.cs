@@ -734,6 +734,7 @@ namespace PoliSim.UI
                 return;
             }
             if (PresidentialNightOwed()) { return; }   // D-PL: a President's night that waited for the night before it on the same day opens now
+            if (UsHouseChoiceOwed()) { return; }   // US-34: the House's 6 January moment, owed the same way
             if (PresidentBetweenAsked()) { return; }   // D-PL2: the night between the rounds the Docket asked for, opened here and never inside a draw
 
             // A Canvas takeover stops the clock — the signing-screen pattern addition to the seam's
@@ -794,6 +795,7 @@ namespace PoliSim.UI
                     CheckElection();
                 }
                 CheckPresidentialRound();   // D-PL: the President's night, on a round's day the manager's day just held
+                CheckUsHouseChoice();   // US-34: the House's own moment on the count's day, where the College had no majority
 
                 AutosaveIfDue();   // MM-2: counted in days played, by the setting's cadence
 
@@ -1135,6 +1137,7 @@ namespace PoliSim.UI
             _pendingElectionVerdict = ui?.PendingElectionVerdict;
             _pendingElectionVerdictEndsGame = ui?.PendingElectionVerdictEndsGame ?? false;
             _presidentialNightOwed = System.DateTime.MinValue;   // D-PL: a night owed in the world just left is not this one's
+            _usHouseChoiceOwed = System.DateTime.MinValue;   // US-34: likewise the House's 6 January moment
             _presidentBetweenAsked = System.DateTime.MinValue;   // D-PL2: nor a night asked for in it
             _pendingElectionDate = ui?.PendingElectionDate != null && System.DateTime.TryParseExact(ui.PendingElectionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out System.DateTime pendingDate) ? pendingDate : default;
             _campaignOpeningAcknowledgedElection = ui?.CampaignOpeningAcknowledgedElection;
@@ -6552,6 +6555,7 @@ namespace PoliSim.UI
                 return;
             }
             if (PlayerCountryId == CountryId.Poland) { ShowPolishSejmNight(); return; }   // D-PL: the 41 okręgi, counted from the election just held (GameController.PolishNight.cs)
+            if (PlayerCountryId == CountryId.USA) { ShowUsNight(); return; }   // US-34 (D-US): the 51, counted from the contests the day loop held today (GameController.UsNight.cs)
 
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(PlayerCountryId);
             var keys = new List<string>();
