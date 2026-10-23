@@ -2230,6 +2230,7 @@ R-US20'S RULE - US-13's measurement decides Code's recommendation on the midterm
 Preregistered before UsMidtermCheck's first run (US-13); amended only with Elias's ruling.
 Amended under Elias's ruling I4 (2026-10-18): unified or divided over both chambers (the
 both-chambers amendment asked with US-15); the model's seat change after R-US18's ruling I1.
+Amended under Elias's ruling K73 (2026-10-23): the model's world reads the game's own House.
 
 THE TERMS
 - An election is a House general election. The president's party at an election is the
@@ -2300,9 +2301,12 @@ THE MODEL'S MIDTERM
   midterm scores (from the oath of 20 Jan 2025); no player decision on any turn; stepped
   one day at a time in the controller's order (the day, the player's day tick, the turn
   at its boundary) to 3 Nov 2026, the 2026 polling day (2 U.S.C. 7), and read on that
-  day. It must hold the record (R-US1 (a), US-2): Trump (REP) the president of record
-  from the oath, and the House the 2024 election chose from 3 Jan 2025. A world that does
-  not hold them fails the instrument; it is not an outcome of this rule.
+  day. It must hold the record's president (R-US1 (a)): Trump (REP) from the oath,
+  elected by the world's own count of 5 Nov 2024 (US-8). Its House is the game's own
+  (K73): the House the world's own count of 5 Nov 2024 elected (US-16), seated from
+  3 Jan 2025 and sitting on the polling day, and the government type is read on it; the
+  world's own count of 3 Nov 2026 is set aside, as this rule reads the poll it builds. A
+  world that does not hold them fails the instrument; it is not an outcome of this rule.
 - The poll: US-5's House history as ruled (R-US15 (a), G2) - the electorate held at the
   four countries' median spread, fitted to the 2024 House split (T-1), the loyalty 2024
   against 2022, in the live chain's order; the identity checked (the poll no farther from
