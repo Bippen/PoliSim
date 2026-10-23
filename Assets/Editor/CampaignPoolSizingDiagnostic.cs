@@ -275,7 +275,7 @@ namespace PoliSim.EditorTools
             return new CampaignRun.Setup(setup.Calendar, parties, setup.PriorShares, setup.LoyaltyPerParty,
                 setup.Compatibility, setup.TrueSalience, setup.NationalAudience, setup.Regions,
                 setup.PublicHouse, setup.PublicPollEveryDays, setup.InternalHouse, setup.ElectorateLoyalty,
-                setup.Outlets, setup.DebateDays, setup.Scandals);
+                setup.Outlets, setup.DebateDays, setup.Scandals, doorCacePp: setup.DoorCacePp);   // A-LOOP q24 5b: the staging's door CACE carried
         }
 
         private static string F(string format, params object[] args)

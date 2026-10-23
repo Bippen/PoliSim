@@ -78,6 +78,9 @@ namespace PoliSim.EditorTools
         public static Result Hold(GameObject host, CountryId id, DateTime? thenTo)
         {
             var result = new Result { Id = id };
+            // GATE-18 (Elias's ruling of 2026-10-23, the noise always on in play): E1's reference world is a measurement at sigma 0 by design - the
+            // count its factors are fitted to reads the poll and nothing drawn - so it is held inside the noise-at-zero scope
+            using (ParliamentaryCount.NoiseAtZero())
             using (Simulation.SimulationManager.EpochScope())
             {
                 DateTime firstVote = VoteOfRecord(id);

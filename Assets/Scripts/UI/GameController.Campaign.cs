@@ -858,9 +858,9 @@ namespace PoliSim.UI
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
                     "REFUSED · FUNDRAISE: " + PreCampaignRun.Refusal(CampaignActionKind.Fundraise).ToUpperInvariant(), reasonStyle);
                 y += reasonHeight;
-                // A-LOOP q24 5a (Q7): the office is out of the run-up until polling day's turnout counts its doors - its chip dimmed, its reason here
+                // A-LOOP q24 5b: the office is back in the run-up now that polling day's turnout counts its doors - what it buys, where the refusal stood
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
-                    "REFUSED · OFFICE: " + PreCampaignRun.Refusal(CampaignActionKind.EstablishOffice).ToUpperInvariant(), reasonStyle);
+                    "OFFICE: OPENS ON DAY ONE - ITS DOORS RAISE YOUR SUPPORTERS' TURNOUT", reasonStyle);
                 y += reasonHeight;
                 PoliSimWidgets.MeasuredLabel(new Rect(r.x, y, r.width, reasonHeight),
                     "POLICY, TRAIN, STRATEGY: NO PRICE IN THE MODEL AND NO SEAM IN THE RUN", reasonStyle);

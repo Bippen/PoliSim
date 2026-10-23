@@ -31,8 +31,9 @@ namespace PoliSim.Elections
     ///   with), read at the personality's <see cref="PersonalityProfile.Optimism"/> point of the
     ///   band, converted to share points by the sourced CACE of the action's contact class times the MARGINAL coverage the
     ///   contact adds to the party's own contacts of that class so far (`CampaignPersuasion.Coverage`, the run's own arithmetic);
-    ///   turnout is valued at ZERO until q24 5b (DECLARED, A-LOOP §5 (1): enthusiasm and mobilisation reach no live count, so a
-    ///   turnout point is worth nothing the world pays; 5b's seam is `Points`, where its sourced turnout CACE will enter);
+    ///   since q24 5b a door-to-door act adds the turnout its doors buy on the count (`DoorTurnoutValuePp`: the sourced turnout CACE on the
+    ///   share of the party's supporters the doors newly reach, the extra votes over the votes cast) at the personality's own `EnthusiasmValue`;
+    ///   enthusiasm from rallies has no sourced turnout effect and is worth nothing (DECLARED);
     /// - *targetImportance* — the personality's affinity for the action (§32's descriptions as
     ///   multipliers) times how salient the message's issue is relative to the most salient one
     ///   measured;
@@ -236,6 +237,12 @@ namespace PoliSim.Elections
         /// <summary>PS-6 US-31: the regions the staging's declared targeting rule contests on the last PUBLISHED poll, heaviest first (<see cref="RegionTargeting"/>) -
         /// the candidate regions of a local act in place of the largest audiences; null = no rule (the largest audiences, as before).</summary>
         public readonly int[] RuleRegions;
+        /// <summary>A-LOOP q24 5b: the doors the party's own operation has opened so far per region (door contacts, not knocks) - its own books - so a door is valued at the
+        /// turnout it ADDS on the count; null = none counted (a staging whose count reads no 5b turnout).</summary>
+        public readonly double[] OwnDoorContactsByRegion;
+        /// <summary>A-LOOP q24 5b: the turnout CACE the staging's count gives an opened door (`GotvTurnout`) - a sourced figure, public; 0 = turnout is
+        /// worth nothing on this count.</summary>
+        public readonly double DoorCacePp;
 
         public double AttacksOnMe
         {
@@ -249,9 +256,12 @@ namespace PoliSim.Elections
             double[] interviewReachToday = null, double bestOutletReach = 1.0, double pollCost = 0.0,
             double[] nationalAudienceByKind = null, double volunteerHoursToday = 0.0, double televisionFund = 0.0,
             double[] regionPressure = null, double[] regionPush = null, double[] attackersOnMe = null, double pressReach = 0.0, double nationalReachShare = 1.0,
-            double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null, int[] ruleRegions = null)
+            double persuasionNorm = 0.0, double[] ownExposureByClass = null, double[] ownQualityByClass = null, int[] ruleRegions = null,
+            double[] ownDoorContactsByRegion = null, double doorCacePp = 0.0)
         {
             RuleRegions = ruleRegions;
+            OwnDoorContactsByRegion = ownDoorContactsByRegion;
+            DoorCacePp = doorCacePp;
             PersuasionNorm = persuasionNorm;
             OwnExposureByClass = ownExposureByClass;
             OwnQualityByClass = ownQualityByClass;
@@ -768,9 +778,13 @@ namespace PoliSim.Elections
             Band(view, spec, audience, view.OwnCredibility, spend, measured, salience, salienceError, match, matchError,
                 profile, m, out double expectedPts, out double spanPts, out double lowPts, out double highPts);
 
-            // ⚠ A-LOOP q24 5a (the review's H1): THE TURNOUT TERM BELOW IS VALUED AT ZERO UNTIL 5b. Its points grew with the absolute
-            // electorate while nothing in the live count reads turnout (§5 (1)), so the AI ranked on a value the world pays at 0. C-N2's
-            // reasoning stands for the day 5b counts doors on polling day, and its arithmetic is kept here as that seam's record:
+            // ⚠ A-LOOP q24 5b (GATE-18 q2): THE TURNOUT TERM, VALUED ON THE COUNT'S OWN ARITHMETIC. Until 5b it was worth zero (5a's review H1: nothing
+            // in the live count read turnout). Now polling day counts each region's doors at the sourced turnout CACE (`GotvTurnout`, `ParliamentaryCount`),
+            // so a door-to-door act is worth the share its doors add there: `DoorTurnoutValuePp`, the extra votes over the votes cast, absorbed, read off
+            // the party's own published share and its own doors so far (so a worked region is worth less), times the personality's own value of a turnout
+            // point against a persuasion point (`PersonalityProfile.EnthusiasmValue`, §32's descriptions, [AUTHORED-DRAFT] as it was, set per
+            // personality in `PersonalityCatalog.Profile`). The offices' own daily knocking is not valued here - it happens with or
+            // without the act. C-N2's reasoning, the record of this seam before 5b:
             // ⚠ C-N2, RULED 2026-09-02 (its second half). Door-to-door's payoff in the WORLD is turnout: the
             // run books every knocked door through `gotv.Operate`, which raises the party's regional
             // MOBILIZATION attribute (§26), and election day multiplies turnout by it. The scorer valued
@@ -787,7 +801,7 @@ namespace PoliSim.Elections
             // Points() already gives enthusiasm, weighted by the same EnthusiasmValue. The offices' own
             // daily knocking is NOT counted here - it happens with or without this action.
             // (the attribute lift, GotvModel.Mobilization over the region's eligible, times the two spans' ratio, times the region's share of
-            // the electorate) - and adds nothing to the expected value until 5b gives a knocked door its sourced turnout CACE.
+            // the electorate) - replaced at 5b by the sourced turnout CACE above.
             // ⚠ C-N7 (2026-09-02), re-applied after D-20 (a). Since C-N1 the coverage an action begets
             // reaches the vote; the scorer valued only the action's own chain, so the news a rally or an
             // announcement makes was invisible to it - the same blind spot C-N2 found for turnout. The
@@ -810,6 +824,13 @@ namespace PoliSim.Elections
                 expectedPts += coveragePts;
                 lowPts += coveragePts;
                 highPts += coveragePts;
+            }
+            if (spec.Kind == CampaignActionKind.DoorToDoor && regionIndex >= 0)
+            {
+                double turnoutPts = profile.EnthusiasmValue * DoorTurnoutValuePp(view, regionIndex, audience);   // q24 5b: the doors' turnout, as the count reads it
+                expectedPts += turnoutPts;
+                lowPts += turnoutPts;
+                highPts += turnoutPts;
             }
 
             double importance = profile.Affinity(spec.Kind) * (measured ? Math.Max(0.0, salience) / topSalience : 0.5);
@@ -868,7 +889,7 @@ namespace PoliSim.Elections
         /// 881b's N3): `CampaignPersuasion.ClassEffectPp` on the party's own class tally with this contact added, less without it
         /// (`AiView.OwnExposureByClass`, `AiView.OwnQualityByClass`) - the pooled quality and the coverage over the party's reach together, so a
         /// saturated class is worth little and a contact below the class's mean quality, which lowers the party's effect, is valued below zero
-        /// and never chosen. Turnout is worth ZERO until q24 5b (the review's H1; 5b's turnout CACE enters here). The personality's weights
+        /// and never chosen. Turnout is not here: since q24 5b a door's turnout is `DoorTurnoutValuePp`, added beside it. The personality's weights
         /// reach the score through its importance, cost and risk terms, as before.
         /// </summary>
         private static double Points(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile, StrategyModifiers m)
@@ -887,6 +908,21 @@ namespace PoliSim.Elections
 
         /// <summary>q24 5a (the review's H1/M5): what the AI values one contact at, in points of share - `Points` as the scorer reads it, for a diagnostic to hold per country.</summary>
         public static double ContactValuePp(AiView view, CampaignActions.ChainTrace trace, PersonalityProfile profile) => Points(view, trace, profile, StrategyModifiers.Identity);
+
+        /// <summary>
+        /// A-LOOP q24 5b: what <paramref name="doors"/> more opened doors in <paramref name="region"/> add to the party's national share, in points, on the
+        /// count's own arithmetic (`GotvTurnout.ShareValuePp`) read off what the party can know: its published share (the last poll it has seen; none
+        /// seen, nothing is valued - DECLARED, the blind read the turnout as nothing), the region's electorate (a public fact on its view), its own doors
+        /// there so far and the votes cast nationally (the staging's audience). 0 where the staging's count reads no 5b turnout or the party does not
+        /// stand there. Before the personality's weight (`PersonalityProfile.EnthusiasmValue`), which the scorer applies.
+        /// </summary>
+        public static double DoorTurnoutValuePp(AiView view, int region, double doors)
+        {
+            if (view.DoorCacePp <= 0.0 || !view.HasPoll || view.Regions == null || region < 0 || region >= view.Regions.Length || !view.Regions[region].Stands) { return 0.0; }
+            if (view.PartyIndex < 0 || view.PartyIndex >= view.LatestPoll.PartyCount) { return 0.0; }
+            double soFar = view.OwnDoorContactsByRegion != null && region < view.OwnDoorContactsByRegion.Length ? view.OwnDoorContactsByRegion[region] : 0.0;
+            return GotvTurnout.ShareValuePp(view.Regions[region].Eligible, view.LatestPoll.Share(view.PartyIndex), soFar, doors, view.NationalAudience, view.DoorCacePp);
+        }
 
         /// <summary>The measurement behind a message: one issue's, or for a general message the mean over the issues measured.</summary>
         private static bool TryMeasurement(AiView view, IssueId? issue, out double salience, out double salienceError,

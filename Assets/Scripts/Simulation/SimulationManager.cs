@@ -5754,12 +5754,19 @@ namespace PoliSim.Simulation
                 foreach (KeyValuePair<string, double> kv in poll) { counted.Append(' ').Append(kv.Key).Append(' ').Append((100.0 * kv.Value).ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture)).Append(" %"); }
                 Debug.Log($"PRESIDENTIAL: {country.Id} - the campaign ran to the polling day, and its final shares are counted:{counted}");
                 groundGame = Elections.UsGroundGame.Of(PlayerCampaign.Setup, PlayerCampaignResult);
-                if (groundGame == null) { Debug.LogWarning($"PRESIDENTIAL: {country.Id} - the campaign ground game could not be read (no REP or DEM staged, or its mobilization does not match the jurisdictions); the states are counted as derived"); }
+                if (groundGame == null) { Debug.LogWarning($"PRESIDENTIAL: {country.Id} - the campaign ground game could not be read (no REP or DEM staged, or its mobilization does not match the jurisdictions); the states are counted with the regional noise alone"); }
             }
             else if (!Elections.NationalElection.TryPredictShares(country.Id, out poll, Elections.EconomicVote.RecordOverTerm(country, CurrentDate, out _), on: CurrentDate, played: country))   // PS-6 US-26: the House history rolled forward - the game's own counts before the day
             {
                 Debug.LogWarning($"PRESIDENTIAL: {country.Id} - no prediction could be made on the polling day {CurrentDate:yyyy-MM-dd}; nothing is counted, and the record's president stays seated by date");
                 return;
+            }
+            // Elias's ruling of 2026-10-23 ("always, all countries"): a polling day no campaign ran up to is counted state by state too - no contact anywhere,
+            // the same keyed regional noise (UsGroundGame.NoCampaign); where its jurisdictions cannot be read the states stand as derived and the line says why
+            if (groundGame == null && Elections.ParliamentaryCount.SigmaPp > 0.0)   // inside ParliamentaryCount.NoiseAtZero (a measurement at sigma 0 by design) the derived states stand exactly, as before
+            {
+                groundGame = Elections.UsGroundGame.NoCampaign(CurrentDate, out string noCampaignWhy);
+                if (groundGame == null && !IsCounterfactual) { Debug.LogWarning($"PRESIDENTIAL: {country.Id} - the jurisdictions of {CurrentDate:yyyy-MM-dd} could not be read ({noCampaignWhy}); the states are counted as derived"); }
             }
             Elections.UsPresidentialElection.Contest held = Elections.UsPresidentialElection.Hold(country, CurrentDate, poll, groundGame, out string why);
             if (held == null)

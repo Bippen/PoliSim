@@ -490,7 +490,7 @@ namespace PoliSim.Elections
 
         private static ContactClass SlotClass(int slot) => slot == CoverageSlot ? ContactClass.Earned : CampaignPersuasion.ClassOf(CampaignActions.TheEight[slot]);
 
-        /// <summary>[AUTHORED-DRAFT] `EnthusiasmPerTurnoutPoint = 60 000` — enthusiasm pressure per point of turnout attribute (§26 consumes this, not the preference model). It stays until q24 5b gives turnout its sourced CACE (`docs/specs/A_LOOP_PLAN.md` §5, Q6); until then no live count reads it and the AI values it at zero (`CampaignAi`).</summary>
+        /// <summary>[AUTHORED-DRAFT] `EnthusiasmPerTurnoutPoint = 60 000` — enthusiasm pressure per point of turnout attribute (§26 consumes this, not the preference model). Since q24 5b the count reads doors at the sourced turnout CACE (`GotvTurnout`) and enthusiasm reaches no count: no live count reads this, and the AI values enthusiasm at zero (`CampaignAi`).</summary>
         public const double EnthusiasmPerTurnoutPoint = 60_000.0;
 
         public double[] ToTurnoutBonus()

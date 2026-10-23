@@ -11,7 +11,7 @@ namespace PoliSim.Elections
     /// costs, and where it applies.
     ///
     /// **Mobilization is per REGION and per PARTY, and it is contacts.** A party's ground
-    /// operation in a valkrets makes contacts — doors knocked, calls made, lifts to the polling
+    /// operation in a valkrets makes contacts — doors opened (a contact is a conversation at the door, not a knock: A-LOOP q24 5b reads it at a per-contacted turnout CACE, and its price of 0.25 volunteer-hours matches [CP20]'s measured two canvassers × 7.2 minutes per opened door, `GotvTurnout`), calls made, lifts to the polling
     /// station, reminders on the day — and the region's mobilization attribute for THAT party's
     /// supporters rises with contacts per eligible voter on a saturating curve:
     /// <code>
@@ -53,7 +53,7 @@ namespace PoliSim.Elections
         public readonly GotvOperation Operation;
         public readonly double MoneyPerContact;
         public readonly double VolunteerHoursPerContact;
-        /// <summary>How much mobilization one contact is worth relative to a door knocked (1.0).</summary>
+        /// <summary>How much mobilization one contact is worth relative to an opened door (1.0).</summary>
         public readonly double Weight;
 
         public GotvSpec(GotvOperation operation, double moneyPerContact, double volunteerHoursPerContact, double weight)
@@ -116,6 +116,7 @@ namespace PoliSim.Elections
     public sealed class RegionalMobilization
     {
         private readonly double[][] _weightedContacts;   // [region][party]
+        private readonly double[][] _doors;   // [region][party] - A-LOOP q24 5b: the door contacts (opened doors) alone, which the turnout CACE reads (`GotvTurnout`)
         private readonly double[] _eligible;
 
         public RegionalMobilization(double[] eligiblePerRegion, int partyCount)
@@ -123,13 +124,17 @@ namespace PoliSim.Elections
             if (eligiblePerRegion == null || eligiblePerRegion.Length == 0) { throw new ArgumentException("no regions"); }
             _eligible = eligiblePerRegion;
             _weightedContacts = new double[eligiblePerRegion.Length][];
-            for (int r = 0; r < eligiblePerRegion.Length; r++) { _weightedContacts[r] = new double[partyCount]; }
+            _doors = new double[eligiblePerRegion.Length][];
+            for (int r = 0; r < eligiblePerRegion.Length; r++) { _weightedContacts[r] = new double[partyCount]; _doors[r] = new double[partyCount]; }
         }
 
         public int RegionCount => _eligible.Length;
         public int PartyCount => _weightedContacts[0].Length;
         public double Eligible(int region) => _eligible[region];
         public double WeightedContacts(int region, int party) => _weightedContacts[region][party];
+
+        /// <summary>A-LOOP q24 5b: the doors a party's operation has opened in a region (door contacts, not knocks) - the contacts the turnout CACE reads on polling day.</summary>
+        public double DoorContacts(int region, int party) => _doors[region][party];
 
         /// <summary>Run an operation for a party in a region with a budget and volunteer-hours; returns contacts made.</summary>
         public double Operate(int region, int party, GotvOperation operation, double money, double volunteerHours,
@@ -138,12 +143,17 @@ namespace PoliSim.Elections
             GotvSpec spec = GotvModel.Spec(operation);
             double contacts = GotvModel.Contacts(spec, money, volunteerHours, out moneySpent, out hoursSpent);
             _weightedContacts[region][party] += contacts * spec.Weight;
+            if (operation == GotvOperation.DoorKnocking) { _doors[region][party] += contacts; }
             return contacts;
         }
 
         /// <summary>PS-6 US-31: weighted contacts carried in as another mobilization holds them (the US count's columns read the campaign's parties' own) -
         /// no operation is run and nothing is spent.</summary>
         public void Carry(int region, int party, double weightedContacts) { _weightedContacts[region][party] += weightedContacts; }
+
+        /// <summary>A-LOOP q24 5b (GATE-18 q2): doors carried in as a campaign's mobilization holds them - the parliamentary count's columns read the
+        /// campaign's parties' own (`ParliamentaryCount`); no operation is run and nothing is spent.</summary>
+        public void CarryDoors(int region, int party, double doors) { _doors[region][party] += doors; }
 
         public double Mobilization(int region, int party) => GotvModel.Mobilization(_weightedContacts[region][party], _eligible[region]);
 

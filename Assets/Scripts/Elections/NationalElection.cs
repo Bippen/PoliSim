@@ -326,6 +326,36 @@ namespace PoliSim.Elections
             return shares;
         }
 
+        /// <summary>GATE-18 q2: the regional breakdown `DeriveRegional` writes into the readout, returned instead - each region's shares in
+        /// <paramref name="keys"/>' order, its name and its valid-vote weight - for the count that starts from it (`ParliamentaryCount`); null for a
+        /// country with no regions wired (Germany without a date).</summary>
+        internal static double[][] RegionalOf(CountryId country, IReadOnlyList<string> keys, double[] preference, System.DateTime on, out string[] names, out double[] weights)
+        {
+            names = null;
+            weights = null;
+            RegionalVoteModel.RegionInput[] regions;
+            double[][] prior;
+            if (country == CountryId.Sweden) { regions = SwedishRegions.Regions(keys); prior = SwedishRegions.PriorShares(keys); }
+            else if (country == CountryId.Germany) { regions = GermanRegions.Regions(keys, on); prior = GermanRegions.PriorShares(keys, on); }
+            else { return null; }
+            double[][] shares = RegionalVoteModel.RegionalSharesByUniformSwing(preference, regions, prior, out double _);
+            names = new string[regions.Length];
+            weights = new double[regions.Length];
+            for (int r = 0; r < regions.Length; r++) { names[r] = regions[r].Name; weights[r] = regions[r].ElectorateWeight; }
+            return shares;
+        }
+
+        /// <summary>GATE-18 q2: the readout set to the regions as COUNTED (`ParliamentaryCount`) - each region's counted shares and its votes cast as
+        /// its weight, so the night's constituencies sum to the headline the count produced (F1), exactly: the national shares ARE their vote-weighted sum.</summary>
+        internal static void SetCountedReadout(IReadOnlyList<string> keys, string[] names, double[][] shares, double[] weights)
+        {
+            LastRegionalKeys = keys;
+            LastRegionalNames = names;
+            LastRegionalShares = shares;
+            LastRegionalWeights = weights;
+            LastRegionalWorstAbsError = 0.0;
+        }
+
         private static void DeriveRegional(CountryId country, IReadOnlyList<string> keys, double[] preference, System.DateTime? on = null)
         {
             LastRegionalKeys = keys;

@@ -304,6 +304,8 @@ This is a PLAN: nothing here is built, and no constant moves until Elias rules o
 
 
 **Built, 5a (2026-10-19, `COMPLETED.md` §881, `wave/aloop5` 69f011b7..eba75194):** the campaign leaves compatibility alone; Σ_class min(CACE·q̄, upper) × coverage over the party's reach, absorbed proportionally ([KB18], [GGGS11]); the AI (turnout worth 0 until 5b, a contact valued by the run's own difference) and the night's ledger in share points; TV BUY charged with its week on the run-up polls, POLL information, OFFICE refused until 5b; format 47. Inert to the dump. Measured: the player's campaign +0.19 points against idle, past GA-5-1's 0.1. Asked: the equal-effort drift; the strategies' trade-offs until 5b.
+
+**Built, 5b (2026-10-23, `COMPLETED.md` §903, `wave/gate18a` 8bbc1dd6..4044eb7d):** doors at [CP20]'s 5.01 pp turnout CACE on the reached supporters (coverage 1 − e^(−doors/supporters); a contact is an opened door, 0.25 volunteer-hours against [CP20]'s two canvassers × 7.2 minutes), the share effect the extra votes over the votes cast inside the live count (`ParliamentaryCount`, GATE-18 q2); the AI values doors (`CampaignAi.DoorTurnoutValuePp`, the count's own arithmetic); OFFICE back in the run-up; the US band coded, the US count on W-B11 until K18's re-cut; phone banking and the siting picker owed; format 56.
 ---
 
 ## 6. q5 - events move salience. Size **M** (with a data fetch).

@@ -112,7 +112,7 @@ namespace PoliSim.EditorTools
                 "identical trace");
 
             // ---------- 2. the sweep: no strategy dominates ----------
-            sb.Append("\n  the sweep - outcome per electorate (own persuasion minus the opponent's, points of share - A-LOOP q24 5a; turnout worth zero until 5b):\n");
+            sb.Append("\n  the sweep - outcome per electorate (own persuasion minus the opponent's, points of share - A-LOOP q24 5a; turnout not in this sweep - 5b counts doors at the count, enthusiasm buys no turnout):\n");
             sb.Append("  loyal share  issues    opponent    Broad      Base     Swing   Negative  Populist   winner\n");
             var wins = new int[6];
             int cells = 0;
@@ -140,7 +140,7 @@ namespace PoliSim.EditorTools
             int maxWins = 0;
             for (int s = 1; s <= 5; s++) { if (wins[s] > 0) { strategiesThatWin++; } if (wins[s] > maxWins) { maxWins = wins[s]; } }
             // ⚠ A-LOOP q24 5a: 2a and 2b are PENDING ON q24 5b AND A RULING OWED TO ELIAS - printed with their measurement, never counted as a
-            // pass or a failure. In points of share turnout is worth zero until 5b (no live count reads it, A_LOOP_PLAN §5 (1)), so Base
+            // pass or a failure. In points of share enthusiasm buys no turnout (5b, since GATE-18 q2, counts doors alone at the turnout CACE), so Base
             // Mobilization's trade (persuasion given up for enthusiasm) buys nothing; and a negative campaign's share of each contact lands on the
             // opponent's own against-tally, which has a coverage of its own, so the attack is not saturated by the attacker's own contacts. The
             // first run of 83f178ae measured Negative winning all 30 cells. The ruling: do the strategies stay ornamental until 5b's turnout lands,
@@ -190,7 +190,7 @@ namespace PoliSim.EditorTools
                 Burst(pressure, 1, CampaignStrategy.None, electorate * (1 - loyalShare) * opponentStrength, 20.0, swingPrioritises, focusSalience, otherSalience, credibility);
 
                 // q24 5a: in points of share - each side's sourced persuasion effect over the electorate (the norm the None week's own
-                // relevance x credibility at the mean salience, 0.5 x 0.6 x 0.7); turnout is worth zero until q24 5b, which no live count reads before it.
+                // relevance x credibility at the mean salience, 0.5 x 0.6 x 0.7); turnout is not in this sweep (5b counts doors at the count, and enthusiasm, which this sweep reads, has no sourced turnout effect).
                 double[] effects = pressure.ShareEffects(electorate, 0.5 * 0.6 * credibility);
                 double own = 100.0 * effects[0];
                 double theirs = 100.0 * effects[1];

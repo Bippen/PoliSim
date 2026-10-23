@@ -163,6 +163,16 @@ namespace PoliSim.Simulation
                 return notHeld;
             }
 
+            // GATE-18 q2 with A-LOOP q24 5b: the count in play - every region on its own turnout, the campaign's doors at the turnout CACE, the declared
+            // regional noise keyed by the master seed, the country and the day (ParliamentaryCount); the chamber is allocated on the counted shares
+            bool campaignRan = campaign != null && CampaignRecord != null && CampaignRecord.ElectionDate == CurrentDate && PlayerCampaign != null;
+            ParliamentaryCount.Result counted = ParliamentaryCount.Count(id, CurrentDate, shareByParty, campaignRan ? PlayerCampaign.Setup : (CampaignRun.Setup?)null, campaignRan ? campaign.Gotv : null);
+            if (counted != null)
+            {
+                shareByParty = counted.Shares;
+                if (!IsCounterfactual) { Debug.Log($"COUNT: {id} on {CurrentDate:yyyy-MM-dd} - " + counted.Line); }
+            }
+
             ElectionRecord record = NationalElection.Run(id, CurrentTurn, shareByParty, CurrentDate);
             country.ElectionHistory.Add(record);
             if (!IsCounterfactual) { Debug.Log($"ELECTION: held for {id} on {CurrentDate:yyyy-MM-dd} (turn {CurrentTurn}) by {record.Method}" + (PlayerCampaignResult != null ? " (a campaign result exists)" : " (no campaign result)")); }

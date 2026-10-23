@@ -444,3 +444,9 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **Past about 2.23 %**, MN's votes in okręg 21 exceed that okręg's whole 2023 vote. Nothing caps them; MN then takes all 12 seats there. A cap would be your ruling.
 
 **Ruled 2026-10-23 in ask mode:** the q4 table and every ask of §892-§900 above (US-26, US-29, US-30, US-27, US-24, US-31, SEAT-1) - see `docs/RULINGS_2026-10-23.md`, K1-K33.
+
+### GATE-18 piece one (§903): for your information, the noise ruled
+
+- The three asks the piece ended in were answered in ask mode the same day: Cantoni & Pons's transfer was already K7; the noise's form is K34 (scaled by √(s(1−s))); the noise applies at every election in every country, K35.
+- **Measured under K34:** a 0.5 % party's mean bias in Sweden is +0.002 points (it was +0.262); the largest one-day move of a national share by the noise is 0.26 points in Sweden, 0.31 in Germany, 0.22 in Poland (it was 0.66, 1.04, 0.29). The BSW at 4.98 % of the 2025 vote still lands above the 5 % line in 42.7 % of draws: its noise is wider than its distance to the line.
+- **Still open, no ruling needed now:** US midterms draw no noise (no state count exists at a midterm); a grassroots AI now values a door's share point up to 1.6 times an establishment AI (play-calibration).

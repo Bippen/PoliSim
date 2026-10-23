@@ -346,8 +346,7 @@ namespace PoliSim.EditorTools
             }
 
             // ---- (b) A LOCAL ACT REACHES A STATE ONLY THROUGH THE NATIONAL TOTAL
-            // PS-6 US-31 (R-US16 (b), I3): the US count now reads W-D1's per-region count where a campaign ran - from its own file alone; any other runtime
-            // caller would carry the ground game into a count R-US16 (c) has not ruled (Sweden's, Germany's)
+            // PS-6 US-31 (R-US16 (b), I3): the US count reads W-D1's per-region count where a campaign ran, from its own file
             List<string> callers = CountCallers(@"\bElectionDay\s*\.\s*Count\b", "Elections/ElectionDay.cs", out int _);
             // the review's L4: the ground game's own entry points stay on the US path - its effects read by the US count alone, a campaign's ground game
             // read (and built) by the day loop's US count alone, once
@@ -358,10 +357,12 @@ namespace PoliSim.EditorTools
             Check(pathOnly, pathOnly
                 ? "the ground game is reached on the US path alone: its effects (UsGroundGame.Effects, NoiseSeedOf) from UsPresidentialElection.cs, a campaign's ground game read once, from SimulationManager.cs's US count"
                 : F("the ground game is reached beyond the US path - its effects from {0}; a campaign's ground game from {1} ({2} reads)", effectCallers.Count == 0 ? "nowhere" : string.Join(", ", effectCallers), campaignReaders.Count == 0 ? "nowhere" : string.Join(", ", campaignReaders), campaignReads));
-            bool usOnly = callers.Count == 1 && callers[0] == UsCountFile;
+            // GATE-18 q2 (the ORDER's "turnout and the declared noise are on in play") with A-LOOP q24 5b: the parliamentary count is W-D1's second caller -
+            // Sweden's, Germany's and Poland's chambers counted region by region (ParliamentaryCount); the US count stays its own file's
+            bool usOnly = callers.Count == 2 && callers.Contains(ParliamentaryCountFile) && callers.Contains(UsCountFile);   // a set, not an order (the review's L8)
             Check(usOnly, usOnly
-                ? "W-D1's per-region count is called from the US count alone (" + UsCountFile + ", PS-6 US-31 - where a campaign ran, R-US16 (b)): no other runtime file calls ElectionDay.Count, so every other country's count reads the national shares and the derivation spreads them (R-US16 (c) not ruled); the (b) table below is the count as US-9 measured it, before US-31"
-                : "W-D1's per-region count is called from " + (callers.Count == 0 ? "no runtime file - the US count no longer reads it" : string.Join(", ", callers)) + " - the premise of R-US16 (b) as built has moved: re-measure");
+                ? "W-D1's per-region count is called from the US count (" + UsCountFile + ", PS-6 US-31 - where a campaign ran, R-US16 (b)) and the parliamentary count (" + ParliamentaryCountFile + ", GATE-18 q2 with A-LOOP q24 5b - Sweden's, Germany's and Poland's chambers) and from no other runtime file; the (b) table below is the count as US-9 measured it, before US-31"
+                : "W-D1's per-region count is called from " + (callers.Count == 0 ? "no runtime file - neither count reads it" : string.Join(", ", callers)) + " - not the US count and the parliamentary count alone: the premise of R-US16 (b) and of GATE-18 q2 as built has moved: re-measure");
             CampaignActions.ActionSpec act = CampaignActions.Spec(ProgramAct);
             int perDay = (int)Math.Floor(CampaignEconomy.HoursPerCampaignDay / act.Hours);
             int x = closest[0], y = largest[0];
@@ -613,6 +614,9 @@ namespace PoliSim.EditorTools
 
         /// <summary>PS-6 US-31: the one runtime file R-US16 (b) licenses to call W-D1's per-region count - the US count's ground game.</summary>
         private const string UsCountFile = "Assets/Scripts/Elections/UsGroundGame.cs";
+
+        /// <summary>GATE-18 q2 with A-LOOP q24 5b: the other - the parliamentary count in play (Sweden, Germany, Poland).</summary>
+        private const string ParliamentaryCountFile = "Assets/Scripts/Elections/ParliamentaryCount.cs";
 
         /// <summary>Every runtime file naming <paramref name="pattern"/> (a call or a method group) but <paramref name="own"/> - comments stripped, the capture
         /// driver's folder aside as `UnwiredSubsystemCheck` sets it; <paramref name="hits"/> the matches in all of them.</summary>

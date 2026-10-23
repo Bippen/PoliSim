@@ -44,7 +44,10 @@ namespace PoliSim.Elections
     /// weekly effect on the buyer's share shows on the run-up's polls for its week and is gone after it (`CampaignPersuasion.RunUpTelevisionEffectPp`),
     /// and nothing of it reaches the count - it no longer adds a buy to the campaign manager's plan (SD-33: it used to move only the
     /// AI's pace reserve, uncharged). The POLL stays as information: its effect is the ± its sample buys, and it changes nothing else.
-    /// The OFFICE is refused until q24 5b counts an office's contacts on polling day's turnout. The five hires stand; three of them
+    /// The OFFICE was refused until q24 5b counted an office's contacts on polling day's turnout; since 5b (GATE-18 q2) it is taken again, as
+    /// CL-1 built it - planned here in the region the decision names (its siting: where its doors go; none named, the largest electorate the
+    /// party has no office in), opened and paid on the campaign's day 0 - and its daily doors reach the count at the turnout CACE
+    /// (`GotvTurnout`). The five hires stand; three of them
     /// (the pollster, the media advisor, the digital director) have no sourced effect of their own and go to q4's list.</para>
     ///
     /// <para><b>Replay.</b> Deterministic under the record's queue and its one stream, so a save inside
@@ -56,7 +59,7 @@ namespace PoliSim.Elections
         /// <summary>The verbs the pre-campaign steps at a price the model already carries.</summary>
         public static readonly CampaignActionKind[] Priced =
         {
-            CampaignActionKind.RecruitStaff, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
+            CampaignActionKind.EstablishOffice, CampaignActionKind.RecruitStaff, CampaignActionKind.CommissionPolling, CampaignActionKind.PrepareAdvertising,
         };
 
         /// <summary>The verbs the pre-campaign REFUSES, each with the standing reason it prints - null for a priced verb.</summary>
@@ -68,7 +71,6 @@ namespace PoliSim.Elections
                 case CampaignActionKind.DevelopPolicy: return "no price and no seam in the run";
                 case CampaignActionKind.TrainCandidate: return "no price in the model - a figure would be invented";
                 case CampaignActionKind.SetStrategy: return "no seam in the run - a played party's strategy is its personality's";
-                case CampaignActionKind.EstablishOffice: return "an office's doors reach no count until turnout is counted on polling day";   // A-LOOP q24 5a (Q7): out until 5b
                 default: return Array.IndexOf(Priced, kind) >= 0 ? null : $"{kind} is not a preparation verb";
             }
         }
@@ -165,7 +167,7 @@ namespace PoliSim.Elections
             };
         }
 
-        /// <summary>The price a verb's chip shows: a day's salary, the internal poll, a television buy at the ad's price (charged when made); an office's opening cost, though the run-up refuses it (q24 5a); 0 for a refused verb.</summary>
+        /// <summary>The price a verb's chip shows: a day's salary, the internal poll, a television buy at the ad's price (charged when made); an office's opening cost (paid on the campaign's day 0); 0 for a refused verb.</summary>
         public static double Price(State s, CampaignActionKind kind)
         {
             switch (kind)
@@ -225,6 +227,21 @@ namespace PoliSim.Elections
             {
                 switch (d.Kind)
                 {
+                    case CampaignActionKind.EstablishOffice:
+                    {
+                        // A-LOOP q24 5b: back in the run-up, CL-1's rule as it stood before 5a - the siting the decision's region, else the one-region rule
+                        int region = d.RegionIndex >= 0 ? d.RegionIndex : NextOfficeRegion(s);
+                        if (region >= s.Staged.Regions.Length) { entry.Refusal = "no such region"; break; }
+                        if (region < 0) { entry.Refusal = "no region without an office is left"; break; }
+                        entry.Target = s.Staged.Regions[region].Name;
+                        entry.Cost = CampaignOffices.OpenCost;
+                        if (!s.Staged.StandsIn(s.Party, region)) { entry.Refusal = "the party has no list there"; break; }   // §697
+                        if (s.HasOffice(region)) { entry.Refusal = "an office is already planned there"; break; }
+                        // The opening is paid on the campaign's day 0 by Begin; the plan must at least be affordable to open now.
+                        if (s.Money < (s.PlannedOffices.Count + 1) * CampaignOffices.OpenCost) { entry.Refusal = "the chest would not open every office planned"; break; }
+                        s.PlannedOffices.Add(region);
+                        break;
+                    }
                     case CampaignActionKind.RecruitStaff:
                     {
                         if (d.Role < 0 || d.Role >= CampaignStaff.TheFive.Length) { entry.Refusal = "no role named"; break; }

@@ -118,6 +118,9 @@ namespace PoliSim.Elections
             /// <summary>PS-6 US-31: the staging's DECLARED rule for where an AI weighs its local acts (the USA's, <see cref="UsGroundGame.TargetingFor"/>); null =
             /// the largest audiences (Sweden, Germany, every harness).</summary>
             public readonly RegionTargeting Targeting;
+            /// <summary>A-LOOP q24 5b: the turnout CACE (points among the reached) an opened door earns on this staging's count - `GotvTurnout`, the figure
+            /// the AI values a door at; 0 = the staging's count reads no 5b turnout (the USA, still on W-B11's curve; a harness's own staging).</summary>
+            public readonly double DoorCacePp;
 
             /// <summary>§697: whether <paramref name="party"/> stands in <paramref name="region"/> - everywhere where no candidacy is staged.</summary>
             public bool StandsIn(int party, int region) => Stands == null || party < 0 || party >= Stands.Length || Stands[party] == null || region < 0 || region >= Stands[party].Length || Stands[party][region];
@@ -138,19 +141,20 @@ namespace PoliSim.Elections
 
             /// <summary>PS-3k (§638): this setup with the government's record applied.</summary>
             public Setup WithRecordShift(double[] shift) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, shift, Families, AwarenessStart, Grouping, Positions, Stands, Targeting, DoorCacePp);
 
             /// <summary>§681: this setup with the entrant layer's families and opening awareness.</summary>
             public Setup WithEntrants(int[] families, double[] awarenessStart, double[] grouping, double[][] positions) => new Setup(Calendar, Parties, PriorShares, LoyaltyPerParty, Compatibility, TrueSalience, NationalAudience, Regions,
-                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands, Targeting);
+                PublicHouse, PublicPollEveryDays, InternalHouse, ElectorateLoyalty, Outlets, DebateDays, Scandals, LiveScandalRatePerPartyDay, RecordShift, families, awarenessStart, grouping, positions, Stands, Targeting, DoorCacePp);
 
             public Setup(CampaignCalendar calendar, PartySetup[] parties, double[] priorShares, double[] loyaltyPerParty,
                 double[] compatibility, double[] trueSalience, double nationalAudience, RegionAudience[] regions,
                 PollingHouse publicHouse, int publicPollEveryDays, PollingHouse internalHouse, double electorateLoyalty = 50.0,
                 MediaOutlet[] outlets = null, int[] debateDays = null, (int Day, int Party, Scandal Scandal)[] scandals = null,
                 double liveScandalRatePerPartyDay = 0.0, double[] recordShift = null, int[] families = null, double[] awarenessStart = null, double[] grouping = null, double[][] positions = null,
-                bool[][] stands = null, RegionTargeting targeting = null)
+                bool[][] stands = null, RegionTargeting targeting = null, double doorCacePp = 0.0)
             {
+                DoorCacePp = doorCacePp;   // A-LOOP q24 5b: the staging's door CACE; 0 wherever the count reads none
                 Targeting = targeting;   // PS-6 US-31: the USA's targeting rule; null everywhere else
                 Stands = stands;   // §697: the candidacy fact per party and region; null everywhere
                 RecordShift = recordShift;   // PS-3k (§638): the government's record, per party, judged at the campaign's opening and, for the count, again on its last day (§752)
@@ -703,7 +707,7 @@ namespace PoliSim.Elections
                     // The poll decision is taken on the view BEFORE today's measurement, and the
                     // measurement then feeds the same day's action estimates (a fresh poll is
                     // what you act on, not what you file).
-                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions);
+                    AiView view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
                     if (CampaignAi.WantsPoll(view, profiles[p], setup.InternalHouse))
                     {
                         if (pools[p].TrySpend(setup.InternalHouse.Cost, CampaignAi.PollingHours, out ResourcePool afterPoll))
@@ -722,7 +726,7 @@ namespace PoliSim.Elections
                         }
                     }
 
-                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions);
+                    view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
 
                     // Actions: the AI's plan, applied one by one against the TRUE inputs - the
                     // world's response, which the AI estimated but did not see.
@@ -794,7 +798,7 @@ namespace PoliSim.Elections
 
                         if (committed.Count > 0)
                         {
-                            view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions);
+                            view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
                         }
                     }
 
@@ -914,7 +918,7 @@ namespace PoliSim.Elections
                         ledger.Log.Add(new DecisionRecord(day, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend, d.Score, d.Blind));
                         Append(digest, day, p, d.Kind, d.TargetLabel + IssueSuffix(d.Target.Issue), d.Spend);
 
-                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions);
+                        view = BuildView(setup, p, phase, today, pools[p], reserve[p], latestPoll[p], momentumPp, issues[p], day, lastOwnPollDay[p], bookedReach[p], bestOutletReach, audienceByKind[p], volunteerHoursLeft[p], credibility, offices[p], officeHoursLeft[p], staff[p], activity, pressure, ruleRegions, gotv);
                     }
                 }
 
@@ -1071,9 +1075,18 @@ namespace PoliSim.Elections
         private static AiView BuildView(Setup setup, int party, CampaignPhase phase, DateTime today, ResourcePool pool,
             double reserve, Poll? latest, double[] momentumPp, IssueMeasurement[] issues, int day, int lastOwnPollDay,
             List<double> bookedReach, double bestOutletReach, double[] audienceByKind, double volunteerHoursToday, double[] credibility,
-            OfficeNetwork offices = null, double[] officeHoursLeft = null, StaffRoster staff = null, PublicActivity activity = null, CampaignPressure pressure = null, int[] ruleRegions = null)
+            OfficeNetwork offices = null, double[] officeHoursLeft = null, StaffRoster staff = null, PublicActivity activity = null, CampaignPressure pressure = null, int[] ruleRegions = null,
+            RegionalMobilization gotv = null)
         {
             int since = lastOwnPollDay == int.MinValue ? -1 : day - lastOwnPollDay;
+            // A-LOOP q24 5b: the party's own doors so far per region - its own books - so it values the next door at the turnout it ADDS; none where
+            // the staging's count reads no 5b turnout
+            double[] ownDoors = null;
+            if (gotv != null && setup.DoorCacePp > 0.0 && gotv.RegionCount == setup.Regions.Length && party < gotv.PartyCount)
+            {
+                ownDoors = new double[gotv.RegionCount];
+                for (int r = 0; r < ownDoors.Length; r++) { ownDoors[r] = gotv.DoorContacts(r, party); }
+            }
 
             // W-B4: the regions as THIS party can reach them - the electorate scaled by its own organisation
             // there, and its own office's unspent volunteer-hours (both its own books, no truth).
@@ -1106,7 +1119,7 @@ namespace PoliSim.Elections
                 MediaSystem.PressReach(setup.Outlets),   // C-N7: a public fact about the media, like bestOutletReach
                 setup.StandingShare(party),   // §699: the party's own reach of the national audience - where it stands
                 CampaignPersuasion.ElectorateMean(setup),   // q24 5a: the scale the sourced CACEs are read against, one figure per staging
-                pressure?.OwnExposureByClass(party), pressure?.OwnQualityByClass(party), ruleRegions);   // and its pooled quality (review 881b's N3): the AI differences the run's own class effect   // q24 5a (the review's M3): the party's own contacts so far per class - its own books - so it values the next one's MARGINAL coverage
+                pressure?.OwnExposureByClass(party), pressure?.OwnQualityByClass(party), ruleRegions, ownDoors, setup.DoorCacePp);   // and its pooled quality (review 881b's N3): the AI differences the run's own class effect   // q24 5a (the review's M3): the party's own contacts so far per class - its own books - so it values the next one's MARGINAL coverage
         }
 
         /// <summary>[AUTHORED-DRAFT] W-B8: how each personality answers a scandal, on the evidence as it sees it: the professional explains, the establishment apologises, the grassroots party apologises, the populist attacks the source, the chaotic denies - and every one of them denies when the evidence looks weak enough (below 0.3 as seen), because that is what §17 says a denial is for.</summary>

@@ -276,7 +276,7 @@ namespace PoliSim.EditorTools
         /// <summary>
         /// Review 881's H1 and M5: on a staging's own electorate and norm, the AI's value of a television ad and an interview (`CampaignAi.ContactValuePp`,
         /// the scorer's own reading) is positive, no more than the class's sourced limit over the party's reach, and the SAME with or without an
-        /// enthusiasm of a whole electorate behind it - turnout is worth zero until 5b.
+        /// enthusiasm of a whole electorate behind it - enthusiasm buys no turnout (5b values doors alone, `CampaignAi.DoorTurnoutValuePp`).
         /// </summary>
         internal static bool AiValuesWithinSource(CampaignRun.Setup setup, out string detail)
         {
@@ -423,8 +423,10 @@ namespace PoliSim.EditorTools
             PreCampaignRun.State office = PreCampaignRun.Begin(staging, party, new System.Random(41));
             int region = PreCampaignRun.NextOfficeRegion(office);
             PreCampaignRun.StepDay(office, new[] { new PreCampaignRun.Decision(CampaignActionKind.EstablishOffice, region) });
-            Check(office.Log.Count == 1 && office.Log[0].Refusal != null && office.PlannedOffices.Count == 0 && Math.Abs(office.Money - staging.Parties[party].StartingMoney) < 1e-9,
-                F("the office is out of the run-up until q24 5b counts its doors: refused \"{0}\", the chest untouched, nothing planned", office.Log.Count == 1 ? office.Log[0].Refusal : "-"));
+            // q24 5b: the office is back in the run-up now that the count reads its doors (GroundGameCountDiagnostic holds what they buy)
+            Check(office.Log.Count == 1 && office.Log[0].Refusal == null && office.PlannedOffices.Count == 1 && office.PlannedOffices[0] == region && Math.Abs(office.Money - staging.Parties[party].StartingMoney) < 1e-9,
+                F("the office is back in the run-up since q24 5b counts its doors: planned in {0}, the chest untouched until the campaign's day 0 pays it{1}", office.Log.Count == 1 ? office.Log[0].Target : "-",
+                    office.Log.Count == 1 && office.Log[0].Refusal != null ? " - REFUSED \"" + office.Log[0].Refusal + "\"" : string.Empty));
         }
 
         private static void Check(bool ok, string what)

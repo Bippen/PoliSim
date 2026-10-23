@@ -221,7 +221,7 @@ namespace PoliSim.EditorTools
                 l.Offices, l.OfficeOperationsPerDay, l.Staff, l.TelevisionBuys, Script);
             return new CampaignRun.Setup(control.Calendar, parties, control.PriorShares, control.LoyaltyPerParty, control.Compatibility, control.TrueSalience,
                 control.NationalAudience, control.Regions, control.PublicHouse, control.PublicPollEveryDays, control.InternalHouse, control.ElectorateLoyalty,
-                control.Outlets, control.DebateDays, control.Scandals);
+                control.Outlets, control.DebateDays, control.Scandals, doorCacePp: control.DoorCacePp);   // A-LOOP q24 5b: the staging's door CACE carried
         }
 
         private static bool IsLocal(CampaignActionKind kind) => kind == CampaignActionKind.Rally || kind == CampaignActionKind.TownHall || kind == CampaignActionKind.DoorToDoor;

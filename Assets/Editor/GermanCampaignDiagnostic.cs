@@ -114,7 +114,7 @@ namespace PoliSim.EditorTools
                     CampaignRun.Setup lifted = new CampaignRun.Setup(scripted.Calendar, scripted.Parties, scripted.PriorShares, scripted.LoyaltyPerParty, scripted.Compatibility, scripted.TrueSalience,
                         scripted.NationalAudience, scripted.Regions, scripted.PublicHouse, scripted.PublicPollEveryDays, scripted.InternalHouse, scripted.ElectorateLoyalty, scripted.Outlets,
                         scripted.DebateDays, scripted.Scandals, scripted.LiveScandalRatePerPartyDay, scripted.RecordShift, scripted.Families, scripted.AwarenessStart, scripted.Grouping,
-                        scripted.Positions, stands: null);
+                        scripted.Positions, stands: null, doorCacePp: scripted.DoorCacePp);
                     int Rallies(CampaignRun.Result r) { int n = 0; foreach (CampaignRun.DecisionRecord d in r.Parties[csu].Log) { if (d.Kind == CampaignActionKind.Rally && d.Target.StartsWith("Hamburg / ", StringComparison.Ordinal)) { n++; } } return n; }
                     int withCandidacy = Rallies(CampaignAiHarness.RunSeeded(scripted, 777));
                     int liftedRallies = Rallies(CampaignAiHarness.RunSeeded(lifted, 777));
@@ -130,7 +130,7 @@ namespace PoliSim.EditorTools
                     CampaignRun.Setup tvLifted = new CampaignRun.Setup(tvStaged.Calendar, tvStaged.Parties, tvStaged.PriorShares, tvStaged.LoyaltyPerParty, tvStaged.Compatibility, tvStaged.TrueSalience,
                         tvStaged.NationalAudience, tvStaged.Regions, tvStaged.PublicHouse, tvStaged.PublicPollEveryDays, tvStaged.InternalHouse, tvStaged.ElectorateLoyalty, tvStaged.Outlets,
                         tvStaged.DebateDays, tvStaged.Scandals, tvStaged.LiveScandalRatePerPartyDay, tvStaged.RecordShift, tvStaged.Families, tvStaged.AwarenessStart, tvStaged.Grouping,
-                        tvStaged.Positions, stands: null);
+                        tvStaged.Positions, stands: null, doorCacePp: tvStaged.DoorCacePp);
                     double csuReach = tvStaged.StandingShare(csuAt);
                     double csuStaged = CampaignAiHarness.RunSeeded(tvStaged, 777).FinalShares[csuAt];
                     double csuLifted = CampaignAiHarness.RunSeeded(tvLifted, 777).FinalShares[csuAt];
@@ -160,11 +160,12 @@ namespace PoliSim.EditorTools
                         F("the SSW keeps its prior: its day-0 weight is its 2021 share of the prior, {1:F3} %, alone (full loyalty, no spatial share) - {0:F3} % after the blend's renormalisation; the campaign's end {2:F3} % - above zero, bounded by its reach {3:F2} %",
                             blended0[sswAt] * 100.0, sswPrior * 100.0, sswAuto * 100.0, sswReach * 100.0));
 
-                    // (h) the run-up refuses an office where the party has no list - since A-LOOP q24 5a (Q7) it refuses every office, until 5b counts its doors
+                    // (h) the run-up refuses an office where the party has no list (A-LOOP q24 5a had refused every office until 5b counted its doors;
+                    // since 5b the run-up takes an office again, and the list rule is the refusal)
                     PreCampaignRun.State pre = PreCampaignRun.Begin(scripted, csu, new Random(1));
                     PreCampaignRun.StepDay(pre, new[] { new PreCampaignRun.Decision(CampaignActionKind.EstablishOffice, hamburg) });
                     string refusal = pre.Log.Count > 0 ? pre.Log[pre.Log.Count - 1].Refusal : null;
-                    Check(refusal != null && refusal == PreCampaignRun.Refusal(CampaignActionKind.EstablishOffice) && !pre.HasOffice(hamburg), "the run-up refuses the CSU an office in Hamburg: " + (refusal ?? "NOTHING REFUSED"));
+                    Check(refusal == "the party has no list there" && !pre.HasOffice(hamburg), "the run-up refuses the CSU an office in Hamburg: " + (refusal ?? "NOTHING REFUSED"));
 
                     // (i) A GERMAN GAME'S OWN DAY PATH - a manager opened on the snap start, the CDU the player's party, stepped day by day as the
                     // game steps it (PlayerSmoke's loop) from 6 November into the campaign: the film holds its clock at the start and cannot reach this

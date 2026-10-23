@@ -25,14 +25,14 @@ namespace PoliSim.Elections
     /// is its electors times §25's swing index (<see cref="SwingRegions.Index"/>) of its margin as the count would derive it from the last published poll;
     /// an AI weighs its local acts in the heaviest, in place of the largest audiences.</description></item>
     /// </list>
-    /// The USA's alone: Sweden's and Germany's campaigns are counted nationally and their AI weighs the largest audiences (R-US16 (c) is not ruled).
+    /// The USA's alone: Sweden's and Germany's AI weighs the largest audiences (R-US16 (c) is not ruled); their chambers are counted region by region since GATE-18 q2, by `ParliamentaryCount` on 5b's turnout CACE, where this count keeps W-B11's mobilisation curve until the US card is re-cut (K18).
     /// </summary>
     public static class UsGroundGame
     {
         /// <summary>W-D1's declared regional noise - σ in points of a party's share in a jurisdiction, `RegionalAggregation.RegionalNoiseSigmaPp`
         /// ([AUTHORED-DRAFT] there): the figure R-US16 (b) was sized on (US-9: the closest states flip in up to a quarter of counts, the presidency in none
         /// of 400) and the plan's words, "with its declared regional noise". DECLARED.</summary>
-        public static double NoiseSigmaPp => RegionalAggregation.RegionalNoiseSigmaPp;
+        public static double NoiseSigmaPp => ParliamentaryCount.SigmaPp;   // GATE-18: the one sigma in play, zero inside `ParliamentaryCount.NoiseAtZero` (a measurement that holds sigma 0 by design)
 
         /// <summary>CONVENTION: §26's turnout attributes held at 50, untouched - the count's frame reads the ground game's mobilization and nothing else (US-9's frame).</summary>
         private const double Neutral = 50.0;
@@ -91,6 +91,30 @@ namespace PoliSim.Elections
         public static int NoiseSeedOf(CountryId country, DateTime pollingDay) => SimulationRandom.RegionalElectionNoiseSeedOn(country, pollingDay);
 
         /// <summary>
+        /// Elias's ruling of 2026-10-23 ("always, all countries"): THE COUNT WITH NO CAMPAIGN - the jurisdictions of <paramref name="pollingDay"/>'s
+        /// count (`UsRegions.Regions`, the staging's own: each one's votes cast of record and its CVAP) with no contact anywhere, so a US polling day the
+        /// player's campaign did not run up to is counted state by state with the same keyed regional noise and nothing else; the frame's base turnout is
+        /// the staging's, votes cast over the electorate. Null, with the reason, where the jurisdictions cannot be read.
+        /// </summary>
+        public static Campaign NoCampaign(DateTime pollingDay, out string why)
+        {
+            RegionAudience[] regions = UsRegions.Regions(pollingDay, out double _, out int _, out why);
+            if (regions == null || regions.Length == 0) { return null; }
+            int n = regions.Length;
+            var c = new Campaign { Regions = new string[n], Eligible = new double[n], DemocratContacts = new double[n], RepublicanContacts = new double[n] };
+            double audience = 0.0, eligible = 0.0;
+            for (int r = 0; r < n; r++)
+            {
+                c.Regions[r] = regions[r].Name;
+                c.Eligible[r] = regions[r].Eligible;
+                audience += regions[r].Audience;
+                eligible += regions[r].Eligible;
+            }
+            c.BaseTurnout = eligible > 0.0 ? audience / eligible : 0.0;
+            return c;
+        }
+
+        /// <summary>
         /// THE STATE EFFECT of <paramref name="campaign"/>'s ground game on the derived states <paramref name="derived"/>: W-D1's count of every jurisdiction
         /// the campaign staged (its preference the derived shares, its mobilization the two nominees' contacts), the noise of <paramref name="sigmaPp"/> drawn on
         /// <paramref name="noiseSeed"/>, against the derived shares. Pure. Null, with the reason, where a derived state has no staged jurisdiction or the
@@ -118,7 +142,7 @@ namespace PoliSim.Elections
             double most = 1.0;
             for (int r = 0; r < n; r++) { for (int p = 0; p < 2; p++) { most = Math.Max(most, TurnoutModel.Multiplier(gotv.Mobilization(r, p), TurnoutModel.MobilizationSpan)); } }
             if (campaign.BaseTurnout <= 0.0 || campaign.BaseTurnout * most >= 1.0) { why = "the frame would clamp a turnout rate"; return null; }
-            ElectionDay.Result count = ElectionDay.Count(names, preference, gotv, campaign.BaseTurnout, Neutral, Neutral, Neutral, new System.Random(noiseSeed), sigmaPp);
+            ElectionDay.Result count = ElectionDay.Count(names, preference, gotv, campaign.BaseTurnout, Neutral, Neutral, Neutral, new System.Random(noiseSeed), sigmaPp, scaledNoise: true);   // Elias's ruling of 2026-10-23: the scaled form, as every count in play
             var effects = new List<StateEffect>(n);
             for (int r = 0; r < n; r++)
             {
@@ -214,7 +238,7 @@ namespace PoliSim.Elections
                 for (int k = 0; districts && k < derived[i].DistrictWinners.Length; k++) { districts = derived[i].DistrictWinners[k] == counted[i].DistrictWinners[k]; }
                 if (derived[i].Winner != counted[i].Winner || !districts) { changed.Add(counted[i].State); }
             }
-            return string.Format(CultureInfo.InvariantCulture, "each state counted with the campaign ground game and the regional noise (sigma {0:0.0} points): the widest move of a margin {1} {2:+0.00;-0.00} points; calls changed from the derived states: {3}",
+            return string.Format(CultureInfo.InvariantCulture, "each state counted with the campaign ground game (none where no campaign ran) and the regional noise (sigma {0:0.0} points at a share of one half, scaled by the square root of s(1-s)): the widest move of a margin {1} {2:+0.00;-0.00} points; calls changed from the derived states: {3}",
                 NoiseSigmaPp, widestAt ?? "none", widest, changed.Count == 0 ? "none" : string.Join(", ", changed));
         }
 

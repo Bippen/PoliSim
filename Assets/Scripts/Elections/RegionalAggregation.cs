@@ -118,6 +118,39 @@ namespace PoliSim.Elections
             return noisy;
         }
 
+        /// <summary>
+        /// THE NOISE IN PLAY - Elias's ruling of 2026-10-23 (ask mode, on GATE-18 piece one's second review, M2): §27's noise with each party's σ
+        /// SCALED BY √(s(1−s)), so a small party's share is perturbed in proportion to the binomial spread of its own share rather than by the same
+        /// absolute amount as a large one's - the clamp at zero then binds rarely and the upward bias the unscaled form gives a small party (the clamp
+        /// lifting a negative draw to zero, the renormalisation charging the large parties) shrinks with it. DECLARED, the normalisation reading:
+        /// W-D1's <paramref name="sigmaPp"/> (`RegionalNoiseSigmaPp`, 1.2 points) is read as the σ of a party at s = 0.5, so a party's σ is
+        /// <paramref name="sigmaPp"/> × √(s(1−s)) / √(0.5 × 0.5) - 1.2 at 50 %, about 1.04 at 25 %, 0.52 at 5 %, 0.17 at 0.5 %. One Gaussian per party,
+        /// as `ApplyNoise` draws them, then the same clamp at zero and renormalisation; a share of zero draws (the draw is kept, so every other party's
+        /// is the one it would have been) and moves nothing.
+        /// </summary>
+        public static double[] ApplyScaledNoise(double[] shares, System.Random random, double sigmaPp = RegionalNoiseSigmaPp)
+        {
+            if (random == null) { throw new ArgumentNullException(nameof(random)); }
+
+            var noisy = new double[shares.Length];
+            double total = 0.0;
+            for (int i = 0; i < shares.Length; i++)
+            {
+                double s = shares[i] < 0.0 ? 0.0 : (shares[i] > 1.0 ? 1.0 : shares[i]);
+                double perturbed = shares[i] + Gaussian(random) * (sigmaPp / 100.0) * Math.Sqrt(s * (1.0 - s)) / HalfSpread;
+                noisy[i] = perturbed < 0.0 ? 0.0 : perturbed;
+                total += noisy[i];
+            }
+
+            if (total <= 0.0) { return shares; }
+
+            for (int i = 0; i < noisy.Length; i++) { noisy[i] /= total; }
+            return noisy;
+        }
+
+        /// <summary>DERIVED: √(0.5 × 0.5) = 0.5, the binomial spread at the share W-D1's σ is read at (`ApplyScaledNoise`).</summary>
+        private const double HalfSpread = 0.5;
+
         /// <summary>Sums regional vote counts into a national total, and returns national shares.</summary>
         public static double[] NationalShares(RegionResult[] regions, int partyCount)
         {
