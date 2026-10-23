@@ -734,6 +734,7 @@ namespace PoliSim.UI
                 return;
             }
             if (PresidentialNightOwed()) { return; }   // D-PL: a President's night that waited for the night before it on the same day opens now
+            if (PresidentBetweenAsked()) { return; }   // D-PL2: the night between the rounds the Docket asked for, opened here and never inside a draw
 
             // A Canvas takeover stops the clock — the signing-screen pattern addition to the seam's
             // discipline statement. The selector never exposed this (the no-selection gate above
@@ -1134,6 +1135,7 @@ namespace PoliSim.UI
             _pendingElectionVerdict = ui?.PendingElectionVerdict;
             _pendingElectionVerdictEndsGame = ui?.PendingElectionVerdictEndsGame ?? false;
             _presidentialNightOwed = System.DateTime.MinValue;   // D-PL: a night owed in the world just left is not this one's
+            _presidentBetweenAsked = System.DateTime.MinValue;   // D-PL2: nor a night asked for in it
             _pendingElectionDate = ui?.PendingElectionDate != null && System.DateTime.TryParseExact(ui.PendingElectionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out System.DateTime pendingDate) ? pendingDate : default;
             _campaignOpeningAcknowledgedElection = ui?.CampaignOpeningAcknowledgedElection;
             // P2-0.3: a load that lands inside an unacknowledged opening opens HQ, as the day did.

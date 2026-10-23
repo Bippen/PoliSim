@@ -107,6 +107,38 @@ namespace PoliSim.EditorTools
                 Dictionary<string, int> sld = PolishSejmAllocation.Allocate(withSld, out _);
                 Check(sld["SLD"] > 0 && sld.Values.Sum() == 460, F("§762: a list with no 2023 committee (SLD at 6 %) takes its national share in every okreg - {0} seat(s)", sld["SLD"]));
 
+                // ---- D-PL2 (Elias, 2026-10-23, on D-PL's ask): A COMMITTEE THAT STOOD IN ONE OKREG KEEPS ITS VOTES THERE - the minority's rise stays in
+                // its okreg, its national total its national share, every okreg's votes its 2023 size, every other list's total its share ----
+                int mnColumn = Array.IndexOf(committees, "MN");
+                var mnOkregi = new List<int>();
+                for (int d = 0; mnColumn >= 0 && d < votes.Count; d++) { if (votes[d][mnColumn] > 0) { mnOkregi.Add(d); } }
+                int sole = PolishSejmAllocation.SoleOkreg("MN");
+                Check(mnOkregi.Count == 1 && sole == mnOkregi[0] && PolishSejmAllocation.SoleOkreg("PiS") < 0 && PolishSejmAllocation.SoleOkreg("SLD") < 0,
+                    F("D-PL2: the KBW's file has MN in {0} okreg(s) ({1}); SoleOkreg reads okreg {2} for MN and none for a committee that stood everywhere or a list with no 2023 committee",
+                        mnOkregi.Count, string.Join(", ", mnOkregi.Select(d => (d + 1).ToString(CultureInfo.InvariantCulture))), sole + 1));
+                foreach (double factor in new[] { 1.5, 4.0, 8.0 })
+                {
+                    double mnShare = shares2023["MN"] * factor;
+                    var risen = new Dictionary<string, double>();
+                    foreach (KeyValuePair<string, double> kv in shares2023) { risen[kv.Key] = kv.Key == "MN" ? mnShare : kv.Value * (1.0 - mnShare) / (1.0 - shares2023["MN"]); }
+                    Dictionary<string, int> risenSeats = PolishSejmAllocation.Allocate(risen, out List<Dictionary<string, int>> risenDistricts);
+                    string[] keys = risen.Keys.ToArray();
+                    double[][] spread = PolishSejmNight.DistrictVotes(keys, risen);
+                    int mnKey = Array.IndexOf(keys, "MN");
+                    var leaks = new List<string>();
+                    double worstSize = 0.0, worstTotal = 0.0;
+                    for (int d = 0; d < spread.Length; d++)
+                    {
+                        if (d != sole && (spread[d][mnKey] > 0.0 || risenDistricts[d].ContainsKey("MN"))) { leaks.Add((d + 1).ToString(CultureInfo.InvariantCulture)); }
+                        worstSize = Math.Max(worstSize, Math.Abs(spread[d].Sum() - votes[d].Sum()) / votes[d].Sum());
+                    }
+                    for (int k = 0; k < keys.Length; k++) { worstTotal = Math.Max(worstTotal, Math.Abs(spread.Sum(row => row[k]) - risen[keys[k]] * six) / six); }
+                    Check(leaks.Count == 0 && worstSize < 1e-9 && worstTotal < 1e-9 && risenSeats.Values.Sum() == 460,
+                        F("D-PL2: MN at {0:0.000} % ({1} times 2023's) - its votes in okreg {2} alone{3}, {4:N0} of them (its share of the base, {5:N0}); every okreg's votes its 2023 size (worst {6:G2} of it), every list's total its share of the base (worst {7:G2}); seats {8}",
+                            100.0 * mnShare, factor, sole + 1, leaks.Count == 0 ? string.Empty : " - LEAKED INTO OKREGI " + string.Join(", ", leaks), spread[sole][mnKey], mnShare * six, worstSize, worstTotal,
+                            string.Join(", ", risenSeats.Where(kv => kv.Value > 0).Select(kv => kv.Key + " " + kv.Value))));
+                }
+
                 // ---- §766 (Elias's ruling D2): TD's POSITION, THE SEAT-WEIGHTED MEAN OF ITS TWO PARTIES' - the weights from the KBW's candidate file, the
                 // member rows from CHES, TD's row their mean; each re-derived from the files every run ----
                 int tdPolska2050 = 0, tdPsl = 0, tdOthers = 0, elected = 0;

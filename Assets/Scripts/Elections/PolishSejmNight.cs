@@ -10,8 +10,8 @@ namespace PoliSim.Elections
     ///
     /// <para><b>The votes are the chamber's own.</b> An okreg's count is the spread `PolishSejmAllocation.Allocate` seats the Sejm from - the game's
     /// national share moved onto 2023's district result by a uniform swing, floored at zero, a list with no 2023 committee at its national share in
-    /// every okreg - computed here in the same expressions and the same order, so a declared okreg's seats are the d'Hondt of the votes the chamber
-    /// was counted on. `PolishNightDiagnostic` holds the night's count at 41 of 41 to the chamber's, okreg by okreg.</para>
+    /// every okreg, a committee that stood in one okreg in 2023 (the minority's) with its votes there alone - read from the one function the chamber
+    /// divides (`PolishSejmAllocation.SwungVotes`), so a declared okreg's seats are the d'Hondt of the votes the chamber was counted on. `PolishNightDiagnostic` holds the night's count at 41 of 41 to the chamber's, okreg by okreg.</para>
     ///
     /// <para><b>The call</b> (28b's answer 2, "IN once counted votes ≥ line × all votes cast; turnout is not modelled, so the total is known"): a list
     /// is IN once its counted votes reach its line (`PolishSejmAllocation.LineOf`: 5 % a party, 8 % a coalition) of the national vote, OUT once
@@ -91,9 +91,12 @@ namespace PoliSim.Elections
             /// <summary>The seats a key's row may print: a list whose call has landed, or an exempt list once every okreg it stands in has declared.</summary>
             public bool SeatsKnown(int key) => Calls[key] == Call.In || Calls[key] == Call.Out || (Calls[key] == Call.Exempt && StandsDeclared(key));
 
-            /// <summary>Whether every okreg where the key has a vote has declared.</summary>
+            /// <summary>Whether every okreg where the key stands has declared: a committee that stood in one okreg in 2023 (`PolishSejmAllocation.SoleOkreg`)
+            /// stands there alone, with a vote or none; any other key wherever it has a vote.</summary>
             public bool StandsDeclared(int key)
             {
+                int sole = PolishSejmAllocation.SoleOkreg(Keys[key]);
+                if (sole >= 0) { return Okregi[sole].Declared; }
                 foreach (Okreg o in Okregi) { if (!o.Declared && o.Votes != null && o.Votes[key] > 0.0) { return false; } }
                 return true;
             }
@@ -149,35 +152,12 @@ namespace PoliSim.Elections
         }
 
         /// <summary>
-        /// Each okreg's votes per key (rows okreg 1 to 41, columns <paramref name="keys"/>): the uniform swing `PolishSejmAllocation.Allocate` divides,
-        /// in its expressions and its order - 2023's national shares on the committees' own sum, the okreg's 2023 share moved by the national change and
-        /// floored at zero, times the okreg's 2023 size; a key with no 2023 committee at its national share. A key the shares do not carry has none.
+        /// Each okreg's votes per key (rows okreg 1 to 41, columns <paramref name="keys"/>): the spread `PolishSejmAllocation.Allocate` divides, read from
+        /// the same function (`PolishSejmAllocation.SwungVotes`, whose class head declares it). A key the shares do not carry has none.
         /// </summary>
         public static double[][] DistrictVotes(IReadOnlyList<string> keys, IReadOnlyDictionary<string, double> shares)
         {
-            string[] committees = PolishSejmDistricts2023.Committees;
-            long[][] votes = PolishSejmDistricts2023.Votes;
-            int districts = votes.Length;
-            var national2023 = new double[committees.Length];
-            long sum2023 = 0;
-            for (int d = 0; d < districts; d++) { for (int c = 0; c < committees.Length; c++) { national2023[c] += votes[d][c]; sum2023 += votes[d][c]; } }
-            for (int c = 0; c < committees.Length; c++) { national2023[c] /= sum2023; }
-
-            var result = new double[districts][];
-            for (int d = 0; d < districts; d++)
-            {
-                long size = 0;
-                for (int c = 0; c < committees.Length; c++) { size += votes[d][c]; }
-                result[d] = new double[keys.Count];
-                for (int k = 0; k < keys.Count; k++)
-                {
-                    if (shares == null || !shares.TryGetValue(keys[k], out double national)) { continue; }
-                    int c = Array.IndexOf(committees, keys[k]);
-                    double local = c >= 0 ? Math.Max(0.0, (double)votes[d][c] / size + (national - national2023[c])) : national;
-                    if (local > 0.0) { result[d][k] = local * size; }
-                }
-            }
-            return result;
+            return PolishSejmAllocation.SwungVotes(keys, shares);
         }
 
         /// <summary>

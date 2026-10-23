@@ -5503,8 +5503,8 @@ namespace PoliSim.Testing
         /// dashed, the seats owed until their calls land, the seats waiting on an open call in paper - built from that election's own count in a screen
         /// of its own, filmed with the Canvas guard and destroyed; STAGED, named so. (2) The President's nights: the game played on as play steps it (the
         /// day path, the country's day tick, the clock paused while the harness walks) to the first vote the game holds - the night the controller opens
-        /// on the day (`CheckPresidentialRound`), filmed; the state between the rounds STAGED from that contest, filmed and destroyed; then on to the
-        /// run-off and its night. A first vote that elects outright has no run-off, and the film says so.
+        /// on the day (`CheckPresidentialRound`), filmed; the state between the rounds through the Docket the day after (D-PL2: its item, then the night
+        /// its OPEN raises), filmed and dismissed; then on to the run-off and its night. A first vote that elects outright has no run-off, and the film says so.
         /// </summary>
         private IEnumerator CapturePolishNights(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
         {
@@ -5601,23 +5601,60 @@ namespace PoliSim.Testing
 
                 if (!wantRunOff && contest.RunOffPending())
                 {
-                    // the state between the rounds, STAGED from the contest just held (28c frame 2): the first round settled, the run-off owed
-                    PresidentialElection.PresidentAt(CountryId.Poland, poland.PresidentialElections, contest.FirstVote, out PresidencyOfRecord.President sitting);
-                    SetPrivateField(controller, "_canvasLive", true);
-                    PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
-                    ElectionNightScreen between = ElectionNightScreen.BuildPresident(contest, ElectionNightScreen.PresidentStage.Between, sitting.Name, contest.FirstVote.Date.AddHours(21), null);
-                    if (between == null) { Debug.LogError("SHOT: D-PL - the board did not build for the state between the rounds; nothing filmed."); _failed++; }
+                    // D-PL2: the state between the rounds (28c frame 2) through its REAL entry - the day after the first vote, played as play steps it, the
+                    // Docket's item between the rounds filmed, its OPEN taken (the field the docket's own action writes), the night the controller's loop
+                    // opens filmed with the run-off counted down from that day, then dismissed by its CONTINUE
+                    bool next = sim.AdvanceDay();
+                    MemTick(sim);
+                    sim.AdvanceCountryDayTick(_countryId);
+                    if (next) { sim.AdvanceTurn(noDecisions); }
+                    FieldInfo tabField = controller.GetType().GetField("_consolidatedTab", BindingFlags.Instance | BindingFlags.NonPublic);
+                    FieldInfo deskField = controller.GetType().GetField("_onDesk", BindingFlags.Instance | BindingFlags.NonPublic);
+                    object tabWas = tabField?.GetValue(controller), deskWas = deskField?.GetValue(controller);
+                    // the review's H1: a tab set by field alone while _onDesk is true films the DESK - the Docket is a tab, so the desk is left first
+                    SetPrivateField(controller, "_onDesk", false);
+                    SetEnumField(controller, "_consolidatedTab", "Decisions");
+                    ResetScrolls(controller);
+                    yield return Settle();
+                    int toRunOff = (int)Math.Round((contest.RunOffOn.Date - sim.CurrentDate.Date).TotalDays);
+                    // the review's M1: the item is asserted on the docket before its frame is taken under its name - the anchor its draw registers
+                    object slipBook = controller.GetType().GetField("_docketSlipBook", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                    bool itemDrawn = slipBook is PeopleSlips.Book drawnBook && drawnBook.Anchors.ContainsKey("docket:president:between");
+                    object nightOnBoard = null;
+                    if (!itemDrawn)
+                    {
+                        Debug.LogError($"SHOT: D-PL2 - the Docket on {sim.CurrentDate:yyyy-MM-dd} drew NO item between the rounds (the contest: first vote {contest.FirstVote:yyyy-MM-dd}, run-off {contest.RunOffOn:yyyy-MM-dd}, pending {contest.RunOffPending()}, held {contest.RunOffHeld}, decided {contest.Decided()}; on the desk {deskField?.GetValue(controller)}, tab {tabField?.GetValue(controller)}); the docket frame and the night are NOT filmed.");
+                        _failed++;
+                    }
                     else
                     {
+                        Claim("imgui");
+                        yield return Capture("e7q_docket_between_the_rounds");
+                        SetPrivateField(controller, "_docketOpenItem", "president:between");
+                        yield return Settle();
+                        nightOnBoard = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller);
+                        if (nightOnBoard == null)
+                        {
+                            Debug.LogError($"SHOT: D-PL2 - the Docket's OPEN between the rounds on {sim.CurrentDate:yyyy-MM-dd} raised NO night (the item open {controller.GetType().GetField("_docketOpenItem", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller) ?? "no"}, the request {controller.GetType().GetField("_presidentBetweenAsked", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(controller)}); an ELECTION: line above names a refusal.");
+                            _failed++;
+                            SetPrivateField(controller, "_docketOpenItem", null);
+                        }
+                    }
+                    if (nightOnBoard != null)
+                    {
+                        yield return WaitForCanvasSettle(controller, wantActive: true);
                         yield return Settle();
                         Claim("electionnight");
-                        yield return Capture("e7q_presidential_election_night_between_staged");
-                        RecordCanvasTextAssert("e7q_presidential_election_night_between_staged", controller);
-                        if (between.Root != null) { UnityEngine.Object.Destroy(between.Root); }
+                        yield return Capture("e7q_presidential_election_night_between");
+                        RecordCanvasTextAssert("e7q_presidential_election_night_between", controller);
+                        Debug.Log($"SHOT: D-PL2 - the night between the rounds opened from the Docket on {sim.CurrentDate:yyyy-MM-dd}: the run-off {contest.RunOffOn:yyyy-MM-dd}, in {toRunOff} days");
+                        InvokeNoArg(controller, "DismissElectionNight");
+                        yield return WaitForCanvasSettle(controller, wantActive: false);
+                        yield return Settle();
                     }
-                    PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
-                    SetPrivateField(controller, "_canvasLive", false);
-                    yield return Settle();
+                    if (tabWas != null) { tabField.SetValue(controller, tabWas); }
+                    if (deskWas != null) { deskField.SetValue(controller, deskWas); }
+                    ResetScrolls(controller);
                 }
             }
             if (speed != null) { speedField.SetValue(controller, speed); }

@@ -98,6 +98,9 @@ namespace PoliSim.UI
             // ---- SP-7b: the statutes on Poland's player-president's desk, each answerable here (after LATER, or after a load) - PS-6 US-23: the US President's too ----
             if (DrawPresidentDeskItems()) { anyPending = true; }
 
+            // ---- D-PL2: Poland's President between the rounds - the run-off owed, the night's between state opened from here; it can wait ----
+            if (DrawPresidentBetweenItem()) { anyPending = true; }   // the review's L3: never "Nothing is waiting on you" under it
+
             // ---- PS-6 US-23: the out-party majority's reconciliation before Congress - once voted it is the President's (the desk's card above, or his rule) ----
             BudgetBill majorityBill = _simulationManager.GetPendingMajorityReconciliation(PlayerCountryId);
             string majorityWords = PoliSim.Simulation.UsMajorityReconciliation.PendingWords(_playerCountry, majorityBill, _simulationManager.CurrentDate);

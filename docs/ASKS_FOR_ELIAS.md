@@ -435,3 +435,10 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **Between the rounds.** The 14 days between the President's rounds are a staged film frame only. Should they be a desk surface?
 - **The call's line.** Board 28b draws the bar as counted votes ÷ all votes cast. The build measures the line on the national vote and leaves out the swing's zero-floor lift, because the board's literal rule disagreed with the chamber 555 times in the review's probe; the national reading called none. Tell Design, or keep the board's rule and accept wrong calls?
 - **The lines' base.** The 5 % and 8 % lines are measured over the game's lists, which sum to one. Art. 196 measures them over every list on the ballot (2023: BS 1.86 %, PJJ 1.63 %, and others). Keep the roster's base, or add an "others" share?
+
+**Ruled 2026-10-23** ("Just do recommended") on the five D-PL asks above: (1) the unstamped go-ahead stands; (2) MN keeps its rise in okręg 21 - built §902; (3) between the rounds is a desk surface - built §902, a Docket item; (4) the call's line stays on the national vote, and Design is told (`uploads/D-PL_built/`); (5) the lines' base stays the game's own lists.
+
+### D-PL2 (§902): for your information, nothing asked
+
+- **MN now takes seats.** Kept in okręg 21, MN wins a seat there at about 1.5 times its 2023 share (0.19 %); the old swing never gave it one. The film's own game, at MN 0.2 %, seats PiS 199, KO 124, TD 77, NL 45, Konf 14 and MN 1.
+- **Past about 2.23 %**, MN's votes in okręg 21 exceed that okręg's whole 2023 vote. Nothing caps them; MN then takes all 12 seats there. A cap would be your ruling.

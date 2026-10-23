@@ -27,6 +27,98 @@ namespace PoliSim.UI
             return _electionNight != null;
         }
 
+        /// <summary>D-PL2: the day the player asked, on the Docket, for the President's night between the rounds - opened by the controller's own loop on
+        /// that day (`PresidentBetweenAsked`), never inside a draw. Cleared by a load.</summary>
+        private System.DateTime _presidentBetweenAsked = System.DateTime.MinValue;
+
+        /// <summary>The Docket's key for the state between the rounds - the film opens the item through it, as it opens every docket item.</summary>
+        private const string PresidentBetweenKey = "president:between";
+
+        /// <summary>
+        /// D-PL2 (Elias, 2026-10-23, on D-PL's ask): Poland's presidential contest that is BETWEEN THE ROUNDS today - its first vote counted, no one
+        /// elected, its run-off owed on a later day - or null. Poland's alone, as its nights are.
+        /// </summary>
+        private PresidentialElection.Contest BetweenTheRounds()
+        {
+            if (PlayerCountryId != CountryId.Poland || _playerCountry?.PresidentialElections == null) { return null; }
+            System.DateTime today = _simulationManager.CurrentDate;
+            foreach (PresidentialElection.Contest c in _playerCountry.PresidentialElections)
+            {
+                if (c.RunOffPending() && c.FirstVote <= today && today < c.RunOffOn) { return c; }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// D-PL2: the Docket's item between the rounds - the run-off's day and the days to it, counted from today; the finalists; OPEN raises the
+        /// President's night in its between state (28c frame 2), with the first round settled and the run-off owed, nothing guessed. It can wait: the clock
+        /// is not held for it. Returns whether it was drawn.
+        /// </summary>
+        private bool DrawPresidentBetweenItem()
+        {
+            PresidentialElection.Contest contest = BetweenTheRounds();
+            if (contest == null) { return false; }
+            int days = (int)System.Math.Round((contest.RunOffOn.Date - _simulationManager.CurrentDate.Date).TotalDays);
+            string inDays = days.ToString(System.Globalization.CultureInfo.InvariantCulture) + (days == 1 ? " day" : " days");
+            string finalists = Surname(contest.RunOffA) + " and " + Surname(contest.RunOffB);
+            _docketSlipBook.Anchors["docket:" + PresidentBetweenKey] = new SlipContent("BETWEEN THE ROUNDS")
+                .Add("FIRST VOTE " + DeskDay(contest.FirstVote) + " · NO ONE OVER HALF OF THE VALID VOTE (ART. 127)")
+                .Add("RUN-OFF " + DeskDay(contest.RunOffOn) + " · IN " + inDays.ToUpperInvariant() + " · " + finalists.ToUpperInvariant())
+                .Add("THE RUN-OFF IS OWED UNTIL ITS NIGHT - NO FIGURE AND NO POLL");
+            if (DrawDocketItem(PresidentBetweenKey, "ballot", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), "The President · between the rounds",
+                    "Run-off " + DeskDay(contest.RunOffOn) + " · in " + inDays + " · " + finalists, holdsTime: false, action: "Open"))
+            {
+                _docketOpenItem = null;   // the item has no body: its action raises the night, which the loop opens
+                _presidentBetweenAsked = _simulationManager.CurrentDate;
+            }
+            return true;
+        }
+
+        /// <summary>D-PL2: the night between the rounds the Docket asked for today - opened now, as every night is (a takeover; CONTINUE its one exit); true
+        /// when it opened, so the clock stays held. Not while a verdict from another night waits to land.</summary>
+        private bool PresidentBetweenAsked()
+        {
+            if (_presidentBetweenAsked == System.DateTime.MinValue) { return false; }
+            System.DateTime asked = _presidentBetweenAsked;
+            _presidentBetweenAsked = System.DateTime.MinValue;
+            if (asked != _simulationManager.CurrentDate)
+            {
+                Debug.Log($"ELECTION: the night between the rounds asked for on {asked:yyyy-MM-dd} is not opened - the day is now {_simulationManager.CurrentDate:yyyy-MM-dd}; the Docket asks again");
+                return false;
+            }
+            if (!string.IsNullOrEmpty(_pendingElectionVerdict))
+            {
+                Debug.Log("ELECTION: the night between the rounds is not opened - the verdict of the night before it has not landed yet");
+                return false;
+            }
+            OpenPresidentBetween();
+            return _electionNight != null;
+        }
+
+        /// <summary>D-PL2: the President's night in its between state for the contest between the rounds today, the run-off counted down from today.</summary>
+        private void OpenPresidentBetween()
+        {
+            PresidentialElection.Contest contest = BetweenTheRounds();
+            if (contest == null || _electionNight != null)
+            {
+                Debug.Log(contest == null ? "ELECTION: the night between the rounds is not opened - no contest is between its rounds today" : "ELECTION: the night between the rounds is not opened - another night is on the board");
+                return;
+            }
+            System.DateTime today = _simulationManager.CurrentDate;
+            try
+            {
+                string sitting = PresidentialElection.PresidentAt(CountryId.Poland, _playerCountry.PresidentialElections, today, out PresidencyOfRecord.President president) ? president.Name : null;
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                _electionNight = ElectionNightScreen.BuildPresident(contest, ElectionNightScreen.PresidentStage.Between, sitting, contest.FirstVote.Date.AddHours(21), null, today);   // the first round's polls, closed at 21:00
+                Debug.Log($"ELECTION: the President's night between the rounds, opened from the Docket on {today:yyyy-MM-dd} - the run-off {contest.RunOffOn:yyyy-MM-dd}, {contest.RunOffA} and {contest.RunOffB}");
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"CANVAS: the presidential night build THREW ({e.GetType().Name}: {e.Message}) - the night is not shown.");
+                _electionNight = null;
+            }
+        }
+
         /// <summary>
         /// The inputs of Poland's Sejm night beside its count, read from the game: the swing's base (the previous election the game held, else the
         /// chamber the world seated - 2019's by lineage on the 2023 night, LOW CONFIDENCE, §767), the President on the day, the outgoing cabinet's party,

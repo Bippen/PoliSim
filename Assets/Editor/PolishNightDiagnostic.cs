@@ -17,7 +17,7 @@ namespace PoliSim.EditorTools
     /// record's shares returns the PKW's 10th Sejm - PiS 194 · KO 157 · TD 65 · NL 26 · Konf 18 · MN 0 - and every okreg's seats as the chamber's own
     /// count divides them (`PolishSejmAllocation.Allocate`). (b) On a seeded sweep of national votes, and on §767's played prediction, the night at
     /// 41 of 41 calls exactly the lists the chamber admits - 5 % a party, 8 % a coalition, the minority exempt - and returns the chamber's seats okreg
-    /// by okreg. (c) Through the night: a call made at any instant is the chamber's verdict; an okreg's certain seats are the least it holds over every way the
+    /// by okreg; and (D-PL2) with the minority's share risen, its votes in okreg 21 alone in both counts. (c) Through the night: a call made at any instant is the chamber's verdict; an okreg's certain seats are the least it holds over every way the
     /// open calls can land, counted out in full (the closed form `PolishSejmNight.At` uses), and never exceed its end; the minority's list is called against
     /// no line.
     /// (d) Board 28a's cartogram as generated: 41 okregi of their statutory magnitudes, 460 cells inside the grid and none twice, each okreg one block,
@@ -80,6 +80,60 @@ namespace PoliSim.EditorTools
                     Check(AgreesWithChamber(s, out string why), F("(b) Trzecia Droga planted at {0:0.00} % (a coalition, its line 8 %): the night calls what the chamber admits{1}", 100.0 * edge, why));
                 }
 
+                // (b) D-PL2: the minority's rise stays in okreg 21 - a sweep with MN at 1 to 8 times its 2023 share (the others drawn as above): no vote of
+                // MN in any other okreg, in the night's count or in the chamber's divisions, and the night still the chamber okreg by okreg
+                var rising = new System.Random(21);
+                int risingSweep = 200, risingDisagree = 0, leaked = 0, mnSeated = 0;
+                string risingWhy = null;
+                for (int t = 0; t < risingSweep; t++)
+                {
+                    Dictionary<string, double> shares = Swept(record, rising, t % 3 == 0);
+                    double mnShare = record["MN"] * (1.0 + 7.0 * rising.NextDouble());
+                    double rest = 0.0;
+                    foreach (KeyValuePair<string, double> kv in shares) { if (kv.Key != "MN") { rest += kv.Value; } }
+                    foreach (string k in new List<string>(shares.Keys)) { shares[k] = k == "MN" ? mnShare : shares[k] * (1.0 - mnShare) / rest; }
+                    if (!AgreesWithChamber(shares, out string why)) { risingDisagree++; risingWhy = risingWhy ?? why; }
+                    PolishSejmAllocation.Allocate(shares, out List<Dictionary<string, int>> divisions);
+                    PolishSejmNight.State end = PolishSejmNight.At(PolishSejmNight.FinalMinute, shares);
+                    int mn = Array.IndexOf(end.Keys, "MN");
+                    for (int d = 0; d < end.Okregi.Length; d++)
+                    {
+                        if (d != 20 && (end.Okregi[d].Votes[mn] > 0.0 || divisions[d].ContainsKey("MN"))) { leaked++; risingWhy = risingWhy ?? F(" - MN at {0:0.000} % has votes in okreg {1}", 100.0 * mnShare, d + 1); }
+                    }
+                    if (end.Seats[mn] > 0) { mnSeated++; }
+                }
+                Check(risingDisagree == 0 && leaked == 0, F("(b) D-PL2: a seeded sweep of {0} national votes with MN at 1 to 8 times its 2023 share ({1} seat it): MN's votes reach no okreg but 21 in the night or the chamber - {2} leaked - and the night at 41 of 41 is the chamber okreg by okreg - {3} disagree{4}",
+                    risingSweep, mnSeated, leaked, risingDisagree, risingWhy ?? string.Empty));
+                // (b) D-PL2, the review's L1: MN past the share at which its votes fill okreg 21 (its 2023 size over the base) - the floor binds there and
+                // nothing caps MN; the night is still the chamber, every call made early still the chamber's verdict, MN's votes still in 21 alone
+                double fills = 0.0, baseVotes = 0.0;
+                foreach (long v in PolishSejmDistricts2023.Votes[20]) { fills += v; }
+                foreach (long[] row in PolishSejmDistricts2023.Votes) { foreach (long v in row) { baseVotes += v; } }
+                fills /= baseVotes;
+                foreach (double past in new[] { 1.1, 1.35 })
+                {
+                    Dictionary<string, double> shares = Planted(record, "MN", fills * past);
+                    bool agrees = AgreesWithChamber(shares, out string why);
+                    PolishSejmNight.State end = PolishSejmNight.At(PolishSejmNight.FinalMinute, shares);
+                    int mn = Array.IndexOf(end.Keys, "MN");
+                    bool alone = true, sound = true;
+                    for (int d = 0; d < end.Okregi.Length; d++) { if (d != 20 && end.Okregi[d].Votes[mn] > 0.0) { alone = false; } }
+                    for (int i = 1; i <= end.Total; i++)
+                    {
+                        PolishSejmNight.State st = PolishSejmNight.At(PolishSejmNight.ArrivalMinute(i, end.Total), shares);
+                        for (int k = 0; k < st.Keys.Length; k++)
+                        {
+                            if (st.Calls[k] != PolishSejmNight.Call.In && st.Calls[k] != PolishSejmNight.Call.Out) { continue; }
+                            if ((st.Calls[k] == PolishSejmNight.Call.In) != (st.National[k] >= PolishSejmAllocation.LineOf(st.Keys[k]))) { sound = false; }
+                        }
+                    }
+                    double over = 0.0;
+                    foreach (double v in end.Okregi[20].Votes) { over += v; }
+                    over -= fills * baseVotes;
+                    Check(agrees && alone && sound, F("(b) D-PL2: MN at {0:0.000} % ({1} times the share that fills okreg 21's 2023 size, {2:0.000} %) - okreg 21 counts {3:N0} votes over its size, MN {4} of its {5} seats; its votes in 21 alone {6}, every early call the chamber's verdict {7}, the night the chamber{8}",
+                        100.0 * fills * past, past, 100.0 * fills, over, end.Okregi[20].Certain[mn], end.Okregi[20].Magnitude, alone, sound, agrees ? string.Empty : why));
+                }
+
                 // (c) through the night
                 int broken = 0, nights = 20;
                 string brokenWhy = null;
@@ -90,10 +144,11 @@ namespace PoliSim.EditorTools
                     PolishSejmNight.State end = PolishSejmNight.At(PolishSejmNight.FinalMinute, shares);
                     int mn = Array.IndexOf(end.Keys, "MN");
                     int rank21 = end.Okregi[20].Rank;
-                    // the minority stands where it has a vote - okreg 21 alone unless the swing lifts it elsewhere (a rise in its national share spreads by the
-                    // same uniform swing the chamber counts on); its seats are owed until every such okreg has declared
+                    // D-PL2: the minority stood in okreg 21 alone in 2023 and keeps its votes there whatever its share (PolishSejmAllocation.SoleOkreg); its
+                    // seats are owed until 21 declares - a vote of it anywhere else breaks the night
                     bool only21 = mn >= 0;
                     for (int d = 0; d < end.Okregi.Length && only21; d++) { if (d != 20 && end.Okregi[d].Votes[mn] > 0.0) { only21 = false; } }
+                    if (!only21) { broken++; brokenWhy = brokenWhy ?? " - MN has votes outside okreg 21"; }
                     for (int i = 0; i <= end.Total; i++)
                     {
                         PolishSejmNight.State st = PolishSejmNight.At(i == 0 ? 0 : PolishSejmNight.ArrivalMinute(i, end.Total), shares);
@@ -134,7 +189,7 @@ namespace PoliSim.EditorTools
                         }
                     }
                 }
-                Check(broken == 0, F("(c) {0} nights walked okreg by okreg: every call made early is the chamber's verdict on the national vote, every okreg's certain seats are the least it holds over every way the open calls can land (counted out in full) and never exceed its end, MN is called against no line and, where it has votes in okreg 21 alone, owed until 21 declares - {1} broken{2}", nights, broken, brokenWhy ?? string.Empty));
+                Check(broken == 0, F("(c) {0} nights walked okreg by okreg: every call made early is the chamber's verdict on the national vote, every okreg's certain seats are the least it holds over every way the open calls can land (counted out in full) and never exceed its end, MN is called against no line, has votes in okreg 21 alone and is owed until 21 declares - {1} broken{2}", nights, broken, brokenWhy ?? string.Empty));
                 var landed = new List<string>();
                 for (int k = 0; k < night.Keys.Length; k++) { landed.Add(night.Keys[k] + " " + night.Calls[k] + (night.CalledAt[k] > 0 ? " at " + night.CalledAt[k].ToString(CultureInfo.InvariantCulture) : string.Empty)); }
                 sb.Append("    the 2023 record's night, the calls as they land: ").Append(string.Join(" · ", landed)).Append('\n');

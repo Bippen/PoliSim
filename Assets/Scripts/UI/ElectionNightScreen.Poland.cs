@@ -150,9 +150,9 @@ namespace PoliSim.UI
                 {
                     Transform cell = CanvasRows.HRow(lane, "Exempt", Px(22f), Px(6f));
                     Stretch((RectTransform)cell);
-                    CanvasRows.Caption(cell, "exempt", Px(14f), PoliSimTheme.TextMuted);
+                    HoldWidth(CanvasRows.Caption(cell, "exempt", Px(14f), PoliSimTheme.TextMuted));
                     int stands = MinorityOkreg(s, k);
-                    if (stands > 0) { CanvasRows.Stamp(cell, stands.ToString(CultureInfo.InvariantCulture), Px(14f), PoliSimTheme.TextPrimary); }
+                    if (stands > 0) { HoldWidth(CanvasRows.Stamp(cell, stands.ToString(CultureInfo.InvariantCulture), Px(14f), PoliSimTheme.TextPrimary).GetComponentInChildren<Text>()); }
                 }
                 else
                 {
@@ -197,9 +197,17 @@ namespace PoliSim.UI
             {
                 lines.Add("A NATIONAL MINORITY'S COMMITTEE - EXEMPT FROM THE LINE (ART. 197 OF THE ELECTORAL CODE)");
                 int stands = MinorityOkreg(s, k), spread = OkregiWithVotes(s, k);
-                lines.Add(stands > 0 ? "HAS VOTES IN OKRĘG " + stands.ToString(CultureInfo.InvariantCulture) + " ONLY"
-                    : "HAS VOTES IN " + spread.ToString(CultureInfo.InvariantCulture) + " OKRĘGI IN THIS COUNT - THE NATIONAL SWING CARRIES ITS RISE INTO EVERY ONE");
-                lines.Add(s.StandsDeclared(k) ? "EVERY OKRĘG WHERE IT HAS VOTES HAS DECLARED" : "ITS SEATS ARE OWED UNTIL EVERY OKRĘG WHERE IT HAS VOTES HAS DECLARED");
+                if (stands > 0)
+                {
+                    // D-PL2: a committee that stood in one okręg in 2023 keeps its votes there (PolishSejmAllocation.SoleOkreg), whatever its national share
+                    lines.Add("STANDS IN OKRĘG " + stands.ToString(CultureInfo.InvariantCulture) + " ONLY");
+                    lines.Add(s.StandsDeclared(k) ? "ITS OKRĘG HAS DECLARED" : "ITS SEATS ARE OWED UNTIL ITS OKRĘG DECLARES");
+                }
+                else
+                {
+                    lines.Add("HAS VOTES IN " + spread.ToString(CultureInfo.InvariantCulture) + " OKRĘGI IN THIS COUNT");
+                    lines.Add(s.StandsDeclared(k) ? "EVERY OKRĘG WHERE IT HAS VOTES HAS DECLARED" : "ITS SEATS ARE OWED UNTIL EVERY OKRĘG WHERE IT HAS VOTES HAS DECLARED");
+                }
                 long votes2023 = 0;
                 int c2023 = Array.IndexOf(PolishSejmDistricts2023.Committees, key);
                 if (c2023 >= 0) { foreach (long[] row in PolishSejmDistricts2023.Votes) { votes2023 += row[c2023]; } }
@@ -229,14 +237,15 @@ namespace PoliSim.UI
             return lines;
         }
 
-        /// <summary>The legend's words for where the exempt list has votes in this count: one okreg, or every okreg the swing carried it into.</summary>
+        /// <summary>The legend's words for where the exempt list stands: its one okreg (a committee that stood in one in 2023 keeps its votes there),
+        /// else every okreg where this count gives it a vote.</summary>
         private static string MinorityWhere(PolishSejmNight.State s)
         {
             for (int k = 0; k < s.Keys.Length; k++)
             {
                 if (s.Calls[k] != PolishSejmNight.Call.Exempt) { continue; }
                 int stands = MinorityOkreg(s, k);
-                return stands > 0 ? " and has votes in okręg " + stands.ToString(CultureInfo.InvariantCulture) + " only"
+                return stands > 0 ? " and stands in okręg " + stands.ToString(CultureInfo.InvariantCulture) + " only"
                     : " and has votes in " + OkregiWithVotes(s, k).ToString(CultureInfo.InvariantCulture) + " okręgi in this count";
             }
             return string.Empty;
@@ -250,16 +259,9 @@ namespace PoliSim.UI
             return n;
         }
 
-        /// <summary>The okreg the minority's list stands in - the one where it has a vote - or 0 where it stands in several or none.</summary>
-        private static int MinorityOkreg(PolishSejmNight.State s, int k)
-        {
-            int found = 0;
-            foreach (PolishSejmNight.Okreg o in s.Okregi)
-            {
-                if (o.Votes != null && o.Votes[k] > 0.0) { if (found != 0) { return 0; } found = o.Number; }
-            }
-            return found;
-        }
+        /// <summary>The okreg number the list stands in alone - the one its 2023 committee stood in, where that was one (`PolishSejmAllocation.SoleOkreg`,
+        /// the count keeping its votes there) - or 0.</summary>
+        private static int MinorityOkreg(PolishSejmNight.State s, int k) => PolishSejmAllocation.SoleOkreg(s.Keys[k]) + 1;
 
         /// <summary>
         /// THE 41 OKREGI (28a's centre, 28b's answers 1 and 2): each declared okreg's cells in the inks of the seats certain under the open calls, the
@@ -441,9 +443,10 @@ namespace PoliSim.UI
         /// D-PL (28c-28d): Poland's presidential night in one of its four states, from the contest the game held (`PresidentialElection.Contest`) - the
         /// first round (the field and the call), between the rounds (the first round settled, the run-off owed), the run-off (the two, one bar), and
         /// elected (the ELECT row and the oath's day, where the night closes). <paramref name="sitting"/>: the President in office on the day.
-        /// Null, and said, where the contest has no field.
+        /// <paramref name="asOf"/>: the day the board is read on - between the rounds the run-off is counted down from it (D-PL2: the Docket opens that
+        /// state on any day between the rounds); the first vote's day where none is given. Null, and said, where the contest has no field.
         /// </summary>
-        public static ElectionNightScreen BuildPresident(PresidentialElection.Contest contest, PresidentStage stage, string sitting, DateTime pollsClosed, string verdict)
+        public static ElectionNightScreen BuildPresident(PresidentialElection.Contest contest, PresidentStage stage, string sitting, DateTime pollsClosed, string verdict, DateTime? asOf = null)
         {
             if (contest == null || contest.Field == null || contest.Field.Count == 0)
             {
@@ -473,7 +476,7 @@ namespace PoliSim.UI
                 BuildField(field, contest, stage, overlay);
                 if (stage == PresidentStage.Elected && contest.Elected != null) { ElectRow(field, contest, overlay); }   // elected outright in the first vote: the night closes on the ELECT row too
             }
-            BuildPresidentCall(call, contest, stage, sitting, overlay);
+            BuildPresidentCall(call, contest, stage, sitting, overlay, asOf ?? contest.FirstVote);
             BuildFooter(content, verdict, screen, null, null, overlay);
 
             Resolve(contentRect);
@@ -610,7 +613,7 @@ namespace PoliSim.UI
 
         /// <summary>The call column (28c's right): the call card - what the count says and why; between the rounds the run-off OWED under its chip, two
         /// empty lanes, nothing guessed; and the ABSENT frame - turnout and votes not modelled.</summary>
-        private static void BuildPresidentCall(Transform parent, PresidentialElection.Contest contest, PresidentStage stage, string sitting, Transform overlay)
+        private static void BuildPresidentCall(Transform parent, PresidentialElection.Contest contest, PresidentStage stage, string sitting, Transform overlay, DateTime asOf)
         {
             PresidentialElection.Candidate a = Find(contest, contest.RunOffA), b = Find(contest, contest.RunOffB);
             string headLine, bodyLine;
@@ -659,8 +662,8 @@ namespace PoliSim.UI
                 chipLayout.childControlWidth = chipLayout.childControlHeight = true;
                 chipLayout.childForceExpandWidth = chipLayout.childForceExpandHeight = false;
                 chip.AddComponent<Image>().color = PoliSimTheme.Caution;
-                int days = (int)Math.Round((contest.RunOffOn - contest.FirstVote).TotalDays);
-                PlText(chip.transform, "Days", "IN " + days.ToString(CultureInfo.InvariantCulture) + " DAYS", Px(14f), PoliSimTheme.Card, PoliSimTheme.Document);
+                int days = (int)Math.Round((contest.RunOffOn.Date - asOf.Date).TotalDays);   // D-PL2: from the day the board is read on
+                PlText(chip.transform, "Days", "IN " + days.ToString(CultureInfo.InvariantCulture) + (days == 1 ? " DAY" : " DAYS"), Px(14f), PoliSimTheme.Card, PoliSimTheme.Document);
                 foreach (PresidentialElection.Candidate c in new[] { a, b })
                 {
                     if (c == null) { continue; }
@@ -775,6 +778,17 @@ namespace PoliSim.UI
             t.horizontalOverflow = HorizontalWrapMode.Wrap;
             t.raycastTarget = false;
             t.gameObject.AddComponent<LayoutElement>().minHeight = size * 1.35f;
+        }
+
+        /// <summary>D-PL2 (the real films real902/real902w: the exempt cell's caption and stamp compressed below their text by the row's layout): a text
+        /// held at its measured width, so the row cannot shrink it - its words never at a smaller size or clipped.</summary>
+        private static void HoldWidth(Text text)
+        {
+            if (text == null) { return; }
+            LayoutElement le = text.GetComponent<LayoutElement>();
+            if (le == null) { le = text.gameObject.AddComponent<LayoutElement>(); }   // Unity's null, never ??
+            le.minWidth = le.preferredWidth = Measure(text.text, text.fontSize, text.font);
+            le.flexibleWidth = 0f;
         }
 
         private static float Measure(string text, int size, Font font)
