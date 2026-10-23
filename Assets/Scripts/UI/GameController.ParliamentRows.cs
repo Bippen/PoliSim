@@ -372,7 +372,7 @@ namespace PoliSim.UI
 
         private void DrawReferenceRow(PeopleSlips.Book book)
         {
-            // §767: Poland too - no election night carries its reference yet (the night needs a regional count; Poland's district map is D-PL's)
+            // §767: Poland too - and since D-PL its night carries the reference at 41 of 41 as the German night does; the row keeps it while that chamber sits
             if ((ConfidenceProcedure.RulesOf(PlayerCountryId) != ConfidenceProcedure.Rules.Bundestag && PlayerCountryId != CountryId.Poland) || _playerCountry.ElectionHistory == null) { return; }
             System.DateTime held = System.DateTime.MinValue;
             foreach (ElectionRecord e in _playerCountry.ElectionHistory)

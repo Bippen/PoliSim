@@ -34,9 +34,12 @@ namespace PoliSim.Elections
         public const int FinalMinute = 300;
 
         /// <summary>Whether the player's country can produce a night at all. ⚠ It is not "is there a
-        /// screen" but "is there a per-constituency RESULT", which is the thing that was missing.</summary>
+        /// screen" but "is there a per-constituency RESULT", which is the thing that was missing.
+        /// D-PL: Poland's count IS per okreg - its Sejm is seated district by district (`PolishSejmAllocation`) - and its night is
+        /// `PolishSejmNight`'s, on the election record's own shares, never this class's regional readout (`At` returns null for it).</summary>
         public static bool Available(CountryId country) =>
-            (country == CountryId.Sweden || country == CountryId.Germany) && NationalElection.LastRegionalShares != null;   // §707 (D-DE): the sixteen Länder
+            country == CountryId.Poland
+            || ((country == CountryId.Sweden || country == CountryId.Germany) && NationalElection.LastRegionalShares != null);   // §707 (D-DE): the sixteen Länder
 
         /// <summary>
         /// Build the night from the prediction `NationalElection.TryPredictShares` most recently made.
@@ -46,7 +49,7 @@ namespace PoliSim.Elections
         public static NightState At(int minute, CountryId country, IReadOnlyList<string> partyKeys,
             int totalSeats, double threshold, DateTime? on = null)
         {
-            if (!Available(country)) { return null; }
+            if (!Available(country) || country == CountryId.Poland) { return null; }   // D-PL: Poland's night is PolishSejmNight's - the readout here may be another country's
 
             double[][] shares = NationalElection.LastRegionalShares;
             string[] names = NationalElection.LastRegionalNames;

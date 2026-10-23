@@ -733,6 +733,7 @@ namespace PoliSim.UI
             {
                 return;
             }
+            if (PresidentialNightOwed()) { return; }   // D-PL: a President's night that waited for the night before it on the same day opens now
 
             // A Canvas takeover stops the clock — the signing-screen pattern addition to the seam's
             // discipline statement. The selector never exposed this (the no-selection gate above
@@ -791,6 +792,7 @@ namespace PoliSim.UI
                 {
                     CheckElection();
                 }
+                CheckPresidentialRound();   // D-PL: the President's night, on a round's day the manager's day just held
 
                 AutosaveIfDue();   // MM-2: counted in days played, by the setting's cadence
 
@@ -1131,6 +1133,7 @@ namespace PoliSim.UI
             _gameOverReason = ui?.GameOverReason;
             _pendingElectionVerdict = ui?.PendingElectionVerdict;
             _pendingElectionVerdictEndsGame = ui?.PendingElectionVerdictEndsGame ?? false;
+            _presidentialNightOwed = System.DateTime.MinValue;   // D-PL: a night owed in the world just left is not this one's
             _pendingElectionDate = ui?.PendingElectionDate != null && System.DateTime.TryParseExact(ui.PendingElectionDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out System.DateTime pendingDate) ? pendingDate : default;
             _campaignOpeningAcknowledgedElection = ui?.CampaignOpeningAcknowledgedElection;
             // P2-0.3: a load that lands inside an unacknowledged opening opens HQ, as the day did.
@@ -6546,6 +6549,7 @@ namespace PoliSim.UI
                 Debug.Log($"ELECTION: no election night for {PlayerCountryId} - the model has no regional count to show (ElectionNightFromModel.Available is false).");
                 return;
             }
+            if (PlayerCountryId == CountryId.Poland) { ShowPolishSejmNight(); return; }   // D-PL: the 41 okręgi, counted from the election just held (GameController.PolishNight.cs)
 
             IReadOnlyList<PoliticalParty> parties = PartySystems.For(PlayerCountryId);
             var keys = new List<string>();

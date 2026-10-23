@@ -427,3 +427,11 @@ Also measured with it, not this item's to fix: in the world without anyone's pol
 - **The Senato.** The XIX Senato's groups are on record, but nothing seats them until PS-7. J2 pairs the 2018 Camera with the 2022 Senato, and no start falls inside both. Is "on record, seated at PS-7" what you meant?
 - **An Italian game stays on the 2018 Camera** for its whole run, because no Italian election is held yet (PS-7). Acceptable until then?
 - **France's 2022 polling days** are now on a fetched page (the FE page's header, "12 et 19 juin 2022"). Use them for France's calendar (G1)?
+
+### D-PL Poland's election nights (§901): the asks it ends in
+
+- **Built from unstamped boards.** Your instruction of 23 October was read as the go-ahead past the LOOKED AT condition (§797). Boards 28a-28d are unstamped, and 28c and 28d say PROPOSAL. Say if you meant to wait for the stamp.
+- **The minority's spread.** Under the uniform swing (§762), any rise in MN's national share above its 2023 0.124 % gives MN votes in every okręg, not only in okręg 21. The chamber's own count does the same, and on the film's night the legend says so ("has votes in 41 okręgi"). Should a committee that stood in one okręg keep its rise there? That changes the simulation, and the night and the count would change together.
+- **Between the rounds.** The 14 days between the President's rounds are a staged film frame only. Should they be a desk surface?
+- **The call's line.** Board 28b draws the bar as counted votes ÷ all votes cast. The build measures the line on the national vote and leaves out the swing's zero-floor lift, because the board's literal rule disagreed with the chamber 555 times in the review's probe; the national reading called none. Tell Design, or keep the board's rule and accept wrong calls?
+- **The lines' base.** The 5 % and 8 % lines are measured over the game's lists, which sum to one. Art. 196 measures them over every list on the ballot (2023: BS 1.86 %, PJJ 1.63 %, and others). Keep the roster's base, or add an "others" share?

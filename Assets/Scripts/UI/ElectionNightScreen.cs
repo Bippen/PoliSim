@@ -48,7 +48,7 @@ namespace PoliSim.UI
     ///   it - the seed (2026 since K-1) IS the previous election - so V-N3 never needed a second one. Only a later
     ///   term, whose record keeps national figures, still waits for the complete count.
     /// </summary>
-    public class ElectionNightScreen
+    public partial class ElectionNightScreen
     {
         public GameObject Root { get; private set; }
 
@@ -162,9 +162,44 @@ namespace PoliSim.UI
                 Seats = previousSeats != null && partyNames != null && previousSeats.Length == partyNames.Length ? previousSeats : null,
             };
 
+            if (state == null || partyNames == null)
+            {
+                Debug.LogWarning("CANVAS: election-night furniture missing - the board is dropped, the night stays silent.");
+                return null;
+            }
+            ElectionNightScreen screen = Shell(out Transform content, out RectTransform contentRect);
+            if (screen == null) { return null; }
+
+            BuildMasthead(content, state, countryName, pollsClosed, totalSeats);
+            ValkretsCartogramView map = BuildBody(content, state, partyNames, totalSeats, previous, ledger, ledgerParty,
+                standingBudget, standingBudgetCitation, government, inkCountry, reference, out LaenderTileView laender);
+            BuildFooter(content, verdict, screen, continueLabel, speaker, screen.Root.transform);
+
+            // The map lays itself in the rect the page gives it; resolve the page now so the first frame already has it,
+            // not two frames on (the signing screen's lesson: a capture can photograph an unlaid rect).
+            // ⚠ On the CONTENT column, not the document: the document carries no layout controller, and uGUI does not descend
+            // past a rect without one - a rebuild asked of the document lays nothing (measured: every band read its default 100).
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+            if (map != null) { map.Rebuild(); }
+            if (laender != null) { laender.Rebuild(); }
+            screen.Map = map;
+            screen.Laender = laender;
+
+            // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
+            // fails on the pixels rather than passing on a clean exit code.
+            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            return screen;
+        }
+
+        /// <summary>The night's paper on the canvas - the wash, the document with its ornate frame, and the content column every night lays out in
+        /// (D-PL: shared with the Sejm's and the President's nights). Null, and said, where the furniture is missing.</summary>
+        private static ElectionNightScreen Shell(out Transform contentTransform, out RectTransform contentRect)
+        {
+            contentTransform = null;
+            contentRect = null;
             Sprite frame = CanvasChrome.Sliced("ui_frame_ornate", 64f, 64f, 64f, 64f);
             Texture2D scrimTexture = IconLibrary.GetChrome("ui_scrim_takeover");
-            if (frame == null || state == null || partyNames == null)
+            if (frame == null)
             {
                 Debug.LogWarning("CANVAS: election-night furniture missing - the board is dropped, the night stays silent.");
                 return null;
@@ -208,7 +243,7 @@ namespace PoliSim.UI
 
             var content = new GameObject("Content");
             content.transform.SetParent(document.transform, false);
-            RectTransform contentRect = content.AddComponent<RectTransform>();
+            contentRect = content.AddComponent<RectTransform>();
             Stretch(contentRect);
             contentRect.offsetMin = new Vector2(52f, 34f);
             contentRect.offsetMax = new Vector2(-52f, -38f);
@@ -217,25 +252,7 @@ namespace PoliSim.UI
             column.childControlWidth = true;
             column.childForceExpandHeight = false;
             column.spacing = 10f;
-
-            BuildMasthead(content.transform, state, countryName, pollsClosed, totalSeats);
-            ValkretsCartogramView map = BuildBody(content.transform, state, partyNames, totalSeats, previous, ledger, ledgerParty,
-                standingBudget, standingBudgetCitation, government, inkCountry, reference, out LaenderTileView laender);
-            BuildFooter(content.transform, verdict, screen, continueLabel, speaker, root.transform);
-
-            // The map lays itself in the rect the page gives it; resolve the page now so the first frame already has it,
-            // not two frames on (the signing screen's lesson: a capture can photograph an unlaid rect).
-            // ⚠ On the CONTENT column, not the document: the document carries no layout controller, and uGUI does not descend
-            // past a rect without one - a rebuild asked of the document lays nothing (measured: every band read its default 100).
-            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
-            if (map != null) { map.Rebuild(); }
-            if (laender != null) { laender.Rebuild(); }
-            screen.Map = map;
-            screen.Laender = laender;
-
-            // S-20: the board stamps its own capture-identity token, so a film that shows the desk over it
-            // fails on the pixels rather than passing on a clean exit code.
-            PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+            contentTransform = content.transform;
             return screen;
         }
         private const float DocumentWidth = 1240f;
@@ -247,6 +264,13 @@ namespace PoliSim.UI
         /// <summary>§A.14: institution + title left, timestamp and the declared chip right.</summary>
         private static void BuildMasthead(Transform parent, NightState state, string countryName,
             DateTime pollsClosed, int totalSeats)
+        {
+            Masthead(parent, countryName, pollsClosed.AddMinutes(state.Minute).ToString("HH:mm", CultureInfo.InvariantCulture) + "  ·  POLLS CLOSED " + pollsClosed.ToString("HH:mm", CultureInfo.InvariantCulture),
+                string.Format(CultureInfo.InvariantCulture, countryName.Equals("GERMANY", StringComparison.OrdinalIgnoreCase) ? "{0} OF {1} LÄNDER DECLARED" : "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies));
+        }
+
+        /// <summary>The masthead with its two right-hand lines given (D-PL: the Sejm's night counts okregi, the President's night the nation).</summary>
+        private static void Masthead(Transform parent, string countryName, string timestamp, string chipLine)
         {
             var mast = new GameObject("Masthead");
             mast.transform.SetParent(parent, false);
@@ -284,8 +308,7 @@ namespace PoliSim.UI
             rightColumn.childForceExpandHeight = false;
             rightColumn.childAlignment = TextAnchor.MiddleRight;
 
-            CanvasChrome.MakeTextRealWeight(right.transform, "Timestamp",
-                pollsClosed.AddMinutes(state.Minute).ToString("HH:mm", CultureInfo.InvariantCulture) + "  ·  POLLS CLOSED " + pollsClosed.ToString("HH:mm", CultureInfo.InvariantCulture),
+            CanvasChrome.MakeTextRealWeight(right.transform, "Timestamp", timestamp,
                 PoliSimTheme.Document, 12, PoliSimTheme.TextSecondary, TextAnchor.MiddleRight)
                 .GetComponent<RectTransform>().sizeDelta = new Vector2(0f, 18f);
 
@@ -297,8 +320,7 @@ namespace PoliSim.UI
             chip.AddComponent<RectTransform>().sizeDelta = new Vector2(300f, 22f);
             chip.AddComponent<Image>().color = PoliSimTheme.Hex(0x5D564A);
             chip.AddComponent<LayoutElement>().minHeight = 22f;
-            Text chipText = CanvasChrome.MakeTextRealWeight(chip.transform, "ChipText",
-                string.Format(CultureInfo.InvariantCulture, countryName.Equals("GERMANY", StringComparison.OrdinalIgnoreCase) ? "{0} OF {1} LÄNDER DECLARED" : "{0} OF {1} CONSTITUENCIES DECLARED", state.DeclaredCount, state.TotalConstituencies),
+            Text chipText = CanvasChrome.MakeTextRealWeight(chip.transform, "ChipText", chipLine,
                 PoliSimTheme.Display, 11, PoliSimTheme.Hex(0xF4ECDC), TextAnchor.MiddleCenter, FontStyle.Bold);
             Stretch(chipText.GetComponent<RectTransform>());
         }

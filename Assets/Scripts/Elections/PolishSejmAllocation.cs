@@ -32,6 +32,10 @@ namespace PoliSim.Elections
             : NationalElection.ExemptFromThreshold(CountryId.Poland, committee) ? Kind.Minority
             : Kind.Party;
 
+        /// <summary>D-PL: a committee's line - `CoalitionThreshold` for a coalition, `PartyThreshold` for a party, 0 for the minority (exempt) - the
+        /// same kinds `Admitted` reads, for the election night that calls each list against its own line (`PolishSejmNight`).</summary>
+        public static double LineOf(string committee) => KindOf(committee) == Kind.Minority ? 0.0 : KindOf(committee) == Kind.Coalition ? CoalitionThreshold : PartyThreshold;
+
         /// <summary>Whether a list clears the national threshold on <paramref name="share"/> (a fraction of the valid vote) - a minority's always does.
         /// Seen from outside as which lists take part in each okreg's division (<see cref="Allocate"/>'s per-district result).</summary>
         private static bool Admitted(string committee, double share) =>
@@ -81,7 +85,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>d'Hondt in one okreg: each seat to the highest quotient votes / (won + 1); a tie to the list with more votes, then the first in order.</summary>
-        private static Dictionary<string, int> DHondt(List<(string Key, double Votes)> lists, int magnitude)
+        internal static Dictionary<string, int> DHondt(List<(string Key, double Votes)> lists, int magnitude)
         {
             var won = new Dictionary<string, int>();
             foreach ((string key, double _) in lists) { won[key] = 0; }

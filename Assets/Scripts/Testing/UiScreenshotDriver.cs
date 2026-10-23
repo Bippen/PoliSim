@@ -5160,6 +5160,12 @@ namespace PoliSim.Testing
             }
 
             var noDecisions = new Dictionary<CountryId, PolicyDecision>();
+            if (_countryId == CountryId.Poland)
+            {
+                // D-PL: a Polish game stages no run-up and no campaign (§767), so its film walks the day path straight to its polling day and its nights
+                yield return CapturePolishInterrupts(controller, sim, noDecisions);
+                yield break;
+            }
 
             // CL-1 (2026-09-12): the run-up is reachable. Drive the day path to the pre-campaign's first day, open
             //    the HQ through the branch the rail's cell takes, film it, queue an office and a pollster live, step
@@ -5490,6 +5496,203 @@ namespace PoliSim.Testing
             SetPrivateField(controller, "_canvasLive", false);
             yield return Settle();
         }
+
+        /// <summary>
+        /// D-PL (Elias, 2026-10-23: "Build the Polish election night"; boards 28a-28d): POLAND'S NIGHTS ON FILM, after the Sejm's own night (e7c).
+        /// (1) The Sejm's night part-way - the election the film just held, staged at 30 of 41 okręgi (board 28a's own state): the undeclared okręgi
+        /// dashed, the seats owed until their calls land, the seats waiting on an open call in paper - built from that election's own count in a screen
+        /// of its own, filmed with the Canvas guard and destroyed; STAGED, named so. (2) The President's nights: the game played on as play steps it (the
+        /// day path, the country's day tick, the clock paused while the harness walks) to the first vote the game holds - the night the controller opens
+        /// on the day (`CheckPresidentialRound`), filmed; the state between the rounds STAGED from that contest, filmed and destroyed; then on to the
+        /// run-off and its night. A first vote that elects outright has no run-off, and the film says so.
+        /// </summary>
+        private IEnumerator CapturePolishNights(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
+        {
+            Country poland = sim.World?.GetCountry(CountryId.Poland);
+            ElectionRecord latest = poland != null && poland.ElectionHistory.Count > 0 ? poland.ElectionHistory[poland.ElectionHistory.Count - 1] : null;
+            if (latest == null || latest.Method != ElectionMethod.PolandDistricts)
+            {
+                Debug.LogError("SHOT: D-PL - no Polish Sejm count in hand, so the night part-way is NOT filmed.");
+                _failed++;
+                yield break;
+            }
+            int minute = PolishSejmNight.ArrivalMinute(30, PolishOkregiCartogramCount);
+            PolishSejmNight.State partial = PolishSejmNight.At(minute, latest.Shares);
+            if (partial == null || partial.Complete)
+            {
+                Debug.LogError($"SHOT: D-PL - the Polish night at minute {minute} is {(partial == null ? "not built" : "already complete")}; the night part-way is NOT filmed.");
+                _failed++;
+            }
+            else
+            {
+                SetPrivateField(controller, "_canvasLive", true);
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                ElectionNightScreen staged = ElectionNightScreen.BuildPoland(GameController.PolishSejmNightInputs(poland, partial, latest.Date), latest.Date.Date.AddHours(21), null);
+                if (staged == null) { Debug.LogError("SHOT: D-PL - the board did not build for the Polish night part-way; nothing filmed."); _failed++; }
+                else
+                {
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e7e_election_night_partial_staged");
+                    RecordCanvasTextAssert("e7e_election_night_partial_staged", controller);
+                    var calls = new List<string>();
+                    for (int k = 0; k < partial.Keys.Length; k++) { calls.Add(partial.Keys[k] + " " + partial.Calls[k] + (partial.CalledAt[k] > 0 ? "@" + partial.CalledAt[k].ToString(CultureInfo.InvariantCulture) : string.Empty) + " " + partial.Seats[k].ToString(CultureInfo.InvariantCulture)); }
+                    Debug.Log(string.Format(CultureInfo.InvariantCulture, "SHOT: D-PL - the Polish night staged part-way: minute {0}, {1} of {2} okręgi declared; {3}; in play {4}, not yet {5}; cells {6} inked / {7} in play / {8} not yet.",
+                        minute, partial.Declared, partial.Total, string.Join(" · ", calls), partial.InPlay, partial.NotYet, staged.Okregi?.LastInked ?? -1, staged.Okregi?.LastInPlay ?? -1, staged.Okregi?.LastNotYet ?? -1));
+                    if (staged.Root != null) { UnityEngine.Object.Destroy(staged.Root); }
+                }
+                PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+                SetPrivateField(controller, "_canvasLive", false);
+                yield return Settle();
+            }
+
+            // (2) the President's nights, on their days
+            FieldInfo speedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object speed = speedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "Paused");
+            PresidentialElection.Contest contest = null;
+            for (int round = 0; round < 2; round++)
+            {
+                bool wantRunOff = round == 1;
+                if (wantRunOff && (contest == null || !contest.RunOffPending()))
+                {
+                    if (contest != null && contest.Decided()) { Debug.Log($"SHOT: D-PL - the first vote of {contest.FirstVote:yyyy-MM-dd} elected outright ({contest.Line}); there is no run-off night to film."); }
+                    break;
+                }
+                int days = 0;
+                bool found = false;
+                while (days < MaxStateSearchDays && !found)
+                {
+                    bool boundary = sim.AdvanceDay();
+                    MemTick(sim);
+                    sim.AdvanceCountryDayTick(_countryId);
+                    days++;
+                    if (boundary) { sim.AdvanceTurn(noDecisions); }
+                    foreach (PresidentialElection.Contest c in poland.PresidentialElections)
+                    {
+                        if (wantRunOff ? c == contest && c.RunOffHeld && c.RunOffOn == sim.CurrentDate : c.FirstVote == sim.CurrentDate) { contest = c; found = true; }
+                    }
+                }
+                if (!found)
+                {
+                    Debug.LogError($"SHOT: D-PL - no presidential {(wantRunOff ? "run-off" : "first vote")} within {MaxStateSearchDays} days of the Sejm's night; the President's night is NOT filmed.");
+                    _failed++;
+                    break;
+                }
+                InvokeNoArg(controller, "CheckPresidentialRound");
+                FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (nightField?.GetValue(controller) == null)
+                {
+                    Debug.LogError($"SHOT: D-PL - the {(wantRunOff ? "run-off" : "first vote")} of {sim.CurrentDate:yyyy-MM-dd} was held ({contest.Line}) and NO President's night was shown; the controller logs why.");
+                    _failed++;
+                    break;
+                }
+                string frame = !wantRunOff ? (contest.Decided() ? "e7p_presidential_election_night_elected_outright" : "e7p_presidential_election_night_first_round")
+                    : contest.Decided() ? "e7r_presidential_election_night_elected" : "e7r_presidential_election_night_runoff_undecided";
+                yield return WaitForCanvasSettle(controller, wantActive: true);
+                yield return Settle();
+                Claim("electionnight");
+                yield return Capture(frame);
+                RecordCanvasTextAssert(frame, controller);
+                Debug.Log($"SHOT: D-PL - the President's night of {sim.CurrentDate:yyyy-MM-dd} after {days} days: {contest.Line}");
+                InvokeNoArg(controller, "DismissElectionNight");
+                yield return WaitForCanvasSettle(controller, wantActive: false);
+                yield return Settle();
+
+                if (!wantRunOff && contest.RunOffPending())
+                {
+                    // the state between the rounds, STAGED from the contest just held (28c frame 2): the first round settled, the run-off owed
+                    PresidentialElection.PresidentAt(CountryId.Poland, poland.PresidentialElections, contest.FirstVote, out PresidencyOfRecord.President sitting);
+                    SetPrivateField(controller, "_canvasLive", true);
+                    PoliSim.Testing.CaptureIdentity.CanvasSurface = "electionnight";
+                    ElectionNightScreen between = ElectionNightScreen.BuildPresident(contest, ElectionNightScreen.PresidentStage.Between, sitting.Name, contest.FirstVote.Date.AddHours(21), null);
+                    if (between == null) { Debug.LogError("SHOT: D-PL - the board did not build for the state between the rounds; nothing filmed."); _failed++; }
+                    else
+                    {
+                        yield return Settle();
+                        Claim("electionnight");
+                        yield return Capture("e7q_presidential_election_night_between_staged");
+                        RecordCanvasTextAssert("e7q_presidential_election_night_between_staged", controller);
+                        if (between.Root != null) { UnityEngine.Object.Destroy(between.Root); }
+                    }
+                    PoliSim.Testing.CaptureIdentity.CanvasSurface = null;
+                    SetPrivateField(controller, "_canvasLive", false);
+                    yield return Settle();
+                }
+            }
+            if (speed != null) { speedField.SetValue(controller, speed); }
+        }
+
+        /// <summary>
+        /// D-PL: THE POLISH INTERRUPTS FILM - a Polish game played from its start as play steps it (the day path, the country's day tick, the clock paused
+        /// while the harness walks) to its polling day, the Sejm's night opened by the controller's own election call and held as a takeover the clock
+        /// cannot pass, dismissed by its CONTINUE; then `CapturePolishNights`. The run-up and campaign frames of the other countries' film have no Polish
+        /// counterpart (no campaign is staged for Poland), and the film says so.
+        /// </summary>
+        private IEnumerator CapturePolishInterrupts(GameController controller, SimulationManager sim, Dictionary<CountryId, PolicyDecision> noDecisions)
+        {
+            Debug.Log("SHOT: -shotinterrupts - Poland stages no run-up and no campaign; the film walks to the polling day and films the nights.");
+            SetPrivateField(controller, "_onDesk", true);
+            FieldInfo walkSpeedField = controller.GetType().GetField("_gameSpeed", BindingFlags.Instance | BindingFlags.NonPublic);
+            object walkSpeed = walkSpeedField?.GetValue(controller);
+            SetEnumField(controller, "_gameSpeed", "Paused");
+            int days = 0;
+            while (days < MaxStateSearchDays)
+            {
+                bool boundary = sim.AdvanceDay();
+                MemTick(sim);
+                sim.AdvanceCountryDayTick(_countryId);
+                days++;
+                if (boundary) { sim.AdvanceTurn(noDecisions); }
+                if (sim.PollingDayToday) { break; }
+            }
+            bool over = false;
+            if (!sim.PollingDayToday)
+            {
+                Debug.LogError($"SHOT: -shotinterrupts found no polling day within {MaxStateSearchDays} days for Poland - the night is NOT filmed.");
+                _failed++;
+            }
+            else
+            {
+                Debug.Log($"SHOT: -shotinterrupts reached Poland's polling day {sim.CurrentDate:yyyy-MM-dd} after {days} days.");
+                InvokeNoArg(controller, "CheckElection");
+                if (walkSpeed != null) { walkSpeedField.SetValue(controller, walkSpeed); }
+                FieldInfo nightField = controller.GetType().GetField("_electionNight", BindingFlags.Instance | BindingFlags.NonPublic);
+                if (nightField?.GetValue(controller) == null)
+                {
+                    Debug.LogError("SHOT: -shotinterrupts - Poland reached its election and NO election night was shown. The controller logs why (ELECTION: / CANVAS: lines above).");
+                    _failed++;
+                }
+                else
+                {
+                    yield return WaitForCanvasSettle(controller, wantActive: true);
+                    yield return Settle();
+                    Claim("electionnight");
+                    yield return Capture("e7c_election_night_takeover");
+                    RecordCanvasTextAssert("e7c_election_night_takeover", controller);
+                    yield return AssertClockHeld(controller, sim, "election night");
+                    InvokeNoArg(controller, "DismissElectionNight");
+                    yield return WaitForCanvasSettle(controller, wantActive: false);
+                    yield return Settle();
+                    Claim("imgui");
+                    FieldInfo overField = controller.GetType().GetField("_isGameOver", BindingFlags.Instance | BindingFlags.NonPublic);
+                    over = overField?.GetValue(controller) is bool o && o;
+                    yield return Capture(over ? "e7d_after_election_night_gameover" : "e7d_after_election_night");
+                    if (!over)
+                    {
+                        yield return ReportClockAfterDismissal(controller, sim, "election night");
+                        yield return CapturePolishNights(controller, sim, noDecisions);
+                    }
+                }
+            }
+            Debug.Log($"SHOT: interrupts done, {_captured} captured, {_failed} failed.");
+            Debug.Log($"SHOT: {ReportOverflows()} text overflow(s) recorded.");
+            Debug.Log($"SHOT: {ReportContainmentEscapes()} containment escape(s) recorded.");
+            Finish(_failed == 0 && _loggedErrors == 0 ? 0 : 1);
+        }
+
+        /// <summary>The okręgi the Polish night counts - the generated cartogram's, so the staged state's place in the order is the night's own.</summary>
+        private static int PolishOkregiCartogramCount => PoliSim.Elections.Generated.PolishOkregiCartogram.Okregi.Length;
 
         /// <summary>
         /// §707 (Elias's round-4 follow-up 5, "a German game filmed from its start to its formation"): after the night the game is played on as

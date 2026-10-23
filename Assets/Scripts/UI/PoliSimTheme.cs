@@ -270,6 +270,16 @@ namespace PoliSim.UI
             { "Germany/BSW",   Hex(0x653875) },
             { "Germany/FDP",   Hex(0x757138) },
             { "Germany/SSW",   Hex(0x385275) },
+            // D-PL (board 28b's legend, a PROPOSAL, built on Elias's go-ahead of 2026-10-23) - [AUTHORED-REFERENCE]: Poland had no inks. The board seats
+            // each committee's brand hue at the desk's S 0.52 · V 0.46 and darkens it in L only until the tile text clears 4.5:1, so its hexes are
+            // taken as drawn, as Germany's were: PiS blue, KO's customary orange, TD in PSL's green (Polska 2050's yellow seated 0.050 from KO, inside
+            // the 0.06 fence - the second published colour taken before lightness moves, §279's order), NL purple, Konfederacja one hue with PiS moved
+            // darker by ΔL 0.090. The minority's committee has no colour on disk and is given none: the night draws its seat, if it wins one, in the Neutral.
+            { "Poland/PiS",    Hex(0x384575) },
+            { "Poland/KO",     Hex(0x755638) },
+            { "Poland/TD",     Hex(0x407437) },
+            { "Poland/NL",     Hex(0x753862) },
+            { "Poland/Konf",   Hex(0x242C5D) },
         };
 
         /// <summary>
