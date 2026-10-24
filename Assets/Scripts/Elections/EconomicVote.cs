@@ -129,7 +129,13 @@ namespace PoliSim.Elections
                 while (headFrom > 0 && SameHead(headFrom)) { headFrom--; }
                 // a stand-in seated after an election the record's head took office before (Sweden's caretaker row from 2026-09-17 continues the 2022
                 // government) is the formation's government after that election - its term is its own
-                if (g.Provisional && rows[headFrom].From < opened) { return g.FormedOn; }
+                // - where the row in force is still the old chamber's (it began before the new chamber convened: Sweden's caretaker, 2026-09-17, before
+                // the 2026-09-28 upprop). A row that began after the new chamber convened is that chamber's own government (Poland's Morawiecki of
+                // 2019-11-15, after the 9th Sejm's 2019-11-12 sitting), and a stand-in mid-term is measured from it - the reading before K104 seated
+                // Morawiecki's first government (2017-12-11) in the record, which the head walk above now reaches
+                DateTime convened = DateTime.MaxValue;
+                foreach (WorldClock.ChamberOfRecord c in WorldClock.Chambers(country.Id)) { if (c.ElectionDay == opened) { convened = c.Convened; } }
+                if (g.Provisional && rows[headFrom].From < opened && rows[at].From < convened) { return g.FormedOn; }
                 while (at > 0 && SameHead(at) && rows[at - 1].From >= opened) { at--; }
                 // a government of record whose row began before the election that opened the term: measured from that election
                 return rows[at].From > opened ? rows[at].From : opened;
@@ -147,7 +153,7 @@ namespace PoliSim.Elections
         }
 
         /// <summary>The party a record's head names in brackets - "Olaf Scholz (SPD), minority" is the SPD's; null where none is named.</summary>
-        private static string HeadParty(string head)
+        internal static string HeadParty(string head)
         {
             if (string.IsNullOrEmpty(head)) { return null; }
             int open = head.IndexOf(" (", StringComparison.Ordinal), close = open < 0 ? -1 : head.IndexOf(')', open);
@@ -195,13 +201,13 @@ namespace PoliSim.Elections
             public Dictionary<string, double> Total = new Dictionary<string, double>();
         }
 
-        /// <summary>A-LOOP: the record over the term as of a day, by component, and the total every live count reads (<see cref="RecordOverTerm"/>).</summary>
-        public static RecordParts RecordPartsOverTerm(Country country, DateTime asOf)
+        /// <summary>A-LOOP: the record over the term as of a day, by component, and the total every live count reads (<see cref="RecordOverTerm"/>). <paramref name="electionDay"/>: the election the fiscal term is judged for (K100; null: <paramref name="asOf"/>'s own).</summary>
+        public static RecordParts RecordPartsOverTerm(Country country, DateTime asOf, DateTime? electionDay = null)
         {
             var parts = new RecordParts();
             parts.Economy = EconomyOverTerm(country, asOf, out parts.Term);
             parts.Approval = ApprovalVote.ShiftOverTerm(country, asOf, out parts.ApprovalReading);
-            parts.Fiscal = FiscalVote.ShiftOverTerm(country, asOf, out parts.FiscalReading);
+            parts.Fiscal = FiscalVote.ShiftOverTerm(country, asOf, out parts.FiscalReading, electionDay);   // K100: the fiscal term reads the election's year (a campaign's opening passes its own election's day)
             parts.Total = Sum(Sum(parts.Economy, parts.Approval), parts.Fiscal);   // A-LOOP q13: economy + approval as q15 summed them, then the fiscal term
             return parts;
         }

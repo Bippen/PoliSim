@@ -327,3 +327,7 @@ file	Assets/Scripts/Simulation/SimulationManager.cs	2a48d139a4813c7ca04ce3b71282
 file	Assets/Scripts/Data/CarbonRateStatute.cs	f5dac03d257341ac4a8e9f45c1aea91e0d5074469bc7cb4ac41a82e3d9e181a6	reviewed	2026-10-24	s911	Reviews/2026-10-24_ledg_review.md	-
 file	Assets/Scripts/Simulation/PolicyImpactLedger.cs	be2e42af0535c540df67849c9395b9ed3681dae017a961ba55953041c171602c	reviewed	2026-10-24	s911	Reviews/2026-10-24_ledg_review.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	875df4d21b036aa4db6652194cb73876c47fb4ae46ccd0f13b7b53f025ef161d	reviewed	2026-10-24	s911	Reviews/2026-10-24_ledg_review.md	-
+file	Assets/Scripts/Elections/Generated/FiscalBalanceRecord.cs	ad361d32e4272da23fad8f4bda76f048b43d505fa3c0f8358d1cd00c37453c24	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_review.md	-
+file	Assets/Scripts/Data/FiscalVoteBook.cs	9a8f8d2d30aacdec7ac995b9e06fff74822c6748f9d3df8216d60830ef499dee	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
+file	Assets/Scripts/Elections/FiscalVote.cs	b52651f7ac4ca48f51639011e8cbf1970d3ecaec165e8650762a49c64e6ff9fd	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	91a5e27a336cd953a39170926537da82d9992c43e9cb414477e6463927ff8e01	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-

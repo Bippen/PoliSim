@@ -81,13 +81,13 @@ namespace PoliSim.Elections
         // §772 (E1): the whole field of record - every candidate the PKW's first round of 2025 returned. The factors are the fit's (see the struct).
         private static readonly CandidateOfRecord[] Poland2025 =
         {
-            new CandidateOfRecord("NAWROCKI", "PiS", "PiS", 0.879942594, "the candidate PiS backed (a civic committee)"),
-            new CandidateOfRecord("TRZASKOWSKI", "KO", "KO", 1.04365446, "KO's candidate"),
-            new CandidateOfRecord("MENTZEN", "Konf", "Konf", 2.17814027, "Konfederacja's candidate"),
+            new CandidateOfRecord("NAWROCKI", "PiS", "PiS", 0.86341394346374889, "the candidate PiS backed (a civic committee)"),
+            new CandidateOfRecord("TRZASKOWSKI", "KO", "KO", 1.0669648547424853, "KO's candidate"),
+            new CandidateOfRecord("MENTZEN", "Konf", "Konf", 2.1372265516906932, "Konfederacja's candidate"),
             new CandidateOfRecord("BRAUN", null, "Konf", double.NaN, "his party ran on Konfederacja's 2023 list and left it in 2025 - no roster row; at Konfederacja's, where B4 placed him"),
-            new CandidateOfRecord("HOŁOWNIA", "TD", "Polska 2050", 0.243875544, "Trzecia Droga's candidate (Polska 2050's leader; PSL backed him)"),
+            new CandidateOfRecord("HOŁOWNIA", "TD", "Polska 2050", 0.24529467100959956, "Trzecia Droga's candidate (Polska 2050's leader; PSL backed him)"),
             new CandidateOfRecord("ZANDBERG", null, "Razem", double.NaN, "Razem ran inside Lewica's 2023 committee and left its club in 2024 - no roster row; at Razem's own"),
-            new CandidateOfRecord("BIEJAT", "NL", "NL", 0.470311426, "Lewica's candidate"),
+            new CandidateOfRecord("BIEJAT", "NL", "NL", 0.47031142616039417, "Lewica's candidate"),
             new CandidateOfRecord("STANOWSKI", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
             new CandidateOfRecord("SENYSZYN", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places her - unplaced"),
             new CandidateOfRecord("JAKUBIAK", null, null, double.NaN, "no roster party backed the candidate and no CHES unit places him - unplaced"),
@@ -106,8 +106,8 @@ namespace PoliSim.Elections
         /// </summary>
         private static readonly (string Ticket, string Party, double Factor)[] Usa2024Factors =
         {
-            ("R", "REP", 1.0183908285859777),
-            ("D", "DEM", 0.94561954699236783),
+            ("R", "REP", 1.0081854876820437),
+            ("D", "DEM", 0.95486787160896192),
         };
 
         /// <summary>

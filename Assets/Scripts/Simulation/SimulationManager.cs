@@ -490,7 +490,7 @@ namespace PoliSim.Simulation
                     // Placed last in the day so it charges interest against the debt every earlier
                     // system has finished with, and reads the same GDP the rest of the day did.
                     AccrueDailyFiscalFlows(country);
-                    Elections.FiscalVote.NoteDay(country, GetOrSeedFiscalPeriod(country).AccruedBudgetBalance);   // A-LOOP q13 (§4 (2)): the open year's flow to date mirrored for the vote - reads the period, writes only the vote's book
+                    Elections.FiscalVote.NoteDay(country, GetOrSeedFiscalPeriod(country).AccruedBudgetBalance, CurrentDate);   // A-LOOP q13 (§4 (2)): the open year's flow to date mirrored for the vote - reads the period, writes only the vote's book
                     UsDebtLimit.Track(country, CurrentDate, EpochDate, UsBudgetProcedure.Applies(country));   // PS-6 US-24: the debt limit's day, after the day's flows - the law read, a suspension's end, the reach, the AI-governed USA's raise where no Congress of the game votes; writes only the limit's fields (nothing where the country is not the USA)
 
                     // CONTINUOUS TIME PHASE 5 (2026-08-16): the core macro engine, daily - the last
@@ -5721,7 +5721,7 @@ namespace PoliSim.Simulation
                     if (recordCountry != null && recordCountry.Government != null)
                     {
                         System.DateTime countDay = PlayerCampaign.Setup.Calendar.CampaignStart.AddDays(PlayerCampaign.Day);
-                        Elections.EconomicVote.RecordParts parts = Elections.EconomicVote.RecordPartsOverTerm(recordCountry, countDay);   // A-LOOP q15: the economy and the approval term, one record
+                        Elections.EconomicVote.RecordParts parts = Elections.EconomicVote.RecordPartsOverTerm(recordCountry, countDay, PlayerCampaign.Setup.Calendar.ElectionDate);   // A-LOOP q15: the economy and the approval term, one record
                         record.CountRecordShift = parts.Total;
                         PlayerCampaign.Setup = PlayerCampaign.Setup.WithRecordShift(RecordShiftFor(PlayerCampaign.Setup, record.CountRecordShift));
                         UnityEngine.Debug.Log($"RECORD: the government's record judged for the count on {countDay:yyyy-MM-dd} for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(parts.Term)}: " + RecordShiftLine(record.CountRecordShift) + RecordPartsLine(parts));
@@ -5948,7 +5948,7 @@ namespace PoliSim.Simulation
                 Country recordCountry = _world.GetCountry(PlayerCountryId.Value);
                 if (record.RecordShift == null && recordCountry != null)
                 {
-                    Elections.EconomicVote.RecordParts parts = Elections.EconomicVote.RecordPartsOverTerm(recordCountry, CurrentDate);   // A-LOOP q15: the economy and the approval term, one record
+                    Elections.EconomicVote.RecordParts parts = Elections.EconomicVote.RecordPartsOverTerm(recordCountry, CurrentDate, calendar.ElectionDate);   // A-LOOP q15: the economy and the approval term, one record
                     record.RecordShift = parts.Total;
                     UnityEngine.Debug.Log($"RECORD: the government's record judged at the campaign's opening for {PlayerCountryId.Value} - {Elections.EconomicVote.Describe(parts.Term)}: " + RecordShiftLine(record.RecordShift) + RecordPartsLine(parts));
                 }
@@ -6459,6 +6459,7 @@ namespace PoliSim.Simulation
             foreach (Country country in _world.Countries)
             {
                 PublicationSystem.SeedInheritedHistory(country);
+                Elections.FiscalVote.SeedPreRun(country, EpochDate);   // K62 (2026-10-23): the vote's fiscal book enters with the sourced years before the start - idempotent (a save's book stands), read by the vote alone
             }
         }
 

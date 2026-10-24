@@ -1,0 +1,11 @@
+url	file	fetched_utc	http_status	bytes
+https://api.sejm.gov.pl/eli/acts/search?publisher=MP&year=2015&type=Postanowienie&title=Rady%20Ministr%C3%B3w&limit=300	eli_search_MP_2015_postanowienia_RM.json	2026-10-24T15:00:59Z	200	14175
+https://api.sejm.gov.pl/eli/acts/search?publisher=MP&year=2017&type=Postanowienie&title=Rady%20Ministr%C3%B3w&limit=300	eli_search_MP_2017_postanowienia_RM.json	2026-10-24T15:01:00Z	200	5966
+https://api.sejm.gov.pl/eli/acts/MP/2015/1090/text.pdf	eli_MP_2015_1090_powolanie_PRM.pdf	2026-10-24T15:01:16Z	200	679721
+https://api.sejm.gov.pl/eli/acts/MP/2015/1090	eli_meta_MP_2015_1090.json	2026-10-24T15:01:16Z	200	929
+https://api.sejm.gov.pl/eli/acts/MP/2017/1150/text.pdf	eli_MP_2017_1150_powolanie_PRM.pdf	2026-10-24T15:01:17Z	200	225424
+https://api.sejm.gov.pl/eli/acts/MP/2017/1150	eli_meta_MP_2017_1150.json	2026-10-24T15:01:17Z	200	931
+https://api.sejm.gov.pl/sejm/term8/votings/search?title=wotum%20zaufania&limit=100	api_sejm_term8_votings_search_wotum_zaufania.json	2026-10-24T15:01:57Z	200	2205
+https://api.sejm.gov.pl/sejm/term8/clubs	api_sejm_term8_clubs.json	2026-10-24T15:01:57Z	200	38659
+https://api.sejm.gov.pl/sejm/term8/MP	api_sejm_term8_MP.json	2026-10-24T15:02:04Z	200	244344
+# curl, byte-exact; response headers saved beside the searches, the PDFs and the term-8 files as <file>.headers.txt (the two act metadata files have none). No host refused. The PDFs hold the appointment as an image with a signature: the head named in the rows is the Sejm's own vote record (term-8 votings search: "wniosku prezes Rady Ministrow pani Beaty Szydlo", 2015-11-18; "pana Mateusza Morawieckiego", 2017-12-12) - quoted in ASCII here, verbatim in the JSON.

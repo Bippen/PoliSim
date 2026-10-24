@@ -71,7 +71,7 @@ namespace PoliSim.EditorTools
             catch (Exception e) { Check(false, "the run threw " + e.GetType().Name + ": " + e.Message + "\n" + e.StackTrace); }
             Debug.Log(_sb.ToString());
             Debug.Log(_failures == 0
-                ? "APPROVAL VOTE: PASS - the reference, the term's size and split, exactly zero at no change, the bounds, a government formed in play, the net approval's composition over three boundaries, the save and the clone, the clamp's share at the floor and the ceiling."
+                ? "APPROVAL VOTE: PASS - the reference, the term's size and split, the RECORD line's own arithmetic (K60), exactly zero at no change, the bounds, a government formed in play, the net approval's composition over three boundaries, the save and the clone, the clamp's share at the floor and the ceiling."
                 : F("APPROVAL VOTE: FAIL - {0} check(s) failed.", _failures));
             CheckExit.Finish(_failures == 0 ? 0 : 1);
         }
@@ -124,10 +124,20 @@ namespace PoliSim.EditorTools
                     F("(2b) split by responsibility (each party's economic vote over the government's {0:0.000}), summing to shift_gov: {1}", total,
                         string.Join(", ", parts.Approval.Select(kv => F("{0} {1:+0.0000;-0.0000} pp ({2:0.0000} pp a point)", kv.Key, 100.0 * kv.Value, b * (magnitudes.TryGetValue(kv.Key, out double m) ? m / total : double.NaN))))));
                 Dictionary<string, double> economy = EconomicVote.RecordShiftOf(se, parts.Term.Index, sim.CurrentDate);
-                bool sums = parts.Total.Count == economy.Count && economy.All(kv => parts.Total.TryGetValue(kv.Key, out double t) && t == kv.Value + parts.Approval[kv.Key]);
+                bool sums = parts.Total.Count == economy.Count && economy.All(kv => parts.Total.TryGetValue(kv.Key, out double t)
+                    && t == (parts.Fiscal.TryGetValue(kv.Key, out double fiscal) ? (kv.Value + parts.Approval[kv.Key]) + fiscal : kv.Value + parts.Approval[kv.Key]));   // q13's fiscal term after them, where the book carries one (K62)
                 Check(SameBits(parts.Economy, economy) && sums,
-                    F("(2c) the record is the economic vote (unchanged: index {0:0.00}) plus the approval term, per party: {1}", parts.Term.Index,
+                    F("(2c) the record is the economic vote (unchanged: index {0:0.00}) plus the approval term (and q13's fiscal term where one is carried), per party: {1}", parts.Term.Index,
                         string.Join(", ", parts.Total.Select(kv => F("{0} {1:+0.0000;-0.0000} pp", kv.Key, 100.0 * kv.Value)))));
+                // K60 (2026-10-23): q15's pass on the RECORD line - the line names the approval term WITH its economy stock, and the size it prints is
+                // b x the net change it prints, within 0.01 pp (the pass Tools/audit/aloop_record_check.pl applies to every count of an audit run)
+                string line = ApprovalVote.Describe(r);
+                System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(line,
+                    @"approval net of its economy terms (-?[0-9.]+) \(approval (-?[0-9.]+), its economy stock ([-+][0-9.]+)\) against (-?[0-9.]+) when .*?: b ([0-9.]+).*?-> the government side ([-+][0-9.]+) pp");
+                double P(int g) => double.Parse(m.Groups[g].Value, CultureInfo.InvariantCulture);
+                double printedSize = m.Success ? P(6) : double.NaN, fromPrinted = m.Success ? P(5) * (P(1) - P(4)) : double.NaN;
+                Check(m.Success && P(5) == 0.16 && b == 0.16 && P(5) == ApprovalVote.CoefficientFor(CountryId.Sweden) && Math.Abs(printedSize - fromPrinted) <= 0.01 && Math.Abs(P(1) - Math.Max(0.0, Math.Min(100.0, P(2) - P(3)))) <= 0.02,
+                    F("(2f) K60: the RECORD line names the approval term with its economy stock and b at 0.16, and its printed size {0:+0.00;-0.00} pp is b x the printed net change ({1:+0.0000;-0.0000} pp) within 0.01 pp - \"{2}\"", printedSize, fromPrinted, line));
                 Dictionary<string, double> live = EconomicVote.RecordOverTerm(se, sim.CurrentDate, out _);
                 Check(SameBits(live, parts.Total), "(2d) the record every live count reads (EconomicVote.RecordOverTerm) is the components' total");
 

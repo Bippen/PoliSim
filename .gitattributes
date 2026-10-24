@@ -7,3 +7,7 @@ Assets/Scripts/Elections/Generated/UsVetoDefections.cs -text
 Tools/aloop_eb_fetch.sh text eol=lf
 docs/generated/EB_QA3_SERIES.tsv -text
 Assets/Scripts/Elections/Generated/EventSalienceFit.cs -text
+# K62 (2026-10-24): the sourced annual balance series, byte-exact as fetched (their digests in the folder's SHA256SUMS.txt)
+ElectionsData/macro/raw/fiscal_balance/** -text
+ElectionsData/macro/fiscal_balance.csv -text
+ElectionsData/poland/raw/governments_2015_2019/** -text

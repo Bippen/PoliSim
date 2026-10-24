@@ -1,0 +1,18 @@
+# wave/fisc: the integrator's reading of the money-path delta after the second review (2026-10-24)
+
+**Why this exists.** `Reviews/2026-10-24_fisc_review2.md` (independent, NOT READY: H1 the USA's E1 reference world reading FY2024 as both BAL0 and BAL-1; M1 a campaign's opening reading BAL0 from the opening day's year; M2 the record check unwired (registered by the integrator); M3 and M4 put to Elias - K104, K105; L1-L6) reviewed `wave/fisc` at e02cc682. Two commits followed: 1a62d629 (H1, M1, K104, K105, L1-L6, prereg v2) and 41e4a083 (two diagnostics the merged tree's Unity run found failing). The money paths changed after the review, and the recipe asks the integrator to read that delta before the ledger rows are written.
+
+**Files reviewed:** `Assets/Scripts/Elections/FiscalVote.cs`, `Assets/Scripts/Data/FiscalVoteBook.cs`, `Assets/Scripts/Elections/EconomicVote.cs`, `Assets/Scripts/Elections/WorldClock.cs`, `Assets/Scripts/Simulation/SimulationManager.cs` (each `git diff e02cc682 41e4a083`), `Assets/Editor/FiscalVoteDiagnostic.cs` ((2d), (8c), (8e)), `Assets/Editor/PreStartRecordDiagnostic.cs` ((d)), `Tools/audit/aloop_record_check.pl`, `ElectionsData/poland/raw/governments_2015_2019/` (the K104 sources, SHA256SUMS).
+
+**What the delta does.**
+- H1/K105: until the first game year closes, `FiscalVote.Judge` reads every year from the source by the election's calendar year E - BAL0 is E, BAL-1..BAL-4 are E-1..E-4, each older than E, closed by the election's day and opened within the tenure; a missing year ends the run. So no year is read twice (the USA's eve world reads FY2023 and FY2022, the same term as a played US start), and a year open at the start but closed before the count is read (Germany's 2025 count reads 2024). After the first game year closes the book is read as before.
+- M1: `SimulationManager` passes the campaign calendar's election date at the opening and at the count (`ShiftOverTerm`'s optional `electionDay`), so an opening never reads its own day's year.
+- K104: Szydło's (2015-11-16) and Morawiecki's first (2017-12-11) governments join `WorldClock.Governments`, named from the Sejm's confidence-vote records (the appointment PDFs carry the act as an image). PiS's fiscal tenure walks back to 2015-11-16; no other reader reaches a row before 2019.
+- 41e4a083: `EconomicVote.TookOffice`'s stand-in branch now also requires the row in force to have begun before the new chamber convened (`WorldClock.Chambers`) - Sweden's caretaker still fires, Poland's 2023 start reads 2019-11-15 again (K104's older rows had made the branch fire there). `FiscalVoteBook` gains `FormationSeen`.
+- None of it books money or draws a random number. The vote's fiscal term is the only figure it moves, and only for a player's country: the no-policy dump `dump912` (label `fisc2`, on 1a62d629) was byte-identical to `form`, and 41e4a083 touches only a stand-in reading and a diagnostic plant.
+
+**The E1 refit.** Because the reference worlds' fiscal term moved, E1's fitted factors were refit from the check's own log (`Tools/us_factor_patch.pl`, and a new `Tools/pl_factor_patch.pl` in the same form - never retyped): Trump 1.0183908 -> 1.0081855, Harris 0.9456195 -> 0.9548679; Poland's at the ninth decimal. The pinned 2024 economic vote in `UsNationalVoteCheck` moved +2.50 -> +2.01 (the miss after it -2.42 -> -1.93), the misses before it unchanged.
+
+**The prereg's run.** `Tools/audit/aloop_fisc.plan` (aud912) read by `aloop_record_check.pl`: ALOOP RECORD CHECK: PASS - 28 RECORD lines recomputed, the four-year form on 8, sigma_v 4.3885.
+
+**Verdict:** the delta implements H1, M1, K104 and K105 as ruled and restores Poland's start reading; READY subject to the final named run and both bars on the merged tree.

@@ -240,6 +240,19 @@ parties of the three committees KO, TD and NL — with one minister sitting in t
 composition on 2023-12-13 (the M.P. 2023 poz. 1381 list) was not decoded (GAP G8); the reading that the same four
 parties formed it rests on the club structure of the day-one Sejm (1b) and on nothing fetched that says so in terms.
 
+### 2e. The PiS governments before the 9th term (K104, ruled 2026-10-24)
+
+Added so the governing party's tenure the fiscal vote reads (K101) starts where PiS's did. No start falls before 2019, so no start's government changes; the rows reach only the tenure walk (`FiscalVote.PartyTenureOfRecord`). Sources in `raw/governments_2015_2019/` (fetch log and SHA256SUMS there); the appointment PDFs hold the act as an image, so the head is named from the Sejm's own vote record.
+
+| from | until | head | instruments | named by |
+|---|---|---|---|---|
+| 2015-11-16 | 2017-12-11 | **Beata Szydło** (PiS) | dismissal accepted 2015-11-12 (M.P. 2015 poz. 1088), designation 2015-11-13 (poz. 1089), appointment 2015-11-16 (poz. 1090, 1091) [ELI-MP-2015] | the confidence vote of 2015-11-18, "wniosku prezes Rady Ministrów pani Beaty Szydło" [API-V8] |
+| 2017-12-11 | 2019-11-15 | **Mateusz Morawiecki** (PiS), his first government | dismissal accepted and designation 2017-12-08 (M.P. 2017 poz. 1143, 1144), appointment 2017-12-11 (poz. 1150, 1152) [ELI-MP-2017] | the confidence vote of 2017-12-12, "wniosku prezesa Rady Ministrów pana Mateusza Morawieckiego" [API-V8] |
+
+The cabinet's party is DERIVED as the 2019 row's is: one PiS club in the 8th-term Sejm (`api_sejm_term8_clubs.json`), Beata Szydło a member of it (`api_sejm_term8_MP.json`); Mateusz Morawiecki was not a deputy of that term, and his party is the 2019 row's head's.
+
+[ELI-MP-2015]: `https://api.sejm.gov.pl/eli/acts/search?publisher=MP&year=2015&type=Postanowienie&title=Rady%20Ministr%C3%B3w&limit=300` and the act `MP/2015/1090` (text.pdf and metadata). [ELI-MP-2017]: the same for 2017 and `MP/2017/1150`. [API-V8]: `https://api.sejm.gov.pl/sejm/term8/votings/search?title=wotum%20zaufania&limit=100`.
+
 ### 2d. The presidents of record by date
 
 | from | to | president | event | source ids |

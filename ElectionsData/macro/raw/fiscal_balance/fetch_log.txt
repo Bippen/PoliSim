@@ -1,0 +1,5 @@
+url	file	fetched_utc	http_status	bytes
+https://ec.europa.eu/eurostat/api/dissemination/statistics/1.0/data/gov_10dd_edpt1?format=JSON&lang=EN&unit=PC_GDP&sector=S13&na_item=B9&geo=SE&geo=DE&geo=FR&geo=IT&geo=PL&sinceTimePeriod=2010	eurostat_gov_10dd_edpt1_B9_S13_PC_GDP.json	2026-10-24T10:09:12Z	200	4035
+https://www.whitehouse.gov/omb/information-resources/budget/historical-tables/	(not kept: the landing page, 253981 bytes, links Table 1.2 of the FY 2027 Budget as hist01z2_fy2027.xlsx; fetched with User-Agent Mozilla/5.0)	2026-10-24 (before the file; the time not logged)	200	253981
+https://www.whitehouse.gov/wp-content/uploads/2026/04/hist01z2_fy2027.xlsx	omb_hist01z2_fy2027.xlsx	2026-10-24T10:09:29Z	200	16491
+# curl, byte-exact; each response header saved beside its file as <file>.headers.txt. No host refused. The OMB file answered 200 with the same size without a User-Agent too.

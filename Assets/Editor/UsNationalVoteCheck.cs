@@ -91,8 +91,8 @@ namespace PoliSim.EditorTools
         /// refuses while a pin fails.</summary>
         private static readonly (int Year, string History, string Before, string After, string Shift)[] Pins =
         {
-            (2024, "(a)", "+0.08", "-2.42", "+2.50"),
-            (2024, "(b)", "-3.02", "-5.52", "+2.50"),
+            (2024, "(a)", "+0.08", "-1.93", "+2.01"),   // §912 (K62-K64, K98-K105): the fiscal term now reaches the 2024 eve (the source years FY2023 and FY2022 under Biden's tenure), so the economic vote reads +2.01 (was +2.50) and the miss after it -1.93 (was -2.42); the misses before it unchanged
+            (2024, "(b)", "-3.02", "-5.02", "+2.01"),
         };
 
         /// <summary>The minor candidates the plan names, by the FEC workbook's column labels; every other column is "the rest".</summary>

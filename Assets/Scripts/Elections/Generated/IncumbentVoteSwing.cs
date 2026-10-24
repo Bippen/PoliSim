@@ -21,12 +21,24 @@ namespace PoliSim.Elections.Generated
         /// <summary>The frame's countries, ParlGov's short names.</summary>
         public static readonly string[] Countries = { "AUS", "AUT", "BEL", "CAN", "DNK", "FIN", "FRA", "DEU", "GRC", "ISL", "IRL", "ITA", "JPN", "LUX", "NLD", "NZL", "NOR", "PRT", "ESP", "SWE", "TUR", "GBR" };
 
-        /// <summary>FITTED (one free parameter, the spread; the mean beside it): the observations, the mean swing and sigma_v with its 95 % interval
-        /// (the chi-square interval of a normal sd, DERIVED), in vote-share points.</summary>
+        /// <summary>FITTED (one free parameter, the spread; the mean beside it): the observations, the mean swing, and the standard deviation with its
+        /// 95 % interval UNDER NORMALITY (the chi-square interval of a normal sd, DERIVED), in vote-share points - printed, not read since K64.</summary>
         public const int N = 239;
         public const double MeanPoints = -2.2111548117154811;
-        public const double SigmaPoints = 5.8993413595021496;
-        public const double SigmaLowerPoints = 5.413604876639214;
-        public const double SigmaUpperPoints = 6.4816078682551739;
+        public const double SdPoints = 5.8993413595021496;
+        public const double SdLowerPoints = 5.413604876639214;
+        public const double SdUpperPoints = 6.4816078682551739;
+
+        /// <summary>K64 (2026-10-23, "sigma_v takes a robust scale"): FITTED - the median swing, the median absolute deviation from it, and the
+        /// MAD-based scale (1.482602218505602 x MAD, DERIVED factor), the one the vote reads; the IQR-based scale (type 7 quantiles, over 1.3489795003921634,
+        /// DERIVED factor) and the kurtosis (population moments) printed beside it; vote-share points.</summary>
+        public const double MedianPoints = -1.6999999999999957;
+        public const double MadPoints = 2.9600000000000044;
+        public const double MadScalePoints = 4.3885025667765882;
+        public const double IqrScalePoints = 4.1994707839171195;
+        public const double Kurtosis = 6.4837947930614117;
+
+        /// <summary>sigma_v as the vote reads it: the MAD-based scale (K64).</summary>
+        public const double SigmaPoints = MadScalePoints;
     }
 }

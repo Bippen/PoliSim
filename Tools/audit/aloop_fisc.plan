@@ -1,0 +1,21 @@
+# K60-K64 (2026-10-23, docs/RULINGS_2026-10-23.md): A-LOOP's approval and fiscal terms re-measured on the build that seeds the pre-run fiscal years
+# (K62), gates each year on the government's tenure (K63), reads the robust spread and caps the term at +/-10 pp (K64). Read with
+# perl Tools/audit/aloop_record_check.pl <the run's log> <its night folder>: every RECORD line's approval term against 0.16 x its net change
+# (K60), its fiscal term against sigma_v x delta-z recomputed from its own BAL-i, and K61's change reading; the governing side's seats on each
+# night printed as a reading.
+#
+# --- q15's low-approval pole (A_LOOP_PLAN.md section 3 (4) (b), as K60 restates it) ---
+id=a2_se_big country=Sweden party=M style=extreme pole=big seed=403 days=730
+# --- q13's poles (section 4 (4)); the first count now carries the sourced years, so the German poles are measured at their first ---
+id=q13_se_deficit country=Sweden party=M style=extreme pole=deficit seed=401 days=1760
+id=q13_se_surplus country=Sweden party=M style=extreme pole=surplus seed=402 days=1760
+id=q13_de_deficit country=Germany party=SPD style=extreme pole=deficit seed=411 days=1760
+id=q13_de_surplus country=Germany party=SPD style=extreme pole=surplus seed=412 days=1760
+id=q13_se_x04 country=Sweden party=M style=exploit exploit=X-04 seed=481 days=1760
+id=g1_se_m_surplus country=Sweden party=M style=extreme pole=surplus seed=805 days=1760
+# --- the first count of every start that holds one, idle (K62: the first election carries a fiscal term) ---
+id=f1_se_m country=Sweden party=M style=idle seed=701 days=300
+id=f3_de_spd country=Germany party=SPD style=idle seed=721 days=260
+id=f4_pl_pis country=Poland party=PiS style=idle seed=731 days=300
+# (Italy holds no count in the game yet - WorldClock.NoElectionYet - so it has no first count to measure; the s-fisc review's L5)
+id=f5_us_rep country=USA party=REP style=idle seed=742 days=300

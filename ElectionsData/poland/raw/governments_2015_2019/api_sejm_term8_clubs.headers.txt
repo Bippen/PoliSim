@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+Date: Sat, 24 Oct 2026 15:02:04 GMT
+Content-Type: application/json
+Content-Language: en-US
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Headers: Content-Type, Accept, Authorization
+Access-Control-Max-Age: 7200
+Strict-Transport-Security: max-age=31536000; includeSubDomains
+Set-Cookie: TS01111461=01ef84482ea897bf10d3b12a64efc85511aa089976fcb76609f93549d513b3a1e8841dc6658c8cf8a4a30358753c84a44c13c3a985; Path=/; Domain=.api.sejm.gov.pl; Secure
+Transfer-Encoding: chunked
+

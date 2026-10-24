@@ -15,8 +15,8 @@
 # ONE OBSERVATION per such election: the party flagged prime minister in the cabinet in office at the election, its vote share at the election
 # minus its share at the previous parliamentary election, in points. An election is left out - each reason counted and printed - where the
 # cabinet in office names no prime minister's party, where that party has no share at either election under its own id (a merger, a split, a
-# joint list listed under another id), or where a share is empty. sigma_v is the sample standard deviation (n - 1); its 95 % interval is the
-# chi-square interval of a normal sd, the quantiles by Wilson-Hilferty (z = 1.959963984540054), DERIVED.
+# joint list listed under another id), or where a share is empty. Since K64 sigma_v is the MAD-based robust scale (below); the sample
+# standard deviation (n - 1) stays printed, and its 95 % interval, under normality, is the chi-square interval of a normal sd, the quantiles by Wilson-Hilferty (z = 1.959963984540054), DERIVED.
 # Writes Assets/Scripts/Elections/Generated/IncumbentVoteSwing.cs (the constants and both digests); FiscalVoteFitCheck re-reads both CSVs,
 # refits and fails while the stored constants are not the fit.
 # Usage (from the project root): perl Tools/aloop_sigma_fit.pl [--dry]
@@ -109,8 +109,25 @@ my $z = 1.959963984540054;
 sub chi2q { my ($zp) = @_; my $a = 2 / (9 * $k); return $k * (1 - $a + $zp * sqrt($a)) ** 3; }
 my ($lo, $hi) = ($sd * sqrt($k / chi2q($z)), $sd * sqrt($k / chi2q(-$z)));
 
-printf "SIGMA_V: n %d elections in %d countries (%s to %s); mean swing %.4f pp; sigma_v %.6f pp; 95%% interval %.6f - %.6f pp\n",
-    $n, scalar(keys %perCountry), $from, $to, $mean, $sd, $lo, $hi;
+# K64 (Elias's ruling of 2026-10-23: "sigma_v takes a robust scale"): the swings are fat-tailed, so the vote reads a ROBUST scale - the MAD-based
+# one, 1.482602218505602 x the median absolute deviation from the median (the factor 1 / the normal's 75 % point, DERIVED, so the scale is a
+# normal's sd where the swings are normal; breakdown point 50 %). Printed beside it: the IQR-based scale (the interquartile range, Hyndman-Fan
+# type 7 quantiles - linear between order statistics - over 1.3489795003921634, twice the normal's 75 % point, DERIVED; breakdown 25 %) and the
+# kurtosis (m4 / m2^2, population moments; a normal's is 3). The standard deviation and its interval stay printed, the interval under normality.
+my @sorted = sort { $a <=> $b } @swing;
+sub q7 { my ($s, $p) = @_; my $h = ($#$s) * $p; my $f = int($h); return $f >= $#$s ? $s->[-1] : $s->[$f] + ($h - $f) * ($s->[$f + 1] - $s->[$f]); }
+my $median = q7(\@sorted, 0.5);
+my @dev = sort { $a <=> $b } map { abs($_ - $median) } @swing;
+my $mad = q7(\@dev, 0.5);
+my $madScale = 1.482602218505602 * $mad;
+my $iqrScale = (q7(\@sorted, 0.75) - q7(\@sorted, 0.25)) / 1.3489795003921634;
+my ($m2, $m4) = (0, 0);
+for (@swing) { $m2 += ($_ - $mean) ** 2; $m4 += ($_ - $mean) ** 4; }
+$m2 /= $n; $m4 /= $n;
+my $kurtosis = $m4 / ($m2 * $m2);
+
+printf "SIGMA_V: n %d elections in %d countries (%s to %s); mean swing %.4f pp; sigma_v (MAD-based, read) %.6f pp; IQR-based %.6f pp; median %.4f pp, MAD %.4f pp; kurtosis %.3f; sd %.6f pp, 95%% interval under normality %.6f - %.6f pp\n",
+    $n, scalar(keys %perCountry), $from, $to, $mean, $madScale, $iqrScale, $median, $mad, $kurtosis, $sd, $lo, $hi;
 printf "  %s %d\n", $_, $perCountry{$_} for sort keys %perCountry;
 printf "  left out: %s %d\n", $_, $out{$_} for sort keys %out;
 printf "  view_election.csv %s\n  view_cabinet.csv %s\n", $digest{'view_election.csv'}, $digest{'view_cabinet.csv'};
@@ -141,13 +158,25 @@ namespace PoliSim.Elections.Generated
         /// <summary>The frame's countries, ParlGov's short names.</summary>
         public static readonly string[] Countries = { $countries };
 
-        /// <summary>FITTED (one free parameter, the spread; the mean beside it): the observations, the mean swing and sigma_v with its 95 % interval
-        /// (the chi-square interval of a normal sd, DERIVED), in vote-share points.</summary>
+        /// <summary>FITTED (one free parameter, the spread; the mean beside it): the observations, the mean swing, and the standard deviation with its
+        /// 95 % interval UNDER NORMALITY (the chi-square interval of a normal sd, DERIVED), in vote-share points - printed, not read since K64.</summary>
         public const int N = $n;
         public const double MeanPoints = ${\ sprintf('%.17g', $mean)};
-        public const double SigmaPoints = ${\ sprintf('%.17g', $sd)};
-        public const double SigmaLowerPoints = ${\ sprintf('%.17g', $lo)};
-        public const double SigmaUpperPoints = ${\ sprintf('%.17g', $hi)};
+        public const double SdPoints = ${\ sprintf('%.17g', $sd)};
+        public const double SdLowerPoints = ${\ sprintf('%.17g', $lo)};
+        public const double SdUpperPoints = ${\ sprintf('%.17g', $hi)};
+
+        /// <summary>K64 (2026-10-23, "sigma_v takes a robust scale"): FITTED - the median swing, the median absolute deviation from it, and the
+        /// MAD-based scale (1.482602218505602 x MAD, DERIVED factor), the one the vote reads; the IQR-based scale (type 7 quantiles, over 1.3489795003921634,
+        /// DERIVED factor) and the kurtosis (population moments) printed beside it; vote-share points.</summary>
+        public const double MedianPoints = ${\ sprintf('%.17g', $median)};
+        public const double MadPoints = ${\ sprintf('%.17g', $mad)};
+        public const double MadScalePoints = ${\ sprintf('%.17g', $madScale)};
+        public const double IqrScalePoints = ${\ sprintf('%.17g', $iqrScale)};
+        public const double Kurtosis = ${\ sprintf('%.17g', $kurtosis)};
+
+        /// <summary>sigma_v as the vote reads it: the MAD-based scale (K64).</summary>
+        public const double SigmaPoints = MadScalePoints;
     }
 }
 CS
