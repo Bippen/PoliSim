@@ -1,0 +1,21 @@
+{
+    "nomination": {
+        "authorityDate": "2026-03-04",
+        "citation": "PN855",
+        "congress": 119,
+        "description": "Kevin Warsh, of Florida, to be Chairman of the Board of Governors of the Federal Reserve System",
+        "nominationType": {
+            "isCivilian": true
+        },
+        "number": 855,
+        "partNumber": "00",
+        "receivedDate": "2026-03-04",
+        "updateDate": "2026-03-05T12:00:21Z"
+    },
+    "request": {
+        "congress": "119",
+        "contentType": "application/json",
+        "format": "json",
+        "number": "855"
+    }
+}

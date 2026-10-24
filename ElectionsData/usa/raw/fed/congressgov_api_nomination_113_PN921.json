@@ -1,0 +1,45 @@
+{
+    "nomination": {
+        "actions": {
+            "count": 12,
+            "url": "https://api.congress.gov/v3/nomination/113/921/actions?format=json"
+        },
+        "citation": "PN921",
+        "committees": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/113/921/committees?format=json"
+        },
+        "congress": 113,
+        "description": "Janet L. Yellen, of California, to be Chairman of the Board of Governors of the Federal Reserve System for a term of four years, vice Ben S. Bernanke, resigned.",
+        "hearings": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/113/921/hearings?format=json"
+        },
+        "latestAction": {
+            "actionDate": "2014-01-06",
+            "text": "Confirmed by the Senate by Yea-Nay Vote. 56 - 26. Record Vote Number: 1."
+        },
+        "nominationType": {
+            "isCivilian": true
+        },
+        "nominees": [
+            {
+                "nomineeCount": 1,
+                "ordinal": 1,
+                "organization": "Federal Reserve System",
+                "positionTitle": "Chairman of the Board of Governors of the Federal Reserve System",
+                "url": "https://api.congress.gov/v3/nomination/113/921/1?format=json"
+            }
+        ],
+        "number": 921,
+        "partNumber": "00",
+        "receivedDate": "2013-10-09",
+        "updateDate": "2019-10-23T20:27:34Z"
+    },
+    "request": {
+        "congress": "113",
+        "contentType": "application/json",
+        "format": "json",
+        "number": "921"
+    }
+}

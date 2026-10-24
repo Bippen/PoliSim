@@ -1018,6 +1018,15 @@ namespace PoliSim.Data
                 "The sitting ECB President at the start of the game - tracks the blended rule's suggested rate closely, with no strong lean in either direction.",
                 0f), CentralBankTerms.Ecb, termsBegin);
 
+            // K15 (Elias's ruling of 2026-10-23): THE FED'S VICE CHAIR, who acts as chair while the chair's term has ended and no successor is confirmed
+            // (UsFedConsent's class note: 12 U.S.C. 242 and 244). An ORIGINAL FICTIONAL person under the same rule, at the same bias 0 as the seeded chair,
+            // so a holdover's rate reads the rule alone; the Vice Chair's own four-year designation and its renewal are not modelled (DECLARED) - the seat
+            // stands for the run. No stream is drawn here.
+            usa.FedViceChair = new FedChair(
+                "Rowan Achterberg", FedChairPhilosophy.Moderate,
+                "The Vice Chair at the start of the game - acts as chair whenever the chair's term has ended and the Senate has confirmed no successor; tracks the rule's suggested rate closely, with no strong lean in either direction.",
+                0f);
+
             var euMembers = new List<CountryId> { germany.Id, france.Id, italy.Id, sweden.Id, poland.Id };
             var europeanUnion = new TradeBloc("European Union", euMembers, externalTariffRate: 3f, internalTariffRate: 0.1f);
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using PoliSim.Data;
 using UnityEngine;
 
@@ -49,15 +50,27 @@ namespace PoliSim.UI
                 DrawDocketCandidates(_fedChairCandidates);
                 anyPending = true;
             }
-            else if (_playerCountry.CurrentFedChair != null && PlayerFedChairBarred(_playerCountry.CurrentFedChair) is PoliSim.Simulation.UsFedConsent.Count barred)
+            // K16 (Elias's ruling of 2026-10-23): the player-president's nominee before the Senate, and the Senate's refusal as the event it is - neither holds the
+            // clock (after a refusal the choice above holds it again); the Vice Chair acts meanwhile (K15)
+            if (PoliSim.Simulation.UsFedConsent.Applies(_playerCountry))
             {
-                // PS-6 US-29 (the review of 2026-10-22, M2): the player-president's chair holds over under a Senate that would refuse any name of his - said here,
-                // and it does not hold the clock (no choice is open)
-                string bank = GetCentralBankName(PlayerCountryId);
-                _docketSlipBook.Anchors["docket:bankholdover"] = new SlipContent("THE " + bank.ToUpperInvariant() + " " + CentralBankHeadWord().ToUpperInvariant() + " HOLDS OVER")
-                    .Add(PlayerFedChairBarredWords(barred, upper: true));
-                DrawDocketItem("bankholdover", "bank", UiPalette.GetAreaColor(UiPalette.SystemArea.Political), "The " + bank + " " + CentralBankHeadWord() + " holds over",
-                    PlayerFedChairBarredWords(barred, upper: false), holdsTime: false, action: null);
+                Color bankInk = UiPalette.GetAreaColor(UiPalette.SystemArea.Political);
+                string acting = PoliSim.Simulation.UsFedConsent.ActingWords(_playerCountry, _simulationManager.CurrentDate);
+                if (_playerCountry.FedNominationPending is FedNomination nomination)
+                {
+                    string vote = nomination.VoteOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture);
+                    _docketSlipBook.Anchors["docket:fednomination"] = new SlipContent(PoliSim.Simulation.UsFedConsent.PendingWords(_playerCountry).ToUpperInvariant())
+                        .Add("THE SENATE VOTES ON " + vote.ToUpperInvariant() + ", BY A MAJORITY" + (acting != null ? " · " + acting.ToUpperInvariant() + " MEANWHILE" : string.Empty));
+                    DrawDocketItem("fednomination", "bank", bankInk, "Before the Senate · " + (nomination.Nominee?.Name ?? "the nominee"),
+                        "The vote on " + vote + (acting != null ? "; the Vice Chair acts meanwhile" : string.Empty), holdsTime: false, action: null);
+                }
+                else if (PoliSim.Simulation.UsFedConsent.StandingRefusal(_playerCountry, _simulationManager.CurrentDate) is FedSenateVote refused)
+                {
+                    _docketSlipBook.Anchors["docket:fedrefusal"] = new SlipContent(PoliSim.Simulation.UsFedConsent.VoteWords(refused).ToUpperInvariant())
+                        .Add((acting != null ? acting.ToUpperInvariant() + " · " : string.Empty) + "THE CHOICE OF A NOMINEE IS OPEN AGAIN");
+                    DrawDocketItem("fedrefusal", "bank", bankInk, "The Senate refused " + (refused.Nominee ?? "the nominee"),
+                        refused.For.ToString(CultureInfo.InvariantCulture) + "-" + refused.Against.ToString(CultureInfo.InvariantCulture) + " on " + refused.VotedOn.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + "; the Vice Chair acts", holdsTime: false, action: null);
+                }
             }
 
             // ---- a foreign-policy meeting ----

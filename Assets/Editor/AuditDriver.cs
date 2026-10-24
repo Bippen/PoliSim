@@ -868,7 +868,7 @@ namespace PoliSim.EditorTools
                     Set("_fedChairCandidates", null);
                     Call("RecomputePolicyPreview");
                     Count("answer chair");
-                    Event($"HOLD chair: appointed {c.CurrentFedChair.Name} (candidate {pick + 1} of {candidates.Count}) - the Appoint button's body");
+                    Event(c.FedNominationPending != null ? $"HOLD chair: nominated {c.FedNominationPending.Nominee?.Name} before the Senate, the vote on {c.FedNominationPending.VoteOn:yyyy-MM-dd} (candidate {pick + 1} of {candidates.Count}) - the Appoint button's body" : $"HOLD chair: appointed {c.CurrentFedChair.Name} (candidate {pick + 1} of {candidates.Count}) - the Appoint button's body");   // the K15-K17 review's L-7: the Fed's verb lodges
                     return true;
                 }
             }

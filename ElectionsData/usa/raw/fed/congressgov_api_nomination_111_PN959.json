@@ -1,0 +1,45 @@
+{
+    "nomination": {
+        "actions": {
+            "count": 12,
+            "url": "https://api.congress.gov/v3/nomination/111/959/actions?format=json"
+        },
+        "citation": "PN959",
+        "committees": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/111/959/committees?format=json"
+        },
+        "congress": 111,
+        "description": "Ben S. Bernanke, of New Jersey, to be Chairman of the Board of Governors of the Federal Reserve System for a term of four years.  (Reappointment)",
+        "hearings": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/111/959/hearings?format=json"
+        },
+        "latestAction": {
+            "actionDate": "2010-01-28",
+            "text": "Confirmed by the Senate by Yea-Nay Vote. 70 - 30. Record Vote Number: 16."
+        },
+        "nominationType": {
+            "isCivilian": true
+        },
+        "nominees": [
+            {
+                "nomineeCount": 1,
+                "ordinal": 1,
+                "organization": "Federal Reserve System",
+                "positionTitle": "Chairman of the Board of Governors of the Federal Reserve System",
+                "url": "https://api.congress.gov/v3/nomination/111/959/1?format=json"
+            }
+        ],
+        "number": 959,
+        "partNumber": "00",
+        "receivedDate": "2009-09-17",
+        "updateDate": "2017-04-17T20:47:04Z"
+    },
+    "request": {
+        "congress": "111",
+        "contentType": "application/json",
+        "format": "json",
+        "number": "959"
+    }
+}

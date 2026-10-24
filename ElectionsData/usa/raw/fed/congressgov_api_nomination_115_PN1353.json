@@ -1,0 +1,41 @@
+{
+    "nomination": {
+        "actions": {
+            "count": 12,
+            "url": "https://api.congress.gov/v3/nomination/115/1353/actions?format=json"
+        },
+        "citation": "PN1353",
+        "committees": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/115/1353/committees?format=json"
+        },
+        "congress": 115,
+        "description": "Jerome H. Powell, of Maryland, to be Chairman of the Board of Governors of the Federal Reserve System for a term of four years, vice Janet L. Yellen, term expiring.",
+        "latestAction": {
+            "actionDate": "2018-01-23",
+            "text": "Confirmed by the Senate by Yea-Nay Vote. 84 - 13. Record Vote Number: 19."
+        },
+        "nominationType": {
+            "isCivilian": true
+        },
+        "nominees": [
+            {
+                "nomineeCount": 1,
+                "ordinal": 1,
+                "organization": "Federal Reserve System",
+                "positionTitle": "Chairman of the Board of Governors of the Federal Reserve System",
+                "url": "https://api.congress.gov/v3/nomination/115/1353/1?format=json"
+            }
+        ],
+        "number": 1353,
+        "partNumber": "00",
+        "receivedDate": "2018-01-08",
+        "updateDate": "2019-10-23T21:31:24Z"
+    },
+    "request": {
+        "congress": "115",
+        "contentType": "application/json",
+        "format": "json",
+        "number": "1353"
+    }
+}

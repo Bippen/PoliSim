@@ -1,0 +1,41 @@
+{
+    "nomination": {
+        "actions": {
+            "count": 7,
+            "url": "https://api.congress.gov/v3/nomination/106/729/actions?format=json"
+        },
+        "citation": "PN729",
+        "committees": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/106/729/committees?format=json"
+        },
+        "congress": 106,
+        "description": "Alan Greenspan, of New York, to be Chairman of the Board of Governors of the Federal Reserve System for a term of four years.  (Reappointment)",
+        "latestAction": {
+            "actionDate": "2000-02-03",
+            "text": "Confirmed by the Senate by Yea-Nay Vote. 89 - 4. Record Vote Number: 6."
+        },
+        "nominationType": {
+            "isCivilian": true
+        },
+        "nominees": [
+            {
+                "nomineeCount": 1,
+                "ordinal": 1,
+                "organization": "Federal Reserve System",
+                "positionTitle": "Chairman of the Board of Governors of the Federal Reserve System",
+                "url": "https://api.congress.gov/v3/nomination/106/729/1?format=json"
+            }
+        ],
+        "number": 729,
+        "partNumber": "00",
+        "receivedDate": "2000-01-24",
+        "updateDate": "2017-04-18T02:57:37Z"
+    },
+    "request": {
+        "congress": "106",
+        "contentType": "application/json",
+        "format": "json",
+        "number": "729"
+    }
+}

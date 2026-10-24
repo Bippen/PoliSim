@@ -96,7 +96,7 @@ namespace PoliSim.Simulation
             _host = new GameObject("ShadowBaseline") { hideFlags = HideFlags.HideAndDontSave };
 
             _sim = _host.AddComponent<SimulationManager>();
-            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (every constructor sets it)
+            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (the Fed: the player's pick awaited as played, the AI's the morning after - the K15-K17 delta review's L-C) (every constructor sets it)
             _world = WorldFactory.CreateDefault();
             _sim.SetWorld(_world);
 
@@ -151,7 +151,7 @@ namespace PoliSim.Simulation
             _host = new GameObject("ShadowBaseline (forked)") { hideFlags = HideFlags.HideAndDontSave };
             if (insideTurn) { _host.SetActive(false); }
             _sim = _host.AddComponent<SimulationManager>();
-            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (every constructor sets it)
+            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (the Fed: the player's pick awaited as played, the AI's the morning after - the K15-K17 delta review's L-C) (every constructor sets it)
 
             CountryId header = seatAsPlayed && realSim.PlayerCountryId.HasValue ? realSim.PlayerCountryId.Value : playerCountryId;   // a save names one; LEDGER-1: the played seat where there is one
             bool seats = !seatAsPlayed || realSim.PlayerCountryId.HasValue;
@@ -409,7 +409,7 @@ namespace PoliSim.Simulation
             _host = new GameObject("ShadowBaseline (carried)") { hideFlags = HideFlags.HideAndDontSave };
             _host.SetActive(false);
             _sim = _host.AddComponent<SimulationManager>();
-            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (every constructor sets it; AF-12's carried world too)
+            _sim.IsCounterfactual = true;   // AF-7: a counterfactual world - the player's bank's head is the AI's keyed pick at its term's end, no hold (the Fed: the player's pick awaited as played, the AI's the morning after - the K15-K17 delta review's L-C) (every constructor sets it; AF-12's carried world too)
 
             SimulationRandom.LiveState real = SimulationRandom.CaptureLive();   // GA-1-3: the real game's stream OBJECTS, handed back as they were
             try

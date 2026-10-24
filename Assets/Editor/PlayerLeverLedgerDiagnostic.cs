@@ -128,10 +128,156 @@ namespace PoliSim.EditorTools
                     watched.Dispose();
                     alone.Dispose();
                 }
+
+                // ---- 5: the Fed's window (the K15-K17 review's H-1) ----
+                FedWindow(sb, failures, leverFamilies, oath: false);
+                FedWindow(sb, failures, leverFamilies, oath: true);   // the K15-K17 delta review's H-A: the role gate closing inside the window (L-E: the gate as an oath closes it, not the presidency's change itself)
             }
 
             Finish(sb, failures);
         }
+
+        /// <summary>The window's planted term end, the day the player lodges on it (the hold's day), a family forked BEFORE it and one forked INSIDE the window,
+        /// and the day the forks are caught up to and read - all inside one turn, the vote day (the term day plus `UsFedConsent.NominationToVoteDays`) too.</summary>
+        private const int FedTermDay = 20, FedForkBefore = 10, FedForkInside = 60, FedReadDay = 80;
+
+        /// <summary>The delta review's H-A: in the oath's case, the day the player leaves the presidency inside the window (before the vote day), and the day the
+        /// inside family is forked then (still inside the window, before the oath).</summary>
+        private const int FedOathDay = 40, FedForkInsideBeforeOath = 30;
+
+        /// <summary>
+        /// 5. The K15-K17 review's H-1: <b>A COUNTERFACTUAL FOLLOWS THE PLAYED WORLD THROUGH THE FED'S WINDOW.</b> The played USA's chair term is planted to end
+        /// on day <c>FedTermDay</c>; the player lodges a nominee that day (the verb, the hold's day), the Vice Chair acting until the vote day. A tariff lever on
+        /// day <c>FedForkBefore</c> forks its family's world BEFORE the term end (the head lever replayed into it on the term day), a fleet order on day
+        /// <c>FedForkInside</c> forks its family's world INSIDE the window (the nomination pending in the copy). Read on day <c>FedReadDay</c> (each fork caught
+        /// up) and again after the boundary (the vote held), each of the two holds the played world's Fed state exactly - the chair, its term, the Vice Chair's
+        /// flag, the pending nominee and its vote day, the Senate's votes - where the old build had the AI's pick seated in the first and the nomination lapsed
+        /// in the second. The head family's own world (its lever withheld) takes the AI's keyed pick the morning after the term day, by the AI's rule for an
+        /// unanswered wait, and seats it as of the term day.
+        /// <para><paramref name="oath"/> (the delta review's H-A; L-E declared: this closes the ROLE GATE, all the manager reads, and does not change the President
+        /// of the day - the date-driven handover is not exercised, and under the crossing rule the count confirms either way): the player leaves the presidency on day <c>FedOathDay</c>, inside the window - the other major
+        /// party seated in the player's place in the played world and in every fork on the same day, each fork caught up to it first - so the nomination
+        /// LAPSES and the AI president's keyed pick is seated the next day, in the played world and identically in every fork that replays the head lever.</para>
+        /// </summary>
+        private static void FedWindow(StringBuilder sb, List<string> failures, Dictionary<PlayerLeverKind, string> leverFamilies, bool oath)
+        {
+            SimulationRandom.Seed(Seed);
+            var game = new Game { Host = new GameObject(oath ? "AF-11 the Fed's window, the oath" : "AF-11 the Fed's window") };
+            int insideDay = oath ? FedForkInsideBeforeOath : FedForkInside;
+            DateTime oathNextDay = DateTime.MinValue;
+            try
+            {
+                SimulationManager sim = game.Host.AddComponent<SimulationManager>();
+                game.World = WorldFactory.CreateDefault();
+                sim.SetWorld(game.World);
+                sim.PlayerCountryId = Player;
+                game.None = new ShadowBaseline(SimulationRandom.MasterSeed);
+                game.Ledger = new PolicyImpactLedger(game.None);
+                sim.ImpactLedger = game.Ledger;
+                Country usa = game.World.GetCountry(Player);
+                DateTime termDay = sim.CurrentDate.Date.AddDays(FedTermDay);
+                FedChair outgoing = usa.CurrentFedChair;
+                outgoing.TermEnds = termDay;   // planted: the seeded term ends inside the turn
+                string headFamily = leverFamilies[PlayerLeverKind.CentralBankHead], beforeFamily = leverFamilies[PlayerLeverKind.PartnerTariffOverride], insideFamily = leverFamilies[PlayerLeverKind.FleetOrder];
+                var except = (Dictionary<string, ShadowBaseline>)typeof(PolicyImpactLedger).GetField("_except", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(game.Ledger);
+                string why = null;
+                bool lodged = false, before = false, inside = false;
+                var mid = new List<string>();
+                for (int d = 1; d <= SimulationManager.DaysPerTurn; d++)
+                {
+                    sim.AdvanceDay();
+                    sim.AdvanceCountryDayTick(Player);
+                    if (d < SimulationManager.DaysPerTurn) { sim.HoldPlayerElection(); }
+                    if (d == FedForkBefore) { before = usa.TradePartners.Count > 0 && sim.SetPartnerTariffOverride(Player, usa.TradePartners[0].PartnerId, out why); if (!before) { Fail(failures, "5. the tariff lever before the window was refused: " + (why ?? "no trade partner")); } }
+                    if (d == FedTermDay)
+                    {
+                        bool held = sim.CentralBankHeadAwaitsPlayer(Player);
+                        lodged = held && sim.AppointCentralBankHead(Player, new FedChair("H-1 probe chair", FedChairPhilosophy.Hawkish, "the diagnostic's probe", 0.5f), out why);
+                        if (!lodged) { Fail(failures, F("5. the head lever on the term day was not lodged (the hold {0}): {1}", held, why ?? "no reason")); }
+                    }
+                    if (d == insideDay)
+                    {
+                        int tech = OrderableTechnology(usa);
+                        inside = tech >= 0 && sim.PlaceFleetOrder(Player, tech, EnergyFleet.StepMw(Player), usa.CalendarYear, out why);
+                        if (!inside) { Fail(failures, "5. the fleet order inside the window was refused: " + (why ?? "no technology orderable")); }
+                    }
+                    if (oath && d == FedOathDay)
+                    {
+                        if (!Congress.PresidentOn(usa, sim.CurrentDate, out _, out string pp, out _) || string.IsNullOrEmpty(pp)) { Fail(failures, "5. the oath: no president found"); }
+                        string outParty = pp == "REP" ? "DEM" : "REP";
+                        foreach (string family in new[] { beforeFamily, insideFamily, headFamily })
+                        {
+                            if (!except.TryGetValue(family, out ShadowBaseline fork)) { continue; }
+                            fork.CatchUp(FedOathDay);
+                            fork.CountryFor(Player).PlayerPartyAbbrev = outParty;
+                        }
+                        usa.PlayerPartyAbbrev = outParty;   // planted: the player out of the White House, in every world on the same day
+                        oathNextDay = sim.CurrentDate.Date.AddDays(1);
+                        if (sim.PlayerMayIntroduce(Player, out _)) { Fail(failures, "5. the oath: the role gate is still open with " + outParty + " in the player's place"); }
+                    }
+                    if (d == FedReadDay)
+                    {
+                        string played = FedState(usa);
+                        foreach (string family in new[] { beforeFamily, insideFamily })
+                        {
+                            if (!except.TryGetValue(family, out ShadowBaseline fork)) { Fail(failures, $"5. the ledger forked no '{family}' world in the Fed's window"); continue; }
+                            fork.CatchUp(FedReadDay);
+                            string forked = FedState(fork.CountryFor(Player));
+                            if (forked != played) { Fail(failures, $"5. day {FedReadDay}, the '{family}' world's Fed is NOT the played world's - played [{played}], forked [{forked}]"); }
+                            mid.Add(F("{0} {1}", family, forked == played ? "EXACT" : "⚠ NOT EXACT"));
+                        }
+                        if (except.TryGetValue(headFamily, out ShadowBaseline own))
+                        {
+                            own.CatchUp(FedReadDay);
+                            Country h = own.CountryFor(Player);
+                            FedChair ai = CentralBankTerms.AiNominee(CentralBankTerms.Fed, outgoing, termDay);
+                            bool aiSeated = h.CurrentFedChair != null && h.CurrentFedChair.Name == ai?.Name && h.CurrentFedChair.TermBegan == termDay && !h.FedViceChairActing && h.FedNominationPending == null;
+                            if (!aiSeated) { Fail(failures, $"5. the '{headFamily}' world (its lever withheld) did not take the AI's keyed pick {ai?.Name} as of the term day: [{FedState(h)}]"); }
+                            mid.Add(F("{0} the AI's pick {1}", headFamily, aiSeated ? "seated as of the term day" : "⚠ NOT SEATED"));
+                        }
+                        else { Fail(failures, $"5. the ledger forked no '{headFamily}' world at the term day's lever"); }
+                    }
+                }
+                var decisions = new Dictionary<CountryId, PolicyDecision>();
+                foreach (Country c in game.World.Countries) { decisions[c.Id] = PolicyDecision.None(); }
+                game.Ledger.AdvanceTurn(sim, game.World, Player, decisions);
+                sim.AdvanceTurn(decisions);
+                game.None.AdvanceTurn();
+                EnergyMarket.BeginTurn(game.World);
+                string end = FedState(usa);
+                FedChair aiPick = CentralBankTerms.AiNominee(CentralBankTerms.Fed, outgoing, termDay);
+                bool voted = oath
+                    ? usa.FedSenateVotes.Count == 0 && usa.FedNominationPending == null && usa.CurrentFedChair?.Name == aiPick?.Name && usa.CurrentFedChair.TermBegan == oathNextDay && !usa.FedViceChairActing
+                    : usa.FedSenateVotes.Count == 1 && usa.FedSenateVotes[0].Confirmed && usa.CurrentFedChair?.Name == "H-1 probe chair" && !usa.FedViceChairActing;
+                if (!voted) { Fail(failures, oath ? $"5. the oath: the played world's nomination did not lapse with the AI's pick {aiPick?.Name} seated the day after the oath: [{end}]" : $"5. the played world's nominee was not confirmed on its vote day: [{end}]"); }
+                var after = new List<string>();
+                foreach (string family in new[] { beforeFamily, insideFamily })
+                {
+                    if (!except.TryGetValue(family, out ShadowBaseline fork)) { continue; }
+                    string forked = FedState(fork.CountryFor(Player));
+                    if (forked != end) { Fail(failures, $"5. after the boundary, the '{family}' world's Fed is NOT the played world's - played [{end}], forked [{forked}]"); }
+                    after.Add(F("{0} {1}", family, forked == end ? "EXACT" : "⚠ NOT EXACT"));
+                }
+                if (oath) { sb.Append("    5. the role gate closing on day " + FedOathDay + " (the player's party out of the White House, as an oath closes it; the President of the day unchanged - declared, the second delta review's L-E), in every world\n"); }
+                sb.Append(F("    5. the Fed's window the term planted to end {0:yyyy-MM-dd}, the nominee lodged that day{1}; on day {2}: {3}; after the boundary: {4} - played [{5}]\n",
+                    termDay, lodged ? string.Empty : " (⚠ NOT LODGED)", FedReadDay, string.Join(" · ", mid), string.Join(" · ", after), end));
+            }
+            finally { game.Dispose(); }
+        }
+
+        /// <summary>The Fed's state as the window compares it: the chair, its term, the Vice Chair's flag, the pending nominee and its vote day, the Senate's votes.</summary>
+        private static string FedState(Country c)
+        {
+            if (c == null) { return "NO USA"; }
+            var sb = new StringBuilder();
+            sb.Append(c.CurrentFedChair?.Name ?? "no chair").Append(' ').Append(c.CurrentFedChair?.TermBegan.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "-")
+              .Append(" acting ").Append(c.FedViceChairActing ? "yes" : "no")
+              .Append(" pending ").Append(c.FedNominationPending == null ? "none" : (c.FedNominationPending.Nominee?.Name ?? "?") + " " + c.FedNominationPending.VoteOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture))
+              .Append(" votes");
+            if (c.FedSenateVotes != null) { foreach (FedSenateVote v in c.FedSenateVotes) { sb.Append(' ').Append(v.Nominee).Append(' ').Append(v.For).Append('-').Append(v.Against).Append(v.Confirmed ? " confirmed" : " refused"); } }
+            return sb.ToString();
+        }
+
 
         private sealed class Game : IDisposable
         {
@@ -171,6 +317,7 @@ namespace PoliSim.EditorTools
                 PullDue(sim, game.World, t, 0, skipFamily, leverFamilies, failures);
                 for (int d = 1; d <= SimulationManager.DaysPerTurn; d++)
                 {
+                    if (skipFamily != null) { sim.AnswerWaitsAsTheAi(Player); }   // the K15-K17 review's H-1: the start of the day, as the ledger's except-world answers what no lever answered (ShadowBaseline.AnswersWaitsAsTheAi)
                     sim.AdvanceDay();
                     sim.AdvanceCountryDayTick(Player);   // FORK-1 (J8): the game's day - the ledger's forks run it too
                     if (d < SimulationManager.DaysPerTurn) { sim.HoldPlayerElection(); }   // FORK-2: the controller's election call on the player's polling day - the ledger's forks hold it too

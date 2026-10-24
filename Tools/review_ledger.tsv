@@ -332,3 +332,6 @@ file	Assets/Scripts/Data/FiscalVoteBook.cs	9a8f8d2d30aacdec7ac995b9e06fff74822c6
 file	Assets/Scripts/Elections/FiscalVote.cs	b52651f7ac4ca48f51639011e8cbf1970d3ecaec165e8650762a49c64e6ff9fd	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
 file	Assets/Scripts/Simulation/SimulationManager.cs	91a5e27a336cd953a39170926537da82d9992c43e9cb414477e6463927ff8e01	reviewed	2026-10-24	s912	Reviews/2026-10-24_fisc_integrator_delta.md	-
 file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	6fb4212ec2c1b6f8f6c38d90b24b1f06c1b472674c448bd45acfc6aaec091cb9	reviewed	2026-10-24	s913	Reviews/2026-10-24_g18b_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	13b8d5a49dd21411dffc3641a193a48b22deeaf164ac9f182d9a78cb1c9747f4	reviewed	2026-10-24	s914	Reviews/2026-10-24_fed_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.PlayerElection.cs	aa1e5320b3d7258da9ec900284f787ecc44f0d704e9102caab5a1828ef24665b	reviewed	2026-10-24	s914	Reviews/2026-10-24_fed_integrator_delta.md	-
+file	Assets/Scripts/Simulation/SimulationManager.cs	6124af141344862b580223472df4ccf9006713a829dd62f0bc1e95051a86203b	reviewed	2026-10-24	s914	Reviews/2026-10-24_fed_integrator_delta.md	-

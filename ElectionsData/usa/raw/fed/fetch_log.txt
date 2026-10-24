@@ -25,3 +25,62 @@
 #    I Not Voting 2, D Not Voting 8, R Yea 11, R Nay 26, R Not Voting 8; Powell (a REP president's nominee) R Yea 44, R Nay 4, R Not Voting 3, D Yea 39,
 #    D Nay 8, I Yea 1, I Nay 1. The president's party's senators who voted were for the nominee in both (45-0, 44-4); the other party's majority was against
 #    Yellen (11-26) and for Powell (40-9). They are read for the vote rule's DECLARED reading in `UsFedConsent` and its ask, not fitted.
+2026-10-24T16:37:20Z	200	5769	us_12usc244_govinfo2024.htm	https://www.govinfo.gov/content/pkg/USCODE-2024-title12/html/USCODE-2024-title12-chap3-subchapII-sec244.htm
+2026-10-24T16:43:13Z	200	23432	wayback_senate_vote_104_2_00165_20250515144911.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1042/vote_104_2_00165.xml (capture 20250515144911)
+2026-10-24T16:43:15Z	200	23501	wayback_senate_vote_106_2_00006_20250523084300.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1062/vote_106_2_00006.xml (capture 20250523084300)
+2026-10-24T16:43:17Z	200	23568	wayback_senate_vote_111_2_00016_20260613095409.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1112/vote_111_2_00016.xml (capture 20260613095409)
+2026-10-24T16:43:19Z	200	28789	wayback_senate_vote_117_2_00176_20251112233424.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1172/vote_117_2_00176.xml (capture 20251112233424)
+2026-10-24T16:43:23Z	200	28788	wayback_senate_vote_119_2_00120_20260513205047.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_votes/vote1192/vote_119_2_00120.xml (capture 20260513205047)
+2026-10-24T16:43:42Z	200	32387	voteview_RS0960246.json	https://voteview.com/api/download?rollcall_id=RS0960246
+2026-10-24T16:43:43Z	200	33649	voteview_RS0980218.json	https://voteview.com/api/download?rollcall_id=RS0980218
+2026-10-24T16:43:44Z	200	32396	voteview_RS1000225.json	https://voteview.com/api/download?rollcall_id=RS1000225
+2026-10-24T16:46:04Z	200	33904	voteview_RS1040778.json	https://voteview.com/api/download?rollcall_id=RS1040778
+2026-10-24T16:46:05Z	200	33775	voteview_RS1060380.json	https://voteview.com/api/download?rollcall_id=RS1060380
+2026-10-24T16:46:06Z	200	33270	voteview_RS1110413.json	https://voteview.com/api/download?rollcall_id=RS1110413
+2026-10-24T16:46:07Z	200	33091	voteview_RS1130292.json	https://voteview.com/api/download?rollcall_id=RS1130292
+2026-10-24T16:46:09Z	200	49515	voteview_RS1150344.json	https://voteview.com/api/download?rollcall_id=RS1150344
+2026-10-24T16:46:10Z	200	49616	voteview_RS1170704.json	https://voteview.com/api/download?rollcall_id=RS1170704
+2026-10-24T16:46:11Z	200	49192	voteview_RS1190779.json	https://voteview.com/api/download?rollcall_id=RS1190779
+2026-10-24T16:46:37Z	200	1434	congressgov_api_nomination_104_PN951.json	https://api.congress.gov/v3/nomination/104/951?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:46:38Z	200	1436	congressgov_api_nomination_106_PN729.json	https://api.congress.gov/v3/nomination/106/729?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:46:39Z	200	1588	congressgov_api_nomination_111_PN959.json	https://api.congress.gov/v3/nomination/111/959?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:46:40Z	200	1602	congressgov_api_nomination_113_PN921.json	https://api.congress.gov/v3/nomination/113/921?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:46:41Z	200	1467	congressgov_api_nomination_115_PN1353.json	https://api.congress.gov/v3/nomination/115/1353?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:46:43Z	200	1633	congressgov_api_nomination_117_PN1522.json	https://api.congress.gov/v3/nomination/117/1522?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:46:44Z	200	592	congressgov_api_nomination_119_PN855.json	https://api.congress.gov/v3/nomination/119/855?api_key=DEMO_KEY&format=json (DEMO_KEY: the public demonstration key of api.data.gov)
+2026-10-24T16:47:20Z	200	139806	wayback_senate_vote_menu_102_1_20250328010723.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_102_1.xml (capture 20250328010723)
+2026-10-24T16:47:22Z	200	135227	wayback_senate_vote_menu_102_2_20250321211158.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_102_2.xml (capture 20250321211158)
+2026-10-24T16:47:25Z	200	158121	wayback_senate_vote_menu_104_2_20250328002646.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_104_2.xml (capture 20250328002646)
+2026-10-24T16:47:28Z	200	154554	wayback_senate_vote_menu_106_2_20250430164803.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_106_2.xml (capture 20250430164803)
+2026-10-24T16:47:30Z	200	109145	wayback_senate_vote_menu_108_2_20260211153755.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_108_2.xml (capture 20260211153755)
+2026-10-24T16:47:32Z	200	141747	wayback_senate_vote_menu_109_2_20250303044437.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_109_2.xml (capture 20250303044437)
+2026-10-24T16:47:40Z	200	196885	wayback_senate_vote_menu_117_2_20250621083613.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_117_2.xml (capture 20250621083613)
+2026-10-24T16:47:45Z	200	165543	wayback_senate_vote_menu_119_2_20261010195728.xml	https://web.archive.org/web/2026id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_119_2.xml (capture 20261010195728)
+2026-10-24T16:48:16Z	200	155651	wayback_senate_vote_menu_111_2_20201210100251.xml	https://web.archive.org/web/2020id_/https://www.senate.gov/legislative/LIS/roll_call_lists/vote_menu_111_2.xml (capture 20201210100251; the 2026 capture 20260705113211 answered 200 with a 491-byte non-menu body, not kept)
+2026-10-24T16:48:26Z	200	81831	federalreserve_pressrelease_other20220204a.htm	https://www.federalreserve.gov/newsevents/pressreleases/other20220204a.htm
+2026-10-24T16:48:26Z	200	83399	federalreserve_pressrelease_other20220110a.htm	https://www.federalreserve.gov/newsevents/pressreleases/other20220110a.htm
+# NOTE 2026-10-24 (K15-K17, Elias's rulings of 2026-10-23): what each new file is read for.
+#  us_12usc244_govinfo2024 (12 U.S.C. 244, United States Code 2024, govinfo): "At meetings of the Board the chairman shall preside, and, in his absence, the
+#    vice chairman shall preside. In the absence of the chairman and the vice chairman, the Board shall elect a member to act as chairman pro tempore."
+#    12 U.S.C. 242 (already on disk under ElectionsData/rules/raw/central_banks/) designates a Vice Chairman "who shall serve in the absence of the
+#    Chairman, as provided in section 244". K15 is read on these words: the chair's ended designation with no successor confirmed read as the Chairman's
+#    absence (a DECLARED reading - neither section says an expired designation is an absence), so the Vice Chair acts.
+#  federalreserve_pressrelease_other20220204a (the Board, 4 Feb 2022): "The Federal Reserve Board on Friday named Jerome H. Powell as Chair Pro Tempore,
+#    pending Senate confirmation to a second term as Chair of the Board of Governors. The action, effective February 5, enables him to continue to carry out
+#    his duties as Chair after the expiration of his term on the same day". federalreserve_pressrelease_other20220110a (10 Jan 2022): "Richard H. Clarida
+#    announces his intention to resign from the Board of Governors of the Federal Reserve System on January 14, 2022" - so on 5 Feb 2022 no Vice Chair
+#    was seated, and the Board's naming is 244's third sentence (the Board electing a member in the absence of both), the member the outgoing chair. The
+#    2022 record is therefore NOT a Vice Chair acting; it is stated beside the ruling in UsFedConsent's class note.
+#  K17, every Fed-chair confirmation held by roll call that was found: the Senate's XML for 104_2 No. 165 (Greenspan, 20 Jun 1996, 91-7), 106_2 No. 6
+#    (Greenspan, 3 Feb 2000, 89-4), 111_2 No. 16 (Bernanke, 28 Jan 2010, 70-30), 117_2 No. 176 (Powell, 12 May 2022, 80-19), 119_2 No. 120 (Warsh,
+#    13 May 2026, 54-45), beside US-29's 113_2 No. 1 (Yellen 2014) and 115_2 No. 19 (Powell 2018), each found in its session's vote menu (saved). The
+#    Senate's lists begin in 1989, so the earlier three are Voteview's (voteview.com, its per-roll-call record, the members' votes and party_vote_counts):
+#    RS0960246 (Volcker, 2 Aug 1979, 98-0), RS0980218 (Volcker, 27 Jul 1983, 84-16), RS1000225 (Greenspan, 3 Aug 1987, 91-2); Voteview's records of the
+#    seven later votes are saved too (they carry the nominating president's position row, POTUS, for all but Warsh 2026).
+#  No roll call is recorded for Greenspan's 1991-92 renomination, Greenspan 2004 or Bernanke 2006: none is in the Senate's vote menus for 102_1, 102_2,
+#    108_2 and 109_2 (saved) - so they were not confirmed by a recorded vote, and they are outside a fit on roll calls. Miller 1978 was not searched.
+#  congressgov_api_nomination_*: congress.gov's nomination records (api.congress.gov v3, DEMO_KEY) for the seven nominations of 1996-2026, read for each
+#    nomination's receivedDate; the vote's day is the Senate's XML vote_date. 119 PN855's record had not been updated past 5 Mar 2026 when fetched (no
+#    latestAction), so its vote day is read from the Senate's XML alone. A nomination returned at a session's end and sent again (115 PN1353, 117 PN1522)
+#    counts from its sending again - the record the Senate voted on.
+#  The 111_2 menu's 2026 capture answered 200 with an Access Denied body (491 bytes, not kept); the 2020 capture is saved.

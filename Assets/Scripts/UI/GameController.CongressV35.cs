@@ -442,7 +442,7 @@ namespace PoliSim.UI
         private static string HoldsWords(UsCongressView.Line l) =>
             l.Holder == null ? "NO PARTY HOLDS A MAJORITY" : PartySystems.ShortName(CountryId.USA, l.Holder) + " " + N(l.Held) + (l.ByVicePresident ? " HOLDS IT WITH THE VICE PRESIDENT'S VOTE" : l.Holds ? " HOLDS IT" : " · " + N(l.Short) + " SHORT");
 
-        // ------------------------------------------------------------------ before the Senate (the Fed chair, as the model holds him)
+        // ------------------------------------------------------------------ before the Senate (the Fed chair, as the model holds it: K15-K17)
 
         private List<(string Text, bool Billed)> CongressNominationLines()
         {
@@ -452,13 +452,12 @@ namespace PoliSim.UI
             if (chair != null)
             {
                 lines.Add(("Chair of the " + GetCentralBankName(PlayerCountryId) + ": " + chair.Name + (chair.HasTerm() ? ", the term as chair to " + CongressDay(chair.TermEnds) + "." : "."), false));
-                if (UsFedConsent.HoldoverWords(_playerCountry, chair, today) != null)
-                {
-                    lines.Add(("His term has ended; he serves on until a successor is confirmed, the game's reading.", false));
-                }
+                string acting = UsFedConsent.ActingWords(_playerCountry, today);
+                if (acting != null) { lines.Add((acting + ", until a successor is confirmed.", false)); }   // K15
+                if (UsFedConsent.StandingRefusal(_playerCountry, _simulationManager.CurrentDate) is FedSenateVote refused) { lines.Add((UsFedConsent.VoteWords(refused) + ".", false)); }   // K16: the refusal as an event
             }
-            lines.Add(("The President nominates; the Senate confirms by a majority.", false));
-            lines.Add(("The count by a crossing rule on the chair's roll calls is billed.", true));
+            lines.Add(("The President nominates; the Senate votes " + UsFedConsent.NominationToVoteDays + " days later, by a majority.", false));
+            lines.Add(("The count: a crossing rule on the chair's roll calls since 2013.", false));   // K17
             return lines;
         }
 
@@ -480,10 +479,12 @@ namespace PoliSim.UI
             {
                 GUIStyle title = V35Serif(17f, PoliSimTheme.TextPrimary);
                 title.fontStyle = FontStyle.Bold;
-                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, y, inner.width, V35.Px(22f)), "No nomination is before the Senate", title);
+                string head = _playerCountry.FedNominationPending?.Nominee != null ? _playerCountry.FedNominationPending.Nominee.Name + ", the vote on " + CongressDay(_playerCountry.FedNominationPending.VoteOn) : "No nomination is before the Senate";   // K16
+                PoliSimWidgets.MeasuredLabel(new Rect(inner.x, y, inner.width, V35.Px(22f)), V35Fit(head, title, inner.width, out _), title);
             }
             y += V35.Px(24f);
-            var slip = new SlipContent("BEFORE THE SENATE").Add("NO NOMINATION IS HELD AS PENDING: THE PLAYER-PRESIDENT NAMES ONLY WHERE THE COUNT WOULD CONFIRM, AND AN AI PRESIDENT'S NOMINEE IS COUNTED ON THE TERM'S DAY");
+            var slip = new SlipContent("BEFORE THE SENATE").Add((UsFedConsent.PendingWords(_playerCountry) ?? "NO NOMINATION IS BEFORE THE SENATE").ToUpperInvariant())
+                .Add("A PLAYER-PRESIDENT'S NOMINEE WAITS FOR ITS VOTE DAY UNDER ANY SENATE; AN AI PRESIDENT'S NOMINEE IS COUNTED ON THE TERM'S DAY");
             foreach ((string text, bool billed) in lines)
             {
                 if (Event.current.type == EventType.Repaint)
@@ -501,7 +502,7 @@ namespace PoliSim.UI
                 slip.Add(text.ToUpperInvariant());
                 y += V35.Px(20f);
             }
-            slip.Add("BILLED: THE VICE CHAIR ACTING WHILE NO SUCCESSOR IS CONFIRMED; A NOMINATION UNDER A HOSTILE SENATE, ITS REFUSAL SHOWN AS AN EVENT");
+            slip.Add("THE VICE CHAIR ACTS WHILE THE CHAIR'S TERM HAS ENDED AND NO SUCCESSOR IS CONFIRMED (12 U.S.C. 242 AND 244)");
             SlipAnchor(r, "congress:nomination");
             _politicsSlipBook.Anchors["congress:nomination"] = slip;
         }

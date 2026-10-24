@@ -1,0 +1,41 @@
+{
+    "nomination": {
+        "actions": {
+            "count": 6,
+            "url": "https://api.congress.gov/v3/nomination/104/951/actions?format=json"
+        },
+        "citation": "PN951",
+        "committees": {
+            "count": 1,
+            "url": "https://api.congress.gov/v3/nomination/104/951/committees?format=json"
+        },
+        "congress": 104,
+        "description": "Alan Greenspan, of New York, to be Chairman of the Board of Governors of the Federal Reserve System for a term of four years. (Reappointment)",
+        "latestAction": {
+            "actionDate": "1996-06-20",
+            "text": "Confirmed by the Senate by Yea-Nay Vote. 91-7. Record Vote No: 165 EX."
+        },
+        "nominationType": {
+            "isCivilian": true
+        },
+        "nominees": [
+            {
+                "nomineeCount": 1,
+                "ordinal": 1,
+                "organization": "Federal Reserve System",
+                "positionTitle": "Chairman of the Board of Governors of the Federal Reserve System",
+                "url": "https://api.congress.gov/v3/nomination/104/951/1?format=json"
+            }
+        ],
+        "number": 951,
+        "partNumber": "00",
+        "receivedDate": "1996-03-15",
+        "updateDate": "2017-04-18T05:41:48Z"
+    },
+    "request": {
+        "congress": "104",
+        "contentType": "application/json",
+        "format": "json",
+        "number": "951"
+    }
+}

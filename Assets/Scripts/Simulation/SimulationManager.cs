@@ -3832,26 +3832,38 @@ namespace PoliSim.Simulation
         /// <summary>AF-11: the central bank's head appointed from the candidates (PS-3c, §630: the government's to appoint - the executive's gate).
         /// False, with the reason, where it is refused. AF-7: the appointee is seated for its statute's full term from today (<see cref="CentralBankTerms"/>);
         /// the verb does not refuse a pick before the sitting head's term ends (the screens offer candidates only at its end - removal is not modelled).
-        /// PS-6 US-29 (R-US12 (a)): the Fed chair is the President's nominee and the Senate's to confirm by majority - the count of the day
-        /// (<see cref="UsFedConsent.Vote"/>) is held before the lever is pulled, so a refusal pulls nothing and the sitting chair serves on.</summary>
+        /// PS-6 US-29 (R-US12 (a)) with K16 (Elias's ruling of 2026-10-23): the Fed chair is the President's nominee and the Senate's to confirm by majority -
+        /// the verb LODGES the nominee before the Senate (`UsFedConsent.Lodge`: the nominating party, the day, the vote day the record's lag later)
+        /// under any Senate, hostile or not, and the Senate votes on that day (`AppointCentralBankHeadsWhoseTermsEnded`); the Vice Chair acts
+        /// meanwhile (K15). Refused while a nomination is already before the Senate.</summary>
         public bool AppointCentralBankHead(CountryId countryId, FedChair candidate, out string refusedBecause)
         {
             Country country = _world?.GetCountry(countryId);
             if (country == null || candidate == null) { refusedBecause = "NO CANDIDATE"; return false; }
             if (!PlayerMayIntroduce(countryId, out refusedBecause)) { return false; }
+            System.Func<World, Country, bool, bool> act;   // one lever, one build (UiLeverVerbCheck): the Fed's lodge or AF-7's seat
             if (UsFedConsent.Applies(country))
             {
-                UsFedConsent.Count count = UsFedConsent.Vote(country, CurrentDate);
-                if (count == null || !count.Confirms) { refusedBecause = UsFedConsent.RefusedWords(count); return false; }
-                Debug.Log($"FED: {country.Id} - {count.President} ({count.PresidentsParty}) nominated {candidate.Name} on {CurrentDate:yyyy-MM-dd}: {UsFedConsent.CountWords(count)}");
+                if (country.FedNominationPending != null) { refusedBecause = "A NOMINATION IS ALREADY BEFORE THE SENATE"; return false; }
+                if (!Congress.PresidentOn(country, CurrentDate, out string president, out string party, out _) || string.IsNullOrEmpty(party)) { refusedBecause = "NO PRESIDENT IS FOUND TO NOMINATE"; return false; }
+                System.DateTime on = CurrentDate;
+                Debug.Log($"FED: {country.Id} - {president} ({party}) nominated {candidate.Name} on {on:yyyy-MM-dd}; the Senate votes on {on.AddDays(UsFedConsent.NominationToVoteDays):yyyy-MM-dd}");
+                act = (world, c, replay) => { UsFedConsent.Lodge(c, replay ? candidate.Copy() : candidate, party, on); return true; };   // GA-1-5: a counterfactual world lodges its own copy
             }
-            CentralBankTerms.Seat(candidate, CentralBankTerms.For(countryId), CurrentDate);   // AF-7: before the lever is pulled, so every world's copy carries the term
-            return Pull(new PlayerLever(PlayerLeverKind.CentralBankHead, countryId, (world, c, replay) => { c.CurrentFedChair = replay ? candidate.Copy() : candidate; return true; }), country);   // GA-1-5: a counterfactual world seats its own copy
+            else
+            {
+                CentralBankTerms.Seat(candidate, CentralBankTerms.For(countryId), CurrentDate);   // AF-7: before the lever is pulled, so every world's copy carries the term
+                act = (world, c, replay) => { c.CurrentFedChair = replay ? candidate.Copy() : candidate; return true; };   // GA-1-5: a counterfactual world seats its own copy
+            }
+            return Pull(new PlayerLever(PlayerLeverKind.CentralBankHead, countryId, act), country);
         }
 
         /// <summary>AF-7 (the review's M1): true on a manager that hosts a COUNTERFACTUAL world - set by every `ShadowBaseline` constructor (the impact
         /// ledger's except-worlds, the no-policy world), never inferred. Nobody answers a hold there, so the player's bank's head is appointed by the AI's
-        /// keyed rule on its term's day, as an AI-run bank's: "without your policies" is the AI's pick, the same name in every counterfactual.</summary>
+        /// keyed rule on its term's day, as an AI-run bank's: "without your policies" is the AI's pick, the same name in every counterfactual. The Fed is the
+        /// exception (the K15-K17 review's H-1): a counterfactual waits for the player's pick as the played world does (`FedAwaitsPlayersPick`), the replayed
+        /// lever lodging it, and only a world the pick never reaches takes the AI's pick - the morning after, by the AI's rule for an unanswered wait
+        /// (`AnswerWaitsAsTheAi`), as the debt limit's (K49).</summary>
         public bool IsCounterfactual { get; set; }
 
         /// <summary>AF-7 (q7, q10): true where the player's government appoints this country's central bank head - the player's own country with its own bank,
@@ -3861,20 +3873,64 @@ namespace PoliSim.Simulation
             !IsCounterfactual && country?.CurrentFedChair != null && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && PlayerMayIntroduce(country.Id, out _);
 
         /// <summary>AF-7: true while the player's own bank's head serves past the term's end, waiting for the player's pick - the hold `GameController` raises.
-        /// PS-6 US-29: for the Fed, only while the Senate of the day would confirm the player-president's nominee (<see cref="UsFedConsent.Confirms"/>) - the
-        /// count is party-line, so a Senate his party does not hold refuses any name, and time is not held for a choice no count can carry: the chair serves on
-        /// (the holdover, a DECLARED reading - `UsFedConsent`'s class note) and the hold rises the day the Senate would confirm. The bank page says so in the
-        /// player's own terms (the review of 2026-10-22, M2: his party's seats of the Senate's, and that no nominee of his can be confirmed).</summary>
+        /// K16 (Elias's ruling of 2026-10-23): for the Fed, a player-president may nominate under any Senate, hostile or not, so the hold rises at the term's
+        /// end whatever the count - and not while a nomination is before the Senate (`Country.FedNominationPending`); after a refusal it rises again. The Vice
+        /// Chair acts meanwhile (K15, `UsFedConsent`'s class note).</summary>
         public bool CentralBankHeadAwaitsPlayer(CountryId countryId)
         {
             Country country = _world?.GetCountry(countryId);
             return country != null && PlayerAppointsCentralBankHead(country) && CentralBankTerms.Ended(country.CurrentFedChair, CurrentDate)
-                   && (!UsFedConsent.Applies(country) || UsFedConsent.Confirms(country, CurrentDate));
+                   && (!UsFedConsent.Applies(country) || country.FedNominationPending == null);
+        }
+
+        /// <summary>The K15-K17 review's H-1: the Fed's own reading of the player's hold, in EVERY world - the player's USA where the role gate lets the player
+        /// appoint (`PlayerMayIntroduce`), a counterfactual's too. The played world holds its clock there until the player lodges a nominee; a counterfactual
+        /// waits the same day for the replayed lever, so a fork follows the played world exactly where no policy differs.</summary>
+        private bool FedAwaitsPlayersPick(Country country) =>
+            UsFedConsent.Applies(country) && country.CurrentFedChair != null && PlayerCountryId.HasValue && PlayerCountryId.Value == country.Id && PlayerMayIntroduce(country.Id, out _);
+
+        /// <summary>The review's H-1: a counterfactual's answer to the Fed's unanswered wait, the morning after (`AnswerWaitsAsTheAi`): where the term has ended
+        /// unfilled, nothing is before the Senate and the world waits for the player's pick, the AI's keyed nominee goes to the count and is seated - the pick
+        /// "without your policies". True where it seated. Never the played world's (the caller's gate).
+        /// The second delta review's H-B: never before a turn's close - a term ending on a turn's last day closes that turn with the Vice Chair acting in every
+        /// world waiting for the player's pick, as the played world does (`UsFedConsent`'s class note).</summary>
+        private bool AnswerFedChairAsTheAi(Country country)
+        {
+            // the delta review's L-D: the cheap tests first, the role gate last
+            if (country == null || country.FedNominationPending != null || !CentralBankTerms.Ended(country.CurrentFedChair, CurrentDate) || !FedAwaitsPlayersPick(country)) { return false; }
+            FedChair outgoing = country.CurrentFedChair;
+            FedChair nominee = CentralBankTerms.AiNominee(CentralBankTerms.Fed, outgoing, CurrentDate);
+            if (!ConsentsToAiNominee(country, nominee, outgoing)) { return false; }
+            country.CurrentFedChair = CentralBankTerms.Seat(nominee, CentralBankTerms.Fed, CurrentDate);
+            country.FedViceChairActing = UsFedConsent.ViceChairActs(country, CurrentDate);
+            return true;
+        }
+
+        /// <summary>
+        /// K16: the Senate's vote on a pending nomination on or after its vote day, by <paramref name="count"/> (the day's). A null count (no president or no
+        /// Senate found) is a DEFECT, never a refusal (the first review's M-2), and its retry is bounded (the delta review's L-A): on the vote day it is logged once
+        /// and held again the next day; on any later day it is logged once more and the nomination is RELEASED - cleared, nothing recorded - so the hold rises
+        /// again for a player who still appoints, or the AI seats where the player has no gate. True where the Senate voted.
+        /// </summary>
+        private bool HoldPendingFedVote(Country country, FedNomination pending, UsFedConsent.Count count)
+        {
+            if (count == null)
+            {
+                bool release = CurrentDate.Date > pending.VoteOn;
+                Debug.LogError($"FED: {country.Id} - no president or no Senate found on {CurrentDate:yyyy-MM-dd} to vote on {pending.Nominee?.Name ?? "the nominee"} (a defect): "
+                               + (release ? "the nomination is released, nothing recorded - the choice is open again" : "the vote is held again tomorrow"));
+                if (release && ReferenceEquals(country.FedNominationPending, pending)) { country.FedNominationPending = null; }
+                return false;
+            }
+            FedSenateVote vote = UsFedConsent.Resolve(country, pending, count, CurrentDate);
+            Debug.Log($"FED: {country.Id} - the Senate's vote on {vote.Nominee ?? "the nominee"} (nominated {pending.NominatedOn:yyyy-MM-dd}) on {CurrentDate:yyyy-MM-dd}: {UsFedConsent.CountWords(count)}"
+                      + (vote.Confirmed ? string.Empty : " - refused; the Vice Chair acts on"));
+            return true;
         }
 
         /// <summary>
         /// AF-7 (q7, q10; GA-0-29, GA-0-53): every head whose statutory term has ended is replaced on the day - a country's own bank by its AI government
-        /// (<see cref="CentralBankTerms.AiAppointment"/>), unless the player's government appoints it, in which case the sitting head serves on until the
+        /// (<see cref="CentralBankTerms.AiAppointment"/>), unless the player's government appoints it, in which case the sitting head serves on (for the Fed the Vice Chair acts, K15) until the
         /// player's pick (the hold); a shared zone's head (the ECB's President) always by the AI - once per zone, whichever member reaches it first.
         /// The AI's shortlist is keyed on the game's seed, the bank and the day, so every world of one game seats the same head and no counted stream moves.
         /// </summary>
@@ -3887,13 +3943,27 @@ namespace PoliSim.Simulation
                 FedChair own = country.CurrentFedChair;
                 if (own != null)
                 {
-                    if (CentralBankTerms.Ended(own, CurrentDate) && !PlayerAppointsCentralBankHead(country))
+                    bool fed = UsFedConsent.Applies(country);
+                    // K16: the Senate votes a pending nomination on its vote day, by the day's count on the nominating party's nominee
+                    FedNomination pending = fed ? country.FedNominationPending : null;
+                    if (pending != null && CurrentDate.Date >= pending.VoteOn && HoldPendingFedVote(country, pending, UsFedConsent.Vote(country, CurrentDate, pending.NominatingParty)))
+                    {
+                        own = country.CurrentFedChair;
+                    }
+                    // the review's H-1: for the Fed the AI does not seat in a world that waits for the player's pick (a counterfactual too, `FedAwaitsPlayersPick`)
+                    if (CentralBankTerms.Ended(own, CurrentDate) && !PlayerAppointsCentralBankHead(country) && !(fed && FedAwaitsPlayersPick(country)))
                     {
                         CentralBankTerms.Statute statute = CentralBankTerms.For(country.Id);
                         FedChair nominee = CentralBankTerms.AiNominee(statute, own, CurrentDate);
-                        if (UsFedConsent.Applies(country) && !ConsentsToAiNominee(country, nominee, own)) { continue; }   // PS-6 US-29: refused - the chair serves on
-                        country.CurrentFedChair = CentralBankTerms.Seat(nominee, statute, CurrentDate);
+                        if (!fed || ConsentsToAiNominee(country, nominee, own))   // PS-6 US-29: refused - the Vice Chair acts (K15)
+                        {
+                            country.CurrentFedChair = CentralBankTerms.Seat(nominee, statute, CurrentDate);
+                            // the delta review's H-A: a nomination the player lodged and left the presidency with LAPSES - the AI president's pick is seated at the
+                            // oath (the role gate closing), as nominations pending at a change of administration are returned (the integrator's reading)
+                            if (fed) { country.FedNominationPending = null; }
+                        }
                     }
+                    if (fed) { country.FedViceChairActing = UsFedConsent.ViceChairActs(country, CurrentDate); }   // K15: the Vice Chair acts while the term has ended unfilled
                     continue;
                 }
                 CurrencyZone zone = country.CurrencyZone;
@@ -3907,11 +3977,12 @@ namespace PoliSim.Simulation
 
         /// <summary>
         /// PS-6 US-29 (R-US12 (a)): the Senate's count on an AI president's Fed nominee (<see cref="UsFedConsent.Vote"/>) - the president of the day, the Senate
-        /// the world seats or, where it seats none (an AI USA), the record's by date. A refusal leaves the sitting chair in office and the same nominee goes again
-        /// the next day (the keyed shortlist names him every day of the holdover); the log says so on the term's own day, on every 3 January (a new Congress -
+        /// the world seats or, where it seats none (an AI USA), the record's by date. A refusal leaves the seat unfilled, the Vice Chair acting (K15), and the same nominee goes again
+        /// the next day (the keyed shortlist names the same nominee every day of the holdover); the log says so on the term's own day, on every 3 January (a new Congress -
         /// the review of 2026-10-22, L3: the AI's turn to nominate can begin after the term's day, as when a save is cut inside a holdover) and on every 20 January
-        /// (the oath: a player-president who leaves office inside a holdover hands the nomination to the AI that day - the second review's L5), and says every
-        /// confirmation. No president or no Senate found is a defect, logged as one on those days, and the chair serves on.
+        /// (the oath: a player-president who leaves office inside a holdover hands the nomination to the AI that day, and a nomination the player lodged lapses
+        /// with the AI's confirmation - the second review's L5, kept by the K15-K17 delta review's H-A), and says every
+        /// confirmation. No president or no Senate found is a defect, logged as one on those days, and the seat stays unfilled.
         /// </summary>
         private bool ConsentsToAiNominee(Country country, FedChair nominee, FedChair outgoing)
         {
@@ -3919,13 +3990,13 @@ namespace PoliSim.Simulation
             bool logDay = outgoing.TermEnds == CurrentDate.Date || (CurrentDate.Month == 1 && (CurrentDate.Day == 3 || CurrentDate.Day == 20));
             if (count == null)
             {
-                if (logDay) { Debug.LogError($"FED: {country.Id} - no president or no Senate found on {CurrentDate:yyyy-MM-dd} to confirm {nominee?.Name ?? "a nominee"} (a defect): the chair serves on"); }
+                if (logDay) { Debug.LogError($"FED: {country.Id} - no president or no Senate found on {CurrentDate:yyyy-MM-dd} to confirm {nominee?.Name ?? "a nominee"} (a defect): the seat stays unfilled"); }
                 return false;
             }
             if (count.Confirms || logDay)
             {
                 Debug.Log($"FED: {country.Id} - {count.President} ({count.PresidentsParty}) nominated {nominee?.Name ?? "no one"} on {CurrentDate:yyyy-MM-dd}: {UsFedConsent.CountWords(count)}"
-                          + (count.Confirms ? string.Empty : $" - {outgoing.Name} serves on until a successor is confirmed"));
+                          + (count.Confirms ? string.Empty : " - " + (UsFedConsent.ActingWords(country, CurrentDate) ?? outgoing.Name + " serves on") + " until a successor is confirmed"));
             }
             return count.Confirms;
         }
@@ -7096,7 +7167,7 @@ namespace PoliSim.Simulation
             if (previewCountry.CurrentFedChair != null)
             {
                 previewedInterestRate = RatePathProjection.Move(previewCountry.CurrencyZone.InterestRate,
-                    RatePathProjection.TargetFor(ruleReadingAtOpen, previewCountry.CurrentFedChair));   // FT-8 (§398): the reading at the top of the turn
+                    RatePathProjection.TargetFor(ruleReadingAtOpen, FederalReserveSystem.PolicyHead(previewCountry)));   // FT-8 (§398): the reading at the top of the turn; K15: the acting Vice Chair on a holdover's days
             }
             else if (CurrencySystem.SharesCurrencyZoneWithOthers(previewCountry, _world))
             {
@@ -7474,6 +7545,10 @@ namespace PoliSim.Simulation
                 PoliceFundingLevel = country.PoliceFundingLevel,
                 SentencingSeverity = country.SentencingSeverity,
                 CurrentFedChair = country.CurrentFedChair,
+                FedViceChair = country.FedViceChair,   // K15: shared as CurrentFedChair is - the preview only reads its lean
+                FedViceChairActing = country.FedViceChairActing,
+                FedNominationPending = country.FedNominationPending,   // K16: shared - the preview never votes or lodges one
+                FedSenateVotes = country.FedSenateVotes,
                 SovereignWealthFund = country.SovereignWealthFund?.Clone(),
                 FleetOrders = country.FleetOrders?.ConvertAll(o => o.Clone()),   // P6-F2 (§539): the connection queue, order by order
                 PaidFamilyLeaveWeeks = country.PaidFamilyLeaveWeeks,

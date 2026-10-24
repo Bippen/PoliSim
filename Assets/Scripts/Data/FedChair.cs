@@ -38,4 +38,30 @@ namespace PoliSim.Data
             RateBias = rateBias;
         }
     }
+
+    /// <summary>
+    /// K16 (Elias's ruling of 2026-10-23): a player-president's Fed nominee before the Senate - lodged by the verb (`SimulationManager.AppointCentralBankHead`),
+    /// voted on its vote day (`UsFedConsent.Resolve`). Null on the country while nothing is pending, which is every country a save of an earlier format carries.
+    /// </summary>
+    [Serializable]
+    public class FedNomination
+    {
+        public FedChair Nominee;
+        /// <summary>The nominating president's party key - the count's own side (`UsFedConsent.Vote`).</summary>
+        public string NominatingParty;
+        public DateTime NominatedOn;
+        /// <summary>The day the Senate votes: the nomination day plus the record's lag (`UsFedConsent.NominationToVoteDays`).</summary>
+        public DateTime VoteOn;
+    }
+
+    /// <summary>K16: one Senate vote on a Fed nominee the game held - a confirmation or a refusal, as counted on its day.</summary>
+    [Serializable]
+    public class FedSenateVote
+    {
+        public string Nominee;
+        public DateTime NominatedOn;
+        public DateTime VotedOn;
+        public int For, Against;
+        public bool Confirmed;
+    }
 }

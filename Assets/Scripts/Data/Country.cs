@@ -907,6 +907,22 @@ namespace PoliSim.Data
         public FedChair CurrentFedChair;
 
         /// <summary>
+        /// K15 (Elias's ruling of 2026-10-23; `UsFedConsent`'s class note): the Fed's Vice Chair - an ORIGINAL FICTIONAL person seated with the USA's world, the
+        /// one who acts as chair while the chair's term has ended and no successor is confirmed. Null for every other country.
+        /// </summary>
+        public FedChair FedViceChair;
+
+        /// <summary>K15: true on the days the Vice Chair acts as chair - the chair's term ended, no successor confirmed - set by the day's step
+        /// (`SimulationManager.AppointCentralBankHeadsWhoseTermsEnded`); the rate rule then reads the Vice Chair's lean (`FederalReserveSystem.PolicyHead`).</summary>
+        public bool FedViceChairActing;
+
+        /// <summary>K16: the player-president's Fed nominee before the Senate, or null (`FedNomination`).</summary>
+        public FedNomination FedNominationPending;
+
+        /// <summary>K16: every Senate vote on a Fed nominee the game held for this country, oldest first (`FedSenateVote`); a refusal plays from here as an event.</summary>
+        public List<FedSenateVote> FedSenateVotes = new List<FedSenateVote>();
+
+        /// <summary>
         /// This country's sovereign wealth fund, or null (the default - every country) if it doesn't
         /// exist. The player creates/dissolves it via an immediate action (mirrors TaxLine.
         /// IsImplemented's on/off pattern), the same way a non-null CurrentFedChair switches USA's

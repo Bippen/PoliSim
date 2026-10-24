@@ -42,7 +42,7 @@ namespace PoliSim.Simulation
         /// <summary>Null when the country has no sitting chair (a currency-zone member or a rate the player sets).</summary>
         public static Step[] Project(Country country, PolicyPreview preview)
         {
-            FedChair chair = country?.CurrentFedChair;
+            FedChair chair = country == null ? null : FederalReserveSystem.PolicyHead(country);   // K15: the acting Vice Chair on a holdover's days
             if (chair == null || preview == null || country.CurrencyZone == null) { return null; }
             float rateNow = country.CurrencyZone.InterestRate;
             float ruleNow = TaylorRule.GetSuggestedInterestRate(country);

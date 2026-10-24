@@ -833,7 +833,8 @@ namespace PoliSim.UI
             // ---- the governor ----
             bool pending = _fedChairCandidates != null && _fedChairCandidates.Count > 0;
             string heldOver = pending ? null : UsFedConsent.HoldoverWords(_playerCountry, chair, _simulationManager.CurrentDate);   // PS-6 US-29: no successor confirmed - the chair serves on
-            UsFedConsent.Count barred = heldOver != null ? PlayerFedChairBarred(chair) : null;   // the review's M2: the player-president under a Senate that would refuse any name of his
+            string acting = UsFedConsent.ActingWords(_playerCountry, _simulationManager.CurrentDate);   // K15: the Vice Chair acting while the term has ended unfilled
+            string beforeSenate = pending ? null : FedNominationStateWords();   // K16: the nominee before the Senate, or the Senate's standing refusal
             string head = GetCentralBankHeadTitle(PlayerCountryId);
             float govH = padY * 2f + V35.Px(44f);
             Rect gov = GUILayoutUtility.GetRect(width, govH, GUILayout.Width(width), GUILayout.Height(govH));
@@ -844,13 +845,14 @@ namespace PoliSim.UI
                 float side = V35.Px(24f);
                 DrawV35Icon(new Rect(govInner.x, govInner.y + Mathf.Round((govInner.height - side) * 0.5f), side, side), "person", area);
                 float tx = govInner.x + side + V35.Px(12f);
-                GUI.Label(new Rect(tx, govInner.y, govInner.width * 0.7f, V35.Px(24f)), head + " · " + chair.Name, V35Serif(V35.Name, PoliSimTheme.TextPrimary));
-                GUI.Label(new Rect(tx, govInner.y + V35.Px(24f), govInner.width * 0.7f, V35.Px(20f)),
-                    pending ? CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates for the next term - the choice is below and on the Docket"
-                    : barred != null ? chair.Philosophy + " · serves on - no nominee of yours can be confirmed"
-                    : heldOver != null ? chair.Philosophy + " · serves on - the Senate has confirmed no successor"
-                    : chair.Philosophy + " · " + CentralBankTermWords(chair, PlayerCountryId),
-                    V35Serif(V35.Floor, PoliSimTheme.TextSecondary));
+                float lineW = Mathf.Max(1f, (pending ? govInner.width * 0.7f : govInner.xMax - tx));
+                GUIStyle nameFace = V35Serif(V35.Name, PoliSimTheme.TextPrimary), stateFace = V35Serif(V35.Floor, PoliSimTheme.TextSecondary);
+                PoliSimWidgets.MeasuredLabel(new Rect(tx, govInner.y, lineW, V35.Px(24f)), V35Fit(acting != null && !pending ? acting : head + " · " + chair.Name, nameFace, lineW, out _), nameFace);   // K15: "Acting: the Vice Chair"
+                string state = pending ? CapitalWord(UiFormat.CountWord(_fedChairCandidates.Count)) + " candidates for the next term - the choice is below and on the Docket"
+                    : beforeSenate != null ? beforeSenate
+                    : heldOver != null ? "The chair's term ended " + chair.TermEnds.ToString("d MMM yyyy", CultureInfo.InvariantCulture) + " - the Senate has confirmed no successor"
+                    : chair.Philosophy + " · " + CentralBankTermWords(chair, PlayerCountryId);
+                PoliSimWidgets.MeasuredLabel(new Rect(tx, govInner.y + V35.Px(24f), lineW, V35.Px(20f)), V35Fit(state, stateFace, lineW, out _), stateFace);
                 if (pending)
                 {
                     GUIStyle stamp = V35Mono(V35.Floor, PoliSimTheme.Caution, bold: true, TextAnchor.MiddleCenter);
@@ -867,13 +869,13 @@ namespace PoliSim.UI
             _politicsSlipBook.Anchors["bank:governor"] = new SlipContent(head.ToUpperInvariant() + " · " + chair.Name.ToUpperInvariant())
                 .Add(chair.Philosophy.ToString().ToUpperInvariant() + " · LEAN " + chair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " ON THE RULE'S RATE")
                 .Add(chair.Description.ToUpperInvariant())
-                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - TIME HOLDS UNTIL ONE IS" : barred != null ? "THE CHAIR SERVES ON PAST THE TERM'S END · NO CANDIDATES ARE DRAWN" : heldOver ?? CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant() + "; A SHORTLIST IS DRAWN THEN");
+                .Add(pending ? "A SUCCESSOR IS TO BE CHOSEN - TIME HOLDS UNTIL ONE IS" : heldOver ?? CentralBankTermWords(chair, PlayerCountryId).ToUpperInvariant() + "; A SHORTLIST IS DRAWN THEN");
             if (UsFedConsent.Applies(_playerCountry))
             {
-                // PS-6 US-29 (R-US12 (a)): who appoints, and the day's count - the review's M2: under a Senate that would refuse any name of the player-president's,
-                // his own terms, never "THE SENATE REFUSES" about a nominee nobody sent
+                // PS-6 US-29 (R-US12 (a)): who appoints, and the day's count by the crossing rule (K17); the Vice Chair named where acting (K15)
                 _politicsSlipBook.Anchors["bank:governor"].Add("THE PRESIDENT NOMINATES · THE SENATE CONFIRMS BY A MAJORITY (ITS PRECEDENT OF 21 NOV 2013) · TODAY: "
-                    + (barred != null ? PlayerFedChairBarredWords(barred, upper: true) : UsFedConsent.CountWords(UsFedConsent.Vote(_playerCountry, _simulationManager.CurrentDate))));
+                    + UsFedConsent.CountWords(UsFedConsent.Vote(_playerCountry, _simulationManager.CurrentDate)) + " BY THE CROSSING RULE ON THE CHAIR'S ROLL CALLS SINCE 2013");
+                if (acting != null) { _politicsSlipBook.Anchors["bank:governor"].Add(acting.ToUpperInvariant() + " · LEAN " + _playerCountry.FedViceChair.RateBias.ToString("+0.00;-0.00;0.00", CultureInfo.InvariantCulture) + " ON THE RULE'S RATE"); }
             }
             V35.FloorGuarded = false;
             GUILayout.Space(gutter);

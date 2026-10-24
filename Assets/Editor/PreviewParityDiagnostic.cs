@@ -110,8 +110,8 @@ namespace PoliSim.EditorTools
                         + TaylorRule.InflationGapWeight(c) * (p.PreviewInflation - TaylorRule.InflationTarget(c))
                         + TaylorRule.UnemploymentGapWeight(c) * (p.PreviewNaturalUnemployment - p.PreviewUnemployment));
                     float ruleNow = TaylorRule.GetSuggestedInterestRate(c);
-                    float targetNow = Mathf.Clamp(ruleNow + c.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
-                    float targetNext = Mathf.Clamp(ruleOnPreview + c.CurrentFedChair.RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                    float targetNow = Mathf.Clamp(ruleNow + FederalReserveSystem.PolicyHead(c).RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
+                    float targetNext = Mathf.Clamp(ruleOnPreview + FederalReserveSystem.PolicyHead(c).RateBias, CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
                     float r0 = c.CurrencyZone.InterestRate;
                     float r1 = r0 + (targetNow - r0) * FederalReserveSystem.RateAdjustmentSpeed;
                     float r2 = r1 + (targetNext - r1) * FederalReserveSystem.RateAdjustmentSpeed;

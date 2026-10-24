@@ -51,6 +51,7 @@ namespace PoliSim.Simulation
             if (_pendingCabinetDecisionsByCountry.TryGetValue(countryId, out List<(CabinetPortfolio Portfolio, CabinetDecision Decision)> decisions) && decisions.Count > 0) { decisions.Clear(); answered = true; }
             Country country = _world?.GetCountry(countryId);
             if (AnswerDebtLimitAsTheAi(country)) { answered = true; }   // PS-6 K23 with K49: a binding debt limit with no raise before Congress - the AI's rule tables it
+            if (AnswerFedChairAsTheAi(country)) { answered = true; }   // the K15-K17 review's H-1: the Fed's term ended unfilled with no nominee lodged - the AI's keyed pick
             SpeakerRound round = RoundOf(countryId);
             if (country == null || round == null) { return answered; }
             if (round.Stage == RoundStage.PlayerAsked)

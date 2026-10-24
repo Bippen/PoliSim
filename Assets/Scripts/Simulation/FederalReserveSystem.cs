@@ -159,10 +159,18 @@ namespace PoliSim.Simulation
         {
             float suggested = TaylorRule.GetSuggestedInterestRate(country);
             float target = Mathf.Clamp(
-                suggested + country.CurrentFedChair.RateBias,
+                suggested + PolicyHead(country).RateBias,
                 CurrencySystem.MinInterestRate, CurrencySystem.MaxInterestRate);
             float current = country.CurrencyZone.InterestRate;
             country.CurrencyZone.InterestRate = current + (target - current) * RateAdjustmentSpeed;
         }
+
+        /// <summary>
+        /// K15 (Elias's ruling of 2026-10-23): the head whose lean the rule reads - the Fed's Vice Chair on the days the Vice Chair acts as chair
+        /// (`Country.FedViceChairActing`: the chair's term ended, no successor confirmed - `UsFedConsent`'s class note), else the sitting head. Every other
+        /// bank, and the Fed on every day no holdover runs, reads its sitting head exactly as before.
+        /// </summary>
+        public static FedChair PolicyHead(Country country) =>
+            country.FedViceChairActing && country.FedViceChair != null ? country.FedViceChair : country.CurrentFedChair;
     }
 }

@@ -11,7 +11,7 @@ namespace PoliSim.Simulation
     /// row carries the statute's own words, and `CentralBankTermCheck` holds every row to its saved page (each page to its SHA-256).
     ///
     /// <para><b>The day a term ends, the head is replaced</b> (q10: "AI-run banks get a head", GA-0-53): a bank the player's government appoints raises
-    /// the hold on that day and the sitting head serves on until the pick (12 U.S.C. 242: members "shall continue to serve until their successors are
+    /// the hold on that day and the sitting head serves on until the pick (the Fed's Vice Chair acts instead - K15, `UsFedConsent`) (12 U.S.C. 242: members "shall continue to serve until their successors are
     /// appointed and have qualified" - read for the others as the same holdover, DECLARED); every other bank's appointer is the AI, which appoints at once
     /// (<see cref="AiAppointment"/>). The ECB's President is the European Council's to appoint (Art. 11.2), never a member government's, so the euro
     /// members' bank is always AI-run.</para>
